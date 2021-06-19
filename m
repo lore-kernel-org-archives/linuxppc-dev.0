@@ -1,82 +1,88 @@
-Return-Path: <SRS0=hJnm=LM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=x5jM=LN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5572EC48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 23:50:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E60FC48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jun 2021 02:55:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B922D611B0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jun 2021 23:50:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B922D611B0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	by mail.kernel.org (Postfix) with ESMTPS id AA39B60041
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jun 2021 02:55:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA39B60041
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G6FzB03NPz3c6C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jun 2021 09:50:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G6L4z2VJwz3c60
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jun 2021 12:55:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=DOvQjNeS;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=PsQpIrSi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::432;
- helo=mail-pf1-x432.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b;
+ helo=mail-pj1-x102b.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=DOvQjNeS; dkim-atps=neutral
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com
- [IPv6:2607:f8b0:4864:20::432])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=PsQpIrSi; dkim-atps=neutral
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com
+ [IPv6:2607:f8b0:4864:20::102b])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G6Fyb3Kdzz2yyt
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jun 2021 09:49:40 +1000 (AEST)
-Received: by mail-pf1-x432.google.com with SMTP id a127so8914066pfa.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 16:49:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=1LjPznQ/uIsBDTfnzklraJ3U4KjBtmygs7CsvfkuOpE=;
- b=DOvQjNeS+IMvZE3V2rm/bsTOIE2+ElVWYpXBZFcbc3+qR4DzP1GrEt9yKpj0PRQqM5
- QK21+zJTSoN1Btb1LpXsZEUBLD482NwV90tCJzDecrk9yRXIR7/iS40hHtUX6HWl3Caq
- KqA7e5DTfGdu/IRPBaotih4QTz2Uw9/rrROpk=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G6L4Q3fnpz302y
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jun 2021 12:55:01 +1000 (AEST)
+Received: by mail-pj1-x102b.google.com with SMTP id g4so6818925pjk.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jun 2021 19:55:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=Qm/LGU7W75aN0DFRrKWxwUIu8JdECUu7qWute3z2ogk=;
+ b=PsQpIrSipbzbf4PZG5+3tHsyeHqXWyaY1X4eAhpgkQTUY7SHWQWBbBqHTOwx0APlIB
+ WbLj2enImC8SZMl8W63BkcQWKlgjjGkLiMEnImjoH1O5E5yBclotwWGtyttQvTLsOvkT
+ 6V9MaeVTg9CpVwX3rzs1RVL4Aw89ID+rLRmFo/Fr6MU6WGpPaNFTOZ8kehaIOw+j7Xnj
+ LEWZ1neZKvo8t2zO8EwRwYwIgH1S5mReguDxFmmb2NzhmpMx8o6h0MXTVxt9/ihyW6b0
+ zjx31jt6mNiKMMWYvbEpNZ7cJD2zuj0ij+XhSeEk6jlq4w9MMrHQQ/InqpyM78qcloyc
+ HW4A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=1LjPznQ/uIsBDTfnzklraJ3U4KjBtmygs7CsvfkuOpE=;
- b=pcCkIQABU8v8Ll8kxh9Ohx4kon3k/6OX/RRIvdIYZqLKCGCI3Zf60382HBWzz8wJG+
- mb/GrQ0noEPos8kumdirebp07naQG7/6zUuDWVHpGlzGn+ATHqgwjrFggRP8Yf1tMO7W
- q5Vt7Rovsx0R3W6GbRLRu/Zf9gNUR3a4hux55MyR77ag32bpTfjNiaQyEjms5t04BgeN
- CTnkR2osIF1NuHMPP8ObVH7JDwkS4r9ZhK/np4fH5NjQ5eEFmQi1lAjJwFdlNEI3w6I8
- bRUNADKG9M8yjN/Lw1WUlhSo5pUiBGwJsKmb9SGa7L6fgrM6w9CqRUhX+Q8nCaNF9get
- tG7w==
-X-Gm-Message-State: AOAM5327jzM1rioXkn1Lv3ETUk5o3uHA9v5+HNemZX3D6qRbPdQq4c2y
- HHu2TzU+buV0iM1SPuu7LTp+hw==
-X-Google-Smtp-Source: ABdhPJwZim075DfvinUYZnIyBpgJHTRdBHlySZ9Lv5z4lp07rXwavP5/Oq5awRv5qpMc/S7ulDSg/Q==
-X-Received: by 2002:a63:d47:: with SMTP id 7mr12346532pgn.339.1624060177005;
- Fri, 18 Jun 2021 16:49:37 -0700 (PDT)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id b1sm472127pjk.51.2021.06.18.16.49.35
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=Qm/LGU7W75aN0DFRrKWxwUIu8JdECUu7qWute3z2ogk=;
+ b=q2HIC8vV13B6FHXvjYLyH/DnwVgO2suBD/XwJ/ph1x8ajvaql6YHev3eeUMAx51fxm
+ P+UUxfJexV1TXYuAgMMK8EQhIVK8HAXFCiHGNH/4XJPvFFCWsmtiePIIEW20WxGvcT/g
+ gdj9x7i0PyuFmpXIF6w7ZoQo7CgMQGgsbIlnYHj5QULSq21tn7xrm1RVxSfyn8HkHGqm
+ NOqY1647QBd0Fiqlle03grkh7kCLl5uOPg34Vrl1jsQd+LNnjztUVVT/cAsDw6NOKsjO
+ mbQgyurFV6i7gvZAcbT5Pp9elx8tPmLbSaSZtBCAJTeM7usbc2AiWrh27CzAQ+SdsPr1
+ HdrA==
+X-Gm-Message-State: AOAM532ELPbA+m/4cG5Jm3t8Pif/hmeRf6reue/GviQlWSGerOd+TvGA
+ 71sIk0ng8RAP0J0zFHLnUxc=
+X-Google-Smtp-Source: ABdhPJyqH7ViLeRB+FzWYOQ3vCq1H+mXD6TGmS95TYmAhoGG8iLkWsaQTJEmu5/Xukv8LchZhr0SNA==
+X-Received: by 2002:a17:902:db10:b029:120:9e54:2c09 with SMTP id
+ m16-20020a170902db10b02901209e542c09mr7685042plx.0.1624071296335; 
+ Fri, 18 Jun 2021 19:54:56 -0700 (PDT)
+Received: from localhost (60-242-147-73.tpgi.com.au. [60.242.147.73])
+ by smtp.gmail.com with ESMTPSA id f205sm1584766pfa.154.2021.06.18.19.54.55
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 18 Jun 2021 16:49:36 -0700 (PDT)
-Date: Fri, 18 Jun 2021 16:49:34 -0700
-From: Kees Cook <keescook@chromium.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] crypto: nx: Fix memcpy() over-reading in nonce
-Message-ID: <202106181648.0C5FA93@keescook>
-References: <20210616203459.1248036-1-keescook@chromium.org>
- <87zgvpqb00.fsf@mpe.ellerman.id.au>
+ Fri, 18 Jun 2021 19:54:56 -0700 (PDT)
+Date: Sat, 19 Jun 2021 12:54:50 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: linux-next: manual merge of the akpm-current tree with the
+ powerpc tree
+To: Andrew Morton <akpm@linux-foundation.org>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
+References: <20210618194455.0d6c278c@canb.auug.org.au>
+In-Reply-To: <20210618194455.0d6c278c@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87zgvpqb00.fsf@mpe.ellerman.id.au>
+Message-Id: <1624071243.qkc40fnx8l.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,57 +94,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, Nayna Jain <nayna@linux.ibm.com>,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- Paulo Flabiano Smorigo <pfsmorigo@gmail.com>, linux-crypto@vger.kernel.org,
- Breno =?iso-8859-1?Q?Leit=E3o?= <leitao@debian.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, linux-hardening@vger.kernel.org
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Linux Kernel =?iso-8859-1?q?Mailing=0A?= List
+ <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 17, 2021 at 04:08:15PM +1000, Michael Ellerman wrote:
-> Kees Cook <keescook@chromium.org> writes:
-> > Fix typo in memcpy() where size should be CTR_RFC3686_NONCE_SIZE.
-> >
-> > Fixes: 030f4e968741 ("crypto: nx - Fix reentrancy bugs")
-> > Cc: stable@vger.kernel.org
-> > Signed-off-by: Kees Cook <keescook@chromium.org>
-> 
-> Thanks.
-> 
-> > ---
-> >  drivers/crypto/nx/nx-aes-ctr.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/crypto/nx/nx-aes-ctr.c b/drivers/crypto/nx/nx-aes-ctr.c
-> > index 13f518802343..6120e350ff71 100644
-> > --- a/drivers/crypto/nx/nx-aes-ctr.c
-> > +++ b/drivers/crypto/nx/nx-aes-ctr.c
-> > @@ -118,7 +118,7 @@ static int ctr3686_aes_nx_crypt(struct skcipher_request *req)
-> >  	struct nx_crypto_ctx *nx_ctx = crypto_skcipher_ctx(tfm);
-> >  	u8 iv[16];
-> >  
-> > -	memcpy(iv, nx_ctx->priv.ctr.nonce, CTR_RFC3686_IV_SIZE);
-> > +	memcpy(iv, nx_ctx->priv.ctr.nonce, CTR_RFC3686_NONCE_SIZE);
-> >  	memcpy(iv + CTR_RFC3686_NONCE_SIZE, req->iv, CTR_RFC3686_IV_SIZE);
-> >  	iv[12] = iv[13] = iv[14] = 0;
-> >  	iv[15] = 1;
-> 
-> Where IV_SIZE is 8 and NONCE_SIZE is 4.
-> 
-> And iv is 16 bytes, so it's not a buffer overflow.
-> 
-> But priv.ctr.nonce is 4 bytes, and at the end of the struct, so it reads
-> 4 bytes past the end of the nx_crypto_ctx, which is not good.
-> 
-> But then immediately overwrites whatever it read with req->iv.
-> 
-> So seems pretty harmless in practice?
+Excerpts from Stephen Rothwell's message of June 18, 2021 7:44 pm:
+> Hi all,
+>=20
+> Today's linux-next merge of the akpm-current tree got a conflict in:
+>=20
+>   arch/powerpc/kernel/smp.c
+>=20
+> between commit:
+>=20
+>   86f46f343272 ("powerpc/32s: Initialise KUAP and KUEP in C")
+>=20
+> from the powerpc tree and commit:
+>=20
+>   103e676c91d0 ("lazy tlb: introduce lazy mm refcount helper functions")
+>=20
+> from the akpm-current tree.
+>=20
+> I fixed it up (see below) and can carry the fix as necessary. This
+> is now fixed as far as linux-next is concerned, but any non trivial
+> conflicts should be mentioned to your upstream maintainer when your tree
+> is submitted for merging.  You may also want to consider cooperating
+> with the maintainer of the conflicting tree to minimise any particularly
+> complex conflicts.
 
-Right -- there's no damage done, but future memcpy() FORTIFY work alerts
-on this, so I'm going through cleaning all of these up. :)
+This is the correct merge.
 
--- 
-Kees Cook
+Thanks,
+Nick
+
+>=20
+> --=20
+> Cheers,
+> Stephen Rothwell
+>=20
+> diff --cc arch/powerpc/kernel/smp.c
+> index b83a59ce9beb,b289f1d213f8..000000000000
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@@ -1541,11 -1541,7 +1541,11 @@@ void start_secondary(void *unused
+>   {
+>   	unsigned int cpu =3D raw_smp_processor_id();
+>  =20
+>  +	/* PPC64 calls setup_kup() in early_setup_secondary() */
+>  +	if (IS_ENABLED(CONFIG_PPC32))
+>  +		setup_kup();
+>  +
+> - 	mmgrab(&init_mm);
+> + 	mmgrab_lazy_tlb(&init_mm);
+>   	current->active_mm =3D &init_mm;
+>  =20
+>   	smp_store_cpu_info(cpu);
+>=20
