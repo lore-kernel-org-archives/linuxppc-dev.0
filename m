@@ -6,61 +6,63 @@ X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7821C2B9F4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jun 2021 14:27:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39816C2B9F4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jun 2021 14:39:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C798E610C7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jun 2021 14:27:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C798E610C7
+	by mail.kernel.org (Postfix) with ESMTPS id 59B6E6117A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jun 2021 14:39:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 59B6E6117A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G6dRh0rRmz3c7B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Jun 2021 00:27:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G6dhm4Llpz3bxY
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Jun 2021 00:39:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=srs0=ovxo=ln=kernel.crashing.org=segher@ozlabs.org;
  receiver=<UNKNOWN>)
 Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G6dRJ0Ry0z3060
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Jun 2021 00:27:23 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by ozlabs.org (Postfix) with ESMTP id 4G6dRD4qlQz9sVm
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Jun 2021 00:27:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G6dhP4D5gz303h
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Jun 2021 00:38:45 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by ozlabs.org (Postfix) with ESMTP id 4G6dhN3mcvz9sW6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Jun 2021 00:38:44 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 4G6dRD4dz2z9sT6; Sun, 20 Jun 2021 00:27:20 +1000 (AEST)
+ id 4G6dhN2WKVz9sVm; Sun, 20 Jun 2021 00:38:44 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=permerror (SPF Permanent Error: Unknown mechanism
  found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
  (client-ip=63.228.1.57; helo=gate.crashing.org;
  envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by ozlabs.org (Postfix) with ESMTP id 4G6dRD0wdXz9sSn;
- Sun, 20 Jun 2021 00:27:19 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTP id 4G6dhM5STRz9sT6;
+ Sun, 20 Jun 2021 00:38:43 +1000 (AEST)
 Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 15JEQHKk016683;
- Sat, 19 Jun 2021 09:26:17 -0500
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 15JEaekD017336;
+ Sat, 19 Jun 2021 09:36:41 -0500
 Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 15JEQGHh016681;
- Sat, 19 Jun 2021 09:26:16 -0500
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 15JEaeJ1017335;
+ Sat, 19 Jun 2021 09:36:40 -0500
 X-Authentication-Warning: gate.crashing.org: segher set sender to
  segher@kernel.crashing.org using -f
-Date: Sat, 19 Jun 2021 09:26:16 -0500
+Date: Sat, 19 Jun 2021 09:36:40 -0500
 From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH v2 2/9] powerpc: Add Microwatt device tree
-Message-ID: <20210619142616.GW5077@gate.crashing.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2 6/9] powerpc/microwatt: Add support for hardware random
+ number generator
+Message-ID: <20210619143640.GX5077@gate.crashing.org>
 References: <YMwWPcsaWzMlDPqQ@thinks.paulus.ozlabs.org>
- <YMwWkPcXlGDSQ9Q3@thinks.paulus.ozlabs.org>
+ <YMwXPHlV/ZleiQUY@thinks.paulus.ozlabs.org>
+ <1624071936.oqwaldrt74.astroid@bobo.none>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <YMwWkPcXlGDSQ9Q3@thinks.paulus.ozlabs.org>
+In-Reply-To: <1624071936.oqwaldrt74.astroid@bobo.none>
 User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -78,11 +80,17 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jun 18, 2021 at 01:44:16PM +1000, Paul Mackerras wrote:
-> Microwatt currently runs with MSR[HV] = 0,
+On Sat, Jun 19, 2021 at 01:08:51PM +1000, Nicholas Piggin wrote:
+> Excerpts from Paul Mackerras's message of June 18, 2021 1:47 pm:
+> > Microwatt's hardware RNG is accessed using the DARN instruction.
+> 
+> I think we're getting a platforms/book3s soon with the VAS patches, 
+> might be a place to add the get_random_darn function.
+> 
+> Huh, DARN is unprivileged right?
 
-That isn't compliant though?  If your implementation does not have LPAR
-it must set MSR[HV]=1 always.
+It is, that's the whole point: to make it very very cheap for user
+software it has to be an unprivileged instruction.
 
 
 Segher
