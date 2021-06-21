@@ -2,65 +2,51 @@ Return-Path: <SRS0=Gjys=LP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E3CCC4743C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 18:48:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B026C4743C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 20:20:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB28E60231
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 18:48:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB28E60231
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 58B60610C7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 20:20:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58B60610C7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G7z7D3c3Fz3bsh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jun 2021 04:48:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G819h2Ncyz3bvs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jun 2021 06:20:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iqNceW4J;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=iqNceW4J; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+ receiver=<UNKNOWN>)
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G7z6J2Sk2z30CX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jun 2021 04:47:20 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id A7ED361356;
- Mon, 21 Jun 2021 18:47:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1624301237;
- bh=Iubxdx/A0LOWkRzH0XmE/PG82jZyYbybm0iqM02k/K8=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=iqNceW4JN57jLG5Cs8HM5C2aCBREYT0iAMSkFQ3FxmKkF8VfhFGk7B/IQqRzuxyTm
- bQorA7OJGw9Oss8sHHun5CHwxxMEoL1ZPNYFwhVrJgXuSwIAjyYTxyrBii37TJRKSG
- y2S2Rd+AnA7W9dK1TkGJCHX0qr210qDIaprrGaU7PO4RFJZ+UbwHARmz9EWhE2d3nT
- LbxBjnYiRsHFINZBN9I/s3t3c1YNRzO2H2j2C+LtF3KUsfT1E5/o/AGybp+d2NoL0F
- kWBuO0XOemln3vP0s71JCwyEkMiw6uCKsDM4ubZhtiGESGZht8Vx7ZGPsJsgcg4836
- wSVPkXW9UdXug==
-From: Mark Brown <broonie@kernel.org>
-To: Xiubo.Lee@gmail.com, tiwai@suse.com, nicoleotsuka@gmail.com,
- perex@perex.cz, timur@kernel.org, alsa-devel@alsa-project.org,
- festevam@gmail.com, Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v2] ASoC: fsl_xcvr: disable all interrupts when suspend
- happens
-Date: Mon, 21 Jun 2021 19:46:06 +0100
-Message-Id: <162430055263.9224.18141192734216884293.b4-ty@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <1624019913-3380-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1624019913-3380-1-git-send-email-shengjiu.wang@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G81985YW2z2yXt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jun 2021 06:19:54 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id AC60868B05; Mon, 21 Jun 2021 22:19:46 +0200 (CEST)
+Date: Mon, 21 Jun 2021 22:19:46 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Stefano Stabellini <sstabellini@kernel.org>
+Subject: Re: [PATCH v13 01/12] swiotlb: Refactor swiotlb init functions
+Message-ID: <20210621201946.GA13822@lst.de>
+References: <20210617062635.1660944-1-tientzu@chromium.org>
+ <20210617062635.1660944-2-tientzu@chromium.org>
+ <alpine.DEB.2.21.2106171434480.24906@sstabellini-ThinkPad-T480s>
+ <CALiNf29SJ0jXirWVDhJw4BUNvkjUeGPyGNJK9m8c30OPX41=5Q@mail.gmail.com>
+ <741a34cc-547c-984d-8af4-2f309880acfa@amd.com>
+ <20210618143212.GA19284@lst.de>
+ <alpine.DEB.2.21.2106211052270.24906@sstabellini-ThinkPad-T480s>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.21.2106211052270.24906@sstabellini-ThinkPad-T480s>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,43 +58,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: thomas.hellstrom@linux.intel.com, heikki.krogerus@linux.intel.com,
+ linux-devicetree <devicetree@vger.kernel.org>, peterz@infradead.org,
+ joonas.lahtinen@linux.intel.com, dri-devel@lists.freedesktop.org,
+ chris@chris-wilson.co.uk, grant.likely@arm.com, paulus@samba.org,
+ Frank Rowand <frowand.list@gmail.com>, mingo@kernel.org,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Nicolas Boichat <drinkcat@chromium.org>,
+ Saravana Kannan <saravanak@google.com>, Joerg Roedel <joro@8bytes.org>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Christoph Hellwig <hch@lst.de>,
+ Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
+ matthew.auld@intel.com, Tom Lendacky <thomas.lendacky@amd.com>,
+ Jianxiong Gao <jxgao@google.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Will Deacon <will@kernel.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ maarten.lankhorst@linux.intel.com, airlied@linux.ie,
+ Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ jani.nikula@linux.intel.com, Rob Herring <robh+dt@kernel.org>,
+ rodrigo.vivi@intel.com, Bjorn Helgaas <bhelgaas@google.com>,
+ Claire Chang <tientzu@chromium.org>, boris.ostrovsky@oracle.com,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
+ Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
+ lkml <linux-kernel@vger.kernel.org>, Tomasz Figa <tfiga@chromium.org>,
+ "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+ Jim Quinlan <james.quinlan@broadcom.com>, xypron.glpk@gmx.de,
+ Robin Murphy <robin.murphy@arm.com>, bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 18 Jun 2021 20:38:33 +0800, Shengjiu Wang wrote:
-> There is an unhandled interrupt after suspend, which cause endless
-> interrupt when system resume, so system may hang.
+On Mon, Jun 21, 2021 at 10:59:20AM -0700, Stefano Stabellini wrote:
+> Just as a clarification: I was referring to the zeroing of "mem" in
+> swiotlb_late_init_with_tbl and swiotlb_init_with_tbl. While it looks
+> like Tom and Christoph are talking about the zeroing of "tlb".
+
+Indeed. 
+
 > 
-> Disable all interrupts in runtime suspend callback to avoid above
-> issue.
+> The zeroing of "mem" is required as some fields of struct io_tlb_mem
+> need to be initialized to zero. While the zeroing of "tlb" is not
+> required except from the point of view of not leaking sensitive data as
+> Christoph mentioned.
+> 
+> Either way, Claire's v14 patch 01/12 looks fine to me.
 
-Applied to
-
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
-
-Thanks!
-
-[1/1] ASoC: fsl_xcvr: disable all interrupts when suspend happens
-      commit: ea837090b388245744988083313f6e9c7c9b9699
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+Agreed.
