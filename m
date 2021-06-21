@@ -2,61 +2,111 @@ Return-Path: <SRS0=Gjys=LP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50AD7C48BE5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 06:50:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E72FEC48BE5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 08:50:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D59DF6109E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 06:50:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D59DF6109E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 1A0E860FE7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 08:50:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1A0E860FE7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G7gCW2wHvz3c44
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 16:50:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G7jt81sz0z2ysq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 18:50:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Uyj1eoyZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oI6Ex9Ha;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=Uyj1eoyZ; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=oI6Ex9Ha; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G7gBQ6CRfz2yXh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jun 2021 16:49:50 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4G7gBG1tZKz9sW7; Mon, 21 Jun 2021 16:49:42 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1624258182;
- bh=/1SDxNaltuutHLL7NBoTW0wRrrQbKL1s2r0ffiYuMFA=;
- h=From:To:Subject:Date:From;
- b=Uyj1eoyZ+yJiW51VtHTeynhIfvFj4oaFVx8ZWd1SOTkg1O67hJmd/aGnEFmAgCU8J
- MCwczZ/9mn9O6RgaVVvSd9C37BEXmdkOmPlWBev2N9IiZSPHRYxnPLDVfaQj7Vayy2
- 9NR8bF6no2Io12u7W9fu2naSabBNq1o5wisZv0Bb5BpgSIR1Ve39TRqcf2DUI8JtDD
- 9AsAzSL84zK5lisQVX53BVmdjMU5OIeHoH8O2PWxmwVCN76NvvKa9ngC0kTCLxCdtd
- PFZJWskg2Y9Wl/WKM3UAn+3AUDyUAkDFgzu1FHy91kjkncp8GMO3XXDHkVeQX+qVNG
- yhaRb+9PvhjaQ==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc/prom_init: Convert prom_strcpy() into
- prom_strscpy_pad()
-Date: Mon, 21 Jun 2021 16:49:37 +1000
-Message-Id: <20210621064938.2021419-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G7jsZ4zrzz2yWy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jun 2021 18:50:25 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 15L8ipw9073850; Mon, 21 Jun 2021 04:50:19 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=J4kfxjJKkdk1JLI+b2WYy5A6Fu/z7y+9G/8waIiDA34=;
+ b=oI6Ex9HaVy+z7G6KTNP9VxXxavy4wDXRh8Et1ZSvDqCm1i0Mi1GenKYBxkiIKiFvTj7Y
+ NpEbVDgWhR/tld8h9V0F6eqa0d2nNz6ei3QtSqdOMnjEj3Ko0Cocj7RPpNQevbEScyDv
+ IobgVmhkce2sb9Ft0G5mxneEXROdelFdpTsSFt02YDf9kEymY3khdM9yQh74Nldife8A
+ qLdNVH+C203I6pRqadZPOZWK0/WtfQ6RTgzuR4UPq86h6H2ZoDj31oQB1VcgWq3oggkD
+ 7pUntEllx9TrZDkwJgurv1P9DiGnQ8C62FWJsMSaewJLGFqqbWo8xwjrp6S0PfxhbtMo RA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39aqh804vb-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 21 Jun 2021 04:50:19 -0400
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 15L8ihrL073727;
+ Mon, 21 Jun 2021 04:50:19 -0400
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39aqh804th-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 21 Jun 2021 04:50:18 -0400
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 15L8ln00021812;
+ Mon, 21 Jun 2021 08:50:16 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma03fra.de.ibm.com with ESMTP id 3998788ds2-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 21 Jun 2021 08:50:16 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 15L8oDAT32702938
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 21 Jun 2021 08:50:13 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8E14EA4057;
+ Mon, 21 Jun 2021 08:50:13 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C2F96A4051;
+ Mon, 21 Jun 2021 08:50:11 +0000 (GMT)
+Received: from bharata.ibmuc.com (unknown [9.85.82.83])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 21 Jun 2021 08:50:11 +0000 (GMT)
+From: Bharata B Rao <bharata@linux.ibm.com>
+To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v8 2/6] powerpc/book3s64/radix: Add H_RPT_INVALIDATE pgsize
+ encodings to mmu_psize_def
+Date: Mon, 21 Jun 2021 14:19:59 +0530
+Message-Id: <20210621085003.904767-3-bharata@linux.ibm.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20210621085003.904767-1-bharata@linux.ibm.com>
+References: <20210621085003.904767-1-bharata@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: iKBAd1YrfOvCH42WBxbLTCvTFf0Cqyua
+X-Proofpoint-GUID: tp6IL8w2ws02K-NPkarW1AZuwmCIKLGc
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-06-21_03:2021-06-20,
+ 2021-06-21 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0
+ malwarescore=0 adultscore=0 lowpriorityscore=0 suspectscore=0 phishscore=0
+ spamscore=0 mlxscore=0 bulkscore=0 priorityscore=1501 clxscore=1015
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2106210049
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,71 +118,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: farosas@linux.ibm.com, aneesh.kumar@linux.ibm.com, npiggin@gmail.com,
+ Bharata B Rao <bharata@linux.ibm.com>, david@gibson.dropbear.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In a subsequent patch we'd like to have something like a strscpy_pad()
-implementation usable in prom_init.c.
+Add a field to mmu_psize_def to store the page size encodings
+of H_RPT_INVALIDATE hcall. Initialize this while scanning the radix
+AP encodings. This will be used when invalidating with required
+page size encoding in the hcall.
 
-Currently we have a strcpy() implementation with only one caller, so
-convert it into strscpy_pad() and update the caller.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/kernel/prom_init.c | 30 ++++++++++++++++++++++++------
- 1 file changed, 24 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu.h | 1 +
+ arch/powerpc/mm/book3s64/radix_pgtable.c | 5 +++++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 523b31685c4c..c18d55f8b951 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -242,13 +242,31 @@ static int __init prom_strcmp(const char *cs, const char *ct)
- 	return 0;
- }
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index eace8c3f7b0a..c02f42d1031e 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -19,6 +19,7 @@ struct mmu_psize_def {
+ 	int		penc[MMU_PAGE_COUNT];	/* HPTE encoding */
+ 	unsigned int	tlbiel;	/* tlbiel supported for that page size */
+ 	unsigned long	avpnm;	/* bits to mask out in AVPN in the HPTE */
++	unsigned long   h_rpt_pgsize; /* H_RPT_INVALIDATE page size encoding */
+ 	union {
+ 		unsigned long	sllp;	/* SLB L||LP (exact mask to use in slbmte) */
+ 		unsigned long ap;	/* Ap encoding used by PowerISA 3.0 */
+diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
+index 5fef8db3b463..637db10d841e 100644
+--- a/arch/powerpc/mm/book3s64/radix_pgtable.c
++++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
+@@ -486,6 +486,7 @@ static int __init radix_dt_scan_page_sizes(unsigned long node,
+ 		def = &mmu_psize_defs[idx];
+ 		def->shift = shift;
+ 		def->ap  = ap;
++		def->h_rpt_pgsize = psize_to_rpti_pgsize(idx);
+ 	}
  
--static char __init *prom_strcpy(char *dest, const char *src)
-+static ssize_t __init prom_strscpy_pad(char *dest, const char *src, size_t n)
- {
--	char *tmp = dest;
-+	ssize_t rc;
-+	size_t i;
+ 	/* needed ? */
+@@ -560,9 +561,13 @@ void __init radix__early_init_devtree(void)
+ 		 */
+ 		mmu_psize_defs[MMU_PAGE_4K].shift = 12;
+ 		mmu_psize_defs[MMU_PAGE_4K].ap = 0x0;
++		mmu_psize_defs[MMU_PAGE_4K].h_rpt_pgsize =
++			psize_to_rpti_pgsize(MMU_PAGE_4K);
  
--	while ((*dest++ = *src++) != '\0')
--		/* nothing */;
--	return tmp;
-+	if (n == 0 || n > INT_MAX)
-+		return -E2BIG;
-+
-+	// Copy up to n bytes
-+	for (i = 0; i < n && src[i] != '\0'; i++)
-+		dest[i] = src[i];
-+
-+	rc = i;
-+
-+	// If we copied all n then we have run out of space for the nul
-+	if (rc == n) {
-+		// Rewind by one character to ensure nul termination
-+		i--;
-+		rc = -E2BIG;
-+	}
-+
-+	for (; i < n; i++)
-+		dest[i] = '\0';
-+
-+	return rc;
- }
+ 		mmu_psize_defs[MMU_PAGE_64K].shift = 16;
+ 		mmu_psize_defs[MMU_PAGE_64K].ap = 0x5;
++		mmu_psize_defs[MMU_PAGE_64K].h_rpt_pgsize =
++			psize_to_rpti_pgsize(MMU_PAGE_64K);
+ 	}
  
- static int __init prom_strncmp(const char *cs, const char *ct, size_t count)
-@@ -2701,7 +2719,7 @@ static void __init flatten_device_tree(void)
- 
- 	/* Add "phandle" in there, we'll need it */
- 	namep = make_room(&mem_start, &mem_end, 16, 1);
--	prom_strcpy(namep, "phandle");
-+	prom_strscpy_pad(namep, "phandle", sizeof("phandle"));
- 	mem_start = (unsigned long)namep + prom_strlen(namep) + 1;
- 
- 	/* Build string array */
+ 	/*
 -- 
-2.25.1
+2.31.1
 
