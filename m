@@ -2,51 +2,94 @@ Return-Path: <SRS0=Gjys=LP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B026C4743C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 20:20:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09FCFC4743C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 21:35:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 58B60610C7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 20:20:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58B60610C7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 4B9FD611BD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jun 2021 21:35:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B9FD611BD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G819h2Ncyz3bvs
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jun 2021 06:20:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G82rk5Dqlz30BC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jun 2021 07:35:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=UKzXohh/;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::635;
+ helo=mail-pl1-x635.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=UKzXohh/; dkim-atps=neutral
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com
+ [IPv6:2607:f8b0:4864:20::635])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G81985YW2z2yXt
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jun 2021 06:19:54 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id AC60868B05; Mon, 21 Jun 2021 22:19:46 +0200 (CEST)
-Date: Mon, 21 Jun 2021 22:19:46 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Stefano Stabellini <sstabellini@kernel.org>
-Subject: Re: [PATCH v13 01/12] swiotlb: Refactor swiotlb init functions
-Message-ID: <20210621201946.GA13822@lst.de>
-References: <20210617062635.1660944-1-tientzu@chromium.org>
- <20210617062635.1660944-2-tientzu@chromium.org>
- <alpine.DEB.2.21.2106171434480.24906@sstabellini-ThinkPad-T480s>
- <CALiNf29SJ0jXirWVDhJw4BUNvkjUeGPyGNJK9m8c30OPX41=5Q@mail.gmail.com>
- <741a34cc-547c-984d-8af4-2f309880acfa@amd.com>
- <20210618143212.GA19284@lst.de>
- <alpine.DEB.2.21.2106211052270.24906@sstabellini-ThinkPad-T480s>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G82r91q5pz2yjB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jun 2021 07:35:18 +1000 (AEST)
+Received: by mail-pl1-x635.google.com with SMTP id u2so572893plf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jun 2021 14:35:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=UDidmCZxhroQ+TOCX79nOJNfPKJOGFSjcIs3K19hLp8=;
+ b=UKzXohh/1StZBHDI4g+MalYUrKYsPNiqfF19dWdrEZWlbsMxHYiLQZgLy4EXhUuWXR
+ M+dVug9hbGLGGAL1TsjAV2lS3Xn1aEk8CKPpyb8zBB/H/ZMu0XR6EhXJwCYlO4Hs6EVq
+ 8esrQr3Bd6IvJ34m0TFKXLP/ytkY9pj/UA2nQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=UDidmCZxhroQ+TOCX79nOJNfPKJOGFSjcIs3K19hLp8=;
+ b=Enhc+F41OOgCU4awAF8LPp6cK8AVGQw+1CWaF3c9dWgMUztBphzhr8+RSVfOHH3rdK
+ RCRScw5bfRw+oC3UHMnlUEHgWQKKB4VSUBzz/RG49ShfpPcj+MgkQZsLxeqfdHzZZVNp
+ GTN9WxsgJNuxfFPzKV3k5vloMSRtiWpM76/ubR/q8TbymvzDQAWxA1Dd37AiplSvSUg1
+ aTDQyfYuVEDPJaH6a+1i56y3asMjOrQZtn4SfqpFtnBvjo91hsl+AxUl82GAh2P+2+EE
+ tXqcHnvsXR1Av/L6FOXu2NULuBrsSGgQI8uLEnl2M6115UX2YPnDtfJHmCKgwfJjevM9
+ zlnw==
+X-Gm-Message-State: AOAM531xE/M6Ge334BQqYlVtzTRXVV7ylw1mafKhi+Rky6rMnifavyYM
+ HVhTvZVWkte1h049VA8IgFPDIA==
+X-Google-Smtp-Source: ABdhPJySc3RO6aQntY+AiU2uAIVn9+bZL0/etrX7035KzHaNrh5bI1NZpIt1xweDPjKFhM6dFtEERg==
+X-Received: by 2002:a17:90a:e98f:: with SMTP id
+ v15mr133613pjy.144.1624311314348; 
+ Mon, 21 Jun 2021 14:35:14 -0700 (PDT)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+ by smtp.gmail.com with ESMTPSA id k9sm17811211pgq.27.2021.06.21.14.35.13
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 21 Jun 2021 14:35:13 -0700 (PDT)
+From: Kees Cook <keescook@chromium.org>
+To: "David S . Miller" <davem@davemloft.net>
+Subject: [PATCH] ibmvnic: Use strscpy() instead of strncpy()
+Date: Mon, 21 Jun 2021 14:35:09 -0700
+Message-Id: <20210621213509.1404256-1-keescook@chromium.org>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.21.2106211052270.24906@sstabellini-ThinkPad-T480s>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Patch-Hashes: v=1; h=sha256; g=9d7d233a23aa862fcc6a92c72955f66ab680a7cf;
+ i=2MSGt3s6JKlmLqc/7MhI8MosbesWNfHpXt3ZKIs5Ui0=;
+ m=73OdtUon7HnZ7lwINUsDE2u3rLyNTedCFDxqqnCnH0U=;
+ p=3HCUEwDxbB6Mvm9EsCUsGy6FDmIED+nO7uTZDX2jFb4=
+X-Patch-Sig: m=pgp; i=keescook@chromium.org; s=0x0x8972F4DFDC6DC026;
+ b=iQIzBAABCgAdFiEEpcP2jyKd1g9yPm4TiXL039xtwCYFAmDRBg0ACgkQiXL039xtwCYm1hAAn8z
+ zKGC+z3/HykUm/wR8tpn/0aihvrjXOE/pNGc82OUB9sRdy3xFtnvDq7A/jcfeK5kwd4zBM6kXwNzB
+ hM8KxnDiM88KuS4hLn61XmYxNC7V6L5moz2ZX5SZrvv0xsM9gZUxe6frtJoocA4jHfKeR5g0picxr
+ 4UBq2Wf+VhkKayMKHHYMEAq/2PvJb5hDt/xCV0SMyKx00OPatExs2CZtCbpjmCcQSSGdiufea830i
+ Zi3jIfzppQecp3bIq8fXUC0hzIjbYa6KUMJoWOA7SrBAiupg+msTYzA1UvWScPZJE7XtObX9bE4Cf
+ K3u5t+0yC8wx0Cjl/0H+QRMVd7iZV2c+FS67Ynwc6eC8NQj2eOE89pg9VBEj0gOqJjkWu7UHzmt62
+ SAXNfDGiqs9pmSsrYuAVJV6qsgEPK7f2qzbndwBGL3gqE4uRoV2k5E7f2jnrKGyje3LnVZGAR8Fx9
+ tlX3OuqdEB05ejAW5Ay60gUCa3I14flW6fTJwQdHM9zfpSxwMPNuy9apw0tb8BJTCUlTe5fan6HA4
+ QSM3EcAu5rSIcgiXiqrDR4AMldjPbKuvtczjKve7Z9KCH7IX1EaTOalWwNH6F6392Sm1X/y0TEMPO
+ TB9Mi0LVgyXEfzTKoyyXC7lU49OAulgfZrJe+DU7iiAUhNw+8b75S3j73KGOv46g=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,50 +101,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: thomas.hellstrom@linux.intel.com, heikki.krogerus@linux.intel.com,
- linux-devicetree <devicetree@vger.kernel.org>, peterz@infradead.org,
- joonas.lahtinen@linux.intel.com, dri-devel@lists.freedesktop.org,
- chris@chris-wilson.co.uk, grant.likely@arm.com, paulus@samba.org,
- Frank Rowand <frowand.list@gmail.com>, mingo@kernel.org,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Nicolas Boichat <drinkcat@chromium.org>,
- Saravana Kannan <saravanak@google.com>, Joerg Roedel <joro@8bytes.org>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Christoph Hellwig <hch@lst.de>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
- linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
- Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
- matthew.auld@intel.com, Tom Lendacky <thomas.lendacky@amd.com>,
- Jianxiong Gao <jxgao@google.com>, Daniel Vetter <daniel@ffwll.ch>,
- Will Deacon <will@kernel.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- maarten.lankhorst@linux.intel.com, airlied@linux.ie,
- Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org,
- jani.nikula@linux.intel.com, Rob Herring <robh+dt@kernel.org>,
- rodrigo.vivi@intel.com, Bjorn Helgaas <bhelgaas@google.com>,
- Claire Chang <tientzu@chromium.org>, boris.ostrovsky@oracle.com,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
- Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
- lkml <linux-kernel@vger.kernel.org>, Tomasz Figa <tfiga@chromium.org>,
- "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- Jim Quinlan <james.quinlan@broadcom.com>, xypron.glpk@gmx.de,
- Robin Murphy <robin.murphy@arm.com>, bauerman@linux.ibm.com
+Cc: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org,
+ Thomas Falcon <tlfalcon@linux.ibm.com>, netdev@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linux-hardening@vger.kernel.org,
+ Dany Madden <drt@linux.ibm.com>, Jakub Kicinski <kuba@kernel.org>,
+ Sukadev Bhattiprolu <sukadev@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 21, 2021 at 10:59:20AM -0700, Stefano Stabellini wrote:
-> Just as a clarification: I was referring to the zeroing of "mem" in
-> swiotlb_late_init_with_tbl and swiotlb_init_with_tbl. While it looks
-> like Tom and Christoph are talking about the zeroing of "tlb".
+Since these strings are expected to be NUL-terminated and the buffers
+are exactly sized (in vnic_client_data_len()) with no padding, strncpy()
+can be safely replaced with strscpy() here, as strncpy() on
+NUL-terminated string is considered deprecated[1]. This has the
+side-effect of silencing a -Warray-bounds warning due to the compiler
+being confused about the vlcd incrementing:
 
-Indeed. 
+In file included from ./include/linux/string.h:253,
+                 from ./include/linux/bitmap.h:10,
+                 from ./include/linux/cpumask.h:12,
+                 from ./include/linux/mm_types_task.h:14,
+                 from ./include/linux/mm_types.h:5,
+                 from ./include/linux/buildid.h:5,
+                 from ./include/linux/module.h:14,
+                 from drivers/net/ethernet/ibm/ibmvnic.c:35:
+In function '__fortify_strncpy',
+    inlined from 'vnic_add_client_data' at drivers/net/ethernet/ibm/ibmvnic.c:3919:2:
+./include/linux/fortify-string.h:39:30: warning: '__builtin_strncpy' offset 12 from the object at 'v
+lcd' is out of the bounds of referenced subobject 'name' with type 'char[]' at offset 12 [-Warray-bo
+unds]
+   39 | #define __underlying_strncpy __builtin_strncpy
+      |                              ^
+./include/linux/fortify-string.h:51:9: note: in expansion of macro '__underlying_strncpy'
+   51 |  return __underlying_strncpy(p, q, size);
+      |         ^~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/ibm/ibmvnic.c: In function 'vnic_add_client_data':
+drivers/net/ethernet/ibm/ibmvnic.c:3883:7: note: subobject 'name' declared here
+ 3883 |  char name[];
+      |       ^~~~
 
-> 
-> The zeroing of "mem" is required as some fields of struct io_tlb_mem
-> need to be initialized to zero. While the zeroing of "tlb" is not
-> required except from the point of view of not leaking sensitive data as
-> Christoph mentioned.
-> 
-> Either way, Claire's v14 patch 01/12 looks fine to me.
+[1] https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings
 
-Agreed.
+Cc: Dany Madden <drt@linux.ibm.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
+Cc: Thomas Falcon <tlfalcon@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 2d8804ebdf96..adb0d5ca9ff1 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -3909,21 +3909,21 @@ static void vnic_add_client_data(struct ibmvnic_adapter *adapter,
+ 	vlcd->type = 1;
+ 	len = strlen(os_name) + 1;
+ 	vlcd->len = cpu_to_be16(len);
+-	strncpy(vlcd->name, os_name, len);
++	strscpy(vlcd->name, os_name, len);
+ 	vlcd = (struct vnic_login_client_data *)(vlcd->name + len);
+ 
+ 	/* Type 2 - LPAR name */
+ 	vlcd->type = 2;
+ 	len = strlen(utsname()->nodename) + 1;
+ 	vlcd->len = cpu_to_be16(len);
+-	strncpy(vlcd->name, utsname()->nodename, len);
++	strscpy(vlcd->name, utsname()->nodename, len);
+ 	vlcd = (struct vnic_login_client_data *)(vlcd->name + len);
+ 
+ 	/* Type 3 - device name */
+ 	vlcd->type = 3;
+ 	len = strlen(adapter->netdev->name) + 1;
+ 	vlcd->len = cpu_to_be16(len);
+-	strncpy(vlcd->name, adapter->netdev->name, len);
++	strscpy(vlcd->name, adapter->netdev->name, len);
+ }
+ 
+ static int send_login(struct ibmvnic_adapter *adapter)
+-- 
+2.30.2
+
