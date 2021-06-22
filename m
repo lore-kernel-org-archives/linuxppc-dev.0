@@ -2,75 +2,85 @@ Return-Path: <SRS0=MtJN=LQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91E95C2B9F4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jun 2021 13:16:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13992C2B9F4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jun 2021 13:42:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 72B0E61040
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jun 2021 13:16:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72B0E61040
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6B6F961076
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jun 2021 13:42:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B6F961076
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G8RjW4Z3pz3bwC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jun 2021 23:15:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G8SJC5bb3z3bt7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jun 2021 23:42:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=Txzx9gND;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=fs7bozKP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::733;
+ helo=mail-qk1-x733.google.com; envelope-from=danielhb413@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=desiato.20200630 header.b=Txzx9gND; 
- dkim-atps=neutral
-Received: from desiato.infradead.org (desiato.infradead.org
- [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=fs7bozKP; dkim-atps=neutral
+Received: from mail-qk1-x733.google.com (mail-qk1-x733.google.com
+ [IPv6:2607:f8b0:4864:20::733])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G8Rhv4cHGz302l
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jun 2021 23:15:24 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=++Q8EHvNJOniOHh5A5dqNXrOe0ZjsvPzI3S1iuyJd0c=; b=Txzx9gND61hysapCm7XtbdbUZr
- 2YsWt1vi+k79EDFOYgoGnzuf2OFMkaj4KdG5nOGfQFdIzyZoFIs2KPpFqdlwwkwiCBjkaT/qldytF
- e+cfhJ95GNrbWmsoCA1bbRT0QqHLryJKGRhlxXE5/OK1ynxTqAByddMjYUdGY9ONd1xPqpc6Ugx/F
- o8NusjwVdkXD7UVBLokBoyfKxOv+hdUIszHpBzT7q+Hytwuq2puSXFhB2LKv8JCH5vzRA1m1+lT3P
- xe2+cqruOSRZ/fKM3F5xUI6rIQ8pYgJ3vxMLfgBbE64jUwvzZw4KjPAaV+Zd3BrGCOHtoKv6WFKJl
- A63KkXoA==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1lvgEj-00AbaW-GN; Tue, 22 Jun 2021 13:14:48 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 8B4FF30021A;
- Tue, 22 Jun 2021 15:14:44 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 4595720C169E1; Tue, 22 Jun 2021 15:14:44 +0200 (CEST)
-Date: Tue, 22 Jun 2021 15:14:44 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Kajol Jain <kjain@linux.ibm.com>
-Subject: Re: [PATCH v3 0/4] Add perf interface to expose nvdimm
-Message-ID: <YNHiRO11E9yYS6mv@hirez.programming.kicks-ass.net>
-References: <20210617132617.99529-1-kjain@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G8SHk1wB1z300T
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jun 2021 23:42:08 +1000 (AEST)
+Received: by mail-qk1-x733.google.com with SMTP id j184so39564085qkd.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jun 2021 06:42:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=33SFdCuliabBuVcZOyxtHisuB0ct9gvnHwG2AsiteTA=;
+ b=fs7bozKP/eq4AU8wpw939O4Sxvb4jdn3P3/RZPFZHgzZmRy+pM3xe9zsszcZHcMLxb
+ rjH1HYmuUkysi+NXX608mueesunsFPJCQI3YY+Pkwh6ry/zxS0i6O1eMKMoZmr7bwinG
+ KAJTIvRTTJ/3cu3AWj0pTae+slqeRYTplEUZs163E6YNhNocBxgoRbXUD9YLze2asauf
+ OX/x7TEctxI4rb+103iAA62RB5fzxn1V0PvPQdiANpu02pHkJ0zAw6cjK1kTQw8jOWRz
+ GJMg68hd/ukMLSVFhZ0xOkFREy6sbm3yEKlTW+AYg66D2DLDkfDgZkOp2CY6A81KI8rb
+ ZfFw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=33SFdCuliabBuVcZOyxtHisuB0ct9gvnHwG2AsiteTA=;
+ b=LWOSXBT29JM8yVu+yV0yh6Y4axbNWbmkF0iEcavqKh/kC+PuZdobk6BL5wdprRTzT2
+ 13OEhYxHlCIwtFZEHlDopaeGxGnNsWmW1KO2RDQc3Qn1GEYnohkGHrCSo6WaJgZb6LmS
+ fCCkpq0J7nfzCInwA5XPu9b35H1rAaX/hAdlwV6tTZxTxTCUiDOLeQSeJeZb+EIPj+Fx
+ lJi548wRUkKIIlcYhgIg7sUVoqhIWHyDz5roZ6IXDFz17Y25GWlHmw6e/aANWZYHNKG4
+ ZcbhmtrBtD4yXgxxBBiYsqlY6c94t/p96o3hflGqjEY0IhOZzkv5otxPvnhn8wm71HVm
+ rAzQ==
+X-Gm-Message-State: AOAM531CdFA8u3F5ZocMcIUm4l9rISwhZ5rS7eg13QYNsYFVDI/Y826c
+ SZu74igbLInqHcDXQPXcjFrXEIZnA6Q=
+X-Google-Smtp-Source: ABdhPJxcxujJkYszLYW7MP1GKVa2g67KvfEiYL5NhMg45dSZ0qzJ4bt8QF9JNyQJSce1ya2bsN6z5Q==
+X-Received: by 2002:ae9:e8d5:: with SMTP id a204mr2177483qkg.245.1624369325055; 
+ Tue, 22 Jun 2021 06:42:05 -0700 (PDT)
+Received: from localhost.localdomain ([191.19.29.157])
+ by smtp.gmail.com with ESMTPSA id r19sm1644491qtw.59.2021.06.22.06.42.03
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 22 Jun 2021 06:42:04 -0700 (PDT)
+From: Daniel Henrique Barboza <danielhb413@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/3] powerpc/pseries: skip reserved LMBs in
+ dlpar_memory_add_by_count()
+Date: Tue, 22 Jun 2021 10:39:21 -0300
+Message-Id: <20210622133923.295373-2-danielhb413@gmail.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20210622133923.295373-1-danielhb413@gmail.com>
+References: <20210622133923.295373-1-danielhb413@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210617132617.99529-1-kjain@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,22 +92,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nvdimm@lists.linux.dev, santosh@fossix.org, maddy@linux.vnet.ibm.com,
- ira.weiny@intel.com, rnsastry@linux.ibm.com, linux-kernel@vger.kernel.org,
- atrajeev@linux.vnet.ibm.com, aneesh.kumar@linux.ibm.com, vaibhav@linux.ibm.com,
- dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org, tglx@linutronix.de
+Cc: Daniel Henrique Barboza <danielhb413@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 17, 2021 at 06:56:13PM +0530, Kajol Jain wrote:
-> ---
-> Kajol Jain (4):
->   drivers/nvdimm: Add nvdimm pmu structure
->   drivers/nvdimm: Add perf interface to expose nvdimm performance stats
->   powerpc/papr_scm: Add perf interface support
->   powerpc/papr_scm: Document papr_scm sysfs event format entries
+The function is counting reserved LMBs as available to be added, but
+they aren't. This will cause the function to miscalculate the available
+LMBs and can trigger errors later on when executing dlpar_add_lmb().
 
-Don't see anything obviously wrong with this one.
+Signed-off-by: Daniel Henrique Barboza <danielhb413@gmail.com>
+---
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 36f66556a7c6..28a7fd90232f 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -683,6 +683,9 @@ static int dlpar_memory_add_by_count(u32 lmbs_to_add)
+ 
+ 	/* Validate that there are enough LMBs to satisfy the request */
+ 	for_each_drmem_lmb(lmb) {
++		if (lmb->flags & DRCONF_MEM_RESERVED)
++			continue;
++
+ 		if (!(lmb->flags & DRCONF_MEM_ASSIGNED))
+ 			lmbs_available++;
+ 
+-- 
+2.31.1
+
