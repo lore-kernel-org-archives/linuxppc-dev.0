@@ -2,60 +2,70 @@ Return-Path: <SRS0=BFlh=LR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A4F1C4743C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 16:10:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60D74C48BE5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 16:10:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1EAFE6102A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 16:10:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1EAFE6102A
+	by mail.kernel.org (Postfix) with ESMTPS id D2E1E611CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 16:10:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2E1E611CB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G97X614dDz3bx9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 02:10:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G97Xb2VGvz3bvR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 02:10:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y6+OULoo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Tuy8HJNy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=Y6+OULoo; 
+ header.s=k20201202 header.b=Tuy8HJNy; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G97WZ2mPSz304C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jun 2021 02:09:46 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id B8DEA611CB;
- Wed, 23 Jun 2021 16:09:41 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G97Wj061Qz3bs5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jun 2021 02:09:52 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 71A8F61220;
+ Wed, 23 Jun 2021 16:09:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1624464582;
- bh=XycGzb/Or5rXgqXxq5Pfdilk0APC+bbYpOpd9WsN+44=;
+ s=k20201202; t=1624464590;
+ bh=ONPWfjtURvhSrw51Nfjaq7MyuJNDRja8KI0zy6NKIig=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Y6+OULooCZkRCYLOck+FarGNR1whZWAjnNUqxQP+vHnmdm9fIh8d320I+xsj5N7R9
- B94VqkbW6XVZRajonlkGv2gaOJT8p/mFoMKw0UM1+nD8531vDy5t/AfsKWaAQievpK
- bbrrlwuL5/nzDJpjMeOBJyGoEng62Brx74mqbVxtsWbmXshGc8KpN69HQJMK3usTbo
- Zm0+HCgd9a7RzYPhWA/6/prSSUxjFi8xWVuiTLgZpGwoFIltvsMIzqPDoPclGZAza2
- MwQPtefUA28lMu9KE4QlL6FuY10IqCifknf6HM6fFcFzSC04WfjTNwoMQ+MSB72/qy
- 5X7yZnzfXkHcA==
+ b=Tuy8HJNyLwOvuhheZZZNZlu3TYaZLVWjosEREFOvWrn2wcCWQsaz/tJqvJAOq/5B3
+ gRnZ59Cn4mKN/M6IgRdJUcx9dbkQnLmA7etZzp/nqRQoRMbMeFBotqdtkSf1ksgzAq
+ WFjTFeZWpBVm+ysv3CQJBWJBWS2ct3TsByZ2RQ0OLac5NlQ0+bCaaMT5+ajabMuAuE
+ jKsu6s4SGrI+APgz+VVGv/yGsYypli2pTMCa2e6ZjOkK4SI7bxm2XYmtPqHhyzofNG
+ m7pvRsxG7q+q1LOBVy7/Q9UkmxKs2SX0HPkLMhfgnSt1NuzIAkg4drdDvcsQsoYvef
+ YMGe43aNYy4eA==
 From: Mark Brown <broonie@kernel.org>
-To: alsa-devel@alsa-project.org, nicoleotsuka@gmail.com, festevam@gmail.com,
- tiwai@suse.com, Shengjiu Wang <shengjiu.wang@nxp.com>, timur@kernel.org,
- Xiubo.Lee@gmail.com, perex@perex.cz
-Subject: Re: [PATCH] ASoC: fsl_spdif: Fix unexpected interrupt after suspend
-Date: Wed, 23 Jun 2021 17:08:56 +0100
-Message-Id: <162446397756.55213.7915054235058479880.b4-ty@kernel.org>
+To: alsa-devel <alsa-devel@alsa-project.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Liam Girdwood <lgirdwood@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ NXP Linux Team <linux-imx@nxp.com>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Shawn Guo <shawnguo@kernel.org>, Zhen Lei <thunder.leizhen@huawei.com>,
+ Shengjiu Wang <shengjiu.wang@gmail.com>,
+ Fabio Estevam <festevam@gmail.com>, Takashi Iwai <tiwai@suse.com>,
+ Jaroslav Kysela <perex@perex.cz>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Nicolin Chen <nicoleotsuka@gmail.com>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Timur Tabi <timur@kernel.org>
+Subject: Re: [PATCH 1/1] ASoC: fsl: remove unnecessary oom message
+Date: Wed, 23 Jun 2021 17:08:59 +0100
+Message-Id: <162446397756.55213.5590608323919673701.b4-ty@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <1624365084-7934-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1624365084-7934-1-git-send-email-shengjiu.wang@nxp.com>
+In-Reply-To: <20210617103141.1765-1-thunder.leizhen@huawei.com>
+References: <20210617103141.1765-1-thunder.leizhen@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -70,24 +80,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Mark Brown <broonie@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 22 Jun 2021 20:31:24 +0800, Shengjiu Wang wrote:
-> When system enter suspend, the machine driver suspend callback
-> function will be called, then the cpu driver trigger callback
-> (SNDRV_PCM_TRIGGER_SUSPEND) be called, it would disable the
-> interrupt.
+On Thu, 17 Jun 2021 18:31:41 +0800, Zhen Lei wrote:
+> Fixes scripts/checkpatch.pl warning:
+> WARNING: Possible unnecessary 'out of memory' message
 > 
-> But the machine driver suspend and cpu dai driver suspend order
-> maybe changed, the cpu dai driver's suspend callback is called before
-> machine driver's suppend callback, then the interrupt is not cleared
-> successfully in trigger callback.
-> 
-> [...]
+> Remove it can help us save a bit of memory.
 
 Applied to
 
@@ -95,8 +97,8 @@ Applied to
 
 Thanks!
 
-[1/1] ASoC: fsl_spdif: Fix unexpected interrupt after suspend
-      commit: a7a0a2feb957e446b2bcf732f245ba04fc8b6314
+[1/1] ASoC: fsl: remove unnecessary oom message
+      commit: 723ca2f89412abe47b7cbb276f683ddb292c172c
 
 All being well this means that it will be integrated into the linux-next
 tree (usually sometime in the next 24 hours) and sent to Linus during
