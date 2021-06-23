@@ -2,56 +2,82 @@ Return-Path: <SRS0=BFlh=LR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AED8AC4743C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 03:48:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69AE1C4743C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 04:13:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5A1AC6135A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 03:48:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A1AC6135A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id F3C6561375
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 04:13:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3C6561375
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G8q496MFWz3bsF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 13:48:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G8qcy2RWRz308r
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 14:13:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=PWj3eARR;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e;
+ helo=mail-pf1-x42e.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=PWj3eARR; dkim-atps=neutral
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com
+ [IPv6:2607:f8b0:4864:20::42e])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G8q3Q6Sbpz2xfP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2021 13:47:44 +1000 (AEST)
-IronPort-SDR: Cnqef1pMgqa4zQgOX8+rlEinvi+XTkM6EmS7SCQv5RObw7rBsfFlE194ANj5MkuAGSB0a2LEsD
- 7Hprpsh8yD3Q==
-X-IronPort-AV: E=McAfee;i="6200,9189,10023"; a="207227257"
-X-IronPort-AV: E=Sophos;i="5.83,293,1616482800"; d="scan'208";a="207227257"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Jun 2021 20:47:41 -0700
-IronPort-SDR: uYPJUoT2zirt3MTmAJaj42JvGTt6AiKYJLW9ZbejB84Y6+D35BukS+YEt5nnX+tJoR8x4oLKEK
- teyZBWeK/Quw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.83,293,1616482800"; d="scan'208";a="406550722"
-Received: from lkp-server01.sh.intel.com (HELO 4aae0cb4f5b5) ([10.239.97.150])
- by orsmga003.jf.intel.com with ESMTP; 22 Jun 2021 20:47:39 -0700
-Received: from kbuild by 4aae0cb4f5b5 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1lvtrX-0005hM-7Y; Wed, 23 Jun 2021 03:47:39 +0000
-Date: Wed, 23 Jun 2021 11:47:18 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD SUCCESS a736143afd036f2078fe19435b16fd55abc789a9
-Message-ID: <60d2aec6.vKGfXdpvZEZZf0dO%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G8qcS5lQ8z2xvQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2021 14:12:54 +1000 (AEST)
+Received: by mail-pf1-x42e.google.com with SMTP id x16so1252797pfa.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jun 2021 21:12:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=WYXrlO9vJFnXxLwCmmWGkaRYm1AEGb2PWxmf4/aRaMM=;
+ b=PWj3eARR1/KOLc3yUFheLksjLuh0Q1kxTZ+4oHKXglw1uxhedJdDbu/cVlPNToDUrU
+ vh0DPZUtDfYhzhru/yUamRmY0kSp5DGEcIMdSbtabLFREq+yEoCpoD5dfB0z/RaLAjwS
+ V9I1KEiKHJLSzFOKR0JzktMFj53vy/Llid1dQnkQ6JTqkfvOj0fz/7Am48X5VyAnyxAm
+ ovBNINnq1tn7yKc5gq7NVyV2GgPtZj9OwYk6TmBcXmzW8j5fDxXmX4XNqGJwNV1lFGLH
+ Gem552NteeFNYAgvn3vUwF+9Q1nYGzqIFFKG78UUunFBt1kS4Dh9G6l7lf8lrv/ZtHEf
+ ItGA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=WYXrlO9vJFnXxLwCmmWGkaRYm1AEGb2PWxmf4/aRaMM=;
+ b=Bkw8W8cRq9BMCQ+fWPeH9ZkOq6NQaLId/N0Gr1UhD228DQFTXtzQEo2LgkdO7fEZ3V
+ OIvk+liH8KLQoFH2PogEcUkZmHi4PgKDr8+G/k/Vv9IqbRagqCQPmsR/AXV6EZuTgg4d
+ o24ooN/sEZvm6HLZb0fyRqkYuew0d4je3ORp3yWuu3kzAdnLEqjK0ybw7bz65EJoasD/
+ S1pidoUyC1uC/2+nzN4EpEAQye8nRchMKUcdhFgUXyw6ZpaIcefjT43nXenkst07lUwi
+ gwBD3eZmE62RAvTJGebh+bgoLwrZ9xdDcGhGkMCKfoE6E6WlGL4W9jURGZsiA61rN19j
+ iP7Q==
+X-Gm-Message-State: AOAM530f+O6Vb6zfvXJXuBCSmZlONFYXpYnlX9H5ETm6H5lR0QyEgYnK
+ Y8hMNBsj+sT3aB8NCb7uQIcOqAAr81I=
+X-Google-Smtp-Source: ABdhPJxqsvT31RoEqpL2B1zCC5QEx2b0h4nda0WLSylu4lRu2rWNi2r9U5AmeDO2TXJUvLszAynE1g==
+X-Received: by 2002:a65:5bc6:: with SMTP id o6mr1907710pgr.364.1624421571473; 
+ Tue, 22 Jun 2021 21:12:51 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com (60-242-147-73.tpgi.com.au. [60.242.147.73])
+ by smtp.gmail.com with ESMTPSA id cq4sm736439pjb.1.2021.06.22.21.12.49
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 22 Jun 2021 21:12:51 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: offline CPU in stop_this_cpu
+Date: Wed, 23 Jun 2021 14:12:45 +1000
+Message-Id: <20210623041245.865134-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,130 +89,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-branch HEAD: a736143afd036f2078fe19435b16fd55abc789a9  Merge branch 'topic/ppc-kvm' into next
+printk_safe_flush_on_panic() has special lock breaking code for the
+case where we panic()ed with the console lock held. It relies on
+panic IPI causing other CPUs to mark themselves offline.
 
-elapsed time: 725m
+Do as most other architectures do.
 
-configs tested: 104
-configs skipped: 2
+This effectively reverts commit de6e5d38417e ("powerpc: smp_send_stop do
+not offline stopped CPUs"), unfortunately it may result in some false
+positive warnings, but the alternative is more situations where we can
+crash without getting messages out.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                           h3600_defconfig
-powerpc                    klondike_defconfig
-arm                       imx_v6_v7_defconfig
-powerpc                      arches_defconfig
-arm                             rpc_defconfig
-nds32                            alldefconfig
-powerpc                       maple_defconfig
-arm                           corgi_defconfig
-arc                    vdk_hs38_smp_defconfig
-mips                   sb1250_swarm_defconfig
-h8300                     edosk2674_defconfig
-sh                           se7724_defconfig
-mips                          malta_defconfig
-arc                           tb10x_defconfig
-mips                           ip28_defconfig
-arm                     eseries_pxa_defconfig
-powerpc                     ep8248e_defconfig
-sh                   rts7751r2dplus_defconfig
-mips                       rbtx49xx_defconfig
-sh                           se7343_defconfig
-arm                    vt8500_v6_v7_defconfig
-arm                         axm55xx_defconfig
-arm                         lpc18xx_defconfig
-powerpc                     tqm8560_defconfig
-openrisc                 simple_smp_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a001-20210622
-i386                 randconfig-a002-20210622
-i386                 randconfig-a003-20210622
-i386                 randconfig-a006-20210622
-i386                 randconfig-a005-20210622
-i386                 randconfig-a004-20210622
-x86_64               randconfig-a012-20210622
-x86_64               randconfig-a016-20210622
-x86_64               randconfig-a015-20210622
-x86_64               randconfig-a014-20210622
-x86_64               randconfig-a013-20210622
-x86_64               randconfig-a011-20210622
-i386                 randconfig-a014-20210622
-i386                 randconfig-a013-20210622
-i386                 randconfig-a015-20210622
-i386                 randconfig-a012-20210622
-i386                 randconfig-a016-20210622
-i386                 randconfig-a011-20210622
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                            kunit_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-b001-20210622
-x86_64               randconfig-a002-20210622
-x86_64               randconfig-a001-20210622
-x86_64               randconfig-a005-20210622
-x86_64               randconfig-a003-20210622
-x86_64               randconfig-a004-20210622
-x86_64               randconfig-a006-20210622
-
+Fixes: de6e5d38417e ("powerpc: smp_send_stop do not offline stopped CPUs")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ arch/powerpc/kernel/smp.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 2e05c783440a..bf12cca86d70 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -619,6 +619,8 @@ static void nmi_stop_this_cpu(struct pt_regs *regs)
+ 	/*
+ 	 * IRQs are already hard disabled by the smp_handle_nmi_ipi.
+ 	 */
++	set_cpu_online(smp_processor_id(), false);
++
+ 	spin_begin();
+ 	while (1)
+ 		spin_cpu_relax();
+@@ -634,6 +636,15 @@ void smp_send_stop(void)
+ static void stop_this_cpu(void *dummy)
+ {
+ 	hard_irq_disable();
++
++	/*
++	 * Offlining CPUs in stop_this_cpu can result in scheduler warnings,
++	 * (see commit de6e5d38417e), but printk_safe_flush_on_panic() wants
++	 * to know other CPUs are offline before it breaks locks to flush
++	 * printk buffers, in case we panic()ed while holding the lock.
++	 */
++	set_cpu_online(smp_processor_id(), false);
++
+ 	spin_begin();
+ 	while (1)
+ 		spin_cpu_relax();
+-- 
+2.23.0
+
