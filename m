@@ -2,83 +2,57 @@ Return-Path: <SRS0=BFlh=LR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 557BDC4743C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 03:29:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44454C4743C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 03:48:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EA966611C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 03:29:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA966611C1
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id DE5A36100A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 03:48:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE5A36100A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G8pfY3b04z3c1v
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 13:29:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=f5gMbUUY;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G8q3q2Hb4z3bv1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 13:48:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a;
- helo=mail-pl1-x62a.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=f5gMbUUY; dkim-atps=neutral
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com
- [IPv6:2607:f8b0:4864:20::62a])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G8pf52K4Zz3bsp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2021 13:29:17 +1000 (AEST)
-Received: by mail-pl1-x62a.google.com with SMTP id u2so429890plf.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jun 2021 20:29:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=Kjmo5eTVmT7tWZTMNJxHfTOGVXPcI8T2d5zlGFsjRHw=;
- b=f5gMbUUYqisHuaCTaz83jkEMFkvgAc7XYuKqPbvUx8zyzKBQ8nVwlRMRHD8rmuQQH4
- 0oQjIan0m6EiP8NdgXhmogjsrcVwdp91wuFkPZKqCp36olmS63sjPczTz/JjAs/MbQh+
- 38OgBuRAyckJ7V6zxLfaWmpCshU6SF/CjtIwn2Z5RtImkVSVqvUR0pvsc7Mwx6aWLoUS
- 6RMJyLa52x+h+x/VmkKKPeXtMSHZYrWIatzO+EH3A/XjSyOYYu5BDWb36KSAJ09Lx/S3
- /nadJBfc96pH487uI5AeOoaey5ocwqNQQlax6qBi8BERS4nTblbAsYEUwoYM0r2qaOwo
- GBZA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=Kjmo5eTVmT7tWZTMNJxHfTOGVXPcI8T2d5zlGFsjRHw=;
- b=FfBcYzyHLZI1UOkZraw1LA8L8b42quCp2o5IH+ptXxger7R6c8SOPA6MEdlDsqiVzY
- fBm7/6Bf7PBm3eHqeP9xB2v/eP7qIminwA8jNfkquzFvPkLgKz4tpzuO3lif0hy/mDQV
- 5v3iatEUuCNmLXf981iCn/BNzKO/UOBzy1nrgOJMUJ8AqLvL8sDINoMc8TEAxS0peVgB
- fnG1ccanCBEndeAzEZ06Y89m0/Q4JQ1kP/XpsG8GKEJkSH5UBRtKMrpwOLV0LkmNLkCo
- +5nz7DVHlNiRjphJoSVpogbj0WZleMz9Ss3+kxLe4Zk/QqX4h8Hl4Hu8MFm+B7JXj0L+
- K7Ug==
-X-Gm-Message-State: AOAM532myb9q5r7y1CRJFXnAA0MGt5tPu8SwI+1Tz/VQp9q1syP2DqzC
- 67/IGSSvyNSLB9+Ei21PrEUPI7221Hk=
-X-Google-Smtp-Source: ABdhPJwtuGUaqbysZGUUBZIYYCAlRsmPo8UiUwyILDVL81LxZGjawPokIJqumbZ1//2vfD+9LnmdNw==
-X-Received: by 2002:a17:90a:5406:: with SMTP id
- z6mr7303129pjh.61.1624418954317; 
- Tue, 22 Jun 2021 20:29:14 -0700 (PDT)
-Received: from bobo.ozlabs.ibm.com (60-242-147-73.tpgi.com.au. [60.242.147.73])
- by smtp.gmail.com with ESMTPSA id s1sm21449506pgg.49.2021.06.22.20.29.12
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 22 Jun 2021 20:29:14 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Make PPC_IRQ_SOFT_MASK_DEBUG depend on PPC64
-Date: Wed, 23 Jun 2021 13:29:09 +1000
-Message-Id: <20210623032909.826010-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.23.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G8q3Q4lLpz2xZh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2021 13:47:44 +1000 (AEST)
+IronPort-SDR: EujTzMQ/rusF1sqgEsPlBJxkOn02YxBSLjc4N5s2pNMwW8ezgO17Cbc9chatAos2i1gENGlWWj
+ QYFXYkxQ60+w==
+X-IronPort-AV: E=McAfee;i="6200,9189,10023"; a="187568806"
+X-IronPort-AV: E=Sophos;i="5.83,293,1616482800"; d="scan'208";a="187568806"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 22 Jun 2021 20:47:40 -0700
+IronPort-SDR: uZ0F2z2O4Xb8u4RskgaPPlkEDJuTDxEqznfTVjxwDSFadD6pAtDEjMbAm+dr+HqO6TnyRmZIfL
+ XvZhaVIIwc0g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.83,293,1616482800"; d="scan'208";a="452873383"
+Received: from lkp-server01.sh.intel.com (HELO 4aae0cb4f5b5) ([10.239.97.150])
+ by orsmga008.jf.intel.com with ESMTP; 22 Jun 2021 20:47:39 -0700
+Received: from kbuild by 4aae0cb4f5b5 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1lvtrX-0005hF-09; Wed, 23 Jun 2021 03:47:39 +0000
+Date: Wed, 23 Jun 2021 11:47:27 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next-test] BUILD REGRESSION
+ a23408e2575e49c4394f8733c78dce907286ac8e
+Message-ID: <60d2aecf.xBveEytZfnhCRdou%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,30 +64,145 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-32-bit platforms don't have irq soft masking.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+branch HEAD: a23408e2575e49c4394f8733c78dce907286ac8e  powerpc/64s/interrupt: Check and fix srr_valid without crashing
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+possible Error/Warning in current branch:
+
+arch/powerpc/platforms/52xx/mpc52xx_pm.c:58:5: error: stack frame size (1040) exceeds limit (1024) in function 'mpc52xx_pm_prepare' [-Werror,-Wframe-larger-than]
+arch/powerpc/platforms/52xx/mpc52xx_pm.c:58:5: error: stack frame size of 1040 bytes in function 'mpc52xx_pm_prepare' [-Werror,-Wframe-larger-than]
+arch/powerpc/sysdev/ehv_pic.c:111:5: error: no previous prototype for function 'ehv_pic_set_irq_type' [-Werror,-Wmissing-prototypes]
+
+Error/Warning ids grouped by kconfigs:
+
+clang_recent_errors
+|-- powerpc-randconfig-r005-20210622
+|   |-- arch-powerpc-platforms-52xx-mpc52xx_pm.c:error:stack-frame-size-()-exceeds-limit-()-in-function-mpc52xx_pm_prepare-Werror-Wframe-larger-than
+|   `-- arch-powerpc-platforms-52xx-mpc52xx_pm.c:error:stack-frame-size-of-bytes-in-function-mpc52xx_pm_prepare-Werror-Wframe-larger-than
+`-- powerpc-randconfig-r035-20210622
+    `-- arch-powerpc-sysdev-ehv_pic.c:error:no-previous-prototype-for-function-ehv_pic_set_irq_type-Werror-Wmissing-prototypes
+
+elapsed time: 725m
+
+configs tested: 107
+configs skipped: 2
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                           h3600_defconfig
+powerpc                    klondike_defconfig
+arm                       imx_v6_v7_defconfig
+powerpc                      arches_defconfig
+arm                             rpc_defconfig
+powerpc                   motionpro_defconfig
+arc                        vdk_hs38_defconfig
+powerpc                     powernv_defconfig
+powerpc                 mpc832x_rdb_defconfig
+powerpc                     tqm5200_defconfig
+powerpc                    gamecube_defconfig
+h8300                     edosk2674_defconfig
+sh                           se7724_defconfig
+mips                          malta_defconfig
+arc                           tb10x_defconfig
+mips                           ip28_defconfig
+arm                     eseries_pxa_defconfig
+powerpc                     ep8248e_defconfig
+sh                   rts7751r2dplus_defconfig
+mips                       rbtx49xx_defconfig
+sh                           se7343_defconfig
+powerpc                 mpc836x_rdk_defconfig
+sh                 kfr2r09-romimage_defconfig
+m68k                          atari_defconfig
+powerpc                     tqm8555_defconfig
+powerpc                 mpc8315_rdb_defconfig
+powerpc                    sam440ep_defconfig
+powerpc                     sequoia_defconfig
+x86_64                            allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+arc                              allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a001-20210622
+i386                 randconfig-a002-20210622
+i386                 randconfig-a003-20210622
+i386                 randconfig-a006-20210622
+i386                 randconfig-a005-20210622
+i386                 randconfig-a004-20210622
+x86_64               randconfig-a012-20210622
+x86_64               randconfig-a016-20210622
+x86_64               randconfig-a015-20210622
+x86_64               randconfig-a014-20210622
+x86_64               randconfig-a013-20210622
+x86_64               randconfig-a011-20210622
+i386                 randconfig-a014-20210622
+i386                 randconfig-a013-20210622
+i386                 randconfig-a015-20210622
+i386                 randconfig-a012-20210622
+i386                 randconfig-a016-20210622
+i386                 randconfig-a011-20210622
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                            kunit_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-b001-20210622
+x86_64               randconfig-a002-20210622
+x86_64               randconfig-a001-20210622
+x86_64               randconfig-a005-20210622
+x86_64               randconfig-a003-20210622
+x86_64               randconfig-a004-20210622
+x86_64               randconfig-a006-20210622
+
 ---
- arch/powerpc/Kconfig.debug | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 6342f9da4545..45d871fb9155 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -84,6 +84,7 @@ config MSI_BITMAP_SELFTEST
- 
- config PPC_IRQ_SOFT_MASK_DEBUG
- 	bool "Include extra checks for powerpc irq soft masking"
-+	depends on PPC64
- 
- config XMON
- 	bool "Include xmon kernel debugger"
--- 
-2.23.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
