@@ -2,68 +2,68 @@ Return-Path: <SRS0=BFlh=LR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2E90C4743C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 12:19:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19C4FC4743C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 12:23:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6BDC861002
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 12:19:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BDC861002
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=uged.al
+	by mail.kernel.org (Postfix) with ESMTPS id 373CC6100B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 12:23:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 373CC6100B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G92Pp3QJ3z3bnR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 22:19:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G92Tz3ZZtz3bv7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 22:23:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=uged.al header.i=@uged.al header.a=rsa-sha256 header.s=google header.b=GO2ZF8gT;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=PqWSqBB5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ugedal.com (client-ip=2607:f8b0:4864:20::729;
- helo=mail-qk1-x729.google.com; envelope-from=odin@ugedal.com;
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::22d;
+ helo=mail-lj1-x22d.google.com; envelope-from=vincent.guittot@linaro.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=uged.al header.i=@uged.al header.a=rsa-sha256
- header.s=google header.b=GO2ZF8gT; dkim-atps=neutral
-Received: from mail-qk1-x729.google.com (mail-qk1-x729.google.com
- [IPv6:2607:f8b0:4864:20::729])
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=PqWSqBB5; dkim-atps=neutral
+Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com
+ [IPv6:2a00:1450:4864:20::22d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G92PG22tjz2xv2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2021 22:18:56 +1000 (AEST)
-Received: by mail-qk1-x729.google.com with SMTP id c23so4511129qkc.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2021 05:18:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uged.al; s=google;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G92TR6C3yz2xtk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2021 22:22:35 +1000 (AEST)
+Received: by mail-lj1-x22d.google.com with SMTP id k8so2716332lja.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2021 05:22:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=qDRcpkPWRJWGf8beIyUh3pmIbeYu5uw6hjZK+7uqw64=;
- b=GO2ZF8gTrGoor6bAQv7Ga4LzmxcMS7s+6dwFOmRjn/lShgRRvcbsAb/8HdF2OTFWks
- vSQMts7V+F0+PkWVCCtoVVfpLv1T2aWaVANdxAm99/ORShdDXAxAfMAhcoKh0OACg3Sk
- XGXxmDvVFUrEZPw/lgdemHfwQXAYkqJ40zVMommj2xVJS9JfTbOeH0P84Ah5NxHb8hyt
- nnZLHI+jZddq/Ku3RYGOxWEGmN0gpPRyXxg9YzQv7aIi56cyABy+ya9YriashxkasD9z
- P649CBR7Pa2OKv1fY755DsuUBOzWvqb2/+tmxgM1hyBqNi62ekva7wpkapxNzszjYtnI
- 1hfg==
+ :cc; bh=K1M8efwheuUHkGZYU3icVERiMojYbNdJd5fKUwXRZZM=;
+ b=PqWSqBB5OILmf2SkzmT/83btBuqlUDrfdW0JVaEvkWsBEwZrXgtzrqkG5Y59t4gC+L
+ 1MWQdFS2G6czzHAeq8rheCjGmBWK4wgOIf9feB7XSPbPYq043gM4yN6bAurum7o65wOy
+ QRVT7ZPPrUzTjEt78fxI/bzYLbsnux5gf9K80cS0N7kEn1Qb48B5Qu/KDk7k3BVNZLI8
+ NBrpRP1Z4o+h5bECZiw2JVXKf7/0sh8BqiARZvqzv8jaTu7/iFfcRXn/QRqio2CwU1kI
+ j4JqqO8rfFyoR3p4Y8CedFElWkPcqNzM3QQ3n5fS+baaeJB+/SbdcTVHwKHUczpy8FRS
+ v61w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=qDRcpkPWRJWGf8beIyUh3pmIbeYu5uw6hjZK+7uqw64=;
- b=W6EeJGO3o+hkXVIm/rKhMIljd0F33g0Gf9IjYOJMN7Oq6uF6KTGaIkuN8UQe4m9N7K
- u0A1P+ROVSYHLsthoyCq3wGJc44rxpA3y3QR8PPCRE8N+XgVvMP0XjAWJdhJrEYEMvX8
- KNBwiS4tjgvTEIwriGX/gqNu3x6/Z53ihIrMiSgHqI39LnCnlI5vU9r7sx4Mr46NJdhJ
- pktsVywfDS9EdJR+ksmY1ZxyjHokHKj6oZTBPKMuNq80vsuunDAJaVKj5481XNrQiR6V
- 6iT6MaCyD3N13Q+d9o6s0x9mqTSbbOmmPsPzfNDDBbj6fZG7ux+A8erAUCAeFuCmqZzS
- lDVw==
-X-Gm-Message-State: AOAM533XVIlpZL8kES7sh/8TeKTPdU7MFuNcjjIKD8yUX2KPVu3T16Q4
- a/WiJamuD+o5Z2hX+8WE76EcwETWF2IR0RiSqY6R+Q==
-X-Google-Smtp-Source: ABdhPJxev0KnShuL3Rs3lB+8v7NabmTZw1GN9AeY4AQxWHCqkTXXbcc7ylQC6fHYGg/5sAmykunyyjZeP5g1gb2dZSM=
-X-Received: by 2002:a37:b3c5:: with SMTP id
- c188mr10078431qkf.242.1624450732991; 
- Wed, 23 Jun 2021 05:18:52 -0700 (PDT)
+ bh=K1M8efwheuUHkGZYU3icVERiMojYbNdJd5fKUwXRZZM=;
+ b=Vpe6ByJ+lxhKidohKIBNFFNDdluKK0OLqGqQl/HyNKVSEk6aBHxBp30oOZF1b28RgP
+ hnV3p1hdCnDgHdt1kR5lSX6xFIeUEeq+kS2t2mw9Jr35OhywKY7ofCUhQpKiITyVzV1y
+ C4NyyvFekf2AnZoliLpz//WVo7Yug93UzjV1vVKUReSBheZBWof8lODQ6I8GW7hb3Ujb
+ Tzf2gzmeziUIY7Hb2FstySug6ay5cI/un+bxNO2pNiBcTGComSvSBH/7HsoJL/dSCKLX
+ a3UwfsNzTvOXZj3tVVr8iuX5Jy0wqxCQUIWMFMcwiFhd5sRb4K/vNgzyTulPcdluPvK/
+ YG+w==
+X-Gm-Message-State: AOAM530SX1sIpzHfmZerIJrkqM1OPTblV7ONoyDG+++Ld7HGuTH7t3Kg
+ im6u+CVU629Fuq4ONkybrNrMNZka9iOSgipxqybMAg==
+X-Google-Smtp-Source: ABdhPJys7dUDWpg23GwyoqW1L85DcIlBG3yos1lJ32xXK/Xr6ViKTW93rMdD7TS5GB03m2YLXKEaJjFMP4jOp8CLzGI=
+X-Received: by 2002:a2e:9b07:: with SMTP id u7mr7469454lji.209.1624450949701; 
+ Wed, 23 Jun 2021 05:22:29 -0700 (PDT)
 MIME-Version: 1.0
 References: <2ED1BDF5-BC0C-47CD-8F33-9A46C738F8CF@linux.vnet.ibm.com>
  <CAKfTPtDrHv4OOfPvwOE2DMNoucXQJ=yvvEpTVKrXghSdKEnZcA@mail.gmail.com>
@@ -73,13 +73,14 @@ References: <2ED1BDF5-BC0C-47CD-8F33-9A46C738F8CF@linux.vnet.ibm.com>
  <CCB4222F-000A-44E8-8D61-F69893704688@linux.vnet.ibm.com>
  <6C676AB3-5D06-471A-8715-60AABEBBE392@linux.vnet.ibm.com>
  <20210623120835.GB29143@vingu-book>
-In-Reply-To: <20210623120835.GB29143@vingu-book>
-From: Odin Ugedal <odin@uged.al>
-Date: Wed, 23 Jun 2021 14:18:16 +0200
-Message-ID: <CAFpoUr01xb9ZJF9mb2nmZDpUHXFH3VSbY3AU8-1owV-_7wVTPg@mail.gmail.com>
+ <CAFpoUr01xb9ZJF9mb2nmZDpUHXFH3VSbY3AU8-1owV-_7wVTPg@mail.gmail.com>
+In-Reply-To: <CAFpoUr01xb9ZJF9mb2nmZDpUHXFH3VSbY3AU8-1owV-_7wVTPg@mail.gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Date: Wed, 23 Jun 2021 14:22:18 +0200
+Message-ID: <CAKfTPtB++3y4VnbKE_n=bgsqCfqXuF0KUsdB_cFhi9xAnMRubw@mail.gmail.com>
 Subject: Re: [powerpc][next-20210621] WARNING at kernel/sched/fair.c:3277
  during boot
-To: Vincent Guittot <vincent.guittot@linaro.org>
+To: Odin Ugedal <odin@uged.al>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -92,42 +93,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
  Linux Next Mailing List <linux-next@vger.kernel.org>,
- Odin Ugedal <odin@uged.al>, open list <linux-kernel@vger.kernel.org>
+ linuxppc-dev@lists.ozlabs.org, open list <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On Wed, 23 Jun 2021 at 14:18, Odin Ugedal <odin@uged.al> wrote:
+>
+> Hi,
+>
+> Wouldn't the attached diff below also help when load is removed,
+> Vincent? Isn't there a theoretical chance that x_sum ends up at zero
+> while x_load ends up as a positive value (without this patch)? Can
+> post as a separate patch if it works for Sachin.
 
-Wouldn't the attached diff below also help when load is removed,
-Vincent? Isn't there a theoretical chance that x_sum ends up at zero
-while x_load ends up as a positive value (without this patch)? Can
-post as a separate patch if it works for Sachin.
+In theory it should not because _sum should be always larger or equal
+to _avg * divider. Otherwise, it means that we have something wrong
+somewhere else
 
-
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index bfaa6e1f6067..def48bc2e90b 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -3688,15 +3688,15 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
-
-                r = removed_load;
-                sub_positive(&sa->load_avg, r);
--               sub_positive(&sa->load_sum, r * divider);
-+               sa->load_sum = sa->load_avg * divider;
-
-                r = removed_util;
-                sub_positive(&sa->util_avg, r);
--               sub_positive(&sa->util_sum, r * divider);
-+               sa->util_sum = sa->util_avg * divider;
-
-                r = removed_runnable;
-                sub_positive(&sa->runnable_avg, r);
--               sub_positive(&sa->runnable_sum, r * divider);
-+               sa->runnable_sum = sa->runnable_avg * divider;
-
-                /*
-                 * removed_runnable is the unweighted version of
-removed_load so we
+>
+>
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index bfaa6e1f6067..def48bc2e90b 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -3688,15 +3688,15 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
+>
+>                 r = removed_load;
+>                 sub_positive(&sa->load_avg, r);
+> -               sub_positive(&sa->load_sum, r * divider);
+> +               sa->load_sum = sa->load_avg * divider;
+>
+>                 r = removed_util;
+>                 sub_positive(&sa->util_avg, r);
+> -               sub_positive(&sa->util_sum, r * divider);
+> +               sa->util_sum = sa->util_avg * divider;
+>
+>                 r = removed_runnable;
+>                 sub_positive(&sa->runnable_avg, r);
+> -               sub_positive(&sa->runnable_sum, r * divider);
+> +               sa->runnable_sum = sa->runnable_avg * divider;
+>
+>                 /*
+>                  * removed_runnable is the unweighted version of
+> removed_load so we
