@@ -7,52 +7,52 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C39AEC4743C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 13:05:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0A20C4743C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 13:05:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF54660FDC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 13:05:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF54660FDC
+	by mail.kernel.org (Postfix) with ESMTPS id 0DB5C60FDC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 13:05:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DB5C60FDC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G93Qx1Pyvz300J
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 23:05:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G93RP1rl4z3btf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jun 2021 23:05:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mojw4VlM;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=G16SYSvF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=mojw4VlM; 
+ header.a=rsa-sha256 header.s=201909 header.b=G16SYSvF; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G93QQ71Dfz2xv5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2021 23:05:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G93Qm1Zx8z307t
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2021 23:05:19 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4G93QN1hWrz9sVm; Wed, 23 Jun 2021 23:04:59 +1000 (AEST)
+ id 4G93Qj1lG8z9shn; Wed, 23 Jun 2021 23:05:16 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1624453500;
- bh=I4MxHP1dXup6kLo8GZg073Bh7ZQwBFa9+tka66GbagE=;
- h=From:To:Cc:Subject:Date:From;
- b=mojw4VlMBTOV48QnS2A0ySIrFvMy/qGQet8L4MeNN2vn6JzSXRWqSIh0cECdOjURW
- YVAKkXvXTrST0/U0XWOBwB4s1z7Sc21X+C510aZQNjU3bGwXy/gUAqbf8J/ZEIc4z9
- AzWnZeye3YguhL0zQdM2EjhrJ+fbKCEZ+VG69mhE6L/jy9veJtEMc7Ooybp7pTVyGQ
- OHAeqbeClNTNsUOQz/RyFG1umrOHUoCV7vplkxpTo7z9AyDN2pCwgGVzYgD94sN13a
- HniTwwoWnQt3rAxqt0ploSRnlHfJyOPY5Fs5XO+Sjfr91XE+PwUvGUTx/fFsYsw81U
- bmmwogoba5oCQ==
+ s=201909; t=1624453517;
+ bh=2vyZt3Kg4E267YPAtAruOCah0DvzM1ACHK0GBJftCHc=;
+ h=From:To:Subject:Date:From;
+ b=G16SYSvFNlyc4nlYoeUz4Ml0enTlXA8LFi48+AiEe7Gr7n8aMfy1uITiRBOqujLRE
+ 8vhzksbun2zLKIMmFC1BNPr+JluGKdooj1bK07dI3qBMwZtTt6/6GizDrA0SD5mctz
+ A884Vl7deMFA9YKTDXr2WtuUuCeKg5wjFP4kqCDQ7CyHQfjo4oMZ6kRMAQuPn3B56W
+ DkEeDuXL8US7CecXhE5YsOQjIG9j/c+zugg1BwjuTyh32VHA/3C7l0zqdD+Bl9ch0r
+ mTT4zXlPQhNqcb9xf0xYPXEODA0MFpanugsNeRjdyZxXPhB+DwO799QSWw/xhjIIx9
+ Aw8eITUqOOJ3Q==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/64s: Make prom_init require RELOCATABLE
-Date: Wed, 23 Jun 2021 23:04:54 +1000
-Message-Id: <20210623130454.2542945-1-mpe@ellerman.id.au>
+Subject: [PATCH] powerpc: Fix is_kvm_guest() / kvm_para_available()
+Date: Wed, 23 Jun 2021 23:05:14 +1000
+Message-Id: <20210623130514.2543232-1-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -67,153 +67,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jniethe5@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When we boot from open firmware (OF) using PPC_OF_BOOT_TRAMPOLINE, aka.
-prom_init, we run parts of the kernel at an address other than the link
-address. That happens because OF loads the kernel above zero (OF is at
-zero) and we run prom_init before copying the kernel down to zero.
+Commit a21d1becaa3f ("powerpc: Reintroduce is_kvm_guest() as a fast-path
+check") added is_kvm_guest() and changed kvm_para_available() to use it.
 
-Currently that works even for non-relocatable kernels, because we do
-various fixups to the prom_init code to make it run where it's loaded.
+is_kvm_guest() checks a static key, kvm_guest, and that static key is
+set in check_kvm_guest().
 
-However those fixups are not sufficient if the kernel becomes large
-enough. In that case prom_init()'s final call to __start() can end up
-generating a plt branch:
+The problem is check_kvm_guest() is only called on pseries, and even
+then only in some configurations. That means is_kvm_guest() always
+returns false on all non-pseries and some pseries depending on
+configuration. That's a bug.
 
-bl      c000000002000018 <00000078.plt_branch.__start>
+For PR KVM guests this is noticable because they no longer do live
+patching of themselves, which can be detected by the omission of a
+message in dmesg such as:
 
-That results in the kernel jumping to the linked address of __start,
-0xc000000000000000, when really it needs to jump to the
-0xc000000000000000 + the runtime address because the kernel is still
-running at the load address.
+  KVM: Live patching for a fast VM worked
 
-We could do further shenanigans to handle that, see Jordan's patch for
-example:
-  https://lore.kernel.org/linuxppc-dev/20210421021721.1539289-1-jniethe5@gmail.com
+To fix it make check_kvm_guest() an initcall, to ensure it's always
+called at boot. It needs to be core so that it runs before
+kvm_guest_init() which is postcore. To be an initcall it needs to return
+int, where 0 means success, so update that.
 
-However it is much simpler to just require a kernel with prom_init() to
-be built relocatable. The result works in all configurations without
-further work, and requires less code.
+We still call it manually in pSeries_smp_probe(), because that runs
+before init calls are run.
 
-This should have no effect on most people, as our defconfigs and
-essentially all distro configs already have RELOCATABLE enabled.
-
+Fixes: a21d1becaa3f ("powerpc: Reintroduce is_kvm_guest() as a fast-path check")
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom_init.c | 58 ++-------------------------------
- arch/powerpc/platforms/Kconfig  |  1 +
- 2 files changed, 3 insertions(+), 56 deletions(-)
+ arch/powerpc/include/asm/kvm_guest.h |  4 ++--
+ arch/powerpc/kernel/firmware.c       | 10 ++++++----
+ arch/powerpc/platforms/pseries/smp.c |  4 +++-
+ 3 files changed, 11 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 05ce15b854e2..a5bf355ce1d6 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -3243,54 +3243,6 @@ static void __init prom_check_initrd(unsigned long r3, unsigned long r4)
- #endif /* CONFIG_BLK_DEV_INITRD */
+diff --git a/arch/powerpc/include/asm/kvm_guest.h b/arch/powerpc/include/asm/kvm_guest.h
+index 2fca299f7e19..c63105d2c9e7 100644
+--- a/arch/powerpc/include/asm/kvm_guest.h
++++ b/arch/powerpc/include/asm/kvm_guest.h
+@@ -16,10 +16,10 @@ static inline bool is_kvm_guest(void)
+ 	return static_branch_unlikely(&kvm_guest);
  }
  
--#ifdef CONFIG_PPC64
--#ifdef CONFIG_RELOCATABLE
--static void reloc_toc(void)
--{
--}
--
--static void unreloc_toc(void)
--{
--}
--#else
--static void __reloc_toc(unsigned long offset, unsigned long nr_entries)
--{
--	unsigned long i;
--	unsigned long *toc_entry;
--
--	/* Get the start of the TOC by using r2 directly. */
--	asm volatile("addi %0,2,-0x8000" : "=b" (toc_entry));
--
--	for (i = 0; i < nr_entries; i++) {
--		*toc_entry = *toc_entry + offset;
--		toc_entry++;
--	}
--}
--
--static void reloc_toc(void)
--{
--	unsigned long offset = reloc_offset();
--	unsigned long nr_entries =
--		(__prom_init_toc_end - __prom_init_toc_start) / sizeof(long);
--
--	__reloc_toc(offset, nr_entries);
--
--	mb();
--}
--
--static void unreloc_toc(void)
--{
--	unsigned long offset = reloc_offset();
--	unsigned long nr_entries =
--		(__prom_init_toc_end - __prom_init_toc_start) / sizeof(long);
--
--	mb();
--
--	__reloc_toc(-offset, nr_entries);
--}
--#endif
--#endif
--
- #ifdef CONFIG_PPC_SVM
- /*
-  * Perform the Enter Secure Mode ultracall.
-@@ -3324,14 +3276,12 @@ static void __init setup_secure_guest(unsigned long kbase, unsigned long fdt)
- 	 * relocated it so the check will fail. Restore the original image by
- 	 * relocating it back to the kernel virtual base address.
- 	 */
--	if (IS_ENABLED(CONFIG_RELOCATABLE))
--		relocate(KERNELBASE);
-+	relocate(KERNELBASE);
- 
- 	ret = enter_secure_mode(kbase, fdt);
- 
- 	/* Relocate the kernel again. */
--	if (IS_ENABLED(CONFIG_RELOCATABLE))
--		relocate(kbase);
-+	relocate(kbase);
- 
- 	if (ret != U_SUCCESS) {
- 		prom_printf("Returned %d from switching to secure mode.\n", ret);
-@@ -3359,8 +3309,6 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- #ifdef CONFIG_PPC32
- 	unsigned long offset = reloc_offset();
- 	reloc_got2(offset);
--#else
--	reloc_toc();
+-bool check_kvm_guest(void);
++int check_kvm_guest(void);
+ #else
+ static inline bool is_kvm_guest(void) { return false; }
+-static inline bool check_kvm_guest(void) { return false; }
++static inline int check_kvm_guest(void) { return 0; }
  #endif
  
- 	/*
-@@ -3537,8 +3485,6 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
+ #endif /* _ASM_POWERPC_KVM_GUEST_H_ */
+diff --git a/arch/powerpc/kernel/firmware.c b/arch/powerpc/kernel/firmware.c
+index c9e2819b095a..c7022c41cc31 100644
+--- a/arch/powerpc/kernel/firmware.c
++++ b/arch/powerpc/kernel/firmware.c
+@@ -23,18 +23,20 @@ EXPORT_SYMBOL_GPL(powerpc_firmware_features);
  
- #ifdef CONFIG_PPC32
- 	reloc_got2(-offset);
--#else
--	unreloc_toc();
+ #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_KVM_GUEST)
+ DEFINE_STATIC_KEY_FALSE(kvm_guest);
+-bool check_kvm_guest(void)
++int __init check_kvm_guest(void)
+ {
+ 	struct device_node *hyper_node;
+ 
+ 	hyper_node = of_find_node_by_path("/hypervisor");
+ 	if (!hyper_node)
+-		return false;
++		return 0;
+ 
+ 	if (!of_device_is_compatible(hyper_node, "linux,kvm"))
+-		return false;
++		return 0;
+ 
+ 	static_branch_enable(&kvm_guest);
+-	return true;
++
++	return 0;
+ }
++core_initcall(check_kvm_guest); // before kvm_guest_init()
  #endif
+diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+index c70b4be9f0a5..096629f54576 100644
+--- a/arch/powerpc/platforms/pseries/smp.c
++++ b/arch/powerpc/platforms/pseries/smp.c
+@@ -211,7 +211,9 @@ static __init void pSeries_smp_probe(void)
+ 	if (!cpu_has_feature(CPU_FTR_SMT))
+ 		return;
  
- 	/* Move to secure memory if we're supposed to be secure guests. */
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 2f071fb9694c..e02d29a9d12f 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -51,6 +51,7 @@ config PPC_NATIVE
- config PPC_OF_BOOT_TRAMPOLINE
- 	bool "Support booting from Open Firmware or yaboot"
- 	depends on PPC_BOOK3S_32 || PPC64
-+	select RELOCATABLE if PPC64
- 	default y
- 	help
- 	  Support from booting from Open Firmware or yaboot using an
+-	if (check_kvm_guest()) {
++	check_kvm_guest();
++
++	if (is_kvm_guest()) {
+ 		/*
+ 		 * KVM emulates doorbells by disabling FSCR[MSGP] so msgsndp
+ 		 * faults to the hypervisor which then reads the instruction
 -- 
 2.25.1
 
