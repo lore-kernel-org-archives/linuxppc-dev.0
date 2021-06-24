@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB0EAC49EA6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 14:05:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7652C49EA6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 14:05:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80F10613FB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 14:05:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80F10613FB
+	by mail.kernel.org (Postfix) with ESMTPS id 79086613FB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 14:05:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79086613FB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G9hjb0kr7z3dD8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 00:05:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G9hjx0nP9z3dZK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 00:05:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,16 +26,17 @@ Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G9hhB5VyFz3bsv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jun 2021 00:04:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G9hhD1kr8z3bv1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jun 2021 00:04:12 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4G9hh93Xb3z9sXG; Fri, 25 Jun 2021 00:04:09 +1000 (AEST)
+ id 4G9hhB1Pg4z9sXJ; Fri, 25 Jun 2021 00:04:09 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20210611111104.1058991-1-npiggin@gmail.com>
-References: <20210611111104.1058991-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/boot: add zImage.lds to targets
-Message-Id: <162454339563.2931445.3731468649516702906.b4-ty@ellerman.id.au>
+In-Reply-To: <20210517140355.2325406-1-npiggin@gmail.com>
+References: <20210517140355.2325406-1-npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/powernv: Fix machine check reporting of async
+ store errors
+Message-Id: <162454339538.2931445.6601401340119730236.b4-ty@ellerman.id.au>
 Date: Fri, 25 Jun 2021 00:03:15 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -51,16 +52,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 11 Jun 2021 21:11:04 +1000, Nicholas Piggin wrote:
-> This prevents spurious rebuilds of the lds and then wrappers.
+On Tue, 18 May 2021 00:03:55 +1000, Nicholas Piggin wrote:
+> POWER9 and POWER10 asynchronous machine checks due to stores have their
+> cause reported in SRR1 but SRR1[42] is set, which in other cases
+> indicates DSISR cause.
+> 
+> Check for these cases and clear SRR1[42], so the cause matching uses
+> the i-side (SRR1) table.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/boot: add zImage.lds to targets
-      https://git.kernel.org/powerpc/c/710e682286784b50b882fc4befdf83c587059211
+[1/1] powerpc/powernv: Fix machine check reporting of async store errors
+      https://git.kernel.org/powerpc/c/3729e0ec59a20825bd4c8c70996b2df63915e1dd
 
 cheers
