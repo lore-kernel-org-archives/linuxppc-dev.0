@@ -2,69 +2,72 @@ Return-Path: <SRS0=UTIz=LS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	INVALID_DATE_TZ_ABSURD,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77579C48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 11:19:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2EECC48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 11:20:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1346B6124C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 11:19:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1346B6124C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 32568613B3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 11:20:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 32568613B3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G9d2K1znXz3by2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 21:19:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G9d2n4Knzz3bv7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 21:20:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bw4AVsGw;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=IHgUrWjq;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=UgtDgR4w;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=will@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
+ helo=galois.linutronix.de; envelope-from=john.ogness@linutronix.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=bw4AVsGw; 
+ secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
+ header.s=2020 header.b=IHgUrWjq; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=UgtDgR4w; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+X-Greylist: delayed 450 seconds by postgrey-1.36 at boromir;
+ Thu, 24 Jun 2021 21:19:26 AEST
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G9d1p2W5tz2yR7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jun 2021 21:19:10 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 6D5C7613C1;
- Thu, 24 Jun 2021 11:18:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1624533547;
- bh=fyQk9K7V5mi+iulKCuVouHY96p/8l9exJzzlUIeSpn8=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=bw4AVsGwRrbnlqsX5CZZBCGVkLRWbVSBBROzH0cW0WxgQnoyiN2SkbZT9Y0qsOq8u
- JL8IIrlYNHTHfBROv+myGIoSXn3V0Qajeyu6WrQ15CejRET9x4mwWpuBCwWkKgfe+I
- +cOMFFna8tPSjLTq48KMyVkK5wGgtDdocNICZALKyCcFBQrrDac4GVZrs41lrwovdH
- A7+mTUl4b8SpYL5RZSXQGAdCk4J4xBM23HuRVgN0YiE8QMME9/0wtATNSKneCXnM3U
- aM6IUBXxfGBIajg731amXfhwP7wHdtJMySWai/ROQfVX1amjwBJVAnH3akjkMUY271
- lYvk5WkbaBLcQ==
-Date: Thu, 24 Jun 2021 12:18:56 +0100
-From: Will Deacon <will@kernel.org>
-To: Robin Murphy <robin.murphy@arm.com>
-Subject: Re: [PATCH v14 06/12] swiotlb: Use is_swiotlb_force_bounce for
- swiotlb data bouncing
-Message-ID: <20210624111855.GA1382@willie-the-truck>
-References: <20210619034043.199220-1-tientzu@chromium.org>
- <20210619034043.199220-7-tientzu@chromium.org>
- <76c3343d-72e5-9df3-8924-5474ee698ef4@quicinc.com>
- <20210623183736.GA472@willie-the-truck>
- <19d4c7a2-744d-21e0-289c-a576e1f0e6f3@quicinc.com>
- <20210624054315.GA25381@lst.de>
- <CALiNf288ZLMhY3E8E3N+z9rkwi1viWNLm1wwMEwT4rNwh3FfwQ@mail.gmail.com>
- <364e6715-eafd-fc4a-e0af-ce2a042756b4@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G9d2605tSz3bvZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jun 2021 21:19:25 +1000 (AEST)
+From: John Ogness <john.ogness@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020; t=1624533109;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=cfuNbKyCExwbvfLByUf+i4tJc2rm0rFQn9eWtArqDyU=;
+ b=IHgUrWjqvTv9XAnW/euiKoHwCs22cXM582fYW7cdZ/gzfBxO7r+42lCoPz/6AoII5OD3vC
+ WUMEZkEBldDcku57tVr2rvTpeuygcckemySzvQ3FLrfSxnbxJcIsRMx4luDvkBtYFr1lHl
+ Z1kclDpHstTRIFFbNIhgx2OMOe37Y2xiSjQUVkH1DiOYeK8BC30dH6MP3hEBxi+TINnr65
+ iFZdoBNAxFkiZMnbkkiL640e/KxI47jyT+B3b83bn9FXtsxdoVP9qYsozOKunTnMD+kMmU
+ XdLGN1R2U9qscSjODZFD9WlP7BF7bv6uHjZjAQKqiaskUoJoReN0NHjL6mXugA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020e; t=1624533109;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=cfuNbKyCExwbvfLByUf+i4tJc2rm0rFQn9eWtArqDyU=;
+ b=UgtDgR4w/gAEfRB86XFxI5AihfurAOaChSakPiA9vEn2TUKTUSjCSlzlcmPcUfDeZYBtLI
+ Ez3uSiW3f8JSHYCg==
+To: Petr Mladek <pmladek@suse.com>
+Subject: [PATCH printk v3 0/6] printk: remove safe buffers
+Date: Thu, 24 Jun 2021 13:17:42 +0206
+Message-Id: <20210624111148.5190-1-john.ogness@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <364e6715-eafd-fc4a-e0af-ce2a042756b4@arm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,78 +79,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: heikki.krogerus@linux.intel.com,
- linux-devicetree <devicetree@vger.kernel.org>, peterz@infradead.org,
- joonas.lahtinen@linux.intel.com, dri-devel@lists.freedesktop.org,
- chris@chris-wilson.co.uk, grant.likely@arm.com, paulus@samba.org,
- Frank Rowand <frowand.list@gmail.com>, mingo@kernel.org,
- Jianxiong Gao <jxgao@google.com>, Stefano Stabellini <sstabellini@kernel.org>,
- Saravana Kannan <saravanak@google.com>, Joerg Roedel <joro@8bytes.org>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Christoph Hellwig <hch@lst.de>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
- linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Dan Williams <dan.j.williams@intel.com>, matthew.auld@intel.com,
- Nicolas Boichat <drinkcat@chromium.org>, thomas.hellstrom@linux.intel.com,
- Jim Quinlan <james.quinlan@broadcom.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- intel-gfx@lists.freedesktop.org, maarten.lankhorst@linux.intel.com,
- jani.nikula@linux.intel.com, Rob Herring <robh+dt@kernel.org>,
- rodrigo.vivi@intel.com, Bjorn Helgaas <bhelgaas@google.com>,
- Claire Chang <tientzu@chromium.org>, boris.ostrovsky@oracle.com,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
- airlied@linux.ie, Thierry Reding <treding@nvidia.com>,
- Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
- Qian Cai <quic_qiancai@quicinc.com>, lkml <linux-kernel@vger.kernel.org>,
- "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- Daniel Vetter <daniel@ffwll.ch>, xypron.glpk@gmx.de,
- Tom Lendacky <thomas.lendacky@amd.com>, linuxppc-dev@lists.ozlabs.org,
- bauerman@linux.ibm.com
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Alexei Starovoitov <ast@kernel.org>,
+ Chris Wilson <chris@chris-wilson.co.uk>,
+ "Wolfram Sang \(Renesas\)" <wsa+renesas@sang-engineering.com>,
+ Paul Mackerras <paulus@samba.org>, Tiezhu Yang <yangtiezhu@loongson.cn>,
+ Marc Zyngier <maz@kernel.org>, Masahiro Yamada <masahiroy@kernel.org>,
+ Russell King <linux@armlinux.org.uk>, Peter Zijlstra <peterz@infradead.org>,
+ Yue Hu <huyue2@yulong.com>, Ingo Molnar <mingo@redhat.com>,
+ linux-arm-kernel@lists.infradead.org, Sami Tolvanen <samitolvanen@google.com>,
+ Valentin Schneider <valentin.schneider@arm.com>,
+ Kees Cook <keescook@chromium.org>, "Paul E. McKenney" <paulmck@kernel.org>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Frederic Weisbecker <frederic@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Nathan Chancellor <nathan@kernel.org>, Nick Terrell <terrelln@fb.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Vlastimil Babka <vbabka@suse.cz>, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Pekka Enberg <penberg@kernel.org>,
+ Sergey Senozhatsky <senozhatsky@chromium.org>,
+ Eric Biederman <ebiederm@xmission.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Mike Rapoport <rppt@kernel.org>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 24, 2021 at 12:14:39PM +0100, Robin Murphy wrote:
-> On 2021-06-24 07:05, Claire Chang wrote:
-> > On Thu, Jun 24, 2021 at 1:43 PM Christoph Hellwig <hch@lst.de> wrote:
-> > > 
-> > > On Wed, Jun 23, 2021 at 02:44:34PM -0400, Qian Cai wrote:
-> > > > is_swiotlb_force_bounce at /usr/src/linux-next/./include/linux/swiotlb.h:119
-> > > > 
-> > > > is_swiotlb_force_bounce() was the new function introduced in this patch here.
-> > > > 
-> > > > +static inline bool is_swiotlb_force_bounce(struct device *dev)
-> > > > +{
-> > > > +     return dev->dma_io_tlb_mem->force_bounce;
-> > > > +}
-> > > 
-> > > To me the crash looks like dev->dma_io_tlb_mem is NULL.  Can you
-> > > turn this into :
-> > > 
-> > >          return dev->dma_io_tlb_mem && dev->dma_io_tlb_mem->force_bounce;
-> > > 
-> > > for a quick debug check?
-> > 
-> > I just realized that dma_io_tlb_mem might be NULL like Christoph
-> > pointed out since swiotlb might not get initialized.
-> > However,  `Unable to handle kernel paging request at virtual address
-> > dfff80000000000e` looks more like the address is garbage rather than
-> > NULL?
-> > I wonder if that's because dev->dma_io_tlb_mem is not assigned
-> > properly (which means device_initialize is not called?).
-> 
-> What also looks odd is that the base "address" 0xdfff800000000000 is held in
-> a couple of registers, but the offset 0xe looks too small to match up to any
-> relevant structure member in that dereference chain :/
+Hi,
 
-FWIW, I've managed to trigger a NULL dereference locally when swiotlb hasn't
-been initialised but we dereference 'dev->dma_io_tlb_mem', so I think
-Christoph's suggestion is needed regardless. But I agree that it won't help
-with the issue reported by Qian Cai.
+Here is v3 of a series to remove the safe buffers. v2 can be
+found here [0]. The safe buffers are no longer needed because
+messages can be stored directly into the log buffer from any
+context.
 
-Qian Cai: please can you share your .config and your command line?
+However, the safe buffers also provided a form of recursion
+protection. For that reason, explicit recursion protection is
+implemented for this series.
 
-Thanks,
+The safe buffers also implicitly provided serialization
+between multiple CPUs executing in NMI context. This was
+particularly necessary for the nmi_backtrace() output. This
+serializiation is now preserved by using the printk_cpu_lock.
 
-Will
+And finally, with the removal of the safe buffers, there is no
+need for extra NMI enter/exit tracking. So this is also removed
+(which includes removing config option CONFIG_PRINTK_NMI).
+
+Changes since v2:
+
+- Move irq disabling/enabling out of the
+  console_lock_spinning_*() functions to simplify the patches
+  keep the function prototypes simple.
+
+- Change printk_enter_irqsave()/printk_exit_irqrestore() to
+  macros to allow a more common calling convention for irq
+  flags.
+
+- Use the counter pointer from printk_enter_irqsave() in
+  printk_exit_irqrestore() rather than fetching it again. This
+  avoids any possible race conditions when printk's percpu
+  flag is set.
+
+- Use the printk_cpu_lock to serialize banner and regs with
+  the stack dump in nmi_cpu_backtrace().
+
+John Ogness
+
+[0] https://lore.kernel.org/lkml/20210330153512.1182-1-john.ogness@linutronix.de
+
+John Ogness (6):
+  lib/nmi_backtrace: explicitly serialize banner and regs
+  printk: track/limit recursion
+  printk: remove safe buffers
+  printk: remove NMI tracking
+  printk: convert @syslog_lock to mutex
+  printk: syslog: close window between wait and read
+
+ arch/arm/kernel/smp.c          |   2 -
+ arch/powerpc/kernel/traps.c    |   1 -
+ arch/powerpc/kernel/watchdog.c |   5 -
+ arch/powerpc/kexec/crash.c     |   3 -
+ include/linux/hardirq.h        |   2 -
+ include/linux/printk.h         |  22 --
+ init/Kconfig                   |   5 -
+ kernel/kexec_core.c            |   1 -
+ kernel/panic.c                 |   3 -
+ kernel/printk/internal.h       |  23 ---
+ kernel/printk/printk.c         | 273 +++++++++++++++----------
+ kernel/printk/printk_safe.c    | 361 +--------------------------------
+ kernel/trace/trace.c           |   2 -
+ lib/nmi_backtrace.c            |  13 +-
+ 14 files changed, 176 insertions(+), 540 deletions(-)
+
+
+base-commit: 48e72544d6f06daedbf1d9b14610be89dba67526
+-- 
+2.20.1
+
