@@ -2,91 +2,55 @@ Return-Path: <SRS0=UTIz=LS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9811C48BDF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 06:06:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3058C48BDF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 06:33:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E7296044F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 06:06:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E7296044F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	by mail.kernel.org (Postfix) with ESMTPS id 138A9613C7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 06:33:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 138A9613C7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4G9V586Qh1z3bx3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 16:06:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=f09JHaTt;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4G9VhS4Xdwz30Cn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jun 2021 16:33:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::12b;
- helo=mail-il1-x12b.google.com; envelope-from=tientzu@chromium.org;
+ smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18;
+ helo=deadmen.hmeau.com; envelope-from=herbert@gondor.apana.org.au;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=f09JHaTt; dkim-atps=neutral
-Received: from mail-il1-x12b.google.com (mail-il1-x12b.google.com
- [IPv6:2607:f8b0:4864:20::12b])
+Received: from deadmen.hmeau.com (helcar.hmeau.com [216.24.177.18])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4G9V4b2QMGz2yXP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jun 2021 16:06:05 +1000 (AEST)
-Received: by mail-il1-x12b.google.com with SMTP id k5so4962524ilv.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2021 23:06:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=osJqntoZHJL8VeQbE2d8Gx1TrOiajWQXazXH9w70kIY=;
- b=f09JHaTt6yY9HlwcujpzmyCJbvbUoIE0cZNa0aICkCK68T/rODYze/6/aKRkuFqgtc
- aQSgGc4CEL1bXaOSKVo+xlBop7hH5m1EqqxXbZi8VyWUJmFL6g6BM4X4ZMkMlYffhkXb
- itPPZk67YIl+8XjGG/C0lboNwjIIr80wXQ+NM=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=osJqntoZHJL8VeQbE2d8Gx1TrOiajWQXazXH9w70kIY=;
- b=azg6kZEwr+ajaDXqwlEA5D3y1nL/nGfgJb6oVxvK0hC6Uq6M3WkMFN/lVCdhcafLQo
- k4gbqiAhVwbeCetpTVzk8PDmyHIIJ3s8Mz4zSdfieaGWo6bSGovGSa5kTzOPHcqPCisB
- otOkloeBlsIcDUx6IiEeUxujG8nGA6EMEN7bIg1xh6/f1H/5AOlAHM2ExzfwpwB1f1tY
- ZrUohc5I0A3mkDger9ydPbokGm1rkSgfTuRWufbkkUTehhr1Hho9SSlpBtpd/nZSDnvh
- lujR3qmJaFnrOvrxtT2lq5QX5jn9X3ag+4UF0Uvjh/JqUb7D3YbDIY9yaA7pPiJLC+8v
- UnSQ==
-X-Gm-Message-State: AOAM532tRuBZlh4ETiIjXIF2Q2c3vpjshr1yeW54t3/vdt24ono4ENb8
- ikGi/ty/LUK4e3fATheIHneUmWP5R0IEAQ==
-X-Google-Smtp-Source: ABdhPJy3WfSk9zmQl6gQd9xgpciCmlu7mzuSUFEDp27071hMmZlKc+MIlKUV9C30s3FeYhYejhllCg==
-X-Received: by 2002:a05:6e02:8b:: with SMTP id
- l11mr2456653ilm.228.1624514761190; 
- Wed, 23 Jun 2021 23:06:01 -0700 (PDT)
-Received: from mail-il1-f169.google.com (mail-il1-f169.google.com.
- [209.85.166.169])
- by smtp.gmail.com with ESMTPSA id s17sm695290ioe.32.2021.06.23.23.06.00
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 23 Jun 2021 23:06:00 -0700 (PDT)
-Received: by mail-il1-f169.google.com with SMTP id b5so4929739ilc.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2021 23:06:00 -0700 (PDT)
-X-Received: by 2002:a92:750c:: with SMTP id q12mr2332407ilc.303.1624514749926; 
- Wed, 23 Jun 2021 23:05:49 -0700 (PDT)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4G9Vh31hs0z2y08
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jun 2021 16:33:21 +1000 (AEST)
+Received: from gondobar.mordor.me.apana.org.au ([192.168.128.4] helo=gondobar)
+ by deadmen.hmeau.com with esmtp (Exim 4.92 #5 (Debian))
+ id 1lwIun-0005DQ-BZ; Thu, 24 Jun 2021 14:32:41 +0800
+Received: from herbert by gondobar with local (Exim 4.92)
+ (envelope-from <herbert@gondor.apana.org.au>)
+ id 1lwIuN-0000Wf-O4; Thu, 24 Jun 2021 14:32:15 +0800
+Date: Thu, 24 Jun 2021 14:32:15 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Ira Weiny <ira.weiny@intel.com>
+Subject: [PATCH] crypto: scatterwalk - Remove obsolete PageSlab check
+Message-ID: <20210624063215.GA31721@gondor.apana.org.au>
+References: <20210615132456.753241-1-hch@lst.de>
+ <20210615132456.753241-2-hch@lst.de>
+ <20210618030157.GA1905674@iweiny-DESK2.sc.intel.com>
+ <20210618033728.GA16787@gondor.apana.org.au>
+ <20210618181258.GC1905674@iweiny-DESK2.sc.intel.com>
 MIME-Version: 1.0
-References: <20210619034043.199220-1-tientzu@chromium.org>
- <20210619034043.199220-7-tientzu@chromium.org>
- <76c3343d-72e5-9df3-8924-5474ee698ef4@quicinc.com>
- <20210623183736.GA472@willie-the-truck>
- <19d4c7a2-744d-21e0-289c-a576e1f0e6f3@quicinc.com>
- <20210624054315.GA25381@lst.de>
-In-Reply-To: <20210624054315.GA25381@lst.de>
-From: Claire Chang <tientzu@chromium.org>
-Date: Thu, 24 Jun 2021 14:05:39 +0800
-X-Gmail-Original-Message-ID: <CALiNf288ZLMhY3E8E3N+z9rkwi1viWNLm1wwMEwT4rNwh3FfwQ@mail.gmail.com>
-Message-ID: <CALiNf288ZLMhY3E8E3N+z9rkwi1viWNLm1wwMEwT4rNwh3FfwQ@mail.gmail.com>
-Subject: Re: [PATCH v14 06/12] swiotlb: Use is_swiotlb_force_bounce for
- swiotlb data bouncing
-To: Christoph Hellwig <hch@lst.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210618181258.GC1905674@iweiny-DESK2.sc.intel.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,60 +62,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: heikki.krogerus@linux.intel.com,
- linux-devicetree <devicetree@vger.kernel.org>, peterz@infradead.org,
- joonas.lahtinen@linux.intel.com, dri-devel@lists.freedesktop.org,
- chris@chris-wilson.co.uk, grant.likely@arm.com, paulus@samba.org,
- Frank Rowand <frowand.list@gmail.com>, mingo@kernel.org,
- Jianxiong Gao <jxgao@google.com>, Stefano Stabellini <sstabellini@kernel.org>,
- Saravana Kannan <saravanak@google.com>, Joerg Roedel <joro@8bytes.org>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
- linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Dan Williams <dan.j.williams@intel.com>, matthew.auld@intel.com,
- Nicolas Boichat <drinkcat@chromium.org>, thomas.hellstrom@linux.intel.com,
- Jim Quinlan <james.quinlan@broadcom.com>, Will Deacon <will@kernel.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- intel-gfx@lists.freedesktop.org, maarten.lankhorst@linux.intel.com,
- Robin Murphy <robin.murphy@arm.com>, jani.nikula@linux.intel.com,
- Rob Herring <robh+dt@kernel.org>, rodrigo.vivi@intel.com,
- Bjorn Helgaas <bhelgaas@google.com>, boris.ostrovsky@oracle.com,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jgross@suse.com,
- airlied@linux.ie, Thierry Reding <treding@nvidia.com>,
- Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
- Qian Cai <quic_qiancai@quicinc.com>, lkml <linux-kernel@vger.kernel.org>,
- "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- Daniel Vetter <daniel@ffwll.ch>, xypron.glpk@gmx.de,
- Tom Lendacky <thomas.lendacky@amd.com>, linuxppc-dev@lists.ozlabs.org,
- bauerman@linux.ibm.com
+Cc: Jens Axboe <axboe@kernel.dk>, linux-block@vger.kernel.org,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Mike Snitzer <snitzer@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+ Geoff Levand <geoff@infradead.org>, Christoph Lameter <cl@gentwo.de>,
+ ceph-devel@vger.kernel.org, linux-mips@vger.kernel.org,
+ Dongsheng Yang <dongsheng.yang@easystack.cn>, linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ dm-devel@redhat.com, Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+ linux-arch@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ilya Dryomov <idryomov@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 24, 2021 at 1:43 PM Christoph Hellwig <hch@lst.de> wrote:
+On Fri, Jun 18, 2021 at 11:12:58AM -0700, Ira Weiny wrote:
 >
-> On Wed, Jun 23, 2021 at 02:44:34PM -0400, Qian Cai wrote:
-> > is_swiotlb_force_bounce at /usr/src/linux-next/./include/linux/swiotlb.h:119
-> >
-> > is_swiotlb_force_bounce() was the new function introduced in this patch here.
-> >
-> > +static inline bool is_swiotlb_force_bounce(struct device *dev)
-> > +{
-> > +     return dev->dma_io_tlb_mem->force_bounce;
-> > +}
->
-> To me the crash looks like dev->dma_io_tlb_mem is NULL.  Can you
-> turn this into :
->
->         return dev->dma_io_tlb_mem && dev->dma_io_tlb_mem->force_bounce;
->
-> for a quick debug check?
+> Interesting!  Thanks!
+> 
+> Digging around a bit more I found:
+> 
+> https://lore.kernel.org/patchwork/patch/439637/
 
-I just realized that dma_io_tlb_mem might be NULL like Christoph
-pointed out since swiotlb might not get initialized.
-However,  `Unable to handle kernel paging request at virtual address
-dfff80000000000e` looks more like the address is garbage rather than
-NULL?
-I wonder if that's because dev->dma_io_tlb_mem is not assigned
-properly (which means device_initialize is not called?).
+Nice find.  So we can at least get rid of the PageSlab call from
+the Crypto API.
+
+---8<---
+As it is now legal to call flush_dcache_page on slab pages we
+no longer need to do the check in the Crypto API.
+
+Reported-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+diff --git a/include/crypto/scatterwalk.h b/include/crypto/scatterwalk.h
+index c837d0775474..7af08174a721 100644
+--- a/include/crypto/scatterwalk.h
++++ b/include/crypto/scatterwalk.h
+@@ -81,12 +81,7 @@ static inline void scatterwalk_pagedone(struct scatter_walk *walk, int out,
+ 		struct page *page;
+ 
+ 		page = sg_page(walk->sg) + ((walk->offset - 1) >> PAGE_SHIFT);
+-		/* Test ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE first as
+-		 * PageSlab cannot be optimised away per se due to
+-		 * use of volatile pointer.
+-		 */
+-		if (ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE && !PageSlab(page))
+-			flush_dcache_page(page);
++		flush_dcache_page(page);
+ 	}
+ 
+ 	if (more && walk->offset >= walk->sg->offset + walk->sg->length)
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
