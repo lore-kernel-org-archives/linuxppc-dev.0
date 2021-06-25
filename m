@@ -2,44 +2,76 @@ Return-Path: <SRS0=zi2C=LT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED1B0C2B9F4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 06:28:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 719FCC2B9F4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 07:29:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 948E5610F7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 06:28:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 948E5610F7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id D00966141E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 07:29:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D00966141E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GB6WT1hnnz3cBD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 16:28:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GB7sm1KGwz3byR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 17:29:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=mbmpQJtI;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=desiato.20200630 header.b=mbmpQJtI; 
+ dkim-atps=neutral
+Received: from desiato.infradead.org (desiato.infradead.org
+ [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GB7s9386zz2xxq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jun 2021 17:28:26 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=5NOt14/R44u0IlgyCS4cWDsu+ALJWOxhITZR4eZIO04=; b=mbmpQJtIGPMRrIGs53GWr7Cg4k
+ hU39jO9r4qRRBj9MAEIo15s/NNq2xWQpbqpoJqw26Hw/81AMfVIqZ0MaTrig4GIKpGYEgDu35LjpK
+ DKQR4icxmN6osxi72wAD1lDAQnNaqcFljxKRANiK+SL9e62PiT6KpF6dyjtsn7VEB9UrVuz4ico3Z
+ pw+9iPXbn38iSJoIpE5AJXH3P0U8i2/U9/rRI+37YuJhtnj8XWFAAeF1ZcNVmlRs++B8G+e/plX40
+ 262JorqFmnQolqCavRCQwWemTpNZSt75mrvVmIYSNQmW4XlXa6rIwjw+WeEO1aRBRbgXDTinZV8h8
+ 8TUaMCUA==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+ id 1lwgFv-00BVV0-A4; Fri, 25 Jun 2021 07:28:10 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GB6Rb3cBFz3btF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jun 2021 16:24:43 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4GB6RY5KBQz9sxS; Fri, 25 Jun 2021 16:24:41 +1000 (AEST)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20210617155116.2167984-1-npiggin@gmail.com>
-References: <20210617155116.2167984-1-npiggin@gmail.com>
-Subject: Re: [PATCH v4 00/17] powerpc/64: fast interrupt exits
-Message-Id: <162460208696.3247425.13006654599795164065.b4-ty@ellerman.id.au>
-Date: Fri, 25 Jun 2021 16:21:26 +1000
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 774AF300252;
+ Fri, 25 Jun 2021 09:28:09 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 33509200B393D; Fri, 25 Jun 2021 09:28:09 +0200 (CEST)
+Date: Fri, 25 Jun 2021 09:28:09 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: PowerPC guest getting "BUG: scheduling while atomic" on
+ linux-next-20210623 during secondary CPUs bringup
+Message-ID: <YNWFiZii+MINhUC3@hirez.programming.kicks-ass.net>
+References: <YNSq3UQTjm6HWELA@in.ibm.com>
+ <20210625054608.fmwt7lxuhp7inkjx@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210625054608.fmwt7lxuhp7inkjx@linux.vnet.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,54 +83,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Valentin Schneider <valentin.schneider@arm.com>, linux-next@vger.kernel.org,
+ Bharata B Rao <bharata@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 18 Jun 2021 01:50:59 +1000, Nicholas Piggin wrote:
-> This series attempts to improve the speed of interrupts and system calls
-> in three major ways.
+On Fri, Jun 25, 2021 at 11:16:08AM +0530, Srikar Dronamraju wrote:
+> * Bharata B Rao <bharata@linux.ibm.com> [2021-06-24 21:25:09]:
 > 
-> Firstly, the SRR/HSRR registers do not need to be reloaded if they were
-> clobbered for the duration of the interrupt and the return NIP and MSR
-> did not changed. 64e does not implement this part, but it could quite
-> easily.
+> > A PowerPC KVM guest gets the following BUG message when booting
+> > linux-next-20210623:
+> > 
+> > smp: Bringing up secondary CPUs ...
+> > BUG: scheduling while atomic: swapper/1/0/0x00000000
+
+'funny', your preempt_count is actually too low. The check here is for
+preempt_count() == DISABLE_OFFSET (aka. 1 when PREEMPT=y), but you have
+0.
+
+> > no locks held by swapper/1/0.
+> > Modules linked in:
+> > CPU: 1 PID: 0 Comm: swapper/1 Not tainted 5.13.0-rc7-next-20210623
+> > Call Trace:
+> > [c00000000ae5bc20] [c000000000badc64] dump_stack_lvl+0x98/0xe0 (unreliable)
+> > [c00000000ae5bc60] [c000000000210200] __schedule_bug+0xb0/0xe0
+> > [c00000000ae5bcd0] [c000000001609e28] __schedule+0x1788/0x1c70
+> > [c00000000ae5be20] [c00000000160a8cc] schedule_idle+0x3c/0x70
+> > [c00000000ae5be50] [c00000000022984c] do_idle+0x2bc/0x420
+> > [c00000000ae5bf00] [c000000000229d88] cpu_startup_entry+0x38/0x40
+> > [c00000000ae5bf30] [c0000000000666c0] start_secondary+0x290/0x2a0
+> > [c00000000ae5bf90] [c00000000000be54] start_secondary_prolog+0x10/0x14
+> > 
+> > <The above repeats for all the secondary CPUs>
+> > 
+> > smp: Brought up 2 nodes, 16 CPUs
+> > numa: Node 0 CPUs: 0-7
+> > numa: Node 1 CPUs: 8-15
+> > 
+> > This seems to have started from next-20210521 and isn't seen on
+> > next-20210511.
+> > 
 > 
-> [...]
+> Bharata,
+> 
+> I think the regression is due to Commit f1a0a376ca0c ("sched/core:
+> Initialize the idle task with preemption disabled")
 
-Patches 1-4, and 6-17 applied to powerpc/next.
+So that extra preempt_disable() that got removed would've incremented it
+to 1 and then things would've been fine.
 
-[01/17] powerpc/interrupt: Fix CONFIG ifdef typo
-        https://git.kernel.org/powerpc/c/9a3ed7adcabce24a85fbe05f54e762b18756ec22
-[02/17] powerpc: remove interrupt exit helpers unused argument
-        https://git.kernel.org/powerpc/c/bf9155f1970c4dbf9ec6b87d3688433bd494a4e1
-[03/17] powerpc/64s: introduce different functions to return from SRR vs HSRR interrupts
-        https://git.kernel.org/powerpc/c/1df7d5e4baeac74d14c1bee18b2dff9302b3efbc
-[04/17] powerpc/64s: avoid reloading (H)SRR registers if they are still valid
-        https://git.kernel.org/powerpc/c/59dc5bfca0cb6a29db1a50847684eb5c19f8f400
-[06/17] powerpc/64: move interrupt return asm to interrupt_64.S
-        https://git.kernel.org/powerpc/c/e754f4d13e3919aafa485657599907aa63b9a40c
-[07/17] powerpc/64s: system call avoid setting MSR[RI] until we set MSR[EE]
-        https://git.kernel.org/powerpc/c/dd152f70bdc1b91445b10c65ac874b90c93fb3b5
-[08/17] powerpc/64s: save one more register in the masked interrupt handler
-        https://git.kernel.org/powerpc/c/63e40806eea984f770c992120bbfd71b589ea580
-[09/17] powerpc/64: allow alternate return locations for soft-masked interrupts
-        https://git.kernel.org/powerpc/c/f23699c93becd746295aaa506537882a46a62219
-[10/17] powerpc/64: interrupt soft-enable race fix
-        https://git.kernel.org/powerpc/c/862fa563524b9f92d7e89fe332732bd3421772db
-[11/17] powerpc/64: treat low kernel text as irqs soft-masked
-        https://git.kernel.org/powerpc/c/9d1988ca87dd90ecf80a0601c7fd13071fbb1a83
-[12/17] powerpc/64: use interrupt restart table to speed up return from interrupt
-        https://git.kernel.org/powerpc/c/13799748b957bc5659f97c036224b0f4b42172e2
-[13/17] powerpc/interrupt: Rename and lightly change syscall_exit_prepare_main()
-        https://git.kernel.org/powerpc/c/f84aa284947f325c5697d35b92abd2047224f24b
-[14/17] powerpc/interrupt: Refactor interrupt_exit_user_prepare()
-        https://git.kernel.org/powerpc/c/a214ee8802adb864d175ea6ca4176223bcc11d2b
-[15/17] powerpc/interrupt: Interchange prep_irq_for_{kernel_enabled/user}_exit()
-        https://git.kernel.org/powerpc/c/99f98f849cf13e5fac532979ccdb77dff07665db
-[16/17] powerpc/interrupt: Refactor prep_irq_for_{user/kernel_enabled}_exit()
-        https://git.kernel.org/powerpc/c/61eece2d1707796fd45225ea3d20e9289251311c
-[17/17] powerpc/interrupt: Remove prep_irq_for_user_exit()
-        https://git.kernel.org/powerpc/c/ae58b1c645895c28ca155843db6788d57ea99e11
+Except.. Valentin changed things such that preempt_count() should've
+been inittialized to 1, instead of 0, but for some raisin that didn't
+stick.. what gives.
 
-cheers
+So we have init_idle(p) -> init_idle_preempt_count(p) ->
+task_thread_info(p)->preempt_count = PREEMPT_DISABLED;
+
+But somehow, by the time you're running start_secondary(), that's gotten
+to be 0 again. Does DEBUG_PREEMPT give more clues?
