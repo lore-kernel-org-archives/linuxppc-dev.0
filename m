@@ -2,56 +2,67 @@ Return-Path: <SRS0=zi2C=LT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35382C2B9F4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 03:51:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3B96C2B9F4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 04:46:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E998613EE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 03:51:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E998613EE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4B3906140F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 04:46:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B3906140F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GB32H4Zkzz3bwP
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 13:51:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GB4Fv2WwCz3c0r
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 14:46:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JDhyVLTa;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=JDhyVLTa; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GB31r1nfRz3033
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jun 2021 13:50:37 +1000 (AEST)
-IronPort-SDR: UmqurFo1tX6iuAGYTp6uwdWkGwnm8IH0j5+mrKi2jo5vCOYMvXr5eCE3aoRctoc3aoajEb8PEq
- hB3tKXt3VTWQ==
-X-IronPort-AV: E=McAfee;i="6200,9189,10025"; a="207539913"
-X-IronPort-AV: E=Sophos;i="5.83,298,1616482800"; d="scan'208";a="207539913"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Jun 2021 20:50:29 -0700
-IronPort-SDR: oUKVdZtw/dW8tZz96OfI+3D7ddpDaZuNusNLfX6qHAqzuCf+lNPCNu/xh1IeQolVVs9XzTBknB
- qEtPUdg5eSRg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.83,298,1616482800"; d="scan'208";a="557570493"
-Received: from lkp-server01.sh.intel.com (HELO 4aae0cb4f5b5) ([10.239.97.150])
- by fmsmga001.fm.intel.com with ESMTP; 24 Jun 2021 20:50:27 -0700
-Received: from kbuild by 4aae0cb4f5b5 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1lwcrK-0006tA-SY; Fri, 25 Jun 2021 03:50:26 +0000
-Date: Fri, 25 Jun 2021 11:50:09 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS dc4225b1afe8424b3fdf56599cdac283be683c69
-Message-ID: <60d55271.LB04gQHcrMrth91n%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GB4FP4gbKz3015
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jun 2021 14:45:44 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4GB4FK3w17z9sW8;
+ Fri, 25 Jun 2021 14:45:41 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1624596343;
+ bh=uVkWgUgdzjG7EIytkJ0IMCXeV3RaBwOniskWOKBd278=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=JDhyVLTamP1ZDt17AIQgSDO8ma1v5gjn/ofgmOOsF4J5sDyV1yWXA5F963cwK7sYM
+ 5IW0BtJI1sHEG8k6TSOcu7N/ZCDWUN0seVheP5ao0lJWwAGcRWbo2KOhcA2S7ji6gW
+ yRSsekFuyqKXevNI3PnmcY5dKUmt+c7ukfh0BqQzwzF70U0MwZo1WJkW4Z/TGDxnnG
+ S4Hq66yS0g13tjLOxcy5xXMa0TwD6t1Fp4VrGaTUH72ZeI4bAGB1YtIf++f9G0lQkw
+ dAd/Qdk8IBfUvZVDV97I6670A0H1AGsl4o+7ItxnsdLMNeiayGnZCXRVjC/WAPqZo4
+ fsiwrBIx9ex5w==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, akpm@linux-foundation.org
+Subject: Re: [PATCH v2 1/4] mm: pagewalk: Fix walk for hugepage tables
+In-Reply-To: <d22d196a-45ea-0960-b748-caab0e996c7c@csgroup.eu>
+References: <cover.1618828806.git.christophe.leroy@csgroup.eu>
+ <db6981c69f96a8c9c6dcf688b7f485e15993ddef.1618828806.git.christophe.leroy@csgroup.eu>
+ <d22d196a-45ea-0960-b748-caab0e996c7c@csgroup.eu>
+Date: Fri, 25 Jun 2021 14:45:37 +1000
+Message-ID: <874kdm1rim.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,131 +74,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Steven Price <steven.price@arm.com>, linux-mm@kvack.org,
+ Oliver O'Halloran <oohall@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: dc4225b1afe8424b3fdf56599cdac283be683c69  Automatic merge of 'next' into merge (2021-06-25 00:45)
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> Hi Michael,
+>
+> Le 19/04/2021 =C3=A0 12:47, Christophe Leroy a =C3=A9crit=C2=A0:
+>> Pagewalk ignores hugepd entries and walk down the tables
+>> as if it was traditionnal entries, leading to crazy result.
+>>=20
+>> Add walk_hugepd_range() and use it to walk hugepage tables.
+>
+> I see you took patch 2 and 3 of the series.
 
-elapsed time: 734m
+Yeah I decided those were bug fixes so could be taken separately.
 
-configs tested: 105
-configs skipped: 3
+> Do you expect Andrew to take patch 1 via mm tree, and then you'll take
+> patch 4 once mm tree is merged ?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I didn't feel I could take patch 1 via the powerpc tree without risking
+conflicts.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-sh                 kfr2r09-romimage_defconfig
-sh                              ul2_defconfig
-arm                        spear3xx_defconfig
-alpha                            alldefconfig
-m68k                          amiga_defconfig
-powerpc                     ep8248e_defconfig
-mips                        omega2p_defconfig
-arm                         s5pv210_defconfig
-powerpc                     akebono_defconfig
-xtensa                generic_kc705_defconfig
-openrisc                    or1ksim_defconfig
-ia64                             allmodconfig
-sh                        edosk7760_defconfig
-powerpc                      katmai_defconfig
-powerpc                 mpc834x_mds_defconfig
-arc                        nsimosci_defconfig
-powerpc                 mpc8540_ads_defconfig
-mips                    maltaup_xpa_defconfig
-arm                       multi_v4t_defconfig
-um                                  defconfig
-powerpc               mpc834x_itxgp_defconfig
-powerpc                 mpc8313_rdb_defconfig
-arm                   milbeaut_m10v_defconfig
-arm                           tegra_defconfig
-s390                          debug_defconfig
-powerpc                       ebony_defconfig
-powerpc                       holly_defconfig
-x86_64                            allnoconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a001-20210622
-i386                 randconfig-a002-20210622
-i386                 randconfig-a003-20210622
-i386                 randconfig-a006-20210622
-i386                 randconfig-a005-20210622
-i386                 randconfig-a004-20210622
-x86_64               randconfig-a012-20210622
-x86_64               randconfig-a016-20210622
-x86_64               randconfig-a015-20210622
-x86_64               randconfig-a014-20210622
-x86_64               randconfig-a013-20210622
-x86_64               randconfig-a011-20210622
-i386                 randconfig-a011-20210622
-i386                 randconfig-a014-20210622
-i386                 randconfig-a013-20210622
-i386                 randconfig-a015-20210622
-i386                 randconfig-a016-20210622
-i386                 randconfig-a012-20210622
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                            kunit_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+Andrew could take patch 1 and 4 via mm, though he might not want to pick
+them up this late.
 
-clang tested configs:
-x86_64               randconfig-b001-20210622
-x86_64               randconfig-a002-20210622
-x86_64               randconfig-a001-20210622
-x86_64               randconfig-a005-20210622
-x86_64               randconfig-a003-20210622
-x86_64               randconfig-a004-20210622
-x86_64               randconfig-a006-20210622
+I guess step one would be to repost 1 and 4 as a new series. Either they
+can go via mm, or for 5.15 I could probably take them both as long as I
+pick them up early enough.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+cheers
