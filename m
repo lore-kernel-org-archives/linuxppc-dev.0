@@ -6,48 +6,49 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF090C2B9F4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 10:20:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9885FC2B9F4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 10:20:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 15A8E61434
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 10:20:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15A8E61434
+	by mail.kernel.org (Postfix) with ESMTPS id 25B3061434
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 10:20:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25B3061434
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GBCgX2BF2z3c0f
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 20:20:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GBCgv52vlz3c6j
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 20:20:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GBCg16fpCz2yWs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jun 2021 20:19:55 +1000 (AEST)
-IronPort-SDR: ujt6qXL3n1zK0iqqeyNyx48i9MEKCjucdwBfC40NyCkiyn3oW88cb3Y4ubZGmo88YZGwU9WKQh
- BLXrncs6uQyg==
-X-IronPort-AV: E=McAfee;i="6200,9189,10025"; a="207680895"
-X-IronPort-AV: E=Sophos;i="5.83,298,1616482800"; d="scan'208";a="207680895"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GBCg32dksz2yWs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jun 2021 20:19:58 +1000 (AEST)
+IronPort-SDR: 1k4TyCOPVWRI3rcJ4SF0kSnp4MzAxYzniu1H5JfOaik3bt1hEYOBcrk4WxxPynAQ5Gu3gZ5yCg
+ d5+UTvFodNVA==
+X-IronPort-AV: E=McAfee;i="6200,9189,10025"; a="293280919"
+X-IronPort-AV: E=Sophos;i="5.83,298,1616482800"; d="scan'208";a="293280919"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  25 Jun 2021 03:19:50 -0700
-IronPort-SDR: qRBiAccpJ2mY+4LcB9R6yd+A3+pDgtd8ZHMeo8i35PXIkZq+RJmT482gmgGsgvd7zMW61+BH2p
- xCu52QQVweUw==
+IronPort-SDR: W3xZpQVF1Znk80hJ21pmyN2QBokp3fq6uiYYkDeR0ZqYQLO73E74UmFOH932Vk193itB3NS4uj
+ 16iqw+Jv7zRw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.83,298,1616482800"; d="scan'208";a="481810236"
+X-IronPort-AV: E=Sophos;i="5.83,298,1616482800"; d="scan'208";a="453765000"
 Received: from lkp-server01.sh.intel.com (HELO 4aae0cb4f5b5) ([10.239.97.150])
- by FMSMGA003.fm.intel.com with ESMTP; 25 Jun 2021 03:19:49 -0700
+ by orsmga008.jf.intel.com with ESMTP; 25 Jun 2021 03:19:49 -0700
 Received: from kbuild by 4aae0cb4f5b5 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1lwiw8-00075b-Ux; Fri, 25 Jun 2021 10:19:48 +0000
-Date: Fri, 25 Jun 2021 18:19:38 +0800
+ id 1lwiw8-00075X-Ti; Fri, 25 Jun 2021 10:19:48 +0000
+Date: Fri, 25 Jun 2021 18:19:45 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD SUCCESS 0e8554b5d7801b0aebc6c348a0a9f7706aa17b3b
-Message-ID: <60d5adba.Ri1j4NUI1VLGgMI6%lkp@intel.com>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 06664e6c0f810035deb4b1d135d7a8f70795512f
+Message-ID: <60d5adc1.ZzWHYB4TIOPy/3d7%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -68,12 +69,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-branch HEAD: 0e8554b5d7801b0aebc6c348a0a9f7706aa17b3b  powerpc/papr_scm: Properly handle UUID types and API
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+branch HEAD: 06664e6c0f810035deb4b1d135d7a8f70795512f  powerpc: mark local variables around longjmp as volatile
 
-elapsed time: 1121m
+elapsed time: 1120m
 
-configs tested: 167
+configs tested: 162
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -91,10 +92,6 @@ arm                      pxa255-idp_defconfig
 sh                              ul2_defconfig
 arm                        neponset_defconfig
 sh                           se7721_defconfig
-arm                             rpc_defconfig
-arm                        magician_defconfig
-mips                      maltasmvp_defconfig
-powerpc                      ppc44x_defconfig
 alpha                            alldefconfig
 m68k                          amiga_defconfig
 powerpc                     ep8248e_defconfig
@@ -142,10 +139,9 @@ h8300                            allyesconfig
 arm                        mvebu_v5_defconfig
 arm                          exynos_defconfig
 xtensa                              defconfig
-arm                        clps711x_defconfig
-sh                           se7343_defconfig
-m68k                        m5272c3_defconfig
-arm                           sunxi_defconfig
+mips                    maltaup_xpa_defconfig
+arm                       multi_v4t_defconfig
+um                                  defconfig
 sh                         ap325rxa_defconfig
 m68k                       m5249evb_defconfig
 arm                  colibri_pxa270_defconfig
