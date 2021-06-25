@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F6DDC2B9F4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 06:27:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25908C2B9F4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 06:27:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 323A7610F7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 06:27:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 323A7610F7
+	by mail.kernel.org (Postfix) with ESMTPS id 9731D610F7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 06:27:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9731D610F7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GB6Vf5zkCz3c71
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 16:27:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GB6W71WQsz3dn0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 16:27:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GB6RY06SXz309N
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jun 2021 16:24:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GB6RZ27D5z3bvp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jun 2021 16:24:42 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4GB6RW68tbz9ssP; Fri, 25 Jun 2021 16:24:39 +1000 (AEST)
+ id 4GB6RY0mhSz9srX; Fri, 25 Jun 2021 16:24:40 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20210503111822.758423-1-npiggin@gmail.com>
-References: <20210503111822.758423-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/pseries: Enable hardlockup watchdog for PowerVM
- partitions
-Message-Id: <162460208794.3247425.6298042643402380644.b4-ty@ellerman.id.au>
-Date: Fri, 25 Jun 2021 16:21:27 +1000
+In-Reply-To: <20210623021528.702241-1-npiggin@gmail.com>
+References: <20210623021528.702241-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2] powerpc/pseries: Enable hardlockup watchdog for
+ PowerVM partitions
+Message-Id: <162460208808.3247425.4990748993921366419.b4-ty@ellerman.id.au>
+Date: Fri, 25 Jun 2021 16:21:28 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -56,7 +56,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 3 May 2021 21:18:22 +1000, Nicholas Piggin wrote:
+On Wed, 23 Jun 2021 12:15:28 +1000, Nicholas Piggin wrote:
 > PowerVM will not arbitrarily oversubscribe or stop guests, page out the
 > guest kernel text to a NFS volume connected by carrier pigeon to abacus
 > based storage, etc., as a KVM host might. So PowerVM guests are not
