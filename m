@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31A0EC2B9F4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 06:26:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65AE5C2B9F4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 06:26:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CBDA561404
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 06:26:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CBDA561404
+	by mail.kernel.org (Postfix) with ESMTPS id DCBB261404
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 06:26:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCBB261404
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GB6Tf34Qxz3c4Z
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 16:26:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GB6Tz3qXZz3dM6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jun 2021 16:26:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,18 +26,17 @@ Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GB6RW2NLxz2yjS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jun 2021 16:24:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GB6RX0rcSz308m
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jun 2021 16:24:40 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4GB6RV1JsHz9sXb; Fri, 25 Jun 2021 16:24:38 +1000 (AEST)
+ id 4GB6RV69Knz9sjD; Fri, 25 Jun 2021 16:24:38 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20210623022924.704645-1-npiggin@gmail.com>
-References: <20210623022924.704645-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64s: accumulate_stolen_time remove irq mask
- workaround
-Message-Id: <162460208833.3247425.2089314055415506694.b4-ty@ellerman.id.au>
-Date: Fri, 25 Jun 2021 16:21:28 +1000
+In-Reply-To: <20210623032909.826010-1-npiggin@gmail.com>
+References: <20210623032909.826010-1-npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc: Make PPC_IRQ_SOFT_MASK_DEBUG depend on PPC64
+Message-Id: <162460208907.3247425.15843181790965239434.b4-ty@ellerman.id.au>
+Date: Fri, 25 Jun 2021 16:21:29 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -56,14 +55,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 23 Jun 2021 12:29:24 +1000, Nicholas Piggin wrote:
-> The caller has been moved to C after irq soft-mask state has been
-> reconciled, and Linux irqs have been marked as disabled, so this
-> does not have to play games with irq internals.
+On Wed, 23 Jun 2021 13:29:09 +1000, Nicholas Piggin wrote:
+> 32-bit platforms don't have irq soft masking.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64s: accumulate_stolen_time remove irq mask workaround
-      https://git.kernel.org/powerpc/c/0cdff98b395e5ab71b650c3df154217b1348e9b5
+[1/1] powerpc: Make PPC_IRQ_SOFT_MASK_DEBUG depend on PPC64
+      https://git.kernel.org/powerpc/c/f5f48e8cb93f4acd77411df0327b61066985bea8
 
 cheers
