@@ -4,41 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73FBFC49EA5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:41:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADF87C49EA5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:41:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C6D36162A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:41:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C6D36162A
+	by mail.kernel.org (Postfix) with ESMTPS id 440516192F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:41:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 440516192F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GBr5T3ncyz3djq
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 20:41:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GBr5p6RFYz3dnG
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 20:41:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GBr2S3P3qz3c0t
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jun 2021 20:38:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GBr2V10gnz30BR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jun 2021 20:38:58 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4GBr2R2R21z9t10; Sat, 26 Jun 2021 20:38:55 +1000 (AEST)
+ id 4GBr2S1NPpz9t2G; Sat, 26 Jun 2021 20:38:55 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, npiggin@gmail.com,
- rzinsly@linux.ibm.com, Haren Myneni <haren@linux.ibm.com>
-In-Reply-To: <ed908341b1eb7ca0183c028a4ed4a0cf48bfe0f6.camel@linux.ibm.com>
-References: <ed908341b1eb7ca0183c028a4ed4a0cf48bfe0f6.camel@linux.ibm.com>
-Subject: Re: [PATCH] selftests/powerpc: Use req_max_processed_len from sysfs
- NX capabilities
-Message-Id: <162470384443.3589875.7632472976704596416.b4-ty@ellerman.id.au>
-Date: Sat, 26 Jun 2021 20:37:24 +1000
+To: Kajol Jain <kjain@linux.ibm.com>, mpe@ellerman.id.au
+In-Reply-To: <20210418074003.6651-1-kjain@linux.ibm.com>
+References: <20210418074003.6651-1-kjain@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/papr_scm: trivial: fix typo in a comment
+Message-Id: <162470384564.3589875.1244984138894329682.b4-ty@ellerman.id.au>
+Date: Sat, 26 Jun 2021 20:37:25 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -53,20 +51,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: trivial@kernel.org, maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, vaibhav@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 22 Jun 2021 22:17:46 -0700, Haren Myneni wrote:
-> On PowerVM, the hypervisor defines the maximum buffer length for
-> each NX request and the kernel exported this value via sysfs.
-> 
-> This patch reads this value if the sysfs entry is available and
-> is used to limit the request length.
+On Sun, 18 Apr 2021 13:10:03 +0530, Kajol Jain wrote:
+> There is a spelling mistake "byes" -> "bytes" in a comment of
+> function drc_pmem_query_stats(). Fix that typo.
 
 Applied to powerpc/next.
 
-[1/1] selftests/powerpc: Use req_max_processed_len from sysfs NX capabilities
-      https://git.kernel.org/powerpc/c/c6c27e3d84648e6188fba314ae21a005e60bdcd4
+[1/1] powerpc/papr_scm: trivial: fix typo in a comment
+      https://git.kernel.org/powerpc/c/d2827e5e2e0f0941a651f4b1ca5e9b778c4b5293
 
 cheers
