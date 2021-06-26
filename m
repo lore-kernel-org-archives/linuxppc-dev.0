@@ -2,55 +2,70 @@ Return-Path: <SRS0=IFvE=LU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A7AAC49EA5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 22:52:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6895EC49EA5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 22:53:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1BA6961C4A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 22:52:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BA6961C4A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5B00E61C2A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 22:53:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B00E61C2A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=posteo.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GC8JM5Lwjz3c8j
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Jun 2021 08:52:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GC8LB6QgSz3c3Z
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Jun 2021 08:53:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=YKidPBzj;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=posteo.net (client-ip=185.67.36.66; helo=mout02.posteo.de;
+ envelope-from=j.ne@posteo.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256
+ header.s=2017 header.b=YKidPBzj; dkim-atps=neutral
+X-Greylist: delayed 459 seconds by postgrey-1.36 at boromir;
+ Sun, 27 Jun 2021 07:35:14 AEST
+Received: from mout02.posteo.de (mout02.posteo.de [185.67.36.66])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GC8HZ42fBz301g
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jun 2021 08:51:13 +1000 (AEST)
-IronPort-SDR: 4rixJl+7JoELFsa5Tblb1ZZv9xa7NjESN6zYn0gM4muXtSL8B+mH2T6fGEt5qNcvo5VXq5kBBJ
- bQHW3ScmVqqg==
-X-IronPort-AV: E=McAfee;i="6200,9189,10027"; a="271668167"
-X-IronPort-AV: E=Sophos;i="5.83,302,1616482800"; d="scan'208";a="271668167"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Jun 2021 15:51:09 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.83,302,1616482800"; d="scan'208";a="407313262"
-Received: from lkp-server01.sh.intel.com (HELO 4aae0cb4f5b5) ([10.239.97.150])
- by orsmga006.jf.intel.com with ESMTP; 26 Jun 2021 15:51:07 -0700
-Received: from kbuild by 4aae0cb4f5b5 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1lxH8k-0007wE-PC; Sat, 26 Jun 2021 22:51:06 +0000
-Date: Sun, 27 Jun 2021 06:50:32 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD SUCCESS b064037ea4104120418ccbf39951a6d529a9d6d5
-Message-ID: <60d7af38.ye6kzt+KtqXQgfec%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GC6bk5lC4z301K
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jun 2021 07:35:12 +1000 (AEST)
+Received: from submission (posteo.de [89.146.220.130]) 
+ by mout02.posteo.de (Postfix) with ESMTPS id 180C32400E5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jun 2021 23:27:25 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=posteo.net; s=2017;
+ t=1624742846; bh=41rpbSn2Uyn0qALHKbYOc9/feymQyErjP+9elyuLFbA=;
+ h=Date:From:To:Cc:Subject:From;
+ b=YKidPBzjA63zz30yQIi00yBJHnHM2jl9JcmbnCDrfgbA+YpcIE9q3+cWOGZ078BBc
+ AeMH1m2poKW9mZWUUrH7s6E56UaoryDtH41SPpH3Nyf7AlS3zmas+fflpJtCiQQ9eO
+ spOMMOS0Bq4kwfK0uPcNejTXGSVZojw6HKaUSiLjic+YoMaNH2Zsro2KItHIN+Cnf2
+ 0rssMMNFjalndR2wCpp5//fo9OJxTVrl/P0EJM6sWcx3tjOP4H8rrWQCcRhu3SXL1E
+ A18sHONTca/zhF2Uc2a23Up2nImqEdZZOQ1ymdXYquDXToqTbpwPcDPNn/KROJv92v
+ 5fsaWqbqbcaPw==
+Received: from customer (localhost [127.0.0.1])
+ by submission (posteo.de) with ESMTPSA id 4GC6Qg0r7lz9rxL;
+ Sat, 26 Jun 2021 23:27:23 +0200 (CEST)
+Date: Sat, 26 Jun 2021 21:27:22 +0000
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.ne@posteo.net>
+To: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+Subject: Re: [PATCH v2 2/4] dt-bindings: nintendo-otp: Document the Wii and
+ Wii U OTP support
+Message-ID: <YNebuj3J51FbWC1n@latitude>
+References: <20210519095044.4109-1-linkmauve@linkmauve.fr>
+ <20210519095044.4109-3-linkmauve@linkmauve.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="7j5plNaFnrRdIOyG"
+Content-Disposition: inline
+In-Reply-To: <20210519095044.4109-3-linkmauve@linkmauve.fr>
+X-Mailman-Approved-At: Sun, 27 Jun 2021 08:53:13 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,180 +77,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>,
+ Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+ Ash Logan <ash@heyquark.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.ne@posteo.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-branch HEAD: b064037ea4104120418ccbf39951a6d529a9d6d5  powerpc/interrupt: Use names in check_return_regs_valid()
 
-elapsed time: 723m
+--7j5plNaFnrRdIOyG
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-configs tested: 154
-configs skipped: 35
+Hello and sorry for the delay,
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+On Wed, May 19, 2021 at 11:50:42AM +0200, Emmanuel Gil Peyrot wrote:
+> Both of these consoles use the exact same two registers, even at the
+> same address, but the Wii=C2=A0U has eight banks of 128=C2=A0bytes memory=
+ while
+> the Wii only has one, hence the two compatible strings.
+>=20
+> Signed-off-by: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
 
-gcc tested configs:
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-mips                  maltasmvp_eva_defconfig
-mips                         db1xxx_defconfig
-sh                        apsh4ad0a_defconfig
-mips                         tb0226_defconfig
-s390                          debug_defconfig
-powerpc                 mpc832x_mds_defconfig
-arc                            hsdk_defconfig
-arc                           tb10x_defconfig
-ia64                            zx1_defconfig
-powerpc                         ps3_defconfig
-powerpc                      mgcoge_defconfig
-sh                        sh7785lcr_defconfig
-sh                           se7721_defconfig
-sh                        edosk7705_defconfig
-arm                         bcm2835_defconfig
-sh                               j2_defconfig
-sh                          r7785rp_defconfig
-h8300                            alldefconfig
-mips                 decstation_r4k_defconfig
-m68k                        mvme16x_defconfig
-arm                           omap1_defconfig
-riscv                            allyesconfig
-arm                          pxa3xx_defconfig
-arm                          moxart_defconfig
-arm                           u8500_defconfig
-arm                         palmz72_defconfig
-powerpc                 mpc834x_mds_defconfig
-arm                         s3c6400_defconfig
-mips                      pic32mzda_defconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                     tqm8560_defconfig
-arc                     nsimosci_hs_defconfig
-arm                         hackkit_defconfig
-mips                     cu1830-neo_defconfig
-powerpc                 xes_mpc85xx_defconfig
-m68k                       m5275evb_defconfig
-powerpc                     pq2fads_defconfig
-arm                         vf610m4_defconfig
-m68k                            mac_defconfig
-microblaze                      mmu_defconfig
-arm                        trizeps4_defconfig
-arm                        cerfcube_defconfig
-sh                             shx3_defconfig
-powerpc                    socrates_defconfig
-powerpc                          g5_defconfig
-powerpc                        fsp2_defconfig
-sparc64                             defconfig
-sparc                       sparc32_defconfig
-sh                          rsk7201_defconfig
-powerpc                  mpc866_ads_defconfig
-powerpc                    adder875_defconfig
-mips                      malta_kvm_defconfig
-arm                         orion5x_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a002-20210625
-x86_64               randconfig-a001-20210625
-x86_64               randconfig-a005-20210625
-x86_64               randconfig-a003-20210625
-x86_64               randconfig-a004-20210625
-x86_64               randconfig-a006-20210625
-i386                 randconfig-a002-20210625
-i386                 randconfig-a001-20210625
-i386                 randconfig-a003-20210625
-i386                 randconfig-a006-20210625
-i386                 randconfig-a005-20210625
-i386                 randconfig-a004-20210625
-x86_64               randconfig-a012-20210622
-x86_64               randconfig-a016-20210622
-x86_64               randconfig-a015-20210622
-x86_64               randconfig-a014-20210622
-x86_64               randconfig-a013-20210622
-x86_64               randconfig-a011-20210622
-i386                 randconfig-a011-20210626
-i386                 randconfig-a014-20210626
-i386                 randconfig-a013-20210626
-i386                 randconfig-a015-20210626
-i386                 randconfig-a012-20210626
-i386                 randconfig-a016-20210626
-i386                 randconfig-a011-20210625
-i386                 randconfig-a014-20210625
-i386                 randconfig-a013-20210625
-i386                 randconfig-a015-20210625
-i386                 randconfig-a012-20210625
-i386                 randconfig-a016-20210625
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                            kunit_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+A link to the (third-party) documentation for the OTP device would be nice.
 
-clang tested configs:
-x86_64               randconfig-b001-20210622
-x86_64               randconfig-b001-20210626
-x86_64               randconfig-b001-20210625
-x86_64               randconfig-a002-20210626
-x86_64               randconfig-a001-20210626
-x86_64               randconfig-a005-20210626
-x86_64               randconfig-a003-20210626
-x86_64               randconfig-a004-20210626
-x86_64               randconfig-a006-20210626
-x86_64               randconfig-a002-20210622
-x86_64               randconfig-a001-20210622
-x86_64               randconfig-a005-20210622
-x86_64               randconfig-a003-20210622
-x86_64               randconfig-a004-20210622
-x86_64               randconfig-a006-20210622
-x86_64               randconfig-a012-20210625
-x86_64               randconfig-a016-20210625
-x86_64               randconfig-a015-20210625
-x86_64               randconfig-a014-20210625
-x86_64               randconfig-a013-20210625
-x86_64               randconfig-a011-20210625
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+Best regards,
+Jonathan Neusch=C3=A4fer
+
+> ---
+>  .../devicetree/bindings/nvmem/nintendo-otp.txt     | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/nvmem/nintendo-otp.=
+txt
+>=20
+> diff --git a/Documentation/devicetree/bindings/nvmem/nintendo-otp.txt b/D=
+ocumentation/devicetree/bindings/nvmem/nintendo-otp.txt
+> new file mode 100644
+> index 000000000000..b26d705ec52d
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/nvmem/nintendo-otp.txt
+> @@ -0,0 +1,14 @@
+> +Nintendo Wii and Wii=C2=A0U OTP
+> +
+> +Required Properties:
+> +- compatible: depending on the console this should be one of:
+> +	- "nintendo,hollywood-otp" for the Wii
+> +	- "nintendo,latte-otp" for the Wii=C2=A0U
+> +- reg: base address and size of the OTP registers
+> +
+> +
+> +Example:
+> +	otp@d8001ec {
+> +		compatible =3D "nintendo,latte-otp";
+> +		reg =3D <0x0d8001ec 0x8>;
+> +	};
+> --=20
+> 2.31.1
+>=20
+
+--7j5plNaFnrRdIOyG
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEvHAHGBBjQPVy+qvDCDBEmo7zX9sFAmDXm4sACgkQCDBEmo7z
+X9veGhAAy2IY+Vkls/q+6+hkbYXDroy+O6Ogd0JYudibYnde3Y0McY0c+7nRHSBP
+jFIcSJfAEzdBk1X+g18nVJsB/ysvDZ3eMbWjGoOb2e5nNhT+G/Xhvpl0bSInHpel
+SqhHoCj3iSCzmZGlUiyKewjGEVboi1/iQR7Wq5gFctNgpDmwapb8w6RRYY8vjg/E
++iI4gSDqgWLkWkDqQengP9AP3X+IKYgs2Xg+ZbXyGl1kx3ZRwxT2G1UEao1T2l1o
+WKlUAAdlB30+qigZVuCkFkuGTMUn7eSLVyWm3gAzu1toHtMChz3faac4ZnYIxcjl
+1kJKnu3dcMySRO8ITQIPsbIxwweWoSoRST0kEGueFylSzo5Kgh93DCBeChoGIcCG
+WeyP7gspFkcm3c6iR4yG+7W+VdKmO3nhSMlMNnttH8mRIO66quV8qV9k0tfVD6DH
+litoyTLmNT4f34T1+kTo0lzo3sRDRcRYt4ZikEqFXVQOHCCAylo6MLjvXLbaFAFd
+3PGKz9tYf7RtT82DDuvnVje1S13hTZ10eOO6HDvSGWPB5zbTks15zNEAE6H2Un3Y
+Xy1Jewlg/9EgaQTM6JzQjz9DG5/z3v26QpfJYo3Kpqg0ssCr9TXkJ/SPSCtq5w7e
+Qmf5ZZpL5hbPj32UremiOB9lLHloav3l8w8E7HS0lVv6tszVyk8=
+=CJPN
+-----END PGP SIGNATURE-----
+
+--7j5plNaFnrRdIOyG--
