@@ -4,21 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADF87C49EA5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:41:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A13DAC49EA5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:42:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 440516192F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:41:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 440516192F
+	by mail.kernel.org (Postfix) with ESMTPS id 25C626161C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:42:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25C626161C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GBr5p6RFYz3dnG
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 20:41:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GBr685nNHz3drB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 20:42:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,17 +26,17 @@ Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GBr2V10gnz30BR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GBr2V3Ldvz3bvC
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jun 2021 20:38:58 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4GBr2S1NPpz9t2G; Sat, 26 Jun 2021 20:38:55 +1000 (AEST)
+ id 4GBr2T09bLz9t2g; Sat, 26 Jun 2021 20:38:56 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Kajol Jain <kjain@linux.ibm.com>, mpe@ellerman.id.au
-In-Reply-To: <20210418074003.6651-1-kjain@linux.ibm.com>
-References: <20210418074003.6651-1-kjain@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/papr_scm: trivial: fix typo in a comment
-Message-Id: <162470384564.3589875.1244984138894329682.b4-ty@ellerman.id.au>
-Date: Sat, 26 Jun 2021 20:37:25 +1000
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20210623130454.2542945-1-mpe@ellerman.id.au>
+References: <20210623130454.2542945-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64s: Make prom_init require RELOCATABLE
+Message-Id: <162470384473.3589875.15306486210535594594.b4-ty@ellerman.id.au>
+Date: Sat, 26 Jun 2021 20:37:24 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,19 +51,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: trivial@kernel.org, maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, vaibhav@linux.ibm.com
+Cc: jniethe5@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 18 Apr 2021 13:10:03 +0530, Kajol Jain wrote:
-> There is a spelling mistake "byes" -> "bytes" in a comment of
-> function drc_pmem_query_stats(). Fix that typo.
+On Wed, 23 Jun 2021 23:04:54 +1000, Michael Ellerman wrote:
+> When we boot from open firmware (OF) using PPC_OF_BOOT_TRAMPOLINE, aka.
+> prom_init, we run parts of the kernel at an address other than the link
+> address. That happens because OF loads the kernel above zero (OF is at
+> zero) and we run prom_init before copying the kernel down to zero.
+> 
+> Currently that works even for non-relocatable kernels, because we do
+> various fixups to the prom_init code to make it run where it's loaded.
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/papr_scm: trivial: fix typo in a comment
-      https://git.kernel.org/powerpc/c/d2827e5e2e0f0941a651f4b1ca5e9b778c4b5293
+[1/1] powerpc/64s: Make prom_init require RELOCATABLE
+      https://git.kernel.org/powerpc/c/24d33ac5b8ffb7a0e697344fea8591376162548f
 
 cheers
