@@ -2,60 +2,44 @@ Return-Path: <SRS0=IFvE=LU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76DC5C49EA6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 07:27:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49C43C49EBC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:39:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC31261456
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 07:27:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC31261456
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7964B61998
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:39:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7964B61998
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GBlnv3nhSz3c51
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 17:27:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GBr2h57csz3bvm
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 20:39:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
- envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GBln96S7Pz306P
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jun 2021 17:27:07 +1000 (AEST)
-Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.53])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4GBljC6Wc4z74VK;
- Sat, 26 Jun 2021 15:23:43 +0800 (CST)
-Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Sat, 26 Jun 2021 15:27:01 +0800
-Received: from localhost.localdomain.localdomain (10.175.113.25) by
- dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Sat, 26 Jun 2021 15:27:01 +0800
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-To: Arnd Bergmann <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [PATCH 8/9] powerpc/mm: Use is_kernel_text() and is_kernel_inittext()
- helper
-Date: Sat, 26 Jun 2021 15:34:38 +0800
-Message-ID: <20210626073439.150586-9-wangkefeng.wang@huawei.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20210626073439.150586-1-wangkefeng.wang@huawei.com>
-References: <20210626073439.150586-1-wangkefeng.wang@huawei.com>
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GBr2K0tZpz2yQw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jun 2021 20:38:48 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4GBr2H5xmCz9sfG; Sat, 26 Jun 2021 20:38:47 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@kernel.org>
+In-Reply-To: <20210429080708.1520360-1-arnd@kernel.org>
+References: <20210429080708.1520360-1-arnd@kernel.org>
+Subject: Re: [PATCH] powerpc: mark local variables around longjmp as volatile
+Message-Id: <162470384692.3589875.5670173938477292479.b4-ty@ellerman.id.au>
+Date: Sat, 26 Jun 2021 20:37:26 +1000
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.113.25]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggpemm500001.china.huawei.com (7.185.36.107)
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,55 +51,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use is_kernel_text() and is_kernel_inittext() helper to simplify code,
-also drop etext, _stext, _sinittext, _einittext declaration which
-already declared in section.h.
+On Thu, 29 Apr 2021 10:06:38 +0200, Arnd Bergmann wrote:
+> gcc-11 points out that modifying local variables next to a
+> longjmp/setjmp may cause undefined behavior:
+> 
+> arch/powerpc/kexec/crash.c: In function 'crash_kexec_prepare_cpus.constprop':
+> arch/powerpc/kexec/crash.c:108:22: error: variable 'ncpus' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbere
+> d]
+> arch/powerpc/kexec/crash.c:109:13: error: variable 'tries' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbere
+> d]
+> arch/powerpc/xmon/xmon.c: In function 'xmon_print_symbol':
+> arch/powerpc/xmon/xmon.c:3625:21: error: variable 'name' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
+> arch/powerpc/xmon/xmon.c: In function 'stop_spus':
+> arch/powerpc/xmon/xmon.c:4057:13: error: variable 'i' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
+> arch/powerpc/xmon/xmon.c: In function 'restart_spus':
+> arch/powerpc/xmon/xmon.c:4098:13: error: variable 'i' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
+> arch/powerpc/xmon/xmon.c: In function 'dump_opal_msglog':
+> arch/powerpc/xmon/xmon.c:3008:16: error: variable 'pos' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
+> arch/powerpc/xmon/xmon.c: In function 'show_pte':
+> arch/powerpc/xmon/xmon.c:3207:29: error: variable 'tsk' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
+> arch/powerpc/xmon/xmon.c: In function 'show_tasks':
+> arch/powerpc/xmon/xmon.c:3302:29: error: variable 'tsk' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
+> arch/powerpc/xmon/xmon.c: In function 'xmon_core':
+> arch/powerpc/xmon/xmon.c:494:13: error: variable 'cmd' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
+> arch/powerpc/xmon/xmon.c:860:21: error: variable 'bp' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
+> arch/powerpc/xmon/xmon.c:860:21: error: variable 'bp' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
+> arch/powerpc/xmon/xmon.c:492:48: error: argument 'fromipi' might be clobbered by 'longjmp' or 'vfork' [-Werror=clobbered]
+> 
+> [...]
 
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
- arch/powerpc/mm/pgtable_32.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+Applied to powerpc/next.
 
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index dcf5ecca19d9..13c798308c2e 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -33,8 +33,6 @@
- 
- #include <mm/mmu_decl.h>
- 
--extern char etext[], _stext[], _sinittext[], _einittext[];
--
- static u8 early_fixmap_pagetable[FIXMAP_PTE_SIZE] __page_aligned_data;
- 
- notrace void __init early_ioremap_init(void)
-@@ -104,14 +102,13 @@ static void __init __mapin_ram_chunk(unsigned long offset, unsigned long top)
- {
- 	unsigned long v, s;
- 	phys_addr_t p;
--	int ktext;
-+	bool ktext;
- 
- 	s = offset;
- 	v = PAGE_OFFSET + s;
- 	p = memstart_addr + s;
- 	for (; s < top; s += PAGE_SIZE) {
--		ktext = ((char *)v >= _stext && (char *)v < etext) ||
--			((char *)v >= _sinittext && (char *)v < _einittext);
-+		ktext = (is_kernel_text(v) || is_kernel_inittext(v));
- 		map_kernel_page(v, p, ktext ? PAGE_KERNEL_TEXT : PAGE_KERNEL);
- 		v += PAGE_SIZE;
- 		p += PAGE_SIZE;
--- 
-2.26.2
+[1/1] powerpc: mark local variables around longjmp as volatile
+      https://git.kernel.org/powerpc/c/a2305e3de819394a7adf68078964a92d06f9db33
 
+cheers
