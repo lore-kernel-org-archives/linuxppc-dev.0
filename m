@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48D1EC49EA5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:44:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A23DC49EA5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:44:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D52EF6191E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:44:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D52EF6191E
+	by mail.kernel.org (Postfix) with ESMTPS id E1C636161C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:44:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1C636161C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GBr8S3RJkz3fSm
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 20:44:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GBr8v3t6pz3fZK
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 20:44:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,19 +26,18 @@ Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GBr2d3KJBz3bwg
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jun 2021 20:39:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GBr2f34vTz3c3p
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jun 2021 20:39:06 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4GBr2c275Dz9sxS; Sat, 26 Jun 2021 20:39:04 +1000 (AEST)
+ id 4GBr2d1TX1z9sjD; Sat, 26 Jun 2021 20:39:05 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <20210601074801.617363-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20210601074801.617363-1-naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/xmon: Add support for running a command on all
- cpus in xmon
-Message-Id: <162470384380.3589875.18024101066814789926.b4-ty@ellerman.id.au>
-Date: Sat, 26 Jun 2021 20:37:23 +1000
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20210622053036.474678-1-npiggin@gmail.com>
+References: <20210622053036.474678-1-npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/64s: Fix copy-paste data exposure into newly
+ created tasks
+Message-Id: <162470384210.3589875.375778181743975829.b4-ty@ellerman.id.au>
+Date: Sat, 26 Jun 2021 20:37:22 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -53,24 +52,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Haren Myneni <haren@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 1 Jun 2021 13:18:01 +0530, Naveen N. Rao wrote:
-> It is sometimes desirable to run a command on all cpus in xmon. A
-> typical scenario is to obtain the backtrace from all cpus in xmon if
-> there is a soft lockup. Add rudimentary support for the same. The
-> command to be run on all cpus should be prefixed with 'c#'. As an
-> example, 'c#t' will run 't' command and produce a backtrace on all cpus
-> in xmon.
+On Tue, 22 Jun 2021 15:30:36 +1000, Nicholas Piggin wrote:
+> copy-paste contains implicit "copy buffer" state that can contain
+> arbitrary user data (if the user process executes a copy instruction).
+> This could be snooped by another process if a context switch hits while
+> the state is live. So cp_abort is executed on context switch to clear
+> out possible sensitive data and prevent the leak.
+> 
+> cp_abort is done after the low level _switch(), which means it is never
+> reached by newly created tasks, so they could snoop on this buffer
+> between their first and second context switch.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/xmon: Add support for running a command on all cpus in xmon
-      https://git.kernel.org/powerpc/c/b8ee3e6d6c5eec7e66de82449382f1a206db2046
+[1/1] powerpc/64s: Fix copy-paste data exposure into newly created tasks
+      https://git.kernel.org/powerpc/c/f35d2f249ef05b9671e7898f09ad89aa78f99122
 
 cheers
