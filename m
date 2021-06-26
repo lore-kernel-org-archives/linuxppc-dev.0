@@ -6,39 +6,40 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 345CBC49EA6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:40:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0CD3C49EA6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:40:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AEBBD6162A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:40:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AEBBD6162A
+	by mail.kernel.org (Postfix) with ESMTPS id 62E506162A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:40:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62E506162A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GBr4R2N5gz3dDv
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 20:40:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GBr4p0HxTz3dYt
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 20:40:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GBr2P5rZgz3byD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jun 2021 20:38:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GBr2Q4Wrfz3c02
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jun 2021 20:38:54 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4GBr2N4R2rz9svs; Sat, 26 Jun 2021 20:38:52 +1000 (AEST)
+ id 4GBr2P2tvPz9sxS; Sat, 26 Jun 2021 20:38:53 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, wangkefeng.wang@huawei.com,
- Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <9fa9ba6807c17f93f35a582c199c646c4a8bfd9c.1622800638.git.christophe.leroy@csgroup.eu>
-References: <9fa9ba6807c17f93f35a582c199c646c4a8bfd9c.1622800638.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Remove klimit
-Message-Id: <162470384534.3589875.7856522821307710306.b4-ty@ellerman.id.au>
-Date: Sat, 26 Jun 2021 20:37:25 +1000
+To: Paul Mackerras <paulus@samba.org>, Steven Price <steven.price@arm.com>,
+ akpm@linux-foundation.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>, dja@axtens.net
+In-Reply-To: <cover.1618828806.git.christophe.leroy@csgroup.eu>
+References: <cover.1618828806.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2 0/4] Convert powerpc to GENERIC_PTDUMP
+Message-Id: <162470383963.3589875.4353977558954497976.b4-ty@ellerman.id.au>
+Date: Sat, 26 Jun 2021 20:37:19 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -53,22 +54,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 4 Jun 2021 09:57:36 +0000 (UTC), Christophe Leroy wrote:
-> klimit is a global variable initialised at build time with the
-> value of _end.
+On Mon, 19 Apr 2021 10:47:24 +0000 (UTC), Christophe Leroy wrote:
+> This series converts powerpc to generic PTDUMP.
 > 
-> This variable is never modified, so _end symbol can be used directly.
+> For that, we first need to add missing hugepd support
+> to pagewalk and ptdump.
 > 
-> Remove klimit.
+> v2:
+> - Reworked the pagewalk modification to add locking and check ops->pte_entry
+> - Modified powerpc early IO mapping to have gaps between mappings
+> - Removed the logic that checked for contiguous physical memory
+> - Removed the articial level calculation in ptdump_pte_entry(), level 4 is ok for all.
+> - Removed page_size argument to note_page()
+> 
+> [...]
 
-Applied to powerpc/next.
+Patches 2 and 4 pplied to powerpc/next.
 
-[1/1] powerpc: Remove klimit
-      https://git.kernel.org/powerpc/c/56afad885228902d090558a0b1cf75e9809e831d
+[2/4] powerpc/mm: Leave a gap between early allocated IO areas
+      https://git.kernel.org/powerpc/c/57307f1b6edd781fba2bf9f7ec5f4d17a881ea54
+[3/4] powerpc/mm: Properly coalesce pages in ptdump
+      https://git.kernel.org/powerpc/c/6ca6512c716afd6e37281372c4c35aa6afd71d10
 
 cheers
