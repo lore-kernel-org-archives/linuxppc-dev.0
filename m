@@ -6,38 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21F48C49EA5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:46:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47929C49EA5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:47:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B22246191E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:46:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B22246191E
+	by mail.kernel.org (Postfix) with ESMTPS id DF1D86191E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 10:47:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF1D86191E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GBrBn2Xk2z3g0s
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 20:46:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GBrDV3SSyz3dQ6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jun 2021 20:47:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GBr5742Ffz3ddc
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jun 2021 20:41:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GBrD80cKMz2yWy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jun 2021 20:47:20 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4GBr563SHHz9srZ; Sat, 26 Jun 2021 20:41:14 +1000 (AEST)
+ id 4GBrD7041Bz9srZ; Sat, 26 Jun 2021 20:47:18 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <1623952506-1431-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-References: <1623952506-1431-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/perf: Fix crash with 'perf_instruction_pointer'
- when pmu is not set
-Message-Id: <162470401680.3591474.3321571139140999830.b4-ty@ellerman.id.au>
-Date: Sat, 26 Jun 2021 20:40:16 +1000
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20210625045337.3197833-1-mpe@ellerman.id.au>
+References: <20210625045337.3197833-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/pseries/vas: Include irqdomain.h
+Message-Id: <162470439681.3596556.4017554069440967202.b4-ty@ellerman.id.au>
+Date: Sat, 26 Jun 2021 20:46:36 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -52,41 +51,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: sfr@canb.auug.org.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 17 Jun 2021 13:55:06 -0400, Athira Rajeev wrote:
-> On systems without any specific PMU driver support registered, running
-> perf record causes Oops.
+On Fri, 25 Jun 2021 14:53:37 +1000, Michael Ellerman wrote:
+> There are patches in flight to break the dependency between asm/irq.h
+> and linux/irqdomain.h, which would break compilation of vas.c because it
+> needs the declaration of irq_create_mapping() etc.
 > 
-> The relevant portion from call trace:
-> 
-> BUG: Kernel NULL pointer dereference on read at 0x00000040
-> Faulting instruction address: 0xc0021f0c
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> BE PAGE_SIZE=4K PREEMPT CMPCPRO
-> SAF3000 DIE NOTIFICATION
-> CPU: 0 PID: 442 Comm: null_syscall Not tainted 5.13.0-rc6-s3k-dev-01645-g7649ee3d2957 #5164
-> NIP:  c0021f0c LR: c00e8ad8 CTR: c00d8a5c
-> NIP [c0021f0c] perf_instruction_pointer+0x10/0x60
-> LR [c00e8ad8] perf_prepare_sample+0x344/0x674
-> Call Trace:
-> [e6775880] [c00e8810] perf_prepare_sample+0x7c/0x674 (unreliable)
-> [e67758c0] [c00e8e44] perf_event_output_forward+0x3c/0x94
-> [e6775910] [c00dea8c] __perf_event_overflow+0x74/0x14c
-> [e6775930] [c00dec5c] perf_swevent_hrtimer+0xf8/0x170
-> [e6775a40] [c008c8d0] __hrtimer_run_queues.constprop.0+0x160/0x318
-> [e6775a90] [c008d94c] hrtimer_interrupt+0x148/0x3b0
-> [e6775ae0] [c000c0c0] timer_interrupt+0xc4/0x22c
-> [e6775b10] [c00046f0] Decrementer_virt+0xb8/0xbc
-> 
-> [...]
+> So add an explicit include of irqdomain.h to avoid that becoming a
+> problem in future.
 
-Applied to powerpc/fixes.
+Applied to powerpc/next.
 
-[1/1] powerpc/perf: Fix crash with 'perf_instruction_pointer' when pmu is not set
-      https://git.kernel.org/powerpc/c/60b7ed54a41b550d50caf7f2418db4a7e75b5bdc
+[1/1] powerpc/pseries/vas: Include irqdomain.h
+      https://git.kernel.org/powerpc/c/c736fb97051c39c74bf5d4684bdac1766d43e175
 
 cheers
