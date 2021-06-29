@@ -2,91 +2,85 @@ Return-Path: <SRS0=j7yY=LX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62B4AC11F66
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jun 2021 13:16:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12CA5C11F67
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jun 2021 22:20:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C0D4B61DC2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jun 2021 13:16:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C0D4B61DC2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6886161D8B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jun 2021 22:20:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6886161D8B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GDlNt1VD6z3bX9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jun 2021 23:16:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GDzSj5xVGz3bWV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jun 2021 08:20:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=LinAUT5M;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::532;
+ helo=mail-pg1-x532.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=LinAUT5M; dkim-atps=neutral
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com
+ [IPv6:2607:f8b0:4864:20::532])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GDlNS0J6sz2yNH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jun 2021 23:16:07 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 15TD4eZ0051674; Tue, 29 Jun 2021 09:15:51 -0400
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39g2na2ytn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 29 Jun 2021 09:15:50 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 15TDCtn4010862;
- Tue, 29 Jun 2021 13:15:48 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma02fra.de.ibm.com with ESMTP id 39duv8gp7f-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 29 Jun 2021 13:15:48 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 15TDFjdl25559434
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 29 Jun 2021 13:15:45 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D8656A409C;
- Tue, 29 Jun 2021 13:15:44 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 90E16A4099;
- Tue, 29 Jun 2021 13:15:44 +0000 (GMT)
-Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Tue, 29 Jun 2021 13:15:44 +0000 (GMT)
-Received: from yukon.ibmuc.com (unknown [9.171.54.151])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id BE5C2220021;
- Tue, 29 Jun 2021 15:15:43 +0200 (CEST)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GDzS90p7mz2yXh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jun 2021 08:20:08 +1000 (AEST)
+Received: by mail-pg1-x532.google.com with SMTP id a7so140219pga.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jun 2021 15:20:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=KVyOVy7whQueTWP1sTcU8QFlgKdMcr7IO98Nb4Zpgno=;
+ b=LinAUT5M61+QEWwICiK7KByINtzxP3i6Fe8XhGGbryFrg/BNRELkGEgG1jnZGz+GwN
+ 24Aj0Um5X2DT8Z/B/B/sLvvI3wq6iUao2/y+WcQQeY7QOP6lRgosPJBkEIc/YunDMLMm
+ Zm+KTB2grJoxdE+teIandILWmkJrRRoTdbeyO99Vo90xVafBOn0Rvj4BeF+Z3NNcRVlr
+ LhAxu6/MsSWQEl5rea963qayDb618BwVUInA6JuW1xivJoIETPm0aZV8VtEJhyZaq7Ad
+ hWs6LNhelsHO6/DrqNYnetdqcRq6759lUHS1vkmfh1IIBoITXhg1wSQZirlTfFjOSZri
+ dSoQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=KVyOVy7whQueTWP1sTcU8QFlgKdMcr7IO98Nb4Zpgno=;
+ b=E7S64st6Q0SkJj2NSsRMHRLBeZedaepUCix7oc7Lvvb54AtwKxxvJq0FTkiqxYZf85
+ mbePJtzV3nYK10xYhD7aQIxWo5a2tZ2CD5jlH7FU8ZSsP/uoFpThWDrLKssC3tuLiAGS
+ TOVxy7abIB73Ljx7KFDidzCuL38LSeIsyXV1wLEF2JhBZR0HaUrqBujBTOzxf2EKl4ZL
+ 07grHWuIwUs+K4KPueveQmRIwwIKaF3zReHMXeuMl9rYEMZ/ta/s7JT7Zv/zDZN/7IBG
+ +vQ5YnnYu83wqPn32DqolQZ4TSeLre/G6SLfpG+di9Hmiez2ueDiEmVN/LHTvnYMhpSd
+ PUDA==
+X-Gm-Message-State: AOAM531yRMFV/RL9fVqtXYILqRnUAq0qSY5KQSakeXLdj9+ksP+qa9Ar
+ ++aYlIAPNnMYfMv/Hapi1tMUlpwDtA4=
+X-Google-Smtp-Source: ABdhPJxiG4wMckNMbQj42BYxGwLP6H46+rgaOslX//Fbwgw/gjfGlwBYfi+lTkZoCJaVea6yXB4g6A==
+X-Received: by 2002:a62:f24b:0:b029:309:d1a1:55fb with SMTP id
+ y11-20020a62f24b0000b0290309d1a155fbmr23765356pfl.61.1625005206199; 
+ Tue, 29 Jun 2021 15:20:06 -0700 (PDT)
+Received: from bobo.ibm.com (220-244-87-52.tpgi.com.au. [220.244.87.52])
+ by smtp.gmail.com with ESMTPSA id l7sm19316583pgb.19.2021.06.29.15.20.04
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 29 Jun 2021 15:20:05 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/xive: Do not skip CPU-less nodes when creating the
- IPIs
-Date: Tue, 29 Jun 2021 15:15:42 +0200
-Message-Id: <20210629131542.743888-1-clg@kaod.org>
-X-Mailer: git-send-email 2.31.1
+Subject: [PATCH v2 1/9] powerpc/64s: fix hash page fault interrupt handler
+Date: Wed, 30 Jun 2021 08:19:49 +1000
+Message-Id: <20210629221957.1947577-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20210629221957.1947577-1-npiggin@gmail.com>
+References: <20210629221957.1947577-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: uUxqi967g8YRGToYliyfTC_TOr22VzJ1
-X-Proofpoint-ORIG-GUID: uUxqi967g8YRGToYliyfTC_TOr22VzJ1
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-06-29_06:2021-06-28,
- 2021-06-29 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 mlxscore=0
- bulkscore=0 spamscore=0 impostorscore=0 suspectscore=0 priorityscore=1501
- clxscore=1034 lowpriorityscore=0 mlxlogscore=999 adultscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2106290088
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,56 +92,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>, stable@vger.kernel.org,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On PowerVM, CPU-less nodes can be populated with hot-plugged CPUs at
-runtime. Today, the IPI is not created for such nodes, and hot-plugged
-CPUs use a bogus IPI, which leads to soft lockups.
+The early bad fault or key fault test in do_hash_fault() ends up calling
+into ___do_page_fault without having gone through an interrupt handler
+wrapper (except the initial _RAW one). This can end up calling local irq
+functions while the interrupt has not been reconciled, which will likely
+cause crashes and it trips up on a later patch that adds more assertions.
 
-We could create the node IPI on demand but it is a bit complex because
-this code would be called under bringup_up() and some IRQ locking is
-being done. The simplest solution is to create the IPIs for all nodes
-at startup.
+pkey_exec_prot from selftests causes this path to be executed.
 
-Fixes: 7dcc37b3eff9 ("powerpc/xive: Map one IPI interrupt per node")
-Cc: stable@vger.kernel.org # v5.13
-Reported-by: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+There is no real reason to run the in_nmi() test should be performed
+before the key fault check. In fact if a perf interrupt in the hash
+fault code did a stack walk that was made to take a key fault somehow
+then running ___do_page_fault could possibly cause another hash fault
+causing problems. Move the in_nmi() test first, and then do everything
+else inside the regular interrupt handler function.
+
+Fixes: 3a96570ffceb ("powerpc: convert interrupt handlers to use wrappers")
+Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
+ arch/powerpc/mm/book3s64/hash_utils.c | 24 +++++++++++-------------
+ 1 file changed, 11 insertions(+), 13 deletions(-)
 
-This patch breaks old versions of irqbalance (<=3D v1.4). Possible nodes
-are collected from /sys/devices/system/node/ but CPU-less nodes are
-not listed there. When interrupts are scanned, the link representing
-the node structure is NULL and segfault occurs.
-
-Version 1.7 seems immune.=20
-
----
- arch/powerpc/sysdev/xive/common.c | 4 ----
- 1 file changed, 4 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
-/common.c
-index f3b16ed48b05..5d2c58dba57e 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1143,10 +1143,6 @@ static int __init xive_request_ipi(void)
- 		struct xive_ipi_desc *xid =3D &xive_ipis[node];
- 		struct xive_ipi_alloc_info info =3D { node };
-=20
--		/* Skip nodes without CPUs */
--		if (cpumask_empty(cpumask_of_node(node)))
--			continue;
+diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+index 96d9aa164007..ac5720371c0d 100644
+--- a/arch/powerpc/mm/book3s64/hash_utils.c
++++ b/arch/powerpc/mm/book3s64/hash_utils.c
+@@ -1522,8 +1522,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap,
+ }
+ EXPORT_SYMBOL_GPL(hash_page);
+ 
+-DECLARE_INTERRUPT_HANDLER_RET(__do_hash_fault);
+-DEFINE_INTERRUPT_HANDLER_RET(__do_hash_fault)
++DECLARE_INTERRUPT_HANDLER(__do_hash_fault);
++DEFINE_INTERRUPT_HANDLER(__do_hash_fault)
+ {
+ 	unsigned long ea = regs->dar;
+ 	unsigned long dsisr = regs->dsisr;
+@@ -1533,6 +1533,11 @@ DEFINE_INTERRUPT_HANDLER_RET(__do_hash_fault)
+ 	unsigned int region_id;
+ 	long err;
+ 
++	if (unlikely(dsisr & (DSISR_BAD_FAULT_64S | DSISR_KEYFAULT))) {
++		hash__do_page_fault(regs);
++		return;
++	}
++
+ 	region_id = get_region_id(ea);
+ 	if ((region_id == VMALLOC_REGION_ID) || (region_id == IO_REGION_ID))
+ 		mm = &init_mm;
+@@ -1571,9 +1576,10 @@ DEFINE_INTERRUPT_HANDLER_RET(__do_hash_fault)
+ 			bad_page_fault(regs, SIGBUS);
+ 		}
+ 		err = 0;
+-	}
+ 
+-	return err;
++	} else if (err) {
++		hash__do_page_fault(regs);
++	}
+ }
+ 
+ /*
+@@ -1582,13 +1588,6 @@ DEFINE_INTERRUPT_HANDLER_RET(__do_hash_fault)
+  */
+ DEFINE_INTERRUPT_HANDLER_RAW(do_hash_fault)
+ {
+-	unsigned long dsisr = regs->dsisr;
 -
- 		/*
- 		 * Map one IPI interrupt per node for all cpus of that node.
- 		 * Since the HW interrupt number doesn't have any meaning,
---=20
-2.31.1
+-	if (unlikely(dsisr & (DSISR_BAD_FAULT_64S | DSISR_KEYFAULT))) {
+-		hash__do_page_fault(regs);
+-		return 0;
+-	}
+-
+ 	/*
+ 	 * If we are in an "NMI" (e.g., an interrupt when soft-disabled), then
+ 	 * don't call hash_page, just fail the fault. This is required to
+@@ -1607,8 +1606,7 @@ DEFINE_INTERRUPT_HANDLER_RAW(do_hash_fault)
+ 		return 0;
+ 	}
+ 
+-	if (__do_hash_fault(regs))
+-		hash__do_page_fault(regs);
++	__do_hash_fault(regs);
+ 
+ 	return 0;
+ }
+-- 
+2.23.0
 
