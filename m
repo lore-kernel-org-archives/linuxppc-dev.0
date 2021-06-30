@@ -4,39 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B41DC11F65
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jun 2021 13:16:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07595C11F65
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jun 2021 13:16:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B78DB61455
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jun 2021 13:16:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B78DB61455
+	by mail.kernel.org (Postfix) with ESMTPS id 4A61F61455
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jun 2021 13:16:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A61F61455
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GFMKq2CXHz3bNl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jun 2021 23:15:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GFML860khz3br2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jun 2021 23:16:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GFMK53wLjz2ykR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jun 2021 23:15:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GFMK85jgrz2ykR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jun 2021 23:15:24 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4GFMK50281z9sPf; Wed, 30 Jun 2021 23:15:20 +1000 (AEST)
+ id 4GFMK10pm6z9sVm; Wed, 30 Jun 2021 23:15:16 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20210630074621.2109197-1-npiggin@gmail.com>
-References: <20210630074621.2109197-1-npiggin@gmail.com>
-Subject: Re: [PATCH v3 0/9] powerpc: fast interrupt exit bug and misc fixes
-Message-Id: <162505887202.174506.101918970064382683.b4-ty@ellerman.id.au>
-Date: Wed, 30 Jun 2021 23:14:32 +1000
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <42f4bd12b476942e4d5dc81c0e839d8871b20b1c.1624863319.git.christophe.leroy@csgroup.eu>
+References: <42f4bd12b476942e4d5dc81c0e839d8871b20b1c.1624863319.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/32s: Fix setup_{kuap/kuep}() on SMP
+Message-Id: <162505885576.174506.2852417119553122234.b4-ty@ellerman.id.au>
+Date: Wed, 30 Jun 2021 23:14:15 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,41 +53,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 30 Jun 2021 17:46:12 +1000, Nicholas Piggin wrote:
-> This is a bunch of fixes for powerpc next, mostly a nasty hole in fast
-> interrupt exit code found by Sachin and some other bits along the way
-> while looking at it.
+On Mon, 28 Jun 2021 06:56:11 +0000 (UTC), Christophe Leroy wrote:
+> On SMP, setup_kup() is also called from start_secondary().
 > 
-> Since v2:
-> - Fixed 64e patch 3 to really set exit_must_hard_disable.
-> - Reworded some changelogs.
+> start_secondary() is not an __init function.
 > 
-> [...]
+> Remove the __init marker from setup_kuep() and and setup_kuap().
 
 Applied to powerpc/next.
 
-[1/9] powerpc/64s: fix hash page fault interrupt handler
-      https://git.kernel.org/powerpc/c/5567b1ee29b7a83e8c01d99d34b5bbd306ce0bcf
-[2/9] powerpc/64e: fix CONFIG_RELOCATABLE build warnings
-      https://git.kernel.org/powerpc/c/fce01acf830a697110ed72ecace4b0afdbcd53cb
-[3/9] powerpc/64e: remove implicit soft-masking and interrupt exit restart logic
-      https://git.kernel.org/powerpc/c/9b69d48c7516a29cdaacd18d8bf5f575014a42a1
-[4/9] powerpc/64s: add a table of implicit soft-masked addresses
-      https://git.kernel.org/powerpc/c/325678fd052259e7c05ef29060a73c705ea90432
-[5/9] powerpc/64s/interrupt: preserve regs->softe for NMI interrupts
-      https://git.kernel.org/powerpc/c/1b0482229c302a3c6afd00d6b3bf0169cf279b44
-[6/9] powerpc/64: enable MSR[EE] in irq replay pt_regs
-      https://git.kernel.org/powerpc/c/2b43dd7653cca47d297756980846ebbfe8887fa1
-[7/9] powerpc/64/interrupt: add missing kprobe annotations on interrupt exit symbols
-      https://git.kernel.org/powerpc/c/98798f33c6be5a511ab61958b40835b3ef08def2
-[8/9] powerpc/64s/interrupt: clean up interrupt return labels
-      https://git.kernel.org/powerpc/c/c59458b00aec4ba580d9628d36d6c984af94d192
-[9/9] powerpc/64s: move ret_from_fork etc above __end_soft_masked
-      https://git.kernel.org/powerpc/c/91fc46eced0f70526d74468ac6c932c90a8585b3
+[1/1] powerpc/32s: Fix setup_{kuap/kuep}() on SMP
+      https://git.kernel.org/powerpc/c/c89e632658e793fbbdcbfbe80a6c13bbf7203e9b
 
 cheers
