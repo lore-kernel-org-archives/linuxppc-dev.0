@@ -2,90 +2,78 @@ Return-Path: <SRS0=ZiU1=LZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 221E8C11F64
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 15:25:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76EEEC11F64
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 16:04:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6AB9F613FB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 15:25:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AB9F613FB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id E3ABB61403
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 16:04:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3ABB61403
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GG28B6pCcz3bhm
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 01:24:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GG31R39Yhz3bhg
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 02:04:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=W1hitavD;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::231;
+ helo=mail-lj1-x231.google.com; envelope-from=alexei.starovoitov@gmail.com;
  receiver=<UNKNOWN>)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=W1hitavD; dkim-atps=neutral
+Received: from mail-lj1-x231.google.com (mail-lj1-x231.google.com
+ [IPv6:2a00:1450:4864:20::231])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GG27n4qjgz308f
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jul 2021 01:24:35 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 161F371A096487; Thu, 1 Jul 2021 11:24:21 -0400
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.70])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39hcn8q4s5-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 01 Jul 2021 11:24:20 -0400
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
- by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 161FDBHu024261;
- Thu, 1 Jul 2021 15:24:18 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma01fra.de.ibm.com with ESMTP id 39fv59rqtv-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 01 Jul 2021 15:24:18 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 161FOFtf32506352
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 1 Jul 2021 15:24:15 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 20300A405B;
- Thu,  1 Jul 2021 15:24:15 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DE11DA4057;
- Thu,  1 Jul 2021 15:24:14 +0000 (GMT)
-Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Thu,  1 Jul 2021 15:24:14 +0000 (GMT)
-Received: from yukon.ibmuc.com (unknown [9.171.33.183])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 228502200C7;
- Thu,  1 Jul 2021 17:24:14 +0200 (CEST)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/xive: Fix error handling when allocating an IPI
-Date: Thu,  1 Jul 2021 17:24:12 +0200
-Message-Id: <20210701152412.1507612-1-clg@kaod.org>
-X-Mailer: git-send-email 2.31.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GG30t0n8yz3001
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jul 2021 02:03:41 +1000 (AEST)
+Received: by mail-lj1-x231.google.com with SMTP id e3so726045ljo.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jul 2021 09:03:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=csy0oso8sVVNOjKf5Gla0HtyiXTuq9Jx8AcUlJu8ImQ=;
+ b=W1hitavDQEn8qNccnxW8+c9VumLiSxCJcP12eYPMdesJOpDw+paTePwzJA1Gua8Iel
+ 2GM50RvgO0jf8yvuEecDlrtjJBs/Mz8/2fIymDYYHr08u8zSQJFY6Pv5DaLiv5wVtxVv
+ SJlOYKaMMZbMC/A2RAL1dJzPdnM4G7XO+crdmBz5Aw/tXgFCAOy4uZB3+o/SmuNEA+W1
+ v1j8j440WhQEQF5Q7A7tJAlWO8eWRawEukYNXRpIJ3ev0zn5wJ7HlwK9qx2ZW6RK3UAK
+ W8U6Sw76TVO36oILcUl142hF9NVUdFGSLz1hflHxC9z4UWOUaxQ2daAYyCeQPHhlqqW5
+ ZylA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=csy0oso8sVVNOjKf5Gla0HtyiXTuq9Jx8AcUlJu8ImQ=;
+ b=kTfQKD83aI3nNnxmXLqZsDv1Pqz/eH8K2sZDfpFNcIyBsp0Ll7fIDFQbZJSqfSlyBh
+ 1JOxnc9lJx8sQ5fPN6qULx0uMJ8/Zkj2MkYOZKZMzcFqW78fNDWR8GeGw12oUpCwG9NC
+ U7x2PKVLOmVAxFNe+GvO2NUQagSLVfXGoXSWsItxDuqY+dpyyLdnFjW18Dure2Ma1jXa
+ QRuvc687srFHOZFBHlB0iwF+bRL6l3tIM+yordbhwgiA5LW9f0Ukp+M3xfzV+FhMbsYs
+ /pz1HP3I9eMfKTE47gC73CwkA9SU3tXN13aQZs494VkzsES1JcwIBBmJsYOJ2NYT94kX
+ 9FJg==
+X-Gm-Message-State: AOAM53120/W+Kb5nMHPx3SnVZM0tNEcioZkRFdupxdWt9OTM+t1rnsUG
+ 86hX2TR5oB5NaCNaillvt10decgbkAYNEDiR3h4=
+X-Google-Smtp-Source: ABdhPJwvTVCLAGoZOJRP0cbmhkzFDDGwtTUKErvtvOWGV08yJxAwgFzrRudfLAQcVSjb5vTaIPhzQ+N/SyE/3VBKqno=
+X-Received: by 2002:a2e:390f:: with SMTP id g15mr231914lja.44.1625155414065;
+ Thu, 01 Jul 2021 09:03:34 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 5Vt0Cgvq0w0KBDaWNmDzss_wptDoTXsf
-X-Proofpoint-ORIG-GUID: 5Vt0Cgvq0w0KBDaWNmDzss_wptDoTXsf
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-07-01_08:2021-07-01,
- 2021-07-01 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- phishscore=0 lowpriorityscore=0 impostorscore=0 adultscore=0 spamscore=0
- suspectscore=0 bulkscore=0 clxscore=1034 mlxscore=0 mlxlogscore=511
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2107010092
+References: <cover.1625145429.git.naveen.n.rao@linux.vnet.ibm.com>
+ <4117b430ffaa8cd7af042496f87fd7539e4f17fd.1625145429.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <4117b430ffaa8cd7af042496f87fd7539e4f17fd.1625145429.git.naveen.n.rao@linux.vnet.ibm.com>
+From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
+Date: Thu, 1 Jul 2021 09:03:22 -0700
+Message-ID: <CAADnVQ+78iDs7N=8xA6BZVBnPx78Q-Ljp860nmb8cOq7V_6qtQ@mail.gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/bpf: Fix detecting BPF atomic instructions
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,46 +85,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- stable@vger.kernel.org, kernel test robot <lkp@intel.com>
+Cc: Daniel Borkmann <daniel@iogearbox.net>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Brendan Jackman <jackmanb@google.com>,
+ bpf <bpf@vger.kernel.org>, Jiri Olsa <jolsa@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a smatch warning:
+On Thu, Jul 1, 2021 at 8:09 AM Naveen N. Rao
+<naveen.n.rao@linux.vnet.ibm.com> wrote:
+>
+> Commit 91c960b0056672 ("bpf: Rename BPF_XADD and prepare to encode other
+> atomics in .imm") converted BPF_XADD to BPF_ATOMIC and added a way to
+> distinguish instructions based on the immediate field. Existing JIT
+> implementations were updated to check for the immediate field and to
+> reject programs utilizing anything more than BPF_ADD (such as BPF_FETCH)
+> in the immediate field.
+>
+> However, the check added to powerpc64 JIT did not look at the correct
+> BPF instruction. Due to this, such programs would be accepted and
+> incorrectly JIT'ed resulting in soft lockups, as seen with the atomic
+> bounds test. Fix this by looking at the correct immediate value.
+>
+> Fixes: 91c960b0056672 ("bpf: Rename BPF_XADD and prepare to encode other atomics in .imm")
+> Reported-by: Jiri Olsa <jolsa@redhat.com>
+> Tested-by: Jiri Olsa <jolsa@redhat.com>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+> Hi Jiri,
+> FYI: I made a small change in this patch -- using 'imm' directly, rather
+> than insn[i].imm. I've still added your Tested-by since this shouldn't
+> impact the fix in any way.
+>
+> - Naveen
 
-  arch/powerpc/sysdev/xive/common.c:1161 xive_request_ipi() warn: unsigne=
-d 'xid->irq' is never less than zero.
-
-Fixes: fd6db2892eba ("powerpc/xive: Modernize XIVE-IPI domain with an 'al=
-loc' handler")
-Cc: stable@vger.kernel.org # v5.13
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
----
- arch/powerpc/sysdev/xive/common.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
-/common.c
-index f8ff558bc305..7bbb9bc83057 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1148,11 +1148,10 @@ static int __init xive_request_ipi(void)
- 		 * Since the HW interrupt number doesn't have any meaning,
- 		 * simply use the node number.
- 		 */
--		xid->irq =3D irq_domain_alloc_irqs(ipi_domain, 1, node, &info);
--		if (xid->irq < 0) {
--			ret =3D xid->irq;
-+		ret =3D irq_domain_alloc_irqs(ipi_domain, 1, node, &info);
-+		if (ret < 0)
- 			goto out_free_xive_ipis;
--		}
-+		xid->irq =3D ret;
-=20
- 		snprintf(xid->name, sizeof(xid->name), "IPI-%d", node);
-=20
---=20
-2.31.1
-
+Excellent debugging! You guys are awesome.
+How do you want this fix routed? via bpf tree?
