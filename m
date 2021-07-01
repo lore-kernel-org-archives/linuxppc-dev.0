@@ -2,73 +2,75 @@ Return-Path: <SRS0=ZiU1=LZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EE9DC11F67
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:38:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1936C11F64
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:38:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A2AD61420
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:38:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A2AD61420
+	by mail.kernel.org (Postfix) with ESMTPS id 8FEB5613FD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:38:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8FEB5613FD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GFzn46whQz3fYs
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 23:38:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GFznR2L47z3h5b
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 23:38:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GFzYm2k4wz3bYL
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GFzYm4PyNz3bhd
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jul 2021 23:28:28 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 161D4DUU036790; Thu, 1 Jul 2021 09:28:16 -0400
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.70])
- by mx0b-001b2d01.pphosted.com with ESMTP id 39h5mqfw19-1
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 161D5LlR142738; Thu, 1 Jul 2021 09:28:16 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39hbs5djec-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 01 Jul 2021 09:28:16 -0400
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
- by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 161DL0eS001433;
+ Thu, 01 Jul 2021 09:28:15 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 161DLCvi010154;
  Thu, 1 Jul 2021 13:28:14 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma01fra.de.ibm.com with ESMTP id 39fv59rpvf-1
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma04ams.nl.ibm.com with ESMTP id 39duv8jeam-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Thu, 01 Jul 2021 13:28:14 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 161DQY2d37159392
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 161DSCGh25559378
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 1 Jul 2021 13:26:34 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5C7C042084;
- Thu,  1 Jul 2021 13:28:12 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2E01C420A9;
- Thu,  1 Jul 2021 13:28:12 +0000 (GMT)
+ Thu, 1 Jul 2021 13:28:12 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DD32813A08C;
+ Thu,  1 Jul 2021 13:28:11 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AFF9113A095;
+ Thu,  1 Jul 2021 13:28:11 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Thu,  1 Jul 2021 13:28:12 +0000 (GMT)
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Thu,  1 Jul 2021 13:28:11 +0000 (GMT)
 Received: from yukon.ibmuc.com (unknown [9.171.33.183])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 9DA2B2201CC;
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 1D01A22016C;
  Thu,  1 Jul 2021 15:28:11 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 31/32] powerpc/xive: Use XIVE domain under xmon and debugfs
-Date: Thu,  1 Jul 2021 15:27:49 +0200
-Message-Id: <20210701132750.1475580-32-clg@kaod.org>
+Subject: [PATCH v2 30/32] KVM: PPC: Book3S HV: XICS: Fix mapping of
+ passthrough interrupts
+Date: Thu,  1 Jul 2021 15:27:48 +0200
+Message-Id: <20210701132750.1475580-31-clg@kaod.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210701132750.1475580-1-clg@kaod.org>
 References: <20210701132750.1475580-1-clg@kaod.org>
@@ -76,16 +78,16 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: gRSY--fo_HCwT86GLjeUTVjn_MZUTb-b
-X-Proofpoint-GUID: gRSY--fo_HCwT86GLjeUTVjn_MZUTb-b
+X-Proofpoint-ORIG-GUID: 6vJqaV3HWUhOW0omVjcS_wA0NmkW01vO
+X-Proofpoint-GUID: 6vJqaV3HWUhOW0omVjcS_wA0NmkW01vO
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-07-01_07:2021-07-01,
  2021-07-01 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- phishscore=0 adultscore=0 suspectscore=0 bulkscore=0 lowpriorityscore=0
- mlxscore=0 impostorscore=0 spamscore=0 malwarescore=0 mlxlogscore=995
- clxscore=1034 classifier=spam adjust=0 reason=mlx scancount=1
+ lowpriorityscore=0
+ adultscore=0 priorityscore=1501 bulkscore=0 mlxlogscore=664 spamscore=0
+ suspectscore=0 phishscore=0 mlxscore=0 impostorscore=0 clxscore=1034
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2104190000 definitions=main-2107010082
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,53 +100,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The default domain of the PCI/MSIs is not the XIVE domain anymore. To
-list the IRQ mappings under XMON and debugfs, query the IRQ data from
-the low level XIVE domain.
+PCI MSIs now live in an MSI domain but the underlying calls, which
+will EOI the interrupt in real mode, need an HW IRQ number mapped in
+the XICS IRQ domain. Grab it there.
 
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/sysdev/xive/common.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ arch/powerpc/kvm/book3s_hv.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
-/common.c
-index f0012d6b4fe9..f8ff558bc305 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -322,11 +322,10 @@ void xmon_xive_get_irq_all(void)
- 	struct irq_desc *desc;
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 965178aeff13..1afbe91c6ca1 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -5233,6 +5233,7 @@ static int kvmppc_set_passthru_irq(struct kvm *kvm,=
+ int host_irq, int guest_gsi)
+ 	struct kvmppc_passthru_irqmap *pimap;
+ 	struct irq_chip *chip;
+ 	int i, rc =3D 0;
++	struct irq_data *host_data;
 =20
- 	for_each_irq_desc(i, desc) {
--		struct irq_data *d =3D irq_desc_get_irq_data(desc);
--		unsigned int hwirq =3D (unsigned int)irqd_to_hwirq(d);
-+		struct irq_data *d =3D irq_domain_get_irq_data(xive_irq_domain, i);
+ 	if (!kvm_irq_bypass)
+ 		return 1;
+@@ -5297,7 +5298,14 @@ static int kvmppc_set_passthru_irq(struct kvm *kvm=
+, int host_irq, int guest_gsi)
+ 	 * the KVM real mode handler.
+ 	 */
+ 	smp_wmb();
+-	irq_map->r_hwirq =3D desc->irq_data.hwirq;
++
++	/*
++	 * The 'host_irq' number is mapped in the PCI-MSI domain but
++	 * the underlying calls, which will EOI the interrupt in real
++	 * mode, need an HW IRQ number mapped in the XICS IRQ domain.
++	 */
++	host_data =3D irq_domain_get_irq_data(irq_get_default_host(), host_irq)=
+;
++	irq_map->r_hwirq =3D (unsigned int)irqd_to_hwirq(host_data);
 =20
--		if (d->domain =3D=3D xive_irq_domain)
--			xmon_xive_get_irq_config(hwirq, d);
-+		if (d)
-+			xmon_xive_get_irq_config(irqd_to_hwirq(d), d);
- 	}
- }
+ 	if (i =3D=3D pimap->n_mapped)
+ 		pimap->n_mapped++;
+@@ -5305,7 +5313,7 @@ static int kvmppc_set_passthru_irq(struct kvm *kvm,=
+ int host_irq, int guest_gsi)
+ 	if (xics_on_xive())
+ 		rc =3D kvmppc_xive_set_mapped(kvm, guest_gsi, host_irq);
+ 	else
+-		kvmppc_xics_set_mapped(kvm, guest_gsi, desc->irq_data.hwirq);
++		kvmppc_xics_set_mapped(kvm, guest_gsi, irq_map->r_hwirq);
+ 	if (rc)
+ 		irq_map->r_hwirq =3D 0;
 =20
-@@ -1766,9 +1765,9 @@ static int xive_core_debug_show(struct seq_file *m,=
- void *private)
- 		xive_debug_show_cpu(m, cpu);
-=20
- 	for_each_irq_desc(i, desc) {
--		struct irq_data *d =3D irq_desc_get_irq_data(desc);
-+		struct irq_data *d =3D irq_domain_get_irq_data(xive_irq_domain, i);
-=20
--		if (d->domain =3D=3D xive_irq_domain)
-+		if (d)
- 			xive_debug_show_irq(m, d);
- 	}
- 	return 0;
 --=20
 2.31.1
 
