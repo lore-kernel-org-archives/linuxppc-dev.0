@@ -2,105 +2,107 @@ Return-Path: <SRS0=ZiU1=LZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61E3FC11F64
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 04:17:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03188C11F64
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 05:12:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EAA8361467
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 04:17:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAA8361467
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4358361451
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 05:12:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4358361451
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GFlLW4gWKz3cdP
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 14:17:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GFmYd4y84z3bXk
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 15:12:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GYdRC4h9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=meoFKDkd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=cmr@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=GYdRC4h9; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=meoFKDkd; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GFlKF1dCWz3002
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jul 2021 14:16:49 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GFmY40dNjz2yNm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jul 2021 15:12:07 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 16144445193283; Thu, 1 Jul 2021 00:16:20 -0400
+ 16154QiH054626; Thu, 1 Jul 2021 01:12:00 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : content-transfer-encoding
- : mime-version; s=pp1; bh=1QeEN8lYtB5E3x3m5VwTT+Q6+645tDNgC2asz074Es0=;
- b=GYdRC4h9cYtdeNnPrwOxhUpXnbKweWClxnzpPdP+ASedvrH7zP2Vo8haRi8Z8S2G1T3x
- 67Uc4cR8co855xbVIym4kUUw2paKz9Z2WXhXJnVMa3mSQGYSEzyYwrKRQQZY6o45VzMw
- m3XqS+kC9eIWD9UuRhgDFn7z7i6hmbUUAK4v0hMxIp4v5VGMwenGo6NY+g4Obi0iMgAG
- H1/k72WqXPMG9tUdz9oF/T0TSpcp+YGyKodD9wqzJVa0vwlDKOCm5ErnxhrXzPgwVh0o
- HjxS0b16I1/dRqXY8knQPmSmVMnicLdOVA2QIMl2hz+xZUxUjPUYT/MpGniIlfgf4V6K cQ== 
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.72])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39gt05cnyn-1
+ h=mime-version :
+ content-transfer-encoding : content-type : date : message-id : cc :
+ subject : from : to : references : in-reply-to; s=pp1;
+ bh=YLgQpRPJ1GRRmxVP4o36eN2IpqUWvL/lgTF0esteDeo=;
+ b=meoFKDkd6M8baV4eg78h5G4g3nhUvxQ7kY9o8mp4eRDnjz1eDt5jz5zMZGVxOSceBS75
+ e8PmANFNg4iMj+0LCNrKqt3ajX5TFoVh98aB97XGOIsePx7SpXrmB2q0KwCNyWIhhlhc
+ IdEZ04bPAVLXd0xHOL3E30ZgF+6+EFuH16jWf3eA+El0vH5de161f+6/Ww5OAc/tfL91
+ rnXx8BBhlYOKG2lmOG4EfZ8FPvduvHvF4bpOiwRlP7bCgx5/ybpStFPk+e/ikiFwDtwF
+ Q/2xedxIqgfEZhD9eGPiMZjIo07+3GdtX8p+MZBQB1OLEzLgFKU9ZKHbAnnSGkLv1qs6 3w== 
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39gntsdaav-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 01 Jul 2021 00:16:20 -0400
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
- by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1614GFsi009388;
- Thu, 1 Jul 2021 04:16:17 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma06fra.de.ibm.com with ESMTP id 39dugh94ph-1
+ Thu, 01 Jul 2021 01:12:00 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16157ZUJ028690;
+ Thu, 1 Jul 2021 05:11:59 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma01dal.us.ibm.com with ESMTP id 39duvf52pf-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 01 Jul 2021 04:16:17 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 1614EY6A30212556
+ Thu, 01 Jul 2021 05:11:59 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1615BxoO41353590
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 1 Jul 2021 04:14:34 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7DB6411C070;
- Thu,  1 Jul 2021 04:16:14 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3D88211C050;
- Thu,  1 Jul 2021 04:16:11 +0000 (GMT)
-Received: from saptagiri.in.ibm.com (unknown [9.85.122.203])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  1 Jul 2021 04:16:11 +0000 (GMT)
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 1/2] sched/topology: Skip updating masks for non-online
- nodes
-Date: Thu,  1 Jul 2021 09:45:51 +0530
-Message-Id: <20210701041552.112072-2-srikar@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.26.3
-In-Reply-To: <20210701041552.112072-1-srikar@linux.vnet.ibm.com>
-References: <20210701041552.112072-1-srikar@linux.vnet.ibm.com>
+ Thu, 1 Jul 2021 05:11:59 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 26DCBAC05F;
+ Thu,  1 Jul 2021 05:11:59 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 60266AC059;
+ Thu,  1 Jul 2021 05:11:58 +0000 (GMT)
+Received: from oc8246131445.ibm.com (unknown [9.211.158.151])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with SMTP;
+ Thu,  1 Jul 2021 05:11:58 +0000 (GMT)
+Received: from localhost (localhost6 [IPv6:::1])
+ by oc8246131445.ibm.com (Postfix) with ESMTP id CC816BC00D0;
+ Thu,  1 Jul 2021 00:11:55 -0500 (CDT)
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 01 Jul 2021 00:11:55 -0500
+Message-Id: <CCHJNKZMJY5Q.3PK2V6112U5CG@oc8246131445.ibm.com>
+Subject: Re: [RESEND PATCH v4 08/11] powerpc: Initialize and use a temporary
+ mm for patching
+From: "Christopher M. Riedl" <cmr@linux.ibm.com>
+To: "Daniel Axtens" <dja@axtens.net>, <linuxppc-dev@lists.ozlabs.org>
+References: <20210506043452.9674-1-cmr@linux.ibm.com>
+ <20210506043452.9674-9-cmr@linux.ibm.com>
+ <87r1gvj45t.fsf@dja-thinkpad.axtens.net>
+In-Reply-To: <87r1gvj45t.fsf@dja-thinkpad.axtens.net>
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: seh_S1PwfZvT5jv2RQ5mzXErcKr8xvet
-X-Proofpoint-ORIG-GUID: seh_S1PwfZvT5jv2RQ5mzXErcKr8xvet
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
-MIME-Version: 1.0
+X-Proofpoint-GUID: RFQifFxCDlIYAhTckoHBQp21RS--prpB
+X-Proofpoint-ORIG-GUID: RFQifFxCDlIYAhTckoHBQp21RS--prpB
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-07-01_01:2021-06-30,
  2021-07-01 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 mlxscore=0
- priorityscore=1501 clxscore=1015 suspectscore=0 phishscore=0
- lowpriorityscore=0 malwarescore=0 mlxlogscore=999 spamscore=0 adultscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2107010027
+ adultscore=0
+ lowpriorityscore=0 suspectscore=0 priorityscore=1501 clxscore=1015
+ malwarescore=0 mlxlogscore=999 impostorscore=0 mlxscore=0 spamscore=0
+ phishscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2107010034
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,113 +114,152 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Rik van Riel <riel@surriel.com>,
- linuxppc-dev@lists.ozlabs.org,
- Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
- LKML <linux-kernel@vger.kernel.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Laurent Dufour <ldufour@linux.ibm.com>,
- Mel Gorman <mgorman@techsingularity.net>,
- Valentin Schneider <valentin.schneider@arm.com>
+Cc: tglx@linutronix.de, x86@kernel.org, linux-hardening@vger.kernel.org,
+ keescook@chromium.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently scheduler doesn't check if node is online before adding CPUs
-to the node mask. However on some architectures, node distance is only
-available for nodes that are online. Its not sure how much to rely on
-the node distance, when one of the nodes is offline.
+On Sun Jun 20, 2021 at 10:19 PM CDT, Daniel Axtens wrote:
+> Hi Chris,
+>
+> > +	/*
+> > +	 * Choose a randomized, page-aligned address from the range:
+> > +	 * [PAGE_SIZE, DEFAULT_MAP_WINDOW - PAGE_SIZE]
+> > +	 * The lower address bound is PAGE_SIZE to avoid the zero-page.
+> > +	 * The upper address bound is DEFAULT_MAP_WINDOW - PAGE_SIZE to stay
+> > +	 * under DEFAULT_MAP_WINDOW with the Book3s64 Hash MMU.
+> > +	 */
+> > +	patching_addr =3D PAGE_SIZE + ((get_random_long() & PAGE_MASK)
+> > +			% (DEFAULT_MAP_WINDOW - 2 * PAGE_SIZE));
+>
+> I checked and poking_init() comes after the functions that init the RNG,
+> so this should be fine. The maths - while a bit fiddly to reason about -
+> does check out.
 
-If said node distance is fake (since one of the nodes is offline) and
-the actual node distance is different, then the cpumask of such nodes
-when the nodes become becomes online will be wrong.
+Thanks for double checking.
 
-This can cause topology_span_sane to throw up a warning message and the
-rest of the topology being not updated properly.
+>
+> > +
+> > +	/*
+> > +	 * PTE allocation uses GFP_KERNEL which means we need to pre-allocate
+> > +	 * the PTE here. We cannot do the allocation during patching with IRQ=
+s
+> > +	 * disabled (ie. "atomic" context).
+> > +	 */
+> > +	ptep =3D get_locked_pte(patching_mm, patching_addr, &ptl);
+> > +	BUG_ON(!ptep);
+> > +	pte_unmap_unlock(ptep, ptl);
+> > +}
+> > =20
+> >  #if IS_BUILTIN(CONFIG_LKDTM)
+> >  unsigned long read_cpu_patching_addr(unsigned int cpu)
+> >  {
+> > -	return (unsigned long)(per_cpu(text_poke_area, cpu))->addr;
+> > +	return patching_addr;
+> >  }
+> >  #endif
+> > =20
+> > -static int text_area_cpu_up(unsigned int cpu)
+> > +struct patch_mapping {
+> > +	spinlock_t *ptl; /* for protecting pte table */
+> > +	pte_t *ptep;
+> > +	struct temp_mm temp_mm;
+> > +};
+> > +
+> > +#ifdef CONFIG_PPC_BOOK3S_64
+> > +
+> > +static inline int hash_prefault_mapping(pgprot_t pgprot)
+> >  {
+> > -	struct vm_struct *area;
+> > +	int err;
+> > =20
+> > -	area =3D get_vm_area(PAGE_SIZE, VM_ALLOC);
+> > -	if (!area) {
+> > -		WARN_ONCE(1, "Failed to create text area for cpu %d\n",
+> > -			cpu);
+> > -		return -1;
+> > -	}
+> > -	this_cpu_write(text_poke_area, area);
+> > +	if (radix_enabled())
+> > +		return 0;
+> > =20
+> > -	return 0;
+> > -}
+> > +	err =3D slb_allocate_user(patching_mm, patching_addr);
+> > +	if (err)
+> > +		pr_warn("map patch: failed to allocate slb entry\n");
+> > =20
+>
+> Here if slb_allocate_user() fails, you'll print a warning and then fall
+> through to the rest of the function. You do return err, but there's a
+> later call to hash_page_mm() that also sets err. Can slb_allocate_user()
+> fail while hash_page_mm() succeeds, and would that be a problem?
 
-Resolve this by skipping update of cpumask for nodes that are not
-online.
+Hmm, yes I think this is a problem. If slb_allocate_user() fails then we
+could potentially mask that error until the actual patching
+fails/miscompares later (and that *will* certainly fail in this case). I
+will return the error and exit the function early in v5 of the series.
+Thanks!
 
-However by skipping, relevant CPUs may not be set when nodes are
-onlined. i.e when coming up with NUMA masks at a certain NUMA distance,
-CPUs that are part of other nodes, which are already online will not be
-part of the NUMA mask. Hence the first time, a CPU is added to the newly
-onlined node, add the other CPUs to the numa_mask.
+>
+> > -static int text_area_cpu_down(unsigned int cpu)
+> > -{
+> > -	free_vm_area(this_cpu_read(text_poke_area));
+> > -	return 0;
+> > +	err =3D hash_page_mm(patching_mm, patching_addr, pgprot_val(pgprot), =
+0,
+> > +			   HPTE_USE_KERNEL_KEY);
+> > +	if (err)
+> > +		pr_warn("map patch: failed to insert hashed page\n");
+> > +
+> > +	/* See comment in switch_slb() in mm/book3s64/slb.c */
+> > +	isync();
+> > +
+>
+> The comment reads:
+>
+> /*
+> * Synchronize slbmte preloads with possible subsequent user memory
+> * address accesses by the kernel (user mode won't happen until
+> * rfid, which is safe).
+> */
+> isync();
+>
+> I have to say having read the description of isync I'm not 100% sure why
+> that's enough (don't we also need stores to complete?) but I'm happy to
+> take commit 5434ae74629a ("powerpc/64s/hash: Add a SLB preload cache")
+> on trust here!
+>
+> I think it does make sense for you to have that barrier here: you are
+> potentially about to start poking at the memory mapped through that SLB
+> entry so you should make sure you're fully synchronised.
+>
+> > +	return err;
+> >  }
+> > =20
+>
+> > +	init_temp_mm(&patch_mapping->temp_mm, patching_mm);
+> > +	use_temporary_mm(&patch_mapping->temp_mm);
+> > =20
+> > -	pmdp =3D pmd_offset(pudp, addr);
+> > -	if (unlikely(!pmdp))
+> > -		return -EINVAL;
+> > +	/*
+> > +	 * On Book3s64 with the Hash MMU we have to manually insert the SLB
+> > +	 * entry and HPTE to prevent taking faults on the patching_addr later=
+.
+> > +	 */
+> > +	return(hash_prefault_mapping(pgprot));
+>
+> hmm, `return hash_prefault_mapping(pgprot);` or
+> `return (hash_prefault_mapping((pgprot));` maybe?
 
-Cc: LKML <linux-kernel@vger.kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Nathan Lynch <nathanl@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Valentin Schneider <valentin.schneider@arm.com>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Mel Gorman <mgorman@techsingularity.net>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Rik van Riel <riel@surriel.com>
-Cc: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>
-Cc: Laurent Dufour <ldufour@linux.ibm.com>
-Reported-by: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>
-Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
----
-Changelog v1->v2:
-v1 link: http://lore.kernel.org/lkml/20210520154427.1041031-4-srikar@linux.vnet.ibm.com/t/#u
-Update the NUMA masks, whenever 1st CPU is added to cpuless node
+Yeah, I noticed I left the extra parentheses here after the RESEND. I
+think this is left-over when I had another wrapper here... anyway, I'll
+clean it up for v5.
 
- kernel/sched/topology.c | 25 +++++++++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-index b77ad49dc14f..f25dbcab4fd2 100644
---- a/kernel/sched/topology.c
-+++ b/kernel/sched/topology.c
-@@ -1833,6 +1833,9 @@ void sched_init_numa(void)
- 			sched_domains_numa_masks[i][j] = mask;
- 
- 			for_each_node(k) {
-+				if (!node_online(j))
-+					continue;
-+
- 				if (sched_debug() && (node_distance(j, k) != node_distance(k, j)))
- 					sched_numa_warn("Node-distance not symmetric");
- 
-@@ -1891,12 +1894,30 @@ void sched_init_numa(void)
- void sched_domains_numa_masks_set(unsigned int cpu)
- {
- 	int node = cpu_to_node(cpu);
--	int i, j;
-+	int i, j, empty;
- 
-+	empty = cpumask_empty(sched_domains_numa_masks[0][node]);
- 	for (i = 0; i < sched_domains_numa_levels; i++) {
- 		for (j = 0; j < nr_node_ids; j++) {
--			if (node_distance(j, node) <= sched_domains_numa_distance[i])
-+			if (!node_online(j))
-+				continue;
-+
-+			if (node_distance(j, node) <= sched_domains_numa_distance[i]) {
- 				cpumask_set_cpu(cpu, sched_domains_numa_masks[i][j]);
-+
-+				/*
-+				 * We skip updating numa_masks for offline
-+				 * nodes. However now that the node is
-+				 * finally online, CPUs that were added
-+				 * earlier, should now be accommodated into
-+				 * newly oneline node's numa mask.
-+				 */
-+				if (node != j && empty) {
-+					cpumask_or(sched_domains_numa_masks[i][node],
-+							sched_domains_numa_masks[i][node],
-+							sched_domains_numa_masks[0][j]);
-+				}
-+			}
- 		}
- 	}
- }
--- 
-2.27.0
+>
+> Kind regards,
+> Daniel
 
