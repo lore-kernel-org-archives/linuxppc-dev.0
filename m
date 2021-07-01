@@ -7,66 +7,69 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4784C11F64
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:33:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0A72C11F64
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:33:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4E8F861417
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:33:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E8F861417
+	by mail.kernel.org (Postfix) with ESMTPS id 1BF3D61350
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:33:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BF3D61350
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GFzgH01ftz3fRG
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 23:33:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GFzgc5n56z3fVB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 23:33:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GFzYb12hjz304d
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jul 2021 23:28:18 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GFzYb53HRz304d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jul 2021 23:28:19 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 161D2hdC178508; Thu, 1 Jul 2021 09:28:12 -0400
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39hc20522y-1
+ 161D3nYr136531; Thu, 1 Jul 2021 09:28:03 -0400
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.71])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39h950akhn-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 01 Jul 2021 09:28:12 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 161DKX3Z005596;
- Thu, 1 Jul 2021 13:28:11 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma05fra.de.ibm.com with ESMTP id 39ft8erqat-1
+ Thu, 01 Jul 2021 09:28:03 -0400
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+ by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 161DLo4I020317;
+ Thu, 1 Jul 2021 13:28:01 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma02fra.de.ibm.com with ESMTP id 39duv8h9aa-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 01 Jul 2021 13:28:10 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 161DS8LP21496254
+ Thu, 01 Jul 2021 13:28:01 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 161DQKCs26083626
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 1 Jul 2021 13:28:08 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AEF33520BE;
- Thu,  1 Jul 2021 13:28:08 +0000 (GMT)
+ Thu, 1 Jul 2021 13:26:20 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BAD0DA4060;
+ Thu,  1 Jul 2021 13:27:58 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8B39EA408E;
+ Thu,  1 Jul 2021 13:27:58 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with SMTP id 819AA520C8;
- Thu,  1 Jul 2021 13:28:08 +0000 (GMT)
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Thu,  1 Jul 2021 13:27:58 +0000 (GMT)
 Received: from yukon.ibmuc.com (unknown [9.171.33.183])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 06C2D22016C;
- Thu,  1 Jul 2021 15:28:07 +0200 (CEST)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 0605E2201CC;
+ Thu,  1 Jul 2021 15:27:57 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 24/32] powerpc/pseries/pci: Drop unused MSI code
-Date: Thu,  1 Jul 2021 15:27:42 +0200
-Message-Id: <20210701132750.1475580-25-clg@kaod.org>
+Subject: [PATCH v2 03/32] powerpc/xive: Add support for IRQ domain hierarchy
+Date: Thu,  1 Jul 2021 15:27:21 +0200
+Message-Id: <20210701132750.1475580-4-clg@kaod.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210701132750.1475580-1-clg@kaod.org>
 References: <20210701132750.1475580-1-clg@kaod.org>
@@ -74,17 +77,17 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: PoKu7wSO9keW9mO5Nlyh0X_VNLXFLdEL
-X-Proofpoint-ORIG-GUID: PoKu7wSO9keW9mO5Nlyh0X_VNLXFLdEL
+X-Proofpoint-ORIG-GUID: x02iyJ_w8RD9WZkCJfoEhOzUKfQfmbBN
+X-Proofpoint-GUID: x02iyJ_w8RD9WZkCJfoEhOzUKfQfmbBN
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-07-01_07:2021-07-01,
  2021-07-01 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- adultscore=0 mlxscore=0 spamscore=0 bulkscore=0 mlxlogscore=999
- priorityscore=1501 phishscore=0 malwarescore=0 suspectscore=0
- impostorscore=0 clxscore=1034 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2104190000 definitions=main-2107010082
+ malwarescore=0
+ lowpriorityscore=0 phishscore=0 spamscore=0 suspectscore=0 impostorscore=0
+ bulkscore=0 adultscore=0 priorityscore=1501 mlxlogscore=999 clxscore=1034
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2107010082
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,139 +104,100 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-MSIs should be fully managed by the PCI and IRQ subsystems now.
+This adds handlers to allocate/free IRQs in a domain hierarchy. We
+could try to use xive_irq_domain_map() in xive_irq_domain_alloc() but
+we rely on xive_irq_alloc_data() to set the IRQ handler data and
+duplicating the code is simpler.
+
+xive_irq_free_data() needs to be called when IRQ are freed to clear
+the MMIO mappings and free the XIVE handler data, xive_irq_data
+structure. This is going to be a problem with MSI domains which we
+will address later.
 
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/platforms/pseries/msi.c | 87 ----------------------------
- 1 file changed, 87 deletions(-)
+ arch/powerpc/sysdev/xive/common.c | 64 +++++++++++++++++++++++++++++++
+ 1 file changed, 64 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platform=
-s/pseries/msi.c
-index e196cc1b8540..1b305e411862 100644
---- a/arch/powerpc/platforms/pseries/msi.c
-+++ b/arch/powerpc/platforms/pseries/msi.c
-@@ -111,21 +111,6 @@ static int rtas_query_irq_number(struct pci_dn *pdn,=
- int offset)
- 	return rtas_ret[0];
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
+/common.c
+index f985ed331a8c..834f1a378fc2 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1375,7 +1375,71 @@ static void xive_irq_domain_debug_show(struct seq_=
+file *m, struct irq_domain *d,
  }
+ #endif
 =20
--static void rtas_teardown_msi_irqs(struct pci_dev *pdev)
--{
--	struct msi_desc *entry;
--
--	for_each_pci_msi_entry(entry, pdev) {
--		if (!entry->irq)
--			continue;
--
--		irq_set_msi_desc(entry->irq, NULL);
--		irq_dispose_mapping(entry->irq);
--	}
--
--	rtas_disable_msi(pdev);
--}
--
- static int check_req(struct pci_dev *pdev, int nvec, char *prop_name)
- {
- 	struct device_node *dn;
-@@ -459,66 +444,6 @@ static int rtas_prepare_msi_irqs(struct pci_dev *pde=
-v, int nvec_in, int type,
- 	return 0;
- }
-=20
--static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec_in, int ty=
-pe)
--{
--	struct pci_dn *pdn;
--	int hwirq, virq, i;
--	int rc;
--	struct msi_desc *entry;
--	struct msi_msg msg;
--
--	rc =3D rtas_prepare_msi_irqs(pdev, nvec_in, type, NULL);
--	if (rc)
--		return rc;
--
--	pdn =3D pci_get_pdn(pdev);
--	i =3D 0;
--	for_each_pci_msi_entry(entry, pdev) {
--		hwirq =3D rtas_query_irq_number(pdn, i++);
--		if (hwirq < 0) {
--			pr_debug("rtas_msi: error (%d) getting hwirq\n", rc);
--			return hwirq;
--		}
--
--		/*
--		 * Depending on the number of online CPUs in the original
--		 * kernel, it is likely for CPU #0 to be offline in a kdump
--		 * kernel. The associated IRQs in the affinity mappings
--		 * provided by irq_create_affinity_masks() are thus not
--		 * started by irq_startup(), as per-design for managed IRQs.
--		 * This can be a problem with multi-queue block devices driven
--		 * by blk-mq : such a non-started IRQ is very likely paired
--		 * with the single queue enforced by blk-mq during kdump (see
--		 * blk_mq_alloc_tag_set()). This causes the device to remain
--		 * silent and likely hangs the guest at some point.
--		 *
--		 * We don't really care for fine-grained affinity when doing
--		 * kdump actually : simply ignore the pre-computed affinity
--		 * masks in this case and let the default mask with all CPUs
--		 * be used when creating the IRQ mappings.
--		 */
--		if (is_kdump_kernel())
--			virq =3D irq_create_mapping(NULL, hwirq);
--		else
--			virq =3D irq_create_mapping_affinity(NULL, hwirq,
--							   entry->affinity);
--
--		if (!virq) {
--			pr_debug("rtas_msi: Failed mapping hwirq %d\n", hwirq);
--			return -ENOSPC;
--		}
--
--		dev_dbg(&pdev->dev, "rtas_msi: allocated virq %d\n", virq);
--		irq_set_msi_desc(virq, entry);
--
--		/* Read config space back so we can restore after reset */
--		__pci_read_msi_msg(entry, &msg);
--		entry->msg =3D msg;
--	}
--
--	return 0;
--}
--
- static int pseries_msi_ops_prepare(struct irq_domain *domain, struct dev=
-ice *dev,
- 				   int nvec, msi_alloc_info_t *arg)
- {
-@@ -759,8 +684,6 @@ static void rtas_msi_pci_irq_fixup(struct pci_dev *pd=
-ev)
-=20
- static int rtas_msi_init(void)
- {
--	struct pci_controller *phb;
--
- 	query_token  =3D rtas_token("ibm,query-interrupt-source-number");
- 	change_token =3D rtas_token("ibm,change-msi");
-=20
-@@ -772,16 +695,6 @@ static int rtas_msi_init(void)
-=20
- 	pr_debug("rtas_msi: Registering RTAS MSI callbacks.\n");
-=20
--	WARN_ON(pseries_pci_controller_ops.setup_msi_irqs);
--	pseries_pci_controller_ops.setup_msi_irqs =3D rtas_setup_msi_irqs;
--	pseries_pci_controller_ops.teardown_msi_irqs =3D rtas_teardown_msi_irqs=
-;
--
--	list_for_each_entry(phb, &hose_list, list_node) {
--		WARN_ON(phb->controller_ops.setup_msi_irqs);
--		phb->controller_ops.setup_msi_irqs =3D rtas_setup_msi_irqs;
--		phb->controller_ops.teardown_msi_irqs =3D rtas_teardown_msi_irqs;
--	}
--
- 	WARN_ON(ppc_md.pci_irq_fixup);
- 	ppc_md.pci_irq_fixup =3D rtas_msi_pci_irq_fixup;
-=20
++#ifdef	CONFIG_IRQ_DOMAIN_HIERARCHY
++static int xive_irq_domain_translate(struct irq_domain *d,
++				     struct irq_fwspec *fwspec,
++				     unsigned long *hwirq,
++				     unsigned int *type)
++{
++	return xive_irq_domain_xlate(d, to_of_node(fwspec->fwnode),
++				     fwspec->param, fwspec->param_count,
++				     hwirq, type);
++}
++
++static int xive_irq_domain_alloc(struct irq_domain *domain, unsigned int=
+ virq,
++				 unsigned int nr_irqs, void *arg)
++{
++	struct irq_fwspec *fwspec =3D arg;
++	irq_hw_number_t hwirq;
++	unsigned int type =3D IRQ_TYPE_NONE;
++	int i, rc;
++
++	rc =3D xive_irq_domain_translate(domain, fwspec, &hwirq, &type);
++	if (rc)
++		return rc;
++
++	pr_debug("%s %d/%lx #%d\n", __func__, virq, hwirq, nr_irqs);
++
++	for (i =3D 0; i < nr_irqs; i++) {
++		/* TODO: call xive_irq_domain_map() */
++
++		/*
++		 * Mark interrupts as edge sensitive by default so that resend
++		 * actually works. Will fix that up below if needed.
++		 */
++		irq_clear_status_flags(virq, IRQ_LEVEL);
++
++		/* allocates and sets handler data */
++		rc =3D xive_irq_alloc_data(virq + i, hwirq + i);
++		if (rc)
++			return rc;
++
++		irq_domain_set_hwirq_and_chip(domain, virq + i, hwirq + i,
++					      &xive_irq_chip, domain->host_data);
++		irq_set_handler(virq + i, handle_fasteoi_irq);
++	}
++
++	return 0;
++}
++
++static void xive_irq_domain_free(struct irq_domain *domain,
++				 unsigned int virq, unsigned int nr_irqs)
++{
++	int i;
++
++	pr_debug("%s %d #%d\n", __func__, virq, nr_irqs);
++
++	for (i =3D 0; i < nr_irqs; i++)
++		xive_irq_free_data(virq + i);
++}
++#endif
++
+ static const struct irq_domain_ops xive_irq_domain_ops =3D {
++#ifdef	CONFIG_IRQ_DOMAIN_HIERARCHY
++	.alloc	=3D xive_irq_domain_alloc,
++	.free	=3D xive_irq_domain_free,
++	.translate =3D xive_irq_domain_translate,
++#endif
+ 	.match =3D xive_irq_domain_match,
+ 	.map =3D xive_irq_domain_map,
+ 	.unmap =3D xive_irq_domain_unmap,
 --=20
 2.31.1
 
