@@ -2,24 +2,24 @@ Return-Path: <SRS0=ZiU1=LZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DDD0C11F64
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:33:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D4DBC11F64
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:34:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 159A561350
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:33:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 159A561350
+	by mail.kernel.org (Postfix) with ESMTPS id F08B561418
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:34:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F08B561418
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GFzgy5lMxz3fRX
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 23:33:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GFzhJ5B2bz3flD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 23:34:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
@@ -29,47 +29,48 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GFzYc0TqSz3065
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jul 2021 23:28:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GFzYd1KWLz307c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jul 2021 23:28:21 +1000 (AEST)
 Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 161D2me1031169; Thu, 1 Jul 2021 09:28:14 -0400
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.70])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39he868pbg-1
+ 161D2mhu031260; Thu, 1 Jul 2021 09:28:15 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39he868pc1-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 01 Jul 2021 09:28:13 -0400
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
- by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 161DKIDg000707;
- Thu, 1 Jul 2021 13:28:11 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma01fra.de.ibm.com with ESMTP id 39fv59rpvd-1
+ Thu, 01 Jul 2021 09:28:14 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 161DM6Pl013489;
+ Thu, 1 Jul 2021 13:28:12 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma06ams.nl.ibm.com with ESMTP id 39h19bgdtf-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 01 Jul 2021 13:28:10 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 161DS8AJ25166302
+ Thu, 01 Jul 2021 13:28:12 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 161DS9fM35127658
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 1 Jul 2021 13:28:08 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 472F213A093;
- Thu,  1 Jul 2021 13:28:08 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 19CB513A098;
- Thu,  1 Jul 2021 13:28:08 +0000 (GMT)
+ Thu, 1 Jul 2021 13:28:10 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CC5F7A409B;
+ Thu,  1 Jul 2021 13:28:09 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9548DA4057;
+ Thu,  1 Jul 2021 13:28:09 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Thu,  1 Jul 2021 13:28:08 +0000 (GMT)
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Thu,  1 Jul 2021 13:28:09 +0000 (GMT)
 Received: from yukon.ibmuc.com (unknown [9.171.33.183])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id 8922A2201CC;
- Thu,  1 Jul 2021 15:28:07 +0200 (CEST)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id EA8C322016C;
+ Thu,  1 Jul 2021 15:28:08 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 23/32] powerpc/xics: Drop unmask of MSIs at startup
-Date: Thu,  1 Jul 2021 15:27:41 +0200
-Message-Id: <20210701132750.1475580-24-clg@kaod.org>
+Subject: [PATCH v2 26/32] powerpc/powernv/pci: Adapt is_pnv_opal_msi() to
+ detect passthrough interrupt
+Date: Thu,  1 Jul 2021 15:27:44 +0200
+Message-Id: <20210701132750.1475580-27-clg@kaod.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210701132750.1475580-1-clg@kaod.org>
 References: <20210701132750.1475580-1-clg@kaod.org>
@@ -77,14 +78,14 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: LxNzKNfVGKUKEGnehrzZ8D2clh-qIE04
-X-Proofpoint-GUID: LxNzKNfVGKUKEGnehrzZ8D2clh-qIE04
+X-Proofpoint-ORIG-GUID: IohUdYWj2LvwhhDxmZR5a96Bjchr_DNb
+X-Proofpoint-GUID: IohUdYWj2LvwhhDxmZR5a96Bjchr_DNb
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-07-01_07:2021-07-01,
  2021-07-01 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- suspectscore=0 bulkscore=0 mlxlogscore=999 phishscore=0 lowpriorityscore=0
+ suspectscore=0 bulkscore=0 mlxlogscore=788 phishscore=0 lowpriorityscore=0
  clxscore=1034 malwarescore=0 mlxscore=0 impostorscore=0 spamscore=0
  adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2104190000 definitions=main-2107010082
@@ -99,64 +100,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-That was a workaround in the XICS domain because of the lack of MSI
-domain. This is now handled.
+The pnv_ioda2_msi_eoi() chip handler is not used anymore for MSIs.
+Simply use the check on the PSI-MSI chip.
 
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/sysdev/xics/ics-opal.c | 11 -----------
- arch/powerpc/sysdev/xics/ics-rtas.c |  9 ---------
- 2 files changed, 20 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/sysdev/xics/ics-opal.c b/arch/powerpc/sysdev/xi=
-cs/ics-opal.c
-index bf26cae1b982..c4d95d8beb6f 100644
---- a/arch/powerpc/sysdev/xics/ics-opal.c
-+++ b/arch/powerpc/sysdev/xics/ics-opal.c
-@@ -62,17 +62,6 @@ static void ics_opal_unmask_irq(struct irq_data *d)
-=20
- static unsigned int ics_opal_startup(struct irq_data *d)
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
+tforms/powernv/pci-ioda.c
+index eb38ce1fd434..6c4b37598bcc 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2015,7 +2015,7 @@ static struct irq_chip pnv_pci_msi_irq_chip;
+  */
+ bool is_pnv_opal_msi(struct irq_chip *chip)
  {
--#ifdef CONFIG_PCI_MSI
--	/*
--	 * The generic MSI code returns with the interrupt disabled on the
--	 * card, using the MSI mask bits. Firmware doesn't appear to unmask
--	 * at that level, so we do it here by hand.
--	 */
--	if (irq_data_get_msi_desc(d))
--		pci_msi_unmask_irq(d);
--#endif
--
--	/* unmask it */
- 	ics_opal_unmask_irq(d);
- 	return 0;
+-	return chip->irq_eoi =3D=3D pnv_ioda2_msi_eoi || chip =3D=3D &pnv_pci_m=
+si_irq_chip;
++	return chip =3D=3D &pnv_pci_msi_irq_chip;
  }
-diff --git a/arch/powerpc/sysdev/xics/ics-rtas.c b/arch/powerpc/sysdev/xi=
-cs/ics-rtas.c
-index b50c6341682e..b9da317b7a2d 100644
---- a/arch/powerpc/sysdev/xics/ics-rtas.c
-+++ b/arch/powerpc/sysdev/xics/ics-rtas.c
-@@ -57,15 +57,6 @@ static void ics_rtas_unmask_irq(struct irq_data *d)
+ EXPORT_SYMBOL_GPL(is_pnv_opal_msi);
 =20
- static unsigned int ics_rtas_startup(struct irq_data *d)
- {
--#ifdef CONFIG_PCI_MSI
--	/*
--	 * The generic MSI code returns with the interrupt disabled on the
--	 * card, using the MSI mask bits. Firmware doesn't appear to unmask
--	 * at that level, so we do it here by hand.
--	 */
--	if (irq_data_get_msi_desc(d))
--		pci_msi_unmask_irq(d);
--#endif
- 	/* unmask it */
- 	ics_rtas_unmask_irq(d);
- 	return 0;
 --=20
 2.31.1
 
