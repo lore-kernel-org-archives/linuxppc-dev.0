@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C5B5C11F64
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:31:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63655C11F67
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:31:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F55F61416
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:31:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F55F61416
+	by mail.kernel.org (Postfix) with ESMTPS id D311561350
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 13:31:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D311561350
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GFzcs6RCSz3bwC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 23:31:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GFzdC4NV0z3dnp
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 23:31:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
@@ -29,48 +29,45 @@ Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GFzYW5kLbz303j
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jul 2021 23:28:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GFzYX3P7Sz303k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Jul 2021 23:28:15 +1000 (AEST)
 Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 161D2iql178552; Thu, 1 Jul 2021 09:28:08 -0400
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39hc20521a-1
+ 161D2kgs178734; Thu, 1 Jul 2021 09:28:03 -0400
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39hc2051y0-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 01 Jul 2021 09:28:08 -0400
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 161DL6jS022255;
- Thu, 1 Jul 2021 13:28:06 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma03fra.de.ibm.com with ESMTP id 39duv8h8w8-1
+ Thu, 01 Jul 2021 09:28:02 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 161DJark003093;
+ Thu, 1 Jul 2021 13:28:00 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma04fra.de.ibm.com with ESMTP id 39duv8h9db-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 01 Jul 2021 13:28:06 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 161DS3Ee26280234
+ Thu, 01 Jul 2021 13:28:00 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 161DQK6U21889374
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 1 Jul 2021 13:28:03 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8AA394204F;
- Thu,  1 Jul 2021 13:28:03 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 65C5D420B5;
- Thu,  1 Jul 2021 13:28:03 +0000 (GMT)
+ Thu, 1 Jul 2021 13:26:20 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 33A9D520A3;
+ Thu,  1 Jul 2021 13:27:58 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Thu,  1 Jul 2021 13:28:03 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with SMTP id 0F4E252117;
+ Thu,  1 Jul 2021 13:27:58 +0000 (GMT)
 Received: from yukon.ibmuc.com (unknown [9.171.33.183])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id D24332201CC;
- Thu,  1 Jul 2021 15:28:02 +0200 (CEST)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 8732722016C;
+ Thu,  1 Jul 2021 15:27:57 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 13/32] KVM: PPC: Book3S HV: Use the new IRQ chip to detect
- passthrough interrupts
-Date: Thu,  1 Jul 2021 15:27:31 +0200
-Message-Id: <20210701132750.1475580-14-clg@kaod.org>
+Subject: [PATCH v2 02/32] powerpc/pseries/pci: Introduce
+ rtas_prepare_msi_irqs()
+Date: Thu,  1 Jul 2021 15:27:20 +0200
+Message-Id: <20210701132750.1475580-3-clg@kaod.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210701132750.1475580-1-clg@kaod.org>
 References: <20210701132750.1475580-1-clg@kaod.org>
@@ -78,14 +75,14 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: -sHvZbGzhsuiP67kWxBtc9WVHYsZDuK6
-X-Proofpoint-ORIG-GUID: -sHvZbGzhsuiP67kWxBtc9WVHYsZDuK6
+X-Proofpoint-GUID: EjQUiDUdetcZgqNXoCkHvjayEqF-uXUM
+X-Proofpoint-ORIG-GUID: EjQUiDUdetcZgqNXoCkHvjayEqF-uXUM
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-07-01_07:2021-07-01,
  2021-07-01 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  lowpriorityscore=0
- adultscore=0 mlxscore=0 spamscore=0 bulkscore=0 mlxlogscore=587
+ adultscore=0 mlxscore=0 spamscore=0 bulkscore=0 mlxlogscore=964
  priorityscore=1501 phishscore=0 malwarescore=0 suspectscore=0
  impostorscore=0 clxscore=1034 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.12.0-2104190000 definitions=main-2107010082
@@ -105,55 +102,66 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Passthrough PCI MSI interrupts are detected in KVM with a check on a
-specific EOI handler (P8) or on XIVE (P9). We can now check the
-PCI-MSI IRQ chip which is cleaner.
+This splits the routine setting the MSIs in two parts: allocation of
+MSIs for the PCI device at the FW level (RTAS) and the actual mapping
+and activation of the IRQs.
+
+rtas_prepare_msi_irqs() will serve as a handler for the PCI MSI domain.
 
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/kvm/book3s_hv.c              | 2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c | 4 +++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/msi.c | 23 +++++++++++++++++++----
+ 1 file changed, 19 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index dd39b5373075..048b4ca55cfe 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -5260,7 +5260,7 @@ static int kvmppc_set_passthru_irq(struct kvm *kvm,=
- int host_irq, int guest_gsi)
- 	 * what our real-mode EOI code does, or a XIVE interrupt
- 	 */
- 	chip =3D irq_data_get_irq_chip(&desc->irq_data);
--	if (!chip || !(is_pnv_opal_msi(chip) || is_xive_irq(chip))) {
-+	if (!chip || !is_pnv_opal_msi(chip)) {
- 		pr_warn("kvmppc_set_passthru_irq_hv: Could not assign IRQ map for (%d,=
-%d)\n",
- 			host_irq, guest_gsi);
- 		mutex_unlock(&kvm->lock);
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
-tforms/powernv/pci-ioda.c
-index d2a17fcb6002..e77caa4dbbdf 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2007,13 +2007,15 @@ void pnv_set_msi_irq_chip(struct pnv_phb *phb, un=
-signed int virq)
- 	irq_set_chip(virq, &phb->ioda.irq_chip);
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platform=
+s/pseries/msi.c
+index d2d090e04745..4bf14f27e1aa 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -373,12 +373,11 @@ static void rtas_hack_32bit_msi_gen2(struct pci_dev=
+ *pdev)
+ 	pci_write_config_dword(pdev, pdev->msi_cap + PCI_MSI_ADDRESS_HI, 0);
  }
 =20
-+static struct irq_chip pnv_pci_msi_irq_chip;
-+
- /*
-  * Returns true iff chip is something that we could call
-  * pnv_opal_pci_msi_eoi for.
-  */
- bool is_pnv_opal_msi(struct irq_chip *chip)
+-static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec_in, int ty=
+pe)
++static int rtas_prepare_msi_irqs(struct pci_dev *pdev, int nvec_in, int =
+type,
++				 msi_alloc_info_t *arg)
  {
--	return chip->irq_eoi =3D=3D pnv_ioda2_msi_eoi;
-+	return chip->irq_eoi =3D=3D pnv_ioda2_msi_eoi || chip =3D=3D &pnv_pci_m=
-si_irq_chip;
- }
- EXPORT_SYMBOL_GPL(is_pnv_opal_msi);
+ 	struct pci_dn *pdn;
+-	int hwirq, virq, i, quota, rc;
+-	struct msi_desc *entry;
+-	struct msi_msg msg;
++	int quota, rc;
+ 	int nvec =3D nvec_in;
+ 	int use_32bit_msi_hack =3D 0;
 =20
+@@ -456,6 +455,22 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev,=
+ int nvec_in, int type)
+ 		return rc;
+ 	}
+=20
++	return 0;
++}
++
++static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec_in, int ty=
+pe)
++{
++	struct pci_dn *pdn;
++	int hwirq, virq, i;
++	int rc;
++	struct msi_desc *entry;
++	struct msi_msg msg;
++
++	rc =3D rtas_prepare_msi_irqs(pdev, nvec_in, type, NULL);
++	if (rc)
++		return rc;
++
++	pdn =3D pci_get_pdn(pdev);
+ 	i =3D 0;
+ 	for_each_pci_msi_entry(entry, pdev) {
+ 		hwirq =3D rtas_query_irq_number(pdn, i++);
 --=20
 2.31.1
 
