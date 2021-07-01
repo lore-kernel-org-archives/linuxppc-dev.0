@@ -2,57 +2,49 @@ Return-Path: <SRS0=ZiU1=LZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D13DBC11F64
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 14:12:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03C69C11F64
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 14:29:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E0E5F613B7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 14:12:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0E5F613B7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cdjrlc.com
+	by mail.kernel.org (Postfix) with ESMTPS id 364FE61409
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 14:29:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 364FE61409
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GG0Xh2Ddvz3bwT
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 00:12:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=cdjrlc.com (client-ip=203.205.250.33; helo=smtpbg506.qq.com;
- envelope-from=wangborong@cdjrlc.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 6418 seconds by postgrey-1.36 at boromir;
- Fri, 02 Jul 2021 00:12:12 AEST
-Received: from smtpbg506.qq.com (smtpbg506.qq.com [203.205.250.33])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GG0XD4NHhz2xKS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jul 2021 00:12:05 +1000 (AEST)
-X-QQ-mid: bizesmtp54t1625148715t01joxvb
-Received: from localhost.localdomain (unknown [182.148.13.55])
- by esmtp6.qq.com (ESMTP) with 
- id ; Thu, 01 Jul 2021 22:11:54 +0800 (CST)
-X-QQ-SSF: 0100000000800040B000D00A0000000
-X-QQ-FEAT: 9waYh4jnNPyqOv0ygbC1/m0a12KsCMqDbI1aToSne+xL3DjS7+G9rBaosHAWB
- dEe7NJmbOC9e1dhde2jrjIwUlbQUvm7RWjW5/sYo8+unHRDgvcf/ayyTawMlzFSYWlW0C3W
- rQpGomGd9IqITzL7R4yLpOvme4n73ht1Q7lni582decm5Lng+pYfLOT/qqfSgOWU9d8sUAx
- bDCh3JgWv245YQNsBXrfiPnKybpT4J4tbms3SXsZ1H4jdr/8ZFyJUNbEo87J64eQ5q+n3+o
- OSYFPt21WhC0i2uXTijHaYMDGX3PooGpVbiPdzYs7272WJa9vH/gem1ajNqw30UGOawu3MP
- eRebsxwCQ10VfvOdvMhPkQg1wL13DgwWDtSXDl1
-X-QQ-GoodBg: 0
-From: Jason Wang <wangborong@cdjrlc.com>
-To: jk@ozlabs.org
-Subject: [PATCH v2] sched: Use BUG_ON
-Date: Thu,  1 Jul 2021 22:11:30 +0800
-Message-Id: <20210701141130.940-1-wangborong@cdjrlc.com>
-X-Mailer: git-send-email 2.32.0
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GG0w04X34z3bhy
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 00:29:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=valentin.schneider@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4GG0vY1DY4z2yMJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jul 2021 00:28:54 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 86090D6E;
+ Thu,  1 Jul 2021 07:28:51 -0700 (PDT)
+Received: from e113632-lin (e113632-lin.cambridge.arm.com [10.1.194.46])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 87BD63F718;
+ Thu,  1 Jul 2021 07:28:49 -0700 (PDT)
+From: Valentin Schneider <valentin.schneider@arm.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2 1/2] sched/topology: Skip updating masks for non-online
+ nodes
+In-Reply-To: <20210701041552.112072-2-srikar@linux.vnet.ibm.com>
+References: <20210701041552.112072-1-srikar@linux.vnet.ibm.com>
+ <20210701041552.112072-2-srikar@linux.vnet.ibm.com>
+Date: Thu, 01 Jul 2021 15:28:45 +0100
+Message-ID: <875yxu85wi.mognet@arm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:cdjrlc.com:qybgforeign:qybgforeign6
-X-QQ-Bgrelay: 1
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,38 +56,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: arnd@arndb.de, linux-kernel@vger.kernel.org,
- Jason Wang <wangborong@cdjrlc.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Rik van Riel <riel@surriel.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Laurent Dufour <ldufour@linux.ibm.com>,
+ Mel Gorman <mgorman@techsingularity.net>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The BUG_ON macro simplifies the if condition followed by BUG, so that
-we can use BUG_ON instead of if condition followed by BUG.
+On 01/07/21 09:45, Srikar Dronamraju wrote:
+> @@ -1891,12 +1894,30 @@ void sched_init_numa(void)
+>  void sched_domains_numa_masks_set(unsigned int cpu)
+>  {
+>       int node = cpu_to_node(cpu);
+> -	int i, j;
+> +	int i, j, empty;
+>
+> +	empty = cpumask_empty(sched_domains_numa_masks[0][node]);
+>       for (i = 0; i < sched_domains_numa_levels; i++) {
+>               for (j = 0; j < nr_node_ids; j++) {
+> -			if (node_distance(j, node) <= sched_domains_numa_distance[i])
+> +			if (!node_online(j))
+> +				continue;
+> +
+> +			if (node_distance(j, node) <= sched_domains_numa_distance[i]) {
+>                               cpumask_set_cpu(cpu, sched_domains_numa_masks[i][j]);
+> +
+> +				/*
+> +				 * We skip updating numa_masks for offline
+> +				 * nodes. However now that the node is
+> +				 * finally online, CPUs that were added
+> +				 * earlier, should now be accommodated into
+> +				 * newly oneline node's numa mask.
+> +				 */
+> +				if (node != j && empty) {
+> +					cpumask_or(sched_domains_numa_masks[i][node],
+> +							sched_domains_numa_masks[i][node],
+> +							sched_domains_numa_masks[0][j]);
+> +				}
+> +			}
 
-Signed-off-by: Jason Wang <wangborong@cdjrlc.com>
+Hmph, so we're playing games with masks of offline nodes - is that really
+necessary? Your modification of sched_init_numa() still scans all of the
+nodes (regardless of their online status) to build the distance map, and
+that is never updated (sched_init_numa() is pretty much an __init
+function).
+
+So AFAICT this is all to cope with topology_span_sane() not applying
+'cpu_map' to its masks. That seemed fine to me back when I wrote it, but in
+light of having bogus distance values for offline nodes, not so much...
+
+What about the below instead?
+
 ---
- arch/powerpc/platforms/cell/spufs/sched.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/cell/spufs/sched.c b/arch/powerpc/platforms/cell/spufs/sched.c
-index 369206489895..0f218d9e5733 100644
---- a/arch/powerpc/platforms/cell/spufs/sched.c
-+++ b/arch/powerpc/platforms/cell/spufs/sched.c
-@@ -904,8 +904,8 @@ static noinline void spusched_tick(struct spu_context *ctx)
- 	struct spu_context *new = NULL;
- 	struct spu *spu = NULL;
+diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+index b77ad49dc14f..c2d9caad4aa6 100644
+--- a/kernel/sched/topology.c
++++ b/kernel/sched/topology.c
+@@ -2075,6 +2075,7 @@ static struct sched_domain *build_sched_domain(struct sched_domain_topology_leve
+ static bool topology_span_sane(struct sched_domain_topology_level *tl,
+ 			      const struct cpumask *cpu_map, int cpu)
+ {
++	struct cpumask *intersect = sched_domains_tmpmask;
+ 	int i;
  
--	if (spu_acquire(ctx))
--		BUG();	/* a kernel thread never has signals pending */
-+	/* a kernel thread never has signals pending */
-+	BUG_ON(spu_acquire(ctx));
+ 	/* NUMA levels are allowed to overlap */
+@@ -2090,14 +2091,17 @@ static bool topology_span_sane(struct sched_domain_topology_level *tl,
+ 	for_each_cpu(i, cpu_map) {
+ 		if (i == cpu)
+ 			continue;
++
+ 		/*
+-		 * We should 'and' all those masks with 'cpu_map' to exactly
+-		 * match the topology we're about to build, but that can only
+-		 * remove CPUs, which only lessens our ability to detect
+-		 * overlaps
++		 * We shouldn't have to bother with cpu_map here, unfortunately
++		 * some architectures (powerpc says hello) have to deal with
++		 * offline NUMA nodes reporting bogus distance values. This can
++		 * lead to funky NODE domain spans, but since those are offline
++		 * we can mask them out.
+ 		 */
++		cpumask_and(intersect, tl->mask(cpu), tl->mask(i));
+ 		if (!cpumask_equal(tl->mask(cpu), tl->mask(i)) &&
+-		    cpumask_intersects(tl->mask(cpu), tl->mask(i)))
++		    cpumask_intersects(intersect, cpu_map))
+ 			return false;
+ 	}
  
- 	if (ctx->state != SPU_STATE_RUNNABLE)
- 		goto out;
--- 
-2.32.0
-
-
-
