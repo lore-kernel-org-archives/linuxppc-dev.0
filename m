@@ -7,37 +7,40 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F823C11F67
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 22:59:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E294C11F67
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 22:59:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C8A7D610CB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 22:59:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8A7D610CB
+	by mail.kernel.org (Postfix) with ESMTPS id 35D84613DC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jul 2021 22:59:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35D84613DC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GGDDc3Q0jz2yfY
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 08:59:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GGDF36p0Pz3dVb
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 08:59:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linkmauve.fr (client-ip=82.65.109.163; helo=luna.linkmauve.fr;
- envelope-from=linkmauve@linkmauve.fr; receiver=<UNKNOWN>)
-Received: from luna.linkmauve.fr (82-65-109-163.subs.proxad.net
- [82.65.109.163])
+ smtp.mailfrom=linkmauve.fr (client-ip=2a01:e0a:828:c7c0:49:5ff:fe41:d261;
+ helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr;
+ receiver=<UNKNOWN>)
+X-Greylist: delayed 10858 seconds by postgrey-1.36 at boromir;
+ Fri, 02 Jul 2021 08:58:11 AEST
+Received: from luna.linkmauve.fr (unknown
+ [IPv6:2a01:e0a:828:c7c0:49:5ff:fe41:d261])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GGDC53lbjz3bWK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jul 2021 08:58:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GGDC76Lygz3060
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jul 2021 08:58:11 +1000 (AEST)
 Received: by luna.linkmauve.fr (Postfix, from userid 1000)
- id CB48CF40839; Fri,  2 Jul 2021 00:57:58 +0200 (CEST)
+ id 967BCF40837; Fri,  2 Jul 2021 00:57:57 +0200 (CEST)
 From: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
 To: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
  linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org
-Subject: [PATCH v3 5/5] powerpc: wii_defconfig: Enable OTP by default
-Date: Fri,  2 Jul 2021 00:57:43 +0200
-Message-Id: <20210701225743.14631-6-linkmauve@linkmauve.fr>
+Subject: [PATCH v3 4/5] powerpc: wii.dts: Expose the OTP on this platform
+Date: Fri,  2 Jul 2021 00:57:42 +0200
+Message-Id: <20210701225743.14631-5-linkmauve@linkmauve.fr>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210701225743.14631-1-linkmauve@linkmauve.fr>
 References: <20210519095044.4109-1-linkmauve@linkmauve.fr>
@@ -63,25 +66,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This selects the nintendo-otp module when building for this platform.
+This can be used by the newly-added nintendo-otp nvmem module.
 
 Signed-off-by: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
 ---
- arch/powerpc/configs/wii_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/boot/dts/wii.dts | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/configs/wii_defconfig b/arch/powerpc/configs/wii_defconfig
-index 379c171f3ddd..a0c45bf2bfb1 100644
---- a/arch/powerpc/configs/wii_defconfig
-+++ b/arch/powerpc/configs/wii_defconfig
-@@ -99,6 +99,7 @@ CONFIG_LEDS_TRIGGER_HEARTBEAT=y
- CONFIG_LEDS_TRIGGER_PANIC=y
- CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_GENERIC=y
-+CONFIG_NVMEM_NINTENDO_OTP=y
- CONFIG_EXT2_FS=y
- CONFIG_EXT4_FS=y
- CONFIG_FUSE_FS=m
+diff --git a/arch/powerpc/boot/dts/wii.dts b/arch/powerpc/boot/dts/wii.dts
+index c5fb54f8cc02..e9c945b123c6 100644
+--- a/arch/powerpc/boot/dts/wii.dts
++++ b/arch/powerpc/boot/dts/wii.dts
+@@ -219,12 +219,17 @@ control@d800100 {
+ 			/*
+ 			 * Both the address and length are wrong, according to
+ 			 * Wiibrew this should be <0x0d800000 0x400>, but it
+-			 * requires refactoring the PIC1 and GPIO nodes before
+-			 * changing that.
++			 * requires refactoring the PIC1, GPIO and OTP nodes
++			 * before changing that.
+ 			 */
+ 			reg = <0x0d800100 0xa0>;
+ 		};
+ 
++		otp@d8001ec {
++			compatible = "nintendo,hollywood-otp";
++			reg = <0x0d8001ec 0x8>;
++		};
++
+ 		disk@d806000 {
+ 			compatible = "nintendo,hollywood-di";
+ 			reg = <0x0d806000 0x40>;
 -- 
 2.32.0
 
