@@ -2,65 +2,62 @@ Return-Path: <SRS0=e0K3=L2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58AB2C07E95
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 20:14:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 264AAC07E95
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 21:12:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C98A761422
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 20:14:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C98A761422
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8091C61176
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 21:12:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8091C61176
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GGmWT2GP3z3bNr
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jul 2021 06:14:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Cqe08NyT;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GGnq91SKjz3bk2
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jul 2021 07:12:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=Cqe08NyT; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=209.85.222.47; helo=mail-ua1-f47.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ua1-f47.google.com (mail-ua1-f47.google.com
+ [209.85.222.47])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GGmVw1xs6z302W
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jul 2021 06:13:43 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPS id 9450161420;
- Fri,  2 Jul 2021 20:13:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1625256820;
- bh=eVKK5wUCmh1On5h88XwikbSrepvV6lRMYe1Dy1rne+Y=;
- h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
- b=Cqe08NyTgRIIPRcBZfZjDN1QgpvyM7B+FotD5+1qenC3kJh+/Wui68PXYaHcBDAVI
- qOF7hi+Vrcs3KbJdz69RXQvmyz9VwG1GkobbBdBUEhydDDuxQzFP+4zBzOXEGQ4Je3
- R0LFUxmELEGAYZBPFCVXUhNaxQSQ/F6OoJXY2I4clUKM2W3i35IuQMf+WOR0sINA9Z
- PoNFaOkQ8qPZNXTnco+oLlHF6aSQZ7oozfQL8ZJTgyaATpOHUAF7sFZzVebRy1rVsp
- 6PUAOZjllNQtAQK4rp+vGeXIKecAw72rFcE206iZdkxrZRbKtFDqsIfo/COjG3rwGe
- E2e7jtm1ttIAg==
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.14-1 tag
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <87o8bk7qk1.fsf@mpe.ellerman.id.au>
-References: <87o8bk7qk1.fsf@mpe.ellerman.id.au>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <87o8bk7qk1.fsf@mpe.ellerman.id.au>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
- tags/powerpc-5.14-1
-X-PR-Tracked-Commit-Id: 4ebbbaa4ce8524b853dd6febf0176a6efa3482d7
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 019b3fd94ba73d3ac615f0537440b81f129821f6
-Message-Id: <162525682055.6172.2897089487227077976.pr-tracker-bot@kernel.org>
-Date: Fri, 02 Jul 2021 20:13:40 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GGnpp3hdSz3014
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jul 2021 07:12:32 +1000 (AEST)
+Received: by mail-ua1-f47.google.com with SMTP id x37so4316519uac.13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jul 2021 14:12:32 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=iWmsu/MAqdEYVnC17Jds+nQkby43Df87NTtUM3jHHqE=;
+ b=j+F/pvTqUaaeGFKfrZUSqhG9q/puNO4OlYi8cH0z56zDIiG67m0NDfGLZpUGv1oGFm
+ /VXgTAeXJpp5mRorK2Ca5WcG1RYF7yF4MVBbop5kx4Vsb/vQ03SM7ujZRKS6fuQMilrT
+ 9Hgc3+AA7YxraN/1zotmBE6oSP+MKr3eWaA+zO0hhl6xxTPNDsIPAmlEI82rUA+cSBpC
+ Fq1YY1qbXkpaZP468YNV8Ob9lxWlvV6mrjuYgWc02+U7DpfYOWara8qYmNj6T/rzGeX4
+ HJUYL6jFjLUdU+8c/pslAxikPyjUsrJjTmMm6W4hHf/nw0FIbilmv2zVZzpsmY1G5doM
+ IcJA==
+X-Gm-Message-State: AOAM533mjYRmD43Wcgyq8aB+POdzrKEn+cqjhHFWJNxltA8Zy0eCi8mw
+ fEloXGFdn+bSbvPVZfc5NzxNPH2ql2m2wvBO+YUHhiDS
+X-Google-Smtp-Source: ABdhPJwFWeUtP8wudZfNwbQ+DaTooM2VLLb988TYTLhMSFaTbFsTt83dii8Q+aFlknLwfrxfTjLyTaJW7401xFUOgRs=
+X-Received: by 2002:ab0:71c1:: with SMTP id n1mr2542722uao.2.1625260349128;
+ Fri, 02 Jul 2021 14:12:29 -0700 (PDT)
+MIME-Version: 1.0
+References: <git-mailbomb-linux-master-f377f7da26d2af87e2ddc39190546f62ecdb2bd8@kernel.org>
+In-Reply-To: <git-mailbomb-linux-master-f377f7da26d2af87e2ddc39190546f62ecdb2bd8@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 2 Jul 2021 23:12:17 +0200
+Message-ID: <CAMuHMdVn6k16OS4NB5NEnRAHFSzSu60t1=SK4bd+xpBFSdLyYg@mail.gmail.com>
+Subject: Re: powerpc/spider-pci: Remove set but not used variable 'val'
 To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,31 +69,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jniethe5@gmail.com, wangborong@cdjrlc.com, jiapeng.chong@linux.alibaba.com,
- herbert@gondor.apana.org.au, sathvika@linux.vnet.ibm.com,
- aneesh.kumar@linux.ibm.com, danielhb413@gmail.com, haren@linux.ibm.com,
- joel@jms.id.au, naveen.n.rao@linux.vnet.ibm.com, chris.zjh@huawei.com,
- nathanl@linux.ibm.com, yuehaibing@huawei.com, arnd@arndb.de,
- kjain@linux.ibm.com, trix@redhat.com, npiggin@gmail.com, nathan@kernel.org,
- thunder.leizhen@huawei.com, andriy.shevchenko@linux.intel.com, dja@axtens.net,
- zhangshaokun@hisilicon.com, atrajeev@linux.vnet.ibm.com, fthain@linux-m68k.org,
- geoff@infradead.org, Linus Torvalds <torvalds@linux-foundation.org>,
- ndesaulniers@google.com, linux-kernel@vger.kernel.org, libaokun1@huawei.com,
- mhiramat@kernel.org, sudeep.holla@arm.com, vaibhav@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pull request you sent on Sat, 03 Jul 2021 00:12:30 +1000:
+Hi Michael,
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.14-1
+On Fri, Jul 2, 2021 at 10:14 PM Linux Kernel Mailing List
+<linux-kernel@vger.kernel.org> wrote:
+> Commit:     f377f7da26d2af87e2ddc39190546f62ecdb2bd8
+> Parent:     911bacda4658129bee039dc90fc0c3f193ee2695
+> Refname:    refs/heads/master
+> Web:        https://git.kernel.org/torvalds/c/f377f7da26d2af87e2ddc391905=
+46f62ecdb2bd8
+> Author:     Baokun Li <libaokun1@huawei.com>
+> AuthorDate: Tue Jun 1 16:53:19 2021 +0800
+> Committer:  Michael Ellerman <mpe@ellerman.id.au>
+> CommitDate: Tue Jun 15 17:12:27 2021 +1000
+>
+>     powerpc/spider-pci: Remove set but not used variable 'val'
+>
+>     Fixes gcc '-Wunused-but-set-variable' warning:
+>     # WARNING: Fixes tag on line 3 doesn't match correct format
+>     # WARNING: Fixes tag on line 3 doesn't match correct format
+>     # WARNING: Fixes tag on line 3 doesn't match correct format
+>     # WARNING: Fixes tag on line 3 doesn't match correct format
+>     # WARNING: Fixes tag on line 3 doesn't match correct format
+>     # WARNING: Fixes tag on line 3 doesn't match correct format
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/019b3fd94ba73d3ac615f0537440b81f129821f6
+Which tools is adding these warnings to various commit descriptions?
 
-Thank you!
+>     arch/powerpc/platforms/cell/spider-pci.c: In function 'spiderpci_io_f=
+lush':
+>     arch/powerpc/platforms/cell/spider-pci.c:28:6: warning:
+>     variable =E2=80=98val=E2=80=99 set but not used [-Wunused-but-set-var=
+iable]
+>
+>     It never used since introduction.
+>
+>     Signed-off-by: Baokun Li <libaokun1@huawei.com>
+>     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>     Link: https://lore.kernel.org/r/20210601085319.140461-1-libaokun1@hua=
+wei.com
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
