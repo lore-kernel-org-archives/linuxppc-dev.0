@@ -2,88 +2,54 @@ Return-Path: <SRS0=e0K3=L2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93498C11F67
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 01:25:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E348C11F67
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 02:36:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B6C8613DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 01:25:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B6C8613DA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9D2F3613DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 02:36:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D2F3613DD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GGHTN5GV0z3bXT
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 11:25:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=BVJd8KA0;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GGK3F0crTz308G
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jul 2021 12:36:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031;
- helo=mail-pj1-x1031.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=BVJd8KA0; dkim-atps=neutral
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com
- [IPv6:2607:f8b0:4864:20::1031])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GGHSr4Jzkz2yMw
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jul 2021 11:25:14 +1000 (AEST)
-Received: by mail-pj1-x1031.google.com with SMTP id
- p4-20020a17090a9304b029016f3020d867so5128904pjo.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Jul 2021 18:25:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=j6iUe8HIceUkFWNmIAR8GP6qmF3Cqvbw/0ZMAoaDhVk=;
- b=BVJd8KA0TcF1xsUFLwjzboqq8/UqTibUuLCT6ADFWD8uaYRLpnFbPYwNQzB0JtU3fd
- c1selm/jyb47/Ovmnj+qS/V8cQGSQ9VKOGOBLZI9bdH8FY449Swd9w3Y7aMRE38BM6TS
- cKtBEeGMJBzr8naae1D62/WP76was1WgxdQj+qoutP0QaVVDGRkL4Z6/dtbn4uJlFtgZ
- 25+oqKJYZlqKSZ++wz9ICI1K2qKYxqg0yrajgx/as4v1qLO1OmLoLs+4R/AWz0oVYwai
- fNQ3v0YJNSQ8dmhmPN7zmHKJqTS+79huaw8tZ9fEC3J6bcXFUr4gdEx6tvjtr2by9yGB
- E2iQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=j6iUe8HIceUkFWNmIAR8GP6qmF3Cqvbw/0ZMAoaDhVk=;
- b=nNaZbUamxzBO/a3GArtr1xLoAlL4vynBKekqlkRW3wFIf/3ceCxfpGIViUcgtNm6Is
- iy816ouHxQrIH+fuEgEt5p+LNV1iTZA0+64G6qWVStYbFx4D5Jf8kxpfOczXUa92G/88
- VQY5J0FylMOHj4FsWWxs0ZRD/bxtNP0Q6J6W3WAo/FvZMuWBy8/kNho3IoriPahZjfha
- 99F89eWmrnfonKBYtTtrc7e3UZuNux1esgTH7HlwWim+J+S+BG85QClm6gRfUHdABuHm
- +LT/sO680PEvynnU7q187mEIHGrL33CeXOGzg5fyScQnjsjW8NLJi6HBYxqDJb2/pNHD
- nARQ==
-X-Gm-Message-State: AOAM531fGpxbu0SvdaycBPkG5sgOt1sJKZcnQoBcsfQxiz99z2HUVAlD
- BEJfmkHY9vvqH2h/Pnv8HXI=
-X-Google-Smtp-Source: ABdhPJz07vEU+x8XcahatpwhI+bYmWSvGSidNX2mrf79YEecOn/xmhTR08mLQr9mGsbQbAEDE2+xbQ==
-X-Received: by 2002:a17:90b:4a0a:: with SMTP id
- kk10mr2353106pjb.16.1625189111444; 
- Thu, 01 Jul 2021 18:25:11 -0700 (PDT)
-Received: from localhost ([118.209.250.144])
- by smtp.gmail.com with ESMTPSA id p14sm1259110pgb.2.2021.07.01.18.25.10
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 01 Jul 2021 18:25:11 -0700 (PDT)
-Date: Fri, 02 Jul 2021 11:25:05 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/mm: Fix lockup on kernel exec fault
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christophe Leroy
- <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>
-References: <024bb05105050f704743a0083fe3548702be5706.1625138205.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <024bb05105050f704743a0083fe3548702be5706.1625138205.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GGK2n3r5xz2yhm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Jul 2021 12:36:09 +1000 (AEST)
+X-IronPort-AV: E=McAfee;i="6200,9189,10032"; a="189044183"
+X-IronPort-AV: E=Sophos;i="5.83,316,1616482800"; d="scan'208";a="189044183"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 01 Jul 2021 19:35:06 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.83,316,1616482800"; d="scan'208";a="644657949"
+Received: from lkp-server01.sh.intel.com (HELO 4aae0cb4f5b5) ([10.239.97.150])
+ by fmsmga005.fm.intel.com with ESMTP; 01 Jul 2021 19:35:04 -0700
+Received: from kbuild by 4aae0cb4f5b5 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1lz91E-000AqO-7D; Fri, 02 Jul 2021 02:35:04 +0000
+Date: Fri, 02 Jul 2021 10:34:38 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next] BUILD REGRESSION
+ 4ebbbaa4ce8524b853dd6febf0176a6efa3482d7
+Message-ID: <60de7b3e.C/T1N/2BC0aUePR2%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Message-Id: <1625188324.lt6lsizhsx.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,88 +61,172 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Christophe Leroy's message of July 1, 2021 9:17 pm:
-> The powerpc kernel is not prepared to handle exec faults from kernel.
-> Especially, the function is_exec_fault() will return 'false' when an
-> exec fault is taken by kernel, because the check is based on reading
-> current->thread.regs->trap which contains the trap from user.
->=20
-> For instance, when provoking a LKDTM EXEC_USERSPACE test,
-> current->thread.regs->trap is set to SYSCALL trap (0xc00), and
-> the fault taken by the kernel is not seen as an exec fault by
-> set_access_flags_filter().
->=20
-> Commit d7df2443cd5f ("powerpc/mm: Fix spurrious segfaults on radix
-> with autonuma") made it clear and handled it properly. But later on
-> commit d3ca587404b3 ("powerpc/mm: Fix reporting of kernel execute
-> faults") removed that handling, introducing test based on error_code.
-> And here is the problem, because on the 603 all upper bits of SRR1
-> get cleared when the TLB instruction miss handler bails out to ISI.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+branch HEAD: 4ebbbaa4ce8524b853dd6febf0176a6efa3482d7  powerpc: Only build restart_table.c for 64s
 
-So the problem is 603 doesn't see the DSISR_NOEXEC_OR_G bit?
+possible Error/Warning in current branch:
 
-I don't see the problem with this for 64s, I don't think anything sane
-can be done for any 0x400 interrupt in the kernel so it's probably
-good to catch all here just in case. For 64s,
+arch/powerpc/platforms/4xx/pci.c:47:19: error: unused function 'ppc440spe_revA' [-Werror,-Wunused-function]
 
-Acked-by: Nicholas Piggin <npiggin@gmail.com>
+Error/Warning ids grouped by kconfigs:
 
-Why is 32s clearing those top bits? And it seems to be setting DSISR
-that AFAIKS it does not use. Seems like it would be good to add a
-NOEXEC_OR_G bit into SRR1.
+clang_recent_errors
+`-- powerpc64-randconfig-r016-20210630
+    `-- arch-powerpc-platforms-4xx-pci.c:error:unused-function-ppc440spe_revA-Werror-Wunused-function
 
-Thanks,
-Nick
+elapsed time: 728m
 
+configs tested: 139
+configs skipped: 3
 
-> Until commit cbd7e6ca0210 ("powerpc/fault: Avoid heavy
-> search_exception_tables() verification"), an exec fault from kernel
-> at a userspace address was indirectly caught by the lack of entry for
-> that address in the exception tables. But after that commit the
-> kernel mainly rely on KUAP or on core mm handling to catch wrong
-> user accesses. Here the access is not wrong, so mm handles it.
-> It is a minor fault because PAGE_EXEC is not set,
-> set_access_flags_filter() should set PAGE_EXEC and voila.
-> But as is_exec_fault() returns false as explained in the begining,
-> set_access_flags_filter() bails out without setting PAGE_EXEC flag,
-> which leads to a forever minor exec fault.
->=20
-> As the kernel is not prepared to handle such exec faults, the thing
-> to do is to fire in bad_kernel_fault() for any exec fault taken by
-> the kernel, as it was prior to commit d3ca587404b3.
->=20
-> Fixes: d3ca587404b3 ("powerpc/mm: Fix reporting of kernel execute faults"=
-)
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
->  arch/powerpc/mm/fault.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
->=20
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 34f641d4a2fe..a8d0ce85d39a 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -199,9 +199,7 @@ static bool bad_kernel_fault(struct pt_regs *regs, un=
-signed long error_code,
->  {
->  	int is_exec =3D TRAP(regs) =3D=3D INTERRUPT_INST_STORAGE;
-> =20
-> -	/* NX faults set DSISR_PROTFAULT on the 8xx, DSISR_NOEXEC_OR_G on other=
-s */
-> -	if (is_exec && (error_code & (DSISR_NOEXEC_OR_G | DSISR_KEYFAULT |
-> -				      DSISR_PROTFAULT))) {
-> +	if (is_exec) {
->  		pr_crit_ratelimited("kernel tried to execute %s page (%lx) - exploit a=
-ttempt? (uid: %d)\n",
->  				    address >=3D TASK_SIZE ? "exec-protected" : "user",
->  				    address,
-> --=20
-> 2.25.0
->=20
->=20
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                           stm32_defconfig
+powerpc                         wii_defconfig
+powerpc                   currituck_defconfig
+mips                 decstation_r4k_defconfig
+arm                       omap2plus_defconfig
+powerpc                 linkstation_defconfig
+sh                        sh7763rdp_defconfig
+sh                             espt_defconfig
+arm                           u8500_defconfig
+arm                          iop32x_defconfig
+mips                     cu1830-neo_defconfig
+powerpc                    socrates_defconfig
+arm                            lart_defconfig
+ia64                        generic_defconfig
+sh                           se7722_defconfig
+sh                         ap325rxa_defconfig
+sh                           se7724_defconfig
+mips                     decstation_defconfig
+sh                        edosk7760_defconfig
+arm                        magician_defconfig
+sh                          kfr2r09_defconfig
+mips                      bmips_stb_defconfig
+powerpc                          g5_defconfig
+mips                       bmips_be_defconfig
+arm                          ixp4xx_defconfig
+arm                        oxnas_v6_defconfig
+sh                          r7780mp_defconfig
+arc                        nsim_700_defconfig
+arm                            hisi_defconfig
+h8300                    h8300h-sim_defconfig
+mips                         bigsur_defconfig
+arc                     nsimosci_hs_defconfig
+xtensa                  nommu_kc705_defconfig
+sh                          rsk7203_defconfig
+arm                        multi_v7_defconfig
+mips                     loongson2k_defconfig
+sh                          sdk7780_defconfig
+arm                         assabet_defconfig
+m68k                        mvme147_defconfig
+m68k                        m5272c3_defconfig
+powerpc                 mpc837x_rdb_defconfig
+arm                       aspeed_g4_defconfig
+sh                          rsk7269_defconfig
+powerpc                   lite5200b_defconfig
+mips                        qi_lb60_defconfig
+xtensa                              defconfig
+powerpc                     mpc512x_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+x86_64                            allnoconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a002-20210630
+x86_64               randconfig-a001-20210630
+x86_64               randconfig-a004-20210630
+x86_64               randconfig-a005-20210630
+x86_64               randconfig-a006-20210630
+x86_64               randconfig-a003-20210630
+i386                 randconfig-a004-20210630
+i386                 randconfig-a001-20210630
+i386                 randconfig-a003-20210630
+i386                 randconfig-a002-20210630
+i386                 randconfig-a005-20210630
+i386                 randconfig-a006-20210630
+i386                 randconfig-a015-20210701
+i386                 randconfig-a016-20210701
+i386                 randconfig-a011-20210701
+i386                 randconfig-a012-20210701
+i386                 randconfig-a013-20210701
+i386                 randconfig-a014-20210701
+i386                 randconfig-a014-20210630
+i386                 randconfig-a011-20210630
+i386                 randconfig-a016-20210630
+i386                 randconfig-a012-20210630
+i386                 randconfig-a013-20210630
+i386                 randconfig-a015-20210630
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                            kunit_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-b001-20210630
+x86_64               randconfig-b001-20210702
+x86_64               randconfig-a004-20210702
+x86_64               randconfig-a005-20210702
+x86_64               randconfig-a002-20210702
+x86_64               randconfig-a006-20210702
+x86_64               randconfig-a003-20210702
+x86_64               randconfig-a001-20210702
+x86_64               randconfig-a012-20210630
+x86_64               randconfig-a015-20210630
+x86_64               randconfig-a016-20210630
+x86_64               randconfig-a013-20210630
+x86_64               randconfig-a011-20210630
+x86_64               randconfig-a014-20210630
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
