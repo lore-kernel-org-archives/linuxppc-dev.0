@@ -2,56 +2,60 @@ Return-Path: <SRS0=oNnW=L3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB7D3C07E97
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jul 2021 03:52:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA7B7C07E97
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jul 2021 04:55:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E72CD61396
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jul 2021 03:52:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E72CD61396
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mit.edu
+	by mail.kernel.org (Postfix) with ESMTPS id 1596F61375
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jul 2021 04:55:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1596F61375
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GGyhT3BQ9z3033
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jul 2021 13:52:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=mit.edu
- (client-ip=18.9.28.11; helo=outgoing.mit.edu; envelope-from=tytso@mit.edu;
- receiver=<UNKNOWN>)
-Received: from outgoing.mit.edu (outgoing-auth-1.mit.edu [18.9.28.11])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GGyh66hNvz2yNx
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jul 2021 13:52:21 +1000 (AEST)
-Received: from cwcc.thunk.org (pool-72-74-133-215.bstnma.fios.verizon.net
- [72.74.133.215]) (authenticated bits=0)
- (User authenticated as tytso@ATHENA.MIT.EDU)
- by outgoing.mit.edu (8.14.7/8.12.4) with ESMTP id 1633q4h8012116
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 2 Jul 2021 23:52:06 -0400
-Received: by cwcc.thunk.org (Postfix, from userid 15806)
- id CA34B15C3CE6; Fri,  2 Jul 2021 23:52:04 -0400 (EDT)
-Date: Fri, 2 Jul 2021 23:52:04 -0400
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: Zhang Yi <yi.zhang@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GH05B0NM7z308f
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jul 2021 14:55:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
+ envelope-from=yi.zhang@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GH04k1pVzz2ysq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Jul 2021 14:55:14 +1000 (AEST)
+Received: from dggeme752-chm.china.huawei.com (unknown [172.30.72.54])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4GH00x4FJmzZpPy;
+ Sat,  3 Jul 2021 12:52:01 +0800 (CST)
+Received: from [10.174.178.134] (10.174.178.134) by
+ dggeme752-chm.china.huawei.com (10.3.19.98) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
+ 15.1.2176.2; Sat, 3 Jul 2021 12:55:09 +0800
 Subject: Re: [powerpc][5.13.0-next-20210701] Kernel crash while running
  ltp(chdir01) tests
-Message-ID: <YN/e5KOEdzRUsZra@mit.edu>
+To: Theodore Ts'o <tytso@mit.edu>
 References: <26ACA75D-E13D-405B-9BFC-691B5FB64243@linux.vnet.ibm.com>
  <bf1c5b38-92f1-65db-e210-a97a199718ba@linux.dev>
  <4cc87ab3-aaa6-ed87-b690-5e5b99de8380@huawei.com>
- <03f734bd-f36e-f55b-0448-485b8a0d5b75@huawei.com>
- <YN86yl5kgVaRixxQ@mit.edu> <YN+PIKV010a+j88S@mit.edu>
- <9b81eb4e-9adb-991f-31be-f5ef0092c4b3@huawei.com>
+ <03f734bd-f36e-f55b-0448-485b8a0d5b75@huawei.com> <YN86yl5kgVaRixxQ@mit.edu>
+ <36778615-86fd-9a19-9bc9-f93a6f2d5817@huawei.com> <YN/a70ucYXu0DqGf@mit.edu>
+From: Zhang Yi <yi.zhang@huawei.com>
+Message-ID: <66fb56cd-f1ff-c592-0202-0691372e32f5@huawei.com>
+Date: Sat, 3 Jul 2021 12:55:09 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.3.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9b81eb4e-9adb-991f-31be-f5ef0092c4b3@huawei.com>
+In-Reply-To: <YN/a70ucYXu0DqGf@mit.edu>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.174.178.134]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+ dggeme752-chm.china.huawei.com (10.3.19.98)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,22 +76,44 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Jul 03, 2021 at 11:37:07AM +0800, Zhang Yi wrote:
-> I check the ocfs2 code, if we register shrinker here, __ocfs2_recovery_thread()->
-> ocfs2_recover_node() seems will register and unregister a lot of unnecessary
-> shrinkers. It depends on the lifetime of the shrinker and the journal, because of
-> the jbd2_journal_destroy() destroy everything, it not a simple undo of
-> jbd2_load_journal(), so it's not easy to add shrinker properly. But it doesn't
-> seems like a real problem, just curious.
+On 2021/7/3 11:35, Theodore Ts'o wrote:
+> On Sat, Jul 03, 2021 at 11:05:07AM +0800, Zhang Yi wrote:
+>>
+>> Originally, I want to add this shrinker as a optional feature for jbd2 because
+>> only ext4 use it now and I'm not sure does ocfs2 needs this feature. So I export
+>> jbd2_journal_[un]register_shrinker(), ext4 could invoke them individually.
+> 
+> The reason why bdev_try_to_free_page() callback was needed for ext4
+> --- namely so there was a way to release checkpointed buffers under
+> memory pressure --- also exists for ocfs2.  It was probably true that
+> in most deployments of ocfs2, they weren't running with super-tight
+> memory availability, so it may not have been necessary the same way
+> that it might be necessary, say, if ext4 was being used on a Rasberry
+> Pi.  :-)
+> 
+>> And one more thing we to could do is rename the 'j_jh_shrink_count' to something
+>> like 'j_checkpoint_jh_count' because we always init it no matter we register the
+>> shrinker or not later.
+> 
+> That makes sense.
+> 
+> In fact, unless I'm mistaken, I don't think it's legal to call
+> percpu_counter_{inc,dec} if the shrinker isn't initialized.  So for
+> ocfs2, if we didn't initialize percpu_counter, when
+> __jbd2_journal_insert_checkpoint() tries to call percpu_counter_inc(),
+> I believe things would potentially go *boom* on some implementations
+> of the percpu counter (e.g., on Power and ARM).  So not only would it
+> not hurt to register the shrinker for ocfs2, I think it's required.
+> 
+> So yeah, let's rename it to something like j_checkpoint_jh_count, and
+> then let's inline jbd2_journal_[un]register_shrinker() in
+> journal_init_common() and jbd2_journal_unregister_shrinker().
+> 
+> What do you think?
+> 
 
-ocfs2_recover_node() only gets called for nodes that need recovery ---
-that is, when an ocfs2 server has crashed, then it becomes necessary
-to replay that node's journal before that node's responsibilities can
-be taken over by another server.  So it doesn't get called that
-frequently --- and when it is needed, the fact that we need to read
-the journal, and replay its entries, the cost in comparison for
-registering and unregistering the shrinker is going to be quite cheap.
+Yeah, it sounds good to me. Do you want me to send the fix patch, or you
+modify your commit 8f9e16badb8fd in another email directly?
 
-Cheers,
-
-					- Ted
+Thanks,
+Yi.
