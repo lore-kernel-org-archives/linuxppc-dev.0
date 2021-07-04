@@ -7,55 +7,55 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB3B0C07E95
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Jul 2021 23:12:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A8ECC47E48
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Jul 2021 23:13:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 50D2A61283
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Jul 2021 23:12:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50D2A61283
+	by mail.kernel.org (Postfix) with ESMTPS id 39927613F6
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Jul 2021 23:13:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39927613F6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GJ4NF0N03z3f23
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jul 2021 09:12:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GJ4Np6gJcz3dMn
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jul 2021 09:12:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QULguvyZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hmZKOJLR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=QULguvyZ; 
+ header.s=k20201202 header.b=hmZKOJLR; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GJ4Ml01nPz2xYf
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jul 2021 09:12:02 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 353B661375;
- Sun,  4 Jul 2021 23:12:00 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GJ4ND4pQXz3f2H
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jul 2021 09:12:28 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id B78E0613FC;
+ Sun,  4 Jul 2021 23:12:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1625440321;
+ s=k20201202; t=1625440346;
  bh=xNZHQJvcgNRFaQ8eiwggEpWrLCEadieOmm+NlS87DBc=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=QULguvyZPxA82Z+hbArm95IH3ck1+A+Pvh1JFaq0k3fuFLTYppOmFFPXPdQVVDWnk
- 7bCMqZkUgW75CzhxuYzKRGtgDaDq8doytpTfqgVnWp08/azx4kLawWhTjqggRT6zgU
- LF3+rDBjW/rDErOfZ4GKLUblAS6Wnk8+kwrAYSLSyNUCZWfPIRGm2zTlnwhgjYS3BQ
- X6uDwkirCP08Zp+3gjJ6JAoGRSrxBJaToOuv3QYWFtXLvDkqyrnlWXflhSyv7CJ5q0
- 0rTC5Tu2dwkwSZSuWsWERzNwWMB8UMGyDaErZbJCJgz/pRdwmHzIYTagCYqH2uO8se
- bOoRTPFX57ZLQ==
+ b=hmZKOJLRaQNEchyMHfHmea06e8rIPTE4DrXG0WKQSFZZ/Q9fUe4He/KWNqCq8TJKm
+ yhEIKLceAnBSyeGqK+ea1IKLZQe9bd8Inw8Ts78atQzLpjPBiJEuVzwGTd22Gc90eD
+ JA8fVpReYoAN9OdoO1uweEMT0FACPAGTXa8UXImfyaIQYh33sxy6ujCEWcOHBlc3cz
+ WxG1Wa+sUOTOVBbvFbCNLJ5JJstdwIBEQnbQ4wPZVYh+r3j1F0ulZs/sc5ewLUClOe
+ x6EmLOMNeKr13mGHXq6FZdq17/EOlwib++T1uDnADy/qp83PqZ7v8P55jRUJzUelGw
+ gNSztrdd4hhog==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 04/20] crypto: nx - add missing MODULE_DEVICE_TABLE
-Date: Sun,  4 Jul 2021 19:11:39 -0400
-Message-Id: <20210704231155.1491795-4-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.4 03/15] crypto: nx - add missing MODULE_DEVICE_TABLE
+Date: Sun,  4 Jul 2021 19:12:09 -0400
+Message-Id: <20210704231222.1492037-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210704231155.1491795-1-sashal@kernel.org>
-References: <20210704231155.1491795-1-sashal@kernel.org>
+In-Reply-To: <20210704231222.1492037-1-sashal@kernel.org>
+References: <20210704231222.1492037-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
