@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C73CC07E9C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jul 2021 14:12:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 226F2C07E99
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jul 2021 14:20:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B280B61958
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jul 2021 14:12:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B280B61958
+	by mail.kernel.org (Postfix) with ESMTPS id 76D376193E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jul 2021 14:20:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76D376193E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GJSLK0kh0z3bZ9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jul 2021 00:12:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GJSXD03zmz3bXr
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jul 2021 00:20:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Sk/CkUmz;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BbftnV3x;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
@@ -28,30 +28,30 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=Sk/CkUmz; 
+ header.s=k20201202 header.b=BbftnV3x; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GJSKk69fsz2yxP
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jul 2021 00:11:38 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPS id DFF3C61955
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jul 2021 14:11:35 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GJSWf3fzYz2yNF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jul 2021 00:20:14 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPS id 8F8A561946
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Jul 2021 14:20:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1625494295;
- bh=SbnaeR9LxIdXQ4Zy9ugOFExDnRvzdL+yeo4v35LkNEE=;
+ s=k20201202; t=1625494811;
+ bh=WoF1xymSrDeDS3PwG5mBwaYw12WB7wIxGR/zhVZ3kHw=;
  h=From:To:Subject:Date:In-Reply-To:References:From;
- b=Sk/CkUmzfeK6nO27QaZhuR/mQWux7HN4Uwh3Ql3VtfmItEAajcpOHdtfXdBo4bgVY
- dBg26lYPljSTppOjHyDw/aiZxLP60Gt+zafMneSGu3qAECk6IdPwJ7QnNL5agdbrDz
- N0BZtTwccy/8SUgO6H7JqxxGtlQQVQRlGbQDU83XNkX6WoOaF4rkmOktzW62XuHJ5H
- b4e3PqtKrilqvdJWgtuHkmkk/CCBXfcRxGtHDq1iW1r2LUzsKqfZlbNSxgBkPaNsCj
- i6kiM6N+zPaEyvsL9fLcsIPd4DMLej73USBE2oDQHTABrPgocZlj8VqHzSXZa2n0MP
- 7C9tGin5jX2Rg==
+ b=BbftnV3xVYPSbNeQAr4lSArAdfUqrtyw97S1+7iTLtRVzQB64vy0fE2AR+z0wXwxa
+ TU/PJM5yyG3izNKBwjJUF9Iqrrxprdm2ysDg6a7TVCas6pLjqAeJITE1/X2Sp2wyFk
+ MM1lZA+VXh1421h0TsCN3z4ZWYqfAyeV4xX2eBuq77VxfmWXd2dLQWDDEqMlrT4zem
+ HNS2qICZ2to2naLeLjElRjL0LaHElZPOJnpLhGJdx+/sYhKspIYm+49Lt3c23Kus6M
+ edjNgpDOvTE2abHETtR9zeIeFEr4Ai4OZGQeJd2JB69mdYErqgr1U4t6Yi9OD2OUXu
+ SiaxBZvhOSMQA==
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 213079] [bisected] IRQ problems and crashes on a PowerMac G5
  with 5.12.3
-Date: Mon, 05 Jul 2021 14:11:35 +0000
+Date: Mon, 05 Jul 2021 14:20:11 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -66,8 +66,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-213079-206035-lA0qxSsWOt@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-213079-206035-hCAIREAe5h@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-213079-206035@https.bugzilla.kernel.org/>
 References: <bug-213079-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -92,10 +92,24 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D213079
 
---- Comment #12 from Oliver O'Halloran (oohall@gmail.com) ---
-Created attachment 297755
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D297755&action=3Dedit
-hackfix for MSI init
+--- Comment #13 from Oliver O'Halloran (oohall@gmail.com) ---
+Hi,
+
+I got a loaner G5 with an NVMe drive, but I haven't been able to replicate =
+the
+crash you're seeing. However, I think that's probably because I'm only read=
+ing
+from the NVMe since it's NTFS formatted and I didn't want to trash someone
+else's files. I'm waiting for a new NVMe drive to arrive so I can do some
+destructive testing which should hopefully replicate the bug.
+
+In the meanwhile, can you try the patch above? That seems to fix bug which =
+is
+causing MSIs to be unusable. I'm not 100% sure why that woudld matter, but =
+it's
+possible the crashes are due to some other bug which doesn't appear when MS=
+Is
+are in use.
 
 --=20
 You may reply to this email to add a comment.
