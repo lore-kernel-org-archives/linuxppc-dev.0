@@ -2,58 +2,62 @@ Return-Path: <SRS0=+jbz=L6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 941FEC07E96
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jul 2021 12:51:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34027C07E96
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jul 2021 12:51:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3508F601FD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jul 2021 12:51:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3508F601FD
+	by mail.kernel.org (Postfix) with ESMTPS id C6683611AB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jul 2021 12:51:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6683611AB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GK2VQ5PqJz3bps
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jul 2021 22:51:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GK2Vw3q9Bz3dYL
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jul 2021 22:51:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qnDz57Ox;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XLBiGX+c;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=vkoul@kernel.org; receiver=<UNKNOWN>)
+ envelope-from=johan@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=qnDz57Ox; 
+ header.s=k20201202 header.b=XLBiGX+c; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GJzjf6G6dz2yWr
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jul 2021 20:45:42 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id B74ED6115A;
- Tue,  6 Jul 2021 10:45:38 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GJzpL5ccxz2ysm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jul 2021 20:49:46 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 6A11E6113A;
+ Tue,  6 Jul 2021 10:49:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1625568340;
- bh=TAVF2IHc14rn/yOfV6TgmbqJAnfb0ILtNpwUOOE8P74=;
+ s=k20201202; t=1625568584;
+ bh=QakVDMCwjBt5tusk+4GnLyspONeoeI28ccgP32Kkl6Y=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=qnDz57OxqxhKbIGKnm6WXO3ax9Jo3aAHpLlFSbF8mTdAxrJmPQJCxsr8+ht0s7IDc
- xYOYxvjvsX3ziqU/f/XYLRW5li2BYhFWrAufqc4Y6IUt+VIgCU61q8WT5QtyauWi71
- 3GBT4a+et00hGy9nCLqm8Av7L+ECtX1ZZb7AHvZBYeXJOuPw/J+F5+MSk6hfnqsqky
- 3hf/hCxp2HS6AXb1Eu+dF2EELhZURp3muNIoWPu7Xiyh/FENrfSE7Xc8B3v9PjCgSi
- vKnGjaNhJjEE1iB7jKy6BPi3AsIP1HMf37fHc+SUFeV7QSyxP2vm1nOS/QzuTrjnob
- Lq9ChTTCah7rA==
-Date: Tue, 6 Jul 2021 16:15:36 +0530
-From: Vinod Koul <vkoul@kernel.org>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+ b=XLBiGX+c23s7Hd4vl9BpJNl+HHlvfzXaPVrxwmNjZbEn3M/O+E2BBk+XwQO60Fx+h
+ AGg3I9ZxntsVRKX9hKl3+llY2WPdIEmlFNvB047fUI1IK4JVxOEF4dF9gqmuEuGb+m
+ YdZOAhq21BupqowkOvwPwtMAMl0LvNKX33WcPSHpRbL6TIhRCmu9lOkum3OF5ngTKK
+ 9dqdoQWVX++wNeQLXO8JH9t41sX/NUE8HwM2MQno+iFQNi2V60qlJhNUGu7azofLM8
+ OVyn3cBQUkqlxFBpjSV6EjXVn4VMkYYJLp789FfNvMpAjh38hTrSLglIFeyVVqTb4s
+ nT0/m/zLxXrsA==
+Received: from johan by xi.lan with local (Exim 4.94.2)
+ (envelope-from <johan@kernel.org>)
+ id 1m0idy-0003U8-8E; Tue, 06 Jul 2021 12:49:34 +0200
+Date: Tue, 6 Jul 2021 12:49:34 +0200
+From: Johan Hovold <johan@kernel.org>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
 Subject: Re: [PATCH] bus: Make remove callback return void
-Message-ID: <YOQ0UPduZkhZ+CmB@matsya>
+Message-ID: <YOQ1PnNT26VsRfLf@hovoldconsulting.com>
 References: <20210706095037.1425211-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
 In-Reply-To: <20210706095037.1425211-1-u.kleine-koenig@pengutronix.de>
@@ -95,7 +99,7 @@ Cc: nvdimm@lists.linux.dev, Alexey Kardashevskiy <aik@ozlabs.ru>,
  Manohar Vanga <manohar.vanga@gmail.com>, linux-wireless@vger.kernel.org,
  Dominik Brodowski <linux@dominikbrodowski.net>,
  virtualization@lists.linux-foundation.org,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
  target-devel@vger.kernel.org,
  Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
  linux-i2c@vger.kernel.org, Kai-Heng Feng <kai.heng.feng@canonical.com>,
@@ -106,16 +110,15 @@ Cc: nvdimm@lists.linux.dev, Alexey Kardashevskiy <aik@ozlabs.ru>,
  industrypack-devel@lists.sourceforge.net, linux-mips@vger.kernel.org,
  Len Brown <lenb@kernel.org>, alsa-devel@alsa-project.org,
  linux-arm-msm@vger.kernel.org, linux-media@vger.kernel.org,
- Maxime Ripard <mripard@kernel.org>, Johan Hovold <johan@kernel.org>,
- greybus-dev@lists.linaro.org, Bjorn Helgaas <bhelgaas@google.com>,
- Dave Jiang <dave.jiang@intel.com>,
+ Maxime Ripard <mripard@kernel.org>, greybus-dev@lists.linaro.org,
+ Bjorn Helgaas <bhelgaas@google.com>, Dave Jiang <dave.jiang@intel.com>,
  Boris Ostrovsky <boris.ostrovsky@oracle.com>,
  Mika Westerberg <mika.westerberg@linux.intel.com>,
  linux-arm-kernel@lists.infradead.org, Johannes Thumshirn <morbidrsa@gmail.com>,
  Mathieu Poirier <mathieu.poirier@linaro.org>, Stephen Boyd <sboyd@kernel.org>,
  Cornelia Huck <cohuck@redhat.com>, Wolfram Sang <wsa@kernel.org>,
  Joey Pabalan <jpabalanb@gmail.com>, Yehezkel Bernat <YehezkelShB@gmail.com>,
- Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>,
+ Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>,
  Bodo Stroesser <bostroesser@gmail.com>,
  Alison Schofield <alison.schofield@intel.com>,
  Heikki Krogerus <heikki.krogerus@linux.intel.com>,
@@ -158,15 +161,15 @@ Cc: nvdimm@lists.linux.dev, Alexey Kardashevskiy <aik@ozlabs.ru>,
  Hans de Goede <hdegoede@redhat.com>, Hannes Reinecke <hare@suse.de>,
  Adrian Hunter <adrian.hunter@intel.com>, Juergen Gross <jgross@suse.com>,
  linuxppc-dev@lists.ozlabs.org, Takashi Iwai <tiwai@suse.com>,
- Alexandre Bounine <alex.bou9@gmail.com>, Mark Brown <broonie@kernel.org>,
- Marc Zyngier <maz@kernel.org>, dmaengine@vger.kernel.org,
- Johannes Berg <johannes@sipsolutions.net>,
+ Alexandre Bounine <alex.bou9@gmail.com>, Vinod Koul <vkoul@kernel.org>,
+ Mark Brown <broonie@kernel.org>, Marc Zyngier <maz@kernel.org>,
+ dmaengine@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
  Maximilian Luz <luzmaximilian@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 06-07-21, 11:50, Uwe Kleine-König wrote:
+On Tue, Jul 06, 2021 at 11:50:37AM +0200, Uwe Kleine-KÃ¶nig wrote:
 > The driver core ignores the return value of this callback because there
 > is only little it can do when a device disappears.
 > 
@@ -179,8 +182,13 @@ On 06-07-21, 11:50, Uwe Kleine-König wrote:
 > With struct bus_type::remove returning void it's prevented that newly
 > implemented buses return an ignored error code and so don't anticipate
 > wrong expectations for driver authors.
+> 
+> Signed-off-by: Uwe Kleine-KÃ¶nig <u.kleine-koenig@pengutronix.de>
 
-Acked-By: Vinod Koul <vkoul@kernel.org>
+>  drivers/staging/greybus/gbphy.c           | 4 +---
 
--- 
-~Vinod
+>  drivers/usb/serial/bus.c                  | 4 +---
+
+>  include/linux/device/bus.h                | 2 +-
+
+Acked-by: Johan Hovold <johan@kernel.org>
