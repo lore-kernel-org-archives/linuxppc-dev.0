@@ -1,49 +1,58 @@
-Return-Path: <SRS0=aqaD=MF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=+jbz=L6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4198C07E96
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 16:32:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61B1BC07E96
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jul 2021 12:54:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 34FAD611C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 16:32:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34FAD611C0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CD6F4619AC
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jul 2021 12:54:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD6F4619AC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GPR543vxCz3bhj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jul 2021 02:32:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GK2ZS3ln0z3f5j
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jul 2021 22:54:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=valentin.schneider@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4GPR4d75Dlz2yPH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jul 2021 02:32:31 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 410806D;
- Tue, 13 Jul 2021 09:32:27 -0700 (PDT)
-Received: from e113632-lin (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5A4543F7D8;
- Tue, 13 Jul 2021 09:32:25 -0700 (PDT)
-From: Valentin Schneider <valentin.schneider@arm.com>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 1/2] sched/topology: Skip updating masks for non-online
- nodes
-In-Reply-To: <20210712124856.GA3836887@linux.vnet.ibm.com>
-References: <20210701041552.112072-1-srikar@linux.vnet.ibm.com>
- <20210701041552.112072-2-srikar@linux.vnet.ibm.com>
- <875yxu85wi.mognet@arm.com> <20210712124856.GA3836887@linux.vnet.ibm.com>
-Date: Tue, 13 Jul 2021 17:32:14 +0100
-Message-ID: <87zguqmay9.mognet@arm.com>
+ spf=none (no SPF record) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.100; helo=mga07.intel.com;
+ envelope-from=heikki.krogerus@linux.intel.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 124 seconds by postgrey-1.36 at boromir;
+ Tue, 06 Jul 2021 21:45:27 AEST
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GK12b4HFbz2yNf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Jul 2021 21:45:27 +1000 (AEST)
+X-IronPort-AV: E=McAfee;i="6200,9189,10036"; a="272945357"
+X-IronPort-AV: E=Sophos;i="5.83,328,1616482800"; d="scan'208";a="272945357"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Jul 2021 04:42:14 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.83,328,1616482800"; d="scan'208";a="562991774"
+Received: from kuha.fi.intel.com ([10.237.72.162])
+ by fmsmga001.fm.intel.com with SMTP; 06 Jul 2021 04:41:40 -0700
+Received: by kuha.fi.intel.com (sSMTP sendmail emulation);
+ Tue, 06 Jul 2021 14:41:39 +0300
+Date: Tue, 6 Jul 2021 14:41:39 +0300
+From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] bus: Make remove callback return void
+Message-ID: <YORBc384OjIBC/Yj@kuha.fi.intel.com>
+References: <20210706095037.1425211-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210706095037.1425211-1-u.kleine-koenig@pengutronix.de>
+X-Mailman-Approved-At: Tue, 06 Jul 2021 22:48:04 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,156 +64,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Vincent Guittot <vincent.guittot@linaro.org>, Rik van Riel <riel@surriel.com>,
- Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
- Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
- LKML <linux-kernel@vger.kernel.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Laurent Dufour <ldufour@linux.ibm.com>,
- Mel Gorman <mgorman@techsingularity.net>, Ingo Molnar <mingo@kernel.org>
+Cc: Alison Schofield <alison.schofield@intel.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Samuel Iglesias Gonsalvez <siglesias@igalia.com>,
+ Jens Taprogge <jens.taprogge@taprogge.org>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Benjamin Tissoires <benjamin.tissoires@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ "K. Y. Srinivasan" <kys@microsoft.com>, Ira Weiny <ira.weiny@intel.com>,
+ Wei Liu <wei.liu@kernel.org>, Alex Dubov <oakad@ya>,
+ Dave Jiang <dave.jiang@intel.com>, Maxim Levitsky <maximlevitsky@gmail.com>,
+ Johannes Thumshirn <morbidrsa@gmail.com>,
+ Vishal Verma <vishal.l.verma@intel.com>, Helge Deller <deller@gmx.de>,
+ =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
+ Dexuan Cui <decui@microsoft.com>, Russell King <linux@armlinux.org.uk>,
+ Jernej Skrabec <jernej.skrabec@gmail.com>, Chen-Yu Tsai <wens@csie.org>,
+ Tom Rix <trix@redhat.com>, Len Brown <lenb@kernel.org>,
+ Jiri Kosina <jikos@kernel.org>, Haiyang Zhang <haiyangz@microsoft.com>,
+ Sudeep Holla <sudeep.holla@arm.com>,
+ William Breathitt Gray <vilhelm.gray@gmail.com>,
+ Maxime Ripard <mripard@kernel.org>, Ben Widawsky <ben.widawsky@intel.com>,
+ Moritz Fischer <mdf@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Cristian Marussi <cristian.marussi@arm.com>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Geoff Levand <geoff@infradead.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Wolfram Sang <wsa@kernel.org>, Vinod Koul <vkoul@kernel.org>,
+ Stefan Richter <stefanr@s5r6.in-berlin.de>, kernel@pengutronix.de,
+ Wu Hao <hao.wu@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/07/21 18:18, Srikar Dronamraju wrote:
-> Hi Valentin,
->
->> On 01/07/21 09:45, Srikar Dronamraju wrote:
->> > @@ -1891,12 +1894,30 @@ void sched_init_numa(void)
->> >  void sched_domains_numa_masks_set(unsigned int cpu)
->> >  {
->>
->> Hmph, so we're playing games with masks of offline nodes - is that really
->> necessary? Your modification of sched_init_numa() still scans all of the
->> nodes (regardless of their online status) to build the distance map, and
->> that is never updated (sched_init_numa() is pretty much an __init
->> function).
->>
->> So AFAICT this is all to cope with topology_span_sane() not applying
->> 'cpu_map' to its masks. That seemed fine to me back when I wrote it, but in
->> light of having bogus distance values for offline nodes, not so much...
->>
->> What about the below instead?
->>
->> ---
->> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
->> index b77ad49dc14f..c2d9caad4aa6 100644
->> --- a/kernel/sched/topology.c
->> +++ b/kernel/sched/topology.c
->> @@ -2075,6 +2075,7 @@ static struct sched_domain *build_sched_domain(struct sched_domain_topology_leve
->>  static bool topology_span_sane(struct sched_domain_topology_level *tl,
->>                            const struct cpumask *cpu_map, int cpu)
->>  {
->> +	struct cpumask *intersect = sched_domains_tmpmask;
->>      int i;
->>
->>      /* NUMA levels are allowed to overlap */
->> @@ -2090,14 +2091,17 @@ static bool topology_span_sane(struct sched_domain_topology_level *tl,
->>      for_each_cpu(i, cpu_map) {
->>              if (i == cpu)
->>                      continue;
->> +
->>              /*
->> -		 * We should 'and' all those masks with 'cpu_map' to exactly
->> -		 * match the topology we're about to build, but that can only
->> -		 * remove CPUs, which only lessens our ability to detect
->> -		 * overlaps
->> +		 * We shouldn't have to bother with cpu_map here, unfortunately
->> +		 * some architectures (powerpc says hello) have to deal with
->> +		 * offline NUMA nodes reporting bogus distance values. This can
->> +		 * lead to funky NODE domain spans, but since those are offline
->> +		 * we can mask them out.
->>               */
->> +		cpumask_and(intersect, tl->mask(cpu), tl->mask(i));
->>              if (!cpumask_equal(tl->mask(cpu), tl->mask(i)) &&
->> -		    cpumask_intersects(tl->mask(cpu), tl->mask(i)))
->> +		    cpumask_intersects(intersect, cpu_map))
->>                      return false;
->>      }
->>
->
-> Unfortunately this is not helping.
-> I tried this patch alone and also with 2/2 patch of this series where
-> we update/fill fake topology numbers. However both cases are still failing.
->
+On Tue, Jul 06, 2021 at 11:50:37AM +0200, Uwe Kleine-König wrote:
+> The driver core ignores the return value of this callback because there
+> is only little it can do when a device disappears.
+> 
+> This is the final bit of a long lasting cleanup quest where several
+> buses were converted to also return void from their remove callback.
+> Additionally some resource leaks were fixed that were caused by drivers
+> returning an error code in the expectation that the driver won't go
+> away.
+> 
+> With struct bus_type::remove returning void it's prevented that newly
+> implemented buses return an ignored error code and so don't anticipate
+> wrong expectations for driver authors.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-Thanks for testing it.
+For ulpi and typec:
 
+Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
 
-Now, let's take examples from your cover letter:
+thanks,
 
-  node distances:
-  node   0   1   2   3   4   5   6   7
-    0:  10  20  40  40  40  40  40  40
-    1:  20  10  40  40  40  40  40  40
-    2:  40  40  10  20  40  40  40  40
-    3:  40  40  20  10  40  40  40  40
-    4:  40  40  40  40  10  20  40  40
-    5:  40  40  40  40  20  10  40  40
-    6:  40  40  40  40  40  40  10  20
-    7:  40  40  40  40  40  40  20  10
-
-But the system boots with just nodes 0 and 1, thus only this distance
-matrix is valid:
-
-  node   0   1
-    0:  10  20
-    1:  20  10
-
-topology_span_sane() is going to use tl->mask(cpu), and as you reported the
-NODE topology level should cause issues. Let's assume all offline nodes say
-they're 10 distance away from everyone else, and that we have one CPU per
-node. This would give us:
-
-  NODE->mask(0) == 0,2-7
-  NODE->mask(1) == 1-7
-
-The intersection is 2-7, we'll trigger the WARN_ON().
-Now, with the above snippet, we'll check if that intersection covers any
-online CPU. For sched_init_domains(), cpu_map is cpu_active_mask, so we'd
-end up with an empty intersection and we shouldn't warn - that's the theory
-at least.
-
-Looking at sd_numa_mask(), I think there's a bug with topology_span_sane():
-it doesn't run in the right place wrt where sched_domains_curr_level is
-updated. Could you try the below on top of the previous snippet?
-
-If that doesn't help, could you share the node distances / topology masks
-that lead to the WARN_ON()? Thanks.
-
----
-diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-index b77ad49dc14f..cda69dfa4065 100644
---- a/kernel/sched/topology.c
-+++ b/kernel/sched/topology.c
-@@ -1516,13 +1516,6 @@ sd_init(struct sched_domain_topology_level *tl,
- 	int sd_id, sd_weight, sd_flags = 0;
- 	struct cpumask *sd_span;
- 
--#ifdef CONFIG_NUMA
--	/*
--	 * Ugly hack to pass state to sd_numa_mask()...
--	 */
--	sched_domains_curr_level = tl->numa_level;
--#endif
--
- 	sd_weight = cpumask_weight(tl->mask(cpu));
- 
- 	if (tl->sd_flags)
-@@ -2131,7 +2124,12 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
- 
- 		sd = NULL;
- 		for_each_sd_topology(tl) {
--
-+#ifdef CONFIG_NUMA
-+			/*
-+			 * Ugly hack to pass state to sd_numa_mask()...
-+			 */
-+			sched_domains_curr_level = tl->numa_level;
-+#endif
- 			if (WARN_ON(!topology_span_sane(tl, cpu_map, i)))
- 				goto error;
- 
-
+-- 
+heikki
