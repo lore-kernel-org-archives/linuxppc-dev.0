@@ -2,81 +2,85 @@ Return-Path: <SRS0=ngpy=MA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73E81C07E96
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jul 2021 12:46:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2E76C07E96
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jul 2021 12:57:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D867061584
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jul 2021 12:46:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D867061584
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3582461481
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jul 2021 12:57:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3582461481
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GLGJX2DTxz3btT
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jul 2021 22:46:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GLGXt5Hw4z3bls
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jul 2021 22:57:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=VetX2Cfr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=MQAwU+Nj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::e33;
- helo=mail-vs1-xe33.google.com; envelope-from=ulf.hansson@linaro.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c;
+ helo=mail-pf1-x42c.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=VetX2Cfr; dkim-atps=neutral
-Received: from mail-vs1-xe33.google.com (mail-vs1-xe33.google.com
- [IPv6:2607:f8b0:4864:20::e33])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=MQAwU+Nj; dkim-atps=neutral
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com
+ [IPv6:2607:f8b0:4864:20::42c])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GLGBf2S5Bz2ymb
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jul 2021 22:41:43 +1000 (AEST)
-Received: by mail-vs1-xe33.google.com with SMTP id az11so3512712vsb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jul 2021 05:41:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=hP9H7HVTE7TFrRNTl1vyqWVVeZcuqXBCZg0bGqclL/A=;
- b=VetX2Cfr8bdRNaZiWLEm04u6bqZW3l6DI4CAN74JIY7k4z1gUX2WPAhVDnzm350lf2
- zN9Z12JQmbzlk/BWNUXvjVAbpB66ZXuvK3SPb444QQ5diXQOytBY51L2/oTaoUD9VeXU
- uFurAnxdtCpnicZBLB0yD9ojUwv6W/qtm1PvBS9AFUFJNPr3tKxeC4wQWDvFkNeWRoRf
- 7SjXn45LyDiaoeLgbbyRwVPp/zZWqO3qYud0+Xn/514eUefuiFS0gjROioJ7tCP2C/ZN
- ZUSLS7lmtDXFsaxdqMahs7f08oqXmzo9A5DfBGmAWg3PByPV9/9CFdzFbNZ8GtPMsFJE
- z42g==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GLGXL4W9Bz2ymb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jul 2021 22:57:05 +1000 (AEST)
+Received: by mail-pf1-x42c.google.com with SMTP id d12so5389613pfj.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jul 2021 05:57:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=W5HxMER8hb4dLNB9ENuzMhUkc9v3oqs/gPiw+4JCqB0=;
+ b=MQAwU+Njs+CKb2Y/oUnmTybxbJUIYHctuFZm6/MOU9xR3X4wH200/i6edEIt0EgOIQ
+ erz38IfDYj5Md5n68FEowyhFh4oyN/nrYRDzwcuAKWalM5em9aLb+jS0A60UC/+oj1CA
+ Z3rHn38xJgLNQbstZC7T03+1JZAjtMMNr8fLNgQNrAPZcPaw6dM9A00X3Q8VpGb+rZs+
+ pw/tsQi/VbZ7pYFN5M0bGPBlf7OjiEV+eXLnbAPRN8JiKwDJq37TwseJGSc07wiA1TQQ
+ 1RIIQ91aPC/PmhCjV4iV91RlQ44+cm89qGGcdvtgYRkF9IBVHZHLSMeY7y9/mH/uUr/3
+ kT9A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=hP9H7HVTE7TFrRNTl1vyqWVVeZcuqXBCZg0bGqclL/A=;
- b=G2C9V0GCVtF9jqxPgI8W2XyPv7CeT6CGdwaXvcZhW+rZHXalNgSlnNMmqttQLJAm1Z
- Mx//7vKDqv9na0uMKDh0a1a9EgHxdMAhAL7WS7ERFrG523AQZ5nuODARVZffvyYavi8p
- I2BkGfnnaloJZwj37US4PS9KmpfIhDmjq1Jue0RHbmNjHCbnrPHgzMC4NjTe2My4jzwR
- KDhqu69v4iKTFFMaRba96f5sQtOl3b0JQOozjRzaCw2K/j8xObqrcGMXa5LJFvt5T+so
- tUiAWqe5NRmoUpfJr1sGukhQBroeuhvUPOdyXX4LuVSD53EXnTUwmMc4tzl5YDOgBmvO
- WOUw==
-X-Gm-Message-State: AOAM531smrJyZKozdfmoHmWy5M+I6zwP9bJ1QmOznPCAKFy4UEHz/U/L
- o8j69iPqQcKIYpToZ7bAkpvtNdUchibPksE4JcNF7A==
-X-Google-Smtp-Source: ABdhPJywz4fR2V+V+6/E9OWxEVi9/b58VFa4IZ2LlJTPpT0B9SRAdSG9PM7u1rPMHG2ZlSabjmUDzfVjnsqdUEe3bFI=
-X-Received: by 2002:a67:8783:: with SMTP id j125mr27888650vsd.42.1625748098931; 
- Thu, 08 Jul 2021 05:41:38 -0700 (PDT)
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=W5HxMER8hb4dLNB9ENuzMhUkc9v3oqs/gPiw+4JCqB0=;
+ b=jSyDun8PuueGcIr5ZTjpaGkXnB1zGDMPjxLr+L8YhDYm4sYy6X+VBFPCSpqsjZ3x6e
+ aDFfry+6euojBVrEj/nNDegJZpUD8/PMSw72uFuKZj+blIurNZAcnvLFIQgVChoN2neC
+ 0O1W1hLXsgyPKpAUs7uefTYtUp31/E8NOzEIHuLM3nQOJcJXzf5WWW4QMiKnDTdEhLTl
+ 0RhhFthVBcDfRMWDJxcmM2g2cjvzNhfICVJu33ip7+jrbDFUQnIF895YRjKj4e6stXJg
+ dq5BpewuL0ztcRRnMsTy583ymue5RcjWhorxSdh2DhxFevE5Z/OE47eBfMo9Hxbgx7Bg
+ gFYA==
+X-Gm-Message-State: AOAM530KT78Geu2hPUGX9qK7MXBJk2U585Dr1/4OrgtcW0Byd5B2lxMQ
+ k9IGh/J6LbaSOYAzr6HHKwE=
+X-Google-Smtp-Source: ABdhPJwU7reWPRYqgm76lH27UoBIzNe66f1QtpAyb4K2hBhq9A37nbVHM+28mHsuE90mN5BjvGmSIw==
+X-Received: by 2002:a63:4e42:: with SMTP id o2mr32295510pgl.49.1625749022644; 
+ Thu, 08 Jul 2021 05:57:02 -0700 (PDT)
+Received: from localhost (14-203-186-173.tpgi.com.au. [14.203.186.173])
+ by smtp.gmail.com with ESMTPSA id j23sm3103816pfd.12.2021.07.08.05.57.01
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 08 Jul 2021 05:57:02 -0700 (PDT)
+Date: Thu, 08 Jul 2021 22:56:57 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/perf: Fix cycles/instructions as
+ PM_CYC/PM_INST_CMPL in power10
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, mpe@ellerman.id.au
+References: <1625639981-1424-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+In-Reply-To: <1625639981-1424-1-git-send-email-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-References: <20210706154803.1631813-1-u.kleine-koenig@pengutronix.de>
- <20210706154803.1631813-5-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <20210706154803.1631813-5-u.kleine-koenig@pengutronix.de>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Thu, 8 Jul 2021 14:41:02 +0200
-Message-ID: <CAPDyKFo0zuooWAkuR=BcsvcJ2pmSrcEoBhuC8+ne18GQphyPHA@mail.gmail.com>
-Subject: Re: [PATCH v2 4/4] bus: Make remove callback return void
-To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
+Message-Id: <1625748771.problnjoqz.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Thu, 08 Jul 2021 22:46:26 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,148 +92,199 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nvdimm@lists.linux.dev, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Samuel Iglesias Gonsalvez <siglesias@igalia.com>,
- Jens Taprogge <jens.taprogge@taprogge.org>, Jaroslav Kysela <perex@perex.cz>,
- linux-fpga@vger.kernel.org, Benjamin Tissoires <benjamin.tissoires@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>,
- Mike Christie <michael.christie@oracle.com>, Wei Liu <wei.liu@kernel.org>,
- Maxim Levitsky <maximlevitsky@gmail.com>, Samuel Holland <samuel@sholland.org>,
- linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
- xen-devel@lists.xenproject.org, Tomas Winkler <tomas.winkler@intel.com>,
- Julien Grall <jgrall@amazon.com>, Ohad Ben-Cohen <ohad@wizery.com>,
- Alex Williamson <alex.williamson@redhat.com>, Alex Elder <elder@kernel.org>,
- linux-parisc@vger.kernel.org, Geoff Levand <geoff@infradead.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-spi@vger.kernel.org, Thorsten Scherer <t.scherer@eckelmann.de>,
- Sascha Hauer <kernel@pengutronix.de>, Jon Mason <jdmason@kudzu.us>,
- linux-ntb@googlegroups.com, Wu Hao <hao.wu@intel.com>,
- David Woodhouse <dwmw@amazon.co.uk>,
- =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Manohar Vanga <manohar.vanga@gmail.com>, linux-wireless@vger.kernel.org,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- virtualization@lists.linux-foundation.org,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- target-devel@vger.kernel.org,
- Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
- linux-i2c@vger.kernel.org, Kai-Heng Feng <kai.heng.feng@canonical.com>,
- Stefano Stabellini <sstabellini@kernel.org>,
- Stephen Hemminger <sthemmin@microsoft.com>, Ira Weiny <ira.weiny@intel.com>,
- Helge Deller <deller@gmx.de>,
- =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
- industrypack-devel@lists.sourceforge.net, linux-mips@vger.kernel.org,
- Len Brown <lenb@kernel.org>, alsa-devel@alsa-project.org,
- linux-arm-msm@vger.kernel.org, linux-media@vger.kernel.org,
- Maxime Ripard <mripard@kernel.org>, Johan Hovold <johan@kernel.org>,
- greybus-dev@lists.linaro.org, Bjorn Helgaas <bhelgaas@google.com>,
- Dave Jiang <dave.jiang@intel.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Mika Westerberg <mika.westerberg@linux.intel.com>,
- linux-arm-kernel@lists.infradead.org, Johannes Thumshirn <morbidrsa@gmail.com>,
- Mathieu Poirier <mathieu.poirier@linaro.org>, Stephen Boyd <sboyd@kernel.org>,
- Cornelia Huck <cohuck@redhat.com>, Wolfram Sang <wsa@kernel.org>,
- Joey Pabalan <jpabalanb@gmail.com>, Yehezkel Bernat <YehezkelShB@gmail.com>,
- =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>,
- Bodo Stroesser <bostroesser@gmail.com>,
- Alison Schofield <alison.schofield@intel.com>,
- Heikki Krogerus <heikki.krogerus@linux.intel.com>,
- Tyrel Datwyler <tyreld@linux.ibm.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Tom Rix <trix@redhat.com>, Jason Wang <jasowang@redhat.com>,
- SeongJae Park <sjpark@amazon.de>, linux-hyperv@vger.kernel.org,
- platform-driver-x86@vger.kernel.org, Frank Li <lznuaa@gmail.com>,
- netdev@vger.kernel.org, Qinglang Miao <miaoqinglang@huawei.com>,
- Jiri Slaby <jirislaby@kernel.org>, Rob Herring <robh@kernel.org>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Mark Gross <mgross@linux.intel.com>, linux-staging@lists.linux.dev,
- Dexuan Cui <decui@microsoft.com>, Jernej Skrabec <jernej.skrabec@gmail.com>,
- Kishon Vijay Abraham I <kishon@ti.com>, Chen-Yu Tsai <wens@csie.org>,
- linux-input@vger.kernel.org, Allen Hubbe <allenbh@gmail.com>,
- Alex Dubov <oakad@yahoo.com>, Haiyang Zhang <haiyangz@microsoft.com>,
- Jiri Kosina <jikos@kernel.org>, Vladimir Zapolskiy <vz@mleia.com>,
- Russell King <rmk+kernel@armlinux.org.uk>,
- Ben Widawsky <ben.widawsky@intel.com>, Moritz Fischer <mdf@kernel.org>,
- linux-cxl@vger.kernel.org, Michael Buesch <m@bues.ch>,
- Dan Williams <dan.j.williams@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Cristian Marussi <cristian.marussi@arm.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Martyn Welch <martyn@welchs.me.uk>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-mmc@vger.kernel.org,
- linux-sunxi@lists.linux.dev, Stefan Richter <stefanr@s5r6.in-berlin.de>,
- Sudeep Holla <sudeep.holla@arm.com>, "David S. Miller" <davem@davemloft.net>,
- Sven Van Asbroeck <TheSven73@gmail.com>, kvm@vger.kernel.org,
- "Michael S. Tsirkin" <mst@redhat.com>, linux-remoteproc@vger.kernel.org,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- Kirti Wankhede <kwankhede@nvidia.com>,
- Andreas Noever <andreas.noever@gmail.com>, linux-i3c@lists.infradead.org,
- linux1394-devel@lists.sourceforge.net, Lee Jones <lee.jones@linaro.org>,
- Arnd Bergmann <arnd@arndb.de>, linux-scsi@vger.kernel.org,
- Vishal Verma <vishal.l.verma@intel.com>, Russell King <linux@armlinux.org.uk>,
- Andy Gross <agross@kernel.org>, linux-serial@vger.kernel.org,
- Jakub Kicinski <kuba@kernel.org>, Michael Jamet <michael.jamet@intel.com>,
- William Breathitt Gray <vilhelm.gray@gmail.com>,
- Hans de Goede <hdegoede@redhat.com>, Hannes Reinecke <hare@suse.de>,
- Adrian Hunter <adrian.hunter@intel.com>, Juergen Gross <jgross@suse.com>,
- linuxppc-dev@lists.ozlabs.org, Takashi Iwai <tiwai@suse.com>,
- Alexandre Bounine <alex.bou9@gmail.com>, Vinod Koul <vkoul@kernel.org>,
- Mark Brown <broonie@kernel.org>, Marc Zyngier <maz@kernel.org>,
- dmaengine@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
- Johannes Thumshirn <jth@kernel.org>, Maximilian Luz <luzmaximilian@gmail.com>
+Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 6 Jul 2021 at 17:53, Uwe Kleine-K=C3=B6nig
-<u.kleine-koenig@pengutronix.de> wrote:
->
-> The driver core ignores the return value of this callback because there
-> is only little it can do when a device disappears.
->
-> This is the final bit of a long lasting cleanup quest where several
-> buses were converted to also return void from their remove callback.
-> Additionally some resource leaks were fixed that were caused by drivers
-> returning an error code in the expectation that the driver won't go
-> away.
->
-> With struct bus_type::remove returning void it's prevented that newly
-> implemented buses return an ignored error code and so don't anticipate
-> wrong expectations for driver authors.
->
-> Acked-by: Russell King (Oracle) <rmk+kernel@armlinux.org.uk> (For ARM, Am=
-ba and related parts)
-> Acked-by: Mark Brown <broonie@kernel.org>
-> Acked-by: Chen-Yu Tsai <wens@csie.org> (for drivers/bus/sunxi-rsb.c)
-> Acked-by: Pali Roh=C3=A1r <pali@kernel.org>
-> Acked-by: Mauro Carvalho Chehab <mchehab@kernel.org> (for drivers/media)
-> Acked-by: Hans de Goede <hdegoede@redhat.com> (For drivers/platform)
-> Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> Acked-By: Vinod Koul <vkoul@kernel.org>
-> Acked-by: Juergen Gross <jgross@suse.com> (For Xen)
-> Acked-by: Lee Jones <lee.jones@linaro.org> (For drivers/mfd)
-> Acked-by: Johannes Thumshirn <jth@kernel.org> (For drivers/mcb)
-> Acked-by: Johan Hovold <johan@kernel.org>
-> Acked-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org> (For drive=
-rs/slimbus)
-> Acked-by: Kirti Wankhede <kwankhede@nvidia.com> (For drivers/vfio)
-> Acked-by: Maximilian Luz <luzmaximilian@gmail.com>
-> Acked-by: Heikki Krogerus <heikki.krogerus@linux.intel.com> (For ulpi and=
- typec)
-> Acked-by: Samuel Iglesias Gons=C3=A1lvez <siglesias@igalia.com> (For ipac=
-k)
-> Reviewed-by: Tom Rix <trix@redhat.com> (For fpga)
-> Acked-by: Geoff Levand <geoff@infradead.org> (For ps3)
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+Excerpts from Athira Rajeev's message of July 7, 2021 4:39 pm:
+> From: Athira Rajeev <atrajeev@linux.vnet.ibm.cm>
+>=20
+> Power10 performance monitoring unit (PMU) driver uses performance
+> monitor counter 5 (PMC5) and performance monitor counter 6 (PMC6)
+> for counting instructions and cycles. Event used for cycles is
+> PM_RUN_CYC and instructions is PM_RUN_INST_CMPL. But counting of these
+> events in wait state is controlled by the CC56RUN bit setting in
+> Monitor Mode Control Register0 (MMCR0). If the CC56RUN bit is not
+> set, PMC5/6 will not count when CTRL[RUN] is zero.
 
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org> # For MMC
+What's the acutal bug here, can you explain a bit more? I thought
+PM_RUN_CYC is supposed to be gated by the runlatch.
 
-[...]
+POWER9 code looks similar, it doesn't have the same problem?
 
-Kind regards
-Uffe
+Thanks,
+Nick
+
+>=20
+> Patch sets the CC56RUN bit in MMCR0 for power10 which makes PMC5 and
+> PMC6 count instructions and cycles regardless of the run bit. With this
+> change, these events are also now renamed to PM_CYC and PM_INST_CMPL
+> rather than PM_RUN_CYC and PM_RUN_INST_CMPL.
+>=20
+> Fixes: a64e697cef23 ("powerpc/perf: power10 Performance Monitoring suppor=
+t")
+> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.cm>
+> Reviewed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+> ---
+> Notes on testing done for this change:
+>  Tested this patch change with a kernel module that
+>  turns off and turns on the runlatch. kernel module also
+>  reads the counter values for PMC5 and PMC6 during the
+>  period when runlatch is off.
+>  - Started PMU counters via "perf stat" and loaded the
+>    test module.
+>  - Checked the counter values captured from module during
+>    the runlatch off period.
+>  - Verified that counters were frozen without the patch and
+>    with the patch, observed counters were incrementing.
+>=20
+>  arch/powerpc/perf/power10-events-list.h |  8 +++---
+>  arch/powerpc/perf/power10-pmu.c         | 44 +++++++++++++++++++++++----=
+------
+>  2 files changed, 35 insertions(+), 17 deletions(-)
+>=20
+> diff --git a/arch/powerpc/perf/power10-events-list.h b/arch/powerpc/perf/=
+power10-events-list.h
+> index 93be719..564f1409 100644
+> --- a/arch/powerpc/perf/power10-events-list.h
+> +++ b/arch/powerpc/perf/power10-events-list.h
+> @@ -9,10 +9,10 @@
+>  /*
+>   * Power10 event codes.
+>   */
+> -EVENT(PM_RUN_CYC,				0x600f4);
+> +EVENT(PM_CYC,				0x600f4);
+>  EVENT(PM_DISP_STALL_CYC,			0x100f8);
+>  EVENT(PM_EXEC_STALL,				0x30008);
+> -EVENT(PM_RUN_INST_CMPL,				0x500fa);
+> +EVENT(PM_INST_CMPL,				0x500fa);
+>  EVENT(PM_BR_CMPL,                               0x4d05e);
+>  EVENT(PM_BR_MPRED_CMPL,                         0x400f6);
+>  EVENT(PM_BR_FIN,				0x2f04a);
+> @@ -50,8 +50,8 @@
+>  /* ITLB Reloaded */
+>  EVENT(PM_ITLB_MISS,				0x400fc);
+> =20
+> -EVENT(PM_RUN_CYC_ALT,				0x0001e);
+> -EVENT(PM_RUN_INST_CMPL_ALT,			0x00002);
+> +EVENT(PM_CYC_ALT,				0x0001e);
+> +EVENT(PM_INST_CMPL_ALT,				0x00002);
+> =20
+>  /*
+>   * Memory Access Events
+> diff --git a/arch/powerpc/perf/power10-pmu.c b/arch/powerpc/perf/power10-=
+pmu.c
+> index f9d64c6..9dd75f3 100644
+> --- a/arch/powerpc/perf/power10-pmu.c
+> +++ b/arch/powerpc/perf/power10-pmu.c
+> @@ -91,8 +91,8 @@
+> =20
+>  /* Table of alternatives, sorted by column 0 */
+>  static const unsigned int power10_event_alternatives[][MAX_ALT] =3D {
+> -	{ PM_RUN_CYC_ALT,		PM_RUN_CYC },
+> -	{ PM_RUN_INST_CMPL_ALT,		PM_RUN_INST_CMPL },
+> +	{ PM_CYC_ALT,			PM_CYC },
+> +	{ PM_INST_CMPL_ALT,		PM_INST_CMPL },
+>  };
+> =20
+>  static int power10_get_alternatives(u64 event, unsigned int flags, u64 a=
+lt[])
+> @@ -118,8 +118,8 @@ static int power10_check_attr_config(struct perf_even=
+t *ev)
+>  	return 0;
+>  }
+> =20
+> -GENERIC_EVENT_ATTR(cpu-cycles,			PM_RUN_CYC);
+> -GENERIC_EVENT_ATTR(instructions,		PM_RUN_INST_CMPL);
+> +GENERIC_EVENT_ATTR(cpu-cycles,			PM_CYC);
+> +GENERIC_EVENT_ATTR(instructions,		PM_INST_CMPL);
+>  GENERIC_EVENT_ATTR(branch-instructions,		PM_BR_CMPL);
+>  GENERIC_EVENT_ATTR(branch-misses,		PM_BR_MPRED_CMPL);
+>  GENERIC_EVENT_ATTR(cache-references,		PM_LD_REF_L1);
+> @@ -148,8 +148,8 @@ static int power10_check_attr_config(struct perf_even=
+t *ev)
+>  CACHE_EVENT_ATTR(iTLB-load-misses,		PM_ITLB_MISS);
+> =20
+>  static struct attribute *power10_events_attr_dd1[] =3D {
+> -	GENERIC_EVENT_PTR(PM_RUN_CYC),
+> -	GENERIC_EVENT_PTR(PM_RUN_INST_CMPL),
+> +	GENERIC_EVENT_PTR(PM_CYC),
+> +	GENERIC_EVENT_PTR(PM_INST_CMPL),
+>  	GENERIC_EVENT_PTR(PM_BR_CMPL),
+>  	GENERIC_EVENT_PTR(PM_BR_MPRED_CMPL),
+>  	GENERIC_EVENT_PTR(PM_LD_REF_L1),
+> @@ -173,8 +173,8 @@ static int power10_check_attr_config(struct perf_even=
+t *ev)
+>  };
+> =20
+>  static struct attribute *power10_events_attr[] =3D {
+> -	GENERIC_EVENT_PTR(PM_RUN_CYC),
+> -	GENERIC_EVENT_PTR(PM_RUN_INST_CMPL),
+> +	GENERIC_EVENT_PTR(PM_CYC),
+> +	GENERIC_EVENT_PTR(PM_INST_CMPL),
+>  	GENERIC_EVENT_PTR(PM_BR_FIN),
+>  	GENERIC_EVENT_PTR(PM_MPRED_BR_FIN),
+>  	GENERIC_EVENT_PTR(PM_LD_REF_L1),
+> @@ -271,8 +271,8 @@ static int power10_check_attr_config(struct perf_even=
+t *ev)
+>  };
+> =20
+>  static int power10_generic_events_dd1[] =3D {
+> -	[PERF_COUNT_HW_CPU_CYCLES] =3D			PM_RUN_CYC,
+> -	[PERF_COUNT_HW_INSTRUCTIONS] =3D			PM_RUN_INST_CMPL,
+> +	[PERF_COUNT_HW_CPU_CYCLES] =3D			PM_CYC,
+> +	[PERF_COUNT_HW_INSTRUCTIONS] =3D			PM_INST_CMPL,
+>  	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =3D		PM_BR_CMPL,
+>  	[PERF_COUNT_HW_BRANCH_MISSES] =3D			PM_BR_MPRED_CMPL,
+>  	[PERF_COUNT_HW_CACHE_REFERENCES] =3D		PM_LD_REF_L1,
+> @@ -280,8 +280,8 @@ static int power10_check_attr_config(struct perf_even=
+t *ev)
+>  };
+> =20
+>  static int power10_generic_events[] =3D {
+> -	[PERF_COUNT_HW_CPU_CYCLES] =3D			PM_RUN_CYC,
+> -	[PERF_COUNT_HW_INSTRUCTIONS] =3D			PM_RUN_INST_CMPL,
+> +	[PERF_COUNT_HW_CPU_CYCLES] =3D			PM_CYC,
+> +	[PERF_COUNT_HW_INSTRUCTIONS] =3D			PM_INST_CMPL,
+>  	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =3D		PM_BR_FIN,
+>  	[PERF_COUNT_HW_BRANCH_MISSES] =3D			PM_MPRED_BR_FIN,
+>  	[PERF_COUNT_HW_CACHE_REFERENCES] =3D		PM_LD_REF_L1,
+> @@ -548,6 +548,24 @@ static void power10_config_bhrb(u64 pmu_bhrb_filter)
+> =20
+>  #undef C
+> =20
+> +/*
+> + * Set the MMCR0[CC56RUN] bit to enable counting for
+> + * PMC5 and PMC6 regardless of the state of CTRL[RUN],
+> + * so that we can use counters 5 and 6 as PM_INST_CMPL and
+> + * PM_CYC.
+> + */
+> +static int power10_compute_mmcr(u64 event[], int n_ev,
+> +				unsigned int hwc[], struct mmcr_regs *mmcr,
+> +				struct perf_event *pevents[], u32 flags)
+> +{
+> +	int ret;
+> +
+> +	ret =3D isa207_compute_mmcr(event, n_ev, hwc, mmcr, pevents, flags);
+> +	if (!ret)
+> +		mmcr->mmcr0 |=3D MMCR0_C56RUN;
+> +	return ret;
+> +}
+> +
+>  static struct power_pmu power10_pmu =3D {
+>  	.name			=3D "POWER10",
+>  	.n_counter		=3D MAX_PMU_COUNTERS,
+> @@ -555,7 +573,7 @@ static void power10_config_bhrb(u64 pmu_bhrb_filter)
+>  	.test_adder		=3D ISA207_TEST_ADDER,
+>  	.group_constraint_mask	=3D CNST_CACHE_PMC4_MASK,
+>  	.group_constraint_val	=3D CNST_CACHE_PMC4_VAL,
+> -	.compute_mmcr		=3D isa207_compute_mmcr,
+> +	.compute_mmcr		=3D power10_compute_mmcr,
+>  	.config_bhrb		=3D power10_config_bhrb,
+>  	.bhrb_filter_map	=3D power10_bhrb_filter_map,
+>  	.get_constraint		=3D isa207_get_constraint,
+> --=20
+> 1.8.3.1
+>=20
+>=20
