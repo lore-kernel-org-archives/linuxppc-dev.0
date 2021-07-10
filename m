@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 244EBC07E9C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Jul 2021 23:50:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A31B5C07E95
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Jul 2021 23:51:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1773861369
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Jul 2021 23:50:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1773861369
+	by mail.kernel.org (Postfix) with ESMTPS id DB61A613DC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Jul 2021 23:51:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB61A613DC
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GMmx02828z3bms
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Jul 2021 09:50:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GMmxy6dTlz3brc
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Jul 2021 09:51:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UcvLir4H;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SCxnlGIh;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=UcvLir4H; 
+ header.s=k20201202 header.b=SCxnlGIh; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GMmwN3rJtz3073
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Jul 2021 09:49:40 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 6524A610D2;
- Sat, 10 Jul 2021 23:49:35 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GMmxS5sBHz308w
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Jul 2021 09:50:36 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 0265B61370;
+ Sat, 10 Jul 2021 23:50:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1625960976;
- bh=YcuXPbe0XfzqQbPH39bcJPdP60ShdIyo75apiWl/Ass=;
+ s=k20201202; t=1625961034;
+ bh=Xlz2lRLQs6zeNSzbDmNovmY/D64BjgH/LZXwUJ/H8g8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=UcvLir4HexPa1kfN+XbisiUtw8Z1V4nUfv/P24n0UuwVls7Vy7JWpDh5a6fwmor4O
- 0vei+4gRJFGZZO71InEHwAGEMmHHH6UAvDmQAS+5pwUv20F4k8osukCwO27qadtwLr
- DyQspng3vU738H8yorYBDy/4O2hCGm58ZWDVr7UyFsGelojRc6IvE8cXBxGXuEU6Ej
- 90uNUoR2XwL5giUaYDFTFF99rImmLhw74705Q88ekUEaFYCTphW29dBLLR72YH06N1
- 25T7xMqAp24/DSOLM7RpkjLSFisU2i83XledbjH1SsTI+uSSTuRmJ+1UbYrtGP5Yfh
- R4DMt5RJkKzbA==
+ b=SCxnlGIh3Z2r2IXrHi5YuLGIMSW7IUJDYJdNJbSfdNM7jKpNpuzfjG0NPO/PMLrft
+ godZbDBDovjTjyBW+3Mua+61GNmxzXJFuJnQfFY15X02Blyz0AajzCNMXY2vVZlb2+
+ 4WaK2yXlc+MCzYkyxhrKHBvOpfqwrOxR7V1BjTGfJNhqsQnqjp5ccphZRskmeyGr/f
+ 6he2fXpeHeObCEYNXgHECqTHWbgIkKP6PF+mLQRCMiXSba4rV7Ok2SD8OtTYWWoH21
+ GT46mXWUKGHkF1/Kaggew7xdac07FisQJPgDQ9CLB7mM73+vo/9usNxboXGhIZJmyj
+ HStIvrHFzD6pA==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.12 13/43] PCI: pciehp: Ignore Link Down/Up caused by
+Subject: [PATCH AUTOSEL 5.10 13/37] PCI: pciehp: Ignore Link Down/Up caused by
  DPC
-Date: Sat, 10 Jul 2021 19:48:45 -0400
-Message-Id: <20210710234915.3220342-13-sashal@kernel.org>
+Date: Sat, 10 Jul 2021 19:49:51 -0400
+Message-Id: <20210710235016.3221124-13-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210710234915.3220342-1-sashal@kernel.org>
-References: <20210710234915.3220342-1-sashal@kernel.org>
+In-Reply-To: <20210710235016.3221124-1-sashal@kernel.org>
+References: <20210710235016.3221124-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -222,10 +222,10 @@ index fb3840e222ad..9d06939736c0 100644
  	 * Disable requests have higher priority than Presence Detect Changed
  	 * or Data Link Layer State Changed events.
 diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 9684b468267f..e5ae5e860431 100644
+index 09ebc134d0d7..a96dc6f53076 100644
 --- a/drivers/pci/pci.h
 +++ b/drivers/pci/pci.h
-@@ -392,6 +392,8 @@ static inline bool pci_dev_is_disconnected(const struct pci_dev *dev)
+@@ -409,6 +409,8 @@ static inline bool pci_dev_is_disconnected(const struct pci_dev *dev)
  
  /* pci_dev priv_flags */
  #define PCI_DEV_ADDED 0
@@ -234,7 +234,7 @@ index 9684b468267f..e5ae5e860431 100644
  
  static inline void pci_dev_assign_added(struct pci_dev *dev, bool added)
  {
-@@ -446,10 +448,12 @@ void pci_restore_dpc_state(struct pci_dev *dev);
+@@ -454,10 +456,12 @@ void pci_restore_dpc_state(struct pci_dev *dev);
  void pci_dpc_init(struct pci_dev *pdev);
  void dpc_process_error(struct pci_dev *pdev);
  pci_ers_result_t dpc_reset_link(struct pci_dev *pdev);
@@ -246,7 +246,7 @@ index 9684b468267f..e5ae5e860431 100644
 +static inline bool pci_dpc_recovered(struct pci_dev *pdev) { return false; }
  #endif
  
- #ifdef CONFIG_PCIEPORTBUS
+ #ifdef CONFIG_PCI_ATS
 diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
 index e05aba86a317..c556e7beafe3 100644
 --- a/drivers/pci/pcie/dpc.c
