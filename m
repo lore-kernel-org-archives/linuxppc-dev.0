@@ -2,94 +2,71 @@ Return-Path: <SRS0=qNK6=ME=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB082C07E99
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 12:58:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 271DAC07E99
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 13:57:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C8AD460FF3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 12:58:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8AD460FF3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5398761003
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 13:57:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5398761003
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GNkN818qsz303k
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 22:58:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GNlh53Mrwz3bWR
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 23:57:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RMHnwqwy;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RMHnwqwy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=apLKxQ3a;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=RMHnwqwy; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=RMHnwqwy; 
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=will@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=apLKxQ3a; 
  dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [216.205.24.124])
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GNk1L1gjXz2yXy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jul 2021 22:42:12 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1626093728;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=JgthilpN6XZFAy+UGPe835lylTvKYfM8g6LSaHbkPeU=;
- b=RMHnwqwyz0jet4Vd+oHM+nw8qUWHuOY1ZSFAlWkGWPPgutu0X1U6DHadq7dku4Az1XCn/A
- iq/A6bb75pIssW+TNjhVNx0+fRoyb4/IbLJZPfyeYuuX6a2KjgHs/0BK24d7OSF5ZDJRJg
- f+1ZZ2ys4cFxpzmagWDOGBhtB3IjwSs=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1626093728;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=JgthilpN6XZFAy+UGPe835lylTvKYfM8g6LSaHbkPeU=;
- b=RMHnwqwyz0jet4Vd+oHM+nw8qUWHuOY1ZSFAlWkGWPPgutu0X1U6DHadq7dku4Az1XCn/A
- iq/A6bb75pIssW+TNjhVNx0+fRoyb4/IbLJZPfyeYuuX6a2KjgHs/0BK24d7OSF5ZDJRJg
- f+1ZZ2ys4cFxpzmagWDOGBhtB3IjwSs=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-227-3hAqniKNON2zUxKAhWLfZw-1; Mon, 12 Jul 2021 08:42:06 -0400
-X-MC-Unique: 3hAqniKNON2zUxKAhWLfZw-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
- [10.5.11.16])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id B87381936B71;
- Mon, 12 Jul 2021 12:42:00 +0000 (UTC)
-Received: from t480s.redhat.com (ovpn-113-111.rdu2.redhat.com [10.10.113.111])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 3670D5C1D1;
- Mon, 12 Jul 2021 12:41:40 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v1 2/4] mm/memory_hotplug: remove nid parameter from
- arch_remove_memory()
-Date: Mon, 12 Jul 2021 14:40:50 +0200
-Message-Id: <20210712124052.26491-3-david@redhat.com>
-In-Reply-To: <20210712124052.26491-1-david@redhat.com>
-References: <20210712124052.26491-1-david@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GNlgc0RvPz2yfq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jul 2021 23:56:59 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 0A31561003;
+ Mon, 12 Jul 2021 13:56:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1626098216;
+ bh=KqwO5Vj/j6Fq4TmXSaTqESu5yHRQzrkv3vVFfvNbMGY=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=apLKxQ3ase69s99n1r/hg6FOeb+BIYvcXeks3TH0kXFsiV4vt4JUCfZRcjNqqJoI+
+ C/PtbYfC7V6I9+tFs23xYS40pB1IE1Ru0GO/sR7kIL+zLBxUujKnwvKpXUPJuSJZEH
+ W/rAB9EgGt57/FadwbxksE14xUlBKeyWZI/Wnb4Nnt0t5RD8RNJlUOkSuzegkOaEqs
+ Qc6OK9PK6WVdefs+A+PDuKLzETeUU+bVabgaTyboguU6s7wHGEC28+izJWHslIy77f
+ yr0fKTdfH84fcYgWwvMeJ8lGvcnMqQz4hxapleBU2sKhQTn0GZErsyzP3AbO0nm6/5
+ eLx4kI3jlwL/w==
+Date: Mon, 12 Jul 2021 14:56:45 +0100
+From: Will Deacon <will@kernel.org>
+To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [PATCH v15 06/12] swiotlb: Use is_swiotlb_force_bounce for
+ swiotlb data bouncing
+Message-ID: <20210712135645.GA28881@willie-the-truck>
+References: <0f7bd903-e309-94a0-21d7-f0e8e9546018@arm.com>
+ <YN/7xcxt/XGAKceZ@Ryzen-9-3900X.localdomain>
+ <20210705190352.GA19461@willie-the-truck>
+ <20210706044848.GA13640@lst.de>
+ <20210706132422.GA20327@willie-the-truck>
+ <a59f771f-3289-62f0-ca50-8f3675d9b166@arm.com>
+ <20210706140513.GA26498@lst.de>
+ <YORsr0h7u5l9DZwh@char.us.oracle.com>
+ <20210706165720.GC20750@willie-the-truck>
+ <YOSMDZmtfXEKerpf@char.us.oracle.com>
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=david@redhat.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="US-ASCII"
-X-Mailman-Approved-At: Mon, 12 Jul 2021 22:57:40 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <YOSMDZmtfXEKerpf@char.us.oracle.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,265 +78,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michel Lespinasse <michel@lespinasse.org>,
- Kefeng Wang <wangkefeng.wang@huawei.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-ia64@vger.kernel.org,
- Wei Yang <richard.weiyang@linux.alibaba.com>,
- "Michael S. Tsirkin" <mst@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Jason Wang <jasowang@redhat.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
- Rich Felker <dalias@libc.org>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Will Deacon <will@kernel.org>,
- Ard Biesheuvel <ardb@kernel.org>, linux-s390@vger.kernel.org,
- Laurent Dufour <ldufour@linux.ibm.com>, Dave Jiang <dave.jiang@intel.com>,
- Baoquan He <bhe@redhat.com>, Christian Borntraeger <borntraeger@de.ibm.com>,
- linux-sh@vger.kernel.org, David Hildenbrand <david@redhat.com>,
- linux-acpi@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- linux-arm-kernel@lists.infradead.org, Len Brown <lenb@kernel.org>,
- Nathan Lynch <nathanl@linux.ibm.com>,
- Pavel Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
- Vishal Verma <vishal.l.verma@intel.com>, Borislav Petkov <bp@alien8.de>,
- Sergei Trofimovich <slyfox@gentoo.org>, Andy Lutomirski <luto@kernel.org>,
- Jia He <justin.he@arm.com>, Dan Williams <dan.j.williams@intel.com>,
- Michal Hocko <mhocko@kernel.org>, Vitaly Kuznetsov <vkuznets@redhat.com>,
- Vlastimil Babka <vbabka@suse.cz>, Oscar Salvador <osalvador@suse.de>,
- Christophe Leroy <christophe.leroy@c-s.fr>,
- Pankaj Gupta <pankaj.gupta.linux@gmail.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Pierre Morel <pmorel@linux.ibm.com>, Scott Cheloha <cheloha@linux.ibm.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Joe Perches <joe@perches.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Mike Rapoport <rppt@kernel.org>
+Cc: Jim Quinlan <james.quinlan@broadcom.com>, heikki.krogerus@linux.intel.com,
+ linux-devicetree <devicetree@vger.kernel.org>, peterz@infradead.org,
+ joonas.lahtinen@linux.intel.com, dri-devel@lists.freedesktop.org,
+ chris@chris-wilson.co.uk, grant.likely@arm.com, paulus@samba.org,
+ Frank Rowand <frowand.list@gmail.com>, mingo@kernel.org,
+ Jianxiong Gao <jxgao@google.com>, Stefano Stabellini <sstabellini@kernel.org>,
+ Saravana Kannan <saravanak@google.com>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, xypron.glpk@gmx.de,
+ Christoph Hellwig <hch@lst.de>,
+ Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Thierry Reding <treding@nvidia.com>, matthew.auld@intel.com,
+ Nicolas Boichat <drinkcat@chromium.org>, thomas.hellstrom@linux.intel.com,
+ jgross@suse.com, intel-gfx@lists.freedesktop.org,
+ maarten.lankhorst@linux.intel.com, jani.nikula@linux.intel.com,
+ Nathan Chancellor <nathan@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ rodrigo.vivi@intel.com, Bjorn Helgaas <bhelgaas@google.com>,
+ Claire Chang <tientzu@chromium.org>, Dan Williams <dan.j.williams@intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ boris.ostrovsky@oracle.com, airlied@linux.ie, linuxppc-dev@lists.ozlabs.org,
+ Randy Dunlap <rdunlap@infradead.org>, Qian Cai <quic_qiancai@quicinc.com>,
+ lkml <linux-kernel@vger.kernel.org>,
+ "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+ Daniel Vetter <daniel@ffwll.ch>, Greg KH <gregkh@linuxfoundation.org>,
+ Tom Lendacky <thomas.lendacky@amd.com>, Robin Murphy <robin.murphy@arm.com>,
+ bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The parameter is unused, let's remove it.
+On Tue, Jul 06, 2021 at 12:59:57PM -0400, Konrad Rzeszutek Wilk wrote:
+> On Tue, Jul 06, 2021 at 05:57:21PM +0100, Will Deacon wrote:
+> > On Tue, Jul 06, 2021 at 10:46:07AM -0400, Konrad Rzeszutek Wilk wrote:
+> > > On Tue, Jul 06, 2021 at 04:05:13PM +0200, Christoph Hellwig wrote:
+> > > > On Tue, Jul 06, 2021 at 03:01:04PM +0100, Robin Murphy wrote:
+> > > > > FWIW I was pondering the question of whether to do something along those 
+> > > > > lines or just scrap the default assignment entirely, so since I hadn't got 
+> > > > > round to saying that I've gone ahead and hacked up the alternative 
+> > > > > (similarly untested) for comparison :)
+> > > > >
+> > > > > TBH I'm still not sure which one I prefer...
+> > > > 
+> > > > Claire did implement something like your suggestion originally, but
+> > > > I don't really like it as it doesn't scale for adding multiple global
+> > > > pools, e.g. for the 64-bit addressable one for the various encrypted
+> > > > secure guest schemes.
+> > > 
+> > > Couple of things:
+> > >  - I am not pushing to Linus the Claire's patchset until we have a
+> > >    resolution on this. I hope you all agree that is a sensible way
+> > >    forward as much as I hate doing that.
+> > 
+> > Sure, it's a pity but we could clearly use a bit more time to get these
+> > just right and we've run out of time for 5.14.
+> > 
+> > I think the main question I have is how would you like to see patches for
+> > 5.15? i.e. as patches on top of devel/for-linus-5.14 or something else?
+> 
+> Yes that would be perfect. If there are any dependencies on the rc1, I
+> can rebase it on top of that.
 
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-Acked-by: Heiko Carstens <hca@linux.ibm.com> (s390)
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Heiko Carstens <hca@linux.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Rich Felker <dalias@libc.org>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: x86@kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Anshuman Khandual <anshuman.khandual@arm.com>
-Cc: Ard Biesheuvel <ardb@kernel.org>
-Cc: Mike Rapoport <rppt@kernel.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Pavel Tatashin <pasha.tatashin@soleen.com>
-Cc: Baoquan He <bhe@redhat.com>
-Cc: Laurent Dufour <ldufour@linux.ibm.com>
-Cc: Sergei Trofimovich <slyfox@gentoo.org>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>
-Cc: Michel Lespinasse <michel@lespinasse.org>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Cc: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Cc: Joe Perches <joe@perches.com>
-Cc: Pierre Morel <pmorel@linux.ibm.com>
-Cc: Jia He <justin.he@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-ia64@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-s390@vger.kernel.org
-Cc: linux-sh@vger.kernel.org
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- arch/arm64/mm/mmu.c            | 3 +--
- arch/ia64/mm/init.c            | 3 +--
- arch/powerpc/mm/mem.c          | 3 +--
- arch/s390/mm/init.c            | 3 +--
- arch/sh/mm/init.c              | 3 +--
- arch/x86/mm/init_32.c          | 3 +--
- arch/x86/mm/init_64.c          | 3 +--
- include/linux/memory_hotplug.h | 3 +--
- mm/memory_hotplug.c            | 4 ++--
- mm/memremap.c                  | 5 +----
- 10 files changed, 11 insertions(+), 22 deletions(-)
+Yes, please, rebasing would be very helpful. The broader rework of
+'io_tlb_default_mem' is going to conflict quite badly otherwise.
 
-diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
-index d74586508448..af8ab553a268 100644
---- a/arch/arm64/mm/mmu.c
-+++ b/arch/arm64/mm/mmu.c
-@@ -1506,8 +1506,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
- 	return ret;
- }
- 
--void arch_remove_memory(int nid, u64 start, u64 size,
--			struct vmem_altmap *altmap)
-+void arch_remove_memory(u64 start, u64 size, struct vmem_altmap *altmap)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
-index 064a967a7b6e..5c6da8d83c1a 100644
---- a/arch/ia64/mm/init.c
-+++ b/arch/ia64/mm/init.c
-@@ -484,8 +484,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
- 	return ret;
- }
- 
--void arch_remove_memory(int nid, u64 start, u64 size,
--			struct vmem_altmap *altmap)
-+void arch_remove_memory(u64 start, u64 size, struct vmem_altmap *altmap)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index ad198b439222..c3c4e31462ec 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -119,8 +119,7 @@ int __ref arch_add_memory(int nid, u64 start, u64 size,
- 	return rc;
- }
- 
--void __ref arch_remove_memory(int nid, u64 start, u64 size,
--			      struct vmem_altmap *altmap)
-+void __ref arch_remove_memory(u64 start, u64 size, struct vmem_altmap *altmap)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-index 8ac710de1ab1..d85bd7f5d8dc 100644
---- a/arch/s390/mm/init.c
-+++ b/arch/s390/mm/init.c
-@@ -306,8 +306,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
- 	return rc;
- }
- 
--void arch_remove_memory(int nid, u64 start, u64 size,
--			struct vmem_altmap *altmap)
-+void arch_remove_memory(u64 start, u64 size, struct vmem_altmap *altmap)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-index ce26c7f8950a..506784702430 100644
---- a/arch/sh/mm/init.c
-+++ b/arch/sh/mm/init.c
-@@ -414,8 +414,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
- 	return ret;
- }
- 
--void arch_remove_memory(int nid, u64 start, u64 size,
--			struct vmem_altmap *altmap)
-+void arch_remove_memory(u64 start, u64 size, struct vmem_altmap *altmap)
- {
- 	unsigned long start_pfn = PFN_DOWN(start);
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 74b78840182d..bd90b8fe81e4 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -801,8 +801,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
- 	return __add_pages(nid, start_pfn, nr_pages, params);
- }
- 
--void arch_remove_memory(int nid, u64 start, u64 size,
--			struct vmem_altmap *altmap)
-+void arch_remove_memory(u64 start, u64 size, struct vmem_altmap *altmap)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index ddeaba947eb3..a6e11763763f 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -1255,8 +1255,7 @@ kernel_physical_mapping_remove(unsigned long start, unsigned long end)
- 	remove_pagetable(start, end, true, NULL);
- }
- 
--void __ref arch_remove_memory(int nid, u64 start, u64 size,
--			      struct vmem_altmap *altmap)
-+void __ref arch_remove_memory(u64 start, u64 size, struct vmem_altmap *altmap)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-index d01b504ce06f..010a192298b5 100644
---- a/include/linux/memory_hotplug.h
-+++ b/include/linux/memory_hotplug.h
-@@ -130,8 +130,7 @@ static inline bool movable_node_is_enabled(void)
- 	return movable_node_enabled;
- }
- 
--extern void arch_remove_memory(int nid, u64 start, u64 size,
--			       struct vmem_altmap *altmap);
-+extern void arch_remove_memory(u64 start, u64 size, struct vmem_altmap *altmap);
- extern void __remove_pages(unsigned long start_pfn, unsigned long nr_pages,
- 			   struct vmem_altmap *altmap);
- 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 93b3abaf9828..f2a9af3af184 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1106,7 +1106,7 @@ int __ref add_memory_resource(int nid, struct resource *res, mhp_t mhp_flags)
- 	/* create memory block devices after memory was added */
- 	ret = create_memory_block_devices(start, size, mhp_altmap.alloc);
- 	if (ret) {
--		arch_remove_memory(nid, start, size, NULL);
-+		arch_remove_memory(start, size, NULL);
- 		goto error;
- 	}
- 
-@@ -1892,7 +1892,7 @@ static int __ref try_remove_memory(int nid, u64 start, u64 size)
- 
- 	mem_hotplug_begin();
- 
--	arch_remove_memory(nid, start, size, altmap);
-+	arch_remove_memory(start, size, altmap);
- 
- 	if (IS_ENABLED(CONFIG_ARCH_KEEP_MEMBLOCK)) {
- 		memblock_free(start, size);
-diff --git a/mm/memremap.c b/mm/memremap.c
-index 15a074ffb8d7..ed593bf87109 100644
---- a/mm/memremap.c
-+++ b/mm/memremap.c
-@@ -140,14 +140,11 @@ static void pageunmap_range(struct dev_pagemap *pgmap, int range_id)
- {
- 	struct range *range = &pgmap->ranges[range_id];
- 	struct page *first_page;
--	int nid;
- 
- 	/* make sure to access a memmap that was actually initialized */
- 	first_page = pfn_to_page(pfn_first(pgmap, range_id));
- 
- 	/* pages are dead and unused, undo the arch mapping */
--	nid = page_to_nid(first_page);
--
- 	mem_hotplug_begin();
- 	remove_pfn_range_from_zone(page_zone(first_page), PHYS_PFN(range->start),
- 				   PHYS_PFN(range_len(range)));
-@@ -155,7 +152,7 @@ static void pageunmap_range(struct dev_pagemap *pgmap, int range_id)
- 		__remove_pages(PHYS_PFN(range->start),
- 			       PHYS_PFN(range_len(range)), NULL);
- 	} else {
--		arch_remove_memory(nid, range->start, range_len(range),
-+		arch_remove_memory(range->start, range_len(range),
- 				pgmap_altmap(pgmap));
- 		kasan_remove_zero_shadow(__va(range->start), range_len(range));
- 	}
--- 
-2.31.1
+Cheers,
 
+Will
