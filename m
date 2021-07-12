@@ -2,104 +2,124 @@ Return-Path: <SRS0=qNK6=ME=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MIME_HTML_ONLY,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C0D8C07E99
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 12:50:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AB90C07E99
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 12:58:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 592466101E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 12:50:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 592466101E
+	by mail.kernel.org (Postfix) with ESMTPS id 562AB60FF3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 12:58:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 562AB60FF3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GNkBR0Wyqz3bWb
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 22:50:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GNkMf5sTzz3bWc
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 22:58:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hjeuJdFl;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TIXovsvw;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=hjeuJdFl; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=TIXovsvw; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GNk9r3g5zz2yX8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jul 2021 22:49:36 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GNVWr48jJz2yxj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jul 2021 14:04:23 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 16CCZAYZ086549; Mon, 12 Jul 2021 08:49:06 -0400
+ 16C43Aep121318; Mon, 12 Jul 2021 00:04:21 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : to : cc :
- subject : message-id : reply-to : references : mime-version : content-type
- : in-reply-to; s=pp1; bh=LJYI1bacdtGJL+1DHEEvi/ZzNJU//hClCL+ahCL3twY=;
- b=hjeuJdFlONaibCzfr4+ZMchWnqawJnEdKzrfU/m0xnGChAhbDzB5WXcar8ogPvZJE17p
- mSWUhXqt5+UFbv6XRZaNb8nukm7IOnyK7006qL93MgurO7o1+q+3gieLVkyRh0ODBQtU
- alxWFF7xnOj0nHRjV+w69c0AAvGAgvtLb1NbxrWSLk8cTefTLrbaGrYFam7osJmoD5X0
- PIufbmp/rrF1h60CIVOB/iyoyKIol5KYKhDaGdi9UOGRXqrrZnTEEQSPGjxUQrDzfd/R
- +bIAbBeB07vWeAaYFYsb3Khyh+HO9EXG7DwNDLjgkq1s169rsVaHiIZZCCgC6bYafBoO 9Q== 
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.72])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39qs48rmaa-1
+ h=subject : mime-version :
+ content-type : from : in-reply-to : date : cc : content-transfer-encoding
+ : message-id : references : to; s=pp1;
+ bh=SnCnHdtOeqy9L++ZFtPlHUXIxEcgiWEXhHOKAojy3eA=;
+ b=TIXovsvwv7es6KR8v0LtDjtOdoaUoy6YudxunUoPHDh8RKzZoeD5acjxIQhuq5Ojf8zw
+ csvE+9Fokk5v3WQ+mOENsLhfbD1gcx6vUEZKyM+rM8NjrfbGc+Fn+qvcST+1yd/dkIAh
+ xk7BIghocj9oDgKcYJTpPFA8ZzHpAQmTLXcuB6vGcxuXBjY4IdKx5SRqBXFrWIanmbqA
+ 02986LFpnQOXacwfokOVc+e+FYO0yaLkK/h0Wr/oyn/qs86aCm11KvI1bst10qGqURcZ
+ WH6c2E12xKGBL6EayVwDOHLD2Z+VlqnxLaeg0T5P7LEq+7HCyaGwB/Tja7jQTHw1yTom gQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39qrr3cb46-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 12 Jul 2021 08:49:05 -0400
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
- by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16CChX0M023645;
- Mon, 12 Jul 2021 12:49:04 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma06fra.de.ibm.com with ESMTP id 39q2th8dm5-1
+ Mon, 12 Jul 2021 00:04:21 -0400
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16C43We7126276;
+ Mon, 12 Jul 2021 00:04:20 -0400
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39qrr3cb2u-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 12 Jul 2021 12:49:04 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 16CCn0PI35717440
+ Mon, 12 Jul 2021 00:04:20 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16C441lJ027805;
+ Mon, 12 Jul 2021 04:04:18 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma04fra.de.ibm.com with ESMTP id 39q368g9m5-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 12 Jul 2021 04:04:18 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 16C42DIn28508428
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 12 Jul 2021 12:49:00 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BB369A4062;
- Mon, 12 Jul 2021 12:49:00 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8AC30A4054;
- Mon, 12 Jul 2021 12:48:57 +0000 (GMT)
-Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Mon, 12 Jul 2021 12:48:57 +0000 (GMT)
-Date: Mon, 12 Jul 2021 18:18:56 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Valentin Schneider <valentin.schneider@arm.com>
-Subject: Re: [PATCH v2 1/2] sched/topology: Skip updating masks for
- non-online nodes
-Message-ID: <20210712124856.GA3836887@linux.vnet.ibm.com>
-References: <20210701041552.112072-1-srikar@linux.vnet.ibm.com>
- <20210701041552.112072-2-srikar@linux.vnet.ibm.com>
- <875yxu85wi.mognet@arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <875yxu85wi.mognet@arm.com>
+ Mon, 12 Jul 2021 04:02:13 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C986611C04C;
+ Mon, 12 Jul 2021 04:04:14 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B376311C052;
+ Mon, 12 Jul 2021 04:04:13 +0000 (GMT)
+Received: from [9.195.47.54] (unknown [9.195.47.54])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Mon, 12 Jul 2021 04:04:13 +0000 (GMT)
+Subject: Re: [RFC PATCH 10/43] powerpc/64s: Always set PMU control registers
+ to frozen/disabled when not in use
+Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.120.23.2.6\))
+Content-Type: text/html;
+	charset=utf-8
+X-Apple-Auto-Saved: 1
+X-Apple-Mail-Plain-Text-Draft: yes
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+X-Apple-Mail-Remote-Attachments: YES
+X-Apple-Base-Url: x-msg://22/
+In-Reply-To: <1626057462.8m12ralsd6.astroid@bobo.none>
+X-Apple-Windows-Friendly: 1
+Date: Mon, 12 Jul 2021 08:47:12 +0530
+X-Apple-Mail-Signature: SKIP_SIGNATURE
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <C5467AE9-8348-4B84-A2DA-688C3E9C4F1E@linux.vnet.ibm.com>
+References: <20210622105736.633352-1-npiggin@gmail.com>
+ <20210622105736.633352-11-npiggin@gmail.com>
+ <C58A063A-3B5D-4188-80E2-4C19802785BF@linux.vnet.ibm.com>
+ <1626057462.8m12ralsd6.astroid@bobo.none>
+X-Uniform-Type-Identifier: com.apple.mail-draft
+To: Nicholas Piggin <npiggin@gmail.com>
+X-Mailer: Apple Mail (2.3608.120.23.2.6)
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: g3uLNbuXkP_eyoH59VlJi4Uwhkq9JcHx
-X-Proofpoint-ORIG-GUID: g3uLNbuXkP_eyoH59VlJi4Uwhkq9JcHx
+X-Proofpoint-GUID: Z7ID5iGbwYHqPp11K578fJMeJNuTDLx7
+X-Proofpoint-ORIG-GUID: wxwMsiJuWoUxpNPv0zCWgTRJFTGm-NIm
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-07-12_07:2021-07-12,
+ definitions=2021-07-12_02:2021-07-09,
  2021-07-12 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 adultscore=0
- phishscore=0 lowpriorityscore=0 bulkscore=0 priorityscore=1501
- clxscore=1015 spamscore=0 malwarescore=0 suspectscore=0 impostorscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2107120099
+ priorityscore=1501 mlxscore=0
+ bulkscore=0 lowpriorityscore=0 malwarescore=0 phishscore=0 mlxlogscore=999
+ spamscore=0 impostorscore=0 suspectscore=0 clxscore=1015 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104190000
+ definitions=main-2107120031
+X-Mailman-Approved-At: Mon, 12 Jul 2021 22:57:40 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,80 +131,162 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Vincent Guittot <vincent.guittot@linaro.org>, Rik van Riel <riel@surriel.com>,
- Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
- Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
- LKML <linux-kernel@vger.kernel.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Laurent Dufour <ldufour@linux.ibm.com>,
- Mel Gorman <mgorman@techsingularity.net>, Ingo Molnar <mingo@kernel.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Valentin,
-
-> On 01/07/21 09:45, Srikar Dronamraju wrote:
-> > @@ -1891,12 +1894,30 @@ void sched_init_numa(void)
-> >  void sched_domains_numa_masks_set(unsigned int cpu)
-> >  {
-> 
-> Hmph, so we're playing games with masks of offline nodes - is that really
-> necessary? Your modification of sched_init_numa() still scans all of the
-> nodes (regardless of their online status) to build the distance map, and
-> that is never updated (sched_init_numa() is pretty much an __init
-> function).
-> 
-> So AFAICT this is all to cope with topology_span_sane() not applying
-> 'cpu_map' to its masks. That seemed fine to me back when I wrote it, but in
-> light of having bogus distance values for offline nodes, not so much...
-> 
-> What about the below instead?
-> 
-> ---
-> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-> index b77ad49dc14f..c2d9caad4aa6 100644
-> --- a/kernel/sched/topology.c
-> +++ b/kernel/sched/topology.c
-> @@ -2075,6 +2075,7 @@ static struct sched_domain *build_sched_domain(struct sched_domain_topology_leve
->  static bool topology_span_sane(struct sched_domain_topology_level *tl,
->  			      const struct cpumask *cpu_map, int cpu)
->  {
-> +	struct cpumask *intersect = sched_domains_tmpmask;
->  	int i;
-> 
->  	/* NUMA levels are allowed to overlap */
-> @@ -2090,14 +2091,17 @@ static bool topology_span_sane(struct sched_domain_topology_level *tl,
->  	for_each_cpu(i, cpu_map) {
->  		if (i == cpu)
->  			continue;
-> +
->  		/*
-> -		 * We should 'and' all those masks with 'cpu_map' to exactly
-> -		 * match the topology we're about to build, but that can only
-> -		 * remove CPUs, which only lessens our ability to detect
-> -		 * overlaps
-> +		 * We shouldn't have to bother with cpu_map here, unfortunately
-> +		 * some architectures (powerpc says hello) have to deal with
-> +		 * offline NUMA nodes reporting bogus distance values. This can
-> +		 * lead to funky NODE domain spans, but since those are offline
-> +		 * we can mask them out.
->  		 */
-> +		cpumask_and(intersect, tl->mask(cpu), tl->mask(i));
->  		if (!cpumask_equal(tl->mask(cpu), tl->mask(i)) &&
-> -		    cpumask_intersects(tl->mask(cpu), tl->mask(i)))
-> +		    cpumask_intersects(intersect, cpu_map))
->  			return false;
->  	}
-> 
-
-Unfortunately this is not helping.
-I tried this patch alone and also with 2/2 patch of this series where
-we update/fill fake topology numbers. However both cases are still failing.
-
--- 
-Thanks and Regards
-Srikar Dronamraju
+<html><head></head><body dir=3D"auto" style=3D"word-wrap: break-word; =
+-webkit-nbsp-mode: space; line-break: after-white-space;" =
+class=3D"ApplePlainTextBody"><div dir=3D"auto" style=3D"word-wrap: =
+break-word; -webkit-nbsp-mode: space; line-break: after-white-space;" =
+class=3D"ApplePlainTextBody"><div =
+class=3D"ApplePlainTextBody"><br><br><blockquote type=3D"cite">On =
+12-Jul-2021, at 8:11 AM, Nicholas Piggin &lt;npiggin@gmail.com&gt; =
+wrote:<br><br>Excerpts from Athira Rajeev's message of July 10, 2021 =
+12:50 pm:<br><blockquote type=3D"cite"><br><br><blockquote =
+type=3D"cite">On 22-Jun-2021, at 4:27 PM, Nicholas Piggin =
+&lt;npiggin@gmail.com&gt; wrote:<br><br>KVM PMU management code looks =
+for particular frozen/disabled bits in<br>the PMU registers so it knows =
+whether it must clear them when coming<br>out of a guest or not. Setting =
+this up helps KVM make these optimisations<br>without getting confused. =
+Longer term the better approach might be to<br>move guest/host PMU =
+switching to the perf subsystem.<br><br>Signed-off-by: Nicholas Piggin =
+&lt;npiggin@gmail.com&gt;<br>---<br>arch/powerpc/kernel/cpu_setup_power.c =
+| 4 ++--<br>arch/powerpc/kernel/dt_cpu_ftrs.c &nbsp;&nbsp;&nbsp;&nbsp;| =
+6 +++---<br>arch/powerpc/kvm/book3s_hv.c =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 5 =
++++++<br>arch/powerpc/perf/core-book3s.c =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 7 +++++++<br>4 files changed, 17 =
+insertions(+), 5 deletions(-)<br><br>diff --git =
+a/arch/powerpc/kernel/cpu_setup_power.c =
+b/arch/powerpc/kernel/cpu_setup_power.c<br>index =
+a29dc8326622..3dc61e203f37 100644<br>--- =
+a/arch/powerpc/kernel/cpu_setup_power.c<br>+++ =
+b/arch/powerpc/kernel/cpu_setup_power.c<br>@@ -109,7 +109,7 @@ static =
+void init_PMU_HV_ISA207(void)<br>static void =
+init_PMU(void)<br>{<br><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCRA, 0);<br>-<span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>mtspr(SPRN_MMCR0, 0);<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCR0, =
+MMCR0_FC);<br><span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>mtspr(SPRN_MMCR1, 0);<br><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCR2, 0);<br>}<br>@@ =
+-123,7 +123,7 @@ static void init_PMU_ISA31(void)<br>{<br><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>mtspr(SPRN_MMCR3, 0);<br><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCRA, =
+MMCRA_BHRB_DISABLE);<br>-<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCR0, =
+MMCR0_PMCCEXT);<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCR0, MMCR0_FC | =
+MMCR0_PMCCEXT);<br>}<br><br>/*<br>diff --git =
+a/arch/powerpc/kernel/dt_cpu_ftrs.c =
+b/arch/powerpc/kernel/dt_cpu_ftrs.c<br>index 0a6b36b4bda8..06a089fbeaa7 =
+100644<br>--- a/arch/powerpc/kernel/dt_cpu_ftrs.c<br>+++ =
+b/arch/powerpc/kernel/dt_cpu_ftrs.c<br>@@ -353,7 +353,7 @@ static void =
+init_pmu_power8(void)<br><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>}<br><br><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>mtspr(SPRN_MMCRA, 0);<br>-<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCR0, 0);<br>+<span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>mtspr(SPRN_MMCR0, MMCR0_FC);<br><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCR1, 0);<br><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>mtspr(SPRN_MMCR2, 0);<br><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCRS, 0);<br>@@ =
+-392,7 +392,7 @@ static void init_pmu_power9(void)<br><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	</span><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>mtspr(SPRN_MMCRC, 0);<br><br><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCRA, 0);<br>-<span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>mtspr(SPRN_MMCR0, 0);<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCR0, =
+MMCR0_FC);<br><span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>mtspr(SPRN_MMCR1, 0);<br><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCR2, 0);<br>}<br>@@ =
+-428,7 +428,7 @@ static void init_pmu_power10(void)<br><br><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>mtspr(SPRN_MMCR3, 0);<br><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCRA, =
+MMCRA_BHRB_DISABLE);<br>-<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCR0, =
+MMCR0_PMCCEXT);<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCR0, MMCR0_FC | =
+MMCR0_PMCCEXT);<br>}<br><br>static int __init =
+feat_enable_pmu_power10(struct dt_cpu_feature *f)<br>diff --git =
+a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c<br>index =
+1f30f98b09d1..f7349d150828 100644<br>--- =
+a/arch/powerpc/kvm/book3s_hv.c<br>+++ =
+b/arch/powerpc/kvm/book3s_hv.c<br>@@ -2593,6 +2593,11 @@ static int =
+kvmppc_core_vcpu_create_hv(struct kvm_vcpu =
+*vcpu)<br>#endif<br>#endif<br><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>vcpu-&gt;arch.mmcr[0] =3D =
+MMCR0_FC;<br>+<span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>if (cpu_has_feature(CPU_FTR_ARCH_31)) {<br>+<span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	</span><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>vcpu-&gt;arch.mmcr[0] |=3D MMCR0_PMCCEXT;<br>+<span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	</span><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>vcpu-&gt;arch.mmcra =3D MMCRA_BHRB_DISABLE;<br>+<span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>}<br>+<br><span class=3D"Apple-tab-span" style=3D"white-space:pre">=
+	</span>vcpu-&gt;arch.ctrl =3D CTRL_RUNLATCH;<br><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	</span>/* =
+default to host PVR, since we can't spoof it */<br><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>kvmppc_set_pvr_hv(vcpu, mfspr(SPRN_PVR));<br>diff --git =
+a/arch/powerpc/perf/core-book3s.c =
+b/arch/powerpc/perf/core-book3s.c<br>index 51622411a7cc..e33b29ec1a65 =
+100644<br>--- a/arch/powerpc/perf/core-book3s.c<br>+++ =
+b/arch/powerpc/perf/core-book3s.c<br>@@ -1361,6 +1361,13 @@ static void =
+power_pmu_enable(struct pmu *pmu)<br><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>goto out;<br><br><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	</span>if =
+(cpuhw-&gt;n_events =3D=3D 0) {<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>if =
+(cpu_has_feature(CPU_FTR_ARCH_31)) {<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCRA, =
+MMCRA_BHRB_DISABLE);<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCR0, MMCR0_FC | =
+MMCR0_PMCCEXT);<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>} else {<br>+<span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	</span><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	</span><span =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>mtspr(SPRN_MMCRA, 0);<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space:pre">	</span>mtspr(SPRN_MMCR0, =
+MMCR0_FC);<br>+<span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span><span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
+</span>}<br></blockquote><br><br>Hi Nick,<br><br>We are setting these =
+bits in =E2=80=9Cpower_pmu_disable=E2=80=9D function. And disable will =
+be called before any event gets deleted/stopped. Can you please help to =
+understand why this is needed in power_pmu_enable path also =
+?<br></blockquote><br>I'll have to go back and check what I needed it =
+for.<br><br>Basically what I'm trying to achieve is that when the guest =
+and host <br>are not running perf, then the registers should match. This =
+way the host <br>can test them with mfspr but does not need to fix them =
+with mtspr.<br><br>It's not too important for performance after TM =
+facility demand faulting<br>and the nested guest PMU fix means you can =
+usually just skip that <br>entirely, but I think it's cleaner. I'll =
+double check my perf/ changes<br>it's possible that part should be split =
+out or is unnecessary.<br><br></blockquote><br>Sure =
+Nick<br><br>power_pmu_disable already sets =
+MMCRA_BHRB_DISABLE/MMCR0_FC/MMCR0_PMCCEXT bits.<br>Hence trying to =
+understand in which scenario we found this was needed for =
+power_pmu_enable.<br><br>Thanks<br>Athira<br><br><blockquote =
+type=3D"cite">Thanks,<br>Nick<br></blockquote><br></div></div></body></htm=
+l>=
