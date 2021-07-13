@@ -2,67 +2,81 @@ Return-Path: <SRS0=aqaD=MF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82BB3C07E9A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 00:26:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB5EDC07E9A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 02:35:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8F0C6611CB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 00:26:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F0C6611CB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
+	by mail.kernel.org (Postfix) with ESMTPS id 278E460725
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 02:35:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 278E460725
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=paul-moore.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GP1df1lF7z306T
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 10:26:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.128.46; helo=mail-wm1-f46.google.com;
- envelope-from=kswilczynski@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com
- [209.85.128.46])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GP4Vv2l3Pz308w
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 12:35:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=paul-moore-com.20150623.gappssmtp.com header.i=@paul-moore-com.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=hAqQVpiv;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=paul-moore.com
+ (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com;
+ envelope-from=paul@paul-moore.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=paul-moore-com.20150623.gappssmtp.com
+ header.i=@paul-moore-com.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=hAqQVpiv; dkim-atps=neutral
+Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com
+ [IPv6:2a00:1450:4864:20::62a])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GP1cs5s6Zz2yP6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2021 10:25:32 +1000 (AEST)
-Received: by mail-wm1-f46.google.com with SMTP id
- i2-20020a05600c3542b02902058529ea07so1119952wmq.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jul 2021 17:25:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GP4VL2cF3z2yNX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2021 12:35:04 +1000 (AEST)
+Received: by mail-ej1-x62a.google.com with SMTP id hc15so34858ejc.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jul 2021 19:35:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=paul-moore-com.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=RBPu6xYIBS0viB5UZS492p6zHqYEhcALtpbidr1sCrU=;
+ b=hAqQVpiv52aQMiILfGaILA7UZ3Vb7hpAEZl5MSyT4Y9giLdF8ZWBqgareVlSQUHWpR
+ ZUrim0on5dre3bqN5EGAiRzVWG6nVeaiF+s6JaGu2Q+54HjtAgU1AvqcqlU5GALyqPc8
+ J59ZdfyvvWc0CNOaKSGrAuHZon7DtT9jG9x1ueo2PbGCXBvXV9LCEYmPz0NJvuwLKCb4
+ e5swfb54jlYSJ49YcMdOKdIhN3CYIP2f7H6ObIehgsT00rpoEugEWTcwjWsk6Ijx/OB+
+ sziXashjbhIgbQwAsqKXq8JHPkE9kbOMVO58+jj4MNa7U/Fp8vQxUrXCiR8DuABY3fmZ
+ DToA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=Q1JaKWz4ljmDgmlS6XOgBpL8dJbggktcA486snVdwEo=;
- b=CB/bTjAIQEYVD2dhjzHj7jcf3u4kGaGQfvp3TbHQHfMG2LYNrkZExd5TA1ERrXqkLS
- BvEfZWDdrO37/WjVeXi8JQ80LramM9ThycRAcY2Tpr+70FP/WEdvaIhZOugJyIVKz20S
- aZnqXuJh1OTgK5F08O33FYYQ5wfPNNaVIEgybBqxZ2CwwcXHSTxnpYqs/yxYRdo29H7m
- LCwJo9z4W/+mvvKLRuXgE5nUc/6cSK5bxHPqZAAOUYHII7qvscUUfKAJxccv9iQ5269z
- aYSQuPsRkulJVXw9i9lAy+fND8Q4+CqpLaoC39yGu8K21PcnaOP7tyXNGNadJOMr/jZf
- lFkg==
-X-Gm-Message-State: AOAM533akPv7K8yORphPqh5GneTFJUVYYIGz0ZG1LyBTdu69VL8KBrmc
- 7FFi8R55MshR0oDzNSyrF6Q=
-X-Google-Smtp-Source: ABdhPJziVUbprznFZuoOf+eG8kg08hyPDAKraPFSp2ML3Rde1dpKkVWCkubdOfyTsnbJzZC0XgepIQ==
-X-Received: by 2002:a05:600c:a45:: with SMTP id
- c5mr17728264wmq.153.1626135927526; 
- Mon, 12 Jul 2021 17:25:27 -0700 (PDT)
-Received: from workstation.lan ([95.155.85.46])
- by smtp.gmail.com with ESMTPSA id p5sm38895wme.2.2021.07.12.17.25.26
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 12 Jul 2021 17:25:27 -0700 (PDT)
-From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 1/2] PCI: Use pcie_reset_state_t type in function arguments
-Date: Tue, 13 Jul 2021 00:25:24 +0000
-Message-Id: <20210713002525.203840-1-kw@linux.com>
-X-Mailer: git-send-email 2.32.0
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=RBPu6xYIBS0viB5UZS492p6zHqYEhcALtpbidr1sCrU=;
+ b=ojgzT33srNHOtC+6k5TsgrzL+C25F7ASqShEOazbBy4HiNcbUGTz+KXq4gJxSn50vy
+ 7VYDVs/f6V6vVDIsYYeIrj2qcJ7jIbJmmW4wjXuAoK8+vlkaAxALccP8Mo37UVyD1Tau
+ PrMOQDfMaXHPfrKKt2sVvNI3svx8RjcbDvDdGkMGiotxr/8DIJfb08VIY0eI95yS1eyl
+ Zf8ssn0HdeEPklfnmFWkRQbEYIBOid6+7+cbn+Mb6yswcCgozEwXdmVJp4UwdaW8P8p+
+ Mx+5vJTrHJnRLvewDunhyATm9CrKulaiqhesi4ooN+vN+w/62jkzcnHN25t7mOWL1lE3
+ nLAg==
+X-Gm-Message-State: AOAM533WwldWaBxxFCByqLulNK/bAvMFmxRgz4X3L2bSra75wLdIXyyR
+ uNFYm35VsY8lIt0luzlZ2Ce/KsyzLNUKvA8HNNEJ
+X-Google-Smtp-Source: ABdhPJyytdq/CE/wkitIkFTYSvvbb5T4D4KC4bniBQLIKEAC15BXF2YMkUTZuWQQktrfljWaz21U9sH3mGdCEuV7T/M=
+X-Received: by 2002:a17:907:10d8:: with SMTP id
+ rv24mr2673354ejb.542.1626143695922; 
+ Mon, 12 Jul 2021 19:34:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20210616085118.1141101-1-omosnace@redhat.com>
+ <8735tdiyc1.ffs@nanos.tec.linutronix.de>
+In-Reply-To: <8735tdiyc1.ffs@nanos.tec.linutronix.de>
+From: Paul Moore <paul@paul-moore.com>
+Date: Mon, 12 Jul 2021 22:34:45 -0400
+Message-ID: <CAHC9VhRAN4RS2c3cwpr=DQ_45MDqn2QV7nL4J3ZWXKfUNLcjdQ@mail.gmail.com>
+Subject: Re: [PATCH v3] lockdown,selinux: fix wrong subject in some SELinux
+ lockdown checks
+To: Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,80 +88,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-efi@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-cxl@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Steffen Klassert <steffen.klassert@secunet.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, x86@kernel.org,
+ James Morris <jmorris@namei.org>, linux-acpi@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, linux-serial@vger.kernel.org,
+ linux-pm@vger.kernel.org, selinux@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>, Casey Schaufler <casey@schaufler-ca.com>,
+ netdev@vger.kernel.org, Stephen Smalley <stephen.smalley.work@gmail.com>,
+ kexec@lists.infradead.org, Ondrej Mosnacek <omosnace@redhat.com>,
+ linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pcie_reset_state_t type has been introduced in the commit
-f7bdd12d234d ("pci: New PCI-E reset API") along with the enum
-pcie_reset_state, but it has never been used for anything else
-other than to define the members of the enumeration set in the
-enum pcie_reset_state.
+On Sat, Jun 19, 2021 at 1:00 PM Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Wed, Jun 16 2021 at 10:51, Ondrej Mosnacek wrote:
+> > diff --git a/arch/x86/mm/testmmiotrace.c b/arch/x86/mm/testmmiotrace.c
+> > index bda73cb7a044..c43a13241ae8 100644
+> > --- a/arch/x86/mm/testmmiotrace.c
+> > +++ b/arch/x86/mm/testmmiotrace.c
+> > @@ -116,7 +116,7 @@ static void do_test_bulk_ioremapping(void)
+> >  static int __init init(void)
+> >  {
+> >       unsigned long size = (read_far) ? (8 << 20) : (16 << 10);
+> > -     int ret = security_locked_down(LOCKDOWN_MMIOTRACE);
+> > +     int ret = security_locked_down(current_cred(), LOCKDOWN_MMIOTRACE);
+>
+> I have no real objection to those patches, but it strikes me odd that
+> out of the 62 changed places 58 have 'current_cred()' and 4 have NULL as
+> argument.
+>
+> I can't see why this would ever end up with anything else than
+> current_cred() or NULL and NULL being the 'special' case. So why not
+> having security_locked_down_no_cred() and make current_cred() implicit
+> for security_locked_down() which avoids most of the churn and just makes
+> the special cases special. I might be missing something though.
 
-Thus, replace the direct use of enum pcie_reset_state in function
-arguments and replace it with pcie_reset_state_t type so that the
-argument type matches the type used in enum pcie_reset_state.
+Unfortunately it is not uncommon for kernel subsystems to add, move,
+or otherwise play around with LSM hooks without checking with the LSM
+folks; generally this is okay, but there have been a few problems in
+the past and I try to keep that in mind when we are introducing new
+hooks or modifying existing ones.  If we have two LSM hooks for
+roughly the same control point it has the potential to cause
+confusion, e.g. do I use the "normal" or the "no_cred" version?  What
+if I don't want to pass a credential, can I just use "no_cred"?  My
+thinking with the single, always-pass-a-cred function is that callers
+don't have to worry about choosing from multiple, similar hooks and
+they know they need to pass a cred which hopefully gets them thinking
+about what cred is appropriate.  It's not foolproof, but I believe the
+single hook approach will be less prone to accidents ... or so I hope
+:)
 
-Signed-off-by: Krzysztof Wilczyński <kw@linux.com>
----
- drivers/pci/pci.c   | 4 ++--
- include/linux/pci.h | 5 ++---
- 2 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index aacf575c15cf..5c3386a73eb1 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -2194,7 +2194,7 @@ EXPORT_SYMBOL(pci_disable_device);
-  * implementation. Architecture implementations can override this.
-  */
- int __weak pcibios_set_pcie_reset_state(struct pci_dev *dev,
--					enum pcie_reset_state state)
-+					pcie_reset_state_t state)
- {
- 	return -EINVAL;
- }
-@@ -2206,7 +2206,7 @@ int __weak pcibios_set_pcie_reset_state(struct pci_dev *dev,
-  *
-  * Sets the PCI reset state for the device.
-  */
--int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
-+int pci_set_pcie_reset_state(struct pci_dev *dev, pcie_reset_state_t state)
- {
- 	return pcibios_set_pcie_reset_state(dev, state);
- }
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 540b377ca8f6..15f93de69e6a 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -191,7 +191,6 @@ enum {
- };
- 
- typedef unsigned int __bitwise pcie_reset_state_t;
--
- enum pcie_reset_state {
- 	/* Reset is NOT asserted (Use to deassert reset) */
- 	pcie_deassert_reset = (__force pcie_reset_state_t) 1,
-@@ -1205,7 +1204,7 @@ extern unsigned int pcibios_max_latency;
- void pci_set_master(struct pci_dev *dev);
- void pci_clear_master(struct pci_dev *dev);
- 
--int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state);
-+int pci_set_pcie_reset_state(struct pci_dev *dev, pcie_reset_state_t state);
- int pci_set_cacheline_size(struct pci_dev *dev);
- int __must_check pci_set_mwi(struct pci_dev *dev);
- int __must_check pcim_set_mwi(struct pci_dev *dev);
-@@ -2079,7 +2078,7 @@ extern u8 pci_cache_line_size;
- void pcibios_disable_device(struct pci_dev *dev);
- void pcibios_set_master(struct pci_dev *dev);
- int pcibios_set_pcie_reset_state(struct pci_dev *dev,
--				 enum pcie_reset_state state);
-+				 pcie_reset_state_t state);
- int pcibios_add_device(struct pci_dev *dev);
- void pcibios_release_device(struct pci_dev *dev);
- #ifdef CONFIG_PCI
 -- 
-2.32.0
-
+paul moore
+www.paul-moore.com
