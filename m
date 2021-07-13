@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE795C07E95
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:34:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0510CC07E95
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:34:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F4A1611C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:34:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F4A1611C1
+	by mail.kernel.org (Postfix) with ESMTPS id 971B3611C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:34:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 971B3611C1
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GP8Sy15Cmz3bc7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 15:34:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GP8TY2DW6z3dVD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 15:34:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AHBxk4UO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Le9FIaAP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
@@ -29,77 +29,77 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=AHBxk4UO; dkim-atps=neutral
+ header.s=pp1 header.b=Le9FIaAP; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GP8Pz64ffz2yNr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2021 15:31:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GP8Q23HRvz307P
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2021 15:31:38 +1000 (AEST)
 Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 16D543nJ107841; Tue, 13 Jul 2021 01:31:20 -0400
+ 16D541WM107407; Tue, 13 Jul 2021 01:31:23 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=3FPvOhQsaG0tgjqN1IMO+IeDsHT0WfZOwQu7BAetpHM=;
- b=AHBxk4UOTbG6I9dU7/gx6+jeWZgMFCskRgzKpsSvJpETkLnxpjo02D1KOVY+CaEfyEXW
- STeZI96Iox5mcMwjyNPmxOHFxmEcho2iQalEyX+Uab07cg3ZKl3KF/882kV1zn3VP/x0
- w6mCzMW7CvUALbcRhqHWzLv0fc17z2CFUfk6W4lxuMfdZ1SD2NDPqT+IovkgZpXn3SF+
- U5czMc8TcsR3PPh4Qs5ASnrf5dOLuqk0MEWvabMdEsGSWViV+AMctmTjlqmWQKY+ZcoG
- cpRc+2ppPBdBLJj6bb1sJQtfC2ieBnCngW2TsxROlu+NS8O7l6G3Z2p9AdsqST6Ci7wo Hw== 
+ bh=Kwi7foOKwhU8NgG5vG7fgNdpivTmYOH87NzNnOWfJT4=;
+ b=Le9FIaAPo8eDCNq8REyGHhF3xmUll/1dd2wHc0ckZenz22KDc0PLyjztRYzc75/3E54p
+ lV66uWpmh4hE3aOmcjZE3Au/QBIQLKhr6FF+TnyKmC3cVLOjG5k5wo7/r/j1R/tZO5Wz
+ 1SjqGrXm50OKcNC1ATnP5m1aV66ay2FhroaT0W7UXEo4ddI97sP9i6NiOsSyt+lkQefA
+ op4pOVrVJt3Vu4XKyn2bYT/PItdQQgfeg4WVflItjmMycnIIPbO9X+7zs7uMAv5upXoZ
+ +SZxAxVQj4NZJ/WqTWpNOZjWbALJQQIvFD6ogWC3i9BudCnLFrjenc5xc3/OLEYw845O 9A== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 39qs117r93-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 39qs117ra4-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 13 Jul 2021 01:31:19 -0400
+ Tue, 13 Jul 2021 01:31:22 -0400
 Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16D54RCZ109021;
- Tue, 13 Jul 2021 01:31:19 -0400
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16D54Jio108705;
+ Tue, 13 Jul 2021 01:31:22 -0400
 Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
  [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 39qs117r8v-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 39qs117r9s-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 13 Jul 2021 01:31:19 -0400
+ Tue, 13 Jul 2021 01:31:22 -0400
 Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16D5RUXv010788;
- Tue, 13 Jul 2021 05:31:18 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma01wdc.us.ibm.com with ESMTP id 39q36ayrds-1
+ by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16D5RUY2010788;
+ Tue, 13 Jul 2021 05:31:21 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma01wdc.us.ibm.com with ESMTP id 39q36ayrf5-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 13 Jul 2021 05:31:18 +0000
-Received: from b03ledav003.gho.boulder.ibm.com
- (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 16D5VH1c13697590
+ Tue, 13 Jul 2021 05:31:21 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16D5VKhp28246524
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 13 Jul 2021 05:31:17 GMT
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8FA4F6A057;
- Tue, 13 Jul 2021 05:31:17 +0000 (GMT)
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 45D4E6A05F;
- Tue, 13 Jul 2021 05:31:17 +0000 (GMT)
+ Tue, 13 Jul 2021 05:31:20 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 488D9BE04F;
+ Tue, 13 Jul 2021 05:31:20 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F1B46BE053;
+ Tue, 13 Jul 2021 05:31:19 +0000 (GMT)
 Received: from oc8246131445.ibm.com (unknown [9.163.19.100])
- by b03ledav003.gho.boulder.ibm.com (Postfix) with SMTP;
- Tue, 13 Jul 2021 05:31:17 +0000 (GMT)
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with SMTP;
+ Tue, 13 Jul 2021 05:31:19 +0000 (GMT)
 Received: from oc8246131445.ibm.com (localhost.localdomain [127.0.0.1])
- by oc8246131445.ibm.com (Postfix) with ESMTP id E05FDBC0B0F;
- Tue, 13 Jul 2021 00:31:14 -0500 (CDT)
+ by oc8246131445.ibm.com (Postfix) with ESMTP id 4A441BC0C34;
+ Tue, 13 Jul 2021 00:31:15 -0500 (CDT)
 From: "Christopher M. Riedl" <cmr@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 1/8] powerpc: Add LKDTM accessor for patching addr
-Date: Tue, 13 Jul 2021 00:31:06 -0500
-Message-Id: <20210713053113.4632-2-cmr@linux.ibm.com>
+Subject: [PATCH v5 8/8] lkdtm/powerpc: Fix code patching hijack test
+Date: Tue, 13 Jul 2021 00:31:13 -0500
+Message-Id: <20210713053113.4632-9-cmr@linux.ibm.com>
 X-Mailer: git-send-email 2.26.1
 In-Reply-To: <20210713053113.4632-1-cmr@linux.ibm.com>
 References: <20210713053113.4632-1-cmr@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 7E7KSAGgTkDxYLfLsW_w8AfEPq8Mbcbl
-X-Proofpoint-ORIG-GUID: hBjLJ25Jv7xMoVWXr8tNMyngZ-Lk2X1_
+X-Proofpoint-GUID: cHCthgBcM9xp9Mt9bos8xwQ5FL3n-jCp
+X-Proofpoint-ORIG-GUID: HDbwSKEE2EoyOQh_byeJIz2jcHRRf7Jr
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-07-13_03:2021-07-13,
  2021-07-12 signatures=0
@@ -127,53 +127,38 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When live patching with STRICT_KERNEL_RWX a mapping is installed at a
-"patching address" with temporary write permissions. Provide a
-LKDTM-only accessor function for this address in preparation for a LKDTM
-test which attempts to "hijack" this mapping by writing to it from
-another CPU.
+Code patching on powerpc with a STRICT_KERNEL_RWX uses a userspace
+address in a temporary mm on Radix now. Use __put_user() to avoid write
+failures due to KUAP when attempting a "hijack" on the patching address.
+__put_user() also works with the non-userspace, vmalloc-based patching
+address on non-Radix MMUs.
 
 Signed-off-by: Christopher M. Riedl <cmr@linux.ibm.com>
 ---
- arch/powerpc/include/asm/code-patching.h | 4 ++++
- arch/powerpc/lib/code-patching.c         | 7 +++++++
- 2 files changed, 11 insertions(+)
+ drivers/misc/lkdtm/perms.c | 9 ---------
+ 1 file changed, 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/incl=
-ude/asm/code-patching.h
-index a95f63788c6b1..16fbc58a4932f 100644
---- a/arch/powerpc/include/asm/code-patching.h
-+++ b/arch/powerpc/include/asm/code-patching.h
-@@ -184,4 +184,8 @@ static inline unsigned long ppc_kallsyms_lookup_name(=
-const char *name)
- #define PPC_INST_STD_LR		PPC_RAW_STD(_R0, _R1, PPC_LR_STKOFF)
- #endif /* CONFIG_PPC64 */
-=20
-+#if IS_BUILTIN(CONFIG_LKDTM) && IS_ENABLED(CONFIG_STRICT_KERNEL_RWX)
-+unsigned long read_cpu_patching_addr(unsigned int cpu);
-+#endif
-+
- #endif /* _ASM_POWERPC_CODE_PATCHING_H */
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-pat=
-ching.c
-index f9a3019e37b43..54b6157d44e95 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -47,6 +47,13 @@ int raw_patch_instruction(u32 *addr, struct ppc_inst i=
-nstr)
- #ifdef CONFIG_STRICT_KERNEL_RWX
- static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
-=20
-+#if IS_BUILTIN(CONFIG_LKDTM)
-+unsigned long read_cpu_patching_addr(unsigned int cpu)
-+{
-+	return (unsigned long)(per_cpu(text_poke_area, cpu))->addr;
-+}
-+#endif
-+
- static int text_area_cpu_up(unsigned int cpu)
+diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
+index 41e87e5f9cc86..da6a34a0a49fb 100644
+--- a/drivers/misc/lkdtm/perms.c
++++ b/drivers/misc/lkdtm/perms.c
+@@ -262,16 +262,7 @@ static inline u32 lkdtm_read_patch_site(void)
+ /* Returns True if the write succeeds */
+ static inline bool lkdtm_try_write(u32 data, u32 *addr)
  {
- 	struct vm_struct *area;
+-#ifdef CONFIG_PPC
+-	__put_kernel_nofault(addr, &data, u32, err);
+-	return true;
+-
+-err:
+-	return false;
+-#endif
+-#ifdef CONFIG_X86_64
+ 	return !__put_user(data, addr);
+-#endif
+ }
+=20
+ static int lkdtm_patching_cpu(void *data)
 --=20
 2.26.1
 
