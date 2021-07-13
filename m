@@ -3,25 +3,25 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 691A1C07E95
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:32:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E30BC07E95
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:32:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0BD4D601FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:32:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BD4D601FE
+	by mail.kernel.org (Postfix) with ESMTPS id 8A07F611C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:32:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A07F611C1
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GP8Qy5HVYz3bp3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 15:32:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GP8RS1qmPz3bxS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 15:32:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bEH/DsR8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PPS/JH2w;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
@@ -29,73 +29,73 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=bEH/DsR8; dkim-atps=neutral
+ header.s=pp1 header.b=PPS/JH2w; dkim-atps=neutral
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GP8Py3Bxjz2yNg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2021 15:31:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GP8Py3cVVz2yNr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2021 15:31:34 +1000 (AEST)
 Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 16D53XHO119564; Tue, 13 Jul 2021 01:31:20 -0400
+ 16D53Xcs119592; Tue, 13 Jul 2021 01:31:19 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : in-reply-to : references : content-transfer-encoding
- : mime-version; s=pp1; bh=DtYP5XN1CsxXX7UBfgH6ySeCaEngl6vOJxB5xrPS5/E=;
- b=bEH/DsR8jMXbD7eXFsHS2/hh/hGdwB+FjciKFywvTshSjQO9WMTH3HR0dpW5ug8Z6X2j
- 1V+iskjHhDV2bEcKV9gfZ/7Mf82pJ5E31BNBEGorlGJ9R1bwNvLASRv7VrSbw4VJINab
- FlqWW6y7QOQuR0p3cvGyh0kxxFVC/yJWIW8Crph/clwkBmgDNZtTxMGpH2DETRjZLmyg
- 0bHKlAUZ3B5/0BXZ93PHIKjnhzvvJHvVPdQrG9F8Rg1bjcqKm9l61ICZUHgWY2uYrgFR
- XkchTXTdgdvYQFl5IdtImVzHdyGIkRaMz16vlzyYabAMSUI3W6qnkEYSiWl+euYkBHYR vg== 
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=Lf9D+3VqKK3yQhoMeH46CzO12HlEy2F6BDlCX9G5ZlA=;
+ b=PPS/JH2wCw7ahqe1Nz8RStHYv2jPF4bAdF68DV3RsijwU+XKc8br8eNsHMH5e501askG
+ g/A7d6qUwFPJSq166Lfy4pgwXyxSJnJo75lk9Lqmq6QpKNzW+nz6v96GNsfmdEqgZG7n
+ 4bvLTP3j8Ped/CJfOSgX6n15vD7YyiGAf/S7waFaMU66h25nhM5/zqqyea5GNxzAINat
+ MrcAzq2uu3ngbmf167lgwxuTOB4/vlljin3eae+JyRtCgvGRIvW1AhwzSMPl12WMANIl
+ AhEMS7QYMPVZ2IQXlvnMSSOCyJlKlFrneZBs2sVPMmCWyurjlmvG3HdOzX6EcQN2Gdml EQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39qrud7rvk-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39qrud7rvc-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 13 Jul 2021 01:31:20 -0400
+ Tue, 13 Jul 2021 01:31:19 -0400
 Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16D53ZZV119725;
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16D54TZ8122661;
  Tue, 13 Jul 2021 01:31:19 -0400
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39qrud7rv8-1
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39qrud7rv3-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Tue, 13 Jul 2021 01:31:19 -0400
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16D5SMTc005680;
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16D5SQhB018314;
  Tue, 13 Jul 2021 05:31:18 GMT
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23]) by ppma02wdc.us.ibm.com with ESMTP id 39q36aqrme-1
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma04wdc.us.ibm.com with ESMTP id 39q36aythj-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Tue, 13 Jul 2021 05:31:18 +0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 16D5VIQv19399004
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16D5VH8e17105288
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 13 Jul 2021 05:31:18 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3336011206B;
- Tue, 13 Jul 2021 05:31:18 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 775F1112062;
+ Tue, 13 Jul 2021 05:31:17 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9C57F6A05A;
+ Tue, 13 Jul 2021 05:31:17 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 452BB6A05D;
  Tue, 13 Jul 2021 05:31:17 +0000 (GMT)
 Received: from oc8246131445.ibm.com (unknown [9.163.19.100])
- by b01ledav004.gho.pok.ibm.com (Postfix) with SMTP;
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with SMTP;
  Tue, 13 Jul 2021 05:31:17 +0000 (GMT)
 Received: from oc8246131445.ibm.com (localhost.localdomain [127.0.0.1])
- by oc8246131445.ibm.com (Postfix) with ESMTP id EE361BC0B10;
+ by oc8246131445.ibm.com (Postfix) with ESMTP id D328EBC01E8;
  Tue, 13 Jul 2021 00:31:14 -0500 (CDT)
 From: "Christopher M. Riedl" <cmr@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 2/8] lkdtm/powerpc: Add test to hijack a patch mapping
-Date: Tue, 13 Jul 2021 00:31:07 -0500
-Message-Id: <20210713053113.4632-3-cmr@linux.ibm.com>
+Subject: [PATCH v5 0/8] Use per-CPU temporary mappings for patching on Radix
+ MMU
+Date: Tue, 13 Jul 2021 00:31:05 -0500
+Message-Id: <20210713053113.4632-1-cmr@linux.ibm.com>
 X-Mailer: git-send-email 2.26.1
-In-Reply-To: <20210713053113.4632-1-cmr@linux.ibm.com>
-References: <20210713053113.4632-1-cmr@linux.ibm.com>
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: jd6MifBtV9SwMGPc5Y040WowAE7piuio
-X-Proofpoint-ORIG-GUID: 1WDkelcbjVrxgZebfw7E7PHsMiHhboTJ
+X-Proofpoint-GUID: BH6e7bgZnFUeI6o9A10KastAAs-J5xjd
+X-Proofpoint-ORIG-GUID: QoiMYoLjfRd8kw1j4S0zW1nZeym6GneZ
 Content-Transfer-Encoding: quoted-printable
 X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
@@ -104,7 +104,7 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  2021-07-12 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- clxscore=1011 suspectscore=0 phishscore=0 malwarescore=0 mlxscore=0
+ clxscore=1015 suspectscore=0 phishscore=0 malwarescore=0 mlxscore=0
  spamscore=0 mlxlogscore=999 impostorscore=0 bulkscore=0 adultscore=0
  lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2104190000 definitions=main-2107130022
@@ -126,236 +126,144 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When live patching with STRICT_KERNEL_RWX the CPU doing the patching
-must temporarily remap the page(s) containing the patch site with +W
-permissions. While this temporary mapping is in use, another CPU could
-write to the same mapping and maliciously alter kernel text. Implement a
-LKDTM test to attempt to exploit such an opening during code patching.
-The test is implemented on powerpc and requires LKDTM built into the
-kernel (building LKDTM as a module is insufficient).
+When compiled with CONFIG_STRICT_KERNEL_RWX, the kernel must create
+temporary mappings when patching itself. These mappings temporarily
+override the strict RWX text protections to permit a write. Currently,
+powerpc allocates a per-CPU VM area for patching. Patching occurs as
+follows:
 
-The LKDTM "hijack" test works as follows:
+	1. Map page in per-CPU VM area w/ PAGE_KERNEL protection
+	2. Patch text
+	3. Remove the temporary mapping
 
-  1. A CPU executes an infinite loop to patch an instruction. This is
-     the "patching" CPU.
-  2. Another CPU attempts to write to the address of the temporary
-     mapping used by the "patching" CPU. This other CPU is the
-     "hijacker" CPU. The hijack either fails with a fault/error or
-     succeeds, in which case some kernel text is now overwritten.
+While the VM area is per-CPU, the mapping is actually inserted into the
+kernel page tables. Presumably, this could allow another CPU to access
+the normally write-protected text - either malicously or accidentally -
+via this same mapping if the address of the VM area is known. Ideally,
+the mapping should be kept local to the CPU doing the patching [0].
 
-The virtual address of the temporary patch mapping is provided via an
-LKDTM-specific accessor to the hijacker CPU. This test assumes a
-hypothetical situation where this address was leaked previously.
+x86 introduced "temporary mm" structs which allow the creation of mappings
+local to a particular CPU [1]. This series intends to bring the notion of a
+temporary mm to powerpc's Book3s64 Radix MMU and harden it by using such a
+mapping for patching a kernel with strict RWX permissions.
 
-How to run the test:
+The first four patches implement an LKDTM test "proof-of-concept" which
+exploits the potential vulnerability (ie. the temporary mapping during patc=
+hing
+is exposed in the kernel page tables and accessible by other CPUs) using a
+simple brute-force approach. This test is implemented for both powerpc and
+x86_64. The test passes on powerpc Radix with this new series, fails on
+upstream powerpc, passes on upstream x86_64, and fails on an older (ancient)
+x86_64 tree without the x86_64 temporary mm patches. The remaining patches =
+add
+support for and use a temporary mm for code patching on powerpc with the Ra=
+dix
+MMU.
 
-	mount -t debugfs none /sys/kernel/debug
-	(echo HIJACK_PATCH > /sys/kernel/debug/provoke-crash/DIRECT)
+Tested boot, ftrace, and repeated LKDTM "hijack":
+	- QEMU+KVM (host: POWER9 Blackbird): Radix MMU w/ KUAP
+	- QEMU+KVM (host: POWER9 Blackbird): Hash MMU
 
-A passing test indicates that it is not possible to overwrite kernel
-text from another CPU by using the temporary mapping established by
-a CPU for patching.
+Tested repeated LKDTM "hijack":
+	- QEMU+KVM (host: AMD desktop): x86_64 upstream
+	- QEMU+KVM (host: AMD desktop): x86_64 w/o percpu temp mm to
+	  verify the LKDTM "hijack" test fails
 
-Signed-off-by: Christopher M. Riedl <cmr@linux.ibm.com>
+Tested boot and ftrace:
+	- QEMU+TCG: ppc44x (bamboo)
+	- QEMU+TCG: g5 (mac99)
 
----
+I also tested with various extra config options enabled as suggested in
+section 12) in Documentation/process/submit-checklist.rst.
 
-v5:  * Use `u32*` instead of `struct ppc_inst*` based on new series in
-       upstream.
+v5:	* Only support Book3s64 Radix MMU for now. There are some issues with
+	  the previous implementation on the Hash MMU as pointed out by Nick
+	  Piggin. Fixing these is not trivial so we only support the Radix MMU
+	  for now. I tried using realmode (no data translation) to patch with
+	  Hash to at least avoid exposing the patch mapping to other CPUs but
+	  this doesn't reliably work either since we cannot access vmalloc'd
+	  space in realmode.
+	* Use percpu variables for the patching_mm and patching_addr. This
+	  avoids the need for synchronization mechanisms entirely. Thanks to
+	  Peter Zijlstra for pointing out text_mutex which unfortunately didn't
+	  work out without larger code changes in powerpc. Also thanks to Daniel
+	  Axtens for comments about using percpu variables for the *percpu* temp
+	  mm things off list.
 
-v4:  * Separate the powerpc and x86_64 bits into individual patches.
-     * Use __put_kernel_nofault() when attempting to hijack the mapping
-     * Use raw_smp_processor_id() to avoid triggering the BUG() when
-       calling smp_processor_id() in preemptible code - the only thing
-       that matters is that one of the threads is bound to a different
-       CPU - we are not using smp_processor_id() to access any per-cpu
-       data or similar where preemption should be disabled.
-     * Rework the patching_cpu() kthread stop condition to avoid:
-       https://lwn.net/Articles/628628/
----
- drivers/misc/lkdtm/core.c  |   1 +
- drivers/misc/lkdtm/lkdtm.h |   1 +
- drivers/misc/lkdtm/perms.c | 134 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 136 insertions(+)
+v4:	* It's time to revisit this series again since @jpn and @mpe fixed
+	  our known STRICT_*_RWX bugs on powerpc/64s.
+	* Rebase on linuxppc/next:
+          commit ee1bc694fbaec ("powerpc/kvm: Fix build error when PPC_MEM_=
+KEYS/PPC_PSERIES=3Dn")
+	* Completely rework how map_patch() works on book3s64 Hash MMU
+	* Split the LKDTM x86_64 and powerpc bits into separate patches
+	* Annotate commit messages with changes from v3 instead of
+	  listing them here completely out-of context...
 
-diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
-index 8024b6a5cc7fc..fbcb95eda337b 100644
---- a/drivers/misc/lkdtm/core.c
-+++ b/drivers/misc/lkdtm/core.c
-@@ -147,6 +147,7 @@ static const struct crashtype crashtypes[] =3D {
- 	CRASHTYPE(WRITE_RO),
- 	CRASHTYPE(WRITE_RO_AFTER_INIT),
- 	CRASHTYPE(WRITE_KERN),
-+	CRASHTYPE(HIJACK_PATCH),
- 	CRASHTYPE(REFCOUNT_INC_OVERFLOW),
- 	CRASHTYPE(REFCOUNT_ADD_OVERFLOW),
- 	CRASHTYPE(REFCOUNT_INC_NOT_ZERO_OVERFLOW),
-diff --git a/drivers/misc/lkdtm/lkdtm.h b/drivers/misc/lkdtm/lkdtm.h
-index 99f90d3e5e9cb..87e7e6136d962 100644
---- a/drivers/misc/lkdtm/lkdtm.h
-+++ b/drivers/misc/lkdtm/lkdtm.h
-@@ -62,6 +62,7 @@ void lkdtm_EXEC_USERSPACE(void);
- void lkdtm_EXEC_NULL(void);
- void lkdtm_ACCESS_USERSPACE(void);
- void lkdtm_ACCESS_NULL(void);
-+void lkdtm_HIJACK_PATCH(void);
-=20
- /* refcount.c */
- void lkdtm_REFCOUNT_INC_OVERFLOW(void);
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index 2dede2ef658f3..39e7456852229 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -9,6 +9,7 @@
- #include <linux/vmalloc.h>
- #include <linux/mman.h>
- #include <linux/uaccess.h>
-+#include <linux/kthread.h>
- #include <asm/cacheflush.h>
-=20
- /* Whether or not to fill the target memory area with do_nothing(). */
-@@ -222,6 +223,139 @@ void lkdtm_ACCESS_NULL(void)
- 	pr_err("FAIL: survived bad write\n");
- }
-=20
-+#if (IS_BUILTIN(CONFIG_LKDTM) && defined(CONFIG_STRICT_KERNEL_RWX) && \
-+	defined(CONFIG_PPC))
-+/*
-+ * This is just a dummy location to patch-over.
-+ */
-+static void patching_target(void)
-+{
-+	return;
-+}
-+
-+#include <asm/code-patching.h>
-+const u32 *patch_site =3D (const u32 *)&patching_target;
-+
-+static inline int lkdtm_do_patch(u32 data)
-+{
-+	return patch_instruction((u32 *)patch_site, ppc_inst(data));
-+}
-+
-+static inline u32 lkdtm_read_patch_site(void)
-+{
-+	return READ_ONCE(*patch_site);
-+}
-+
-+/* Returns True if the write succeeds */
-+static inline bool lkdtm_try_write(u32 data, u32 *addr)
-+{
-+	__put_kernel_nofault(addr, &data, u32, err);
-+	return true;
-+
-+err:
-+	return false;
-+}
-+
-+static int lkdtm_patching_cpu(void *data)
-+{
-+	int err =3D 0;
-+	u32 val =3D 0xdeadbeef;
-+
-+	pr_info("starting patching_cpu=3D%d\n", raw_smp_processor_id());
-+
-+	do {
-+		err =3D lkdtm_do_patch(val);
-+	} while (lkdtm_read_patch_site() =3D=3D val && !err && !kthread_should_st=
-op());
-+
-+	if (err)
-+		pr_warn("XFAIL: patch_instruction returned error: %d\n", err);
-+
-+	while (!kthread_should_stop()) {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule();
-+	}
-+
-+	return err;
-+}
-+
-+void lkdtm_HIJACK_PATCH(void)
-+{
-+	struct task_struct *patching_kthrd;
-+	int patching_cpu, hijacker_cpu, attempts;
-+	unsigned long addr;
-+	bool hijacked;
-+	const u32 bad_data =3D 0xbad00bad;
-+	const u32 original_insn =3D lkdtm_read_patch_site();
-+
-+	if (!IS_ENABLED(CONFIG_SMP)) {
-+		pr_err("XFAIL: this test requires CONFIG_SMP\n");
-+		return;
-+	}
-+
-+	if (num_online_cpus() < 2) {
-+		pr_warn("XFAIL: this test requires at least two cpus\n");
-+		return;
-+	}
-+
-+	hijacker_cpu =3D raw_smp_processor_id();
-+	patching_cpu =3D cpumask_any_but(cpu_online_mask, hijacker_cpu);
-+
-+	patching_kthrd =3D kthread_create_on_node(&lkdtm_patching_cpu, NULL,
-+						cpu_to_node(patching_cpu),
-+						"lkdtm_patching_cpu");
-+	kthread_bind(patching_kthrd, patching_cpu);
-+	wake_up_process(patching_kthrd);
-+
-+	addr =3D offset_in_page(patch_site) | read_cpu_patching_addr(patching_cpu=
-);
-+
-+	pr_info("starting hijacker_cpu=3D%d\n", hijacker_cpu);
-+	for (attempts =3D 0; attempts < 100000; ++attempts) {
-+		/* Try to write to the other CPU's temp patch mapping */
-+		hijacked =3D lkdtm_try_write(bad_data, (u32 *)addr);
-+
-+		if (hijacked) {
-+			if (kthread_stop(patching_kthrd)) {
-+				pr_info("hijack attempts: %d\n", attempts);
-+				pr_err("XFAIL: error stopping patching cpu\n");
-+				return;
-+			}
-+			break;
-+		}
-+	}
-+	pr_info("hijack attempts: %d\n", attempts);
-+
-+	if (hijacked) {
-+		if (lkdtm_read_patch_site() =3D=3D bad_data)
-+			pr_err("overwrote kernel text\n");
-+		/*
-+		 * There are window conditions where the hijacker cpu manages to
-+		 * write to the patch site but the site gets overwritten again by
-+		 * the patching cpu. We still consider that a "successful" hijack
-+		 * since the hijacker cpu did not fault on the write.
-+		 */
-+		pr_err("FAIL: wrote to another cpu's patching area\n");
-+	} else {
-+		kthread_stop(patching_kthrd);
-+	}
-+
-+	/* Restore the original data to be able to run the test again */
-+	lkdtm_do_patch(original_insn);
-+}
-+
-+#else
-+
-+void lkdtm_HIJACK_PATCH(void)
-+{
-+	if (!IS_ENABLED(CONFIG_PPC))
-+		pr_err("XFAIL: this test only runs on powerpc\n");
-+	if (!IS_ENABLED(CONFIG_STRICT_KERNEL_RWX))
-+		pr_err("XFAIL: this test requires CONFIG_STRICT_KERNEL_RWX\n");
-+	if (!IS_BUILTIN(CONFIG_LKDTM))
-+		pr_err("XFAIL: this test requires CONFIG_LKDTM=3Dy (not =3Dm!)\n");
-+}
-+
-+#endif
-+
- void __init lkdtm_perms_init(void)
- {
- 	/* Make sure we can write to __ro_after_init values during __init */
+v3:	* Rebase on linuxppc/next: commit 9123e3a74ec7 ("Linux 5.9-rc1")
+	* Move temporary mm implementation into code-patching.c where it
+	  belongs
+	* Implement LKDTM hijacker test on x86_64 (on IBM time oof) Do
+	* not use address zero for the patching address in the
+	  temporary mm (thanks @dja for pointing this out!)
+	* Wrap the LKDTM test w/ CONFIG_SMP as suggested by Christophe
+	  Leroy
+	* Comments to clarify PTE pre-allocation and patching addr
+	  selection
+
+v2:	* Rebase on linuxppc/next:
+	  commit 105fb38124a4 ("powerpc/8xx: Modify ptep_get()")
+	* Always dirty pte when mapping patch
+	* Use `ppc_inst_len` instead of `sizeof` on instructions
+	* Declare LKDTM patching addr accessor in header where it belongs=09
+
+v1:	* Rebase on linuxppc/next (4336b9337824)
+	* Save and restore second hw watchpoint
+	* Use new ppc_inst_* functions for patching check and in LKDTM test
+
+rfc-v2:	* Many fixes and improvements mostly based on extensive feedback
+          and testing by Christophe Leroy (thanks!).
+	* Make patching_mm and patching_addr static and move
+	  '__ro_after_init' to after the variable name (more common in
+	  other parts of the kernel)
+	* Use 'asm/debug.h' header instead of 'asm/hw_breakpoint.h' to
+	  fix PPC64e compile
+	* Add comment explaining why we use BUG_ON() during the init
+	  call to setup for patching later
+	* Move ptep into patch_mapping to avoid walking page tables a
+	  second time when unmapping the temporary mapping
+	* Use KUAP under non-radix, also manually dirty the PTE for patch
+	  mapping on non-BOOK3S_64 platforms
+	* Properly return any error from __patch_instruction
+        * Do not use 'memcmp' where a simple comparison is appropriate
+	* Simplify expression for patch address by removing pointer maths
+	* Add LKDTM test
+
+[0]: https://github.com/linuxppc/issues/issues/224
+[1]: https://lore.kernel.org/kernel-hardening/20190426232303.28381-1-nadav.=
+amit@gmail.com/
+
+Christopher M. Riedl (8):
+  powerpc: Add LKDTM accessor for patching addr
+  lkdtm/powerpc: Add test to hijack a patch mapping
+  x86_64: Add LKDTM accessor for patching addr
+  lkdtm/x86_64: Add test to hijack a patch mapping
+  powerpc/64s: Introduce temporary mm for Radix MMU
+  powerpc: Rework and improve STRICT_KERNEL_RWX patching
+  powerpc/64s: Initialize and use a temporary mm for patching on Radix
+  lkdtm/powerpc: Fix code patching hijack test
+
+ arch/powerpc/include/asm/code-patching.h |   4 +
+ arch/powerpc/include/asm/debug.h         |   1 +
+ arch/powerpc/kernel/process.c            |   5 +
+ arch/powerpc/lib/code-patching.c         | 240 ++++++++++++++++++++---
+ arch/x86/include/asm/text-patching.h     |   4 +
+ arch/x86/kernel/alternative.c            |   7 +
+ drivers/misc/lkdtm/core.c                |   1 +
+ drivers/misc/lkdtm/lkdtm.h               |   1 +
+ drivers/misc/lkdtm/perms.c               | 143 ++++++++++++++
+ 9 files changed, 378 insertions(+), 28 deletions(-)
+
 --=20
 2.26.1
 
