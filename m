@@ -1,84 +1,69 @@
-Return-Path: <SRS0=qNK6=ME=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=aqaD=MF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B831C11F66
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 23:56:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 681E5C07E9A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 00:25:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C1A9261158
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jul 2021 23:56:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1A9261158
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id A3C7B611C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 00:25:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A3C7B611C1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GP0zJ3CNDz30QG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 09:56:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=VvA9gF1c;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GP1dJ2zrzz30L4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 10:25:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::535;
- helo=mail-ed1-x535.google.com; envelope-from=salah.triki@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=VvA9gF1c; dkim-atps=neutral
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com
- [IPv6:2a00:1450:4864:20::535])
+ smtp.mailfrom=gmail.com (client-ip=209.85.221.43; helo=mail-wr1-f43.google.com;
+ envelope-from=kswilczynski@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com
+ [209.85.221.43])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GNwlV4fN7z2y0G
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2021 06:45:57 +1000 (AEST)
-Received: by mail-ed1-x535.google.com with SMTP id dj21so10120687edb.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jul 2021 13:45:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:mime-version:content-disposition;
- bh=dDg6dKdVLJtJjWTE5YR4R8BahCCcS2EwH/pICn0zM0g=;
- b=VvA9gF1cQzfsFJJuZw2k6deH0TrKgAqzG7Lh3UsbcHfVdGVULX6QCCBcDJkyEzUz6S
- 4M0lhD/f0O3zOV/qW/FH+AdiIPmjmsUduCXl6hYUHdp0jGxO78/bsxoJe7yL4u47uXAT
- tIbgGLcdyJo2USYyUEiAAC42fyPLUXRMCVa3JkgqjQ4V0cgkjc3wrkDUPdEYzp64M1/4
- kW+QcOi3Npa4jrni6tUvOEtIWOGIx/uQf0sSsamDOx8HwRbNEELxMo2PCR1eJWjfQjNo
- XuctAP+IH3aZE96KMW8ZiFzNDr+Jwl7oANfweKQq9/jpchIKc9rys4gkFmtEyMKvWiCa
- /JgA==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GP1cs5ZbQz2yMq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2021 10:25:32 +1000 (AEST)
+Received: by mail-wr1-f43.google.com with SMTP id d12so27390376wre.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jul 2021 17:25:32 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
- :content-disposition;
- bh=dDg6dKdVLJtJjWTE5YR4R8BahCCcS2EwH/pICn0zM0g=;
- b=mBqpfxVdXsawVQs04iEYyfgH4gCmVCkSN4RvnS6BroL/9ayfZfXTSzSzLjrpWp47mv
- zfPdHuP16q9mT8ZsR2WZXTj4JyUYOaMatVd75noTk3hMzxMWamhvXiPwPSpsEWgR3Tai
- IjtW+yBtI5aH4Nzv55N9M8um/PhuWrioEd8yOu3WbDWY1FgArvv/BJQemSZ7uwDmsXAm
- 7/pzDPwr48zVYbIVpGx8NBbq85lbSojLLJLrnXSUPQmFy4TCQF5qpGfO/P4FfeeNMMPM
- TOYm4jntCisCfweKSagNgmEuHf1anwl04FAnfYhsiC0qi6HOJjArEyjEJwkEutlnKTEe
- 1SAg==
-X-Gm-Message-State: AOAM532fCc6GKD7uu6t4oL1Qu5SobZIUV4+lw1Xx6JUrTkEn+zKuniqK
- s3W6uG1+O4wS5sRxadzLNVg=
-X-Google-Smtp-Source: ABdhPJxTE8FRlr/SGGLVlQazu5h0rWf2qLy5L/iBr8vz6rqGAo+osxrbvsDwkpP/yPqJf49D1JCo5Q==
-X-Received: by 2002:aa7:d5c8:: with SMTP id d8mr882407eds.165.1626122750086;
- Mon, 12 Jul 2021 13:45:50 -0700 (PDT)
-Received: from pc ([196.235.212.194])
- by smtp.gmail.com with ESMTPSA id p26sm6814303ejd.80.2021.07.12.13.45.48
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=bui7AgdPIiwwrYwMh79xgVS7mq+OX7ceu5SE/Hq8sVc=;
+ b=tCacwCiukxmqaIRuLL9DDtRL3ICyw6KQ2r71lm8cZcP13GkScueuCg+cva+0dGFnal
+ 0XeXOq7DpWQj2qOFM0f4EOHHDa9WxiJkRmiNPpdu0jCfIh2r17o97KBcxURxRh6qdupD
+ DzpWsT01nRh3K1vhGm8KdxbFXUzGASIfF8Vyxk7Hb39gcf368fGAD7xLEAiRpoDCCuCH
+ N8Gv9zyk9ToPfyUBD1mn9BTy7MhE6MKcsax7AaQIXaYF/18qUPTE/vt39K2bmUylqetd
+ jTXoXnyWR0nRT2exRY6/UmVaLKlHtx3YxUvdlOvBBFlzmbZyy9bDyj/tAC9ot2CjM8AZ
+ MDYQ==
+X-Gm-Message-State: AOAM530V6jdwokJuKGf2UYGMSFKLGw3Md3HwJqxWRfMuKtBAnEkHmgMF
+ 4goiBJQgJWQ5BJXhzTH4T2U=
+X-Google-Smtp-Source: ABdhPJwBMvQ6lKonrvm8WyUjCvo327ju2Dz8Wj7wvkaN1fP7TiUWp6kySHD0TLvAM1NwWrQHjogLyA==
+X-Received: by 2002:a5d:6ac4:: with SMTP id u4mr1997170wrw.166.1626135928773; 
+ Mon, 12 Jul 2021 17:25:28 -0700 (PDT)
+Received: from workstation.lan ([95.155.85.46])
+ by smtp.gmail.com with ESMTPSA id p5sm38895wme.2.2021.07.12.17.25.27
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 12 Jul 2021 13:45:49 -0700 (PDT)
-Date: Mon, 12 Jul 2021 21:45:46 +0100
-From: Salah Triki <salah.triki@gmail.com>
-To: haren@us.ibm.com, mpe@ellerman.id.au, benh@kernel.crashing.org,
- paulus@samba.org, herbert@gondor.apana.org.au, davem@davemloft.net
-Subject: [PATCH] replace if with min
-Message-ID: <20210712204546.GA1492390@pc>
+ Mon, 12 Jul 2021 17:25:28 -0700 (PDT)
+From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH 2/2] powerpc/eeh: Use pcie_reset_state_t type in function
+ arguments
+Date: Tue, 13 Jul 2021 00:25:25 +0000
+Message-Id: <20210713002525.203840-2-kw@linux.com>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20210713002525.203840-1-kw@linux.com>
+References: <20210713002525.203840-1-kw@linux.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Mailman-Approved-At: Tue, 13 Jul 2021 09:55:31 +1000
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,33 +75,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Cc: linux-pci@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace if with min in order to make code more clean.
+The pcie_reset_state_t type has been introduced in the commit
+f7bdd12d234d ("pci: New PCI-E reset API") along with the enum
+pcie_reset_state, but it has never been used for anything else
+other than to define the members of the enumeration set in the
+enum pcie_reset_state.
 
-Signed-off-by: Salah Triki <salah.triki@gmail.com>
+Thus, replace the direct use of enum pcie_reset_state in function
+arguments and replace it with pcie_reset_state_t type so that the
+argument type matches the type used in enum pcie_reset_state.
+
+Signed-off-by: Krzysztof Wilczyński <kw@linux.com>
 ---
- drivers/crypto/nx/nx-842.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/kernel/eeh.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/crypto/nx/nx-842.c b/drivers/crypto/nx/nx-842.c
-index 2ab90ec10e61..0d1d5a463899 100644
---- a/drivers/crypto/nx/nx-842.c
-+++ b/drivers/crypto/nx/nx-842.c
-@@ -134,8 +134,7 @@ EXPORT_SYMBOL_GPL(nx842_crypto_exit);
- static void check_constraints(struct nx842_constraints *c)
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 3bbdcc86d01b..15485abb89ff 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -714,7 +714,7 @@ static void eeh_restore_dev_state(struct eeh_dev *edev, void *userdata)
+  * Return value:
+  * 	0 if success
+  */
+-int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
++int pcibios_set_pcie_reset_state(struct pci_dev *dev, pcie_reset_state_t state)
  {
- 	/* limit maximum, to always have enough bounce buffer to decompress */
--	if (c->maximum > BOUNCE_BUFFER_SIZE)
--		c->maximum = BOUNCE_BUFFER_SIZE;
-+	c->maximum = min(c->maximum, BOUNCE_BUFFER_SIZE);
- }
- 
- static int nx842_crypto_add_header(struct nx842_crypto_header *hdr, u8 *buf)
+ 	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
+ 	struct eeh_pe *pe = eeh_dev_to_pe(edev);
 -- 
-2.25.1
+2.32.0
 
