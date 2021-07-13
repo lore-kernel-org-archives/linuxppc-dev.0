@@ -4,108 +4,111 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DBCEAC07E95
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:26:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05771C07E95
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:32:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 515E960232
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:26:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 515E960232
+	by mail.kernel.org (Postfix) with ESMTPS id 6549F611C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:32:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6549F611C1
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GP8Ht0RTlz3bsH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 15:26:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GP8QS3PBSz3bXK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 15:32:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Os/S/TNb;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DkvNGnLk;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=parth@linux.ibm.com;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=cmr@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Os/S/TNb; dkim-atps=neutral
+ header.s=pp1 header.b=DkvNGnLk; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GP8GG505Rz2yNZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2021 15:24:54 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GP8Py0ftZz2yNc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2021 15:31:33 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 16D541xZ106750; Tue, 13 Jul 2021 01:24:49 -0400
+ 16D5RQmT147091; Tue, 13 Jul 2021 01:31:20 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=ZTnMM3mGGqOnUOgF6S7CuQEQrJWP/0bovcoDH+AF2hA=;
- b=Os/S/TNb4dd+OmrJPo8+DfkUfR4a8kEOsH1KCTyXdd0vixaSgxlxPHk4NmpU3rGEjCr3
- xTVOnQ1MeHrAWLDqBKQRJmhY8VyFrIrO8dxnYeAL8+D5UY+pU5SquPGCPPyx8W8N+YHG
- Fc/gwAMLUKZUnaUAr6DNo5FXFftLQRqsIQ9Slj24WxIIMj9xZ7BCmM/qo5xEobCAiwAP
- NS42Ot66ktI06KsdIO9gIZPQGou6c+aLbtxUmlBet9F5agLMn1320Gn7gf3casoWxTS8
- yPFHmYYEKJPxiAy/6adlYWgTw6zODW1JqGcSE2paY6zT6xtdSOzLmoSllEtJ9MI/LkLy JA== 
+ bh=m9WunVL9v/+sDqvWmb6xfYT5UK9T02Ajzu69XvnBnn0=;
+ b=DkvNGnLkBnGTJRwEUhyLGiEOhuwI1eyg7GnBX4y0sWFzRpr/KoZY22+hl86XfKMBJO5T
+ OEYQLV5+SXmg5j3gn9Ksuyx/0N8+HhQGy4AlhJzoiabUM/sCz2TJfRP5ESJiQwdZoEv2
+ Af3yEp+QF3wprIAHrreasFdIJbtlrlbHqYuc97moSebBZNX+yhZZMJeTukWNwP0lEWi9
+ R9iHG7JuUDvCG4CNmJZgDb+d+MprgDqoBGww51ZPTs85+dnACMJbniz8RNFs0TiMixCt
+ N+UDEQNlra+mP0wgUxokwv4qTcOpddYYMFYMWbIoYNShaoutxvayZBmhOyB6oXRfHkCB oQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 39qs117kmu-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 39qrvam3gm-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 13 Jul 2021 01:24:49 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16D56jr1115687;
- Tue, 13 Jul 2021 01:24:48 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 39qs117kmb-1
+ Tue, 13 Jul 2021 01:31:20 -0400
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16D5VJDs152458;
+ Tue, 13 Jul 2021 01:31:19 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 39qrvam3gf-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 13 Jul 2021 01:24:48 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16D5MF4P018930;
- Tue, 13 Jul 2021 05:24:47 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04ams.nl.ibm.com with ESMTP id 39q3689310-1
+ Tue, 13 Jul 2021 01:31:19 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16D5RUnU010702;
+ Tue, 13 Jul 2021 05:31:18 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma01wdc.us.ibm.com with ESMTP id 39q36ayrdy-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 13 Jul 2021 05:24:46 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 16D5Meea24576268
+ Tue, 13 Jul 2021 05:31:18 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16D5VHP550004310
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 13 Jul 2021 05:22:40 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 786564C062;
- Tue, 13 Jul 2021 05:24:44 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 75CE24C044;
- Tue, 13 Jul 2021 05:24:42 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.102.18.200])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 13 Jul 2021 05:24:42 +0000 (GMT)
-From: Parth Shah <parth@linux.ibm.com>
+ Tue, 13 Jul 2021 05:31:17 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 95D4678068;
+ Tue, 13 Jul 2021 05:31:17 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4AC7D78066;
+ Tue, 13 Jul 2021 05:31:17 +0000 (GMT)
+Received: from oc8246131445.ibm.com (unknown [9.163.19.100])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with SMTP;
+ Tue, 13 Jul 2021 05:31:17 +0000 (GMT)
+Received: from oc8246131445.ibm.com (localhost.localdomain [127.0.0.1])
+ by oc8246131445.ibm.com (Postfix) with ESMTP id 074DCBC0B11;
+ Tue, 13 Jul 2021 00:31:15 -0500 (CDT)
+From: "Christopher M. Riedl" <cmr@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC 2/2] kernel/idle: Update and use idle-hint in VPA region
-Date: Tue, 13 Jul 2021 10:54:33 +0530
-Message-Id: <20210713052433.257003-3-parth@linux.ibm.com>
-X-Mailer: git-send-email 2.26.3
-In-Reply-To: <20210713052433.257003-1-parth@linux.ibm.com>
-References: <20210713052433.257003-1-parth@linux.ibm.com>
+Subject: [PATCH v5 3/8] x86_64: Add LKDTM accessor for patching addr
+Date: Tue, 13 Jul 2021 00:31:08 -0500
+Message-Id: <20210713053113.4632-4-cmr@linux.ibm.com>
+X-Mailer: git-send-email 2.26.1
+In-Reply-To: <20210713053113.4632-1-cmr@linux.ibm.com>
+References: <20210713053113.4632-1-cmr@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: SpXDZIwvsAK7htr7VUnwltiMIUt7MQjn
-X-Proofpoint-ORIG-GUID: ohrjz4hFXC57tCInTgacUWua0ccoh7D4
+X-Proofpoint-ORIG-GUID: r6hXbqrh5llFK3wh2elbVGnswmCRkNht
+X-Proofpoint-GUID: gRYvcaTsQLdnilhE3MhAzZG_jp22yX9N
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-07-13_03:2021-07-13,
  2021-07-12 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 adultscore=0
- suspectscore=0 impostorscore=0 clxscore=1015 lowpriorityscore=0
- bulkscore=0 malwarescore=0 priorityscore=1501 mlxlogscore=999 mlxscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2107130022
+ clxscore=1015 impostorscore=0
+ lowpriorityscore=0 mlxscore=0 mlxlogscore=999 spamscore=0 phishscore=0
+ bulkscore=0 malwarescore=0 suspectscore=0 adultscore=0 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104190000
+ definitions=main-2107130026
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,83 +120,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, srikar@linux.vnet.ibm.com,
- parths1229@gmail.com, svaidy@linux.vnet.ibm.com
+Cc: keescook@chromium.org, peterz@infradead.org, x86@kernel.org,
+ npiggin@gmail.com, linux-hardening@vger.kernel.org, tglx@linutronix.de,
+ dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In guest, Set idle_hint to 1 when the prev_cpu of a vCPU goes into idle state,
-similarly set idle_hint to 0 when exiting an idle state.
+When live patching with STRICT_KERNEL_RWX a mapping is installed at a
+"patching address" with temporary write permissions. Provide a
+LKDTM-only accessor function for this address in preparation for a LKDTM
+test which attempts to "hijack" this mapping by writing to it from
+another CPU.
 
-Since the idle_hint is in VPA region, the available_idle_cpu() in guest can
-read this region every time to find if a vCPU can be scheduled instantly by
-the hypervsior or not.
-
-Signed-off-by: Parth Shah <parth@linux.ibm.com>
+Signed-off-by: Christopher M. Riedl <cmr@linux.ibm.com>
 ---
- arch/powerpc/include/asm/paravirt.h | 12 ++++++++++--
- kernel/sched/idle.c                 |  3 +++
- 2 files changed, 13 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/text-patching.h | 4 ++++
+ arch/x86/kernel/alternative.c        | 7 +++++++
+ 2 files changed, 11 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/paravirt.h b/arch/powerpc/include/asm/paravirt.h
-index bcb7b5f917be..b20e4d25bd00 100644
---- a/arch/powerpc/include/asm/paravirt.h
-+++ b/arch/powerpc/include/asm/paravirt.h
-@@ -21,6 +21,12 @@ static inline bool is_shared_processor(void)
- 	return static_branch_unlikely(&shared_processor);
+diff --git a/arch/x86/include/asm/text-patching.h b/arch/x86/include/asm/=
+text-patching.h
+index b7421780e4e92..f0caf9ee13bd8 100644
+--- a/arch/x86/include/asm/text-patching.h
++++ b/arch/x86/include/asm/text-patching.h
+@@ -167,4 +167,8 @@ void int3_emulate_ret(struct pt_regs *regs)
  }
- 
-+static inline int idle_hint_of(int cpu)
-+{
-+	__be32 idle_hint = READ_ONCE(lppaca_of(cpu).idle_hint);
-+	return be32_to_cpu(idle_hint);
-+}
+ #endif /* !CONFIG_UML_X86 */
+=20
++#if IS_BUILTIN(CONFIG_LKDTM)
++unsigned long read_cpu_patching_addr(unsigned int cpu);
++#endif
 +
- /* If bit 0 is set, the cpu has been preempted */
- static inline u32 yield_count_of(int cpu)
+ #endif /* _ASM_X86_TEXT_PATCHING_H */
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.=
+c
+index e9da3dc712541..28bb92b695639 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -773,6 +773,13 @@ static inline void unuse_temporary_mm(temp_mm_state_=
+t prev_state)
+ __ro_after_init struct mm_struct *poking_mm;
+ __ro_after_init unsigned long poking_addr;
+=20
++#if IS_BUILTIN(CONFIG_LKDTM)
++unsigned long read_cpu_patching_addr(unsigned int cpu)
++{
++	return poking_addr;
++}
++#endif
++
+ static void *__text_poke(void *addr, const void *opcode, size_t len)
  {
-@@ -109,8 +115,10 @@ static inline bool vcpu_is_preempted(int cpu)
- 	}
- #endif
- 
--	if (yield_count_of(cpu) & 1)
--		return true;
-+	if (yield_count_of(cpu) & 1) {
-+		if (idle_hint_of(cpu) == 0)
-+			return true;
-+	}
- 	return false;
- }
- 
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index 7ca3d3d86c2a..fdc8d1d474f0 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -7,6 +7,7 @@
-  *        tasks which are handled in sched/fair.c )
-  */
- #include "sched.h"
-+#include <asm/idle_hint.h>
- 
- #include <trace/events/power.h>
- 
-@@ -290,6 +291,7 @@ static void do_idle(void)
- 			arch_cpu_idle_dead();
- 		}
- 
-+		set_idle_hint(cpu, 1);
- 		arch_cpu_idle_enter();
- 		rcu_nocb_flush_deferred_wakeup();
- 
-@@ -306,6 +308,7 @@ static void do_idle(void)
- 			cpuidle_idle_call();
- 		}
- 		arch_cpu_idle_exit();
-+		set_idle_hint(cpu, 0);
- 	}
- 
- 	/*
--- 
-2.26.3
+ 	bool cross_page_boundary =3D offset_in_page(addr) + len > PAGE_SIZE;
+--=20
+2.26.1
 
