@@ -7,108 +7,107 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0510CC07E95
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:34:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C78CC07E95
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:35:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 971B3611C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:34:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 971B3611C1
+	by mail.kernel.org (Postfix) with ESMTPS id E8D46611CB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 05:35:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8D46611CB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GP8TY2DW6z3dVD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 15:34:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GP8VC4clPz3dc8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jul 2021 15:35:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Le9FIaAP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=THx/Rzqi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=cmr@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Le9FIaAP; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=THx/Rzqi; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GP8Q23HRvz307P
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2021 15:31:38 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 16D541WM107407; Tue, 13 Jul 2021 01:31:23 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GP8Q62hzfz3097
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2021 15:31:42 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 16D54Hua000762; Tue, 13 Jul 2021 01:31:23 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=Kwi7foOKwhU8NgG5vG7fgNdpivTmYOH87NzNnOWfJT4=;
- b=Le9FIaAPo8eDCNq8REyGHhF3xmUll/1dd2wHc0ckZenz22KDc0PLyjztRYzc75/3E54p
- lV66uWpmh4hE3aOmcjZE3Au/QBIQLKhr6FF+TnyKmC3cVLOjG5k5wo7/r/j1R/tZO5Wz
- 1SjqGrXm50OKcNC1ATnP5m1aV66ay2FhroaT0W7UXEo4ddI97sP9i6NiOsSyt+lkQefA
- op4pOVrVJt3Vu4XKyn2bYT/PItdQQgfeg4WVflItjmMycnIIPbO9X+7zs7uMAv5upXoZ
- +SZxAxVQj4NZJ/WqTWpNOZjWbALJQQIvFD6ogWC3i9BudCnLFrjenc5xc3/OLEYw845O 9A== 
+ bh=XCleOmoVIk8CFFqNyEx7CfNU9+f7yAb7rw5n/scUPag=;
+ b=THx/RzqicsHTMdmZuD4AQjVZYQwAI++kaA9uP6nin+HoG7K6P5XoccCKfLesnIxlw8YZ
+ 60CIiD/NivffZla3phRX12MRLibqFeFho9P4FO206HEBhOz22iZVH4VrZZedCGzyhdGm
+ 5HEPBbfThhMd1hpltp5z3j+4+B/pfi1EuMgdX7AH55DKytaSuFFkmLMWc4xemsVrinq9
+ bfSwNT0VlY+zVZMlLC1jKoBfDLA3+Qb6+5BkG/8RrtLRzJmioKuDsXui806FqX7Syb2b
+ BNX7lZyXavc+vjQhf2Sbvt83PDgjRRtk3dxjrgu1Dri6xhWQY6b8nRB+ysXXNl8HaiHV HA== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 39qs117ra4-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39qs2vr9h3-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Tue, 13 Jul 2021 01:31:22 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16D54Jio108705;
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16D54P29001501;
  Tue, 13 Jul 2021 01:31:22 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 39qs117r9s-1
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39qs2vr9gw-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Tue, 13 Jul 2021 01:31:22 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16D5RUY2010788;
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16D5SPHL011535;
  Tue, 13 Jul 2021 05:31:21 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma01wdc.us.ibm.com with ESMTP id 39q36ayrf5-1
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26]) by ppma04dal.us.ibm.com with ESMTP id 39q36b7n7x-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Tue, 13 Jul 2021 05:31:21 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 16D5VKhp28246524
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16D5VKhR11600150
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
  Tue, 13 Jul 2021 05:31:20 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 488D9BE04F;
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CB74828065;
  Tue, 13 Jul 2021 05:31:20 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F1B46BE053;
- Tue, 13 Jul 2021 05:31:19 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 081F628059;
+ Tue, 13 Jul 2021 05:31:20 +0000 (GMT)
 Received: from oc8246131445.ibm.com (unknown [9.163.19.100])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with SMTP;
+ by b01ledav001.gho.pok.ibm.com (Postfix) with SMTP;
  Tue, 13 Jul 2021 05:31:19 +0000 (GMT)
 Received: from oc8246131445.ibm.com (localhost.localdomain [127.0.0.1])
- by oc8246131445.ibm.com (Postfix) with ESMTP id 4A441BC0C34;
+ by oc8246131445.ibm.com (Postfix) with ESMTP id 21E9ABC0B41;
  Tue, 13 Jul 2021 00:31:15 -0500 (CDT)
 From: "Christopher M. Riedl" <cmr@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 8/8] lkdtm/powerpc: Fix code patching hijack test
-Date: Tue, 13 Jul 2021 00:31:13 -0500
-Message-Id: <20210713053113.4632-9-cmr@linux.ibm.com>
+Subject: [PATCH v5 5/8] powerpc/64s: Introduce temporary mm for Radix MMU
+Date: Tue, 13 Jul 2021 00:31:10 -0500
+Message-Id: <20210713053113.4632-6-cmr@linux.ibm.com>
 X-Mailer: git-send-email 2.26.1
 In-Reply-To: <20210713053113.4632-1-cmr@linux.ibm.com>
 References: <20210713053113.4632-1-cmr@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: cHCthgBcM9xp9Mt9bos8xwQ5FL3n-jCp
-X-Proofpoint-ORIG-GUID: HDbwSKEE2EoyOQh_byeJIz2jcHRRf7Jr
+X-Proofpoint-ORIG-GUID: mR43311HGck7F-7OTJw7B0VjrQMc3tzu
+X-Proofpoint-GUID: aecOiKltVjrwY5VvOvgGJD_4qjWgNhTx
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-07-13_03:2021-07-13,
  2021-07-12 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 adultscore=0
- suspectscore=0 impostorscore=0 clxscore=1015 lowpriorityscore=0
- bulkscore=0 malwarescore=0 priorityscore=1501 mlxlogscore=999 mlxscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2107130022
+ clxscore=1015
+ lowpriorityscore=0 malwarescore=0 impostorscore=0 bulkscore=0 phishscore=0
+ suspectscore=0 mlxscore=0 adultscore=0 priorityscore=1501 spamscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2107130026
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -127,38 +126,157 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Code patching on powerpc with a STRICT_KERNEL_RWX uses a userspace
-address in a temporary mm on Radix now. Use __put_user() to avoid write
-failures due to KUAP when attempting a "hijack" on the patching address.
-__put_user() also works with the non-userspace, vmalloc-based patching
-address on non-Radix MMUs.
+x86 supports the notion of a temporary mm which restricts access to
+temporary PTEs to a single CPU. A temporary mm is useful for situations
+where a CPU needs to perform sensitive operations (such as patching a
+STRICT_KERNEL_RWX kernel) requiring temporary mappings without exposing
+said mappings to other CPUs. Another benefit is that other CPU TLBs do
+not need to be flushed when the temporary mm is torn down.
+
+Mappings in the temporary mm can be set in the userspace portion of the
+address-space.
+
+Interrupts must be disabled while the temporary mm is in use. HW
+breakpoints, which may have been set by userspace as watchpoints on
+addresses now within the temporary mm, are saved and disabled when
+loading the temporary mm. The HW breakpoints are restored when unloading
+the temporary mm. All HW breakpoints are indiscriminately disabled while
+the temporary mm is in use.
+
+Based on x86 implementation:
+
+commit cefa929c034e
+("x86/mm: Introduce temporary mm structs")
 
 Signed-off-by: Christopher M. Riedl <cmr@linux.ibm.com>
----
- drivers/misc/lkdtm/perms.c | 9 ---------
- 1 file changed, 9 deletions(-)
 
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index 41e87e5f9cc86..da6a34a0a49fb 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -262,16 +262,7 @@ static inline u32 lkdtm_read_patch_site(void)
- /* Returns True if the write succeeds */
- static inline bool lkdtm_try_write(u32 data, u32 *addr)
- {
--#ifdef CONFIG_PPC
--	__put_kernel_nofault(addr, &data, u32, err);
--	return true;
--
--err:
--	return false;
--#endif
--#ifdef CONFIG_X86_64
- 	return !__put_user(data, addr);
--#endif
+---
+
+v5:  * Drop support for using a temporary mm on Book3s64 Hash MMU.
+
+v4:  * Pass the prev mm instead of NULL to switch_mm_irqs_off() when
+       using/unusing the temp mm as suggested by Jann Horn to keep
+       the context.active counter in-sync on mm/nohash.
+     * Disable SLB preload in the temporary mm when initializing the
+       temp_mm struct.
+     * Include asm/debug.h header to fix build issue with
+       ppc44x_defconfig.
+---
+ arch/powerpc/include/asm/debug.h |  1 +
+ arch/powerpc/kernel/process.c    |  5 +++
+ arch/powerpc/lib/code-patching.c | 56 ++++++++++++++++++++++++++++++++
+ 3 files changed, 62 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/debug.h b/arch/powerpc/include/asm/=
+debug.h
+index 86a14736c76c3..dfd82635ea8b3 100644
+--- a/arch/powerpc/include/asm/debug.h
++++ b/arch/powerpc/include/asm/debug.h
+@@ -46,6 +46,7 @@ static inline int debugger_fault_handler(struct pt_regs=
+ *regs) { return 0; }
+ #endif
+=20
+ void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk);
++void __get_breakpoint(int nr, struct arch_hw_breakpoint *brk);
+ bool ppc_breakpoint_available(void);
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+ extern void do_send_trap(struct pt_regs *regs, unsigned long address,
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.=
+c
+index 185beb2905801..a0776200772e8 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -865,6 +865,11 @@ static inline int set_breakpoint_8xx(struct arch_hw_=
+breakpoint *brk)
+ 	return 0;
  }
 =20
- static int lkdtm_patching_cpu(void *data)
++void __get_breakpoint(int nr, struct arch_hw_breakpoint *brk)
++{
++	memcpy(brk, this_cpu_ptr(&current_brk[nr]), sizeof(*brk));
++}
++
+ void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk)
+ {
+ 	memcpy(this_cpu_ptr(&current_brk[nr]), brk, sizeof(*brk));
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-pat=
+ching.c
+index 54b6157d44e95..3122d8e4cc013 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -17,6 +17,9 @@
+ #include <asm/code-patching.h>
+ #include <asm/setup.h>
+ #include <asm/inst.h>
++#include <asm/mmu_context.h>
++#include <asm/debug.h>
++#include <asm/tlb.h>
+=20
+ static int __patch_instruction(u32 *exec_addr, struct ppc_inst instr, u3=
+2 *patch_addr)
+ {
+@@ -45,6 +48,59 @@ int raw_patch_instruction(u32 *addr, struct ppc_inst i=
+nstr)
+ }
+=20
+ #ifdef CONFIG_STRICT_KERNEL_RWX
++
++struct temp_mm {
++	struct mm_struct *temp;
++	struct mm_struct *prev;
++	struct arch_hw_breakpoint brk[HBP_NUM_MAX];
++};
++
++static inline void init_temp_mm(struct temp_mm *temp_mm, struct mm_struc=
+t *mm)
++{
++	/* We currently only support temporary mm on the Book3s64 Radix MMU */
++	WARN_ON(!radix_enabled());
++
++	temp_mm->temp =3D mm;
++	temp_mm->prev =3D NULL;
++	memset(&temp_mm->brk, 0, sizeof(temp_mm->brk));
++}
++
++static inline void use_temporary_mm(struct temp_mm *temp_mm)
++{
++	lockdep_assert_irqs_disabled();
++
++	temp_mm->prev =3D current->active_mm;
++	switch_mm_irqs_off(temp_mm->prev, temp_mm->temp, current);
++
++	WARN_ON(!mm_is_thread_local(temp_mm->temp));
++
++	if (ppc_breakpoint_available()) {
++		struct arch_hw_breakpoint null_brk =3D {0};
++		int i =3D 0;
++
++		for (; i < nr_wp_slots(); ++i) {
++			__get_breakpoint(i, &temp_mm->brk[i]);
++			if (temp_mm->brk[i].type !=3D 0)
++				__set_breakpoint(i, &null_brk);
++		}
++	}
++}
++
++static inline void unuse_temporary_mm(struct temp_mm *temp_mm)
++{
++	lockdep_assert_irqs_disabled();
++
++	switch_mm_irqs_off(temp_mm->temp, temp_mm->prev, current);
++
++	if (ppc_breakpoint_available()) {
++		int i =3D 0;
++
++		for (; i < nr_wp_slots(); ++i)
++			if (temp_mm->brk[i].type !=3D 0)
++				__set_breakpoint(i, &temp_mm->brk[i]);
++	}
++}
++
+ static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
+=20
+ #if IS_BUILTIN(CONFIG_LKDTM)
 --=20
 2.26.1
 
