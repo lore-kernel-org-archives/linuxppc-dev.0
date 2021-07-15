@@ -2,83 +2,71 @@ Return-Path: <SRS0=2J9c=MH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	INVALID_DATE_TZ_ABSURD,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D614C636C8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 17:23:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2630EC636C9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 19:34:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 424B06100B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 17:23:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 424B06100B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=deltatee.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3F0CC610C7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 19:34:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F0CC610C7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GQh6Z6vfZz3dRY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jul 2021 03:23:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GQl1q5jmBz3bhl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jul 2021 05:34:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=Dkn3q4LV;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=H1Slcp5v;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=KhW3dN8M;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=deltatee.com (client-ip=204.191.154.188; helo=ale.deltatee.com;
- envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
+ helo=galois.linutronix.de; envelope-from=john.ogness@linutronix.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256
- header.s=20200525 header.b=Dkn3q4LV; dkim-atps=neutral
-Received: from ale.deltatee.com (ale.deltatee.com [204.191.154.188])
+ secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
+ header.s=2020 header.b=H1Slcp5v; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=KhW3dN8M; 
+ dkim-atps=neutral
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GQgyj6Df4z3bmF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jul 2021 03:16:45 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=deltatee.com; s=20200525; h=Subject:MIME-Version:References:In-Reply-To:
- Message-Id:Date:Cc:To:From:content-disposition;
- bh=j6Pr/OuRQ0FDOA0vFikKAhizbVvYkzaBamOZP0pmeEg=; b=Dkn3q4LV3x6P2TnAQ4dHbiy0gT
- dHrqGIqsYfANtr88cB4SDDmwoDAm+3uMXwwUMCZ5FDoIEaICaRygRCgjZCR1YWHKgaDLwGd7pcIds
- LPRHC56e5Ne+6AJEfCgMVy5UwvTjTaLVsU9csxkrEf4u+SsNzIhl19BpCNJzR+mGxBoNX+XpJZ1Th
- hwJWkb9pyr1rz6+CFF31AEDrthTPJGyTTUWW58QveoemPsYFHnAnEhW+LulIW1Nl3aByuE69itje2
- t2Vw4QfVY/ws9zJK0WYtD95XW1HBnPxc3TFddZSrjQawxAgva8UCldcIeIcd0Pt4xkD5WIL0MUWWt
- wyEWisGw==;
-Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
- by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
- (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
- id 1m44V0-0001yc-48; Thu, 15 Jul 2021 10:46:11 -0600
-Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
- (envelope-from <gunthorp@deltatee.com>)
- id 1m44Uo-0001nW-Ns; Thu, 15 Jul 2021 10:45:58 -0600
-From: Logan Gunthorpe <logang@deltatee.com>
-To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- iommu@lists.linux-foundation.org, linux-parisc@vger.kernel.org,
- xen-devel@lists.xenproject.org
-Date: Thu, 15 Jul 2021 10:45:37 -0600
-Message-Id: <20210715164544.6827-10-logang@deltatee.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20210715164544.6827-1-logang@deltatee.com>
-References: <20210715164544.6827-1-logang@deltatee.com>
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GQl1G1w8Gz2yNw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jul 2021 05:34:10 +1000 (AEST)
+From: John Ogness <john.ogness@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020; t=1626377641;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=AlYsQuWcV07ceFNksYMnBsP5kyWUBQUeoD8kaOeX8A4=;
+ b=H1Slcp5vR+s/qOKCOLfC9pox8PNkKoEZX8fxv9qmyD7nwiZLomLYup9Pb9FSsmnOQ+EPaJ
+ Du1FIb9sBZPE8VTu1nJNL595Me3c0MZJjKkbHZrnXnF/9WNVx8xFDvTpj33GISk1s/v7Pm
+ 0xjM1na3FCAQFwxtGR9n+pmqGKbPqyn1XcKlFopRInV3uT9P8psg1163D7eL1MzzQJQxF9
+ w5QYbOw3ajycAn9+z/aP9ORfvcr5gmQb9+b6REqz40z5gGn1ngTCuCBm8GzwrMKDYg5iQZ
+ rvR6PNLVTwDg/7QK+YkTZ146g7FBStWXWMKo7L5tx9lYhzmJU99uLYpyoeLtQw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020e; t=1626377641;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=AlYsQuWcV07ceFNksYMnBsP5kyWUBQUeoD8kaOeX8A4=;
+ b=KhW3dN8MQmFGfyVll3Bd6RO29BZ6Hgev3jn4REDVIC0SszHesjcDnMLQfy1uO9iz382/CP
+ tmAaxQ5nCOpMAaAg==
+To: Petr Mladek <pmladek@suse.com>
+Subject: [PATCH printk v4 0/6] printk: remove safe buffers
+Date: Thu, 15 Jul 2021 21:39:53 +0206
+Message-Id: <20210715193359.25946-1-john.ogness@linutronix.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 172.16.1.31
-X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-parisc@vger.kernel.org, xen-devel@lists.xenproject.org, hch@lst.de,
- m.szyprowski@samsung.com, robin.murphy@arm.com, sbates@raithlin.com,
- martin.oliveira@eideticom.com, logang@deltatee.com, mpe@ellerman.id.au,
- benh@kernel.crashing.org, paulus@samba.org, geoff@infradead.org
-X-SA-Exim-Mail-From: gunthorp@deltatee.com
-Subject: [PATCH v1 09/16] powerpc/iommu: return error code from .map_sg() ops
-X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
-X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,98 +78,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geoff Levand <geoff@infradead.org>, Robin Murphy <robin.murphy@arm.com>,
- Martin Oliveira <martin.oliveira@eideticom.com>,
- Stephen Bates <sbates@raithlin.com>, Paul Mackerras <paulus@samba.org>,
- Logan Gunthorpe <logang@deltatee.com>, Christoph Hellwig <hch@lst.de>,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ "Wolfram Sang \(Renesas\)" <wsa+renesas@sang-engineering.com>,
+ Paul Mackerras <paulus@samba.org>, Tiezhu Yang <yangtiezhu@loongson.cn>,
+ Daniel Borkmann <daniel@iogearbox.net>, Marc Zyngier <maz@kernel.org>,
+ Masahiro Yamada <masahiroy@kernel.org>, Russell King <linux@armlinux.org.uk>,
+ Peter Zijlstra <peterz@infradead.org>, Yue Hu <huyue2@yulong.com>,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-arm-kernel@lists.infradead.org,
+ Valentin Schneider <valentin.schneider@arm.com>,
+ Kees Cook <keescook@chromium.org>, "Paul E. McKenney" <paulmck@kernel.org>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Vipin Sharma <vipinsh@google.com>, Frederic Weisbecker <frederic@kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Nathan Chancellor <nathan@kernel.org>,
+ Nick Terrell <terrelln@fb.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
+ Nick Desaulniers <ndesaulniers@google.com>, Xiongwei Song <sxwjean@gmail.com>,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <senozhatsky@chromium.org>,
+ Eric Biederman <ebiederm@xmission.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Mike Rapoport <rppt@kernel.org>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Martin Oliveira <martin.oliveira@eideticom.com>
+Hi,
 
-The .map_sg() op now expects an error code instead of zero on failure.
+Here is v4 of a series to remove the safe buffers. v3 can be
+found here [0]. The safe buffers are no longer needed because
+messages can be stored directly into the log buffer from any
+context.
 
-Propagate the error up if vio_dma_iommu_map_sg() fails.
+However, the safe buffers also provided a form of recursion
+protection. For that reason, explicit recursion protection is
+implemented for this series.
 
-ppc_iommu_map_sg() may fail either because of iommu_range_alloc() or
-because of tbl->it_ops->set(). The former only supports returning an
-error with DMA_MAPPING_ERROR and an examination of the latter indicates
-that it may return arch-specific errors (for example,
-tce_buildmulti_pSeriesLP()). Hence, coalesce all of those errors into
--EINVAL;
+The safe buffers also implicitly provided serialization
+between multiple CPUs executing in NMI context. This was
+particularly necessary for the nmi_backtrace() output. This
+serializiation is now preserved by using the printk cpulock.
 
-Signed-off-by: Martin Oliveira <martin.oliveira@eideticom.com>
-Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Geoff Levand <geoff@infradead.org>
----
- arch/powerpc/kernel/iommu.c             | 4 ++--
- arch/powerpc/platforms/ps3/system-bus.c | 2 +-
- arch/powerpc/platforms/pseries/vio.c    | 5 +++--
- 3 files changed, 6 insertions(+), 5 deletions(-)
+With the removal of the safe buffers, there is no need for
+extra NMI enter/exit tracking. So this is also removed
+(which includes removing the config option CONFIG_PRINTK_NMI).
 
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 2af89a5e379f..bd0ed618bfa5 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -473,7 +473,7 @@ int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	if ((nelems == 0) || !tbl)
--		return 0;
-+		return -EINVAL;
- 
- 	outs = s = segstart = &sglist[0];
- 	outcount = 1;
-@@ -599,7 +599,7 @@ int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
- 		if (s == outs)
- 			break;
- 	}
--	return 0;
-+	return -EINVAL;
- }
- 
- 
-diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
-index 1a5665875165..c54eb46f0cfb 100644
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -663,7 +663,7 @@ static int ps3_ioc0_map_sg(struct device *_dev, struct scatterlist *sg,
- 			   unsigned long attrs)
- {
- 	BUG();
--	return 0;
-+	return -EINVAL;
- }
- 
- static void ps3_sb_unmap_sg(struct device *_dev, struct scatterlist *sg,
-diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
-index e00f3725ec96..e31e59c54f30 100644
---- a/arch/powerpc/platforms/pseries/vio.c
-+++ b/arch/powerpc/platforms/pseries/vio.c
-@@ -560,7 +560,8 @@ static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
- 	for_each_sg(sglist, sgl, nelems, count)
- 		alloc_size += roundup(sgl->length, IOMMU_PAGE_SIZE(tbl));
- 
--	if (vio_cmo_alloc(viodev, alloc_size))
-+	ret = vio_cmo_alloc(viodev, alloc_size);
-+	if (ret)
- 		goto out_fail;
- 	ret = ppc_iommu_map_sg(dev, tbl, sglist, nelems, dma_get_mask(dev),
- 			direction, attrs);
-@@ -577,7 +578,7 @@ static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
- 	vio_cmo_dealloc(viodev, alloc_size);
- out_fail:
- 	atomic_inc(&viodev->cmo.allocs_failed);
--	return 0;
-+	return ret;
- }
- 
- static void vio_dma_iommu_unmap_sg(struct device *dev,
+And finally, there are a few places in the kernel that need to
+specify code blocks where all printk calls are to be deferred
+printing. Previously the NMI tracking API was being (mis)used
+for this purpose. This series introduces an official and
+explicit interface for such cases. (Note that all deferred
+printing will be removed anyway, once printing kthreads are
+introduced.)
+
+Changes since v3:
+
+- Remove safe context tracking in vprintk().
+
+- Add safe context tracking for @console_owner usage since that
+  is also a component of the printing code.
+
+- Refactor syslog_print() so that it is easier to understand
+  and follow the locking logic.
+
+- Introduce printk_deferred_enter/exit functions to be used by
+  code that needs to specify code block where all printk calls
+  are to be deferred printing.
+
+John Ogness
+
+[0] https://lore.kernel.org/lkml/20210624111148.5190-1-john.ogness@linutronix.de
+
+John Ogness (6):
+  lib/nmi_backtrace: explicitly serialize banner and regs
+  printk: track/limit recursion
+  printk: remove safe buffers
+  printk: remove NMI tracking
+  printk: convert @syslog_lock to mutex
+  printk: syslog: close window between wait and read
+
+ arch/arm/kernel/smp.c          |   4 +-
+ arch/powerpc/kernel/traps.c    |   1 -
+ arch/powerpc/kernel/watchdog.c |   5 -
+ arch/powerpc/kexec/crash.c     |   2 +-
+ include/linux/hardirq.h        |   2 -
+ include/linux/printk.h         |  41 ++--
+ init/Kconfig                   |   5 -
+ kernel/kexec_core.c            |   1 -
+ kernel/panic.c                 |   3 -
+ kernel/printk/internal.h       |  25 ---
+ kernel/printk/printk.c         | 268 ++++++++++++++----------
+ kernel/printk/printk_safe.c    | 364 +--------------------------------
+ kernel/trace/trace.c           |   4 +-
+ lib/nmi_backtrace.c            |  13 +-
+ 14 files changed, 194 insertions(+), 544 deletions(-)
+
+
+base-commit: 70333dec446292cd896cd051d2ebd6808b328949
 -- 
 2.20.1
 
