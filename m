@@ -2,74 +2,85 @@ Return-Path: <SRS0=2J9c=MH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 392ADC47E4E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 16:54:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C22C5C636C7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 17:16:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DB41E613F8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 16:54:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB41E613F8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=armlinux.org.uk
+	by mail.kernel.org (Postfix) with ESMTPS id 046F76100B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 17:16:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 046F76100B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GQgSW3gWBz3bY0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jul 2021 02:54:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GQgyH3f70z3bYS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jul 2021 03:16:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=U8UTMSyF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=oVKqj1qx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk
- (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk;
- envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=deltatee.com (client-ip=204.191.154.188; helo=ale.deltatee.com;
+ envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256
- header.s=pandora-2019 header.b=U8UTMSyF; 
- dkim-atps=neutral
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
- [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
+ unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256
+ header.s=20200525 header.b=oVKqj1qx; dkim-atps=neutral
+X-Greylist: delayed 1786 seconds by postgrey-1.36 at boromir;
+ Fri, 16 Jul 2021 03:15:54 AEST
+Received: from ale.deltatee.com (ale.deltatee.com [204.191.154.188])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GQgS12PqSz2yYx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jul 2021 02:53:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GQgxk37GLz2yY9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jul 2021 03:15:53 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=SHLau5Ake9xcwQGIQtYxnHJNJDrvOEPwwI40kAVcRog=; b=U8UTMSyF6jF6T0gR2j3D29bvs
- eItdcAl8yoYyPm0BOaqxfp0KAqwYLm3tCNGL3UOXkwf2YVG3YLDETqIWI2+TSILpWhKSi+ZfIepQo
- lLen0o6KgjL85hkzakJ1QZk21sjlzGaASbY+nCfE7vBnPME0Mzb+H5RRmAZ+ZNIKuXcRPERLyqXtq
- VdtZCLk1naymemWuZBuS7BxTMY7tagmEv9JEUS6/HzNAPZKSxBYrlmfrzjhaGexuK2It2kZa4r1/A
- CGDiaLgNp8Hmc8kCrs/WvG5KWvG0MHFhzYQbO2P7Gy0lVzLUmA2kl6R0xkg6NYiRgFN4tL0/sUnPU
- SpUuGxGOA==;
-Received: from shell.armlinux.org.uk
- ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:46188)
- by pandora.armlinux.org.uk with esmtpsa
- (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
- (envelope-from <linux@armlinux.org.uk>)
- id 1m44bq-00015M-DY; Thu, 15 Jul 2021 17:53:14 +0100
-Received: from linux by shell.armlinux.org.uk with local (Exim 4.92)
- (envelope-from <linux@shell.armlinux.org.uk>)
- id 1m44bl-0002LK-Cz; Thu, 15 Jul 2021 17:53:09 +0100
-Date: Thu, 15 Jul 2021 17:53:09 +0100
-From: "Russell King (Oracle)" <linux@armlinux.org.uk>
-To: Logan Gunthorpe <logang@deltatee.com>
-Subject: Re: [PATCH v1 00/16] .map_sg() error cleanup
-Message-ID: <20210715165309.GO22278@shell.armlinux.org.uk>
+ d=deltatee.com; s=20200525; h=Subject:MIME-Version:References:In-Reply-To:
+ Message-Id:Date:Cc:To:From:content-disposition;
+ bh=5q5HrJN5z01eX+XAG2EfKItHnqLG5Bo1fOvwGUnV4O4=; b=oVKqj1qxGhVN9ixr6TLSsC4ZBO
+ UTD1MZ1POYG3KI27eIMLMFxYbxzslShIpA6YWVrJkGi8+wWJ/wcVjvI1+Jf302nsbpn08IP0HnrjG
+ oh9pK+zmvzVkSIE1LmiCYRQEMg/n7BKDDFN1GhirqNtUZZY85nV7dWg7yr93fsfot42jaRm2mqSn+
+ wA3i/zh7pUzR0TP8bgsZsoHOwBQn2dWZ41mvNoesxsAdL31ytt8u53ohsynd3SOTknscoWtbi7kQX
+ eUTXIk0RVW11sAtm1oHi0qiO2SdAZ7zV+zvHAQY6D/M0Zv5t6bRmqKI4wJIkqLx4KZbsVyYpCrClV
+ /+yGg5Kg==;
+Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
+ by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
+ id 1m44Ut-0001yb-T5; Thu, 15 Jul 2021 10:46:04 -0600
+Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
+ (envelope-from <gunthorp@deltatee.com>)
+ id 1m44Up-0001no-O1; Thu, 15 Jul 2021 10:45:59 -0600
+From: Logan Gunthorpe <logang@deltatee.com>
+To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ iommu@lists.linux-foundation.org, linux-parisc@vger.kernel.org,
+ xen-devel@lists.xenproject.org
+Date: Thu, 15 Jul 2021 10:45:43 -0600
+Message-Id: <20210715164544.6827-16-logang@deltatee.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20210715164544.6827-1-logang@deltatee.com>
 References: <20210715164544.6827-1-logang@deltatee.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210715164544.6827-1-logang@deltatee.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 172.16.1.31
+X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-parisc@vger.kernel.org, xen-devel@lists.xenproject.org, hch@lst.de,
+ m.szyprowski@samsung.com, robin.murphy@arm.com, sbates@raithlin.com,
+ martin.oliveira@eideticom.com, logang@deltatee.com
+X-SA-Exim-Mail-From: gunthorp@deltatee.com
+Subject: [PATCH v1 15/16] dma-mapping: return error code from
+ dma_dummy_map_sg()
+X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
+X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,55 +92,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, Robin Murphy <robin.murphy@arm.com>,
- Martin Oliveira <martin.oliveira@eideticom.com>, linux-mips@vger.kernel.org,
- linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- xen-devel@lists.xenproject.org, Stephen Bates <sbates@raithlin.com>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
- linux-arm-kernel@lists.infradead.org,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Robin Murphy <robin.murphy@arm.com>,
+ Martin Oliveira <martin.oliveira@eideticom.com>,
+ Stephen Bates <sbates@raithlin.com>, Logan Gunthorpe <logang@deltatee.com>,
+ Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 15, 2021 at 10:45:28AM -0600, Logan Gunthorpe wrote:
-> Hi,
-> 
-> This series is spun out and expanded from my work to add P2PDMA support
-> to DMA map operations[1].
-> 
-> The P2PDMA work requires distinguishing different error conditions in
-> a map_sg operation. dma_map_sgtable() already allows for returning an
-> error code (where as dma_map_sg() is only allowed to return zero)
-> however, it currently only returns -EINVAL when a .map_sg() call returns
-> zero.
-> 
-> This series cleans up all .map_sg() implementations to return appropriate
-> error codes. After the cleanup, dma_map_sg() will still return zero,
-> however dma_map_sgtable() will pass the error code from the .map_sg()
-> call. Thanks go to Martn Oliveira for doing a lot of the cleanup of the
-> obscure implementations.
-> 
-> The patch set is based off of v5.14-rc1 and a git repo can be found
-> here:
+From: Martin Oliveira <martin.oliveira@eideticom.com>
 
-Have all the callers for dma_map_sg() been updated to check for error
-codes? If not, isn't that a pre-requisit to this patch set?
+The .map_sg() op now expects an error code instead of zero on failure.
 
-From what I see in Linus' current tree, we still have cases today
-where the return value of dma_map_sg() is compared with zero to
-detect failure, so I think that needs fixing before we start changing
-the dma_map_sg() implementation to return negative numbers.
+The only errno to return is -ENODEV in the case when DMA is not
+supported.
 
-I also notice that there are various places that don't check the
-return value - and returning a negative number instead of zero may
-well cause random other bits to be set in fields.
+Signed-off-by: Martin Oliveira <martin.oliveira@eideticom.com>
+Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
+---
+ kernel/dma/dummy.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-So, I think there's a fair amount of work to do in all the drivers
-before this change can be considered.
-
+diff --git a/kernel/dma/dummy.c b/kernel/dma/dummy.c
+index eacd4c5b10bf..ae9abebed0c4 100644
+--- a/kernel/dma/dummy.c
++++ b/kernel/dma/dummy.c
+@@ -22,7 +22,7 @@ static int dma_dummy_map_sg(struct device *dev, struct scatterlist *sgl,
+ 		int nelems, enum dma_data_direction dir,
+ 		unsigned long attrs)
+ {
+-	return 0;
++	return -ENODEV;
+ }
+ 
+ static int dma_dummy_supported(struct device *hwdev, u64 mask)
 -- 
-RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
+2.20.1
+
