@@ -2,27 +2,27 @@ Return-Path: <SRS0=2J9c=MH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	INVALID_DATE_TZ_ABSURD,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	INVALID_DATE_TZ_ABSURD,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2630EC636C9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 19:34:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B8E6C636C8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 19:35:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F0CC610C7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 19:34:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F0CC610C7
+	by mail.kernel.org (Postfix) with ESMTPS id 16F3C610C7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 19:35:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16F3C610C7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GQl1q5jmBz3bhl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jul 2021 05:34:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GQl2K5L4bz30Gx
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jul 2021 05:35:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=H1Slcp5v;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=KhW3dN8M;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=l0Cruanf;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=6rgV+E+L;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
@@ -30,41 +30,45 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=H1Slcp5v; 
+ header.s=2020 header.b=l0Cruanf; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=KhW3dN8M; 
+ header.a=ed25519-sha256 header.s=2020e header.b=6rgV+E+L; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GQl1G1w8Gz2yNw
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GQl1G3rXRz2yP1
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jul 2021 05:34:10 +1000 (AEST)
 From: John Ogness <john.ogness@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1626377641;
+ s=2020; t=1626377643;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=AlYsQuWcV07ceFNksYMnBsP5kyWUBQUeoD8kaOeX8A4=;
- b=H1Slcp5vR+s/qOKCOLfC9pox8PNkKoEZX8fxv9qmyD7nwiZLomLYup9Pb9FSsmnOQ+EPaJ
- Du1FIb9sBZPE8VTu1nJNL595Me3c0MZJjKkbHZrnXnF/9WNVx8xFDvTpj33GISk1s/v7Pm
- 0xjM1na3FCAQFwxtGR9n+pmqGKbPqyn1XcKlFopRInV3uT9P8psg1163D7eL1MzzQJQxF9
- w5QYbOw3ajycAn9+z/aP9ORfvcr5gmQb9+b6REqz40z5gGn1ngTCuCBm8GzwrMKDYg5iQZ
- rvR6PNLVTwDg/7QK+YkTZ146g7FBStWXWMKo7L5tx9lYhzmJU99uLYpyoeLtQw==
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=OkFMmaJ3o//Lzgh5yHddl0yI0TEK6B33ffsKKtQmoQI=;
+ b=l0CruanfisUOKro0CTcpYaZeXcMhjjldFWwlmsEM6SRh17m3TlFSDZ97AJhVpb9Or7nJNn
+ zphKGMNCf0l/fLLFK6g7iuq+je98l3lV2LjPDwF4qJ1HHhtSGSLLV/V2Ct8Ipe+Tqzx73I
+ MeqxWyI+2A49UBnCHEpodfML4eK0ZTfB10g47fwykNITN4BIzEVEOOm5l8p3vUqP71e0fI
+ tYnaTzOa3wuipmPKpnS1WQxsdjANeHRwrschRyuwOUGhvgEYIQ9M0njv6lI3mVxyNkkbT3
+ IoRcQq7U5GUpF9hnFVPm9/l2lythVEu2QZYNawagPpW0eAwHAx+eHfnvaVUXwQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1626377641;
+ s=2020e; t=1626377643;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=AlYsQuWcV07ceFNksYMnBsP5kyWUBQUeoD8kaOeX8A4=;
- b=KhW3dN8MQmFGfyVll3Bd6RO29BZ6Hgev3jn4REDVIC0SszHesjcDnMLQfy1uO9iz382/CP
- tmAaxQ5nCOpMAaAg==
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=OkFMmaJ3o//Lzgh5yHddl0yI0TEK6B33ffsKKtQmoQI=;
+ b=6rgV+E+LHX+rbAN3SrpoCieLEkFcEAfYXRhHboxHr4RdvzGCzAgXUVs32r+zWjv9jNIrZa
+ KN0TAzN5VxW2S3BA==
 To: Petr Mladek <pmladek@suse.com>
-Subject: [PATCH printk v4 0/6] printk: remove safe buffers
-Date: Thu, 15 Jul 2021 21:39:53 +0206
-Message-Id: <20210715193359.25946-1-john.ogness@linutronix.de>
+Subject: [PATCH printk v4 4/6] printk: remove NMI tracking
+Date: Thu, 15 Jul 2021 21:39:57 +0206
+Message-Id: <20210715193359.25946-5-john.ogness@linutronix.de>
+In-Reply-To: <20210715193359.25946-1-john.ogness@linutronix.de>
+References: <20210715193359.25946-1-john.ogness@linutronix.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -78,105 +82,291 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+Cc: Peter Zijlstra <peterz@infradead.org>,
  Rasmus Villemoes <linux@rasmusvillemoes.dk>,
  "Wolfram Sang \(Renesas\)" <wsa+renesas@sang-engineering.com>,
- Paul Mackerras <paulus@samba.org>, Tiezhu Yang <yangtiezhu@loongson.cn>,
- Daniel Borkmann <daniel@iogearbox.net>, Marc Zyngier <maz@kernel.org>,
- Masahiro Yamada <masahiroy@kernel.org>, Russell King <linux@armlinux.org.uk>,
- Peter Zijlstra <peterz@infradead.org>, Yue Hu <huyue2@yulong.com>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Paul Mackerras <paulus@samba.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Marc Zyngier <maz@kernel.org>, Masahiro Yamada <masahiroy@kernel.org>,
+ Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
  linux-arm-kernel@lists.infradead.org,
  Valentin Schneider <valentin.schneider@arm.com>,
- Kees Cook <keescook@chromium.org>, "Paul E. McKenney" <paulmck@kernel.org>,
+ Kees Cook <keescook@chromium.org>,
  Anshuman Khandual <anshuman.khandual@arm.com>,
  Vipin Sharma <vipinsh@google.com>, Frederic Weisbecker <frederic@kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>, Nathan Chancellor <nathan@kernel.org>,
- Nick Terrell <terrelln@fb.com>, Steven Rostedt <rostedt@goodmis.org>,
- Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
- Nick Desaulniers <ndesaulniers@google.com>, Xiongwei Song <sxwjean@gmail.com>,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>, Nathan Chancellor <nathan@kernel.org>,
+ Nick Terrell <terrelln@fb.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Vlastimil Babka <vbabka@suse.cz>, Xiongwei Song <sxwjean@gmail.com>,
+ Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
  Sergey Senozhatsky <senozhatsky@chromium.org>,
- Eric Biederman <ebiederm@xmission.com>,
  Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Mike Rapoport <rppt@kernel.org>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+ Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+All NMI contexts are handled the same as the safe context: store the
+message and defer printing. There is no need to have special NMI
+context tracking for this. Using in_nmi() is enough.
 
-Here is v4 of a series to remove the safe buffers. v3 can be
-found here [0]. The safe buffers are no longer needed because
-messages can be stored directly into the log buffer from any
-context.
+There are several parts of the kernel that are manually calling into
+the printk NMI context tracking in order to cause general printk
+deferred printing:
 
-However, the safe buffers also provided a form of recursion
-protection. For that reason, explicit recursion protection is
-implemented for this series.
+    arch/arm/kernel/smp.c
+    arch/powerpc/kexec/crash.c
+    kernel/trace/trace.c
 
-The safe buffers also implicitly provided serialization
-between multiple CPUs executing in NMI context. This was
-particularly necessary for the nmi_backtrace() output. This
-serializiation is now preserved by using the printk cpulock.
+For these users, provide a new function pair
+printk_deferred_enter/exit that explicitly achieves the same
+objective.
 
-With the removal of the safe buffers, there is no need for
-extra NMI enter/exit tracking. So this is also removed
-(which includes removing the config option CONFIG_PRINTK_NMI).
+Signed-off-by: John Ogness <john.ogness@linutronix.de>
+---
+ arch/arm/kernel/smp.c       |  4 ++--
+ arch/powerpc/kexec/crash.c  |  2 +-
+ include/linux/hardirq.h     |  2 --
+ include/linux/printk.h      | 31 +++++++++++++++++++------------
+ init/Kconfig                |  5 -----
+ kernel/printk/internal.h    |  8 --------
+ kernel/printk/printk_safe.c | 37 +------------------------------------
+ kernel/trace/trace.c        |  4 ++--
+ 8 files changed, 25 insertions(+), 68 deletions(-)
 
-And finally, there are a few places in the kernel that need to
-specify code blocks where all printk calls are to be deferred
-printing. Previously the NMI tracking API was being (mis)used
-for this purpose. This series introduces an official and
-explicit interface for such cases. (Note that all deferred
-printing will be removed anyway, once printing kthreads are
-introduced.)
-
-Changes since v3:
-
-- Remove safe context tracking in vprintk().
-
-- Add safe context tracking for @console_owner usage since that
-  is also a component of the printing code.
-
-- Refactor syslog_print() so that it is easier to understand
-  and follow the locking logic.
-
-- Introduce printk_deferred_enter/exit functions to be used by
-  code that needs to specify code block where all printk calls
-  are to be deferred printing.
-
-John Ogness
-
-[0] https://lore.kernel.org/lkml/20210624111148.5190-1-john.ogness@linutronix.de
-
-John Ogness (6):
-  lib/nmi_backtrace: explicitly serialize banner and regs
-  printk: track/limit recursion
-  printk: remove safe buffers
-  printk: remove NMI tracking
-  printk: convert @syslog_lock to mutex
-  printk: syslog: close window between wait and read
-
- arch/arm/kernel/smp.c          |   4 +-
- arch/powerpc/kernel/traps.c    |   1 -
- arch/powerpc/kernel/watchdog.c |   5 -
- arch/powerpc/kexec/crash.c     |   2 +-
- include/linux/hardirq.h        |   2 -
- include/linux/printk.h         |  41 ++--
- init/Kconfig                   |   5 -
- kernel/kexec_core.c            |   1 -
- kernel/panic.c                 |   3 -
- kernel/printk/internal.h       |  25 ---
- kernel/printk/printk.c         | 268 ++++++++++++++----------
- kernel/printk/printk_safe.c    | 364 +--------------------------------
- kernel/trace/trace.c           |   4 +-
- lib/nmi_backtrace.c            |  13 +-
- 14 files changed, 194 insertions(+), 544 deletions(-)
-
-
-base-commit: 70333dec446292cd896cd051d2ebd6808b328949
+diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
+index c7bb168b0d97..842427ff2b3c 100644
+--- a/arch/arm/kernel/smp.c
++++ b/arch/arm/kernel/smp.c
+@@ -667,9 +667,9 @@ static void do_handle_IPI(int ipinr)
+ 		break;
+ 
+ 	case IPI_CPU_BACKTRACE:
+-		printk_nmi_enter();
++		printk_deferred_enter();
+ 		nmi_cpu_backtrace(get_irq_regs());
+-		printk_nmi_exit();
++		printk_deferred_exit();
+ 		break;
+ 
+ 	default:
+diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
+index 0196d0c211ac..1070378c8e35 100644
+--- a/arch/powerpc/kexec/crash.c
++++ b/arch/powerpc/kexec/crash.c
+@@ -313,7 +313,7 @@ void default_machine_crash_shutdown(struct pt_regs *regs)
+ 	int (*old_handler)(struct pt_regs *regs);
+ 
+ 	/* Avoid hardlocking with irresponsive CPU holding logbuf_lock */
+-	printk_nmi_enter();
++	printk_deferred_enter();
+ 
+ 	/*
+ 	 * This function is only called after the system
+diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
+index 69bc86ea382c..76878b357ffa 100644
+--- a/include/linux/hardirq.h
++++ b/include/linux/hardirq.h
+@@ -116,7 +116,6 @@ extern void rcu_nmi_exit(void);
+ 	do {							\
+ 		lockdep_off();					\
+ 		arch_nmi_enter();				\
+-		printk_nmi_enter();				\
+ 		BUG_ON(in_nmi() == NMI_MASK);			\
+ 		__preempt_count_add(NMI_OFFSET + HARDIRQ_OFFSET);	\
+ 	} while (0)
+@@ -135,7 +134,6 @@ extern void rcu_nmi_exit(void);
+ 	do {							\
+ 		BUG_ON(!in_nmi());				\
+ 		__preempt_count_sub(NMI_OFFSET + HARDIRQ_OFFSET);	\
+-		printk_nmi_exit();				\
+ 		arch_nmi_exit();				\
+ 		lockdep_on();					\
+ 	} while (0)
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index 664612f75dac..03f7ccedaf18 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -149,18 +149,6 @@ static inline __printf(1, 2) __cold
+ void early_printk(const char *s, ...) { }
+ #endif
+ 
+-#ifdef CONFIG_PRINTK_NMI
+-extern void printk_nmi_enter(void);
+-extern void printk_nmi_exit(void);
+-extern void printk_nmi_direct_enter(void);
+-extern void printk_nmi_direct_exit(void);
+-#else
+-static inline void printk_nmi_enter(void) { }
+-static inline void printk_nmi_exit(void) { }
+-static inline void printk_nmi_direct_enter(void) { }
+-static inline void printk_nmi_direct_exit(void) { }
+-#endif /* PRINTK_NMI */
+-
+ struct dev_printk_info;
+ 
+ #ifdef CONFIG_PRINTK
+@@ -180,6 +168,16 @@ int printk(const char *fmt, ...);
+  */
+ __printf(1, 2) __cold int printk_deferred(const char *fmt, ...);
+ 
++extern void __printk_safe_enter(void);
++extern void __printk_safe_exit(void);
++/*
++ * The printk_deferred_enter/exit macros are available only as a hack for
++ * some code paths that need to defer all printk console printing. Interrupts
++ * must be disabled for the deferred duration.
++ */
++#define printk_deferred_enter __printk_safe_enter
++#define printk_deferred_exit __printk_safe_exit
++
+ /*
+  * Please don't use printk_ratelimit(), because it shares ratelimiting state
+  * with all other unrelated printk_ratelimit() callsites.  Instead use
+@@ -223,6 +221,15 @@ int printk_deferred(const char *s, ...)
+ {
+ 	return 0;
+ }
++
++static inline void printk_deferred_enter(void)
++{
++}
++
++static inline void printk_deferred_exit(void)
++{
++}
++
+ static inline int printk_ratelimit(void)
+ {
+ 	return 0;
+diff --git a/init/Kconfig b/init/Kconfig
+index a61c92066c2e..9c0510693543 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1506,11 +1506,6 @@ config PRINTK
+ 	  very difficult to diagnose system problems, saying N here is
+ 	  strongly discouraged.
+ 
+-config PRINTK_NMI
+-	def_bool y
+-	depends on PRINTK
+-	depends on HAVE_NMI
+-
+ config BUG
+ 	bool "BUG() support" if EXPERT
+ 	default y
+diff --git a/kernel/printk/internal.h b/kernel/printk/internal.h
+index 6cc35c5de890..b6d310c72fc9 100644
+--- a/kernel/printk/internal.h
++++ b/kernel/printk/internal.h
+@@ -6,12 +6,6 @@
+ 
+ #ifdef CONFIG_PRINTK
+ 
+-#define PRINTK_SAFE_CONTEXT_MASK	0x007ffffff
+-#define PRINTK_NMI_DIRECT_CONTEXT_MASK	0x008000000
+-#define PRINTK_NMI_CONTEXT_MASK		0xff0000000
+-
+-#define PRINTK_NMI_CONTEXT_OFFSET	0x010000000
+-
+ __printf(4, 0)
+ int vprintk_store(int facility, int level,
+ 		  const struct dev_printk_info *dev_info,
+@@ -19,8 +13,6 @@ int vprintk_store(int facility, int level,
+ 
+ __printf(1, 0) int vprintk_default(const char *fmt, va_list args);
+ __printf(1, 0) int vprintk_deferred(const char *fmt, va_list args);
+-void __printk_safe_enter(void);
+-void __printk_safe_exit(void);
+ 
+ bool printk_percpu_data_ready(void);
+ 
+diff --git a/kernel/printk/printk_safe.c b/kernel/printk/printk_safe.c
+index 29c580dac93d..ef0f9a2044da 100644
+--- a/kernel/printk/printk_safe.c
++++ b/kernel/printk/printk_safe.c
+@@ -4,12 +4,9 @@
+  */
+ 
+ #include <linux/preempt.h>
+-#include <linux/spinlock.h>
+-#include <linux/debug_locks.h>
+ #include <linux/kdb.h>
+ #include <linux/smp.h>
+ #include <linux/cpumask.h>
+-#include <linux/irq_work.h>
+ #include <linux/printk.h>
+ #include <linux/kprobes.h>
+ 
+@@ -17,35 +14,6 @@
+ 
+ static DEFINE_PER_CPU(int, printk_context);
+ 
+-#ifdef CONFIG_PRINTK_NMI
+-void noinstr printk_nmi_enter(void)
+-{
+-	this_cpu_add(printk_context, PRINTK_NMI_CONTEXT_OFFSET);
+-}
+-
+-void noinstr printk_nmi_exit(void)
+-{
+-	this_cpu_sub(printk_context, PRINTK_NMI_CONTEXT_OFFSET);
+-}
+-
+-/*
+- * Marks a code that might produce many messages in NMI context
+- * and the risk of losing them is more critical than eventual
+- * reordering.
+- */
+-void printk_nmi_direct_enter(void)
+-{
+-	if (this_cpu_read(printk_context) & PRINTK_NMI_CONTEXT_MASK)
+-		this_cpu_or(printk_context, PRINTK_NMI_DIRECT_CONTEXT_MASK);
+-}
+-
+-void printk_nmi_direct_exit(void)
+-{
+-	this_cpu_and(printk_context, ~PRINTK_NMI_DIRECT_CONTEXT_MASK);
+-}
+-
+-#endif /* CONFIG_PRINTK_NMI */
+-
+ /* Can be preempted by NMI. */
+ void __printk_safe_enter(void)
+ {
+@@ -70,10 +38,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
+ 	 * Use the main logbuf even in NMI. But avoid calling console
+ 	 * drivers that might have their own locks.
+ 	 */
+-	if (this_cpu_read(printk_context) &
+-	    (PRINTK_NMI_DIRECT_CONTEXT_MASK |
+-	     PRINTK_NMI_CONTEXT_MASK |
+-	     PRINTK_SAFE_CONTEXT_MASK)) {
++	if (this_cpu_read(printk_context) || in_nmi()) {
+ 		int len;
+ 
+ 		len = vprintk_store(0, LOGLEVEL_DEFAULT, NULL, fmt, args);
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index d23a09d3eb37..b30ad20d251f 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -9647,7 +9647,7 @@ void ftrace_dump(enum ftrace_dump_mode oops_dump_mode)
+ 	tracing_off();
+ 
+ 	local_irq_save(flags);
+-	printk_nmi_direct_enter();
++	printk_deferred_enter();
+ 
+ 	/* Simulate the iterator */
+ 	trace_init_global_iter(&iter);
+@@ -9729,7 +9729,7 @@ void ftrace_dump(enum ftrace_dump_mode oops_dump_mode)
+ 		atomic_dec(&per_cpu_ptr(iter.array_buffer->data, cpu)->disabled);
+ 	}
+ 	atomic_dec(&dump_running);
+-	printk_nmi_direct_exit();
++	printk_deferred_exit();
+ 	local_irq_restore(flags);
+ }
+ EXPORT_SYMBOL_GPL(ftrace_dump);
 -- 
 2.20.1
 
