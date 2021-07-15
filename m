@@ -2,79 +2,82 @@ Return-Path: <SRS0=2J9c=MH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA078C636C8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 17:18:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCFABC636C7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 17:18:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 71B176100B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 17:18:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71B176100B
+	by mail.kernel.org (Postfix) with ESMTPS id 8162D6100B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jul 2021 17:18:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8162D6100B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GQh071LF6z3dMq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jul 2021 03:17:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GQh0c1SpHz3blK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jul 2021 03:18:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=a4eD7Hw2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=Sws5QpZQ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=deltatee.com (client-ip=204.191.154.188; helo=ale.deltatee.com;
- envelope-from=logang@deltatee.com; receiver=<UNKNOWN>)
+ envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256
- header.s=20200525 header.b=a4eD7Hw2; dkim-atps=neutral
-X-Greylist: delayed 1188 seconds by postgrey-1.36 at boromir;
- Fri, 16 Jul 2021 03:16:06 AEST
+ header.s=20200525 header.b=Sws5QpZQ; dkim-atps=neutral
 Received: from ale.deltatee.com (ale.deltatee.com [204.191.154.188])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GQgxy6jXxz3070
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jul 2021 03:16:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GQgy12Djyz30N5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jul 2021 03:16:09 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=deltatee.com; s=20200525; h=Subject:In-Reply-To:MIME-Version:Date:
- Message-ID:From:References:Cc:To:content-disposition;
- bh=zhc7pzLmZmjUsLXsFnMXewKeUUfUybMjLBdEKzxTgWI=; b=a4eD7Hw2j62J4jmrqG3qM9ka82
- 5k5K5mLQB+hZHZqXGBpC8vAokNP0Ip4On3I09UBGqNxaWIRq2dmyriwR06pgFKl9jIT5xqRBf9vsD
- YwuOCb9uZhKtsGIHsKDWUmojgkYI2/2LwIaMUocRxIEBx7IUQ/6yxeiqqZGnSG4a85UbkDOZqICEa
- lG9jcrA6QbuiJkY03RA7uB1x8xSEwzPTD/kmMZHa3L73KtXI/2a8MW52t16HXK3n1ZJYijnMXJyfP
- O/wyAVK1kdSyrErsaIIRyaT5BgNIbq1xTAmZfgnfhUHzVRbyGsOS/vCEnIuD/1MU7ahfhlv+CI82Y
- BmE/J6uw==;
-Received: from s0106a84e3fe8c3f3.cg.shawcable.net ([24.64.144.200]
- helo=[192.168.0.10])
- by ale.deltatee.com with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
- (Exim 4.92) (envelope-from <logang@deltatee.com>)
- id 1m44eg-0002EB-Nd; Thu, 15 Jul 2021 10:56:11 -0600
-To: "Russell King (Oracle)" <linux@armlinux.org.uk>
-References: <20210715164544.6827-1-logang@deltatee.com>
- <20210715165309.GO22278@shell.armlinux.org.uk>
+ d=deltatee.com; s=20200525; h=Subject:MIME-Version:References:In-Reply-To:
+ Message-Id:Date:Cc:To:From:content-disposition;
+ bh=Wrns5FFqiizJvY/sNvwDopZHfXFnxfOgrEtwhJFRdNw=; b=Sws5QpZQtGmVowR/5iUlwg8UgC
+ Q5huPCa0lRnH7erDaKrhzfZc3JEbtS/rjcSlaa8ceAyHmJK3qWsjN9/c4G6FhbYQ9HlDeJ9jETJXB
+ bdq2f8TzBEOEkrjZGT5Co1lxkWTp+AluJjL1bkBj90Yq6ajMWBMKV71yrDPw9lVFWzowjR6HfsXtg
+ d+Je/PWPnaLtSYNrKpkvSiyI5DRH5zJ66i9nbDkdeg3NtjmH3nUDa+Kbqhs6Z3Dk8wWp1fVvuoZAb
+ ByyrzFq6ya5bW2DjyLNWRxN8NNyR7KERo6lOJpGSIfwCgNHNa6vWbhtarhteipE1N4ZU/tBRoJcGY
+ 7hO7A1Vg==;
+Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
+ by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
+ id 1m44Ux-0001yb-0X; Thu, 15 Jul 2021 10:46:08 -0600
+Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
+ (envelope-from <gunthorp@deltatee.com>)
+ id 1m44Uo-0001nZ-TI; Thu, 15 Jul 2021 10:45:58 -0600
 From: Logan Gunthorpe <logang@deltatee.com>
-Message-ID: <aa33d2bf-8324-5647-b800-3a2e3e774e80@deltatee.com>
-Date: Thu, 15 Jul 2021 10:56:09 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ iommu@lists.linux-foundation.org, linux-parisc@vger.kernel.org,
+ xen-devel@lists.xenproject.org
+Date: Thu, 15 Jul 2021 10:45:38 -0600
+Message-Id: <20210715164544.6827-11-logang@deltatee.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20210715164544.6827-1-logang@deltatee.com>
+References: <20210715164544.6827-1-logang@deltatee.com>
 MIME-Version: 1.0
-In-Reply-To: <20210715165309.GO22278@shell.armlinux.org.uk>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-CA
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 24.64.144.200
-X-SA-Exim-Rcpt-To: martin.oliveira@eideticom.com, sbates@raithlin.com,
- robin.murphy@arm.com, m.szyprowski@samsung.com, hch@lst.de,
- xen-devel@lists.xenproject.org, linux-parisc@vger.kernel.org,
- iommu@lists.linux-foundation.org, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-mips@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux@armlinux.org.uk
-X-SA-Exim-Mail-From: logang@deltatee.com
-Subject: Re: [PATCH v1 00/16] .map_sg() error cleanup
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 172.16.1.31
+X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-parisc@vger.kernel.org, xen-devel@lists.xenproject.org, hch@lst.de,
+ m.szyprowski@samsung.com, robin.murphy@arm.com, sbates@raithlin.com,
+ martin.oliveira@eideticom.com, logang@deltatee.com, schnelle@linux.ibm.com,
+ gerald.schaefer@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com,
+ borntraeger@de.ibm.com
+X-SA-Exim-Mail-From: gunthorp@deltatee.com
+Subject: [PATCH v1 10/16] s390/pci: return error code from s390_dma_map_sg()
 X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
 X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -88,52 +91,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, Robin Murphy <robin.murphy@arm.com>,
- Martin Oliveira <martin.oliveira@eideticom.com>, linux-mips@vger.kernel.org,
- linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- xen-devel@lists.xenproject.org, Stephen Bates <sbates@raithlin.com>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
- linux-arm-kernel@lists.infradead.org,
+Cc: Vasily Gorbik <gor@linux.ibm.com>, Niklas Schnelle <schnelle@linux.ibm.com>,
+ Robin Murphy <robin.murphy@arm.com>, Heiko Carstens <hca@linux.ibm.com>,
+ Martin Oliveira <martin.oliveira@eideticom.com>,
+ Stephen Bates <sbates@raithlin.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Logan Gunthorpe <logang@deltatee.com>, Christoph Hellwig <hch@lst.de>,
  Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Martin Oliveira <martin.oliveira@eideticom.com>
 
+The .map_sg() op now expects an error code instead of zero on failure.
 
+So propagate the error from __s390_dma_map_sg() up.
 
-On 2021-07-15 10:53 a.m., Russell King (Oracle) wrote:
-> On Thu, Jul 15, 2021 at 10:45:28AM -0600, Logan Gunthorpe wrote:
->> Hi,
->>
->> This series is spun out and expanded from my work to add P2PDMA support
->> to DMA map operations[1].
->>
->> The P2PDMA work requires distinguishing different error conditions in
->> a map_sg operation. dma_map_sgtable() already allows for returning an
->> error code (where as dma_map_sg() is only allowed to return zero)
->> however, it currently only returns -EINVAL when a .map_sg() call returns
->> zero.
->>
->> This series cleans up all .map_sg() implementations to return appropriate
->> error codes. After the cleanup, dma_map_sg() will still return zero,
->> however dma_map_sgtable() will pass the error code from the .map_sg()
->> call. Thanks go to Martn Oliveira for doing a lot of the cleanup of the
->> obscure implementations.
->>
->> The patch set is based off of v5.14-rc1 and a git repo can be found
->> here:
-> 
-> Have all the callers for dma_map_sg() been updated to check for error
-> codes? If not, isn't that a pre-requisit to this patch set?
+Signed-off-by: Martin Oliveira <martin.oliveira@eideticom.com>
+Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
+Cc: Niklas Schnelle <schnelle@linux.ibm.com>
+Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+---
+ arch/s390/pci/pci_dma.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-No. Perhaps I wasn't clear enough: This series is changing only
-impelemntations of .map_sg(). It does *not* change the return code of
-dma_map_sg(). dma_map_sg() will continue to return zero on error for the
-foreseeable future. The dma_map_sgtable() call already allows returning
-error codes and it will pass the new error code through. This is what
-will be used in the P2PDMA work.
+diff --git a/arch/s390/pci/pci_dma.c b/arch/s390/pci/pci_dma.c
+index ebc9a49523aa..c78b02012764 100644
+--- a/arch/s390/pci/pci_dma.c
++++ b/arch/s390/pci/pci_dma.c
+@@ -487,7 +487,7 @@ static int s390_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 	unsigned int max = dma_get_max_seg_size(dev);
+ 	unsigned int size = s->offset + s->length;
+ 	unsigned int offset = s->offset;
+-	int count = 0, i;
++	int count = 0, i, ret;
+ 
+ 	for (i = 1; i < nr_elements; i++) {
+ 		s = sg_next(s);
+@@ -497,8 +497,9 @@ static int s390_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 
+ 		if (s->offset || (size & ~PAGE_MASK) ||
+ 		    size + s->length > max) {
+-			if (__s390_dma_map_sg(dev, start, size,
+-					      &dma->dma_address, dir))
++			ret = __s390_dma_map_sg(dev, start, size,
++						&dma->dma_address, dir);
++			if (ret)
+ 				goto unmap;
+ 
+ 			dma->dma_address += offset;
+@@ -511,7 +512,8 @@ static int s390_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 		}
+ 		size += s->length;
+ 	}
+-	if (__s390_dma_map_sg(dev, start, size, &dma->dma_address, dir))
++	ret = __s390_dma_map_sg(dev, start, size, &dma->dma_address, dir);
++	if (ret)
+ 		goto unmap;
+ 
+ 	dma->dma_address += offset;
+@@ -523,7 +525,7 @@ static int s390_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 		s390_dma_unmap_pages(dev, sg_dma_address(s), sg_dma_len(s),
+ 				     dir, attrs);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static void s390_dma_unmap_sg(struct device *dev, struct scatterlist *sg,
+-- 
+2.20.1
 
-Logan
