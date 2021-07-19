@@ -2,107 +2,114 @@ Return-Path: <SRS0=aJM7=ML=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95825C636CB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 09:13:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24940C12002
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 09:33:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E78ED61006
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 09:13:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E78ED61006
+	by mail.kernel.org (Postfix) with ESMTPS id 80FC76108B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 09:33:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80FC76108B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GSx3X4mL4z3bfR
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 19:13:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GSxVW1J6Zz3bfr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 19:33:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jYgac5mS;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mBSLFmoV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=jYgac5mS; dkim-atps=neutral
+ header.s=pp1 header.b=mBSLFmoV; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GSx314rtvz2yMg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jul 2021 19:13:17 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GSxTv1cg1z2ydJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jul 2021 19:33:06 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 16J93CZC016660; Mon, 19 Jul 2021 05:13:12 -0400
+ 16J9WvmH050441; Mon, 19 Jul 2021 05:33:01 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : from : to : cc
- : references : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=B7aayJ/EZJm+/twI+gZ8WtaZYHDvNpoK35UM7JsYGW4=;
- b=jYgac5mSNaj06O3Su8rTTiII1rDv/v9/lq916YGutf35ZnGMs553h2XkDilwklCaSFC+
- z9W/6bzU2zgng6ESoWr9kIx5s6FeznSuPcIcaSj3Wk9e6HDsRvvc2FxCMjsJxz8V/BE2
- LT7lSiApoDQqtcrhWsaB4vN+UHanEvJXi6e1p7PBT1xCH/X9GcVSZlYJRa/78tPxjQCE
- mJ76g3vF1A6WiC84QC0BQWoka7xDNDonqaxFv4eQ+GTBM8hBDSpM7AMNazZUhyKHMmAt
- ByiQxOHu9pq2G48c6HrSm83FD60OeH51Ujfhyrow4gmQav7wujaQrSAle40nF6rVbThC fA== 
+ h=from : to : subject :
+ date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=2pUAoTYGYLwvY5R3j7LKt7sGmIuwzXulbRPsP6Dv1W4=;
+ b=mBSLFmoVtiGxb5CHB6WXWzZcjxexQNW5IBl+fPRAecCFRlJ/gmkC3iBbarOFvVtsGA8p
+ ZbttxJSjX17WLb1Qp+GWmba4RYOj4SbdS74FMwJi0TgnWEAZOsCMKTz/wLI3tE05Jeob
+ nb4xT4PgTWtOOB0oa/y83jLzxgDfoMdQOFAbtzeakhKfk8nl/YCDITTKOywkq5AZUICq
+ QaaKL73QMSKA7r4JdH3yrXM3pfwqv5wjqXpPLH5OwrfFGRKuzQak4uk1cebebjxqxklo
+ FjfB9dEO/iTx9JJNAaugv077nXZYYNqsYKRR6YALdLJI6SjoLfZsYFm5nxCvICFCN74N FQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39w5pqt2fk-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 19 Jul 2021 05:33:01 -0400
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16J9X1wV050546;
+ Mon, 19 Jul 2021 05:33:01 -0400
 Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
  [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39w5hr1x60-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39w5pqt2ek-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 19 Jul 2021 05:13:12 -0400
+ Mon, 19 Jul 2021 05:33:00 -0400
 Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16J9D2Tc031982;
- Mon, 19 Jul 2021 09:13:10 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma04ams.nl.ibm.com with ESMTP id 39upu88mfn-1
+ by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16J9WtVN016183;
+ Mon, 19 Jul 2021 09:32:58 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma04ams.nl.ibm.com with ESMTP id 39upu88mre-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 19 Jul 2021 09:13:09 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 16J9D7Gg26214688
+ Mon, 19 Jul 2021 09:32:58 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16J9Wuoi15728926
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 19 Jul 2021 09:13:07 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 39A0CAE059;
- Mon, 19 Jul 2021 09:13:07 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E5ECFAE045;
- Mon, 19 Jul 2021 09:13:06 +0000 (GMT)
-Received: from pomme.local (unknown [9.145.1.33])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 19 Jul 2021 09:13:06 +0000 (GMT)
-Subject: Re: [PATCH v5] pseries: prevent free CPU ids to be reused on another
- node
-From: Laurent Dufour <ldufour@linux.ibm.com>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org
-References: <20210429174908.16613-1-ldufour@linux.ibm.com>
-Message-ID: <f2d7a3f4-6d3f-b06b-2b66-9fa988c92998@linux.ibm.com>
-Date: Mon, 19 Jul 2021 11:13:04 +0200
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
- Gecko/20100101 Thunderbird/78.11.0
+ Mon, 19 Jul 2021 09:32:56 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1D7ADA4054;
+ Mon, 19 Jul 2021 09:32:56 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EBF5AA4060;
+ Mon, 19 Jul 2021 09:32:53 +0000 (GMT)
+Received: from pratiks-thinkpad.ibmuc.com (unknown [9.85.84.3])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 19 Jul 2021 09:32:53 +0000 (GMT)
+From: "Pratik R. Sampat" <psampat@linux.ibm.com>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, psampat@linux.ibm.com,
+ pratik.r.sampat@gmail.com
+Subject: [PATCH v5 1/1] powerpc/pseries: Interface to represent PAPR firmware
+ attributes
+Date: Mon, 19 Jul 2021 15:02:50 +0530
+Message-Id: <20210719093250.41405-2-psampat@linux.ibm.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20210719093250.41405-1-psampat@linux.ibm.com>
+References: <20210719093250.41405-1-psampat@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20210429174908.16613-1-ldufour@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: lnjOtmXweAQV8cMon31Bcafo0u5f8OHy
-X-Proofpoint-ORIG-GUID: lnjOtmXweAQV8cMon31Bcafo0u5f8OHy
+X-Proofpoint-ORIG-GUID: PDuodgTy8lRIPyczRntU76hO6C7CMuWS
+X-Proofpoint-GUID: cizPHRVEyzqpPcWje_Ylqfh7ioTgIaCh
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-07-19_02:2021-07-16,
  2021-07-19 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 clxscore=1015
- malwarescore=0 adultscore=0 suspectscore=0 mlxlogscore=999 spamscore=0
- bulkscore=0 phishscore=0 impostorscore=0 priorityscore=1501
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2107190050
+ clxscore=1015 adultscore=0
+ phishscore=0 lowpriorityscore=0 spamscore=0 mlxlogscore=999 suspectscore=0
+ priorityscore=1501 malwarescore=0 impostorscore=0 mlxscore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104190000
+ definitions=main-2107190053
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,318 +121,504 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael,
+Adds a generic interface to represent the energy and frequency related
+PAPR attributes on the system using the new H_CALL
+"H_GET_ENERGY_SCALE_INFO".
 
-Is there a way to get that patch in 5.14?
+H_GET_EM_PARMS H_CALL was previously responsible for exporting this
+information in the lparcfg, however the H_GET_EM_PARMS H_CALL
+will be deprecated P10 onwards.
 
-Thanks,
-Laurent.
+The H_GET_ENERGY_SCALE_INFO H_CALL is of the following call format:
+hcall(
+  uint64 H_GET_ENERGY_SCALE_INFO,  // Get energy scale info
+  uint64 flags,           // Per the flag request
+  uint64 firstAttributeId,// The attribute id
+  uint64 bufferAddress,   // Guest physical address of the output buffer
+  uint64 bufferSize       // The size in bytes of the output buffer
+);
 
-Le 29/04/2021 à 19:49, Laurent Dufour a écrit :
-> When a CPU is hot added, the CPU ids are taken from the available mask from
-> the lower possible set. If that set of values was previously used for CPU
-> attached to a different node, this seems to application like if these CPUs
-> have migrated from a node to another one which is not expected in real
-> life.
-> 
-> To prevent this, it is needed to record the CPU ids used for each node and
-> to not reuse them on another node. However, to prevent CPU hot plug to
-> fail, in the case the CPU ids is starved on a node, the capability to reuse
-> other nodes’ free CPU ids is kept. A warning is displayed in such a case
-> to warn the user.
-> 
-> A new CPU bit mask (node_recorded_ids_map) is introduced for each possible
-> node. It is populated with the CPU onlined at boot time, and then when a
-> CPU is hot plug to a node. The bits in that mask remain when the CPU is hot
-> unplugged, to remind this CPU ids have been used for this node.
-> 
-> If no id set was found, a retry is made without removing the ids used on
-> the other nodes to try reusing them. This is the way ids have been
-> allocated prior to this patch.
-> 
-> The effect of this patch can be seen by removing and adding CPUs using the
-> Qemu monitor. In the following case, the first CPU from the node 2 is
-> removed, then the first one from the node 1 is removed too. Later, the
-> first CPU of the node 2 is added back. Without that patch, the kernel will
-> numbered these CPUs using the first CPU ids available which are the ones
-> freed when removing the second CPU of the node 0. This leads to the CPU ids
-> 16-23 to move from the node 1 to the node 2. With the patch applied, the
-> CPU ids 32-39 are used since they are the lowest free ones which have not
-> been used on another node.
-> 
-> At boot time:
-> [root@vm40 ~]# numactl -H | grep cpus
-> node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
-> node 1 cpus: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
-> node 2 cpus: 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47
-> 
-> Vanilla kernel, after the CPU hot unplug/plug operations:
-> [root@vm40 ~]# numactl -H | grep cpus
-> node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
-> node 1 cpus: 24 25 26 27 28 29 30 31
-> node 2 cpus: 16 17 18 19 20 21 22 23 40 41 42 43 44 45 46 47
-> 
-> Patched kernel, after the CPU hot unplug/plug operations:
-> [root@vm40 ~]# numactl -H | grep cpus
-> node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
-> node 1 cpus: 24 25 26 27 28 29 30 31
-> node 2 cpus: 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47
-> 
-> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
-> ---
-> V5:
->   - Rework code structure
->   - Reintroduce the capability to reuse other node's ids.
-> V4: addressing Nathan's comment
->   - Rename the local variable named 'nid' into 'assigned_node'
-> V3: addressing Nathan's comments
->   - Remove the retry feature
->   - Reduce the number of local variables (removing 'i')
->   - Add comment about the cpu_add_remove_lock protecting the added CPU mask.
->   V2: (no functional changes)
->   - update the test's output in the commit's description
->   - node_recorded_ids_map should be static
-> ---
->   arch/powerpc/platforms/pseries/hotplug-cpu.c | 171 ++++++++++++++-----
->   1 file changed, 132 insertions(+), 39 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 7e970f81d8ff..e1f224320102 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -39,6 +39,12 @@
->   /* This version can't take the spinlock, because it never returns */
->   static int rtas_stop_self_token = RTAS_UNKNOWN_SERVICE;
->   
-> +/*
-> + * Record the CPU ids used on each nodes.
-> + * Protected by cpu_add_remove_lock.
-> + */
-> +static cpumask_var_t node_recorded_ids_map[MAX_NUMNODES];
-> +
->   static void rtas_stop_self(void)
->   {
->   	static struct rtas_args args;
-> @@ -139,72 +145,148 @@ static void pseries_cpu_die(unsigned int cpu)
->   	paca_ptrs[cpu]->cpu_start = 0;
->   }
->   
-> +/**
-> + * find_cpu_id_range - found a linear ranger of @nthreads free CPU ids.
-> + * @nthreads : the number of threads (cpu ids)
-> + * @assigned_node : the node it belongs to or NUMA_NO_NODE if free ids from any
-> + *                  node can be peek.
-> + * @cpu_mask: the returned CPU mask.
-> + *
-> + * Returns 0 on success.
-> + */
-> +static int find_cpu_id_range(unsigned int nthreads, int assigned_node,
-> +			     cpumask_var_t *cpu_mask)
-> +{
-> +	cpumask_var_t candidate_mask;
-> +	unsigned int cpu, node;
-> +	int rc = -ENOSPC;
-> +
-> +	if (!zalloc_cpumask_var(&candidate_mask, GFP_KERNEL))
-> +		return -ENOMEM;
-> +
-> +	cpumask_clear(*cpu_mask);
-> +	for (cpu = 0; cpu < nthreads; cpu++)
-> +		cpumask_set_cpu(cpu, *cpu_mask);
-> +
-> +	BUG_ON(!cpumask_subset(cpu_present_mask, cpu_possible_mask));
-> +
-> +	/* Get a bitmap of unoccupied slots. */
-> +	cpumask_xor(candidate_mask, cpu_possible_mask, cpu_present_mask);
-> +
-> +	if (assigned_node != NUMA_NO_NODE) {
-> +		/*
-> +		 * Remove free ids previously assigned on the other nodes. We
-> +		 * can walk only online nodes because once a node became online
-> +		 * it is not turned offlined back.
-> +		 */
-> +		for_each_online_node(node) {
-> +			if (node == assigned_node)
-> +				continue;
-> +			cpumask_andnot(candidate_mask, candidate_mask,
-> +				       node_recorded_ids_map[node]);
-> +		}
-> +	}
-> +
-> +	if (cpumask_empty(candidate_mask))
-> +		goto out;
-> +
-> +	while (!cpumask_empty(*cpu_mask)) {
-> +		if (cpumask_subset(*cpu_mask, candidate_mask))
-> +			/* Found a range where we can insert the new cpu(s) */
-> +			break;
-> +		cpumask_shift_left(*cpu_mask, *cpu_mask, nthreads);
-> +	}
-> +
-> +	if (!cpumask_empty(*cpu_mask))
-> +		rc = 0;
-> +
-> +out:
-> +	free_cpumask_var(candidate_mask);
-> +	return rc;
-> +}
-> +
->   /*
->    * Update cpu_present_mask and paca(s) for a new cpu node.  The wrinkle
-> - * here is that a cpu device node may represent up to two logical cpus
-> + * here is that a cpu device node may represent multiple logical cpus
->    * in the SMT case.  We must honor the assumption in other code that
->    * the logical ids for sibling SMT threads x and y are adjacent, such
->    * that x^1 == y and y^1 == x.
->    */
->   static int pseries_add_processor(struct device_node *np)
->   {
-> -	unsigned int cpu;
-> -	cpumask_var_t candidate_mask, tmp;
-> -	int err = -ENOSPC, len, nthreads, i;
-> +	int len, nthreads, node, cpu, assigned_node;
-> +	int rc = 0;
-> +	cpumask_var_t cpu_mask;
->   	const __be32 *intserv;
->   
->   	intserv = of_get_property(np, "ibm,ppc-interrupt-server#s", &len);
->   	if (!intserv)
->   		return 0;
->   
-> -	zalloc_cpumask_var(&candidate_mask, GFP_KERNEL);
-> -	zalloc_cpumask_var(&tmp, GFP_KERNEL);
-> -
->   	nthreads = len / sizeof(u32);
-> -	for (i = 0; i < nthreads; i++)
-> -		cpumask_set_cpu(i, tmp);
->   
-> -	cpu_maps_update_begin();
-> +	if (!alloc_cpumask_var(&cpu_mask, GFP_KERNEL))
-> +		return -ENOMEM;
->   
-> -	BUG_ON(!cpumask_subset(cpu_present_mask, cpu_possible_mask));
-> +	/*
-> +	 * Fetch from the DT nodes read by dlpar_configure_connector() the NUMA
-> +	 * node id the added CPU belongs to.
-> +	 */
-> +	node = of_node_to_nid(np);
-> +	if (node < 0 || !node_possible(node))
-> +		node = first_online_node;
->   
-> -	/* Get a bitmap of unoccupied slots. */
-> -	cpumask_xor(candidate_mask, cpu_possible_mask, cpu_present_mask);
-> -	if (cpumask_empty(candidate_mask)) {
-> -		/* If we get here, it most likely means that NR_CPUS is
-> -		 * less than the partition's max processors setting.
-> +	BUG_ON(node == NUMA_NO_NODE);
-> +	assigned_node = node;
-> +
-> +	cpu_maps_update_begin();
-> +
-> +	rc = find_cpu_id_range(nthreads, node, &cpu_mask);
-> +	if (rc && nr_node_ids > 1) {
-> +		/*
-> +		 * Try again, considering the free CPU ids from the other node.
->   		 */
-> -		printk(KERN_ERR "Cannot add cpu %pOF; this system configuration"
-> -		       " supports %d logical cpus.\n", np,
-> -		       num_possible_cpus());
-> -		goto out_unlock;
-> +		node = NUMA_NO_NODE;
-> +		rc = find_cpu_id_range(nthreads, NUMA_NO_NODE, &cpu_mask);
->   	}
->   
-> -	while (!cpumask_empty(tmp))
-> -		if (cpumask_subset(tmp, candidate_mask))
-> -			/* Found a range where we can insert the new cpu(s) */
-> -			break;
-> -		else
-> -			cpumask_shift_left(tmp, tmp, nthreads);
-> -
-> -	if (cpumask_empty(tmp)) {
-> -		printk(KERN_ERR "Unable to find space in cpu_present_mask for"
-> -		       " processor %pOFn with %d thread(s)\n", np,
-> -		       nthreads);
-> -		goto out_unlock;
-> +	if (rc) {
-> +		pr_err("Cannot add cpu %pOF; this system configuration"
-> +		       " supports %d logical cpus.\n", np, num_possible_cpus());
-> +		goto out;
->   	}
->   
-> -	for_each_cpu(cpu, tmp) {
-> +	for_each_cpu(cpu, cpu_mask) {
->   		BUG_ON(cpu_present(cpu));
->   		set_cpu_present(cpu, true);
->   		set_hard_smp_processor_id(cpu, be32_to_cpu(*intserv++));
->   	}
-> -	err = 0;
-> -out_unlock:
-> +
-> +	/* Record the newly used CPU ids for the associate node. */
-> +	cpumask_or(node_recorded_ids_map[assigned_node],
-> +		   node_recorded_ids_map[assigned_node], cpu_mask);
-> +
-> +	/*
-> +	 * If node is set to NUMA_NO_NODE, CPU ids have be reused from
-> +	 * another node, remove them from its mask.
-> +	 */
-> +	if (node == NUMA_NO_NODE) {
-> +		cpu = cpumask_first(cpu_mask);
-> +		pr_warn("Reusing free CPU ids %d-%d from another node\n",
-> +			cpu, cpu + nthreads - 1);
-> +		for_each_online_node(node) {
-> +			if (node == assigned_node)
-> +				continue;
-> +			cpumask_andnot(node_recorded_ids_map[node],
-> +				       node_recorded_ids_map[node],
-> +				       cpu_mask);
-> +		}
-> +	}
-> +
-> +out:
->   	cpu_maps_update_done();
-> -	free_cpumask_var(candidate_mask);
-> -	free_cpumask_var(tmp);
-> -	return err;
-> +	free_cpumask_var(cpu_mask);
-> +	return rc;
->   }
->   
->   /*
-> @@ -908,6 +990,7 @@ static struct notifier_block pseries_smp_nb = {
->   static int __init pseries_cpu_hotplug_init(void)
->   {
->   	int qcss_tok;
-> +	unsigned int node;
->   
->   #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
->   	ppc_md.cpu_probe = dlpar_cpu_probe;
-> @@ -929,8 +1012,18 @@ static int __init pseries_cpu_hotplug_init(void)
->   	smp_ops->cpu_die = pseries_cpu_die;
->   
->   	/* Processors can be added/removed only on LPAR */
-> -	if (firmware_has_feature(FW_FEATURE_LPAR))
-> +	if (firmware_has_feature(FW_FEATURE_LPAR)) {
-> +		for_each_node(node) {
-> +			alloc_bootmem_cpumask_var(&node_recorded_ids_map[node]);
-> +
-> +			/* Record ids of CPU added at boot time */
-> +			cpumask_or(node_recorded_ids_map[node],
-> +				   node_recorded_ids_map[node],
-> +				   node_to_cpumask_map[node]);
-> +		}
-> +
->   		of_reconfig_notifier_register(&pseries_smp_nb);
-> +	}
->   
->   	return 0;
->   }
-> 
+This H_CALL can query either all the attributes at once with
+firstAttributeId = 0, flags = 0 as well as query only one attribute
+at a time with firstAttributeId = id, flags = 1.
+
+The output buffer consists of the following
+1. number of attributes              - 8 bytes
+2. array offset to the data location - 8 bytes
+3. version info                      - 1 byte
+4. A data array of size num attributes, which contains the following:
+  a. attribute ID              - 8 bytes
+  b. attribute value in number - 8 bytes
+  c. attribute name in string  - 64 bytes
+  d. attribute value in string - 64 bytes
+
+The new H_CALL exports information in direct string value format, hence
+a new interface has been introduced in
+/sys/firmware/papr/energy_scale_info to export this information to
+userspace in an extensible pass-through format.
+
+The H_CALL returns the name, numeric value and string value (if exists)
+
+The format of exposing the sysfs information is as follows:
+/sys/firmware/papr/energy_scale_info/
+   |-- <id>/
+     |-- desc
+     |-- value
+     |-- value_desc (if exists)
+   |-- <id>/
+     |-- desc
+     |-- value
+     |-- value_desc (if exists)
+...
+
+The energy information that is exported is useful for userspace tools
+such as powerpc-utils. Currently these tools infer the
+"power_mode_data" value in the lparcfg, which in turn is obtained from
+the to be deprecated H_GET_EM_PARMS H_CALL.
+On future platforms, such userspace utilities will have to look at the
+data returned from the new H_CALL being populated in this new sysfs
+interface and report this information directly without the need of
+interpretation.
+
+Signed-off-by: Pratik R. Sampat <psampat@linux.ibm.com>
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ .../sysfs-firmware-papr-energy-scale-info     |  26 ++
+ arch/powerpc/include/asm/hvcall.h             |  24 +-
+ arch/powerpc/kvm/trace_hv.h                   |   1 +
+ arch/powerpc/platforms/pseries/Makefile       |   3 +-
+ .../pseries/papr_platform_attributes.c        | 317 ++++++++++++++++++
+ 5 files changed, 369 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-firmware-papr-energy-scale-info
+ create mode 100644 arch/powerpc/platforms/pseries/papr_platform_attributes.c
+
+diff --git a/Documentation/ABI/testing/sysfs-firmware-papr-energy-scale-info b/Documentation/ABI/testing/sysfs-firmware-papr-energy-scale-info
+new file mode 100644
+index 000000000000..139a576c7c9d
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-firmware-papr-energy-scale-info
+@@ -0,0 +1,26 @@
++What:		/sys/firmware/papr/energy_scale_info
++Date:		June 2021
++Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	Directory hosting a set of platform attributes like
++		energy/frequency on Linux running as a PAPR guest.
++
++		Each file in a directory contains a platform
++		attribute hierarchy pertaining to performance/
++		energy-savings mode and processor frequency.
++
++What:		/sys/firmware/papr/energy_scale_info/<id>
++		/sys/firmware/papr/energy_scale_info/<id>/desc
++		/sys/firmware/papr/energy_scale_info/<id>/value
++		/sys/firmware/papr/energy_scale_info/<id>/value_desc
++Date:		June 2021
++Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	Energy, frequency attributes directory for POWERVM servers
++
++		This directory provides energy, frequency, folding information. It
++		contains below sysfs attributes:
++
++		- desc: String description of the attribute <id>
++
++		- value: Numeric value of attribute <id>
++
++		- value_desc: String value of attribute <id>
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index e3b29eda8074..c91714ea6719 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -316,7 +316,8 @@
+ #define H_SCM_PERFORMANCE_STATS 0x418
+ #define H_RPT_INVALIDATE	0x448
+ #define H_SCM_FLUSH		0x44C
+-#define MAX_HCALL_OPCODE	H_SCM_FLUSH
++#define H_GET_ENERGY_SCALE_INFO	0x450
++#define MAX_HCALL_OPCODE	H_GET_ENERGY_SCALE_INFO
+ 
+ /* Scope args for H_SCM_UNBIND_ALL */
+ #define H_UNBIND_SCOPE_ALL (0x1)
+@@ -631,6 +632,27 @@ struct hv_gpci_request_buffer {
+ 	uint8_t bytes[HGPCI_MAX_DATA_BYTES];
+ } __packed;
+ 
++#define ESI_VERSION	0x1
++#define MAX_ESI_ATTRS	10
++#define MAX_BUF_SZ	(sizeof(struct h_energy_scale_info_hdr) + \
++			(sizeof(struct energy_scale_attribute) * MAX_ESI_ATTRS))
++
++struct energy_scale_attribute {
++	__be64 id;
++	__be64 value;
++	unsigned char desc[64];
++	unsigned char value_desc[64];
++} __packed;
++
++struct h_energy_scale_info_hdr {
++	__be64 num_attrs;
++	__be64 array_offset;
++	__u8 data_header_version;
++} __packed;
++
++/* /sys/firmware/papr */
++extern struct kobject *papr_kobj;
++
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_HVCALL_H */
+diff --git a/arch/powerpc/kvm/trace_hv.h b/arch/powerpc/kvm/trace_hv.h
+index 830a126e095d..38cd0ed0a617 100644
+--- a/arch/powerpc/kvm/trace_hv.h
++++ b/arch/powerpc/kvm/trace_hv.h
+@@ -115,6 +115,7 @@
+ 	{H_VASI_STATE,			"H_VASI_STATE"}, \
+ 	{H_ENABLE_CRQ,			"H_ENABLE_CRQ"}, \
+ 	{H_GET_EM_PARMS,		"H_GET_EM_PARMS"}, \
++	{H_GET_ENERGY_SCALE_INFO,	"H_GET_ENERGY_SCALE_INFO"}, \
+ 	{H_SET_MPP,			"H_SET_MPP"}, \
+ 	{H_GET_MPP,			"H_GET_MPP"}, \
+ 	{H_HOME_NODE_ASSOCIATIVITY,	"H_HOME_NODE_ASSOCIATIVITY"}, \
+diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
+index c8a2b0b05ac0..d14fca89ac25 100644
+--- a/arch/powerpc/platforms/pseries/Makefile
++++ b/arch/powerpc/platforms/pseries/Makefile
+@@ -6,7 +6,8 @@ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
+ 			   of_helpers.o \
+ 			   setup.o iommu.o event_sources.o ras.o \
+ 			   firmware.o power.o dlpar.o mobility.o rng.o \
+-			   pci.o pci_dlpar.o eeh_pseries.o msi.o
++			   pci.o pci_dlpar.o eeh_pseries.o msi.o \
++			   papr_platform_attributes.o
+ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_SCANLOG)	+= scanlog.o
+ obj-$(CONFIG_KEXEC_CORE)	+= kexec.o
+diff --git a/arch/powerpc/platforms/pseries/papr_platform_attributes.c b/arch/powerpc/platforms/pseries/papr_platform_attributes.c
+new file mode 100644
+index 000000000000..52a14997fafc
+--- /dev/null
++++ b/arch/powerpc/platforms/pseries/papr_platform_attributes.c
+@@ -0,0 +1,317 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Platform energy and frequency attributes driver
++ *
++ * This driver creates a sys file at /sys/firmware/papr/ which encapsulates a
++ * directory structure containing files in keyword - value pairs that specify
++ * energy and frequency configuration of the system.
++ *
++ * The format of exposing the sysfs information is as follows:
++ * /sys/firmware/papr/energy_scale_info/
++ *  |-- <id>/
++ *    |-- desc
++ *    |-- value
++ *    |-- value_desc (if exists)
++ *  |-- <id>/
++ *    |-- desc
++ *    |-- value
++ *    |-- value_desc (if exists)
++ *
++ * Copyright 2021 IBM Corp.
++ */
++
++#include <asm/hvcall.h>
++#include <asm/machdep.h>
++
++#include "pseries.h"
++
++/*
++ * Flag attributes to fetch either all or one attribute from the HCALL
++ * flag = BE(0) => fetch all attributes with firstAttributeId = 0
++ * flag = BE(1) => fetch a single attribute with firstAttributeId = id
++ */
++#define ESI_FLAGS_ALL		0
++#define ESI_FLAGS_SINGLE	PPC_BIT(0)
++
++#define MAX_ATTRS		3
++
++struct papr_attr {
++	u64 id;
++	struct kobj_attribute kobj_attr;
++};
++struct papr_group {
++	struct attribute_group pg;
++	struct papr_attr pgattrs[MAX_ATTRS];
++} *pgs;
++
++/* /sys/firmware/papr */
++struct kobject *papr_kobj;
++/* /sys/firmware/papr/energy_scale_info */
++struct kobject *esi_kobj;
++
++/*
++ * Extract and export the description of the energy scale attributes
++ */
++static ssize_t papr_show_desc(struct kobject *kobj,
++			       struct kobj_attribute *kobj_attr,
++			       char *buf)
++{
++	struct papr_attr *pattr = container_of(kobj_attr, struct papr_attr,
++					       kobj_attr);
++	struct h_energy_scale_info_hdr *t_hdr;
++	struct energy_scale_attribute *t_esi;
++	char *t_buf;
++	int ret = 0;
++
++	t_buf = kmalloc(MAX_BUF_SZ, GFP_KERNEL);
++	if (t_buf == NULL)
++		return -ENOMEM;
++
++	ret = plpar_hcall_norets(H_GET_ENERGY_SCALE_INFO, ESI_FLAGS_SINGLE,
++				 pattr->id, virt_to_phys(t_buf),
++				 MAX_BUF_SZ);
++
++	if (ret != H_SUCCESS) {
++		pr_warn("hcall failed: H_GET_ENERGY_SCALE_INFO");
++		goto out;
++	}
++
++	t_hdr = (struct h_energy_scale_info_hdr *) t_buf;
++	t_esi = (struct energy_scale_attribute *)
++		(t_buf + be64_to_cpu(t_hdr->array_offset));
++
++	ret = snprintf(buf, sizeof(t_esi->desc), "%s\n", t_esi->desc);
++	if (ret < 0)
++		ret = -EIO;
++out:
++	kfree(t_buf);
++
++	return ret;
++}
++
++/*
++ * Extract and export the numeric value of the energy scale attributes
++ */
++static ssize_t papr_show_value(struct kobject *kobj,
++				struct kobj_attribute *kobj_attr,
++				char *buf)
++{
++	struct papr_attr *pattr = container_of(kobj_attr, struct papr_attr,
++					       kobj_attr);
++	struct h_energy_scale_info_hdr *t_hdr;
++	struct energy_scale_attribute *t_esi;
++	char *t_buf;
++	int ret = 0;
++
++	t_buf = kmalloc(MAX_BUF_SZ, GFP_KERNEL);
++	if (t_buf == NULL)
++		return -ENOMEM;
++
++	ret = plpar_hcall_norets(H_GET_ENERGY_SCALE_INFO, ESI_FLAGS_SINGLE,
++				 pattr->id, virt_to_phys(t_buf),
++				 MAX_BUF_SZ);
++
++	if (ret != H_SUCCESS) {
++		pr_warn("hcall failed: H_GET_ENERGY_SCALE_INFO");
++		goto out;
++	}
++
++	t_hdr = (struct h_energy_scale_info_hdr *) t_buf;
++	t_esi = (struct energy_scale_attribute *)
++		(t_buf + be64_to_cpu(t_hdr->array_offset));
++
++	ret = snprintf(buf, sizeof(t_esi->value), "%llu\n",
++		       be64_to_cpu(t_esi->value));
++	if (ret < 0)
++		ret = -EIO;
++out:
++	kfree(t_buf);
++
++	return ret;
++}
++
++/*
++ * Extract and export the value description in string format of the energy
++ * scale attributes
++ */
++static ssize_t papr_show_value_desc(struct kobject *kobj,
++				     struct kobj_attribute *kobj_attr,
++				     char *buf)
++{
++	struct papr_attr *pattr = container_of(kobj_attr, struct papr_attr,
++					       kobj_attr);
++	struct h_energy_scale_info_hdr *t_hdr;
++	struct energy_scale_attribute *t_esi;
++	char *t_buf;
++	int ret = 0;
++
++	t_buf = kmalloc(MAX_BUF_SZ, GFP_KERNEL);
++	if (t_buf == NULL)
++		return -ENOMEM;
++
++	ret = plpar_hcall_norets(H_GET_ENERGY_SCALE_INFO, ESI_FLAGS_SINGLE,
++				 pattr->id, virt_to_phys(t_buf),
++				 MAX_BUF_SZ);
++
++	if (ret != H_SUCCESS) {
++		pr_warn("hcall failed: H_GET_ENERGY_SCALE_INFO");
++		goto out;
++	}
++
++	t_hdr = (struct h_energy_scale_info_hdr *) t_buf;
++	t_esi = (struct energy_scale_attribute *)
++		(t_buf + be64_to_cpu(t_hdr->array_offset));
++
++	ret = snprintf(buf, sizeof(t_esi->value_desc), "%s\n",
++		       t_esi->value_desc);
++	if (ret < 0)
++		ret = -EIO;
++out:
++	kfree(t_buf);
++
++	return ret;
++}
++
++static struct papr_ops_info {
++	const char *attr_name;
++	ssize_t (*show)(struct kobject *kobj, struct kobj_attribute *kobj_attr,
++			char *buf);
++} ops_info[MAX_ATTRS] = {
++	{ "desc", papr_show_desc },
++	{ "value", papr_show_value },
++	{ "value_desc", papr_show_value_desc },
++};
++
++static void add_attr(u64 id, int index, struct papr_attr *attr)
++{
++	attr->id = id;
++	sysfs_attr_init(&attr->kobj_attr.attr);
++	attr->kobj_attr.attr.name = ops_info[index].attr_name;
++	attr->kobj_attr.attr.mode = 0444;
++	attr->kobj_attr.show = ops_info[index].show;
++}
++
++static int add_attr_group(u64 id, struct papr_group *pg, bool show_val_desc)
++{
++	int i;
++
++	for (i = 0; i < MAX_ATTRS; i++) {
++		if (!strcmp(ops_info[i].attr_name, "value_desc") &&
++		    !show_val_desc) {
++			continue;
++		}
++		add_attr(id, i, &pg->pgattrs[i]);
++		pg->pg.attrs[i] = &pg->pgattrs[i].kobj_attr.attr;
++	}
++
++	return sysfs_create_group(esi_kobj, &pg->pg);
++}
++
++static int __init papr_init(void)
++{
++	struct h_energy_scale_info_hdr *esi_hdr;
++	struct energy_scale_attribute *esi_attrs;
++	uint64_t num_attrs;
++	int ret, idx, i;
++	char *esi_buf;
++
++	if (!firmware_has_feature(FW_FEATURE_LPAR))
++		return -ENXIO;
++
++	esi_buf = kmalloc(MAX_BUF_SZ, GFP_KERNEL);
++	if (esi_buf == NULL)
++		return -ENOMEM;
++	/*
++	 * hcall(
++	 * uint64 H_GET_ENERGY_SCALE_INFO,  // Get energy scale info
++	 * uint64 flags,            // Per the flag request
++	 * uint64 firstAttributeId, // The attribute id
++	 * uint64 bufferAddress,    // Guest physical address of the output buffer
++	 * uint64 bufferSize);      // The size in bytes of the output buffer
++	 */
++	ret = plpar_hcall_norets(H_GET_ENERGY_SCALE_INFO, ESI_FLAGS_ALL, 0,
++				 virt_to_phys(esi_buf), MAX_BUF_SZ);
++	if (ret != H_SUCCESS) {
++		pr_warn("hcall failed: H_GET_ENERGY_SCALE_INFO");
++		goto out;
++	}
++
++	esi_hdr = (struct h_energy_scale_info_hdr *) esi_buf;
++	if (esi_hdr->data_header_version != ESI_VERSION) {
++		pr_warn("H_GET_ENERGY_SCALE_INFO VER MISMATCH - EXP: 0x%x, REC: 0x%x",
++			ESI_VERSION, esi_hdr->data_header_version);
++	}
++
++	num_attrs = be64_to_cpu(esi_hdr->num_attrs);
++	esi_attrs = (struct energy_scale_attribute *)
++		    (esi_buf + be64_to_cpu(esi_hdr->array_offset));
++
++	pgs = kcalloc(num_attrs, sizeof(*pgs), GFP_KERNEL);
++	if (!pgs)
++		goto out;
++
++	papr_kobj = kobject_create_and_add("papr", firmware_kobj);
++	if (!papr_kobj) {
++		pr_warn("kobject_create_and_add papr failed\n");
++		goto out_pgs;
++	}
++
++	esi_kobj = kobject_create_and_add("energy_scale_info", papr_kobj);
++	if (!esi_kobj) {
++		pr_warn("kobject_create_and_add energy_scale_info failed\n");
++		goto out_kobj;
++	}
++
++	for (idx = 0; idx < num_attrs; idx++) {
++		bool show_val_desc = true;
++
++		pgs[idx].pg.attrs = kcalloc(MAX_ATTRS + 1,
++					    sizeof(*pgs[idx].pg.attrs),
++					    GFP_KERNEL);
++		if (!pgs[idx].pg.attrs) {
++			for (i = idx - 1; i >= 0; i--)
++				kfree(pgs[i].pg.attrs);
++			goto out_ekobj;
++		}
++
++		pgs[idx].pg.name = kasprintf(GFP_KERNEL, "%lld",
++					     be64_to_cpu(esi_attrs[idx].id));
++		if (pgs[idx].pg.name == NULL) {
++			for (i = idx; i >= 0; i--)
++				kfree(pgs[i].pg.attrs);
++			goto out_ekobj;
++		}
++		/* Do not add the value description if it does not exist */
++		if (strnlen(esi_attrs[idx].value_desc,
++			    sizeof(esi_attrs[idx].value_desc)) == 0)
++			show_val_desc = false;
++
++		if (add_attr_group(be64_to_cpu(esi_attrs[idx].id), &pgs[idx],
++				   show_val_desc)) {
++			pr_warn("Failed to create papr attribute group %s\n",
++				pgs[idx].pg.name);
++			goto out_pgattrs;
++		}
++	}
++
++	kfree(esi_buf);
++	return 0;
++
++out_pgattrs:
++	for (i = 0; i < num_attrs ; i++) {
++		kfree(pgs[i].pg.attrs);
++		kfree(pgs[i].pg.name);
++	}
++out_ekobj:
++	kobject_put(esi_kobj);
++out_kobj:
++	kobject_put(papr_kobj);
++out_pgs:
++	kfree(pgs);
++out:
++	kfree(esi_buf);
++
++	return -ENOMEM;
++}
++
++machine_device_initcall(pseries, papr_init);
+-- 
+2.31.1
 
