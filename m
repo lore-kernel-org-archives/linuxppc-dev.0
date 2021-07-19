@@ -2,62 +2,52 @@ Return-Path: <SRS0=aJM7=ML=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 551CFC07E95
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 16:30:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EA7EC64980
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 17:08:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8D676613C0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 16:30:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D676613C0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id CAECC60FE9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 17:08:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CAECC60FE9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GT6lR1r1jz30D9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jul 2021 02:30:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GT7b32m0Fz3bft
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jul 2021 03:08:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=ghwIxZRA;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=ghwIxZRA; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GT6kv3ZzBz2yfr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jul 2021 02:29:58 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 8F0FD61264;
- Mon, 19 Jul 2021 16:29:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
- s=korg; t=1626712195;
- bh=v7pWGtxDohJ7VY2sfL19nblJLcEcVeGV8U2O2jdQST8=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=ghwIxZRACQ8WV6CGcTPTzIe5yarKqddUJdfdb+FT5wtfo29SIfUTDkNTouAmXHlWF
- 64DRyKZ+xHqKHkbVftbgZ/v2Snf0gs8hy0gnyt9Tgs3jYYYqHVDulLsiYIjRjpWJTZ
- ziUkDcqmGsf3do4HoYospEpCuSrNpy1li55bA3t4=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 5.12 286/292] perf script python: Fix buffer size to report
- iregs in perf script
-Date: Mon, 19 Jul 2021 16:55:48 +0200
-Message-Id: <20210719144952.322441606@linuxfoundation.org>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20210719144942.514164272@linuxfoundation.org>
-References: <20210719144942.514164272@linuxfoundation.org>
-User-Agent: quilt/0.66
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4GT7ZZ5JHrz2yP2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jul 2021 03:07:50 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 16JH4N2o028857;
+ Mon, 19 Jul 2021 12:04:23 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 16JH4Mln028856;
+ Mon, 19 Jul 2021 12:04:22 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Mon, 19 Jul 2021 12:04:22 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] replace if with min
+Message-ID: <20210719170422.GO1583@gate.crashing.org>
+References: <20210712204546.GA1492390@pc>
+ <20210719181205.Horde.xU8C00MIRgjqhZQ3-RrANw8@messagerie.c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210719181205.Horde.xU8C00MIRgjqhZQ3-RrANw8@messagerie.c-s.fr>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,107 +59,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>,
- Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
- Athira Jajeev <atrajeev@linux.vnet.ibm.com>,
- Nageswara R Sastry <rnsastry@linux.ibm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, Paul Clarke <pc@us.ibm.com>,
- Kajol Jain <kjain@linux.ibm.com>, Jiri Olsa <jolsa@redhat.com>
+Cc: herbert@gondor.apana.org.au, Salah Triki <salah.triki@gmail.com>,
+ linux-kernel@vger.kernel.org, paulus@samba.org, linux-crypto@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Kajol Jain <kjain@linux.ibm.com>
+On Mon, Jul 19, 2021 at 06:12:05PM +0200, Christophe Leroy wrote:
+> Salah Triki <salah.triki@gmail.com> a écrit :
+> >Replace if with min in order to make code more clean.
 
-[ Upstream commit dea8cfcc33695f70f56023b416cf88ae44c8a45a ]
+> >--- a/drivers/crypto/nx/nx-842.c
+> >+++ b/drivers/crypto/nx/nx-842.c
+> >@@ -134,8 +134,7 @@ EXPORT_SYMBOL_GPL(nx842_crypto_exit);
+> > static void check_constraints(struct nx842_constraints *c)
+> > {
+> > 	/* limit maximum, to always have enough bounce buffer to decompress 
+> > 	*/
+> >-	if (c->maximum > BOUNCE_BUFFER_SIZE)
+> >-		c->maximum = BOUNCE_BUFFER_SIZE;
+> >+	c->maximum = min(c->maximum, BOUNCE_BUFFER_SIZE);
+> 
+> For me the code is less clear with this change, and in addition it  
+> slightly changes the behaviour. Before, the write was done only when  
+> the value was changing. Now you rewrite the value always, even when it  
+> doesn't change.
 
-Commit 48a1f565261d2ab1 ("perf script python: Add more PMU fields to
-event handler dict") added functionality to report fields like weight,
-iregs, uregs etc via perf report.  That commit predefined buffer size to
-512 bytes to print those fields.
+In both cases the compiler can decide to either write it more often than
+strictly needed, depending on what it thinks best (and it usually has
+better estimates than the programmer).  The behaviour is identical (and
+the generated machine code is as well, in my testing).
 
-But in PowerPC, since we added extended regs support in:
-
-  068aeea3773a6f4c ("perf powerpc: Support exposing Performance Monitor Counter SPRs as part of extended regs")
-  d735599a069f6936 ("powerpc/perf: Add extended regs support for power10 platform")
-
-Now iregs can carry more bytes of data and this predefined buffer size
-can result to data loss in perf script output.
-
-This patch resolves this issue by making the buffer size dynamic, based
-on the number of registers needed to print. It also changes the
-regs_map() return type from int to void, as it is not being used by the
-set_regs_in_dict(), its only caller.
-
-Fixes: 068aeea3773a6f4c ("perf powerpc: Support exposing Performance Monitor Counter SPRs as part of extended regs")
-Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
-Tested-by: Nageswara R Sastry <rnsastry@linux.ibm.com>
-Cc: Athira Jajeev <atrajeev@linux.vnet.ibm.com>
-Cc: Jiri Olsa <jolsa@redhat.com>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: Paul Clarke <pc@us.ibm.com>
-Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lore.kernel.org/lkml/20210628062341.155839-1-kjain@linux.ibm.com
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- .../util/scripting-engines/trace-event-python.c | 17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
-
-diff --git a/tools/perf/util/scripting-engines/trace-event-python.c b/tools/perf/util/scripting-engines/trace-event-python.c
-index 23dc5014e711..a61be9c07565 100644
---- a/tools/perf/util/scripting-engines/trace-event-python.c
-+++ b/tools/perf/util/scripting-engines/trace-event-python.c
-@@ -687,7 +687,7 @@ static void set_sample_datasrc_in_dict(PyObject *dict,
- 			_PyUnicode_FromString(decode));
- }
- 
--static int regs_map(struct regs_dump *regs, uint64_t mask, char *bf, int size)
-+static void regs_map(struct regs_dump *regs, uint64_t mask, char *bf, int size)
- {
- 	unsigned int i = 0, r;
- 	int printed = 0;
-@@ -695,7 +695,7 @@ static int regs_map(struct regs_dump *regs, uint64_t mask, char *bf, int size)
- 	bf[0] = 0;
- 
- 	if (!regs || !regs->regs)
--		return 0;
-+		return;
- 
- 	for_each_set_bit(r, (unsigned long *) &mask, sizeof(mask) * 8) {
- 		u64 val = regs->regs[i++];
-@@ -704,8 +704,6 @@ static int regs_map(struct regs_dump *regs, uint64_t mask, char *bf, int size)
- 				     "%5s:0x%" PRIx64 " ",
- 				     perf_reg_name(r), val);
- 	}
--
--	return printed;
- }
- 
- static void set_regs_in_dict(PyObject *dict,
-@@ -713,7 +711,16 @@ static void set_regs_in_dict(PyObject *dict,
- 			     struct evsel *evsel)
- {
- 	struct perf_event_attr *attr = &evsel->core.attr;
--	char bf[512];
-+
-+	/*
-+	 * Here value 28 is a constant size which can be used to print
-+	 * one register value and its corresponds to:
-+	 * 16 chars is to specify 64 bit register in hexadecimal.
-+	 * 2 chars is for appending "0x" to the hexadecimal value and
-+	 * 10 chars is for register name.
-+	 */
-+	int size = __sw_hweight64(attr->sample_regs_intr) * 28;
-+	char bf[size];
- 
- 	regs_map(&sample->intr_regs, attr->sample_regs_intr, bf, sizeof(bf));
- 
--- 
-2.30.2
+The field name "maximum" is not the best choice, which makes the code
+read a bit funny ("the min of max"), but the comment makes things pretty
+clear.
 
 
-
+Segher
