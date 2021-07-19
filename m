@@ -3,81 +3,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EC27C12002
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 06:34:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFC4FC12002
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 06:34:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D48461165
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 06:34:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D48461165
+	by mail.kernel.org (Postfix) with ESMTPS id 2CA396115B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 06:34:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2CA396115B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GSsWX4yglz3bTt
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 16:34:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GSsWz5x5lz3bnh
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 16:34:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hE5qpfPd;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=s+y7PGu3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=hE5qpfPd; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=s+y7PGu3; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GSsVv1Dj9z2yN5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GSsVv2Sfrz2yZC
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jul 2021 16:33:42 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 16J648Rk153167; Mon, 19 Jul 2021 02:33:36 -0400
+ 16J6SiRh013093; Mon, 19 Jul 2021 02:33:35 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version; s=pp1;
- bh=kdmreP7YA3UrwzCFhRCMpIKoAo7N/ldyvK2ItSEadg0=;
- b=hE5qpfPdunsXm2ezTOeBCxiWeG9nWF0K0r6f8mkT9AmskD75j2IfBcWihxA4fHrm4Ewb
- ol1kAOS7kDvrLnZicjG3BSKVg2l9Y9mBVq+dT7BAA17i61FX2lBy0PwbxbCCBhqIyoHu
- UgkLkph7ddtJ88uoYR1Jr2CvbhyR5ZgHrMzo6oDJneIT43eM3chbu7nJBlPEbINv4RUj
- 4JCtZhRIjuxINcoYp7wu6eoTeOrby+CM300Mz8Lshlz0kD5a8vC4OhtjxlfGeb6DyFsS
- LMJCiICCEBjR1ILH7gUcKrbsrQSxh+j1Je7nhfe0AinK3oOOpUvbqi1ZiAImXobzjOQY VA== 
+ : date : message-id : in-reply-to : references; s=pp1;
+ bh=xhsFBQQhd+v0g2hFgAVn2UjRNynXKnOoX1vUoPJcaTE=;
+ b=s+y7PGu3M2MiMUXrnMNBpX157i65jMU/sfF9/j6ZyDw7wfg2w6UKibpRrMrjHMwOyjOA
+ v7BlQ4OsOHoZ7T02asfyNUi4n2E8Wd6gpTj45YB7wyTo84N34rfKB6disFl9nCjFHyFF
+ OACvM/l/2FLKvmpZXquL3Yzc2VJ/jIe7O7XfK/OcBJWKas//o+GFQiaebXi3ihLyJ7Ir
+ 4pQqX+WQh1+y+BbvN8kxzFHt2euHCxwYc6agZhUpM+gFHf1MJ54NA+1alHoWcoPDqWEy
+ pUoeC9/f64i7AgHuAtoSnfHvKX1kRrVqEQ2d8M5YnsQ3VlIY3XTe6EU15Gja10c7vRGO 9g== 
 Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
  [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39vxwpf429-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39w0mt4ar7-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Mon, 19 Jul 2021 02:33:35 -0400
 Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16J6Wvnl009185;
- Mon, 19 Jul 2021 06:33:35 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma04dal.us.ibm.com with ESMTP id 39upuaddns-1
+ by ppma04dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16J6Wvnv009171;
+ Mon, 19 Jul 2021 06:33:34 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25]) by ppma04dal.us.ibm.com with ESMTP id 39upuaddnr-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 19 Jul 2021 06:33:35 +0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 16J6XX2215139344
+ Mon, 19 Jul 2021 06:33:34 +0000
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16J6XXVm19988864
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
  Mon, 19 Jul 2021 06:33:33 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A42BC6E056;
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ABBD26A74D;
  Mon, 19 Jul 2021 06:33:33 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E18E16E04E;
- Mon, 19 Jul 2021 06:33:32 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 179696A74C;
+ Mon, 19 Jul 2021 06:33:33 +0000 (GMT)
 Received: from sofia.ibm.com (unknown [9.85.122.97])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
  Mon, 19 Jul 2021 06:33:32 +0000 (GMT)
 Received: by sofia.ibm.com (Postfix, from userid 1000)
- id CCB162E301D; Mon, 19 Jul 2021 12:03:30 +0530 (IST)
+ id DD1F72E2D40; Mon, 19 Jul 2021 12:03:30 +0530 (IST)
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -85,24 +84,24 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
  Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
  Michal Suchanek <msuchanek@suse.de>
-Subject: [PATCH v5 0/2] cpuidle/pseries: cleanup of the CEDE0 latency fixup
- code
-Date: Mon, 19 Jul 2021 12:03:17 +0530
-Message-Id: <1626676399-15975-1-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [PATCH v5 2/2] cpuidle/pseries: Do not cap the CEDE0 latency in
+ fixup_cede0_latency()
+Date: Mon, 19 Jul 2021 12:03:19 +0530
+Message-Id: <1626676399-15975-3-git-send-email-ego@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1626676399-15975-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1626676399-15975-1-git-send-email-ego@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: G0IAr-gj6S3yQx0WTGp4LQ24E1rWrc-z
-X-Proofpoint-GUID: G0IAr-gj6S3yQx0WTGp4LQ24E1rWrc-z
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
-MIME-Version: 1.0
+X-Proofpoint-ORIG-GUID: nAKZk-yhKhhOyvD5KGc_zypugulw-9aK
+X-Proofpoint-GUID: nAKZk-yhKhhOyvD5KGc_zypugulw-9aK
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-07-19_02:2021-07-16,
  2021-07-19 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 malwarescore=0
- impostorscore=0 adultscore=0 mlxlogscore=999 lowpriorityscore=0
- bulkscore=0 clxscore=1015 mlxscore=0 suspectscore=0 priorityscore=1501
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ suspectscore=0
+ impostorscore=0 malwarescore=0 adultscore=0 clxscore=1011 mlxlogscore=999
+ phishscore=0 priorityscore=1501 mlxscore=0 bulkscore=0 spamscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2104190000 definitions=main-2107190033
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -123,160 +122,112 @@ Sender: "Linuxppc-dev"
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
+Currently in fixup_cede0_latency() code, we perform the fixup the
+CEDE(0) exit latency value only if minimum advertized extended CEDE
+latency values are less than 10us. This was done so as to not break
+the expected behaviour on POWER8 platforms where the advertised
+latency was higher than the default 10us, which would delay the SMT
+folding on the core.
 
-Hi,
+However, after the earlier patch "cpuidle/pseries: Fixup CEDE0 latency
+only for POWER10 onwards", we can be sure that the fixup of CEDE0
+latency is going to happen only from POWER10 onwards. Hence
+unconditionally use the minimum exit latency provided by the platform.
 
-This is the v5 of the patchset to fixup CEDE0 latency only from
-POWER10 onwards.
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle-pseries.c | 59 ++++++++++++++++++++-------------------
+ 1 file changed, 30 insertions(+), 29 deletions(-)
 
-
-The previous versions of the patches are
-v4 : https://lore.kernel.org/linux-pm/1623048014-16451-1-git-send-email-ego@linux.vnet.ibm.com/
-v3 : https://lore.kernel.org/linuxppc-dev/1619697982-28461-1-git-send-email-ego@linux.vnet.ibm.com/
-v2 : https://lore.kernel.org/linuxppc-dev/1619673517-10853-1-git-send-email-ego@linux.vnet.ibm.com/
-v1 : https://lore.kernel.org/linuxppc-dev/1619104049-5118-1-git-send-email-ego@linux.vnet.ibm.com/
-
-v4 --> v5 changes
- * Patch 1 : Unchanged. Rebased it against the latest powerpc/merge
-  tree. With this patch, on processors older than POWER10, the CEDE
-  latency is set to the hardcoded value of 10us which is closer to the
-  measured value (details of the measurement in Patch 1).
-
- * Added a Patch 2/2 titled "cpuidle/pseries: Do not cap the CEDE0
-   latency in fixup_cede0_latency()" which will ensure that on POWER10
-   onwards we simply take the latency value exposed by the firmware
-   without keeping an upper cap of 10us. This upper cap was previously
-   required to prevent regression on POWER8 which had advertized
-   latency values higher than 10us while the measured values were
-   lesser. With Patch 1, we don't need the upper cap any longer.
-
-
-Tested the series on POWER8, POWER9 and POWER10 with the
-cpuidle-smt-performance test case
-(https://github.com/gautshen/misc/tree/master/cpuidle-smt-performance) .
-  
-This test has three classes of threads
-1. Workload thread which computes fibonacci numbers (Pinned to the
-   primary thread CPU 8). We are interested in the throughput of this
-   workload thread.
-
-2. Three irritator threads which are pinned to the secondary CPUs of
-   the core on which the workload thread is running (CPUs 10, 12,
-   14). These irritators block on a pipe until woken up by a
-   waker. After being woken up, they again go back to sleep by
-   blocking on a pipe read. We are interested in the wakeup latency of
-   the irritator threads.
-
-3. A waker thread which, pinned to a different core (CPU 16) from
-   where the workload and the irritators are running, periodically
-   wakes up the three irritator threads by writing to their respective
-   pipes. The purpose of these periodic wakeups is to prime the
-   cpuidle governor on the irritator CPUs to pick the idle state the
-   wakeup period.
-
-We measure the wakeup latency of the irritator threads, which tells us
-the impact of entering a particular combinations of idle states. Thus
-shallower the state, lower should be the wakeup latency.
-
-We also measure the throughput of the fibonacci workload to measure
-the single-thread performance in the presence of the waking irritators
-on the sibling threads. Entering an idle state which performs SMT
-folding should show greater throughput.
-
-There is no observable difference in the behaviour on POWER8 and
-POWER10 with and without the patch series, since the CEDE latencies on
-both of them with and without the patch are 10us.
-
-However, on POWER9, without the patch, the CEDE latency is 1us based
-on the value returned by the firmware (which is not accurate), while
-with the patch it is set to the default value of 10us which is closer
-to the accurate measure.
-
-The throughput, wakeup latency, throughput and the snooze, CEDE idle
-percentage residency results on POWER9 with and without patch are as
-follows.
-
-We observe that for a wakeup period between 20us - 100us, the wakeup
-latency of the irritator threads with the patch improves by 40-45%.
-
-Though note that with the patch, the throughput of the fibbonacci
-workload drops by 5-10% when the wakeup period of the irritator
-threads is between 20us-100us. This is an acceptable tradeoff since
-there are certain benchmarks on POWER9 which are very sensitive to the
-wakeup latency and have a sleeping duration of less than 100us.
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Avg Wakeup Latency of the irritator threads
-(lower the better)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Irritator  |                   |
-wakeup     |   Without         |   With
-period     |   Patch           |   Patch
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    1 us   |   3.703 us        |   3.632 us ( -1.91%)
-    2 us   |   3.843 us        |   3.925 us ( +2.13%)
-    5 us   |   8.575 us        |   8.656 us ( +0.94%)
-   10 us   |   8.264 us        |   8.242 us ( -0.27%)
-   20 us   |   8.672 us        |   8.256 us ( -4.80%)
-   50 us   |  15.552 us        |   8.257 us (-46.90%)
-   80 us   |  15.603 us        |   8.803 us (-43.58%)
-  100 us   |  15.617 us        |   8.328 us (-46.67%)
-  120 us   |  15.612 us        |  14.505 us ( -7.09%)
-  500 us   |  15.957 us        |  15.723 us ( -1.47%)
- 1000 us   |  16.526 us        |  16.502 us ( -0.14%)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Fibonacci workload throughput in Million Operations
-per second (higher the better)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Irritator  |                   |
-wakeup     |   Without         |   With
-period     |   Patch           |   Patch
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    1 us   |  44.234 Mops/s    |   44.305 Mops/s ( +0.16%)
-    2 us   |  44.290 Mops/s    |   44.233 Mops/s ( -0.13%)
-    5 us   |  44.757 Mops/s    |   44.759 Mops/s ( -0.01%)
-   10 us   |  46.169 Mops/s    |   46.049 Mops/s ( -0.25%)
-   20 us   |  48.263 Mops/s    |   49.647 Mops/s ( +2.87%)
-   50 us   |  52.817 Mops/s    |   52.310 Mops/s ( -0.96%)
-   80 us   |  57.338 Mops/s    |   53.216 Mops/s ( -7.19%)
-  100 us   |  58.958 Mops/s    |   53.497 Mops/s ( -9.26%)
-  120 us   |  60.060 Mops/s    |   58.980 Mops/s ( -1.80%)
-  500 us   |  64.484 Mops/s    |   64.460 Mops/s ( -0.04%)
- 1000 us   |  65.200 Mops/s    |   65.188 Mops/s ( -0.02%)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(snooze, CEDE Residency Percentage)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Irritator  |                   |
-wakeup     |   Without         |   With
-period     |   Patch           |   Patch
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    1 us   |  ( 0.40%,  0.00%) |  (0.28%,   0.00%)
-    2 us   |  ( 0.42%,  0.00%) |  (0.33%,   0.00%)
-    5 us   |  ( 3.94%,  0.00%) |  (3.89%,   0.00%)
-   10 us   |  (21.85%,  0.00%) |  (21.62%,  0.00%)
-   20 us   |  (43.44%,  0.00%) |  (50.90%,  0.00%)
-   50 us   |  ( 0.03%, 76.07%) |  (76.85%,  0.00%)
-   80 us   |  ( 0.07%, 84.14%) |  (84.85%,  0.00%)
-  100 us   |  ( 0.03%, 87.18%) |  (87.61%,  0.02%)
-  120 us   |  ( 0.02%, 89.21%) |  (14.71%, 74.40%)
-  500 us   |  ( 0.00%, 97.27%) |  ( 3.70%, 93.53%
- 1000 us   |  ( 0.00%, 98.57%) |  ( 0.17%, 98.40%)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-
-
-
-Gautham R. Shenoy (2):
-  cpuidle/pseries: Fixup CEDE0 latency only for POWER10 onwards
-  cpuidle/pseries: Do not cap the CEDE0 latency in fixup_cede0_latency()
-
- drivers/cpuidle/cpuidle-pseries.c | 75 +++++++++++++++++++++++----------------
- 1 file changed, 45 insertions(+), 30 deletions(-)
-
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index e592280d..bba449b 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -346,11 +346,9 @@ static int pseries_cpuidle_driver_init(void)
+ static void __init fixup_cede0_latency(void)
+ {
+ 	struct xcede_latency_payload *payload;
+-	u64 min_latency_us;
++	u64 min_xcede_latency_us = UINT_MAX;
+ 	int i;
+ 
+-	min_latency_us = dedicated_states[1].exit_latency; // CEDE latency
+-
+ 	if (parse_cede_parameters())
+ 		return;
+ 
+@@ -358,42 +356,45 @@ static void __init fixup_cede0_latency(void)
+ 		nr_xcede_records);
+ 
+ 	payload = &xcede_latency_parameter.payload;
++
++	/*
++	 * The CEDE idle state maps to CEDE(0). While the hypervisor
++	 * does not advertise CEDE(0) exit latency values, it does
++	 * advertise the latency values of the extended CEDE states.
++	 * We use the lowest advertised exit latency value as a proxy
++	 * for the exit latency of CEDE(0).
++	 */
+ 	for (i = 0; i < nr_xcede_records; i++) {
+ 		struct xcede_latency_record *record = &payload->records[i];
++		u8 hint = record->hint;
+ 		u64 latency_tb = be64_to_cpu(record->latency_ticks);
+ 		u64 latency_us = DIV_ROUND_UP_ULL(tb_to_ns(latency_tb), NSEC_PER_USEC);
+ 
+-		if (latency_us == 0)
+-			pr_warn("cpuidle: xcede record %d has an unrealistic latency of 0us.\n", i);
+-
+-		if (latency_us < min_latency_us)
+-			min_latency_us = latency_us;
+-	}
+-
+-	/*
+-	 * By default, we assume that CEDE(0) has exit latency 10us,
+-	 * since there is no way for us to query from the platform.
+-	 *
+-	 * However, if the wakeup latency of an Extended CEDE state is
+-	 * smaller than 10us, then we can be sure that CEDE(0)
+-	 * requires no more than that.
+-	 *
+-	 * Perform the fix-up.
+-	 */
+-	if (min_latency_us < dedicated_states[1].exit_latency) {
+ 		/*
+-		 * We set a minimum of 1us wakeup latency for cede0 to
+-		 * distinguish it from snooze
++		 * We expect the exit latency of an extended CEDE
++		 * state to be non-zero, it to since it takes at least
++		 * a few nanoseconds to wakeup the idle CPU and
++		 * dispatch the virtual processor into the Linux
++		 * Guest.
++		 *
++		 * So we consider only non-zero value for performing
++		 * the fixup of CEDE(0) latency.
+ 		 */
+-		u64 cede0_latency = 1;
++		if (latency_us == 0) {
++			pr_warn("cpuidle: Skipping xcede record %d [hint=%d]. Exit latency = 0us\n",
++				i, hint);
++			continue;
++		}
+ 
+-		if (min_latency_us > cede0_latency)
+-			cede0_latency = min_latency_us - 1;
++		if (latency_us < min_xcede_latency_us)
++			min_xcede_latency_us = latency_us;
++	}
+ 
+-		dedicated_states[1].exit_latency = cede0_latency;
+-		dedicated_states[1].target_residency = 10 * (cede0_latency);
++	if (min_xcede_latency_us != UINT_MAX) {
++		dedicated_states[1].exit_latency = min_xcede_latency_us;
++		dedicated_states[1].target_residency = 10 * (min_xcede_latency_us);
+ 		pr_info("cpuidle: Fixed up CEDE exit latency to %llu us\n",
+-			cede0_latency);
++			min_xcede_latency_us);
+ 	}
+ 
+ }
 -- 
 1.9.4
 
