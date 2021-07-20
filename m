@@ -2,67 +2,91 @@ Return-Path: <SRS0=3PPi=MM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98C97C07E95
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jul 2021 06:07:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41BC5C07E95
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jul 2021 06:18:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 979AD6113A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jul 2021 06:07:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 979AD6113A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8F10860FE4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jul 2021 06:18:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F10860FE4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GTStc1lZPz3bfD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jul 2021 16:07:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GTT6L6CG1z3bf0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jul 2021 16:18:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Ihy/jz+o;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=bOgMs8/x;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
- helo=casper.infradead.org;
- envelope-from=batv+d721ffb997130df132c6+6540+infradead.org+hch@casper.srs.infradead.org;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::431;
+ helo=mail-wr1-x431.google.com; envelope-from=ckoenig.leichtzumerken@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=Ihy/jz+o; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=bOgMs8/x; dkim-atps=neutral
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com
+ [IPv6:2a00:1450:4864:20::431])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GTSt90RP5z2xbB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jul 2021 16:07:28 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=zY/bA1mmo80mAzxM6Dqf7zbj0hsJZEwAfFA84ALlcz8=; b=Ihy/jz+o+4KAUoA6iHjBE2hAIk
- 1KVtU50DJksORf+Jgi5tF72tnslR5cy7hHwFbg9m7p15Ox9epP3q7P1aAIqa8EqnS0VDizf62TOX8
- yTS1k/oalIUSYym8s3k8gJyn8NPkVn0yVB3AKiCbxd3CA9TTXjsmChIWKQOFj0RetzQG31RxSqktC
- gIqCg8mhmOKnxxrckhaLumo0Tn0rzbL6d/AiBBKnkftU2JBJOWUgEtF9UsqXrmmjhT0EJOSSFqTbU
- cEPJOh95bDAyO13/oCQR4yM+1i36dMG7CETXN1DMt/PiE2YB04CURN5mvt/KZGh1m5QyBxbe9Wqqv
- Kc4ETxvg==;
-Received: from hch by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat
- Linux)) id 1m5iu3-007oH6-Lz; Tue, 20 Jul 2021 06:06:56 +0000
-Date: Tue, 20 Jul 2021 07:06:51 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Anson Jacob <Anson.Jacob@amd.com>
-Subject: Re: [RFC 2/2] drm/amd/display: Use PPC FPU functions
-Message-ID: <YPZn+wqulTHSR+h2@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GTT5p3dwpz2yPC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jul 2021 16:17:33 +1000 (AEST)
+Received: by mail-wr1-x431.google.com with SMTP id t5so24669687wrw.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jul 2021 23:17:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-transfer-encoding:content-language;
+ bh=YUv373TRbJzpXEjq3/HXrealkqxY3Zrlb077s3lFdTo=;
+ b=bOgMs8/xCj3eL2F7zv7VyLj1GImGnX1zf134Xe6YHmA2mts3mLnezy0+UqqSc5zAQr
+ rZTYdWF62QMA9Y2AQ9c84CetJ/S9098g1PKmMOTPQsf1Z8qHfW59aSXlBo3gZGfnTHAs
+ ZMJF69i0jYBhucxfkoNoN6oQ3ljI8kCA9Mzkot6CtiTX0pNx/Ftgc08KVtmq83kRi8TY
+ Zu74g2JPRQSTs+Yfhs+fQ8xzLKYK77YcT2p/vvL3UdrjMb503/9KWYdDpS/9mIxAd3+h
+ 1lt6uIfOVzluOff/N/ZIJVD1o+J/Hnlc6V49Ch8ASNlS94shqy4wgbnAywPZAL56SnHQ
+ A5QA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-transfer-encoding
+ :content-language;
+ bh=YUv373TRbJzpXEjq3/HXrealkqxY3Zrlb077s3lFdTo=;
+ b=VqR989quNsCSYVqi93qXqsgz+PWu0NwqldMhQlsYOtcAtxmzeOwmOdULtQ6cz3zeQ7
+ r+zegj0jMOn0xt12ahB0KvQtYkzYrh9Np7Ts91eUJ9lObwpe60cUpd95rXGjNMiXeUMK
+ 3mrc6pdny9o5kR+d1h5EaxIyh6owvG1RSKNOpw7+Ne3alC/BcQ/Nn0UyeuATq4p6gyfO
+ k9e6hvIYqQyd7ReZWvsVy3pzG38Gl89eRq1PdSKlJG5T7y+GsPvNKmC616gOw3ZVMm7a
+ eXpjIscwSLgcd/U8Dsv19T98YmXoFaLB1ryY8lNp4ge6dr4ODQnBWF96Kqew+TNlfXV5
+ UA9w==
+X-Gm-Message-State: AOAM533ulkBWvmL5dtsRUGj53a462BfJCjzR4scWJl2JdQlZQoZOAJEe
+ aiAGtCKHCfeEx+Ek8Yfi1DQ=
+X-Google-Smtp-Source: ABdhPJwrP8qAYB5H7g+4sskeYriO2f1L15Hn6rZR7pEzSwo+pLKcVZRB8fz5WUDNgJkBh3jw60V5TA==
+X-Received: by 2002:adf:e40e:: with SMTP id g14mr34880575wrm.413.1626761846576; 
+ Mon, 19 Jul 2021 23:17:26 -0700 (PDT)
+Received: from ?IPv6:2a02:908:1252:fb60:8651:5b5e:8648:2fd0?
+ ([2a02:908:1252:fb60:8651:5b5e:8648:2fd0])
+ by smtp.gmail.com with ESMTPSA id o19sm9990450wmr.18.2021.07.19.23.17.25
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Mon, 19 Jul 2021 23:17:26 -0700 (PDT)
+Subject: Re: [RFC 0/2] Add generic FPU api similar to x86
+To: Anson Jacob <Anson.Jacob@amd.com>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org, christophe.leroy@csgroup.eu,
+ linuxppc-dev@lists.ozlabs.org, amd-gfx@lists.freedesktop.org
 References: <20210719195211.520428-1-Anson.Jacob@amd.com>
- <20210719195211.520428-3-Anson.Jacob@amd.com>
+From: =?UTF-8?Q?Christian_K=c3=b6nig?= <ckoenig.leichtzumerken@gmail.com>
+Message-ID: <cd330e45-f8e0-8751-813a-98f1810881c1@gmail.com>
+Date: Tue, 20 Jul 2021 08:17:24 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210719195211.520428-3-Anson.Jacob@amd.com>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- casper.infradead.org. See http://www.infradead.org/rpr.html
+In-Reply-To: <20210719195211.520428-1-Anson.Jacob@amd.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,20 +98,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Harry.Wentland@amd.com, Sunpeng.Li@amd.com, qingqing.zhuo@amd.com,
- Rodrigo.Siqueira@amd.com, roman.li@amd.com, amd-gfx@lists.freedesktop.org,
- Bhawanpreet.Lakha@amd.com, Aurabindo.Pillai@amd.com, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, bindu.r@amd.com
+Cc: Sunpeng.Li@amd.com, Bhawanpreet.Lakha@amd.com, qingqing.zhuo@amd.com,
+ Rodrigo.Siqueira@amd.com, roman.li@amd.com, Aurabindo.Pillai@amd.com,
+ Harry.Wentland@amd.com, bindu.r@amd.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->  #define DC_FP_END() kernel_fpu_end()
->  #elif defined(CONFIG_PPC64)
->  #include <asm/switch_to.h>
-> +#define DC_FP_START() kernel_fpu_begin()
-> +#define DC_FP_END() kernel_fpu_end()
->  #endif
+While you already CCed a bunch of people stuff like that needs to go to 
+the appropriate mailing list and not just amd-gfx.
 
-Please use the same header as x86 in your first patch and then kill
-this ifdefered and the DC_FP_START/DC_FP_END definitions entirely.
+Especially LKML so that other core devs can take a look as well.
+
+Regards,
+Christian.
+
+Am 19.07.21 um 21:52 schrieb Anson Jacob:
+> This is an attempt to have generic FPU enable/disable
+> calls similar to x86.
+> So that we can simplify gpu/drm/amd/display/dc/os_types.h
+>
+> Also adds FPU correctness logic seen in x86.
+>
+> Anson Jacob (2):
+>    ppc/fpu: Add generic FPU api similar to x86
+>    drm/amd/display: Use PPC FPU functions
+>
+>   arch/powerpc/include/asm/switch_to.h      |  29 ++---
+>   arch/powerpc/kernel/process.c             | 130 ++++++++++++++++++++++
+>   drivers/gpu/drm/amd/display/dc/os_types.h |  28 +----
+>   3 files changed, 139 insertions(+), 48 deletions(-)
+>
+
