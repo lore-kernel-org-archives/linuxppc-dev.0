@@ -1,126 +1,119 @@
-Return-Path: <SRS0=aJM7=ML=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=3PPi=MM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B79FC07E95
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 22:56:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08379C07E95
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jul 2021 05:05:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C1A5A6100C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jul 2021 22:56:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1A5A6100C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=amd.com
+	by mail.kernel.org (Postfix) with ESMTPS id 152CC60C41
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jul 2021 05:05:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 152CC60C41
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GTHKL3PQNz3bsF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jul 2021 08:56:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GTRVM0MBQz30D9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jul 2021 15:05:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=rWzzC+Q3;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bD8fD32/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=amd.com
- (client-ip=40.107.236.54; helo=nam11-bn8-obe.outbound.protection.outlook.com;
- envelope-from=anson.jacob@amd.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256
- header.s=selector1 header.b=rWzzC+Q3; 
- dkim-atps=neutral
-Received: from NAM11-BN8-obe.outbound.protection.outlook.com
- (mail-bn8nam11on2054.outbound.protection.outlook.com [40.107.236.54])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=bD8fD32/; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GTCDn6KnCz2xvP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jul 2021 05:52:40 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=HjGvGga5l1ovuEk3fImcgn/7+9xRO22KaaGl9CfFjwYmBOvnhOkjCjs8e6lfM9qpE1WZh9YPb0XuNnJIVOLt3pSdB8cSAI4oX7yVjnxqGKlqnWaVeiS4BByZ254AkdTsu8+7PFjycaeUbp3elt31mvDxFwncY1CHbekes/JXfNkGhrS7rFaKoZ+s2S9217fCrD3rVYKITR/DnY7LioHig6MERVHWGD2ObZliJnJJmot/X97AcTMOUO8kK2JFHAIaqimcUcUGLiJN58QOdRcAkXTEQSNCP+ppALfZ1JtWL/iVP8bmkUpivJrdUJcnZ2TgklWpwVnhDi8Ba9i/UTB/gg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=LEkxXUq3Z69RAeClJjF4jp3Nmwh0brf4fKd+pUSFyh0=;
- b=fwVMD3jlMGdMQiX/zYiE4L0Oc+WPzoPDCEuiAqoDqTmte5iB+8fQ8ZQ386dJfg+++Zo4J6fzl+vkTBPDNN8LKIMfZDv2G9dELRgQiDJ4r8p1hGlF3IkhX016WgIlmJCstcbQNCgpSaNwMJwy0U32/dJSHJT7Tk2U+ry6pJTLTTNztoOBz79lAeG1I3I7QHjB3rylWnsKrUS5DWHR2LBq4BT1mR/NruxPsudKKGL8Vws6IS6iy1H8aEZ8ltIH2rchV/6wDUetm7RI1J9/SXq252XnZ1C7OYcprawqoSRrZ+W0tKliynMT4L8rehyDs+Q2wa0KwFOZMw8l6VmDV+7oSg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=ellerman.id.au smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=LEkxXUq3Z69RAeClJjF4jp3Nmwh0brf4fKd+pUSFyh0=;
- b=rWzzC+Q3IQs0QwOdtyCrij6pNTdt619QEVGhMpvX4EqcRNTQ8KJDSWabEIasNZpQE/XKOmLtpj7F1tggW/oDQW6pkJlbBUWgpJPJY2s+M3C6zR0X1DRA7IvNlHw5CqHbAGK8mfR5SY3wd8ImSL2ws8+0oPrVeRPyEBzpiWPsiV8=
-Received: from DM5PR19CA0002.namprd19.prod.outlook.com (2603:10b6:3:151::12)
- by BN8PR12MB2962.namprd12.prod.outlook.com (2603:10b6:408:47::24) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4331.22; Mon, 19 Jul
- 2021 19:52:20 +0000
-Received: from DM6NAM11FT027.eop-nam11.prod.protection.outlook.com
- (2603:10b6:3:151:cafe::79) by DM5PR19CA0002.outlook.office365.com
- (2603:10b6:3:151::12) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4331.22 via Frontend
- Transport; Mon, 19 Jul 2021 19:52:19 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; ellerman.id.au; dkim=none (message not signed)
- header.d=none;ellerman.id.au; dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB03.amd.com;
-Received: from SATLEXMB03.amd.com (165.204.84.17) by
- DM6NAM11FT027.mail.protection.outlook.com (10.13.172.205) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4331.21 via Frontend Transport; Mon, 19 Jul 2021 19:52:19 +0000
-Received: from SATLEXMB07.amd.com (10.181.41.45) by SATLEXMB03.amd.com
- (10.181.40.144) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2242.4; Mon, 19 Jul
- 2021 14:52:17 -0500
-Received: from SATLEXMB03.amd.com (10.181.40.144) by SATLEXMB07.amd.com
- (10.181.41.45) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2242.4; Mon, 19 Jul
- 2021 12:52:17 -0700
-Received: from Bumblebee.amd.com (10.180.168.240) by SATLEXMB03.amd.com
- (10.181.40.144) with Microsoft SMTP Server id 15.1.2242.4 via Frontend
- Transport; Mon, 19 Jul 2021 14:52:15 -0500
-From: Anson Jacob <Anson.Jacob@amd.com>
-To: <mpe@ellerman.id.au>, <benh@kernel.crashing.org>, <paulus@samba.org>,
- <christophe.leroy@csgroup.eu>, <linuxppc-dev@lists.ozlabs.org>,
- <amd-gfx@lists.freedesktop.org>
-Subject: [RFC 1/2] ppc/fpu: Add generic FPU api similar to x86
-Date: Mon, 19 Jul 2021 15:52:10 -0400
-Message-ID: <20210719195211.520428-2-Anson.Jacob@amd.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210719195211.520428-1-Anson.Jacob@amd.com>
-References: <20210719195211.520428-1-Anson.Jacob@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GTRTk0xPtz2yj0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jul 2021 15:04:40 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 16K53NJ9019968; Tue, 20 Jul 2021 01:04:30 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=YIlbonzyYfr48j+9mltYbtpEvxW+h5RKDMRsYj4+yp8=;
+ b=bD8fD32/SMHgXFWkCZxZCzTI5HHc1jN9Lu64hUj1qXnSp2JdP2nHKV/mR7gmu2yQUhqC
+ C8Ls0kvfnjPB60HM2uSmfmFmWsNhBZLskfteK/ntAIRIaF/kZFIieLI28D4TJ/wCsOCX
+ WPBsSRbYF/QvNj2wPZj7XMMHEpsNSKmNhCdNF4lDffvWU9nrH52heYs/B6/4yX2oJ/lm
+ GzNSVy5LOxBuVEq/foMNwavbZZWu1jFV6/VKDwk3IezmyKtcaaqcYKUFjYyAzLQJWXuJ
+ PGIWziQTkB0/0dieRZqILEkEOhZGBye1BzJpjEkuVz41jfsINQ5FrKQ4aUf66tqP4xsw nQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 39wny8jj8p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 20 Jul 2021 01:04:29 -0400
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16K53O8T020069;
+ Tue, 20 Jul 2021 01:04:29 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 39wny8jj81-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 20 Jul 2021 01:04:29 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16K52cfK014061;
+ Tue, 20 Jul 2021 05:04:27 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma06ams.nl.ibm.com with ESMTP id 39vng70p9y-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 20 Jul 2021 05:04:27 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16K54PQH26673532
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 20 Jul 2021 05:04:25 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6348FAE059;
+ Tue, 20 Jul 2021 05:04:25 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6F874AE051;
+ Tue, 20 Jul 2021 05:04:23 +0000 (GMT)
+Received: from [9.199.45.122] (unknown [9.199.45.122])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 20 Jul 2021 05:04:23 +0000 (GMT)
+Subject: Re: [PATCH v5 1/1] powerpc/pseries: Interface to represent PAPR
+ firmware attributes
+To: Fabiano Rosas <farosas@linux.ibm.com>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, pratik.r.sampat@gmail.com
+References: <20210719093250.41405-1-psampat@linux.ibm.com>
+ <20210719093250.41405-2-psampat@linux.ibm.com> <87fswa2k93.fsf@linux.ibm.com>
+From: Pratik Sampat <psampat@linux.ibm.com>
+Message-ID: <de3c5540-2a07-8373-57a2-a89e3d304413@linux.ibm.com>
+Date: Tue, 20 Jul 2021 10:34:22 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: f3982905-7300-4d22-548e-08d94aeeb7d0
-X-MS-TrafficTypeDiagnostic: BN8PR12MB2962:
-X-Microsoft-Antispam-PRVS: <BN8PR12MB2962E8CDD1874F869E5FDE4AEBE19@BN8PR12MB2962.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:6430;
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: jI7Hh9p0IemVEk3bvgdLGeVbmgV3mSRqkRNXy88oeyafLpTb7W2hB9raD+kg7zN87T7PAqouXz/uQjAKBYlmZJ1/92OWBJ1u1qYAqujH4rG5VU+LwCDeb83VXMx7eG/1YSg03rYBx29PqaZnU/tQq8gAdWYgoNP0lMUm1awT9kRIgL9V9ABO5ROnhLs6ohdRJPsc7Wthb5uVU2Rtnej5B5Vk42KOyGLq0LSGzcjF2YbmjdY6IQxt6pbVft31xfcUoSMrFyUJjYVaPCqh2YTKZK1sefumLmV3yHNH6K0D+CALWVuxw/Tj4GzV6m7UraJc6Ln0iz4+ac+lJClLPZYB3TmJs7Qx+KU63HeSpgL9bL6USa9o2JMJsj10OD/SLJHFWDqL87DUyEALQHn8uXVJ76VIBaFXOJFjpKv9FALgwB4QYit5Ci2fpThtcL2Nxq3JyxPYLXJd/Xh3CrViIKCujWiSBVeqkBs2NUn5GNWUrTvALcolYgk5AiV10aGZvsPfEqsLCGZpB0qkTJF91gNnM0gcVgPwufSNQgEbz4DmXTdvK+rH/FB5OXcprHBmD42YA8UlEp+RJU3nxaueiP9x3uJzo99ATbYvVNgA2gntr6FMeeo8Avca70Mvajr78DgZ7pEbkFvs/6Ld65tFJznszcyPEIQwS4BFl971lYgr2tv6GCeWdfWK+JzZ/9usHi14/oQMcCGHeyGu7qNPx1WsmcFuqQDUULyjOiIhpyJ4O0szRVCmor7PjFfJEUsOJb9Q11+YLGkPDG4tJfm3cncVoQ==
-X-Forefront-Antispam-Report: CIP:165.204.84.17; CTRY:US; LANG:en; SCL:1; SRV:;
- IPV:CAL; SFV:NSPM; H:SATLEXMB03.amd.com; PTR:InfoDomainNonexistent; CAT:NONE;
- SFS:(4636009)(376002)(136003)(346002)(39860400002)(396003)(46966006)(36840700001)(186003)(5660300002)(426003)(83380400001)(8676002)(8936002)(356005)(70586007)(47076005)(336012)(7696005)(26005)(36756003)(82310400003)(86362001)(70206006)(316002)(54906003)(81166007)(4326008)(110136005)(36860700001)(1076003)(2616005)(2906002)(478600001)(82740400003)(6666004)(41533002)(36900700001);
- DIR:OUT; SFP:1101; 
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jul 2021 19:52:19.5101 (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: f3982905-7300-4d22-548e-08d94aeeb7d0
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d; Ip=[165.204.84.17];
- Helo=[SATLEXMB03.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT027.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN8PR12MB2962
-X-Mailman-Approved-At: Tue, 20 Jul 2021 08:55:35 +1000
+In-Reply-To: <87fswa2k93.fsf@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: ssVwGSroUKkgqBVXNDRQTUb2Yw54hczw
+X-Proofpoint-GUID: 4u1S___xB0Dar2DtbsH4-eXC1GRUkLB7
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-07-20_01:2021-07-19,
+ 2021-07-20 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 clxscore=1015
+ impostorscore=0 mlxscore=0 lowpriorityscore=0 spamscore=0 adultscore=0
+ malwarescore=0 mlxlogscore=999 bulkscore=0 suspectscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2107200028
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -132,273 +125,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sunpeng.Li@amd.com, Harry.Wentland@amd.com, qingqing.zhuo@amd.com,
- Rodrigo.Siqueira@amd.com, roman.li@amd.com, Anson.Jacob@amd.com,
- Aurabindo.Pillai@amd.com, Bhawanpreet.Lakha@amd.com, bindu.r@amd.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-- Add kernel_fpu_begin & kernel_fpu_end API as x86
-- Add logic similar to x86 to ensure fpu
-  begin/end call correctness
-- Add kernel_fpu_enabled to know if FPU is enabled
 
-Signed-off-by: Anson Jacob <Anson.Jacob@amd.com>
----
- arch/powerpc/include/asm/switch_to.h |  29 ++----
- arch/powerpc/kernel/process.c        | 130 +++++++++++++++++++++++++++
- 2 files changed, 137 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 9d1fbd8be1c7..aded7aa661c0 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -41,10 +41,7 @@ extern void enable_kernel_fp(void);
- extern void flush_fp_to_thread(struct task_struct *);
- extern void giveup_fpu(struct task_struct *);
- extern void save_fpu(struct task_struct *);
--static inline void disable_kernel_fp(void)
--{
--	msr_check_and_clear(MSR_FP);
--}
-+extern void disable_kernel_fp(void);
- #else
- static inline void save_fpu(struct task_struct *t) { }
- static inline void flush_fp_to_thread(struct task_struct *t) { }
-@@ -55,10 +52,7 @@ extern void enable_kernel_altivec(void);
- extern void flush_altivec_to_thread(struct task_struct *);
- extern void giveup_altivec(struct task_struct *);
- extern void save_altivec(struct task_struct *);
--static inline void disable_kernel_altivec(void)
--{
--	msr_check_and_clear(MSR_VEC);
--}
-+extern void disable_kernel_altivec(void);
- #else
- static inline void save_altivec(struct task_struct *t) { }
- static inline void __giveup_altivec(struct task_struct *t) { }
-@@ -67,20 +61,7 @@ static inline void __giveup_altivec(struct task_struct *t) { }
- #ifdef CONFIG_VSX
- extern void enable_kernel_vsx(void);
- extern void flush_vsx_to_thread(struct task_struct *);
--static inline void disable_kernel_vsx(void)
--{
--	msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
--}
--#else
--static inline void enable_kernel_vsx(void)
--{
--	BUILD_BUG();
--}
--
--static inline void disable_kernel_vsx(void)
--{
--	BUILD_BUG();
--}
-+extern void disable_kernel_vsx(void);
- #endif
- 
- #ifdef CONFIG_SPE
-@@ -114,4 +95,8 @@ static inline void clear_task_ebb(struct task_struct *t)
- 
- extern int set_thread_tidr(struct task_struct *t);
- 
-+bool kernel_fpu_enabled(void);
-+void kernel_fpu_begin(void);
-+void kernel_fpu_end(void);
-+
- #endif /* _ASM_POWERPC_SWITCH_TO_H */
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 185beb290580..2ced8c6a3fab 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -75,6 +75,17 @@
- #define TM_DEBUG(x...) do { } while(0)
- #endif
- 
-+/*
-+ * Track whether the kernel is using the FPU state
-+ * currently.
-+ *
-+ * This flag is used:
-+ *
-+ *   - kernel_fpu_begin()/end() correctness
-+ *   - kernel_fpu_enabled info
-+ */
-+static DEFINE_PER_CPU(bool, in_kernel_fpu);
-+
- extern unsigned long _get_SP(void);
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-@@ -212,6 +223,9 @@ void enable_kernel_fp(void)
- 	unsigned long cpumsr;
- 
- 	WARN_ON(preemptible());
-+	WARN_ON_ONCE(this_cpu_read(in_kernel_fpu));
-+
-+	this_cpu_write(in_kernel_fpu, true);
- 
- 	cpumsr = msr_check_and_set(MSR_FP);
- 
-@@ -231,6 +245,15 @@ void enable_kernel_fp(void)
- 	}
- }
- EXPORT_SYMBOL(enable_kernel_fp);
-+
-+void disable_kernel_fp(void)
-+{
-+	WARN_ON_ONCE(!this_cpu_read(in_kernel_fpu));
-+
-+	this_cpu_write(in_kernel_fpu, false);
-+	msr_check_and_clear(MSR_FP);
-+}
-+EXPORT_SYMBOL(disable_kernel_fp);
- #else
- static inline void __giveup_fpu(struct task_struct *tsk) { }
- #endif /* CONFIG_PPC_FPU */
-@@ -263,6 +286,9 @@ void enable_kernel_altivec(void)
- 	unsigned long cpumsr;
- 
- 	WARN_ON(preemptible());
-+	WARN_ON_ONCE(this_cpu_read(in_kernel_fpu));
-+
-+	this_cpu_write(in_kernel_fpu, true);
- 
- 	cpumsr = msr_check_and_set(MSR_VEC);
- 
-@@ -283,6 +309,14 @@ void enable_kernel_altivec(void)
- }
- EXPORT_SYMBOL(enable_kernel_altivec);
- 
-+void disable_kernel_altivec(void)
-+{
-+	WARN_ON_ONCE(!this_cpu_read(in_kernel_fpu));
-+
-+	this_cpu_write(in_kernel_fpu, false);
-+	msr_check_and_clear(MSR_VEC);
-+}
-+EXPORT_SYMBOL(disable_kernel_altivec);
- /*
-  * Make sure the VMX/Altivec register state in the
-  * the thread_struct is up to date for task tsk.
-@@ -333,6 +367,9 @@ void enable_kernel_vsx(void)
- 	unsigned long cpumsr;
- 
- 	WARN_ON(preemptible());
-+	WARN_ON_ONCE(this_cpu_read(in_kernel_fpu));
-+
-+	this_cpu_write(in_kernel_fpu, true);
- 
- 	cpumsr = msr_check_and_set(MSR_FP|MSR_VEC|MSR_VSX);
- 
-@@ -354,6 +391,15 @@ void enable_kernel_vsx(void)
- }
- EXPORT_SYMBOL(enable_kernel_vsx);
- 
-+void disable_kernel_vsx(void)
-+{
-+	WARN_ON_ONCE(!this_cpu_read(in_kernel_fpu));
-+
-+	this_cpu_write(in_kernel_fpu, false);
-+	msr_check_and_clear(MSR_FP|MSR_VEC|MSR_VSX);
-+}
-+EXPORT_SYMBOL(disable_kernel_vsx);
-+
- void flush_vsx_to_thread(struct task_struct *tsk)
- {
- 	if (tsk->thread.regs) {
-@@ -406,6 +452,90 @@ void flush_spe_to_thread(struct task_struct *tsk)
- }
- #endif /* CONFIG_SPE */
- 
-+static bool fpu_support(void)
-+{
-+	if (cpu_has_feature(CPU_FTR_VSX_COMP)) {
-+		return true;
-+	} else if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP)) {
-+		return true;
-+	} else if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE)) {
-+		return true;
-+	}
-+
-+	return false;
-+}
-+
-+bool kernel_fpu_enabled(void)
-+{
-+	return this_cpu_read(in_kernel_fpu);
-+}
-+EXPORT_SYMBOL(kernel_fpu_enabled);
-+
-+void kernel_fpu_begin(void)
-+{
-+	if (!fpu_support()) {
-+		WARN_ON_ONCE(1);
-+		return;
-+	}
-+
-+	preempt_disable();
-+
-+#ifdef CONFIG_VSX
-+	if (cpu_has_feature(CPU_FTR_VSX_COMP)) {
-+		enable_kernel_vsx();
-+		return;
-+	}
-+#endif
-+
-+#ifdef CONFIG_ALTIVEC
-+	if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP)) {
-+		enable_kernel_altivec();
-+		return;
-+	}
-+#endif
-+
-+#ifdef CONFIG_PPC_FPU
-+	if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE)) {
-+		enable_kernel_fp();
-+		return;
-+	}
-+#endif
-+}
-+EXPORT_SYMBOL_GPL(kernel_fpu_begin);
-+
-+void kernel_fpu_end(void)
-+{
-+	if (!fpu_support()) {
-+		WARN_ON_ONCE(1);
-+		return;
-+	}
-+
-+#ifdef CONFIG_VSX
-+	if (cpu_has_feature(CPU_FTR_VSX_COMP)) {
-+		disable_kernel_vsx();
-+		goto done;
-+	}
-+#endif
-+
-+#ifdef CONFIG_ALTIVEC
-+	if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP)) {
-+		disable_kernel_altivec();
-+		goto done;
-+	}
-+#endif
-+
-+#ifdef CONFIG_PPC_FPU
-+	if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE)) {
-+		disable_kernel_fp();
-+		goto done;
-+	}
-+#endif
-+
-+done:
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL_GPL(kernel_fpu_end);
-+
- static unsigned long msr_all_available;
- 
- static int __init init_msr_all_available(void)
--- 
-2.25.1
+On 20/07/21 12:39 am, Fabiano Rosas wrote:
+> "Pratik R. Sampat" <psampat@linux.ibm.com> writes:
+>
+>> +	pgs = kcalloc(num_attrs, sizeof(*pgs), GFP_KERNEL);
+>> +	if (!pgs)
+>> +		goto out;
+>> +
+>> +	papr_kobj = kobject_create_and_add("papr", firmware_kobj);
+>> +	if (!papr_kobj) {
+>> +		pr_warn("kobject_create_and_add papr failed\n");
+>> +		goto out_pgs;
+>> +	}
+>> +
+>> +	esi_kobj = kobject_create_and_add("energy_scale_info", papr_kobj);
+>> +	if (!esi_kobj) {
+>> +		pr_warn("kobject_create_and_add energy_scale_info failed\n");
+>> +		goto out_kobj;
+>> +	}
+>> +
+>> +	for (idx = 0; idx < num_attrs; idx++) {
+>> +		bool show_val_desc = true;
+>> +
+>> +		pgs[idx].pg.attrs = kcalloc(MAX_ATTRS + 1,
+>> +					    sizeof(*pgs[idx].pg.attrs),
+>> +					    GFP_KERNEL);
+>> +		if (!pgs[idx].pg.attrs) {
+>> +			for (i = idx - 1; i >= 0; i--)
+>> +				kfree(pgs[i].pg.attrs);
+> What about the pg.name from the previous iterations?
+>
+>> +			goto out_ekobj;
+>> +		}
+>> +
+>> +		pgs[idx].pg.name = kasprintf(GFP_KERNEL, "%lld",
+>> +					     be64_to_cpu(esi_attrs[idx].id));
+>> +		if (pgs[idx].pg.name == NULL) {
+>> +			for (i = idx; i >= 0; i--)
+>> +				kfree(pgs[i].pg.attrs);
+> Here too.
+>
+> You could just 'goto out_pgattrs' in both cases.
+
+Yeah, you're right. I may have over-complicated the free, in case of
+failure in both the cases above I could just free from "out_pgattrs"
+with no issues
+
+>> +			goto out_ekobj;
+>> +		}
+>> +		/* Do not add the value description if it does not exist */
+>> +		if (strnlen(esi_attrs[idx].value_desc,
+>> +			    sizeof(esi_attrs[idx].value_desc)) == 0)
+>> +			show_val_desc = false;
+>> +
+>> +		if (add_attr_group(be64_to_cpu(esi_attrs[idx].id), &pgs[idx],
+>> +				   show_val_desc)) {
+>> +			pr_warn("Failed to create papr attribute group %s\n",
+>> +				pgs[idx].pg.name);
+>> +			goto out_pgattrs;
+>> +		}
+>> +	}
+>> +
+>> +	kfree(esi_buf);
+>> +	return 0;
+>> +
+>> +out_pgattrs:
+>> +	for (i = 0; i < num_attrs ; i++) {
+>> +		kfree(pgs[i].pg.attrs);
+>> +		kfree(pgs[i].pg.name);
+>> +	}
+>> +out_ekobj:
+>> +	kobject_put(esi_kobj);
+>> +out_kobj:
+>> +	kobject_put(papr_kobj);
+>> +out_pgs:
+>> +	kfree(pgs);
+>> +out:
+>> +	kfree(esi_buf);
+>> +
+>> +	return -ENOMEM;
+>> +}
+>> +
+>> +machine_device_initcall(pseries, papr_init);
 
