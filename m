@@ -2,26 +2,26 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24423C07E9B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jul 2021 05:39:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A94DCC07E9B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jul 2021 05:49:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3E96E60FF2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jul 2021 05:39:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E96E60FF2
+	by mail.kernel.org (Postfix) with ESMTPS id 9F15E6109F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jul 2021 05:49:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F15E6109F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GV4Bx4ntJz3bgs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jul 2021 15:39:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GV4Qd5N64z3bhG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jul 2021 15:49:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WXoS460m;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iSteywaO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
@@ -29,83 +29,81 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=WXoS460m; dkim-atps=neutral
+ header.s=pp1 header.b=iSteywaO; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GV4BL6DNSz2yWs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jul 2021 15:38:34 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GV4Q51PWFz2yMZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jul 2021 15:48:44 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 16L5Y2Lc033965
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jul 2021 01:38:31 -0400
+ 16L5XQks093060; Wed, 21 Jul 2021 01:48:40 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to; s=pp1;
- bh=XLBV2v7vgvPjtxonQOulTbcxWTDxjtgB3nTPNB9u4Ac=;
- b=WXoS460mFhSrz2GxImUeeis4vblyEdV8iFEwmkgM+ofbcibEEYtstte9wcgllOe6Jpdr
- YBCn5hyFb/oJLrrrivoKFbTeoZJ/dHwODrFDHJzVTctgSa6WVV+YhB/uCdrk8mLJD2mg
- +FZhBF12RvgRfKLuYqrx1EBNlak2hJDCdfeSdVyisBdjVpp06HkVrxSutNFVNmAXqyMo
- i7PooIUYaIpY1TRnFngumlJp85BFgPd0LeyvkweSf30/yn64tWGxfns9smxOPOezddR1
- 4vC0mzVI0znkJO1McUey3cq6UguTLP3BM6SCPDbS81qhCYCtuZYzGQNMSqnbWK0P1Euw JA== 
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references; s=pp1;
+ bh=mQ9/acaAFRGI3CLNvsx/sw6rcwl8T1RWczi3NkW2Pgw=;
+ b=iSteywaO8+HnIudYTddWILK6cSH8f3uxdt4G6CZEF2Pl+4wYt7/V1asdcxwB3eD+90T+
+ 6McXRCjNA04IhhM3vlZFbv49OKPFGRW3bQqKySIhvfPWeJKlEs8pgh6Oz+VIzJOjJboH
+ Xs7qybuBlATnrhV4r1Rh1EyBxY2vEPW+M3r8TZoF5fKzInxgaaiq6R3kHSgaFBXdg4V7
+ rekwwVtoYcsiBKTT7IYytplBZ7vfv2PsAgEfmOauvH1Q1fcrLErzI1cBb1dk2sX+hxTY
+ 0cAaU1O30hDiD5mYxb1tKCeaVi+cL7YjmzQglDyyOijSuw3pCtuHS32dmIiEPhd0aQf7 4A== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39xcjchbnv-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jul 2021 01:38:30 -0400
-Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16L5bG0A052553
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jul 2021 01:38:29 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 39xcjchbn7-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39xd8k8ks7-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 21 Jul 2021 01:38:29 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16L5bDf8030284;
- Wed, 21 Jul 2021 05:38:27 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04ams.nl.ibm.com with ESMTP id 39upu89p7h-1
+ Wed, 21 Jul 2021 01:48:39 -0400
+Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16L5XRZ4093188;
+ Wed, 21 Jul 2021 01:48:39 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39xd8k8krs-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 21 Jul 2021 05:38:27 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 16L5a0ZM18219278
+ Wed, 21 Jul 2021 01:48:39 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16L5mbtn004902;
+ Wed, 21 Jul 2021 05:48:37 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma06ams.nl.ibm.com with ESMTP id 39vng71ace-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 21 Jul 2021 05:48:36 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16L5mXu322937956
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 21 Jul 2021 05:36:01 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AE7F35204F;
- Wed, 21 Jul 2021 05:38:23 +0000 (GMT)
-Received: from [9.79.181.237] (unknown [9.79.181.237])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTPS id BC4F752052;
- Wed, 21 Jul 2021 05:38:22 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.120.23.2.6\))
-Subject: Re: [PATCH] powerpc/64s/perf: Always use SIAR for kernel interrupts
+ Wed, 21 Jul 2021 05:48:33 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BD73A4C052;
+ Wed, 21 Jul 2021 05:48:33 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2660B4C04E;
+ Wed, 21 Jul 2021 05:48:32 +0000 (GMT)
+Received: from localhost.localdomain.localdomain (unknown [9.79.181.237])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 21 Jul 2021 05:48:31 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <20210720141504.420110-1-npiggin@gmail.com>
-Date: Wed, 21 Jul 2021 11:06:13 +0530
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <3B701B8E-5C49-49A6-BAF7-246F42F7B0E7@linux.vnet.ibm.com>
-References: <20210720141504.420110-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-X-Mailer: Apple Mail (2.3608.120.23.2.6)
+To: mpe@ellerman.id.au
+Subject: [PATCH V4 1/1] powerpc/perf: Fix PMU callbacks to clear pending PMI
+ before resetting an overflown PMC
+Date: Wed, 21 Jul 2021 01:48:29 -0400
+Message-Id: <1626846509-1350-2-git-send-email-atrajeev@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1626846509-1350-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+References: <1626846509-1350-1-git-send-email-atrajeev@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: k-4EWvewWTS_8ilSwCEdBTnaBvEHII-Z
-X-Proofpoint-GUID: tNVEEk2x67TGpgQuy8BaVAjZSlKZhmP7
+X-Proofpoint-GUID: Wm9DCWJDrXZo9A2ykb7rRXwqKFuTY67F
+X-Proofpoint-ORIG-GUID: mfvKNB6UK9QkTtIP_jMXTON37zvieAiY
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-07-21_02:2021-07-21,
  2021-07-21 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 lowpriorityscore=0
- clxscore=1015 priorityscore=1501 phishscore=0 adultscore=0 malwarescore=0
- impostorscore=0 spamscore=0 suspectscore=0 mlxlogscore=999 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104190000
- definitions=main-2107210027
+ lowpriorityscore=0
+ bulkscore=0 clxscore=1015 mlxscore=0 suspectscore=0 priorityscore=1501
+ phishscore=0 adultscore=0 impostorscore=0 spamscore=0 mlxlogscore=999
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2107210027
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,88 +115,266 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+ rnsastry@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Running perf fuzzer showed below in dmesg logs:
+"Can't find PMC that caused IRQ"
 
+This means a PMU exception happened, but none of the PMC's (Performance
+Monitor Counter) were found to be overflown. There are some corner cases
+that clears the PMCs after PMI gets masked. In such cases, the perf
+interrupt handler will not find the active PMC values that had caused
+the overflow and thus leads to this message while replaying.
 
-> On 20-Jul-2021, at 7:45 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
->=20
-> If an interrupt is taken in kernel mode, always use SIAR for it rather =
-than
-> looking at regs_sipr. This prevents samples piling up around interrupt
-> enable (hard enable or interrupt replay via soft enable) in PMUs / =
-modes
-> where the PR sample indication is not in synch with SIAR.
->=20
-> This results in better sampling of interrupt entry and exit in =
-particular.
->=20
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
-> arch/powerpc/perf/core-book3s.c | 9 +++++++++
-> 1 file changed, 9 insertions(+)
->=20
-> diff --git a/arch/powerpc/perf/core-book3s.c =
-b/arch/powerpc/perf/core-book3s.c
-> index bb0ee716de91..91203ed9d0ff 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -340,6 +340,13 @@ static inline void perf_read_regs(struct pt_regs =
-*regs)
-> 	 * If the PMU doesn't update the SIAR for non marked events use
-> 	 * pt_regs.
-> 	 *
-> +	 * If regs is a kernel interrupt, always use SIAR. Some PMUs =
-have an
-> +	 * issue with regs_sipr not being in synch with SIAR in =
-interrupt entry
-> +	 * and return sequences, which can result in regs_sipr being =
-true for
-> +	 * kernel interrupts and SIAR, which has the effect of causing =
-samples
-> +	 * to pile up at mtmsrd MSR[EE] 0->1 or pending irq replay =
-around
-> +	 * interrupt entry/exit.
-> +	 *
-> 	 * If the PMU has HV/PR flags then check to see if they
-> 	 * place the exception in userspace. If so, use pt_regs. In
-> 	 * continuous sampling mode the SIAR and the PMU exception are
-> @@ -356,6 +363,8 @@ static inline void perf_read_regs(struct pt_regs =
-*regs)
-> 		use_siar =3D 1;
-> 	else if ((ppmu->flags & PPMU_NO_CONT_SAMPLING))
-> 		use_siar =3D 0;
-> +	else if (!user_mode(regs))
-> +		use_siar =3D 1;
+Case 1: PMU Interrupt happens during replay of other interrupts and
+counter values gets cleared by PMU callbacks before replay:
 
+During replay of interrupts like timer, __do_irq and doorbell exception, we
+conditionally enable interrupts via may_hard_irq_enable(). This could
+potentially create a window to generate a PMI. Since irq soft mask is set
+to ALL_DISABLED, the PMI will get masked here. We could get IPIs run before
+perf interrupt is replayed and the PMU events could deleted or stopped.
+This will change the PMU SPR values and resets the counters. Snippet of
+ftrace log showing PMU callbacks invoked in "__do_irq":
 
-Tested the change.
+<idle>-0 [051] dns. 132025441306354: __do_irq <-call_do_irq
+<idle>-0 [051] dns. 132025441306430: irq_enter <-__do_irq
+<idle>-0 [051] dns. 132025441306503: irq_enter_rcu <-__do_irq
+<idle>-0 [051] dnH. 132025441306599: xive_get_irq <-__do_irq
+<<>>
+<idle>-0 [051] dnH. 132025441307770: generic_smp_call_function_single_interrupt <-smp_ipi_demux_relaxed
+<idle>-0 [051] dnH. 132025441307839: flush_smp_call_function_queue <-smp_ipi_demux_relaxed
+<idle>-0 [051] dnH. 132025441308057: _raw_spin_lock <-event_function
+<idle>-0 [051] dnH. 132025441308206: power_pmu_disable <-perf_pmu_disable
+<idle>-0 [051] dnH. 132025441308337: power_pmu_del <-event_sched_out
+<idle>-0 [051] dnH. 132025441308407: power_pmu_read <-power_pmu_del
+<idle>-0 [051] dnH. 132025441308477: read_pmc <-power_pmu_read
+<idle>-0 [051] dnH. 132025441308590: isa207_disable_pmc <-power_pmu_del
+<idle>-0 [051] dnH. 132025441308663: write_pmc <-power_pmu_del
+<idle>-0 [051] dnH. 132025441308787: power_pmu_event_idx <-perf_event_update_userpage
+<idle>-0 [051] dnH. 132025441308859: rcu_read_unlock_strict <-perf_event_update_userpage
+<idle>-0 [051] dnH. 132025441308975: power_pmu_enable <-perf_pmu_enable
+<<>>
+<idle>-0 [051] dnH. 132025441311108: irq_exit <-__do_irq
+<idle>-0 [051] dns. 132025441311319: performance_monitor_exception <-replay_soft_interrupts
 
-Workload used: Testcase that runs a loop of =E2=80=9Cscv=E2=80=9D =
-syscalls
+Case 2: PMI's masked during local_* operations, example local_add.
+If the local_add operation happens within a local_irq_save, replay of
+PMI will be during local_irq_restore. Similar to case 1, this could
+also create a window before replay where PMU events gets deleted or
+stopped.
 
-Before the patch:
-# perf record <test>
-# perf report|grep replay
-     3.90%  scvonly  [kernel.vmlinux]            [k] =
-replay_soft_interrupts
+Patch adds a fix to update the PMU callback function 'power_pmu_disable' to
+check for pending perf interrupt. If there is an overflown PMC and pending
+perf interrupt indicated in Paca, clear the PMI bit in paca to drop that
+sample. Clearing of PMI bit is done in 'power_pmu_disable' since disable is
+invoked before any event gets deleted/stopped. With this fix, if there are
+more than one event running in the PMU, there is a chance that we clear the
+PMI bit for the event which is not getting deleted/stopped. The other
+events may still remain active. Hence to make sure we don't drop valid
+sample in such cases, another check is added in power_pmu_enable. This
+checks if there is an overflown PMC found among the active events and if
+so enable back the PMI bit. Two new helper functions are introduced to
+clear/set the PMI, ie 'clear_pmi_irq_pending' and 'set_pmi_irq_pending'.
+Helper function 'pmi_irq_pending' is introduced to give a warning if
+there is pending PMI bit in paca, but no PMC is overflown.
 
-Samples were present around interrupt replay code.
+Also there are corner cases which results in performance monitor interrupts
+getting triggered during power_pmu_disable. This happens since PMXE bit is
+not cleared along with disabling of other MMCR0 bits in the pmu_disable.
+Such PMI's could leave the PMU running and could trigger PMI again which
+will set MMCR0 PMAO bit. This could lead to spurious interrupts in some
+corner cases. Example, a timer after power_pmu_del which will re-enable
+interrupts and triggers a PMI again since PMAO bit is still set. But fails
+to find valid overflow since PMC get cleared in power_pmu_del. Patch
+fixes this by disabling PMXE along with disabling of other MMCR0 bits
+in power_pmu_disable.
 
-After the fix, perf report didn=E2=80=99t had samples pointing to replay =
-code.
+We can't just replay PMI any time. Hence this approach is preferred rather
+than replaying PMI before resetting overflown PMC. Patch also documents
+core-book3s on a race condition which can trigger these PMC messages during
+idle path in PowerNV.
 
-Tested-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Fixes: f442d004806e ("powerpc/64s: Add support to mask perf interrupts and replay them")
+Reported-by: Nageswara R Sastry <nasastry@in.ibm.com>
+Suggested-by: Nicholas Piggin <npiggin@gmail.com>
+Suggested-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/hw_irq.h | 38 +++++++++++++++++++++++++
+ arch/powerpc/perf/core-book3s.c   | 59 ++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 96 insertions(+), 1 deletion(-)
 
-Thanks
-Athira
-> 	else if (!(ppmu->flags & PPMU_NO_SIPR) && regs_sipr(regs))
-> 		use_siar =3D 0;
-> 	else
-> --=20
-> 2.23.0
->=20
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 21cc571..d4e2d74 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -224,6 +224,40 @@ static inline bool arch_irqs_disabled(void)
+ 	return arch_irqs_disabled_flags(arch_local_save_flags());
+ }
+ 
++static inline void set_pmi_irq_pending(void)
++{
++	/*
++	 * Invoked from PMU callback functions to set
++	 * PMI bit in Paca. This has to be called with
++	 * irq's disabled ( via hard_irq_disable ).
++	 */
++	if (IS_ENABLED(CONFIG_PPC_IRQ_SOFT_MASK_DEBUG))
++		WARN_ON_ONCE(mfmsr() & MSR_EE);
++	get_paca()->irq_happened |= PACA_IRQ_PMI;
++}
++
++static inline void clear_pmi_irq_pending(void)
++{
++	/*
++	 * Invoked from PMU callback functions to clear
++	 * the pending PMI bit in Paca.
++	 */
++	if (IS_ENABLED(CONFIG_PPC_IRQ_SOFT_MASK_DEBUG))
++		WARN_ON_ONCE(mfmsr() & MSR_EE);
++	get_paca()->irq_happened &= ~PACA_IRQ_PMI;
++}
++
++static inline int pmi_irq_pending(void)
++{
++	/*
++	 * Invoked from PMU callback functions to check
++	 * if there is a pending PMI bit in Paca.
++	 */
++	if (get_paca()->irq_happened & PACA_IRQ_PMI)
++		return 1;
++	return 0;
++}
++
+ #ifdef CONFIG_PPC_BOOK3S
+ /*
+  * To support disabling and enabling of irq with PMI, set of
+@@ -408,6 +442,10 @@ static inline void do_hard_irq_enable(void)
+ 	BUILD_BUG();
+ }
+ 
++static inline void clear_pmi_irq_pending(void) { }
++static inline void set_pmi_irq_pending(void) { }
++static inline int pmi_irq_pending(void) { return 0; }
++
+ static inline void irq_soft_mask_regs_set_state(struct pt_regs *regs, unsigned long val)
+ {
+ }
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index bb0ee71..ad29220 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -848,6 +848,19 @@ static void write_pmc(int idx, unsigned long val)
+ 	}
+ }
+ 
++static int any_pmc_overflown(struct cpu_hw_events *cpuhw)
++{
++	int i, idx;
++
++	for (i = 0; i < cpuhw->n_events; i++) {
++		idx = cpuhw->event[i]->hw.idx;
++		if ((idx) && ((int)read_pmc(idx) < 0))
++			return idx;
++	}
++
++	return 0;
++}
++
+ /* Called from sysrq_handle_showregs() */
+ void perf_event_print_debug(void)
+ {
+@@ -1272,11 +1285,13 @@ static void power_pmu_disable(struct pmu *pmu)
+ 
+ 		/*
+ 		 * Set the 'freeze counters' bit, clear EBE/BHRBA/PMCC/PMAO/FC56
++		 * Also clear PMXE to disable PMI's getting triggered in some
++		 * corner cases during PMU disable.
+ 		 */
+ 		val  = mmcr0 = mfspr(SPRN_MMCR0);
+ 		val |= MMCR0_FC;
+ 		val &= ~(MMCR0_EBE | MMCR0_BHRBA | MMCR0_PMCC | MMCR0_PMAO |
+-			 MMCR0_FC56);
++			 MMCR0_PMXE | MMCR0_FC56);
+ 		/* Set mmcr0 PMCCEXT for p10 */
+ 		if (ppmu->flags & PPMU_ARCH_31)
+ 			val |= MMCR0_PMCCEXT;
+@@ -1290,6 +1305,24 @@ static void power_pmu_disable(struct pmu *pmu)
+ 		mb();
+ 		isync();
+ 
++		/*
++		 * Some corner cases could clear the PMU counter overflow
++		 * while a masked PMI is pending. One of such case is
++		 * when a PMI happens during interrupt replay and perf
++		 * counter values gets cleared by PMU callbacks before
++		 * replay.
++		 *
++		 * If any of PMC corresponding to the active PMU events is
++		 * overflown, disable the interrupt by clearing the paca
++		 * bit for PMI since we are disabling the PMU now.
++		 * Otherwise provide a warning if there is PMI pending, but
++		 * no counter is found overflown.
++		 */
++		if (any_pmc_overflown(cpuhw))
++			clear_pmi_irq_pending();
++		else
++			WARN_ON(pmi_irq_pending());
++
+ 		val = mmcra = cpuhw->mmcr.mmcra;
+ 
+ 		/*
+@@ -1381,6 +1414,15 @@ static void power_pmu_enable(struct pmu *pmu)
+ 	 * (possibly updated for removal of events).
+ 	 */
+ 	if (!cpuhw->n_added) {
++		/*
++		 * If there is any active event with an overflown PMC
++		 * value, Set back PACA_IRQ_PMI which would have got
++		 * cleared in power_pmu_disable.
++		 */
++		hard_irq_disable();
++		if (any_pmc_overflown(cpuhw))
++			set_pmi_irq_pending();
++
+ 		mtspr(SPRN_MMCRA, cpuhw->mmcr.mmcra & ~MMCRA_SAMPLE_ENABLE);
+ 		mtspr(SPRN_MMCR1, cpuhw->mmcr.mmcr1);
+ 		if (ppmu->flags & PPMU_ARCH_31)
+@@ -2336,6 +2378,12 @@ static void __perf_event_interrupt(struct pt_regs *regs)
+ 				break;
+ 			}
+ 		}
++		/*
++		 * Clear PACA_IRQ_PMI in case it was set by
++		 * set_pmi_irq_pending() when PMU was enabled
++		 * after accounting for interrupts.
++		 */
++		clear_pmi_irq_pending();
+ 		if (!active)
+ 			/* reset non active counters that have overflowed */
+ 			write_pmc(i + 1, 0);
+@@ -2355,6 +2403,15 @@ static void __perf_event_interrupt(struct pt_regs *regs)
+ 			}
+ 		}
+ 	}
++
++	/*
++	 * During system wide profling or while specific CPU
++	 * is monitored for an event, some corner cases could
++	 * cause PMC to overflow in idle path. This will trigger
++	 * a PMI after waking up from idle. Since counter values
++	 * are _not_ saved/restored in idle path, can lead to
++	 * below "Can't find PMC" message.
++	 */
+ 	if (unlikely(!found) && !arch_irq_disabled_regs(regs))
+ 		printk_ratelimited(KERN_WARNING "Can't find PMC that caused IRQ\n");
+ 
+-- 
+1.8.3.1
 
