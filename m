@@ -2,66 +2,66 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70055C07E9B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jul 2021 04:49:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF3E9C12002
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jul 2021 04:50:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CDB2E60E08
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jul 2021 04:49:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDB2E60E08
+	by mail.kernel.org (Postfix) with ESMTPS id EAF0F6024A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jul 2021 04:50:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAF0F6024A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GV35h1rkqz3bf3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jul 2021 14:49:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GV36J28F2z3byH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jul 2021 14:50:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=Jlb4Ku4Z;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=ObFvdECS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=amd.com
- (client-ip=40.107.92.62; helo=nam10-bn7-obe.outbound.protection.outlook.com;
+ (client-ip=40.107.237.63; helo=nam12-bn8-obe.outbound.protection.outlook.com;
  envelope-from=anson.jacob@amd.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256
- header.s=selector1 header.b=Jlb4Ku4Z; 
+ header.s=selector1 header.b=ObFvdECS; 
  dkim-atps=neutral
-Received: from NAM10-BN7-obe.outbound.protection.outlook.com
- (mail-bn7nam10on2062.outbound.protection.outlook.com [40.107.92.62])
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com
+ (mail-bn8nam12on2063.outbound.protection.outlook.com [40.107.237.63])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GV34b6Xcyz2yP1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jul 2021 14:48:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GV34m09MSz3bTq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jul 2021 14:48:38 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=nPq1Ou/iEgRKitoNWS5d38famT2g9I+tktifJhe5CqasN33rHeRIPrBJZ+L1MsfYGwKHw5GaOkNdlerYqMS0MLKWiOMEIljphu7+v/5aaIeQm7BU+8AD02d4t4d3alhy5OralPNyDo3tOEi3UGmWmH6C72Ivfh3+OLxiWrtXkJzgIJbBOuD/CZrilR3FooVRorZT+cv2gsB4uIxMbwYajuurCJAoqGY7D8jeliUcCz3Uc2GVT6VnP5vlI+qcOubPBGO871hR94GumhsMsV6w9wsOQyLhm7TI30Yio1BuhACPU21SnVuvPkiUAtEhtyQADEYkx4bpSxWj6MecrG7V4w==
+ b=VWM4dlKWpdXIvioaZYHt18r+Qvjr1MI3q3yn7gE00DXNdx8LTmXbVsJusoLLfwf5qnuFX7nNGMQFBjwuaNBDckifiJGPpWFHZNjcxrTiZ+YReZ83Xo0A3CgS6NljYRWsXx0LwCG9Ili7bYEwepsjVkJAJKVOGALNFCgfiOnYNPVNh8Jbk1oLt8mhUjLqTErqsfkpkXNeQOWor5NdVqPhmQdZZnWt3s9OvBXEcZZRpTwnA0JLfMk3xXp4i6589397le7gtK/GHJiGjT5eo8poDQ6YqGEGASs460TaIbvvvNM6T4LDgOjkpIAeFxV5fR4Z8dHaXQv4RC/LXdzZRdDubQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=TrzMv5T4lvXTDDAO61PU0YC1kmkH91c8l3sbzBCe32Y=;
- b=bCHeHjcgQF9uiYddAZ4M896m/myjiqimbnss3V4m9+YujLLOBHunM+vtZMRfMldZ0fTbs0m67SsQNI3u965s03CG6uaT5JSaRN3CT5vd8tkcno1nW1o40MVILjboSrB5zPsi+WSyv67tmZHxQ5q9DpUlz/3BORJco7C9ppQh4/k4btjsFXoBnCGW07aGUwGFjjgnVgnaG5G2XQZJkCVisxCQq9ZVvoGfrQfDfxF5eM2kAVpTC3c2w7cLO/jU0waVdThNWLP4Gj7a3B76e8gj08h5pUEExTcjx5qf/K4lvkx2sXgL9g1V0roNsNrhpmYmSm8LeAGFpJVtiG/O58IBSg==
+ bh=NbtVLY3/SNAzZ/q6dAPqNpQpqBEP3+dwnKNyCcuyZ6c=;
+ b=dF66Zldw/0UGRzvpwLxj8ZgQrcKCeW7k9JDbCUBCrrHc+D3xxZS5civhWCtQpFobHE4O1eIrjYyF7GDrkh4fpNQI0igOJm8+mORJiAK3f1+LGAP3Fu72SJvm+ynTqpMqnhYRUE7fsqLPJBb3lZTKWchhJNoFThJAWDyB+bfu3XooOZtBVyUxQld16AwC13FZh9D4s8vGRaJuE//qXvbaf4cux9XPOPeXTACU+q/JHuWSaEoezGk6BTbhFRnovySt1A4MZRyu//FflRLr59cykB8di9D1jl4F/+M2D/bfPpYWPWJMF2APCVFFv6QkOCpAu1O0f03DLPdGIbBohw/Law==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=ellerman.id.au smtp.mailfrom=amd.com;
  dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
  header.from=amd.com; dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1; 
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=TrzMv5T4lvXTDDAO61PU0YC1kmkH91c8l3sbzBCe32Y=;
- b=Jlb4Ku4ZcQZaofYPWvyZoEHBllgl4ryC4R3SotLCq17haHBbQ/umJl/W30gR0b6P/Va4TyR56lUuAgrZeH9cH2oj2MJAVNn1gEbYs3kUeH0jTR2YsHTsYRXznSRhgVgbarESO0AoeyLfFZfwJVBocW0+TQFd/DPD9g598PdArzw=
-Received: from DM3PR08CA0001.namprd08.prod.outlook.com (2603:10b6:0:52::11) by
- MWHPR12MB1904.namprd12.prod.outlook.com (2603:10b6:300:114::10) with
+ bh=NbtVLY3/SNAzZ/q6dAPqNpQpqBEP3+dwnKNyCcuyZ6c=;
+ b=ObFvdECS9OMpqW5K5Xb4DvYlDQMH4RPMw8Kt46sg1Aa2Db+NB0EaTbQBmvIeRs/DpiwCAJGbahMxRcEyQF9lQ/bZuPSBlICPi8z60cFkIxhZgweXprNpgsY5fNIbUzF9q7WwMQgU+UdWXCQ3PRUSbYFIrmFyHlCsFoaz2NGKxKI=
+Received: from DS7PR03CA0180.namprd03.prod.outlook.com (2603:10b6:5:3b2::35)
+ by CH2PR12MB3686.namprd12.prod.outlook.com (2603:10b6:610:23::12) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4331.21; Wed, 21 Jul
- 2021 04:48:06 +0000
-Received: from DM6NAM11FT055.eop-nam11.prod.protection.outlook.com
- (2603:10b6:0:52:cafe::6f) by DM3PR08CA0001.outlook.office365.com
- (2603:10b6:0:52::11) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4331.21 via Frontend
- Transport; Wed, 21 Jul 2021 04:48:06 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4331.29; Wed, 21 Jul
+ 2021 04:48:19 +0000
+Received: from DM6NAM11FT029.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:5:3b2:cafe::2a) by DS7PR03CA0180.outlook.office365.com
+ (2603:10b6:5:3b2::35) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4331.22 via Frontend
+ Transport; Wed, 21 Jul 2021 04:48:19 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; ellerman.id.au; dkim=none (message not signed)
  header.d=none;ellerman.id.au; dmarc=pass action=none header.from=amd.com;
@@ -69,55 +69,57 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=SATLEXMB04.amd.com;
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
- DM6NAM11FT055.mail.protection.outlook.com (10.13.173.103) with Microsoft SMTP
+ DM6NAM11FT029.mail.protection.outlook.com (10.13.173.23) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4352.24 via Frontend Transport; Wed, 21 Jul 2021 04:48:05 +0000
-Received: from SATLEXMB08.amd.com (10.181.40.132) by SATLEXMB04.amd.com
+ 15.20.4352.24 via Frontend Transport; Wed, 21 Jul 2021 04:48:18 +0000
+Received: from SATLEXMB07.amd.com (10.181.41.45) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2242.4; Tue, 20 Jul
- 2021 23:48:04 -0500
-Received: from SATLEXMB04.amd.com (10.181.40.145) by SATLEXMB08.amd.com
- (10.181.40.132) with Microsoft SMTP Server (version=TLS1_2,
+ 2021 23:48:18 -0500
+Received: from SATLEXMB04.amd.com (10.181.40.145) by SATLEXMB07.amd.com
+ (10.181.41.45) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2242.4; Tue, 20 Jul
- 2021 21:48:04 -0700
+ 2021 21:48:17 -0700
 Received: from Bumblebee.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server id 15.1.2242.4 via Frontend
- Transport; Tue, 20 Jul 2021 23:48:03 -0500
+ Transport; Tue, 20 Jul 2021 23:48:11 -0500
 From: Anson Jacob <Anson.Jacob@amd.com>
 To: <mpe@ellerman.id.au>, <benh@kernel.crashing.org>, <paulus@samba.org>,
  <christophe.leroy@csgroup.eu>, <linuxppc-dev@lists.ozlabs.org>,
  <amd-gfx@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>
-Subject: [RFC v2 0/2] PPC: Add generic FPU api similar to x86
-Date: Wed, 21 Jul 2021 00:47:59 -0400
-Message-ID: <20210721044801.840501-1-Anson.Jacob@amd.com>
+Subject: [RFC v2 2/2] drm/amd/display: Use PPC FPU functions
+Date: Wed, 21 Jul 2021 00:48:01 -0400
+Message-ID: <20210721044801.840501-3-Anson.Jacob@amd.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210721044801.840501-1-Anson.Jacob@amd.com>
+References: <20210721044801.840501-1-Anson.Jacob@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: b6b57cd7-6f0f-41f0-30a0-08d94c02bad3
-X-MS-TrafficTypeDiagnostic: MWHPR12MB1904:
-X-Microsoft-Antispam-PRVS: <MWHPR12MB190494D82B1C7EDB6A652764EBE39@MWHPR12MB1904.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:7219;
+X-MS-Office365-Filtering-Correlation-Id: 181b8a50-9300-43ed-bcd1-08d94c02c28c
+X-MS-TrafficTypeDiagnostic: CH2PR12MB3686:
+X-Microsoft-Antispam-PRVS: <CH2PR12MB36866E871A6F91C818349AF2EBE39@CH2PR12MB3686.namprd12.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:5516;
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: wWnrdtgg7QSEPQ5A7nmhRCfvJTJe05roofGklhwzfVHVRw82rHSqSuryUSYmh7c4rUdsKBlY8Jor8ynLJHK3fzGYdOl2sqwlEx6707WPt9c+mg4qBVxPcSJp3mlkfsdQhqaKAGqN1NE3Jnj1oXs2GN+6x37JepgskK5pgubkzbpp1Sxl2N6EL2Un/zFyGc/PeviTKe8ESsyZlbt04IxA4f0t4sJ07wXMK6IZZl+4Tcwn115IQMuMq4Yzpkh9UWSpSCNmnAL3KP6mAus39sU3dKC/9PnPuk+1Wj3yyCQ3RKJQAD3lS6nD9IggqxxpPMe6MCOBH837wEb39kh2Omgew909bQ40ZSivA79GC0lkE9vEYCtKSGhM2Euw4rqWAAzrLyUwUhwWHAQ1nVLRdwntQ50fZNY+E3J6OJWJ6nbkIML830vdUPcKXjE1eONcgAvEfPBAEuJcowkoVWx7xXA7KKSkmPb2e2JtPM2Rh9N9Dl9B6c4gJQR0i4HkK3+QTxXEdDUUtxEt/P4Cf3QJWFcBiVwqXyMeMOIO45/isShVfq9E4/dFZA5VfWy4sjyemjBuLsppbap0bctt1FgwvNJEc4icWG7Xt+zVIMzghvJDoW6ruwH5XM3mx1PcNbvBrgvxJEUxxtIv1bIr15JxDB+77r9trcXqFyS4gXq4dJfhouOceRjElYyl5zyJpTIyM5sv6CecJqgxiGzsixRhz0CeNTMZZrGswTbpj3WTDnqdyoDBkh7B/MoiVc3eOjKneW+ZGVjVSGehgIa/mmqEYhVTkQ==
+X-Microsoft-Antispam-Message-Info: xDa9zuJFMNsVB3Qh7VO9H0mmFAhb2OEVY6uC44qZh8hc+MZtp8YgBMKqol6jE04Aj9vqAGQXKO3I6K3xt0YlDb5Mshk5MPD5voqtzfKsA1YUI+ATddwizA9nF6IsVfvZ31OIT0OfKPwGfAGNN6pucx7kh10Xu9C5ecP4BWf/bTjextL21J8HL37roKjzI/xUNXzLmMFP+4S2ZsJdZi6VOZMINZRGuuKn+2PQqC1aVQLL91Cr3frD/YbFv3unJ9fmGYVmqIBcABgbDprjzgVQ1wVSoGVPutAvskWWbdqJUH0W6E3txKHJwK5/qcYb/b6Tj3GMyrxgqwmLWYCXjee+ImpLLIZAnxmEXJSwLEN0Gd/ulPDyR8B0y1Fr4fz8XgvNl+Om1+9vBFeCmgJ0TcRrKT8zOWx4s6GHu0BfLNOScJh09Xtu2NgFfpvICCEdTzWZ3wFULhEETd+tNQZ/MuhcHoPLcE8ZPi42iqEPsqTJAJlnodDRR+IuWenpMVjsqFnBQlZNZkvSvAfRuiU6T7ExyEvRKjhL9xxXg0I1KWPmIMk6edwsCo+NnZSFuVaZxZxb3UBQMhzsBdLDZNpiXtZB/VliCzzFxlSdCjgOWfOdT0sSYibyGsZzPINC+CdvsV5xCBx1YNr/xc1KnpiDPDzf10hZau/JqltwZdbjRFfsYhFg9jdX8JNPTjH92yeH/oB8oR9ugPS/FSpe7ZYlHy7POQQXf0zWjyp28Rd1crjIU9o=
 X-Forefront-Antispam-Report: CIP:165.204.84.17; CTRY:US; LANG:en; SCL:1; SRV:;
  IPV:CAL; SFV:NSPM; H:SATLEXMB04.amd.com; PTR:InfoDomainNonexistent; CAT:NONE;
- SFS:(4636009)(136003)(346002)(376002)(396003)(39860400002)(36840700001)(46966006)(5660300002)(4326008)(2906002)(86362001)(186003)(8676002)(47076005)(1076003)(6666004)(478600001)(2616005)(110136005)(336012)(316002)(54906003)(36860700001)(70206006)(7696005)(36756003)(356005)(8936002)(81166007)(4744005)(426003)(26005)(70586007)(83380400001)(82740400003)(82310400003)(41533002)(36900700001);
+ SFS:(4636009)(46966006)(36840700001)(8676002)(356005)(81166007)(6666004)(1076003)(82310400003)(2616005)(8936002)(336012)(36860700001)(316002)(70586007)(5660300002)(4326008)(70206006)(110136005)(83380400001)(426003)(508600001)(26005)(36756003)(186003)(54906003)(47076005)(7696005)(86362001)(2906002)(36900700001);
  DIR:OUT; SFP:1101; 
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Jul 2021 04:48:05.6594 (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: b6b57cd7-6f0f-41f0-30a0-08d94c02bad3
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Jul 2021 04:48:18.6315 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 181b8a50-9300-43ed-bcd1-08d94c02c28c
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d; Ip=[165.204.84.17];
  Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT055.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT029.eop-nam11.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR12MB1904
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH2PR12MB3686
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,37 +131,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sunpeng.Li@amd.com, Harry.Wentland@amd.com, qingqing.zhuo@amd.com,
- Rodrigo.Siqueira@amd.com, roman.li@amd.com, Anson.Jacob@amd.com,
- Aurabindo.Pillai@amd.com, Bhawanpreet.Lakha@amd.com, bindu.r@amd.com
+Cc: Sunpeng.Li@amd.com, Harry Wentland <harry.wentland@amd.com>,
+ qingqing.zhuo@amd.com, Rodrigo.Siqueira@amd.com, roman.li@amd.com,
+ Christoph Hellwig <hch@infradead.org>, Anson.Jacob@amd.com,
+ Aurabindo.Pillai@amd.com, Bhawanpreet.Lakha@amd.com,
+ =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>, bindu.r@amd.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is an attempt to have generic FPU enable/disable
-calls similar to x86. 
-So that we can simplify gpu/drm/amd/display/dc/os_types.h
+Use kernel_fpu_begin & kernel_fpu_end for PPC
 
-Also adds FPU correctness logic seen in x86.
+Depends on "ppc/fpu: Add generic FPU api similar to x86"
 
 v2:
-- Added asm/fpu/api.h powerpc variant with kernel_fpu_begin/end()
-  and kernel_fpu_enabled() declarations
-- Updated kernel_fpu_enabled as EXPORT_SYMBOL_GPL
-- Got rid of macro switch for PPC in dc/os_types.h as header file
-  with same name as x86 is added by previous patch in the series
+- Got rid of macro switch for PPC as header file with same
+  name as x86 is added by previous patch in the series
 
-Anson Jacob (2):
-  ppc/fpu: Add generic FPU api similar to x86
-  drm/amd/display: Use PPC FPU functions
+Signed-off-by: Anson Jacob <Anson.Jacob@amd.com>
+CC: Christoph Hellwig <hch@infradead.org>
+CC: Rodrigo Siqueira <Rodrigo.Siqueira@amd.com>
+CC: Harry Wentland <harry.wentland@amd.com>
+CC: Christian König <christian.koenig@amd.com>
+---
+ drivers/gpu/drm/amd/display/dc/os_types.h | 29 -----------------------
+ 1 file changed, 29 deletions(-)
 
- arch/powerpc/include/asm/fpu/api.h        |  18 +++
- arch/powerpc/include/asm/switch_to.h      |  25 +----
- arch/powerpc/kernel/process.c             | 130 ++++++++++++++++++++++
- drivers/gpu/drm/amd/display/dc/os_types.h |  29 -----
- 4 files changed, 151 insertions(+), 51 deletions(-)
- create mode 100644 arch/powerpc/include/asm/fpu/api.h
-
+diff --git a/drivers/gpu/drm/amd/display/dc/os_types.h b/drivers/gpu/drm/amd/display/dc/os_types.h
+index 126c2f3a4dd3..47ef434f93d8 100644
+--- a/drivers/gpu/drm/amd/display/dc/os_types.h
++++ b/drivers/gpu/drm/amd/display/dc/os_types.h
+@@ -51,38 +51,9 @@
+ #define dm_error(fmt, ...) DRM_ERROR(fmt, ##__VA_ARGS__)
+ 
+ #if defined(CONFIG_DRM_AMD_DC_DCN)
+-#if defined(CONFIG_X86)
+ #include <asm/fpu/api.h>
+ #define DC_FP_START() kernel_fpu_begin()
+ #define DC_FP_END() kernel_fpu_end()
+-#elif defined(CONFIG_PPC64)
+-#include <asm/switch_to.h>
+-#include <asm/cputable.h>
+-#define DC_FP_START() { \
+-	if (cpu_has_feature(CPU_FTR_VSX_COMP)) { \
+-		preempt_disable(); \
+-		enable_kernel_vsx(); \
+-	} else if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP)) { \
+-		preempt_disable(); \
+-		enable_kernel_altivec(); \
+-	} else if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE)) { \
+-		preempt_disable(); \
+-		enable_kernel_fp(); \
+-	} \
+-}
+-#define DC_FP_END() { \
+-	if (cpu_has_feature(CPU_FTR_VSX_COMP)) { \
+-		disable_kernel_vsx(); \
+-		preempt_enable(); \
+-	} else if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP)) { \
+-		disable_kernel_altivec(); \
+-		preempt_enable(); \
+-	} else if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE)) { \
+-		disable_kernel_fp(); \
+-		preempt_enable(); \
+-	} \
+-}
+-#endif
+ #endif
+ 
+ /*
 -- 
 2.25.1
 
