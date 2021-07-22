@@ -2,76 +2,111 @@ Return-Path: <SRS0=LYrz=MO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E8EEC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jul 2021 19:38:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A368C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jul 2021 22:13:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 37FBD60EB5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jul 2021 19:38:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 37FBD60EB5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 611F360EB4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jul 2021 22:13:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 611F360EB4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GW2nB1rylz30Fy
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 05:38:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GW6Cr6jjqz30Qq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 08:13:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JeHVIXLd;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.222.171;
- helo=mail-qk1-f171.google.com; envelope-from=pku.leo@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
  receiver=<UNKNOWN>)
-Received: from mail-qk1-f171.google.com (mail-qk1-f171.google.com
- [209.85.222.171])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=JeHVIXLd; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GW2mm5zl6z2yP5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jul 2021 05:38:16 +1000 (AEST)
-Received: by mail-qk1-f171.google.com with SMTP id n10so6488930qke.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2021 12:38:15 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=rrCcO1rl/jimbgMioNh66hv+GfxnblGwSC/dwoJZl/s=;
- b=N2yMAJMDjf8qZelhxwWSBd5ylUKHcul/ePqtY0L+K7S8F7YNv6Wy4NwdNc+s6N4Vmg
- 1RlcD0A78RCgo9V/UsKScQeaflShB622sOCCLBbdTBlVa/FLauKOAjQJcIl3JsW+xMi7
- U5x0txZJSE2Rma/GZ5UmC5+/3pCoOj+30cp9Z4ANaSuI9ZWSxtmsAvkM+5UJS0vIQjFM
- W2oPROLb2ILqfP3YlaDQr2UYGPuMyR4I7f9mJ+Wiidkiq4FZugysdiWmtqojuMkOMeOL
- QMGZnbJ5qf4bX8ISkpaM/XdM2swL7pVUy5azJi60532FghoQPLMYep8qqJBIoAqMIDB8
- Ivdg==
-X-Gm-Message-State: AOAM531KVnLct3E93jVfJd+NWW6j+c5y/K2DkMKzQHjzePlkhUg5PDR9
- hZvsZQlIDLgZYeYAZcVegcklTNcvgVQ=
-X-Google-Smtp-Source: ABdhPJxCReMLrzQVOL4vf3sZqVvkxr/dFvmpkzkytuZkykDw+4J+HEMQKWVeZhzJump3Emvhkkxraw==
-X-Received: by 2002:a37:e109:: with SMTP id c9mr1284011qkm.480.1626982692205; 
- Thu, 22 Jul 2021 12:38:12 -0700 (PDT)
-Received: from mail-qt1-f173.google.com (mail-qt1-f173.google.com.
- [209.85.160.173])
- by smtp.gmail.com with ESMTPSA id 6sm13292030qkv.115.2021.07.22.12.38.10
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 22 Jul 2021 12:38:11 -0700 (PDT)
-Received: by mail-qt1-f173.google.com with SMTP id a19so169200qtx.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2021 12:38:10 -0700 (PDT)
-X-Received: by 2002:ac8:7c44:: with SMTP id o4mr1090841qtv.191.1626982690807; 
- Thu, 22 Jul 2021 12:38:10 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GW6CJ4bZMz2yLJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jul 2021 08:13:00 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 16MM31N7057669; Thu, 22 Jul 2021 18:12:50 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=vCyfG/myHm5qkQSU3/36ogaM6pmaiSPiwXMVEtHUM6Y=;
+ b=JeHVIXLdHQ9HRE+F0PBnWuyLqKmkxL7Wq48aj+SnUMI5J84cJlwNMyV9SqDT9e8xZPi9
+ /AsUzya+y8geiRMmvXUu8fSi7wTzimwSWPa/vjbMKXI2leUtnpBm1n2bRc/jTDPp+K+n
+ pAlKkkwHLZh3vMV74I4kx5m1ox8y2Gk20O1jrGntCpUsgro08d/RH5u9+hRGeSjRFAhC
+ C+yUW2bgGLJDuU87sHPLtiS3Y3M7azXgNeuypL9W4Gi3iy9GCONz5lzHcxKs1gqcJbrj
+ MnQIY7vjmv+MfhYDBYzVI2xeRQNcms3ZzSvOkfudK5BdSGQzWxsFmaPjcRX961coDKUn Hg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39yepjm8pm-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 22 Jul 2021 18:12:50 -0400
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16MM3uqo065579;
+ Thu, 22 Jul 2021 18:12:50 -0400
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 39yepjm8p8-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 22 Jul 2021 18:12:50 -0400
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16MMBcSq009793;
+ Thu, 22 Jul 2021 22:12:49 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma03wdc.us.ibm.com with ESMTP id 39vqdwyjrm-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 22 Jul 2021 22:12:49 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16MMCmLb29360580
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 22 Jul 2021 22:12:48 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1A90FC6066;
+ Thu, 22 Jul 2021 22:12:48 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 951BDC6062;
+ Thu, 22 Jul 2021 22:12:46 +0000 (GMT)
+Received: from farosas.linux.ibm.com.com (unknown [9.211.86.55])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 22 Jul 2021 22:12:46 +0000 (GMT)
+From: Fabiano Rosas <farosas@linux.ibm.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH v4 1/2] KVM: PPC: Book3S HV: Sanitise vcpu registers in nested
+ path
+Date: Thu, 22 Jul 2021 19:12:39 -0300
+Message-Id: <20210722221240.2384655-2-farosas@linux.ibm.com>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210722221240.2384655-1-farosas@linux.ibm.com>
+References: <20210722221240.2384655-1-farosas@linux.ibm.com>
 MIME-Version: 1.0
-References: <20210705111250.1513634-1-fido_max@inbox.ru>
- <CADRPPNRYDBFHEppfpYLwsy7MMEdtsOLS764MJboL9ERW0-KK3Q@mail.gmail.com>
- <ec981260-fbe3-5cc4-1da3-dfb2f70f8f85@inbox.ru>
-In-Reply-To: <ec981260-fbe3-5cc4-1da3-dfb2f70f8f85@inbox.ru>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Thu, 22 Jul 2021 14:37:59 -0500
-X-Gmail-Original-Message-ID: <CADRPPNST8XRhO5yR7p8pSbbJCO7xwhF2W3WZ7R=63mTET+fAdA@mail.gmail.com>
-Message-ID: <CADRPPNST8XRhO5yR7p8pSbbJCO7xwhF2W3WZ7R=63mTET+fAdA@mail.gmail.com>
-Subject: Re: [PATCH] soc: fsl: qe: convert QE interrupt controller to
- platform_device
-To: Maxim Kochetkov <fido_max@inbox.ru>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: kBEwsEJeWv6qLdulFESkBg57SjpfCZZ7
+X-Proofpoint-ORIG-GUID: 2KcexTNFBMMnm3IeExgpezqrfHqTghfh
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-07-22_12:2021-07-22,
+ 2021-07-22 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 malwarescore=0
+ suspectscore=0 lowpriorityscore=0 clxscore=1015 impostorscore=0
+ mlxlogscore=999 spamscore=0 priorityscore=1501 adultscore=0 mlxscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2104190000 definitions=main-2107220142
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,56 +118,184 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: saravanak@google.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- lkml <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, Zhao Qiang <qiang.zhao@nxp.com>
+Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jul 19, 2021 at 1:57 AM Maxim Kochetkov <fido_max@inbox.ru> wrote:
->
-> 15.07.2021 01:29, Li Yang wrote:
-> >  From the original code, this should be type = "qeic".  It is not
-> > defined in current binding but probably needed for backward
-> > compatibility.
->
-> I took these strings from this part:
->
->         np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
->
->         if (!np) {
->
->                 np = of_find_node_by_type(NULL, "qeic");
->
->                 if (!np)
->
->                         return -ENODEV;
->
->         }
->
-> However I can't find usage of "qeic" in any dts, so I will drop this in V2
+As one of the arguments of the H_ENTER_NESTED hypercall, the nested
+hypervisor (L1) prepares a structure containing the values of various
+hypervisor-privileged registers with which it wants the nested guest
+(L2) to run. Since the nested HV runs in supervisor mode it needs the
+host to write to these registers.
 
-It is really a bit hard to find as it is pretty old.  But it was
-really used up until this commit below in 2008.  So probably it will
-be better to keep it just for backward compatibility?
+To stop a nested HV manipulating this mechanism and using a nested
+guest as a proxy to access a facility that has been made unavailable
+to it, we have a routine that sanitises the values of the HV registers
+before copying them into the nested guest's vcpu struct.
 
-commit a2dd70a11d4c9cb8a4e4bb41f53a9b430e08559b
-Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date:   Thu Jan 24 18:39:59 2008 +0300
+However, when coming out of the guest the values are copied as they
+were back into L1 memory, which means that any sanitisation we did
+during guest entry will be exposed to L1 after H_ENTER_NESTED returns.
 
-    [POWERPC] QE: get rid of most device_types and model
+This patch alters this sanitisation to have effect on the vcpu->arch
+registers directly before entering and after exiting the guest,
+leaving the structure that is copied back into L1 unchanged (except
+when we really want L1 to access the value, e.g the Cause bits of
+HFSCR).
 
-    Now we're searching for "fsl,qe", "fsl,qe-muram", "fsl,qe-muram-data"
-    and "fsl,qe-ic".
+Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
+---
+ arch/powerpc/kvm/book3s_hv_nested.c | 100 +++++++++++++++-------------
+ 1 file changed, 52 insertions(+), 48 deletions(-)
 
-    Unfortunately it's still impossible to remove device_type = "qe"
-    from the existing device trees because older u-boots are looking for it.
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index 8543ad538b0c..3804dc50ebe8 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -104,8 +104,17 @@ static void save_hv_return_state(struct kvm_vcpu *vcpu, int trap,
+ {
+ 	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+ 
++	/*
++	 * When loading the hypervisor-privileged registers to run L2,
++	 * we might have used bits from L1 state to restrict what the
++	 * L2 state is allowed to be. Since L1 is not allowed to read
++	 * the HV registers, do not include these modifications in the
++	 * return state.
++	 */
++	hr->hfscr = ((~HFSCR_INTR_CAUSE & hr->hfscr) |
++		     (HFSCR_INTR_CAUSE & vcpu->arch.hfscr));
++
+ 	hr->dpdes = vc->dpdes;
+-	hr->hfscr = vcpu->arch.hfscr;
+ 	hr->purr = vcpu->arch.purr;
+ 	hr->spurr = vcpu->arch.spurr;
+ 	hr->ic = vcpu->arch.ic;
+@@ -134,49 +143,7 @@ static void save_hv_return_state(struct kvm_vcpu *vcpu, int trap,
+ 	}
+ }
+ 
+-/*
+- * This can result in some L0 HV register state being leaked to an L1
+- * hypervisor when the hv_guest_state is copied back to the guest after
+- * being modified here.
+- *
+- * There is no known problem with such a leak, and in many cases these
+- * register settings could be derived by the guest by observing behaviour
+- * and timing, interrupts, etc., but it is an issue to consider.
+- */
+-static void sanitise_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
+-{
+-	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+-	u64 mask;
+-
+-	/*
+-	 * Don't let L1 change LPCR bits for the L2 except these:
+-	 */
+-	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD |
+-		LPCR_LPES | LPCR_MER;
+-
+-	/*
+-	 * Additional filtering is required depending on hardware
+-	 * and configuration.
+-	 */
+-	hr->lpcr = kvmppc_filter_lpcr_hv(vcpu->kvm,
+-			(vc->lpcr & ~mask) | (hr->lpcr & mask));
+-
+-	/*
+-	 * Don't let L1 enable features for L2 which we've disabled for L1,
+-	 * but preserve the interrupt cause field.
+-	 */
+-	hr->hfscr &= (HFSCR_INTR_CAUSE | vcpu->arch.hfscr);
+-
+-	/* Don't let data address watchpoint match in hypervisor state */
+-	hr->dawrx0 &= ~DAWRX_HYP;
+-	hr->dawrx1 &= ~DAWRX_HYP;
+-
+-	/* Don't let completed instruction address breakpt match in HV state */
+-	if ((hr->ciabr & CIABR_PRIV) == CIABR_PRIV_HYPER)
+-		hr->ciabr &= ~CIABR_PRIV;
+-}
+-
+-static void restore_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
++static void restore_hv_regs(struct kvm_vcpu *vcpu, const struct hv_guest_state *hr)
+ {
+ 	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+ 
+@@ -288,6 +255,43 @@ static int kvmhv_write_guest_state_and_regs(struct kvm_vcpu *vcpu,
+ 				     sizeof(struct pt_regs));
+ }
+ 
++static void load_l2_hv_regs(struct kvm_vcpu *vcpu,
++			    const struct hv_guest_state *l2_hv,
++			    const struct hv_guest_state *l1_hv, u64 *lpcr)
++{
++	struct kvmppc_vcore *vc = vcpu->arch.vcore;
++	u64 mask;
++
++	restore_hv_regs(vcpu, l2_hv);
++
++	/*
++	 * Don't let L1 change LPCR bits for the L2 except these:
++	 */
++	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD |
++		LPCR_LPES | LPCR_MER;
++
++	/*
++	 * Additional filtering is required depending on hardware
++	 * and configuration.
++	 */
++	*lpcr = kvmppc_filter_lpcr_hv(vcpu->kvm,
++				      (vc->lpcr & ~mask) | (*lpcr & mask));
++
++	/*
++	 * Don't let L1 enable features for L2 which we've disabled for L1,
++	 * but preserve the interrupt cause field.
++	 */
++	vcpu->arch.hfscr = l2_hv->hfscr & (HFSCR_INTR_CAUSE | l1_hv->hfscr);
++
++	/* Don't let data address watchpoint match in hypervisor state */
++	vcpu->arch.dawrx0 = l2_hv->dawrx0 & ~DAWRX_HYP;
++	vcpu->arch.dawrx1 = l2_hv->dawrx1 & ~DAWRX_HYP;
++
++	/* Don't let completed instruction address breakpt match in HV state */
++	if ((l2_hv->ciabr & CIABR_PRIV) == CIABR_PRIV_HYPER)
++		vcpu->arch.ciabr = l2_hv->ciabr & ~CIABR_PRIV;
++}
++
+ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
+ {
+ 	long int err, r;
+@@ -296,7 +300,7 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
+ 	struct hv_guest_state l2_hv = {0}, saved_l1_hv;
+ 	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+ 	u64 hv_ptr, regs_ptr;
+-	u64 hdec_exp;
++	u64 hdec_exp, lpcr;
+ 	s64 delta_purr, delta_spurr, delta_ic, delta_vtb;
+ 
+ 	if (vcpu->kvm->arch.l1_ptcr == 0)
+@@ -349,8 +353,8 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
+ 	/* Guest must always run with ME enabled, HV disabled. */
+ 	vcpu->arch.shregs.msr = (vcpu->arch.regs.msr | MSR_ME) & ~MSR_HV;
+ 
+-	sanitise_hv_regs(vcpu, &l2_hv);
+-	restore_hv_regs(vcpu, &l2_hv);
++	lpcr = l2_hv.lpcr;
++	load_l2_hv_regs(vcpu, &l2_hv, &saved_l1_hv, &lpcr);
+ 
+ 	vcpu->arch.ret = RESUME_GUEST;
+ 	vcpu->arch.trap = 0;
+@@ -360,7 +364,7 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
+ 			r = RESUME_HOST;
+ 			break;
+ 		}
+-		r = kvmhv_run_single_vcpu(vcpu, hdec_exp, l2_hv.lpcr);
++		r = kvmhv_run_single_vcpu(vcpu, hdec_exp, lpcr);
+ 	} while (is_kvmppc_resume_guest(r));
+ 
+ 	/* save L2 state for return */
+-- 
+2.29.2
 
-    Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-
-Regards,
-Leo
