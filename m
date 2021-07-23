@@ -7,50 +7,50 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5010BC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 17:52:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC3D0C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 17:53:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E6CBB60C51
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 17:52:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E6CBB60C51
+	by mail.kernel.org (Postfix) with ESMTPS id 7801760F02
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 17:53:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7801760F02
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GWcNh4RtPz3dVw
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jul 2021 03:52:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GWcP81JKqz3dYy
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jul 2021 03:53:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=AIGezHoG;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=gy2yuCy6;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=deltatee.com (client-ip=204.191.154.188; helo=ale.deltatee.com;
  envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256
- header.s=20200525 header.b=AIGezHoG; dkim-atps=neutral
+ header.s=20200525 header.b=gy2yuCy6; dkim-atps=neutral
 Received: from ale.deltatee.com (ale.deltatee.com [204.191.154.188])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GWcKq146mz2xb6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jul 2021 03:50:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GWcKr0FpVz2xfk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jul 2021 03:50:24 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=deltatee.com; s=20200525; h=Subject:MIME-Version:References:In-Reply-To:
  Message-Id:Date:Cc:To:From:content-disposition;
- bh=SvEzwpNxmVfyllnMOG86hKyCuFZgCTrDE53Ra6OCzdU=; b=AIGezHoGK3cvhuvpm9LgSCPFw+
- W39PIjEzRmI0X/NioqeEpNuXVb1zCbBKuFA4bT5I06t9NnL2eD+Akf2L/ak9iCisf4dW66hFmhAw6
- ftb1BEa7F5hkipqxWEWZ/Fj6HLGh6gRQ8WtphEiYPX9P7x1I0GEM1Xdd8XzTF6TlxjK7Us4SxGOi8
- tL4vIiFVWCnAvaZPy6kEYVkNAU7BNbN2Hsl/Lgw0seP4DnzQg5uV597ldlCZB5/GL32xRfD5KAyKz
- XBbHKprL3crIvNyGQ3V/IN9t/HbPBhcdFkUPCsJ13Du7CJo08M9AyGdHO5ZOYYNEUHRhNZVa0mEtQ
- zjT4+/FA==;
+ bh=1Ac+kLf3m7NLdDW/VFqzSvvzNcJRkR+YtO34l2sNfsw=; b=gy2yuCy6RXfZFoVI62RBxY2Vdx
+ JOS32Sq1Rn0aOy/579utR028nrSjr8QP5FhWiPnIc4vzB9DsPkheJtBaTQv7RRAoql9+ZMDMkojOA
+ 4OBpxvzzhXM5MA/SfwpfYnRWfq02+2YwozBRi9o1VFzLo8dUbzy12FLifUpIXoimlt7T5mg0+0EbC
+ ID4BRGbLM321atRibedyd59NKOzyDyU9a7ONADmpnIukKcxKLyTlkVNRUQ4An24ijNxf2Y0FnRVb5
+ cYaUnAFcwqcWC1pkPngo6nqYR3aXGPU8CjlZba8Y+9tuDttzW2OZ9227q1h48RIogHDF7jF1pHFeI
+ mT6MDrdg==;
 Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
  by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
- id 1m6zJU-0005Lg-5M; Fri, 23 Jul 2021 11:50:20 -0600
+ id 1m6zJU-0005Lh-Af; Fri, 23 Jul 2021 11:50:21 -0600
 Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
  (envelope-from <gunthorp@deltatee.com>)
- id 1m6zJM-0005rK-US; Fri, 23 Jul 2021 11:50:13 -0600
+ id 1m6zJN-0005rQ-A4; Fri, 23 Jul 2021 11:50:13 -0600
 From: Logan Gunthorpe <logang@deltatee.com>
 To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
@@ -58,8 +58,8 @@ To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  iommu@lists.linux-foundation.org, linux-parisc@vger.kernel.org,
  xen-devel@lists.xenproject.org
-Date: Fri, 23 Jul 2021 11:50:04 -0600
-Message-Id: <20210723175008.22410-18-logang@deltatee.com>
+Date: Fri, 23 Jul 2021 11:50:06 -0600
+Message-Id: <20210723175008.22410-20-logang@deltatee.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20210723175008.22410-1-logang@deltatee.com>
 References: <20210723175008.22410-1-logang@deltatee.com>
@@ -73,11 +73,12 @@ X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-parisc@vger.kernel.org, xen-devel@lists.xenproject.org, hch@lst.de,
  m.szyprowski@samsung.com, robin.murphy@arm.com, sbates@raithlin.com,
- martin.oliveira@eideticom.com, logang@deltatee.com, boris.ostrovsky@oracle.com,
- konrad.wilk@oracle.com, jgross@suse.com, sstabellini@kernel.org
+ martin.oliveira@eideticom.com, logang@deltatee.com, tglx@linutronix.de,
+ mingo@redhat.com, bp@alien8.de, hpa@zytor.com, schnelle@linux.ibm.com,
+ tsbogend@alpha.franken.de, mpe@ellerman.id.au
 X-SA-Exim-Mail-From: gunthorp@deltatee.com
-Subject: [PATCH v2 17/21] xen: swiotlb: return error code from
- xen_swiotlb_map_sg()
+Subject: [PATCH v2 19/21] x86/amd_gart: don't set failed sg dma_address to
+ DMA_MAPPING_ERROR
 X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
 X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -91,51 +92,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juergen Gross <jgross@suse.com>,
- Stefano Stabellini <sstabellini@kernel.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Robin Murphy <robin.murphy@arm.com>,
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Niklas Schnelle <schnelle@linux.ibm.com>, Robin Murphy <robin.murphy@arm.com>,
  Martin Oliveira <martin.oliveira@eideticom.com>,
- Stephen Bates <sbates@raithlin.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Logan Gunthorpe <logang@deltatee.com>, Christoph Hellwig <hch@lst.de>,
- Marek Szyprowski <m.szyprowski@samsung.com>
+ Stephen Bates <sbates@raithlin.com>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Logan Gunthorpe <logang@deltatee.com>,
+ Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Martin Oliveira <martin.oliveira@eideticom.com>
+Setting the ->dma_address to DMA_MAPPING_ERROR is not part of
+the ->map_sg calling convention, so remove it.
 
-The .map_sg() op now expects an error code instead of zero on failure.
-
-xen_swiotlb_map_sg() may only fail if xen_swiotlb_map_page() fails, but
-xen_swiotlb_map_page() only supports returning errors as
-DMA_MAPPING_ERROR. So coalesce all errors into EIO per the documentation
-for dma_map_sgtable().
-
-Signed-off-by: Martin Oliveira <martin.oliveira@eideticom.com>
+Link: https://lore.kernel.org/linux-mips/20210716063241.GC13345@lst.de/
+Suggested-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
-Reviewed-by: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Stefano Stabellini <sstabellini@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Niklas Schnelle <schnelle@linux.ibm.com>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
 ---
- drivers/xen/swiotlb-xen.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/amd_gart_64.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
-index 24d11861ac7d..85d58b720a24 100644
---- a/drivers/xen/swiotlb-xen.c
-+++ b/drivers/xen/swiotlb-xen.c
-@@ -509,7 +509,7 @@ xen_swiotlb_map_sg(struct device *dev, struct scatterlist *sgl, int nelems,
- out_unmap:
- 	xen_swiotlb_unmap_sg(dev, sgl, i, dir, attrs | DMA_ATTR_SKIP_CPU_SYNC);
- 	sg_dma_len(sgl) = 0;
--	return 0;
-+	return -EIO;
+diff --git a/arch/x86/kernel/amd_gart_64.c b/arch/x86/kernel/amd_gart_64.c
+index 46aea9a4f26b..ed837383de5c 100644
+--- a/arch/x86/kernel/amd_gart_64.c
++++ b/arch/x86/kernel/amd_gart_64.c
+@@ -458,8 +458,6 @@ static int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents,
+ 		panic("dma_map_sg: overflow on %lu pages\n", pages);
+ 
+ 	iommu_full(dev, pages << PAGE_SHIFT, dir);
+-	for_each_sg(sg, s, nents, i)
+-		s->dma_address = DMA_MAPPING_ERROR;
+ 	return ret;
  }
  
- static void
 -- 
 2.20.1
 
