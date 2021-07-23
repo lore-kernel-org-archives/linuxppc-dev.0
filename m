@@ -2,79 +2,62 @@ Return-Path: <SRS0=1oDC=MP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EC41C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 20:01:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 128BBC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 20:32:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC3F760E97
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 20:01:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AC3F760E97
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6432160BD3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 20:32:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6432160BD3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GWgFL2jmCz30RR
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jul 2021 06:01:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GWgwp6VBkz3cc6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jul 2021 06:32:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZMr+NUTB;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=merlin.20170209 header.b=PRJwKuak;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1234::107; helo=merlin.infradead.org;
+ envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=ZMr+NUTB; 
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=merlin.20170209 header.b=PRJwKuak; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1234::107])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GWgDs57D9z30FR
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jul 2021 06:01:17 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPS id 8E38F60F25
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jul 2021 20:01:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1627070475;
- bh=2qgOjnUGJULLCpcQGZvkrjHzmYTpnrQ/BQRkUCuYh5I=;
- h=From:To:Subject:Date:In-Reply-To:References:From;
- b=ZMr+NUTBajDSEToW/g9kbAKe6S+WAUFwaFb1VNFCrTYz0TNqHHOkYiwyb8As/F3hJ
- vTnYV839CqiTL6p5PJ/os3YYb5qfFUYvMnn66ds/Xe5nu+51dXyU9bbDMVMCARVoDk
- gXwP1/lU1bDrukuR0DFqdeqhtZUoUSvEv8qi/UiNYTLbqM/KUg1USJaATPVFfkVo+b
- tElHtv7BUm1+1Fe7UmGHazctScpprUju2ztnHGOtcLpKgZOn9e9vwqe8HlbV4naZ7A
- nDXs+X+CKoZ4acyEBk+GJ0yDf0cOK/FcSnik4wUxdX3bbPMTgTpFcKYWhlhnuJAVGC
- i0A44I721D1uw==
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 213837] "Kernel panic - not syncing: corrupted stack end
- detected inside scheduler" at building via distcc on a G5
-Date: Fri, 23 Jul 2021 20:01:15 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: CC platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Memory Management
-X-Bugzilla-Component: Other
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: akpm@linux-foundation.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-213837-206035-pQI29BYrfv@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-213837-206035@https.bugzilla.kernel.org/>
-References: <bug-213837-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GWgwL0QKvz30FS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jul 2021 06:31:59 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=Date:Cc:To:Subject:From:References:
+ In-Reply-To:Message-Id:Sender:Reply-To:MIME-Version:Content-Type:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=1TYWW0rzWbWcSSyHi+XDS9UVjhzJx7NyYyJH9V4T3k4=; b=PRJwKuakm6zA9j8iJJ74WtG9x2
+ 8/owyFtkZrdRCTLSyV5ZtJKjatWdPHf+NOre/VlGuqwPSIetHZ6ZxFACqpBtQcDiWhywjS80ovO82
+ BU3xLTHe+2GnZg6GcN/9kUNhgS1tK9HNu4RgI6U2Fzb6xRR0xbLj5ps6qOmE9aaPKN7Hmo+1x4mKo
+ +g4T8Voc1120Pv6+yHIF749rLH9Fuvg+VY9o32ZeBVoMhq4NvgRSOufbzOIPpXqVfDVCrUFNIWf22
+ hC+sseGApTlS4RDgYAc7wjzXtkzzG4XZGpdokV3sqUiTI4Yj/RIxJk2ro6xG20YODVgk+u5RvnisZ
+ mdO4Ci4g==;
+Received: from geoff by merlin.infradead.org with local (Exim 4.94.2 #2 (Red
+ Hat Linux)) id 1m71pj-009Bip-I7; Fri, 23 Jul 2021 20:31:47 +0000
+Message-Id: <1cdd7f718dde93dcaebf7ddd025869901aa30523.1627068552.git.geoff@infradead.org>
+In-Reply-To: <cover.1627068552.git.geoff@infradead.org>
+References: <cover.1627068552.git.geoff@infradead.org>
+From: Geoff Levand <geoff@infradead.org>
+Patch-Date: Sat, 24 Jul 2021 13:02:14 -0700
+Subject: [PATCH v4 05/10] net/ps3_gelic: Add vlan_id structure
+To: David S. Miller <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
+Date: Fri, 23 Jul 2021 20:31:47 +0000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,19 +69,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D213837
+In an effort to make the PS3 gelic driver easier to maintain, add
+a definition for the vlan_id structure.
 
---- Comment #1 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 298019
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D298019&action=3Dedit
-kernel .config (5.13.4, PowerMac G5 11,2)
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+---
+ drivers/net/ethernet/toshiba/ps3_gelic_net.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
---=20
-You may reply to this email to add a comment.
+diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.c b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+index 946e9bfa071b..54e50ad9e629 100644
+--- a/drivers/net/ethernet/toshiba/ps3_gelic_net.c
++++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+@@ -1614,13 +1614,14 @@ static struct gelic_card *gelic_alloc_card_net(struct net_device **netdev)
+ static void gelic_card_get_vlan_info(struct gelic_card *card)
+ {
+ 	struct device *dev = ctodev(card);
++	unsigned int i;
+ 	u64 v1, v2;
+ 	int status;
+-	unsigned int i;
+-	struct {
++	struct vlan_id {
+ 		int tx;
+ 		int rx;
+-	} vlan_id_ix[2] = {
++	};
++	struct vlan_id vlan_id_ix[2] = {
+ 		[GELIC_PORT_ETHERNET_0] = {
+ 			.tx = GELIC_LV1_VLAN_TX_ETHERNET_0,
+ 			.rx = GELIC_LV1_VLAN_RX_ETHERNET_0
+-- 
+2.25.1
 
-You are receiving this mail because:
-You are watching someone on the CC list of the bug.=
+
