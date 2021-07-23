@@ -7,50 +7,50 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C5E9C4320A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 17:51:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE5D3C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 17:52:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 04C8D60C51
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 17:51:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 04C8D60C51
+	by mail.kernel.org (Postfix) with ESMTPS id 5109B60C51
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jul 2021 17:52:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5109B60C51
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GWcMK3znQz3dBq
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jul 2021 03:51:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GWcMm748Kz3bcc
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jul 2021 03:52:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=I0NqDGyF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=ceE3xNa5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=deltatee.com (client-ip=204.191.154.188; helo=ale.deltatee.com;
  envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256
- header.s=20200525 header.b=I0NqDGyF; dkim-atps=neutral
+ header.s=20200525 header.b=ceE3xNa5; dkim-atps=neutral
 Received: from ale.deltatee.com (ale.deltatee.com [204.191.154.188])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GWcKl6KmGz2yYt
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jul 2021 03:50:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GWcKl716zz305q
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jul 2021 03:50:19 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=deltatee.com; s=20200525; h=Subject:MIME-Version:References:In-Reply-To:
  Message-Id:Date:Cc:To:From:content-disposition;
- bh=BqE/2wCCjH4FvfGKjQ09Cv01+9Px9vk9cMsrkFQoCn0=; b=I0NqDGyFiHeU4vQIrAHeYz9/OX
- RnbsqrIWWArueD4reUWEXhXjdCxttxJixLpASD8WyFe9J/cv5ALJGHTdtEm6rCwvD6eoT0PfxJzsr
- pcY28iGg92alpdU6jVLWb/XcJgUHIs3QrSGvqLxCQlTa9o9xJY06Nj7nHY8vPpcwinKgjHdFtNIq2
- FA2Za3AhlhPpxgT0kGWLvtBXvp55hycTfrI6RyTL4xPeplXhvfYGbCzgbF54Qc25rW+h9eSFC7wgi
- mF4zGD5pQcmZnzHMpGu/QiTAdDpsHWqS6g1Zw2GAPcveTb8Yqm0bB4pmSZdV192zGGh9aaF0WUgVz
- tsjKiQ7g==;
+ bh=HKCVUstwA/z3wuW2EGad6Fa2PQLjmM0RyJDS41E8gEg=; b=ceE3xNa5zKwrpv+KSzmE7LfjqN
+ 0q/StfTaFLC89OIPsL5+enoCQ8wyl6/6i4jsEFiR43MEKekW1TRVGs6gbFQAw05b52z+Gg/B/HERs
+ 9OhcoIjeIB26sAHv5+uTd3D/NbWNNXUPnOUr95+mHUB34EmPY7Fko/92+5UiQVxjDeY5a2hCXho37
+ WUkvAUx9LUDaBn28taATIaM4Whds0u2lS0PSsUSwfkqXp0M+8yje3Gmj75OuBqwto3/1QVzP9VFof
+ dxz4o8gHrETaFZyTg9X6dGaLxMEevxwctrUYwYEcmWkRnf+9VN8ernNXHxdpFxwYPEua/aErYGkeC
+ VaCk22FA==;
 Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
  by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
- id 1m6zJN-0005Li-Sn; Fri, 23 Jul 2021 11:50:14 -0600
+ id 1m6zJQ-0005Li-JV; Fri, 23 Jul 2021 11:50:17 -0600
 Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
  (envelope-from <gunthorp@deltatee.com>)
- id 1m6zJK-0005qb-OJ; Fri, 23 Jul 2021 11:50:10 -0600
+ id 1m6zJN-0005rW-Is; Fri, 23 Jul 2021 11:50:13 -0600
 From: Logan Gunthorpe <logang@deltatee.com>
 To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
@@ -58,8 +58,8 @@ To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  iommu@lists.linux-foundation.org, linux-parisc@vger.kernel.org,
  xen-devel@lists.xenproject.org
-Date: Fri, 23 Jul 2021 11:49:49 -0600
-Message-Id: <20210723175008.22410-3-logang@deltatee.com>
+Date: Fri, 23 Jul 2021 11:50:08 -0600
+Message-Id: <20210723175008.22410-22-logang@deltatee.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20210723175008.22410-1-logang@deltatee.com>
 References: <20210723175008.22410-1-logang@deltatee.com>
@@ -75,8 +75,8 @@ X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
  m.szyprowski@samsung.com, robin.murphy@arm.com, sbates@raithlin.com,
  martin.oliveira@eideticom.com, logang@deltatee.com
 X-SA-Exim-Mail-From: gunthorp@deltatee.com
-Subject: [PATCH v2 02/21] dma-direct: Return appropriate error code from
- dma_direct_map_sg()
+Subject: [PATCH v2 21/21] dma-mapping: Disallow .map_sg operations from
+ returning zero on error
 X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
 X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -98,29 +98,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that the map_sg() op expects error codes instead of return zero on
-error, convert dma_direct_map_sg() to return an error code. Per the
-documentation for dma_map_sgtable(), -EIO is returned due to an
-DMA_MAPPING_ERROR with unknown cause.
+Now that all the .map_sg operations have been converted to returning
+proper error codes, drop the code to handle a zero return value,
+add a warning if a zero is returned and update the comment for the
+map_sg operation.
 
 Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
 ---
- kernel/dma/direct.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/dma/mapping.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-index f737e3347059..f33ceb68aef2 100644
---- a/kernel/dma/direct.c
-+++ b/kernel/dma/direct.c
-@@ -411,7 +411,7 @@ int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+diff --git a/kernel/dma/mapping.c b/kernel/dma/mapping.c
+index b8dc8b1cb402..86a8a421344a 100644
+--- a/kernel/dma/mapping.c
++++ b/kernel/dma/mapping.c
+@@ -194,6 +194,9 @@ static int __dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
+ 	else
+ 		ents = ops->map_sg(dev, sg, nents, dir, attrs);
  
- out_unmap:
- 	dma_direct_unmap_sg(dev, sgl, i, dir, attrs | DMA_ATTR_SKIP_CPU_SYNC);
--	return 0;
-+	return -EIO;
- }
++	if (WARN_ON_ONCE(ents == 0))
++		return -EIO;
++
+ 	if (ents > 0)
+ 		debug_dma_map_sg(dev, sg, nents, ents, dir);
  
- dma_addr_t dma_direct_map_resource(struct device *dev, phys_addr_t paddr,
+@@ -259,9 +262,7 @@ int dma_map_sgtable(struct device *dev, struct sg_table *sgt,
+ 	int nents;
+ 
+ 	nents = __dma_map_sg_attrs(dev, sgt->sgl, sgt->orig_nents, dir, attrs);
+-	if (nents == 0)
+-		return -EIO;
+-	else if (nents < 0) {
++	if (nents < 0) {
+ 		if (WARN_ON_ONCE(nents != -EINVAL && nents != -ENOMEM &&
+ 				 nents != -EIO))
+ 			return -EIO;
 -- 
 2.20.1
 
