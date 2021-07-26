@@ -2,86 +2,109 @@ Return-Path: <SRS0=wZlq=MS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CDFEC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 17:11:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11A64C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 20:18:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BF4486056B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 17:11:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BF4486056B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iram.es
+	by mail.kernel.org (Postfix) with ESMTPS id 1014B60F6E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 20:18:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1014B60F6E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GYRKn3Vx5z3bXD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 03:11:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GYWSk70dlz3bXV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 06:17:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=iram.es header.i=@iram.es header.a=rsa-sha256 header.s=DKIM header.b=n6Jq1zVz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XhfRAlWC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=iram.es
- (client-ip=130.206.19.150; helo=mx01.puc.rediris.es;
- envelope-from=prvs=1837463adb=paubert@iram.es; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=iram.es header.i=@iram.es header.a=rsa-sha256
- header.s=DKIM header.b=n6Jq1zVz; dkim-atps=neutral
-X-Greylist: delayed 919 seconds by postgrey-1.36 at boromir;
- Tue, 27 Jul 2021 03:11:14 AEST
-Received: from mx01.puc.rediris.es (outbound6mad.lav.puc.rediris.es
- [130.206.19.150])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=XhfRAlWC; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GYRKG2fb3z2yZB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jul 2021 03:11:12 +1000 (AEST)
-Received: from mta-out02.sim.rediris.es (mta-out02.sim.rediris.es
- [130.206.24.44])
- by mx01.puc.rediris.es  with ESMTP id 16QGth9n021301-16QGth9p021301
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Mon, 26 Jul 2021 18:55:43 +0200
-Received: from mta-out02.sim.rediris.es (localhost.localdomain [127.0.0.1])
- by mta-out02.sim.rediris.es (Postfix) with ESMTPS id 0E9F5C7A3F3;
- Mon, 26 Jul 2021 18:55:43 +0200 (CEST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by mta-out02.sim.rediris.es (Postfix) with ESMTP id F2972C7A48C;
- Mon, 26 Jul 2021 18:55:42 +0200 (CEST)
-X-Amavis-Modified: Mail body modified (using disclaimer) -
- mta-out02.sim.rediris.es
-Received: from mta-out02.sim.rediris.es ([127.0.0.1])
- by localhost (mta-out02.sim.rediris.es [127.0.0.1]) (amavisd-new, port 10026)
- with ESMTP id jzjTcSwQkz2F; Mon, 26 Jul 2021 18:55:42 +0200 (CEST)
-Received: from lt-gp.iram.es (haproxy02.sim.rediris.es [130.206.24.70])
- by mta-out02.sim.rediris.es (Postfix) with ESMTPA id 2F887C7A3F3;
- Mon, 26 Jul 2021 18:55:40 +0200 (CEST)
-Date: Mon, 26 Jul 2021 18:55:33 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Michal Suchanek <msuchanek@suse.de>
-Subject: Re: [PATCH] powerpc/stacktrace: Include linux/delay.h
-Message-ID: <20210726165533.GA6643@lt-gp.iram.es>
-References: <20210726154243.29025-1-msuchanek@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GYWS72ZyHz3068
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jul 2021 06:17:26 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 16QK6ZOc184140; Mon, 26 Jul 2021 16:17:18 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=THLNBzErXmgvcbqtLURu006pI/FzQrcVNE1dOLEUfAE=;
+ b=XhfRAlWCYZpox65fq75KYgxgXC1w9fGH6Jp6SIJ4bYgH9KgZgDYJOVOiF15iaiCtkuh/
+ iiKtBqZF3pU9Zw3XoaimzW5kufiJi3Eh+yyHg/jQJtD8du/6diErthoS+tW0d/bV+kPK
+ M8DlLdDODMShu9VdyVuw11ALq2SzgzCZ28B+5hnnr8w4425eQPL5I/Qfr5SlSe9vxc97
+ mgtxF6O85JtI5a+pcxSDyJKodHp5cJNDB+hSXrNXzhe0oZwb7KmqKAOvPgJ59P/uIvHY
+ 9leDhqBNutZ1VReYEEq4W67oqtpYMCp0dXhd9tNIkDqE6GH/n4qEAzlePwK+l8wDhz+6 tw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a23t0890b-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 26 Jul 2021 16:17:18 -0400
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16QK6sRN184896;
+ Mon, 26 Jul 2021 16:17:17 -0400
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a23t088yv-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 26 Jul 2021 16:17:17 -0400
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16QKCQf8028284;
+ Mon, 26 Jul 2021 20:17:17 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma02wdc.us.ibm.com with ESMTP id 3a235jhdce-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 26 Jul 2021 20:17:16 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16QKHGHR38076742
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 26 Jul 2021 20:17:16 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 03EC9BE059;
+ Mon, 26 Jul 2021 20:17:16 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 89ADABE058;
+ Mon, 26 Jul 2021 20:17:14 +0000 (GMT)
+Received: from farosas.linux.ibm.com.com (unknown [9.211.57.103])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon, 26 Jul 2021 20:17:14 +0000 (GMT)
+From: Fabiano Rosas <farosas@linux.ibm.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH v5 0/2] KVM: PPC: Book3S HV: Nested guest state sanitising
+ changes
+Date: Mon, 26 Jul 2021 17:17:08 -0300
+Message-Id: <20210726201710.2432874-1-farosas@linux.ibm.com>
+X-Mailer: git-send-email 2.29.2
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 8csxEGbE7O05fx4jWBHVob81gNMFITiQ
+X-Proofpoint-ORIG-GUID: Ma7cv6T0a1XBI6sNPHKTiMQ91jeoXY-2
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210726154243.29025-1-msuchanek@suse.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-Authentication-Results: mx01.puc.rediris.es;
- spf=pass (rediris.es: domain of paubert@iram.es designates 130.206.24.44 as
- permitted sender) smtp.mailfrom=paubert@iram.es
-X-FE-Policy-ID: 2:8:0:SYSTEM
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; d=iram.es; s=DKIM;
- c=relaxed/relaxed; 
- h=date:from:to:cc:subject:message-id:references:mime-version:content-type;
- bh=WX5am9mZ2qXQ90+KT5G4LIHyaObghAjkzPCF6LmWvEo=;
- b=n6Jq1zVzqZWbVm2kCdfMVWnEZJAvai0TzAXXm/NzK72u+ub9/nNByh/xjNiNruvfcbnfeNs5ZMTa
- pshOu+lVfLHrTOKuq42yA2pincW3yNTw/JqUQJWtif3eLd4B5TDMk2ZKQfN+sdWMeHyXG5KZ3dy7
- zfS6d9wGaN3ST2HP30A+HWQtPXNIMMxLEt/fnelnS59gYOv6Jc2dlVIUZHi7XkdG1ArJ5xtmNlZT
- Dx1wVYreqGnWajbct4dCqweUgYSpnmnv/I6szN9UKGpUZhSVe8RS1LL8Iylk4FQWoBRFDZW8V9/D
- pUZBoNOhvuSmOV4ZQq3Y9AW9/6T6ENZfAWHN/Q==
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-07-26_14:2021-07-26,
+ 2021-07-26 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 spamscore=0
+ lowpriorityscore=0 impostorscore=0 priorityscore=1501 mlxlogscore=818
+ bulkscore=0 phishscore=0 suspectscore=0 malwarescore=0 mlxscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2107140000 definitions=main-2107260118
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,39 +116,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jul 26, 2021 at 05:42:43PM +0200, Michal Suchanek wrote:
-> commit 7c6986ade69e ("powerpc/stacktrace: Fix spurious "stale" traces in raise_backtrace_ipi()")
-> introduces udelay() call without including the linux/delay.h header.
-> This may happen to work on master but the header that declares the
-> functionshould be included nonetheless.
-> 
-> Fixes: 7c6986ade69e ("powerpc/stacktrace: Fix spurious "stale" traces in raise_backtrace_ipi()")
-> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-> ---
->  arch/powerpc/kernel/stacktrace.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-> index 2b0d04a1b7d2..a17ac10f86b1 100644
-> --- a/arch/powerpc/kernel/stacktrace.c
-> +++ b/arch/powerpc/kernel/stacktrace.c
-> @@ -12,6 +12,7 @@
->  #include <linux/kallsyms.h>
->  #include <linux/module.h>
->  #include <linux/nmi.h>
-> +#include <linux/delay.h>
->  #include <linux/sched.h>
->  #include <linux/sched/debug.h>
->  #include <linux/sched/task_stack.h>
+This series aims to stop contaminating the l2_hv structure with bits
+that might have come from L1 state.
 
-Hmm, I believe we try to keep the list of includes sorted in
-alphabetical order.
+Patch 1 makes l2_hv read-only (mostly). It is now only changed when we
+explicitly want to pass information to L1.
 
-	Gabriel
- 
+Patch 2 makes sure that L1 is not forwarded HFU interrupts when the
+host has decided to disable any facilities (theoretical for now, since
+HFSCR bits are always the same between L1/Ln).
+
+Changes since v4:
+- moved setting of the Cause bits under BOOK3S_INTERRUPT_H_FAC_UNAVAIL.
+
+v4:
+
+- now passing lpcr separately into load_l2_hv_regs to solve the
+  conflict with commit a19b70abc69a ("KVM: PPC: Book3S HV: Nested move
+  LPCR sanitising to sanitise_hv_regs");
+
+- patch 2 now forwards a HEAI instead of injecting a Program.
+
+https://lkml.kernel.org/r/20210722221240.2384655-1-farosas@linux.ibm.com
+
+v3:
+
+- removed the sanitise functions;
+- moved the entry code into a new load_l2_hv_regs and the exit code
+  into the existing save_hv_return_state;
+- new patch: removes the cause bits when L0 has disabled the
+  corresponding facility.
+
+https://lkml.kernel.org/r/20210415230948.3563415-1-farosas@linux.ibm.com
+
+v2:
+
+- made the change more generic, not only applies to hfscr anymore;
+- sanitisation is now done directly on the vcpu struct, l2_hv is left
+  unchanged.
+
+https://lkml.kernel.org/r/20210406214645.3315819-1-farosas@linux.ibm.com
+
+v1:
+https://lkml.kernel.org/r/20210305231055.2913892-1-farosas@linux.ibm.com
+
+Fabiano Rosas (2):
+  KVM: PPC: Book3S HV: Sanitise vcpu registers in nested path
+  KVM: PPC: Book3S HV: Stop forwarding all HFUs to L1
+
+ arch/powerpc/kvm/book3s_hv_nested.c | 118 ++++++++++++++++------------
+ 1 file changed, 68 insertions(+), 50 deletions(-)
+
+-- 
+2.29.2
 
