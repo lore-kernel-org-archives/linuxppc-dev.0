@@ -2,82 +2,80 @@ Return-Path: <SRS0=wZlq=MS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,
 	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
 	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F6B7C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 04:07:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AD96C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 04:08:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B24B360551
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 04:07:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B24B360551
+	by mail.kernel.org (Postfix) with ESMTPS id CB4E66056C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 04:08:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CB4E66056C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GY5xK2kvbz3hNx
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 14:07:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GY5xn3pF9z3gS9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 14:08:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=iII4mvQZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=C7TZA/rA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1033;
- helo=mail-pj1-x1033.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a;
+ helo=mail-pl1-x62a.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=iII4mvQZ; dkim-atps=neutral
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com
- [IPv6:2607:f8b0:4864:20::1033])
+ header.s=20161025 header.b=C7TZA/rA; dkim-atps=neutral
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com
+ [IPv6:2607:f8b0:4864:20::62a])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GY5bM2dRkz3d8t
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jul 2021 13:52:15 +1000 (AEST)
-Received: by mail-pj1-x1033.google.com with SMTP id
- k4-20020a17090a5144b02901731c776526so17813559pjm.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jul 2021 20:52:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GY5bP2hnBz30Q6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jul 2021 13:52:17 +1000 (AEST)
+Received: by mail-pl1-x62a.google.com with SMTP id e21so5527994pla.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Jul 2021 20:52:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=NSmVzL4c1YQEwgpeygYKTRCpdKgworBmM1lrd2e93zY=;
- b=iII4mvQZd7A61sKYSg5blG9nCxBOJkE7sLfMABwTu+6BvfEiPRQODXjf/zRpZZUqBy
- xJEwiYBOK6WeH4DEmYUuc95c0LnX3lvLzuy/7aXLaG1xWcZ2VCZxIgikJbjK8IvCQFos
- p2QdHepyt+z9gIkROglukNYu7WB5zmckhYpaB1Zc3p5+f1YdpFYzDG9Ykis1pc1H+2EK
- IVHqcGdgwMR7Hlqdre0sov8ELYbcpStB/PEvYzlSa8ym0+cslmpFkNWKmZpck686B0ia
- upCOoaAZEBD00wC2/r5hIYldjrJRFh9u3/mFpERSI1QqJvA8lcDVuquCEb5WML3S0fbP
- VEEw==
+ bh=86e4Ir+GEs/5DHLdJaHdInDBlUze8Yk+Kpd4tTCHNYc=;
+ b=C7TZA/rAlCWxwMf2EMMbByyBRWsKpwk2yPXEv1z4YRMODsMclb3dwX3IL7zMpV2ckg
+ w7AKpzx+a4H6Ryom1TPUc1UTI5xS2V52JjPz09kI9HfXf/8nYQWmmTq3D0OM3Y61lDq7
+ P3T8NlyxnawOjX4r51u0M5DUD/hhO0WpAteCg/nVlgVY3I9O4LsBzobFx5/yqsdFL215
+ BojwqjFjwio3tvdfPU//KRAhXCnVMr2VLQ+tjI7fxLPbahNw78eL86/JlecTdecd/C3f
+ 7lh8pfxS7Oa8pv4MEcSJ+wnHnn9HnrZZhF2F48iaP0JmIuwd0f4nTu24HNon/IDxkoRu
+ XDCQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=NSmVzL4c1YQEwgpeygYKTRCpdKgworBmM1lrd2e93zY=;
- b=Fc+9u6QKtq6tgPXGSDfZW4IL1PTcHkjCOCey+jtZpcqY9dHZAH3xdn8EV3NM1R4hqK
- GfxfpZyVae1bhHdHHEX9PeCt5rChkZ8VfHfxsh4/W4MkD3XEDV8iJ7V/xTPJRSqVngEd
- 8lLWTh3Hpq88lCFTe8gv2VnXzz3VF0DebUfAt3mZiyPp//gKIRBPgCq0t5l8+pGbrrBH
- VEV+sRYVsWSIhrldtRHutHkJeL7SIVpF7V7XN1Aj1cfWlQrwqnaU+1O9mG5gBvx3KYNZ
- zT+Nftjo0+gjjTcPH8jbjW7lxyNlr9I2OcwNm3/ojxVPUICYCvJQtPu1PMxGcfqjaPNY
- ulqQ==
-X-Gm-Message-State: AOAM531wVMfTPhmAu0/ymq/EfL6CRYZGFi8x4w72x2q483hm7/jGFigf
- Vbq0dV0c6a5q/RPgT/tlWxE=
-X-Google-Smtp-Source: ABdhPJwqbi7Bm1VNXw0rR05N1QF7VUxQw7HRIu5SUrB3z0DuugVhc7yinaOnxi7co67WY/jHhzsJiw==
-X-Received: by 2002:aa7:978c:0:b029:32a:403e:88cc with SMTP id
- o12-20020aa7978c0000b029032a403e88ccmr16006240pfp.7.1627271532915; 
- Sun, 25 Jul 2021 20:52:12 -0700 (PDT)
+ bh=86e4Ir+GEs/5DHLdJaHdInDBlUze8Yk+Kpd4tTCHNYc=;
+ b=t65TaFlZrqnQHSdYR/zRaptu2mlBgxbS3lO0cR9zeDqho4xd/UDZ05JCNJ1wsjDw22
+ vz7//8Uux44F9NOaXqDwOhQ7jEUql5+Mc647oRxa2ajL4a6Hr+cKzpgbsH4Oa70V4LQl
+ Beb6fFSkdsGssdJNgQtYE1uqcblhg/WIaX3fNJmvI0VunSzFjqmtjXI+XLIPxhW1G24H
+ pZyJJl1UGehlPBN8SzUgu2gbIE/7LRJC+B1OHC6yqQ1mBZh7m7vHnOpCfnzGLQ7rifyb
+ 9sffrXhsDiP/og9HaQ1vvqckuvheHu7pvO1yCP7X0OM78f5fP/8hr1qYOEVn4EF8rO+P
+ z+FA==
+X-Gm-Message-State: AOAM532IkVOlDIHcVVipvylw4LYUy40k5IGseQvag5VQ0yiW9n+q7GTy
+ JAV55uVjP8ZgGP8MleTznj8=
+X-Google-Smtp-Source: ABdhPJyvbE/mgqiqH4BsDllLyRe4rI83EOMWmvwbKGvzlbeAozLtB/VuSyR7CWJxYbpK+s7rHaKmxQ==
+X-Received: by 2002:a63:34a:: with SMTP id 71mr16330513pgd.289.1627271535149; 
+ Sun, 25 Jul 2021 20:52:15 -0700 (PDT)
 Received: from bobo.ibm.com (220-244-190-123.tpgi.com.au. [220.244.190.123])
- by smtp.gmail.com with ESMTPSA id p33sm41140341pfw.40.2021.07.25.20.52.11
+ by smtp.gmail.com with ESMTPSA id p33sm41140341pfw.40.2021.07.25.20.52.13
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 25 Jul 2021 20:52:12 -0700 (PDT)
+ Sun, 25 Jul 2021 20:52:14 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v1 38/55] KVM: PPC: Book3S HV P9: Restrict DSISR canary
- workaround to processors that require it
-Date: Mon, 26 Jul 2021 13:50:19 +1000
-Message-Id: <20210726035036.739609-39-npiggin@gmail.com>
+Subject: [PATCH v1 39/55] KVM: PPC: Book3S HV P9: More SPR speed improvements
+Date: Mon, 26 Jul 2021 13:50:20 +1000
+Message-Id: <20210726035036.739609-40-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20210726035036.739609-1-npiggin@gmail.com>
 References: <20210726035036.739609-1-npiggin@gmail.com>
@@ -99,49 +97,131 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use CPU_FTR_P9_RADIX_PREFETCH_BUG for this, to test for DD2.1 and below
-processors.
+This avoids more scoreboard stalls and reduces mtSPRs.
 
--43 cycles (7178) POWER9 virt-mode NULL hcall
+-193 cycles (6985) POWER9 virt-mode NULL hcall
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kvm/book3s_hv.c          | 3 ++-
- arch/powerpc/kvm/book3s_hv_p9_entry.c | 6 ++++--
- 2 files changed, 6 insertions(+), 3 deletions(-)
+ arch/powerpc/kvm/book3s_hv_p9_entry.c | 73 ++++++++++++++++-----------
+ 1 file changed, 43 insertions(+), 30 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index e7dfc33e2b38..47ccea5ffba2 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -1598,7 +1598,8 @@ XXX benchmark guest exits
- 		unsigned long vsid;
- 		long err;
- 
--		if (vcpu->arch.fault_dsisr == HDSISR_CANARY) {
-+		if (cpu_has_feature(CPU_FTR_P9_RADIX_PREFETCH_BUG) &&
-+		    unlikely(vcpu->arch.fault_dsisr == HDSISR_CANARY)) {
- 			r = RESUME_GUEST; /* Just retry if it's the canary */
- 			break;
- 		}
 diff --git a/arch/powerpc/kvm/book3s_hv_p9_entry.c b/arch/powerpc/kvm/book3s_hv_p9_entry.c
-index 737d4eaf74bc..d83b5d4d02c1 100644
+index d83b5d4d02c1..c4e93167d120 100644
 --- a/arch/powerpc/kvm/book3s_hv_p9_entry.c
 +++ b/arch/powerpc/kvm/book3s_hv_p9_entry.c
-@@ -671,9 +671,11 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
- 	 * HDSI which should correctly update the HDSISR the second time HDSI
- 	 * entry.
- 	 *
--	 * Just do this on all p9 processors for now.
-+	 * The "radix prefetch bug" test can be used to test for this bug, as
-+	 * it also exists fo DD2.1 and below.
- 	 */
--	mtspr(SPRN_HDSISR, HDSISR_CANARY);
-+	if (cpu_has_feature(CPU_FTR_P9_RADIX_PREFETCH_BUG))
-+		mtspr(SPRN_HDSISR, HDSISR_CANARY);
+@@ -633,24 +633,29 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
+ 		vc->tb_offset_applied = vc->tb_offset;
+ 	}
  
- 	mtspr(SPRN_SPRG0, vcpu->arch.shregs.sprg0);
- 	mtspr(SPRN_SPRG1, vcpu->arch.shregs.sprg1);
+-	if (vc->pcr)
+-		mtspr(SPRN_PCR, vc->pcr | PCR_MASK);
+-	mtspr(SPRN_DPDES, vc->dpdes);
+ 	mtspr(SPRN_VTB, vc->vtb);
+-
+ 	mtspr(SPRN_PURR, vcpu->arch.purr);
+ 	mtspr(SPRN_SPURR, vcpu->arch.spurr);
+ 
++	if (vc->pcr)
++		mtspr(SPRN_PCR, vc->pcr | PCR_MASK);
++	if (vc->dpdes)
++		mtspr(SPRN_DPDES, vc->dpdes);
++
+ 	if (dawr_enabled()) {
+-		mtspr(SPRN_DAWR0, vcpu->arch.dawr0);
+-		mtspr(SPRN_DAWRX0, vcpu->arch.dawrx0);
++		if (vcpu->arch.dawr0 != host_dawr0)
++			mtspr(SPRN_DAWR0, vcpu->arch.dawr0);
++		if (vcpu->arch.dawrx0 != host_dawrx0)
++			mtspr(SPRN_DAWRX0, vcpu->arch.dawrx0);
+ 		if (cpu_has_feature(CPU_FTR_DAWR1)) {
+-			mtspr(SPRN_DAWR1, vcpu->arch.dawr1);
+-			mtspr(SPRN_DAWRX1, vcpu->arch.dawrx1);
++			if (vcpu->arch.dawr1 != host_dawr1)
++				mtspr(SPRN_DAWR1, vcpu->arch.dawr1);
++			if (vcpu->arch.dawrx1 != host_dawrx1)
++				mtspr(SPRN_DAWRX1, vcpu->arch.dawrx1);
+ 		}
+ 	}
+-	mtspr(SPRN_CIABR, vcpu->arch.ciabr);
+-	mtspr(SPRN_IC, vcpu->arch.ic);
++	if (vcpu->arch.ciabr != host_ciabr)
++		mtspr(SPRN_CIABR, vcpu->arch.ciabr);
+ 
+ 	mtspr(SPRN_PSSCR, vcpu->arch.psscr | PSSCR_EC |
+ 	      (local_paca->kvm_hstate.fake_suspend << PSSCR_FAKE_SUSPEND_LG));
+@@ -869,20 +874,6 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
+ 	vc->dpdes = mfspr(SPRN_DPDES);
+ 	vc->vtb = mfspr(SPRN_VTB);
+ 
+-	save_clear_guest_mmu(kvm, vcpu);
+-	switch_mmu_to_host(kvm, host_pidr);
+-
+-	/*
+-	 * If we are in real mode, only switch MMU on after the MMU is
+-	 * switched to host, to avoid the P9_RADIX_PREFETCH_BUG.
+-	 */
+-	if (IS_ENABLED(CONFIG_PPC_TRANSACTIONAL_MEM) &&
+-			vcpu->arch.shregs.msr & MSR_TS_MASK)
+-		msr |= MSR_TS_S;
+-	__mtmsrd(msr, 0);
+-
+-	store_vcpu_state(vcpu);
+-
+ 	dec = mfspr(SPRN_DEC);
+ 	if (!(lpcr & LPCR_LD)) /* Sign extend if not using large decrementer */
+ 		dec = (s32) dec;
+@@ -900,6 +891,22 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
+ 		vc->tb_offset_applied = 0;
+ 	}
+ 
++	save_clear_guest_mmu(kvm, vcpu);
++	switch_mmu_to_host(kvm, host_pidr);
++
++	/*
++	 * Enable MSR here in order to have facilities enabled to save
++	 * guest registers. This enables MMU (if we were in realmode), so
++	 * only switch MMU on after the MMU is switched to host, to avoid
++	 * the P9_RADIX_PREFETCH_BUG or hash guest context.
++	 */
++	if (IS_ENABLED(CONFIG_PPC_TRANSACTIONAL_MEM) &&
++			vcpu->arch.shregs.msr & MSR_TS_MASK)
++		msr |= MSR_TS_S;
++	__mtmsrd(msr, 0);
++
++	store_vcpu_state(vcpu);
++
+ 	mtspr(SPRN_PURR, local_paca->kvm_hstate.host_purr);
+ 	mtspr(SPRN_SPURR, local_paca->kvm_hstate.host_spurr);
+ 
+@@ -907,15 +914,21 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
+ 	mtspr(SPRN_PSSCR, host_psscr |
+ 	      (local_paca->kvm_hstate.fake_suspend << PSSCR_FAKE_SUSPEND_LG));
+ 	mtspr(SPRN_HFSCR, host_hfscr);
+-	mtspr(SPRN_CIABR, host_ciabr);
+-	mtspr(SPRN_DAWR0, host_dawr0);
+-	mtspr(SPRN_DAWRX0, host_dawrx0);
++	if (vcpu->arch.ciabr != host_ciabr)
++		mtspr(SPRN_CIABR, host_ciabr);
++	if (vcpu->arch.dawr0 != host_dawr0)
++		mtspr(SPRN_DAWR0, host_dawr0);
++	if (vcpu->arch.dawrx0 != host_dawrx0)
++		mtspr(SPRN_DAWRX0, host_dawrx0);
+ 	if (cpu_has_feature(CPU_FTR_DAWR1)) {
+-		mtspr(SPRN_DAWR1, host_dawr1);
+-		mtspr(SPRN_DAWRX1, host_dawrx1);
++		if (vcpu->arch.dawr1 != host_dawr1)
++			mtspr(SPRN_DAWR1, host_dawr1);
++		if (vcpu->arch.dawrx1 != host_dawrx1)
++			mtspr(SPRN_DAWRX1, host_dawrx1);
+ 	}
+ 
+-	mtspr(SPRN_DPDES, 0);
++	if (vc->dpdes)
++		mtspr(SPRN_DPDES, 0);
+ 	if (vc->pcr)
+ 		mtspr(SPRN_PCR, PCR_MASK);
+ 
 -- 
 2.23.0
 
