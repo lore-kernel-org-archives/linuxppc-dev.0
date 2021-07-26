@@ -2,60 +2,73 @@ Return-Path: <SRS0=wZlq=MS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FC8EC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 09:46:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57FADC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 14:39:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 65D846054F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 09:46:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 65D846054F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id ACDF060EB2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 14:39:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ACDF060EB2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=me.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GYFSc0w5Nz3bY7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Jul 2021 19:46:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.93; helo=mga11.intel.com;
- envelope-from=andriy.shevchenko@intel.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 123 seconds by postgrey-1.36 at boromir;
- Mon, 26 Jul 2021 19:46:33 AEST
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GYMyP1dfQz3bYr
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 00:39:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=me.com header.i=@me.com header.a=rsa-sha256 header.s=1a1hai header.b=d5LzJIp7;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=me.com
+ (client-ip=17.58.6.48; helo=pv50p00im-hyfv10021501.me.com;
+ envelope-from=sxwjean@me.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=me.com header.i=@me.com header.a=rsa-sha256
+ header.s=1a1hai header.b=d5LzJIp7; dkim-atps=neutral
+X-Greylist: delayed 460 seconds by postgrey-1.36 at boromir;
+ Tue, 27 Jul 2021 00:39:12 AEST
+Received: from pv50p00im-hyfv10021501.me.com (pv50p00im-hyfv10021501.me.com
+ [17.58.6.48])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GYFS90ZM6z304G
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jul 2021 19:46:32 +1000 (AEST)
-X-IronPort-AV: E=McAfee;i="6200,9189,10056"; a="209079590"
-X-IronPort-AV: E=Sophos;i="5.84,270,1620716400"; d="scan'208";a="209079590"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Jul 2021 02:43:12 -0700
-X-IronPort-AV: E=Sophos;i="5.84,270,1620716400"; d="scan'208";a="417001763"
-Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
- by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Jul 2021 02:43:10 -0700
-Received: from andy by smile with local (Exim 4.94.2)
- (envelope-from <andriy.shevchenko@intel.com>)
- id 1m7x8X-000fh1-Mv; Mon, 26 Jul 2021 12:43:01 +0300
-Date: Mon, 26 Jul 2021 12:43:01 +0300
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Christian Lamparter <chunkeey@gmail.com>
-Subject: Re: [PATCH v3 0/5] powerpc: apm82181: adding customer devices
-Message-ID: <YP6DpWPhIFpF+j40@smile.fi.intel.com>
-References: <cover.1599343429.git.chunkeey@gmail.com>
- <YPsWMRLWQoxHFub6@smile.fi.intel.com>
- <8a8f50d1-b89c-322f-1465-062ed287d491@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GYMxr63sTz2xfL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jul 2021 00:39:12 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=me.com; s=1a1hai;
+ t=1627309910; bh=o4KbhPghRaFvtnL6R0pnWWU/e4yDdHIWSmM7oMiG7Ac=;
+ h=From:To:Subject:Date:Message-Id:MIME-Version;
+ b=d5LzJIp7irxTwAC9Wg6n4pV/nNoLP7+PWxneIAL1PG2/gxhhpA7ckNLfiFBGbanDg
+ /DNy+HOaKevZGCLCs3/v2FvA1fQb0yxvUlcRi9LdBeTVPVPjTL9J0aFsj0lsX251W6
+ ocov/Spkg2Wq72D2TcHVNvDA74zE5M/wGO/QxlALU7Ew7rlFXPy1GypeeHxO03woqC
+ wouMPqn4SjaJiIhjXrxGiH6IrSjRvGCIYfhLbB/53F9cdLEgT0X+VjDQ6PTuA8pW3/
+ IplOSEEUFrsGiaGYVPsp1C1WXg6g3NAGTu8G93pUNR8MuIBQvxhoAkhF1TEp9AbwqF
+ v7lvgWoizS/Ug==
+Received: from xiongwei.. (unknown [120.245.2.8])
+ by pv50p00im-hyfv10021501.me.com (Postfix) with ESMTPSA id 7942BB4034F;
+ Mon, 26 Jul 2021 14:31:44 +0000 (UTC)
+From: sxwjean@me.com
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 4/4] powerpc/64e: Get dear offset with _DEAR macro
+Date: Mon, 26 Jul 2021 22:30:53 +0800
+Message-Id: <20210726143053.532839-4-sxwjean@me.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210726143053.532839-1-sxwjean@me.com>
+References: <20210726143053.532839-1-sxwjean@me.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <8a8f50d1-b89c-322f-1465-062ed287d491@gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-07-26_06:2021-07-26,
+ 2021-07-26 signatures=0
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
+ malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 clxscore=1015 mlxscore=0
+ mlxlogscore=945 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-2009150000 definitions=main-2107260082
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,98 +80,95 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Chris Blake <chrisrblake93@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: ravi.bangoria@linux.ibm.com, Xiongwei Song <sxwjean@gmail.com>,
+ aneesh.kumar@linux.ibm.com, oleg@redhat.com, linux-kernel@vger.kernel.org,
+ efremov@linux.com, paulus@samba.org, npiggin@gmail.com, peterx@redhat.com,
+ akpm@linux-foundation.org, sandipan@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Jul 24, 2021 at 12:08:30AM +0200, Christian Lamparter wrote:
-> On 23/07/2021 21:19, Andy Shevchenko wrote:
-> > On Sun, Sep 06, 2020 at 12:06:10AM +0200, Christian Lamparter wrote:
-> > > I've been holding on to these devices dts' for a while now.
-> > > But ever since the recent purge of the PPC405, I'm feeling
-> > > the urge to move forward.
-> > > 
-> > > The devices in question have been running with OpenWrt since
-> > > around 2016/2017. Back then it was linux v4.4 and required
-> > > many out-of-tree patches (for WIFI, SATA, CRYPTO...), that
-> > > since have been integrated. So, there's nothing else in the
-> > > way I think.
-> > > 
-> > > A patch that adds the Meraki vendor-prefix has been sent
-> > > separately, as there's also the Meraki MR32 that I'm working
-> > > on as well. Here's the link to the patch:
-> > > <https://lore.kernel.org/linuxppc-dev/20200822154045.16036-1-chunkeey@gmail.com/>
-> > > 
-> > > Now, I've looked around in the arch/powerpc for recent .dts
-> > > and device submissions to get an understanding of what is
-> > > required.
-> > > >From the looks of it, it seems like every device gets a
-> > > skeleton defconfig and a CONFIG_$DEVICE symbol (Like:
-> > > CONFIG_MERAKI_MR24, CONFIG_WD_MYBOOKLIVE).
-> > > 
-> > > Will this be the case? Or would it make sense to further
-> > > unite the Bluestone, MR24 and MBL under a common CONFIG_APM82181
-> > > and integrate the BLUESTONE device's defconfig into it as well?
-> > > (I've stumbled across the special machine compatible
-> > > handling of ppc in the Documentation/devicetree/usage-model.rst
-> > > already.)
-> > 
-> > I haven't found any traces of this to be applied. What is the status of this
-> > patch series? And what is the general state of affairs for the PPC44x?
-> 
-> 
-> My best guess is: It's complicated. While there was a recent big
-> UPSET EVENT regarding the My Book Live (MBL) that affected "hundreds"
-> and "thousands": "An unpleasant surprise for My Book Live owners"
-> (<https://lwn.net/Articles/861235/>). Sadly this wasn't getting any
-> traction.
-> 
-> I can tell that the mentioned Cisco Meraki MR32 (Broadcom ARM SoC)
-> got merged. So this is off the plate 😌.
-> 
-> But APM821xx sadly went nowhere 😕. One reason being that I haven't
-> yet posted a V4, V5 and so on...
+From: Xiongwei Song <sxwjean@gmail.com>
 
-I will help with testing if needed, please continue this, it's helpful!
+Use _DEAR to get the offset of dear register in pr_regs for 64e cpus.
 
-> In theory, for v4 I would have liked to know how to handle the
-> kConfig aspect of the series: Would it be "OK" to have a
-> single CONFIG_APM82181/CONFIG_APM821XX symbol or should there
-> be a CONFIG_MBL the CONFIG_MR24 (CONFIG_WNDR4700 and CONFIG_MX60W
-> in the future)?
+Signed-off-by: Xiongwei Song <sxwjean@gmail.com>
+---
+ arch/powerpc/kernel/asm-offsets.c    | 13 +++----------
+ arch/powerpc/kernel/exceptions-64e.S |  8 ++++----
+ 2 files changed, 7 insertions(+), 14 deletions(-)
 
-No idea. Not a PPC maintainer here.
-
-> As for the MBL: Well, If you (or any one else) is interested in
-> having a more up-to-date Debian. Then I have something:
-> 
-> A while back, I made a "build.sh". This will build a
-> "out-of-the-box" Debian unstable/SID powerpc system image.
-> This includes sensible NAS defaults + programs as well as
-> a Cockpit Web-GUI. But also makes it easily possible to do
-> the DTBs development on the latest vanilla (5.14-rc2 as of
-> the time of writing this) kernel for the
-> MyBook Live Single and Duo:
-> 
-> <https://github.com/chunkeey/mbl-debian>
-
-Thanks for the pointer.
-
-> I can't really make one for the MR24 though. Its 32MiB NAND
-> makes it difficult to install anything else than OpenWrt
-> (and get some use out of the device).
-
-Not interested in MR24, up to you.
-
-> So, how to proceed?
-
-At least send a v4 :-)
-
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index f4ebc435fd78..8357d5fcd09e 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -286,23 +286,16 @@ int main(void)
+ 	STACK_PT_REGS_OFFSET(_CCR, ccr);
+ 	STACK_PT_REGS_OFFSET(_XER, xer);
+ 	STACK_PT_REGS_OFFSET(_DAR, dar);
++	STACK_PT_REGS_OFFSET(_DEAR, dear);
+ 	STACK_PT_REGS_OFFSET(_DSISR, dsisr);
+ 	STACK_PT_REGS_OFFSET(_ESR, esr);
+ 	STACK_PT_REGS_OFFSET(ORIG_GPR3, orig_gpr3);
+ 	STACK_PT_REGS_OFFSET(RESULT, result);
+ 	STACK_PT_REGS_OFFSET(_TRAP, trap);
+-#ifndef CONFIG_PPC64
+-	/*
+-	 * The PowerPC 400-class & Book-E processors have neither the DAR
+-	 * nor the DSISR SPRs. Hence, we overload them to hold the similar
+-	 * DEAR and ESR SPRs for such processors.  For critical interrupts
+-	 * we use them to hold SRR0 and SRR1.
+-	 */
+-	STACK_PT_REGS_OFFSET(_DEAR, dar);
+-#else /* CONFIG_PPC64 */
++#ifdef CONFIG_PPC64
+ 	STACK_PT_REGS_OFFSET(SOFTE, softe);
+ 	STACK_PT_REGS_OFFSET(_PPR, ppr);
+-#endif /* CONFIG_PPC64 */
++#endif
+ 
+ #ifdef CONFIG_PPC_PKEY
+ 	STACK_PT_REGS_OFFSET(STACK_REGS_AMR, amr);
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index bf8c4c2f98ea..221e085e8c8c 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -545,7 +545,7 @@ __end_interrupts:
+ 				PROLOG_ADDITION_2REGS)
+ 	mfspr	r14,SPRN_DEAR
+ 	mfspr	r15,SPRN_ESR
+-	std	r14,_DAR(r1)
++	std	r14,_DEAR(r1)
+ 	std	r15,_ESR(r1)
+ 	ld	r14,PACA_EXGEN+EX_R14(r13)
+ 	ld	r15,PACA_EXGEN+EX_R15(r13)
+@@ -558,7 +558,7 @@ __end_interrupts:
+ 				PROLOG_ADDITION_2REGS)
+ 	li	r15,0
+ 	mr	r14,r10
+-	std	r14,_DAR(r1)
++	std	r14,_DEAR(r1)
+ 	std	r15,_ESR(r1)
+ 	ld	r14,PACA_EXGEN+EX_R14(r13)
+ 	ld	r15,PACA_EXGEN+EX_R15(r13)
+@@ -575,7 +575,7 @@ __end_interrupts:
+ 				PROLOG_ADDITION_2REGS)
+ 	mfspr	r14,SPRN_DEAR
+ 	mfspr	r15,SPRN_ESR
+-	std	r14,_DAR(r1)
++	std	r14,_DEAR(r1)
+ 	std	r15,_ESR(r1)
+ 	ld	r14,PACA_EXGEN+EX_R14(r13)
+ 	ld	r15,PACA_EXGEN+EX_R15(r13)
+@@ -1057,7 +1057,7 @@ bad_stack_book3e:
+ 	std	r11,_CCR(r1)
+ 	mfspr	r10,SPRN_DEAR
+ 	mfspr	r11,SPRN_ESR
+-	std	r10,_DAR(r1)
++	std	r10,_DEAR(r1)
+ 	std	r11,_ESR(r1)
+ 	std	r0,GPR0(r1);		/* save r0 in stackframe */	    \
+ 	std	r2,GPR2(r1);		/* save r2 in stackframe */	    \
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.30.2
 
