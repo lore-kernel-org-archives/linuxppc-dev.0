@@ -2,69 +2,115 @@ Return-Path: <SRS0=LxjK=MT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-15.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A576C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 06:26:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 640EBC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 06:49:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 349906056B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 06:26:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 349906056B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id DFE186112D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 06:49:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DFE186112D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GYmyH5LBSz3bbB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 16:25:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GYnTr18wYz3bc8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 16:49:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=ZlPtXIOV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=du6MRDY0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
- helo=casper.infradead.org;
- envelope-from=batv+120c431586dc67e47307+6547+infradead.org+hch@casper.srs.infradead.org;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=ZlPtXIOV; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=du6MRDY0; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GYmxq1cNrz2yMF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jul 2021 16:25:35 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
- Content-Type:Content-ID:Content-Description;
- bh=jFuNMKcRbcVnR+JgRWAcFH4S0wPCM0LhDW7OHMhdenM=; b=ZlPtXIOVwXE0aeEVhqPQ0pLddO
- rr5EooQEZ6+S9JLHdS21sBPJ1zXlGbUobbMssMsOIoajU/cNBcLZJUaVK4Cq1Vob1y9rvjIvfaLP2
- jLpBaotC3LPfh4M8MsZaVgWQopzUxvAs4oPgX7/CsaH6Tg3bzUa+ZnsFVTsnGZ8SKQM2ObR5Ktt06
- WsUeEtBSIekhebyDfQ2PaCHHjj4MGhZDYWrXqhTPqVBQoOEXwnJPZUVITViJeIx9mu07++3CnzVuD
- /ZSLyXN29uMKgcHN4h+6S9tjvi3olbm75aJXSRMnpdhi9hwLYuajBpxC0wX2qwNMJvHPzgYD+vaqb
- 7LUmYtkA==;
-Received: from [2001:4bb8:184:87c5:b7fb:1299:a9e5:ff56] (helo=localhost)
- by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1m8GRw-00Ejpq-EQ; Tue, 27 Jul 2021 06:20:46 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Jens Axboe <axboe@kernel.dk>,
-	Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 15/15] block: use bvec_kmap_local in bio_integrity_process
-Date: Tue, 27 Jul 2021 07:56:46 +0200
-Message-Id: <20210727055646.118787-16-hch@lst.de>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210727055646.118787-1-hch@lst.de>
-References: <20210727055646.118787-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GYnTG16Wtz2yNS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jul 2021 16:49:21 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 16R6YZZr031688; Tue, 27 Jul 2021 02:49:14 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=4gKl0q2cCG3K0uWmHofx3rjoSMwefxziUQ3VJpNnV4w=;
+ b=du6MRDY0J1mBENbGmQ6B5qGjstjN5EpVK/im5p0EwHOo9F//VUIWoNubMWsbZ5aGfhxF
+ Z7WLvZ0A5sBT/rvP1vurgPr442mLyrK5TSrRZf8CmbUTpNEUto+QuKN/sIZ+Jge78iEA
+ eJkvcBbkrJEtzwKh4SsiaNzd2F+K+av+O539a8vNKcF6uL4APDa67jxeHitgwm1bGNce
+ UWj8UeGZ3VUmBf8wgrl4J/K5VCX1iLcuchyvHDkuQFuLmTa5kC/RtJ8rE5QvF9gsgm9C
+ jTLium8IKThP6vv7KadyvS7i7tPcyt5XykVWvyyffIuMl6Um16YBIYWoBCuITjLlMX7q KA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a2d080qa9-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 27 Jul 2021 02:49:14 -0400
+Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16R6Ynl7033625;
+ Tue, 27 Jul 2021 02:49:13 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a2d080q92-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 27 Jul 2021 02:49:13 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16R6CSpi027171;
+ Tue, 27 Jul 2021 06:49:11 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma04ams.nl.ibm.com with ESMTP id 3a235m07db-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 27 Jul 2021 06:49:11 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16R6n8Zv28311894
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 27 Jul 2021 06:49:08 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 932F0A4062;
+ Tue, 27 Jul 2021 06:49:08 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DA1CEA405B;
+ Tue, 27 Jul 2021 06:49:05 +0000 (GMT)
+Received: from [9.199.45.94] (unknown [9.199.45.94])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 27 Jul 2021 06:49:05 +0000 (GMT)
+Subject: Re: [PATCH] cpufreq:powernv: Fix init_chip_info initialization in
+ numa=off
+To: ego@linux.vnet.ibm.com
+References: <20210726170758.61041-1-psampat@linux.ibm.com>
+ <20210727061656.GA10282@in.ibm.com>
+From: Pratik Sampat <psampat@linux.ibm.com>
+Message-ID: <60aaa78a-ece1-73d2-ea4c-e3835a6e3ab8@linux.ibm.com>
+Date: Tue, 27 Jul 2021 12:19:04 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- casper.infradead.org. See http://www.infradead.org/rpr.html
+In-Reply-To: <20210727061656.GA10282@in.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 2wm48rhKY5L38nFjNAYG_fYMRPhOJ6TD
+X-Proofpoint-GUID: rpSxo2XOqTUJmE7fJEZ_NqTsKBv5681R
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-07-27_04:2021-07-27,
+ 2021-07-27 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0
+ lowpriorityscore=0 phishscore=0 spamscore=0 clxscore=1015
+ priorityscore=1501 suspectscore=0 mlxscore=0 bulkscore=0 adultscore=0
+ impostorscore=0 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2107140000 definitions=main-2107270038
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,58 +122,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-block@vger.kernel.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "Martin K . Petersen" <martin.petersen@oracle.com>,
- Mike Snitzer <snitzer@redhat.com>, Geoff Levand <geoff@infradead.org>,
- linuxppc-dev@lists.ozlabs.org, ceph-devel@vger.kernel.org,
- linux-mips@vger.kernel.org, Dongsheng Yang <dongsheng.yang@easystack.cn>,
- linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- dm-devel@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
- Ira Weiny <ira.weiny@intel.com>, Ilya Dryomov <idryomov@gmail.com>
+Cc: linux-pm@vger.kernel.org, pratik.r.sampat@gmail.com, rjw@rjwysocki.net,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Using local kmaps slightly reduces the chances to stray writes, and
-the bvec interface cleans up the code a little bit.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
----
- block/bio-integrity.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
 
-diff --git a/block/bio-integrity.c b/block/bio-integrity.c
-index 4b4eb8964a6f..8f54d49dc500 100644
---- a/block/bio-integrity.c
-+++ b/block/bio-integrity.c
-@@ -172,18 +172,16 @@ static blk_status_t bio_integrity_process(struct bio *bio,
- 	iter.prot_buf = prot_buf;
- 
- 	__bio_for_each_segment(bv, bio, bviter, *proc_iter) {
--		void *kaddr = kmap_atomic(bv.bv_page);
-+		void *kaddr = bvec_kmap_local(&bv);
- 
--		iter.data_buf = kaddr + bv.bv_offset;
-+		iter.data_buf = kaddr;
- 		iter.data_size = bv.bv_len;
--
- 		ret = proc_fn(&iter);
--		if (ret) {
--			kunmap_atomic(kaddr);
--			return ret;
--		}
-+		kunmap_local(kaddr);
-+
-+		if (ret)
-+			break;
- 
--		kunmap_atomic(kaddr);
- 	}
- 	return ret;
- }
--- 
-2.30.2
+On 27/07/21 11:46 am, Gautham R Shenoy wrote:
+> On Mon, Jul 26, 2021 at 10:37:57PM +0530, Pratik R. Sampat wrote:
+>> In the numa=off kernel command-line configuration init_chip_info() loops
+>> around the number of chips and attempts to copy the cpumask of that node
+>> which is NULL for all iterations after the first chip.
+>>
+>> Hence, store the cpu mask for each chip instead of derving cpumask from
+>> node while populating the "chips" struct array and copy that to the
+>> chips[i].mask
+>>
+>> Cc: stable@vger.kernel.org
+>> Fixes: 053819e0bf84 ("cpufreq: powernv: Handle throttling due to Pmax capping at chip level")
+>> Signed-off-by: Pratik R. Sampat <psampat@linux.ibm.com>
+>> Reported-by: Shirisha Ganta <shirisha.ganta1@ibm.com>
+>> ---
+>>   drivers/cpufreq/powernv-cpufreq.c | 15 +++++++++++++--
+>>   1 file changed, 13 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>> index 005600cef273..8ec10d9aed8f 100644
+>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>> @@ -1046,12 +1046,20 @@ static int init_chip_info(void)
+>>   	unsigned int *chip;
+>>   	unsigned int cpu, i;
+>>   	unsigned int prev_chip_id = UINT_MAX;
+>> +	cpumask_t *chip_cpu_mask;
+>>   	int ret = 0;
+>>
+>>   	chip = kcalloc(num_possible_cpus(), sizeof(*chip), GFP_KERNEL);
+>>   	if (!chip)
+>>   		return -ENOMEM;
+>>
+>> +	/* Allocate a chip cpu mask large enough to fit mask for all chips */
+>> +	chip_cpu_mask = kcalloc(32, sizeof(cpumask_t), GFP_KERNEL);
+> I suppose by 32 you mean the maximum number of chips possible. You
+> could use a #define for that.
+
+ack, I could #define the constant.
+
+> Otherwise, the patch looks good to me.
+>
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>
+Thanks
+Pratik
+
+>
+>> +	if (!chip_cpu_mask) {
+>> +		ret = -ENOMEM;
+>> +		goto free_and_return;
+>> +	}
+>> +
+>>   	for_each_possible_cpu(cpu) {
+>>   		unsigned int id = cpu_to_chip_id(cpu);
+>>
+>> @@ -1059,22 +1067,25 @@ static int init_chip_info(void)
+>>   			prev_chip_id = id;
+>>   			chip[nr_chips++] = id;
+>>   		}
+>> +		cpumask_set_cpu(cpu, &chip_cpu_mask[nr_chips-1]);
+>>   	}
+>>
+>>   	chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
+>>   	if (!chips) {
+>>   		ret = -ENOMEM;
+>> -		goto free_and_return;
+>> +		goto out_chip_cpu_mask;
+>>   	}
+>>
+>>   	for (i = 0; i < nr_chips; i++) {
+>>   		chips[i].id = chip[i];
+>> -		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
+>> +		cpumask_copy(&chips[i].mask, &chip_cpu_mask[i]);
+>>   		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
+>>   		for_each_cpu(cpu, &chips[i].mask)
+>>   			per_cpu(chip_info, cpu) =  &chips[i];
+>>   	}
+>>
+>> +out_chip_cpu_mask:
+>> +	kfree(chip_cpu_mask);
+>>   free_and_return:
+>>   	kfree(chip);
+>>   	return ret;
+>> -- 
+>> 2.31.1
+>>
 
