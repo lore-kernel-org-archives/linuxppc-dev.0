@@ -8,61 +8,61 @@ X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 562AFC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 22:28:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FEC9C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 22:29:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E4D2160FC0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 22:28:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E4D2160FC0
+	by mail.kernel.org (Postfix) with ESMTPS id BBD6B60F6E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jul 2021 22:28:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BBD6B60F6E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GZBJv4CSzz3dCn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 08:28:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GZBKQ1hSRz3dKY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 08:28:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=AbRSqNdZ;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=4JNGme4W;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=amd.com
- (client-ip=40.107.237.44; helo=nam12-bn8-obe.outbound.protection.outlook.com;
+ (client-ip=40.107.223.44; helo=nam11-dm6-obe.outbound.protection.outlook.com;
  envelope-from=thomas.lendacky@amd.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256
- header.s=selector1 header.b=AbRSqNdZ; 
+ header.s=selector1 header.b=4JNGme4W; 
  dkim-atps=neutral
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com
- (mail-bn8nam12on2044.outbound.protection.outlook.com [40.107.237.44])
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com
+ (mail-dm6nam11on2044.outbound.protection.outlook.com [40.107.223.44])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GZBHJ3Z2xz3bTC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 08:27:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GZBHh4D60z3bjX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 08:27:26 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=WWpmIXFfZFjlBwOabATYwwJnuOXd75mvssDL/+/jCKES8f7p9TqRm4ssX5zcjO29HJg8ZS1ZkryJQvtx70Dsvo73pfRYc4T7Fr9c5sHoKgv0je2yUMz6eEyi55h1Jxbupt0aMoGfpIshdJaIqN25zXBHWwyNITPHTzHbDAnx+t6VoctpwoSQBa5iMzS3Wjmiv/qo3Tp49d+1s3J9RVbOfs8SJqFpj5LEQCvYWdjDqeb32xG9jstTzVHwQ8JlD2BK6wVflvKkgc5aTgQ0o1nsUocCnlyXRZPzjXFvbpezQcxOp3/DJDNItz6pJnk+DoKjB6uWTIi3MINg+PSEsZxW/w==
+ b=ai1UQTOIwf/KXrk+Ua5QCpoK4sY+emn8rG4THDjxdDvb3tyGUee31bCK2gJVeZMwX9PJqbQO4xHhqVTPqzDxBcCfcFn1QZVBFWGCxk2d1SaUb+kDwGVIW0LWEcBm2aFM0FATjFdjZqiI/wp37tbC1qU+XAElaajd1fiAG6qJ4/DmXvtjeown9iMK/3UtVomXvBsPcl6IzFio1LbjQz05IMVYBKjue5IkWnI3GOdT/a2kkqzEPOXfhotGUi2f96HHGFBi+56hukoASOxUJp1EFuCxfHdpRN+NXxRJiIM+8uFPCLVHxZzHUC6DzNL1M8qDCrhqoHcipHPIK9Lqi3aBFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=D94tUDv6KePt80sethbOGHdYxlwwYHbtwKspSl/dixo=;
- b=g0HABxWuyEBgPro7+l0ZdMACIon90sR258k0X9RFXeFxv+IN9VJPApFR73UAYrnD661FWynZ+dPTVbLKXOa2i1rqDbI6G7tRZaf2K2wF/YKovFfnoJJYc0tb1fT/j1YR4Y3w+d5dHViubHDHs4pgvgsZx/+fBJgDox3Ouo2Fnm5PHqz7dugDSEm3ul4P6oBNUYLf1CdQPdKL8VXVZ/Da8DT5ruqNF2IX3PGj6Qyhe72kY+45WGubPaFBTLVSevExgX/f9rI5LnVyWQUaHoPigdeQ28xLzT6iJbfa20hy45bPPYqvWfz0sxNwrSDC+4jmCsqKcyFib9W+V7g9FD/L7g==
+ bh=7rBYhxwUFw8fcyx0fuQ206NyJJMRUZngGck8eTaViKU=;
+ b=E5ej607xPfpPPO51/1pKN4g4pWiGRiPct/UxaqpHZu0mb6H0YsGT8w/xrtWT4cESCV9TME9SgBJQaeb2Pck4s2Rx0JK1B+PgdLbHMP3kMN9eCG3iLjIoOPdHPX3uhDCCWVc5CL+4as2UnS4ROFViSzQQiX0eSALUeoJTImqNurImO2RZqHkyFyI6jeho0geNnd98Sdaj+5f1AL5ulxpEgNPm9C4CPmgxx9ssQAEu6oCLVH88skMVYbJ5UCttU4hhg1vmBG/Rn4Z85/rT3eVMUTksMCxNgLOsL4qci50kERoc9IzwIsNc05Kg9JqjsnRLUzMtgnzD9DIlgCMqu/84wQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
  header.d=amd.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1; 
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=D94tUDv6KePt80sethbOGHdYxlwwYHbtwKspSl/dixo=;
- b=AbRSqNdZs9JUj6YgpzkTt/M46cfbeZBJQTQCoTkM9l/DZ+gfptA/WxVaqyrHVV4WKQzVVXNZyS8mXEjZeY3quh7Z+LOiK1K3u4WNHIxDGrE0fdwSWIMr90ImckeLmqwXHivRJw3qyD7AVhvbgUZC3ppngTDRlxwks6yw2pHBl7s=
+ bh=7rBYhxwUFw8fcyx0fuQ206NyJJMRUZngGck8eTaViKU=;
+ b=4JNGme4WyKZeEVBRd4wuMKiOM+j1chWIXrWAkn2h5i0AO4O3/ld8WZcWtC62e+Ur6i92qFCUdop52l7pgf8UrU02IpRwjqCVwpxTNqCX4aFWOi5tzovzlF9JIzrJ070DY9d/LHxvhAbnTCLsAtFHqC1QT4zAn88AHtFlx0YeEW0=
 Authentication-Results: vger.kernel.org; dkim=none (message not signed)
  header.d=none;vger.kernel.org; dmarc=none action=none header.from=amd.com;
 Received: from DM4PR12MB5229.namprd12.prod.outlook.com (2603:10b6:5:398::12)
- by DM8PR12MB5462.namprd12.prod.outlook.com (2603:10b6:8:24::11) with
+ by DM4PR12MB5357.namprd12.prod.outlook.com (2603:10b6:5:39b::24) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4352.26; Tue, 27 Jul
- 2021 22:26:49 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4373.18; Tue, 27 Jul
+ 2021 22:27:09 +0000
 Received: from DM4PR12MB5229.namprd12.prod.outlook.com
  ([fe80::73:2581:970b:3208]) by DM4PR12MB5229.namprd12.prod.outlook.com
  ([fe80::73:2581:970b:3208%3]) with mapi id 15.20.4352.031; Tue, 27 Jul 2021
- 22:26:49 +0000
+ 22:27:09 +0000
 From: Tom Lendacky <thomas.lendacky@amd.com>
 To: linux-kernel@vger.kernel.org, x86@kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
@@ -71,73 +71,72 @@ To: linux-kernel@vger.kernel.org, x86@kernel.org,
  linux-graphics-maintainer@vmware.com, amd-gfx@lists.freedesktop.org,
  dri-devel@lists.freedesktop.org, kexec@lists.infradead.org,
  linux-fsdevel@vger.kernel.org
-Subject: [PATCH 01/11] mm: Introduce a function to check for virtualization
- protection features
-Date: Tue, 27 Jul 2021 17:26:04 -0500
-Message-Id: <cbc875b1d2113225c2b44a2384d5b303d0453cf7.1627424774.git.thomas.lendacky@amd.com>
+Subject: [PATCH 03/11] powerpc/pseries/svm: Add a powerpc version of
+ prot_guest_has()
+Date: Tue, 27 Jul 2021 17:26:06 -0500
+Message-Id: <19f7eefdc98e091fbfae9db0db575422f18f0543.1627424774.git.thomas.lendacky@amd.com>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <cover.1627424773.git.thomas.lendacky@amd.com>
 References: <cover.1627424773.git.thomas.lendacky@amd.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: SN7PR04CA0187.namprd04.prod.outlook.com
- (2603:10b6:806:126::12) To DM4PR12MB5229.namprd12.prod.outlook.com
+X-ClientProxiedBy: SA9PR13CA0001.namprd13.prod.outlook.com
+ (2603:10b6:806:21::6) To DM4PR12MB5229.namprd12.prod.outlook.com
  (2603:10b6:5:398::12)
 MIME-Version: 1.0
 X-MS-Exchange-MessageSentRepresentingType: 1
 Received: from tlendack-t1.amd.com (165.204.77.1) by
- SN7PR04CA0187.namprd04.prod.outlook.com (2603:10b6:806:126::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4352.26 via Frontend
- Transport; Tue, 27 Jul 2021 22:26:47 +0000
+ SA9PR13CA0001.namprd13.prod.outlook.com (2603:10b6:806:21::6) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.4373.7 via Frontend Transport; Tue, 27 Jul 2021 22:27:07 +0000
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 717f060a-ce09-4bfd-6ed3-08d9514da04b
-X-MS-TrafficTypeDiagnostic: DM8PR12MB5462:
+X-MS-Office365-Filtering-Correlation-Id: 9f293814-4a4b-4e53-7f3f-08d9514dac4c
+X-MS-TrafficTypeDiagnostic: DM4PR12MB5357:
 X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <DM8PR12MB5462E1D71C4524EFBC495C44ECE99@DM8PR12MB5462.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:5516;
+X-Microsoft-Antispam-PRVS: <DM4PR12MB5357FFC67710513F4427516CECE99@DM4PR12MB5357.namprd12.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:1417;
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: QHO+mLE4VdSGkVexmSJilen55jEjTS8GTaqInU8OCZJURUEKKiH6wLoIaBCotonFjYINFSfaDlFQsSnYW9I0GZ9KCHxBtvawV2kGIRLXevyuVYvWux9s3yOTcAiL092P3H+pwGl4BkXVE6tWtDvuiiuKoeogEAkME1G1SyC9lRSp3fk3YQz6fEMEzZsZkKAwttUpxV884TtjkpRBa87KDNb4o/c7sIP14a//tq4j7+XfhvBR3XeVlf97W3RqgwGDK0/PNpwIDhXPvx86QukFSO1PjRKUuCtQVD4719YcZB9WQ+Ywp4j0PF3GgSnfP5G+ksuCBJtw7Z2d+9HA3FoPqqjRWygDEAUOBPPkLgXgokMs6HKEPZncr3OoenxA1fbTrBTkecjQ4/uP39kjFdWu2R1q31+GO0PBI28xL/H5QAnJpd1ukcjMwG4+xJneLFYwuY/cbB6mjWJW3r0jz+zMEyfd+wy229lY6Ivz5WxP9CLKGiZ7nPHnUdDV4gGk0ecKY7BKpQsgz9zwr4Tf3ru7w1/cfMwcR7XC4LhGcXNgj9x9F02gFpBt5Cds8oFNsgLmYsL+jejPlzV8ukZgyRBICMOlzxpwyxZ7dG3jKnvcxSqmzcfKBTVLZklUtNBJhA7UXqtlXbLVLKS015MpVdm2fcvsK6O3/rsnk4w80R1B8s/ipKGPdc1WDhzGUPaDpUZfCPIUT634UBZp4SIjAyT9T8kxaB00RsXYqngdvLitifE=
+X-Microsoft-Antispam-Message-Info: xAbHVrjzIYpjzq53UexUtPS4Mqj3/v17JOVKeJ1nk0z7aeEtELuC1CKLeBIsW95qO88RTTuIcs4aebvcZc3B6nCzcSN82Npu/UH69rG/Pxlcwc4HDdX48/BTJ7QNGhs/gmSzWpqbhTo/5aIks8fOBv0UJG/ImnMdbIbDsDURfgkx67Ya7Y7KJXfAqt1j1kUnTwP+u6n4CyBybiwQyOcwIJUSab4NSCucsPZMVl8Mp6Rfe0puH5nZnyXVJWiedHxGFNA30PccDFQ2NaLWk//PkDiCS5bPdIKNVG/ijQstBKnbNSPoLxBkXU79qF3szQeKYL0wGbZpwgtqiwdeZ14Ri3+kmd6VdY3feLm6NojfUxE0QrY/qz6u5lWgTfnMgpGVWbBrVxikvYEspGmwsW87T/yUkvly2qy19LKaIfwti0zvK/3XBS7cwhmnaDAYYVopkQPOip9kdII/WNIOQySYZ6kX4FcR1o7NVGElNXbyrECmxbJ9bC7/I0tuJ+ubXfQNo1Ro8ZoE3GCU4GpisgiWlnWZyWWO2E/N5SzwMRXIJLrYlYAc5lIx/BXlLpzMLNkipOp3JUKS3oXinyVifjuagAmf4hzkcxPDuSuzf9dMj9mfDoO0SXpWqhruUglfvh4+uup1VFXrbLOOaB560m+iEcvZykIcqryZCirgkV2dbiYOuW4L/eN44QUQHYey9ZCebmCC1JYSEXWCIcQB1YU5OQ==
 X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:DM4PR12MB5229.namprd12.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(4636009)(39860400002)(346002)(396003)(376002)(136003)(366004)(86362001)(6666004)(26005)(186003)(478600001)(8936002)(2616005)(2906002)(52116002)(7416002)(4326008)(66476007)(8676002)(7696005)(54906003)(66946007)(5660300002)(316002)(6486002)(66556008)(921005)(38100700002)(38350700002)(36756003)(956004);
+ SFS:(4636009)(396003)(39860400002)(366004)(346002)(376002)(136003)(5660300002)(36756003)(54906003)(956004)(66556008)(4326008)(316002)(86362001)(8676002)(921005)(2616005)(66946007)(38350700002)(38100700002)(66476007)(7696005)(2906002)(6486002)(7416002)(478600001)(26005)(52116002)(8936002)(186003);
  DIR:OUT; SFP:1101; 
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?/PxRIthfUgjSvOzOXFVDfetP3FE+cMWPbcDgoqdodIwAFD2ob5hvbVOx+p7U?=
- =?us-ascii?Q?GodRCOoEAypKQlcTEXj4nDUYsUQUyVceFkfzyCSZiDyCyyVbO9vyKRChEUak?=
- =?us-ascii?Q?Vje+poSD35i+VB+IIlDXzqIaa2k2R1GgNEtjqAXm8ApVTXTIGCFxHRSglGka?=
- =?us-ascii?Q?Mk2P1QMka5F9dxvWsDxCsXXh5I6XdoGlONEDNjqcRMENWKtBb7k/31zaaU+8?=
- =?us-ascii?Q?CFjVLIRmFBty7j3lZBQ3NmMmbcXoD2ZsJUCfVy1J99mB8DtN6hJWaVdK/sdP?=
- =?us-ascii?Q?d0WfS+FggVs+1aZrY28fpxF1LMtVCEOZK7JLOtgUudji5y7YfzAbJWjCD+Bi?=
- =?us-ascii?Q?08SI7OOFCzvMsxVGEyoupsIJGCLQ4Kic2W9Z/kXZYu5JcHPWKD3HHdLW1MS8?=
- =?us-ascii?Q?nhYE1mTQuMbqWfHDrFB+stZfD9iQwy7OnYNrZN/4b48/ZobEmrNMsnz6xzCr?=
- =?us-ascii?Q?rtV03rquzdDacDywnjREO2dg61X9+ljzOKG3lojbpQqh7vGgDD5AiWAHsJJ7?=
- =?us-ascii?Q?8sZsJvSKkD2HnzqGX/mL915cMocrAIZkzS4HbRPITBHpC9k42r3yGMUlWIyi?=
- =?us-ascii?Q?DeU+soKlXDakAzITsFTn2ddN3llWzbMazDwI908yE4Escazz8y9knSjJSi+3?=
- =?us-ascii?Q?D3VlkgWasR2rJDWAX5kWQcVDuM0vu0n4e7KLb6eL9hpMkRTaTr31j8xRevP6?=
- =?us-ascii?Q?hwD4O1uhoAMyuaPnjmEXerRozpP+/KuVsNgnLHDsCzI1A0Zpe+fwduX8CGfV?=
- =?us-ascii?Q?fXKeIxrEfAG7sgClLwyV8HVTt4oId035LtyR1XH73EZSK8SbGdu56nQLL9K+?=
- =?us-ascii?Q?Qe2eRkoQx7ShwNjLpuacHxVCXndXguia1T8yQ1hhtHu5Gm8gVT1YIE81GvxH?=
- =?us-ascii?Q?PxFmWFcxmH+mPn2UliCeD6mLcRc3XfTqvjTwiEsdrFyvuheGxc0abf4jgPoq?=
- =?us-ascii?Q?1rmvOCXTQucovzVuNnk18cF9LPBXZgeDkBKPtoSpunWipLP5VzYnTIGRglZg?=
- =?us-ascii?Q?KWUSoyHxBhqtS3YT89beN8wYlzprbW+QmPmwJ1wls6ih/0lgjjdomED4MEE/?=
- =?us-ascii?Q?dU1bF44pbLDV9RHW94GAiVzINOtGVnwqrnUrUSNz/SHo8v1RpadyW46sUJ1C?=
- =?us-ascii?Q?mHR2zPDAmyiXwQaaptwEh5LUhfx3HbYz/OLjkNaFAaaLVUgRPSacd/kcfz64?=
- =?us-ascii?Q?MjCQuzYRG8qPlJ5BKR/Je3rMlOgmKR1gNfNK+v2Y9oUeyeIR/ulGtUsUqthO?=
- =?us-ascii?Q?CNUIdaMHX2a3U1cOFtFNzqy+qMwbkXiSMF9E7dhuGl7EMXTsDR/4jqla+2Xt?=
- =?us-ascii?Q?V9nQ1yMMceQNr0lMKl++Z/wt?=
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?kc7iz37gigN3u+7RGOhMMt7PioywRpKQ+A+3saV+wOhLSSKgZDhPLONaxLer?=
+ =?us-ascii?Q?+tbc4SMj4dV6uHS6XyQwSM1Lh7VzGU3j6YnLCVUeqSqdREewhTgUyIsjaGVa?=
+ =?us-ascii?Q?7IZskbey1kKo81/fw4bKE5fDpGUnqw/1Ryodw2FHScckh0cajaepUI518bHj?=
+ =?us-ascii?Q?FJiH8Nh5GR8QOEQYzGwdeyHbfscZEqvG0rbSmmUTzOocsZxNRkfWzu0Td9EL?=
+ =?us-ascii?Q?iu8lTRZaYclf8NAd9/XJctPbxW2niGR8/tJf6ca8+QIw9Wr41E42VrddgyZ3?=
+ =?us-ascii?Q?7mVPyELznu+YVPH65U7E1LhAcq9Ag9feNiqYxYRWnrXc+DnLMUPnzI2Ac4EC?=
+ =?us-ascii?Q?1QkzKEe9CKg9/0XKT2BIPINlqaUq1MNadW7U5MqobXx9JrkccwyAl2nR7ReE?=
+ =?us-ascii?Q?M5gOK9G8KBltrwNXLbQOQbdsVuLtU01dvC6/INfwHk7dNk74E2EyjcPuUJ8K?=
+ =?us-ascii?Q?bedVun5IqVFAxZaVrVCYEBGgeM/3TyqO6lUapt2ZB6Nx37HEbhgw6kPrCGpx?=
+ =?us-ascii?Q?8rXdk4KVD36lx231hPbzzebz3JU3FM7z+y75QRV2xImlBb0QMWJcw6oGMueZ?=
+ =?us-ascii?Q?5oUXCJGtDwhCKuMfjB3/Pulbp3xZYvwdxRX+7XeMcQE5vwhEYxjjGEITuORZ?=
+ =?us-ascii?Q?qMzs/f1sYn4rdcsltu0iQQwRuTsw1SUJVixwluMUzsyicwxIprUbhKerbjQE?=
+ =?us-ascii?Q?L4gm3V+PLDHVl1dBGeC3wLu0UlxjNq4hXWvZCQFNCGWztVGRiW+iL4CDEOCX?=
+ =?us-ascii?Q?yoKY8d2R5wU6EHcQBQgegb7itpVKY0dClL8oKNlS5w7OonkK35K2smdue+uA?=
+ =?us-ascii?Q?KO1mSVyXBroN51AAWADf4WS46pQgBrx0fcTY+hXhEJZ/CkpwMO3PgkpTalCV?=
+ =?us-ascii?Q?jL16H8hUiceiOLyGDdNcZ/b3B9yg+YjhmCX9Wk5ZMetfAOIlf4cMHYmzJ2Vg?=
+ =?us-ascii?Q?51hWnGOq3NzwMxf2pHlgr745Gut+mb8E+sFo7OdOZ94KvcZ4xS0gNsUR2xfy?=
+ =?us-ascii?Q?WSOni8FRE5Bp9WP/KGlKrb7LhE8C+nD6lZom3hxiOeUMKnP9z8Do0MBSdKdJ?=
+ =?us-ascii?Q?KkwYdfZP/hP1bf55Mkxiyf0HgKa5oiU0RhH9SXrh79Fic+ouRc+0iOpq2K1w?=
+ =?us-ascii?Q?+iELD1u/KH2zBTsGpgR84ATwMfXVS/wm6KNMDr6y3AeyrvS2KfGPJXla0QZr?=
+ =?us-ascii?Q?me6/D8OTm3NQDy5qYX/ps5t/4xwjcGEAORb9oSKU4J0ULDIsiMIFj8Okkh+R?=
+ =?us-ascii?Q?ozTDg5pqkMGcq7Mr81kqAxKQFcZwzVXbO1CwaWHLG+r+RshD+d0suNgfuqYX?=
+ =?us-ascii?Q?pX1x7N+gKLc0jz+QVTd0376Z?=
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 717f060a-ce09-4bfd-6ed3-08d9514da04b
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9f293814-4a4b-4e53-7f3f-08d9514dac4c
 X-MS-Exchange-CrossTenant-AuthSource: DM4PR12MB5229.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Jul 2021 22:26:49.5535 (UTC)
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Jul 2021 22:27:09.6792 (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: ZAqqFm7MIdcu88eQAlOLDfwrloJneekLcMxN0JUEE1djlRNIG90oeAP9CYDEi2s/1Mvut8ee/ZKd0eCSw5uEow==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM8PR12MB5462
+X-MS-Exchange-CrossTenant-UserPrincipalName: j3g9RhCcbhfP0KRAR+GITdr3ah14k0zwHJB6A4wX1eUIvHbQ1wBo7wlIiqoOaJZqZEByf2FPZxawQyr3ZydedA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB5357
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -152,48 +151,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>,
  Andi Kleen <ak@linux.intel.com>, Tianyu Lan <Tianyu.Lan@microsoft.com>,
  Joerg Roedel <joro@8bytes.org>, Borislav Petkov <bp@alien8.de>,
- Brijesh Singh <brijesh.singh@amd.com>
+ Brijesh Singh <brijesh.singh@amd.com>, Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In prep for other protected virtualization technologies, introduce a
-generic helper function, prot_guest_has(), that can be used to check
-for specific protection attributes, like memory encryption. This is
-intended to eliminate having to add multiple technology-specific checks
-to the code (e.g. if (sev_active() || tdx_active())).
+Introduce a powerpc version of the prot_guest_has() function. This will
+be used to replace the powerpc mem_encrypt_active() implementation, so
+the implementation will initially only support the PATTR_MEM_ENCRYPT
+attribute.
 
-Co-developed-by: Andi Kleen <ak@linux.intel.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Co-developed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
 ---
- arch/Kconfig                    |  3 +++
- include/linux/protected_guest.h | 32 ++++++++++++++++++++++++++++++++
- 2 files changed, 35 insertions(+)
- create mode 100644 include/linux/protected_guest.h
+ arch/powerpc/include/asm/protected_guest.h | 30 ++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/Kconfig     |  1 +
+ 2 files changed, 31 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/protected_guest.h
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 129df498a8e1..a47cf283f2ff 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -1231,6 +1231,9 @@ config RELR
- config ARCH_HAS_MEM_ENCRYPT
- 	bool
- 
-+config ARCH_HAS_PROTECTED_GUEST
-+	bool
-+
- config HAVE_SPARSE_SYSCALL_NR
-        bool
-        help
-diff --git a/include/linux/protected_guest.h b/include/linux/protected_guest.h
+diff --git a/arch/powerpc/include/asm/protected_guest.h b/arch/powerpc/include/asm/protected_guest.h
 new file mode 100644
-index 000000000000..f8ed7b72967b
+index 000000000000..ce55c2c7e534
 --- /dev/null
-+++ b/include/linux/protected_guest.h
-@@ -0,0 +1,32 @@
++++ b/arch/powerpc/include/asm/protected_guest.h
+@@ -0,0 +1,30 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
 + * Protected Guest (and Host) Capability checks
@@ -203,29 +186,39 @@ index 000000000000..f8ed7b72967b
 + * Author: Tom Lendacky <thomas.lendacky@amd.com>
 + */
 +
-+#ifndef _PROTECTED_GUEST_H
-+#define _PROTECTED_GUEST_H
++#ifndef _POWERPC_PROTECTED_GUEST_H
++#define _POWERPC_PROTECTED_GUEST_H
++
++#include <asm/svm.h>
 +
 +#ifndef __ASSEMBLY__
 +
-+#define PATTR_MEM_ENCRYPT		0	/* Encrypted memory */
-+#define PATTR_HOST_MEM_ENCRYPT		1	/* Host encrypted memory */
-+#define PATTR_GUEST_MEM_ENCRYPT		2	/* Guest encrypted memory */
-+#define PATTR_GUEST_PROT_STATE		3	/* Guest encrypted state */
++static inline bool prot_guest_has(unsigned int attr)
++{
++	switch (attr) {
++	case PATTR_MEM_ENCRYPT:
++		return is_secure_guest();
 +
-+#ifdef CONFIG_ARCH_HAS_PROTECTED_GUEST
-+
-+#include <asm/protected_guest.h>
-+
-+#else	/* !CONFIG_ARCH_HAS_PROTECTED_GUEST */
-+
-+static inline bool prot_guest_has(unsigned int attr) { return false; }
-+
-+#endif	/* CONFIG_ARCH_HAS_PROTECTED_GUEST */
++	default:
++		return false;
++	}
++}
 +
 +#endif	/* __ASSEMBLY__ */
 +
-+#endif	/* _PROTECTED_GUEST_H */
++#endif	/* _POWERPC_PROTECTED_GUEST_H */
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index 5e037df2a3a1..8ce5417d6feb 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -159,6 +159,7 @@ config PPC_SVM
+ 	select SWIOTLB
+ 	select ARCH_HAS_MEM_ENCRYPT
+ 	select ARCH_HAS_FORCE_DMA_UNENCRYPTED
++	select ARCH_HAS_PROTECTED_GUEST
+ 	help
+ 	 There are certain POWER platforms which support secure guests using
+ 	 the Protected Execution Facility, with the help of an Ultravisor
 -- 
 2.32.0
 
