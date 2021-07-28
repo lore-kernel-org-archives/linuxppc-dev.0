@@ -7,46 +7,47 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A8F2C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 08:08:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C182CC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 08:09:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E88AC60BD3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 08:08:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E88AC60BD3
+	by mail.kernel.org (Postfix) with ESMTPS id 15BD660F41
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 08:09:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 15BD660F41
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GZRBR4K7Jz30FM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 18:08:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GZRBm5bWKz3d7t
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 18:09:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com;
  envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GZR9H4VSzz3cnL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 18:07:47 +1000 (AEST)
-Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.57])
- by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4GZR1n30c7zYdS8;
- Wed, 28 Jul 2021 16:01:17 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GZR9J1bmGz3cnT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 18:07:48 +1000 (AEST)
+Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.54])
+ by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4GZR1q3JLXzYcwd;
+ Wed, 28 Jul 2021 16:01:19 +0800 (CST)
 Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
  dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Wed, 28 Jul 2021 16:07:13 +0800
+ 15.1.2176.2; Wed, 28 Jul 2021 16:07:15 +0800
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Wed, 28 Jul 2021 16:07:12 +0800
+ 15.1.2176.2; Wed, 28 Jul 2021 16:07:14 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <rostedt@goodmis.org>, <mingo@redhat.com>, <davem@davemloft.net>,
  <ast@kernel.org>, <ryabinin.a.a@gmail.com>
-Subject: [PATCH v2 4/7] sections: Move is_kernel_inittext() into sections.h
-Date: Wed, 28 Jul 2021 16:13:17 +0800
-Message-ID: <20210728081320.20394-5-wangkefeng.wang@huawei.com>
+Subject: [PATCH v2 7/7] powerpc/mm: Use is_kernel_text() and
+ is_kernel_inittext() helper
+Date: Wed, 28 Jul 2021 16:13:20 +0800
+Message-ID: <20210728081320.20394-8-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20210728081320.20394-1-wangkefeng.wang@huawei.com>
 References: <20210728081320.20394-1-wangkefeng.wang@huawei.com>
@@ -68,133 +69,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, x86@kernel.org, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, paulus@samba.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The is_kernel_inittext() and init_kernel_text() are with same
-functionality, let's just keep is_kernel_inittext() and move
-it into sections.h, then update all the callers.
+Use is_kernel_text() and is_kernel_inittext() helper to simplify code,
+also drop etext, _stext, _sinittext, _einittext declaration which
+already declared in section.h.
 
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: x86@kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
 ---
- arch/x86/kernel/unwind_orc.c   |  2 +-
- include/asm-generic/sections.h | 14 ++++++++++++++
- include/linux/kallsyms.h       |  8 --------
- include/linux/kernel.h         |  1 -
- kernel/extable.c               | 12 ++----------
- 5 files changed, 17 insertions(+), 20 deletions(-)
+ arch/powerpc/mm/pgtable_32.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/kernel/unwind_orc.c b/arch/x86/kernel/unwind_orc.c
-index a1202536fc57..d92ec2ced059 100644
---- a/arch/x86/kernel/unwind_orc.c
-+++ b/arch/x86/kernel/unwind_orc.c
-@@ -175,7 +175,7 @@ static struct orc_entry *orc_find(unsigned long ip)
- 	}
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index dcf5ecca19d9..13c798308c2e 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -33,8 +33,6 @@
  
- 	/* vmlinux .init slow lookup: */
--	if (init_kernel_text(ip))
-+	if (is_kernel_inittext(ip))
- 		return __orc_find(__start_orc_unwind_ip, __start_orc_unwind,
- 				  __stop_orc_unwind_ip - __start_orc_unwind_ip, ip);
+ #include <mm/mmu_decl.h>
  
-diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
-index 26ed9fc9b4e3..4f2f32aa2b7a 100644
---- a/include/asm-generic/sections.h
-+++ b/include/asm-generic/sections.h
-@@ -170,4 +170,18 @@ static inline bool is_kernel_rodata(unsigned long addr)
- 	       addr < (unsigned long)__end_rodata;
- }
- 
-+/**
-+ * is_kernel_inittext - checks if the pointer address is located in the
-+ *                    .init.text section
-+ *
-+ * @addr: address to check
-+ *
-+ * Returns: true if the address is located in .init.text, false otherwise.
-+ */
-+static inline bool is_kernel_inittext(unsigned long addr)
-+{
-+	return addr >= (unsigned long)_sinittext &&
-+	       addr < (unsigned long)_einittext;
-+}
-+
- #endif /* _ASM_GENERIC_SECTIONS_H_ */
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index b016c62f30a6..8a9d329c927c 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -24,14 +24,6 @@
- struct cred;
- struct module;
- 
--static inline int is_kernel_inittext(unsigned long addr)
--{
--	if (addr >= (unsigned long)_sinittext
--	    && addr < (unsigned long)_einittext)
--		return 1;
--	return 0;
--}
+-extern char etext[], _stext[], _sinittext[], _einittext[];
 -
- static inline int is_kernel_text(unsigned long addr)
+ static u8 early_fixmap_pagetable[FIXMAP_PTE_SIZE] __page_aligned_data;
+ 
+ notrace void __init early_ioremap_init(void)
+@@ -104,14 +102,13 @@ static void __init __mapin_ram_chunk(unsigned long offset, unsigned long top)
  {
- 	if ((addr >= (unsigned long)_stext && addr < (unsigned long)_etext))
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 0622418bafbc..d4ba46cf4737 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -229,7 +229,6 @@ extern bool parse_option_str(const char *str, const char *option);
- extern char *next_arg(char *args, char **param, char **val);
+ 	unsigned long v, s;
+ 	phys_addr_t p;
+-	int ktext;
++	bool ktext;
  
- extern int core_kernel_text(unsigned long addr);
--extern int init_kernel_text(unsigned long addr);
- extern int __kernel_text_address(unsigned long addr);
- extern int kernel_text_address(unsigned long addr);
- extern int func_ptr_is_kernel_text(void *ptr);
-diff --git a/kernel/extable.c b/kernel/extable.c
-index da26203841d4..98ca627ac5ef 100644
---- a/kernel/extable.c
-+++ b/kernel/extable.c
-@@ -62,14 +62,6 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
- 	return e;
- }
- 
--int init_kernel_text(unsigned long addr)
--{
--	if (addr >= (unsigned long)_sinittext &&
--	    addr < (unsigned long)_einittext)
--		return 1;
--	return 0;
--}
--
- int notrace core_kernel_text(unsigned long addr)
- {
- 	if (addr >= (unsigned long)_stext &&
-@@ -77,7 +69,7 @@ int notrace core_kernel_text(unsigned long addr)
- 		return 1;
- 
- 	if (system_state < SYSTEM_RUNNING &&
--	    init_kernel_text(addr))
-+	    is_kernel_inittext(addr))
- 		return 1;
- 	return 0;
- }
-@@ -94,7 +86,7 @@ int __kernel_text_address(unsigned long addr)
- 	 * Since we are after the module-symbols check, there's
- 	 * no danger of address overlap:
- 	 */
--	if (init_kernel_text(addr))
-+	if (is_kernel_inittext(addr))
- 		return 1;
- 	return 0;
- }
+ 	s = offset;
+ 	v = PAGE_OFFSET + s;
+ 	p = memstart_addr + s;
+ 	for (; s < top; s += PAGE_SIZE) {
+-		ktext = ((char *)v >= _stext && (char *)v < etext) ||
+-			((char *)v >= _sinittext && (char *)v < _einittext);
++		ktext = (is_kernel_text(v) || is_kernel_inittext(v));
+ 		map_kernel_page(v, p, ktext ? PAGE_KERNEL_TEXT : PAGE_KERNEL);
+ 		v += PAGE_SIZE;
+ 		p += PAGE_SIZE;
 -- 
 2.26.2
 
