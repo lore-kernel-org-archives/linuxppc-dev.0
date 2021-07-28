@@ -2,66 +2,65 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40BCFC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 16:35:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CD15C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 16:38:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5BB5B60F23
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 16:35:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5BB5B60F23
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
+	by mail.kernel.org (Postfix) with ESMTPS id 9A17960EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 16:38:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9A17960EB9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GZfR24Mpyz3bhv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 02:35:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=LxjG3gFI;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GZfV90NlLz3cnF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 02:38:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=alien8.de (client-ip=5.9.137.197; helo=mail.skyhub.de;
- envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
- header.s=dkim header.b=LxjG3gFI; dkim-atps=neutral
-X-Greylist: delayed 402 seconds by postgrey-1.36 at boromir;
- Thu, 29 Jul 2021 02:34:57 AEST
-Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GZfQT6366z2yhd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jul 2021 02:34:57 +1000 (AEST)
-Received: from nazgul.tnic (unknown [109.121.183.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 8F24F1EC0527;
- Wed, 28 Jul 2021 18:27:49 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
- t=1627489669;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
- bh=GOEYhGPYQ4YUbo4gftj4JX0Uz5V/Qj9S6dris+AXSaA=;
- b=LxjG3gFIJCDuOQDGzY+hiG0vN+dfpBr7Vq5w2ORdpOETiJfx6X9JMDFJJMxIan0ujoNNw7
- KMi/vJ5Nq5Vi/Nq5x7JcXDHRAXe8ptcsnGwT9j1ZZa1hhOAXVDNeta9RonTrMrxsR3lvLV
- KIVjknjki6FEc0QGw1JCe7AU529aFu0=
-Date: Wed, 28 Jul 2021 18:28:01 +0200
-From: Borislav Petkov <bp@alien8.de>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 01/11] mm: Introduce a function to check for
- virtualization protection features
-Message-ID: <YQGFh3BlaD8RAEBz@nazgul.tnic>
-References: <cover.1627424773.git.thomas.lendacky@amd.com>
- <cbc875b1d2113225c2b44a2384d5b303d0453cf7.1627424774.git.thomas.lendacky@amd.com>
- <YQFY5/cq2thyHzUe@infradead.org>
+ smtp.mailfrom=xmission.com (client-ip=166.70.13.232;
+ helo=out02.mta.xmission.com; envelope-from=ebiederm@xmission.com;
+ receiver=<UNKNOWN>)
+Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GZfTk5H1Kz304X
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jul 2021 02:37:46 +1000 (AEST)
+Received: from in01.mta.xmission.com ([166.70.13.51]:32964)
+ by out02.mta.xmission.com with esmtps (TLS1.3) tls
+ TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1m8m8G-007CzP-LA; Wed, 28 Jul 2021 10:10:09 -0600
+Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]:41378
+ helo=email.xmission.com)
+ by in01.mta.xmission.com with esmtpsa (TLS1.3) tls
+ TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1m8m8C-00A9Pq-J2; Wed, 28 Jul 2021 10:10:08 -0600
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Arnd Bergmann <arnd@kernel.org>
+References: <20210727144859.4150043-1-arnd@kernel.org>
+ <20210727144859.4150043-2-arnd@kernel.org>
+Date: Wed, 28 Jul 2021 11:09:22 -0500
+In-Reply-To: <20210727144859.4150043-2-arnd@kernel.org> (Arnd Bergmann's
+ message of "Tue, 27 Jul 2021 16:48:54 +0200")
+Message-ID: <87eebifmj1.fsf@disp2133>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <YQFY5/cq2thyHzUe@infradead.org>
+Content-Type: text/plain
+X-XM-SPF: eid=1m8m8C-00A9Pq-J2; ; ; mid=<87eebifmj1.fsf@disp2133>; ; ;
+ hst=in01.mta.xmission.com; ; ; ip=68.227.160.95; ; ; frm=ebiederm@xmission.com;
+ ; ; spf=neutral
+X-XM-AID: U2FsdGVkX18xroipV9CATxhuOK1ETEIbw3EWCZZa/6o=
+X-SA-Exim-Connect-IP: 68.227.160.95
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH v5 1/6] kexec: move locking into do_kexec_load
+X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,36 +72,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tom Lendacky <thomas.lendacky@amd.com>, linux-efi@vger.kernel.org,
- Tianyu Lan <Tianyu.Lan@microsoft.com>, kvm@vger.kernel.org,
- linux-s390@vger.kernel.org, x86@kernel.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
- platform-driver-x86@vger.kernel.org, iommu@lists.linux-foundation.org,
- Andi Kleen <ak@linux.intel.com>, linux-graphics-maintainer@vmware.com,
- dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
- Brijesh Singh <brijesh.singh@amd.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Feng Tang <feng.tang@intel.com>, linux-mips@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Will Deacon <will@kernel.org>, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ Helge Deller <deller@gmx.de>, x86@kernel.org,
+ Christoph Hellwig <hch@infradead.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Al Viro <viro@zeniv.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
+ linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jul 28, 2021 at 02:17:27PM +0100, Christoph Hellwig wrote:
-> So common checks obviously make sense, but I really hate the stupid
-> multiplexer.  Having one well-documented helper per feature is much
-> easier to follow.
+Arnd Bergmann <arnd@kernel.org> writes:
 
-We had that in x86 - it was called cpu_has_<xxx> where xxx is the
-feature bit. It didn't scale with the sheer amount of feature bits that
-kept getting added so we do cpu_feature_enabled(X86_FEATURE_XXX) now.
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> The locking is the same between the native and compat version of
+> sys_kexec_load(), so it can be done in the common implementation
+> to reduce duplication.
 
-The idea behind this is very similar - those protected guest flags
-will only grow in the couple of tens range - at least - so having a
-multiplexer is a lot simpler, I'd say, than having a couple of tens of
-helpers. And those PATTR flags should have good, readable names, btw.
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-Thx.
-
--- 
-Regards/Gruss,
-    Boris.
-
-https://people.kernel.org/tglx/notes-about-netiquette
+>
+> Co-developed-by: Eric Biederman <ebiederm@xmission.com>
+> Co-developed-by: Christoph Hellwig <hch@infradead.org>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  kernel/kexec.c | 44 ++++++++++++++++----------------------------
+>  1 file changed, 16 insertions(+), 28 deletions(-)
+>
+> diff --git a/kernel/kexec.c b/kernel/kexec.c
+> index c82c6c06f051..9c7aef8f4bb6 100644
+> --- a/kernel/kexec.c
+> +++ b/kernel/kexec.c
+> @@ -110,6 +110,17 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
+>  	unsigned long i;
+>  	int ret;
+>  
+> +	/*
+> +	 * Because we write directly to the reserved memory region when loading
+> +	 * crash kernels we need a mutex here to prevent multiple crash kernels
+> +	 * from attempting to load simultaneously, and to prevent a crash kernel
+> +	 * from loading over the top of a in use crash kernel.
+> +	 *
+> +	 * KISS: always take the mutex.
+> +	 */
+> +	if (!mutex_trylock(&kexec_mutex))
+> +		return -EBUSY;
+> +
+>  	if (flags & KEXEC_ON_CRASH) {
+>  		dest_image = &kexec_crash_image;
+>  		if (kexec_crash_image)
+> @@ -121,7 +132,8 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
+>  	if (nr_segments == 0) {
+>  		/* Uninstall image */
+>  		kimage_free(xchg(dest_image, NULL));
+> -		return 0;
+> +		ret = 0;
+> +		goto out_unlock;
+>  	}
+>  	if (flags & KEXEC_ON_CRASH) {
+>  		/*
+> @@ -134,7 +146,7 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
+>  
+>  	ret = kimage_alloc_init(&image, entry, nr_segments, segments, flags);
+>  	if (ret)
+> -		return ret;
+> +		goto out_unlock;
+>  
+>  	if (flags & KEXEC_PRESERVE_CONTEXT)
+>  		image->preserve_context = 1;
+> @@ -171,6 +183,8 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
+>  		arch_kexec_protect_crashkres();
+>  
+>  	kimage_free(image);
+> +out_unlock:
+> +	mutex_unlock(&kexec_mutex);
+>  	return ret;
+>  }
+>  
+> @@ -247,21 +261,8 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
+>  		((flags & KEXEC_ARCH_MASK) != KEXEC_ARCH_DEFAULT))
+>  		return -EINVAL;
+>  
+> -	/* Because we write directly to the reserved memory
+> -	 * region when loading crash kernels we need a mutex here to
+> -	 * prevent multiple crash  kernels from attempting to load
+> -	 * simultaneously, and to prevent a crash kernel from loading
+> -	 * over the top of a in use crash kernel.
+> -	 *
+> -	 * KISS: always take the mutex.
+> -	 */
+> -	if (!mutex_trylock(&kexec_mutex))
+> -		return -EBUSY;
+> -
+>  	result = do_kexec_load(entry, nr_segments, segments, flags);
+>  
+> -	mutex_unlock(&kexec_mutex);
+> -
+>  	return result;
+>  }
+>  
+> @@ -301,21 +302,8 @@ COMPAT_SYSCALL_DEFINE4(kexec_load, compat_ulong_t, entry,
+>  			return -EFAULT;
+>  	}
+>  
+> -	/* Because we write directly to the reserved memory
+> -	 * region when loading crash kernels we need a mutex here to
+> -	 * prevent multiple crash  kernels from attempting to load
+> -	 * simultaneously, and to prevent a crash kernel from loading
+> -	 * over the top of a in use crash kernel.
+> -	 *
+> -	 * KISS: always take the mutex.
+> -	 */
+> -	if (!mutex_trylock(&kexec_mutex))
+> -		return -EBUSY;
+> -
+>  	result = do_kexec_load(entry, nr_segments, ksegments, flags);
+>  
+> -	mutex_unlock(&kexec_mutex);
+> -
+>  	return result;
+>  }
+>  #endif
