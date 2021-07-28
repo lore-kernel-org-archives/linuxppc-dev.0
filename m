@@ -2,65 +2,62 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CD15C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 16:38:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2732AC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 17:36:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A17960EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 16:38:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9A17960EB9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6C89C60527
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 17:36:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6C89C60527
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GZfV90NlLz3cnF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 02:38:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GZgn65Hmqz3cbj
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 03:36:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DT4jVR33;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=xmission.com (client-ip=166.70.13.232;
- helo=out02.mta.xmission.com; envelope-from=ebiederm@xmission.com;
- receiver=<UNKNOWN>)
-Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GZfTk5H1Kz304X
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jul 2021 02:37:46 +1000 (AEST)
-Received: from in01.mta.xmission.com ([166.70.13.51]:32964)
- by out02.mta.xmission.com with esmtps (TLS1.3) tls
- TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
- (envelope-from <ebiederm@xmission.com>)
- id 1m8m8G-007CzP-LA; Wed, 28 Jul 2021 10:10:09 -0600
-Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]:41378
- helo=email.xmission.com)
- by in01.mta.xmission.com with esmtpsa (TLS1.3) tls
- TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
- (envelope-from <ebiederm@xmission.com>)
- id 1m8m8C-00A9Pq-J2; Wed, 28 Jul 2021 10:10:08 -0600
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Arnd Bergmann <arnd@kernel.org>
-References: <20210727144859.4150043-1-arnd@kernel.org>
- <20210727144859.4150043-2-arnd@kernel.org>
-Date: Wed, 28 Jul 2021 11:09:22 -0500
-In-Reply-To: <20210727144859.4150043-2-arnd@kernel.org> (Arnd Bergmann's
- message of "Tue, 27 Jul 2021 16:48:54 +0200")
-Message-ID: <87eebifmj1.fsf@disp2133>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=DT4jVR33; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GZgmX1T0lz30FM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jul 2021 03:35:40 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id BFC916103E;
+ Wed, 28 Jul 2021 17:35:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1627493736;
+ bh=Dd5+s2KkNCc4fOScdHWL03hrtCdA/vqdiUXce7gQov4=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=DT4jVR33VjkDxlTcx4mFdRVbMKV0SwbakzDTTSn8m3wG1bNTwGtCw3eAiOBDHk4js
+ gBtZdbFBMA/MQlehtcvUO38qj7sAKD0cQmrNCgX2F7qiPaFhN6VlIBTfX1JEiUUtug
+ D66LjOl8Z6M9snQlNPzd3dWtzE8f8HSL4x0XcYUCj+KSfsXWh6tNK1PchWkUlXDb9j
+ mBDpB5xciM6JTDDirU/EO4XDc48XTWap5NHRhOLeq1QQxOlvh+nYcqT3hgmFOq4w/Y
+ Ssr+t+ndCBw/OlODG9bza0kfb3OT4PLzz84gIVSri3tcEg4866ofDAkFh4tnRtYqYO
+ Be4vpNfkun+3w==
+Date: Wed, 28 Jul 2021 10:35:34 -0700
+From: Nathan Chancellor <nathan@kernel.org>
+To: Sachin Sant <sachinp@linux.vnet.ibm.com>, Will Deacon <will@kernel.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [powerpc][next-20210727] Boot failure - kernel BUG at
+ arch/powerpc/kernel/interrupt.c:98!
+Message-ID: <YQGVZnMe9hFieF8D@Ryzen-9-3900X.localdomain>
+References: <1905CD70-7656-42AE-99E2-A31FC3812EAC@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-XM-SPF: eid=1m8m8C-00A9Pq-J2; ; ; mid=<87eebifmj1.fsf@disp2133>; ; ;
- hst=in01.mta.xmission.com; ; ; ip=68.227.160.95; ; ; frm=ebiederm@xmission.com;
- ; ; spf=neutral
-X-XM-AID: U2FsdGVkX18xroipV9CATxhuOK1ETEIbw3EWCZZa/6o=
-X-SA-Exim-Connect-IP: 68.227.160.95
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: [PATCH v5 1/6] kexec: move locking into do_kexec_load
-X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1905CD70-7656-42AE-99E2-A31FC3812EAC@linux.vnet.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,136 +69,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Feng Tang <feng.tang@intel.com>, linux-mips@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Will Deacon <will@kernel.org>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Helge Deller <deller@gmx.de>, x86@kernel.org,
- Christoph Hellwig <hch@infradead.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Al Viro <viro@zeniv.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
- linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: Robin Murphy <robin.murphy@arm.com>, iommu@lists.linux-foundation.org,
+ linux-next@vger.kernel.org, Claire Chang <tientzu@chromium.org>,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Arnd Bergmann <arnd@kernel.org> writes:
+On Wed, Jul 28, 2021 at 01:31:06PM +0530, Sachin Sant wrote:
+> linux-next fails to boot on Power server (POWER8/POWER9). Following traces
+> are seen during boot
+> 
+> [    0.010799] software IO TLB: tearing down default memory pool
+> [    0.010805] ------------[ cut here ]------------
+> [    0.010808] kernel BUG at arch/powerpc/kernel/interrupt.c:98!
+> [    0.010812] Oops: Exception in kernel mode, sig: 5 [#1]
+> [    0.010816] LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
+> [    0.010820] Modules linked in:
+> [    0.010824] CPU: 1 PID: 1 Comm: swapper/0 Not tainted 5.14.0-rc3-next-20210727 #1
+> [    0.010830] NIP:  c000000000032cfc LR: c00000000000c764 CTR: c00000000000c670
+> [    0.010834] REGS: c000000003603b10 TRAP: 0700   Not tainted  (5.14.0-rc3-next-20210727)
+> [    0.010838] MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 28000222  XER: 00000002
+> [    0.010848] CFAR: c00000000000c760 IRQMASK: 3 
+> [    0.010848] GPR00: c00000000000c764 c000000003603db0 c0000000029bd000 0000000000000001 
+> [    0.010848] GPR04: 0000000000000a68 0000000000000400 c000000003603868 ffffffffffffffff 
+> [    0.010848] GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000003 
+> [    0.010848] GPR12: ffffffffffffffff c00000001ec9ee80 c000000000012a28 0000000000000000 
+> [    0.010848] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> [    0.010848] GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> [    0.010848] GPR24: 000000000000f134 0000000000000000 ffffffffffffffff c000000003603868 
+> [    0.010848] GPR28: 0000000000000400 0000000000000a68 c00000000202e9c0 c000000003603e80 
+> [    0.010896] NIP [c000000000032cfc] system_call_exception+0x8c/0x2e0
+> [    0.010901] LR [c00000000000c764] system_call_common+0xf4/0x258
+> [    0.010907] Call Trace:
+> [    0.010909] [c000000003603db0] [c00000000016a6dc] calculate_sigpending+0x4c/0xe0 (unreliable)
+> [    0.010915] [c000000003603e10] [c00000000000c764] system_call_common+0xf4/0x258
+> [    0.010921] --- interrupt: c00 at kvm_template_end+0x4/0x8
+> [    0.010926] NIP:  c000000000092dec LR: c000000000114fc8 CTR: 0000000000000000
+> [    0.010930] REGS: c000000003603e80 TRAP: 0c00   Not tainted  (5.14.0-rc3-next-20210727)
+> [    0.010934] MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 28000222  XER: 00000000
+> [    0.010943] IRQMASK: 0 
+> [    0.010943] GPR00: c00000000202e9c0 c000000003603b00 c0000000029bd000 000000000000f134 
+> [    0.010943] GPR04: 0000000000000a68 0000000000000400 c000000003603868 ffffffffffffffff 
+> [    0.010943] GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> [    0.010943] GPR12: 0000000000000000 c00000001ec9ee80 c000000000012a28 0000000000000000 
+> [    0.010943] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> [    0.010943] GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> [    0.010943] GPR24: c0000000020033c4 c00000000110afc0 c000000002081950 c000000003277d40 
+> [    0.010943] GPR28: 0000000000000000 c00000000a680000 0000000004000000 00000000000d0000 
+> [    0.010989] NIP [c000000000092dec] kvm_template_end+0x4/0x8
+> [    0.010993] LR [c000000000114fc8] set_memory_encrypted+0x38/0x60
+> [    0.010999] --- interrupt: c00
+> [    0.011001] [c000000003603b00] [c00000000000c764] system_call_common+0xf4/0x258 (unreliable)
+> [    0.011008] Instruction dump:
+> [    0.011011] 694a0003 312affff 7d495110 0b0a0000 60000000 60000000 e87f0108 68690002 
+> [    0.011019] 7929ffe2 0b090000 68634000 786397e2 <0b030000> e93f0138 792907e0 0b090000 
+> [    0.011029] ---[ end trace a20ad55589efcb10 ]---
+> [    0.012297] 
+> [    1.012304] Kernel panic - not syncing: Fatal exception
+> 
+> next-20210723 was good. The boot failure seems to have been introduced with next-20210726.
+> 
+> I have attached the boot log.
 
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> The locking is the same between the native and compat version of
-> sys_kexec_load(), so it can be done in the common implementation
-> to reduce duplication.
+I noticed this with OpenSUSE's ppc64le config [1] and my bisect landed on
+commit ad6c00283163 ("swiotlb: Free tbl memory in swiotlb_exit()"). That
+series just keeps on giving... Adding some people from that thread to
+this one. Original thread:
+https://lore.kernel.org/r/1905CD70-7656-42AE-99E2-A31FC3812EAC@linux.vnet.ibm.com/
 
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+[1]: https://github.com/openSUSE/kernel-source/raw/master/config/ppc64le/default
 
->
-> Co-developed-by: Eric Biederman <ebiederm@xmission.com>
-> Co-developed-by: Christoph Hellwig <hch@infradead.org>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  kernel/kexec.c | 44 ++++++++++++++++----------------------------
->  1 file changed, 16 insertions(+), 28 deletions(-)
->
-> diff --git a/kernel/kexec.c b/kernel/kexec.c
-> index c82c6c06f051..9c7aef8f4bb6 100644
-> --- a/kernel/kexec.c
-> +++ b/kernel/kexec.c
-> @@ -110,6 +110,17 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
->  	unsigned long i;
->  	int ret;
->  
-> +	/*
-> +	 * Because we write directly to the reserved memory region when loading
-> +	 * crash kernels we need a mutex here to prevent multiple crash kernels
-> +	 * from attempting to load simultaneously, and to prevent a crash kernel
-> +	 * from loading over the top of a in use crash kernel.
-> +	 *
-> +	 * KISS: always take the mutex.
-> +	 */
-> +	if (!mutex_trylock(&kexec_mutex))
-> +		return -EBUSY;
-> +
->  	if (flags & KEXEC_ON_CRASH) {
->  		dest_image = &kexec_crash_image;
->  		if (kexec_crash_image)
-> @@ -121,7 +132,8 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
->  	if (nr_segments == 0) {
->  		/* Uninstall image */
->  		kimage_free(xchg(dest_image, NULL));
-> -		return 0;
-> +		ret = 0;
-> +		goto out_unlock;
->  	}
->  	if (flags & KEXEC_ON_CRASH) {
->  		/*
-> @@ -134,7 +146,7 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
->  
->  	ret = kimage_alloc_init(&image, entry, nr_segments, segments, flags);
->  	if (ret)
-> -		return ret;
-> +		goto out_unlock;
->  
->  	if (flags & KEXEC_PRESERVE_CONTEXT)
->  		image->preserve_context = 1;
-> @@ -171,6 +183,8 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
->  		arch_kexec_protect_crashkres();
->  
->  	kimage_free(image);
-> +out_unlock:
-> +	mutex_unlock(&kexec_mutex);
->  	return ret;
->  }
->  
-> @@ -247,21 +261,8 @@ SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
->  		((flags & KEXEC_ARCH_MASK) != KEXEC_ARCH_DEFAULT))
->  		return -EINVAL;
->  
-> -	/* Because we write directly to the reserved memory
-> -	 * region when loading crash kernels we need a mutex here to
-> -	 * prevent multiple crash  kernels from attempting to load
-> -	 * simultaneously, and to prevent a crash kernel from loading
-> -	 * over the top of a in use crash kernel.
-> -	 *
-> -	 * KISS: always take the mutex.
-> -	 */
-> -	if (!mutex_trylock(&kexec_mutex))
-> -		return -EBUSY;
-> -
->  	result = do_kexec_load(entry, nr_segments, segments, flags);
->  
-> -	mutex_unlock(&kexec_mutex);
-> -
->  	return result;
->  }
->  
-> @@ -301,21 +302,8 @@ COMPAT_SYSCALL_DEFINE4(kexec_load, compat_ulong_t, entry,
->  			return -EFAULT;
->  	}
->  
-> -	/* Because we write directly to the reserved memory
-> -	 * region when loading crash kernels we need a mutex here to
-> -	 * prevent multiple crash  kernels from attempting to load
-> -	 * simultaneously, and to prevent a crash kernel from loading
-> -	 * over the top of a in use crash kernel.
-> -	 *
-> -	 * KISS: always take the mutex.
-> -	 */
-> -	if (!mutex_trylock(&kexec_mutex))
-> -		return -EBUSY;
-> -
->  	result = do_kexec_load(entry, nr_segments, ksegments, flags);
->  
-> -	mutex_unlock(&kexec_mutex);
-> -
->  	return result;
->  }
->  #endif
+Cheers,
+Nathan
