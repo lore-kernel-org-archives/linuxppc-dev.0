@@ -2,93 +2,113 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 237D0C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 11:51:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74CAAC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 12:05:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D96BF60EB2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 11:51:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E961A60F91
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 12:05:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E961A60F91
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GZX7W18w3z3cb6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 21:51:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GZXRx3PsZz30LC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 22:05:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=rjufznQp;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jSy+XZOa;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::432;
- helo=mail-wr1-x432.google.com; envelope-from=ckoenig.leichtzumerken@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=rjufznQp; dkim-atps=neutral
-Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com
- [IPv6:2a00:1450:4864:20::432])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=jSy+XZOa; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GZX6z6VVYz306R
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 21:51:06 +1000 (AEST)
-Received: by mail-wr1-x432.google.com with SMTP id h14so2145327wrx.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 04:51:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-transfer-encoding:content-language;
- bh=yp5cWmb4AkxFKBl8NuqRHF/Fj+1O+kz07eQ9B1cFrTM=;
- b=rjufznQpIgT9Y4X5wATRAu5BDsSd6HgqZ5d9ZbD1tV5XqwI37bp4dlZn7sEU3roUWH
- clGVPK5HZt0ibEg3n3rnQO/LLfCGXNB1z/OcJviBqX5BnDvPAT6ovSqtf2GG9z+b2bf5
- hNRMQ5K1GU2t5utAkiIOYPFplsyDtoOtGyLrHrE0gjJStx3UlTxodAu66P1SUyVqHuRo
- M6T6x8SRy36Ns7u7LeNWzv4QGHqMLlVM5YZOdZC2fd6M+9vcopSschELbxKP610fuQ0E
- cnkAxdbpF2osQv7uYuvrxQu8i8zU9T8kP5ggNwdog+ispko+yCugJr87oZyjOacGVREA
- 620A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-transfer-encoding
- :content-language;
- bh=yp5cWmb4AkxFKBl8NuqRHF/Fj+1O+kz07eQ9B1cFrTM=;
- b=trBosbYb+c7LyiE+KdiwaBCWWyXMGOJ09megZ/ATf48kSZRSlSKugdG3BhrYf4upIS
- CbsloGGBRtYhFYVRjbgT6Ycg1bc+cuk4mzQMOMjZapH/9UjeQZGxd65zYm3PzOkgHEHF
- 0R5edu9Y4fg6M/pOaXvVmW3yxLFcglRsneuqOsbicr6CU6j1bP2OpvJ5iXkyZj2/et2Y
- MA8kmggnoerUaPqkfZqNpnNT495nw8qKYgTZrYxojvPZazv+6BR8GY8ZNQJY+Z1oP9OR
- yrHZ8FbcSO5oP30HkJEaww/UgPBKjtVNvO4xRcrDxZmfEUj2j0SUtbOiazwxTSVfrjEt
- zFwQ==
-X-Gm-Message-State: AOAM532pmeLnBwBCeRxn6mkNDHC6tafgAbIyNbOHjLv3cbi8vr/23c+6
- uzLkSLiUR+4Olh6BfvEOCf4=
-X-Google-Smtp-Source: ABdhPJxnFTfpGwAmyL+B5BY1p5oMjCoBMdD/Omxoq7nc4R8MHgQpLQLkqKXCOPeVLSKKDmRSYkfgVw==
-X-Received: by 2002:adf:d1c7:: with SMTP id b7mr22336082wrd.108.1627473059546; 
- Wed, 28 Jul 2021 04:50:59 -0700 (PDT)
-Received: from ?IPv6:2a02:908:1252:fb60:6a5d:b580:2891:cbac?
- ([2a02:908:1252:fb60:6a5d:b580:2891:cbac])
- by smtp.gmail.com with ESMTPSA id q72sm7758671wme.14.2021.07.28.04.50.57
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 28 Jul 2021 04:50:59 -0700 (PDT)
-Subject: Re: [PATCH 00/11] Implement generic prot_guest_has() helper function
-To: Tom Lendacky <thomas.lendacky@amd.com>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- iommu@lists.linux-foundation.org, kvm@vger.kernel.org,
- linux-efi@vger.kernel.org, platform-driver-x86@vger.kernel.org,
- linux-graphics-maintainer@vmware.com, amd-gfx@lists.freedesktop.org,
- dri-devel@lists.freedesktop.org, kexec@lists.infradead.org,
- linux-fsdevel@vger.kernel.org
-References: <cover.1627424773.git.thomas.lendacky@amd.com>
-From: =?UTF-8?Q?Christian_K=c3=b6nig?= <ckoenig.leichtzumerken@gmail.com>
-Message-ID: <5cd35ae7-a7ff-eca4-5d2a-f0dad94e1d7a@gmail.com>
-Date: Wed, 28 Jul 2021 13:50:57 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GZXRN0VNqz307m
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 22:05:19 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 16SC2VdD101996; Wed, 28 Jul 2021 08:05:14 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : subject :
+ date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=IQu+wCH9h7nDTOSHQeUwEGhSI28OKU5cShZSQ8xx/uw=;
+ b=jSy+XZOaPcxAhtNsegAIez5qIsGtjbahHYn5lu32mUuck3t76OQQoRH7mPLp/tczyaTF
+ a0o1jDf4c5IiPcaMtv2e88Y0jQx8UKzAm4FJ3mvqk5TC9zvhum9QqEna1PZ3xcVmlus2
+ 7oqi2I9JJ7J3lX+qEK24RXE+3oX6JtFlyXdET60xfmoFugDrT4aobokYjVsBkyNLCeZR
+ D8EHQXFQFks3bT7SFNljhYuK4YIWPJHZOLeQ875kY0BI9/atzuvD1vheginSf3pUpcnO
+ ZEzrCcU0sRwrCaOofktxlokCVlG4Y3xQmt8JaVWGWQOI6X9YhTLIwPBL8j8ekZ9aK9k/ lw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a36g897k2-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 28 Jul 2021 08:05:14 -0400
+Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16SC5D2m134022;
+ Wed, 28 Jul 2021 08:05:13 -0400
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a36g897h7-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 28 Jul 2021 08:05:12 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16SC2pui009742;
+ Wed, 28 Jul 2021 12:05:11 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma03ams.nl.ibm.com with ESMTP id 3a235yh1fa-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 28 Jul 2021 12:05:11 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16SC58f731392066
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 28 Jul 2021 12:05:08 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9793111C050;
+ Wed, 28 Jul 2021 12:05:08 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BD98F11C058;
+ Wed, 28 Jul 2021 12:05:05 +0000 (GMT)
+Received: from pratiks-thinkpad.ibmuc.com (unknown [9.85.80.104])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 28 Jul 2021 12:05:05 +0000 (GMT)
+From: "Pratik R. Sampat" <psampat@linux.ibm.com>
+To: mpe@ellerman.id.au, rjw@rjwysocki.net, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org, psampat@linux.ibm.com, pratik.r.sampat@gmail.com
+Subject: [PATCH v2 1/1] cpufreq:powernv: Fix init_chip_info initialization in
+ numa=off
+Date: Wed, 28 Jul 2021 17:35:00 +0530
+Message-Id: <20210728120500.87549-2-psampat@linux.ibm.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20210728120500.87549-1-psampat@linux.ibm.com>
+References: <20210728120500.87549-1-psampat@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <cover.1627424773.git.thomas.lendacky@amd.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: yy9xZxCFGgnQXWxN30-uVWG8VmOn6ZmQ
+X-Proofpoint-ORIG-GUID: 5nhJnAlooTf6GZS1GKBZpkDtRQGvr6iq
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-07-28_07:2021-07-27,
+ 2021-07-28 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 bulkscore=0
+ impostorscore=0 suspectscore=0 phishscore=0 adultscore=0 malwarescore=0
+ lowpriorityscore=0 mlxscore=0 mlxlogscore=999 priorityscore=1501
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2107140000 definitions=main-2107280068
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,136 +120,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>,
- Brijesh Singh <brijesh.singh@amd.com>, David Airlie <airlied@linux.ie>,
- Dave Hansen <dave.hansen@linux.intel.com>, Paul Mackerras <paulus@samba.org>,
- Will Deacon <will@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
- Andi Kleen <ak@linux.intel.com>, Baoquan He <bhe@redhat.com>,
- Joerg Roedel <joro@8bytes.org>, Christian Borntraeger <borntraeger@de.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Dave Young <dyoung@redhat.com>,
- Tianyu Lan <Tianyu.Lan@microsoft.com>, Daniel Vetter <daniel@ffwll.ch>,
- Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Peter Zijlstra <peterz@infradead.org>, Thomas Zimmermann <tzimmermann@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Am 28.07.21 um 00:26 schrieb Tom Lendacky:
-> This patch series provides a generic helper function, prot_guest_has(),
-> to replace the sme_active(), sev_active(), sev_es_active() and
-> mem_encrypt_active() functions.
->
-> It is expected that as new protected virtualization technologies are
-> added to the kernel, they can all be covered by a single function call
-> instead of a collection of specific function calls all called from the
-> same locations.
->
-> The powerpc and s390 patches have been compile tested only. Can the
-> folks copied on this series verify that nothing breaks for them.
+In the numa=off kernel command-line configuration init_chip_info() loops
+around the number of chips and attempts to copy the cpumask of that node
+which is NULL for all iterations after the first chip.
 
-As GPU driver dev I'm only one end user of this, but at least from the 
-high level point of view that makes totally sense to me.
+Hence, store the cpu mask for each chip instead of derving cpumask from
+node while populating the "chips" struct array and copy that to the
+chips[i].mask
 
-Feel free to add an Acked-by: Christian König <christian.koenig@amd.com>.
+Cc: stable@vger.kernel.org
+Fixes: 053819e0bf84 ("cpufreq: powernv: Handle throttling due to Pmax capping at chip level")
+Signed-off-by: Pratik R. Sampat <psampat@linux.ibm.com>
+Reported-by: Shirisha Ganta <shirisha.ganta1@ibm.com>
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-We could run that through the AMD GPU unit tests, but I fear we actually 
-don't test on a system with SEV/SME active.
-
-Going to raise that on our team call today.
-
-Regards,
-Christian.
-
->
-> Cc: Andi Kleen <ak@linux.intel.com>
-> Cc: Andy Lutomirski <luto@kernel.org>
-> Cc: Ard Biesheuvel <ardb@kernel.org>
-> Cc: Baoquan He <bhe@redhat.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Cc: Christian Borntraeger <borntraeger@de.ibm.com>
-> Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: Dave Hansen <dave.hansen@linux.intel.com>
-> Cc: Dave Young <dyoung@redhat.com>
-> Cc: David Airlie <airlied@linux.ie>
-> Cc: Heiko Carstens <hca@linux.ibm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Joerg Roedel <joro@8bytes.org>
-> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> Cc: Maxime Ripard <mripard@kernel.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Vasily Gorbik <gor@linux.ibm.com>
-> Cc: VMware Graphics <linux-graphics-maintainer@vmware.com>
-> Cc: Will Deacon <will@kernel.org>
->
-> ---
->
-> Patches based on:
->    https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git master
->    commit 79e920060fa7 ("Merge branch 'WIP/fixes'")
->
-> Tom Lendacky (11):
->    mm: Introduce a function to check for virtualization protection
->      features
->    x86/sev: Add an x86 version of prot_guest_has()
->    powerpc/pseries/svm: Add a powerpc version of prot_guest_has()
->    x86/sme: Replace occurrences of sme_active() with prot_guest_has()
->    x86/sev: Replace occurrences of sev_active() with prot_guest_has()
->    x86/sev: Replace occurrences of sev_es_active() with prot_guest_has()
->    treewide: Replace the use of mem_encrypt_active() with
->      prot_guest_has()
->    mm: Remove the now unused mem_encrypt_active() function
->    x86/sev: Remove the now unused mem_encrypt_active() function
->    powerpc/pseries/svm: Remove the now unused mem_encrypt_active()
->      function
->    s390/mm: Remove the now unused mem_encrypt_active() function
->
->   arch/Kconfig                               |  3 ++
->   arch/powerpc/include/asm/mem_encrypt.h     |  5 --
->   arch/powerpc/include/asm/protected_guest.h | 30 +++++++++++
->   arch/powerpc/platforms/pseries/Kconfig     |  1 +
->   arch/s390/include/asm/mem_encrypt.h        |  2 -
->   arch/x86/Kconfig                           |  1 +
->   arch/x86/include/asm/kexec.h               |  2 +-
->   arch/x86/include/asm/mem_encrypt.h         | 13 +----
->   arch/x86/include/asm/protected_guest.h     | 27 ++++++++++
->   arch/x86/kernel/crash_dump_64.c            |  4 +-
->   arch/x86/kernel/head64.c                   |  4 +-
->   arch/x86/kernel/kvm.c                      |  3 +-
->   arch/x86/kernel/kvmclock.c                 |  4 +-
->   arch/x86/kernel/machine_kexec_64.c         | 19 +++----
->   arch/x86/kernel/pci-swiotlb.c              |  9 ++--
->   arch/x86/kernel/relocate_kernel_64.S       |  2 +-
->   arch/x86/kernel/sev.c                      |  6 +--
->   arch/x86/kvm/svm/svm.c                     |  3 +-
->   arch/x86/mm/ioremap.c                      | 16 +++---
->   arch/x86/mm/mem_encrypt.c                  | 60 +++++++++++++++-------
->   arch/x86/mm/mem_encrypt_identity.c         |  3 +-
->   arch/x86/mm/pat/set_memory.c               |  3 +-
->   arch/x86/platform/efi/efi_64.c             |  9 ++--
->   arch/x86/realmode/init.c                   |  8 +--
->   drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c    |  4 +-
->   drivers/gpu/drm/drm_cache.c                |  4 +-
->   drivers/gpu/drm/vmwgfx/vmwgfx_drv.c        |  4 +-
->   drivers/gpu/drm/vmwgfx/vmwgfx_msg.c        |  6 +--
->   drivers/iommu/amd/init.c                   |  7 +--
->   drivers/iommu/amd/iommu.c                  |  3 +-
->   drivers/iommu/amd/iommu_v2.c               |  3 +-
->   drivers/iommu/iommu.c                      |  3 +-
->   fs/proc/vmcore.c                           |  6 +--
->   include/linux/mem_encrypt.h                |  4 --
->   include/linux/protected_guest.h            | 37 +++++++++++++
->   kernel/dma/swiotlb.c                       |  4 +-
->   36 files changed, 218 insertions(+), 104 deletions(-)
->   create mode 100644 arch/powerpc/include/asm/protected_guest.h
->   create mode 100644 arch/x86/include/asm/protected_guest.h
->   create mode 100644 include/linux/protected_guest.h
->
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 005600cef273..5f0e7c315e49 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -36,6 +36,7 @@
+ #define MAX_PSTATE_SHIFT	32
+ #define LPSTATE_SHIFT		48
+ #define GPSTATE_SHIFT		56
++#define MAX_NR_CHIPS		32
+ 
+ #define MAX_RAMP_DOWN_TIME				5120
+ /*
+@@ -1046,12 +1047,20 @@ static int init_chip_info(void)
+ 	unsigned int *chip;
+ 	unsigned int cpu, i;
+ 	unsigned int prev_chip_id = UINT_MAX;
++	cpumask_t *chip_cpu_mask;
+ 	int ret = 0;
+ 
+ 	chip = kcalloc(num_possible_cpus(), sizeof(*chip), GFP_KERNEL);
+ 	if (!chip)
+ 		return -ENOMEM;
+ 
++	/* Allocate a chip cpu mask large enough to fit mask for all chips */
++	chip_cpu_mask = kcalloc(MAX_NR_CHIPS, sizeof(cpumask_t), GFP_KERNEL);
++	if (!chip_cpu_mask) {
++		ret = -ENOMEM;
++		goto free_and_return;
++	}
++
+ 	for_each_possible_cpu(cpu) {
+ 		unsigned int id = cpu_to_chip_id(cpu);
+ 
+@@ -1059,22 +1068,25 @@ static int init_chip_info(void)
+ 			prev_chip_id = id;
+ 			chip[nr_chips++] = id;
+ 		}
++		cpumask_set_cpu(cpu, &chip_cpu_mask[nr_chips-1]);
+ 	}
+ 
+ 	chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
+ 	if (!chips) {
+ 		ret = -ENOMEM;
+-		goto free_and_return;
++		goto out_chip_cpu_mask;
+ 	}
+ 
+ 	for (i = 0; i < nr_chips; i++) {
+ 		chips[i].id = chip[i];
+-		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
++		cpumask_copy(&chips[i].mask, &chip_cpu_mask[i]);
+ 		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
+ 		for_each_cpu(cpu, &chips[i].mask)
+ 			per_cpu(chip_info, cpu) =  &chips[i];
+ 	}
+ 
++out_chip_cpu_mask:
++	kfree(chip_cpu_mask);
+ free_and_return:
+ 	kfree(chip);
+ 	return ret;
+-- 
+2.31.1
 
