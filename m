@@ -2,65 +2,127 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2C8CC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 03:02:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18845C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 07:27:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1756D60F6B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 03:02:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1756D60F6B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 623CC60EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 07:27:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 623CC60EB9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GZJNq1lJ3z3bYP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 13:02:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GZQH85dp8z3cbf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 17:27:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gzWyRti+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZIlL3nft;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=srs0=jfoe=mu=linux.ibm.com=hbathini@ozlabs.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=gzWyRti+; 
- dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=ZIlL3nft; dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GZJNM24mpz302M
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 13:01:54 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4GZJNC510kz9sWX;
- Wed, 28 Jul 2021 13:01:47 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1627441308;
- bh=zX1C16qqqIJJgzlwuK/90tstge6Gxyn/4mQmQ1LVDK4=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=gzWyRti+29ip505uVfvV3iKdJR9oW88gLdQmfEQMurAc7Vij6o+50EO/i/s+D70ov
- 6mPGKFbNgRkkwkRIGemoT2w4anpwTT4QbbQRZ/RCMAOw7voFbjh2kDPGSOMSA6zW2o
- 2I/6G36aLnx5j1rLE/uBE3wt+QbkyBMDLJMxuefV+4CxiUJzonQUPrMBEXrBSh3JdC
- P/YSqa6IgV9tfXI/DFOsG/+GrGSvKqmFWZrde4FL6jeo53a+HO6BimsVXi1OimpjJR
- OGeQvraiW1mqbuXoTPK/Cx+7Tw13xWbLwiLog64ukvgek0DTdluDlKThLyX6zT+RQp
- HtzrrXPi/YiMg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jason Wang <wangborong@cdjrlc.com>
-Subject: Re: [PATCH] powerpc/xmon: use ARRAY_SIZE
-In-Reply-To: <20210725150107.27865-1-wangborong@cdjrlc.com>
-References: <20210725150107.27865-1-wangborong@cdjrlc.com>
-Date: Wed, 28 Jul 2021 13:01:44 +1000
-Message-ID: <87bl6n16qv.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GZQGY54rQz2yZL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 17:27:17 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by ozlabs.org (Postfix) with ESMTP id 4GZQGQ52v8z9sX1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 17:27:10 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 4GZQGQ4YXkz9sWw; Wed, 28 Jul 2021 17:27:10 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=ZIlL3nft; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4GZQGP5Nkqz9sSs;
+ Wed, 28 Jul 2021 17:27:08 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 16S7AL4T125737; Wed, 28 Jul 2021 03:27:06 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : from : to : cc
+ : date : message-id : mime-version : content-type :
+ content-transfer-encoding; s=pp1;
+ bh=Uzd+uCddAdpy+30hlVYxOFwFoleqOWg55fIefDuT8n8=;
+ b=ZIlL3nftKEKpOQQarL6Frpo1u6Rp20n/5D33KirIdzoNM7aSNOg+xdunt0j5IrqNNnAg
+ TrvD6Rnj3mEgcE8E35zBY4/WPVq3bUE66POLqzJNBi5rBe/aoyhrEE5LXIaQhUmLcZLf
+ JMb7TSPwAmnjorh9aYfYJc4ibsczFCfDiNOM7/JqaS2smUHvkWP86swi2CFNemEKmRYV
+ 8d+eojWrICpqzzUOssSDNeAD3Vm27BDPw90+wxGe+KqG/8dywnJNEYBQUH+xVCG8sNm4
+ 8KSy81dkpY2wvH9NX9PwiumKIQ3/foYt7B6op3vQdaR8WnPiBu4ZTr+UFzX+zwyr6i/0 tA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a31ym1qpg-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 28 Jul 2021 03:27:06 -0400
+Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16S7HfI2013093;
+ Wed, 28 Jul 2021 03:27:06 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a31ym1qnn-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 28 Jul 2021 03:27:06 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16S7Geic015089;
+ Wed, 28 Jul 2021 07:27:04 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma06ams.nl.ibm.com with ESMTP id 3a235kgvpx-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 28 Jul 2021 07:27:03 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 16S7OGQe30671118
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 28 Jul 2021 07:24:16 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3BFB5A4075;
+ Wed, 28 Jul 2021 07:26:58 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 33B04A4073;
+ Wed, 28 Jul 2021 07:26:55 +0000 (GMT)
+Received: from hbathini-workstation.ibm.com (unknown [9.77.202.40])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 28 Jul 2021 07:26:54 +0000 (GMT)
+Subject: [PATCH V2] powerpc/fadump: register for fadump as early as possible
+From: Hari Bathini <hbathini@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 28 Jul 2021 12:56:53 +0530
+Message-ID: <162745719918.257192.9734055270116337209.stgit@hbathini-workstation.ibm.com>
+User-Agent: StGit/0.23
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: h5Gz0NrU2K_OrhrznySqSeEoLRGVRO1L
+X-Proofpoint-ORIG-GUID: -FXQC4nTJx-xtMHefL_i6uvYXjMoMg-2
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-07-28_05:2021-07-27,
+ 2021-07-28 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 impostorscore=0
+ priorityscore=1501 mlxscore=0 bulkscore=0 adultscore=0 malwarescore=0
+ spamscore=0 phishscore=0 suspectscore=0 lowpriorityscore=0 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2107140000
+ definitions=main-2107280040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,21 +134,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- Jason Wang <wangborong@cdjrlc.com>, linux-kernel@vger.kernel.org
+Cc: Kairui Song <kasong@redhat.com>, Petr Tesarik <ptesarik@suse.cz>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Sourabh Jain <sourabhjain@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ =?utf-8?q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>,
+ Dave Young <dyoung@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Jason Wang <wangborong@cdjrlc.com> writes:
-> The ARRAY_SIZE is the macro definition of sizeof(a)/sizeof(a[0]) and
-> it is more compact and formal to get a array size.
->
-> Signed-off-by: Jason Wang <wangborong@cdjrlc.com>
-> ---
->  arch/powerpc/xmon/ppc-opc.c | 12 ++++--------
->  1 file changed, 4 insertions(+), 8 deletions(-)
+Crash recovery (fadump) is setup in the userspace by some service.
+This service rebuilds initrd with dump capture capability, if it is
+not already dump capture capable before proceeding to register for
+firmware assisted dump (echo 1 > /sys/kernel/fadump/registered). But
+arming the kernel with crash recovery support does not have to wait
+for userspace configuration. So, register for fadump while setting
+it up itself. This can at worst lead to a scenario, where /proc/vmcore
+is ready afer crash but the initrd does not know how/where to offload
+it, which is always better than not having a /proc/vmcore at all due
+to incomplete configuration in the userspace at the time of crash.
 
-This code is copied from binutils, please don't change it unnecessarily.
+Commit 0823c68b054b ("powerpc/fadump: re-register firmware-assisted
+dump if already registered") ensures this change does not break
+userspace.
 
-cheers
+Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+---
+
+Changes in V2:
+* Updated the changelog with bit more explanation about userspace issue
+  with/without this change.
+* Added a comment in the code for why setup_fadump function is changed
+  from subsys_init() to subsys_init_sync() call.
+
+
+ arch/powerpc/kernel/fadump.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index b990075285f5..2911aefdf594 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -1637,13 +1637,20 @@ int __init setup_fadump(void)
+ 		if (fw_dump.ops->fadump_process(&fw_dump) < 0)
+ 			fadump_invalidate_release_mem();
+ 	}
+-	/* Initialize the kernel dump memory structure for FAD registration. */
+-	else if (fw_dump.reserve_dump_area_size)
++	/* Initialize the kernel dump memory structure and register with f/w */
++	else if (fw_dump.reserve_dump_area_size) {
+ 		fw_dump.ops->fadump_init_mem_struct(&fw_dump);
++		register_fadump();
++	}
+ 
+ 	return 1;
+ }
+-subsys_initcall(setup_fadump);
++/*
++ * Replace subsys_initcall() with subsys_initcall_sync() as there is dependency
++ * with crash_save_vmcoreinfo_init() to ensure vmcoreinfo initialization is done
++ * before regisering with f/w.
++ */
++subsys_initcall_sync(setup_fadump);
+ #else /* !CONFIG_PRESERVE_FA_DUMP */
+ 
+ /* Scan the Firmware Assisted dump configuration details. */
+
+
