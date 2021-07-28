@@ -2,111 +2,70 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CBA3C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 12:06:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3B4FC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 12:44:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D32EE60249
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 12:06:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D32EE60249
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7E1C160F9E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 12:44:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7E1C160F9E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GZXSP3xVhz3dBM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 22:06:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GZYJ85Tdyz3cjj
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 22:44:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RuJbATXb;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=UQ/8qIYa;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=RuJbATXb; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=UQ/8qIYa; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GZXRM6bdNz307g
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 22:05:19 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 16SC2Wcx102161; Wed, 28 Jul 2021 08:05:11 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : subject :
- date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=aDjoQ6PCd+ro0kecpAZRm+2oFswZI14RrcJfPOq+DS8=;
- b=RuJbATXb873pUUrRb6xKR6yAyaMOzfNG/pnRZvs2Z2gSHL+FYsTquIQu3shSJ+baxZPD
- aSVxA2S0shsQOIMJWzBN2/uQA2m059Ji78hr6bqmxvtGhx6ZtdixPM4X2/8KkKh+wICN
- 8rW4HZfIkMUqFiwieqtP2aB0rtmxImZkdv5tvUE2lfTFP3py6VPd8owzzR+8qCPwUAWg
- oCWTr9Cq5s++wroNPBQ2BVgxJz246CukuCXqdSyzu2YDUbmMaB2kHG5qC+qQRjrqqYdP
- pS8uAc65qtF3VmWCFt1u6N/PAJuEPXt2GztL9PamnawAXxSfD5dVuPULnScJz2JJ5JyA Ag== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3a36g897ge-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 28 Jul 2021 08:05:11 -0400
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16SC2jZu103800;
- Wed, 28 Jul 2021 08:05:10 -0400
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3a36g897d9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 28 Jul 2021 08:05:10 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16SC2enw028535;
- Wed, 28 Jul 2021 12:05:07 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma05fra.de.ibm.com with ESMTP id 3a235prnpj-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 28 Jul 2021 12:05:07 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 16SC55iL27459932
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 28 Jul 2021 12:05:05 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2A88111C04C;
- Wed, 28 Jul 2021 12:05:05 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2EE4711C052;
- Wed, 28 Jul 2021 12:05:02 +0000 (GMT)
-Received: from pratiks-thinkpad.ibmuc.com (unknown [9.85.80.104])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 28 Jul 2021 12:05:01 +0000 (GMT)
-From: "Pratik R. Sampat" <psampat@linux.ibm.com>
-To: mpe@ellerman.id.au, rjw@rjwysocki.net, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, psampat@linux.ibm.com, pratik.r.sampat@gmail.com
-Subject: [PATCH v2 0/1] cpufreq:powernv: Fix init_chip_info initialization in
- numa=off
-Date: Wed, 28 Jul 2021 17:34:59 +0530
-Message-Id: <20210728120500.87549-1-psampat@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: qLF8gRZNsat2QJgIsydJHKnL5EJaRZen
-X-Proofpoint-ORIG-GUID: 79Iav9C0fPQN7vYJm35dA6APE-PsZyRf
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GZYHf4Vlwz308L
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 22:43:41 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4GZYHZ1ybVz9sSs;
+ Wed, 28 Jul 2021 22:43:38 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1627476219;
+ bh=Ua9l0fbwYf9DXxQijm/D7Oz8UlSCL9oNqn7tF7luSvs=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=UQ/8qIYaJRScflx9AwVVfU8McpeRUkUYefqiEfaOVkRXs/DxN86r+qHS+ZTAjrn1D
+ lF7JC95nT+52+/MF0/mRtVAwfDY0dzHfTq1ignDIu/4vW+BMSqjBUhlVojjtuDc/DL
+ hwdeIQKdlPyRjwuXKGhfLtMpibnFjTF3k3B3hsyqwhvm6e0ZS8Qqvy65eZhR7Si7ln
+ NkSd1NITOy6wBYJy7EHTVwFenb+JvprNMuqPQ+svLhxIwsGG4vH6kPNPOn1lK3OhYg
+ Pi1AfR1tzasUVFm7Kg3A9FcnwgCfm2cTC4Z0uMwCM4R7GZ5+fcT8h9Kza/UTTrIY6Y
+ 31aMlFhFzs40w==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Paul Menzel <pmenzel@molgen.mpg.de>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Christophe
+ Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: Possible regression by ab037dd87a2f (powerpc/vdso: Switch VDSO
+ to generic C implementation.)
+In-Reply-To: <4f037af0-5066-ebb9-53a6-733b3bd8eeac@molgen.mpg.de>
+References: <a273c619-9258-e29a-24c3-ea47a13c4817@molgen.mpg.de>
+ <3661999754da1a5e5c810fa669654cc7db95b059.camel@kernel.crashing.org>
+ <4f037af0-5066-ebb9-53a6-733b3bd8eeac@molgen.mpg.de>
+Date: Wed, 28 Jul 2021 22:43:36 +1000
+Message-ID: <878s1q1udj.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-07-28_07:2021-07-27,
- 2021-07-28 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 bulkscore=0
- impostorscore=0 suspectscore=0 phishscore=0 adultscore=0 malwarescore=0
- lowpriorityscore=0 mlxscore=0 mlxlogscore=999 priorityscore=1501
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2107140000 definitions=main-2107280068
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,22 +77,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Derek Parker <parkerderek86@gmail.com>, Dmitrii Okunev <xaionaro@gmail.com>,
+ murp@ibm.com, linuxppc-dev@lists.ozlabs.org, laboger@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-v1: https://lkml.org/lkml/2021/7/26/1509
-Changelog v1-->v2:
-Based on comments from Gautham,
-1. Included a #define for MAX_NR_CHIPS instead of hardcoding the
-allocation.
+Paul Menzel <pmenzel@molgen.mpg.de> writes:
+> Am 28.07.21 um 01:14 schrieb Benjamin Herrenschmidt:
+>> On Tue, 2021-07-27 at 10:45 +0200, Paul Menzel wrote:
+>
+>>> On ppc64le Go 1.16.2 from Ubuntu 21.04 terminates with a segmentation
+>>> fault [1], and it might be related to *[release-branch.go1.16] runtime:
+>>> fix crash during VDSO calls on PowerPC* [2], conjecturing that commit
+>>> ab037dd87a2f (powerpc/vdso: Switch VDSO to generic C implementation.)
+>>> added in Linux 5.11 causes this.
+>>>
+>>> If this is indeed the case, this would be a regression in userspace. Is
+>>> there a generic fix or should the change be reverted?
+>>=20
+>> From the look at the links you posted, this appears to be completely
+>> broken assumptions by Go that some registers don't change while calling
+>> what essentially are external library functions *while inside those
+>> functions* (ie in this case from a signal handler).
+>>=20
+>> I suppose it would be possible to build the VDSO with gcc arguments to
+>> make it not use r30, but that's just gross...
+>
+> Thank you for looking into this. No idea, if it falls under Linux=E2=80=
+=99 no=20
+> regression policy or not.
 
-Pratik R. Sampat (1):
-  cpufreq:powernv: Fix init_chip_info initialization in numa=off
+Reluctantly yes, I think it does. Though it would have been good if it
+had been reported to us sooner.
 
- drivers/cpufreq/powernv-cpufreq.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+It looks like that Go fix is only committed to master, and neither of
+the latest Go 1.16 or 1.15 releases contain the fix? ie. there's no way
+for a user to get a working version of Go other than building master?
 
--- 
-2.31.1
+I'll see if we can work around it in the kernel. Are you able to test a
+kernel patch if I send you one?
 
+cheers
