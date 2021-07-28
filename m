@@ -2,87 +2,55 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E0BFC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 08:15:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BE2AC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 08:27:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3993E60BD3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 08:15:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3993E60BD3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=pku.edu.cn
+	by mail.kernel.org (Postfix) with ESMTPS id 5BAAD60FA0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 08:27:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5BAAD60FA0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GZRL25dfQz3cll
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 18:15:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=pku.edu.cn header.i=@pku.edu.cn header.a=rsa-sha256 header.s=dkim header.b=QLdJCAL5;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GZRbQ63f6z3cZg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 18:26:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=pku.edu.cn (client-ip=165.227.154.27;
- helo=zg8tmty1ljiyny4xntqumjca.icoremail.net; envelope-from=liangjs@pku.edu.cn;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=pku.edu.cn header.i=@pku.edu.cn header.a=rsa-sha256
- header.s=dkim header.b=QLdJCAL5; dkim-atps=neutral
-X-Greylist: delayed 589 seconds by postgrey-1.36 at boromir;
- Wed, 28 Jul 2021 17:00:14 AEST
-Received: from zg8tmty1ljiyny4xntqumjca.icoremail.net
- (zg8tmty1ljiyny4xntqumjca.icoremail.net [165.227.154.27])
- by lists.ozlabs.org (Postfix) with SMTP id 4GZPgL06wtz307t
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 17:00:10 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=pku.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
- Message-Id:MIME-Version:Content-Transfer-Encoding; bh=Tsk7dHdWsL
- EbmV3FNfViCC4F9wAAdUC2y4rEc+9Pyjk=; b=QLdJCAL5t4H826FNnhHMNNB7cV
- 74QntP1txnNwaAs+owBLYRRdnzNCaEoPI/k1mzQkoM9jSp6uO3/U9q4YWpWxW+DT
- 2W0EzXZuIdkoIxyuQObIm91HTuK9dm3g7HTVPjDfmJXPzFJkHdveFpSC65jCsPol
- ouo7rLJbcmPetyzx4=
-Received: from lexp.lan (unknown [222.29.156.242])
- by front01 (Coremail) with SMTP id 5oFpogDX3YXH_QBhrklqAQ--.51338S2;
- Wed, 28 Jul 2021 14:48:41 +0800 (CST)
-From: Jiashuo Liang <liangjs@pku.edu.cn>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Sandipan Das <sandipan@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Kan Liang <kan.liang@linux.intel.com>
-Subject: [PATCH] mm/pkeys: Remove unused parameter in arch_set_user_pkey_access
-Date: Wed, 28 Jul 2021 14:47:04 +0800
-Message-Id: <20210728064704.268879-1-liangjs@pku.edu.cn>
-X-Mailer: git-send-email 2.32.0
+ smtp.mailfrom=molgen.mpg.de (client-ip=141.14.17.11; helo=mx1.molgen.mpg.de;
+ envelope-from=pmenzel@molgen.mpg.de; receiver=<UNKNOWN>)
+Received: from mx1.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GZRb32Slgz3068
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 18:26:36 +1000 (AEST)
+Received: from [141.14.220.45] (g45.guest.molgen.mpg.de [141.14.220.45])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 47EBA61E5FE00;
+ Wed, 28 Jul 2021 10:26:29 +0200 (CEST)
+Subject: Re: Possible regression by ab037dd87a2f (powerpc/vdso: Switch VDSO to
+ generic C implementation.)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+References: <a273c619-9258-e29a-24c3-ea47a13c4817@molgen.mpg.de>
+ <3661999754da1a5e5c810fa669654cc7db95b059.camel@kernel.crashing.org>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Message-ID: <4f037af0-5066-ebb9-53a6-733b3bd8eeac@molgen.mpg.de>
+Date: Wed, 28 Jul 2021 10:26:29 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.12.0
 MIME-Version: 1.0
+In-Reply-To: <3661999754da1a5e5c810fa669654cc7db95b059.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: 5oFpogDX3YXH_QBhrklqAQ--.51338S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxKryDtryUur4kWF43JrWkZwb_yoWxJw17pF
- 9Fkw1vgrW7Ga4jqFyDK397ZFy3Cry0gr1a9ryxK343ZFnFvw1rJF1rZr42kr92yrykG3WS
- kws2gFn5Zr4qgaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDU0xBIdaVrnRJUUU9a1xkIjI8I6I8E6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AE
- w4v_Jr0_Jr4l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2
- IY67AKxVWDJVCq3wA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVW8Jr0_Cr1UM28EF7xvwVC2
- z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s0DM2AIxVAIcxkEcV
- Aq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r10
- 6r15McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64
- vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxan2IY04v7MxkIecxE
- wVAFwVW8AwCF04k20xvY0x0EwIxGrwCF04k20xvE74AGY7Cv6cx26w4UJr1UMxC20s026x
- CaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_
- JrWlx4CE17CEb7AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r
- 1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_
- Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8Jr
- UvcSsGvfC2KfnxnUUI43ZEXa7VUb2Nt3UUUUU==
-X-CM-SenderInfo: isqqijqrtqmio6sn3hxhgxhubq/1tbiAwEQBVPy7sYrGgABsu
-X-Mailman-Approved-At: Wed, 28 Jul 2021 18:14:49 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,161 +62,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, Jiashuo Liang <liangjs@pku.edu.cn>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Derek Parker <parkerderek86@gmail.com>, Dmitrii Okunev <xaionaro@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The arch_set_user_pkey_access function never uses its first parameter
-(struct task_struct *tsk).  It is only able to set the pkey permissions for
-the current task as implemented, and existing kernel code only passes
-"current" to arch_set_user_pkey_access.  So remove the ambiguous parameter
-to make the code clean.
+Dear Benjamin,
 
-Signed-off-by: Jiashuo Liang <liangjs@pku.edu.cn>
----
- arch/powerpc/include/asm/pkeys.h |  8 +++-----
- arch/powerpc/mm/book3s64/pkeys.c |  3 +--
- arch/x86/include/asm/pkeys.h     | 12 ++++--------
- arch/x86/kernel/fpu/xstate.c     |  3 +--
- arch/x86/mm/pkeys.c              |  3 +--
- include/linux/pkeys.h            |  3 +--
- mm/mprotect.c                    |  2 +-
- 7 files changed, 12 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index 59a2c7dbc78f..e905b2ab31e2 100644
---- a/arch/powerpc/include/asm/pkeys.h
-+++ b/arch/powerpc/include/asm/pkeys.h
-@@ -143,10 +143,8 @@ static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
- 	return __arch_override_mprotect_pkey(vma, prot, pkey);
- }
- 
--extern int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
--				       unsigned long init_val);
--static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
--					    unsigned long init_val)
-+extern int __arch_set_user_pkey_access(int pkey, unsigned long init_val);
-+static inline int arch_set_user_pkey_access(int pkey, unsigned long init_val)
- {
- 	if (!mmu_has_feature(MMU_FTR_PKEY))
- 		return -EINVAL;
-@@ -160,7 +158,7 @@ static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- 	if (pkey == 0)
- 		return init_val ? -EINVAL : 0;
- 
--	return __arch_set_user_pkey_access(tsk, pkey, init_val);
-+	return __arch_set_user_pkey_access(pkey, init_val);
- }
- 
- static inline bool arch_pkeys_enabled(void)
-diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
-index a2d9ad138709..dc77c0a27291 100644
---- a/arch/powerpc/mm/book3s64/pkeys.c
-+++ b/arch/powerpc/mm/book3s64/pkeys.c
-@@ -333,8 +333,7 @@ static inline void init_iamr(int pkey, u8 init_bits)
-  * Set the access rights in AMR IAMR and UAMOR registers for @pkey to that
-  * specified in @init_val.
-  */
--int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
--				unsigned long init_val)
-+int __arch_set_user_pkey_access(int pkey, unsigned long init_val)
- {
- 	u64 new_amr_bits = 0x0ul;
- 	u64 new_iamr_bits = 0x0ul;
-diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
-index 5c7bcaa79623..26d872bdee49 100644
---- a/arch/x86/include/asm/pkeys.h
-+++ b/arch/x86/include/asm/pkeys.h
-@@ -11,8 +11,7 @@
-  */
- #define arch_max_pkey() (cpu_feature_enabled(X86_FEATURE_OSPKE) ? 16 : 1)
- 
--extern int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
--		unsigned long init_val);
-+extern int arch_set_user_pkey_access(int pkey, unsigned long init_val);
- 
- static inline bool arch_pkeys_enabled(void)
- {
-@@ -43,8 +42,7 @@ static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
- 	return __arch_override_mprotect_pkey(vma, prot, pkey);
- }
- 
--extern int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
--		unsigned long init_val);
-+extern int __arch_set_user_pkey_access(int pkey, unsigned long init_val);
- 
- #define ARCH_VM_PKEY_FLAGS (VM_PKEY_BIT0 | VM_PKEY_BIT1 | VM_PKEY_BIT2 | VM_PKEY_BIT3)
- 
-@@ -120,10 +118,8 @@ int mm_pkey_free(struct mm_struct *mm, int pkey)
- 	return 0;
- }
- 
--extern int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
--		unsigned long init_val);
--extern int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
--		unsigned long init_val);
-+extern int arch_set_user_pkey_access(int pkey, unsigned long init_val);
-+extern int __arch_set_user_pkey_access(int pkey, unsigned long init_val);
- 
- static inline int vma_pkey(struct vm_area_struct *vma)
- {
-diff --git a/arch/x86/kernel/fpu/xstate.c b/arch/x86/kernel/fpu/xstate.c
-index c8def1b7f8fb..565de4a49c0a 100644
---- a/arch/x86/kernel/fpu/xstate.c
-+++ b/arch/x86/kernel/fpu/xstate.c
-@@ -912,8 +912,7 @@ EXPORT_SYMBOL_GPL(get_xsave_addr);
-  * This will go out and modify PKRU register to set the access
-  * rights for @pkey to @init_val.
-  */
--int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
--			      unsigned long init_val)
-+int arch_set_user_pkey_access(int pkey, unsigned long init_val)
- {
- 	u32 old_pkru, new_pkru_bits = 0;
- 	int pkey_shift;
-diff --git a/arch/x86/mm/pkeys.c b/arch/x86/mm/pkeys.c
-index e44e938885b7..fafc10ea7cf1 100644
---- a/arch/x86/mm/pkeys.c
-+++ b/arch/x86/mm/pkeys.c
-@@ -42,8 +42,7 @@ int __execute_only_pkey(struct mm_struct *mm)
- 	 * Set up PKRU so that it denies access for everything
- 	 * other than execution.
- 	 */
--	ret = arch_set_user_pkey_access(current, execute_only_pkey,
--			PKEY_DISABLE_ACCESS);
-+	ret = arch_set_user_pkey_access(execute_only_pkey, PKEY_DISABLE_ACCESS);
- 	/*
- 	 * If the PKRU-set operation failed somehow, just return
- 	 * 0 and effectively disable execute-only support.
-diff --git a/include/linux/pkeys.h b/include/linux/pkeys.h
-index 6beb26b7151d..c8a5d96ab461 100644
---- a/include/linux/pkeys.h
-+++ b/include/linux/pkeys.h
-@@ -33,8 +33,7 @@ static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
- 	return -EINVAL;
- }
- 
--static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
--			unsigned long init_val)
-+static inline int arch_set_user_pkey_access(int pkey, unsigned long init_val)
- {
- 	return 0;
- }
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 883e2cc85cad..fe2c4755d833 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -689,7 +689,7 @@ SYSCALL_DEFINE2(pkey_alloc, unsigned long, flags, unsigned long, init_val)
- 	if (pkey == -1)
- 		goto out;
- 
--	ret = arch_set_user_pkey_access(current, pkey, init_val);
-+	ret = arch_set_user_pkey_access(pkey, init_val);
- 	if (ret) {
- 		mm_pkey_free(current->mm, pkey);
- 		goto out;
--- 
-2.32.0
+Am 28.07.21 um 01:14 schrieb Benjamin Herrenschmidt:
+> On Tue, 2021-07-27 at 10:45 +0200, Paul Menzel wrote:
 
+>> On ppc64le Go 1.16.2 from Ubuntu 21.04 terminates with a segmentation
+>> fault [1], and it might be related to *[release-branch.go1.16] runtime:
+>> fix crash during VDSO calls on PowerPC* [2], conjecturing that commit
+>> ab037dd87a2f (powerpc/vdso: Switch VDSO to generic C implementation.)
+>> added in Linux 5.11 causes this.
+>>
+>> If this is indeed the case, this would be a regression in userspace. Is
+>> there a generic fix or should the change be reverted?
+> 
+> From the look at the links you posted, this appears to be completely
+> broken assumptions by Go that some registers don't change while calling
+> what essentially are external library functions *while inside those
+> functions* (ie in this case from a signal handler).
+> 
+> I suppose it would be possible to build the VDSO with gcc arguments to
+> make it not use r30, but that's just gross...
+
+Thank you for looking into this. No idea, if it falls under Linux’ no 
+regression policy or not.
+
+
+Kind regards,
+
+Paul
