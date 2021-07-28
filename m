@@ -2,67 +2,51 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA194C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 13:25:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FBA0C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 14:47:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 242CC60FE7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 13:25:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 242CC60FE7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9495160F91
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 14:47:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9495160F91
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GZZDB3Gzlz3bZZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jul 2021 23:25:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=CxvZX41K;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
- helo=casper.infradead.org;
- envelope-from=batv+0bc2c65ec7bce8a447c4+6548+infradead.org+hch@casper.srs.infradead.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=CxvZX41K; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GZc2C2d7kz30G4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 00:47:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=hfec=mu=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GZZCl05JRz3046
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2021 23:25:22 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=wyV5oHahoyFyDlkMKSruinnsahdkugSgLawjHfbEEjQ=; b=CxvZX41K0o1QkS+QNIrwd0eOBe
- mqQ6PrksWIat6lXJKZPun+q1pAOQx0xLcn0dXI0f5/QwQmDJVibY4qE3c7TAdHgsIiPO3KhQic7GW
- 1eyfOJ6+e5m0vdD3PZ+UIsWjdf71Rv+qjxbud/TVWu09HUCIEgoxhatZ/TSoyrl9g8w0xVsK0qnJb
- Ssgb2vj86C8FXbvbGsNNF9o/MH3FUfh7M9nUfPwhEPmwHvq/+B3ENaQ00GINALSLZBrB8jUNO3eAN
- ZD343FSM3tMyDXd6949QP8wSOuEJ0mt327HB6lpEtnWhWjFhF6Z9hGOLbHanuC9ie9QiNGCSpAJVM
- Xwq8/NVQ==;
-Received: from hch by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat
- Linux)) id 1m8jWV-00G5AN-CH; Wed, 28 Jul 2021 13:23:16 +0000
-Date: Wed, 28 Jul 2021 14:22:59 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Tom Lendacky <thomas.lendacky@amd.com>
-Subject: Re: [PATCH 02/11] x86/sev: Add an x86 version of prot_guest_has()
-Message-ID: <YQFaM7nOhD2d6SUQ@infradead.org>
-References: <cover.1627424773.git.thomas.lendacky@amd.com>
- <b3e929a77303dd47fd2adc2a1011009d3bfcee20.1627424774.git.thomas.lendacky@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GZc1n6M3Jz307m
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jul 2021 00:46:53 +1000 (AEST)
+Received: from oasis.local.home (cpe-66-24-58-225.stny.res.rr.com
+ [66.24.58.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 4215C60527;
+ Wed, 28 Jul 2021 14:46:49 +0000 (UTC)
+Date: Wed, 28 Jul 2021 10:46:42 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Kefeng Wang <wangkefeng.wang@huawei.com>
+Subject: Re: [PATCH v2 2/7] kallsyms: Fix address-checks for kernel related
+ range
+Message-ID: <20210728104642.7ae75442@oasis.local.home>
+In-Reply-To: <20210728081320.20394-3-wangkefeng.wang@huawei.com>
+References: <20210728081320.20394-1-wangkefeng.wang@huawei.com>
+ <20210728081320.20394-3-wangkefeng.wang@huawei.com>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b3e929a77303dd47fd2adc2a1011009d3bfcee20.1627424774.git.thomas.lendacky@amd.com>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- casper.infradead.org. See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,33 +58,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-efi@vger.kernel.org, Brijesh Singh <brijesh.singh@amd.com>,
- kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org,
- platform-driver-x86@vger.kernel.org, linux-s390@vger.kernel.org,
- Andi Kleen <ak@linux.intel.com>, x86@kernel.org, amd-gfx@lists.freedesktop.org,
- Ingo Molnar <mingo@redhat.com>, linux-graphics-maintainer@vmware.com,
- Tianyu Lan <Tianyu.Lan@microsoft.com>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, linux-fsdevel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, Petr Mladek <pmladek@suse.com>,
+ ryabinin.a.a@gmail.com, arnd@arndb.de,
+ Sergey Senozhatsky <senozhatsky@chromium.org>, linux-kernel@vger.kernel.org,
+ ast@kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ mingo@redhat.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 27, 2021 at 05:26:05PM -0500, Tom Lendacky via iommu wrote:
-> Introduce an x86 version of the prot_guest_has() function. This will be
-> used in the more generic x86 code to replace vendor specific calls like
-> sev_active(), etc.
-> 
-> While the name suggests this is intended mainly for guests, it will
-> also be used for host memory encryption checks in place of sme_active().
-> 
-> The amd_prot_guest_has() function does not use EXPORT_SYMBOL_GPL for the
-> same reasons previously stated when changing sme_active(), sev_active and
+On Wed, 28 Jul 2021 16:13:15 +0800
+Kefeng Wang <wangkefeng.wang@huawei.com> wrote:
 
-None of that applies here as none of the callers get pulled into
-random macros.  The only case of that is sme_me_mask through
-sme_mask, but that's not something this series replaces as far as I can
-tell.
+> The is_kernel_inittext/is_kernel_text/is_kernel function should not
+> include the end address(the labels _einittext, _etext and _end) when
+> check the address range, the issue exists since Linux v2.6.12.
+> 
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> Cc: Petr Mladek <pmladek@suse.com>
+> Acked-by: Sergey Senozhatsky <senozhatsky@chromium.org>
+> Reviewed-by: Petr Mladek <pmladek@suse.com>
+> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+
+Reviewed-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+
+-- Steve
+
+> ---
+>  include/linux/kallsyms.h | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+> index 2a241e3f063f..b016c62f30a6 100644
+> --- a/include/linux/kallsyms.h
+> +++ b/include/linux/kallsyms.h
+> @@ -27,21 +27,21 @@ struct module;
+>  static inline int is_kernel_inittext(unsigned long addr)
+>  {
+>  	if (addr >= (unsigned long)_sinittext
+> -	    && addr <= (unsigned long)_einittext)
+> +	    && addr < (unsigned long)_einittext)
+>  		return 1;
+>  	return 0;
+>  }
+>  
+>  static inline int is_kernel_text(unsigned long addr)
+>  {
+> -	if ((addr >= (unsigned long)_stext && addr <= (unsigned long)_etext))
+> +	if ((addr >= (unsigned long)_stext && addr < (unsigned long)_etext))
+>  		return 1;
+>  	return in_gate_area_no_mm(addr);
+>  }
+>  
+>  static inline int is_kernel(unsigned long addr)
+>  {
+> -	if (addr >= (unsigned long)_stext && addr <= (unsigned long)_end)
+> +	if (addr >= (unsigned long)_stext && addr < (unsigned long)_end)
+>  		return 1;
+>  	return in_gate_area_no_mm(addr);
+>  }
+
