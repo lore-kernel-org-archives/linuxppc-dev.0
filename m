@@ -4,69 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 277A3C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 14:27:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AB6AC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 14:28:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6AE6560F4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 14:27:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6AE6560F4A
+	by mail.kernel.org (Postfix) with ESMTPS id 7AEB160F4B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 14:28:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7AEB160F4B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GbCY750lnz3d7H
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 00:27:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GbCYZ080Rz3cJR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 00:28:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=g90J6KzE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=PfW4Cb3V;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kernel.org (client-ip=202.248.20.75;
- helo=condef-10.nifty.com; envelope-from=masahiroy@kernel.org;
+ host) smtp.mailfrom=kernel.org (client-ip=202.248.20.70;
+ helo=condef-05.nifty.com; envelope-from=masahiroy@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=g90J6KzE; 
+ header.s=dec2015msa header.b=PfW4Cb3V; 
  dkim-atps=neutral
-X-Greylist: delayed 187 seconds by postgrey-1.36 at boromir;
- Fri, 30 Jul 2021 00:27:12 AEST
-Received: from condef-10.nifty.com (condef-10.nifty.com [202.248.20.75])
- by lists.ozlabs.org (Postfix) with ESMTP id 4GbCXc2Rw7z2yxT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 00:27:12 +1000 (AEST)
-Received: from conuserg-12.nifty.com ([10.126.8.75])by condef-10.nifty.com
- with ESMTP id 16TEKV0k013435
+Received: from condef-05.nifty.com (condef-05.nifty.com [202.248.20.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4GbCY15b5Rz3cWP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 00:27:33 +1000 (AEST)
+Received: from conuserg-12.nifty.com ([10.126.8.75])by condef-05.nifty.com
+ with ESMTP id 16TEKVRO009495
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jul 2021 23:21:00 +0900
 Received: from localhost.localdomain (133-32-232-101.west.xps.vectant.ne.jp
  [133.32.232.101]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id 16TEJpXK024963;
- Thu, 29 Jul 2021 23:19:52 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 16TEJpXK024963
+ by conuserg-12.nifty.com with ESMTP id 16TEJpXJ024963;
+ Thu, 29 Jul 2021 23:19:51 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 16TEJpXJ024963
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1627568393;
- bh=xnWWtxC19ADseH30zsXXnYhg04+pJDyHBtIF5COZE6E=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=g90J6KzE9ROshrt2kxpkOh/6j3qbX/p8SGW2TSESGoK/7OGAd5KOlIDj2cO4IPwD+
- cS03Mjm79Q7MJX7vso7iNFPAIaWygc4UhP6Fgo9TqYIBIF2g5EFJgG3x+xGjr7cPwN
- 5Jes/l0CFzAx866+FFu8G4zQ60Vy6nF6EaILkAH37wT01u4t3qhIS1Qo+0nTd8H2xl
- ig/tH3ZgebF1mMZHw0ITaqAxsHGAig0WEAa9ZScRPiev1VAZJbvHtHTTIHKC4iukXA
- 4PMX0sKoy7g62ZQTJNMn3NO1n7zJdhyqJ1XUEid+8X1lpresxifV912tpW//AqUMhH
- X0HvPYAQOZRMA==
+ s=dec2015msa; t=1627568392;
+ bh=k0k1BpTJNthZ0PJ04lpkmlmV8tJCB6nj/7sP9kIAxfY=;
+ h=From:To:Cc:Subject:Date:From;
+ b=PfW4Cb3Vg5fCqLQicGRT5nE8436T44DKu88jWgt8iaBkCBdm1qf0QUuKCoGarp7Da
+ +2vpT9WAgGsmgcwGv2BFpwIkyj8AMoHvlQZ7XakKmcPcxUKVY+d6F0hgJUiL0QV39+
+ RbMzNx2f9CopVb+VYgDzE2uiPjkLZ4RPtbnPu5MVbIr/WnBWzd/X/UdKqDOCb03H+W
+ ry9xjVTO8OXMkETYEfcyS/act1xtWs4S+sf3Lwwvb4Bh54mLcO70VMRL94HragobdQ
+ sTMGwcdOxtnj5v19ee8WLokUfvyeS1gPiD6uU93+O9O2sc7V66FDj6tv2VTE9+z58n
+ S35OGPYnmj5AA==
 X-Nifty-SrcIP: [133.32.232.101]
 From: Masahiro Yamada <masahiroy@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/3] powerpc: make the install target not depend on any build
- artifact
-Date: Thu, 29 Jul 2021 23:19:36 +0900
-Message-Id: <20210729141937.445051-2-masahiroy@kernel.org>
+Subject: [PATCH 1/3] powerpc: remove unused zInstall target from
+ arch/powerpc/boot/Makefile
+Date: Thu, 29 Jul 2021 23:19:35 +0900
+Message-Id: <20210729141937.445051-1-masahiroy@kernel.org>
 X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20210729141937.445051-1-masahiroy@kernel.org>
-References: <20210729141937.445051-1-masahiroy@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -83,64 +79,75 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: Jordan Niethe <jniethe5@gmail.com>, Masahiro Yamada <masahiroy@kernel.org>,
  Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
  Nicholas Piggin <npiggin@gmail.com>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Bill Wendling <morbo@google.com>, Joel Stanley <joel@jms.id.au>
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>, Joel Stanley <joel@jms.id.au>,
+ Bill Wendling <morbo@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The install target should not depend on any build artifact.
+Commit c913e5f95e54 ("powerpc/boot: Don't install zImage.* from make
+install") added the zInstall target to arch/powerpc/boot/Makefile,
+but you cannot use it since the corresponding hook is missing in
+arch/powerpc/Makefile.
 
-The reason is explained in commit 19514fc665ff ("arm, kbuild: make
-"make install" not depend on vmlinux").
+It has never worked since its addition. Nobody has complained about
+it for 7 years, which means this code was unneeded.
 
-Change the PowerPC installation code in a similar way.
+With this removal, the install.sh will be passed in with 4 parameters.
+Simplify the shell script.
 
 Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 ---
 
- arch/powerpc/boot/Makefile   |  2 +-
- arch/powerpc/boot/install.sh | 14 ++++++++++++++
- 2 files changed, 15 insertions(+), 1 deletion(-)
+ arch/powerpc/boot/Makefile   |  6 +-----
+ arch/powerpc/boot/install.sh | 13 -------------
+ 2 files changed, 1 insertion(+), 18 deletions(-)
 
 diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index a702f9d1ec0d..0d165bd98b61 100644
+index e312ea802aa6..a702f9d1ec0d 100644
 --- a/arch/powerpc/boot/Makefile
 +++ b/arch/powerpc/boot/Makefile
-@@ -445,7 +445,7 @@ $(obj)/zImage.initrd:	$(addprefix $(obj)/, $(initrd-y))
- 	$(Q)rm -f $@; ln $< $@
- 
- # Only install the vmlinux
--install: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
-+install:
+@@ -448,11 +448,7 @@ $(obj)/zImage.initrd:	$(addprefix $(obj)/, $(initrd-y))
+ install: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
  	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)"
  
- PHONY += install
+-# Install the vmlinux and other built boot targets.
+-zInstall: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
+-	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)" $^
+-
+-PHONY += install zInstall
++PHONY += install
+ 
+ # anything not in $(targets)
+ clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
 diff --git a/arch/powerpc/boot/install.sh b/arch/powerpc/boot/install.sh
-index 658c93ca7437..14473150ddb4 100644
+index b6a256bc96ee..658c93ca7437 100644
 --- a/arch/powerpc/boot/install.sh
 +++ b/arch/powerpc/boot/install.sh
-@@ -20,6 +20,20 @@
+@@ -15,7 +15,6 @@
+ #   $2 - kernel image file
+ #   $3 - kernel map file
+ #   $4 - default install path (blank if root directory)
+-#   $5 and more - kernel boot files; zImage*, uImage, cuImage.*, etc.
+ #
+ 
  # Bail with error code if anything goes wrong
- set -e
+@@ -41,15 +40,3 @@ fi
  
-+verify () {
-+	if [ ! -f "$1" ]; then
-+		echo ""                                                   1>&2
-+		echo " *** Missing file: $1"                              1>&2
-+		echo ' *** You need to run "make" before "make install".' 1>&2
-+		echo ""                                                   1>&2
-+		exit 1
-+	fi
-+}
-+
-+# Make sure the files actually exist
-+verify "$2"
-+verify "$3"
-+
- # User may have a custom install script
- 
- if [ -x ~/bin/${INSTALLKERNEL} ]; then exec ~/bin/${INSTALLKERNEL} "$@"; fi
+ cat $2 > $4/$image_name
+ cp $3 $4/System.map
+-
+-# Copy all the bootable image files
+-path=$4
+-shift 4
+-while [ $# -ne 0 ]; do
+-	image_name=`basename $1`
+-	if [ -f $path/$image_name ]; then
+-		mv $path/$image_name $path/$image_name.old
+-	fi
+-	cat $1 > $path/$image_name
+-	shift
+-done;
 -- 
 2.27.0
 
