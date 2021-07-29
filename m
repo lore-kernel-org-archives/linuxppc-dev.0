@@ -2,68 +2,83 @@ Return-Path: <SRS0=k2O5=MV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.4 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13E83C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 19:05:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AE62C2BB55
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 20:16:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8EE4860EC0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 19:05:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8EE4860EC0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 28A1B60F23
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 20:16:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 28A1B60F23
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GbKjv6V1qz3cVk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 05:05:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GbMHY33ZQz3d6c
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 06:16:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Dn/OvyNA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=sANr7BcT;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=deltatee.com (client-ip=204.191.154.188; helo=ale.deltatee.com;
+ envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=Dn/OvyNA; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GbKjQ5vhBz2ysv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 05:05:14 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 4FF2660EC0;
- Thu, 29 Jul 2021 19:05:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1627585512;
- bh=PyoadivhHXDqsmQj3YmT7k4+9dotZZVfqKpaviYYOck=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=Dn/OvyNArRhQbbCEd2H4nvwmS581p+a+2JtYmrCXNKEx2O8tYW2gBhr+3CRePInee
- x+CRdLm0qkg6bdKHFXf3JYllMdfwWrUWxC+Vj7dD8BvM5LAt/6xcF460ije8zqiub+
- c+U5JSDEhvey+UK05ve9XitHscev51by0be8C2tAWzOoq7aYiHZEJf+P+WU7jrj1NJ
- 4SMu71SXy4aoqdmHz8FbCBa1xNczweOCky6E+L7pt+Oa/i7Sw8hO0d/45r4HkUGygd
- dRnP868EZJA4rZSJMR8C/b86pWHmWRekTSJGLBtPqQQR1DBJgiOIFyFg2ITox0Q7C9
- V0rVcujxWxKtw==
-Subject: Re: [powerpc][next-20210727] Boot failure - kernel BUG at
- arch/powerpc/kernel/interrupt.c:98!
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Will Deacon <will@kernel.org>
-References: <1905CD70-7656-42AE-99E2-A31FC3812EAC@linux.vnet.ibm.com>
- <YQGVZnMe9hFieF8D@Ryzen-9-3900X.localdomain>
- <20210729161335.GA22016@willie-the-truck> <YQLY0RHa/3YgJdmS@fedora>
-From: Nathan Chancellor <nathan@kernel.org>
-Message-ID: <ec7c2fa6-3ad0-d3f6-67a2-b089310eabdf@kernel.org>
-Date: Thu, 29 Jul 2021 12:05:10 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.12.0
+ unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256
+ header.s=20200525 header.b=sANr7BcT; dkim-atps=neutral
+Received: from ale.deltatee.com (ale.deltatee.com [204.191.154.188])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GbMGy6Vsnz30F0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 06:15:52 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=deltatee.com; s=20200525; h=Subject:MIME-Version:References:In-Reply-To:
+ Message-Id:Date:Cc:To:From:content-disposition;
+ bh=x3KSnhFQmhq0kDAcj69QIXa3ZhZHzFN2nEhizdLNjiI=; b=sANr7BcTE+BYenm6+gpWCnWZgt
+ a1vbMDbMOWdqeSnuy6+gCxsg3ykH4e1tLmv3LHu7BCfCZ5kPtdlKqdN3HC1+rCC/ooIH2ImcJXDlN
+ 8jKSQ1+r/37FUAT5WVcD/FO6jV8chXBoPy/We7DjNh3Dzic0CwdMDdHXpDFXnRf1+vbyQg8ubpjAK
+ 37wuuawNneI5QWW6HQDMGTSF5DYEgZKQuMBRdaaJwPxbPiGRXYpiqEQjOFAaAmvaMZsXdtPzSOaZ1
+ ANO+o3NlbiOZsQSea15Ytm6BS2LVHdEvR81DRul4WITMxI1iS66PVfZhi0EzJbq5dw5zcX1Q8AZ1l
+ /ucxZeDQ==;
+Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
+ by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
+ id 1m9CRZ-0008VL-R5; Thu, 29 Jul 2021 14:15:50 -0600
+Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
+ (envelope-from <gunthorp@deltatee.com>)
+ id 1m9CRW-0001UN-Gn; Thu, 29 Jul 2021 14:15:46 -0600
+From: Logan Gunthorpe <logang@deltatee.com>
+To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ iommu@lists.linux-foundation.org, linux-parisc@vger.kernel.org,
+ xen-devel@lists.xenproject.org
+Date: Thu, 29 Jul 2021 14:15:38 -0600
+Message-Id: <20210729201539.5602-21-logang@deltatee.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20210729201539.5602-1-logang@deltatee.com>
+References: <20210729201539.5602-1-logang@deltatee.com>
 MIME-Version: 1.0
-In-Reply-To: <YQLY0RHa/3YgJdmS@fedora>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 172.16.1.31
+X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-parisc@vger.kernel.org, xen-devel@lists.xenproject.org, hch@lst.de,
+ m.szyprowski@samsung.com, robin.murphy@arm.com, sbates@raithlin.com,
+ martin.oliveira@eideticom.com, logang@deltatee.com
+X-SA-Exim-Mail-From: gunthorp@deltatee.com
+Subject: [PATCH v3 20/21] dma-mapping: return error code from
+ dma_dummy_map_sg()
+X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
+X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,75 +90,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
- Robin Murphy <robin.murphy@arm.com>, iommu@lists.linux-foundation.org,
- linux-next@vger.kernel.org, Claire Chang <tientzu@chromium.org>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: Robin Murphy <robin.murphy@arm.com>,
+ Martin Oliveira <martin.oliveira@eideticom.com>,
+ Stephen Bates <sbates@raithlin.com>, Logan Gunthorpe <logang@deltatee.com>,
+ Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/29/2021 9:35 AM, Konrad Rzeszutek Wilk wrote:
-> On Thu, Jul 29, 2021 at 05:13:36PM +0100, Will Deacon wrote:
->> On Wed, Jul 28, 2021 at 10:35:34AM -0700, Nathan Chancellor wrote:
->>> On Wed, Jul 28, 2021 at 01:31:06PM +0530, Sachin Sant wrote:
->>>> next-20210723 was good. The boot failure seems to have been introduced with next-20210726.
->>>>
->>>> I have attached the boot log.
->>>
->>> I noticed this with OpenSUSE's ppc64le config [1] and my bisect landed on
->>> commit ad6c00283163 ("swiotlb: Free tbl memory in swiotlb_exit()"). That
->>> series just keeps on giving...
-> 
-> Low-level across platform do that. And thank you for testing it and
-> finding this bug. Please let me know if the patch works so I can add it
-> in in the patch series.
+From: Martin Oliveira <martin.oliveira@eideticom.com>
 
-That was not meant to sound as sarcastic as it did so my apologies for 
-that :(
+The .map_sg() op now expects an error code instead of zero on failure.
 
-Will's patch looks good to me in QEMU, I do not have a bare metal POWER 
-system to test it on.
+The only errno to return is -EINVAL in the case when DMA is not
+supported.
 
-Tested-by: Nathan Chancellor <nathan@kernel.org>
+Signed-off-by: Martin Oliveira <martin.oliveira@eideticom.com>
+Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
+---
+ kernel/dma/dummy.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->>
->> Yes, but look how handy our new print is!
-> 
-> :)
->>
->> [    0.010799] software IO TLB: tearing down default memory pool
->> [    0.010805] ------------[ cut here ]------------
->> [    0.010808] kernel BUG at arch/powerpc/kernel/interrupt.c:98!
->>
->> Following Nick's suggestion, the diff below should help? I don't have a
->> relevant box on which I can test it though.
->>
->> Will
->>
->> --->8
->>
->> diff --git a/arch/powerpc/platforms/pseries/svm.c b/arch/powerpc/platforms/pseries/svm.c
->> index 1d829e257996..87f001b4c4e4 100644
->> --- a/arch/powerpc/platforms/pseries/svm.c
->> +++ b/arch/powerpc/platforms/pseries/svm.c
->> @@ -63,6 +63,9 @@ void __init svm_swiotlb_init(void)
->>   
->>   int set_memory_encrypted(unsigned long addr, int numpages)
->>   {
->> +       if (!mem_encrypt_active())
->> +               return 0;
->> +
->>          if (!PAGE_ALIGNED(addr))
->>                  return -EINVAL;
->>   
->> @@ -73,6 +76,9 @@ int set_memory_encrypted(unsigned long addr, int numpages)
->>   
->>   int set_memory_decrypted(unsigned long addr, int numpages)
->>   {
->> +       if (!mem_encrypt_active())
->> +               return 0;
->> +
->>          if (!PAGE_ALIGNED(addr))
->>                  return -EINVAL;
->>   
+diff --git a/kernel/dma/dummy.c b/kernel/dma/dummy.c
+index eacd4c5b10bf..b492d59ac77e 100644
+--- a/kernel/dma/dummy.c
++++ b/kernel/dma/dummy.c
+@@ -22,7 +22,7 @@ static int dma_dummy_map_sg(struct device *dev, struct scatterlist *sgl,
+ 		int nelems, enum dma_data_direction dir,
+ 		unsigned long attrs)
+ {
+-	return 0;
++	return -EINVAL;
+ }
+ 
+ static int dma_dummy_supported(struct device *hwdev, u64 mask)
+-- 
+2.20.1
+
