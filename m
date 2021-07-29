@@ -7,50 +7,50 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0868C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 20:18:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30ECBC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 20:18:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 43B7860F23
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 20:18:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 43B7860F23
+	by mail.kernel.org (Postfix) with ESMTPS id C4CB860F23
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 20:18:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C4CB860F23
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GbMKM6qQYz3dXj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 06:17:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GbMKq3HN0z3dD7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 06:18:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=FSTBqqnH;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=UKIatoBm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=deltatee.com (client-ip=204.191.154.188; helo=ale.deltatee.com;
  envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256
- header.s=20200525 header.b=FSTBqqnH; dkim-atps=neutral
+ header.s=20200525 header.b=UKIatoBm; dkim-atps=neutral
 Received: from ale.deltatee.com (ale.deltatee.com [204.191.154.188])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GbMGy6g6sz3cGg
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GbMGz05tLz3cHT
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 06:15:51 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=deltatee.com; s=20200525; h=Subject:MIME-Version:References:In-Reply-To:
  Message-Id:Date:Cc:To:From:content-disposition;
- bh=/XA9bvLAJiET8xClVyx9hB75GctlP2ewYMlZJlt3uAE=; b=FSTBqqnHJ7VntRb/GUL2Z5yKTq
- JfAogRaPb+WVjHlf1NRCExtt0URwGzF1+pWVjp3v9jELMe1sVylEhpCokcScL/Pik/gQ8D9aVMzvZ
- uoC9GV1+hK1crdrqvUeKMesCcmmz0glkvNT9qYfOPK6DdOiPOO102aJ534nrKtjvNc2ibTJtuP/TR
- t6WErOWjGuYieypzGV2PhsY++SnraaQQ4FNRqKtOnq2TNO2E3YBXoBVkHkqc7fK1HwylkFoWZZTI2
- wNrwlxU476Xj9XD9pqFKs+ZOh16XIR+O62g1eQS8XUIK9YHNwj+UhqtQn/TXl9FaMhBTj2klVY6f4
- WFu1sJPg==;
+ bh=BqE/2wCCjH4FvfGKjQ09Cv01+9Px9vk9cMsrkFQoCn0=; b=UKIatoBmrCpSphyHjiY30+Y1OG
+ CY9raw8PJFoIaw2b6o5szEv3xbVs91s3wNGAYZu8i4P6a660NOAY/g6x8HspQTJyFrjhq0lPulGcF
+ v07xfdnRxyYUor5/nHo8jyHPSdyBF+7HKkOQgh/ObDv6lrzlYMt+Cl5pMBs1tdIjqeBtInWDeMcpS
+ UKmA3BGqOsrwUqFs0m5PnSIDkvdxIcJSuq9ljO6Bp/jBY/y/yUpAZ2IgJluFfQdhe12F5LWJdUNr3
+ z4nBLGUTT9E7d+rhQBcQmWwdw6NZNHqHJSKtvZtcLRxrCzCo9CF/mQQmviIJVR6T6a10Vsb35ajum
+ EtSXlZWg==;
 Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
  by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
- id 1m9CRX-0008VO-5W; Thu, 29 Jul 2021 14:15:48 -0600
+ id 1m9CRW-0008VM-N8; Thu, 29 Jul 2021 14:15:47 -0600
 Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
  (envelope-from <gunthorp@deltatee.com>)
- id 1m9CRU-0001Tb-0B; Thu, 29 Jul 2021 14:15:44 -0600
+ id 1m9CRT-0001TV-PR; Thu, 29 Jul 2021 14:15:43 -0600
 From: Logan Gunthorpe <logang@deltatee.com>
 To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
@@ -58,8 +58,8 @@ To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  iommu@lists.linux-foundation.org, linux-parisc@vger.kernel.org,
  xen-devel@lists.xenproject.org
-Date: Thu, 29 Jul 2021 14:15:22 -0600
-Message-Id: <20210729201539.5602-5-logang@deltatee.com>
+Date: Thu, 29 Jul 2021 14:15:20 -0600
+Message-Id: <20210729201539.5602-3-logang@deltatee.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20210729201539.5602-1-logang@deltatee.com>
 References: <20210729201539.5602-1-logang@deltatee.com>
@@ -73,10 +73,10 @@ X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-parisc@vger.kernel.org, xen-devel@lists.xenproject.org, hch@lst.de,
  m.szyprowski@samsung.com, robin.murphy@arm.com, sbates@raithlin.com,
- martin.oliveira@eideticom.com, logang@deltatee.com, joro@8bytes.org,
- will@kernel.org
+ martin.oliveira@eideticom.com, logang@deltatee.com
 X-SA-Exim-Mail-From: gunthorp@deltatee.com
-Subject: [PATCH v3 04/21] dma-iommu: Return error code from iommu_dma_map_sg()
+Subject: [PATCH v3 02/21] dma-direct: Return appropriate error code from
+ dma_direct_map_sg()
 X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
 X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -90,8 +90,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
- Joerg Roedel <joro@8bytes.org>,
+Cc: Robin Murphy <robin.murphy@arm.com>,
  Martin Oliveira <martin.oliveira@eideticom.com>,
  Stephen Bates <sbates@raithlin.com>, Logan Gunthorpe <logang@deltatee.com>,
  Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>
@@ -99,83 +98,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Return appropriate error codes EINVAL or ENOMEM from
-iommup_dma_map_sg(). If lower level code returns ENOMEM, then we
-return it, other errors are coalesced into EINVAL.
-
-iommu_dma_map_sg_swiotlb() returns -EIO as its an unknown error
-from a call that returns DMA_MAPPING_ERROR.
+Now that the map_sg() op expects error codes instead of return zero on
+error, convert dma_direct_map_sg() to return an error code. Per the
+documentation for dma_map_sgtable(), -EIO is returned due to an
+DMA_MAPPING_ERROR with unknown cause.
 
 Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
-Cc: Joerg Roedel <joro@8bytes.org>
-Cc: Will Deacon <will@kernel.org>
 ---
- drivers/iommu/dma-iommu.c | 23 ++++++++++++++++-------
- 1 file changed, 16 insertions(+), 7 deletions(-)
+ kernel/dma/direct.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/iommu/dma-iommu.c b/drivers/iommu/dma-iommu.c
-index 98ba927aee1a..d9aaed080e68 100644
---- a/drivers/iommu/dma-iommu.c
-+++ b/drivers/iommu/dma-iommu.c
-@@ -972,7 +972,7 @@ static int iommu_dma_map_sg_swiotlb(struct device *dev, struct scatterlist *sg,
+diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+index f737e3347059..f33ceb68aef2 100644
+--- a/kernel/dma/direct.c
++++ b/kernel/dma/direct.c
+@@ -411,7 +411,7 @@ int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
  
  out_unmap:
- 	iommu_dma_unmap_sg_swiotlb(dev, sg, i, dir, attrs | DMA_ATTR_SKIP_CPU_SYNC);
+ 	dma_direct_unmap_sg(dev, sgl, i, dir, attrs | DMA_ATTR_SKIP_CPU_SYNC);
 -	return 0;
 +	return -EIO;
  }
  
- /*
-@@ -993,11 +993,13 @@ static int iommu_dma_map_sg(struct device *dev, struct scatterlist *sg,
- 	dma_addr_t iova;
- 	size_t iova_len = 0;
- 	unsigned long mask = dma_get_seg_boundary(dev);
-+	ssize_t ret;
- 	int i;
- 
--	if (static_branch_unlikely(&iommu_deferred_attach_enabled) &&
--	    iommu_deferred_attach(dev, domain))
--		return 0;
-+	if (static_branch_unlikely(&iommu_deferred_attach_enabled)) {
-+		ret = iommu_deferred_attach(dev, domain);
-+		goto out;
-+	}
- 
- 	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
- 		iommu_dma_sync_sg_for_device(dev, sg, nents, dir);
-@@ -1045,14 +1047,17 @@ static int iommu_dma_map_sg(struct device *dev, struct scatterlist *sg,
- 	}
- 
- 	iova = iommu_dma_alloc_iova(domain, iova_len, dma_get_mask(dev), dev);
--	if (!iova)
-+	if (!iova) {
-+		ret = -ENOMEM;
- 		goto out_restore_sg;
-+	}
- 
- 	/*
- 	 * We'll leave any physical concatenation to the IOMMU driver's
- 	 * implementation - it knows better than we do.
- 	 */
--	if (iommu_map_sg_atomic(domain, iova, sg, nents, prot) < iova_len)
-+	ret = iommu_map_sg_atomic(domain, iova, sg, nents, prot);
-+	if (ret < iova_len)
- 		goto out_free_iova;
- 
- 	return __finalise_sg(dev, sg, nents, iova);
-@@ -1061,7 +1066,11 @@ static int iommu_dma_map_sg(struct device *dev, struct scatterlist *sg,
- 	iommu_dma_free_iova(cookie, iova, iova_len, NULL);
- out_restore_sg:
- 	__invalidate_sg(sg, nents);
--	return 0;
-+out:
-+	if (ret == -ENOMEM)
-+		return ret;
-+	else
-+		return -EINVAL;
- }
- 
- static void iommu_dma_unmap_sg(struct device *dev, struct scatterlist *sg,
+ dma_addr_t dma_direct_map_resource(struct device *dev, phys_addr_t paddr,
 -- 
 2.20.1
 
