@@ -2,70 +2,63 @@ Return-Path: <SRS0=k2O5=MV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3168C43214
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 14:28:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08AAFC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 16:14:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A03EF60F6F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 14:28:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A03EF60F6F
+	by mail.kernel.org (Postfix) with ESMTPS id 8A105604DC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jul 2021 16:14:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8A105604DC
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GbCZ61F2Xz3cR3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 00:28:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GbFw31vk7z3cJN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 02:14:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=dEba40yz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ygvx/+gI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kernel.org (client-ip=202.248.20.67;
- helo=condef-02.nifty.com; envelope-from=masahiroy@kernel.org;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=will@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=dEba40yz; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=Ygvx/+gI; 
  dkim-atps=neutral
-Received: from condef-02.nifty.com (condef-02.nifty.com [202.248.20.67])
- by lists.ozlabs.org (Postfix) with ESMTP id 4GbCY45mDvz3cP2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 00:27:36 +1000 (AEST)
-Received: from conuserg-12.nifty.com ([10.126.8.75])by condef-02.nifty.com
- with ESMTP id 16TEKVZ6003968
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jul 2021 23:21:00 +0900
-Received: from localhost.localdomain (133-32-232-101.west.xps.vectant.ne.jp
- [133.32.232.101]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id 16TEJpXL024963;
- Thu, 29 Jul 2021 23:19:53 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 16TEJpXL024963
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1627568394;
- bh=tVlc+Zehc0ZuNG0/0e46gBchE5kb8xTkthFuDGJLr5o=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=dEba40yzIedI5gzfvTXsJCQJkSOLZ4EuYCn889j29SxvQIqFETZHdwHDF/H0FHTUD
- +us19Q/eOhGVzYjS3GqAsHU6Bvb/BvowgdzazNvQWABBr21XWsGrxyu/wevBYn1mlf
- fIt9PFZSY++HcJIpcgDuWgXqOzEXrl/NDXvFe+W9epOHoRMYT6hDLEg9x6GYlabWcd
- wXYCpnjM7aSGbNX77ls6is3Uty2OSM8gQuI4WrGrXTR2CrLdtRQlDMC/UapNkH58fE
- thrbidXHmSx3cEnjZIYLBOk1c/m5lxqrXoHd8wLQ6BP29InxMb4stSXKaQ7zpe+1tz
- 2CiWzGEDX9/og==
-X-Nifty-SrcIP: [133.32.232.101]
-From: Masahiro Yamada <masahiroy@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] powerpc: move the install rule to arch/powerpc/Makefile
-Date: Thu, 29 Jul 2021 23:19:37 +0900
-Message-Id: <20210729141937.445051-3-masahiroy@kernel.org>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20210729141937.445051-1-masahiroy@kernel.org>
-References: <20210729141937.445051-1-masahiroy@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GbFvX1zcYz2xxg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 02:13:44 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 7D568604DB;
+ Thu, 29 Jul 2021 16:13:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1627575221;
+ bh=KVD7TN9dcK4ktTL6Ey8DL93tJliPrHY8gZ++t0vHUF4=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Ygvx/+gIy1i+Qtm92gnOF4QTD+7jJzpbn1XjGqrGvEi5uSALRy7a0oJb+WDy0IzOs
+ 2ckLUQ18NWZfDBdV0SyEvckHE6bmqug/HgfXN98nd/Smce58NrUEFZSsH24xuSO9Mv
+ v4KKei+Juvh2Qxnwz83+iFgJjfb0mnTOwfDzYnzj9D5r5wYpCUyFFpO7rx0/TFIbCy
+ 8IZJa/zybafLy1fx3RK0V6m9nJz/QWH4+gEAqG1LFKWpq930/SvhmIRIabwmZssaMs
+ FAP8KrRGI/Ofj64yoY0uhHM4VPlYH5b5iQg6z67oQytfIIoIF+56XzN9P4KTMKUffY
+ Z5ifueWR9CpdA==
+Date: Thu, 29 Jul 2021 17:13:36 +0100
+From: Will Deacon <will@kernel.org>
+To: Nathan Chancellor <nathan@kernel.org>
+Subject: Re: [powerpc][next-20210727] Boot failure - kernel BUG at
+ arch/powerpc/kernel/interrupt.c:98!
+Message-ID: <20210729161335.GA22016@willie-the-truck>
+References: <1905CD70-7656-42AE-99E2-A31FC3812EAC@linux.vnet.ibm.com>
+ <YQGVZnMe9hFieF8D@Ryzen-9-3900X.localdomain>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <YQGVZnMe9hFieF8D@Ryzen-9-3900X.localdomain>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,60 +70,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jordan Niethe <jniethe5@gmail.com>, Masahiro Yamada <masahiroy@kernel.org>,
- Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Bill Wendling <morbo@google.com>, Miguel Ojeda <ojeda@kernel.org>,
- Joel Stanley <joel@jms.id.au>
+Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Robin Murphy <robin.murphy@arm.com>, iommu@lists.linux-foundation.org,
+ linux-next@vger.kernel.org, Claire Chang <tientzu@chromium.org>,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, the install target in arch/powerpc/Makefile descends into
-arch/powerpc/boot/Makefile to invoke the shell script, but there is no
-good reason to do so.
+On Wed, Jul 28, 2021 at 10:35:34AM -0700, Nathan Chancellor wrote:
+> On Wed, Jul 28, 2021 at 01:31:06PM +0530, Sachin Sant wrote:
+> > next-20210723 was good. The boot failure seems to have been introduced with next-20210726.
+> > 
+> > I have attached the boot log.
+> 
+> I noticed this with OpenSUSE's ppc64le config [1] and my bisect landed on
+> commit ad6c00283163 ("swiotlb: Free tbl memory in swiotlb_exit()"). That
+> series just keeps on giving...
 
-arch/powerpc/Makefile can run the shell script directly.
+Yes, but look how handy our new print is!
 
-Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
----
+[    0.010799] software IO TLB: tearing down default memory pool
+[    0.010805] ------------[ cut here ]------------
+[    0.010808] kernel BUG at arch/powerpc/kernel/interrupt.c:98!
 
- arch/powerpc/Makefile      | 3 ++-
- arch/powerpc/boot/Makefile | 6 ------
- 2 files changed, 2 insertions(+), 7 deletions(-)
+Following Nick's suggestion, the diff below should help? I don't have a
+relevant box on which I can test it though.
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 6505d66f1193..9aaf1abbc641 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -407,7 +407,8 @@ endef
+Will
+
+--->8
+
+diff --git a/arch/powerpc/platforms/pseries/svm.c b/arch/powerpc/platforms/pseries/svm.c
+index 1d829e257996..87f001b4c4e4 100644
+--- a/arch/powerpc/platforms/pseries/svm.c
++++ b/arch/powerpc/platforms/pseries/svm.c
+@@ -63,6 +63,9 @@ void __init svm_swiotlb_init(void)
  
- PHONY += install
- install:
--	$(Q)$(MAKE) $(build)=$(boot) install
-+	sh -x $(srctree)/$(boot)/install.sh "$(KERNELRELEASE)" vmlinux \
-+	System.map "$(INSTALL_PATH)"
+ int set_memory_encrypted(unsigned long addr, int numpages)
+ {
++       if (!mem_encrypt_active())
++               return 0;
++
+        if (!PAGE_ALIGNED(addr))
+                return -EINVAL;
  
- archclean:
- 	$(Q)$(MAKE) $(clean)=$(boot)
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 0d165bd98b61..10c0fb306f15 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -444,12 +444,6 @@ $(obj)/zImage:		$(addprefix $(obj)/, $(image-y))
- $(obj)/zImage.initrd:	$(addprefix $(obj)/, $(initrd-y))
- 	$(Q)rm -f $@; ln $< $@
+@@ -73,6 +76,9 @@ int set_memory_encrypted(unsigned long addr, int numpages)
  
--# Only install the vmlinux
--install:
--	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)"
--
--PHONY += install
--
- # anything not in $(targets)
- clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
- 	zImage zImage.initrd zImage.chrp zImage.coff zImage.holly \
--- 
-2.27.0
-
+ int set_memory_decrypted(unsigned long addr, int numpages)
+ {
++       if (!mem_encrypt_active())
++               return 0;
++
+        if (!PAGE_ALIGNED(addr))
+                return -EINVAL;
+ 
