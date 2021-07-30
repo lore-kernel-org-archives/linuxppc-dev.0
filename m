@@ -2,108 +2,79 @@ Return-Path: <SRS0=lRG+=MW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F428C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 18:25:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74B9CC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 20:21:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B809260F4B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 18:25:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B809260F4B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id F024A60F36
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 20:21:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org F024A60F36
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GbwnV29Dbz3dLj
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Jul 2021 04:25:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GbzLs23p1z3cSd
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Jul 2021 06:21:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SdmeEPW5;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=JLaAC3h6;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
+ smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::229;
+ helo=mail-lj1-x229.google.com; envelope-from=ndesaulniers@google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=SdmeEPW5; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20161025 header.b=JLaAC3h6; dkim-atps=neutral
+Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com
+ [IPv6:2a00:1450:4864:20::229])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gbwly47Rrz2yNS
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jul 2021 04:24:29 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 16UILZhc086527; Fri, 30 Jul 2021 14:24:18 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=+aHhODXsrxgCZJXS6IWNFCGR8ORRlbmmf+HOQMIbJus=;
- b=SdmeEPW5zI123+C6f9elpPAaURtWUU1iKm0nmZm3IcgrUfM8dJQ7L3rduv6ZAw20WkVW
- ZOHiWfXPyNuRB4tqM1oh2q+prjWr2totrEGcvKLhFMZWOeBA118m1CoEvFsY0Tu9UQ3t
- d1/Ai2t8DDt60C0naw3BSNf6Z5VYbIE4QvVzlPFUxFN2xq/OadEw0Os66Ygfwt1UC+RA
- haIEhdvC2AxO6bHmWar2lakXpvPNaW/GHdoYSlVn+XCgwDm5BdLM7SoQKGnChLHfiR7B
- jZ789uXnIj23uTYYkoj6+ncrddlcNn7MXdRtOLmeWiX2l0QGE3qOPEtpJhQWbgTChZS/ 2g== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3a4pmtg20j-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Jul 2021 14:24:18 -0400
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16UINelJ092698;
- Fri, 30 Jul 2021 14:24:17 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3a4pmtg200-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Jul 2021 14:24:17 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16UIN328020502;
- Fri, 30 Jul 2021 18:24:15 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma04ams.nl.ibm.com with ESMTP id 3a235m4k0y-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 30 Jul 2021 18:24:15 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 16UIOBA125428400
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 30 Jul 2021 18:24:11 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7A37AA406E;
- Fri, 30 Jul 2021 18:24:11 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4F13AA404D;
- Fri, 30 Jul 2021 18:24:09 +0000 (GMT)
-Received: from li-c7b85bcc-2727-11b2-a85c-a9ba7f3a2193.ibm.com (unknown
- [9.199.33.196])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 30 Jul 2021 18:24:08 +0000 (GMT)
-From: Ganesh Goudar <ganeshgr@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH 1/3] powerpc/pseries: Parse control memory access error
-Date: Fri, 30 Jul 2021 23:53:47 +0530
-Message-Id: <20210730182349.625819-1-ganeshgr@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GbzLL5V9cz2yMM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jul 2021 06:20:56 +1000 (AEST)
+Received: by mail-lj1-x229.google.com with SMTP id h11so13984703ljo.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 13:20:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=6ZdxsXIhfZeShR0BpG7ZM9hlF98/ed3x62uZjV8NOlc=;
+ b=JLaAC3h6i7sv+zobgB6FCO8AkNHOnE+QSegQ6bJPG6zSD18coezaJg3a+0CFIZQDfS
+ 8q2bUhPPeq8m6y39/0m8Oj0eweVmITzggzzvOvTbMRziX1ZII5ODNwmvKf5pQ2aAcIyR
+ aejTL5OimVzszTLBmMh/RQY5fS6aDnBUyroYVcmtGcurAfL/38PbaRCFUlL8bEkPg2M6
+ iI76uy2PSOch+Xjq8lgsVsP5Q7CyTB9B37NnsW/dBhrfXzwYpdNeOp7Sl5aILWZ13KJ5
+ TvQtlXaQ1w+IqLoPVg9nOVqxFjaQA1nx72kNzlQ/DV8S+Ow1gRYts2kwwuBIlJeGLIkG
+ Uu+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=6ZdxsXIhfZeShR0BpG7ZM9hlF98/ed3x62uZjV8NOlc=;
+ b=gJ9+927nzUFKZo/a5e778B2C5s0g3uUvS3/q0ExBX7jQ441F65GetOgONZmd710aqo
+ hOFDSzgJveKPDXx8cBrxhg9T+96ynmNzpIFmrAC1Xo6g+wVGz0FPOA3i8JXVsRSFSzE/
+ mYqoP9aldeqLADxf/p9fOyNl58jjmdrSMl0Njyl4jiKbj5sIsC/zpOdWhqcAh6WggH+c
+ KiDITaqi03Ml2alHFEeswGQfK6ZFnvggJldHSosnUr3QuyHiefJ0NZvIpo2ksebSPppz
+ WzOirnWWWXDbrPBEPjDSY8velsP0+kWZZqpdiKgGU+SM09QiOAsCkyF025Crt226c2SV
+ pkjA==
+X-Gm-Message-State: AOAM531OC92r8q0V8jcA7WvQCAV4WLN/cPMqBk9hgJ5F1MLbDPmE9oTS
+ jXGwCjpbY/oM9UAlPiXNF/W0wz9K+HUGBts2DjEbrA==
+X-Google-Smtp-Source: ABdhPJxOp5UzhKE8mQDqRvlDz8V9c71SjR7m9HyAJLUxJZSu5SbSBuLRrcen1tdS0S3uE6PnU0rTNbtfAOPrHw/7VOw=
+X-Received: by 2002:a05:651c:329:: with SMTP id
+ b9mr2900217ljp.116.1627676446795; 
+ Fri, 30 Jul 2021 13:20:46 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: AaW5U39ZKX8x4B9up8Qm0akyh4NH4Yla
-X-Proofpoint-GUID: G1-istGlzmUQ8ATQTEu35K90QB77UTIt
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-07-30_11:2021-07-30,
- 2021-07-30 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 spamscore=0
- mlxscore=0 phishscore=0 adultscore=0 lowpriorityscore=0 bulkscore=0
- clxscore=1011 priorityscore=1501 impostorscore=0 malwarescore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2107140000 definitions=main-2107300121
+References: <20210729141937.445051-1-masahiroy@kernel.org>
+In-Reply-To: <20210729141937.445051-1-masahiroy@kernel.org>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Date: Fri, 30 Jul 2021 13:20:34 -0700
+Message-ID: <CAKwvOd=AM1zus+apNQ14oS05bQPoSuhSdjUhPUD-4EU5x2KFSA@mail.gmail.com>
+Subject: Re: [PATCH 1/3] powerpc: remove unused zInstall target from
+ arch/powerpc/boot/Makefile
+To: Masahiro Yamada <masahiroy@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,73 +86,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, Ganesh Goudar <ganeshgr@linux.ibm.com>,
- mahesh@linux.ibm.com, npiggin@gmail.com
+Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Jordan Niethe <jniethe5@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Bill Wendling <morbo@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add support to parse and log control memory access
-error for pseries.
+On Thu, Jul 29, 2021 at 7:22 AM Masahiro Yamada <masahiroy@kernel.org> wrote:
+>
+> Commit c913e5f95e54 ("powerpc/boot: Don't install zImage.* from make
+> install") added the zInstall target to arch/powerpc/boot/Makefile,
+> but you cannot use it since the corresponding hook is missing in
+> arch/powerpc/Makefile.
+>
+> It has never worked since its addition. Nobody has complained about
+> it for 7 years, which means this code was unneeded.
+>
+> With this removal, the install.sh will be passed in with 4 parameters.
+> Simplify the shell script.
+>
+> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 
-Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
----
- arch/powerpc/platforms/pseries/ras.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
 
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 167f2e1b8d39..608c35cad0c3 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -80,6 +80,7 @@ struct pseries_mc_errorlog {
- #define MC_ERROR_TYPE_TLB		0x04
- #define MC_ERROR_TYPE_D_CACHE		0x05
- #define MC_ERROR_TYPE_I_CACHE		0x07
-+#define MC_ERROR_TYPE_CTRL_MEM_ACCESS	0x08
- 
- /* RTAS pseries MCE error sub types */
- #define MC_ERROR_UE_INDETERMINATE		0
-@@ -103,6 +104,9 @@ struct pseries_mc_errorlog {
- #define MC_ERROR_TLB_MULTIHIT		2
- #define MC_ERROR_TLB_INDETERMINATE	3
- 
-+#define MC_ERROR_CTRL_MEM_ACCESS_PTABLE_WALK	0
-+#define MC_ERROR_CTRL_MEM_ACCESS_OP_ACCESS	1
-+
- static inline u8 rtas_mc_error_sub_type(const struct pseries_mc_errorlog *mlog)
- {
- 	switch (mlog->error_type) {
-@@ -112,6 +116,8 @@ static inline u8 rtas_mc_error_sub_type(const struct pseries_mc_errorlog *mlog)
- 	case	MC_ERROR_TYPE_ERAT:
- 	case	MC_ERROR_TYPE_TLB:
- 		return (mlog->sub_err_type & 0x03);
-+	case	MC_ERROR_TYPE_CTRL_MEM_ACCESS:
-+		return (mlog->sub_err_type & 0x70) >> 4;
- 	default:
- 		return 0;
- 	}
-@@ -699,6 +705,21 @@ static int mce_handle_err_virtmode(struct pt_regs *regs,
- 	case MC_ERROR_TYPE_I_CACHE:
- 		mce_err.error_type = MCE_ERROR_TYPE_ICACHE;
- 		break;
-+	case MC_ERROR_TYPE_CTRL_MEM_ACCESS:
-+		mce_err.error_type = MCE_ERROR_TYPE_RA;
-+		if (mce_log->sub_err_type & 0x80)
-+			eaddr = be64_to_cpu(mce_log->effective_address);
-+		switch (err_sub_type) {
-+		case MC_ERROR_CTRL_MEM_ACCESS_PTABLE_WALK:
-+			mce_err.u.ra_error_type =
-+				MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE_FOREIGN;
-+			break;
-+		case MC_ERROR_CTRL_MEM_ACCESS_OP_ACCESS:
-+			mce_err.u.ra_error_type =
-+				MCE_RA_ERROR_LOAD_STORE_FOREIGN;
-+			break;
-+		}
-+		break;
- 	case MC_ERROR_TYPE_UNKNOWN:
- 	default:
- 		mce_err.error_type = MCE_ERROR_TYPE_UNKNOWN;
+> ---
+>
+>  arch/powerpc/boot/Makefile   |  6 +-----
+>  arch/powerpc/boot/install.sh | 13 -------------
+>  2 files changed, 1 insertion(+), 18 deletions(-)
+>
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index e312ea802aa6..a702f9d1ec0d 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -448,11 +448,7 @@ $(obj)/zImage.initrd:      $(addprefix $(obj)/, $(initrd-y))
+>  install: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
+>         sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)"
+>
+> -# Install the vmlinux and other built boot targets.
+> -zInstall: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
+> -       sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)" $^
+> -
+> -PHONY += install zInstall
+> +PHONY += install
+>
+>  # anything not in $(targets)
+>  clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
+> diff --git a/arch/powerpc/boot/install.sh b/arch/powerpc/boot/install.sh
+> index b6a256bc96ee..658c93ca7437 100644
+> --- a/arch/powerpc/boot/install.sh
+> +++ b/arch/powerpc/boot/install.sh
+> @@ -15,7 +15,6 @@
+>  #   $2 - kernel image file
+>  #   $3 - kernel map file
+>  #   $4 - default install path (blank if root directory)
+> -#   $5 and more - kernel boot files; zImage*, uImage, cuImage.*, etc.
+>  #
+>
+>  # Bail with error code if anything goes wrong
+> @@ -41,15 +40,3 @@ fi
+>
+>  cat $2 > $4/$image_name
+>  cp $3 $4/System.map
+> -
+> -# Copy all the bootable image files
+> -path=$4
+> -shift 4
+> -while [ $# -ne 0 ]; do
+> -       image_name=`basename $1`
+> -       if [ -f $path/$image_name ]; then
+> -               mv $path/$image_name $path/$image_name.old
+> -       fi
+> -       cat $1 > $path/$image_name
+> -       shift
+> -done;
+> --
+> 2.27.0
+>
+
+
 -- 
-2.31.1
-
+Thanks,
+~Nick Desaulniers
