@@ -2,80 +2,87 @@ Return-Path: <SRS0=lRG+=MW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FSL_HELO_FAKE,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 010C1C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 20:30:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C6E3C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 22:35:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5B4D460EE6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 20:30:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5B4D460EE6
+	by mail.kernel.org (Postfix) with ESMTPS id C9D6960FE7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 22:35:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C9D6960FE7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GbzYZ4LpWz3d7S
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Jul 2021 06:30:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gc2KQ72d0z3cQq
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Jul 2021 08:35:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=N8HoRlaG;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=UfW+Uyhy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::22c;
- helo=mail-lj1-x22c.google.com; envelope-from=ndesaulniers@google.com;
+ smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1030;
+ helo=mail-pj1-x1030.google.com; envelope-from=seanjc@google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=N8HoRlaG; dkim-atps=neutral
-Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com
- [IPv6:2a00:1450:4864:20::22c])
+ header.s=20161025 header.b=UfW+Uyhy; dkim-atps=neutral
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com
+ [IPv6:2607:f8b0:4864:20::1030])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GbzY54lPLz2yWG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jul 2021 06:30:15 +1000 (AEST)
-Received: by mail-lj1-x22c.google.com with SMTP id m9so14062986ljp.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 13:30:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gc2Jl3YyJz30BX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jul 2021 08:34:45 +1000 (AEST)
+Received: by mail-pj1-x1030.google.com with SMTP id l19so17340160pjz.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 15:34:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=NlNJsWKLmqO3IeQQioweQYYN6qx+xQ/7jnpZkoegGsQ=;
- b=N8HoRlaGoRDU1r+nR55Q+mD8NeG34Px6GOxSmRxfAWW/GtjaLdW4aEeIuv/KprECeS
- nlkj1pzEAMruW5U2sly70QyiAeKTV7LAgxYxFO5Ghd+vKCdzW2j0cp2YcLu0GLu4zTkX
- gf8JtbV00p0gPK9m1zN7X84cFLWtYaj/gcnSOMvkCOkm915o9iUhaJbypDlgNwlsaCYm
- 6cLVDs9eLPDBauUK9WRcd5TAEwbftzIPZKZyABICTTlEZmWKkWwmUfVd/E03Y+x7H32F
- GwRknAJs6R8kf0WLZw6JN8rYtXRbl/xtr5FoJDjoRXDQZrn8G/VXJkeaoiv3RCrBcY9C
- nDbQ==
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=2B8bmMK1MWV0IKBzZFhJ4QQnRCCDWLQwwtmcrrRzShw=;
+ b=UfW+Uyhy937lSOvlfCbvzUSHfPBdVvhcTOaILHqlmzjEQeZkE7CJS1pDjY85yLeTrk
+ ZUbJvCXGnG9V4YR8YvLqiCoHxoAuC0RJHo8xznM5u3dhr6dkJI9BNq9mI/HgcDxL19UV
+ T0+Bsg6O2a3etVDRUOMu6je3JU33B5pFqiYpolqwzc84ASrmmPyryuwH24+FPODl2NK0
+ /jswqbw3cLYGC3s8tw+3+64iNj05CofMOCHjsjPmhNsSGF6fZGX5s2X6UpkAmOT82yEf
+ KD+vMh5N6wzurqnoLV7GP3bDuQRiamzrkbH5J6wxueQVfjy9YKlsV1lqKUCTBLbTMy1G
+ tbIg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=NlNJsWKLmqO3IeQQioweQYYN6qx+xQ/7jnpZkoegGsQ=;
- b=cCBiMcCy/ofanS5Mn0q3qNj7L4Gv80YGiRT5UIOXFi5byU0lu6V+09Dh2zFbbTbnrs
- pg4nsj8lH2T3B9As1f0KD/EzCYD3FMD3oUx3ej8JiMBYaPzP4QLyHLwbbBQImxnmkGv5
- 8MyVvXAwOCA0tH25YJSwU/uDgiEeeIT6TXHDitoL387uzwBqBAp4qtDGjycuD9Lz/BzD
- L/HueKOHB67Ld+OEY5dk6zV3kNkPT5k03ir3PtcTATDBC7xnxLae4TclJVrOrJQjDXbR
- H5e/Q0s1L0JX3AcljHn5q+wyWpLfKm436VbF9+SiR+bJoQFPgnvVaG7unE3m874q84cu
- Il1w==
-X-Gm-Message-State: AOAM53119gEkOt3YV9a7y7fFHXbPGvoatEditx6DjZNsOFCAr6mfdgpz
- dgKIUTgj8R3mxlwR0ZANWck9noH1HsEdaqwu2dWiKw==
-X-Google-Smtp-Source: ABdhPJycP4d14boj+x7rHzVPDwajcqyRnadT/XwhsCoJtnZ5aga9ccR/57cOzQWxd3X3ZJJjF6Pof8pxFnN/+9b14Ac=
-X-Received: by 2002:a05:651c:329:: with SMTP id
- b9mr2927423ljp.116.1627677010835; 
- Fri, 30 Jul 2021 13:30:10 -0700 (PDT)
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=2B8bmMK1MWV0IKBzZFhJ4QQnRCCDWLQwwtmcrrRzShw=;
+ b=FR+rR2+7w76oNQFizChzGLmFfhwW0hfkvtp8oDHN4YYAYm1qNTOgPwttqCP6suTVio
+ wGKZJJkn+nlyMBBBs2OH+Q0nwb/e6FYq0nw6VISd+95RDE66evSUjrqc/ZyIcbLq8nck
+ OOtIeKKAb+m2659P4cMcwNYVmbM/gckTmB66Wb9fPVA+5flKJDq8zQszU3vABN1Rj+0e
+ ibRCl6hiF20142JMIMVoLWPYEGwTIEK3+xNBjLBhGXNxY0VtaxgBqhMFvyEW6twswkLq
+ TnwyFfNmJL1L5qAl5Hn3AJSTbsyX5nKjhuNvNATEFpXJl7PFR7fVo5Ve9LUl00tqbygp
+ E64g==
+X-Gm-Message-State: AOAM531O8AkGf6925xlMrHiZsw4zOmz9CGcZQrfisSYtZ+jbmwO/8u1S
+ fn1mjDEH2rBsKWsDYhxIxxE5kw==
+X-Google-Smtp-Source: ABdhPJzSqN3B7Go3MtNjE9VY5h0clk+hYXj3ladZ5/S+PnXE8W92M9c05HKB4nGF1ekuX4eoULgjrQ==
+X-Received: by 2002:a17:90b:1bcc:: with SMTP id
+ oa12mr5239612pjb.113.1627684481796; 
+ Fri, 30 Jul 2021 15:34:41 -0700 (PDT)
+Received: from google.com (157.214.185.35.bc.googleusercontent.com.
+ [35.185.214.157])
+ by smtp.gmail.com with ESMTPSA id b184sm3525033pfg.72.2021.07.30.15.34.41
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 30 Jul 2021 15:34:41 -0700 (PDT)
+Date: Fri, 30 Jul 2021 22:34:37 +0000
+From: Sean Christopherson <seanjc@google.com>
+To: Tom Lendacky <thomas.lendacky@amd.com>
+Subject: Re: [PATCH 07/11] treewide: Replace the use of mem_encrypt_active()
+ with prot_guest_has()
+Message-ID: <YQR+ffO92gMfGDbs@google.com>
+References: <cover.1627424773.git.thomas.lendacky@amd.com>
+ <029791b24c6412f9427cfe6ec598156c64395964.1627424774.git.thomas.lendacky@amd.com>
 MIME-Version: 1.0
-References: <20210729141937.445051-1-masahiroy@kernel.org>
- <20210729141937.445051-3-masahiroy@kernel.org>
-In-Reply-To: <20210729141937.445051-3-masahiroy@kernel.org>
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Fri, 30 Jul 2021 13:29:59 -0700
-Message-ID: <CAKwvOdkRuxaUvAi4ik2SiDgEeNOX6D76aBtHDBPyDVTumWskLg@mail.gmail.com>
-Subject: Re: [PATCH 3/3] powerpc: move the install rule to
- arch/powerpc/Makefile
-To: Masahiro Yamada <masahiroy@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <029791b24c6412f9427cfe6ec598156c64395964.1627424774.git.thomas.lendacky@amd.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,88 +94,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Jordan Niethe <jniethe5@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Bill Wendling <morbo@google.com>, Miguel Ojeda <ojeda@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>
+Cc: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>,
+ linux-efi@vger.kernel.org, Brijesh Singh <brijesh.singh@amd.com>,
+ kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org,
+ platform-driver-x86@vger.kernel.org, Will Deacon <will@kernel.org>,
+ linux-s390@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
+ Baoquan He <bhe@redhat.com>, Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ amd-gfx@lists.freedesktop.org, David Airlie <airlied@linux.ie>,
+ Ingo Molnar <mingo@redhat.com>, linux-graphics-maintainer@vmware.com,
+ Dave Young <dyoung@redhat.com>, Tianyu Lan <Tianyu.Lan@microsoft.com>,
+ Thomas Zimmermann <tzimmermann@suse.de>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Daniel Vetter <daniel@ffwll.ch>,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 29, 2021 at 7:22 AM Masahiro Yamada <masahiroy@kernel.org> wrote:
->
-> Currently, the install target in arch/powerpc/Makefile descends into
-> arch/powerpc/boot/Makefile to invoke the shell script, but there is no
-> good reason to do so.
+On Tue, Jul 27, 2021, Tom Lendacky wrote:
+> @@ -451,7 +450,7 @@ void __init mem_encrypt_free_decrypted_mem(void)
+>  	 * The unused memory range was mapped decrypted, change the encryption
+>  	 * attribute from decrypted to encrypted before freeing it.
+>  	 */
+> -	if (mem_encrypt_active()) {
+> +	if (sme_me_mask) {
 
-Sure, but there are more arch/ subdirs that DO invoke install.sh from
-arch/<arch>/boot/Makefile than, not:
+Any reason this uses sme_me_mask?  The helper it calls, __set_memory_enc_dec(),
+uses prot_guest_has(PATTR_MEM_ENCRYPT) so I assume it's available?
 
-arch/<arch>/boot/Makefile:
-- parisc
-- nios2
-- arm
-- nds32
-- sparc
-- riscv
-- 390
-- ppc (this patch)
-- x86
-- arm64
+>  		r = set_memory_encrypted(vaddr, npages);
+>  		if (r) {
+>  			pr_warn("failed to free unused decrypted pages\n");
 
-arch/<arch>/Makefile:
-- ia64
-- m68k
-
-Patch is fine, but right now the tree is a bit inconsistent.
-
->
-> arch/powerpc/Makefile can run the shell script directly.
->
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-> ---
->
->  arch/powerpc/Makefile      | 3 ++-
->  arch/powerpc/boot/Makefile | 6 ------
->  2 files changed, 2 insertions(+), 7 deletions(-)
->
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 6505d66f1193..9aaf1abbc641 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -407,7 +407,8 @@ endef
->
->  PHONY += install
->  install:
-> -       $(Q)$(MAKE) $(build)=$(boot) install
-> +       sh -x $(srctree)/$(boot)/install.sh "$(KERNELRELEASE)" vmlinux \
-> +       System.map "$(INSTALL_PATH)"
->
->  archclean:
->         $(Q)$(MAKE) $(clean)=$(boot)
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 0d165bd98b61..10c0fb306f15 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -444,12 +444,6 @@ $(obj)/zImage:             $(addprefix $(obj)/, $(image-y))
->  $(obj)/zImage.initrd:  $(addprefix $(obj)/, $(initrd-y))
->         $(Q)rm -f $@; ln $< $@
->
-> -# Only install the vmlinux
-> -install:
-> -       sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)"
-> -
-> -PHONY += install
-> -
->  # anything not in $(targets)
->  clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
->         zImage zImage.initrd zImage.chrp zImage.coff zImage.holly \
-> --
-> 2.27.0
->
-
-
--- 
-Thanks,
-~Nick Desaulniers
