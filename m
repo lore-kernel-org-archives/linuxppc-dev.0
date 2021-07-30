@@ -2,68 +2,112 @@ Return-Path: <SRS0=lRG+=MW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A8ECC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 13:36:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F117EC4320A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 18:25:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA22660F5C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 13:36:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DA22660F5C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1EEBA60F94
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 18:25:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1EEBA60F94
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GbpMm2kBWz3d6c
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 23:36:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GbwmX1RP5z3d7F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Jul 2021 04:25:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ho38LvuK;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=F+9p7KpP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=ho38LvuK; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=F+9p7KpP; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GbpMC5lvyz2yxx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 23:36:07 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 6FB9460F4A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 13:36:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1627652164;
- bh=Kxc+WnvFkFgpyTYYCMg+FHtM463+Ta69Z65pcvFy+nw=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=ho38LvuKv74hab1fk9TeMpOaOP6S+B8D6La1ytammZe5husN2Sln3hk0b/jsKKSP0
- Oz9B9qEtRAk1vmf+xAbnGmmd1qGPrQ9eU9guuq08fEy1thlwKJFnvdr7w53exlPS5B
- k3IeKepk+++IJ/FD/tQwIU77xPc6BY7A8E0E/yzZnR1X6UFUVaRYVOX9RitafiYcbV
- bib44KzdYE0lqK4kU4CYw8St0cKpzFa5VucXQ9aczPK2DoLoAKfefZLGOIjmQj1Tqw
- GMjjZmvtivOvJ8j07Wxuk3EZcIC+y0tVdQ6NY50ImRhnD1JcDVSgsJHoIXs89/F/p8
- Jl4YG45FZpqUg==
-Received: by mail-lj1-f178.google.com with SMTP id e5so12407957ljp.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 06:36:04 -0700 (PDT)
-X-Gm-Message-State: AOAM5327GLQOPTGJSl+xxb9Hi1DjynJkFsXAWUyhoQtcPhzgiQ+bi8oJ
- hQ5qdFci7tEe70vldqbfTQli5lBopGzFZ3Y9SYk=
-X-Google-Smtp-Source: ABdhPJwuftgxHedyhF9ABjFcX5ntB4hnZJtnEQD3qNPIiKJ5o00xy/u2gbz8S8h+EITSt2YoA2WUUAyPzv0cemOlwyo=
-X-Received: by 2002:adf:fd90:: with SMTP id d16mr3288984wrr.105.1627652152412; 
- Fri, 30 Jul 2021 06:35:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gbwly45FKz2yNK
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jul 2021 04:24:29 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 16UIMX2I180365; Fri, 30 Jul 2021 14:24:23 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=D6/MohSKkzIUyUpZ6c8/jFPUemFrIIoEn0DhLaN5meA=;
+ b=F+9p7KpPNF8DbB+Dt2Wm8+Dg5/jXPjUn6JDwU6HC0DneNNcG9pymmKD6JI3V68Gix6lq
+ WINWtmcw85qiSiksI0oq8wRoh8tJ03X+dDvfRlJf65I70+f1oGNHsLLbiYZqdNhXnWap
+ zkkiNtq/0CVlzo79H5wNWl4Ue1KhEmZbRiBbP2QLzPDBhWCDQsqi3cVsWtK6cAn6MT+G
+ q9zfH3e9+/7+3q7Izr8+BRHe8R3yAHheSJSx6wPZWf/VGBUE54jCztOd9tz4QNavL1l2
+ 0yxaPcRfHYGmhqXff1Tqzis459ougIDI9j3msWVUx/9F5OgDFhm2a6BsDk7y9FIPaW7W 6A== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a4pn9g160-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 30 Jul 2021 14:24:22 -0400
+Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16UINPLH182880;
+ Fri, 30 Jul 2021 14:24:22 -0400
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a4pn9g15h-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 30 Jul 2021 14:24:22 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16UINE7t029219;
+ Fri, 30 Jul 2021 18:24:20 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma04fra.de.ibm.com with ESMTP id 3a235kknpf-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 30 Jul 2021 18:24:20 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16UIOHOI26018154
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 30 Jul 2021 18:24:17 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E1DF0A4051;
+ Fri, 30 Jul 2021 18:24:16 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C5F1AA4040;
+ Fri, 30 Jul 2021 18:24:14 +0000 (GMT)
+Received: from li-c7b85bcc-2727-11b2-a85c-a9ba7f3a2193.ibm.com (unknown
+ [9.199.33.196])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 30 Jul 2021 18:24:14 +0000 (GMT)
+From: Ganesh Goudar <ganeshgr@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [PATCH 3/3] powerpc/mce: Modify the real address error logging
+ messages
+Date: Fri, 30 Jul 2021 23:53:49 +0530
+Message-Id: <20210730182349.625819-3-ganeshgr@linux.ibm.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20210730182349.625819-1-ganeshgr@linux.ibm.com>
+References: <20210730182349.625819-1-ganeshgr@linux.ibm.com>
 MIME-Version: 1.0
-References: <20210727144859.4150043-1-arnd@kernel.org>
- <YQPLG20V3dmOfq3a@osiris>
-In-Reply-To: <YQPLG20V3dmOfq3a@osiris>
-From: Arnd Bergmann <arnd@kernel.org>
-Date: Fri, 30 Jul 2021 15:35:35 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a0YV0UVsui67WE4LiGM+RmQsDBOvFMaKArT5UmNLgN5GA@mail.gmail.com>
-Message-ID: <CAK8P3a0YV0UVsui67WE4LiGM+RmQsDBOvFMaKArT5UmNLgN5GA@mail.gmail.com>
-Subject: Re: [PATCH v5 0/6] compat: remove compat_alloc_user_space
-To: Heiko Carstens <hca@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: WQaSjqRX3QGDBLMPZN0_5_cnnzLOWLim
+X-Proofpoint-GUID: m-gU05EZFlN0X2vZUs2FjYiDsIC7Ri5y
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-07-30_11:2021-07-30,
+ 2021-07-30 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0
+ priorityscore=1501 mlxscore=0 bulkscore=0 spamscore=0 clxscore=1015
+ lowpriorityscore=0 malwarescore=0 suspectscore=0 mlxlogscore=999
+ impostorscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2107140000 definitions=main-2107300121
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,62 +119,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Feng Tang <feng.tang@intel.com>,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Linux-MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
- Will Deacon <will@kernel.org>, linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Helge Deller <deller@gmx.de>, the arch/x86 maintainers <x86@kernel.org>,
- Christoph Hellwig <hch@infradead.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Borislav Petkov <bp@alien8.de>, Al Viro <viro@zeniv.linux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Parisc List <linux-parisc@vger.kernel.org>,
- Linux API <linux-api@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+Cc: mikey@neuling.org, Ganesh Goudar <ganeshgr@linux.ibm.com>,
+ mahesh@linux.ibm.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 30, 2021 at 11:49 AM Heiko Carstens <hca@linux.ibm.com> wrote:
-> On Tue, Jul 27, 2021 at 04:48:53PM +0200, Arnd Bergmann wrote:
->
-> Our CI reports this with linux-next and running strace selftest in
-> compat mode:
+To avoid ambiguity, modify the strings in real address error
+logging messages to "foreign/control memory" from "foreign",
+Since the error discriptions in P9 user manual and P10 user
+manual are different for same type of errors.
 
-Thanks a lot for the report! I managed track it down based on your
-output, it turns out that I end up copying data from the stack according
-to how much the user asked for, and in this case that was much more
-than the 8 byte nodemask_t, copying all of the kernel stack all the
-way into the guard page with CONFIG_VMAP_STACK, where it
-crashed. Without CONFIG_VMAP_STACK, or with user space that
-asks for less data, it would just be an information leak, so others
-probably haven't noticed the problem.
+P9 User Manual for MCE:
+DSISR:59 Host real address to foreign space during translation.
+DSISR:60 Host real address to foreign space on a load or store
+	 access.
 
-The change below should fix that, I'll double-check the other callers
-as well before sending a proper fixup patch to Andrew.
+P10 User Manual for MCE:
+DSISR:59 D-side tablewalk used a host real address in the
+	 control memory address range.
+DSISR:60 D-side operand access to control memory address space.
 
-        Arnd
+Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
+---
+ arch/powerpc/kernel/mce.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index 4fabf2dddbc0..0d1f3be32723 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -1438,6 +1438,7 @@ static int copy_nodes_to_user(unsigned long
-__user *mask, unsigned long maxnode,
-                if (clear_user((char __user *)mask + nbytes, copy - nbytes))
-                        return -EFAULT;
-                copy = nbytes;
-+               maxnode = nr_node_ids;
-        }
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index 47a683cd00d2..f3ef480bb739 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -388,14 +388,14 @@ void machine_check_print_event_info(struct machine_check_event *evt,
+ 	static const char *mc_ra_types[] = {
+ 		"Indeterminate",
+ 		"Instruction fetch (bad)",
+-		"Instruction fetch (foreign)",
++		"Instruction fetch (foreign/control memory)",
+ 		"Page table walk ifetch (bad)",
+-		"Page table walk ifetch (foreign)",
++		"Page table walk ifetch (foreign/control memory)",
+ 		"Load (bad)",
+ 		"Store (bad)",
+ 		"Page table walk Load/Store (bad)",
+-		"Page table walk Load/Store (foreign)",
+-		"Load/Store (foreign)",
++		"Page table walk Load/Store (foreign/control memory)",
++		"Load/Store (foreign/control memory)",
+ 	};
+ 	static const char *mc_link_types[] = {
+ 		"Indeterminate",
+-- 
+2.31.1
 
-        if (compat)
