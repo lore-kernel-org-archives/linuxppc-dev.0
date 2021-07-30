@@ -2,41 +2,108 @@ Return-Path: <SRS0=lRG+=MW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10F09C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 04:43:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E2D0C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 05:18:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1AEC861042
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 04:43:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1AEC861042
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 45DDD60EBB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 05:18:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 45DDD60EBB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GbZXz5CcPz3cYx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 14:43:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4GbZXd5Ljtz2yZB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 14:43:28 +1000 (AEST)
-Received: from fstn1-p1.ozlabs.ibm.com. (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 76B7CAE80062;
- Fri, 30 Jul 2021 00:43:20 -0400 (EDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] powerpc/powernv: Check if powernv_rng is initialized
-Date: Fri, 30 Jul 2021 14:43:15 +1000
-Message-Id: <20210730044315.956125-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.30.2
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GbbKH4tPwz3cT2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 15:18:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FvJ6R+IR;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sachinp@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=FvJ6R+IR; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GbbJk29XLz304V
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 15:18:13 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 16U54E77176731; Fri, 30 Jul 2021 01:18:05 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=content-type :
+ mime-version : subject : from : in-reply-to : date : cc :
+ content-transfer-encoding : message-id : references : to; s=pp1;
+ bh=mRMfJDSaBEiYJwtsisL7fiThg4iCN4T1/5czZbY5axI=;
+ b=FvJ6R+IRNlN3XBd8mh75U1wb7IFYE94aLjH21FjdyTNc2ng/V+THg3+abnCVvcN0ULgE
+ leJjIs0OvxXLCDSh5TV45Xq91IKkKOB8vxuq9fnWD2kfHhJvZVsIfPyXKzcK8Fyg5B/Q
+ cmAv66+1vp64SHxEPjxshxAuVKxUAjA+NCTeaFKOjTI5RK51A4FKFO4g1y5fjsvkelJO
+ PZorV9RcMMW+Ltxf9dnoNPqdpgQbpn7CAVGYvHM98EzO4weCS03sZSLj8uQkNJv8KLa9
+ zQEeGWgzS9Vjlb68N9BUcAvJbKEZEYiBK6NdL6Gb078pYx8cXHX/Vl2vj4kKzY8e+9jU Ww== 
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3a4abj12rj-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 30 Jul 2021 01:18:04 -0400
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16U5DNNP030427;
+ Fri, 30 Jul 2021 05:18:02 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma06fra.de.ibm.com with ESMTP id 3a235kjg2n-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 30 Jul 2021 05:18:02 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16U5I0pV32702790
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 30 Jul 2021 05:18:00 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 37C3B11C05C;
+ Fri, 30 Jul 2021 05:18:00 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 493CD11C052;
+ Fri, 30 Jul 2021 05:17:58 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.43.3.232])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 30 Jul 2021 05:17:58 +0000 (GMT)
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 14.0 \(3654.100.0.2.22\))
+Subject: Re: [powerpc][next-20210727] Boot failure - kernel BUG at
+ arch/powerpc/kernel/interrupt.c:98!
+From: Sachin Sant <sachinp@linux.vnet.ibm.com>
+In-Reply-To: <20210729161335.GA22016@willie-the-truck>
+Date: Fri, 30 Jul 2021 10:47:56 +0530
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <3123C52D-1345-43E1-905A-FF6754E4453C@linux.vnet.ibm.com>
+References: <1905CD70-7656-42AE-99E2-A31FC3812EAC@linux.vnet.ibm.com>
+ <YQGVZnMe9hFieF8D@Ryzen-9-3900X.localdomain>
+ <20210729161335.GA22016@willie-the-truck>
+To: Will Deacon <will@kernel.org>
+X-Mailer: Apple Mail (2.3654.100.0.2.22)
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: DiaWfTeMzTsWBpfNTQmvb1ps_L8keHyd
+X-Proofpoint-ORIG-GUID: DiaWfTeMzTsWBpfNTQmvb1ps_L8keHyd
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-07-30_03:2021-07-29,
+ 2021-07-30 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 phishscore=0
+ adultscore=0 lowpriorityscore=0 priorityscore=1501 impostorscore=0
+ mlxlogscore=999 spamscore=0 malwarescore=0 clxscore=1015 mlxscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2107140000 definitions=main-2107300030
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,79 +115,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Robin Murphy <robin.murphy@arm.com>, Nathan Chancellor <nathan@kernel.org>,
+ iommu@lists.linux-foundation.org, linux-next@vger.kernel.org,
+ Claire Chang <tientzu@chromium.org>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The powernv-rng driver has 2 users - the bare metal powernv platform and
-the KVM's H_RANDOM hcall. The hcall handler works fine when it is L0 KVM
-but fails in L1 KVM as there is no support for the HW registers in L1 VMs
-and such support is not advertised either (== no "ibm,power-rng" in
-the FDT). So when a nested VM tries H_RANDOM, the L1 KVM crashes on
-in_be64(rng->regs).
-
-This checks the pointers and returns an error if the feature is not
-set up.
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
 
 
-Randomly randomized H_RANDOM:
+> On 29-Jul-2021, at 9:43 PM, Will Deacon <will@kernel.org> wrote:
+>=20
+> On Wed, Jul 28, 2021 at 10:35:34AM -0700, Nathan Chancellor wrote:
+>> On Wed, Jul 28, 2021 at 01:31:06PM +0530, Sachin Sant wrote:
+>>> next-20210723 was good. The boot failure seems to have been =
+introduced with next-20210726.
+>>>=20
+>>> I have attached the boot log.
+>>=20
+>> I noticed this with OpenSUSE's ppc64le config [1] and my bisect =
+landed on
+>> commit ad6c00283163 ("swiotlb: Free tbl memory in swiotlb_exit()"). =
+That
+>> series just keeps on giving...
+>=20
+> Yes, but look how handy our new print is!
+>=20
+> [    0.010799] software IO TLB: tearing down default memory pool
+> [    0.010805] ------------[ cut here ]------------
+> [    0.010808] kernel BUG at arch/powerpc/kernel/interrupt.c:98!
+>=20
+> Following Nick's suggestion, the diff below should help? I don't have =
+a
+> relevant box on which I can test it though.
+>=20
 
-00:00:45 executing program 10:
-r0 = openat$kvm(0xffffffffffffff9c, &(0x7f0000000000), 0x0, 0x0)
-r1 = ioctl$KVM_CREATE_VM(r0, 0x2000ae01, 0x0)
-r2 = ioctl$KVM_CREATE_VCPU(r1, 0x2000ae41, 0x0)
-ioctl$KVM_SET_REGS(r2, 0x8188ae82, &(0x7f00000001c0)={[0x0, 0x0, 0xffffffffffffffe1, 0x0, 0x0, 0x200000953, 0x0, 0xfffffffffffffffe, 0x0, 0x0, 0x2], 0x2000})
-syz_kvm_setup_cpu$ppc64(0xffffffffffffffff, r2, &(0x7f0000e80000/0x180000)=nil, 0x0, 0x0, 0x0, 0x0, 0x0)
-r3 = openat$kvm(0xffffffffffffff9c, &(0x7f0000000100), 0x0, 0x0)
-syz_kvm_setup_cpu$ppc64(r1, r2, &(0x7f0000e70000/0x180000)=nil, &(0x7f0000000080)=[{0x0, &(0x7f0000000280)="0000e03d0080ef61e403ef790000ef650900ef61647b007c0000e03f0000ff63e403ff7b0000ff679952ff6370e63f7e0000603c00006360e4036378000063640003636018a8803c28bf8460e4038478ef97846436888460b6f6a03c88d6a560e403a5781beda564d879a5602665c03cb08dc660e403c67806b3c664966fc660d53fe03cddf1e760e403e7785c41e7646623e76022000044463fb1f20000803e00809462e403947a0000946604009462a6a6607f4abb4c130000603f00007b63e4037b7b00007b679a367b6332d9c17c201c994f7201004cbb7a603f72047b63e4037b7b955f7b6799947b636401607f", 0xf0}], 0x1, 0x0, &(0x7f00000000c0)=[@featur2={0x1, 0x1000}], 0x1)
+Thanks for the fix. This fixes the reported problem for me.
+Tested successfully on both PowerVM LPAR as well as bare metal =
+environment.
 
+Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
 
-cpu 0xd: Vector: 300 (Data Access) at [c00000001599f590]
-    pc: c00000000011d2bc: powernv_get_random_long+0x4c/0xc0
-    lr: c00000000011d298: powernv_get_random_long+0x28/0xc0
-    sp: c00000001599f830
-   msr: 800000000280b033
-   dar: 0
- dsisr: 40000000
-  current = 0xc0000000614c7f80
-  paca    = 0xc0000000fff81700	 irqmask: 0x03	 irq_happened: 0x01
-    pid   = 31576, comm = syz-executor.10
-
-Linux version 5.14.0-rc2-le_f29cf1ff9a23_a+fstn1 (aik@fstn1-p1) (gcc (Ubuntu 10.3.0-1ubuntu1) 10.3.0, GNU ld (GNU Binutils for Ubuntu) 2.36.1) #263 SMP Thu Jul 29 17:56:12 AEST 2021
-enter ? for help
-[c00000001599f860] c0000000001e45f8 kvmppc_pseries_do_hcall+0x5d8/0x2190
-[c00000001599f8f0] c0000000001ea2dc kvmppc_vcpu_run_hv+0x31c/0x14d0
-[c00000001599f9c0] c0000000001bd518 kvmppc_vcpu_run+0x48/0x60
-[c00000001599f9f0] c0000000001b74b0 kvm_arch_vcpu_ioctl_run+0x580/0x7d0
-[c00000001599fa90] c00000000019e6f8 kvm_vcpu_ioctl+0x418/0xd00
-[c00000001599fc70] c00000000079d8c4 sys_ioctl+0xb44/0x2100
-[c00000001599fd90] c00000000003b704 system_call_exception+0x224/0x410
-[c00000001599fe10] c00000000000c0e8 system_call_vectored_common+0xe8/0x278
-
-
-
----
- arch/powerpc/platforms/powernv/rng.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
-index 72c25295c1c2..070d0963995d 100644
---- a/arch/powerpc/platforms/powernv/rng.c
-+++ b/arch/powerpc/platforms/powernv/rng.c
-@@ -105,6 +105,8 @@ int powernv_get_random_long(unsigned long *v)
- 	struct powernv_rng *rng;
- 
- 	rng = get_cpu_var(powernv_rng);
-+	if (!rng || !rng->regs)
-+		return 0;
- 
- 	*v = rng_whiten(rng, in_be64(rng->regs));
- 
--- 
-2.30.2
+> Will
+>=20
+> --->8
+>=20
+> diff --git a/arch/powerpc/platforms/pseries/svm.c =
+b/arch/powerpc/platforms/pseries/svm.c
+> index 1d829e257996..87f001b4c4e4 100644
+> --- a/arch/powerpc/platforms/pseries/svm.c
+> +++ b/arch/powerpc/platforms/pseries/svm.c
+> @@ -63,6 +63,9 @@ void __init svm_swiotlb_init(void)
+>=20
+> int set_memory_encrypted(unsigned long addr, int numpages)
+> {
+> +       if (!mem_encrypt_active())
+> +               return 0;
+> +
+>        if (!PAGE_ALIGNED(addr))
+>                return -EINVAL;
+>=20
+> @@ -73,6 +76,9 @@ int set_memory_encrypted(unsigned long addr, int =
+numpages)
+>=20
+> int set_memory_decrypted(unsigned long addr, int numpages)
+> {
+> +       if (!mem_encrypt_active())
+> +               return 0;
+> +
+>        if (!PAGE_ALIGNED(addr))
+>                return -EINVAL;
+>=20
 
