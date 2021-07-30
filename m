@@ -2,57 +2,114 @@ Return-Path: <SRS0=lRG+=MW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CC85C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 09:59:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4279C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 10:10:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C3C0760C3F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 09:59:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C3C0760C3F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 396FF60E76
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 10:10:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 396FF60E76
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GbjXp3Bm7z3d7f
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 19:59:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
- envelope-from=andriy.shevchenko@intel.com; receiver=<UNKNOWN>)
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gbjp23xQtz3cRy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jul 2021 20:10:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FMq4Q3px;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=FMq4Q3px; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gbgry4GpMz301X
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 18:42:48 +1000 (AEST)
-X-IronPort-AV: E=McAfee;i="6200,9189,10060"; a="192649277"
-X-IronPort-AV: E=Sophos;i="5.84,281,1620716400"; d="scan'208";a="192649277"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Jul 2021 01:06:43 -0700
-X-IronPort-AV: E=Sophos;i="5.84,281,1620716400"; d="scan'208";a="635393118"
-Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
- by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Jul 2021 01:06:29 -0700
-Received: from andy by smile with local (Exim 4.94.2)
- (envelope-from <andriy.shevchenko@intel.com>)
- id 1m9NXA-003JSv-6T; Fri, 30 Jul 2021 11:06:20 +0300
-Date: Fri, 30 Jul 2021 11:06:20 +0300
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH v1 0/5] PCI: Drop duplicated tracking of a pci_dev's
- bound driver
-Message-ID: <YQOy/OTvY66igEoe@smile.fi.intel.com>
-References: <20210729203740.1377045-1-u.kleine-koenig@pengutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GbjnV68YCz302W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jul 2021 20:10:06 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 16UA3o6B173920; Fri, 30 Jul 2021 06:09:59 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : to : cc :
+ subject : message-id : reply-to : references : mime-version : content-type
+ : in-reply-to; s=pp1; bh=moXt+ETW1JFI/6xQjdBKMgyely4L7znSX8B2bRIvBwM=;
+ b=FMq4Q3pxUhpk3PjBkqZ4VWMjOfSkIcepQN9CjdyBEnORntfq0rS3qq29+iMFKT3dKRXc
+ E+jAs1dqkFDP5blCuh0IX52CFjZ1xtSuYzjk3VSf54tEcoFS1j1KMS/L31M4UBc+tNQK
+ w8ASm2FXOsnazBPFPG/s94jYq4sXpavuQATPBrkvm5fbc/HiWw4tIeqREWmeg3Qx1aAG
+ Tk46oEw6znvJvI0l0Of203fdfgRvUg572xvScFmccxIyyUeM4y8UWuDwi9nhSBqxVpdn
+ CePdYYfC3DeGPMyUhMIbZnZq9JHoF9dSyW+bJtdzJbLDUxuLClwKjwoK5qcEfl4bMlsD Fw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a4aqjyqnj-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 30 Jul 2021 06:09:59 -0400
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16UA4GrO175396;
+ Fri, 30 Jul 2021 06:09:59 -0400
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a4aqjyqn7-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 30 Jul 2021 06:09:59 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16UA2uXX031684;
+ Fri, 30 Jul 2021 10:09:58 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma01dal.us.ibm.com with ESMTP id 3a3w9h9bsc-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 30 Jul 2021 10:09:53 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 16UA8RMG46334256
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 30 Jul 2021 10:08:27 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 73020C6067;
+ Fri, 30 Jul 2021 10:08:27 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CD827C6055;
+ Fri, 30 Jul 2021 10:08:26 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.199.53.50])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Fri, 30 Jul 2021 10:08:26 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id BE98D2E2DC1; Fri, 30 Jul 2021 15:38:20 +0530 (IST)
+Date: Fri, 30 Jul 2021 15:38:20 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Parth Shah <parth@linux.ibm.com>
+Subject: Re: [PATCHv2 3/3] powerpc/smp: Use existing L2 cache_map cpumask to
+ find L3 cache siblings
+Message-ID: <20210730100820.GA21509@in.ibm.com>
+References: <20210728175607.591679-1-parth@linux.ibm.com>
+ <20210728175607.591679-4-parth@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210729203740.1377045-1-u.kleine-koenig@pengutronix.de>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-X-Mailman-Approved-At: Fri, 30 Jul 2021 19:58:48 +1000
+In-Reply-To: <20210728175607.591679-4-parth@linux.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: miJDKNFYz_7SxQ-i91svLBr7FgXNWxTc
+X-Proofpoint-ORIG-GUID: dYib21QOywSNqPpDSuzeV8f-LEQmUv1W
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-07-30_05:2021-07-29,
+ 2021-07-30 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 malwarescore=0
+ phishscore=0 spamscore=0 impostorscore=0 mlxscore=0 priorityscore=1501
+ clxscore=1015 mlxlogscore=999 adultscore=0 suspectscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2107140000 definitions=main-2107300061
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,65 +121,207 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
- =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, Alexander Duyck <alexanderduyck@fb.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Sathya Prakash <sathya.prakash@broadcom.com>,
- oss-drivers@corigine.com, Oliver O'Halloran <oohall@gmail.com>,
- Jiri Olsa <jolsa@redhat.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- linux-perf-users@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>,
- Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org,
- Ido Schimmel <idosch@nvidia.com>, x86@kernel.org, qat-linux@intel.com,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- linux-pci@vger.kernel.org, linux-wireless@vger.kernel.org,
- Jakub Kicinski <kuba@kernel.org>, Mathias Nyman <mathias.nyman@intel.com>,
- Yisen Zhuang <yisen.zhuang@huawei.com>, Fiona Trahe <fiona.trahe@intel.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
- Simon Horman <simon.horman@corigine.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Michael Buesch <m@bues.ch>, Jiri Pirko <jiri@nvidia.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Namhyung Kim <namhyung@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>,
- Salil Mehta <salil.mehta@huawei.com>,
- Sreekanth Reddy <sreekanth.reddy@broadcom.com>, xen-devel@lists.xenproject.org,
- Vadym Kochan <vkochan@marvell.com>, MPT-FusionLinux.pdl@broadcom.com,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- Wojciech Ziemba <wojciech.ziemba@intel.com>, linux-kernel@vger.kernel.org,
- Taras Chornyi <tchornyi@marvell.com>, Zhou Wang <wangzhou1@hisilicon.com>,
- linux-crypto@vger.kernel.org, kernel@pengutronix.de, netdev@vger.kernel.org,
- Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Reply-To: ego@linux.vnet.ibm.com
+Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, srikar@linux.vnet.ibm.com,
+ parths1229@gmail.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 29, 2021 at 10:37:35PM +0200, Uwe Kleine-König wrote:
-> Hello,
-> 
-> struct pci_dev tracks the bound pci driver twice. This series is about
-> removing this duplication.
-> 
-> The first two patches are just cleanups. The third patch introduces a
-> wrapper that abstracts access to struct pci_dev->driver. In the next
-> patch (hopefully) all users are converted to use the new wrapper and
-> finally the fifth patch removes the duplication.
-> 
-> Note this series is only build tested (allmodconfig on several
-> architectures).
-> 
-> I'm open to restructure this series if this simplifies things. E.g. the
-> use of the new wrapper in drivers/pci could be squashed into the patch
-> introducing the wrapper. Patch 4 could be split by maintainer tree or
-> squashed into patch 3 completely.
+On Wed, Jul 28, 2021 at 11:26:07PM +0530, Parth Shah wrote:
+> On POWER10 systems, the "ibm,thread-groups" property "2" indicates the cpus
+> in thread-group share both L2 and L3 caches. Hence, use cache_property = 2
+> itself to find both the L2 and L3 cache siblings.
+> Hence, create a new thread_group_l3_cache_map to keep list of L3 siblings,
+> but fill the mask using same property "2" array.
 
-I see only patch 4 and this cover letter...
+This version looks good to me.
 
--- 
-With Best Regards,
-Andy Shevchenko
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
+> 
+> Signed-off-by: Parth Shah <parth@linux.ibm.com>
 
+> ---
+>  arch/powerpc/include/asm/smp.h  |  3 ++
+>  arch/powerpc/kernel/cacheinfo.c |  3 ++
+>  arch/powerpc/kernel/smp.c       | 66 ++++++++++++++++++++++-----------
+>  3 files changed, 51 insertions(+), 21 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+> index 1259040cc3a4..7ef1cd8168a0 100644
+> --- a/arch/powerpc/include/asm/smp.h
+> +++ b/arch/powerpc/include/asm/smp.h
+> @@ -35,6 +35,7 @@ extern int *chip_id_lookup_table;
+> 
+>  DECLARE_PER_CPU(cpumask_var_t, thread_group_l1_cache_map);
+>  DECLARE_PER_CPU(cpumask_var_t, thread_group_l2_cache_map);
+> +DECLARE_PER_CPU(cpumask_var_t, thread_group_l3_cache_map);
+> 
+>  #ifdef CONFIG_SMP
+> 
+> @@ -144,6 +145,7 @@ extern int cpu_to_core_id(int cpu);
+> 
+>  extern bool has_big_cores;
+>  extern bool thread_group_shares_l2;
+> +extern bool thread_group_shares_l3;
+> 
+>  #define cpu_smt_mask cpu_smt_mask
+>  #ifdef CONFIG_SCHED_SMT
+> @@ -198,6 +200,7 @@ extern void __cpu_die(unsigned int cpu);
+>  #define hard_smp_processor_id()		get_hard_smp_processor_id(0)
+>  #define smp_setup_cpu_maps()
+>  #define thread_group_shares_l2  0
+> +#define thread_group_shares_l3	0
+>  static inline void inhibit_secondary_onlining(void) {}
+>  static inline void uninhibit_secondary_onlining(void) {}
+>  static inline const struct cpumask *cpu_sibling_mask(int cpu)
+> diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
+> index 20d91693eac1..cf1be75b7833 100644
+> --- a/arch/powerpc/kernel/cacheinfo.c
+> +++ b/arch/powerpc/kernel/cacheinfo.c
+> @@ -469,6 +469,9 @@ static int get_group_id(unsigned int cpu_id, int level)
+>  	else if (thread_group_shares_l2 && level == 2)
+>  		return cpumask_first(per_cpu(thread_group_l2_cache_map,
+>  					     cpu_id));
+> +	else if (thread_group_shares_l3 && level == 3)
+> +		return cpumask_first(per_cpu(thread_group_l3_cache_map,
+> +					     cpu_id));
+>  	return -1;
+>  }
+> 
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index a7fcac44a8e2..f2abd88e0c25 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -78,6 +78,7 @@ struct task_struct *secondary_current;
+>  bool has_big_cores;
+>  bool coregroup_enabled;
+>  bool thread_group_shares_l2;
+> +bool thread_group_shares_l3;
+> 
+>  DEFINE_PER_CPU(cpumask_var_t, cpu_sibling_map);
+>  DEFINE_PER_CPU(cpumask_var_t, cpu_smallcore_map);
+> @@ -101,7 +102,7 @@ enum {
+> 
+>  #define MAX_THREAD_LIST_SIZE	8
+>  #define THREAD_GROUP_SHARE_L1   1
+> -#define THREAD_GROUP_SHARE_L2   2
+> +#define THREAD_GROUP_SHARE_L2_L3 2
+>  struct thread_groups {
+>  	unsigned int property;
+>  	unsigned int nr_groups;
+> @@ -131,6 +132,12 @@ DEFINE_PER_CPU(cpumask_var_t, thread_group_l1_cache_map);
+>   */
+>  DEFINE_PER_CPU(cpumask_var_t, thread_group_l2_cache_map);
+> 
+> +/*
+> + * On P10, thread_group_l3_cache_map for each CPU is equal to the
+> + * thread_group_l2_cache_map
+> + */
+> +DEFINE_PER_CPU(cpumask_var_t, thread_group_l3_cache_map);
+> +
+>  /* SMP operations for this machine */
+>  struct smp_ops_t *smp_ops;
+> 
+> @@ -889,19 +896,41 @@ static struct thread_groups *__init get_thread_groups(int cpu,
+>  	return tg;
+>  }
+> 
+> +static int update_mask_from_threadgroup(cpumask_var_t *mask, struct thread_groups *tg, int cpu, int cpu_group_start)
+> +{
+> +	int first_thread = cpu_first_thread_sibling(cpu);
+> +	int i;
+> +
+> +	zalloc_cpumask_var_node(mask, GFP_KERNEL, cpu_to_node(cpu));
+> +
+> +	for (i = first_thread; i < first_thread + threads_per_core; i++) {
+> +		int i_group_start = get_cpu_thread_group_start(i, tg);
+> +
+> +		if (unlikely(i_group_start == -1)) {
+> +			WARN_ON_ONCE(1);
+> +			return -ENODATA;
+> +		}
+> +
+> +		if (i_group_start == cpu_group_start)
+> +			cpumask_set_cpu(i, *mask);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  static int __init init_thread_group_cache_map(int cpu, int cache_property)
+> 
+>  {
+> -	int first_thread = cpu_first_thread_sibling(cpu);
+> -	int i, cpu_group_start = -1, err = 0;
+> +	int cpu_group_start = -1, err = 0;
+>  	struct thread_groups *tg = NULL;
+>  	cpumask_var_t *mask = NULL;
+> 
+>  	if (cache_property != THREAD_GROUP_SHARE_L1 &&
+> -	    cache_property != THREAD_GROUP_SHARE_L2)
+> +	    cache_property != THREAD_GROUP_SHARE_L2_L3)
+>  		return -EINVAL;
+> 
+>  	tg = get_thread_groups(cpu, cache_property, &err);
+> +
+>  	if (!tg)
+>  		return err;
+> 
+> @@ -912,25 +941,18 @@ static int __init init_thread_group_cache_map(int cpu, int cache_property)
+>  		return -ENODATA;
+>  	}
+> 
+> -	if (cache_property == THREAD_GROUP_SHARE_L1)
+> +	if (cache_property == THREAD_GROUP_SHARE_L1) {
+>  		mask = &per_cpu(thread_group_l1_cache_map, cpu);
+> -	else if (cache_property == THREAD_GROUP_SHARE_L2)
+> +		update_mask_from_threadgroup(mask, tg, cpu, cpu_group_start);
+> +	}
+> +	else if (cache_property == THREAD_GROUP_SHARE_L2_L3) {
+>  		mask = &per_cpu(thread_group_l2_cache_map, cpu);
+> -
+> -	zalloc_cpumask_var_node(mask, GFP_KERNEL, cpu_to_node(cpu));
+> -
+> -	for (i = first_thread; i < first_thread + threads_per_core; i++) {
+> -		int i_group_start = get_cpu_thread_group_start(i, tg);
+> -
+> -		if (unlikely(i_group_start == -1)) {
+> -			WARN_ON_ONCE(1);
+> -			return -ENODATA;
+> -		}
+> -
+> -		if (i_group_start == cpu_group_start)
+> -			cpumask_set_cpu(i, *mask);
+> +		update_mask_from_threadgroup(mask, tg, cpu, cpu_group_start);
+> +		mask = &per_cpu(thread_group_l3_cache_map, cpu);
+> +		update_mask_from_threadgroup(mask, tg, cpu, cpu_group_start);
+>  	}
+> 
+> +
+>  	return 0;
+>  }
+> 
+> @@ -1020,14 +1042,16 @@ static int __init init_big_cores(void)
+>  	has_big_cores = true;
+> 
+>  	for_each_possible_cpu(cpu) {
+> -		int err = init_thread_group_cache_map(cpu, THREAD_GROUP_SHARE_L2);
+> +		int err = init_thread_group_cache_map(cpu, THREAD_GROUP_SHARE_L2_L3);
+> 
+>  		if (err)
+>  			return err;
+>  	}
+> 
+>  	thread_group_shares_l2 = true;
+> -	pr_debug("L2 cache only shared by the threads in the small core\n");
+> +	thread_group_shares_l3 = true;
+> +	pr_debug("L2/L3 cache only shared by the threads in the small core\n");
+> +
+>  	return 0;
+>  }
+> 
+> -- 
+> 2.26.3
+> 
