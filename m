@@ -2,47 +2,47 @@ Return-Path: <SRS0=nAH3=MZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B7F4C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 10:42:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA364C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 10:45:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A56860F9F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 10:42:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9A56860F9F
+	by mail.kernel.org (Postfix) with ESMTPS id 332F160FA0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 10:45:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 332F160FA0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=8bytes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GdZMj0rNqz3dDV
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 20:42:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GdZRG6cxxz3cGc
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 20:45:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=8bytes.org (client-ip=81.169.241.247; helo=theia.8bytes.org;
- envelope-from=joro@8bytes.org; receiver=<UNKNOWN>)
-Received: from theia.8bytes.org (8bytes.org [81.169.241.247])
+ smtp.mailfrom=8bytes.org (client-ip=2a01:238:4383:600:38bc:a715:4b6d:a889;
+ helo=theia.8bytes.org; envelope-from=joro@8bytes.org; receiver=<UNKNOWN>)
+Received: from theia.8bytes.org (8bytes.org
+ [IPv6:2a01:238:4383:600:38bc:a715:4b6d:a889])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GdZMK5JVgz306F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Aug 2021 20:42:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GdZQv3tfsz303f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Aug 2021 20:45:27 +1000 (AEST)
 Received: by theia.8bytes.org (Postfix, from userid 1000)
- id 06300379; Mon,  2 Aug 2021 12:42:18 +0200 (CEST)
-Date: Mon, 2 Aug 2021 12:42:17 +0200
+ id A1662379; Mon,  2 Aug 2021 12:45:24 +0200 (CEST)
+Date: Mon, 2 Aug 2021 12:45:23 +0200
 From: Joerg Roedel <joro@8bytes.org>
 To: Tom Lendacky <thomas.lendacky@amd.com>
-Subject: Re: [PATCH 05/11] x86/sev: Replace occurrences of sev_active() with
- prot_guest_has()
-Message-ID: <YQfMCXN0z+LhNBdN@8bytes.org>
+Subject: Re: [PATCH 06/11] x86/sev: Replace occurrences of sev_es_active()
+ with prot_guest_has()
+Message-ID: <YQfMw2FRO5M1osGF@8bytes.org>
 References: <cover.1627424773.git.thomas.lendacky@amd.com>
- <fa4cdba858e5cb20da2bcd31acf6959ae391bded.1627424774.git.thomas.lendacky@amd.com>
+ <ba565128b88661a656fc3972f01bb2e295158a15.1627424774.git.thomas.lendacky@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <fa4cdba858e5cb20da2bcd31acf6959ae391bded.1627424774.git.thomas.lendacky@amd.com>
+In-Reply-To: <ba565128b88661a656fc3972f01bb2e295158a15.1627424774.git.thomas.lendacky@amd.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,36 +54,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>,
+Cc: linux-s390@vger.kernel.org,
+ Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>,
  linux-efi@vger.kernel.org, Brijesh Singh <brijesh.singh@amd.com>,
- kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org,
- platform-driver-x86@vger.kernel.org, Ard Biesheuvel <ardb@kernel.org>,
- linux-s390@vger.kernel.org, Andi Kleen <ak@linux.intel.com>, x86@kernel.org,
- amd-gfx@lists.freedesktop.org, Ingo Molnar <mingo@redhat.com>,
- linux-graphics-maintainer@vmware.com, Tianyu Lan <Tianyu.Lan@microsoft.com>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ kvm@vger.kernel.org, Tianyu Lan <Tianyu.Lan@microsoft.com>, x86@kernel.org,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ amd-gfx@lists.freedesktop.org, platform-driver-x86@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Andi Kleen <ak@linux.intel.com>,
+ linux-graphics-maintainer@vmware.com, dri-devel@lists.freedesktop.org,
+ linux-fsdevel@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 27, 2021 at 05:26:08PM -0500, Tom Lendacky wrote:
-> Replace occurrences of sev_active() with the more generic prot_guest_has()
-> using PATTR_GUEST_MEM_ENCRYPT, except for in arch/x86/mm/mem_encrypt*.c
-> where PATTR_SEV will be used. If future support is added for other memory
-> encryption technologies, the use of PATTR_GUEST_MEM_ENCRYPT can be
-> updated, as required, to use PATTR_SEV.
-> 
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Cc: Dave Hansen <dave.hansen@linux.intel.com>
-> Cc: Andy Lutomirski <luto@kernel.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Ard Biesheuvel <ardb@kernel.org>
-> Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
+On Tue, Jul 27, 2021 at 05:26:09PM -0500, Tom Lendacky wrote:
+> @@ -48,7 +47,7 @@ static void sme_sev_setup_real_mode(struct trampoline_header *th)
+>  	if (prot_guest_has(PATTR_HOST_MEM_ENCRYPT))
+>  		th->flags |= TH_FLAGS_SME_ACTIVE;
+>  
+> -	if (sev_es_active()) {
+> +	if (prot_guest_has(PATTR_GUEST_PROT_STATE)) {
+>  		/*
+>  		 * Skip the call to verify_cpu() in secondary_startup_64 as it
+>  		 * will cause #VC exceptions when the AP can't handle them yet.
 
-Reviewed-by: Joerg Roedel <jroedel@suse.de>
+Not sure how TDX will handle AP booting, are you sure it needs this
+special setup as well? Otherwise a check for SEV-ES would be better
+instead of the generic PATTR_GUEST_PROT_STATE.
+
+Regards,
+
+Joerg
