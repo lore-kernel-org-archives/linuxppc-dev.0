@@ -2,80 +2,120 @@ Return-Path: <SRS0=nAH3=MZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	FROM_LOCAL_NOVOWEL,HEADER_FROM_DIFFERENT_DOMAINS,HK_RANDOM_FROM,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F305C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 23:40:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5A4BC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 23:40:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 603F660EE6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 23:40:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 603F660EE6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3C8A960EE6
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 23:40:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3C8A960EE6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gdvd40gKkz3dRS
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 09:40:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GdvdY6kBcz3dWL
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 09:40:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=bllfssUh;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ABoHgzRV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::636;
- helo=mail-ej1-x636.google.com; envelope-from=jcmvbkbc@gmail.com;
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=laboger@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=bllfssUh; dkim-atps=neutral
-Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com
- [IPv6:2a00:1450:4864:20::636])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=ABoHgzRV; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gdm9F0HtVz2xYx
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 04:04:15 +1000 (AEST)
-Received: by mail-ej1-x636.google.com with SMTP id go31so32165707ejc.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Aug 2021 11:04:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=KpOmQ9FDFdEDp1DRxCOS4/jNxSUC+b7VQifrd/M4FUE=;
- b=bllfssUh1l3Cfof1I9S9zG5MovjfwF9CypWcpRvDmWpOEx759rPpO8GjtwWqnstMf2
- 1QwJGh+kGvZKoMFQKf6FhnPOMkpo3JEJzP0z2jokepgekez40su6FDqDQO76azQW4aaY
- ndpMqrh8QhqQUbO9PB7UVTzGgkGjnuiB8BDrnOUlo6IfpOOOD5wRbVnNH3nzFEb8Jlvv
- f2sHv6d82OwwrINjEhGy7L8YhBy8Uq7x29x9aN5cqnZAFpZ+YseiNvbNJLRthMaSdJt+
- GNYBQGlDLHbH2bDQodG8T6OzjQiYO36wOgJ2MGUlCkSsxnL4jcZpqW+jXXGFabstpv3T
- roTQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=KpOmQ9FDFdEDp1DRxCOS4/jNxSUC+b7VQifrd/M4FUE=;
- b=WekSDgv42exTqcz5/NvWkyXrfnbmHoKgUuw2m5U99bKwv9VH6MU7yTDAbV2jGkJpJG
- xKvEWyYUY5CxaybDMSOAAUKqcbktR5SV3MmBKqivcFMkIftvY+k584unsMBkUJ70n5qp
- PnlBExiC6wps4bvJtI6s8kImeLfgG+FbzYD5tFdX88dCz8x4cnmysvatjbAwrREoVV/A
- WIQ7Hhk8q2Nw8A247Axan5UxSgo9nWDfBQcPMVkPHUDiE04pP6qJNRcIvKg7zZ5XPRuE
- 2l2umWGla6cZtlEB3qxyy7ZJqkQN9/cFt3h9597q2plmjYbh8K9RHm/tsvcHNCptmKFs
- /lIA==
-X-Gm-Message-State: AOAM531iaZ6prpn1WS0AHMeCtFSTF5gJQL/kCL/n7vAz+HLpDG5vrZYj
- i8gs3M+GK/se1X5rHZ7bcpg1deHS8q2AGY3Sl60=
-X-Google-Smtp-Source: ABdhPJx4CTYoE1N/7r5r3Yv59NCnUgpiXyVEWPBrQR2H8OPpQmdyOckhCi7flWDeCgEu3pc8T6+GCYt+gQKqcxApyio=
-X-Received: by 2002:a17:906:34da:: with SMTP id
- h26mr16470323ejb.376.1627927449046; 
- Mon, 02 Aug 2021 11:04:09 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GdmP60s2yz2xjR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 04:14:33 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 172I4Uk4065612; Mon, 2 Aug 2021 14:14:19 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=oF+1KWrDgjCrVhbHAm9zTngJfuhEWpIte0xFd6CR5pA=;
+ b=ABoHgzRVL2odC/C8J9ZYcZmvATrN0Byr0tvpDwpXkAeyOVBhlUNUq+AMrc/pECtQkR1q
+ glRb1wDhVcWhMI55SRWErH7vcw2Q+ZR7eb5qkyVGA8HBILPcUXOTt0L0FrGE+/uL3a7m
+ mmLBCxo585FXrAI2I8L6TXvnyuz4laO/8EV8tEIdqAS6U++c+zKGb3Tgg8E4eUwRrOxY
+ PHNOG3ZZJxKmnKyssIR+KbXwJ68nK8+EgCkneblgf7QZgktHs4/MWrYRypdlkhECyNbz
+ bGoazNFOZ/yZ/UP4cgtPKVnkPFaHlFKnb78EM0Tl0DjBv/O2uU/iw4p7tsVuCYP/2Qv3 Zg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3a5m01vay3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 02 Aug 2021 14:14:19 -0400
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 172I58AW067243;
+ Mon, 2 Aug 2021 14:14:19 -0400
+Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.27])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3a5m01vaxs-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 02 Aug 2021 14:14:19 -0400
+Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
+ by ppma05wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 172ID96J006700;
+ Mon, 2 Aug 2021 18:14:18 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma05wdc.us.ibm.com with ESMTP id 3a4x5b0cs9-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 02 Aug 2021 18:14:18 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 172IEHHt34472344
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 2 Aug 2021 18:14:17 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 449AF28060;
+ Mon,  2 Aug 2021 18:14:17 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3768828068;
+ Mon,  2 Aug 2021 18:14:16 +0000 (GMT)
+Received: from li-608f474c-22e2-11b2-a85c-e58472f80495.ibm.com (unknown
+ [9.163.36.158]) by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon,  2 Aug 2021 18:14:16 +0000 (GMT)
+Subject: Re: Possible regression by ab037dd87a2f (powerpc/vdso: Switch VDSO to
+ generic C implementation.)
+To: Michael Ellerman <mpe@ellerman.id.au>, Paul Murphy <murp@ibm.com>,
+ pmenzel@molgen.mpg.de
+References: <b5f948b4-759d-bb9f-06aa-6c15d37cd2bb@molgen.mpg.de>
+ <a273c619-9258-e29a-24c3-ea47a13c4817@molgen.mpg.de>
+ <3661999754da1a5e5c810fa669654cc7db95b059.camel@kernel.crashing.org>
+ <4f037af0-5066-ebb9-53a6-733b3bd8eeac@molgen.mpg.de>
+ <878s1q1udj.fsf@mpe.ellerman.id.au>
+ <OF44F7146F.67A4C1C2-ON00258720.004DBF64-00258720.004FCFCC@ibm.com>
+ <87czqwl67h.fsf@mpe.ellerman.id.au>
+From: Lynn Boger <laboger@linux.vnet.ibm.com>
+Message-ID: <4c031287-9632-c77b-e5d6-222ca761fab6@linux.vnet.ibm.com>
+Date: Mon, 2 Aug 2021 13:14:15 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 MIME-Version: 1.0
-References: <20210731052233.4703-1-masahiroy@kernel.org>
- <20210731052233.4703-2-masahiroy@kernel.org>
-In-Reply-To: <20210731052233.4703-2-masahiroy@kernel.org>
-From: Max Filippov <jcmvbkbc@gmail.com>
-Date: Mon, 2 Aug 2021 11:03:57 -0700
-Message-ID: <CAMo8BfLDjw71xiCDo8uk4pQFuOzqAoak0k3R4YJDnRsA2hoCtw@mail.gmail.com>
-Subject: Re: [PATCH 2/3] trace: refactor TRACE_IRQFLAGS_SUPPORT in Kconfig
-To: Masahiro Yamada <masahiroy@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <87czqwl67h.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: szjwlszLeoG2xfb-8pMHWwVkruHoACZW
+X-Proofpoint-GUID: IZOuJOLNQGrU95TB3mcGTsXX_7TEu5Ov
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-08-02_07:2021-08-02,
+ 2021-08-02 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 suspectscore=0
+ mlxlogscore=999 lowpriorityscore=0 clxscore=1011 priorityscore=1501
+ mlxscore=0 malwarescore=0 phishscore=0 bulkscore=0 impostorscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2107140000 definitions=main-2108020117
 X-Mailman-Approved-At: Tue, 03 Aug 2021 09:38:00 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -88,68 +128,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Rich Felker <dalias@libc.org>,
- "open list:SUPERH" <linux-sh@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Linus Walleij <linus.walleij@linaro.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, LKML <linux-kernel@vger.kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>,
- "open list:SPARC + UltraSPAR..." <sparclinux@vger.kernel.org>,
- linux-riscv@lists.infradead.org, Vincent Chen <deanbo422@gmail.com>,
- Will Deacon <will@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Jonas Bonn <jonas@southpole.se>, linux-s390 <linux-s390@vger.kernel.org>,
- Vasily Gorbik <gor@linux.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
- YiFei Zhu <yifeifz2@illinois.edu>, Richard Weinberger <richard@nod.at>,
- Helge Deller <deller@gmx.de>,
- "maintainer:X86 ARCHITECTURE..." <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Ley Foon Tan <ley.foon.tan@intel.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- "open list:PARISC ARCHITECTURE" <linux-parisc@vger.kernel.org>,
- Sami Tolvanen <samitolvanen@google.com>,
- =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- Stafford Horne <shorne@gmail.com>, linux-snps-arc@lists.infradead.org,
- Jeff Dike <jdike@addtoit.com>,
- "open list:TENSILICA XTENSA PORT \(xtensa\)" <linux-xtensa@linux-xtensa.org>,
- Albert Ou <aou@eecs.berkeley.edu>, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, Anshuman Khandual <anshuman.khandual@arm.com>,
- Heiko Carstens <hca@linux.ibm.com>, linux-um@lists.infradead.org,
- Steven Rostedt <rostedt@goodmis.org>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
- Greentime Hu <green.hu@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Andrey Konovalov <andreyknvl@gmail.com>, Chris Zankel <chris@zankel.net>,
- Michal Simek <monstr@monstr.eu>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Brian Cain <bcain@codeaurora.org>, Nick Hu <nickhu@andestech.com>,
- Vineet Gupta <vgupta@synopsys.com>, Nicholas Piggin <npiggin@gmail.com>,
- linux-mips@vger.kernel.org, Frederic Weisbecker <frederic@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>,
- "open list:QUALCOMM HEXAGON..." <linux-hexagon@vger.kernel.org>,
- Colin Ian King <colin.king@canonical.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
+Cc: parkerderek86@gmail.com, xaionaro@gmail.com, paulus@samba.org,
+ murphyp@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 30, 2021 at 10:24 PM Masahiro Yamada <masahiroy@kernel.org> wrote:
->
-> Make architectures select TRACE_IRQFLAGS_SUPPORT instead of
-> having many defines.
->
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-> ---
->  arch/xtensa/Kconfig           | 4 +---
+Fixes will be in Go 1.16.7 and 1.15.15. Backports are no longer being 
+done for Go 1.14.
 
-Acked-by: Max Filippov <jcmvbkbc@gmail.com>
--- 
-Thanks.
--- Max
+On 8/2/21 1:18 AM, Michael Ellerman wrote:
+> "Paul Murphy" <murp@ibm.com> writes:
+>>   
+>> (My apologies for however IBM's email client munges this)
+>>
+>>> I heard it is going to be in Go 1.16.7, but I do not know much about Go.
+>>> Maybe the folks in Cc can chime in.
+>>   
+>>   
+>> We have backports primed and ready for the next point release. They
+>> are waiting on the release manager to cherrypick them.
+> OK good, that is still the correct fix in the long run.
+>
+>> I think we were aware that our VDSO usage may have exploited some
+>> peculiarities in how the ppc64 version was constructed (i.e hand
+>> written assembly which just didn't happen to clobber R30).
+> Yeah I was "somewhat surprised" that Go thought it could use r30 like
+> that across a VDSO call :D
+>
+> But to be fair the ABI of the VDSO has always been a little fishy,
+> because the entry points pretend to be a transparent wrapper around
+> system calls, but then in a case like this are not.
+>
+>> Go up to this point has only used the vdso function __kernel_clock_gettime; it
+>> is the only entry point which would need to explicitly avoid R30 for
+>> Go's sake.
+> I thought about limiting the workaround to just that code, but it seemed
+> silly and likely to come back to bite us. Once the compilers decides to
+> spill a non-volatile there are plenty of other ones to choose from.
+>
+> cheers
