@@ -2,66 +2,64 @@ Return-Path: <SRS0=nAH3=MZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B9EBC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 02:36:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E4C4C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 06:03:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 65CC261050
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 02:36:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 65CC261050
+	by mail.kernel.org (Postfix) with ESMTPS id 9E5B760EFF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 06:03:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9E5B760EFF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GdMb55D8vz30J0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 12:36:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GdS9M5cbfz3cKF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 16:03:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=a1WosJ0K;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KhE/7yng;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=a1WosJ0K; 
+ header.a=rsa-sha256 header.s=201909 header.b=KhE/7yng; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GdMZZ44J5z2yLm
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Aug 2021 12:36:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GdS8r54w1z2yy3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Aug 2021 16:02:51 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4GdMZP2s0Lz9sT6;
- Mon,  2 Aug 2021 12:36:13 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4GdS8p4BsNz9sRK;
+ Mon,  2 Aug 2021 16:02:48 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1627871780;
- bh=3h+pDmgdaEzjLhKsKsWflOl3eTtWNpO0qlqcc3HN5gw=;
+ s=201909; t=1627884171;
+ bh=n8jZx6w5lsO8h4k9sHk6uNDWOQkmiMu8W8QtD1+2nO8=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=a1WosJ0KTXjCRMYjN+wSNFc6ThlMWt6oNtTvbiU08VVh18S12fqbdg7dtDkTBwLa5
- mW8V1Rs4z1BYZuL+pODWPRcD9vbuP8wr01nokBcoTqy49p0SZolAkJwet6ROF0SgEd
- HIz4pn3qWuGGanDbWuW4js0/5hgiIlpoNRE/cyUZxz2eu0jNe7yDYVqAQscP9GPFnE
- qSf68THatsIhId+0A9UWQp8CymuJZBASivoSVD4ldWSNoXSko1yGGp69QbvPTzYUiQ
- G0ZV6Ba/iniZMiL5MNvLUDtAPk+yDPaeM5eVp48+0XyP3sN+LVB9D69GzgsiEom2l/
- 2x/ybfb3/4spg==
+ b=KhE/7yngTkzWfiGcIos1FbWPLpdyYidIZkO96Xmei+xSuXi1IHpFADnnXA8lTi0MH
+ 8rXdS5lr94S+ItUlrRMXhROjhnXJMA37UrMObAbcX8Q+i9hF8253qAxVhVjQjuKhQI
+ PvbBC/XyMMPYxr6hx19BDj5H73ioBoa5cm499JaPS3/gJ6oNLVXdNndj18KA6ZP7zM
+ +0aCqQs7N8eHzd+lRqMP7OcsLf65/FC2gwY9aSeroiw2cwPAWtH6/VaGL0TNg3Amsh
+ uQZEZUitD1aOINQJieswBnfY5NUtPNl4aXBg6c9C+xIFrt+eHyeWBUx89pkyP+I1IA
+ m4/iHahE0wTcA==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Masahiro Yamada <masahiroy@kernel.org>, Andy Lutomirski
- <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Vincenzo Frascino
- <vincenzo.frascino@arm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] arch: vdso: remove if-conditionals of
- $(c-gettimeofday-y)
-In-Reply-To: <20210731060020.12913-1-masahiroy@kernel.org>
-References: <20210731060020.12913-1-masahiroy@kernel.org>
-Date: Mon, 02 Aug 2021 12:36:08 +1000
-Message-ID: <87v94ozi7b.fsf@mpe.ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH kernel] powerpc/powernv: Check if powernv_rng is
+ initialized
+In-Reply-To: <20210730044315.956125-1-aik@ozlabs.ru>
+References: <20210730044315.956125-1-aik@ozlabs.ru>
+Date: Mon, 02 Aug 2021 16:02:48 +1000
+Message-ID: <87im0ol6yf.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -75,46 +73,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Masahiro Yamada <masahiroy@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-mips@vger.kernel.org, linux-csky@vger.kernel.org,
- Russell King <linux@armlinux.org.uk>, Albert Ou <aou@eecs.berkeley.edu>,
- Palmer Dabbelt <palmer@dabbelt.com>, linux-arm-kernel@lists.infradead.org,
- Paul Walmsley <paul.walmsley@sifive.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Guo Ren <guoren@kernel.org>,
- linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
- Paul Mackerras <paulus@samba.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Masahiro Yamada <masahiroy@kernel.org> writes:
-> arm, arm64, csky, mips, powerpc always select GENERIC_GETTIMEOFDAY,
-> hence $(gettimeofday-y) never becomes empty.
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+> The powernv-rng driver has 2 users - the bare metal powernv platform and
+> the KVM's H_RANDOM hcall. The hcall handler works fine when it is L0 KVM
+> but fails in L1 KVM as there is no support for the HW registers in L1 VMs
+> and such support is not advertised either (== no "ibm,power-rng" in
+> the FDT). So when a nested VM tries H_RANDOM, the L1 KVM crashes on
+> in_be64(rng->regs).
 >
-> riscv conditionally selects GENERIC_GETTIMEOFDAY when MMU=y && 64BIT=y,
-> but arch/riscv/kernel/vdso/vgettimeofday.o is built only under that
-> condition. So, you can always define CFLAGS_vgettimeofday.o
+> This checks the pointers and returns an error if the feature is not
+> set up.
 >
-> Remove all the meaningless conditionals.
->
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 > ---
 >
-> Changes in v2:
->   - Fix csky as well
 >
->  arch/arm/vdso/Makefile              |  4 ----
->  arch/arm64/kernel/vdso/Makefile     |  5 +----
->  arch/arm64/kernel/vdso32/Makefile   |  3 ---
->  arch/csky/kernel/vdso/Makefile      |  4 +---
->  arch/mips/vdso/Makefile             |  2 --
->  arch/powerpc/kernel/vdso32/Makefile | 14 ++++++--------
->  arch/powerpc/kernel/vdso64/Makefile | 14 ++++++--------
+> Randomly randomized H_RANDOM:
+>
+> 00:00:45 executing program 10:
+> r0 = openat$kvm(0xffffffffffffff9c, &(0x7f0000000000), 0x0, 0x0)
+> r1 = ioctl$KVM_CREATE_VM(r0, 0x2000ae01, 0x0)
+> r2 = ioctl$KVM_CREATE_VCPU(r1, 0x2000ae41, 0x0)
+> ioctl$KVM_SET_REGS(r2, 0x8188ae82, &(0x7f00000001c0)={[0x0, 0x0, 0xffffffffffffffe1, 0x0, 0x0, 0x200000953, 0x0, 0xfffffffffffffffe, 0x0, 0x0, 0x2], 0x2000})
+> syz_kvm_setup_cpu$ppc64(0xffffffffffffffff, r2, &(0x7f0000e80000/0x180000)=nil, 0x0, 0x0, 0x0, 0x0, 0x0)
+> r3 = openat$kvm(0xffffffffffffff9c, &(0x7f0000000100), 0x0, 0x0)
+> syz_kvm_setup_cpu$ppc64(r1, r2, &(0x7f0000e70000/0x180000)=nil, &(0x7f0000000080)=[{0x0, &(0x7f0000000280)="0000e03d0080ef61e403ef790000ef650900ef61647b007c0000e03f0000ff63e403ff7b0000ff679952ff6370e63f7e0000603c00006360e4036378000063640003636018a8803c28bf8460e4038478ef97846436888460b6f6a03c88d6a560e403a5781beda564d879a5602665c03cb08dc660e403c67806b3c664966fc660d53fe03cddf1e760e403e7785c41e7646623e76022000044463fb1f20000803e00809462e403947a0000946604009462a6a6607f4abb4c130000603f00007b63e4037b7b00007b679a367b6332d9c17c201c994f7201004cbb7a603f72047b63e4037b7b955f7b6799947b636401607f", 0xf0}], 0x1, 0x0, &(0x7f00000000c0)=[@featur2={0x1, 0x1000}], 0x1)
+>
+>
+> cpu 0xd: Vector: 300 (Data Access) at [c00000001599f590]
+>     pc: c00000000011d2bc: powernv_get_random_long+0x4c/0xc0
+>     lr: c00000000011d298: powernv_get_random_long+0x28/0xc0
+>     sp: c00000001599f830
+>    msr: 800000000280b033
+>    dar: 0
+>  dsisr: 40000000
+>   current = 0xc0000000614c7f80
+>   paca    = 0xc0000000fff81700	 irqmask: 0x03	 irq_happened: 0x01
+>     pid   = 31576, comm = syz-executor.10
+>
+> Linux version 5.14.0-rc2-le_f29cf1ff9a23_a+fstn1 (aik@fstn1-p1) (gcc (Ubuntu 10.3.0-1ubuntu1) 10.3.0, GNU ld (GNU Binutils for Ubuntu) 2.36.1) #263 SMP Thu Jul 29 17:56:12 AEST 2021
+> enter ? for help
+> [c00000001599f860] c0000000001e45f8 kvmppc_pseries_do_hcall+0x5d8/0x2190
+> [c00000001599f8f0] c0000000001ea2dc kvmppc_vcpu_run_hv+0x31c/0x14d0
+> [c00000001599f9c0] c0000000001bd518 kvmppc_vcpu_run+0x48/0x60
+> [c00000001599f9f0] c0000000001b74b0 kvm_arch_vcpu_ioctl_run+0x580/0x7d0
+> [c00000001599fa90] c00000000019e6f8 kvm_vcpu_ioctl+0x418/0xd00
+> [c00000001599fc70] c00000000079d8c4 sys_ioctl+0xb44/0x2100
+> [c00000001599fd90] c00000000003b704 system_call_exception+0x224/0x410
+> [c00000001599fe10] c00000000000c0e8 system_call_vectored_common+0xe8/0x278
 
-I noticed this the other day and was puzzled why we still needed
-the conditional, thanks for cleaning it up.
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+There would be no bug if KVM was using arch_get_random_seed_long(),
+because that defers to ppc_md, which is only populated when the RNG is
+setup correctly. That seems like a better fix?
 
 cheers
