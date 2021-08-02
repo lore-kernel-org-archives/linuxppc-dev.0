@@ -2,84 +2,68 @@ Return-Path: <SRS0=nAH3=MZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8665C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 22:08:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C40FC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 23:38:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB73F60F41
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 22:08:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EB73F60F41
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 568BA60EE3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 23:38:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 568BA60EE3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GdsZX4VxHz3cPF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 08:08:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GdvZq4D5vz3bPN
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 09:38:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GXMiPWq4;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mk/OrQNA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=GXMiPWq4; 
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=mk/OrQNA; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GdsZ31Ntrz2xfP
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 08:07:38 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPS id 606B760F48
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Aug 2021 22:07:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1627942056;
- bh=IkrImeaiLqrCc9Iuv2ShFvD/5+ZB6VZ9eWlI0DAabq4=;
- h=From:To:Subject:Date:In-Reply-To:References:From;
- b=GXMiPWq48InKBlB2TitW+3rNS5iHTQmrp/u7o44kMVEDipYlv5N+83Rv5dC5xuGFA
- 8sM6LFD645FnCGb2/ChGVlTClLTQcsz9394uVUN61Q2jxiUcwytDoKgGL7VkMNNI4e
- mIZkKeqC0N9GA3Z/9MiYNhjVRfgbeAW0MIzD2disUUAv4iVbrHRZPG9TNt8zyDZNlv
- vN/R67+VEBDIYR2PHfbXTBnc8l/8mJC6gVmfXL+TMh/VlzxvxrE33k4fJSb+nWYSsR
- eJ+6IksPJN4hds2V9tue+26s3iwweqC+Sq4laCM1tajbIBwzCgCFwUVs7IZImkXUCn
- XJ5NdqBHX7kVA==
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: =?UTF-8?B?W0J1ZyAyMTM4MDNdIEc1IGtlcm5lbCBidWlsZCAodjUuMTQtcmMy?=
- =?UTF-8?B?KSBmYWlscyBhdCBsaW5raW5nIHN0YWdlIC0gbGQ6IGFyY2gvcG93ZXJwYy9t?=
- =?UTF-8?B?bS9wZ3RhYmxlLm86IGluIGZ1bmN0aW9uIGAuX19wdGVwX3NldF9hY2Nlc3Nf?=
- =?UTF-8?B?ZmxhZ3MnOiAvdXNyL3NyYy9saW51eC1zdGFibGUvLi9hcmNoL3Bvd2VycGMv?=
- =?UTF-8?B?aW5jbHVkZS9hc20vYm9vazNzLzY0L3BndGFibGUuaDo4MjQ6IHVuZGVmaW5l?=
- =?UTF-8?B?ZCByZWZlcmVuY2UgdG8gYC5yYWRpeF9fcHRlcF9zZXRfYWNjZXNzX2ZsYWdz?=
- =?UTF-8?B?Jw==?=
-Date: Mon, 02 Aug 2021 22:07:36 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-213803-206035-uE9kzJAMn6@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-213803-206035@https.bugzilla.kernel.org/>
-References: <bug-213803-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GdN214dCtz2yP0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Aug 2021 12:56:41 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4GdN1V04FQz9sW5;
+ Mon,  2 Aug 2021 12:56:13 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1627872995;
+ bh=lgFF44D+VvUgGNOcyjoWgD9ieIKlVa+1W38G93yYucc=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=mk/OrQNAgyUtJh9QVu/sq6e2cVKMZEuh5t1elkMY1Gr3oABbY0LNl7+izatEJSZYL
+ zGYgU92C+VtRG3i2VpinkrgquF7osc3y3sT0rg1Dkyhhq3uC9pQ9Vyxzu9DIdALkJc
+ uVe/31b8NqskHAYnC6qUpRqajmu4XqURQ3LIDSg6AKfjRRV0hOE1uY7cgZepVTdX9e
+ 8HP4jyVzz75vtA5OgyyRq7pJjgDvTYCj/aQ+sFQ1koQ2SqpBgqVF2xnWntozO8y/pw
+ uq0H9be0uwkFpXGGeabu1UoeiTG0mQrIQSbO5Gdvb2ehvStkNDQgftwpI5d9vMxe/C
+ vq3iTIN0uJtjQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Masahiro Yamada <masahiroy@kernel.org>, Steven Rostedt
+ <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH 2/3] trace: refactor TRACE_IRQFLAGS_SUPPORT in Kconfig
+In-Reply-To: <20210731052233.4703-2-masahiroy@kernel.org>
+References: <20210731052233.4703-1-masahiroy@kernel.org>
+ <20210731052233.4703-2-masahiroy@kernel.org>
+Date: Mon, 02 Aug 2021 12:56:13 +1000
+Message-ID: <87lf5klfle.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
+X-Mailman-Approved-At: Tue, 03 Aug 2021 09:38:00 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,17 +75,113 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Mark Rutland <mark.rutland@arm.com>, Rich Felker <dalias@libc.org>,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>,
+ linux-csky@vger.kernel.org, "H. Peter
+ Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org, Vincent Chen <deanbo422@gmail.com>,
+ Will Deacon <will@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org,
+ Vasily Gorbik <gor@linux.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+ YiFei Zhu <yifeifz2@illinois.edu>, Richard Weinberger <richard@nod.at>,
+ Masahiro Yamada <masahiroy@kernel.org>, x86@kernel.org,
+ Russell King <linux@armlinux.org.uk>, Ley Foon Tan <ley.foon.tan@intel.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linux-parisc@vger.kernel.org,
+ Sami Tolvanen <samitolvanen@google.com>,
+ Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Stafford Horne <shorne@gmail.com>, linux-snps-arc@lists.infradead.org,
+ Jeff Dike <jdike@addtoit.com>, linux-xtensa@linux-xtensa.org,
+ Albert Ou <aou@eecs.berkeley.edu>, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>, Anshuman Khandual <anshuman.khandual@arm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, linux-um@lists.infradead.org,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
+ Greentime Hu <green.hu@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Andrey Konovalov <andreyknvl@gmail.com>, Chris Zankel <chris@zankel.net>,
+ Michal Simek <monstr@monstr.eu>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Brian Cain <bcain@codeaurora.org>, Nick Hu <nickhu@andestech.com>,
+ Vineet Gupta <vgupta@synopsys.com>, linux-mips@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>,
+ Frederic Weisbecker <frederic@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ linux-hexagon@vger.kernel.org, Colin Ian King <colin.king@canonical.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Helge Deller <deller@gmx.de>, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D213803
+Masahiro Yamada <masahiroy@kernel.org> writes:
+> Make architectures select TRACE_IRQFLAGS_SUPPORT instead of
+> having many defines.
+>
+> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+> ---
+>
+>  arch/Kconfig                  | 3 +++
+>  arch/arc/Kconfig              | 4 +---
+>  arch/arm/Kconfig              | 5 +----
+>  arch/arm64/Kconfig            | 4 +---
+>  arch/csky/Kconfig             | 4 +---
+>  arch/hexagon/Kconfig          | 4 +---
+>  arch/microblaze/Kconfig       | 1 +
+>  arch/microblaze/Kconfig.debug | 5 -----
+>  arch/mips/Kconfig             | 1 +
+>  arch/mips/Kconfig.debug       | 4 ----
+>  arch/nds32/Kconfig            | 4 +---
+>  arch/nios2/Kconfig            | 3 ---
+>  arch/openrisc/Kconfig         | 4 +---
+>  arch/parisc/Kconfig           | 1 +
+>  arch/parisc/Kconfig.debug     | 3 ---
+>  arch/powerpc/Kconfig          | 5 +----
+>  arch/riscv/Kconfig            | 4 +---
+>  arch/s390/Kconfig             | 1 +
+>  arch/s390/Kconfig.debug       | 3 ---
+>  arch/sh/Kconfig               | 1 +
+>  arch/sh/Kconfig.debug         | 3 ---
+>  arch/sparc/Kconfig            | 1 +
+>  arch/sparc/Kconfig.debug      | 4 ----
+>  arch/um/Kconfig               | 5 +----
+>  arch/x86/Kconfig              | 1 +
+>  arch/x86/Kconfig.debug        | 3 ---
+>  arch/xtensa/Kconfig           | 4 +---
+>  27 files changed, 21 insertions(+), 64 deletions(-)
 
---- Comment #1 from Erhard F. (erhard_f@mailbox.org) ---
-Still a problem in v5.14-rc4.
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index d01e3401581d..76a28452c042 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -94,10 +94,6 @@ config STACKTRACE_SUPPORT
+>  	bool
+>  	default y
+>  
+> -config TRACE_IRQFLAGS_SUPPORT
+> -	bool
+> -	default y
+> -
+>  config LOCKDEP_SUPPORT
+>  	bool
+>  	default y
+> @@ -271,6 +267,7 @@ config PPC
+>  	select STRICT_KERNEL_RWX if STRICT_MODULE_RWX
+>  	select SYSCTL_EXCEPTION_TRACE
+>  	select THREAD_INFO_IN_TASK
+> +	select TRACE_IRQFLAGS_SUPPORT
+>  	select VIRT_TO_BUS			if !PPC64
+>  	#
+>  	# Please keep this list sorted alphabetically.
 
---=20
-You may reply to this email to add a comment.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+cheers
