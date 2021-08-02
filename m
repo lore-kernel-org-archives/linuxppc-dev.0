@@ -2,71 +2,68 @@ Return-Path: <SRS0=nAH3=MZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBCD1C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 13:15:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB2B5C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 14:42:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E9E0260D07
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 13:15:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E9E0260D07
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id F3CAB60E97
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 14:42:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org F3CAB60E97
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GddmF2qlcz3cSW
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 23:15:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gdggz2b9Yz3cVG
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 00:42:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=217.182.185.173;
- helo=smtpout3.3005.mail-out.ovh.net; envelope-from=clg@kaod.org;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 966 seconds by postgrey-1.36 at boromir;
- Mon, 02 Aug 2021 23:15:16 AEST
-Received: from smtpout3.3005.mail-out.ovh.net (smtpout3.3005.mail-out.ovh.net
- [217.182.185.173])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gddlm3SDmz3046
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Aug 2021 23:15:14 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.146.59])
- by mo3005.mail-out.ovh.net (Postfix) with ESMTPS id EC3A413B0E9;
- Mon,  2 Aug 2021 12:59:02 +0000 (UTC)
-Received: from kaod.org (37.59.142.97) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Mon, 2 Aug
- 2021 14:59:02 +0200
-Authentication-Results: garm.ovh; auth=pass
- (GARM-97G0024d37b098-f782-465d-969d-06a754345f4b,
- BF3CD4E3C57DE48CDC00B7E56D076D590FF73035) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 82.66.77.115
-Subject: Re: [PATCH] powerpc/xive: Do not skip CPU-less nodes when creating
- the IPIs
-To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>
-References: <20210629131542.743888-1-clg@kaod.org>
- <87a6m0l5by.fsf@mpe.ellerman.id.au>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <1facebb0-3ac1-18cc-e473-46120a5ef4ad@kaod.org>
-Date: Mon, 2 Aug 2021 14:59:01 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gdggb351Nz2yMF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 00:41:44 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4GdggT5fPxz9sV7;
+ Mon,  2 Aug 2021 16:41:41 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id sxvA18ZlbfTl; Mon,  2 Aug 2021 16:41:41 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4GdggT4Wzjz9sTy;
+ Mon,  2 Aug 2021 16:41:41 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6EF818B763;
+ Mon,  2 Aug 2021 16:41:41 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id dcbB9jHazxF2; Mon,  2 Aug 2021 16:41:41 +0200 (CEST)
+Received: from [172.25.230.103] (po15451.idsi0.si.c-s.fr [172.25.230.103])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3DB238B774;
+ Mon,  2 Aug 2021 16:41:41 +0200 (CEST)
+Subject: Re: Debian SID kernel doesn't boot on PowerBook 3400c
+To: Stan Johnson <userm57@yahoo.com>
+References: <60841a75-ed7c-8789-15db-272bf43055f5.ref@yahoo.com>
+ <60841a75-ed7c-8789-15db-272bf43055f5@yahoo.com>
+ <20210731175842.Horde.UunWM8rZMP0dRCaeWUo-og1@messagerie.c-s.fr>
+ <cd7c931c-a578-a2ff-0632-7767a0e90bb9@yahoo.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <fbd08736-9738-35cf-3b47-b5c9c455c552@csgroup.eu>
+Date: Mon, 2 Aug 2021 16:41:41 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.12.0
 MIME-Version: 1.0
-In-Reply-To: <87a6m0l5by.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
+In-Reply-To: <cd7c931c-a578-a2ff-0632-7767a0e90bb9@yahoo.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.97]
-X-ClientProxiedBy: DAG1EX1.mxp5.local (172.16.2.1) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: 5022168f-0f47-41e8-8cfd-12b1bc3af52d
-X-Ovh-Tracer-Id: 17011784644205841260
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddriedvgdehgecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefuvfhfhffkffgfgggjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehuedtheeghfdvhedtueelteegvdefueektdefiefhffffieduuddtudfhgfevtdenucffohhmrghinhepghhithhhuhgsrdgtohhmnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrdeljeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtohepmhhpvgesvghllhgvrhhmrghnrdhiugdrrghu
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,63 +75,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Laurent Vivier <lvivier@redhat.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>, stable@vger.kernel.org,
- David Gibson <dgibson@redhat.com>, Kairui Song <kasong@redhat.com>
+Cc: Debian PowerPC <debian-powerpc@lists.debian.org>,
+ linuxppc-dev@lists.ozlabs.org, Finn Thain <fthain@linux-m68k.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 8/2/21 8:37 AM, Michael Ellerman wrote:
-> Cédric Le Goater <clg@kaod.org> writes:
->> On PowerVM, CPU-less nodes can be populated with hot-plugged CPUs at
->> runtime. Today, the IPI is not created for such nodes, and hot-plugged
->> CPUs use a bogus IPI, which leads to soft lockups.
+
+
+Le 31/07/2021 à 20:24, Stan Johnson a écrit :
+> Hi Christophe,
+> 
+> On 7/31/21 9:58 AM, Christophe Leroy wrote:
+>> Stan Johnson <userm57@yahoo.com> a écrit :
 >>
->> We could create the node IPI on demand but it is a bit complex because
->> this code would be called under bringup_up() and some IRQ locking is
->> being done. The simplest solution is to create the IPIs for all nodes
->> at startup.
+>>> Hello,
+>>>
+>>> The current Debian SID kernel will not boot on a PowerBook 3400c running
+>>> the latest version of Debian SID. If booted using the BootX extension,
+>>> the kernel hangs immediately:
+>>>
+>>> "Welcome to Linux, kernel 5.10.0-8-powerpc"
+>>>
+>>> If booted from Mac OS, the Mac OS screen hangs.
+>>>
+>>> Booting also hangs if the "No video driver" option is selected in BootX,
+>>> "No video driver" causes "video=ofonly" to be passed to the kernel.
+>>>
+>>> This is the current command line that I'm using in BootX:
+>>> root=/dev/sda13 video=chips65550:vmode:14,cmode:16
+>>>
+>>> Kernel v5.9 works as expected.
+>>>
+>>> The config file I'm using is attached.
+>>>
+>>> Here are the results of a git bisect, marking v5.9 as "good" and the
+>>> most current kernel as "bad":
+>>>
+>>> $ cd linux
+>>> $ git remote update
+>>> $ git bisect reset
+>>> $ git bisect start
+>>> $ git bisect bad
+>>> $ git bisect good v5.9
+>>>
+>>> Note: "bad" -> hangs at boot; "good" -> boots to login prompt
+>>>
+>>>   1) 5.11.0-rc5-pmac-00034-g684da7628d9 (bad)
+>>>   2) 5.10.0-rc3-pmac-00383-gbb9dd3ce617 (good)
+>>>   3) 5.10.0-pmac-06637-g2911ed9f47b (good)
+>>>      Note: I had to disable SMP to build this kernel.
+>>>   4) 5.10.0-pmac-10584-g9805529ec54 (good)
+>>>      Note: I had to disable SMP to build this kernel.
+>>>   5) 5.10.0-pmac-12577-g8552d28e140 (bad)
+>>>   6) 5.10.0-pmac-11576-g8a5be36b930 (bad)
+>>>   7) 5.10.0-pmac-11044-gbe695ee29e8 (good)
+>>>      Note: I had to disable SMP to build this kernel.
+>>>   8) 5.10.0-rc2-pmac-00288-g59d512e4374 (bad)
+>>>   9) 5.10.0-rc2-pmac-00155-gc3d35ddd1ec (good)
+>>> 10) 5.10.0-rc2-pmac-00221-g7049b288ea8 (good)
+>>> 11) 5.10.0-rc2-pmac-00254-g4b74a35fc7e (bad)
+>>> 12) 5.10.0-rc2-pmac-00237-ged22bb8d39f (good)
+>>> 13) 5.10.0-rc2-pmac-00245-g87b57ea7e10 (good)
+>>> 14) 5.10.0-rc2-pmac-00249-gf10881a46f8 (bad)
+>>> 15) 5.10.0-rc2-pmac-00247-gf8a4b277c3c (good)
+>>> 16) 5.10.0-rc2-pmac-00248-gdb972a3787d (bad)
+>>>
+>>> db972a3787d12b1ce9ba7a31ec376d8a79e04c47 is the first bad commit
 >>
->> Fixes: 7dcc37b3eff9 ("powerpc/xive: Map one IPI interrupt per node")
->> Cc: stable@vger.kernel.org # v5.13
->> Reported-by: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>
->> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->> ---
+>> Not sure this is really the root of the problem.
 >>
->> This patch breaks old versions of irqbalance (<= v1.4). Possible nodes
->> are collected from /sys/devices/system/node/ but CPU-less nodes are
->> not listed there. When interrupts are scanned, the link representing
->> the node structure is NULL and segfault occurs.
+>> Can you try again without CONFIG_VMAP_STACK ?
+>>
+>> Thanks
+>> Christophe
+>> ...
 > 
-> Breaking userspace is usually frowned upon, even if it is irqbalance.
->
-> If CPU-less nodes appeared in /sys/devices/system/node would that fix
-> it? Could we do that or is that not possible for other reasons?
 > 
->> Version 1.7 seems immune. 
+> With CONFIG_VMAP_STACK=y, 5.11.0-rc5-pmac-00034-g684da7628d9 hangs at
+> boot on the PB 3400c.
 > 
-> Which was released in August 2020.
+> Without CONFIG_VMAP_STACK, 5.11.0-rc5-pmac-00034-g684da7628d9 boots as
+> expected.
 > 
-> Looks like some distros still ship 1.6, I take it you're not sure if
-> that is broken or not.
+> I didn't re-build the Debian SID kernel, though I confirmed that the
+> Debian config file for 5.10.0-8-powerpc includes CONFIG_VMAP_STACK=y.
+> It's not clear whether removing CONFIG_VMAP_STACK would be appropriate
+> for other powerpc systems.
+> 
+> Please let me know why removing CONFIG_VMAP_STACK fixed the problem on
+> the PB 3400c. Should CONFIG_HAVE_ARCH_VMAP_STACK also be removed?
+> 
 
-I did a bisect on irqbalance and the "bad" commit was introduced between 
-version 1.7 and version 1.8 :
+When CONFIG_HAVE_ARCH_VMAP_STACK is selected by the architecture, CONFIG_VMAP_STACK  is selected by 
+default.
 
-  commit 31dea01f3a47 ("Also fetch node info for non-PCI devices") 
-  https://github.com/Irqbalance/irqbalance/commit/31dea01f3a47aa6374560638486879e5129f9c94
+The point is that your config has CONFIG_ADB_PMU.
 
-which was backported on RHEL 8 in RPM irqbalance-1.4.0-6.el8.
+A bug with VMAP stack was detected during 5.9 release cycle for platforms selecting CONFIG_ADB_PMU. 
+Because fixing the bug was an heavy change, we prefered at that time to disable VMAP stack, so VMAP 
+stack was deselected for CONFIG_ADB_PMU by commit 4a133eb351ccc275683ad49305d0b04dde903733.
 
-Any distro using irqbalance <= 1.7 without the patch above is fine. 
+Then as a second step, the proper fix was implemented and then VMAP stack was enabled again by the 
+commit you bisected.
 
-Since irqbalance handled cleanly irqs referencing offline nodes before 
-this patch, I am inclined to think that the irqbalance fix is incomplete. 
-Unfortunately, the commit log lacks some context on the non-PCI devices. 
+Taking into account that the problem disappears for you when you manually deselect VMAP stacks, it 
+means the problem is not the fix itself, but the fact that VMAP stacks are now enable by default.
 
-Thanks,
+We need to understand why VMAP stack doesn't work on your platform, more than that why it doesn't 
+boot at all with VMAP stack.
 
-C. 
+Could you send me the dmesg output of your system when it properly boots ?
+
+Did you check with kernel 5.13 ?
+
+Thanks
+Christophe
