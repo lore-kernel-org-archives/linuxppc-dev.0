@@ -2,114 +2,73 @@ Return-Path: <SRS0=nAH3=MZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8F16C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 07:45:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33205C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 08:40:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 751E060FC1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 07:45:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 751E060FC1
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3226161057
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 08:40:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3226161057
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GdVRb0rMMz3cZj
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 17:45:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=opXA+N2F;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GdWfl4rFDz3cRH
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 18:40:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=opXA+N2F; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=209.85.218.41; helo=mail-ej1-f41.google.com;
+ envelope-from=jirislaby@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ej1-f41.google.com (mail-ej1-f41.google.com
+ [209.85.218.41])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GdVR26DFxz2xfx
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Aug 2021 17:45:18 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 1727Y5rd125744; Mon, 2 Aug 2021 03:45:12 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : in-reply-to : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=3GTKSoYuyeI7amyWljKoeZqQ+nHMylTD/J3zpAbpSkU=;
- b=opXA+N2F/OyCTrMckSbOQvv0dIelBOVELlf0qOm/01gfXdjEuvk6vCiHmojnt3SMYS8K
- bxW+LNNfiXRU7UgPKtR4usSebN/rk1tanddBuxxEMvc8FRtczuLXIVPnjwSFJgxozrim
- zD8r7WT5rh1J5mZs1h0CVY2lRQwX67Qo2K9kKqyBQp7M/LNmVWXi/5p3gxxnDiJaCLN9
- rZs1ekfust89aikdjGSboEL5x7zhilaaveAazi3oEk70xDpx1YXVJKNxQDDkLJ3jZa23
- DxTIk25KIE8o9mHofZKFkLQtN+Lxjp+q7mu/NEr2rJCrB2HANs6cVKDtn15Evjr5PfHQ iQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3a5kjutct4-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 02 Aug 2021 03:45:12 -0400
-Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1727cEhp137848;
- Mon, 2 Aug 2021 03:45:11 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3a5kjutcs5-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 02 Aug 2021 03:45:11 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1727bmXr009344;
- Mon, 2 Aug 2021 07:45:09 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma01wdc.us.ibm.com with ESMTP id 3a4x5a7t7y-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 02 Aug 2021 07:45:09 +0000
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1727j9XO21889420
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 2 Aug 2021 07:45:09 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F3602B2064;
- Mon,  2 Aug 2021 07:45:08 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 09D95B2068;
- Mon,  2 Aug 2021 07:45:04 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.199.36.88])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon,  2 Aug 2021 07:45:03 +0000 (GMT)
-Subject: Re: [PATCH v3] fpga: dfl: fme: Fix cpu hotplug issue in performance
- reporting
-To: will@kernel.org, hao.wu@intel.com, mark.rutland@arm.com
-References: <20210713074216.208391-1-kjain@linux.ibm.com>
-From: kajoljain <kjain@linux.ibm.com>
-Message-ID: <61495dc0-f496-992c-1d2a-9229a04e6e44@linux.ibm.com>
-Date: Mon, 2 Aug 2021 13:15:00 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GdWfK0rNkz303f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Aug 2021 18:40:08 +1000 (AEST)
+Received: by mail-ej1-f41.google.com with SMTP id e19so29634260ejs.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Aug 2021 01:40:08 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=Zz03E5xQt7p2VN7cWkxfZkNKl6W24aLbb5bhnlK6M/Y=;
+ b=kFK85vDzDgzBQ8KkyeQzyLQxD7ouBNOCANWOKpp1kylKpLsGvUZM/6N7GJzVy2eD3G
+ A++T78jliJlu+Mcm8cM4fVOFVQM4TRQoRSK8JvTpTRU92pJVWvhlWnzAvBDWfxoY6xbj
+ GgwG0cVRWHpfscJu9N5entbtqIKDQ4i4Xszl1NvDBG7RAus9RRHM0rvtY36OpFgvFISz
+ nM8Eb0qMkYoJxViFXZ2AKKI1U6BWLmIKYhAYuyld0AWo8KzyNxBYz8Fn/tw7deSlrxco
+ 2CjcrE79laejbSoxvduwgnqKPGyB/gGzAX7VK79EPTi8wPFKMMjxfwYhqgx/8+aNBEkX
+ 9lDQ==
+X-Gm-Message-State: AOAM530XP77h6wtNcn/5LESKbCNfWWQ50VHe92T3KXxrv63eNM0c8OcY
+ obTTat2v1VFIenz6WgNYNQY=
+X-Google-Smtp-Source: ABdhPJwNQd3t1Hni44DinFugXrDzcKsPIzaWgkeB9qalXL+5uv984oWzkAMVLlGBGUqmkB7JpErwhg==
+X-Received: by 2002:a17:906:3048:: with SMTP id
+ d8mr14693966ejd.534.1627893604790; 
+ Mon, 02 Aug 2021 01:40:04 -0700 (PDT)
+Received: from ?IPv6:2a0b:e7c0:0:107::70f? ([2a0b:e7c0:0:107::70f])
+ by smtp.gmail.com with ESMTPSA id n10sm4284468ejk.86.2021.08.02.01.40.03
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Mon, 02 Aug 2021 01:40:04 -0700 (PDT)
+Subject: Re: [PATCH 2/2] virtio-console: remove unnecessary kmemdup()
+To: Xianting Tian <xianting.tian@linux.alibaba.com>,
+ gregkh@linuxfoundation.org, amit@kernel.org, arnd@arndb.de
+References: <20210801051655.79048-1-xianting.tian@linux.alibaba.com>
+ <b5554967-a683-96ae-deb9-2d4980d33b41@kernel.org>
+ <5ad81a0e-fbb2-a849-6db7-f5718633d282@linux.alibaba.com>
+From: Jiri Slaby <jirislaby@kernel.org>
+Message-ID: <a2598ec9-7bc9-be42-bcab-fa19c9e734f7@kernel.org>
+Date: Mon, 2 Aug 2021 10:40:03 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
-In-Reply-To: <20210713074216.208391-1-kjain@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: RyHz5855e0unzEdNSw03Cg5mCfzhtRmF
-X-Proofpoint-GUID: W10U2EPBpxzuTFdcHfQHeMJ90pMtAAy-
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+ Thunderbird/78.12.0
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-08-02_01:2021-08-02,
- 2021-08-02 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 phishscore=0 impostorscore=0 suspectscore=0 adultscore=0
- mlxlogscore=999 bulkscore=0 mlxscore=0 clxscore=1015 lowpriorityscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2107140000 definitions=main-2108020053
+In-Reply-To: <5ad81a0e-fbb2-a849-6db7-f5718633d282@linux.alibaba.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,75 +80,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.ibm.com, rnsastry@linux.ibm.com, trix@redhat.com,
- linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, linux-perf-users@vger.kernel.org,
- atrajeev@linux.vnet.ibm.com, mdf@kernel.org, linuxppc-dev@lists.ozlabs.org,
- yilun.xu@intel.com
+Cc: osandov@fb.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 02. 08. 21, 10:32, Xianting Tian wrote:
+> 
+> 在 2021/8/2 下午3:25, Jiri Slaby 写道:
+>> Hi,
+>>
+>> why is this 2/2? I seem (Lore neither) to find 1/2.
+> You didn't receive 1/2?
+> [PATCH 1/2] tty: hvc: pass DMA capable memory to put_chars()
+> https://lkml.org/lkml/2021/8/1/8 <https://lkml.org/lkml/2021/8/1/8>
+
+Oh, I did, but it's not properly threaded. PLease fix your setup.
+
+>> On 01. 08. 21, 7:16, Xianting Tian wrote:
+>>> hvc framework will never pass stack memory to the put_chars() function,
+>>
+>> Am I blind or missing something?
+>>
+>> hvc_console_print(...)
+>> {
+>>   char c[N_OUTBUF]
+>> ...
+>>   cons_ops[index]->put_chars(vtermnos[index], c, i);
+>>
+>> The same here:
+>>
+>> hvc_poll_put_char(..., char ch)
+>> {
+>> ...
+>>    n = hp->ops->put_chars(hp->vtermno, &ch, 1);
+>>
+>> AFAICS both of them *pass* a pointer to stack variable.
+> 
+> yes, I discussed the issue with Arnd before in below thread,  you can 
+> get the history, thanks
+> 
+> https://lkml.org/lkml/2021/7/27/494 <https://lkml.org/lkml/2021/7/27/494>
+
+So is this a v2? You should have noted that. And what changed from v1 too.
+
+>>> So the calling of kmemdup() is unnecessary, remove it.
+>>>
+>>> Fixes: c4baad5029 ("virtio-console: avoid DMA from stack")
+>>
+>> This patch doesn't "Fix" -- it reverts the commit. You should've CCed 
+>> the author too.
+> 
+> yes, we discussed ther issue in above thread, which we CCed the author.
+
+I don't see any input from the author?
 
 
-On 7/13/21 1:12 PM, Kajol Jain wrote:
-> The performance reporting driver added cpu hotplug
-> feature but it didn't add pmu migration call in cpu
-> offline function.
-> This can create an issue incase the current designated
-> cpu being used to collect fme pmu data got offline,
-> as based on current code we are not migrating fme pmu to
-> new target cpu. Because of that perf will still try to
-> fetch data from that offline cpu and hence we will not
-> get counter data.
-> 
-> Patch fixed this issue by adding pmu_migrate_context call
-> in fme_perf_offline_cpu function.
-> 
-> Fixes: 724142f8c42a ("fpga: dfl: fme: add performance reporting support")
-> Tested-by: Xu Yilun <yilun.xu@intel.com>
-> Acked-by: Wu Hao <hao.wu@intel.com>
-> Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
-> Cc: stable@vger.kernel.org
-> ---
+Anyway, 1/2 does not even build, so you will send v3 with all the above 
+fixed, hopefully.
 
-Any update on this patch? Please let me know if any changes required.
-
-Thanks,
-Kajol Jain
-
->  drivers/fpga/dfl-fme-perf.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> ---
-> Changelog:
-> v2 -> v3:
-> - Added Acked-by tag
-> - Removed comment as suggested by Wu Hao
-> - Link to patch v2: https://lkml.org/lkml/2021/7/9/143
-> 
-> v1 -> v2:
-> - Add stable@vger.kernel.org in cc list
-> - Link to patch v1: https://lkml.org/lkml/2021/6/28/275
-> 
-> RFC -> PATCH v1
-> - Remove RFC tag
-> - Did nits changes on subject and commit message as suggested by Xu Yilun
-> - Added Tested-by tag
-> - Link to rfc patch: https://lkml.org/lkml/2021/6/28/112
-> ---
-> 
-> diff --git a/drivers/fpga/dfl-fme-perf.c b/drivers/fpga/dfl-fme-perf.c
-> index 4299145ef347..587c82be12f7 100644
-> --- a/drivers/fpga/dfl-fme-perf.c
-> +++ b/drivers/fpga/dfl-fme-perf.c
-> @@ -953,6 +953,8 @@ static int fme_perf_offline_cpu(unsigned int cpu, struct hlist_node *node)
->  		return 0;
->  
->  	priv->cpu = target;
-> +	perf_pmu_migrate_context(&priv->pmu, cpu, target);
-> +
->  	return 0;
->  }
->  
-> 
+thanks,
+-- 
+js
