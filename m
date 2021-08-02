@@ -2,111 +2,97 @@ Return-Path: <SRS0=nAH3=MZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5A4BC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 23:40:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40EA0C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 23:52:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C8A960EE6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 23:40:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3C8A960EE6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9517260EE3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Aug 2021 23:52:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9517260EE3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GdvdY6kBcz3dWL
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 09:40:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GdvtR6Gpdz3cHm
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 09:51:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ABoHgzRV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tB94p91k;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=laboger@linux.vnet.ibm.com;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=ABoHgzRV; dkim-atps=neutral
+ header.s=pp1 header.b=tB94p91k; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GdmP60s2yz2xjR
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 04:14:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gdvsv2SCKz2yNG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 09:51:30 +1000 (AEST)
 Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 172I4Uk4065612; Mon, 2 Aug 2021 14:14:19 -0400
+ 172NYWhq191770; Mon, 2 Aug 2021 19:51:19 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=oF+1KWrDgjCrVhbHAm9zTngJfuhEWpIte0xFd6CR5pA=;
- b=ABoHgzRVL2odC/C8J9ZYcZmvATrN0Byr0tvpDwpXkAeyOVBhlUNUq+AMrc/pECtQkR1q
- glRb1wDhVcWhMI55SRWErH7vcw2Q+ZR7eb5qkyVGA8HBILPcUXOTt0L0FrGE+/uL3a7m
- mmLBCxo585FXrAI2I8L6TXvnyuz4laO/8EV8tEIdqAS6U++c+zKGb3Tgg8E4eUwRrOxY
- PHNOG3ZZJxKmnKyssIR+KbXwJ68nK8+EgCkneblgf7QZgktHs4/MWrYRypdlkhECyNbz
- bGoazNFOZ/yZ/UP4cgtPKVnkPFaHlFKnb78EM0Tl0DjBv/O2uU/iw4p7tsVuCYP/2Qv3 Zg== 
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=Zy8u+iZjJF5rgUIWtPjs5w51IfL+CHjjbvIEPBpoG5k=;
+ b=tB94p91kxMeukDC0RwIMEkW4ZxiHMfwvun4CSxfNXOEjpRg+oup2W7VuEkRTZESjFKEg
+ okRXIGuAHBrh0qjJa1CMuBEBj9inOmLZGCCwsoFJw77a+NfV6wG9QOqkVfCnIb8XKUPE
+ zOCV8wWmD6m883dQknDizD05aXG7QztE5Razfi8ak9ZtQV011B84Gh94qWcKV1zYvd70
+ ucQj+rKSP2NnXwoG3Gm2zECOd/hWDwk1OK+KwHcVChEJs0lR1ScWRwTBtuYVCobO6ibi
+ csFhs+eVePl4o9XO/LH4abgPx2umrQ+0lrAIwgCwYQdHRg5ly+1r3xSD4kRF3ALYp8YC rw== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3a5m01vay3-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3a5m024cky-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 02 Aug 2021 14:14:19 -0400
+ Mon, 02 Aug 2021 19:51:19 -0400
 Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 172I58AW067243;
- Mon, 2 Aug 2021 14:14:19 -0400
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3a5m01vaxs-1
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 172NZrxL194627;
+ Mon, 2 Aug 2021 19:51:18 -0400
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3a5m024cks-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 02 Aug 2021 14:14:19 -0400
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 172ID96J006700;
- Mon, 2 Aug 2021 18:14:18 GMT
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23]) by ppma05wdc.us.ibm.com with ESMTP id 3a4x5b0cs9-1
+ Mon, 02 Aug 2021 19:51:18 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 172NhOYk018035;
+ Mon, 2 Aug 2021 23:51:17 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma01dal.us.ibm.com with ESMTP id 3a4x5c282v-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 02 Aug 2021 18:14:18 +0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 172IEHHt34472344
+ Mon, 02 Aug 2021 23:51:15 +0000
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 172Nnm7G28115318
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 2 Aug 2021 18:14:17 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 449AF28060;
- Mon,  2 Aug 2021 18:14:17 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3768828068;
- Mon,  2 Aug 2021 18:14:16 +0000 (GMT)
-Received: from li-608f474c-22e2-11b2-a85c-e58472f80495.ibm.com (unknown
- [9.163.36.158]) by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon,  2 Aug 2021 18:14:16 +0000 (GMT)
-Subject: Re: Possible regression by ab037dd87a2f (powerpc/vdso: Switch VDSO to
- generic C implementation.)
-To: Michael Ellerman <mpe@ellerman.id.au>, Paul Murphy <murp@ibm.com>,
- pmenzel@molgen.mpg.de
-References: <b5f948b4-759d-bb9f-06aa-6c15d37cd2bb@molgen.mpg.de>
- <a273c619-9258-e29a-24c3-ea47a13c4817@molgen.mpg.de>
- <3661999754da1a5e5c810fa669654cc7db95b059.camel@kernel.crashing.org>
- <4f037af0-5066-ebb9-53a6-733b3bd8eeac@molgen.mpg.de>
- <878s1q1udj.fsf@mpe.ellerman.id.au>
- <OF44F7146F.67A4C1C2-ON00258720.004DBF64-00258720.004FCFCC@ibm.com>
- <87czqwl67h.fsf@mpe.ellerman.id.au>
-From: Lynn Boger <laboger@linux.vnet.ibm.com>
-Message-ID: <4c031287-9632-c77b-e5d6-222ca761fab6@linux.vnet.ibm.com>
-Date: Mon, 2 Aug 2021 13:14:15 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+ Mon, 2 Aug 2021 23:49:48 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4D81D112089;
+ Mon,  2 Aug 2021 23:49:48 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D8DC1112080;
+ Mon,  2 Aug 2021 23:49:45 +0000 (GMT)
+Received: from farosas.linux.ibm.com.com (unknown [9.211.147.189])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon,  2 Aug 2021 23:49:45 +0000 (GMT)
+From: Fabiano Rosas <farosas@linux.ibm.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Book3S HV: Fix kvmhv_copy_tofrom_guest_radix
+Date: Mon,  2 Aug 2021 20:49:41 -0300
+Message-Id: <20210802234941.2568493-1-farosas@linux.ibm.com>
+X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
-In-Reply-To: <87czqwl67h.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: szjwlszLeoG2xfb-8pMHWwVkruHoACZW
-X-Proofpoint-GUID: IZOuJOLNQGrU95TB3mcGTsXX_7TEu5Ov
+X-Proofpoint-ORIG-GUID: XDu1sdXcRYa4geea3LgkH1NIsLRHQtNl
+X-Proofpoint-GUID: 66lDNQhNt0HxsFdf703KzyF9NmB-7PQo
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-08-02_07:2021-08-02,
  2021-08-02 signatures=0
@@ -115,8 +101,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  mlxlogscore=999 lowpriorityscore=0 clxscore=1011 priorityscore=1501
  mlxscore=0 malwarescore=0 phishscore=0 bulkscore=0 impostorscore=0
  adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2107140000 definitions=main-2108020117
-X-Mailman-Approved-At: Tue, 03 Aug 2021 09:38:00 +1000
+ engine=8.12.0-2107140000 definitions=main-2108020149
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -128,43 +113,159 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: parkerderek86@gmail.com, xaionaro@gmail.com, paulus@samba.org,
- murphyp@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, christophe.leroy@c-s.fr, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fixes will be in Go 1.16.7 and 1.15.15. Backports are no longer being 
-done for Go 1.14.
+This function was introduced along with nested HV guest support. It
+uses the platform's Radix MMU quadrants[1] to provide a nested
+hypervisor with fast access to its nested guests memory
+(H_COPY_TOFROM_GUEST hypercall). It has also since been added as a
+fast path for the kvmppc_ld/st routines which are used during
+instruction emulation.
 
-On 8/2/21 1:18 AM, Michael Ellerman wrote:
-> "Paul Murphy" <murp@ibm.com> writes:
->>   
->> (My apologies for however IBM's email client munges this)
->>
->>> I heard it is going to be in Go 1.16.7, but I do not know much about Go.
->>> Maybe the folks in Cc can chime in.
->>   
->>   
->> We have backports primed and ready for the next point release. They
->> are waiting on the release manager to cherrypick them.
-> OK good, that is still the correct fix in the long run.
->
->> I think we were aware that our VDSO usage may have exploited some
->> peculiarities in how the ppc64 version was constructed (i.e hand
->> written assembly which just didn't happen to clobber R30).
-> Yeah I was "somewhat surprised" that Go thought it could use r30 like
-> that across a VDSO call :D
->
-> But to be fair the ABI of the VDSO has always been a little fishy,
-> because the entry points pretend to be a transparent wrapper around
-> system calls, but then in a case like this are not.
->
->> Go up to this point has only used the vdso function __kernel_clock_gettime; it
->> is the only entry point which would need to explicitly avoid R30 for
->> Go's sake.
-> I thought about limiting the workaround to just that code, but it seemed
-> silly and likely to come back to bite us. Once the compilers decides to
-> spill a non-volatile there are plenty of other ones to choose from.
->
-> cheers
+The commit def0bfdbd603 ("powerpc: use probe_user_read() and
+probe_user_write()") changed the low level copy function from
+raw_copy_from_user to probe_user_read, which adds a check to
+access_ok. In powerpc that is:
+
+ static inline bool __access_ok(unsigned long addr, unsigned long size)
+ {
+        return addr < TASK_SIZE_MAX && size <= TASK_SIZE_MAX - addr;
+ }
+
+and TASK_SIZE_MAX is 0x0010000000000000UL for 64-bit, which means that
+setting the two MSBs of the effective address (which correspond to the
+quadrant) now cause access_ok to reject the access.
+
+This was not caught earlier because the most common code path via
+kvmppc_ld/st contains a fallback (kvm_read_guest) that is likely to
+succeed for L1 guests. For nested guests there is no fallback.
+
+Another issue is that probe_user_read (now __copy_from_user_nofault)
+does not return the number of not copied bytes in case of failure, so
+the destination memory is not being cleared anymore in
+kvmhv_copy_from_guest_radix:
+
+ ret = kvmhv_copy_tofrom_guest_radix(vcpu, eaddr, to, NULL, n);
+ if (ret > 0)                            <-- always false!
+        memset(to + (n - ret), 0, ret);
+
+This patch fixes both issues by introducing two new functions that set
+the quadrant bit of the effective address only after checking
+access_ok and moving the memset closer to __copy_to_user_inatomic.
+
+1 - for more on quadrants see commit d7b456152230 ("KVM: PPC: Book3S
+HV: Implement functions to access quadrants 1 & 2")
+
+Fixes: def0bfdbd603 ("powerpc: use probe_user_read() and probe_user_write()")
+Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
+---
+ arch/powerpc/kvm/book3s_64_mmu_radix.c | 63 ++++++++++++++++++++------
+ 1 file changed, 49 insertions(+), 14 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index b5905ae4377c..076a8e4a9135 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -30,12 +30,57 @@
+  */
+ static int p9_supported_radix_bits[4] = { 5, 9, 9, 13 };
+ 
++/* LPIDR and PIDR must have already been set */
++static long __copy_from_guest_quadrant(void *dst, void __user *src, size_t size,
++				       unsigned long quadrant)
++{
++	long ret = size;
++	mm_segment_t old_fs = force_uaccess_begin();
++
++	if (access_ok(src, size)) {
++		src += (quadrant << 62);
++
++		pagefault_disable();
++		ret = __copy_from_user_inatomic((void __user *)dst, src, size);
++		pagefault_enable();
++	}
++	force_uaccess_end(old_fs);
++
++	if (!ret)
++		return ret;
++
++	memset(dst + (size - ret), 0, ret);
++
++	return -EFAULT;
++}
++
++/* LPIDR and PIDR must have already been set */
++static long __copy_to_guest_quadrant(void __user *dst, void *src, size_t size,
++				     unsigned long quadrant)
++{
++	long ret = -EFAULT;
++	mm_segment_t old_fs = force_uaccess_begin();
++
++	if (access_ok(dst, size)) {
++		dst += (quadrant << 62);
++
++		pagefault_disable();
++		ret = __copy_to_user_inatomic(dst, (void __user *)src, size);
++		pagefault_enable();
++	}
++	force_uaccess_end(old_fs);
++
++	if (ret)
++		return -EFAULT;
++	return 0;
++}
++
+ unsigned long __kvmhv_copy_tofrom_guest_radix(int lpid, int pid,
+ 					      gva_t eaddr, void *to, void *from,
+ 					      unsigned long n)
+ {
+ 	int old_pid, old_lpid;
+-	unsigned long quadrant, ret = n;
++	unsigned long quadrant, ret;
+ 	bool is_load = !!to;
+ 
+ 	/* Can't access quadrants 1 or 2 in non-HV mode, call the HV to do it */
+@@ -47,10 +92,6 @@ unsigned long __kvmhv_copy_tofrom_guest_radix(int lpid, int pid,
+ 	quadrant = 1;
+ 	if (!pid)
+ 		quadrant = 2;
+-	if (is_load)
+-		from = (void *) (eaddr | (quadrant << 62));
+-	else
+-		to = (void *) (eaddr | (quadrant << 62));
+ 
+ 	preempt_disable();
+ 
+@@ -66,9 +107,9 @@ unsigned long __kvmhv_copy_tofrom_guest_radix(int lpid, int pid,
+ 	isync();
+ 
+ 	if (is_load)
+-		ret = copy_from_user_nofault(to, (const void __user *)from, n);
++		ret = __copy_from_guest_quadrant(to, (void __user *)eaddr, n, quadrant);
+ 	else
+-		ret = copy_to_user_nofault((void __user *)to, from, n);
++		ret = __copy_to_guest_quadrant((void __user *)eaddr, from, n, quadrant);
+ 
+ 	/* switch the pid first to avoid running host with unallocated pid */
+ 	if (quadrant == 1 && pid != old_pid)
+@@ -109,13 +150,7 @@ static long kvmhv_copy_tofrom_guest_radix(struct kvm_vcpu *vcpu, gva_t eaddr,
+ long kvmhv_copy_from_guest_radix(struct kvm_vcpu *vcpu, gva_t eaddr, void *to,
+ 				 unsigned long n)
+ {
+-	long ret;
+-
+-	ret = kvmhv_copy_tofrom_guest_radix(vcpu, eaddr, to, NULL, n);
+-	if (ret > 0)
+-		memset(to + (n - ret), 0, ret);
+-
+-	return ret;
++	return kvmhv_copy_tofrom_guest_radix(vcpu, eaddr, to, NULL, n);
+ }
+ EXPORT_SYMBOL_GPL(kvmhv_copy_from_guest_radix);
+ 
+-- 
+2.29.2
+
