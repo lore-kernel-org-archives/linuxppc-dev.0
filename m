@@ -6,52 +6,52 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99B9BC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:07:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CA52C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:08:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B1C260F14
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:07:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3B1C260F14
+	by mail.kernel.org (Postfix) with ESMTPS id 79E3C60F14
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:08:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 79E3C60F14
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GffrX6YCzz3dT7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 15:07:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gffrw0SGpz3dXQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 15:08:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
  envelope-from=andriy.shevchenko@intel.com; receiver=<UNKNOWN>)
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GfHYj3pRvz307Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 00:38:47 +1000 (AEST)
-X-IronPort-AV: E=McAfee;i="6200,9189,10065"; a="277465706"
-X-IronPort-AV: E=Sophos;i="5.84,291,1620716400"; d="scan'208";a="277465706"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Aug 2021 07:37:44 -0700
-X-IronPort-AV: E=Sophos;i="5.84,291,1620716400"; d="scan'208";a="479533435"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GfHbY5VdJz2yX6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 00:40:25 +1000 (AEST)
+X-IronPort-AV: E=McAfee;i="6200,9189,10065"; a="211837192"
+X-IronPort-AV: E=Sophos;i="5.84,291,1620716400"; d="scan'208";a="211837192"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Aug 2021 07:39:23 -0700
+X-IronPort-AV: E=Sophos;i="5.84,291,1620716400"; d="scan'208";a="419683121"
 Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
- by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Aug 2021 07:37:29 -0700
+ by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Aug 2021 07:39:07 -0700
 Received: from andy by smile with local (Exim 4.94.2)
  (envelope-from <andriy.shevchenko@intel.com>)
- id 1mAvXk-004lSc-2p; Tue, 03 Aug 2021 17:37:20 +0300
-Date: Tue, 3 Aug 2021 17:37:20 +0300
+ id 1mAvZJ-004lU3-S4; Tue, 03 Aug 2021 17:38:57 +0300
+Date: Tue, 3 Aug 2021 17:38:57 +0300
 From: Andy Shevchenko <andriy.shevchenko@intel.com>
 To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH v2 4/6] PCI: Provide wrapper to access a pci_dev's bound
- driver
-Message-ID: <YQlUoGYP6c/eWgJO@smile.fi.intel.com>
+Subject: Re: [PATCH v2 5/6] PCI: Adapt all code locations to not use struct
+ pci_dev::driver directly
+Message-ID: <YQlVAcOGDrDO8500@smile.fi.intel.com>
 References: <20210803100150.1543597-1-u.kleine-koenig@pengutronix.de>
- <20210803100150.1543597-5-u.kleine-koenig@pengutronix.de>
+ <20210803100150.1543597-6-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210803100150.1543597-5-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20210803100150.1543597-6-u.kleine-koenig@pengutronix.de>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-Mailman-Approved-At: Wed, 04 Aug 2021 15:05:41 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -101,20 +101,18 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Aug 03, 2021 at 12:01:48PM +0200, Uwe Kleine-König wrote:
-> Which driver a device is bound to is available twice: In struct
-> pci_dev::dev->driver and in struct pci_dev::driver. To get rid of the
-> duplication introduce a wrapper to access struct pci_dev's driver
-> member. Once all users are converted the wrapper can be changed to
-> calculate the driver using pci_dev::dev->driver.
+On Tue, Aug 03, 2021 at 12:01:49PM +0200, Uwe Kleine-König wrote:
+> This prepares removing the driver member of struct pci_dev which holds the
+> same information than struct pci_dev::dev->driver.
 
 ...
 
->  #define	to_pci_driver(drv) container_of(drv, struct pci_driver, driver)
-> +#define pci_driver_of_dev(pdev) ((pdev)->driver)
+> +	struct pci_driver *pdrv;
 
-Seems like above is (mis)using TAB instead of space after #define. Not sure if
-it's good to have them different.
+Missed blank line here and everywhere else. I don't remember if it's a
+checkpatch who complains on this.
+
+> +	return (pdev && (pdrv = pci_driver_of_dev(pdev))) ? pdrv->name : "<null>";
 
 -- 
 With Best Regards,
