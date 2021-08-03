@@ -2,69 +2,57 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A625C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:07:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99B9BC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:07:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 51C1460F14
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:07:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 51C1460F14
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 3B1C260F14
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:07:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3B1C260F14
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GffrB0KJTz3cS9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 15:07:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=fStBYY9c;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=pGmFmcj1;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GffrX6YCzz3dT7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 15:07:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
- helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=fStBYY9c; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=pGmFmcj1; 
- dkim-atps=neutral
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
+ envelope-from=andriy.shevchenko@intel.com; receiver=<UNKNOWN>)
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GfHGY72yLz3027
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 00:25:41 +1000 (AEST)
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1628000193;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=Qkfc7lxCqn4p3B20wjfjiLsyLpuZIa2kIlbDitBY8sw=;
- b=fStBYY9cDOofnMkMc6JUcZVYcNWx/eg2N05Pb/o7ef6JJTcTG48t+GioJgBl+eXKMJGEgi
- TVCeDR+EwHJjgdulnpLwVy12sseYnaixefw5o14vk+2PAOm/LUlJHLssIOZ+nJyuRxaM3r
- fCCG5ZeBAdz/Q3kIzOJQstWW7ST+mFehWQwEJk+hKZizcoepZD/zOgz+f7GO7oZ2MtK2DY
- wm7slubFVtLqvtY6o7cEl9ZIw3mvJ35go7HuaiPxyi+ESejsT+e0qaP6D0Fis4EUqsKcRu
- JGNGT0BYA9PAUGHVfsb3cVOtZwFCr59O6V6ObVy+T4OF395mknhLgwpLJFiGUg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1628000193;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=Qkfc7lxCqn4p3B20wjfjiLsyLpuZIa2kIlbDitBY8sw=;
- b=pGmFmcj1u+vX59p9gWCClfCslb9a1WxY2Pwa8q+HwkfzdAY6X/r9JgYaxIXaCJOpPNDW2W
- rceMZSe2cSwuwVDA==
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 00/38] Replace deprecated CPU-hotplug
-Date: Tue,  3 Aug 2021 16:15:43 +0200
-Message-Id: <20210803141621.780504-1-bigeasy@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GfHYj3pRvz307Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 00:38:47 +1000 (AEST)
+X-IronPort-AV: E=McAfee;i="6200,9189,10065"; a="277465706"
+X-IronPort-AV: E=Sophos;i="5.84,291,1620716400"; d="scan'208";a="277465706"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Aug 2021 07:37:44 -0700
+X-IronPort-AV: E=Sophos;i="5.84,291,1620716400"; d="scan'208";a="479533435"
+Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
+ by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Aug 2021 07:37:29 -0700
+Received: from andy by smile with local (Exim 4.94.2)
+ (envelope-from <andriy.shevchenko@intel.com>)
+ id 1mAvXk-004lSc-2p; Tue, 03 Aug 2021 17:37:20 +0300
+Date: Tue, 3 Aug 2021 17:37:20 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH v2 4/6] PCI: Provide wrapper to access a pci_dev's bound
+ driver
+Message-ID: <YQlUoGYP6c/eWgJO@smile.fi.intel.com>
+References: <20210803100150.1543597-1-u.kleine-koenig@pengutronix.de>
+ <20210803100150.1543597-5-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210803100150.1543597-5-u.kleine-koenig@pengutronix.de>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-Mailman-Approved-At: Wed, 04 Aug 2021 15:05:41 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,177 +65,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Ben Segall <bsegall@google.com>,
- Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Vincent Guittot <vincent.guittot@linaro.org>, linux-acpi@vger.kernel.org,
- Mel Gorman <mgorman@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>,
- Guenter Roeck <linux@roeck-us.net>, Petr Mladek <pmladek@suse.com>,
- Jean Delvare <jdelvare@suse.com>, linux-pm@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Pekka Paalanen <ppaalanen@gmail.com>, Andy Lutomirski <luto@kernel.org>,
- tglx@linutronix.de, Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Karol Herbst <karolherbst@gmail.com>,
- linux-crypto@vger.kernel.org, Tejun Heo <tj@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, Mark Rutland <mark.rutland@arm.com>,
- Zefan Li <lizefan.x@bytedance.com>, linux-doc@vger.kernel.org,
- nouveau@lists.freedesktop.org, Dave Hansen <dave.hansen@linux.intel.com>,
- virtualization@lists.linux-foundation.org, Song Liu <song@kernel.org>,
- Ingo Molnar <mingo@kernel.org>, linux-s390@vger.kernel.org,
- Davidlohr Bueso <dave@stgolabs.net>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Julian Wiedmann <jwi@linux.ibm.com>,
- Daniel Jordan <daniel.m.jordan@oracle.com>, Gonglei <arei.gonglei@huawei.com>,
- Len Brown <lenb@kernel.org>, Vasily Gorbik <gor@linux.ibm.com>,
- Suzuki K Poulose <suzuki.poulose@arm.com>, Mike Travis <mike.travis@hpe.com>,
- coresight@lists.linaro.org, kvm-ppc@vger.kernel.org,
- John Stultz <john.stultz@linaro.org>, cgroups@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
- Mathieu Poirier <mathieu.poirier@linaro.org>, Stephen Boyd <sboyd@kernel.org>,
- Robin Holt <robinmholt@gmail.com>,
- Daniel Bristot de Oliveira <bristot@redhat.com>,
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+ =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, linux-pci@vger.kernel.org,
+ Alexander Duyck <alexanderduyck@fb.com>,
+ Sathya Prakash <sathya.prakash@broadcom.com>, oss-drivers@corigine.com,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Jiri Olsa <jolsa@redhat.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ linux-perf-users@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org,
+ Ido Schimmel <idosch@nvidia.com>, x86@kernel.org, qat-linux@intel.com,
  Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jason Wang <jasowang@redhat.com>, Amit Kucheria <amitk@kernel.org>,
- Lai Jiangshan <jiangshanlai@gmail.com>, platform-driver-x86@vger.kernel.org,
- Steve Wahl <steve.wahl@hpe.com>, Joel Fernandes <joel@joelfernandes.org>,
- Mark Gross <mgross@linux.intel.com>, Jonathan Corbet <corbet@lwn.net>,
- "Michael S. Tsirkin" <mst@redhat.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Jiri Kosina <jikos@kernel.org>, Josh Triplett <josh@joshtriplett.org>,
- Steven Rostedt <rostedt@goodmis.org>, rcu@vger.kernel.org,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- linux-hwmon@vger.kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Stuart Hayes <stuart.w.hayes@gmail.com>,
- "David S. Miller" <davem@davemloft.net>, Len Brown <len.brown@intel.com>,
- Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
- "H. Peter Anvin" <hpa@zytor.com>, live-patching@vger.kernel.org,
- Miroslav Benes <mbenes@suse.cz>, Jiri Olsa <jolsa@redhat.com>,
- Steffen Klassert <steffen.klassert@secunet.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, Jakub Kicinski <kuba@kernel.org>,
- Zhang Rui <rui.zhang@intel.com>, Mike Leach <mike.leach@linaro.org>,
- "Paul E. McKenney" <paulmck@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
- Johannes Weiner <hannes@cmpxchg.org>, linux-raid@vger.kernel.org,
- Hans de Goede <hdegoede@redhat.com>, Joe Lawrence <joe.lawrence@redhat.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Namhyung Kim <namhyung@kernel.org>,
- linux-edac@vger.kernel.org, netdev@vger.kernel.org, linux-mips@vger.kernel.org,
- Leo Yan <leo.yan@linaro.org>, Borislav Petkov <bp@alien8.de>,
- linuxppc-dev@lists.ozlabs.org, Karsten Graul <kgraul@linux.ibm.com>
+ Ingo Molnar <mingo@redhat.com>, linux-wireless@vger.kernel.org,
+ Jakub Kicinski <kuba@kernel.org>, Mathias Nyman <mathias.nyman@intel.com>,
+ Yisen Zhuang <yisen.zhuang@huawei.com>, Fiona Trahe <fiona.trahe@intel.com>,
+ Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
+ Simon Horman <simon.horman@corigine.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Michael Buesch <m@bues.ch>, Jiri Pirko <jiri@nvidia.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Namhyung Kim <namhyung@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>,
+ Salil Mehta <salil.mehta@huawei.com>,
+ Sreekanth Reddy <sreekanth.reddy@broadcom.com>, xen-devel@lists.xenproject.org,
+ Vadym Kochan <vkochan@marvell.com>, MPT-FusionLinux.pdl@broadcom.com,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ Wojciech Ziemba <wojciech.ziemba@intel.com>, linux-kernel@vger.kernel.org,
+ Taras Chornyi <tchornyi@marvell.com>, Zhou Wang <wangzhou1@hisilicon.com>,
+ linux-crypto@vger.kernel.org, kernel@pengutronix.de, netdev@vger.kernel.org,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a tree wide replacement of the deprecated CPU hotplug functions
-which are only wrappers around the actual functions.
+On Tue, Aug 03, 2021 at 12:01:48PM +0200, Uwe Kleine-König wrote:
+> Which driver a device is bound to is available twice: In struct
+> pci_dev::dev->driver and in struct pci_dev::driver. To get rid of the
+> duplication introduce a wrapper to access struct pci_dev's driver
+> member. Once all users are converted the wrapper can be changed to
+> calculate the driver using pci_dev::dev->driver.
 
-Each patch is independent and can be picked up by the relevant maintainer.
+...
 
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Amit Kucheria <amitk@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Ben Segall <bsegall@google.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: cgroups@vger.kernel.org
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: coresight@lists.linaro.org
-Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
-Cc: Daniel Jordan <daniel.m.jordan@oracle.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Davidlohr Bueso <dave@stgolabs.net>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Gonglei <arei.gonglei@huawei.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Heiko Carstens <hca@linux.ibm.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Jakub Kicinski <kuba@kernel.org>
-Cc: Jason Wang <jasowang@redhat.com>
-Cc: Jean Delvare <jdelvare@suse.com>
-Cc: Jiri Kosina <jikos@kernel.org>
-Cc: Jiri Olsa <jolsa@redhat.com>
-Cc: Joe Lawrence <joe.lawrence@redhat.com>
-Cc: Joel Fernandes <joel@joelfernandes.org>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
-Cc: John Stultz <john.stultz@linaro.org>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Josh Triplett <josh@joshtriplett.org>
-Cc: Julian Wiedmann <jwi@linux.ibm.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>
-Cc: Karol Herbst <karolherbst@gmail.com>
-Cc: Karsten Graul <kgraul@linux.ibm.com>
-Cc: kvm-ppc@vger.kernel.org
-Cc: Lai Jiangshan <jiangshanlai@gmail.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Leo Yan <leo.yan@linaro.org>
-Cc: linux-acpi@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-crypto@vger.kernel.org
-Cc: linux-doc@vger.kernel.org
-Cc: linux-edac@vger.kernel.org
-Cc: linux-hwmon@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-mips@vger.kernel.org
-Cc: linux-mm@kvack.org
-Cc: linux-pm@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-raid@vger.kernel.org
-Cc: linux-s390@vger.kernel.org
-Cc: live-patching@vger.kernel.org
-Cc: Mark Gross <mgross@linux.intel.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Cc: Mathieu Poirier <mathieu.poirier@linaro.org>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Mike Leach <mike.leach@linaro.org>
-Cc: Mike Travis <mike.travis@hpe.com>
-Cc: Miroslav Benes <mbenes@suse.cz>
-Cc: Namhyung Kim <namhyung@kernel.org>
-Cc: netdev@vger.kernel.org
-Cc: nouveau@lists.freedesktop.org
-Cc: "Paul E. McKenney" <paulmck@kernel.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Pekka Paalanen <ppaalanen@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Petr Mladek <pmladek@suse.com>
-Cc: platform-driver-x86@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: rcu@vger.kernel.org
-Cc: Robin Holt <robinmholt@gmail.com>
-Cc: Song Liu <song@kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Steffen Klassert <steffen.klassert@secunet.com>
-Cc: Stephen Boyd <sboyd@kernel.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Steve Wahl <steve.wahl@hpe.com>
-Cc: Stuart Hayes <stuart.w.hayes@gmail.com>
-Cc: Suzuki K Poulose <suzuki.poulose@arm.com>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: virtualization@lists.linux-foundation.org
-Cc: x86@kernel.org
-Cc: Zefan Li <lizefan.x@bytedance.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
+>  #define	to_pci_driver(drv) container_of(drv, struct pci_driver, driver)
+> +#define pci_driver_of_dev(pdev) ((pdev)->driver)
 
-Sebastian
+Seems like above is (mis)using TAB instead of space after #define. Not sure if
+it's good to have them different.
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
 
