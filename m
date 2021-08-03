@@ -2,108 +2,54 @@ Return-Path: <SRS0=geFq=M2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7F70C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 14:38:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41786C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 15:01:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 46E7660F58
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 14:38:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 46E7660F58
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4CD0460EBB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 15:01:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4CD0460EBB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=inria.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GfHY16QNWz3cLX
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 00:38:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f3mmmwNq;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GfJ415WR2z3cT1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 01:01:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=inria.fr (client-ip=192.134.164.104;
+ helo=mail3-relais-sop.national.inria.fr; envelope-from=julia.lawall@inria.fr;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=f3mmmwNq; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+X-Greylist: delayed 65 seconds by postgrey-1.36 at boromir;
+ Wed, 04 Aug 2021 01:01:15 AEST
+Received: from mail3-relais-sop.national.inria.fr
+ (mail3-relais-sop.national.inria.fr [192.134.164.104])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GfHXV39pJz307Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 00:37:45 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 173EaK33032260; Tue, 3 Aug 2021 10:37:38 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=tLN72oLhqkifL5Ze8gcwxPcar2obJSiBJeWMGeqXaIM=;
- b=f3mmmwNqZ5yWSO6n3A/snNnyfGK8iKfZFqWo4VROlgx/35VnvgLKlTOESg/E59XB1p8N
- 6ZXc+4yCDVIlGs6IKb60DKx5F78xmbEuE2BjtatjawbrVJp0WxRAOrmzcGuE5z8HMyuF
- W2pyYvdL6/EY236zEcw19aGzr9ZcX+IXq3vujkiZutbdG9d2NiFTviUhCmP4/kt7Rbch
- J4a8PgtdUhaUaf+s5bEdUG2FVD5E+Ip9U4T1qFJRfqFYHtWFwyUDBYKhxRmN+Zeb1LFP
- gGWadGjfNO0mWZzO7ty1vs/sVd3IP6ssKBqZwUPuMUZh/c8VnI5x46Vb1OSc83hAwo7o Sg== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3a76d72jtd-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 03 Aug 2021 10:37:38 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 173Eb4qi039309;
- Tue, 3 Aug 2021 10:37:37 -0400
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3a76d72js8-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 03 Aug 2021 10:37:37 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 173EX2Gq000602;
- Tue, 3 Aug 2021 14:37:36 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma04wdc.us.ibm.com with ESMTP id 3a4x5ckeac-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 03 Aug 2021 14:37:36 +0000
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 173EbZSn36897160
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 3 Aug 2021 14:37:35 GMT
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 52523136067;
- Tue,  3 Aug 2021 14:37:35 +0000 (GMT)
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 53D7F136059;
- Tue,  3 Aug 2021 14:37:33 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.85.83.113])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue,  3 Aug 2021 14:37:32 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [RFC PATCH] powerpc/book3s64/radix: Upgrade va tlbie to PID tlbie if
- we cross PMD_SIZE
-Date: Tue,  3 Aug 2021 20:07:25 +0530
-Message-Id: <20210803143725.615186-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GfJ3b0XnCz2xts
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 01:01:14 +1000 (AEST)
+IronPort-HdrOrdr: =?us-ascii?q?A9a23=3Au1HY9K6Kdxj5lZVovAPXwMPXdLJyesId70hD?=
+ =?us-ascii?q?6qkRc202TiX2rauTdZggvyMc6wxhO03I++rgBEDoexq1yXcf2+cs1NmZMDUO9F?=
+ =?us-ascii?q?HJEKhSqbqn+THmFiHkn9Qx6Y5recFFZ+HNMQ=3D=3D?=
+X-IronPort-AV: E=Sophos;i="5.84,291,1620684000"; d="scan'208";a="389614604"
+Received: from dt-lawall.paris.inria.fr ([128.93.67.65])
+ by mail3-relais-sop.national.inria.fr with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 03 Aug 2021 17:00:02 +0200
+Date: Tue, 3 Aug 2021 16:59:55 +0200 (CEST)
+From: Julia Lawall <julia.lawall@inria.fr>
+X-X-Sender: julia@hadrien
+To: Michael Ellerman <mpe@ellerman.id.au>, 
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc/kexec: fix for_each_child.cocci warning
+Message-ID: <alpine.DEB.2.22.394.2108031654080.17639@hadrien>
+User-Agent: Alpine 2.22 (DEB 394 2020-01-19)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: g1__6icWIVqu6I2zxp6fUt6f5aMfFaur
-X-Proofpoint-GUID: X5TjH2UPwEK0T2VlfYSQ1gkguWwqgYsZ
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-08-03_04:2021-08-03,
- 2021-08-03 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 bulkscore=0 mlxscore=0 spamscore=0 lowpriorityscore=0
- clxscore=1015 mlxlogscore=999 impostorscore=0 suspectscore=0 adultscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2107140000 definitions=main-2108030096
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,63 +61,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com
+Cc: Sumera Priyadarsini <sylphrenadin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ kbuild-all@lists.01.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With shared mapping, even though we are unmapping a large range, the kernel
-will force a TLB flush with ptl lock held to avoid the race mentioned in
-commit 1cf35d47712d ("mm: split 'tlb_flush_mmu()' into tlb flushing and memory freeing parts")
-This results in the kernel issuing a high number of TLB flushes even for a large
-range. This can be improved by making sure the kernel switch to pid based flush if the
-kernel is unmapping a 2M range.
+From: kernel test robot <lkp@intel.com>
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+for_each_node_by_type should have of_node_put() before return.
+
+Generated by: scripts/coccinelle/iterators/for_each_child.cocci
+
+CC: Sumera Priyadarsini <sylphrenadin@gmail.com>
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: kernel test robot <lkp@intel.com>
 ---
- arch/powerpc/mm/book3s64/radix_tlb.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
-index aefc100d79a7..21d0f098e43b 100644
---- a/arch/powerpc/mm/book3s64/radix_tlb.c
-+++ b/arch/powerpc/mm/book3s64/radix_tlb.c
-@@ -1106,7 +1106,7 @@ EXPORT_SYMBOL(radix__flush_tlb_kernel_range);
-  * invalidating a full PID, so it has a far lower threshold to change from
-  * individual page flushes to full-pid flushes.
-  */
--static unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
-+static unsigned long tlb_single_page_flush_ceiling __read_mostly = 32;
- static unsigned long tlb_local_single_page_flush_ceiling __read_mostly = POWER9_TLB_SETS_RADIX * 2;
- 
- static inline void __radix__flush_tlb_range(struct mm_struct *mm,
-@@ -1133,7 +1133,7 @@ static inline void __radix__flush_tlb_range(struct mm_struct *mm,
- 	if (fullmm)
- 		flush_pid = true;
- 	else if (type == FLUSH_TYPE_GLOBAL)
--		flush_pid = nr_pages > tlb_single_page_flush_ceiling;
-+		flush_pid = nr_pages >= tlb_single_page_flush_ceiling;
- 	else
- 		flush_pid = nr_pages > tlb_local_single_page_flush_ceiling;
- 	/*
-@@ -1335,7 +1335,7 @@ static void __radix__flush_tlb_range_psize(struct mm_struct *mm,
- 	if (fullmm)
- 		flush_pid = true;
- 	else if (type == FLUSH_TYPE_GLOBAL)
--		flush_pid = nr_pages > tlb_single_page_flush_ceiling;
-+		flush_pid = nr_pages >= tlb_single_page_flush_ceiling;
- 	else
- 		flush_pid = nr_pages > tlb_local_single_page_flush_ceiling;
- 
-@@ -1505,7 +1505,7 @@ void do_h_rpt_invalidate_prt(unsigned long pid, unsigned long lpid,
- 			continue;
- 
- 		nr_pages = (end - start) >> def->shift;
--		flush_pid = nr_pages > tlb_single_page_flush_ceiling;
-+		flush_pid = nr_pages >= tlb_single_page_flush_ceiling;
- 
- 		/*
- 		 * If the number of pages spanning the range is above
--- 
-2.31.1
+The code seems to have been this way since the beginning of time.  Perhaps
+the of_node_put is a no op for this code?
+
+ core_64.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- a/arch/powerpc/kexec/core_64.c
++++ b/arch/powerpc/kexec/core_64.c
+@@ -64,8 +64,10 @@ int default_machine_kexec_prepare(struct
+ 			begin = image->segment[i].mem;
+ 			end = begin + image->segment[i].memsz;
+
+-			if ((begin < high) && (end > low))
++			if ((begin < high) && (end > low)) {
++				of_node_put(node);
+ 				return -ETXTBSY;
++			}
+ 		}
+ 	}
 
