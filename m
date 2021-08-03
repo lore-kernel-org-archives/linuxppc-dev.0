@@ -2,86 +2,108 @@ Return-Path: <SRS0=geFq=M2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD724C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 14:26:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7F70C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 14:38:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 553CA60ED6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 14:26:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 553CA60ED6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	by mail.kernel.org (Postfix) with ESMTPS id 46E7660F58
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 14:38:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 46E7660F58
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GfHHh7165z3dCT
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 00:26:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GfHY16QNWz3cLX
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 00:38:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=PYhmKlzH;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f3mmmwNq;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::32a;
- helo=mail-wm1-x32a.google.com; envelope-from=daniel.thompson@linaro.org;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=PYhmKlzH; dkim-atps=neutral
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com
- [IPv6:2a00:1450:4864:20::32a])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=f3mmmwNq; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GfHH26D6Yz3bYQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 00:26:05 +1000 (AEST)
-Received: by mail-wm1-x32a.google.com with SMTP id n11so12608270wmd.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Aug 2021 07:26:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=Hyrev4qZ9gpvHA1KPCI74nwAO20DWHqFncjdod67xeY=;
- b=PYhmKlzHVcWBCe22CBKVh/KxzmRCtPAQBvU+UWPmJGHL6O8vEmHQ2VVS7padRiJfDv
- M0L+E63SYkCVgoWe8p7Jfd5Lvh/vsoT3Hi5J0VWPan3CZIXdxpFKAwATKpBrOAGhUKM7
- tW3YaxbCKIcKPv7p7/Kx3CzOZ9ev/Q1EULAYiP/qxyhk5ODDZcKhNo+GVGA0pf/cki+l
- 62n2JMxkUOb0ktuQSYOHM48ZBedtzV4VW23uslZwi4WCIUhadBSmTJ4R3hh0SDk3xtii
- KUbHi5FBa2auiSaifO4Ufh18Eq/uukG0ta2ryDOAfVyzBOiYCbrAiIsw/XZP2hS2AE1J
- zzag==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=Hyrev4qZ9gpvHA1KPCI74nwAO20DWHqFncjdod67xeY=;
- b=BsecyDAcUfS1D0TkZOtrEiTyq2MmDsHbaOu9/unjUoevy2vtZ1XxF4G5NdGIoJab1F
- A1th4EGFI/O96c3cv1CkKzgSwyWmS1+zOrqjRy/KeoZDJy/Nq/WJJIeMTVpnu9s/F9/g
- mTFGvDVDWjbgdnzEKKgnlXjDZNOGXjm91O3qxlRicdSxdMu4XxRBZAcA6WCB6haJd6fa
- vcR9pOS+xt2kjxehd7yy/FUJSa/6DUlDWaH/3zvHW9odN/41fLkif/82i07VJ3VaqqIl
- kSF0m2O/J7qKzYGt7IsgHGEGcUHU3I9eviHdSCVPrP2aSzXLJs/UKwGPc06iEee5ciB8
- fFag==
-X-Gm-Message-State: AOAM530eAFhRMMCtot8O2A2emUU8qazpRy3llENkuo1KHfNpRqN2RwhY
- s9NGQp94RMtDEVTxkREciHuOgg==
-X-Google-Smtp-Source: ABdhPJwBsXTY7UQoTg+5apK7w/53TzVRzoUSN5h/Ae6fXdtB2xBNWKpTQUndSfLu+uJJGNrrmH5HIw==
-X-Received: by 2002:a7b:c0c1:: with SMTP id s1mr22633670wmh.130.1628000761410; 
- Tue, 03 Aug 2021 07:26:01 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net.
- [80.7.220.175])
- by smtp.gmail.com with ESMTPSA id f7sm17949139wrr.54.2021.08.03.07.25.59
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 03 Aug 2021 07:26:00 -0700 (PDT)
-Date: Tue, 3 Aug 2021 15:25:58 +0100
-From: Daniel Thompson <daniel.thompson@linaro.org>
-To: John Ogness <john.ogness@linutronix.de>
-Subject: Re: [PATCH printk v1 03/10] kgdb: delay roundup if holding printk
- cpulock
-Message-ID: <20210803142558.cz7apumpgijs5y4y@maple.lan>
-References: <20210803131301.5588-1-john.ogness@linutronix.de>
- <20210803131301.5588-4-john.ogness@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GfHXV39pJz307Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 00:37:45 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 173EaK33032260; Tue, 3 Aug 2021 10:37:38 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=tLN72oLhqkifL5Ze8gcwxPcar2obJSiBJeWMGeqXaIM=;
+ b=f3mmmwNqZ5yWSO6n3A/snNnyfGK8iKfZFqWo4VROlgx/35VnvgLKlTOESg/E59XB1p8N
+ 6ZXc+4yCDVIlGs6IKb60DKx5F78xmbEuE2BjtatjawbrVJp0WxRAOrmzcGuE5z8HMyuF
+ W2pyYvdL6/EY236zEcw19aGzr9ZcX+IXq3vujkiZutbdG9d2NiFTviUhCmP4/kt7Rbch
+ J4a8PgtdUhaUaf+s5bEdUG2FVD5E+Ip9U4T1qFJRfqFYHtWFwyUDBYKhxRmN+Zeb1LFP
+ gGWadGjfNO0mWZzO7ty1vs/sVd3IP6ssKBqZwUPuMUZh/c8VnI5x46Vb1OSc83hAwo7o Sg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3a76d72jtd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 03 Aug 2021 10:37:38 -0400
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 173Eb4qi039309;
+ Tue, 3 Aug 2021 10:37:37 -0400
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3a76d72js8-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 03 Aug 2021 10:37:37 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 173EX2Gq000602;
+ Tue, 3 Aug 2021 14:37:36 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma04wdc.us.ibm.com with ESMTP id 3a4x5ckeac-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 03 Aug 2021 14:37:36 +0000
+Received: from b03ledav002.gho.boulder.ibm.com
+ (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 173EbZSn36897160
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 3 Aug 2021 14:37:35 GMT
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 52523136067;
+ Tue,  3 Aug 2021 14:37:35 +0000 (GMT)
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 53D7F136059;
+ Tue,  3 Aug 2021 14:37:33 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.85.83.113])
+ by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue,  3 Aug 2021 14:37:32 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [RFC PATCH] powerpc/book3s64/radix: Upgrade va tlbie to PID tlbie if
+ we cross PMD_SIZE
+Date: Tue,  3 Aug 2021 20:07:25 +0530
+Message-Id: <20210803143725.615186-1-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210803131301.5588-4-john.ogness@linutronix.de>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: g1__6icWIVqu6I2zxp6fUt6f5aMfFaur
+X-Proofpoint-GUID: X5TjH2UPwEK0T2VlfYSQ1gkguWwqgYsZ
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-08-03_04:2021-08-03,
+ 2021-08-03 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 bulkscore=0 mlxscore=0 spamscore=0 lowpriorityscore=0
+ clxscore=1015 mlxlogscore=999 impostorscore=0 suspectscore=0 adultscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2107140000 definitions=main-2108030096
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,103 +115,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Douglas Anderson <dianders@chromium.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Chengyang Fan <cy.fan@huawei.com>, Bhaskar Chowdhury <unixbhaskar@gmail.com>,
- x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- kgdb-bugreport@lists.sourceforge.net, Petr Mladek <pmladek@suse.com>,
- Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>,
- Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Sergey Senozhatsky <senozhatsky@chromium.org>,
- Jason Wessel <jason.wessel@windriver.com>, linuxppc-dev@lists.ozlabs.org,
- =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Aug 03, 2021 at 03:18:54PM +0206, John Ogness wrote:
-> kgdb makes use of its own cpulock (@dbg_master_lock, @kgdb_active)
-> during cpu roundup. This will conflict with the printk cpulock.
+With shared mapping, even though we are unmapping a large range, the kernel
+will force a TLB flush with ptl lock held to avoid the race mentioned in
+commit 1cf35d47712d ("mm: split 'tlb_flush_mmu()' into tlb flushing and memory freeing parts")
+This results in the kernel issuing a high number of TLB flushes even for a large
+range. This can be improved by making sure the kernel switch to pid based flush if the
+kernel is unmapping a 2M range.
 
-When the full vision is realized what will be the purpose of the printk
-cpulock?
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/mm/book3s64/radix_tlb.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-I'm asking largely because it's current role is actively unhelpful
-w.r.t. kdb. It is possible that cautious use of in_dbg_master() might
-be a better (and safer) solution. However it sounds like there is a
-larger role planned for the printk cpulock...
+diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
+index aefc100d79a7..21d0f098e43b 100644
+--- a/arch/powerpc/mm/book3s64/radix_tlb.c
++++ b/arch/powerpc/mm/book3s64/radix_tlb.c
+@@ -1106,7 +1106,7 @@ EXPORT_SYMBOL(radix__flush_tlb_kernel_range);
+  * invalidating a full PID, so it has a far lower threshold to change from
+  * individual page flushes to full-pid flushes.
+  */
+-static unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
++static unsigned long tlb_single_page_flush_ceiling __read_mostly = 32;
+ static unsigned long tlb_local_single_page_flush_ceiling __read_mostly = POWER9_TLB_SETS_RADIX * 2;
+ 
+ static inline void __radix__flush_tlb_range(struct mm_struct *mm,
+@@ -1133,7 +1133,7 @@ static inline void __radix__flush_tlb_range(struct mm_struct *mm,
+ 	if (fullmm)
+ 		flush_pid = true;
+ 	else if (type == FLUSH_TYPE_GLOBAL)
+-		flush_pid = nr_pages > tlb_single_page_flush_ceiling;
++		flush_pid = nr_pages >= tlb_single_page_flush_ceiling;
+ 	else
+ 		flush_pid = nr_pages > tlb_local_single_page_flush_ceiling;
+ 	/*
+@@ -1335,7 +1335,7 @@ static void __radix__flush_tlb_range_psize(struct mm_struct *mm,
+ 	if (fullmm)
+ 		flush_pid = true;
+ 	else if (type == FLUSH_TYPE_GLOBAL)
+-		flush_pid = nr_pages > tlb_single_page_flush_ceiling;
++		flush_pid = nr_pages >= tlb_single_page_flush_ceiling;
+ 	else
+ 		flush_pid = nr_pages > tlb_local_single_page_flush_ceiling;
+ 
+@@ -1505,7 +1505,7 @@ void do_h_rpt_invalidate_prt(unsigned long pid, unsigned long lpid,
+ 			continue;
+ 
+ 		nr_pages = (end - start) >> def->shift;
+-		flush_pid = nr_pages > tlb_single_page_flush_ceiling;
++		flush_pid = nr_pages >= tlb_single_page_flush_ceiling;
+ 
+ 		/*
+ 		 * If the number of pages spanning the range is above
+-- 
+2.31.1
 
-
-> Therefore, a CPU must ensure that it is not holding the printk
-> cpulock when calling kgdb_cpu_enter(). If it is, it must allow its
-> printk context to complete first.
-> 
-> A new helper function kgdb_roundup_delay() is introduced for kgdb
-> to determine if it is holding the printk cpulock. If so, a flag is
-> set so that when the printk cpulock is released, kgdb will be
-> re-triggered for that CPU.
-> 
-> Signed-off-by: John Ogness <john.ogness@linutronix.de>
-> ---
->  arch/powerpc/include/asm/smp.h |  1 +
->  arch/powerpc/kernel/kgdb.c     | 10 +++++++-
->  arch/powerpc/kernel/smp.c      |  5 ++++
->  arch/x86/kernel/kgdb.c         |  9 ++++---
->  include/linux/kgdb.h           |  3 +++
->  include/linux/printk.h         |  8 ++++++
->  kernel/debug/debug_core.c      | 45 ++++++++++++++++++++--------------
->  kernel/printk/printk.c         | 12 +++++++++
->  8 files changed, 70 insertions(+), 23 deletions(-)
-> 
-> [...]
-> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-> index 3d0c933937b4..1b546e117f10 100644
-> --- a/kernel/printk/printk.c
-> +++ b/kernel/printk/printk.c
-> @@ -44,6 +44,7 @@
->  #include <linux/irq_work.h>
->  #include <linux/ctype.h>
->  #include <linux/uio.h>
-> +#include <linux/kgdb.h>
->  #include <linux/sched/clock.h>
->  #include <linux/sched/debug.h>
->  #include <linux/sched/task_stack.h>
-> @@ -214,6 +215,7 @@ int devkmsg_sysctl_set_loglvl(struct ctl_table *table, int write,
->  #ifdef CONFIG_SMP
->  static atomic_t printk_cpulock_owner = ATOMIC_INIT(-1);
->  static atomic_t printk_cpulock_nested = ATOMIC_INIT(0);
-> +static unsigned int kgdb_cpu = -1;
-
-Is this the flag to provoke retriggering? It appears to be a write-only
-variable (at least in this patch). How is it consumed?
-
-
-Daniel.
-
-
->  /**
->   * __printk_wait_on_cpu_lock() - Busy wait until the printk cpu-reentrant
-> @@ -325,6 +327,16 @@ void __printk_cpu_unlock(void)
->  			   -1); /* LMM(__printk_cpu_unlock:B) */
->  }
->  EXPORT_SYMBOL(__printk_cpu_unlock);
-> +
-> +bool kgdb_roundup_delay(unsigned int cpu)
-> +{
-> +	if (cpu != atomic_read(&printk_cpulock_owner))
-> +		return false;
-> +
-> +	kgdb_cpu = cpu;
-> +	return true;
-> +}
-> +EXPORT_SYMBOL(kgdb_roundup_delay);
->  #endif /* CONFIG_SMP */
->  
->  /* Number of registered extended console drivers. */
-> -- 
-> 2.20.1
-> 
