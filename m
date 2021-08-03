@@ -2,78 +2,103 @@ Return-Path: <SRS0=geFq=M2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48556C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 16:45:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15424C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 16:55:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 75EF961108
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 16:45:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 75EF961108
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 59EC860EE7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 16:55:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 59EC860EE7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GfLMr5hY0z3cQH
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 02:45:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GfLbH57fBz3bjG
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 02:55:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R+tHiuUl;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gVtLEmE7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=R+tHiuUl; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=gVtLEmE7; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GfLMN0trYz2ydJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 02:45:04 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPS id 7B8C161108
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 16:45:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1628009101;
- bh=eZ1Q6PqRQqekWDeI82krloYZVphJkigGCbN4dbCBhew=;
- h=From:To:Subject:Date:From;
- b=R+tHiuUlfwXTMOwWlCPl9bmnJDIEFFJpQx8AfGPeWVwxpKZj/XqalwCiORWCR2jCz
- vZKRa3UGtvm9pPfmxPCKvnUM2XCagviM33cUCYXSqY/jSl/o52hHls3xBnAKTqaBiT
- ErExsvhwjyzl4OBUUy3YAiaYhraDFJKJwisj6YdWs6QakfsK1MR0H8YmXQqwSePejW
- NiwJUPAOaybNaKDKV16MUmpNlvZGMji/GTJnfzhRm6q8bLuZeBUEo10DEJ+5zkyXH/
- 3CTQkBkqyK8rBsBI/x3MUbW+G0Cplfy70Ijv7qEqasq1ZNF3hCjCQybMhPvSDGtL97
- fN2MD0JMonxTA==
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 213961] New: Oops while loading radeon driver
-Date: Tue, 03 Aug 2021 16:45:00 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: new
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: riesebie@lxtec.de
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_id short_desc product version
- cf_kernel_version rep_platform op_sys cf_tree bug_status bug_severity
- priority component assigned_to reporter cf_regression attachments.created
-Message-ID: <bug-213961-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GfLZj49gSz301q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 02:54:53 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 173GXi96056904; Tue, 3 Aug 2021 12:54:43 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=fXnWJHvn1o1ua8XNwo9QTLIS65vV3L5LhMAgWQBcIkU=;
+ b=gVtLEmE78wMO4j24PYF7ipfGSEva5ygbxCUV5iT8LVZf0zXB8BS6MJzsNNfE6iWvIRGw
+ oBqms6tAEJMnZUh6SvLwtgZCT22zyehfMKkhKNLe68L6Cq9l4icAxcWJs8e1yunsAKZR
+ T09+4rh1EcNFQPF/IreDtwf/9hnxhH/9iWNRjPSCMjRkLT/37rFyStROpdadb8Enq3Jz
+ CCGbva51FAA0bl1ZkyVi5toKvdnmudo5R7GZkIobLD8I5ACdwwvE9yigd9zFEmoR31TD
+ OgAWTECHrTYeVTW42J0By/rLV08kJM66eGmYi0KipeWjrrYgN4xrq9BpehOstnmFQ0fQ 3A== 
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a733j655c-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 03 Aug 2021 12:54:43 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 173Gqgfm025618;
+ Tue, 3 Aug 2021 16:54:42 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma04dal.us.ibm.com with ESMTP id 3a4x5d2qrh-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 03 Aug 2021 16:54:42 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 173Gsfft43581936
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 3 Aug 2021 16:54:41 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EA30C6A05F;
+ Tue,  3 Aug 2021 16:54:40 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CC1A76A04D;
+ Tue,  3 Aug 2021 16:54:40 +0000 (GMT)
+Received: from localhost (unknown [9.211.83.167])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue,  3 Aug 2021 16:54:40 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Laurent Dufour <ldufour@linux.ibm.com>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH v5] pseries: prevent free CPU ids to be reused on
+ another node
+In-Reply-To: <20210429174908.16613-1-ldufour@linux.ibm.com>
+References: <20210429174908.16613-1-ldufour@linux.ibm.com>
+Date: Tue, 03 Aug 2021 11:54:40 -0500
+Message-ID: <87v94mii3z.fsf@linux.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 0-Tub6NlkC0RPb4sJ-Cox4dKZFgIq0VP
+X-Proofpoint-GUID: 0-Tub6NlkC0RPb4sJ-Cox4dKZFgIq0VP
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-08-03_04:2021-08-03,
+ 2021-08-03 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 spamscore=0
+ priorityscore=1501 phishscore=0 malwarescore=0 adultscore=0
+ mlxlogscore=963 suspectscore=0 lowpriorityscore=0 mlxscore=0
+ impostorscore=0 clxscore=1011 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2107140000 definitions=main-2108030105
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,40 +110,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D213961
+Laurent Dufour <ldufour@linux.ibm.com> writes:
+> V5:
+>  - Rework code structure
+>  - Reintroduce the capability to reuse other node's ids.
 
-            Bug ID: 213961
-           Summary: Oops while loading radeon driver
-           Product: Platform Specific/Hardware
-           Version: 2.5
-    Kernel Version: 5.14-rc4
-          Hardware: PPC-32
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: PPC-32
-          Assignee: platform_ppc-32@kernel-bugs.osdl.org
-          Reporter: riesebie@lxtec.de
-        Regression: No
+OK. While I preferred v4, where we would fail an add rather than allow
+CPU IDs to appear to "travel" between nodes, this change is a net
+improvement.
 
-Created attachment 298183
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D298183&action=3Dedit
-Boot proto
-
-Please find attached boot proto. The virtual console freezes. X doesn' star=
-t.
-ssh login from remote gives access to the system.
-
-Thanks in advance
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+Reviewed-by: Nathan Lynch <nathanl@linux.ibm.com>
