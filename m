@@ -2,67 +2,77 @@ Return-Path: <SRS0=geFq=M2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96323C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 10:54:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 710C7C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 11:00:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8273360F94
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 10:54:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8273360F94
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id BC74260FC2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 11:00:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BC74260FC2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GfBZX3b05z30Gg
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 20:54:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=geuqcauT;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GfBjw06fCz3cLL
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 21:00:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=geuqcauT; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
+ helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de;
+ receiver=<UNKNOWN>)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GfBZ54t0kz306F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 20:53:48 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4GfBZ34C1Mz9sS8;
- Tue,  3 Aug 2021 20:53:47 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1627988027;
- bh=cJNsL+t2vT3uJSBsFeq+A2MiJioWppOoB66u0oBhfjs=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=geuqcauTtj4QzKe3/2N+ScP1OOtpDNibfxboxrZSujpKvEOdY8yTvu78eaRfKV/82
- 4zwLxJGNh0OIRxSmKeonLzmqka+MgWP5MLt8L6pFM4NN/juSfujeFYykhKHXBEJsFH
- EdevlV3aJqVvsOXgVEb9NKPj29/FGUuYXHeoAmPa0yeQcSEPuKTl2LlzH4tR2uGvrY
- sP4sHHgNUkkHzhzQvgi9ndxu7oFPk5hvuObRaJlQZkQEVldyap4Y8/S1/DYMeVcLZv
- +n+pkQ1dGFYViWqmHvukLlPeQI0zY0S3n3QyPBPcd0Lf7qNUa2dVNFz1+JH9O9zBuK
- hj+4qXTx8v4rw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ganesh Goudar <ganeshgr@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/3] selftests/powerpc: Add test for real address error
- handling
-In-Reply-To: <20210730182349.625819-2-ganeshgr@linux.ibm.com>
-References: <20210730182349.625819-1-ganeshgr@linux.ibm.com>
- <20210730182349.625819-2-ganeshgr@linux.ibm.com>
-Date: Tue, 03 Aug 2021 20:53:43 +1000
-Message-ID: <87sfzqol3c.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gf9S46VXtz2ymZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 20:03:30 +1000 (AEST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+ by metis.ext.pengutronix.de with esmtps
+ (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1mArFM-0002yN-C1; Tue, 03 Aug 2021 12:02:04 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+ by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1mArFD-0006FL-MW; Tue, 03 Aug 2021 12:01:55 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1mArFC-0002oK-Il; Tue, 03 Aug 2021 12:01:54 +0200
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH v2 6/6] PCI: Drop duplicated tracking of a pci_dev's bound
+ driver
+Date: Tue,  3 Aug 2021 12:01:50 +0200
+Message-Id: <20210803100150.1543597-7-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210803100150.1543597-1-u.kleine-koenig@pengutronix.de>
+References: <20210803100150.1543597-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
+X-Patch-Hashes: v=1; h=sha256; i=yGEodBYjARp1eJPqP9/n/KpfKo6ALJzXr+t0LDtBUZM=;
+ m=JRVTmu6nPliiiBslnXnYAnMTr94GnCwSSGQey1Vdrcw=;
+ p=VXwrm6IwhM33tInq/RiiFiTf7eEJSweS+vvs0hZjA4Y=;
+ g=dfdf1d247df87fe752d1cd93dee47b352d54b9dc
+X-Patch-Sig: m=pgp; i=u.kleine-koenig@pengutronix.de;
+ s=0x0D2511F322BFAB1C1580266BE2DCDD9132669BD6;
+ b=iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmEJFAcACgkQwfwUeK3K7AlY4QgAoQ1
+ tszu0I41Zf6v0DKUasmGS98o7Yfn0OAkexq7Ntd7+GO5Lwc/dR4OcqooMePO5FWdYTzhGFWsTXAAD
+ LGujFGBNIwdOZY7PsRSHFlhr8DoTUgXyHh0WvMo6wsFShQYS62Ay8MgAU36nYDzrGR94CrNoCANwS
+ h+SL7+g+mtMAbQlS/p+3RSIYxyZ7XVHTUqkYWvnbsQpiqJVjtySAaBAdOsmo1ks0PezNBWORDnTZx
+ oiJmCi1ZKOwWmWW0oqRhmNELiPQJzEh2XFGYcJCfDILAltZ8JK14Akc3BKVCwfr8+rcyFeI1PC7hB
+ WPmvafaXTQnzw47uX9Cc5oG6/RB92PA==
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
+ SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+X-Mailman-Approved-At: Tue, 03 Aug 2021 21:00:13 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,38 +84,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, Ganesh Goudar <ganeshgr@linux.ibm.com>,
- mahesh@linux.ibm.com, npiggin@gmail.com
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+ =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, linux-pci@vger.kernel.org,
+ Alexander Duyck <alexanderduyck@fb.com>,
+ Sathya Prakash <sathya.prakash@broadcom.com>, oss-drivers@corigine.com,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Jiri Olsa <jolsa@redhat.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ linux-perf-users@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org,
+ Ido Schimmel <idosch@nvidia.com>, x86@kernel.org, qat-linux@intel.com,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Ingo Molnar <mingo@redhat.com>, linux-wireless@vger.kernel.org,
+ Jakub Kicinski <kuba@kernel.org>, Mathias Nyman <mathias.nyman@intel.com>,
+ Yisen Zhuang <yisen.zhuang@huawei.com>, Fiona Trahe <fiona.trahe@intel.com>,
+ Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
+ Simon Horman <simon.horman@corigine.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Michael Buesch <m@bues.ch>, Jiri Pirko <jiri@nvidia.com>,
+ Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@intel.com>, Juergen Gross <jgross@suse.com>,
+ Salil Mehta <salil.mehta@huawei.com>,
+ Sreekanth Reddy <sreekanth.reddy@broadcom.com>, xen-devel@lists.xenproject.org,
+ Vadym Kochan <vkochan@marvell.com>, MPT-FusionLinux.pdl@broadcom.com,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ Wojciech Ziemba <wojciech.ziemba@intel.com>, linux-kernel@vger.kernel.org,
+ Taras Chornyi <tchornyi@marvell.com>, Zhou Wang <wangzhou1@hisilicon.com>,
+ linux-crypto@vger.kernel.org, kernel@pengutronix.de, netdev@vger.kernel.org,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Ganesh Goudar <ganeshgr@linux.ibm.com> writes:
-> Add test for real address or control memory address access
-> error handling, using NX-GZIP engine.
->
-> The error is injected by accessing the control memory address
-> using illegal instruction, on successful handling the process
-> attempting to access control memory address using illegal
-> instruction receives SIGBUS.
->
-> Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
-> ---
->  tools/testing/selftests/powerpc/Makefile      |  3 +-
->  tools/testing/selftests/powerpc/mce/Makefile  |  6 +++
->  .../selftests/powerpc/mce/inject-ra-err.c     | 42 +++++++++++++++++++
->  .../selftests/powerpc/mce/inject-ra-err.sh    | 19 +++++++++
->  4 files changed, 69 insertions(+), 1 deletion(-)
->  create mode 100644 tools/testing/selftests/powerpc/mce/Makefile
->  create mode 100644 tools/testing/selftests/powerpc/mce/inject-ra-err.c
->  create mode 100755 tools/testing/selftests/powerpc/mce/inject-ra-err.sh
+Currently it's tracked twice which driver is bound to a given pci
+device. Now that all users of the pci specific one (struct
+pci_dev::driver) are updated to use an access macro
+(pci_driver_of_dev()), change the macro to use the information from the
+driver core and remove the driver member from struct pci_dev.
 
-This breaks the selftests build:
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/pci/pci-driver.c | 4 ----
+ include/linux/pci.h      | 3 +--
+ 2 files changed, 1 insertion(+), 6 deletions(-)
 
-  https://github.com/ruscur/linux-ci/runs/3204665920?check_suite_focus=true
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index 740d5bf5d411..5d950eb476e2 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -305,12 +305,10 @@ static long local_pci_probe(void *_ddi)
+ 	 * its remove routine.
+ 	 */
+ 	pm_runtime_get_sync(dev);
+-	pci_dev->driver = pci_drv;
+ 	rc = pci_drv->probe(pci_dev, ddi->id);
+ 	if (!rc)
+ 		return rc;
+ 	if (rc < 0) {
+-		pci_dev->driver = NULL;
+ 		pm_runtime_put_sync(dev);
+ 		return rc;
+ 	}
+@@ -376,7 +374,6 @@ static int pci_call_probe(struct pci_driver *drv, struct pci_dev *dev,
+  * @pci_dev: PCI device being probed
+  *
+  * returns 0 on success, else error.
+- * side-effect: pci_dev->driver is set to drv when drv claims pci_dev.
+  */
+ static int __pci_device_probe(struct pci_driver *drv, struct pci_dev *pci_dev)
+ {
+@@ -451,7 +448,6 @@ static int pci_device_remove(struct device *dev)
+ 		pm_runtime_put_noidle(dev);
+ 	}
+ 	pcibios_free_irq(pci_dev);
+-	pci_dev->driver = NULL;
+ 	pci_iov_remove(pci_dev);
+ 
+ 	/* Undo the runtime PM settings in local_pci_probe() */
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 778f3b5e6f23..f44ab76e216f 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -342,7 +342,6 @@ struct pci_dev {
+ 	u16		pcie_flags_reg;	/* Cached PCIe Capabilities Register */
+ 	unsigned long	*dma_alias_mask;/* Mask of enabled devfn aliases */
+ 
+-	struct pci_driver *driver;	/* Driver bound to this device */
+ 	u64		dma_mask;	/* Mask of the bits of bus address this
+ 					   device implements.  Normally this is
+ 					   0xffffffff.  You only need to change
+@@ -887,7 +886,7 @@ struct pci_driver {
+ };
+ 
+ #define	to_pci_driver(drv) container_of(drv, struct pci_driver, driver)
+-#define pci_driver_of_dev(pdev) ((pdev)->driver)
++#define pci_driver_of_dev(pdev) ((pdev)->dev.driver ? to_pci_driver((pdev)->dev.driver) : NULL)
+ 
+ /**
+  * PCI_DEVICE - macro used to describe a specific PCI device
+-- 
+2.30.2
 
-  make[2]: Entering directory '/linux/tools/testing/selftests/powerpc/mce'
-  powerpc-linux-gnu-gcc -std=gnu99 -O2 -Wall -Werror -DGIT_VERSION='"77349a6"' -I/linux/tools/testing/selftests/powerpc/include     inject-ra-err.c  -o /output/kselftest/powerpc/mce/inject-ra-err
-  Error: inject-ra-err.c:11:25: fatal error: asm/vas-api.h: No such file or directory
-
-cheers
