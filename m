@@ -2,77 +2,85 @@ Return-Path: <SRS0=geFq=M2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53A3FC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 11:01:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9C44C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 11:34:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 97E4961040
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 11:01:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 97E4961040
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id E28DA60F11
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 11:34:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E28DA60F11
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=inbox.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GfBl72PVxz3dGQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 21:01:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GfCT51m9zz2yhF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 21:34:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=inbox.ru header.i=@inbox.ru header.a=rsa-sha256 header.s=mail3 header.b=gB4ZiJSm;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=inbox.ru header.i=@inbox.ru header.a=rsa-sha256 header.s=mail3 header.b=k6o0ctCW;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
- helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de;
- receiver=<UNKNOWN>)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gf9S46YKFz2ysv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 20:03:30 +1000 (AEST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
- by metis.ext.pengutronix.de with esmtps
- (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
- (envelope-from <ukl@pengutronix.de>)
- id 1mArFM-0002yM-C2; Tue, 03 Aug 2021 12:02:04 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
- by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.92)
- (envelope-from <ukl@pengutronix.de>)
- id 1mArFC-0006FI-FW; Tue, 03 Aug 2021 12:01:54 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.92)
- (envelope-from <ukl@pengutronix.de>)
- id 1mArFC-0002nx-C7; Tue, 03 Aug 2021 12:01:54 +0200
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 5/6] PCI: Adapt all code locations to not use struct
- pci_dev::driver directly
-Date: Tue,  3 Aug 2021 12:01:49 +0200
-Message-Id: <20210803100150.1543597-6-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210803100150.1543597-1-u.kleine-koenig@pengutronix.de>
-References: <20210803100150.1543597-1-u.kleine-koenig@pengutronix.de>
+ smtp.mailfrom=inbox.ru (client-ip=185.5.136.252; helo=fallback20.mail.ru;
+ envelope-from=fido_max@inbox.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=inbox.ru header.i=@inbox.ru header.a=rsa-sha256
+ header.s=mail3 header.b=gB4ZiJSm; 
+ dkim=pass (1024-bit key) header.d=inbox.ru header.i=@inbox.ru
+ header.a=rsa-sha256 header.s=mail3 header.b=k6o0ctCW; 
+ dkim-atps=neutral
+Received: from fallback20.mail.ru (fallback20.mail.ru [185.5.136.252])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GfCSS1zDTz2yhF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 21:33:59 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=inbox.ru;
+ s=mail3; 
+ h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:Cc:To:From:From:Subject:Content-Type:Content-Transfer-Encoding:To:Cc;
+ bh=5J1LAkOStwLr5Szy1OrD59ZeHyDPT07+QyClKVIYwn8=; 
+ t=1627990440;x=1628595840; 
+ b=gB4ZiJSmoXagxQeacOauNrXggmb59VRCkG/9XYXzmiV3W5JebQr+JcewehwxuWzqexOilHOxJTE91HhZ1lJ0DBarPSyH/23+tLWni8nEtUT3XDm5DzJf4APJ//ddSBNOZK5ZrSqCVZvjObSTjbLI7y7m6tovFYs+/T916oLkLgI=;
+Received: from [10.161.25.38] (port=60436 helo=smtp61.i.mail.ru)
+ by fallback20.m.smailru.net with esmtp (envelope-from <fido_max@inbox.ru>)
+ id 1mAsgE-0005vW-En; Tue, 03 Aug 2021 14:33:54 +0300
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=inbox.ru;
+ s=mail3; 
+ h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:Cc:To:From:From:Subject:Content-Type:Content-Transfer-Encoding:To:Cc;
+ bh=5J1LAkOStwLr5Szy1OrD59ZeHyDPT07+QyClKVIYwn8=; 
+ t=1627990434;x=1628595834; 
+ b=k6o0ctCWBBct/0weeJWM/7iyZ+vXboFe16pM4bt/tkZ3bx9KOrMbR36CQrk6WM7hWl5eBVO5vEVPcqYVvZsj/9hANHJvpTKwalBSh8XX8XO8K6sOoS4Fod0+yhHnOvmrBinUnf3ooyEm21ePVYcTzpe2mw3OV6XCUi1OtqJq/cQ=;
+Received: by smtp61.i.mail.ru with esmtpa (envelope-from <fido_max@inbox.ru>)
+ id 1mAsg2-0004iv-AK; Tue, 03 Aug 2021 14:33:43 +0300
+From: Maxim Kochetkov <fido_max@inbox.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4] soc: fsl: qe: convert QE interrupt controller to
+ platform_device
+Date: Tue,  3 Aug 2021 14:35:38 +0300
+Message-Id: <20210803113538.560277-1-fido_max@inbox.ru>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Patch-Hashes: v=1; h=sha256; i=9L+xMpEBAe+EMrTNszE9gpsj0FkwASarXVYcMu+YsdI=;
- m=G3t4EAjyOjy3F8ef7TOQklRyeKO15tgc41ovGVIn+a4=;
- p=Srp4lE5TG4JQcYFCRjqTwA1yZ/geNI4huBcI6p65IyA=;
- g=56cfecb1923fb7e3ec74c8d802decb54c006d8f3
-X-Patch-Sig: m=pgp; i=u.kleine-koenig@pengutronix.de;
- s=0x0D2511F322BFAB1C1580266BE2DCDD9132669BD6;
- b=iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmEJFAQACgkQwfwUeK3K7Akt4wgAle7
- nA3Sz5l3jj+12cXnjhucc0sgtVEco6Hbmi+mHZdnTkqr4BZIPPB8a/pbtebm5R54xg/xn5Z7h783r
- dBPyMjQx4PB3XSBg68+NL7LBi1DFRvjiAqZf41+LZye1a5tgjNaH9kntqf5BzMqdnr6oUGXwJSOwX
- yXI3OPV+DZBtnYJsEPvOrUenvKKUbdxyTIvba4ItBna949kdcmQe/Qn5OHYblCpggY3Thqwvtl2er
- gnVYft5D+YQMKOoIhX5gS4SKjeAkzHv5KJfugJLIURrjyncYa5TSCdYdAED53j8BfNJGs5vURhi06
- 8XoK0+n3xztk7a3MUXQ7A8fImcxiyrw==
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
- SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
-X-Mailman-Approved-At: Tue, 03 Aug 2021 21:00:13 +1000
+X-7564579A: 646B95376F6C166E
+X-77F55803: 4F1203BC0FB41BD941C43E597735A9C36A98DBA789EBB6AE26DB9A6C1D9BF7E0182A05F53808504066AC962118594CD82AA12C898B944E40D1A14D3227BB309BB4A141AA88F7E734
+X-7FA49CB5: FF5795518A3D127A4AD6D5ED66289B5278DA827A17800CE70CB15FA6C489297DEA1F7E6F0F101C67BD4B6F7A4D31EC0BCC500DACC3FED6E28638F802B75D45FF8AA50765F7900637B9ECF1867A781AFF8638F802B75D45FF36EB9D2243A4F8B5A6FCA7DBDB1FC311F39EFFDF887939037866D6147AF826D8339D95D74413E4A942F837281D4603336F9789CCF6C18C3F8528715B7D10C86878DA827A17800CE79AE9BAF3542BD4619FA2833FD35BB23D9E625A9149C048EEB1593CA6EC85F86D2CC0D3CB04F14752D2E47CDBA5A96583BD4B6F7A4D31EC0BC014FD901B82EE079FA2833FD35BB23D27C277FBC8AE2E8B0FC4FCDDD36A1EE6A471835C12D1D977C4224003CC836476EB9C4185024447017B076A6E789B0E975F5C1EE8F4F765FCF1FD787189321A053AA81AA40904B5D9CF19DD082D7633A078D18283394535A93AA81AA40904B5D98AA50765F7900637DFF7D95064351EF7D81D268191BDAD3D698AB9A7B718F8C4D1B931868CE1C5781A620F70A64A45A98AA50765F79006372E808ACE2090B5E1725E5C173C3A84C3C5EA940A35A165FF2DBA43225CD8A89F83C798A30B85E16B42539A7722CA490CB5C8C57E37DE458BEDA766A37F9254B7
+X-C1DE0DAB: C20DE7B7AB408E4181F030C43753B8186998911F362727C414F749A5E30D975C85811CA530B504913DA9E08479E341D8CF76A35945F360EF9C2B6934AE262D3EE7EAB7254005DCED1C8AEA1E975C27AC1E0A4E2319210D9B64D260DF9561598F01A9E91200F654B03031C89702B531498E8E86DC7131B365E7726E8460B7C23C
+X-C8649E89: 4E36BF7865823D7055A7F0CF078B5EC49A30900B95165D34C786159FDC4342B07AB2F74F2D016C42B064E933508F7FFE73DEC9C1812D95982C6F047A2D1AE3D51D7E09C32AA3244C830611220198631E6BEDBD64134B7BE555E75C8D0ED9F6EEED98077840A144B9
+X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu530nj6fImhcD4MUrOEAnl0W826KZ9Q+tr5ycPtXkTV4k65bRjmOUUP8cvGozZ33TWg5HZplvhhXbhDGzqmQDTd6OAevLeAnq3Ra9uf7zvY2zzsIhlcp/Y7m53TZgf2aB4JOg4gkr2bioj9N286KAyvN7oC57uGb6Fww==
+X-Mailru-Sender: 11C2EC085EDE56FA9C10FA2967F5AB24D4E199C00A9860967D9727C80553D0C5828D92E36CF2E653EE9242D420CFEBFD3DDE9B364B0DF2891A624F84B2C74EDA4239CF2AF0A6D4F80DA7A0AF5A3A8387
+X-Mras: Ok
+X-7564579A: B8F34718100C35BD
+X-77F55803: 6242723A09DB00B4DE24245422D83CE6F6EF26CB7A2DAAF27C35BF5860D7129E049FFFDB7839CE9E46EDBEBD7A47596060E6CB7D164C5199477E3807A253DB6E6461F1AD2AA14E20
+X-7FA49CB5: 0D63561A33F958A51FC20AD42B9911452530ED994695C0E99061C89B615004F5CACD7DF95DA8FC8BD5E8D9A59859A8B64071617579528AACCC7F00164DA146DAFE8445B8C89999728AA50765F79006372CF0B7F2E2D5057D389733CBF5DBD5E9C8A9BA7A39EFB766F5D81C698A659EA7CC7F00164DA146DA9985D098DBDEAEC83820445CF21F0C3CF6B57BC7E6449061A352F6E88A58FB86F5D81C698A659EA73AA81AA40904B5D9A18204E546F3947CDA7BFA4571439BB29735652A29929C6C4AD6D5ED66289B52698AB9A7B718F8C442539A7722CA490CD5E8D9A59859A8B67A7B0CDC955A1711089D37D7C0E48F6C5571747095F342E88FB05168BE4CE3AF
+X-C1DE0DAB: C20DE7B7AB408E4181F030C43753B8186998911F362727C414F749A5E30D975C85811CA530B504919013A8C37DA2D177380209919B75AA789C2B6934AE262D3EE7EAB7254005DCED1C8AEA1E975C27AC699F904B3F4130E343918A1A30D5E7FCCB5012B2E24CD356
+X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu530nj6fImhcD4MUrOEAnl0W826KZ9Q+tr5ycPtXkTV4k65bRjmOUUP8cvGozZ33TWg5HZplvhhXbhDGzqmQDTd6OAevLeAnq3Ra9uf7zvY2zzsIhlcp/Y7m53TZgf2aB4JOg4gkr2bioj9N286KAyvN7IkOlGiLJxvg==
+X-Mailru-MI: 800
+X-Mailru-Sender: A5480F10D64C9005EA165EA48716E380AC789DBD41723ACC6A46957E4B27E5D15CE6193A6A9ACCF8C099ADC76E806A99D50E20E2BC48EF5A30D242760C51EA9CEAB4BC95F72C04283CDA0F3B3F5B9367
+X-Mras: Ok
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,770 +92,165 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
- =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, linux-pci@vger.kernel.org,
- Alexander Duyck <alexanderduyck@fb.com>,
- Sathya Prakash <sathya.prakash@broadcom.com>, oss-drivers@corigine.com,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Jiri Olsa <jolsa@redhat.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- linux-perf-users@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>,
- Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org,
- Ido Schimmel <idosch@nvidia.com>, x86@kernel.org, qat-linux@intel.com,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, linux-wireless@vger.kernel.org,
- Jakub Kicinski <kuba@kernel.org>, Mathias Nyman <mathias.nyman@intel.com>,
- Yisen Zhuang <yisen.zhuang@huawei.com>, Fiona Trahe <fiona.trahe@intel.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
- Simon Horman <simon.horman@corigine.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Michael Buesch <m@bues.ch>, Jiri Pirko <jiri@nvidia.com>,
- Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Andy Shevchenko <andriy.shevchenko@intel.com>, Juergen Gross <jgross@suse.com>,
- Salil Mehta <salil.mehta@huawei.com>,
- Sreekanth Reddy <sreekanth.reddy@broadcom.com>, xen-devel@lists.xenproject.org,
- Vadym Kochan <vkochan@marvell.com>, MPT-FusionLinux.pdl@broadcom.com,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- Wojciech Ziemba <wojciech.ziemba@intel.com>, linux-kernel@vger.kernel.org,
- Taras Chornyi <tchornyi@marvell.com>, Zhou Wang <wangzhou1@hisilicon.com>,
- linux-crypto@vger.kernel.org, kernel@pengutronix.de, netdev@vger.kernel.org,
- Frederic Barrat <fbarrat@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: kernel test robot <lkp@intel.com>, saravanak@google.com,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, leoyang.li@nxp.com,
+ Maxim Kochetkov <fido_max@inbox.ru>, Dan Carpenter <dan.carpenter@oracle.com>,
+ linux-arm-kernel@lists.infradead.org, qiang.zhao@nxp.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This prepares removing the driver member of struct pci_dev which holds the
-same information than struct pci_dev::dev->driver.
+Since 5.13 QE's ucc nodes can't get interrupts from devicetree:
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+	ucc@2000 {
+		cell-index = <1>;
+		reg = <0x2000 0x200>;
+		interrupts = <32>;
+		interrupt-parent = <&qeic>;
+	};
+
+Now fw_devlink expects driver to create and probe a struct device
+for interrupt controller.
+
+So lets convert this driver to simple platform_device with probe().
+Also use platform_get_ and devm_ family function to get/allocate
+resources and drop unused .compatible = "qeic".
+
+[1] - https://lore.kernel.org/lkml/CAGETcx9PiX==mLxB9PO8Myyk6u2vhPVwTMsA5NkD-ywH5xhusw@mail.gmail.com
+Fixes: e590474768f1 ("driver core: Set fw_devlink=on by default")
+Fixes: ea718c699055 ("Revert "Revert "driver core: Set fw_devlink=on by default""")
+Signed-off-by: Maxim Kochetkov <fido_max@inbox.ru>
+Reported-by: kernel test robot <lkp@intel.com>
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
 ---
- arch/powerpc/include/asm/ppc-pci.h            |  3 +-
- arch/powerpc/kernel/eeh_driver.c              | 12 ++++---
- arch/x86/events/intel/uncore.c                |  2 +-
- arch/x86/kernel/probe_roms.c                  |  2 +-
- drivers/bcma/host_pci.c                       |  6 ++--
- drivers/crypto/hisilicon/qm.c                 |  2 +-
- drivers/crypto/qat/qat_common/adf_aer.c       |  2 +-
- drivers/message/fusion/mptbase.c              |  4 +--
- drivers/misc/cxl/guest.c                      | 21 +++++------
- drivers/misc/cxl/pci.c                        | 25 +++++++------
- .../ethernet/hisilicon/hns3/hns3_ethtool.c    |  2 +-
- .../ethernet/marvell/prestera/prestera_pci.c  |  2 +-
- drivers/net/ethernet/mellanox/mlxsw/pci.c     |  2 +-
- .../ethernet/netronome/nfp/nfp_net_ethtool.c  |  2 +-
- drivers/pci/iov.c                             | 23 +++++++-----
- drivers/pci/pci-driver.c                      | 28 ++++++++-------
- drivers/pci/pci.c                             | 10 +++---
- drivers/pci/pcie/err.c                        | 35 ++++++++++---------
- drivers/pci/xen-pcifront.c                    |  3 +-
- drivers/ssb/pcihost_wrapper.c                 |  7 ++--
- drivers/usb/host/xhci-pci.c                   |  3 +-
- 21 files changed, 112 insertions(+), 84 deletions(-)
+ drivers/soc/fsl/qe/qe_ic.c | 75 ++++++++++++++++++++++----------------
+ 1 file changed, 44 insertions(+), 31 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index 2b9edbf6e929..63938c156c57 100644
---- a/arch/powerpc/include/asm/ppc-pci.h
-+++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -57,7 +57,8 @@ void eeh_sysfs_remove_device(struct pci_dev *pdev);
- 
- static inline const char *eeh_driver_name(struct pci_dev *pdev)
- {
--	return (pdev && pdev->driver) ? pdev->driver->name : "<null>";
-+	struct pci_driver *pdrv;
-+	return (pdev && (pdrv = pci_driver_of_dev(pdev))) ? pdrv->name : "<null>";
+diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/soc/fsl/qe/qe_ic.c
+index 3f711c1a0996..e710d554425d 100644
+--- a/drivers/soc/fsl/qe/qe_ic.c
++++ b/drivers/soc/fsl/qe/qe_ic.c
+@@ -23,6 +23,7 @@
+ #include <linux/signal.h>
+ #include <linux/device.h>
+ #include <linux/spinlock.h>
++#include <linux/platform_device.h>
+ #include <asm/irq.h>
+ #include <asm/io.h>
+ #include <soc/fsl/qe/qe.h>
+@@ -404,41 +405,40 @@ static void qe_ic_cascade_muxed_mpic(struct irq_desc *desc)
+ 	chip->irq_eoi(&desc->irq_data);
  }
  
- #endif /* CONFIG_EEH */
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 3eff6a4888e7..0fc712a8775e 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -104,13 +104,14 @@ static bool eeh_edev_actionable(struct eeh_dev *edev)
-  */
- static inline struct pci_driver *eeh_pcid_get(struct pci_dev *pdev)
+-static void __init qe_ic_init(struct device_node *node)
++static int qe_ic_init(struct platform_device *pdev)
  {
--	if (!pdev || !pdev->driver)
-+	struct pci_driver *pdrv;
-+	if (!pdev || !(pdrv = pci_driver_of_dev(pdev)))
- 		return NULL;
++	struct device *dev = &pdev->dev;
+ 	void (*low_handler)(struct irq_desc *desc);
+ 	void (*high_handler)(struct irq_desc *desc);
+ 	struct qe_ic *qe_ic;
+-	struct resource res;
+-	u32 ret;
++	struct resource *res;
++	struct device_node *node = pdev->dev.of_node;
  
--	if (!try_module_get(pdev->driver->driver.owner))
-+	if (!try_module_get(pdrv->driver.owner))
- 		return NULL;
+-	ret = of_address_to_resource(node, 0, &res);
+-	if (ret)
+-		return;
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (res == NULL) {
++		dev_err(dev, "no memory resource defined\n");
++		return -ENODEV;
++	}
  
--	return pdev->driver;
-+	return pdrv;
- }
+-	qe_ic = kzalloc(sizeof(*qe_ic), GFP_KERNEL);
++	qe_ic = devm_kzalloc(dev, sizeof(*qe_ic), GFP_KERNEL);
+ 	if (qe_ic == NULL)
+-		return;
++		return -ENOMEM;
  
- /**
-@@ -122,10 +123,11 @@ static inline struct pci_driver *eeh_pcid_get(struct pci_dev *pdev)
-  */
- static inline void eeh_pcid_put(struct pci_dev *pdev)
- {
--	if (!pdev || !pdev->driver)
-+	struct pci_driver *pdrv;
-+	if (!pdev || !(pdrv = pci_driver_of_dev(pdev)))
- 		return;
- 
--	module_put(pdev->driver->driver.owner);
-+	module_put(pdrv->driver.owner);
- }
- 
- /**
-diff --git a/arch/x86/events/intel/uncore.c b/arch/x86/events/intel/uncore.c
-index 9bf4dbbc26e2..14eb141b6cf2 100644
---- a/arch/x86/events/intel/uncore.c
-+++ b/arch/x86/events/intel/uncore.c
-@@ -1176,7 +1176,7 @@ static int uncore_pci_probe(struct pci_dev *pdev, const struct pci_device_id *id
- 	 * PCI slot and func to indicate the uncore box.
- 	 */
- 	if (id->driver_data & ~0xffff) {
--		struct pci_driver *pci_drv = pdev->driver;
-+		struct pci_driver *pci_drv = pci_driver_of_dev(pdev);
- 
- 		pmu = uncore_pci_find_dev_pmu(pdev, pci_drv->id_table);
- 		if (pmu == NULL)
-diff --git a/arch/x86/kernel/probe_roms.c b/arch/x86/kernel/probe_roms.c
-index 9e1def3744f2..55bfafec9684 100644
---- a/arch/x86/kernel/probe_roms.c
-+++ b/arch/x86/kernel/probe_roms.c
-@@ -80,7 +80,7 @@ static struct resource video_rom_resource = {
-  */
- static bool match_id(struct pci_dev *pdev, unsigned short vendor, unsigned short device)
- {
--	struct pci_driver *drv = pdev->driver;
-+	struct pci_driver *drv = pci_driver_of_dev(pdev);
- 	const struct pci_device_id *id;
- 
- 	if (pdev->vendor == vendor && pdev->device == device)
-diff --git a/drivers/bcma/host_pci.c b/drivers/bcma/host_pci.c
-index 69c10a7b7c61..f9bfae87ebd9 100644
---- a/drivers/bcma/host_pci.c
-+++ b/drivers/bcma/host_pci.c
-@@ -161,6 +161,7 @@ static int bcma_host_pci_probe(struct pci_dev *dev,
- 			       const struct pci_device_id *id)
- {
- 	struct bcma_bus *bus;
-+	struct pci_driver *pdrv;
- 	int err = -ENOMEM;
- 	const char *name;
- 	u32 val;
-@@ -176,8 +177,9 @@ static int bcma_host_pci_probe(struct pci_dev *dev,
- 		goto err_kfree_bus;
- 
- 	name = dev_name(&dev->dev);
--	if (dev->driver && dev->driver->name)
--		name = dev->driver->name;
-+	pdrv = pci_driver_of_dev(dev);
-+	if (pdrv && pdrv->name)
-+		name = pdrv->name;
- 	err = pci_request_regions(dev, name);
- 	if (err)
- 		goto err_pci_disable;
-diff --git a/drivers/crypto/hisilicon/qm.c b/drivers/crypto/hisilicon/qm.c
-index 1d67f94a1d56..303cc546f466 100644
---- a/drivers/crypto/hisilicon/qm.c
-+++ b/drivers/crypto/hisilicon/qm.c
-@@ -3003,7 +3003,7 @@ static int qm_alloc_uacce(struct hisi_qm *qm)
- 	};
- 	int ret;
- 
--	ret = strscpy(interface.name, pdev->driver->name,
-+	ret = strscpy(interface.name, pci_driver_of_dev(pdev)->name,
- 		      sizeof(interface.name));
- 	if (ret < 0)
- 		return -ENAMETOOLONG;
-diff --git a/drivers/crypto/qat/qat_common/adf_aer.c b/drivers/crypto/qat/qat_common/adf_aer.c
-index d2ae293d0df6..162c2b9ef93d 100644
---- a/drivers/crypto/qat/qat_common/adf_aer.c
-+++ b/drivers/crypto/qat/qat_common/adf_aer.c
-@@ -185,7 +185,7 @@ static const struct pci_error_handlers adf_err_handler = {
- int adf_enable_aer(struct adf_accel_dev *accel_dev)
- {
- 	struct pci_dev *pdev = accel_to_pci_dev(accel_dev);
--	struct pci_driver *pdrv = pdev->driver;
-+	struct pci_driver *pdrv = pci_driver_of_dev(pdev);
- 
- 	pdrv->err_handler = &adf_err_handler;
- 	pci_enable_pcie_error_reporting(pdev);
-diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-index 7f7abc9069f7..b93e160560d4 100644
---- a/drivers/message/fusion/mptbase.c
-+++ b/drivers/message/fusion/mptbase.c
-@@ -838,8 +838,8 @@ mpt_device_driver_register(struct mpt_pci_driver * dd_cbfunc, u8 cb_idx)
- 
- 	/* call per pci device probe entry point */
- 	list_for_each_entry(ioc, &ioc_list, list) {
--		id = ioc->pcidev->driver ?
--		    ioc->pcidev->driver->id_table : NULL;
-+		struct pci_driver *pdrv = pci_driver_of_dev(ioc->pcidev);
-+		id = pdrv ? pdrv->id_table : NULL;
- 		if (dd_cbfunc->probe)
- 			dd_cbfunc->probe(ioc->pcidev, id);
- 	 }
-diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-index 186308f1f8eb..99b969b182b5 100644
---- a/drivers/misc/cxl/guest.c
-+++ b/drivers/misc/cxl/guest.c
-@@ -25,28 +25,29 @@ static void pci_error_handlers(struct cxl_afu *afu,
- 		return;
- 
- 	list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
--		if (!afu_dev->driver)
-+		struct pci_driver *afu_drv = pci_driver_of_dev(afu_dev);
-+		if (!afu_drv)
- 			continue;
- 
- 		switch (bus_error_event) {
- 		case CXL_ERROR_DETECTED_EVENT:
- 			afu_dev->error_state = state;
- 
--			if (afu_dev->driver->err_handler &&
--			    afu_dev->driver->err_handler->error_detected)
--				afu_dev->driver->err_handler->error_detected(afu_dev, state);
-+			if (afu_drv->err_handler &&
-+			    afu_drv->err_handler->error_detected)
-+				afu_drv->err_handler->error_detected(afu_dev, state);
- 		break;
- 		case CXL_SLOT_RESET_EVENT:
- 			afu_dev->error_state = state;
- 
--			if (afu_dev->driver->err_handler &&
--			    afu_dev->driver->err_handler->slot_reset)
--				afu_dev->driver->err_handler->slot_reset(afu_dev);
-+			if (afu_drv->err_handler &&
-+			    afu_drv->err_handler->slot_reset)
-+				afu_drv->err_handler->slot_reset(afu_dev);
- 		break;
- 		case CXL_RESUME_EVENT:
--			if (afu_dev->driver->err_handler &&
--			    afu_dev->driver->err_handler->resume)
--				afu_dev->driver->err_handler->resume(afu_dev);
-+			if (afu_drv->err_handler &&
-+			    afu_drv->err_handler->resume)
-+				afu_drv->err_handler->resume(afu_dev);
- 		break;
- 		}
+-	qe_ic->irqhost = irq_domain_add_linear(node, NR_QE_IC_INTS,
+-					       &qe_ic_host_ops, qe_ic);
+-	if (qe_ic->irqhost == NULL) {
+-		kfree(qe_ic);
+-		return;
++	qe_ic->regs = devm_ioremap(dev, res->start, resource_size(res));
++	if (qe_ic->regs == NULL) {
++		dev_err(dev, "failed to ioremap() registers\n");
++		return -ENODEV;
  	}
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 2ba899f5659f..1cf39275029f 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1805,13 +1805,14 @@ static pci_ers_result_t cxl_vphb_error_detected(struct cxl_afu *afu,
- 		return result;
  
- 	list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
--		if (!afu_dev->driver)
-+		struct pci_driver *afu_drv = pci_driver_of_dev(afu_dev);
-+		if (!afu_drv)
- 			continue;
+-	qe_ic->regs = ioremap(res.start, resource_size(&res));
+-
+ 	qe_ic->hc_irq = qe_ic_irq_chip;
  
- 		afu_dev->error_state = state;
+-	qe_ic->virq_high = irq_of_parse_and_map(node, 0);
+-	qe_ic->virq_low = irq_of_parse_and_map(node, 1);
++	qe_ic->virq_high = platform_get_irq(pdev, 0);
++	qe_ic->virq_low = platform_get_irq(pdev, 1);
  
--		if (afu_dev->driver->err_handler)
--			afu_result = afu_dev->driver->err_handler->error_detected(afu_dev,
-+		if (afu_drv->err_handler)
-+			afu_result = afu_drv->err_handler->error_detected(afu_dev,
- 										  state);
- 		/* Disconnect trumps all, NONE trumps NEED_RESET */
- 		if (afu_result == PCI_ERS_RESULT_DISCONNECT)
-@@ -2003,6 +2004,8 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
- 			continue;
- 
- 		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
-+			struct pci_driver *afu_drv;
+-	if (!qe_ic->virq_low) {
+-		printk(KERN_ERR "Failed to map QE_IC low IRQ\n");
+-		kfree(qe_ic);
+-		return;
++	if (qe_ic->virq_low < 0) {
++		return -ENODEV;
+ 	}
 +
- 			/* Reset the device context.
- 			 * TODO: make this less disruptive
- 			 */
-@@ -2028,12 +2031,13 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
- 			 * shouldn't start new work until we call
- 			 * their resume function.
- 			 */
--			if (!afu_dev->driver)
-+			afu_drv = pci_driver_of_dev(afu_dev);
-+			if (!afu_drv)
- 				continue;
- 
--			if (afu_dev->driver->err_handler &&
--			    afu_dev->driver->err_handler->slot_reset)
--				afu_result = afu_dev->driver->err_handler->slot_reset(afu_dev);
-+			if (afu_drv->err_handler &&
-+			    afu_drv->err_handler->slot_reset)
-+				afu_result = afu_drv->err_handler->slot_reset(afu_dev);
- 
- 			if (afu_result == PCI_ERS_RESULT_DISCONNECT)
- 				result = PCI_ERS_RESULT_DISCONNECT;
-@@ -2074,9 +2078,10 @@ static void cxl_pci_resume(struct pci_dev *pdev)
- 			continue;
- 
- 		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
--			if (afu_dev->driver && afu_dev->driver->err_handler &&
--			    afu_dev->driver->err_handler->resume)
--				afu_dev->driver->err_handler->resume(afu_dev);
-+			struct pci_driver *afu_drv = pci_driver_of_dev(afu_dev);
-+			if (afu_drv && afu_drv->err_handler &&
-+			    afu_drv->err_handler->resume)
-+				afu_drv->err_handler->resume(afu_dev);
- 		}
- 	}
- 	spin_unlock(&adapter->afu_list_lock);
-diff --git a/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c b/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
-index 82061ab6930f..e085454c8b84 100644
---- a/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
-+++ b/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
-@@ -593,7 +593,7 @@ static void hns3_get_drvinfo(struct net_device *netdev,
- 		return;
+ 	if (qe_ic->virq_high != qe_ic->virq_low) {
+ 		low_handler = qe_ic_cascade_low;
+ 		high_handler = qe_ic_cascade_high;
+@@ -447,6 +447,13 @@ static void __init qe_ic_init(struct device_node *node)
+ 		high_handler = NULL;
  	}
  
--	strncpy(drvinfo->driver, h->pdev->driver->name,
-+	strncpy(drvinfo->driver, pci_driver_of_dev(h->pdev)->name,
- 		sizeof(drvinfo->driver));
- 	drvinfo->driver[sizeof(drvinfo->driver) - 1] = '\0';
- 
-diff --git a/drivers/net/ethernet/marvell/prestera/prestera_pci.c b/drivers/net/ethernet/marvell/prestera/prestera_pci.c
-index a250d394da38..180999c2165e 100644
---- a/drivers/net/ethernet/marvell/prestera/prestera_pci.c
-+++ b/drivers/net/ethernet/marvell/prestera/prestera_pci.c
-@@ -720,7 +720,7 @@ static int prestera_fw_load(struct prestera_fw *fw)
- static int prestera_pci_probe(struct pci_dev *pdev,
- 			      const struct pci_device_id *id)
- {
--	const char *driver_name = pdev->driver->name;
-+	const char *driver_name = pci_driver_of_dev(pdev)->name;
- 	struct prestera_fw *fw;
- 	int err;
- 
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/pci.c b/drivers/net/ethernet/mellanox/mlxsw/pci.c
-index 13b0259f7ea6..d3c1ca840fa7 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/pci.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/pci.c
-@@ -1876,7 +1876,7 @@ static void mlxsw_pci_cmd_fini(struct mlxsw_pci *mlxsw_pci)
- 
- static int mlxsw_pci_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- {
--	const char *driver_name = pdev->driver->name;
-+	const char *driver_name = pci_driver_of_dev(pdev)->name;
- 	struct mlxsw_pci *mlxsw_pci;
- 	int err;
- 
-diff --git a/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c b/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c
-index 1b482446536d..5c25f6af3f62 100644
---- a/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c
-+++ b/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c
-@@ -202,7 +202,7 @@ nfp_get_drvinfo(struct nfp_app *app, struct pci_dev *pdev,
- {
- 	char nsp_version[ETHTOOL_FWVERS_LEN] = {};
- 
--	strlcpy(drvinfo->driver, pdev->driver->name, sizeof(drvinfo->driver));
-+	strlcpy(drvinfo->driver, pci_driver_of_dev(pdev)->name, sizeof(drvinfo->driver));
- 	nfp_net_get_nspinfo(app, nsp_version);
- 	snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
- 		 "%s %s %s %s", vnic_version, nsp_version,
-diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index dafdc652fcd0..7c6f0c466df8 100644
---- a/drivers/pci/iov.c
-+++ b/drivers/pci/iov.c
-@@ -164,13 +164,14 @@ static ssize_t sriov_vf_total_msix_show(struct device *dev,
- 					char *buf)
- {
- 	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct pci_driver *pdrv = pci_driver_of_dev(pdev);
- 	u32 vf_total_msix = 0;
- 
- 	device_lock(dev);
--	if (!pdev->driver || !pdev->driver->sriov_get_vf_total_msix)
-+	if (!pdrv || !pdrv->sriov_get_vf_total_msix)
- 		goto unlock;
- 
--	vf_total_msix = pdev->driver->sriov_get_vf_total_msix(pdev);
-+	vf_total_msix = pdrv->sriov_get_vf_total_msix(pdev);
- unlock:
- 	device_unlock(dev);
- 	return sysfs_emit(buf, "%u\n", vf_total_msix);
-@@ -183,6 +184,7 @@ static ssize_t sriov_vf_msix_count_store(struct device *dev,
- {
- 	struct pci_dev *vf_dev = to_pci_dev(dev);
- 	struct pci_dev *pdev = pci_physfn(vf_dev);
-+	struct pci_driver *pdrv;
- 	int val, ret;
- 
- 	ret = kstrtoint(buf, 0, &val);
-@@ -193,13 +195,14 @@ static ssize_t sriov_vf_msix_count_store(struct device *dev,
- 		return -EINVAL;
- 
- 	device_lock(&pdev->dev);
--	if (!pdev->driver || !pdev->driver->sriov_set_msix_vec_count) {
-+	pdrv = pci_driver_of_dev(pdev);
-+	if (!pdrv || !pdrv->sriov_set_msix_vec_count) {
- 		ret = -EOPNOTSUPP;
- 		goto err_pdev;
- 	}
- 
- 	device_lock(&vf_dev->dev);
--	if (vf_dev->driver) {
-+	if (pci_driver_of_dev(vf_dev)) {
- 		/*
- 		 * A driver is already attached to this VF and has configured
- 		 * itself based on the current MSI-X vector count. Changing
-@@ -209,7 +212,7 @@ static ssize_t sriov_vf_msix_count_store(struct device *dev,
- 		goto err_dev;
- 	}
- 
--	ret = pdev->driver->sriov_set_msix_vec_count(vf_dev, val);
-+	ret = pdrv->sriov_set_msix_vec_count(vf_dev, val);
- 
- err_dev:
- 	device_unlock(&vf_dev->dev);
-@@ -376,6 +379,7 @@ static ssize_t sriov_numvfs_store(struct device *dev,
- 				  const char *buf, size_t count)
- {
- 	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct pci_driver *pdrv;
- 	int ret;
- 	u16 num_vfs;
- 
-@@ -392,14 +396,15 @@ static ssize_t sriov_numvfs_store(struct device *dev,
- 		goto exit;
- 
- 	/* is PF driver loaded */
--	if (!pdev->driver) {
-+	pdrv = pci_driver_of_dev(pdev);
-+	if (!pdrv) {
- 		pci_info(pdev, "no driver bound to device; cannot configure SR-IOV\n");
- 		ret = -ENOENT;
- 		goto exit;
- 	}
- 
- 	/* is PF driver loaded w/callback */
--	if (!pdev->driver->sriov_configure) {
-+	if (!pdrv->sriov_configure) {
- 		pci_info(pdev, "driver does not support SR-IOV configuration via sysfs\n");
- 		ret = -ENOENT;
- 		goto exit;
-@@ -407,7 +412,7 @@ static ssize_t sriov_numvfs_store(struct device *dev,
- 
- 	if (num_vfs == 0) {
- 		/* disable VFs */
--		ret = pdev->driver->sriov_configure(pdev, 0);
-+		ret = pdrv->sriov_configure(pdev, 0);
- 		goto exit;
- 	}
- 
-@@ -419,7 +424,7 @@ static ssize_t sriov_numvfs_store(struct device *dev,
- 		goto exit;
- 	}
- 
--	ret = pdev->driver->sriov_configure(pdev, num_vfs);
-+	ret = pdrv->sriov_configure(pdev, num_vfs);
- 	if (ret < 0)
- 		goto exit;
- 
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index 7dff574bb2fa..740d5bf5d411 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -443,7 +443,7 @@ static int pci_device_probe(struct device *dev)
- static int pci_device_remove(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct pci_driver *drv = pci_dev->driver;
-+	struct pci_driver *drv = pci_driver_of_dev(pci_dev);
- 
- 	if (drv->remove) {
- 		pm_runtime_get_sync(dev);
-@@ -480,7 +480,7 @@ static int pci_device_remove(struct device *dev)
- static void pci_device_shutdown(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct pci_driver *drv = pci_dev->driver;
-+	struct pci_driver *drv = pci_driver_of_dev(pci_dev);
- 
- 	pm_runtime_resume(dev);
- 
-@@ -576,7 +576,7 @@ static int pci_pm_reenable_device(struct pci_dev *pci_dev)
- static int pci_legacy_suspend(struct device *dev, pm_message_t state)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct pci_driver *drv = pci_dev->driver;
-+	struct pci_driver *drv = pci_driver_of_dev(pci_dev);
- 
- 	if (drv && drv->suspend) {
- 		pci_power_t prev = pci_dev->current_state;
-@@ -617,7 +617,7 @@ static int pci_legacy_suspend_late(struct device *dev, pm_message_t state)
- static int pci_legacy_resume(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct pci_driver *drv = pci_dev->driver;
-+	struct pci_driver *drv = pci_driver_of_dev(pci_dev);
- 
- 	pci_fixup_device(pci_fixup_resume, pci_dev);
- 
-@@ -636,7 +636,7 @@ static void pci_pm_default_suspend(struct pci_dev *pci_dev)
- 
- static bool pci_has_legacy_pm_support(struct pci_dev *pci_dev)
- {
--	struct pci_driver *drv = pci_dev->driver;
-+	struct pci_driver *drv = pci_driver_of_dev(pci_dev);
- 	bool ret = drv && (drv->suspend || drv->resume);
- 
- 	/*
-@@ -1224,16 +1224,17 @@ static int pci_pm_restore(struct device *dev)
- static int pci_pm_runtime_suspend(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
-+	struct pci_driver *pdrv = pci_driver_of_dev(pci_dev);
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 	pci_power_t prev = pci_dev->current_state;
- 	int error;
- 
- 	/*
--	 * If pci_dev->driver is not set (unbound), we leave the device in D0,
-+	 * If pdrv is not set (unbound), we leave the device in D0,
- 	 * but it may go to D3cold when the bridge above it runtime suspends.
- 	 * Save its config space in case that happens.
- 	 */
--	if (!pci_dev->driver) {
-+	if (!pdrv) {
- 		pci_save_state(pci_dev);
- 		return 0;
- 	}
-@@ -1279,6 +1280,7 @@ static int pci_pm_runtime_suspend(struct device *dev)
- static int pci_pm_runtime_resume(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
-+	struct pci_driver *pdrv = pci_driver_of_dev(pci_dev);
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 	pci_power_t prev_state = pci_dev->current_state;
- 	int error = 0;
-@@ -1290,7 +1292,7 @@ static int pci_pm_runtime_resume(struct device *dev)
- 	 */
- 	pci_restore_standard_config(pci_dev);
- 
--	if (!pci_dev->driver)
-+	if (!pdrv)
- 		return 0;
- 
- 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
-@@ -1310,13 +1312,14 @@ static int pci_pm_runtime_resume(struct device *dev)
- static int pci_pm_runtime_idle(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
-+	struct pci_driver *pdrv = pci_driver_of_dev(pci_dev);
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
- 	/*
--	 * If pci_dev->driver is not set (unbound), the device should
-+	 * If pdrv is not set (unbound), the device should
- 	 * always remain in D0 regardless of the runtime PM status
- 	 */
--	if (!pci_dev->driver)
-+	if (!pdrv)
- 		return 0;
- 
- 	if (!pm)
-@@ -1423,8 +1426,9 @@ static struct pci_driver pci_compat_driver = {
-  */
- struct pci_driver *pci_dev_driver(const struct pci_dev *dev)
- {
--	if (dev->driver)
--		return dev->driver;
-+	struct pci_driver *pdrv = pci_driver_of_dev(dev);
-+	if (pdrv)
-+		return pdrv;
- 	else {
- 		int i;
- 		for (i = 0; i <= PCI_ROM_RESOURCE; i++)
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index aacf575c15cf..9565f6c1bd4f 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -5069,11 +5069,12 @@ EXPORT_SYMBOL_GPL(pci_dev_unlock);
- 
- static void pci_dev_save_and_disable(struct pci_dev *dev)
- {
-+	struct pci_driver *pdrv = pci_driver_of_dev(dev);
- 	const struct pci_error_handlers *err_handler =
--			dev->driver ? dev->driver->err_handler : NULL;
-+			pdrv ? pdrv->err_handler : NULL;
- 
- 	/*
--	 * dev->driver->err_handler->reset_prepare() is protected against
-+	 * pdrv->err_handler->reset_prepare() is protected against
- 	 * races with ->remove() by the device lock, which must be held by
- 	 * the caller.
- 	 */
-@@ -5100,13 +5101,14 @@ static void pci_dev_save_and_disable(struct pci_dev *dev)
- 
- static void pci_dev_restore(struct pci_dev *dev)
- {
-+	struct pci_driver *pdrv = pci_driver_of_dev(dev);
- 	const struct pci_error_handlers *err_handler =
--			dev->driver ? dev->driver->err_handler : NULL;
-+			pdrv ? pdrv->err_handler : NULL;
- 
- 	pci_restore_state(dev);
- 
- 	/*
--	 * dev->driver->err_handler->reset_done() is protected against
-+	 * err_handler->reset_done() is protected against
- 	 * races with ->remove() by the device lock, which must be held by
- 	 * the caller.
- 	 */
-diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
-index b576aa890c76..5b2b7b2972dd 100644
---- a/drivers/pci/pcie/err.c
-+++ b/drivers/pci/pcie/err.c
-@@ -51,12 +51,12 @@ static int report_error_detected(struct pci_dev *dev,
- {
- 	pci_ers_result_t vote;
- 	const struct pci_error_handlers *err_handler;
-+	struct pci_driver *pdrv = pci_driver_of_dev(dev);
- 
- 	device_lock(&dev->dev);
- 	if (!pci_dev_set_io_state(dev, state) ||
--		!dev->driver ||
--		!dev->driver->err_handler ||
--		!dev->driver->err_handler->error_detected) {
-+		!pdrv || !pdrv->err_handler ||
-+		!pdrv->err_handler->error_detected) {
- 		/*
- 		 * If any device in the subtree does not have an error_detected
- 		 * callback, PCI_ERS_RESULT_NO_AER_DRIVER prevents subsequent
-@@ -70,7 +70,7 @@ static int report_error_detected(struct pci_dev *dev,
- 			vote = PCI_ERS_RESULT_NONE;
- 		}
- 	} else {
--		err_handler = dev->driver->err_handler;
-+		err_handler = pdrv->err_handler;
- 		vote = err_handler->error_detected(dev, state);
- 	}
- 	pci_uevent_ers(dev, vote);
-@@ -93,14 +93,15 @@ static int report_mmio_enabled(struct pci_dev *dev, void *data)
- {
- 	pci_ers_result_t vote, *result = data;
- 	const struct pci_error_handlers *err_handler;
-+	struct pci_driver *pdrv = pci_driver_of_dev(dev);
- 
- 	device_lock(&dev->dev);
--	if (!dev->driver ||
--		!dev->driver->err_handler ||
--		!dev->driver->err_handler->mmio_enabled)
-+	if (!pdrv ||
-+		!pdrv->err_handler ||
-+		!pdrv->err_handler->mmio_enabled)
- 		goto out;
- 
--	err_handler = dev->driver->err_handler;
-+	err_handler = pdrv->err_handler;
- 	vote = err_handler->mmio_enabled(dev);
- 	*result = merge_result(*result, vote);
- out:
-@@ -112,14 +113,15 @@ static int report_slot_reset(struct pci_dev *dev, void *data)
- {
- 	pci_ers_result_t vote, *result = data;
- 	const struct pci_error_handlers *err_handler;
-+	struct pci_driver *pdrv = pci_driver_of_dev(dev);
- 
- 	device_lock(&dev->dev);
--	if (!dev->driver ||
--		!dev->driver->err_handler ||
--		!dev->driver->err_handler->slot_reset)
-+	if (!pdrv ||
-+		!pdrv->err_handler ||
-+		!pdrv->err_handler->slot_reset)
- 		goto out;
- 
--	err_handler = dev->driver->err_handler;
-+	err_handler = pdrv->err_handler;
- 	vote = err_handler->slot_reset(dev);
- 	*result = merge_result(*result, vote);
- out:
-@@ -130,15 +132,16 @@ static int report_slot_reset(struct pci_dev *dev, void *data)
- static int report_resume(struct pci_dev *dev, void *data)
- {
- 	const struct pci_error_handlers *err_handler;
-+	struct pci_driver *pdrv = pci_driver_of_dev(dev);
- 
- 	device_lock(&dev->dev);
- 	if (!pci_dev_set_io_state(dev, pci_channel_io_normal) ||
--		!dev->driver ||
--		!dev->driver->err_handler ||
--		!dev->driver->err_handler->resume)
-+		!pdrv ||
-+		!pdrv->err_handler ||
-+		!pdrv->err_handler->resume)
- 		goto out;
- 
--	err_handler = dev->driver->err_handler;
-+	err_handler = pdrv->err_handler;
- 	err_handler->resume(dev);
- out:
- 	pci_uevent_ers(dev, PCI_ERS_RESULT_RECOVERED);
-diff --git a/drivers/pci/xen-pcifront.c b/drivers/pci/xen-pcifront.c
-index 3c648e6cb8f8..fc3ffb6a8689 100644
---- a/drivers/pci/xen-pcifront.c
-+++ b/drivers/pci/xen-pcifront.c
-@@ -598,12 +598,11 @@ static pci_ers_result_t pcifront_common_process(int cmd,
- 	result = PCI_ERS_RESULT_NONE;
- 
- 	pcidev = pci_get_domain_bus_and_slot(domain, bus, devfn);
--	if (!pcidev || !pcidev->driver) {
-+	if (!pcidev || !(pdrv = pci_driver_of_dev(pcidev))) {
- 		dev_err(&pdev->xdev->dev, "device or AER driver is NULL\n");
- 		pci_dev_put(pcidev);
- 		return result;
- 	}
--	pdrv = pcidev->driver;
- 
- 	if (pdrv->err_handler && pdrv->err_handler->error_detected) {
- 		pci_dbg(pcidev, "trying to call AER service\n");
-diff --git a/drivers/ssb/pcihost_wrapper.c b/drivers/ssb/pcihost_wrapper.c
-index 410215c16920..9cd3633498d3 100644
---- a/drivers/ssb/pcihost_wrapper.c
-+++ b/drivers/ssb/pcihost_wrapper.c
-@@ -68,6 +68,7 @@ static int ssb_pcihost_probe(struct pci_dev *dev,
- 			     const struct pci_device_id *id)
- {
- 	struct ssb_bus *ssb;
-+	struct pci_driver *pdrv;
- 	int err = -ENOMEM;
- 	const char *name;
- 	u32 val;
-@@ -79,8 +80,10 @@ static int ssb_pcihost_probe(struct pci_dev *dev,
- 	if (err)
- 		goto err_kfree_ssb;
- 	name = dev_name(&dev->dev);
--	if (dev->driver && dev->driver->name)
--		name = dev->driver->name;
++	qe_ic->irqhost = irq_domain_add_linear(node, NR_QE_IC_INTS,
++					       &qe_ic_host_ops, qe_ic);
++	if (qe_ic->irqhost == NULL) {
++		dev_err(dev, "failed to add irq domain\n");
++		return -ENODEV;
++	}
 +
-+	pdrv = pci_driver_of_dev(dev);
-+	if (pdrv && pdrv->name)
-+		name = pdrv->name;
- 	err = pci_request_regions(dev, name);
- 	if (err)
- 		goto err_pci_disable;
-diff --git a/drivers/usb/host/xhci-pci.c b/drivers/usb/host/xhci-pci.c
-index 18c2bbddf080..d8a6ef602a46 100644
---- a/drivers/usb/host/xhci-pci.c
-+++ b/drivers/usb/host/xhci-pci.c
-@@ -100,10 +100,11 @@ static int xhci_pci_reinit(struct xhci_hcd *xhci, struct pci_dev *pdev)
- static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
+ 	qe_ic_write(qe_ic->regs, QEIC_CICR, 0);
+ 
+ 	irq_set_handler_data(qe_ic->virq_low, qe_ic);
+@@ -456,20 +463,26 @@ static void __init qe_ic_init(struct device_node *node)
+ 		irq_set_handler_data(qe_ic->virq_high, qe_ic);
+ 		irq_set_chained_handler(qe_ic->virq_high, high_handler);
+ 	}
++	return 0;
+ }
++static const struct of_device_id qe_ic_ids[] = {
++	{ .compatible = "fsl,qe-ic"},
++	{ .type = "qeic"},
++	{},
++};
+ 
+-static int __init qe_ic_of_init(void)
++static struct platform_driver qe_ic_driver =
  {
- 	struct pci_dev                  *pdev = to_pci_dev(dev);
-+	struct pci_driver               *pdrv = pci_driver_of_dev(pdev);
- 	struct xhci_driver_data         *driver_data;
- 	const struct pci_device_id      *id;
+-	struct device_node *np;
++	.driver	= {
++		.name		= "qe-ic",
++		.of_match_table	= qe_ic_ids,
++	},
++	.probe	= qe_ic_init,
++};
  
--	id = pci_match_id(pdev->driver->id_table, pdev);
-+	id = pci_match_id(pdrv->id_table, pdev);
- 
- 	if (id && id->driver_data) {
- 		driver_data = (struct xhci_driver_data *)id->driver_data;
+-	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+-	if (!np) {
+-		np = of_find_node_by_type(NULL, "qeic");
+-		if (!np)
+-			return -ENODEV;
+-	}
+-	qe_ic_init(np);
+-	of_node_put(np);
++static int __init qe_ic_of_init(void)
++{
++	platform_driver_register(&qe_ic_driver);
+ 	return 0;
+ }
+ subsys_initcall(qe_ic_of_init);
 -- 
-2.30.2
+2.31.1
 
