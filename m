@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 710C7C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 11:00:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EC5AC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 11:01:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC74260FC2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 11:00:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BC74260FC2
+	by mail.kernel.org (Postfix) with ESMTPS id F35BB60E97
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 11:00:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org F35BB60E97
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GfBjw06fCz3cLL
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 21:00:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GfBkL546gz3d6M
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Aug 2021 21:00:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
  helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de;
@@ -29,43 +29,42 @@ Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gf9S46VXtz2ymZ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gf9S46d7Cz2yyP
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 20:03:30 +1000 (AEST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
  by metis.ext.pengutronix.de with esmtps
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <ukl@pengutronix.de>)
- id 1mArFM-0002yN-C1; Tue, 03 Aug 2021 12:02:04 +0200
+ id 1mArFM-0002yL-C1; Tue, 03 Aug 2021 12:02:04 +0200
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
  by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.92)
  (envelope-from <ukl@pengutronix.de>)
- id 1mArFD-0006FL-MW; Tue, 03 Aug 2021 12:01:55 +0200
+ id 1mArFC-0006FF-3O; Tue, 03 Aug 2021 12:01:54 +0200
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.92)
  (envelope-from <ukl@pengutronix.de>)
- id 1mArFC-0002oK-Il; Tue, 03 Aug 2021 12:01:54 +0200
+ id 1mArFC-0002nA-04; Tue, 03 Aug 2021 12:01:54 +0200
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 6/6] PCI: Drop duplicated tracking of a pci_dev's bound
- driver
-Date: Tue,  3 Aug 2021 12:01:50 +0200
-Message-Id: <20210803100150.1543597-7-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH v2 4/6] PCI: Provide wrapper to access a pci_dev's bound driver
+Date: Tue,  3 Aug 2021 12:01:48 +0200
+Message-Id: <20210803100150.1543597-5-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210803100150.1543597-1-u.kleine-koenig@pengutronix.de>
 References: <20210803100150.1543597-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Patch-Hashes: v=1; h=sha256; i=yGEodBYjARp1eJPqP9/n/KpfKo6ALJzXr+t0LDtBUZM=;
- m=JRVTmu6nPliiiBslnXnYAnMTr94GnCwSSGQey1Vdrcw=;
- p=VXwrm6IwhM33tInq/RiiFiTf7eEJSweS+vvs0hZjA4Y=;
- g=dfdf1d247df87fe752d1cd93dee47b352d54b9dc
+X-Patch-Hashes: v=1; h=sha256; i=7QyPcwdZ4NY+Kamu1yuALIDREdHsFlSri/yk8rxG5RU=;
+ m=efVkvKukHsBB4PwEUkp1fcCPAc6GyqodQBQ/wT0SBJU=;
+ p=/gl5i/UU1Dx09yWOtLon+pQ4jNTmCE0Y+RzjPzQvvpA=;
+ g=9669558ff758fb0bb7e9379b94e233c729d3a4b8
 X-Patch-Sig: m=pgp; i=u.kleine-koenig@pengutronix.de;
  s=0x0D2511F322BFAB1C1580266BE2DCDD9132669BD6;
- b=iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmEJFAcACgkQwfwUeK3K7AlY4QgAoQ1
- tszu0I41Zf6v0DKUasmGS98o7Yfn0OAkexq7Ntd7+GO5Lwc/dR4OcqooMePO5FWdYTzhGFWsTXAAD
- LGujFGBNIwdOZY7PsRSHFlhr8DoTUgXyHh0WvMo6wsFShQYS62Ay8MgAU36nYDzrGR94CrNoCANwS
- h+SL7+g+mtMAbQlS/p+3RSIYxyZ7XVHTUqkYWvnbsQpiqJVjtySAaBAdOsmo1ks0PezNBWORDnTZx
- oiJmCi1ZKOwWmWW0oqRhmNELiPQJzEh2XFGYcJCfDILAltZ8JK14Akc3BKVCwfr8+rcyFeI1PC7hB
- WPmvafaXTQnzw47uX9Cc5oG6/RB92PA==
+ b=iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmEJFAEACgkQwfwUeK3K7AkEDAf9FkM
+ yYEH0uPWXjAlXFjWJg/qs1OjQZAytoASxLwmE7IwWg35kI/m1h/u2a2AVZWn+jaVHX3HODjoadxTn
+ URZHNuJTI8vyJ54sQhdWu1XQAhM6hQXMH+VT5+sGSr6ef22DBYjejzITU3/dQmbXd5bgxHmE4qZs9
+ AmMZlyF3h+R4zSeZ0XiQH4ZgZZbxWVvcTc+1Nrp5kiounCsd0W2hQGCJeeLjt6mxggPqplrDkaEyC
+ 1q0Gc6KhA26FWFEJQk/kKyDRSWF9Wgopqjwre5M4S6Stwz1lcOE74RvqFEPXeM/WWzw2fp7bt95sa
+ h9z/Mj0ADvJRNNvlyk8x8kpwN0o6vdw==
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
 X-SA-Exim-Mail-From: ukl@pengutronix.de
@@ -120,69 +119,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently it's tracked twice which driver is bound to a given pci
-device. Now that all users of the pci specific one (struct
-pci_dev::driver) are updated to use an access macro
-(pci_driver_of_dev()), change the macro to use the information from the
-driver core and remove the driver member from struct pci_dev.
+Which driver a device is bound to is available twice: In struct
+pci_dev::dev->driver and in struct pci_dev::driver. To get rid of the
+duplication introduce a wrapper to access struct pci_dev's driver
+member. Once all users are converted the wrapper can be changed to
+calculate the driver using pci_dev::dev->driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/pci/pci-driver.c | 4 ----
- include/linux/pci.h      | 3 +--
- 2 files changed, 1 insertion(+), 6 deletions(-)
+ include/linux/pci.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index 740d5bf5d411..5d950eb476e2 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -305,12 +305,10 @@ static long local_pci_probe(void *_ddi)
- 	 * its remove routine.
- 	 */
- 	pm_runtime_get_sync(dev);
--	pci_dev->driver = pci_drv;
- 	rc = pci_drv->probe(pci_dev, ddi->id);
- 	if (!rc)
- 		return rc;
- 	if (rc < 0) {
--		pci_dev->driver = NULL;
- 		pm_runtime_put_sync(dev);
- 		return rc;
- 	}
-@@ -376,7 +374,6 @@ static int pci_call_probe(struct pci_driver *drv, struct pci_dev *dev,
-  * @pci_dev: PCI device being probed
-  *
-  * returns 0 on success, else error.
-- * side-effect: pci_dev->driver is set to drv when drv claims pci_dev.
-  */
- static int __pci_device_probe(struct pci_driver *drv, struct pci_dev *pci_dev)
- {
-@@ -451,7 +448,6 @@ static int pci_device_remove(struct device *dev)
- 		pm_runtime_put_noidle(dev);
- 	}
- 	pcibios_free_irq(pci_dev);
--	pci_dev->driver = NULL;
- 	pci_iov_remove(pci_dev);
- 
- 	/* Undo the runtime PM settings in local_pci_probe() */
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 778f3b5e6f23..f44ab76e216f 100644
+index 540b377ca8f6..778f3b5e6f23 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -342,7 +342,6 @@ struct pci_dev {
- 	u16		pcie_flags_reg;	/* Cached PCIe Capabilities Register */
- 	unsigned long	*dma_alias_mask;/* Mask of enabled devfn aliases */
- 
--	struct pci_driver *driver;	/* Driver bound to this device */
- 	u64		dma_mask;	/* Mask of the bits of bus address this
- 					   device implements.  Normally this is
- 					   0xffffffff.  You only need to change
-@@ -887,7 +886,7 @@ struct pci_driver {
+@@ -887,6 +887,7 @@ struct pci_driver {
  };
  
  #define	to_pci_driver(drv) container_of(drv, struct pci_driver, driver)
--#define pci_driver_of_dev(pdev) ((pdev)->driver)
-+#define pci_driver_of_dev(pdev) ((pdev)->dev.driver ? to_pci_driver((pdev)->dev.driver) : NULL)
++#define pci_driver_of_dev(pdev) ((pdev)->driver)
  
  /**
   * PCI_DEVICE - macro used to describe a specific PCI device
