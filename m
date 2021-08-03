@@ -2,72 +2,58 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	INVALID_DATE_TZ_ABSURD,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E195BC432BE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:06:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FBD4C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:06:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3785160EBC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:06:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3785160EBC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 88B3C60F14
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:06:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 88B3C60F14
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GffpR56pKz3cSn
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 15:06:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gffpq1XMDz3d8L
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 15:06:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=zk5sPz0A;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=eiwsN3XD;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
- helo=galois.linutronix.de; envelope-from=john.ogness@linutronix.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=zk5sPz0A; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=eiwsN3XD; 
- dkim-atps=neutral
-Received: from galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=none (no SPF record) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.24; helo=mga09.intel.com;
+ envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 123 seconds by postgrey-1.36 at boromir;
+ Tue, 03 Aug 2021 23:55:31 AEST
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GfFfw2GDVz307C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 23:13:12 +1000 (AEST)
-From: John Ogness <john.ogness@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1627996383;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=zratP/d2dqbzr5A3KZPCTDEa+UpOjiFaTT3D2EIH/Pg=;
- b=zk5sPz0A/N68QiMZNa4XnUH53XQGAkBgxmMF9RdDFSoOGdHXqC//ofK9o10vkQtIIgxpxy
- o3gzfJIWcGuD/7CJSo5P2+b6eNhxoNOxZol539AjZC3laI2y9WkzZGJ7p/8XuGC/SI6py5
- 6Mpztfu+HxmsRcOTqIZJcFq3yrOVV08E2vhgrY8or5Z3uRGykD2IiT/TXmzbGy4LL+sBHS
- cGTPp1pxVnfmrDUBXMNIf7pO9xGKJUUaHa3+Iftq3TyMFoNPnqWV077wktj4wMXkILY+0N
- qrvzjb5E1n/5VK5Jn8gch/Yneaa2fDy8JybmbeFc/b2DSqzfflXIeOBn73Azfw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1627996383;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=zratP/d2dqbzr5A3KZPCTDEa+UpOjiFaTT3D2EIH/Pg=;
- b=eiwsN3XDO7gIOKIO/tyPKCl9YBM/K+0P9ejFJ1AFeHJgY6RpWMpxmcaTC14bbaMpVCrVQI
- kAWF+aftd/6aNtAw==
-To: Petr Mladek <pmladek@suse.com>
-Subject: [PATCH printk v1 00/10] printk: introduce atomic consoles and sync
- mode
-Date: Tue,  3 Aug 2021 15:18:51 +0206
-Message-Id: <20210803131301.5588-1-john.ogness@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GfGbl6bDrz3079
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Aug 2021 23:55:31 +1000 (AEST)
+X-IronPort-AV: E=McAfee;i="6200,9189,10064"; a="213677050"
+X-IronPort-AV: E=Sophos;i="5.84,291,1620716400"; d="scan'208";a="213677050"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Aug 2021 06:52:25 -0700
+X-IronPort-AV: E=Sophos;i="5.84,291,1620716400"; d="scan'208";a="670439422"
+Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
+ by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Aug 2021 06:52:12 -0700
+Received: from andy by smile with local (Exim 4.94.2)
+ (envelope-from <andriy.shevchenko@linux.intel.com>)
+ id 1mAupt-004kJM-Mo; Tue, 03 Aug 2021 16:52:01 +0300
+Date: Tue, 3 Aug 2021 16:52:01 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: John Ogness <john.ogness@linutronix.de>
+Subject: Re: [PATCH printk v1 00/10] printk: introduce atomic consoles and
+ sync mode
+Message-ID: <YQlKAeXS9MPmE284@smile.fi.intel.com>
+References: <20210803131301.5588-1-john.ogness@linutronix.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210803131301.5588-1-john.ogness@linutronix.de>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-Mailman-Approved-At: Wed, 04 Aug 2021 15:05:41 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -83,28 +69,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
  "Gustavo A. R. Silva" <gustavoars@kernel.org>,
  Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Jiri Slaby <jirislaby@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Jiri Slaby <jirislaby@kernel.org>, Tony Lindgren <tony@atomide.com>,
+ Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
  Al Cooper <alcooperx@gmail.com>, Douglas Anderson <dianders@chromium.org>,
  Paul Cercueil <paul@crapouillou.net>,
  Matthias Brugger <matthias.bgg@gmail.com>, Paul Mackerras <paulus@samba.org>,
  "H. Peter Anvin" <hpa@zytor.com>, Cengiz Can <cengiz@kernel.wtf>,
  Chengyang Fan <cy.fan@huawei.com>,
  Daniel Thompson <daniel.thompson@linaro.org>,
- Eddie Huang <eddie.huang@mediatek.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Bhaskar Chowdhury <unixbhaskar@gmail.com>, Changbin Du <changbin.du@intel.com>,
  Masahiro Yamada <masahiroy@kernel.org>, x86@kernel.org,
- linux-mediatek@lists.infradead.org,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ linux-mediatek@lists.infradead.org, Peter Zijlstra <peterz@infradead.org>,
  Ingo Molnar <mingo@redhat.com>, linux-serial@vger.kernel.org,
  kgdb-bugreport@lists.sourceforge.net, linux-mips@vger.kernel.org,
- Wang Qing <wangqing@vivo.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Wang Qing <wangqing@vivo.com>, Petr Mladek <pmladek@suse.com>,
  "Paul E. McKenney" <paulmck@kernel.org>, Johan Hovold <johan@kernel.org>,
  Steven Rostedt <rostedt@goodmis.org>, Borislav Petkov <bp@alien8.de>,
  Nicholas Piggin <npiggin@gmail.com>, Hsin-Yi Wang <hsinyi@chromium.org>,
  Sedat Dilek <sedat.dilek@gmail.com>, Claire Chang <tientzu@chromium.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Eddie Huang <eddie.huang@mediatek.com>,
  Andrij Abyzov <aabyzov@slb.com>, linux-arm-kernel@lists.infradead.org,
  Sumit Garg <sumit.garg@linaro.org>,
  kuldip dwivedi <kuldip.dwivedi@puresoftware.com>,
@@ -119,89 +103,55 @@ Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  "Maciej W. Rozycki" <macro@orcam.me.uk>, linuxppc-dev@lists.ozlabs.org,
  Vitor Massaru Iha <vitor@massaru.org>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+ =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On Tue, Aug 03, 2021 at 03:18:51PM +0206, John Ogness wrote:
+> Hi,
+> 
+> This is the next part of our printk-rework effort (points 3 and
+> 4 of the LPC 2019 summary [0]).
+> 
+> Here the concept of "atomic consoles" is introduced through  a
+> new (optional) write_atomic() callback for console drivers. This
+> callback must be implemented as an NMI-safe variant of the
+> write() callback, meaning that it can function from any context
+> without relying on questionable tactics such as ignoring locking
+> and also without relying on the synchronization of console
+> semaphore.
+> 
+> As an example of how such an atomic console can look like, this
+> series implements write_atomic() for the 8250 UART driver.
+> 
+> This series also introduces a new console printing mode called
+> "sync mode" that is only activated when the kernel is about to
+> end (such as panic, oops, shutdown, reboot). Sync mode can only
+> be activated if atomic consoles are available. A system without
+> registered atomic consoles will be unaffected by this series.
+> 
+> When in sync mode, the console printing behavior becomes:
+> 
+> - only consoles implementing write_atomic() will be called
+> 
+> - printing occurs within vprintk_store() instead of
+>   console_unlock(), since the console semaphore is irrelevant
+>   for atomic consoles
+> 
+> For systems that have registered atomic consoles, this series
+> improves the reliability of seeing crash messages by using new
+> locking techniques rather than "ignoring locks and hoping for
+> the best". In particular, atomic consoles rely on the
+> CPU-reentrant spinlock (i.e. the printk cpulock) for
+> synchronizing console output.
 
-This is the next part of our printk-rework effort (points 3 and
-4 of the LPC 2019 summary [0]).
+If console is runtime suspended, who will bring it up?
+Does it mean that this callback can't be implemented on the consoles that
+do runtime suspend (some of 8250 currently, for example)?
 
-Here the concept of "atomic consoles" is introduced through  a
-new (optional) write_atomic() callback for console drivers. This
-callback must be implemented as an NMI-safe variant of the
-write() callback, meaning that it can function from any context
-without relying on questionable tactics such as ignoring locking
-and also without relying on the synchronization of console
-semaphore.
-
-As an example of how such an atomic console can look like, this
-series implements write_atomic() for the 8250 UART driver.
-
-This series also introduces a new console printing mode called
-"sync mode" that is only activated when the kernel is about to
-end (such as panic, oops, shutdown, reboot). Sync mode can only
-be activated if atomic consoles are available. A system without
-registered atomic consoles will be unaffected by this series.
-
-When in sync mode, the console printing behavior becomes:
-
-- only consoles implementing write_atomic() will be called
-
-- printing occurs within vprintk_store() instead of
-  console_unlock(), since the console semaphore is irrelevant
-  for atomic consoles
-
-For systems that have registered atomic consoles, this series
-improves the reliability of seeing crash messages by using new
-locking techniques rather than "ignoring locks and hoping for
-the best". In particular, atomic consoles rely on the
-CPU-reentrant spinlock (i.e. the printk cpulock) for
-synchronizing console output.
-
-John Ogness
-
-[0] https://lore.kernel.org/lkml/87k1acz5rx.fsf@linutronix.de/
-
-John Ogness (10):
-  printk: relocate printk cpulock functions
-  printk: rename printk cpulock API and always disable interrupts
-  kgdb: delay roundup if holding printk cpulock
-  printk: relocate printk_delay()
-  printk: call boot_delay_msec() in printk_delay()
-  printk: use seqcount_latch for console_seq
-  console: add write_atomic interface
-  printk: introduce kernel sync mode
-  kdb: if available, only use atomic consoles for output mirroring
-  serial: 8250: implement write_atomic
-
- arch/powerpc/include/asm/smp.h         |   1 +
- arch/powerpc/kernel/kgdb.c             |  10 +-
- arch/powerpc/kernel/smp.c              |   5 +
- arch/x86/kernel/kgdb.c                 |   9 +-
- drivers/tty/serial/8250/8250.h         |  47 ++-
- drivers/tty/serial/8250/8250_core.c    |  17 +-
- drivers/tty/serial/8250/8250_fsl.c     |   9 +
- drivers/tty/serial/8250/8250_ingenic.c |   7 +
- drivers/tty/serial/8250/8250_mtk.c     |  29 +-
- drivers/tty/serial/8250/8250_port.c    |  92 ++--
- drivers/tty/serial/8250/Kconfig        |   1 +
- include/linux/console.h                |  32 ++
- include/linux/kgdb.h                   |   3 +
- include/linux/printk.h                 |  57 +--
- include/linux/serial_8250.h            |   5 +
- kernel/debug/debug_core.c              |  45 +-
- kernel/debug/kdb/kdb_io.c              |  16 +
- kernel/printk/printk.c                 | 554 +++++++++++++++++--------
- lib/Kconfig.debug                      |   3 +
- lib/dump_stack.c                       |   4 +-
- lib/nmi_backtrace.c                    |   4 +-
- 21 files changed, 684 insertions(+), 266 deletions(-)
-
-
-base-commit: 23d8adcf8022b9483605531d8985f5b77533cb3a
 -- 
-2.20.1
+With Best Regards,
+Andy Shevchenko
+
 
