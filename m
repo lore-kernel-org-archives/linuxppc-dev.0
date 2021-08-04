@@ -2,53 +2,49 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A0A4C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 01:38:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FADCC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 02:55:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 729A560F43
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 01:38:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 729A560F43
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9A05760EEA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 02:55:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9A05760EEA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GfZBw02mYz3cM3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 11:38:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gfbvb5Dgdz3cS0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 12:55:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.42;
+ helo=out30-42.freemail.mail.aliyun.com;
+ envelope-from=xianting.tian@linux.alibaba.com; receiver=<UNKNOWN>)
+Received: from out30-42.freemail.mail.aliyun.com
+ (out30-42.freemail.mail.aliyun.com [115.124.30.42])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GfZBW31JNz2ysv
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 11:38:09 +1000 (AEST)
-X-IronPort-AV: E=McAfee;i="6200,9189,10065"; a="194106438"
-X-IronPort-AV: E=Sophos;i="5.84,293,1620716400"; d="scan'208";a="194106438"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Aug 2021 18:37:06 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.84,293,1620716400"; d="scan'208";a="667624603"
-Received: from lkp-server01.sh.intel.com (HELO d053b881505b) ([10.239.97.150])
- by fmsmga006.fm.intel.com with ESMTP; 03 Aug 2021 18:37:05 -0700
-Received: from kbuild by d053b881505b with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1mB5qC-000ETI-Rm; Wed, 04 Aug 2021 01:37:04 +0000
-Date: Wed, 04 Aug 2021 09:36:30 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD SUCCESS a6cae77f1bc89368a4e2822afcddc45c3062d499
-Message-ID: <6109ef1e.JRgrcabFgHGXco8j%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GfbvD0MPrz2ysq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 12:55:01 +1000 (AEST)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R211e4; CH=green; DM=||false|;
+ DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04420;
+ MF=xianting.tian@linux.alibaba.com; NM=1; PH=DS; RN=9; SR=0;
+ TI=SMTPD_---0UhvKFUE_1628045695; 
+Received: from localhost(mailfrom:xianting.tian@linux.alibaba.com
+ fp:SMTPD_---0UhvKFUE_1628045695) by smtp.aliyun-inc.com(127.0.0.1);
+ Wed, 04 Aug 2021 10:54:55 +0800
+From: Xianting Tian <xianting.tian@linux.alibaba.com>
+To: gregkh@linuxfoundation.org, jirislaby@kernel.org, amit@kernel.org,
+ arnd@arndb.de, osandov@fb.com
+Subject: [PATCH v3 1/2] tty: hvc: pass DMA capable memory to put_chars()
+Date: Wed,  4 Aug 2021 10:54:53 +0800
+Message-Id: <20210804025453.93543-1-xianting.tian@linux.alibaba.com>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,180 +56,144 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Xianting Tian <xianting.tian@linux.alibaba.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-branch HEAD: a6cae77f1bc89368a4e2822afcddc45c3062d499  powerpc/stacktrace: Include linux/delay.h
+As well known, hvc backend can register its opertions to hvc backend.
+the opertions contain put_chars(), get_chars() and so on.
 
-elapsed time: 725m
+Some hvc backend may do dma in its opertions. eg, put_chars() of
+virtio-console. But in the code of hvc framework, it may pass DMA
+incapable memory to put_chars() under a specific configuration, which
+is explained in commit c4baad5029(virtio-console: avoid DMA from stack):
+1, c[] is on stack,
+   hvc_console_print():
+	char c[N_OUTBUF] __ALIGNED__;
+	cons_ops[index]->put_chars(vtermnos[index], c, i);
+2, ch is on stack,
+   static void hvc_poll_put_char(,,char ch)
+   {
+	struct tty_struct *tty = driver->ttys[0];
+	struct hvc_struct *hp = tty->driver_data;
+	int n;
 
-configs tested: 154
-configs skipped: 3
+	do {
+		n = hp->ops->put_chars(hp->vtermno, &ch, 1);
+	} while (n <= 0);
+   }
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Commit c4baad5029 is just the fix to avoid DMA from stack memory, which
+is passed to virtio-console by hvc framework in above code. But I think
+the fix is aggressive, it directly uses kmemdup() to alloc new buffer
+from kmalloc area and do memcpy no matter the memory is in kmalloc area
+or not. But most importantly, it should better be fixed in the hvc
+framework, by changing it to never pass stack memory to the put_chars()
+function in the first place. Otherwise, we still face the same issue if
+a new hvc backend using dma added in the furture.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20210803
-mips                           ip28_defconfig
-arm                        cerfcube_defconfig
-arm                        neponset_defconfig
-arc                        nsimosci_defconfig
-arm                         hackkit_defconfig
-powerpc                      obs600_defconfig
-m68k                          atari_defconfig
-mips                           rs90_defconfig
-mips                        jmr3927_defconfig
-mips                           ip32_defconfig
-powerpc                 xes_mpc85xx_defconfig
-arm                         s3c6400_defconfig
-arm                            xcep_defconfig
-arm                         vf610m4_defconfig
-ia64                             alldefconfig
-powerpc                     tqm8541_defconfig
-nios2                         3c120_defconfig
-arm                            pleb_defconfig
-powerpc                     pseries_defconfig
-arm                        trizeps4_defconfig
-arm                          imote2_defconfig
-arm                            dove_defconfig
-h8300                            alldefconfig
-sh                           se7619_defconfig
-powerpc                   bluestone_defconfig
-mips                          rm200_defconfig
-powerpc                      ppc64e_defconfig
-powerpc                      ppc6xx_defconfig
-sh                     sh7710voipgw_defconfig
-powerpc                           allnoconfig
-x86_64                           alldefconfig
-powerpc                     mpc512x_defconfig
-openrisc                 simple_smp_defconfig
-powerpc                     ppa8548_defconfig
-s390                             alldefconfig
-sh                           se7343_defconfig
-h8300                    h8300h-sim_defconfig
-ia64                      gensparse_defconfig
-sh                        apsh4ad0a_defconfig
-mips                          rb532_defconfig
-arc                          axs103_defconfig
-sh                           se7722_defconfig
-arm                         socfpga_defconfig
-mips                         db1xxx_defconfig
-powerpc                   lite5200b_defconfig
-arm                           omap1_defconfig
-sparc                       sparc32_defconfig
-powerpc                 mpc8540_ads_defconfig
-powerpc                       ebony_defconfig
-powerpc                      bamboo_defconfig
-powerpc                     kilauea_defconfig
-mips                        bcm63xx_defconfig
-powerpc                 mpc8315_rdb_defconfig
-xtensa                generic_kc705_defconfig
-mips                           ip27_defconfig
-powerpc64                           defconfig
-arm                           sama5_defconfig
-sh                          sdk7786_defconfig
-arc                    vdk_hs38_smp_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-x86_64                            allnoconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-x86_64               randconfig-a002-20210803
-x86_64               randconfig-a004-20210803
-x86_64               randconfig-a006-20210803
-x86_64               randconfig-a003-20210803
-x86_64               randconfig-a001-20210803
-x86_64               randconfig-a005-20210803
-i386                 randconfig-a004-20210803
-i386                 randconfig-a005-20210803
-i386                 randconfig-a002-20210803
-i386                 randconfig-a006-20210803
-i386                 randconfig-a001-20210803
-i386                 randconfig-a003-20210803
-i386                 randconfig-a004-20210802
-i386                 randconfig-a005-20210802
-i386                 randconfig-a002-20210802
-i386                 randconfig-a006-20210802
-i386                 randconfig-a001-20210802
-i386                 randconfig-a003-20210802
-i386                 randconfig-a005-20210804
-i386                 randconfig-a004-20210804
-i386                 randconfig-a002-20210804
-i386                 randconfig-a006-20210804
-i386                 randconfig-a003-20210804
-i386                 randconfig-a001-20210804
-i386                 randconfig-a012-20210803
-i386                 randconfig-a011-20210803
-i386                 randconfig-a015-20210803
-i386                 randconfig-a013-20210803
-i386                 randconfig-a014-20210803
-i386                 randconfig-a016-20210803
-i386                 randconfig-a012-20210802
-i386                 randconfig-a011-20210802
-i386                 randconfig-a015-20210802
-i386                 randconfig-a013-20210802
-i386                 randconfig-a014-20210802
-i386                 randconfig-a016-20210802
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+Considering lock competition of hp->outbuf, we created a new buffer
+hp->hvc_con_outbuf, which is aligned at least to N_OUTBUF, and use it
+in above two cases.
 
-clang tested configs:
-x86_64               randconfig-c001-20210803
-x86_64               randconfig-a012-20210803
-x86_64               randconfig-a016-20210803
-x86_64               randconfig-a013-20210803
-x86_64               randconfig-a011-20210803
-x86_64               randconfig-a014-20210803
-x86_64               randconfig-a015-20210803
+With the patch, we can remove the fix c4baad5029.
 
+Signed-off-by: Xianting Tian <xianting.tian@linux.alibaba.com>
+Tested-by: Xianting Tian <xianting.tian@linux.alibaba.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ drivers/tty/hvc/hvc_console.c | 30 ++++++++++++++++++++++++++++--
+ drivers/tty/hvc/hvc_console.h |  2 ++
+ 2 files changed, 30 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+index 5bb8c4e44..e5862989c 100644
+--- a/drivers/tty/hvc/hvc_console.c
++++ b/drivers/tty/hvc/hvc_console.c
+@@ -151,9 +151,11 @@ static uint32_t vtermnos[MAX_NR_HVC_CONSOLES] =
+ static void hvc_console_print(struct console *co, const char *b,
+ 			      unsigned count)
+ {
+-	char c[N_OUTBUF] __ALIGNED__;
++	char *c;
+ 	unsigned i = 0, n = 0;
+ 	int r, donecr = 0, index = co->index;
++	unsigned long flags;
++	struct hvc_struct *hp;
+ 
+ 	/* Console access attempt outside of acceptable console range. */
+ 	if (index >= MAX_NR_HVC_CONSOLES)
+@@ -163,6 +165,13 @@ static void hvc_console_print(struct console *co, const char *b,
+ 	if (vtermnos[index] == -1)
+ 		return;
+ 
++	list_for_each_entry(hp, &hvc_structs, next)
++		if (hp->vtermno == vtermnos[index])
++			break;
++
++	c = hp->hvc_con_outbuf;
++
++	spin_lock_irqsave(&hp->hvc_con_lock, flags);
+ 	while (count > 0 || i > 0) {
+ 		if (count > 0 && i < sizeof(c)) {
+ 			if (b[n] == '\n' && !donecr) {
+@@ -191,6 +200,7 @@ static void hvc_console_print(struct console *co, const char *b,
+ 			}
+ 		}
+ 	}
++	spin_unlock_irqrestore(&hp->hvc_con_lock, flags);
+ 	hvc_console_flush(cons_ops[index], vtermnos[index]);
+ }
+ 
+@@ -878,9 +888,15 @@ static void hvc_poll_put_char(struct tty_driver *driver, int line, char ch)
+ 	struct tty_struct *tty = driver->ttys[0];
+ 	struct hvc_struct *hp = tty->driver_data;
+ 	int n;
++	unsigned long flags;
++	char *c;
+ 
++	c = hp->hvc_con_outbuf;
+ 	do {
+-		n = hp->ops->put_chars(hp->vtermno, &ch, 1);
++		spin_lock_irqsave(&hp->hvc_con_lock, flags);
++		c[0] = ch;
++		n = hp->ops->put_chars(hp->vtermno, c, 1);
++		spin_unlock_irqrestore(&hp->hvc_con_lock, flags);
+ 	} while (n <= 0);
+ }
+ #endif
+@@ -933,6 +949,16 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
+ 	hp->outbuf_size = outbuf_size;
+ 	hp->outbuf = &((char *)hp)[ALIGN(sizeof(*hp), sizeof(long))];
+ 
++	/*
++	 * hvc_con_outbuf is guaranteed to be aligned at least to the
++	 * size(N_OUTBUF) by kmalloc().
++	 */
++	hp->hvc_con_outbuf = kzalloc(N_OUTBUF, GFP_KERNEL);
++	if (!hp->hvc_con_outbuf)
++		return ERR_PTR(-ENOMEM);
++
++	spin_lock_init(&hp->hvc_con_lock);
++
+ 	tty_port_init(&hp->port);
+ 	hp->port.ops = &hvc_port_ops;
+ 
+diff --git a/drivers/tty/hvc/hvc_console.h b/drivers/tty/hvc/hvc_console.h
+index 18d005814..8972c52de 100644
+--- a/drivers/tty/hvc/hvc_console.h
++++ b/drivers/tty/hvc/hvc_console.h
+@@ -48,6 +48,8 @@ struct hvc_struct {
+ 	struct work_struct tty_resize;
+ 	struct list_head next;
+ 	unsigned long flags;
++	char *hvc_con_outbuf;
++	spinlock_t hvc_con_lock;
+ };
+ 
+ /* implemented by a low level driver */
+-- 
+2.17.1
+
