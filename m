@@ -2,74 +2,88 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F89FC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:09:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D16EC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:15:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F8ED60EC0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:09:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5F8ED60EC0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id ACD2660BD3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 05:15:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ACD2660BD3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GfftR0C8Rz3dmB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 15:09:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gfg0p21NQz3cXQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 15:15:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=LwdXqV6T;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=CjGblo5J;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=C0Ck3geE;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
- helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1030;
+ helo=mail-pj1-x1030.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=LwdXqV6T; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=CjGblo5J; 
- dkim-atps=neutral
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=C0Ck3geE; dkim-atps=neutral
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com
+ [IPv6:2607:f8b0:4864:20::1030])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GfKbj5nGKz307n
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 02:10:41 +1000 (AEST)
-Date: Tue, 3 Aug 2021 18:10:33 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1628007036;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=ZhCR89X1oG7iNKpxBHqwK160maOrSQVKgeomxdN0wRc=;
- b=LwdXqV6TEL+jelWYIVu/L1AwkukJUhfDeR6fxf6HaCffMyf5pGalG64DdzD6SrFbnK74/x
- PVNjb7a8JiALCQD3CJBVmxfKVnGPRCXtU70BUFy11admR5LtOLT9dQeI/ENtXdJ/CkhTdc
- pZNvsYTpT+QPzjRhgzvNT0CjgoFJhxwmycapteSubpDkPSBjZ+FP8bxnvUSWW30Gz0Y7dW
- 1ffy1Rr5tDaLDwQ1cWTtCeME4yw92tE3YUaDago5Lw9pEtw1H1L8au8do+a32W2/sN3gs0
- btcFKclunpFVufnMA6+fMpSDPoeRfMtyi+RFwzALyjj/jtaWzgKiRMXG8gO4tg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1628007036;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=ZhCR89X1oG7iNKpxBHqwK160maOrSQVKgeomxdN0wRc=;
- b=CjGblo5JavDHAEsakSWenCqJ60bnDYFeC+TGn7n/YdarB5rRq+iJbcWjrVSzA5F0n0kDM4
- Vc1wmHGVCRR8DGCA==
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 00/38] Replace deprecated CPU-hotplug
-Message-ID: <20210803161033.vp3o34meyw3ek43z@linutronix.de>
-References: <20210803141621.780504-1-bigeasy@linutronix.de>
- <83dc5dfd-1ed0-f428-826f-fb819911fc89@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gfg0C30Wsz2yLh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 15:14:34 +1000 (AEST)
+Received: by mail-pj1-x1030.google.com with SMTP id
+ s22-20020a17090a1c16b0290177caeba067so7160037pjs.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Aug 2021 22:14:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:references:in-reply-to:mime-version:message-id
+ :content-transfer-encoding;
+ bh=g2lEclpK8rx1SxIedmLq/RnIwOdwyXFvHeDeTMr9HDM=;
+ b=C0Ck3geEryRzahd+bxFsI4qgXJucnZzpVkrOMejBVaaskUW0ERJc2tAOAykQcHoYAU
+ wc31TLWGa/uRT5C72c8rLl1Rwuwo27j/tCuffqlosRe4QR1CZVOvc4C2nXXZzIwTER4c
+ CQOBe3RKevOdw4Qp2itcbEn69dduvqshl/NnfC4/KIlknfzATS0kRynFlvnCv6PdgN5W
+ pVji9Bel4zr9eitlopANPCOp+MGTOqUA8ZznpWWr5/EIEdcuyfCTEFPGSFhdvr4bfK9q
+ XVVih5YzH9HHXRHIBCqmH34TSedSPJB891y/4ZAh7nF9nMAybzrUvohlHSFk6QJL92i4
+ fUnA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=g2lEclpK8rx1SxIedmLq/RnIwOdwyXFvHeDeTMr9HDM=;
+ b=QbfN2WLTRyq1jV4eXS+q1gU6E2oocuw8v4R4SmX32d6z8tAAquNuOobxxXFIa3/mAv
+ gcCFYIGoB5IHXKACuQpa0EmJ/9Osi8GnUY2FmyS6WuExSD5FwysfQG+2RWO0sCWCByqy
+ /oGap59CJEM5gx++lssiIM58A6FR/w4eIPDUn2XT/SItPv0q9kEZYlxyKHCwy5tiNq/Y
+ peHK2VljzJXBhQZZJiS0PlAtM0yJZ6d1bJTZMsuQlqIz3zFtVabkM5nS0iHFiG/qXp+d
+ Dw/nDxKShB3OlN3mt/geKRGAaDrBttO1EeD3Ncs83dSo8CO2h2GXIQ5uz/WlkRyzoDVG
+ 088A==
+X-Gm-Message-State: AOAM5315iE17U6ltLa+s0QiQRsVSPOZE15OYWdArjlOW3gcJ6rmKXxNE
+ 6gCjwwCm/wNE+HIBa6jhg9M=
+X-Google-Smtp-Source: ABdhPJyZw/u9guwaqSLigzQ95ESE/UIP7wKoGzzdh+MTpbf+trrBhpGNmJXFHqfksETGDPaBKK4sEA==
+X-Received: by 2002:a63:d458:: with SMTP id i24mr738383pgj.289.1628054068123; 
+ Tue, 03 Aug 2021 22:14:28 -0700 (PDT)
+Received: from localhost (60-242-181-102.static.tpgi.com.au. [60.242.181.102])
+ by smtp.gmail.com with ESMTPSA id
+ l6sm975210pff.74.2021.08.03.22.14.27
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 03 Aug 2021 22:14:27 -0700 (PDT)
+Date: Wed, 04 Aug 2021 15:14:22 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [RFC PATCH] powerpc/book3s64/radix: Upgrade va tlbie to PID tlbie
+ if we cross PMD_SIZE
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+References: <20210803143725.615186-1-aneesh.kumar@linux.ibm.com>
+In-Reply-To: <20210803143725.615186-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <83dc5dfd-1ed0-f428-826f-fb819911fc89@redhat.com>
-X-Mailman-Approved-At: Wed, 04 Aug 2021 15:05:41 +1000
+Message-Id: <1628053302.0qclx0xcj9.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,77 +95,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Ben Segall <bsegall@google.com>,
- Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
- linux-acpi@vger.kernel.org, Mel Gorman <mgorman@suse.de>,
- Guenter Roeck <linux@roeck-us.net>, Petr Mladek <pmladek@suse.com>,
- Jean Delvare <jdelvare@suse.com>, linux-pm@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Pekka Paalanen <ppaalanen@gmail.com>, Andy Lutomirski <luto@kernel.org>,
- tglx@linutronix.de, Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Karol Herbst <karolherbst@gmail.com>,
- linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, Mark Rutland <mark.rutland@arm.com>,
- linux-doc@vger.kernel.org, nouveau@lists.freedesktop.org,
- Dave Hansen <dave.hansen@linux.intel.com>,
- virtualization@lists.linux-foundation.org, Ingo Molnar <mingo@kernel.org>,
- linux-s390@vger.kernel.org, Davidlohr Bueso <dave@stgolabs.net>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Julian Wiedmann <jwi@linux.ibm.com>,
- Daniel Jordan <daniel.m.jordan@oracle.com>, Gonglei <arei.gonglei@huawei.com>,
- Len Brown <lenb@kernel.org>, Mike Travis <mike.travis@hpe.com>,
- coresight@lists.linaro.org, kvm-ppc@vger.kernel.org,
- John Stultz <john.stultz@linaro.org>, cgroups@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- Mathieu Poirier <mathieu.poirier@linaro.org>,
- Daniel Bristot de Oliveira <bristot@redhat.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jason Wang <jasowang@redhat.com>, Amit Kucheria <amitk@kernel.org>,
- Lai Jiangshan <jiangshanlai@gmail.com>, platform-driver-x86@vger.kernel.org,
- Joel Fernandes <joel@joelfernandes.org>, Mark Gross <mgross@linux.intel.com>,
- Jonathan Corbet <corbet@lwn.net>, "Michael S. Tsirkin" <mst@redhat.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Jiri Kosina <jikos@kernel.org>, Josh Triplett <josh@joshtriplett.org>,
- rcu@vger.kernel.org, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- linux-hwmon@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>,
- linux-mm@kvack.org, "H. Peter Anvin" <hpa@zytor.com>,
- live-patching@vger.kernel.org, Miroslav Benes <mbenes@suse.cz>,
- Jiri Olsa <jolsa@redhat.com>, Herbert Xu <herbert@gondor.apana.org.au>,
- x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- Jakub Kicinski <kuba@kernel.org>, Mike Leach <mike.leach@linaro.org>,
- "Paul E. McKenney" <paulmck@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
- Johannes Weiner <hannes@cmpxchg.org>, linux-raid@vger.kernel.org,
- Joe Lawrence <joe.lawrence@redhat.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
- Namhyung Kim <namhyung@kernel.org>, linux-edac@vger.kernel.org,
- netdev@vger.kernel.org, linux-mips@vger.kernel.org,
- Leo Yan <leo.yan@linaro.org>, Borislav Petkov <bp@alien8.de>,
- linuxppc-dev@lists.ozlabs.org, Karsten Graul <kgraul@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2021-08-03 17:30:40 [+0200], Hans de Goede wrote:
-> Hi Sebastien,
-Hi Hans,
+Excerpts from Aneesh Kumar K.V's message of August 4, 2021 12:37 am:
+> With shared mapping, even though we are unmapping a large range, the kern=
+el
+> will force a TLB flush with ptl lock held to avoid the race mentioned in
+> commit 1cf35d47712d ("mm: split 'tlb_flush_mmu()' into tlb flushing and m=
+emory freeing parts")
+> This results in the kernel issuing a high number of TLB flushes even for =
+a large
+> range. This can be improved by making sure the kernel switch to pid based=
+ flush if the
+> kernel is unmapping a 2M range.
 
-> On 8/3/21 4:15 PM, Sebastian Andrzej Siewior wrote:
-> > This is a tree wide replacement of the deprecated CPU hotplug functions
-> > which are only wrappers around the actual functions.
-> > 
-> > Each patch is independent and can be picked up by the relevant maintainer.
-> 
-> Ok; and I take it that then also is the plan for merging these ?
-> 
-> FWIW I'm fine with the drivers/platform/x86 patch going upstream
-> through some other tree if its easier to keep the set together ...
+It would be good to have a bit more description here.
 
-There is no need to keep that set together since each patch is
-independent. Please merge it through your tree.
+In any patch that changes a heuristic like this, I would like to see=20
+some justification or reasoning that could be refuted or used as a=20
+supporting argument if we ever wanted to change the heuristic later.
+Ideally with some of the obvious downsides listed as well.
 
-> Regards,
-> 
-> Hans
+This "improves" things here, but what if it hurt things elsewhere, how=20
+would we come in later and decide to change it back?
 
-Sebastian
+THP flushes for example, I think now they'll do PID flushes (if they=20
+have to be broadcast, which they will tend to be when khugepaged does
+them). So now that might increase jitter for THP and cause it to be a
+loss for more workloads.
+
+So where do you notice this? What's the benefit?
+
+>=20
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>  arch/powerpc/mm/book3s64/radix_tlb.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3=
+s64/radix_tlb.c
+> index aefc100d79a7..21d0f098e43b 100644
+> --- a/arch/powerpc/mm/book3s64/radix_tlb.c
+> +++ b/arch/powerpc/mm/book3s64/radix_tlb.c
+> @@ -1106,7 +1106,7 @@ EXPORT_SYMBOL(radix__flush_tlb_kernel_range);
+>   * invalidating a full PID, so it has a far lower threshold to change fr=
+om
+>   * individual page flushes to full-pid flushes.
+>   */
+> -static unsigned long tlb_single_page_flush_ceiling __read_mostly =3D 33;
+> +static unsigned long tlb_single_page_flush_ceiling __read_mostly =3D 32;
+>  static unsigned long tlb_local_single_page_flush_ceiling __read_mostly =
+=3D POWER9_TLB_SETS_RADIX * 2;
+> =20
+>  static inline void __radix__flush_tlb_range(struct mm_struct *mm,
+> @@ -1133,7 +1133,7 @@ static inline void __radix__flush_tlb_range(struct =
+mm_struct *mm,
+>  	if (fullmm)
+>  		flush_pid =3D true;
+>  	else if (type =3D=3D FLUSH_TYPE_GLOBAL)
+> -		flush_pid =3D nr_pages > tlb_single_page_flush_ceiling;
+> +		flush_pid =3D nr_pages >=3D tlb_single_page_flush_ceiling;
+
+Arguably >=3D is nicer than > here, but this shouldn't be in the same=20
+patch as the value change.
+
+>  	else
+>  		flush_pid =3D nr_pages > tlb_local_single_page_flush_ceiling;
+
+And it should change everything to be consistent. Although I'm not sure=20
+it's worth changing even though I highly doubt any administrator would
+be tweaking this.
+
+Thanks,
+Nick
+
+>  	/*
+> @@ -1335,7 +1335,7 @@ static void __radix__flush_tlb_range_psize(struct m=
+m_struct *mm,
+>  	if (fullmm)
+>  		flush_pid =3D true;
+>  	else if (type =3D=3D FLUSH_TYPE_GLOBAL)
+> -		flush_pid =3D nr_pages > tlb_single_page_flush_ceiling;
+> +		flush_pid =3D nr_pages >=3D tlb_single_page_flush_ceiling;
+>  	else
+>  		flush_pid =3D nr_pages > tlb_local_single_page_flush_ceiling;
+> =20
+> @@ -1505,7 +1505,7 @@ void do_h_rpt_invalidate_prt(unsigned long pid, uns=
+igned long lpid,
+>  			continue;
+> =20
+>  		nr_pages =3D (end - start) >> def->shift;
+> -		flush_pid =3D nr_pages > tlb_single_page_flush_ceiling;
+> +		flush_pid =3D nr_pages >=3D tlb_single_page_flush_ceiling;
+> =20
+>  		/*
+>  		 * If the number of pages spanning the range is above
+> --=20
+> 2.31.1
+>=20
+>=20
