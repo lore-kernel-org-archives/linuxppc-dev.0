@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-4.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4A65C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 13:30:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFAE0C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 13:30:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 27B1560F43
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 13:30:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 27B1560F43
+	by mail.kernel.org (Postfix) with ESMTPS id 340B460F43
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 13:30:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 340B460F43
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gft0H5f9Mz3cmd
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 23:30:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gft0l5kqxz3cLc
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Aug 2021 23:30:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C7ZbwGZT;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hfReEmom;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
@@ -28,29 +28,29 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=C7ZbwGZT; 
+ header.s=k20201202 header.b=hfReEmom; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gfszl0Lv6z2xlC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 23:29:55 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPS id 90C1160F56
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 13:29:52 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gft0G5S1rz3cXd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 23:30:22 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPS id 498D660F56
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Aug 2021 13:30:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1628083792;
- bh=aRmgYz3UrChcG5uRNT1Q0iZEmW9L07lJu8XZO4xabVM=;
+ s=k20201202; t=1628083820;
+ bh=B32P28qQPVrRuZa/32qvlJl6X+pVp1wAyKEZzazj6zg=;
  h=From:To:Subject:Date:In-Reply-To:References:From;
- b=C7ZbwGZTeD+0vmUcwm/aw/nO9QO9I96qyims2AImW8JkPi1vQeMMYFwOIjvOW6m9A
- v6d/1L8ufxVpyoyZGL8kPYF6sBTeFfqxiYaJ+Lg0w4u7CfZXciDYu0clskVgbgXITV
- bzrq8GI46yF7hbWu/u1URGfbt/DnzJ2AydZfpHqJ+1wQ9kfvpokH8VP3hq6E9k1pHe
- NIdNvzWKF7d51oPYHlh7KWLlXnUSKKOyPbpWAJFEsdLnjkarzEUa1v9WW5khbVvYdv
- oV2GkuR1Xtepxotxpf3N8tEkzYRDZBRxBLy2plVlx6u6Zqu9Jm64AlWa2Z72kkURt9
- js6xhSQcN+LWQ==
+ b=hfReEmomb2mpnhw9ZHPrIl7tEcWiKZFUWfILBoRln3Hr+cs348MJXFPpXCbHpCksu
+ QcvO8ijUL/f/3Ltl6Rv/pE/qFNq9D3A/k4XuXpd5z30T/CKOR5rdHEL4+kO2L4UH9Q
+ rI1qwLk69F7gxWrsY/T4GA5OhepWRYQMb07XABvE7WBlypJjoVUtVtFbmdnOftP89v
+ Yetk3r/Fpk1O2dsqMDxPPjpe0Sp5vK2yHI5BigrDuTWwYQdID+tYADCFuqXyHUkEEi
+ DDNlywRMNAewKAaF+0+IyQAhLqGxhH5K8gSMqLmhcF7iKWwJAksEDfKRofoo3P5UN/
+ BUsFKUBQvSY7Q==
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 213961] Oops while loading radeon driver
-Date: Wed, 04 Aug 2021 13:29:52 +0000
+Date: Wed, 04 Aug 2021 13:30:20 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -66,7 +66,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-213961-206035-Oz8uniRS3a@https.bugzilla.kernel.org/>
+Message-ID: <bug-213961-206035-ryGBfKl8bO@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-213961-206035@https.bugzilla.kernel.org/>
 References: <bug-213961-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -91,10 +91,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D213961
 
---- Comment #2 from Elimar Riesebieter (riesebie@lxtec.de) ---
-Created attachment 298195
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D298195&action=3Dedit
-dmesg dump
+--- Comment #3 from Elimar Riesebieter (riesebie@lxtec.de) ---
+Created attachment 298197
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D298197&action=3Dedit
+.config
 
 --=20
 You may reply to this email to add a comment.
