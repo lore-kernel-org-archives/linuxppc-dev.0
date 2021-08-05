@@ -2,78 +2,71 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.6 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C77EC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:04:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33FF4C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:10:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 205F960462
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:04:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 205F960462
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9879161040
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:10:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9879161040
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GgLjy4Vxlz3dBG
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 18:04:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=E6nmmWhp;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GgLrP1S0Fz3d8N
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 18:10:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=E6nmmWhp; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=gmail.com (client-ip=209.85.221.48; helo=mail-wr1-f48.google.com;
+ envelope-from=jirislaby@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com
+ [209.85.221.48])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GgLjS0v51z2xKM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Aug 2021 18:04:11 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPS id DB40A61040
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Aug 2021 08:04:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1628150648;
- bh=XAUVV8mo4WeQs5eiz27eP9oJ+utUVxwI7TPzS6dv0sQ=;
- h=From:To:Subject:Date:In-Reply-To:References:From;
- b=E6nmmWhpXXuL4/076qXbxv5HWK7DkT1PaaSIhNeHjIDfvq/GwBM/vteCia5vfgaPZ
- o5D0BRPwwArDQPEurvCyPSTimGTtYobVn80vS+2JUKBkuKDEftdl+MsjU6muHKlipf
- FM1rJcNjjL3CDhqyy9rUmE+AqGupZT67r2XjM9JjRgLGul43PVCwC+60I1ZJwD+Xll
- CEf6+g2rT1ncfY5tLWf930LBQRqcWxydljrSt7LGYbh2OZZdor/RdMc2PpXUhIZeSW
- 0h1uCWWpk6vF5pPa+DOGELLE2e5U3L3UQC/79mv5V2ndBcEfr8hp+kCKE7LCsOb9H1
- Io8O2MA0Gv5cA==
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 213961] Oops while loading radeon driver
-Date: Thu, 05 Aug 2021 08:04:08 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: christophe.leroy@csgroup.eu
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-213961-206035-BcDapI0Wat@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-213961-206035@https.bugzilla.kernel.org/>
-References: <bug-213961-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GgLqz5QyQz300x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Aug 2021 18:09:51 +1000 (AEST)
+Received: by mail-wr1-f48.google.com with SMTP id c16so5297021wrp.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Aug 2021 01:09:51 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:from:to:cc:references:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=wOvvcGOWNL43pF5gzZ1KGiUW3rYoHQr+5VBEfIZFYow=;
+ b=sYY5ElURzq7tEqWHFQnaD2HQLzXIMfZfbO71+1+oMX4q8x00Kv6rufOLOglLj1jhX7
+ hbAzNQTjX912rzH4KppM9lPgXfwKDNiJCnQ4HY+LTzCuV8ml7i5vOiskgp79StkTVR2E
+ 5i6W5lOeoIc2Sbxiu5dtygqN6eJzn8s7dJ7t7o3QLTy14fX1ITIetwfZGKHShf2uNuJF
+ WbMbBlRw7I/MtoSfZ2idWVt1baTzUKnjccTY6O8UAjcPTtZlXNWK0hFaFa60ii4ROnqN
+ qZBdF2SyYUEtr4DP+eJfwlGK9Etopp1E5v7hWZCYJEGxFXVCaCQ3DC7bT9y2tHPo3AXm
+ YSoA==
+X-Gm-Message-State: AOAM530333C6sm0JncgPPjl3l2ypk0yY9vRxPKw5qXH5FQbHUPHtY4Rj
+ jvh60joT3GKHNLs89tqKRsY=
+X-Google-Smtp-Source: ABdhPJza9yPxZ/Yp1GJ6J7eu3qML/uunC/YdJrWn4YIzJejETB/deUbtlehxI2PyWD7B9IGNnmfT1A==
+X-Received: by 2002:a5d:6691:: with SMTP id l17mr3681771wru.368.1628150988580; 
+ Thu, 05 Aug 2021 01:09:48 -0700 (PDT)
+Received: from ?IPv6:2a0b:e7c0:0:107::49? ([2a0b:e7c0:0:107::49])
+ by smtp.gmail.com with ESMTPSA id i5sm5215326wrs.85.2021.08.05.01.09.47
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 05 Aug 2021 01:09:48 -0700 (PDT)
+Subject: Re: [PATCH v3 1/2] tty: hvc: pass DMA capable memory to put_chars()
+From: Jiri Slaby <jirislaby@kernel.org>
+To: Xianting Tian <xianting.tian@linux.alibaba.com>,
+ gregkh@linuxfoundation.org, amit@kernel.org, arnd@arndb.de, osandov@fb.com
+References: <20210804025453.93543-1-xianting.tian@linux.alibaba.com>
+ <0f26a1c3-53e8-9282-69e8-8d81a9cafc59@kernel.org>
+Message-ID: <f1b92c7d-0eaf-4eac-ecd2-fbb74fb63b52@kernel.org>
+Date: Thu, 5 Aug 2021 10:09:47 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.12.0
 MIME-Version: 1.0
+In-Reply-To: <0f26a1c3-53e8-9282-69e8-8d81a9cafc59@kernel.org>
+Content-Type: text/plain; charset=iso-8859-2; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,34 +78,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D213961
+On 05. 08. 21, 9:58, Jiri Slaby wrote:
+> Hi,
+> 
+> On 04. 08. 21, 4:54, Xianting Tian wrote:
+>> @@ -933,6 +949,16 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, 
+>> int data,
+>>       hp->outbuf_size = outbuf_size;
+>>       hp->outbuf = &((char *)hp)[ALIGN(sizeof(*hp), sizeof(long))];
 
---- Comment #8 from Christophe Leroy (christophe.leroy@csgroup.eu) ---
-Great:
+This deserves cleanup too. Why is "outbuf" not "char outbuf[0] 
+__ALIGNED__" at the end of the structure? The allocation would be easier 
+(using struct_size()) and this line would be gone completely.
 
-[   15.246367] NIP [bea42a80] radeon_agp_head_init+0x1c/0xf8 [radeon]
-[   15.246969] LR [bea39860] radeon_driver_load_kms+0x1bc/0x1f4 [radeon]
-[   15.247160] Call Trace:
-[   15.247168] [f2b75c30] [c0c1ec60] 0xc0c1ec60 (unreliable)
-[   15.247180] [f2b75c50] [bea39860] radeon_driver_load_kms+0x1bc/0x1f4
-[radeon]
-[   15.247343] [f2b75c80] [be8cc74c] drm_dev_register+0x10c/0x268 [drm]
-[   15.247718] [f2b75cb0] [bea36484] radeon_pci_probe+0x108/0x190 [radeon]
-[   15.248001] [f2b75cd0] [c03832fc] pci_device_probe+0xf4/0x1a4
+>> +    /*
+>> +     * hvc_con_outbuf is guaranteed to be aligned at least to the
+>> +     * size(N_OUTBUF) by kmalloc().
+>> +     */
+>> +    hp->hvc_con_outbuf = kzalloc(N_OUTBUF, GFP_KERNEL);
+>> +    if (!hp->hvc_con_outbuf)
+>> +        return ERR_PTR(-ENOMEM);
+> 
+> This leaks hp, right?
 
-So we now know we have a NULL pointer dereference in radeon_agp_head_init().
+Actually, why don't you make
+char c[N_OUTBUF] __ALIGNED__;
 
-Looks like all this code is quite recent, at least there are recent
-modification, so I think you should address it with RADEON people, I'm not =
-sure
-the problem is a PPC32 subject.
+part of struct hvc_struct directly?
 
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+> BTW your 2 patches are still not threaded, that is hard to follow.
+> 
+>> +
+>> +    spin_lock_init(&hp->hvc_con_lock);
+>> +
+>>       tty_port_init(&hp->port);
+>>       hp->port.ops = &hvc_port_ops;
+> 
+> thanks,
+-- 
+js
+suse labs
