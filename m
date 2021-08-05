@@ -2,71 +2,67 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.6 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.4 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33FF4C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:10:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15101C4320A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:12:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9879161040
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:10:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9879161040
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id AD56961050
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:12:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AD56961050
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GgLrP1S0Fz3d8N
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 18:10:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GgLv51Ftsz3clv
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 18:12:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.221.48; helo=mail-wr1-f48.google.com;
- envelope-from=jirislaby@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com
- [209.85.221.48])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GgLqz5QyQz300x
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Aug 2021 18:09:51 +1000 (AEST)
-Received: by mail-wr1-f48.google.com with SMTP id c16so5297021wrp.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Aug 2021 01:09:51 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:from:to:cc:references:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=wOvvcGOWNL43pF5gzZ1KGiUW3rYoHQr+5VBEfIZFYow=;
- b=sYY5ElURzq7tEqWHFQnaD2HQLzXIMfZfbO71+1+oMX4q8x00Kv6rufOLOglLj1jhX7
- hbAzNQTjX912rzH4KppM9lPgXfwKDNiJCnQ4HY+LTzCuV8ml7i5vOiskgp79StkTVR2E
- 5i6W5lOeoIc2Sbxiu5dtygqN6eJzn8s7dJ7t7o3QLTy14fX1ITIetwfZGKHShf2uNuJF
- WbMbBlRw7I/MtoSfZ2idWVt1baTzUKnjccTY6O8UAjcPTtZlXNWK0hFaFa60ii4ROnqN
- qZBdF2SyYUEtr4DP+eJfwlGK9Etopp1E5v7hWZCYJEGxFXVCaCQ3DC7bT9y2tHPo3AXm
- YSoA==
-X-Gm-Message-State: AOAM530333C6sm0JncgPPjl3l2ypk0yY9vRxPKw5qXH5FQbHUPHtY4Rj
- jvh60joT3GKHNLs89tqKRsY=
-X-Google-Smtp-Source: ABdhPJza9yPxZ/Yp1GJ6J7eu3qML/uunC/YdJrWn4YIzJejETB/deUbtlehxI2PyWD7B9IGNnmfT1A==
-X-Received: by 2002:a5d:6691:: with SMTP id l17mr3681771wru.368.1628150988580; 
- Thu, 05 Aug 2021 01:09:48 -0700 (PDT)
-Received: from ?IPv6:2a0b:e7c0:0:107::49? ([2a0b:e7c0:0:107::49])
- by smtp.gmail.com with ESMTPSA id i5sm5215326wrs.85.2021.08.05.01.09.47
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 05 Aug 2021 01:09:48 -0700 (PDT)
-Subject: Re: [PATCH v3 1/2] tty: hvc: pass DMA capable memory to put_chars()
-From: Jiri Slaby <jirislaby@kernel.org>
-To: Xianting Tian <xianting.tian@linux.alibaba.com>,
- gregkh@linuxfoundation.org, amit@kernel.org, arnd@arndb.de, osandov@fb.com
-References: <20210804025453.93543-1-xianting.tian@linux.alibaba.com>
- <0f26a1c3-53e8-9282-69e8-8d81a9cafc59@kernel.org>
-Message-ID: <f1b92c7d-0eaf-4eac-ecd2-fbb74fb63b52@kernel.org>
-Date: Thu, 5 Aug 2021 10:09:47 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.12.0
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com;
+ envelope-from=pulehui@huawei.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 1163 seconds by postgrey-1.36 at boromir;
+ Thu, 05 Aug 2021 18:12:11 AEST
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GgLtg6cv5z2yMG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Aug 2021 18:12:10 +1000 (AEST)
+Received: from dggemv703-chm.china.huawei.com (unknown [172.30.72.57])
+ by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4GgLLZ20GMz832N;
+ Thu,  5 Aug 2021 15:47:50 +0800 (CST)
+Received: from dggpemm500019.china.huawei.com (7.185.36.180) by
+ dggemv703-chm.china.huawei.com (10.3.19.46) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.2; Thu, 5 Aug 2021 15:52:38 +0800
+Received: from [10.67.109.184] (10.67.109.184) by
+ dggpemm500019.china.huawei.com (7.185.36.180) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.2; Thu, 5 Aug 2021 15:52:37 +0800
+Subject: Re: [PATCH] powerpc/kprobes: Fix kprobe Oops happens in booke
+To: Michael Ellerman <mpe@ellerman.id.au>, <oleg@redhat.com>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>,
+ <naveen.n.rao@linux.vnet.ibm.com>, <mhiramat@kernel.org>,
+ <christophe.leroy@csgroup.eu>, <peterz@infradead.org>, <npiggin@gmail.com>,
+ <ruscur@russell.cc>
+References: <20210804143735.148547-1-pulehui@huawei.com>
+ <87fsvoo1uy.fsf@mpe.ellerman.id.au>
+From: Pu Lehui <pulehui@huawei.com>
+Message-ID: <6cb26d8a-5553-a014-7e64-6149d8079b62@huawei.com>
+Date: Thu, 5 Aug 2021 15:52:37 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
-In-Reply-To: <0f26a1c3-53e8-9282-69e8-8d81a9cafc59@kernel.org>
-Content-Type: text/plain; charset=iso-8859-2; format=flowed
+In-Reply-To: <87fsvoo1uy.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.109.184]
+X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
+ dggpemm500019.china.huawei.com (7.185.36.180)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,49 +74,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org
+Cc: zhangjinhao2@huawei.com, xukuohai@huawei.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 05. 08. 21, 9:58, Jiri Slaby wrote:
-> Hi,
+
+
+On 2021/8/5 14:13, Michael Ellerman wrote:
+> Pu Lehui <pulehui@huawei.com> writes:
+>> When using kprobe on powerpc booke series processor, Oops happens
+>> as show bellow:
+>>
+>> [   35.861352] Oops: Exception in kernel mode, sig: 5 [#1]
+>> [   35.861676] BE PAGE_SIZE=4K SMP NR_CPUS=24 QEMU e500
+>> [   35.861905] Modules linked in:
+>> [   35.862144] CPU: 0 PID: 76 Comm: sh Not tainted 5.14.0-rc3-00060-g7e96bf476270 #18
+>> [   35.862610] NIP:  c0b96470 LR: c00107b4 CTR: c0161c80
+>> [   35.862805] REGS: c387fe70 TRAP: 0700   Not tainted (5.14.0-rc3-00060-g7e96bf476270)
+>> [   35.863198] MSR:  00029002 <CE,EE,ME>  CR: 24022824  XER: 20000000
+>> [   35.863577]
+>> [   35.863577] GPR00: c0015218 c387ff20 c313e300 c387ff50 00000004 40000002 40000000 0a1a2cce
+>> [   35.863577] GPR08: 00000000 00000004 00000000 59764000 24022422 102490c2 00000000 00000000
+>> [   35.863577] GPR16: 00000000 00000000 00000040 10240000 10240000 10240000 10240000 10220000
+>> [   35.863577] GPR24: ffffffff 10240000 00000000 00000000 bfc655e8 00000800 c387ff50 00000000
+>> [   35.865367] NIP [c0b96470] schedule+0x0/0x130
+>> [   35.865606] LR [c00107b4] interrupt_exit_user_prepare_main+0xf4/0x100
+>> [   35.865974] Call Trace:
+>> [   35.866142] [c387ff20] [c0053224] irq_exit+0x114/0x120 (unreliable)
+>> [   35.866472] [c387ff40] [c0015218] interrupt_return+0x14/0x13c
+>> [   35.866728] --- interrupt: 900 at 0x100af3dc
+>> [   35.866963] NIP:  100af3dc LR: 100de020 CTR: 00000000
+>> [   35.867177] REGS: c387ff50 TRAP: 0900   Not tainted (5.14.0-rc3-00060-g7e96bf476270)
+>> [   35.867488] MSR:  0002f902 <CE,EE,PR,FP,ME>  CR: 20022422  XER: 20000000
+>> [   35.867808]
+>> [   35.867808] GPR00: c001509c bfc65570 1024b4d0 00000000 100de020 20022422 bfc655a8 100af3dc
+>> [   35.867808] GPR08: 0002f902 00000000 00000000 00000000 72656773 102490c2 00000000 00000000
+>> [   35.867808] GPR16: 00000000 00000000 00000040 10240000 10240000 10240000 10240000 10220000
+>> [   35.867808] GPR24: ffffffff 10240000 00000000 00000000 bfc655e8 10245910 ffffffff 00000001
+>> [   35.869406] NIP [100af3dc] 0x100af3dc
+>> [   35.869578] LR [100de020] 0x100de020
+>> [   35.869751] --- interrupt: 900
+>> [   35.870001] Instruction dump:
+>> [   35.870283] 40c20010 815e0518 714a0100 41e2fd04 39200000 913e00c0 3b1e0450 4bfffd80
+>> [   35.870666] 0fe00000 92a10024 4bfff1a9 60000000 <7fe00008> 7c0802a6 93e1001c 7c5f1378
+>> [   35.871339] ---[ end trace 23ff848139efa9b9 ]---
+>>
+>> There is no real mode for booke arch and the MMU translation is
+>> always on. The corresponding MSR_IS/MSR_DS bit in booke is used
+>> to switch the address space, but not for real mode judgment.
+>>
+>> Fixes: 21f8b2fa3ca5 ("powerpc/kprobes: Ignore traps that happened in real mode")
+>> Signed-off-by: Pu Lehui <pulehui@huawei.com>
+>> ---
+>>   arch/powerpc/include/asm/ptrace.h | 6 ++++++
+>>   arch/powerpc/kernel/kprobes.c     | 5 +----
+>>   2 files changed, 7 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+>> index 3e5d470a6155..4aec1a97024b 100644
+>> --- a/arch/powerpc/include/asm/ptrace.h
+>> +++ b/arch/powerpc/include/asm/ptrace.h
+>> @@ -187,6 +187,12 @@ static inline unsigned long frame_pointer(struct pt_regs *regs)
+>>   #define user_mode(regs) (((regs)->msr & MSR_PR) != 0)
+>>   #endif
+>>   
+>> +#ifdef CONFIG_BOOKE
+>> +#define real_mode(regs)	0
+>> +#else
+>> +#define real_mode(regs)	(!((regs)->msr & MSR_IR) || !((regs)->msr & MSR_DR))
+>> +#endif
 > 
-> On 04. 08. 21, 4:54, Xianting Tian wrote:
->> @@ -933,6 +949,16 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, 
->> int data,
->>       hp->outbuf_size = outbuf_size;
->>       hp->outbuf = &((char *)hp)[ALIGN(sizeof(*hp), sizeof(long))];
-
-This deserves cleanup too. Why is "outbuf" not "char outbuf[0] 
-__ALIGNED__" at the end of the structure? The allocation would be easier 
-(using struct_size()) and this line would be gone completely.
-
->> +    /*
->> +     * hvc_con_outbuf is guaranteed to be aligned at least to the
->> +     * size(N_OUTBUF) by kmalloc().
->> +     */
->> +    hp->hvc_con_outbuf = kzalloc(N_OUTBUF, GFP_KERNEL);
->> +    if (!hp->hvc_con_outbuf)
->> +        return ERR_PTR(-ENOMEM);
+> I'm not sure about this helper.
 > 
-> This leaks hp, right?
-
-Actually, why don't you make
-char c[N_OUTBUF] __ALIGNED__;
-
-part of struct hvc_struct directly?
-
-> BTW your 2 patches are still not threaded, that is hard to follow.
+> Arguably it should only return true if both MSR_IR and MSR_DR are clear.
 > 
->> +
->> +    spin_lock_init(&hp->hvc_con_lock);
->> +
->>       tty_port_init(&hp->port);
->>       hp->port.ops = &hvc_port_ops;
 > 
-> thanks,
--- 
-js
-suse labs
+>> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+>> index cbc28d1a2e1b..fac9a5974718 100644
+>> --- a/arch/powerpc/kernel/kprobes.c
+>> +++ b/arch/powerpc/kernel/kprobes.c
+>> @@ -289,10 +289,7 @@ int kprobe_handler(struct pt_regs *regs)
+>>   	unsigned int *addr = (unsigned int *)regs->nip;
+>>   	struct kprobe_ctlblk *kcb;
+>>   
+>> -	if (user_mode(regs))
+>> -		return 0;
+>> -
+>> -	if (!(regs->msr & MSR_IR) || !(regs->msr & MSR_DR))
+>> +	if (user_mode(regs) || real_mode(regs))
+>>   		return 0;
+> 
+> I think just adding an IS_ENABLED(CONFIG_BOOKE) here might be better.
+> 
+> cheers
+> .
+> 
+Thanks for your suggestion, I will fix it in v2.
+
+Best regards
+Lehui
