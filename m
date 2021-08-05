@@ -2,61 +2,85 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1745EC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:19:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29877C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:19:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 78A1460230
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:19:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 78A1460230
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8572E6104F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:19:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8572E6104F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GgM2f70jZz3d6y
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 18:19:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GgM3L1hSZz3dDg
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 18:19:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=1tfTAD2S;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=s4jwRYLo;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031;
+ helo=mail-pj1-x1031.google.com; envelope-from=cgel.zte@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=1tfTAD2S; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=s4jwRYLo; dkim-atps=neutral
+Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com
+ [IPv6:2607:f8b0:4864:20::1031])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GgM2C5X1tz302C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Aug 2021 18:18:42 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 2F0196104F;
- Thu,  5 Aug 2021 08:18:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
- s=korg; t=1628151520;
- bh=3Qyqz/XehSHX/KN//v96jroYOCaR+p2m3HMTILA0UBA=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=1tfTAD2SzzVKWhuczBMWWCBkLmJujhVs6ns1DA/ZOSo0U1X148bi5U7Tw/q0OrooI
- fejyLXMwHkCrIrbtlW97iHgOA0bXRKN2IF340MROLRuSypoXuueXE/6sTbuuy6aRu+
- umdeCMGPzCKRl1oD9ddTkCi+WD9x7kM4XxVtbiqA=
-Date: Thu, 5 Aug 2021 10:18:38 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Xianting Tian <xianting.tian@linux.alibaba.com>
-Subject: Re: [PATCH v3 1/2] tty: hvc: pass DMA capable memory to put_chars()
-Message-ID: <YQue3tK98e6fAqwP@kroah.com>
-References: <20210804025453.93543-1-xianting.tian@linux.alibaba.com>
- <0f26a1c3-53e8-9282-69e8-8d81a9cafc59@kernel.org>
- <40f78d10-0a57-4620-e7e2-f806bd61abca@linux.alibaba.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GgK6d21qqz2xfL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Aug 2021 16:52:23 +1000 (AEST)
+Received: by mail-pj1-x1031.google.com with SMTP id j1so6617842pjv.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Aug 2021 23:52:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=GlmMJcvsNL7r2fqrc4Rymp5aSqY0XLGbpUjwdzjt8TE=;
+ b=s4jwRYLozfAWXk3CdFQRL+6GIY85SN+v/QOTmDuaxwPo39Q711NlDvjCbBcbulWsLj
+ 7NiQhtHqqRRe29Xi1RBJD3UjJ5cbPyWJipn3Pwrny3d8dRd8MgVY3Qz61l6zSAGfDXOF
+ /ZLk+ROT9+dyKdzKgvCBvUCRWH0Mcq1LKoopZrMjXPrBpjxUJGfs+DBAhH7EWywMVeCQ
+ Otz9QF3U3tev21aAlCWh9wGLHsivMRe/DH4+Hhm+a+r2c7JoqeECGkq+L8o7WbZZyA1u
+ rfnqC/IEpAS5vpw7CnC9dXkUnoPKt+1uVlNb1Kaup8QZ+QNn7bFb5HQFLtUuklaLpDaK
+ v6jw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=GlmMJcvsNL7r2fqrc4Rymp5aSqY0XLGbpUjwdzjt8TE=;
+ b=HiYpebL5RdE5wyD3dt8Q6mzrQIvsN2PwRL99bhzaW/qb5bkrdLogzkARAkM6hZ5FpZ
+ IuUR96q13XhMbUmL78qhI1Ni9TQj9dKWuqBvDIoqhg6JQnXPmXn3VIvotvQQHyP1J9HJ
+ eSbEuDQnhYqc5mwZQ7i3CORS86Oy+A0dsqIZ5q8y6hJj8vjtqae4lmBwPJoIEpMu1+Nd
+ RL02WFw8L+SQpE21cOHR/3djhOo17rEZ3rPvSQQT6MlkrFp+BqErdIxFawc5jPoHo5PF
+ sslzYfIdwly2UFIDPCoPEwIKO4yYxiwLnha5L1p3WwDMKx1yN8BlusZUkoJ6Gn2Rk1wF
+ 1Kiw==
+X-Gm-Message-State: AOAM5332pVudd9u29LUyy/wtPuZkzYcUu92ySTwGD9Ev2oOluBJtU/su
+ lYFpaneImVF9p8lRD1vqtQ0=
+X-Google-Smtp-Source: ABdhPJyxRn4WdhDjQJdsYQc6bC6ojEMmWOv6W9V6kigMMmMlKBLxxYaU6M0/n8LxQ0lpTosPugc5vQ==
+X-Received: by 2002:aa7:8d10:0:b029:303:8d17:7b8d with SMTP id
+ j16-20020aa78d100000b02903038d177b8dmr3690606pfe.26.1628146339294; 
+ Wed, 04 Aug 2021 23:52:19 -0700 (PDT)
+Received: from localhost.localdomain ([193.203.214.57])
+ by smtp.gmail.com with ESMTPSA id i18sm6623194pgb.83.2021.08.04.23.52.17
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 04 Aug 2021 23:52:18 -0700 (PDT)
+From: cgel.zte@gmail.com
+X-Google-Original-From: yong.yiran@zte.com.cn
+To: mpe@ellerman.id.au
+Subject: [PATCH linux-next] powerpc/tm: remove duplicate include in tm-poison.c
+Date: Wed,  4 Aug 2021 23:52:55 -0700
+Message-Id: <20210805065255.628170-1-yong.yiran@zte.com.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <40f78d10-0a57-4620-e7e2-f806bd61abca@linux.alibaba.com>
+X-Mailman-Approved-At: Thu, 05 Aug 2021 18:19:18 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,45 +92,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: arnd@arndb.de, amit@kernel.org, Jiri Slaby <jirislaby@kernel.org>,
- linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, osandov@fb.com
+Cc: yong.yiran@zte.com.cn, Zeal Robot <zealci@zte.com.cn>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, paulus@samba.org,
+ linux-kselftest@vger.kernel.org, shuah@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Aug 05, 2021 at 04:08:46PM +0800, Xianting Tian wrote:
-> 
-> 在 2021/8/5 下午3:58, Jiri Slaby 写道:
-> > Hi,
-> > 
-> > On 04. 08. 21, 4:54, Xianting Tian wrote:
-> > > @@ -933,6 +949,16 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno,
-> > > int data,
-> > >       hp->outbuf_size = outbuf_size;
-> > >       hp->outbuf = &((char *)hp)[ALIGN(sizeof(*hp), sizeof(long))];
-> > >   +    /*
-> > > +     * hvc_con_outbuf is guaranteed to be aligned at least to the
-> > > +     * size(N_OUTBUF) by kmalloc().
-> > > +     */
-> > > +    hp->hvc_con_outbuf = kzalloc(N_OUTBUF, GFP_KERNEL);
-> > > +    if (!hp->hvc_con_outbuf)
-> > > +        return ERR_PTR(-ENOMEM);
-> > 
-> > This leaks hp, right?
-> > 
-> > BTW your 2 patches are still not threaded, that is hard to follow.
-> 
-> yes, thanks, I found the bug, I am preparing to do this in v4.
-> 
-> It is the first time I send series patches(number >1), I checked the method
-> for sending series patch on LKML.org, I should send '0/2' which is the
-> history info for series patches.
+From: yong yiran <yong.yiran@zte.com.cn>
 
-Please use 'git send-email' to send the full series all at once,
-otherwise it is hard to make the emails threaded "by hand" if you do not
-do so.
+'inttypes.h' included in 'tm-poison.c' is duplicated.
+Remove all but the first include of inttypes.h from tm-poison.c.
 
-thanks,
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: yong yiran <yong.yiran@zte.com.cn>
+---
+ tools/testing/selftests/powerpc/tm/tm-poison.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-greg k-h
+diff --git a/tools/testing/selftests/powerpc/tm/tm-poison.c b/tools/testing/selftests/powerpc/tm/tm-poison.c
+index 29e5f26af7b9..27c083a03d1f 100644
+--- a/tools/testing/selftests/powerpc/tm/tm-poison.c
++++ b/tools/testing/selftests/powerpc/tm/tm-poison.c
+@@ -20,7 +20,6 @@
+ #include <sched.h>
+ #include <sys/types.h>
+ #include <signal.h>
+-#include <inttypes.h>
+ 
+ #include "tm.h"
+ 
+-- 
+2.25.1
+
