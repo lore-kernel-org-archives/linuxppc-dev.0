@@ -2,84 +2,56 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.4 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29877C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:19:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 918FCC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:20:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8572E6104F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:19:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8572E6104F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 06CAB6104F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 08:20:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 06CAB6104F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GgM3L1hSZz3dDg
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 18:19:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=s4jwRYLo;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GgM3g5Pb2z3d85
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 18:19:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031;
- helo=mail-pj1-x1031.google.com; envelope-from=cgel.zte@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=s4jwRYLo; dkim-atps=neutral
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com
- [IPv6:2607:f8b0:4864:20::1031])
+ smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.42;
+ helo=out30-42.freemail.mail.aliyun.com;
+ envelope-from=xianting.tian@linux.alibaba.com; receiver=<UNKNOWN>)
+Received: from out30-42.freemail.mail.aliyun.com
+ (out30-42.freemail.mail.aliyun.com [115.124.30.42])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GgK6d21qqz2xfL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Aug 2021 16:52:23 +1000 (AEST)
-Received: by mail-pj1-x1031.google.com with SMTP id j1so6617842pjv.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Aug 2021 23:52:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=GlmMJcvsNL7r2fqrc4Rymp5aSqY0XLGbpUjwdzjt8TE=;
- b=s4jwRYLozfAWXk3CdFQRL+6GIY85SN+v/QOTmDuaxwPo39Q711NlDvjCbBcbulWsLj
- 7NiQhtHqqRRe29Xi1RBJD3UjJ5cbPyWJipn3Pwrny3d8dRd8MgVY3Qz61l6zSAGfDXOF
- /ZLk+ROT9+dyKdzKgvCBvUCRWH0Mcq1LKoopZrMjXPrBpjxUJGfs+DBAhH7EWywMVeCQ
- Otz9QF3U3tev21aAlCWh9wGLHsivMRe/DH4+Hhm+a+r2c7JoqeECGkq+L8o7WbZZyA1u
- rfnqC/IEpAS5vpw7CnC9dXkUnoPKt+1uVlNb1Kaup8QZ+QNn7bFb5HQFLtUuklaLpDaK
- v6jw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=GlmMJcvsNL7r2fqrc4Rymp5aSqY0XLGbpUjwdzjt8TE=;
- b=HiYpebL5RdE5wyD3dt8Q6mzrQIvsN2PwRL99bhzaW/qb5bkrdLogzkARAkM6hZ5FpZ
- IuUR96q13XhMbUmL78qhI1Ni9TQj9dKWuqBvDIoqhg6JQnXPmXn3VIvotvQQHyP1J9HJ
- eSbEuDQnhYqc5mwZQ7i3CORS86Oy+A0dsqIZ5q8y6hJj8vjtqae4lmBwPJoIEpMu1+Nd
- RL02WFw8L+SQpE21cOHR/3djhOo17rEZ3rPvSQQT6MlkrFp+BqErdIxFawc5jPoHo5PF
- sslzYfIdwly2UFIDPCoPEwIKO4yYxiwLnha5L1p3WwDMKx1yN8BlusZUkoJ6Gn2Rk1wF
- 1Kiw==
-X-Gm-Message-State: AOAM5332pVudd9u29LUyy/wtPuZkzYcUu92ySTwGD9Ev2oOluBJtU/su
- lYFpaneImVF9p8lRD1vqtQ0=
-X-Google-Smtp-Source: ABdhPJyxRn4WdhDjQJdsYQc6bC6ojEMmWOv6W9V6kigMMmMlKBLxxYaU6M0/n8LxQ0lpTosPugc5vQ==
-X-Received: by 2002:aa7:8d10:0:b029:303:8d17:7b8d with SMTP id
- j16-20020aa78d100000b02903038d177b8dmr3690606pfe.26.1628146339294; 
- Wed, 04 Aug 2021 23:52:19 -0700 (PDT)
-Received: from localhost.localdomain ([193.203.214.57])
- by smtp.gmail.com with ESMTPSA id i18sm6623194pgb.83.2021.08.04.23.52.17
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 04 Aug 2021 23:52:18 -0700 (PDT)
-From: cgel.zte@gmail.com
-X-Google-Original-From: yong.yiran@zte.com.cn
-To: mpe@ellerman.id.au
-Subject: [PATCH linux-next] powerpc/tm: remove duplicate include in tm-poison.c
-Date: Wed,  4 Aug 2021 23:52:55 -0700
-Message-Id: <20210805065255.628170-1-yong.yiran@zte.com.cn>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GgLq42lTGz2xtj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Aug 2021 18:09:03 +1000 (AEST)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R781e4; CH=green; DM=||false|;
+ DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04395;
+ MF=xianting.tian@linux.alibaba.com; NM=1; PH=DS; RN=8; SR=0;
+ TI=SMTPD_---0Ui1UakR_1628150926; 
+Received: from B-LB6YLVDL-0141.local(mailfrom:xianting.tian@linux.alibaba.com
+ fp:SMTPD_---0Ui1UakR_1628150926) by smtp.aliyun-inc.com(127.0.0.1);
+ Thu, 05 Aug 2021 16:08:47 +0800
+Subject: Re: [PATCH v3 1/2] tty: hvc: pass DMA capable memory to put_chars()
+To: Jiri Slaby <jirislaby@kernel.org>, gregkh@linuxfoundation.org,
+ amit@kernel.org, arnd@arndb.de, osandov@fb.com
+References: <20210804025453.93543-1-xianting.tian@linux.alibaba.com>
+ <0f26a1c3-53e8-9282-69e8-8d81a9cafc59@kernel.org>
+From: Xianting Tian <xianting.tian@linux.alibaba.com>
+Message-ID: <40f78d10-0a57-4620-e7e2-f806bd61abca@linux.alibaba.com>
+Date: Thu, 5 Aug 2021 16:08:46 +0800
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
+ Gecko/20100101 Thunderbird/78.10.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <0f26a1c3-53e8-9282-69e8-8d81a9cafc59@kernel.org>
+Content-Type: multipart/alternative;
+ boundary="------------89017586A9F754D3FF14BE18"
 X-Mailman-Approved-At: Thu, 05 Aug 2021 18:19:18 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -92,36 +64,153 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: yong.yiran@zte.com.cn, Zeal Robot <zealci@zte.com.cn>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, paulus@samba.org,
- linux-kselftest@vger.kernel.org, shuah@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: yong yiran <yong.yiran@zte.com.cn>
+This is a multi-part message in MIME format.
+--------------89017586A9F754D3FF14BE18
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-'inttypes.h' included in 'tm-poison.c' is duplicated.
-Remove all but the first include of inttypes.h from tm-poison.c.
 
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: yong yiran <yong.yiran@zte.com.cn>
----
- tools/testing/selftests/powerpc/tm/tm-poison.c | 1 -
- 1 file changed, 1 deletion(-)
+在 2021/8/5 下午3:58, Jiri Slaby 写道:
+> Hi,
+>
+> On 04. 08. 21, 4:54, Xianting Tian wrote:
+>> @@ -933,6 +949,16 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, 
+>> int data,
+>>       hp->outbuf_size = outbuf_size;
+>>       hp->outbuf = &((char *)hp)[ALIGN(sizeof(*hp), sizeof(long))];
+>>   +    /*
+>> +     * hvc_con_outbuf is guaranteed to be aligned at least to the
+>> +     * size(N_OUTBUF) by kmalloc().
+>> +     */
+>> +    hp->hvc_con_outbuf = kzalloc(N_OUTBUF, GFP_KERNEL);
+>> +    if (!hp->hvc_con_outbuf)
+>> +        return ERR_PTR(-ENOMEM);
+>
+> This leaks hp, right?
+>
+> BTW your 2 patches are still not threaded, that is hard to follow.
 
-diff --git a/tools/testing/selftests/powerpc/tm/tm-poison.c b/tools/testing/selftests/powerpc/tm/tm-poison.c
-index 29e5f26af7b9..27c083a03d1f 100644
---- a/tools/testing/selftests/powerpc/tm/tm-poison.c
-+++ b/tools/testing/selftests/powerpc/tm/tm-poison.c
-@@ -20,7 +20,6 @@
- #include <sched.h>
- #include <sys/types.h>
- #include <signal.h>
--#include <inttypes.h>
- 
- #include "tm.h"
- 
--- 
-2.25.1
+yes, thanks, I found the bug, I am preparing to do this in v4.
 
+It is the first time I send series patches(number >1), I checked the 
+method for sending series patch on LKML.org, I should send '0/2' which 
+is the history info for series patches.
+
+I will add 0/2 in v4, sorry again for this:(
+
+beside avove things, the solution in this patch is for you? thanks
+
+>
+>> +
+>> +    spin_lock_init(&hp->hvc_con_lock);
+>> +
+>>       tty_port_init(&hp->port);
+>>       hp->port.ops = &hvc_port_ops;
+>
+> thanks,
+
+--------------89017586A9F754D3FF14BE18
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p><br>
+    </p>
+    <div class="moz-cite-prefix">在 2021/8/5 下午3:58, Jiri Slaby 写道:<br>
+    </div>
+    <blockquote type="cite"
+      cite="mid:0f26a1c3-53e8-9282-69e8-8d81a9cafc59@kernel.org">Hi,
+      <br>
+      <br>
+      On 04. 08. 21, 4:54, Xianting Tian wrote:
+      <br>
+      <blockquote type="cite">@@ -933,6 +949,16 @@ struct hvc_struct
+        *hvc_alloc(uint32_t vtermno, int data,
+        <br>
+              hp-&gt;outbuf_size = outbuf_size;
+        <br>
+              hp-&gt;outbuf = &amp;((char *)hp)[ALIGN(sizeof(*hp),
+        sizeof(long))];
+        <br>
+          +    /*
+        <br>
+        +     * hvc_con_outbuf is guaranteed to be aligned at least to
+        the
+        <br>
+        +     * size(N_OUTBUF) by kmalloc().
+        <br>
+        +     */
+        <br>
+        +    hp-&gt;hvc_con_outbuf = kzalloc(N_OUTBUF, GFP_KERNEL);
+        <br>
+        +    if (!hp-&gt;hvc_con_outbuf)
+        <br>
+        +        return ERR_PTR(-ENOMEM);
+        <br>
+      </blockquote>
+      <br>
+      This leaks hp, right?
+      <br>
+      <br>
+      BTW your 2 patches are still not threaded, that is hard to follow.
+      <br>
+    </blockquote>
+    <p>yes, thanks, I found the bug, I am preparing to do this in v4.<span
+        style="color: rgb(51, 51, 51); font-family: Arial, sans-serif;
+        font-size: 13px; font-style: normal; font-variant-ligatures:
+        normal; font-variant-caps: normal; font-weight: 400;
+        letter-spacing: normal; orphans: 2; text-align: start;
+        text-indent: 0px; text-transform: none; white-space: normal;
+        widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+        background-color: rgb(255, 255, 255); text-decoration-style:
+        initial; text-decoration-color: initial; display: inline
+        !important; float: none;"><br>
+      </span></p>
+    <p>It is the first time I send series patches(number &gt;1), I
+      checked the method for sending series patch on LKML.org, I should
+      send '0/2' which is the history info for series patches. <br>
+    </p>
+    <p>I will add 0/2 in v4, sorry again for this:(</p>
+    <p>beside avove things, the solution in this patch is for you?
+      thanks <br>
+      <span style="color: rgb(51, 51, 51); font-family: Arial,
+        sans-serif; font-size: 13px; font-style: normal;
+        font-variant-ligatures: normal; font-variant-caps: normal;
+        font-weight: 400; letter-spacing: normal; orphans: 2;
+        text-align: start; text-indent: 0px; text-transform: none;
+        white-space: normal; widows: 2; word-spacing: 0px;
+        -webkit-text-stroke-width: 0px; background-color: rgb(255, 255,
+        255); text-decoration-style: initial; text-decoration-color:
+        initial; display: inline !important; float: none;"></span></p>
+    <blockquote type="cite"
+      cite="mid:0f26a1c3-53e8-9282-69e8-8d81a9cafc59@kernel.org">
+      <br>
+      <blockquote type="cite">+
+        <br>
+        +    spin_lock_init(&amp;hp-&gt;hvc_con_lock);
+        <br>
+        +
+        <br>
+              tty_port_init(&amp;hp-&gt;port);
+        <br>
+              hp-&gt;port.ops = &amp;hvc_port_ops;
+        <br>
+          </blockquote>
+      <br>
+      thanks,
+      <br>
+    </blockquote>
+  </body>
+</html>
+
+--------------89017586A9F754D3FF14BE18--
