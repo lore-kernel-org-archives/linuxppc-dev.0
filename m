@@ -2,109 +2,82 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E92A4C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 21:28:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2F70C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 22:02:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 50AC860F42
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 21:28:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 50AC860F42
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 491436113C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 22:02:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 491436113C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=paul-moore.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GghYH62kYz3d88
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 07:28:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GgjJk41H6z3d7J
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 08:02:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e8XQJ6gt;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=paul-moore-com.20150623.gappssmtp.com header.i=@paul-moore-com.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=Y9dxhU40;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=paul-moore.com
+ (client-ip=2a00:1450:4864:20::52c; helo=mail-ed1-x52c.google.com;
+ envelope-from=paul@paul-moore.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=e8XQJ6gt; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=paul-moore-com.20150623.gappssmtp.com
+ header.i=@paul-moore-com.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=Y9dxhU40; dkim-atps=neutral
+Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com
+ [IPv6:2a00:1450:4864:20::52c])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GghWZ26CPz3cc9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Aug 2021 07:26:50 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 175LPuo2156657; Thu, 5 Aug 2021 17:26:39 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=qAcy4bZmcIeKrCL1oEuggo3xdZrcZMk1yAPqswiWuuk=;
- b=e8XQJ6gtYhnFScl2NRpMgqFzPFOQQnHSL49jpZkLip+g7MpX1X5lC3u1g93efV8O9DPu
- 13PyVyEMfPF9SNASq2Bm0V5uhCI5OImLqizCJUmVTSru+KaBbUQylONg1O2RyxF44cEI
- wNr0kohL2OE0ZhqpKfqDLPh3oVGsrrukAlBvovw54Njfz2v29XMpyU8H0Tig0ID/UCp/
- 8xKKDIgrW44euj02ZxV87/sV2KH0sehA/w4Mqw01JEc7texOzXCJAznCwwswmzJPyrSm
- oS9Cq1Vi+ZJwLsJAk39KlwyGXJznrlIPIz5QZCyCxef47GsgUxbOheiRUb6y7kWTukE8 Dg== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3a84mvpnnx-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 05 Aug 2021 17:26:39 -0400
-Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 175LQdd2158833;
- Thu, 5 Aug 2021 17:26:39 -0400
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3a84mvpnkq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 05 Aug 2021 17:26:38 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 175LMZrY029489;
- Thu, 5 Aug 2021 21:26:26 GMT
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24]) by ppma04wdc.us.ibm.com with ESMTP id 3a7yak94qx-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 05 Aug 2021 21:26:26 +0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 175LQQ8445089210
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 5 Aug 2021 21:26:26 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DDA7F11206D;
- Thu,  5 Aug 2021 21:26:25 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 77BAC112061;
- Thu,  5 Aug 2021 21:26:23 +0000 (GMT)
-Received: from farosas.linux.ibm.com.com (unknown [9.163.18.4])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu,  5 Aug 2021 21:26:23 +0000 (GMT)
-From: Fabiano Rosas <farosas@linux.ibm.com>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v2 1/3] KVM: PPC: Book3S HV: Fix copy_tofrom_guest routines
-Date: Thu,  5 Aug 2021 18:26:14 -0300
-Message-Id: <20210805212616.2641017-2-farosas@linux.ibm.com>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20210805212616.2641017-1-farosas@linux.ibm.com>
-References: <20210805212616.2641017-1-farosas@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GgjJF2qTzz2yNf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Aug 2021 08:02:04 +1000 (AEST)
+Received: by mail-ed1-x52c.google.com with SMTP id y7so10457775eda.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Aug 2021 15:02:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=paul-moore-com.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=c3urkHLQm5QwJdZ9O5/+QqeYs/qIDb1LdTwMX8UuIJo=;
+ b=Y9dxhU40Cp8veCcp+fcPVCm4ifcChrN1zCWT6snRwiYjugw4bnQknql6Al6HruhkGh
+ hRr2EK3dfowDwcLy/91ol0zhq75r4GYw/0FGGfHCvI9pwgM/NBpebJBtEgcpxjZPzh7X
+ 6Qb4mLJ2AkRFR7FJQcLLLzFC1VGLUVsRMVl3aLy6lBeo2Y7pxZfomIrU+VomHL3c87QG
+ q3wIiaH3OeaFpPWo49uBcSya0/hSPyR98ZBBjPRupyhM1wN8h8eCnG23kWHKYe5oxTOx
+ ekDzNhD/GOj4/cx6e4T7C6fCiv+h+myJcrv4/jTtK0HBwN5TieASVgvaRp9YnmbuiQXC
+ 4KhA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=c3urkHLQm5QwJdZ9O5/+QqeYs/qIDb1LdTwMX8UuIJo=;
+ b=a3EktE3TMjPXJ/jjnITNUzp47I+e3hdRPydksVezmy7vOcl3WrY1s/cucc5FmMzE++
+ eEC2OSUEvNA/NLqMtEmHN+HLAhVZiuCMAoez37phwhS+Y3jEIlDElloY3KDGDhxPp/PE
+ 51PoXC9O/gPLfcF7z2+koF+JeLYRkittYf+E3kW/bM3z6FNde5OwulSyOItuJk2ys6U+
+ ROJJtVxVHnUnSSV3x25fi3asbe4OmJyze9jpCAVB+XDxi6qXLqqSaddu20JaYvhMkAaV
+ bhVw+ATUJ0x3TlJbXs5hEt89hpl9lAvVPVU/aMBdCk6JkY1x9DGZ63hHeEcyGZ22pZEk
+ EMBw==
+X-Gm-Message-State: AOAM530umlAeqBBqU3n7LQ0yeSANcRmOiKeuv0WoSFfWd+eS4IsUnxHq
+ jEtjNWAZOQhKlGP3jVERHX9O0lvviOMnGsRYN60C
+X-Google-Smtp-Source: ABdhPJyUIiWYAz6aUFc6MPvieEo2GUkchlv7WYU/OChfOMJj/dkrDY3GEEK87ConDlVxbwRyeX2EW3ZWABWXQS8VcSk=
+X-Received: by 2002:a05:6402:b83:: with SMTP id
+ cf3mr9240826edb.12.1628200918472; 
+ Thu, 05 Aug 2021 15:01:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 8Aot_Q1mB1-TB6G4SrOFhy8HYdeG3YTS
-X-Proofpoint-ORIG-GUID: 28-eg7G-4H_ZUI3cn1xfcx4ELReQ9XMR
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-08-05_10:2021-08-05,
- 2021-08-05 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999
- priorityscore=1501 clxscore=1015 impostorscore=0 malwarescore=0
- adultscore=0 spamscore=0 phishscore=0 suspectscore=0 bulkscore=0
- mlxscore=0 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2107140000 definitions=main-2108050124
+References: <cover.1621363275.git.rgb@redhat.com>
+ <2300b1083a32aade7ae7efb95826e8f3f260b1df.1621363275.git.rgb@redhat.com>
+In-Reply-To: <2300b1083a32aade7ae7efb95826e8f3f260b1df.1621363275.git.rgb@redhat.com>
+From: Paul Moore <paul@paul-moore.com>
+Date: Thu, 5 Aug 2021 18:01:47 -0400
+Message-ID: <CAHC9VhRDYYOpUvCkcWw=2a_P0AJxtA5N5y_Kj5PAG-0BQ02COQ@mail.gmail.com>
+Subject: Re: [PATCH v4 1/3] audit: replace magic audit syscall class numbers
+ with macros
+To: Richard Guy Briggs <rgb@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,73 +89,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, christophe.leroy@c-s.fr, npiggin@gmail.com
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, Arnd Bergmann <arnd@kernel.org>, x86@kernel.org,
+ LKML <linux-kernel@vger.kernel.org>, Eric Paris <eparis@redhat.com>,
+ sparclinux@vger.kernel.org, Aleksa Sarai <cyphar@cyphar.com>,
+ Linux-Audit Mailing List <linux-audit@redhat.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>, linux-alpha@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, Eric Paris <eparis@parisplace.org>,
+ Steve Grubb <sgrubb@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The __kvmhv_copy_tofrom_guest_radix function was introduced along with
-nested HV guest support. It uses the platform's Radix MMU quadrants to
-provide a nested hypervisor with fast access to its nested guests
-memory (H_COPY_TOFROM_GUEST hypercall). It has also since been added
-as a fast path for the kvmppc_ld/st routines which are used during
-instruction emulation.
+On Wed, May 19, 2021 at 4:01 PM Richard Guy Briggs <rgb@redhat.com> wrote:
+>
+> Replace audit syscall class magic numbers with macros.
+>
+> This required putting the macros into new header file
+> include/linux/auditsc_classmacros.h since the syscall macros were
+> included for both 64 bit and 32 bit in any compat code, causing
+> redefinition warnings.
+>
+> Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
+> Link: https://lore.kernel.org/r/2300b1083a32aade7ae7efb95826e8f3f260b1df.1621363275.git.rgb@redhat.com
+> ---
+>  MAINTAINERS                         |  1 +
+>  arch/alpha/kernel/audit.c           |  8 ++++----
+>  arch/ia64/kernel/audit.c            |  8 ++++----
+>  arch/parisc/kernel/audit.c          |  8 ++++----
+>  arch/parisc/kernel/compat_audit.c   |  9 +++++----
+>  arch/powerpc/kernel/audit.c         | 10 +++++-----
+>  arch/powerpc/kernel/compat_audit.c  | 11 ++++++-----
+>  arch/s390/kernel/audit.c            | 10 +++++-----
+>  arch/s390/kernel/compat_audit.c     | 11 ++++++-----
+>  arch/sparc/kernel/audit.c           | 10 +++++-----
+>  arch/sparc/kernel/compat_audit.c    | 11 ++++++-----
+>  arch/x86/ia32/audit.c               | 11 ++++++-----
+>  arch/x86/kernel/audit_64.c          |  8 ++++----
+>  include/linux/audit.h               |  1 +
+>  include/linux/auditsc_classmacros.h | 23 +++++++++++++++++++++++
+>  kernel/auditsc.c                    | 12 ++++++------
+>  lib/audit.c                         | 10 +++++-----
+>  lib/compat_audit.c                  | 11 ++++++-----
+>  18 files changed, 102 insertions(+), 71 deletions(-)
+>  create mode 100644 include/linux/auditsc_classmacros.h
 
-The commit def0bfdbd603 ("powerpc: use probe_user_read() and
-probe_user_write()") changed the low level copy function from
-raw_copy_from_user to probe_user_read, which adds a check to
-access_ok. In powerpc that is:
+...
 
- static inline bool __access_ok(unsigned long addr, unsigned long size)
- {
-         return addr < TASK_SIZE_MAX && size <= TASK_SIZE_MAX - addr;
- }
+> diff --git a/include/linux/auditsc_classmacros.h b/include/linux/auditsc_classmacros.h
+> new file mode 100644
+> index 000000000000..18757d270961
+> --- /dev/null
+> +++ b/include/linux/auditsc_classmacros.h
+> @@ -0,0 +1,23 @@
+> +/* SPDX-License-Identifier: GPL-2.0-or-later */
+> +/* auditsc_classmacros.h -- Auditing support syscall macros
+> + *
+> + * Copyright 2021 Red Hat Inc., Durham, North Carolina.
+> + * All Rights Reserved.
+> + *
+> + * Author: Richard Guy Briggs <rgb@redhat.com>
+> + */
+> +#ifndef _LINUX_AUDITSCM_H_
+> +#define _LINUX_AUDITSCM_H_
+> +
+> +enum auditsc_class_t {
+> +       AUDITSC_NATIVE = 0,
+> +       AUDITSC_COMPAT,
+> +       AUDITSC_OPEN,
+> +       AUDITSC_OPENAT,
+> +       AUDITSC_SOCKETCALL,
+> +       AUDITSC_EXECVE,
+> +
+> +       AUDITSC_NVALS /* count */
+> +};
+> +
+> +#endif
 
-and TASK_SIZE_MAX is 0x0010000000000000UL for 64-bit, which means that
-setting the two MSBs of the effective address (which correspond to the
-quadrant) now cause access_ok to reject the access.
+My apologies Richard, for some reason I had it in my mind that this
+series was waiting on you to answer a question and/or respin; however,
+now that I'm clearing my patch queues looking for any stragglers I see
+that isn't the case.  Looking over the patchset I think it looks okay
+to me, my only concern is that "auditsc_classmacros.h" is an awfully
+specific header file name and could prove to be annoying if we want to
+add to it in the future.  What do you think about something like
+"audit_arch.h" instead?
 
-This was not caught earlier because the most common code path via
-kvmppc_ld/st contains a fallback (kvm_read_guest) that is likely to
-succeed for L1 guests. For nested guests there is no fallback.
+If that change is okay with you I can go ahead and do the rename while
+I'm merging the patches, I'll consider it penance for letting this
+patchset sit for so long :/
 
-Another issue is that probe_user_read (now __copy_from_user_nofault)
-does not return the number of bytes not copied in case of failure, so
-the destination memory is not being cleared anymore in
-kvmhv_copy_from_guest_radix:
-
- ret = kvmhv_copy_tofrom_guest_radix(vcpu, eaddr, to, NULL, n);
- if (ret > 0)                            <-- always false!
-         memset(to + (n - ret), 0, ret);
-
-This patch fixes both issues by skipping access_ok and open-coding the
-low level __copy_to/from_user_inatomic.
-
-Fixes: def0bfdbd603 ("powerpc: use probe_user_read() and probe_user_write()")
-Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
----
- arch/powerpc/kvm/book3s_64_mmu_radix.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index b5905ae4377c..44eb7b1ef289 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -65,10 +65,12 @@ unsigned long __kvmhv_copy_tofrom_guest_radix(int lpid, int pid,
- 	}
- 	isync();
- 
-+	pagefault_disable();
- 	if (is_load)
--		ret = copy_from_user_nofault(to, (const void __user *)from, n);
-+		ret = __copy_from_user_inatomic(to, (const void __user *)from, n);
- 	else
--		ret = copy_to_user_nofault((void __user *)to, from, n);
-+		ret = __copy_to_user_inatomic((void __user *)to, from, n);
-+	pagefault_enable();
- 
- 	/* switch the pid first to avoid running host with unallocated pid */
- 	if (quadrant == 1 && pid != old_pid)
 -- 
-2.29.2
-
+paul moore
+www.paul-moore.com
