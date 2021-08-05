@@ -1,83 +1,122 @@
-Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=nnl5=M5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2F70C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 22:02:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9932C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 00:31:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 491436113C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 22:02:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 491436113C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=paul-moore.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2916C61185
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 00:31:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2916C61185
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GgjJk41H6z3d7J
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 08:02:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GgmcM4clbz3dBh
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 10:31:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=paul-moore-com.20150623.gappssmtp.com header.i=@paul-moore-com.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=Y9dxhU40;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kWCQrWA8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=paul-moore.com
- (client-ip=2a00:1450:4864:20::52c; helo=mail-ed1-x52c.google.com;
- envelope-from=paul@paul-moore.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=paul-moore-com.20150623.gappssmtp.com
- header.i=@paul-moore-com.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=Y9dxhU40; dkim-atps=neutral
-Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com
- [IPv6:2a00:1450:4864:20::52c])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=kWCQrWA8; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GgjJF2qTzz2yNf
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Aug 2021 08:02:04 +1000 (AEST)
-Received: by mail-ed1-x52c.google.com with SMTP id y7so10457775eda.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Aug 2021 15:02:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=paul-moore-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=c3urkHLQm5QwJdZ9O5/+QqeYs/qIDb1LdTwMX8UuIJo=;
- b=Y9dxhU40Cp8veCcp+fcPVCm4ifcChrN1zCWT6snRwiYjugw4bnQknql6Al6HruhkGh
- hRr2EK3dfowDwcLy/91ol0zhq75r4GYw/0FGGfHCvI9pwgM/NBpebJBtEgcpxjZPzh7X
- 6Qb4mLJ2AkRFR7FJQcLLLzFC1VGLUVsRMVl3aLy6lBeo2Y7pxZfomIrU+VomHL3c87QG
- q3wIiaH3OeaFpPWo49uBcSya0/hSPyR98ZBBjPRupyhM1wN8h8eCnG23kWHKYe5oxTOx
- ekDzNhD/GOj4/cx6e4T7C6fCiv+h+myJcrv4/jTtK0HBwN5TieASVgvaRp9YnmbuiQXC
- 4KhA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=c3urkHLQm5QwJdZ9O5/+QqeYs/qIDb1LdTwMX8UuIJo=;
- b=a3EktE3TMjPXJ/jjnITNUzp47I+e3hdRPydksVezmy7vOcl3WrY1s/cucc5FmMzE++
- eEC2OSUEvNA/NLqMtEmHN+HLAhVZiuCMAoez37phwhS+Y3jEIlDElloY3KDGDhxPp/PE
- 51PoXC9O/gPLfcF7z2+koF+JeLYRkittYf+E3kW/bM3z6FNde5OwulSyOItuJk2ys6U+
- ROJJtVxVHnUnSSV3x25fi3asbe4OmJyze9jpCAVB+XDxi6qXLqqSaddu20JaYvhMkAaV
- bhVw+ATUJ0x3TlJbXs5hEt89hpl9lAvVPVU/aMBdCk6JkY1x9DGZ63hHeEcyGZ22pZEk
- EMBw==
-X-Gm-Message-State: AOAM530umlAeqBBqU3n7LQ0yeSANcRmOiKeuv0WoSFfWd+eS4IsUnxHq
- jEtjNWAZOQhKlGP3jVERHX9O0lvviOMnGsRYN60C
-X-Google-Smtp-Source: ABdhPJyUIiWYAz6aUFc6MPvieEo2GUkchlv7WYU/OChfOMJj/dkrDY3GEEK87ConDlVxbwRyeX2EW3ZWABWXQS8VcSk=
-X-Received: by 2002:a05:6402:b83:: with SMTP id
- cf3mr9240826edb.12.1628200918472; 
- Thu, 05 Aug 2021 15:01:58 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GgX9z3lwkz3cLc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Aug 2021 01:11:02 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 175F4EmC005933; Thu, 5 Aug 2021 11:09:52 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=PYHeUHL0ZH8GoGa/stFMWsqDkOKMwYpeVYQU+PRHDys=;
+ b=kWCQrWA8FO5KjMsKJYhTjzMslbexR3lrUnigXsdYDtzPndt3N6OUvoEdkVx9002xs7lj
+ 0Agjq9pZ+7AHBWChrwjltOA5lzXp4B5IF3Ghn4zNbly1JArc+EARvIUVX8FL+8qEMZJ7
+ A8Db7/fGPv9ocXDf3uZwSmBFRyPaCA1UYaWMB5VML1ZmzhbOU9ZkeGYNFxm7hwmmrQdO
+ OjeQWLkTR1qVQzb3vbrghmADqt0LrDt+b3ardW94BLZUQODxLYQvY1hqylCDIzHc6qoD
+ UXsjpxAIhvrAtuRnuQwMMzpTl5+36Prhqr6y6VaWwVWHT3/2j4xQ1zzlsCjkbkNQpJdx 1w== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a88599e9v-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 05 Aug 2021 11:09:52 -0400
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 175F4lkt007894;
+ Thu, 5 Aug 2021 11:09:51 -0400
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a88599e7j-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 05 Aug 2021 11:09:51 -0400
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 175F8XUx021505;
+ Thu, 5 Aug 2021 15:09:47 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma06fra.de.ibm.com with ESMTP id 3a4wsj27yx-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 05 Aug 2021 15:09:47 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 175F9iFG49348978
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 5 Aug 2021 15:09:45 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BC867421F2;
+ Thu,  5 Aug 2021 15:09:44 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6879D421D7;
+ Thu,  5 Aug 2021 15:09:44 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu,  5 Aug 2021 15:09:44 +0000 (GMT)
+Received: from [9.206.171.115] (unknown [9.206.171.115])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id D69DE600B2;
+ Fri,  6 Aug 2021 01:09:19 +1000 (AEST)
+Subject: Re: [PATCH v2 5/6] PCI: Adapt all code locations to not use struct
+ pci_dev::driver directly
+To: =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+ Bjorn Helgaas <bhelgaas@google.com>
+References: <20210803100150.1543597-1-u.kleine-koenig@pengutronix.de>
+ <20210803100150.1543597-6-u.kleine-koenig@pengutronix.de>
+From: Andrew Donnellan <ajd@linux.ibm.com>
+Message-ID: <4b8d26d5-443c-600f-78a9-de5214c80452@linux.ibm.com>
+Date: Fri, 6 Aug 2021 01:09:08 +1000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.12.0
 MIME-Version: 1.0
-References: <cover.1621363275.git.rgb@redhat.com>
- <2300b1083a32aade7ae7efb95826e8f3f260b1df.1621363275.git.rgb@redhat.com>
-In-Reply-To: <2300b1083a32aade7ae7efb95826e8f3f260b1df.1621363275.git.rgb@redhat.com>
-From: Paul Moore <paul@paul-moore.com>
-Date: Thu, 5 Aug 2021 18:01:47 -0400
-Message-ID: <CAHC9VhRDYYOpUvCkcWw=2a_P0AJxtA5N5y_Kj5PAG-0BQ02COQ@mail.gmail.com>
-Subject: Re: [PATCH v4 1/3] audit: replace magic audit syscall class numbers
- with macros
-To: Richard Guy Briggs <rgb@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20210803100150.1543597-6-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: SKWjp6RCFUPhal8PxWyzHfD-QFMwM8HG
+X-Proofpoint-ORIG-GUID: V9rEFGa5BbjLQbM1Nl6jGEVpBSAwreDP
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-08-05_05:2021-08-05,
+ 2021-08-05 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ spamscore=0 malwarescore=0 mlxlogscore=999 mlxscore=0 bulkscore=0
+ adultscore=0 impostorscore=0 clxscore=1011 suspectscore=0
+ priorityscore=1501 phishscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2107140000 definitions=main-2108050092
+X-Mailman-Approved-At: Fri, 06 Aug 2021 10:30:47 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,96 +128,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, Arnd Bergmann <arnd@kernel.org>, x86@kernel.org,
- LKML <linux-kernel@vger.kernel.org>, Eric Paris <eparis@redhat.com>,
- sparclinux@vger.kernel.org, Aleksa Sarai <cyphar@cyphar.com>,
- Linux-Audit Mailing List <linux-audit@redhat.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>, linux-alpha@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, Eric Paris <eparis@parisplace.org>,
- Steve Grubb <sgrubb@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+ =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, linux-pci@vger.kernel.org,
+ Alexander Duyck <alexanderduyck@fb.com>,
+ Sathya Prakash <sathya.prakash@broadcom.com>, oss-drivers@corigine.com,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Jiri Olsa <jolsa@redhat.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ linux-perf-users@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org,
+ Ido Schimmel <idosch@nvidia.com>, x86@kernel.org, qat-linux@intel.com,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Ingo Molnar <mingo@redhat.com>, linux-wireless@vger.kernel.org,
+ Jakub Kicinski <kuba@kernel.org>, Mathias Nyman <mathias.nyman@intel.com>,
+ Yisen Zhuang <yisen.zhuang@huawei.com>, Fiona Trahe <fiona.trahe@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
+ Simon Horman <simon.horman@corigine.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Michael Buesch <m@bues.ch>, Jiri Pirko <jiri@nvidia.com>,
+ Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@intel.com>, Juergen Gross <jgross@suse.com>,
+ Salil Mehta <salil.mehta@huawei.com>,
+ Sreekanth Reddy <sreekanth.reddy@broadcom.com>, xen-devel@lists.xenproject.org,
+ Vadym Kochan <vkochan@marvell.com>, MPT-FusionLinux.pdl@broadcom.com,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ Wojciech Ziemba <wojciech.ziemba@intel.com>, linux-kernel@vger.kernel.org,
+ Taras Chornyi <tchornyi@marvell.com>, Zhou Wang <wangzhou1@hisilicon.com>,
+ linux-crypto@vger.kernel.org, kernel@pengutronix.de, netdev@vger.kernel.org,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 19, 2021 at 4:01 PM Richard Guy Briggs <rgb@redhat.com> wrote:
->
-> Replace audit syscall class magic numbers with macros.
->
-> This required putting the macros into new header file
-> include/linux/auditsc_classmacros.h since the syscall macros were
-> included for both 64 bit and 32 bit in any compat code, causing
-> redefinition warnings.
->
-> Signed-off-by: Richard Guy Briggs <rgb@redhat.com>
-> Link: https://lore.kernel.org/r/2300b1083a32aade7ae7efb95826e8f3f260b1df.1621363275.git.rgb@redhat.com
-> ---
->  MAINTAINERS                         |  1 +
->  arch/alpha/kernel/audit.c           |  8 ++++----
->  arch/ia64/kernel/audit.c            |  8 ++++----
->  arch/parisc/kernel/audit.c          |  8 ++++----
->  arch/parisc/kernel/compat_audit.c   |  9 +++++----
->  arch/powerpc/kernel/audit.c         | 10 +++++-----
->  arch/powerpc/kernel/compat_audit.c  | 11 ++++++-----
->  arch/s390/kernel/audit.c            | 10 +++++-----
->  arch/s390/kernel/compat_audit.c     | 11 ++++++-----
->  arch/sparc/kernel/audit.c           | 10 +++++-----
->  arch/sparc/kernel/compat_audit.c    | 11 ++++++-----
->  arch/x86/ia32/audit.c               | 11 ++++++-----
->  arch/x86/kernel/audit_64.c          |  8 ++++----
->  include/linux/audit.h               |  1 +
->  include/linux/auditsc_classmacros.h | 23 +++++++++++++++++++++++
->  kernel/auditsc.c                    | 12 ++++++------
->  lib/audit.c                         | 10 +++++-----
->  lib/compat_audit.c                  | 11 ++++++-----
->  18 files changed, 102 insertions(+), 71 deletions(-)
->  create mode 100644 include/linux/auditsc_classmacros.h
+On 3/8/21 8:01 pm, Uwe Kleine-König wrote:
+> This prepares removing the driver member of struct pci_dev which holds the
+> same information than struct pci_dev::dev->driver.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-...
+cxl hunks look alright.
 
-> diff --git a/include/linux/auditsc_classmacros.h b/include/linux/auditsc_classmacros.h
-> new file mode 100644
-> index 000000000000..18757d270961
-> --- /dev/null
-> +++ b/include/linux/auditsc_classmacros.h
-> @@ -0,0 +1,23 @@
-> +/* SPDX-License-Identifier: GPL-2.0-or-later */
-> +/* auditsc_classmacros.h -- Auditing support syscall macros
-> + *
-> + * Copyright 2021 Red Hat Inc., Durham, North Carolina.
-> + * All Rights Reserved.
-> + *
-> + * Author: Richard Guy Briggs <rgb@redhat.com>
-> + */
-> +#ifndef _LINUX_AUDITSCM_H_
-> +#define _LINUX_AUDITSCM_H_
-> +
-> +enum auditsc_class_t {
-> +       AUDITSC_NATIVE = 0,
-> +       AUDITSC_COMPAT,
-> +       AUDITSC_OPEN,
-> +       AUDITSC_OPENAT,
-> +       AUDITSC_SOCKETCALL,
-> +       AUDITSC_EXECVE,
-> +
-> +       AUDITSC_NVALS /* count */
-> +};
-> +
-> +#endif
-
-My apologies Richard, for some reason I had it in my mind that this
-series was waiting on you to answer a question and/or respin; however,
-now that I'm clearing my patch queues looking for any stragglers I see
-that isn't the case.  Looking over the patchset I think it looks okay
-to me, my only concern is that "auditsc_classmacros.h" is an awfully
-specific header file name and could prove to be annoying if we want to
-add to it in the future.  What do you think about something like
-"audit_arch.h" instead?
-
-If that change is okay with you I can go ahead and do the rename while
-I'm merging the patches, I'll consider it penance for letting this
-patchset sit for so long :/
+Acked-by: Andrew Donnellan <ajd@linux.ibm.com> # cxl
 
 -- 
-paul moore
-www.paul-moore.com
+Andrew Donnellan              OzLabs, ADL Canberra
+ajd@linux.ibm.com             IBM Australia Limited
