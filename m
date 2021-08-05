@@ -2,26 +2,26 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF35DC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 07:25:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5594CC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 07:26:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A4356023B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 07:25:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0A4356023B
+	by mail.kernel.org (Postfix) with ESMTPS id DAEF96023B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 07:26:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DAEF96023B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GgKsH4HHGz3dDM
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 17:25:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GgKsl4Gx5z3cKs
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 17:26:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AejbVI4Q;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Odv8txRO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
@@ -29,80 +29,83 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=AejbVI4Q; dkim-atps=neutral
+ header.s=pp1 header.b=Odv8txRO; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GgKrH0Z0Kz3bX3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Aug 2021 17:25:01 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GgKrJ3pdFz3bX3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Aug 2021 17:25:04 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 17573Fx8145808; Thu, 5 Aug 2021 03:24:58 -0400
+ 17574AKl190609; Thu, 5 Aug 2021 03:25:02 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=xTOloxu+kX26mmcganPgGmVvIM+ZLnBpjMkSHkYV+To=;
- b=AejbVI4QolKMNDYPoJnC/UW9yt1nVrc1F4qdmeIclURG6oqOcvyCcn9PbWgu2QmQhFQx
- qjfo1o2HjHnDyQ9IS5K9fvSuZyw4Xy7u6z/X4fwAzY4kv1W3woQo8TglUqPnvgrULlkO
- vckR779OCCzbeDGtU8kTdlcyMC5tqwoCd3Qzh9srTFZRofM8ELZKNO/+0eccxgHqimZq
- ov3H/GUMVGffWSzzX4OHdlUDrhYXks5C0xk+yF8AK1rXvAjVsBCB/qxCefEyOj0v3uNp
- NNhFYtFTCRZ6JG5bBM9jhQBEpiyMxXsTtdxdDzD+2vgk+gDUefUBP234i52hnHX7AIik lg== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=dyfLrbUYF+bfLKmLM+04hqX0pe2+BPIZfw16sZMuW4U=;
+ b=Odv8txROkw7TPkmiGzqPWJcm02CuK8nRdAMYZ6n6/MD0ej6xqrX5j1wA+/VVYdNrhc4n
+ 5H/6JcrquStwMNSQOvRfVS3iFRpJjCc0GT9mFNgKYZNR4dEkjZ8EwDadnJnoDRWtvWFh
+ wMsmdOx8TOJzzmyhX40DuJ5DY3nwe64lu3vpYH8dA8DE3D1xPyWk0PBBNqkGk9j6V3uU
+ sb8mgWC3jJRm4V9F5vf2uu5VrDunI7fDCHXII+8JqSpWk2+JRJf72bkn5v6qGfmsgPG3
+ P3Y812iQ5IZiWRGIE7oUuOMmh+IA49E+aUDok3urz6bpQOUbdRjMXaL0+TowT8Zt0KwC 7A== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3a87f65md6-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a8858vttm-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 05 Aug 2021 03:24:58 -0400
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 17573NoV146527;
- Thu, 5 Aug 2021 03:24:57 -0400
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3a87f65mcj-1
+ Thu, 05 Aug 2021 03:25:02 -0400
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 17574BJx190676;
+ Thu, 5 Aug 2021 03:25:01 -0400
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a8858vtsy-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 05 Aug 2021 03:24:57 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17577gwV030594;
- Thu, 5 Aug 2021 07:24:54 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma05fra.de.ibm.com with ESMTP id 3a4x58hnxk-1
+ Thu, 05 Aug 2021 03:25:01 -0400
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17577ZqN029911;
+ Thu, 5 Aug 2021 07:24:59 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma03fra.de.ibm.com with ESMTP id 3a4x58snma-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 05 Aug 2021 07:24:54 +0000
+ Thu, 05 Aug 2021 07:24:59 +0000
 Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
  [9.149.105.59])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1757OpfI50790844
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1757OtI748038366
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 5 Aug 2021 07:24:51 GMT
+ Thu, 5 Aug 2021 07:24:56 GMT
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7F0D0A4070;
- Thu,  5 Aug 2021 07:24:50 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id AB7B1A4051;
+ Thu,  5 Aug 2021 07:24:55 +0000 (GMT)
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7ABDCA405B;
- Thu,  5 Aug 2021 07:24:48 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 99484A405D;
+ Thu,  5 Aug 2021 07:24:53 +0000 (GMT)
 Received: from bharata.ibmuc.com (unknown [9.102.2.73])
  by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  5 Aug 2021 07:24:48 +0000 (GMT)
+ Thu,  5 Aug 2021 07:24:53 +0000 (GMT)
 From: Bharata B Rao <bharata@linux.ibm.com>
 To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH v0 0/5] PPC: KVM: pseries: Asynchronous page fault
-Date: Thu,  5 Aug 2021 12:54:34 +0530
-Message-Id: <20210805072439.501481-1-bharata@linux.ibm.com>
+Subject: [RFC PATCH v0 2/5] KVM: PPC: Add support for KVM_REQ_ESN_EXIT
+Date: Thu,  5 Aug 2021 12:54:36 +0530
+Message-Id: <20210805072439.501481-3-bharata@linux.ibm.com>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20210805072439.501481-1-bharata@linux.ibm.com>
+References: <20210805072439.501481-1-bharata@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: rfyLg0DUXb31M9zppxGRRiZ3dvIe21_C
-X-Proofpoint-GUID: 3bnfYHbwF8zasQ8ffrVI2dmJ-mCxSSWt
+X-Proofpoint-GUID: ao0apLeLEIhah8sEikhfIA4zOIOgPT53
+X-Proofpoint-ORIG-GUID: gJYXdwxIfgtarxBhCZTJr-1bD0jviSo_
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-08-05_02:2021-08-04,
  2021-08-05 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  lowpriorityscore=0
- spamscore=0 priorityscore=1501 bulkscore=0 phishscore=0 mlxlogscore=900
- suspectscore=0 impostorscore=0 clxscore=1011 mlxscore=0 adultscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2107140000 definitions=main-2108050041
+ spamscore=0 malwarescore=0 mlxlogscore=999 mlxscore=0 bulkscore=0
+ adultscore=0 impostorscore=0 clxscore=1015 suspectscore=0
+ priorityscore=1501 phishscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2107140000 definitions=main-2108050041
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,50 +123,63 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Add a new KVM exit request KVM_REQ_ESN_EXIT that will be used
+to exit to userspace (QEMU) whenever subvention notification
+needs to be sent to the guest.
 
-This series adds asynchronous page fault support for pseries guests
-and enables the support for the same in powerpc KVM. This is an
-early RFC with details and multiple TODOs listed in patch descriptions.
+The userspace (QEMU) issues the subvention notification by
+injecting an interrupt into the guest.
 
-This patch needs supporting enablement in QEMU too which will be
-posted separately.
+Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+---
+ arch/powerpc/include/asm/kvm_host.h | 1 +
+ arch/powerpc/kvm/book3s_hv.c        | 8 ++++++++
+ include/uapi/linux/kvm.h            | 1 +
+ 3 files changed, 10 insertions(+)
 
-Bharata B Rao (5):
-  powerpc: Define Expropriation interrupt bit to VPA byte offset 0xB9
-  KVM: PPC: Add support for KVM_REQ_ESN_EXIT
-  KVM: PPC: Book3S: Enable setting SRR1 flags for DSI
-  KVM: PPC: BOOK3S HV: Async PF support
-  pseries: Asynchronous page fault support
-
- Documentation/virt/kvm/api.rst            |  15 ++
- arch/powerpc/include/asm/async-pf.h       |  12 ++
- arch/powerpc/include/asm/hvcall.h         |   1 +
- arch/powerpc/include/asm/kvm_book3s_esn.h |  24 +++
- arch/powerpc/include/asm/kvm_host.h       |  22 +++
- arch/powerpc/include/asm/kvm_ppc.h        |   4 +-
- arch/powerpc/include/asm/lppaca.h         |  20 +-
- arch/powerpc/include/uapi/asm/kvm.h       |   6 +
- arch/powerpc/kvm/Kconfig                  |   2 +
- arch/powerpc/kvm/Makefile                 |   5 +-
- arch/powerpc/kvm/book3s.c                 |   6 +-
- arch/powerpc/kvm/book3s_64_mmu_radix.c    |   9 +-
- arch/powerpc/kvm/book3s_hv.c              |  37 +++-
- arch/powerpc/kvm/book3s_hv_esn.c          | 189 +++++++++++++++++++
- arch/powerpc/kvm/book3s_hv_nested.c       |   4 +-
- arch/powerpc/kvm/book3s_pr.c              |   4 +-
- arch/powerpc/mm/fault.c                   |   7 +-
- arch/powerpc/platforms/pseries/Makefile   |   2 +-
- arch/powerpc/platforms/pseries/async-pf.c | 219 ++++++++++++++++++++++
- drivers/cpuidle/cpuidle-pseries.c         |   4 +-
- include/uapi/linux/kvm.h                  |   2 +
- tools/include/uapi/linux/kvm.h            |   1 +
- 22 files changed, 574 insertions(+), 21 deletions(-)
- create mode 100644 arch/powerpc/include/asm/async-pf.h
- create mode 100644 arch/powerpc/include/asm/kvm_book3s_esn.h
- create mode 100644 arch/powerpc/kvm/book3s_hv_esn.c
- create mode 100644 arch/powerpc/platforms/pseries/async-pf.c
-
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 9f52f282b1aa..204dc2d91388 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -52,6 +52,7 @@
+ #define KVM_REQ_WATCHDOG	KVM_ARCH_REQ(0)
+ #define KVM_REQ_EPR_EXIT	KVM_ARCH_REQ(1)
+ #define KVM_REQ_PENDING_TIMER	KVM_ARCH_REQ(2)
++#define KVM_REQ_ESN_EXIT	KVM_ARCH_REQ(3)
+ 
+ #include <linux/mmu_notifier.h>
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 085fb8ecbf68..47ccd4a2df54 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -2820,6 +2820,14 @@ static void kvmppc_core_vcpu_free_hv(struct kvm_vcpu *vcpu)
+ 
+ static int kvmppc_core_check_requests_hv(struct kvm_vcpu *vcpu)
+ {
++	/*
++	 * If subvention interrupt needs to be injected to the guest
++	 * exit to user space.
++	 */
++	if (kvm_check_request(KVM_REQ_ESN_EXIT, vcpu)) {
++		vcpu->run->exit_reason = KVM_EXIT_ESN;
++		return 0;
++	}
+ 	/* Indicate we want to get back into the guest */
+ 	return 1;
+ }
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index d9e4aabcb31a..47be532ed14b 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -269,6 +269,7 @@ struct kvm_xen_exit {
+ #define KVM_EXIT_AP_RESET_HOLD    32
+ #define KVM_EXIT_X86_BUS_LOCK     33
+ #define KVM_EXIT_XEN              34
++#define KVM_EXIT_ESN		  35
+ 
+ /* For KVM_EXIT_INTERNAL_ERROR */
+ /* Emulate instruction failed. */
 -- 
 2.31.1
 
