@@ -2,47 +2,61 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8ADBC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 17:37:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50ABDC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 18:42:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC49D610A2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 17:37:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CC49D610A2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7E8B760F01
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Aug 2021 18:42:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7E8B760F01
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GgbQT2fFcz3dCY
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 03:37:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GgcsL3f59z3dBl
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 04:41:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=yLSS8767;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=cmarinas@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
+ header.a=rsa-sha256 header.s=korg header.b=yLSS8767; 
+ dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GgbQ34RxNz3cHQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Aug 2021 03:36:43 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 0683E610A2;
- Thu,  5 Aug 2021 17:36:32 +0000 (UTC)
-Date: Thu, 5 Aug 2021 18:36:25 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Lee Jones <lee.jones@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ggcrr5KJDz30Qm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Aug 2021 04:41:31 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id D0F0C60F01;
+ Thu,  5 Aug 2021 18:41:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+ s=korg; t=1628188887;
+ bh=DJstyoIneDhJWe2M45tnolj4HGCE0gCrRv38Ul0FPvI=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=yLSS87676hn106VIngpXBP/rOEU9YnrWCbO+LvhheiKjxKARCwKmpPaCV3EXfwCgP
+ eswsJEhyB34IGotQMI4++5xN+H6/H2Zsa8YN4zRquACi04W3hFcBWcF1DF3HWEIxIo
+ hfvqM78wNk4u3fnnSgFl6tYnBJF7uBTAQJcXiptc=
+Date: Thu, 5 Aug 2021 20:41:23 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
 Subject: Re: [PATCH 1/3] arch: Export machine_restart() instances so they can
  be called from modules
-Message-ID: <20210805173625.GH6719@arm.com>
+Message-ID: <YQww08x2whx/LIIT@kroah.com>
 References: <20210805075032.723037-1-lee.jones@linaro.org>
  <20210805075032.723037-2-lee.jones@linaro.org>
+ <20210805173625.GH6719@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210805075032.723037-2-lee.jones@linaro.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20210805173625.GH6719@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,23 +68,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org,
  John Crispin <john@phrozen.org>, Sebastian Reichel <sre@kernel.org>,
- "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+ "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
  Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>,
  linux-csky@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org,
- Will Deacon <will@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Lee Jones <lee.jones@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
  Anton Ivanov <anton.ivanov@cambridgegreys.com>,
  Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org,
- Brian Cain <bcain@codeaurora.org>, Helge Deller <deller@gmx.de>,
- linux-sh@vger.kernel.org, Ley Foon Tan <ley.foon.tan@intel.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Brian Cain <bcain@codeaurora.org>,
+ Helge Deller <deller@gmx.de>, Ley Foon Tan <ley.foon.tan@intel.com>,
  Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
  Geert Uytterhoeven <geert@linux-m68k.org>, linux-snps-arc@lists.infradead.org,
  Jeff Dike <jdike@addtoit.com>, uclinux-h8-devel@lists.sourceforge.jp,
  linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>,
- Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
+ Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
  linux-um@lists.infradead.org,
  Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
  linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org,
@@ -86,21 +99,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Aug 05, 2021 at 08:50:30AM +0100, Lee Jones wrote:
-> diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
-> index b4bb67f17a2ca..cf89ce91d7145 100644
-> --- a/arch/arm64/kernel/process.c
-> +++ b/arch/arm64/kernel/process.c
-> @@ -212,6 +212,7 @@ void machine_restart(char *cmd)
->  	printk("Reboot failed -- System halted\n");
->  	while (1);
->  }
-> +EXPORT_SYMBOL(machine_restart);
+On Thu, Aug 05, 2021 at 06:36:25PM +0100, Catalin Marinas wrote:
+> On Thu, Aug 05, 2021 at 08:50:30AM +0100, Lee Jones wrote:
+> > diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
+> > index b4bb67f17a2ca..cf89ce91d7145 100644
+> > --- a/arch/arm64/kernel/process.c
+> > +++ b/arch/arm64/kernel/process.c
+> > @@ -212,6 +212,7 @@ void machine_restart(char *cmd)
+> >  	printk("Reboot failed -- System halted\n");
+> >  	while (1);
+> >  }
+> > +EXPORT_SYMBOL(machine_restart);
+> 
+> Should we make this EXPORT_SYMBOL_GPL? I suppose it's not for general
+> use by out of tree drivers and it matches the other pm_power_off symbol
+> we export in this file.
 
-Should we make this EXPORT_SYMBOL_GPL? I suppose it's not for general
-use by out of tree drivers and it matches the other pm_power_off symbol
-we export in this file.
-
-Either way:
-
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+Yes please.
