@@ -2,111 +2,51 @@ Return-Path: <SRS0=nnl5=M5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2060C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 13:48:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9756C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 14:31:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 34F7D606A5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 13:48:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 34F7D606A5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 27BB3611C3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 14:31:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 27BB3611C3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gh6JL44HCz3d90
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 23:48:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gh7Fl3HVNz3dHM
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Aug 2021 00:31:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=moarYL4O;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=moarYL4O; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gh6Hr6GLgz30Jn
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Aug 2021 23:48:08 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 176Dlpi1111305; Fri, 6 Aug 2021 09:48:04 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=CAh1X3ImT2pKR3Y96VlYGTAD/OWoNzpUy6zZFx+NLNI=;
- b=moarYL4OvNKWFBXrpWYT/BtQweSAnZc48IfgpB9HKq2pdph17KzH5dGk/4NJMFs/xBxC
- OOOH+fpXRb0Q1xXhp0pBDpZFwZxBlLD5PKIFyBkzSfYX+uuSjpVOiJC9qIbQtLw3xe31
- o86m/2rRhPJZhf113tT5dGKX4Pr1O1mg9fRbBQKNczQ/LOyulPP+whR8841nQdimt7kQ
- cQW2eXdNrNIjYM9JsdV1GES+Qt+DvXDsJ4wwhmL4uQyrQEu6CH422IkMSw/+5pFj/gcN
- 19cVBzaTHn+XLwWS4wQFrQ7xA8qn4Cnh5mVWowqiLB3MT/ktCkRV0BCeYGcFPKvvXz6O 5Q== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3a8ww86qcb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 06 Aug 2021 09:48:03 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 176Dm1A8111661;
- Fri, 6 Aug 2021 09:48:01 -0400
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3a8ww86pqq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 06 Aug 2021 09:48:00 -0400
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 176DcIRs007972;
- Fri, 6 Aug 2021 13:46:16 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma05wdc.us.ibm.com with ESMTP id 3a8mq9qwut-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 06 Aug 2021 13:46:16 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 176DjFes46203222
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 6 Aug 2021 13:45:15 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 12518BE054;
- Fri,  6 Aug 2021 13:45:15 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 82C4EBE04F;
- Fri,  6 Aug 2021 13:45:13 +0000 (GMT)
-Received: from farosas.linux.ibm.com.com (unknown [9.211.46.8])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri,  6 Aug 2021 13:45:13 +0000 (GMT)
-From: Fabiano Rosas <farosas@linux.ibm.com>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v6 1/2] KVM: PPC: Book3S HV: Sanitise vcpu registers in nested
- path
-Date: Fri,  6 Aug 2021 10:45:05 -0300
-Message-Id: <20210806134506.2649735-2-farosas@linux.ibm.com>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20210806134506.2649735-1-farosas@linux.ibm.com>
-References: <20210806134506.2649735-1-farosas@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: xNAyehcURWiijUfOBr7Ac7b-7ZkmuNB_
-X-Proofpoint-ORIG-GUID: yXGud68HmfPmNEXIVehVk7j9ABC0Lsdr
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-08-06_04:2021-08-05,
- 2021-08-06 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0
- priorityscore=1501 malwarescore=0 suspectscore=0 clxscore=1015
- lowpriorityscore=0 mlxlogscore=999 impostorscore=0 adultscore=0
- bulkscore=0 mlxscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2107140000 definitions=main-2108060094
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Gh7FJ2wlbz3bn8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Aug 2021 00:30:58 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 176EQjC0006372;
+ Fri, 6 Aug 2021 09:26:45 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 176EQikA006370;
+ Fri, 6 Aug 2021 09:26:44 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Fri, 6 Aug 2021 09:26:43 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [RFC PATCH 1/4] powerpc: Optimize register usage for esr register
+Message-ID: <20210806142643.GU1583@gate.crashing.org>
+References: <20210726143053.532839-1-sxwjean@me.com>
+ <874kc3njxh.fsf@mpe.ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <874kc3njxh.fsf@mpe.ellerman.id.au>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,184 +58,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
+Cc: ravi.bangoria@linux.ibm.com, sxwjean@me.com,
+ Xiongwei Song <sxwjean@gmail.com>, aneesh.kumar@linux.ibm.com, oleg@redhat.com,
+ npiggin@gmail.com, linux-kernel@vger.kernel.org, peterx@redhat.com,
+ paulus@samba.org, efremov@linux.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, sandipan@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As one of the arguments of the H_ENTER_NESTED hypercall, the nested
-hypervisor (L1) prepares a structure containing the values of various
-hypervisor-privileged registers with which it wants the nested guest
-(L2) to run. Since the nested HV runs in supervisor mode it needs the
-host to write to these registers.
+On Fri, Aug 06, 2021 at 04:53:14PM +1000, Michael Ellerman wrote:
+> But I'm not sure about the use of anonymous unions in UAPI headers. Old
+> compilers don't support them, so there's a risk of breakage.
 
-To stop a nested HV manipulating this mechanism and using a nested
-guest as a proxy to access a facility that has been made unavailable
-to it, we have a routine that sanitises the values of the HV registers
-before copying them into the nested guest's vcpu struct.
+More precisely, it exists only since C11, so even with all not-so-ancient
+compilers it will not work if the user uses (say) -std=c99, which still
+is popular.
 
-However, when coming out of the guest the values are copied as they
-were back into L1 memory, which means that any sanitisation we did
-during guest entry will be exposed to L1 after H_ENTER_NESTED returns.
+> I'd rather we didn't touch the uapi version.
 
-This patch alters this sanitisation to have effect on the vcpu->arch
-registers directly before entering and after exiting the guest,
-leaving the structure that is copied back into L1 unchanged (except
-when we really want L1 to access the value, e.g the Cause bits of
-HFSCR).
+Yeah.
 
-Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kvm/book3s_hv_nested.c | 94 ++++++++++++++---------------
- 1 file changed, 46 insertions(+), 48 deletions(-)
+> > -	err = ___do_page_fault(regs, regs->dar, regs->dsisr);
+> > +	if (IS_ENABLED(CONFIG_4xx) || IS_ENABLED(CONFIG_BOOKE))
+> > +		err = ___do_page_fault(regs, regs->dar, regs->esr);
+> > +	else
+> > +		err = ___do_page_fault(regs, regs->dar, regs->dsisr);
+> 
+> As Christophe said, I don't thinks this is an improvement.
+> 
+> It makes the code less readable. If anyone is confused about what is
+> passed to ___do_page_fault() they can either read the comment above it,
+> or look at the definition of pt_regs to see that esr and dsisr share
+> storage.
 
-diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
-index 898f942eb198..1823674d46ef 100644
---- a/arch/powerpc/kvm/book3s_hv_nested.c
-+++ b/arch/powerpc/kvm/book3s_hv_nested.c
-@@ -105,7 +105,6 @@ static void save_hv_return_state(struct kvm_vcpu *vcpu, int trap,
- 	struct kvmppc_vcore *vc = vcpu->arch.vcore;
- 
- 	hr->dpdes = vc->dpdes;
--	hr->hfscr = vcpu->arch.hfscr;
- 	hr->purr = vcpu->arch.purr;
- 	hr->spurr = vcpu->arch.spurr;
- 	hr->ic = vcpu->arch.ic;
-@@ -128,55 +127,17 @@ static void save_hv_return_state(struct kvm_vcpu *vcpu, int trap,
- 	case BOOK3S_INTERRUPT_H_INST_STORAGE:
- 		hr->asdr = vcpu->arch.fault_gpa;
- 		break;
-+	case BOOK3S_INTERRUPT_H_FAC_UNAVAIL:
-+		hr->hfscr = ((~HFSCR_INTR_CAUSE & hr->hfscr) |
-+			     (HFSCR_INTR_CAUSE & vcpu->arch.hfscr));
-+		break;
- 	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
- 		hr->heir = vcpu->arch.emul_inst;
- 		break;
- 	}
- }
- 
--/*
-- * This can result in some L0 HV register state being leaked to an L1
-- * hypervisor when the hv_guest_state is copied back to the guest after
-- * being modified here.
-- *
-- * There is no known problem with such a leak, and in many cases these
-- * register settings could be derived by the guest by observing behaviour
-- * and timing, interrupts, etc., but it is an issue to consider.
-- */
--static void sanitise_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
--{
--	struct kvmppc_vcore *vc = vcpu->arch.vcore;
--	u64 mask;
--
--	/*
--	 * Don't let L1 change LPCR bits for the L2 except these:
--	 */
--	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD |
--		LPCR_LPES | LPCR_MER;
--
--	/*
--	 * Additional filtering is required depending on hardware
--	 * and configuration.
--	 */
--	hr->lpcr = kvmppc_filter_lpcr_hv(vcpu->kvm,
--			(vc->lpcr & ~mask) | (hr->lpcr & mask));
--
--	/*
--	 * Don't let L1 enable features for L2 which we've disabled for L1,
--	 * but preserve the interrupt cause field.
--	 */
--	hr->hfscr &= (HFSCR_INTR_CAUSE | vcpu->arch.hfscr);
--
--	/* Don't let data address watchpoint match in hypervisor state */
--	hr->dawrx0 &= ~DAWRX_HYP;
--	hr->dawrx1 &= ~DAWRX_HYP;
--
--	/* Don't let completed instruction address breakpt match in HV state */
--	if ((hr->ciabr & CIABR_PRIV) == CIABR_PRIV_HYPER)
--		hr->ciabr &= ~CIABR_PRIV;
--}
--
--static void restore_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
-+static void restore_hv_regs(struct kvm_vcpu *vcpu, const struct hv_guest_state *hr)
- {
- 	struct kvmppc_vcore *vc = vcpu->arch.vcore;
- 
-@@ -288,6 +249,43 @@ static int kvmhv_write_guest_state_and_regs(struct kvm_vcpu *vcpu,
- 				     sizeof(struct pt_regs));
- }
- 
-+static void load_l2_hv_regs(struct kvm_vcpu *vcpu,
-+			    const struct hv_guest_state *l2_hv,
-+			    const struct hv_guest_state *l1_hv, u64 *lpcr)
-+{
-+	struct kvmppc_vcore *vc = vcpu->arch.vcore;
-+	u64 mask;
-+
-+	restore_hv_regs(vcpu, l2_hv);
-+
-+	/*
-+	 * Don't let L1 change LPCR bits for the L2 except these:
-+	 */
-+	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD |
-+		LPCR_LPES | LPCR_MER;
-+
-+	/*
-+	 * Additional filtering is required depending on hardware
-+	 * and configuration.
-+	 */
-+	*lpcr = kvmppc_filter_lpcr_hv(vcpu->kvm,
-+				      (vc->lpcr & ~mask) | (*lpcr & mask));
-+
-+	/*
-+	 * Don't let L1 enable features for L2 which we've disabled for L1,
-+	 * but preserve the interrupt cause field.
-+	 */
-+	vcpu->arch.hfscr = l2_hv->hfscr & (HFSCR_INTR_CAUSE | l1_hv->hfscr);
-+
-+	/* Don't let data address watchpoint match in hypervisor state */
-+	vcpu->arch.dawrx0 = l2_hv->dawrx0 & ~DAWRX_HYP;
-+	vcpu->arch.dawrx1 = l2_hv->dawrx1 & ~DAWRX_HYP;
-+
-+	/* Don't let completed instruction address breakpt match in HV state */
-+	if ((l2_hv->ciabr & CIABR_PRIV) == CIABR_PRIV_HYPER)
-+		vcpu->arch.ciabr = l2_hv->ciabr & ~CIABR_PRIV;
-+}
-+
- long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
- {
- 	long int err, r;
-@@ -296,7 +294,7 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
- 	struct hv_guest_state l2_hv = {0}, saved_l1_hv;
- 	struct kvmppc_vcore *vc = vcpu->arch.vcore;
- 	u64 hv_ptr, regs_ptr;
--	u64 hdec_exp;
-+	u64 hdec_exp, lpcr;
- 	s64 delta_purr, delta_spurr, delta_ic, delta_vtb;
- 
- 	if (vcpu->kvm->arch.l1_ptcr == 0)
-@@ -369,8 +367,8 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
- 	/* Guest must always run with ME enabled, HV disabled. */
- 	vcpu->arch.shregs.msr = (vcpu->arch.regs.msr | MSR_ME) & ~MSR_HV;
- 
--	sanitise_hv_regs(vcpu, &l2_hv);
--	restore_hv_regs(vcpu, &l2_hv);
-+	lpcr = l2_hv.lpcr;
-+	load_l2_hv_regs(vcpu, &l2_hv, &saved_l1_hv, &lpcr);
- 
- 	vcpu->arch.ret = RESUME_GUEST;
- 	vcpu->arch.trap = 0;
-@@ -380,7 +378,7 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
- 			r = RESUME_HOST;
- 			break;
- 		}
--		r = kvmhv_run_single_vcpu(vcpu, hdec_exp, l2_hv.lpcr);
-+		r = kvmhv_run_single_vcpu(vcpu, hdec_exp, lpcr);
- 	} while (is_kvmppc_resume_guest(r));
- 
- 	/* save L2 state for return */
--- 
-2.29.2
+Esp. since the affected platforms are legacy, yup.
 
+
+Segher
