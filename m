@@ -2,65 +2,111 @@ Return-Path: <SRS0=nnl5=M5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 599C4C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 07:42:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F51FC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 07:57:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ED52C60F25
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 07:42:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ED52C60F25
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id AEA31610FD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 07:57:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AEA31610FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=in.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GgyB73b8zz3dHT
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 17:42:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GgyWT4JFHz3cXQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Aug 2021 17:57:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C9sJGTzl;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
- helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de;
+ smtp.mailfrom=in.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=puvichakravarthy@in.ibm.com;
  receiver=<UNKNOWN>)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ggx0l2bC4z3cZ1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Aug 2021 16:49:25 +1000 (AEST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
- by metis.ext.pengutronix.de with esmtps
- (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
- (envelope-from <ukl@pengutronix.de>)
- id 1mBtcu-0007Bd-Gw; Fri, 06 Aug 2021 08:46:40 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
- by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.92)
- (envelope-from <ukl@pengutronix.de>)
- id 1mBtce-0004p1-8f; Fri, 06 Aug 2021 08:46:24 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.92)
- (envelope-from <ukl@pengutronix.de>)
- id 1mBtce-0003LN-5b; Fri, 06 Aug 2021 08:46:24 +0200
-Date: Fri, 6 Aug 2021 08:46:23 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2 0/6] PCI: Drop duplicated tracking of a pci_dev's
- bound driver
-Message-ID: <20210806064623.3lxl4clzbjpmchef@pengutronix.de>
-References: <20210803100150.1543597-1-u.kleine-koenig@pengutronix.de>
- <20210805234234.GA1797883@bjorn-Precision-5520>
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=C9sJGTzl; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GgyVv2XrYz307Z
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Aug 2021 17:57:10 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 1767hsGK173941; Fri, 6 Aug 2021 03:57:04 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=to : cc : subject : from
+ : message-id : date : content-type : content-transfer-encoding :
+ mime-version; s=pp1; bh=0BH2xqetlBG6lv0Zh4Y+tDhCIjOHXrQYLAstUQSCNxo=;
+ b=C9sJGTzlHbIuUvrScwT1mdFdsmZpWVk+GTk4xETEXntVPz4mZ8XTEwbde9e5HBqLPwp6
+ kPtEJ/JBWPMn2ZUaY2MZgjRDpyllVwmW/otMuh/EuOkPszMApg8KerChDc7Q/FAJeSVh
+ sF55nPWriq00/p5BJazWIeGsuqQ8ZBpd7fDxp17fGo61oJaExJXZdkwXGUlwWK7gLyxI
+ 3rWpc8Fe4J+dz2JyqmRzuunEIxTRf88/3BHa5DlhXCsYJyrPFG0SJpcUBJJLRB2a1Q+L
+ 5p9vVeedlkLqs1Po0er6w3QNdfpktQBfwOu/1dad3yTx58CnrhB2s+4G5NeXwpth3liR Lg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a83gqkb56-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 06 Aug 2021 03:57:04 -0400
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1767hwhm174008;
+ Fri, 6 Aug 2021 03:57:03 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3a83gqkb4w-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 06 Aug 2021 03:57:03 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1767qLpJ021758;
+ Fri, 6 Aug 2021 07:57:03 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma03dal.us.ibm.com with ESMTP id 3a7ankguf8-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 06 Aug 2021 07:57:03 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1767v1w113763170
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 6 Aug 2021 07:57:01 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D31B16A051;
+ Fri,  6 Aug 2021 07:57:01 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BCA4E6A05F;
+ Fri,  6 Aug 2021 07:57:01 +0000 (GMT)
+Received: from mww0882.dal12m.mail.ibm.com (unknown [9.208.88.142])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTPS;
+ Fri,  6 Aug 2021 07:57:01 +0000 (GMT)
+To: aneesh.kumar@linux.ibm.com
+Subject: Re: [RFC PATCH] powerpc/book3s64/radix: Upgrade va tlbie to PID tlbie
+ if we cross PMD_SIZE
+From: "Puvichakravarthy Ramachandran" <puvichakravarthy@in.ibm.com>
+Message-ID: <OFAE67F802.E3873360-ON00258729.0020407B-65258729.002BAB12@ibm.com>
+Date: Fri, 6 Aug 2021 13:26:59 +0530
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="nllglfksvmzlkdkm"
-Content-Disposition: inline
-In-Reply-To: <20210805234234.GA1797883@bjorn-Precision-5520>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
- SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
-X-Mailman-Approved-At: Fri, 06 Aug 2021 17:41:54 +1000
+X-KeepSent: AE67F802:E3873360-00258729:0020407B; name=$KeepSent; type=4
+X-Mailer: HCL Notes Build V1101FP3_03312021 SHF15 May 21, 2021
+X-Disclaimed: 37479
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: oZlSlJkPHOItQMM6ixANbhd1_4HBIX-M
+X-Proofpoint-GUID: KsqYNgf2Y6fRzAdzaGmPc6QSv6YOTN9w
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-08-06_02:2021-08-05,
+ 2021-08-06 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 bulkscore=0
+ phishscore=0 suspectscore=0 impostorscore=0 spamscore=0 adultscore=0
+ mlxscore=0 malwarescore=0 priorityscore=1501 lowpriorityscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2107140000 definitions=main-2108060052
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,163 +118,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
- =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, linux-pci@vger.kernel.org,
- Alexander Duyck <alexanderduyck@fb.com>, x86@kernel.org,
- oss-drivers@corigine.com, netdev@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Jiri Olsa <jolsa@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- Taras Chornyi <tchornyi@marvell.com>,
- Stefano Stabellini <sstabellini@kernel.org>,
- Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org,
- Sathya Prakash <sathya.prakash@broadcom.com>, qat-linux@intel.com,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, Jakub Kicinski <kuba@kernel.org>,
- Yisen Zhuang <yisen.zhuang@huawei.com>,
- Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
- Fiona Trahe <fiona.trahe@intel.com>, Oliver O'Halloran <oohall@gmail.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, Mathias Nyman <mathias.nyman@intel.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Ido Schimmel <idosch@nvidia.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Frederic Barrat <fbarrat@linux.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Michael Buesch <m@bues.ch>, Jiri Pirko <jiri@nvidia.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Namhyung Kim <namhyung@kernel.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Andy Shevchenko <andriy.shevchenko@intel.com>, Juergen Gross <jgross@suse.com>,
- Salil Mehta <salil.mehta@huawei.com>,
- Sreekanth Reddy <sreekanth.reddy@broadcom.com>, xen-devel@lists.xenproject.org,
- Vadym Kochan <vkochan@marvell.com>, MPT-FusionLinux.pdl@broadcom.com,
- linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Zhou Wang <wangzhou1@hisilicon.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-crypto@vger.kernel.org, kernel@pengutronix.de,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Simon Horman <simon.horman@corigine.com>,
- Wojciech Ziemba <wojciech.ziemba@intel.com>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+> With shared mapping, even though we are unmapping a large range, the=20
+kernel
+> will force a TLB flush with ptl lock held to avoid the race mentioned in
+> commit 1cf35d47712d ("mm: split 'tlb=5Fflush=5Fmmu()' into tlb flushing a=
+nd=20
+memory freeing parts")
+> This results in the kernel issuing a high number of TLB flushes even for =
 
---nllglfksvmzlkdkm
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hello Bjorn,
-
-On Thu, Aug 05, 2021 at 06:42:34PM -0500, Bjorn Helgaas wrote:
-> On Tue, Aug 03, 2021 at 12:01:44PM +0200, Uwe Kleine-K=F6nig wrote:
-> > Hello,
-> >=20
-> > changes since v1 (https://lore.kernel.org/linux-pci/20210729203740.1377=
-045-1-u.kleine-koenig@pengutronix.de):
-> >=20
-> > - New patch to simplify drivers/pci/xen-pcifront.c, spotted and
-> >   suggested by Boris Ostrovsky
-> > - Fix a possible NULL pointer dereference I introduced in xen-pcifront.c
-> > - A few whitespace improvements
-> > - Add a commit log to patch #6 (formerly #5)
-> >=20
-> > I also expanded the audience for patches #4 and #6 to allow affected
-> > people to actually see the changes to their drivers.
-> >=20
-> > Interdiff can be found below.
-> >=20
-> > The idea is still the same: After a few cleanups (#1 - #3) a new macro
-> > is introduced abstracting access to struct pci_dev->driver. All users
-> > are then converted to use this and in the last patch the macro is
-> > changed to make use of struct pci_dev::dev->driver to get rid of the
-> > duplicated tracking.
+a large
+> range. This can be improved by making sure the kernel switch to pid=20
+based flush if the
+> kernel is unmapping a 2M range.
 >=20
-> I love the idea of this series!
-
-\o/
-
-> I looked at all the bus_type.probe() methods, it looks like pci_dev is
-> not the only offender here.  At least the following also have a driver
-> pointer in the device struct:
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>  arch/powerpc/mm/book3s64/radix=5Ftlb.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 >=20
->   parisc_device.driver
->   acpi_device.driver
->   dio_dev.driver
->   hid_device.driver
->   pci_dev.driver
->   pnp_dev.driver
->   rio_dev.driver
->   zorro_dev.driver
-
-Right, when I converted zorro_dev it was pointed out that the code was
-copied from pci and the latter has the same construct. :-)
-See
-https://lore.kernel.org/r/20210730191035.1455248-5-u.kleine-koenig@pengutro=
-nix.de
-for the patch, I don't find where pci was pointed out, maybe it was on
-irc only.
-
-> Do you plan to do the same for all of them, or is there some reason
-> why they need the pointer and PCI doesn't?
-
-There is a list of cleanup stuff I intend to work on. Considering how
-working on that list only made it longer in the recent past, maybe it
-makes more sense to not work on it :-)
-
-> In almost all cases, other buses define a "to_<bus>_driver()"
-> interface.  In fact, PCI already has a to_pci_driver().
+> diff --git a/arch/powerpc/mm/book3s64/radix=5Ftlb.c=20
+b/arch/powerpc/mm/book3s64/radix=5Ftlb.c
+> index aefc100d79a7..21d0f098e43b 100644
+> --- a/arch/powerpc/mm/book3s64/radix=5Ftlb.c
+> +++ b/arch/powerpc/mm/book3s64/radix=5Ftlb.c
+> @@ -1106,7 +1106,7 @@ EXPORT=5FSYMBOL(radix=5F=5Fflush=5Ftlb=5Fkernel=5Fr=
+ange);
+>   * invalidating a full PID, so it has a far lower threshold to change=20
+from
+>   * individual page flushes to full-pid flushes.
+>   */
+> -static unsigned long tlb=5Fsingle=5Fpage=5Fflush=5Fceiling =5F=5Fread=5F=
+mostly =3D 33;
+> +static unsigned long tlb=5Fsingle=5Fpage=5Fflush=5Fceiling =5F=5Fread=5F=
+mostly =3D 32;
+>  static unsigned long tlb=5Flocal=5Fsingle=5Fpage=5Fflush=5Fceiling =5F=
+=5Fread=5Fmostly=20
+=3D POWER9=5FTLB=5FSETS=5FRADIX * 2;
 >=20
-> This series adds pci_driver_of_dev(), which basically just means we
-> can do this:
->=20
->   pdrv =3D pci_driver_of_dev(pdev);
->=20
-> instead of this:
->=20
->   pdrv =3D to_pci_driver(pdev->dev.driver);
->=20
-> I don't see any other "<bus>_driver_of_dev()" interfaces, so I assume
-> other buses just live with the latter style?  I'd rather not be
-> different and have two ways to get the "struct pci_driver *" unless
-> there's a good reason.
+>  static inline void =5F=5Fradix=5F=5Fflush=5Ftlb=5Frange(struct mm=5Fstru=
+ct *mm,
+> @@ -1133,7 +1133,7 @@ static inline void =5F=5Fradix=5F=5Fflush=5Ftlb=5Fr=
+ange(struct=20
+mm=5Fstruct *mm,
+>       if (fullmm)
+>               flush=5Fpid =3D true;
+>       else if (type =3D=3D FLUSH=5FTYPE=5FGLOBAL)
+> -             flush=5Fpid =3D nr=5Fpages > tlb=5Fsingle=5Fpage=5Fflush=5F=
+ceiling;
+> +             flush=5Fpid =3D nr=5Fpages >=3D tlb=5Fsingle=5Fpage=5Fflush=
+=5Fceiling;
+>       else
+>               flush=5Fpid =3D nr=5Fpages >=20
+tlb=5Flocal=5Fsingle=5Fpage=5Fflush=5Fceiling;
 
-Among few the busses I already fixed in this regard pci was the first
-that has a considerable amount of usage. So I considered it worth giving
-it a name.
+Additional details on the test environment. This was tested on a 2 Node/8=20
+socket Power10 system.
+The LPAR had 105 cores and the LPAR spanned across all the sockets.=20
+
+# perf stat -I 1000 -a -e cycles,instructions -e=20
+"{cpu/config=3D0x030008,name=3DPM=5FEXEC=5FSTALL/}" -e=20
+"{cpu/config=3D0x02E01C,name=3DPM=5FEXEC=5FSTALL=5FTLBIE/}" ./tlbie -i 10 -=
+c 1  -t 1
+ Rate of work: =3D 176=20
+#           time             counts unit events
+     1.029206442         4198594519      cycles =20
+     1.029206442         2458254252      instructions              # 0.59=20
+insn per cycle=20
+     1.029206442         3004031488      PM=5FEXEC=5FSTALL  =20
+     1.029206442         1798186036      PM=5FEXEC=5FSTALL=5FTLBIE  =20
+ Rate of work: =3D 181=20
+     2.054288539         4183883450      cycles =20
+     2.054288539         2472178171      instructions              # 0.59=20
+insn per cycle=20
+     2.054288539         3014609313      PM=5FEXEC=5FSTALL  =20
+     2.054288539         1797851642      PM=5FEXEC=5FSTALL=5FTLBIE  =20
+ Rate of work: =3D 180=20
+     3.078306883         4171250717      cycles =20
+     3.078306883         2468341094      instructions              # 0.59=20
+insn per cycle=20
+     3.078306883         2993036205      PM=5FEXEC=5FSTALL  =20
+     3.078306883         1798181890      PM=5FEXEC=5FSTALL=5FTLBIE  =20
+.
+.=20
+
+# cat /sys/kernel/debug/powerpc/tlb=5Fsingle=5Fpage=5Fflush=5Fceiling
+34
+
+# echo 32 > /sys/kernel/debug/powerpc/tlb=5Fsingle=5Fpage=5Fflush=5Fceiling
+
+# perf stat -I 1000 -a -e cycles,instructions -e=20
+"{cpu/config=3D0x030008,name=3DPM=5FEXEC=5FSTALL/}" -e=20
+"{cpu/config=3D0x02E01C,name=3DPM=5FEXEC=5FSTALL=5FTLBIE/}" ./tlbie -i 10 -=
+c 1  -t 1
+ Rate of work: =3D 313=20
+#           time             counts unit events
+     1.030310506         4206071143      cycles =20
+     1.030310506         4314716958      instructions              # 1.03=20
+insn per cycle=20
+     1.030310506         2157762167      PM=5FEXEC=5FSTALL  =20
+     1.030310506          110825573      PM=5FEXEC=5FSTALL=5FTLBIE  =20
+ Rate of work: =3D 322=20
+     2.056034068         4331745630      cycles =20
+     2.056034068         4531658304      instructions              # 1.05=20
+insn per cycle=20
+     2.056034068         2288971361      PM=5FEXEC=5FSTALL  =20
+     2.056034068          111267927      PM=5FEXEC=5FSTALL=5FTLBIE  =20
+ Rate of work: =3D 321=20
+     3.081216434         4327050349      cycles =20
+     3.081216434         4379679508      instructions              # 1.01=20
+insn per cycle=20
+     3.081216434         2252602550      PM=5FEXEC=5FSTALL  =20
+     3.081216434          110974887      PM=5FEXEC=5FSTALL=5FTLBIE  =20
+.
+.
 =20
-> Looking through the places that care about pci_dev.driver (the ones
-> updated by patch 5/6), many of them are ... a little dubious to begin
-> with.  A few need the "struct pci_error_handlers *err_handler"
-> pointer, so that's probably legitimate.  But many just need a name,
-> and should probably be using dev_driver_string() instead.
 
-Yeah, I considered adding a function to get the driver name from a
-pci_dev and a function to get the error handlers. Maybe it's an idea to
-introduce these two and then use to_pci_driver(pdev->dev.driver) for the
-few remaining users? Maybe doing that on top of my current series makes
-sense to have a clean switch from pdev->driver to pdev->dev.driver?!
+Regards,
+Puvichakravarthy Ramachandran
 
-Best regards
-Uwe
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
 
---nllglfksvmzlkdkm
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmEM2rwACgkQwfwUeK3K
-7AlqBggAh2Z8+ZW+YMYlQQ8AzujRmGYo9gKX26eGdp2jNjZUeOc0CEZwm/GiW4aZ
-9+W1RS3i+O6ToHVYkt9fNEpdUGO3YdBKiMHGWsrkQuwNjm4Yv5Dlx/wRz0dU4vIX
-QQDa5tw6Mow1g0gjZqHvDuwbgKoJyHXzFD115kBaINYN/XqOLST9YvMqxxSsHHsD
-qRmpU59QTxEqHXKIsgABctdVnQBkbixppZH3/6nu+Xh7qkZvczBLpx/C5V1+XeAv
-47LOxaH3wiLQBS/sICKlAFeYcbAyNhwh+nbMxx5i3lG6O6LhaeX46FPMoTG6qiAj
-MaO1mAnwrEO35eTXFBgw4IYh37zS9A==
-=/ZHI
------END PGP SIGNATURE-----
-
---nllglfksvmzlkdkm--
