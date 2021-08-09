@@ -2,91 +2,62 @@ Return-Path: <SRS0=IXoQ=NA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46C97C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Aug 2021 20:57:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1A3DC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Aug 2021 21:54:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 77A6D6101E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Aug 2021 20:57:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 77A6D6101E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4787560F25
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Aug 2021 21:54:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4787560F25
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gk7gY3NNrz30Jj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 06:57:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gk8y22sgNz30FD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 07:54:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=FnE/mwoX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WW6aFqzA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032;
- helo=mail-pj1-x1032.google.com; envelope-from=danielhb413@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=FnE/mwoX; dkim-atps=neutral
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com
- [IPv6:2607:f8b0:4864:20::1032])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=WW6aFqzA; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gk7fp49mhz2xvF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Aug 2021 06:56:32 +1000 (AEST)
-Received: by mail-pj1-x1032.google.com with SMTP id
- lw7-20020a17090b1807b029017881cc80b7so899928pjb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Aug 2021 13:56:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=aHkEfDAWCJ52ci6CWzgHFotFEpQgyQ+sf+J3/pgjMWo=;
- b=FnE/mwoXtb/DMoLH6pkJpeH+iUokfECSyCZxpAPBoAtZ08oUDzmJ9EkAmCQ8cL+Q6W
- 17bfrsbKeLiOXV9Y7YUwvrKM8LmlRrY9XgTjwCgULlDkIK3bLZJCLcJbuhlWWf9nIyYO
- m+08IYHqobyAGKLdO4mcgH45KuvkEE/3FL9D6Qvk9EFpyUOlVSZaSRQXNpps9rmemqgH
- xI32Q0SeE6DcfIA49U0pZ3kU9+eHKhVvuZTMSyG4sCJwIwFzFEU00BdsQUsBAVRZXFPm
- 4JbKuwpqQRY5XMgVnEhKWBBvSEXKcZr4jt4gOD+mBfjaaMxQGvscNW9/L/bFB4RPjTlY
- K4gA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=aHkEfDAWCJ52ci6CWzgHFotFEpQgyQ+sf+J3/pgjMWo=;
- b=NMv/c13FUuoeKNHjya+UZV8JlHKQe6BP7e+EwlTe+2jkmOERfPqCXmquo1JL2art0O
- xF6LfBHrWw5ew2k9GqXG66q8FSLuUphrwFFFFspmuFiI/vfiHQftrqU9eyXMjgp1dyFG
- 3UazaBlNoGzE523YGikrn3Du7BSnpHFRqUA01vBvY8GlxXGSt88IAXD5n7ieaKnIec25
- XIiJwkMcLJHxCDAZAEJxzjR6dhPogqlv5UIo5Op6uhlV3sXNiavznJmk50S4zpAbcgpE
- 7uu6ePQeqBhhFkb6Qr0smjLhnZqYMQqqyT17bYy+FdO74gzFCn+Vziv0TwGQ4wWSZCoh
- 3FeQ==
-X-Gm-Message-State: AOAM533i1+M1iTDje2gfjBnS8nuVf28QLv53a8boCWKdW0ouW/6XzXaz
- aeF3MVP+1+pxio1F5up1ft8=
-X-Google-Smtp-Source: ABdhPJyuh3J7fUBjz7DiAIBd5Rm5t88uDl92NjUk3Hbnwa4NJ/OkA3mOHW8P9BGWvGlKbMs4cqGPiA==
-X-Received: by 2002:a05:6a00:888:b029:3c3:ff1:38e with SMTP id
- q8-20020a056a000888b02903c30ff1038emr19786128pfj.17.1628542588878; 
- Mon, 09 Aug 2021 13:56:28 -0700 (PDT)
-Received: from [192.168.10.222] ([191.19.172.190])
- by smtp.gmail.com with ESMTPSA id e35sm405510pjk.28.2021.08.09.13.56.27
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 09 Aug 2021 13:56:28 -0700 (PDT)
-Subject: Re: [PATCH v7 0/6] Add support for FORM2 associativity
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-References: <20210809052434.53978-1-aneesh.kumar@linux.ibm.com>
-From: Daniel Henrique Barboza <danielhb413@gmail.com>
-Message-ID: <3eb3146c-dc38-1de8-262f-ed4326ffcfe0@gmail.com>
-Date: Mon, 9 Aug 2021 17:56:25 -0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gk43g2BxMz2yyM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Aug 2021 04:14:23 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 5978561002;
+ Mon,  9 Aug 2021 18:14:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1628532859;
+ bh=qXeJ0P/U8JvDxO9kR9G0/0wx57hQ6JjYEoFVv0vPQv8=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:From;
+ b=WW6aFqzA3dvX3Ze6M+eftHp7JaBZzCklo9aY7tR1PQm8w/hnkzEnuCle4tCjoZiSe
+ nT6rKeORsoNdjHgHs9BqQjZRVKkrC6rxN1uu2Ygmc41jcEEm8UEVPbXxSnQ6K0Wfj8
+ qSINXH8XorzrEZOa15qbiDu7ItPII0bkSjch0lXkcnkoO4HSU1QbFOtyKkGI+wZYNN
+ 0+0+St5OBLuFlSt+oW4UklxyjCkK/jpDv/4IACdl9gU6SOxr0i2z8LDiCotUp5Fcfn
+ PGIel408/Vk6fQxN4caUeDLV9ODEWUpMqiy48I+zaYWawQn9qjAcLm5+IUrHSYXRZm
+ w1DE8HFaMxc8g==
+Date: Mon, 9 Aug 2021 13:14:18 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH v2 0/6] PCI: Drop duplicated tracking of a pci_dev's
+ bound driver
+Message-ID: <20210809181418.GA2168343@bjorn-Precision-5520>
 MIME-Version: 1.0
-In-Reply-To: <20210809052434.53978-1-aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210807092645.52kn4ustyjudztvl@pengutronix.de>
+X-Mailman-Approved-At: Tue, 10 Aug 2021 07:54:12 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,135 +69,190 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+ =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, linux-pci@vger.kernel.org,
+ Alexander Duyck <alexanderduyck@fb.com>,
+ Sathya Prakash <sathya.prakash@broadcom.com>, oss-drivers@corigine.com,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Jiri Olsa <jolsa@redhat.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ linux-perf-users@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org,
+ Ido Schimmel <idosch@nvidia.com>, x86@kernel.org, qat-linux@intel.com,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Ingo Molnar <mingo@redhat.com>, Wojciech Ziemba <wojciech.ziemba@intel.com>,
+ Jakub Kicinski <kuba@kernel.org>, Yisen Zhuang <yisen.zhuang@huawei.com>,
+ Fiona Trahe <fiona.trahe@intel.com>, Andrew Donnellan <ajd@linux.ibm.com>,
+ Mathias Nyman <mathias.nyman@intel.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
+ Simon Horman <simon.horman@corigine.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Michael Buesch <m@bues.ch>, Jiri Pirko <jiri@nvidia.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Namhyung Kim <namhyung@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@intel.com>, Juergen Gross <jgross@suse.com>,
+ Salil Mehta <salil.mehta@huawei.com>,
+ Sreekanth Reddy <sreekanth.reddy@broadcom.com>, xen-devel@lists.xenproject.org,
+ Vadym Kochan <vkochan@marvell.com>, MPT-FusionLinux.pdl@broadcom.com,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Taras Chornyi <tchornyi@marvell.com>, Zhou Wang <wangzhou1@hisilicon.com>,
+ Arnd Bergmann <arnd@arndb.de>, linux-crypto@vger.kernel.org,
+ kernel@pengutronix.de, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Sat, Aug 07, 2021 at 11:26:45AM +0200, Uwe Kleine-König wrote:
+> On Fri, Aug 06, 2021 at 04:24:52PM -0500, Bjorn Helgaas wrote:
+> > On Fri, Aug 06, 2021 at 08:46:23AM +0200, Uwe Kleine-König wrote:
+> > > On Thu, Aug 05, 2021 at 06:42:34PM -0500, Bjorn Helgaas wrote:
+> > 
+> > > > I looked at all the bus_type.probe() methods, it looks like pci_dev is
+> > > > not the only offender here.  At least the following also have a driver
+> > > > pointer in the device struct:
+> > > > 
+> > > >   parisc_device.driver
+> > > >   acpi_device.driver
+> > > >   dio_dev.driver
+> > > >   hid_device.driver
+> > > >   pci_dev.driver
+> > > >   pnp_dev.driver
+> > > >   rio_dev.driver
+> > > >   zorro_dev.driver
+> > > 
+> > > Right, when I converted zorro_dev it was pointed out that the code was
+> > > copied from pci and the latter has the same construct. :-)
+> > > See
+> > > https://lore.kernel.org/r/20210730191035.1455248-5-u.kleine-koenig@pengutronix.de
+> > > for the patch, I don't find where pci was pointed out, maybe it was on
+> > > irc only.
+> > 
+> > Oh, thanks!  I looked to see if you'd done something similar
+> > elsewhere, but I missed this one.
+> > 
+> > > > Looking through the places that care about pci_dev.driver (the ones
+> > > > updated by patch 5/6), many of them are ... a little dubious to begin
+> > > > with.  A few need the "struct pci_error_handlers *err_handler"
+> > > > pointer, so that's probably legitimate.  But many just need a name,
+> > > > and should probably be using dev_driver_string() instead.
+> > > 
+> > > Yeah, I considered adding a function to get the driver name from a
+> > > pci_dev and a function to get the error handlers. Maybe it's an idea to
+> > > introduce these two and then use to_pci_driver(pdev->dev.driver) for the
+> > > few remaining users? Maybe doing that on top of my current series makes
+> > > sense to have a clean switch from pdev->driver to pdev->dev.driver?!
+> > 
+> > I'd propose using dev_driver_string() for these places:
+> > 
+> >   eeh_driver_name() (could change callers to use dev_driver_string())
+> >   bcma_host_pci_probe()
+> >   qm_alloc_uacce()
+> >   hns3_get_drvinfo()
+> >   prestera_pci_probe()
+> >   mlxsw_pci_probe()
+> >   nfp_get_drvinfo()
+> >   ssb_pcihost_probe()
+> 
+> So the idea is:
+> 
+> 	PCI: Simplify pci_device_remove()
+> 	PCI: Drop useless check from pci_device_probe()
+> 	xen/pci: Drop some checks that are always true
+> 
+> are kept as is as preparation. (Do you want to take them from this v2,
+> or should I include them again in v3?)
+
+Easiest if you include them until we merge the series.
+
+> Then convert the list of functions above to use dev_driver_string() in a
+> 4th patch.
+> 
+> > The use in mpt_device_driver_register() looks unnecessary: it's only
+> > to get a struct pci_device_id *, which is passed to ->probe()
+> > functions that don't need it.
+> 
+> This is patch #5.
+> 
+> > The use in adf_enable_aer() looks wrong: it sets the err_handler
+> > pointer in one of the adf_driver structs.  I think those structs
+> > should be basically immutable, and the drivers that call
+> > adf_enable_aer() from their .probe() methods should set
+> > ".err_handler = &adf_err_handler" in their static adf_driver
+> > definitions instead.
+> 
+> I don't understand that one without some research, probably this yields
+> at least one patch.
+
+Yeah, it's a little messy because you'd have to make adf_err_handler
+non-static and add an extern for it.  Sample below.
+
+> > I think that basically leaves these:
+> > 
+> >   uncore_pci_probe()     # .id_table, custom driver "registration"
+> >   match_id()             # .id_table, arch/x86/kernel/probe_roms.c
+> >   xhci_pci_quirks()      # .id_table
+> >   pci_error_handlers()   # roll-your-own AER handling, drivers/misc/cxl/guest.c
+> > 
+> > I think it would be fine to use to_pci_driver(pdev->dev.driver) for
+> > these few.
+> 
+> Converting these will be patch 7 then and patch 8 can then drop the
+> duplicated handling.
+> 
+> Sounds reasonable?
+
+Sounds good to me.  Thanks for working on this!
+
+Bjorn
 
 
-On 8/9/21 2:24 AM, Aneesh Kumar K.V wrote:
-> Form2 associativity adds a much more flexible NUMA topology layout
-> than what is provided by Form1. More details can be found in patch 7.
-> 
-> $ numactl -H
-> ...
-> node distances:
-> node   0   1   2   3
->    0:  10  11  222  33
->    1:  44  10  55  66
->    2:  77  88  10  99
->    3:  101  121  132  10
-> $
-> 
-> After DAX kmem memory add
-> # numactl -H
-> available: 5 nodes (0-4)
-> ...
-> node distances:
-> node   0   1   2   3   4
->    0:  10  11  222  33  240
->    1:  44  10  55  66  255
->    2:  77  88  10  99  255
->    3:  101  121  132  10  230
->    4:  255  255  255  230  10
-> 
-> 
-> PAPR SCM now use the numa distance details to find the numa_node and target_node
-> for the device.
-> 
-> kvaneesh@ubuntu-guest:~$ ndctl  list -N -v
-> [
->    {
->      "dev":"namespace0.0",
->      "mode":"devdax",
->      "map":"dev",
->      "size":1071644672,
->      "uuid":"d333d867-3f57-44c8-b386-d4d3abdc2bf2",
->      "raw_uuid":"915361ad-fe6a-42dd-848f-d6dc9f5af362",
->      "daxregion":{
->        "id":0,
->        "size":1071644672,
->        "devices":[
->          {
->            "chardev":"dax0.0",
->            "size":1071644672,
->            "target_node":4,
->            "mode":"devdax"
->          }
->        ]
->      },
->      "align":2097152,
->      "numa_node":3
->    }
-> ]
-> kvaneesh@ubuntu-guest:~$
-> 
-> 
-> The above output is with a Qemu command line
-> 
-> -numa node,nodeid=4 \
-> -numa dist,src=0,dst=1,val=11 -numa dist,src=0,dst=2,val=222 -numa dist,src=0,dst=3,val=33 -numa dist,src=0,dst=4,val=240 \
-> -numa dist,src=1,dst=0,val=44 -numa dist,src=1,dst=2,val=55 -numa dist,src=1,dst=3,val=66 -numa dist,src=1,dst=4,val=255 \
-> -numa dist,src=2,dst=0,val=77 -numa dist,src=2,dst=1,val=88 -numa dist,src=2,dst=3,val=99 -numa dist,src=2,dst=4,val=255 \
-> -numa dist,src=3,dst=0,val=101 -numa dist,src=3,dst=1,val=121 -numa dist,src=3,dst=2,val=132 -numa dist,src=3,dst=4,val=230 \
-> -numa dist,src=4,dst=0,val=255 -numa dist,src=4,dst=1,val=255 -numa dist,src=4,dst=2,val=255 -numa dist,src=4,dst=3,val=230 \
-> -object memory-backend-file,id=memnvdimm1,prealloc=yes,mem-path=$PMEM_DISK,share=yes,size=${PMEM_SIZE}  \
-> -device nvdimm,label-size=128K,memdev=memnvdimm1,id=nvdimm1,slot=4,uuid=72511b67-0b3b-42fd-8d1d-5be3cae8bcaa,node=4
-> 
-> Qemu changes can be found at https://lore.kernel.org/qemu-devel/20210616011944.2996399-1-danielhb413@gmail.com/
-
-
-Series tested with the forementioned QEMU build. All patches:
-
-
-Tested-by: Daniel Henrique Barboza <danielhb413@gmail.com>
-
-> 
-> Changes from v6:
-> * Address review feedback
-> 
-> Changes from v5:
-> * Fix build error reported by kernel test robot
-> * Address review feedback
-> 
-> Changes from v4:
-> * Drop DLPAR related device tree property for now because both Qemu nor PowerVM
->    will provide the distance details of all possible NUMA nodes during boot.
-> * Rework numa distance code based on review feedback.
-> 
-> Changes from v3:
-> * Drop PAPR SCM specific changes and depend completely on NUMA distance information.
-> 
-> Changes from v2:
-> * Add nvdimm list to Cc:
-> * update PATCH 8 commit message.
-> 
-> Changes from v1:
-> * Update FORM2 documentation.
-> * rename max_domain_index to max_associativity_domain_index
-> 
-> 
-> Aneesh Kumar K.V (6):
->    powerpc/pseries: rename min_common_depth to primary_domain_index
->    powerpc/pseries: Rename TYPE1_AFFINITY to FORM1_AFFINITY
->    powerpc/pseries: Consolidate different NUMA distance update code paths
->    powerpc/pseries: Add a helper for form1 cpu distance
->    powerpc/pseries: Add support for FORM2 associativity
->    powerpc/pseries: Consolidate form1 distance initialization into a
->      helper
-> 
->   Documentation/powerpc/associativity.rst       | 103 +++++
->   arch/powerpc/include/asm/firmware.h           |   7 +-
->   arch/powerpc/include/asm/prom.h               |   3 +-
->   arch/powerpc/include/asm/topology.h           |   6 +-
->   arch/powerpc/kernel/prom_init.c               |   3 +-
->   arch/powerpc/mm/numa.c                        | 433 ++++++++++++++----
->   arch/powerpc/platforms/pseries/firmware.c     |   3 +-
->   arch/powerpc/platforms/pseries/hotplug-cpu.c  |   2 +
->   .../platforms/pseries/hotplug-memory.c        |   2 +
->   arch/powerpc/platforms/pseries/lpar.c         |   4 +-
->   10 files changed, 455 insertions(+), 111 deletions(-)
->   create mode 100644 Documentation/powerpc/associativity.rst
-> 
+diff --git a/drivers/crypto/qat/qat_4xxx/adf_drv.c b/drivers/crypto/qat/qat_4xxx/adf_drv.c
+index a8805c815d16..75e6c5540523 100644
+--- a/drivers/crypto/qat/qat_4xxx/adf_drv.c
++++ b/drivers/crypto/qat/qat_4xxx/adf_drv.c
+@@ -310,6 +310,7 @@ static struct pci_driver adf_driver = {
+ 	.probe = adf_probe,
+ 	.remove = adf_remove,
+ 	.sriov_configure = adf_sriov_configure,
++	.err_handler = adf_err_handler,
+ };
+ 
+ module_pci_driver(adf_driver);
+diff --git a/drivers/crypto/qat/qat_common/adf_aer.c b/drivers/crypto/qat/qat_common/adf_aer.c
+index d2ae293d0df6..701c3c5f8b9b 100644
+--- a/drivers/crypto/qat/qat_common/adf_aer.c
++++ b/drivers/crypto/qat/qat_common/adf_aer.c
+@@ -166,7 +166,7 @@ static void adf_resume(struct pci_dev *pdev)
+ 	dev_info(&pdev->dev, "Device is up and running\n");
+ }
+ 
+-static const struct pci_error_handlers adf_err_handler = {
++const struct pci_error_handlers adf_err_handler = {
+ 	.error_detected = adf_error_detected,
+ 	.slot_reset = adf_slot_reset,
+ 	.resume = adf_resume,
+@@ -187,7 +187,6 @@ int adf_enable_aer(struct adf_accel_dev *accel_dev)
+ 	struct pci_dev *pdev = accel_to_pci_dev(accel_dev);
+ 	struct pci_driver *pdrv = pdev->driver;
+ 
+-	pdrv->err_handler = &adf_err_handler;
+ 	pci_enable_pcie_error_reporting(pdev);
+ 	return 0;
+ }
+diff --git a/drivers/crypto/qat/qat_common/adf_common_drv.h b/drivers/crypto/qat/qat_common/adf_common_drv.h
+index c61476553728..98a29e0b8769 100644
+--- a/drivers/crypto/qat/qat_common/adf_common_drv.h
++++ b/drivers/crypto/qat/qat_common/adf_common_drv.h
+@@ -95,6 +95,7 @@ void adf_ae_fw_release(struct adf_accel_dev *accel_dev);
+ int adf_ae_start(struct adf_accel_dev *accel_dev);
+ int adf_ae_stop(struct adf_accel_dev *accel_dev);
+ 
++extern const struct pci_error_handlers adf_err_handler;
+ int adf_enable_aer(struct adf_accel_dev *accel_dev);
+ void adf_disable_aer(struct adf_accel_dev *accel_dev);
+ void adf_reset_sbr(struct adf_accel_dev *accel_dev);
