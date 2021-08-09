@@ -2,61 +2,59 @@ Return-Path: <SRS0=IXoQ=NA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1A3DC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Aug 2021 21:54:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A08AC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Aug 2021 21:55:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4787560F25
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Aug 2021 21:54:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4787560F25
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id EDCD260F25
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Aug 2021 21:55:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EDCD260F25
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=omp.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gk8y22sgNz30FD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 07:54:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gk8yV0cMnz30Gr
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 07:55:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WW6aFqzA;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=WW6aFqzA; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ spf=pass (sender SPF authorized) smtp.mailfrom=omp.ru
+ (client-ip=45.84.86.81; helo=mxout01.lancloud.ru;
+ envelope-from=s.shtylyov@omp.ru; receiver=<UNKNOWN>)
+X-Greylist: delayed 338 seconds by postgrey-1.36 at boromir;
+ Tue, 10 Aug 2021 06:56:07 AEST
+Received: from mxout01.lancloud.ru (mxout01.lancloud.ru [45.84.86.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gk43g2BxMz2yyM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Aug 2021 04:14:23 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 5978561002;
- Mon,  9 Aug 2021 18:14:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1628532859;
- bh=qXeJ0P/U8JvDxO9kR9G0/0wx57hQ6JjYEoFVv0vPQv8=;
- h=Date:From:To:Cc:Subject:In-Reply-To:From;
- b=WW6aFqzA3dvX3Ze6M+eftHp7JaBZzCklo9aY7tR1PQm8w/hnkzEnuCle4tCjoZiSe
- nT6rKeORsoNdjHgHs9BqQjZRVKkrC6rxN1uu2Ygmc41jcEEm8UEVPbXxSnQ6K0Wfj8
- qSINXH8XorzrEZOa15qbiDu7ItPII0bkSjch0lXkcnkoO4HSU1QbFOtyKkGI+wZYNN
- 0+0+St5OBLuFlSt+oW4UklxyjCkK/jpDv/4IACdl9gU6SOxr0i2z8LDiCotUp5Fcfn
- PGIel408/Vk6fQxN4caUeDLV9ODEWUpMqiy48I+zaYWawQn9qjAcLm5+IUrHSYXRZm
- w1DE8HFaMxc8g==
-Date: Mon, 9 Aug 2021 13:14:18 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH v2 0/6] PCI: Drop duplicated tracking of a pci_dev's
- bound driver
-Message-ID: <20210809181418.GA2168343@bjorn-Precision-5520>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gk7fH6fGqz2xnd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Aug 2021 06:56:06 +1000 (AEST)
+Received: from LanCloud
+DKIM-Filter: OpenDKIM Filter v2.11.0 mxout01.lancloud.ru 2BFC5206094F
+Received: from LanCloud
+Received: from LanCloud
+Received: from LanCloud
+Subject: [PATCH v2 7/9] usb: phy: fsl-usb: add IRQ check
+From: Sergey Shtylyov <s.shtylyov@omp.ru>
+To: <linux-usb@vger.kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@kernel.org>, Ran Wang
+ <ran.wang_1@nxp.com>
+References: <47bacc02-4e34-3208-779c-7072a6261782@omp.ru>
+Organization: Open Mobile Platform
+Message-ID: <b0a86089-8b8b-122e-fd6d-73e8c2304964@omp.ru>
+Date: Mon, 9 Aug 2021 23:50:18 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210807092645.52kn4ustyjudztvl@pengutronix.de>
+In-Reply-To: <47bacc02-4e34-3208-779c-7072a6261782@omp.ru>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [192.168.11.198]
+X-ClientProxiedBy: LFEXT02.lancloud.ru (fd00:f066::142) To
+ LFEX1907.lancloud.ru (fd00:f066::207)
 X-Mailman-Approved-At: Tue, 10 Aug 2021 07:54:12 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -69,190 +67,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
- =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, linux-pci@vger.kernel.org,
- Alexander Duyck <alexanderduyck@fb.com>,
- Sathya Prakash <sathya.prakash@broadcom.com>, oss-drivers@corigine.com,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Jiri Olsa <jolsa@redhat.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- linux-perf-users@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>,
- Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org,
- Ido Schimmel <idosch@nvidia.com>, x86@kernel.org, qat-linux@intel.com,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, Wojciech Ziemba <wojciech.ziemba@intel.com>,
- Jakub Kicinski <kuba@kernel.org>, Yisen Zhuang <yisen.zhuang@huawei.com>,
- Fiona Trahe <fiona.trahe@intel.com>, Andrew Donnellan <ajd@linux.ibm.com>,
- Mathias Nyman <mathias.nyman@intel.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
- Simon Horman <simon.horman@corigine.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Michael Buesch <m@bues.ch>, Jiri Pirko <jiri@nvidia.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Namhyung Kim <namhyung@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Andy Shevchenko <andriy.shevchenko@intel.com>, Juergen Gross <jgross@suse.com>,
- Salil Mehta <salil.mehta@huawei.com>,
- Sreekanth Reddy <sreekanth.reddy@broadcom.com>, xen-devel@lists.xenproject.org,
- Vadym Kochan <vkochan@marvell.com>, MPT-FusionLinux.pdl@broadcom.com,
- netdev@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- Taras Chornyi <tchornyi@marvell.com>, Zhou Wang <wangzhou1@hisilicon.com>,
- Arnd Bergmann <arnd@arndb.de>, linux-crypto@vger.kernel.org,
- kernel@pengutronix.de, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Frederic Barrat <fbarrat@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Aug 07, 2021 at 11:26:45AM +0200, Uwe Kleine-König wrote:
-> On Fri, Aug 06, 2021 at 04:24:52PM -0500, Bjorn Helgaas wrote:
-> > On Fri, Aug 06, 2021 at 08:46:23AM +0200, Uwe Kleine-König wrote:
-> > > On Thu, Aug 05, 2021 at 06:42:34PM -0500, Bjorn Helgaas wrote:
-> > 
-> > > > I looked at all the bus_type.probe() methods, it looks like pci_dev is
-> > > > not the only offender here.  At least the following also have a driver
-> > > > pointer in the device struct:
-> > > > 
-> > > >   parisc_device.driver
-> > > >   acpi_device.driver
-> > > >   dio_dev.driver
-> > > >   hid_device.driver
-> > > >   pci_dev.driver
-> > > >   pnp_dev.driver
-> > > >   rio_dev.driver
-> > > >   zorro_dev.driver
-> > > 
-> > > Right, when I converted zorro_dev it was pointed out that the code was
-> > > copied from pci and the latter has the same construct. :-)
-> > > See
-> > > https://lore.kernel.org/r/20210730191035.1455248-5-u.kleine-koenig@pengutronix.de
-> > > for the patch, I don't find where pci was pointed out, maybe it was on
-> > > irc only.
-> > 
-> > Oh, thanks!  I looked to see if you'd done something similar
-> > elsewhere, but I missed this one.
-> > 
-> > > > Looking through the places that care about pci_dev.driver (the ones
-> > > > updated by patch 5/6), many of them are ... a little dubious to begin
-> > > > with.  A few need the "struct pci_error_handlers *err_handler"
-> > > > pointer, so that's probably legitimate.  But many just need a name,
-> > > > and should probably be using dev_driver_string() instead.
-> > > 
-> > > Yeah, I considered adding a function to get the driver name from a
-> > > pci_dev and a function to get the error handlers. Maybe it's an idea to
-> > > introduce these two and then use to_pci_driver(pdev->dev.driver) for the
-> > > few remaining users? Maybe doing that on top of my current series makes
-> > > sense to have a clean switch from pdev->driver to pdev->dev.driver?!
-> > 
-> > I'd propose using dev_driver_string() for these places:
-> > 
-> >   eeh_driver_name() (could change callers to use dev_driver_string())
-> >   bcma_host_pci_probe()
-> >   qm_alloc_uacce()
-> >   hns3_get_drvinfo()
-> >   prestera_pci_probe()
-> >   mlxsw_pci_probe()
-> >   nfp_get_drvinfo()
-> >   ssb_pcihost_probe()
-> 
-> So the idea is:
-> 
-> 	PCI: Simplify pci_device_remove()
-> 	PCI: Drop useless check from pci_device_probe()
-> 	xen/pci: Drop some checks that are always true
-> 
-> are kept as is as preparation. (Do you want to take them from this v2,
-> or should I include them again in v3?)
+The driver neglects to check the result of platform_get_irq()'s call and
+blithely passes the negative error codes to request_irq() (which takes
+*unsigned* IRQ #), causing it to fail with -EINVAL, overriding an original
+error code. Stop calling request_irq() with the invalid IRQ #s.
 
-Easiest if you include them until we merge the series.
+Fixes: 0807c500a1a6 ("USB: add Freescale USB OTG Transceiver driver")
+Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
 
-> Then convert the list of functions above to use dev_driver_string() in a
-> 4th patch.
-> 
-> > The use in mpt_device_driver_register() looks unnecessary: it's only
-> > to get a struct pci_device_id *, which is passed to ->probe()
-> > functions that don't need it.
-> 
-> This is patch #5.
-> 
-> > The use in adf_enable_aer() looks wrong: it sets the err_handler
-> > pointer in one of the adf_driver structs.  I think those structs
-> > should be basically immutable, and the drivers that call
-> > adf_enable_aer() from their .probe() methods should set
-> > ".err_handler = &adf_err_handler" in their static adf_driver
-> > definitions instead.
-> 
-> I don't understand that one without some research, probably this yields
-> at least one patch.
+---
+ drivers/usb/phy/phy-fsl-usb.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Yeah, it's a little messy because you'd have to make adf_err_handler
-non-static and add an extern for it.  Sample below.
-
-> > I think that basically leaves these:
-> > 
-> >   uncore_pci_probe()     # .id_table, custom driver "registration"
-> >   match_id()             # .id_table, arch/x86/kernel/probe_roms.c
-> >   xhci_pci_quirks()      # .id_table
-> >   pci_error_handlers()   # roll-your-own AER handling, drivers/misc/cxl/guest.c
-> > 
-> > I think it would be fine to use to_pci_driver(pdev->dev.driver) for
-> > these few.
-> 
-> Converting these will be patch 7 then and patch 8 can then drop the
-> duplicated handling.
-> 
-> Sounds reasonable?
-
-Sounds good to me.  Thanks for working on this!
-
-Bjorn
-
-
-diff --git a/drivers/crypto/qat/qat_4xxx/adf_drv.c b/drivers/crypto/qat/qat_4xxx/adf_drv.c
-index a8805c815d16..75e6c5540523 100644
---- a/drivers/crypto/qat/qat_4xxx/adf_drv.c
-+++ b/drivers/crypto/qat/qat_4xxx/adf_drv.c
-@@ -310,6 +310,7 @@ static struct pci_driver adf_driver = {
- 	.probe = adf_probe,
- 	.remove = adf_remove,
- 	.sriov_configure = adf_sriov_configure,
-+	.err_handler = adf_err_handler,
- };
+Index: usb/drivers/usb/phy/phy-fsl-usb.c
+===================================================================
+--- usb.orig/drivers/usb/phy/phy-fsl-usb.c
++++ usb/drivers/usb/phy/phy-fsl-usb.c
+@@ -873,6 +873,8 @@ int usb_otg_start(struct platform_device
  
- module_pci_driver(adf_driver);
-diff --git a/drivers/crypto/qat/qat_common/adf_aer.c b/drivers/crypto/qat/qat_common/adf_aer.c
-index d2ae293d0df6..701c3c5f8b9b 100644
---- a/drivers/crypto/qat/qat_common/adf_aer.c
-+++ b/drivers/crypto/qat/qat_common/adf_aer.c
-@@ -166,7 +166,7 @@ static void adf_resume(struct pci_dev *pdev)
- 	dev_info(&pdev->dev, "Device is up and running\n");
- }
- 
--static const struct pci_error_handlers adf_err_handler = {
-+const struct pci_error_handlers adf_err_handler = {
- 	.error_detected = adf_error_detected,
- 	.slot_reset = adf_slot_reset,
- 	.resume = adf_resume,
-@@ -187,7 +187,6 @@ int adf_enable_aer(struct adf_accel_dev *accel_dev)
- 	struct pci_dev *pdev = accel_to_pci_dev(accel_dev);
- 	struct pci_driver *pdrv = pdev->driver;
- 
--	pdrv->err_handler = &adf_err_handler;
- 	pci_enable_pcie_error_reporting(pdev);
- 	return 0;
- }
-diff --git a/drivers/crypto/qat/qat_common/adf_common_drv.h b/drivers/crypto/qat/qat_common/adf_common_drv.h
-index c61476553728..98a29e0b8769 100644
---- a/drivers/crypto/qat/qat_common/adf_common_drv.h
-+++ b/drivers/crypto/qat/qat_common/adf_common_drv.h
-@@ -95,6 +95,7 @@ void adf_ae_fw_release(struct adf_accel_dev *accel_dev);
- int adf_ae_start(struct adf_accel_dev *accel_dev);
- int adf_ae_stop(struct adf_accel_dev *accel_dev);
- 
-+extern const struct pci_error_handlers adf_err_handler;
- int adf_enable_aer(struct adf_accel_dev *accel_dev);
- void adf_disable_aer(struct adf_accel_dev *accel_dev);
- void adf_reset_sbr(struct adf_accel_dev *accel_dev);
+ 	/* request irq */
+ 	p_otg->irq = platform_get_irq(pdev, 0);
++	if (p_otg->irq < 0)
++		return p_otg->irq;
+ 	status = request_irq(p_otg->irq, fsl_otg_isr,
+ 				IRQF_SHARED, driver_name, p_otg);
+ 	if (status) {
