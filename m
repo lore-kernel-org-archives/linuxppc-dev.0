@@ -2,69 +2,67 @@ Return-Path: <SRS0=xfaR=NB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-20.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8572BC432BE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 13:05:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D163C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 14:40:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F19C60FDA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 13:05:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9F19C60FDA
+	by mail.kernel.org (Postfix) with ESMTPS id C84BA60EDF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 14:40:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C84BA60EDF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GkY8y6yr2z3cHH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 23:05:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GkbGY0DSvz3cHv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Aug 2021 00:40:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kaod.org (client-ip=87.98.187.244; helo=10.mo52.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 1201 seconds by postgrey-1.36 at boromir;
- Tue, 10 Aug 2021 23:05:07 AEST
 Received: from 10.mo52.mail-out.ovh.net (10.mo52.mail-out.ovh.net
  [87.98.187.244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GkY8M3ZnZz2yXW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Aug 2021 23:05:05 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.4.98])
- by mo52.mail-out.ovh.net (Postfix) with ESMTPS id 762FF28E0AD;
- Tue, 10 Aug 2021 14:29:24 +0200 (CEST)
-Received: from kaod.org (37.59.142.98) by DAG4EX1.mxp5.local (172.16.2.31)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GkbFx6ltyz2yLg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Aug 2021 00:40:03 +1000 (AEST)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.138.188])
+ by mo52.mail-out.ovh.net (Postfix) with ESMTPS id 4F9CE28D983;
+ Tue, 10 Aug 2021 14:10:34 +0200 (CEST)
+Received: from kaod.org (37.59.142.96) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Tue, 10 Aug
- 2021 14:29:23 +0200
+ 2021 14:10:33 +0200
 Authentication-Results: garm.ovh; auth=pass
- (GARM-98R002fbe691c1-0908-429f-92dd-d22aaa425cef,
+ (GARM-96R001585fc535-c7b1-4071-ab7c-464b626dbf3e,
  8F36BE46FB8773C29BD4C9A30C998E4B5B7B2B54) smtp.auth=clg@kaod.org
 X-OVh-ClientIp: 90.89.73.13
 Subject: Re: [PATCH v2] powerpc/xive: Do not skip CPU-less nodes when creating
  the IPIs
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
 To: <linuxppc-dev@lists.ozlabs.org>
 References: <20210807072057.184698-1-clg@kaod.org>
- <dbcf71dc-2e5e-a6bc-9b55-f4e2f023dfd5@kaod.org>
-Message-ID: <6c72a812-c0e9-27c3-06bb-5db7bd7680eb@kaod.org>
-Date: Tue, 10 Aug 2021 14:29:23 +0200
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <dbcf71dc-2e5e-a6bc-9b55-f4e2f023dfd5@kaod.org>
+Date: Tue, 10 Aug 2021 14:10:33 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.11.0
 MIME-Version: 1.0
-In-Reply-To: <dbcf71dc-2e5e-a6bc-9b55-f4e2f023dfd5@kaod.org>
+In-Reply-To: <20210807072057.184698-1-clg@kaod.org>
 Content-Type: text/plain; charset="utf-8"
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [37.59.142.98]
-X-ClientProxiedBy: DAG7EX1.mxp5.local (172.16.2.61) To DAG4EX1.mxp5.local
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.96]
+X-ClientProxiedBy: DAG3EX1.mxp5.local (172.16.2.21) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: 03d7914e-046e-4507-bb90-a0c02437d3f6
-X-Ovh-Tracer-Id: 8152641226076752803
+X-Ovh-Tracer-GUID: 898aff2c-2d0f-455e-ae6c-791ba1f98149
+X-Ovh-Tracer-Id: 7834574503954189094
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrjeelgdehgecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefuhffvfhfkffgfgggjtgfgihesthejredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeelkeefveffvefgfffhgfehveeukeekteekteeitdejteetleffgffhtdetffetudenucffohhmrghinhepghhithhhuhgsrdgtohhmnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrdelkeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrjeelgdehtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefuvfhfhffkffgfgggjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehuedtheeghfdvhedtueelteegvdefueektdefiefhffffieduuddtudfhgfevtdenucffohhmrghinhepghhithhhuhgsrdgtohhmnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrdelieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,27 +76,141 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Laurent Vivier <lvivier@redhat.com>,
  Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
- 
-> I forgot to add that this version does break irqbalance anymore, since
-                                        
-                                ... does not break ...
+On 8/7/21 9:20 AM, Cédric Le Goater wrote:
+> On PowerVM, CPU-less nodes can be populated with hot-plugged CPUs at
+> runtime. Today, the IPI is not created for such nodes, and hot-plugged
+> CPUs use a bogus IPI, which leads to soft lockups.
+> 
+> We can not directly allocate and request the IPI on demand because
+> bringup_up() is called under the IRQ sparse lock. The alternative is
+> to allocate the IPIs for all possible nodes at startup and to request
+> the mapping on demand when the first CPU of a node is brought up.
+> 
+> Fixes: 7dcc37b3eff9 ("powerpc/xive: Map one IPI interrupt per node")
+> Cc: stable@vger.kernel.org # v5.13
+> Reported-by: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>
+> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> Cc: Laurent Vivier <lvivier@redhat.com>
+> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+> Message-Id: <20210629131542.743888-1-clg@kaod.org>
+> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+> ---
+>  arch/powerpc/sysdev/xive/common.c | 35 +++++++++++++++++++++----------
+>  1 file changed, 24 insertions(+), 11 deletions(-)
 
-Sorry for the noise,
+I forgot to add that this version does break irqbalance anymore, since
+Linux is not mapping interrupts of CPU-less nodes.
 
-> Linux is not mapping interrupts of CPU-less nodes.
+Anyhow, irqbalance is now fixed : 
+
+  https://github.com/Irqbalance/irqbalance/commit/a7f81483a95a94d6a62ca7fb999a090e01c0de9b
+
+So v1 (plus irqbalance patch above) or v2 are safe to use. I do prefer 
+v2.
+
+Thanks to Laurent and Srikar for the extra tests,
+
+C.
+
+> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+> index dbdbbc2f1dc5..943fd30095af 100644
+> --- a/arch/powerpc/sysdev/xive/common.c
+> +++ b/arch/powerpc/sysdev/xive/common.c
+> @@ -67,6 +67,7 @@ static struct irq_domain *xive_irq_domain;
+>  static struct xive_ipi_desc {
+>  	unsigned int irq;
+>  	char name[16];
+> +	atomic_t started;
+>  } *xive_ipis;
+>  
+>  /*
+> @@ -1120,7 +1121,7 @@ static const struct irq_domain_ops xive_ipi_irq_domain_ops = {
+>  	.alloc  = xive_ipi_irq_domain_alloc,
+>  };
+>  
+> -static int __init xive_request_ipi(void)
+> +static int __init xive_init_ipis(void)
+>  {
+>  	struct fwnode_handle *fwnode;
+>  	struct irq_domain *ipi_domain;
+> @@ -1144,10 +1145,6 @@ static int __init xive_request_ipi(void)
+>  		struct xive_ipi_desc *xid = &xive_ipis[node];
+>  		struct xive_ipi_alloc_info info = { node };
+>  
+> -		/* Skip nodes without CPUs */
+> -		if (cpumask_empty(cpumask_of_node(node)))
+> -			continue;
+> -
+>  		/*
+>  		 * Map one IPI interrupt per node for all cpus of that node.
+>  		 * Since the HW interrupt number doesn't have any meaning,
+> @@ -1159,11 +1156,6 @@ static int __init xive_request_ipi(void)
+>  		xid->irq = ret;
+>  
+>  		snprintf(xid->name, sizeof(xid->name), "IPI-%d", node);
+> -
+> -		ret = request_irq(xid->irq, xive_muxed_ipi_action,
+> -				  IRQF_PERCPU | IRQF_NO_THREAD, xid->name, NULL);
+> -
+> -		WARN(ret < 0, "Failed to request IPI %d: %d\n", xid->irq, ret);
+>  	}
+>  
+>  	return ret;
+> @@ -1178,6 +1170,22 @@ static int __init xive_request_ipi(void)
+>  	return ret;
+>  }
+>  
+> +static int __init xive_request_ipi(unsigned int cpu)
+> +{
+> +	struct xive_ipi_desc *xid = &xive_ipis[early_cpu_to_node(cpu)];
+> +	int ret;
+> +
+> +	if (atomic_inc_return(&xid->started) > 1)
+> +		return 0;
+> +
+> +	ret = request_irq(xid->irq, xive_muxed_ipi_action,
+> +			  IRQF_PERCPU | IRQF_NO_THREAD,
+> +			  xid->name, NULL);
+> +
+> +	WARN(ret < 0, "Failed to request IPI %d: %d\n", xid->irq, ret);
+> +	return ret;
+> +}
+> +
+>  static int xive_setup_cpu_ipi(unsigned int cpu)
+>  {
+>  	unsigned int xive_ipi_irq = xive_ipi_cpu_to_irq(cpu);
+> @@ -1192,6 +1200,9 @@ static int xive_setup_cpu_ipi(unsigned int cpu)
+>  	if (xc->hw_ipi != XIVE_BAD_IRQ)
+>  		return 0;
+>  
+> +	/* Register the IPI */
+> +	xive_request_ipi(cpu);
+> +
+>  	/* Grab an IPI from the backend, this will populate xc->hw_ipi */
+>  	if (xive_ops->get_ipi(cpu, xc))
+>  		return -EIO;
+> @@ -1231,6 +1242,8 @@ static void xive_cleanup_cpu_ipi(unsigned int cpu, struct xive_cpu *xc)
+>  	if (xc->hw_ipi == XIVE_BAD_IRQ)
+>  		return;
+>  
+> +	/* TODO: clear IPI mapping */
+> +
+>  	/* Mask the IPI */
+>  	xive_do_source_set_mask(&xc->ipi_data, true);
+>  
+> @@ -1253,7 +1266,7 @@ void __init xive_smp_probe(void)
+>  	smp_ops->cause_ipi = xive_cause_ipi;
+>  
+>  	/* Register the IPI */
+> -	xive_request_ipi();
+> +	xive_init_ipis();
+>  
+>  	/* Allocate and setup IPI for the boot CPU */
+>  	xive_setup_cpu_ipi(smp_processor_id());
 > 
-> Anyhow, irqbalance is now fixed : 
-> 
->   https://github.com/Irqbalance/irqbalance/commit/a7f81483a95a94d6a62ca7fb999a090e01c0de9b
-> 
-> So v1 (plus irqbalance patch above) or v2 are safe to use. I do prefer 
-> v2.
-> 
-> Thanks to Laurent and Srikar for the extra tests,
-> 
-> C.
+
