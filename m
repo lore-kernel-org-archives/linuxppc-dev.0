@@ -2,62 +2,100 @@ Return-Path: <SRS0=xfaR=NB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1839C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 04:20:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6EECC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 04:54:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0DDE66101D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 04:20:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0DDE66101D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id E08DB6101D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 04:54:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E08DB6101D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GkKVj4Sd0z3cYp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 14:20:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GkLFt0rMPz30F1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 14:54:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.a=rsa-sha256 header.s=201602 header.b=IzxuryAq;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CxTY+x93;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=dgibson@ozlabs.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=IzxuryAq; 
- dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=CxTY+x93; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GkKSb0Xhkz304R
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Aug 2021 14:18:22 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 4GkKSQ5SnVz9sXV; Tue, 10 Aug 2021 14:18:14 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gibson.dropbear.id.au; s=201602; t=1628569094;
- bh=R4Rfarwm4oFgdSr2eCPJ0F7hx4Ks/MCjeaoosS8XcdI=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=IzxuryAqImHf1+EHZwApe01gvUf9a1tR+AW/GezvqyOZeREstFEVb9/BoJWNv6zwe
- 3aLftldCN4U0b5g0ym0dBYtXRyG8VUw+Uk+xavxqz433jYTN/0o9DxBwPa6U5tsfSx
- SXJ01HmF6RojeCO98v8u0bshbUu+hEE9msUAz/qQ=
-Date: Tue, 10 Aug 2021 12:40:39 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v7 3/6] powerpc/pseries: Consolidate different NUMA
- distance update code paths
-Message-ID: <YRHnJ30QLP60D52m@yekko>
-References: <20210809052434.53978-1-aneesh.kumar@linux.ibm.com>
- <20210809052434.53978-4-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GkLF5471Cz306m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Aug 2021 14:53:29 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 17A4c5H2091681; Tue, 10 Aug 2021 00:53:19 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=CHNfh++tx+l5Y7r/lyyaYIVPTVOYZKUFM3NMMF2YYt0=;
+ b=CxTY+x93yGr3uNno/qFzxq9CsAM87osy10tHgfDyXpqSVIpKo5pMKUT1lZZun1Be16+Y
+ IcuY90IGE60guR/J4PTc2lTlQQC7xL4j+SvOWfumrL7YrbochXyT75rgIEp3vUp6dRWf
+ d5ZlD3H5+X3I0MoojtkqtN+HxrpClWFZ2aPYSZauXIIPMEg9H7oSJ66hW0hEX6qPOtJg
+ cU8qfU2oRAtVAT37Fgk0s1leXdz7VfUFGhfrJCAQGLylol8IzXo6aM1Oy/hPKNAWBKhH
+ C/IcG9W1d/t35nRzG22NbiMbdUodv4YUA5iZXevfc2OzXp0YNAW5Y+7A6SFBV06jcsA5 YQ== 
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3abg7kas72-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 10 Aug 2021 00:53:19 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17A4hZbw006482;
+ Tue, 10 Aug 2021 04:53:18 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25]) by ppma01wdc.us.ibm.com with ESMTP id 3a9htbg9sf-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 10 Aug 2021 04:53:18 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 17A4rINo38732168
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 10 Aug 2021 04:53:18 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1E26128058;
+ Tue, 10 Aug 2021 04:53:18 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 997832805E;
+ Tue, 10 Aug 2021 04:53:16 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.199.41.101])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue, 10 Aug 2021 04:53:16 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [PATCH] powerpc/book3s64/radix: make tlb_single_page_flush_ceiling a
+ debugfs entry
+Date: Tue, 10 Aug 2021 10:23:07 +0530
+Message-Id: <20210810045307.11892-1-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="8zM9R+1OE51NsaZW"
-Content-Disposition: inline
-In-Reply-To: <20210809052434.53978-4-aneesh.kumar@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 3Z86PQ1akAPa8RT6o10mkgfNySV5bvUM
+X-Proofpoint-ORIG-GUID: 3Z86PQ1akAPa8RT6o10mkgfNySV5bvUM
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-08-10_01:2021-08-06,
+ 2021-08-10 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 suspectscore=0
+ bulkscore=0 lowpriorityscore=0 mlxlogscore=999 adultscore=0 phishscore=0
+ priorityscore=1501 spamscore=0 mlxscore=0 impostorscore=0 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2107140000
+ definitions=main-2108100028
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,404 +107,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Daniel Henrique Barboza <danielhb413@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Similar to x86/s390 add a debugfs file to tune tlb_single_page_flush_ceiling.
 
---8zM9R+1OE51NsaZW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/mm/book3s64/radix_tlb.c | 48 ++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
 
-On Mon, Aug 09, 2021 at 10:54:31AM +0530, Aneesh Kumar K.V wrote:
-> The associativity details of the newly added resourced are collected from
-> the hypervisor via "ibm,configure-connector" rtas call. Update the numa
-> distance details of the newly added numa node after the above call.
->=20
-> Instead of updating NUMA distance every time we lookup a node id
-> from the associativity property, add helpers that can be used
-> during boot which does this only once. Also remove the distance
-> update from node id lookup helpers.
->=20
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
+index aefc100d79a7..5cca0fe130e7 100644
+--- a/arch/powerpc/mm/book3s64/radix_tlb.c
++++ b/arch/powerpc/mm/book3s64/radix_tlb.c
+@@ -17,6 +17,7 @@
+ #include <asm/trace.h>
+ #include <asm/cputhreads.h>
+ #include <asm/plpar_wrappers.h>
++#include <asm/debugfs.h>
+ 
+ #include "internal.h"
+ 
+@@ -1524,3 +1525,50 @@ void do_h_rpt_invalidate_prt(unsigned long pid, unsigned long lpid,
+ EXPORT_SYMBOL_GPL(do_h_rpt_invalidate_prt);
+ 
+ #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
++
++static ssize_t tlbflush_read_file(struct file *file, char __user *user_buf,
++			     size_t count, loff_t *ppos)
++{
++	char buf[32];
++	unsigned int len;
++
++	len = sprintf(buf, "%ld\n", tlb_single_page_flush_ceiling);
++	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
++}
++
++static ssize_t tlbflush_write_file(struct file *file,
++		 const char __user *user_buf, size_t count, loff_t *ppos)
++{
++	char buf[32];
++	ssize_t len;
++	int ceiling;
++
++	len = min(count, sizeof(buf) - 1);
++	if (copy_from_user(buf, user_buf, len))
++		return -EFAULT;
++
++	buf[len] = '\0';
++	if (kstrtoint(buf, 0, &ceiling))
++		return -EINVAL;
++
++	if (ceiling < 0)
++		return -EINVAL;
++
++	tlb_single_page_flush_ceiling = ceiling;
++	return count;
++}
++
++static const struct file_operations fops_tlbflush = {
++	.read = tlbflush_read_file,
++	.write = tlbflush_write_file,
++	.llseek = default_llseek,
++};
++
++static int __init create_tlb_single_page_flush_ceiling(void)
++{
++	debugfs_create_file("tlb_single_page_flush_ceiling", S_IRUSR | S_IWUSR,
++			    powerpc_debugfs_root, NULL, &fops_tlbflush);
++	return 0;
++}
++late_initcall(create_tlb_single_page_flush_ceiling);
++
+-- 
+2.31.1
 
-It would make review easier if you'd folded the fixes/cleanups from
-6/6 in here, rather than having them separate.
-
-> ---
->  arch/powerpc/include/asm/topology.h           |   2 +
->  arch/powerpc/mm/numa.c                        | 178 +++++++++++++-----
->  arch/powerpc/platforms/pseries/hotplug-cpu.c  |   2 +
->  .../platforms/pseries/hotplug-memory.c        |   2 +
->  4 files changed, 138 insertions(+), 46 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/a=
-sm/topology.h
-> index e4db64c0e184..a6425a70c37b 100644
-> --- a/arch/powerpc/include/asm/topology.h
-> +++ b/arch/powerpc/include/asm/topology.h
-> @@ -64,6 +64,7 @@ static inline int early_cpu_to_node(int cpu)
->  }
-> =20
->  int of_drconf_to_nid_single(struct drmem_lmb *lmb);
-> +void update_numa_distance(struct device_node *node);
-> =20
->  #else
-> =20
-> @@ -93,6 +94,7 @@ static inline int of_drconf_to_nid_single(struct drmem_=
-lmb *lmb)
->  	return first_online_node;
->  }
-> =20
-> +static inline void update_numa_distance(struct device_node *node) {}
->  #endif /* CONFIG_NUMA */
-> =20
->  #if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 368719b14dcc..c695faf67d68 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -208,22 +208,6 @@ int __node_distance(int a, int b)
->  }
->  EXPORT_SYMBOL(__node_distance);
-> =20
-> -static void initialize_distance_lookup_table(int nid,
-> -		const __be32 *associativity)
-> -{
-> -	int i;
-> -
-> -	if (affinity_form !=3D FORM1_AFFINITY)
-> -		return;
-> -
-> -	for (i =3D 0; i < distance_ref_points_depth; i++) {
-> -		const __be32 *entry;
-> -
-> -		entry =3D &associativity[be32_to_cpu(distance_ref_points[i]) - 1];
-> -		distance_lookup_table[nid][i] =3D of_read_number(entry, 1);
-> -	}
-> -}
-> -
->  /*
->   * Returns nid in the range [0..nr_node_ids], or -1 if no useful NUMA
->   * info is found.
-> @@ -241,15 +225,6 @@ static int associativity_to_nid(const __be32 *associ=
-ativity)
->  	/* POWER4 LPAR uses 0xffff as invalid node */
->  	if (nid =3D=3D 0xffff || nid >=3D nr_node_ids)
->  		nid =3D NUMA_NO_NODE;
-> -
-> -	if (nid > 0 &&
-> -		of_read_number(associativity, 1) >=3D distance_ref_points_depth) {
-> -		/*
-> -		 * Skip the length field and send start of associativity array
-
-So.. this highlights a point.  In your comments you're treating
-"associativity array" as meaning the value including the length plus
-the assoc IDs, but this comment you've removed is treating it as just
-the assoc IDs.  Personally I think things become clearer to talk about
-if you treat the canonical form of "associativity array" as just the
-assoc IDs (with implicit length), then treat the ibm,associativity
-properties as containing (length + associativity array).
-
-> -		 */
-> -		initialize_distance_lookup_table(nid, associativity + 1);
-> -	}
-> -
->  out:
->  	return nid;
->  }
-> @@ -287,6 +262,48 @@ int of_node_to_nid(struct device_node *device)
->  }
->  EXPORT_SYMBOL(of_node_to_nid);
-> =20
-> +static void __initialize_form1_numa_distance(const __be32 *associativity)
-> +{
-> +	int i, nid;
-> +
-> +	if (affinity_form !=3D FORM1_AFFINITY)
-> +		return;
-> +
-> +	nid =3D associativity_to_nid(associativity);
-> +	if (nid !=3D NUMA_NO_NODE) {
-> +		for (i =3D 0; i < distance_ref_points_depth; i++) {
-> +			const __be32 *entry;
-> +
-> +			entry =3D &associativity[be32_to_cpu(distance_ref_points[i])];
-
-So, here you've now removed all checks that distance_ref_points[i]
-doesn't overflow the length of associativity.  It comes back in 6/6,
-but it's still not ideal.
-
-> +			distance_lookup_table[nid][i] =3D of_read_number(entry, 1);
-> +		}
-> +	}
-> +}
-> +
-> +static void initialize_form1_numa_distance(struct device_node *node)
-> +{
-> +	const __be32 *associativity;
-> +
-> +	associativity =3D of_get_associativity(node);
-> +	if (!associativity)
-> +		return;
-> +
-> +	__initialize_form1_numa_distance(associativity);
-> +}
-> +
-> +/*
-> + * Used to update distance information w.r.t newly added node.
-> + */
-> +void update_numa_distance(struct device_node *node)
-> +{
-> +	if (affinity_form =3D=3D FORM0_AFFINITY)
-> +		return;
-> +	else if (affinity_form =3D=3D FORM1_AFFINITY) {
-> +		initialize_form1_numa_distance(node);
-> +		return;
-> +	}
-> +}
-> +
->  static int __init find_primary_domain_index(void)
->  {
->  	int index;
-> @@ -433,6 +450,48 @@ static int of_get_assoc_arrays(struct assoc_arrays *=
-aa)
->  	return 0;
->  }
-> =20
-> +static int get_nid_and_numa_distance(struct drmem_lmb *lmb)
-> +{
-> +	struct assoc_arrays aa =3D { .arrays =3D NULL };
-> +	int default_nid =3D NUMA_NO_NODE;
-
-There's still no point I can see to this intermediate variable.
-
-> +	int nid =3D default_nid;
-> +	int rc, index;
-> +
-> +	if ((primary_domain_index < 0) || !numa_enabled)
-> +		return default_nid;
-> +
-> +	rc =3D of_get_assoc_arrays(&aa);
-> +	if (rc)
-> +		return default_nid;
-> +
-> +	if (primary_domain_index <=3D aa.array_sz &&
-> +	    !(lmb->flags & DRCONF_MEM_AI_INVALID) && lmb->aa_index < aa.n_array=
-s) {
-> +		index =3D lmb->aa_index * aa.array_sz + primary_domain_index - 1;
-> +		nid =3D of_read_number(&aa.arrays[index], 1);
-> +
-> +		if (nid =3D=3D 0xffff || nid >=3D nr_node_ids)
-> +			nid =3D default_nid;
-> +		if (nid > 0 && affinity_form =3D=3D FORM1_AFFINITY) {
-> +			int i;
-> +			const __be32 *associativity;
-> +
-> +			index =3D lmb->aa_index * aa.array_sz;
-> +			associativity =3D &aa.arrays[index];
-> +			/*
-> +			 * lookup array associativity entries have different format
-> +			 * There is no length of the array as the first element.
-> +			 */
-> +			for (i =3D 0; i < distance_ref_points_depth; i++) {
-> +				const __be32 *entry;
-> +
-> +				entry =3D &associativity[be32_to_cpu(distance_ref_points[i]) - 1];
-> +				distance_lookup_table[nid][i] =3D of_read_number(entry, 1);
-> +			}
-> +		}
-> +	}
-> +	return nid;
-> +}
-> +
->  /*
->   * This is like of_node_to_nid_single() for memory represented in the
->   * ibm,dynamic-reconfiguration-memory node.
-> @@ -458,21 +517,14 @@ int of_drconf_to_nid_single(struct drmem_lmb *lmb)
-> =20
->  		if (nid =3D=3D 0xffff || nid >=3D nr_node_ids)
->  			nid =3D default_nid;
-> -
-> -		if (nid > 0) {
-> -			index =3D lmb->aa_index * aa.array_sz;
-> -			initialize_distance_lookup_table(nid,
-> -							&aa.arrays[index]);
-> -		}
->  	}
-> -
->  	return nid;
->  }
-> =20
->  #ifdef CONFIG_PPC_SPLPAR
-> -static int vphn_get_nid(long lcpu)
-> +
-> +static int __vphn_get_associativity(long lcpu, __be32 *associativity)
->  {
-> -	__be32 associativity[VPHN_ASSOC_BUFSIZE] =3D {0};
->  	long rc, hwid;
-> =20
->  	/*
-> @@ -492,12 +544,30 @@ static int vphn_get_nid(long lcpu)
-> =20
->  		rc =3D hcall_vphn(hwid, VPHN_FLAG_VCPU, associativity);
->  		if (rc =3D=3D H_SUCCESS)
-> -			return associativity_to_nid(associativity);
-> +			return 0;
->  	}
-> =20
-> +	return -1;
-> +}
-> +
-> +static int vphn_get_nid(long lcpu)
-> +{
-> +	__be32 associativity[VPHN_ASSOC_BUFSIZE] =3D {0};
-> +
-> +
-> +	if (!__vphn_get_associativity(lcpu, associativity))
-> +		return associativity_to_nid(associativity);
-> +
->  	return NUMA_NO_NODE;
-> +
->  }
->  #else
-> +
-> +static int __vphn_get_associativity(long lcpu, __be32 *associativity)
-> +{
-> +	return -1;
-> +}
-> +
->  static int vphn_get_nid(long unused)
->  {
->  	return NUMA_NO_NODE;
-> @@ -692,7 +762,7 @@ static int __init numa_setup_drmem_lmb(struct drmem_l=
-mb *lmb,
->  			size =3D read_n_cells(n_mem_size_cells, usm);
->  		}
-> =20
-> -		nid =3D of_drconf_to_nid_single(lmb);
-> +		nid =3D get_nid_and_numa_distance(lmb);
->  		fake_numa_create_new_node(((base + size) >> PAGE_SHIFT),
->  					  &nid);
->  		node_set_online(nid);
-> @@ -709,6 +779,7 @@ static int __init parse_numa_properties(void)
->  	struct device_node *memory;
->  	int default_nid =3D 0;
->  	unsigned long i;
-> +	const __be32 *associativity;
-> =20
->  	if (numa_enabled =3D=3D 0) {
->  		printk(KERN_WARNING "NUMA disabled by user\n");
-> @@ -734,18 +805,30 @@ static int __init parse_numa_properties(void)
->  	 * each node to be onlined must have NODE_DATA etc backing it.
->  	 */
->  	for_each_present_cpu(i) {
-> +		__be32 vphn_assoc[VPHN_ASSOC_BUFSIZE];
->  		struct device_node *cpu;
-> -		int nid =3D vphn_get_nid(i);
-> +		int nid =3D NUMA_NO_NODE;
-> =20
-> -		/*
-> -		 * Don't fall back to default_nid yet -- we will plug
-> -		 * cpus into nodes once the memory scan has discovered
-> -		 * the topology.
-> -		 */
-> -		if (nid =3D=3D NUMA_NO_NODE) {
-> +		memset(vphn_assoc, 0, VPHN_ASSOC_BUFSIZE * sizeof(__be32));
-> +
-> +		if (__vphn_get_associativity(i, vphn_assoc) =3D=3D 0) {
-> +			nid =3D associativity_to_nid(vphn_assoc);
-> +			__initialize_form1_numa_distance(vphn_assoc);
-> +		} else {
-> +
-> +			/*
-> +			 * Don't fall back to default_nid yet -- we will plug
-> +			 * cpus into nodes once the memory scan has discovered
-> +			 * the topology.
-> +			 */
->  			cpu =3D of_get_cpu_node(i, NULL);
->  			BUG_ON(!cpu);
-> -			nid =3D of_node_to_nid_single(cpu);
-> +
-> +			associativity =3D of_get_associativity(cpu);
-> +			if (associativity) {
-> +				nid =3D associativity_to_nid(associativity);
-> +				__initialize_form1_numa_distance(associativity);
-> +			}
->  			of_node_put(cpu);
->  		}
-> =20
-> @@ -781,8 +864,11 @@ static int __init parse_numa_properties(void)
->  		 * have associativity properties.  If none, then
->  		 * everything goes to default_nid.
->  		 */
-> -		nid =3D of_node_to_nid_single(memory);
-> -		if (nid < 0)
-> +		associativity =3D of_get_associativity(memory);
-> +		if (associativity) {
-> +			nid =3D associativity_to_nid(associativity);
-> +			__initialize_form1_numa_distance(associativity);
-> +		} else
->  			nid =3D default_nid;
-> =20
->  		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/=
-platforms/pseries/hotplug-cpu.c
-> index 7e970f81d8ff..778b6ab35f0d 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -498,6 +498,8 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
->  		return saved_rc;
->  	}
-> =20
-> +	update_numa_distance(dn);
-> +
->  	rc =3D dlpar_online_cpu(dn);
->  	if (rc) {
->  		saved_rc =3D rc;
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/power=
-pc/platforms/pseries/hotplug-memory.c
-> index 377d852f5a9a..ee1d81d7e54a 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -180,6 +180,8 @@ static int update_lmb_associativity_index(struct drme=
-m_lmb *lmb)
->  		return -ENODEV;
->  	}
-> =20
-> +	update_numa_distance(lmb_node);
-> +
->  	dr_node =3D of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
->  	if (!dr_node) {
->  		dlpar_free_cc_nodes(lmb_node);
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---8zM9R+1OE51NsaZW
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAmER5yUACgkQbDjKyiDZ
-s5KCxRAAsnxwCv181UqbKLTBYTvTZUly+rpc4dZWfuDIAlmX/QbhgLkKfQedX4ok
-P3oSIImviO3Gc1alQHkeFB8J5yMrWDnSVuYBqb2I/9T/X30FHVB9S/6+PZZynraU
-820di/c6RelhSkl2kdfhRLzQ5hAo3w70pd/mwZWac3+6AEARsiiWPOKYrm9am21y
-Oclor10Ar2eE0TUX0f8ByoMOQkeVffYPaeJZAgbzT0ETnaFVA62yTcTJqAkQC5Qg
-vo2/pnZkH9JNQrFtP0XMTjGIeKPeYRjIMfbLyjwZDOgljXyR92p/XI19OhajZCFY
-25wahYPfB1ECNVG7H65KK0JMlzaNxeycCydW4puEOKzn/K5hWThl6gFnM2c+e49D
-1pyTLttaXjwjhtORjB0D5+3q3222GTvZp/6yyxRk4se/yut/QoZSMCH08tl0eClk
-tETSs/OBbX7WIZc/ED4M7ui6yy74bzBuS+LwNH/Q3lwh1dpVTZK7rwGSN76p02Mz
-0WM8F8a0aT2kSbDhyjIlmEnTcKbeD9Ot1jx/rNLNXGha5vi+ps2RyeXOVvNW9miI
-eONRXH9XhnAnenCye5gSfos59Wy/h9T8XRKsPMlULJSntbv7EAr+GkJQmAJdyqMS
-CUt+UQX4Pk4CnF2Z12yzJE/cEuM+thh8UWMbZJRjqnHCQIsufuY=
-=xNOq
------END PGP SIGNATURE-----
-
---8zM9R+1OE51NsaZW--
