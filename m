@@ -7,45 +7,44 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85564C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 14:45:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12C0EC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 14:45:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 138EF60EB5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 14:45:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 138EF60EB5
+	by mail.kernel.org (Postfix) with ESMTPS id 8049660EB5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 14:45:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8049660EB5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GkbN02rrbz3dX5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Aug 2021 00:45:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GkbNT09WXz3db6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Aug 2021 00:45:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=134.134.136.100; helo=mga07.intel.com;
+ (client-ip=134.134.136.20; helo=mga02.intel.com;
  envelope-from=ricardo.neri-calderon@linux.intel.com; receiver=<UNKNOWN>)
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GkbK94hbWz30Lh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Aug 2021 00:42:53 +1000 (AEST)
-X-IronPort-AV: E=McAfee;i="6200,9189,10072"; a="278663301"
-X-IronPort-AV: E=Sophos;i="5.84,310,1620716400"; d="scan'208";a="278663301"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GkbKC4njJz30Fy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Aug 2021 00:42:55 +1000 (AEST)
+X-IronPort-AV: E=McAfee;i="6200,9189,10072"; a="202097421"
+X-IronPort-AV: E=Sophos;i="5.84,310,1620716400"; d="scan'208";a="202097421"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Aug 2021 07:41:45 -0700
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 10 Aug 2021 07:41:48 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.84,310,1620716400"; d="scan'208";a="526170588"
+X-IronPort-AV: E=Sophos;i="5.84,310,1620716400"; d="scan'208";a="526170599"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
- by fmsmga002.fm.intel.com with ESMTP; 10 Aug 2021 07:41:44 -0700
+ by fmsmga002.fm.intel.com with ESMTP; 10 Aug 2021 07:41:45 -0700
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To: "Peter Zijlstra (Intel)" <peterz@infradead.org>,
  Ingo Molnar <mingo@kernel.org>, Juri Lelli <juri.lelli@redhat.com>,
  Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH v4 4/6] sched/fair: Provide update_sg_lb_stats() with sched
- domain statistics
-Date: Tue, 10 Aug 2021 07:41:43 -0700
-Message-Id: <20210810144145.18776-5-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v4 6/6] sched/fair: Consider SMT in ASYM_PACKING load balance
+Date: Tue, 10 Aug 2021 07:41:45 -0700
+Message-Id: <20210810144145.18776-7-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20210810144145.18776-1-ricardo.neri-calderon@linux.intel.com>
 References: <20210810144145.18776-1-ricardo.neri-calderon@linux.intel.com>
@@ -77,12 +76,16 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Before deciding to pull tasks when using asymmetric packing of tasks,
-on some architectures (e.g., x86) it is necessary to know not only the
-state of dst_cpu but also of its SMT siblings. The decision to classify
-a candidate busiest group as group_asym_packing is done in
-update_sg_lb_stats(). Give this function access to the scheduling domain
-statistics, which contains the statistics of the local group.
+When deciding to pull tasks in ASYM_PACKING, it is necessary not only to
+check for the idle state of the destination CPU, dst_cpu, but also of
+its SMT siblings.
+
+If dst_cpu is idle but its SMT siblings are busy, performance suffers
+if it pulls tasks from a medium priority CPU that does not have SMT
+siblings.
+
+Implement asym_smt_can_pull_tasks() to inspect the state of the SMT
+siblings of both dst_cpu and the CPUs in the candidate busiest group.
 
 Cc: Aubrey Li <aubrey.li@intel.com>
 Cc: Ben Segall <bsegall@google.com>
@@ -96,52 +99,155 @@ Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Tim Chen <tim.c.chen@linux.intel.com>
 Reviewed-by: Joel Fernandes (Google) <joel@joelfernandes.org>
 Reviewed-by: Len Brown <len.brown@intel.com>
-Originally-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
 Changes since v3:
-  * None
+  * Removed the arch_asym_check_smt_siblings() hook. Discussions with the
+    powerpc folks showed that this patch should not impact them. Also, more
+    recent powerpc processor no longer use asym_packing. (PeterZ)
+  * Removed unnecessary local variable in asym_can_pull_tasks(). (Dietmar)
+  * Removed unnecessary check for local CPUs when the local group has zero
+    utilization. (Joel)
+  * Renamed asym_can_pull_tasks() as asym_smt_can_pull_tasks() to reflect
+    the fact that it deals with SMT cases.
+  * Made asym_smt_can_pull_tasks() return false for !CONFIG_SCHED_SMT so
+    that callers can deal with non-SMT cases.
 
 Changes since v2:
-  * Introduced this patch.
+  * Reworded the commit message to reflect updates in code.
+  * Corrected misrepresentation of dst_cpu as the CPU doing the load
+    balancing. (PeterZ)
+  * Removed call to arch_asym_check_smt_siblings() as it is now called in
+    sched_asym().
 
 Changes since v1:
-  * N/A
+  * Don't bailout in update_sd_pick_busiest() if dst_cpu cannot pull
+    tasks. Instead, reclassify the candidate busiest group, as it
+    may still be selected. (PeterZ)
+  * Avoid an expensive and unnecessary call to cpumask_weight() when
+    determining if a sched_group is comprised of SMT siblings.
+    (PeterZ).
 ---
- kernel/sched/fair.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ kernel/sched/fair.c | 95 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 95 insertions(+)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 3b686e18a39b..ae3d2bc59d8d 100644
+index dd411cefb63f..8a1a2a43732c 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -8539,6 +8539,7 @@ group_type group_classify(unsigned int imbalance_pct,
-  * @sg_status: Holds flag indicating the status of the sched_group
-  */
- static inline void update_sg_lb_stats(struct lb_env *env,
-+				      struct sd_lb_stats *sds,
- 				      struct sched_group *group,
- 				      struct sg_lb_stats *sgs,
- 				      int *sg_status)
-@@ -8547,7 +8548,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
+@@ -8531,10 +8531,99 @@ group_type group_classify(unsigned int imbalance_pct,
+ 	return group_has_spare;
+ }
  
- 	memset(sgs, 0, sizeof(*sgs));
++/**
++ * asym_smt_can_pull_tasks - Check whether the load balancing CPU can pull tasks
++ * @dst_cpu:	Destination CPU of the load balancing
++ * @sds:	Load-balancing data with statistics of the local group
++ * @sgs:	Load-balancing statistics of the candidate busiest group
++ * @sg:		The candidate busiet group
++ *
++ * Check the state of the SMT siblings of both @sds::local and @sg and decide
++ * if @dst_cpu can pull tasks. If @dst_cpu does not have SMT siblings, it can
++ * pull tasks if two or more of the SMT siblings of @sg are busy. If only one
++ * CPU in @sg is busy, pull tasks only if @dst_cpu has higher priority.
++ *
++ * If both @dst_cpu and @sg have SMT siblings, even the number of idle CPUs
++ * between @sds::local and @sg. Thus, pull tasks from @sg if the difference
++ * between the number of busy CPUs is 2 or more. If the difference is of 1,
++ * only pull if @dst_cpu has higher priority. If @sg does not have SMT siblings
++ * only pull tasks if all of the SMT siblings of @dst_cpu are idle and @sg
++ * has lower priority.
++ */
++static bool asym_smt_can_pull_tasks(int dst_cpu, struct sd_lb_stats *sds,
++				    struct sg_lb_stats *sgs,
++				    struct sched_group *sg)
++{
++#ifdef CONFIG_SCHED_SMT
++	bool local_is_smt, sg_is_smt;
++	int sg_busy_cpus;
++
++	local_is_smt = sds->local->flags & SD_SHARE_CPUCAPACITY;
++	sg_is_smt = sg->flags & SD_SHARE_CPUCAPACITY;
++
++	sg_busy_cpus = sgs->group_weight - sgs->idle_cpus;
++
++	if (!local_is_smt) {
++		/*
++		 * If we are here, @dst_cpu is idle and does not have SMT
++		 * siblings. Pull tasks if candidate group has two or more
++		 * busy CPUs.
++		 */
++		if (sg_is_smt && sg_busy_cpus >= 2)
++			return true;
++
++		/*
++		 * @dst_cpu does not have SMT siblings. @sg may have SMT
++		 * siblings and only one is busy. In such case, @dst_cpu
++		 * can help if it has higher priority and is idle.
++		 */
++		return !sds->local_stat.group_util &&
++		       sched_asym_prefer(dst_cpu, sg->asym_prefer_cpu);
++	}
++
++	/* @dst_cpu has SMT siblings. */
++
++	if (sg_is_smt) {
++		int local_busy_cpus = sds->local->group_weight -
++				      sds->local_stat.idle_cpus;
++		int busy_cpus_delta = sg_busy_cpus - local_busy_cpus;
++
++		/* Local can always help to even the number busy CPUs. */
++		if (busy_cpus_delta >= 2)
++			return true;
++
++		if (busy_cpus_delta == 1)
++			return sched_asym_prefer(dst_cpu,
++						 sg->asym_prefer_cpu);
++
++		return false;
++	}
++
++	/*
++	 * @sg does not have SMT siblings. Ensure that @sds::local does not end
++	 * up with more than one busy SMT sibling and only pull tasks if there
++	 * are not busy CPUs. As CPUs move in and out of idle state frequently,
++	 * also check the group utilization to smoother the decision.
++	 */
++	if (!sds->local_stat.group_util)
++		return sched_asym_prefer(dst_cpu, sg->asym_prefer_cpu);
++
++	return false;
++#else
++	/* Always return false so that callers deal with non-SMT cases. */
++	return false;
++#endif
++}
++
+ static inline bool
+ sched_asym(struct lb_env *env, struct sd_lb_stats *sds,  struct sg_lb_stats *sgs,
+ 	   struct sched_group *group)
+ {
++	/* Only do SMT checks if either local or candidate have SMT siblings */
++	if ((sds->local->flags & SD_SHARE_CPUCAPACITY) ||
++	    (group->flags & SD_SHARE_CPUCAPACITY))
++		return asym_smt_can_pull_tasks(env->dst_cpu, sds, sgs, group);
++
+ 	return sched_asym_prefer(env->dst_cpu, group->asym_prefer_cpu);
+ }
  
--	local_group = cpumask_test_cpu(env->dst_cpu, sched_group_span(group));
-+	local_group = group == sds->local;
+@@ -9540,6 +9629,12 @@ static struct rq *find_busiest_queue(struct lb_env *env,
+ 		    nr_running == 1)
+ 			continue;
  
- 	for_each_cpu_and(i, sched_group_span(group), env->cpus) {
- 		struct rq *rq = cpu_rq(i);
-@@ -9110,7 +9111,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
- 				update_group_capacity(env->sd, env->dst_cpu);
- 		}
- 
--		update_sg_lb_stats(env, sg, sgs, &sg_status);
-+		update_sg_lb_stats(env, sds, sg, sgs, &sg_status);
- 
- 		if (local_group)
- 			goto next_group;
++		/* Make sure we only pull tasks from a CPU of lower priority */
++		if ((env->sd->flags & SD_ASYM_PACKING) &&
++		    sched_asym_prefer(i, env->dst_cpu) &&
++		    nr_running == 1)
++			continue;
++
+ 		switch (env->migration_type) {
+ 		case migrate_load:
+ 			/*
 -- 
 2.17.1
 
