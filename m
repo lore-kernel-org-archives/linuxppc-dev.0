@@ -2,67 +2,53 @@ Return-Path: <SRS0=xfaR=NB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.3 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D163C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 14:40:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B0E3C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 14:43:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C84BA60EDF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 14:40:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C84BA60EDF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7068A60F25
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Aug 2021 14:43:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7068A60F25
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GkbGY0DSvz3cHv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Aug 2021 00:40:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=87.98.187.244; helo=10.mo52.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Received: from 10.mo52.mail-out.ovh.net (10.mo52.mail-out.ovh.net
- [87.98.187.244])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GkbKY5h4Mz3bP2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Aug 2021 00:43:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=linux.intel.com
+ (client-ip=192.55.52.151; helo=mga17.intel.com;
+ envelope-from=ricardo.neri-calderon@linux.intel.com; receiver=<UNKNOWN>)
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GkbFx6ltyz2yLg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Aug 2021 00:40:03 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.138.188])
- by mo52.mail-out.ovh.net (Postfix) with ESMTPS id 4F9CE28D983;
- Tue, 10 Aug 2021 14:10:34 +0200 (CEST)
-Received: from kaod.org (37.59.142.96) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Tue, 10 Aug
- 2021 14:10:33 +0200
-Authentication-Results: garm.ovh; auth=pass
- (GARM-96R001585fc535-c7b1-4071-ab7c-464b626dbf3e,
- 8F36BE46FB8773C29BD4C9A30C998E4B5B7B2B54) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 90.89.73.13
-Subject: Re: [PATCH v2] powerpc/xive: Do not skip CPU-less nodes when creating
- the IPIs
-To: <linuxppc-dev@lists.ozlabs.org>
-References: <20210807072057.184698-1-clg@kaod.org>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <dbcf71dc-2e5e-a6bc-9b55-f4e2f023dfd5@kaod.org>
-Date: Tue, 10 Aug 2021 14:10:33 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
-MIME-Version: 1.0
-In-Reply-To: <20210807072057.184698-1-clg@kaod.org>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.96]
-X-ClientProxiedBy: DAG3EX1.mxp5.local (172.16.2.21) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: 898aff2c-2d0f-455e-ae6c-791ba1f98149
-X-Ovh-Tracer-Id: 7834574503954189094
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrjeelgdehtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefuvfhfhffkffgfgggjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehuedtheeghfdvhedtueelteegvdefueektdefiefhffffieduuddtudfhgfevtdenucffohhmrghinhepghhithhhuhgsrdgtohhmnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrdelieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GkbK54C35z2xtv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Aug 2021 00:42:48 +1000 (AEST)
+X-IronPort-AV: E=McAfee;i="6200,9189,10072"; a="195181909"
+X-IronPort-AV: E=Sophos;i="5.84,310,1620716400"; d="scan'208";a="195181909"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+ by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 10 Aug 2021 07:41:45 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.84,310,1620716400"; d="scan'208";a="526170594"
+Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
+ by fmsmga002.fm.intel.com with ESMTP; 10 Aug 2021 07:41:45 -0700
+From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To: "Peter Zijlstra (Intel)" <peterz@infradead.org>,
+ Ingo Molnar <mingo@kernel.org>, Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>
+Subject: [PATCH v4 5/6] sched/fair: Carve out logic to mark a group for
+ asymmetric packing
+Date: Tue, 10 Aug 2021 07:41:44 -0700
+Message-Id: <20210810144145.18776-6-ricardo.neri-calderon@linux.intel.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210810144145.18776-1-ricardo.neri-calderon@linux.intel.com>
+References: <20210810144145.18776-1-ricardo.neri-calderon@linux.intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,143 +60,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Laurent Vivier <lvivier@redhat.com>,
- Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, stable@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Aubrey Li <aubrey.li@intel.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ "Ravi V. Shankar" <ravi.v.shankar@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ Aubrey Li <aubrey.li@linux.intel.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Ricardo Neri <ricardo.neri@intel.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Quentin Perret <qperret@google.com>, Ben Segall <bsegall@google.com>,
+ Mel Gorman <mgorman@suse.de>, Daniel Bristot de Oliveira <bristot@redhat.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ "Joel Fernandes \(Google\)" <joel@joelfernandes.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org,
+ Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 8/7/21 9:20 AM, Cédric Le Goater wrote:
-> On PowerVM, CPU-less nodes can be populated with hot-plugged CPUs at
-> runtime. Today, the IPI is not created for such nodes, and hot-plugged
-> CPUs use a bogus IPI, which leads to soft lockups.
-> 
-> We can not directly allocate and request the IPI on demand because
-> bringup_up() is called under the IRQ sparse lock. The alternative is
-> to allocate the IPIs for all possible nodes at startup and to request
-> the mapping on demand when the first CPU of a node is brought up.
-> 
-> Fixes: 7dcc37b3eff9 ("powerpc/xive: Map one IPI interrupt per node")
-> Cc: stable@vger.kernel.org # v5.13
-> Reported-by: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>
-> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> Cc: Laurent Vivier <lvivier@redhat.com>
-> Signed-off-by: Cédric Le Goater <clg@kaod.org>
-> Message-Id: <20210629131542.743888-1-clg@kaod.org>
-> Signed-off-by: Cédric Le Goater <clg@kaod.org>
-> ---
->  arch/powerpc/sysdev/xive/common.c | 35 +++++++++++++++++++++----------
->  1 file changed, 24 insertions(+), 11 deletions(-)
+Create a separate function, sched_asym(). A subsequent changeset will
+introduce logic to deal with SMT in conjunction with asmymmetric
+packing. Such logic will need the statistics of the scheduling
+group provided as argument. Update them before calling sched_asym().
 
-I forgot to add that this version does break irqbalance anymore, since
-Linux is not mapping interrupts of CPU-less nodes.
+Cc: Aubrey Li <aubrey.li@intel.com>
+Cc: Ben Segall <bsegall@google.com>
+Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: Quentin Perret <qperret@google.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Tim Chen <tim.c.chen@linux.intel.com>
+Reviewed-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+Reviewed-by: Len Brown <len.brown@intel.com>
+Co-developed-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+---
+Changes since v3:
+  * Remove a redundant check for the local group in sched_asym().
+    (Dietmar)
+  * Reworded commit message for clarity. (Len)
 
-Anyhow, irqbalance is now fixed : 
+Changes since v2:
+  * Introduced this patch.
 
-  https://github.com/Irqbalance/irqbalance/commit/a7f81483a95a94d6a62ca7fb999a090e01c0de9b
+Changes since v1:
+  * N/A
+---
+ kernel/sched/fair.c | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
-So v1 (plus irqbalance patch above) or v2 are safe to use. I do prefer 
-v2.
-
-Thanks to Laurent and Srikar for the extra tests,
-
-C.
-
-> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-> index dbdbbc2f1dc5..943fd30095af 100644
-> --- a/arch/powerpc/sysdev/xive/common.c
-> +++ b/arch/powerpc/sysdev/xive/common.c
-> @@ -67,6 +67,7 @@ static struct irq_domain *xive_irq_domain;
->  static struct xive_ipi_desc {
->  	unsigned int irq;
->  	char name[16];
-> +	atomic_t started;
->  } *xive_ipis;
->  
->  /*
-> @@ -1120,7 +1121,7 @@ static const struct irq_domain_ops xive_ipi_irq_domain_ops = {
->  	.alloc  = xive_ipi_irq_domain_alloc,
->  };
->  
-> -static int __init xive_request_ipi(void)
-> +static int __init xive_init_ipis(void)
->  {
->  	struct fwnode_handle *fwnode;
->  	struct irq_domain *ipi_domain;
-> @@ -1144,10 +1145,6 @@ static int __init xive_request_ipi(void)
->  		struct xive_ipi_desc *xid = &xive_ipis[node];
->  		struct xive_ipi_alloc_info info = { node };
->  
-> -		/* Skip nodes without CPUs */
-> -		if (cpumask_empty(cpumask_of_node(node)))
-> -			continue;
-> -
->  		/*
->  		 * Map one IPI interrupt per node for all cpus of that node.
->  		 * Since the HW interrupt number doesn't have any meaning,
-> @@ -1159,11 +1156,6 @@ static int __init xive_request_ipi(void)
->  		xid->irq = ret;
->  
->  		snprintf(xid->name, sizeof(xid->name), "IPI-%d", node);
-> -
-> -		ret = request_irq(xid->irq, xive_muxed_ipi_action,
-> -				  IRQF_PERCPU | IRQF_NO_THREAD, xid->name, NULL);
-> -
-> -		WARN(ret < 0, "Failed to request IPI %d: %d\n", xid->irq, ret);
->  	}
->  
->  	return ret;
-> @@ -1178,6 +1170,22 @@ static int __init xive_request_ipi(void)
->  	return ret;
->  }
->  
-> +static int __init xive_request_ipi(unsigned int cpu)
-> +{
-> +	struct xive_ipi_desc *xid = &xive_ipis[early_cpu_to_node(cpu)];
-> +	int ret;
-> +
-> +	if (atomic_inc_return(&xid->started) > 1)
-> +		return 0;
-> +
-> +	ret = request_irq(xid->irq, xive_muxed_ipi_action,
-> +			  IRQF_PERCPU | IRQF_NO_THREAD,
-> +			  xid->name, NULL);
-> +
-> +	WARN(ret < 0, "Failed to request IPI %d: %d\n", xid->irq, ret);
-> +	return ret;
-> +}
-> +
->  static int xive_setup_cpu_ipi(unsigned int cpu)
->  {
->  	unsigned int xive_ipi_irq = xive_ipi_cpu_to_irq(cpu);
-> @@ -1192,6 +1200,9 @@ static int xive_setup_cpu_ipi(unsigned int cpu)
->  	if (xc->hw_ipi != XIVE_BAD_IRQ)
->  		return 0;
->  
-> +	/* Register the IPI */
-> +	xive_request_ipi(cpu);
-> +
->  	/* Grab an IPI from the backend, this will populate xc->hw_ipi */
->  	if (xive_ops->get_ipi(cpu, xc))
->  		return -EIO;
-> @@ -1231,6 +1242,8 @@ static void xive_cleanup_cpu_ipi(unsigned int cpu, struct xive_cpu *xc)
->  	if (xc->hw_ipi == XIVE_BAD_IRQ)
->  		return;
->  
-> +	/* TODO: clear IPI mapping */
-> +
->  	/* Mask the IPI */
->  	xive_do_source_set_mask(&xc->ipi_data, true);
->  
-> @@ -1253,7 +1266,7 @@ void __init xive_smp_probe(void)
->  	smp_ops->cause_ipi = xive_cause_ipi;
->  
->  	/* Register the IPI */
-> -	xive_request_ipi();
-> +	xive_init_ipis();
->  
->  	/* Allocate and setup IPI for the boot CPU */
->  	xive_setup_cpu_ipi(smp_processor_id());
-> 
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index ae3d2bc59d8d..dd411cefb63f 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -8531,6 +8531,13 @@ group_type group_classify(unsigned int imbalance_pct,
+ 	return group_has_spare;
+ }
+ 
++static inline bool
++sched_asym(struct lb_env *env, struct sd_lb_stats *sds,  struct sg_lb_stats *sgs,
++	   struct sched_group *group)
++{
++	return sched_asym_prefer(env->dst_cpu, group->asym_prefer_cpu);
++}
++
+ /**
+  * update_sg_lb_stats - Update sched_group's statistics for load balancing.
+  * @env: The load balancing environment.
+@@ -8591,18 +8598,17 @@ static inline void update_sg_lb_stats(struct lb_env *env,
+ 		}
+ 	}
+ 
++	sgs->group_capacity = group->sgc->capacity;
++
++	sgs->group_weight = group->group_weight;
++
+ 	/* Check if dst CPU is idle and preferred to this group */
+ 	if (!local_group && env->sd->flags & SD_ASYM_PACKING &&
+-	    env->idle != CPU_NOT_IDLE &&
+-	    sgs->sum_h_nr_running &&
+-	    sched_asym_prefer(env->dst_cpu, group->asym_prefer_cpu)) {
++	    env->idle != CPU_NOT_IDLE && sgs->sum_h_nr_running &&
++	    sched_asym(env, sds, sgs, group)) {
+ 		sgs->group_asym_packing = 1;
+ 	}
+ 
+-	sgs->group_capacity = group->sgc->capacity;
+-
+-	sgs->group_weight = group->group_weight;
+-
+ 	sgs->group_type = group_classify(env->sd->imbalance_pct, group, sgs);
+ 
+ 	/* Computing avg_load makes sense only when group is overloaded */
+-- 
+2.17.1
 
