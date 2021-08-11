@@ -2,117 +2,63 @@ Return-Path: <SRS0=Olcr=NC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E7F6C432BE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Aug 2021 12:47:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91E8AC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Aug 2021 12:54:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C4D6F6056C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Aug 2021 12:47:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C4D6F6056C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 38B6960F22
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Aug 2021 12:54:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 38B6960F22
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gl8jk1F2fz3bnJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Aug 2021 22:47:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pv79AOHO;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gl8sD4cgzz3cJg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Aug 2021 22:54:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com;
+ smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
+ helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=pv79AOHO; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gl8hp4nndz302W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Aug 2021 22:46:50 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 17BCXveI020593; Wed, 11 Aug 2021 08:46:47 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=Y4hZ51Uv+Q9tIIeG033/i31F6ICBSLny+IRgHDDF4Ik=;
- b=pv79AOHOJTEDbhf58haV2G7BZi0/zQMMDB+f4BZxtIb68H1KKqKhYUrkNiYHn8wisfl7
- +ER44jBQCPEZE6g84e1NFiWBomrexDV0dQLlv1yodLljxrYNARyPK5EMzrYs3w0i1fCF
- uEMIBHo+Ns0Shjk80NPwwpNX1IMvdbLlvTWWTGQw9roDiDDXjb8XHwn+jVF3nMSxL/sH
- C199U1iZ16E8xg/qbcnjC0l0BTkZI1eyOm15TK6Vqgl+zowJwTmlH4SFDwoAhZjt7+wj
- TikWbtglEPnhAFiw+6WGt1K9wDvB6uIBfguSry357zXXAovwzb2yaoLgsKPseWEtYdpq hA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3abt14f94n-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 Aug 2021 08:46:47 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 17BCXw2l020720;
- Wed, 11 Aug 2021 08:46:47 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3abt14f940-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 Aug 2021 08:46:46 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17BChR9C005980;
- Wed, 11 Aug 2021 12:46:45 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma03ams.nl.ibm.com with ESMTP id 3a9ht9020v-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 Aug 2021 12:46:45 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 17BCkgD243974992
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 11 Aug 2021 12:46:42 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A61594C06E;
- Wed, 11 Aug 2021 12:46:42 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 871254C066;
- Wed, 11 Aug 2021 12:46:41 +0000 (GMT)
-Received: from Madhavan.PrimaryTP (unknown [9.85.71.29])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 11 Aug 2021 12:46:41 +0000 (GMT)
-Subject: Re: [PATCH v1 16/55] powerpc/64s: Implement PMU override command line
- option
-To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
-References: <20210726035036.739609-1-npiggin@gmail.com>
- <20210726035036.739609-17-npiggin@gmail.com>
- <e7bb1311-3b50-dcc2-7fb0-1773558e9abc@linux.ibm.com>
- <1628245966.h9u2e2m21l.astroid@bobo.none>
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-Message-ID: <c38c0802-1e59-f5bf-6d24-169db49f4427@linux.ibm.com>
-Date: Wed, 11 Aug 2021 18:16:40 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gl2Vm5Hv7z3029
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Aug 2021 18:07:44 +1000 (AEST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+ by metis.ext.pengutronix.de with esmtps
+ (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1mDjGA-0000yl-5I; Wed, 11 Aug 2021 10:06:46 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+ by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1mDjG4-0000O2-Lw; Wed, 11 Aug 2021 10:06:40 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1mDjG4-0002vI-Id; Wed, 11 Aug 2021 10:06:40 +0200
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Subject: [PATCH v3 0/8] PCI: Drop duplicated tracking of a pci_dev's bound
+ driver
+Date: Wed, 11 Aug 2021 10:06:29 +0200
+Message-Id: <20210811080637.2596434-1-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-In-Reply-To: <1628245966.h9u2e2m21l.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 17IApHHt5G8d-4OWExycSnxWezf1NBgC
-X-Proofpoint-GUID: N2t1KoQBOenPW2JtSo2g0cCf4ptimMH3
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-08-11_04:2021-08-11,
- 2021-08-11 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 impostorscore=0
- phishscore=0 malwarescore=0 adultscore=0 suspectscore=0 lowpriorityscore=0
- spamscore=0 mlxlogscore=999 clxscore=1015 bulkscore=0 priorityscore=1501
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2107140000
- definitions=main-2108110085
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
+ SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+X-Mailman-Approved-At: Wed, 11 Aug 2021 22:53:44 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -124,129 +70,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Sathya Prakash <sathya.prakash@broadcom.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Alexander Duyck <alexanderduyck@fb.com>, x86@kernel.org, qat-linux@intel.com,
+ oss-drivers@corigine.com, Oliver O'Halloran <oohall@gmail.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Jiri Olsa <jolsa@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Marco Chiappero <marco.chiappero@intel.com>,
+ Stefano Stabellini <sstabellini@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ linux-scsi@vger.kernel.org,
+ =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ linux-pci@vger.kernel.org, linux-wireless@vger.kernel.org,
+ Jakub Kicinski <kuba@kernel.org>, Yisen Zhuang <yisen.zhuang@huawei.com>,
+ Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
+ Fiona Trahe <fiona.trahe@intel.com>, Andrew Donnellan <ajd@linux.ibm.com>,
+ =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Ido Schimmel <idosch@nvidia.com>, Simon Horman <simon.horman@corigine.com>,
+ linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Jack Xu <jack.xu@intel.com>, Borislav Petkov <bp@alien8.de>,
+ Michael Buesch <m@bues.ch>, Jiri Pirko <jiri@nvidia.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Namhyung Kim <namhyung@kernel.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, Juergen Gross <jgross@suse.com>,
+ Salil Mehta <salil.mehta@huawei.com>,
+ Sreekanth Reddy <sreekanth.reddy@broadcom.com>, xen-devel@lists.xenproject.org,
+ Vadym Kochan <vkochan@marvell.com>, MPT-FusionLinux.pdl@broadcom.com,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ Wojciech Ziemba <wojciech.ziemba@intel.com>, linux-kernel@vger.kernel.org,
+ Mathias Nyman <mathias.nyman@intel.com>, Zhou Wang <wangzhou1@hisilicon.com>,
+ linux-crypto@vger.kernel.org, kernel@pengutronix.de, netdev@vger.kernel.org,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Tomaszx Kowalik <tomaszx.kowalik@intel.com>,
+ Taras Chornyi <tchornyi@marvell.com>, "David S. Miller" <davem@davemloft.net>,
+ linux-perf-users@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Uwe Kleine-König <uwe@kleine-koenig.org>
 
-On 8/6/21 4:08 PM, Nicholas Piggin wrote:
-> Excerpts from Madhavan Srinivasan's message of August 6, 2021 5:33 pm:
->> On 7/26/21 9:19 AM, Nicholas Piggin wrote:
->>> It can be useful in simulators (with very constrained environments)
->>> to allow some PMCs to run from boot so they can be sampled directly
->>> by a test harness, rather than having to run perf.
->>>
->>> A previous change freezes counters at boot by default, so provide
->>> a boot time option to un-freeze (plus a bit more flexibility).
->>>
->>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->>> ---
->>>    .../admin-guide/kernel-parameters.txt         |  7 ++++
->>>    arch/powerpc/perf/core-book3s.c               | 35 +++++++++++++++++++
->>>    2 files changed, 42 insertions(+)
->>>
->>> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
->>> index bdb22006f713..96b7d0ebaa40 100644
->>> --- a/Documentation/admin-guide/kernel-parameters.txt
->>> +++ b/Documentation/admin-guide/kernel-parameters.txt
->>> @@ -4089,6 +4089,13 @@
->>>    			Override pmtimer IOPort with a hex value.
->>>    			e.g. pmtmr=0x508
->>>
->>> +	pmu=		[PPC] Manually enable the PMU.
->>
->> This is bit confusing, IIUC, we are manually disabling the perf
->> registration
->> with this option and not pmu.
->> If this option is used, we will unfreeze the
->> MMCR0_FC (only in the HV_mode) and not register perf subsystem.
-> With the previous patch, this option un-freezes the PMU
-> (and disables perf).
->
->> Since this option is valid only for HV_mode, canwe call it
->> kvm_disable_perf or kvm_dis_perf.
-> It's only disabled for guests because it would require a bit
-> of logic to set pmcregs_in_use when we register our lppaca. We could
-> add that if needed, but the intention is for use on BML, not exactly
-> KVM specific.
->
-> I can add HV restriction to the help text. And we could rename the
-> option. free_run_pmu= or something?
+Hello,
 
+Today the following is always true for a struct pci_dev *pdev:
 
-yeah having it a different name will be better. I am not sure
-whether we should say "[PPC] Manually enable the PMU",
-because IIUC, if we dont provide this option PMU and perf is
-anyway enabled, but rest looks good to me.
+	pdev->driver ==
+		pdev->dev.driver ? to_pci_driver(pdev->dev.driver) : NULL
 
-Maddy
+This series is about getting rid of struct pci_dev::driver. The first
+three patches are unmodified compared to v2 (apart from an added
+Reviewed-by tag) and are just minor cleanups.
 
+Patch #4 replaces all usages of pci_dev::driver->name by
+dev_driver_string().
 
->
-> Thanks,
-> Nick
->
->>
->>> +			Enable the PMU by setting MMCR0 to 0 (clear FC bit).
->>> +			This option is implemented for Book3S processors.
->>> +			If a number is given, then MMCR1 is set to that number,
->>> +			otherwise (e.g., 'pmu=on'), it is left 0. The perf
->>> +			subsystem is disabled if this option is used.
->>> +
->>>    	pm_debug_messages	[SUSPEND,KNL]
->>>    			Enable suspend/resume debug messages during boot up.
->>>
->>> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
->>> index 65795cadb475..e7cef4fe17d7 100644
->>> --- a/arch/powerpc/perf/core-book3s.c
->>> +++ b/arch/powerpc/perf/core-book3s.c
->>> @@ -2428,8 +2428,24 @@ int register_power_pmu(struct power_pmu *pmu)
->>>    }
->>>
->>>    #ifdef CONFIG_PPC64
->>> +static bool pmu_override = false;
->>> +static unsigned long pmu_override_val;
->>> +static void do_pmu_override(void *data)
->>> +{
->>> +	ppc_set_pmu_inuse(1);
->>> +	if (pmu_override_val)
->>> +		mtspr(SPRN_MMCR1, pmu_override_val);
->>> +	mtspr(SPRN_MMCR0, mfspr(SPRN_MMCR0) & ~MMCR0_FC);
->>> +}
->>> +
->>>    static int __init init_ppc64_pmu(void)
->>>    {
->>> +	if (cpu_has_feature(CPU_FTR_HVMODE) && pmu_override) {
->>> +		printk(KERN_WARNING "perf: disabling perf due to pmu= command line option.\n");
->>> +		on_each_cpu(do_pmu_override, NULL, 1);
->>> +		return 0;
->>> +	}
->>> +
->>>    	/* run through all the pmu drivers one at a time */
->>>    	if (!init_power5_pmu())
->>>    		return 0;
->>> @@ -2451,4 +2467,23 @@ static int __init init_ppc64_pmu(void)
->>>    		return init_generic_compat_pmu();
->>>    }
->>>    early_initcall(init_ppc64_pmu);
->>> +
->>> +static int __init pmu_setup(char *str)
->>> +{
->>> +	unsigned long val;
->>> +
->>> +	if (!early_cpu_has_feature(CPU_FTR_HVMODE))
->>> +		return 0;
->>> +
->>> +	pmu_override = true;
->>> +
->>> +	if (kstrtoul(str, 0, &val))
->>> +		val = 0;
->>> +
->>> +	pmu_override_val = val;
->>> +
->>> +	return 1;
->>> +}
->>> +__setup("pmu=", pmu_setup);
->>> +
->>>    #endif
+Patch #5 simplifies struct mpt_pci_driver by dropping an unused
+parameter from a function callback. The calculation of this parameter
+made use of struct pci_dev::driver.
+
+Patch #6 simplifies adf_enable_aer() and moves one assignment done in
+that function to the initializer of the respective static data.
+
+Patch #7 then modifies all remaining users of struct pci_dev::driver to
+use to_pci_driver(pdev->dev.driver) instead and finally patch #8 gets
+rid of the driver member.
+
+Note this series is only build tested.
+
+Theoretically patches #4 and #7 could be split by subsystem, there are
+no dependencies, but I'd prefer that all patches go in together via the
+pci tree to simplify the procedure. If you don't agree please speak up.
+
+Best regards
+Uwe
+
+Uwe Kleine-König (8):
+  PCI: Simplify pci_device_remove()
+  PCI: Drop useless check from pci_device_probe()
+  xen/pci: Drop some checks that are always true
+  PCI: replace pci_dev::driver usage that gets the driver name
+  scsi: message: fusion: Remove unused parameter of mpt_pci driver's
+    probe()
+  crypto: qat - simplify adf_enable_aer()
+  PCI: Replace pci_dev::driver usage by pci_dev::dev.driver
+  PCI: Drop duplicated tracking of a pci_dev's bound driver
+
+ arch/powerpc/include/asm/ppc-pci.h            |  7 ++-
+ arch/powerpc/kernel/eeh_driver.c              | 10 +--
+ arch/x86/events/intel/uncore.c                |  2 +-
+ arch/x86/kernel/probe_roms.c                  |  2 +-
+ drivers/bcma/host_pci.c                       |  7 ++-
+ drivers/crypto/hisilicon/qm.c                 |  2 +-
+ drivers/crypto/qat/qat_4xxx/adf_drv.c         |  7 +--
+ drivers/crypto/qat/qat_c3xxx/adf_drv.c        |  7 +--
+ drivers/crypto/qat/qat_c62x/adf_drv.c         |  7 +--
+ drivers/crypto/qat/qat_common/adf_aer.c       | 10 +--
+ .../crypto/qat/qat_common/adf_common_drv.h    |  2 +-
+ drivers/crypto/qat/qat_dh895xcc/adf_drv.c     |  7 +--
+ drivers/message/fusion/mptbase.c              |  7 +--
+ drivers/message/fusion/mptbase.h              |  2 +-
+ drivers/message/fusion/mptctl.c               |  4 +-
+ drivers/message/fusion/mptlan.c               |  2 +-
+ drivers/misc/cxl/guest.c                      | 24 ++++---
+ drivers/misc/cxl/pci.c                        | 30 +++++----
+ .../ethernet/hisilicon/hns3/hns3_ethtool.c    |  2 +-
+ .../ethernet/marvell/prestera/prestera_pci.c  |  2 +-
+ drivers/net/ethernet/mellanox/mlxsw/pci.c     |  2 +-
+ .../ethernet/netronome/nfp/nfp_net_ethtool.c  |  2 +-
+ drivers/pci/iov.c                             | 25 +++++---
+ drivers/pci/pci-driver.c                      | 45 ++++++-------
+ drivers/pci/pci.c                             |  4 +-
+ drivers/pci/pcie/err.c                        | 36 ++++++-----
+ drivers/pci/xen-pcifront.c                    | 63 +++++++++----------
+ drivers/ssb/pcihost_wrapper.c                 |  8 ++-
+ drivers/usb/host/xhci-pci.c                   |  2 +-
+ include/linux/pci.h                           |  1 -
+ 30 files changed, 164 insertions(+), 167 deletions(-)
+
+base-commit: 2734d6c1b1a089fb593ef6a23d4b70903526fe0c
+-- 
+2.30.2
+
