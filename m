@@ -4,67 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D06A8C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 05:46:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D018CC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 07:12:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D6C2F60241
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 05:46:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D6C2F60241
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 0C3C860EE2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 07:12:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0C3C860EE2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GlbKr0d9Kz3bWg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 15:46:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GldDb0TtGz3cK4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 17:12:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=oz4IcUCX;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=KWqNs2Mz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
- envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=oz4IcUCX; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org;
+ envelope-from=batv+05ee741c295a7d1f89bd+6563+infradead.org+hch@casper.srs.infradead.org;
+ receiver=<UNKNOWN>)
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GlbK50BKBz2yNB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Aug 2021 15:46:16 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4GlbK32Rpmz9sWl;
- Thu, 12 Aug 2021 15:46:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1628747175;
- bh=dGQNxHwNfCMGT7qUNezTN7u5TWFpZYd9MbDw4n7nvu4=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=oz4IcUCX96rvOrDZuo4RUXKR9QRqrcbA8JKt2pmbgrolgDE9PmppRhqVriOGfBULB
- GUY/b2CFxa0oPPcGikaOaPTIkpjqwC/bS5B4T3fa+6Gykt34I61IG61iEwQTQxF8an
- dBypgxvMHXU/1JhLDhlswAEZ4FVPaJIxISdikqZCCOs7n0nzB3vaXLom6Rfj11UKfN
- isGYfEOT+ZP+wAk3NXc3KwMH1NLJL/3PF/HwtBDraamM2KoLvM2fYJsd2zMo34UWAh
- Blsa8p1aZq+4janK3icqMv41taJ8cqNKj7iH/AidGrLCSvGrnxCydaPR+mGtQqFFaY
- Dtpm8KmgQAOtw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Paul Menzel <pmenzel@molgen.mpg.de>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
-Subject: Re: clang/ld.lld build fails with `can't create dynamic relocation
- R_PPC64_ADDR64 against local symbol in readonly segment`
-In-Reply-To: <77a69755-5291-285c-45be-c1e42423fddc@molgen.mpg.de>
-References: <b647b710-7ae0-3c7e-6996-92ac974b3b2a@molgen.mpg.de>
- <77a69755-5291-285c-45be-c1e42423fddc@molgen.mpg.de>
-Date: Thu, 12 Aug 2021 15:46:12 +1000
-Message-ID: <87r1ezmd0b.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GldCk1Bjdz2yNB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Aug 2021 17:11:43 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=B2gGP1VQRHCk6MX5le6+GSdI6v6K4Z0HHWZKFL10rE0=; b=KWqNs2MzE3TrEoFEQpnBVNyN0g
+ 3jwYoTV2xVF97Q4jfnPDewLohje/W5KP+UVtzf70pRbNyVa0L9JR/HRVX++AjDpqrnODvsCq3iI6s
+ s5hWoJJ7ZlojfvWMh/XXqY102KCc4s+2CULMGqM9r9FaqMI/S9tVa1ufKTY3vmbMdC+GxCI/13mMB
+ m5AdxVnPALV6Jdrsa+eStgqDvqaVf+z0JdxyAI+Vm+PhT8v18Xohd1mTScUog28GAzhZYHaRa8eH8
+ 1bRc8324eOnZjmhS5fyzGdF12l4kFva4VJYN6JiZH4nOA3O5IbcKjh1RosqC6FmXil2UqOXUOVEK3
+ /vMn+JfQ==;
+Received: from hch by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat
+ Linux)) id 1mE4oC-00EGqD-Lh; Thu, 12 Aug 2021 07:07:34 +0000
+Date: Thu, 12 Aug 2021 08:07:20 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH v3 4/8] PCI: replace pci_dev::driver usage that gets the
+ driver name
+Message-ID: <YRTIqGm5Dr8du7a7@infradead.org>
+References: <20210811080637.2596434-1-u.kleine-koenig@pengutronix.de>
+ <20210811080637.2596434-5-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210811080637.2596434-5-u.kleine-koenig@pengutronix.de>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,49 +71,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Derek Parker <parkerderek86@gmail.com>, Dmitrii Okunev <xaionaro@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org, Alexander Duyck <alexanderduyck@fb.com>,
+ oss-drivers@corigine.com, Paul Mackerras <paulus@samba.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, Rafa?? Mi??ecki <zajec5@gmail.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Bjorn Helgaas <helgaas@kernel.org>, Ido Schimmel <idosch@nvidia.com>,
+ Jakub Kicinski <kuba@kernel.org>, Yisen Zhuang <yisen.zhuang@huawei.com>,
+ Vadym Kochan <vkochan@marvell.com>, Michael Buesch <m@bues.ch>,
+ Jiri Pirko <jiri@nvidia.com>, Salil Mehta <salil.mehta@huawei.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Taras Chornyi <tchornyi@marvell.com>, Zhou Wang <wangzhou1@hisilicon.com>,
+ linux-crypto@vger.kernel.org, kernel@pengutronix.de, netdev@vger.kernel.org,
+ Simon Horman <simon.horman@corigine.com>, Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Paul Menzel <pmenzel@molgen.mpg.de> writes:
-> Am 29.07.21 um 10:23 schrieb Paul Menzel:
->
->> I just wanted to make you aware that building Linux for ppc64le with=20
->> clang/lld.ld fails with [1]:
->>=20
->>  =C2=A0=C2=A0=C2=A0 ld.lld: error: can't create dynamic relocation R_PPC=
-64_ADDR64=20
->> against symbol: empty_zero_page in readonly segment; recompile object=20
->> files with -fPIC or pass '-Wl,-z,notext' to allow text relocations in=20
->> the output
->>  =C2=A0=C2=A0=C2=A0 >>> defined in arch/powerpc/kernel/head_64.o
->>  =C2=A0=C2=A0=C2=A0 >>> referenced by=20
->> arch/powerpc/kernel/head_64.o:(___ksymtab+empty_zero_page+0x0)
->>=20
->> The patch below from one of the comments [2] fixes it.
->>=20
->> --- i/arch/powerpc/Makefile
->> +++ w/arch/powerpc/Makefile
->> @@ -122,7 +122,7 @@ cflags-$(CONFIG_STACKPROTECTOR)=C2=A0=C2=A0=C2=A0=C2=
-=A0 +=3D=20
->> -mstack-protector-guard-reg=3Dr2
->>  =C2=A0endif
->>=20
->>  =C2=A0LDFLAGS_vmlinux-y :=3D -Bstatic
->> -LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) :=3D -pie
->> +LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) :=3D -pie -z notext
->>  =C2=A0LDFLAGS_vmlinux=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 :=3D $(=
-LDFLAGS_vmlinux-y)
->>  =C2=A0LDFLAGS_vmlinux +=3D $(call ld-option,--orphan-handling=3Dwarn)
->
-> Any comments, if this is the right fix? Current Linux master branch=20
-> still fails to build with `LLVM=3D1` on Ubuntu 21.04 without this change.
+On Wed, Aug 11, 2021 at 10:06:33AM +0200, Uwe Kleine-K??nig wrote:
+>  static inline const char *eeh_driver_name(struct pci_dev *pdev)
+>  {
+> -	return (pdev && pdev->driver) ? pdev->driver->name : "<null>";
+> +	const char *drvstr = pdev ? dev_driver_string(&pdev->dev) : "";
+> +
+> +	if (*drvstr == '\0')
+> +		return "<null>";
+> +
+> +	return drvstr;
 
-Sorry but I have no idea if it's the right fix. What I need is the
-author (or someone else) to send a patch with a change log explaining
-the change, what it does, why it's right for llvm, and why it's right
-for binutils.
+This looks rather obsfucated due to the fact that dev_driver_string
+never returns '\0', and due to the strange mix of a tenary operation
+and the if on a related condition.
 
-cheers
+
+>  }
+>  
+>  #endif /* CONFIG_EEH */
+> diff --git a/drivers/bcma/host_pci.c b/drivers/bcma/host_pci.c
+> index 69c10a7b7c61..dc2ffa686964 100644
+> --- a/drivers/bcma/host_pci.c
+> +++ b/drivers/bcma/host_pci.c
+> @@ -175,9 +175,10 @@ static int bcma_host_pci_probe(struct pci_dev *dev,
+>  	if (err)
+>  		goto err_kfree_bus;
+>  
+> -	name = dev_name(&dev->dev);
+> -	if (dev->driver && dev->driver->name)
+> -		name = dev->driver->name;
+> +	name = dev_driver_string(&dev->dev);
+> +	if (*name == '\0')
+> +		name = dev_name(&dev->dev);
+
+Where does this '\0' check come from?
+
+> +
+> +	name = dev_driver_string(&dev->dev);
+> +	if (*name == '\0')
+> +		name = dev_name(&dev->dev);
+> +
+
+More of this weirdness.
