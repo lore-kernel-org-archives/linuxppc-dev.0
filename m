@@ -2,26 +2,26 @@ Return-Path: <SRS0=8rOk=ND=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C82BC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 13:27:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11DCBC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 13:29:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A5DF760FC3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 13:27:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A5DF760FC3
+	by mail.kernel.org (Postfix) with ESMTPS id 4260860EB9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 13:29:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4260860EB9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GlnXn2YRHz3dTL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 23:27:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Glnbf5K44z3cYp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 23:29:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sFolAhAu;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dfjVsu+E;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
@@ -29,83 +29,76 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=sFolAhAu; dkim-atps=neutral
+ header.s=pp1 header.b=dfjVsu+E; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GlnS56QrMz3cLZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Aug 2021 23:23:01 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GlnZl5kxkz2yMq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Aug 2021 23:28:47 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 17CD3e7m120802; Thu, 12 Aug 2021 09:22:52 -0400
+ 17CD5FLU085678; Thu, 12 Aug 2021 09:28:43 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=pp1;
- bh=idKZaRxCmP0OJflBOo15tEwPsCtJz0SAfyWjxwSo1TM=;
- b=sFolAhAukl2Lzm9OFzXahUJRPb+cNLHu2H6dgdRaInp9MBQ9Phf+cCdHBIip+uLKLs9K
- QGVjekkg79p+j46kddo+JaKbPHBSDAX7+p0HZJlN6mSa53/xKEV46E2rfLpDCFvYLMg0
- ZgCTdqeIi4qQydzIbjOOAXiuL0ParSQoxuaSKEtSF/noLPLWB2JK8V5BGOzFEouJjhsp
- F/TYwprQduLBzloKDUdTDTajv4ZtQr+5ZTZxV9SPPO3dYLIP+qGm9zqj9Vf+LRXXruHp
- 5krzSNXwBUWoI/lWelu/QU1FNiFzmTJPOt89o6h9wUQ3DDQnzw22N612lZX3FZFEw8TC XA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3accufwxgt-1
+ content-transfer-encoding; s=pp1;
+ bh=yEbpgxGUKdUJxSZyST6qKqhf4I1DK4m4TlsEVOTRXBE=;
+ b=dfjVsu+Eq75AQ0+SgqvcTr/jmIzNamLQMPbl+PkMcc4+8K9wWbsY2N5xdgO4fMFQpYfh
+ DA0tWrOLuDzthGH5wGhmbkuhF5cv1R6sPT0/DF7gwX4mn74NMdbCFPKavawv4uY8PZQq
+ 3LyU3jUk6NxkWXVv71NsHG6gCPzJEEEVztIkdY6TozA8mNgtUqW8iNFyhDjwgLPga8MJ
+ 9tzvIY8FcGZ0QpxaGAA83mrUSUpvbfMqgSKh2PNZxej8ma3+3mCqPs4Umz20aRC9QoXO
+ KHNQyOF5L5MzShnIA17dZrlxF6XbeRCCim9FlKlky0rtmGtlRK1x6iTI6iUGsQ4UaEIM kA== 
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3acy932xf3-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 12 Aug 2021 09:22:52 -0400
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 17CD3itX121308;
- Thu, 12 Aug 2021 09:22:51 -0400
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3accufwxg7-1
+ Thu, 12 Aug 2021 09:28:42 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17CDP2N5013647;
+ Thu, 12 Aug 2021 13:28:41 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma02dal.us.ibm.com with ESMTP id 3a9htgb5dq-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 12 Aug 2021 09:22:51 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17CDC9Ch009486;
- Thu, 12 Aug 2021 13:22:50 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma04dal.us.ibm.com with ESMTP id 3a9htftkpt-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 12 Aug 2021 13:22:50 +0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 17CDMnFA22282640
+ Thu, 12 Aug 2021 13:28:41 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 17CDSeF418416172
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 12 Aug 2021 13:22:49 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F02FA6E053;
- Thu, 12 Aug 2021 13:22:48 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 463D26E056;
- Thu, 12 Aug 2021 13:22:46 +0000 (GMT)
+ Thu, 12 Aug 2021 13:28:40 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E80E76A047;
+ Thu, 12 Aug 2021 13:28:39 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2BC296A051;
+ Thu, 12 Aug 2021 13:28:38 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.199.50.186])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 12 Aug 2021 13:22:45 +0000 (GMT)
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 12 Aug 2021 13:28:37 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v8 5/5] powerpc/pseries: Add support for FORM2 associativity
-Date: Thu, 12 Aug 2021 18:52:23 +0530
-Message-Id: <20210812132223.225214-6-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v2 2/2] powerpc: rename powerpc_debugfs_root to
+ arch_debugfs_dir
+Date: Thu, 12 Aug 2021 18:58:31 +0530
+Message-Id: <20210812132831.233794-2-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20210812132223.225214-1-aneesh.kumar@linux.ibm.com>
-References: <20210812132223.225214-1-aneesh.kumar@linux.ibm.com>
+In-Reply-To: <20210812132831.233794-1-aneesh.kumar@linux.ibm.com>
+References: <20210812132831.233794-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 538F3FgQo0griAGHjK5EeA9va6vS9xAN
-X-Proofpoint-ORIG-GUID: V-YtEDBeIojZcD3vWhXuZdJRnSrGgRtR
+X-Proofpoint-GUID: EEomobtPMDE9SCRiCGeZO-RX0mWujdco
+X-Proofpoint-ORIG-GUID: EEomobtPMDE9SCRiCGeZO-RX0mWujdco
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-08-12_04:2021-08-12,
  2021-08-12 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- adultscore=0 spamscore=0 mlxlogscore=999 clxscore=1015 impostorscore=0
- bulkscore=0 priorityscore=1501 malwarescore=0 mlxscore=0 phishscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ clxscore=1015 impostorscore=0
+ lowpriorityscore=0 priorityscore=1501 suspectscore=0 spamscore=0
+ mlxscore=0 mlxlogscore=999 bulkscore=0 phishscore=0 malwarescore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2107140000 definitions=main-2108120085
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -118,469 +111,810 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Daniel Henrique Barboza <danielhb413@gmail.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PAPR interface currently supports two different ways of communicating resource
-grouping details to the OS. These are referred to as Form 0 and Form 1
-associativity grouping. Form 0 is the older format and is now considered
-deprecated. This patch adds another resource grouping named FORM2.
+No functional change in this patch. arch_debugfs_dir is the generic kernel
+name declared in linux/debugfs.h for arch-specific debugfs directory.
+Architectures like x86/s390 already use the name. Rename powerpc
+specific powerpc_debugfs_root to arch_debugfs_dir.
 
-Signed-off-by: Daniel Henrique Barboza <danielhb413@gmail.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- Documentation/powerpc/associativity.rst   | 104 ++++++++++++
- arch/powerpc/include/asm/firmware.h       |   3 +-
- arch/powerpc/include/asm/prom.h           |   1 +
- arch/powerpc/kernel/prom_init.c           |   3 +-
- arch/powerpc/mm/numa.c                    | 187 ++++++++++++++++++----
- arch/powerpc/platforms/pseries/firmware.c |   1 +
- 6 files changed, 262 insertions(+), 37 deletions(-)
- create mode 100644 Documentation/powerpc/associativity.rst
+ arch/powerpc/include/asm/debugfs.h          | 13 -------------
+ arch/powerpc/kernel/Makefile                |  3 ++-
+ arch/powerpc/kernel/dawr.c                  |  3 +--
+ arch/powerpc/kernel/eeh.c                   | 16 ++++++++--------
+ arch/powerpc/kernel/eeh_cache.c             |  4 ++--
+ arch/powerpc/kernel/fadump.c                |  4 ++--
+ arch/powerpc/kernel/hw_breakpoint.c         |  1 -
+ arch/powerpc/kernel/kdebugfs.c              | 14 ++++++++++++++
+ arch/powerpc/kernel/security.c              | 16 ++++++++--------
+ arch/powerpc/kernel/setup-common.c          | 13 -------------
+ arch/powerpc/kernel/setup_64.c              |  1 -
+ arch/powerpc/kernel/traps.c                 |  4 ++--
+ arch/powerpc/kvm/book3s_xics.c              |  6 +++---
+ arch/powerpc/kvm/book3s_xive.c              |  3 +--
+ arch/powerpc/kvm/book3s_xive_native.c       |  3 +--
+ arch/powerpc/mm/book3s64/hash_utils.c       |  4 ++--
+ arch/powerpc/mm/book3s64/pgtable.c          |  4 ++--
+ arch/powerpc/mm/book3s64/radix_tlb.c        |  6 +++---
+ arch/powerpc/mm/ptdump/bats.c               |  4 ++--
+ arch/powerpc/mm/ptdump/segment_regs.c       |  4 ++--
+ arch/powerpc/platforms/cell/axon_msi.c      |  4 ++--
+ arch/powerpc/platforms/powernv/memtrace.c   |  3 +--
+ arch/powerpc/platforms/powernv/opal-imc.c   |  4 ++--
+ arch/powerpc/platforms/powernv/opal-lpc.c   |  4 ++--
+ arch/powerpc/platforms/powernv/opal-xscom.c |  4 ++--
+ arch/powerpc/platforms/powernv/pci-ioda.c   |  4 ++--
+ arch/powerpc/platforms/pseries/dtl.c        |  4 ++--
+ arch/powerpc/platforms/pseries/lpar.c       |  5 +++--
+ arch/powerpc/sysdev/xive/common.c           |  3 +--
+ arch/powerpc/xmon/xmon.c                    |  6 +++---
+ 30 files changed, 75 insertions(+), 92 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/debugfs.h
+ create mode 100644 arch/powerpc/kernel/kdebugfs.c
 
-diff --git a/Documentation/powerpc/associativity.rst b/Documentation/powerpc/associativity.rst
-new file mode 100644
-index 000000000000..07e7dd3d6c87
---- /dev/null
-+++ b/Documentation/powerpc/associativity.rst
-@@ -0,0 +1,104 @@
-+============================
-+NUMA resource associativity
-+=============================
-+
-+Associativity represents the groupings of the various platform resources into
-+domains of substantially similar mean performance relative to resources outside
-+of that domain. Resources subsets of a given domain that exhibit better
-+performance relative to each other than relative to other resources subsets
-+are represented as being members of a sub-grouping domain. This performance
-+characteristic is presented in terms of NUMA node distance within the Linux kernel.
-+From the platform view, these groups are also referred to as domains.
-+
-+PAPR interface currently supports different ways of communicating these resource
-+grouping details to the OS. These are referred to as Form 0, Form 1 and Form2
-+associativity grouping. Form 0 is the oldest format and is now considered deprecated.
-+
-+Hypervisor indicates the type/form of associativity used via "ibm,architecture-vec-5 property".
-+Bit 0 of byte 5 in the "ibm,architecture-vec-5" property indicates usage of Form 0 or Form 1.
-+A value of 1 indicates the usage of Form 1 associativity. For Form 2 associativity
-+bit 2 of byte 5 in the "ibm,architecture-vec-5" property is used.
-+
-+Form 0
-+-----
-+Form 0 associativity supports only two NUMA distances (LOCAL and REMOTE).
-+
-+Form 1
-+-----
-+With Form 1 a combination of ibm,associativity-reference-points, and ibm,associativity
-+device tree properties are used to determine the NUMA distance between resource groups/domains.
-+
-+The “ibm,associativity” property contains a list of one or more numbers (domainID)
-+representing the resource’s platform grouping domains.
-+
-+The “ibm,associativity-reference-points” property contains a list of one or more numbers
-+(domainID index) that represents the 1 based ordinal in the associativity lists.
-+The list of domainID indexes represents an increasing hierarchy of resource grouping.
-+
-+ex:
-+{ primary domainID index, secondary domainID index, tertiary domainID index.. }
-+
-+Linux kernel uses the domainID at the primary domainID index as the NUMA node id.
-+Linux kernel computes NUMA distance between two domains by recursively comparing
-+if they belong to the same higher-level domains. For mismatch at every higher
-+level of the resource group, the kernel doubles the NUMA distance between the
-+comparing domains.
-+
-+Form 2
-+-------
-+Form 2 associativity format adds separate device tree properties representing NUMA node distance
-+thereby making the node distance computation flexible. Form 2 also allows flexible primary
-+domain numbering. With numa distance computation now detached from the index value in
-+"ibm,associativity-reference-points" property, Form 2 allows a large number of primary domain
-+ids at the same domainID index representing resource groups of different performance/latency
-+characteristics.
-+
-+Hypervisor indicates the usage of FORM2 associativity using bit 2 of byte 5 in the
-+"ibm,architecture-vec-5" property.
-+
-+"ibm,numa-lookup-index-table" property contains a list of one or more numbers representing
-+the domainIDs present in the system. The offset of the domainID in this property is
-+used as an index while computing numa distance information via "ibm,numa-distance-table".
-+
-+prop-encoded-array: The number N of the domainIDs encoded as with encode-int, followed by
-+N domainID encoded as with encode-int
-+
-+For ex:
-+"ibm,numa-lookup-index-table" =  {4, 0, 8, 250, 252}. The offset of domainID 8 (2) is used when
-+computing the distance of domain 8 from other domains present in the system. For the rest of
-+this document, this offset will be referred to as domain distance offset.
-+
-+"ibm,numa-distance-table" property contains a list of one or more numbers representing the NUMA
-+distance between resource groups/domains present in the system.
-+
-+prop-encoded-array: The number N of the distance values encoded as with encode-int, followed by
-+N distance values encoded as with encode-bytes. The max distance value we could encode is 255.
-+The number N must be equal to the square of m where m is the number of domainIDs in the
-+numa-lookup-index-table.
-+
-+For ex:
-+ibm,numa-lookup-index-table = <3 0 8 40>;
-+ibm,numa-distace-table = <9>, /bits/ 8 < 10  20  80
-+					 20  10 160
-+					 80 160  10>;
-+  | 0    8   40
-+--|------------
-+  |
-+0 | 10   20  80
-+  |
-+8 | 20   10  160
-+  |
-+40| 80   160  10
-+
-+A possible "ibm,associativity" property for resources in node 0, 8 and 40
-+
-+{ 3, 6, 7, 0 }
-+{ 3, 6, 9, 8 }
-+{ 3, 6, 7, 40}
-+
-+With "ibm,associativity-reference-points"  { 0x3 }
-+
-+"ibm,lookup-index-table" helps in having a compact representation of distance matrix.
-+Since domainID can be sparse, the matrix of distances can also be effectively sparse.
-+With "ibm,lookup-index-table" we can achieve a compact representation of
-+distance information.
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index 60b631161360..97a3bd9ffeb9 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -53,6 +53,7 @@
- #define FW_FEATURE_ULTRAVISOR	ASM_CONST(0x0000004000000000)
- #define FW_FEATURE_STUFF_TCE	ASM_CONST(0x0000008000000000)
- #define FW_FEATURE_RPT_INVALIDATE ASM_CONST(0x0000010000000000)
-+#define FW_FEATURE_FORM2_AFFINITY ASM_CONST(0x0000020000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -73,7 +74,7 @@ enum {
- 		FW_FEATURE_HPT_RESIZE | FW_FEATURE_DRMEM_V2 |
- 		FW_FEATURE_DRC_INFO | FW_FEATURE_BLOCK_REMOVE |
- 		FW_FEATURE_PAPR_SCM | FW_FEATURE_ULTRAVISOR |
--		FW_FEATURE_RPT_INVALIDATE,
-+		FW_FEATURE_RPT_INVALIDATE | FW_FEATURE_FORM2_AFFINITY,
- 	FW_FEATURE_PSERIES_ALWAYS = 0,
- 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL | FW_FEATURE_ULTRAVISOR,
- 	FW_FEATURE_POWERNV_ALWAYS = 0,
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index df9fec9d232c..5c80152e8f18 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -149,6 +149,7 @@ extern int of_read_drc_info_cell(struct property **prop,
- #define OV5_XCMO		0x0440	/* Page Coalescing */
- #define OV5_FORM1_AFFINITY	0x0580	/* FORM1 NUMA affinity */
- #define OV5_PRRN		0x0540	/* Platform Resource Reassignment */
-+#define OV5_FORM2_AFFINITY	0x0520	/* Form2 NUMA affinity */
- #define OV5_HP_EVT		0x0604	/* Hot Plug Event support */
- #define OV5_RESIZE_HPT		0x0601	/* Hash Page Table resizing */
- #define OV5_PFO_HW_RNG		0x1180	/* PFO Random Number Generator */
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 57db605ad33a..95a42d49e291 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -1096,7 +1096,8 @@ static const struct ibm_arch_vec ibm_architecture_vec_template __initconst = {
- #else
- 		0,
- #endif
--		.associativity = OV5_FEAT(OV5_FORM1_AFFINITY) | OV5_FEAT(OV5_PRRN),
-+		.associativity = OV5_FEAT(OV5_FORM1_AFFINITY) | OV5_FEAT(OV5_PRRN) |
-+		OV5_FEAT(OV5_FORM2_AFFINITY),
- 		.bin_opts = OV5_FEAT(OV5_RESIZE_HPT) | OV5_FEAT(OV5_HP_EVT),
- 		.micro_checkpoint = 0,
- 		.reserved0 = 0,
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index fdb2472befa4..32acef4da845 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -56,12 +56,17 @@ static int n_mem_addr_cells, n_mem_size_cells;
- 
- #define FORM0_AFFINITY 0
- #define FORM1_AFFINITY 1
-+#define FORM2_AFFINITY 2
- static int affinity_form;
- 
- #define MAX_DISTANCE_REF_POINTS 4
- static int distance_ref_points_depth;
- static const __be32 *distance_ref_points;
- static int distance_lookup_table[MAX_NUMNODES][MAX_DISTANCE_REF_POINTS];
-+static int numa_distance_table[MAX_NUMNODES][MAX_NUMNODES] = {
-+	[0 ... MAX_NUMNODES - 1] = { [0 ... MAX_NUMNODES - 1] = -1 }
-+};
-+static int numa_id_index_table[MAX_NUMNODES] = { [0 ... MAX_NUMNODES - 1] = NUMA_NO_NODE };
- 
- /*
-  * Allocate node_to_cpumask_map based on number of available nodes
-@@ -166,6 +171,54 @@ static void unmap_cpu_from_node(unsigned long cpu)
- }
- #endif /* CONFIG_HOTPLUG_CPU || CONFIG_PPC_SPLPAR */
- 
-+static int __associativity_to_nid(const __be32 *associativity,
-+				  int max_array_sz)
-+{
-+	int nid;
-+	/*
-+	 * primary_domain_index is 1 based array index.
-+	 */
-+	int index = primary_domain_index  - 1;
-+
-+	if (!numa_enabled || index >= max_array_sz)
-+		return NUMA_NO_NODE;
-+
-+	nid = of_read_number(&associativity[index], 1);
-+
-+	/* POWER4 LPAR uses 0xffff as invalid node */
-+	if (nid == 0xffff || nid >= nr_node_ids)
-+		nid = NUMA_NO_NODE;
-+	return nid;
-+}
-+/*
-+ * Returns nid in the range [0..nr_node_ids], or -1 if no useful NUMA
-+ * info is found.
-+ */
-+static int associativity_to_nid(const __be32 *associativity)
-+{
-+	int array_sz = of_read_number(associativity, 1);
-+
-+	/* Skip the first element in the associativity array */
-+	return __associativity_to_nid((associativity + 1), array_sz);
-+}
-+
-+static int __cpu_form2_relative_distance(__be32 *cpu1_assoc, __be32 *cpu2_assoc)
-+{
-+	int dist;
-+	int node1, node2;
-+
-+	node1 = associativity_to_nid(cpu1_assoc);
-+	node2 = associativity_to_nid(cpu2_assoc);
-+
-+	dist = numa_distance_table[node1][node2];
-+	if (dist <= LOCAL_DISTANCE)
-+		return 0;
-+	else if (dist <= REMOTE_DISTANCE)
-+		return 1;
-+	else
-+		return 2;
-+}
-+
- static int __cpu_form1_relative_distance(__be32 *cpu1_assoc, __be32 *cpu2_assoc)
- {
- 	int dist = 0;
-@@ -186,8 +239,9 @@ int cpu_relative_distance(__be32 *cpu1_assoc, __be32 *cpu2_assoc)
- {
- 	/* We should not get called with FORM0 */
- 	VM_WARN_ON(affinity_form == FORM0_AFFINITY);
+diff --git a/arch/powerpc/include/asm/debugfs.h b/arch/powerpc/include/asm/debugfs.h
+deleted file mode 100644
+index 2c5c48571d75..000000000000
+--- a/arch/powerpc/include/asm/debugfs.h
++++ /dev/null
+@@ -1,13 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
+-#ifndef _ASM_POWERPC_DEBUGFS_H
+-#define _ASM_POWERPC_DEBUGFS_H
 -
--	return __cpu_form1_relative_distance(cpu1_assoc, cpu2_assoc);
-+	if (affinity_form == FORM1_AFFINITY)
-+		return __cpu_form1_relative_distance(cpu1_assoc, cpu2_assoc);
-+	return __cpu_form2_relative_distance(cpu1_assoc, cpu2_assoc);
- }
- 
- /* must hold reference to node during call */
-@@ -201,7 +255,9 @@ int __node_distance(int a, int b)
- 	int i;
- 	int distance = LOCAL_DISTANCE;
- 
--	if (affinity_form == FORM0_AFFINITY)
-+	if (affinity_form == FORM2_AFFINITY)
-+		return numa_distance_table[a][b];
-+	else if (affinity_form == FORM0_AFFINITY)
- 		return ((a == b) ? LOCAL_DISTANCE : REMOTE_DISTANCE);
- 
- 	for (i = 0; i < distance_ref_points_depth; i++) {
-@@ -216,37 +272,6 @@ int __node_distance(int a, int b)
- }
- EXPORT_SYMBOL(__node_distance);
- 
--static int __associativity_to_nid(const __be32 *associativity,
--				  int max_array_sz)
--{
--	int nid;
--	/*
--	 * primary_domain_index is 1 based array index.
--	 */
--	int index = primary_domain_index  - 1;
--
--	if (!numa_enabled || index >= max_array_sz)
--		return NUMA_NO_NODE;
--
--	nid = of_read_number(&associativity[index], 1);
--
--	/* POWER4 LPAR uses 0xffff as invalid node */
--	if (nid == 0xffff || nid >= nr_node_ids)
--		nid = NUMA_NO_NODE;
--	return nid;
--}
 -/*
-- * Returns nid in the range [0..nr_node_ids], or -1 if no useful NUMA
-- * info is found.
+- * Copyright 2017, Michael Ellerman, IBM Corporation.
 - */
--static int associativity_to_nid(const __be32 *associativity)
--{
--	int array_sz = of_read_number(associativity, 1);
 -
--	/* Skip the first element in the associativity array */
--	return __associativity_to_nid((associativity + 1), array_sz);
--}
+-#include <linux/debugfs.h>
 -
- /* Returns the nid associated with the given device tree node,
-  * or -1 if not found.
-  */
-@@ -320,6 +345,8 @@ static void initialize_form1_numa_distance(const __be32 *associativity)
-  */
- void update_numa_distance(struct device_node *node)
+-extern struct dentry *powerpc_debugfs_root;
+-
+-#endif /* _ASM_POWERPC_DEBUGFS_H */
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index f66b63e81c3b..7be36c1e1db6 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -46,7 +46,8 @@ obj-y				:= cputable.o syscalls.o \
+ 				   prom.o traps.o setup-common.o \
+ 				   udbg.o misc.o io.o misc_$(BITS).o \
+ 				   of_platform.o prom_parse.o firmware.o \
+-				   hw_breakpoint_constraints.o interrupt.o
++				   hw_breakpoint_constraints.o interrupt.o \
++				   kdebugfs.o
+ obj-y				+= ptrace/
+ obj-$(CONFIG_PPC64)		+= setup_64.o \
+ 				   paca.o nvram_64.o note.o
+diff --git a/arch/powerpc/kernel/dawr.c b/arch/powerpc/kernel/dawr.c
+index cdc2dccb987d..64e423d2fe0f 100644
+--- a/arch/powerpc/kernel/dawr.c
++++ b/arch/powerpc/kernel/dawr.c
+@@ -9,7 +9,6 @@
+ #include <linux/export.h>
+ #include <linux/fs.h>
+ #include <linux/debugfs.h>
+-#include <asm/debugfs.h>
+ #include <asm/machdep.h>
+ #include <asm/hvcall.h>
+ 
+@@ -101,7 +100,7 @@ static int __init dawr_force_setup(void)
+ 	if (PVR_VER(mfspr(SPRN_PVR)) == PVR_POWER9) {
+ 		/* Turn DAWR off by default, but allow admin to turn it on */
+ 		debugfs_create_file_unsafe("dawr_enable_dangerous", 0600,
+-					   powerpc_debugfs_root,
++					   arch_debugfs_dir,
+ 					   &dawr_force_enable,
+ 					   &dawr_enable_fops);
+ 	}
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 3bbdcc86d01b..e9b597ed423c 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -21,9 +21,9 @@
+ #include <linux/spinlock.h>
+ #include <linux/export.h>
+ #include <linux/of.h>
++#include <linux/debugfs.h>
+ 
+ #include <linux/atomic.h>
+-#include <asm/debugfs.h>
+ #include <asm/eeh.h>
+ #include <asm/eeh_event.h>
+ #include <asm/io.h>
+@@ -1901,24 +1901,24 @@ static int __init eeh_init_proc(void)
+ 		proc_create_single("powerpc/eeh", 0, NULL, proc_eeh_show);
+ #ifdef CONFIG_DEBUG_FS
+ 		debugfs_create_file_unsafe("eeh_enable", 0600,
+-					   powerpc_debugfs_root, NULL,
++					   arch_debugfs_dir, NULL,
+ 					   &eeh_enable_dbgfs_ops);
+ 		debugfs_create_u32("eeh_max_freezes", 0600,
+-				powerpc_debugfs_root, &eeh_max_freezes);
++				arch_debugfs_dir, &eeh_max_freezes);
+ 		debugfs_create_bool("eeh_disable_recovery", 0600,
+-				powerpc_debugfs_root,
++				arch_debugfs_dir,
+ 				&eeh_debugfs_no_recover);
+ 		debugfs_create_file_unsafe("eeh_dev_check", 0600,
+-				powerpc_debugfs_root, NULL,
++				arch_debugfs_dir, NULL,
+ 				&eeh_dev_check_fops);
+ 		debugfs_create_file_unsafe("eeh_dev_break", 0600,
+-				powerpc_debugfs_root, NULL,
++				arch_debugfs_dir, NULL,
+ 				&eeh_dev_break_fops);
+ 		debugfs_create_file_unsafe("eeh_force_recover", 0600,
+-				powerpc_debugfs_root, NULL,
++				arch_debugfs_dir, NULL,
+ 				&eeh_force_recover_fops);
+ 		debugfs_create_file_unsafe("eeh_dev_can_recover", 0600,
+-				powerpc_debugfs_root, NULL,
++				arch_debugfs_dir, NULL,
+ 				&eeh_dev_can_recover_fops);
+ 		eeh_cache_debugfs_init();
+ #endif
+diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
+index bf3270426d82..9bdaaf7fddc9 100644
+--- a/arch/powerpc/kernel/eeh_cache.c
++++ b/arch/powerpc/kernel/eeh_cache.c
+@@ -12,8 +12,8 @@
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/atomic.h>
++#include <linux/debugfs.h>
+ #include <asm/pci-bridge.h>
+-#include <asm/debugfs.h>
+ #include <asm/ppc-pci.h>
+ 
+ 
+@@ -283,6 +283,6 @@ DEFINE_SHOW_ATTRIBUTE(eeh_addr_cache);
+ void eeh_cache_debugfs_init(void)
  {
-+	int nid;
-+
- 	if (affinity_form == FORM0_AFFINITY)
- 		return;
- 	else if (affinity_form == FORM1_AFFINITY) {
-@@ -332,6 +359,84 @@ void update_numa_distance(struct device_node *node)
- 		initialize_form1_numa_distance(associativity);
- 		return;
- 	}
-+
-+	/* FORM2 affinity  */
-+	nid = of_node_to_nid_single(node);
-+	if (nid == NUMA_NO_NODE)
-+		return;
-+
-+	/*
-+	 * With FORM2 we expect NUMA distance of all possible NUMA
-+	 * nodes to be provided during boot.
-+	 */
-+	WARN(numa_distance_table[nid][nid] == -1,
-+	     "NUMA distance details for node %d not provided\n", nid);
-+}
-+
-+/*
-+ * ibm,numa-lookup-index-table= {N, domainid1, domainid2, ..... domainidN}
-+ * ibm,numa-distance-table = { N, 1, 2, 4, 5, 1, 6, .... N elements}
-+ */
-+static void initialize_form2_numa_distance_lookup_table(void)
-+{
-+	int i, j;
-+	struct device_node *root;
-+	const __u8 *numa_dist_table;
-+	const __be32 *numa_lookup_index;
-+	int numa_dist_table_length;
-+	int max_numa_index, distance_index;
-+
-+	if (firmware_has_feature(FW_FEATURE_OPAL))
-+		root = of_find_node_by_path("/ibm,opal");
-+	else
-+		root = of_find_node_by_path("/rtas");
-+	if (!root)
-+		root = of_find_node_by_path("/");
-+
-+	numa_lookup_index = of_get_property(root, "ibm,numa-lookup-index-table", NULL);
-+	max_numa_index = of_read_number(&numa_lookup_index[0], 1);
-+
-+	/* first element of the array is the size and is encode-int */
-+	numa_dist_table = of_get_property(root, "ibm,numa-distance-table", NULL);
-+	numa_dist_table_length = of_read_number((const __be32 *)&numa_dist_table[0], 1);
-+	/* Skip the size which is encoded int */
-+	numa_dist_table += sizeof(__be32);
-+
-+	pr_debug("numa_dist_table_len = %d, numa_dist_indexes_len = %d\n",
-+		 numa_dist_table_length, max_numa_index);
-+
-+	for (i = 0; i < max_numa_index; i++)
-+		/* +1 skip the max_numa_index in the property */
-+		numa_id_index_table[i] = of_read_number(&numa_lookup_index[i + 1], 1);
-+
-+
-+	if (numa_dist_table_length != max_numa_index * max_numa_index) {
-+		WARN(1, "Wrong NUMA distance information\n");
-+		/* consider everybody else just remote. */
-+		for (i = 0;  i < max_numa_index; i++) {
-+			for (j = 0; j < max_numa_index; j++) {
-+				int nodeA = numa_id_index_table[i];
-+				int nodeB = numa_id_index_table[j];
-+
-+				if (nodeA == nodeB)
-+					numa_distance_table[nodeA][nodeB] = LOCAL_DISTANCE;
-+				else
-+					numa_distance_table[nodeA][nodeB] = REMOTE_DISTANCE;
-+			}
-+		}
-+	}
-+
-+	distance_index = 0;
-+	for (i = 0;  i < max_numa_index; i++) {
-+		for (j = 0; j < max_numa_index; j++) {
-+			int nodeA = numa_id_index_table[i];
-+			int nodeB = numa_id_index_table[j];
-+
-+			numa_distance_table[nodeA][nodeB] = numa_dist_table[distance_index++];
-+			pr_debug("dist[%d][%d]=%d ", nodeA, nodeB, numa_distance_table[nodeA][nodeB]);
-+		}
-+	}
-+	of_node_put(root);
+ 	debugfs_create_file_unsafe("eeh_address_cache", 0400,
+-			powerpc_debugfs_root, NULL,
++			arch_debugfs_dir, NULL,
+ 			&eeh_addr_cache_fops);
  }
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index b990075285f5..b7ceb041743c 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -24,8 +24,8 @@
+ #include <linux/slab.h>
+ #include <linux/cma.h>
+ #include <linux/hugetlb.h>
++#include <linux/debugfs.h>
  
- static int __init find_primary_domain_index(void)
-@@ -344,6 +449,9 @@ static int __init find_primary_domain_index(void)
- 	 */
- 	if (firmware_has_feature(FW_FEATURE_OPAL)) {
- 		affinity_form = FORM1_AFFINITY;
-+	} else if (firmware_has_feature(FW_FEATURE_FORM2_AFFINITY)) {
-+		dbg("Using form 2 affinity\n");
-+		affinity_form = FORM2_AFFINITY;
- 	} else if (firmware_has_feature(FW_FEATURE_FORM1_AFFINITY)) {
- 		dbg("Using form 1 affinity\n");
- 		affinity_form = FORM1_AFFINITY;
-@@ -388,9 +496,12 @@ static int __init find_primary_domain_index(void)
- 
- 		index = of_read_number(&distance_ref_points[1], 1);
- 	} else {
-+		/*
-+		 * Both FORM1 and FORM2 affinity find the primary domain details
-+		 * at the same offset.
-+		 */
- 		index = of_read_number(distance_ref_points, 1);
+-#include <asm/debugfs.h>
+ #include <asm/page.h>
+ #include <asm/prom.h>
+ #include <asm/fadump.h>
+@@ -1557,7 +1557,7 @@ static void fadump_init_files(void)
+ 		return;
  	}
--
- 	/*
- 	 * Warn and cap if the hardware supports more than
- 	 * MAX_DISTANCE_REF_POINTS domains.
-@@ -819,6 +930,12 @@ static int __init parse_numa_properties(void)
  
- 	dbg("NUMA associativity depth for CPU/Memory: %d\n", primary_domain_index);
+-	debugfs_create_file("fadump_region", 0444, powerpc_debugfs_root, NULL,
++	debugfs_create_file("fadump_region", 0444, arch_debugfs_dir, NULL,
+ 			    &fadump_region_fops);
  
-+	/*
-+	 * If it is FORM2 initialize the distance table here.
-+	 */
-+	if (affinity_form == FORM2_AFFINITY)
-+		initialize_form2_numa_distance_lookup_table();
+ 	if (fw_dump.dump_active) {
+diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+index 21a638aff72f..91a3be14808b 100644
+--- a/arch/powerpc/kernel/hw_breakpoint.c
++++ b/arch/powerpc/kernel/hw_breakpoint.c
+@@ -22,7 +22,6 @@
+ #include <asm/processor.h>
+ #include <asm/sstep.h>
+ #include <asm/debug.h>
+-#include <asm/debugfs.h>
+ #include <asm/hvcall.h>
+ #include <asm/inst.h>
+ #include <linux/uaccess.h>
+diff --git a/arch/powerpc/kernel/kdebugfs.c b/arch/powerpc/kernel/kdebugfs.c
+new file mode 100644
+index 000000000000..36d3124d5a8b
+--- /dev/null
++++ b/arch/powerpc/kernel/kdebugfs.c
+@@ -0,0 +1,14 @@
++// SPDX-License-Identifier: GPL-2.0
++#include <linux/debugfs.h>
++#include <linux/export.h>
++#include <linux/init.h>
 +
- 	/*
- 	 * Even though we connect cpus to numa domains later in SMP
- 	 * init, we need to know the node ids now. This is because
-diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index 5d4c2bc20bba..f162156b7b68 100644
---- a/arch/powerpc/platforms/pseries/firmware.c
-+++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -123,6 +123,7 @@ vec5_fw_features_table[] = {
- 	{FW_FEATURE_PRRN,		OV5_PRRN},
- 	{FW_FEATURE_DRMEM_V2,		OV5_DRMEM_V2},
- 	{FW_FEATURE_DRC_INFO,		OV5_DRC_INFO},
-+	{FW_FEATURE_FORM2_AFFINITY,	OV5_FORM2_AFFINITY},
- };
++struct dentry *arch_debugfs_dir;
++EXPORT_SYMBOL(arch_debugfs_dir);
++
++static int __init arch_kdebugfs_init(void)
++{
++	arch_debugfs_dir = debugfs_create_dir("powerpc", NULL);
++	return 0;
++}
++arch_initcall(arch_kdebugfs_init);
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index cc51fa52e783..1a998490fe60 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -11,10 +11,10 @@
+ #include <linux/nospec.h>
+ #include <linux/prctl.h>
+ #include <linux/seq_buf.h>
++#include <linux/debugfs.h>
  
- static void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
+ #include <asm/asm-prototypes.h>
+ #include <asm/code-patching.h>
+-#include <asm/debugfs.h>
+ #include <asm/security_features.h>
+ #include <asm/setup.h>
+ #include <asm/inst.h>
+@@ -106,7 +106,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_barrier_nospec, barrier_nospec_get,
+ static __init int barrier_nospec_debugfs_init(void)
+ {
+ 	debugfs_create_file_unsafe("barrier_nospec", 0600,
+-				   powerpc_debugfs_root, NULL,
++				   arch_debugfs_dir, NULL,
+ 				   &fops_barrier_nospec);
+ 	return 0;
+ }
+@@ -114,7 +114,7 @@ device_initcall(barrier_nospec_debugfs_init);
+ 
+ static __init int security_feature_debugfs_init(void)
+ {
+-	debugfs_create_x64("security_features", 0400, powerpc_debugfs_root,
++	debugfs_create_x64("security_features", 0400, arch_debugfs_dir,
+ 			   &powerpc_security_features);
+ 	return 0;
+ }
+@@ -420,7 +420,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_stf_barrier, stf_barrier_get, stf_barrier_set,
+ 
+ static __init int stf_barrier_debugfs_init(void)
+ {
+-	debugfs_create_file_unsafe("stf_barrier", 0600, powerpc_debugfs_root,
++	debugfs_create_file_unsafe("stf_barrier", 0600, arch_debugfs_dir,
+ 				   NULL, &fops_stf_barrier);
+ 	return 0;
+ }
+@@ -748,7 +748,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_count_cache_flush, count_cache_flush_get,
+ static __init int count_cache_flush_debugfs_init(void)
+ {
+ 	debugfs_create_file_unsafe("count_cache_flush", 0600,
+-				   powerpc_debugfs_root, NULL,
++				   arch_debugfs_dir, NULL,
+ 				   &fops_count_cache_flush);
+ 	return 0;
+ }
+@@ -834,9 +834,9 @@ DEFINE_SIMPLE_ATTRIBUTE(fops_uaccess_flush, uaccess_flush_get, uaccess_flush_set
+ 
+ static __init int rfi_flush_debugfs_init(void)
+ {
+-	debugfs_create_file("rfi_flush", 0600, powerpc_debugfs_root, NULL, &fops_rfi_flush);
+-	debugfs_create_file("entry_flush", 0600, powerpc_debugfs_root, NULL, &fops_entry_flush);
+-	debugfs_create_file("uaccess_flush", 0600, powerpc_debugfs_root, NULL, &fops_uaccess_flush);
++	debugfs_create_file("rfi_flush", 0600, arch_debugfs_dir, NULL, &fops_rfi_flush);
++	debugfs_create_file("entry_flush", 0600, arch_debugfs_dir, NULL, &fops_entry_flush);
++	debugfs_create_file("uaccess_flush", 0600, arch_debugfs_dir, NULL, &fops_uaccess_flush);
+ 	return 0;
+ }
+ device_initcall(rfi_flush_debugfs_init);
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index aa9c2d01424a..b1e43b69a559 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -33,7 +33,6 @@
+ #include <linux/of_platform.h>
+ #include <linux/hugetlb.h>
+ #include <linux/pgtable.h>
+-#include <asm/debugfs.h>
+ #include <asm/io.h>
+ #include <asm/paca.h>
+ #include <asm/prom.h>
+@@ -773,18 +772,6 @@ static int __init check_cache_coherency(void)
+ late_initcall(check_cache_coherency);
+ #endif /* CONFIG_CHECK_CACHE_COHERENCY */
+ 
+-#ifdef CONFIG_DEBUG_FS
+-struct dentry *powerpc_debugfs_root;
+-EXPORT_SYMBOL(powerpc_debugfs_root);
+-
+-static int powerpc_debugfs_init(void)
+-{
+-	powerpc_debugfs_root = debugfs_create_dir("powerpc", NULL);
+-	return 0;
+-}
+-arch_initcall(powerpc_debugfs_init);
+-#endif
+-
+ void ppc_printk_progress(char *s, unsigned short hex)
+ {
+ 	pr_info("%s\n", s);
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 1ff258f6c76c..eaa79a0996d1 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -32,7 +32,6 @@
+ #include <linux/nmi.h>
+ #include <linux/pgtable.h>
+ 
+-#include <asm/debugfs.h>
+ #include <asm/kvm_guest.h>
+ #include <asm/io.h>
+ #include <asm/kdump.h>
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index dfbce527c98e..c8f648727d36 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -37,10 +37,10 @@
+ #include <linux/smp.h>
+ #include <linux/console.h>
+ #include <linux/kmsg_dump.h>
++#include <linux/debugfs.h>
+ 
+ #include <asm/emulated_ops.h>
+ #include <linux/uaccess.h>
+-#include <asm/debugfs.h>
+ #include <asm/interrupt.h>
+ #include <asm/io.h>
+ #include <asm/machdep.h>
+@@ -2267,7 +2267,7 @@ static int __init ppc_warn_emulated_init(void)
+ 	struct ppc_emulated_entry *entries = (void *)&ppc_emulated;
+ 
+ 	dir = debugfs_create_dir("emulated_instructions",
+-				 powerpc_debugfs_root);
++				 arch_debugfs_dir);
+ 
+ 	debugfs_create_u32("do_warn", 0644, dir, &ppc_warn_emulated);
+ 
+diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
+index 303e3cb096db..ebd5d920de8c 100644
+--- a/arch/powerpc/kvm/book3s_xics.c
++++ b/arch/powerpc/kvm/book3s_xics.c
+@@ -10,13 +10,13 @@
+ #include <linux/gfp.h>
+ #include <linux/anon_inodes.h>
+ #include <linux/spinlock.h>
+-
++#include <linux/debugfs.h>
+ #include <linux/uaccess.h>
++
+ #include <asm/kvm_book3s.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/hvcall.h>
+ #include <asm/xics.h>
+-#include <asm/debugfs.h>
+ #include <asm/time.h>
+ 
+ #include <linux/seq_file.h>
+@@ -1024,7 +1024,7 @@ static void xics_debugfs_init(struct kvmppc_xics *xics)
+ 		return;
+ 	}
+ 
+-	xics->dentry = debugfs_create_file(name, 0444, powerpc_debugfs_root,
++	xics->dentry = debugfs_create_file(name, 0444, arch_debugfs_dir,
+ 					   xics, &xics_debug_fops);
+ 
+ 	pr_debug("%s: created %s\n", __func__, name);
+diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+index 8cfab3547494..19adbb1dda04 100644
+--- a/arch/powerpc/kvm/book3s_xive.c
++++ b/arch/powerpc/kvm/book3s_xive.c
+@@ -22,7 +22,6 @@
+ #include <asm/xive.h>
+ #include <asm/xive-regs.h>
+ #include <asm/debug.h>
+-#include <asm/debugfs.h>
+ #include <asm/time.h>
+ #include <asm/opal.h>
+ 
+@@ -2329,7 +2328,7 @@ static void xive_debugfs_init(struct kvmppc_xive *xive)
+ 		return;
+ 	}
+ 
+-	xive->dentry = debugfs_create_file(name, S_IRUGO, powerpc_debugfs_root,
++	xive->dentry = debugfs_create_file(name, S_IRUGO, arch_debugfs_dir,
+ 					   xive, &xive_debug_fops);
+ 
+ 	pr_debug("%s: created %s\n", __func__, name);
+diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+index 573ecaab3597..4ce800c7454f 100644
+--- a/arch/powerpc/kvm/book3s_xive_native.c
++++ b/arch/powerpc/kvm/book3s_xive_native.c
+@@ -20,7 +20,6 @@
+ #include <asm/xive.h>
+ #include <asm/xive-regs.h>
+ #include <asm/debug.h>
+-#include <asm/debugfs.h>
+ #include <asm/opal.h>
+ 
+ #include <linux/debugfs.h>
+@@ -1257,7 +1256,7 @@ static void xive_native_debugfs_init(struct kvmppc_xive *xive)
+ 		return;
+ 	}
+ 
+-	xive->dentry = debugfs_create_file(name, 0444, powerpc_debugfs_root,
++	xive->dentry = debugfs_create_file(name, 0444, arch_debugfs_dir,
+ 					   xive, &xive_native_debug_fops);
+ 
+ 	pr_debug("%s: created %s\n", __func__, name);
+diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+index ac5720371c0d..c145776d3ae5 100644
+--- a/arch/powerpc/mm/book3s64/hash_utils.c
++++ b/arch/powerpc/mm/book3s64/hash_utils.c
+@@ -36,8 +36,8 @@
+ #include <linux/hugetlb.h>
+ #include <linux/cpu.h>
+ #include <linux/pgtable.h>
++#include <linux/debugfs.h>
+ 
+-#include <asm/debugfs.h>
+ #include <asm/interrupt.h>
+ #include <asm/processor.h>
+ #include <asm/mmu.h>
+@@ -2072,7 +2072,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_hpt_order, hpt_order_get, hpt_order_set, "%llu\n")
+ 
+ static int __init hash64_debugfs(void)
+ {
+-	debugfs_create_file("hpt_order", 0600, powerpc_debugfs_root, NULL,
++	debugfs_create_file("hpt_order", 0600, arch_debugfs_dir, NULL,
+ 			    &fops_hpt_order);
+ 	return 0;
+ }
+diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
+index 9ffa65074cb0..7011a8f16d7a 100644
+--- a/arch/powerpc/mm/book3s64/pgtable.c
++++ b/arch/powerpc/mm/book3s64/pgtable.c
+@@ -6,9 +6,9 @@
+ #include <linux/sched.h>
+ #include <linux/mm_types.h>
+ #include <linux/memblock.h>
++#include <linux/debugfs.h>
+ #include <misc/cxl-base.h>
+ 
+-#include <asm/debugfs.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlb.h>
+ #include <asm/trace.h>
+@@ -520,7 +520,7 @@ static int __init pgtable_debugfs_setup(void)
+ 	 * invalidated as expected.
+ 	 */
+ 	debugfs_create_bool("tlbie_enabled", 0600,
+-			powerpc_debugfs_root,
++			arch_debugfs_dir,
+ 			&tlbie_enabled);
+ 
+ 	return 0;
+diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
+index 1fa2bc6a969e..7724af19ed7e 100644
+--- a/arch/powerpc/mm/book3s64/radix_tlb.c
++++ b/arch/powerpc/mm/book3s64/radix_tlb.c
+@@ -10,6 +10,7 @@
+ #include <linux/memblock.h>
+ #include <linux/mmu_context.h>
+ #include <linux/sched/mm.h>
++#include <linux/debugfs.h>
+ 
+ #include <asm/ppc-opcode.h>
+ #include <asm/tlb.h>
+@@ -17,7 +18,6 @@
+ #include <asm/trace.h>
+ #include <asm/cputhreads.h>
+ #include <asm/plpar_wrappers.h>
+-#include <asm/debugfs.h>
+ 
+ #include "internal.h"
+ 
+@@ -1529,9 +1529,9 @@ EXPORT_SYMBOL_GPL(do_h_rpt_invalidate_prt);
+ static int __init create_tlb_single_page_flush_ceiling(void)
+ {
+ 	debugfs_create_u32("tlb_single_page_flush_ceiling", 0600,
+-			   powerpc_debugfs_root, &tlb_single_page_flush_ceiling);
++			   arch_debugfs_dir, &tlb_single_page_flush_ceiling);
+ 	debugfs_create_u32("tlb_local_single_page_flush_ceiling", 0600,
+-			   powerpc_debugfs_root, &tlb_local_single_page_flush_ceiling);
++			   arch_debugfs_dir, &tlb_local_single_page_flush_ceiling);
+ 	return 0;
+ }
+ late_initcall(create_tlb_single_page_flush_ceiling);
+diff --git a/arch/powerpc/mm/ptdump/bats.c b/arch/powerpc/mm/ptdump/bats.c
+index c4c628b03cf8..8bf7383fb26c 100644
+--- a/arch/powerpc/mm/ptdump/bats.c
++++ b/arch/powerpc/mm/ptdump/bats.c
+@@ -7,7 +7,7 @@
+  */
+ 
+ #include <linux/pgtable.h>
+-#include <asm/debugfs.h>
++#include <linux/debugfs.h>
+ #include <asm/cpu_has_feature.h>
+ 
+ #include "ptdump.h"
+@@ -103,7 +103,7 @@ static const struct file_operations bats_fops = {
+ static int __init bats_init(void)
+ {
+ 	debugfs_create_file("block_address_translation", 0400,
+-			    powerpc_debugfs_root, NULL, &bats_fops);
++			    arch_debugfs_dir, NULL, &bats_fops);
+ 	return 0;
+ }
+ device_initcall(bats_init);
+diff --git a/arch/powerpc/mm/ptdump/segment_regs.c b/arch/powerpc/mm/ptdump/segment_regs.c
+index 565048a0c9be..9223dfb85c51 100644
+--- a/arch/powerpc/mm/ptdump/segment_regs.c
++++ b/arch/powerpc/mm/ptdump/segment_regs.c
+@@ -6,7 +6,7 @@
+  * This dumps the content of Segment Registers
+  */
+ 
+-#include <asm/debugfs.h>
++#include <linux/debugfs.h>
+ 
+ static void seg_show(struct seq_file *m, int i)
+ {
+@@ -55,7 +55,7 @@ static const struct file_operations sr_fops = {
+ 
+ static int __init sr_init(void)
+ {
+-	debugfs_create_file("segment_registers", 0400, powerpc_debugfs_root,
++	debugfs_create_file("segment_registers", 0400, arch_debugfs_dir,
+ 			    NULL, &sr_fops);
+ 	return 0;
+ }
+diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+index ca2555b8a0c2..82335e364c44 100644
+--- a/arch/powerpc/platforms/cell/axon_msi.c
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -12,8 +12,8 @@
+ #include <linux/export.h>
+ #include <linux/of_platform.h>
+ #include <linux/slab.h>
++#include <linux/debugfs.h>
+ 
+-#include <asm/debugfs.h>
+ #include <asm/dcr.h>
+ #include <asm/machdep.h>
+ #include <asm/prom.h>
+@@ -480,6 +480,6 @@ void axon_msi_debug_setup(struct device_node *dn, struct axon_msic *msic)
+ 
+ 	snprintf(name, sizeof(name), "msic_%d", of_node_to_nid(dn));
+ 
+-	debugfs_create_file(name, 0600, powerpc_debugfs_root, msic, &fops_msic);
++	debugfs_create_file(name, 0600, arch_debugfs_dir, msic, &fops_msic);
+ }
+ #endif /* DEBUG */
+diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
+index 537a4daed614..877720c64515 100644
+--- a/arch/powerpc/platforms/powernv/memtrace.c
++++ b/arch/powerpc/platforms/powernv/memtrace.c
+@@ -18,7 +18,6 @@
+ #include <linux/memory_hotplug.h>
+ #include <linux/numa.h>
+ #include <asm/machdep.h>
+-#include <asm/debugfs.h>
+ #include <asm/cacheflush.h>
+ 
+ /* This enables us to keep track of the memory removed from each node. */
+@@ -330,7 +329,7 @@ DEFINE_SIMPLE_ATTRIBUTE(memtrace_init_fops, memtrace_enable_get,
+ static int memtrace_init(void)
+ {
+ 	memtrace_debugfs_dir = debugfs_create_dir("memtrace",
+-						  powerpc_debugfs_root);
++						  arch_debugfs_dir);
+ 
+ 	debugfs_create_file("enable", 0600, memtrace_debugfs_dir,
+ 			    NULL, &memtrace_init_fops);
+diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
+index 7824cc364bc4..63e4738baf33 100644
+--- a/arch/powerpc/platforms/powernv/opal-imc.c
++++ b/arch/powerpc/platforms/powernv/opal-imc.c
+@@ -13,11 +13,11 @@
+ #include <linux/of_address.h>
+ #include <linux/of_platform.h>
+ #include <linux/crash_dump.h>
++#include <linux/debugfs.h>
+ #include <asm/opal.h>
+ #include <asm/io.h>
+ #include <asm/imc-pmu.h>
+ #include <asm/cputhreads.h>
+-#include <asm/debugfs.h>
+ 
+ static struct dentry *imc_debugfs_parent;
+ 
+@@ -56,7 +56,7 @@ static void export_imc_mode_and_cmd(struct device_node *node,
+ 	u32 cb_offset;
+ 	struct imc_mem_info *ptr = pmu_ptr->mem_info;
+ 
+-	imc_debugfs_parent = debugfs_create_dir("imc", powerpc_debugfs_root);
++	imc_debugfs_parent = debugfs_create_dir("imc", arch_debugfs_dir);
+ 
+ 	if (of_property_read_u32(node, "cb_offset", &cb_offset))
+ 		cb_offset = IMC_CNTL_BLK_OFFSET;
+diff --git a/arch/powerpc/platforms/powernv/opal-lpc.c b/arch/powerpc/platforms/powernv/opal-lpc.c
+index 608569082ba0..1e5d51db40f8 100644
+--- a/arch/powerpc/platforms/powernv/opal-lpc.c
++++ b/arch/powerpc/platforms/powernv/opal-lpc.c
+@@ -10,13 +10,13 @@
+ #include <linux/bug.h>
+ #include <linux/io.h>
+ #include <linux/slab.h>
++#include <linux/debugfs.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+ #include <asm/opal.h>
+ #include <asm/prom.h>
+ #include <linux/uaccess.h>
+-#include <asm/debugfs.h>
+ #include <asm/isa-bridge.h>
+ 
+ static int opal_lpc_chip_id = -1;
+@@ -371,7 +371,7 @@ static int opal_lpc_init_debugfs(void)
+ 	if (opal_lpc_chip_id < 0)
+ 		return -ENODEV;
+ 
+-	root = debugfs_create_dir("lpc", powerpc_debugfs_root);
++	root = debugfs_create_dir("lpc", arch_debugfs_dir);
+ 
+ 	rc |= opal_lpc_debugfs_create_type(root, "io", OPAL_LPC_IO);
+ 	rc |= opal_lpc_debugfs_create_type(root, "mem", OPAL_LPC_MEM);
+diff --git a/arch/powerpc/platforms/powernv/opal-xscom.c b/arch/powerpc/platforms/powernv/opal-xscom.c
+index fd510d961b8c..6b4eed2ef4fa 100644
+--- a/arch/powerpc/platforms/powernv/opal-xscom.c
++++ b/arch/powerpc/platforms/powernv/opal-xscom.c
+@@ -14,11 +14,11 @@
+ #include <linux/gfp.h>
+ #include <linux/slab.h>
+ #include <linux/uaccess.h>
++#include <linux/debugfs.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+ #include <asm/opal.h>
+-#include <asm/debugfs.h>
+ #include <asm/prom.h>
+ 
+ static u64 opal_scom_unmangle(u64 addr)
+@@ -189,7 +189,7 @@ static int scom_debug_init(void)
+ 	if (!firmware_has_feature(FW_FEATURE_OPAL))
+ 		return 0;
+ 
+-	root = debugfs_create_dir("scom", powerpc_debugfs_root);
++	root = debugfs_create_dir("scom", arch_debugfs_dir);
+ 	if (!root)
+ 		return -1;
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 7de464679292..eb4897f499ab 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -20,6 +20,7 @@
+ #include <linux/iommu.h>
+ #include <linux/rculist.h>
+ #include <linux/sizes.h>
++#include <linux/debugfs.h>
+ 
+ #include <asm/sections.h>
+ #include <asm/io.h>
+@@ -32,7 +33,6 @@
+ #include <asm/iommu.h>
+ #include <asm/tce.h>
+ #include <asm/xics.h>
+-#include <asm/debugfs.h>
+ #include <asm/firmware.h>
+ #include <asm/pnv-pci.h>
+ #include <asm/mmzone.h>
+@@ -2259,7 +2259,7 @@ static void pnv_pci_ioda_create_dbgfs(void)
+ 		phb = hose->private_data;
+ 
+ 		sprintf(name, "PCI%04x", hose->global_number);
+-		phb->dbgfs = debugfs_create_dir(name, powerpc_debugfs_root);
++		phb->dbgfs = debugfs_create_dir(name, arch_debugfs_dir);
+ 
+ 		debugfs_create_file_unsafe("dump_diag_regs", 0200, phb->dbgfs,
+ 					   phb, &pnv_pci_diag_data_fops);
+diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
+index 982f069e4c31..352af5b14a0f 100644
+--- a/arch/powerpc/platforms/pseries/dtl.c
++++ b/arch/powerpc/platforms/pseries/dtl.c
+@@ -11,10 +11,10 @@
+ #include <linux/spinlock.h>
+ #include <asm/smp.h>
+ #include <linux/uaccess.h>
++#include <linux/debugfs.h>
+ #include <asm/firmware.h>
+ #include <asm/dtl.h>
+ #include <asm/lppaca.h>
+-#include <asm/debugfs.h>
+ #include <asm/plpar_wrappers.h>
+ #include <asm/machdep.h>
+ 
+@@ -338,7 +338,7 @@ static int dtl_init(void)
+ 
+ 	/* set up common debugfs structure */
+ 
+-	dtl_dir = debugfs_create_dir("dtl", powerpc_debugfs_root);
++	dtl_dir = debugfs_create_dir("dtl", arch_debugfs_dir);
+ 
+ 	debugfs_create_x8("dtl_event_mask", 0600, dtl_dir, &dtl_event_mask);
+ 	debugfs_create_u32("dtl_buf_entries", 0400, dtl_dir, &dtl_buf_entries);
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index dab356e3ff87..2c1d66b5fde3 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -22,6 +22,8 @@
+ #include <linux/workqueue.h>
+ #include <linux/proc_fs.h>
+ #include <linux/pgtable.h>
++#include <linux/debugfs.h>
++
+ #include <asm/processor.h>
+ #include <asm/mmu.h>
+ #include <asm/page.h>
+@@ -39,7 +41,6 @@
+ #include <asm/kexec.h>
+ #include <asm/fadump.h>
+ #include <asm/asm-prototypes.h>
+-#include <asm/debugfs.h>
+ #include <asm/dtl.h>
+ 
+ #include "pseries.h"
+@@ -2016,7 +2017,7 @@ static int __init vpa_debugfs_init(void)
+ 	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
+ 		return 0;
+ 
+-	vpa_dir = debugfs_create_dir("vpa", powerpc_debugfs_root);
++	vpa_dir = debugfs_create_dir("vpa", arch_debugfs_dir);
+ 
+ 	/* set up the per-cpu vpa file*/
+ 	for_each_possible_cpu(i) {
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index dbdbbc2f1dc5..f85915ca0f98 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -21,7 +21,6 @@
+ #include <linux/msi.h>
+ #include <linux/vmalloc.h>
+ 
+-#include <asm/debugfs.h>
+ #include <asm/prom.h>
+ #include <asm/io.h>
+ #include <asm/smp.h>
+@@ -1716,7 +1715,7 @@ DEFINE_SHOW_ATTRIBUTE(xive_core_debug);
+ int xive_core_debug_init(void)
+ {
+ 	if (xive_enabled())
+-		debugfs_create_file("xive", 0400, powerpc_debugfs_root,
++		debugfs_create_file("xive", 0400, arch_debugfs_dir,
+ 				    NULL, &xive_core_debug_fops);
+ 	return 0;
+ }
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index da4d7f225a40..ead460b80905 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -26,8 +26,8 @@
+ #include <linux/ctype.h>
+ #include <linux/highmem.h>
+ #include <linux/security.h>
++#include <linux/debugfs.h>
+ 
+-#include <asm/debugfs.h>
+ #include <asm/ptrace.h>
+ #include <asm/smp.h>
+ #include <asm/string.h>
+@@ -4077,8 +4077,8 @@ DEFINE_SIMPLE_ATTRIBUTE(xmon_dbgfs_ops, xmon_dbgfs_get,
+ 
+ static int __init setup_xmon_dbgfs(void)
+ {
+-	debugfs_create_file("xmon", 0600, powerpc_debugfs_root, NULL,
+-				&xmon_dbgfs_ops);
++	debugfs_create_file("xmon", 0600, arch_debugfs_dir, NULL,
++			    &xmon_dbgfs_ops);
+ 	return 0;
+ }
+ device_initcall(setup_xmon_dbgfs);
 -- 
 2.31.1
 
