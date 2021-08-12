@@ -2,65 +2,51 @@ Return-Path: <SRS0=8rOk=ND=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1C1AC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 08:16:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A5F6C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 08:52:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF2ED60560
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 08:16:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EF2ED60560
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id A812061038
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 08:52:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A812061038
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Glffw2ZJPz3cPP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 18:16:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GlgRT05HRz3cKc
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Aug 2021 18:52:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
- helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de;
- receiver=<UNKNOWN>)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+ smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.131;
+ helo=out30-131.freemail.mail.aliyun.com;
+ envelope-from=xianting.tian@linux.alibaba.com; receiver=<UNKNOWN>)
+Received: from out30-131.freemail.mail.aliyun.com
+ (out30-131.freemail.mail.aliyun.com [115.124.30.131])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GlffN2Flrz2yhl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Aug 2021 18:16:26 +1000 (AEST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
- by metis.ext.pengutronix.de with esmtps
- (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
- (envelope-from <ukl@pengutronix.de>)
- id 1mE5rm-0002LU-Am; Thu, 12 Aug 2021 10:15:06 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
- by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.92)
- (envelope-from <ukl@pengutronix.de>)
- id 1mE5rb-0002s2-AN; Thu, 12 Aug 2021 10:14:55 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.92)
- (envelope-from <ukl@pengutronix.de>)
- id 1mE5rb-0006R3-8Y; Thu, 12 Aug 2021 10:14:55 +0200
-Date: Thu, 12 Aug 2021 10:14:25 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH v3 4/8] PCI: replace pci_dev::driver usage that gets the
- driver name
-Message-ID: <20210812081425.7pjy4a25e2ehkr3x@pengutronix.de>
-References: <20210811080637.2596434-1-u.kleine-koenig@pengutronix.de>
- <20210811080637.2596434-5-u.kleine-koenig@pengutronix.de>
- <YRTIqGm5Dr8du7a7@infradead.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="n62mnckfisrc5gc5"
-Content-Disposition: inline
-In-Reply-To: <YRTIqGm5Dr8du7a7@infradead.org>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
- SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GlgQt1PCSz301J
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Aug 2021 18:51:32 +1000 (AEST)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R721e4; CH=green; DM=||false|;
+ DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04420;
+ MF=xianting.tian@linux.alibaba.com; NM=1; PH=DS; RN=10; SR=0;
+ TI=SMTPD_---0Uilubck_1628758275; 
+Received: from localhost(mailfrom:xianting.tian@linux.alibaba.com
+ fp:SMTPD_---0Uilubck_1628758275) by smtp.aliyun-inc.com(127.0.0.1);
+ Thu, 12 Aug 2021 16:51:15 +0800
+From: Xianting Tian <xianting.tian@linux.alibaba.com>
+To: gregkh@linuxfoundation.org, jirislaby@kernel.org, amit@kernel.org,
+ arnd@arndb.de, osandov@fb.com
+Subject: [PATCH v5 1/2] tty: hvc: pass DMA capable memory to put_chars()
+Date: Thu, 12 Aug 2021 16:51:11 +0800
+Message-Id: <20210812085112.145265-2-xianting.tian@linux.alibaba.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210812085112.145265-1-xianting.tian@linux.alibaba.com>
+References: <20210812085112.145265-1-xianting.tian@linux.alibaba.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,134 +58,224 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexander Duyck <alexanderduyck@fb.com>, oss-drivers@corigine.com,
- Paul Mackerras <paulus@samba.org>, Herbert Xu <herbert@gondor.apana.org.au>,
- Ido Schimmel <idosch@nvidia.com>, Rafa?? Mi??ecki <zajec5@gmail.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org,
- Jakub Kicinski <kuba@kernel.org>, Yisen Zhuang <yisen.zhuang@huawei.com>,
- Vadym Kochan <vkochan@marvell.com>, Michael Buesch <m@bues.ch>,
- Jiri Pirko <jiri@nvidia.com>, Salil Mehta <salil.mehta@huawei.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- Taras Chornyi <tchornyi@marvell.com>, Zhou Wang <wangzhou1@hisilicon.com>,
- linux-crypto@vger.kernel.org, kernel@pengutronix.de, netdev@vger.kernel.org,
- Simon Horman <simon.horman@corigine.com>, Oliver O'Halloran <oohall@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Xianting Tian <xianting.tian@linux.alibaba.com>, guoren@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+As well known, hvc backend can register its opertions to hvc backend.
+the opertions contain put_chars(), get_chars() and so on.
 
---n62mnckfisrc5gc5
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Some hvc backend may do dma in its opertions. eg, put_chars() of
+virtio-console. But in the code of hvc framework, it may pass DMA
+incapable memory to put_chars() under a specific configuration, which
+is explained in commit c4baad5029(virtio-console: avoid DMA from stack):
+1, c[] is on stack,
+   hvc_console_print():
+	char c[N_OUTBUF] __ALIGNED__;
+	cons_ops[index]->put_chars(vtermnos[index], c, i);
+2, ch is on stack,
+   static void hvc_poll_put_char(,,char ch)
+   {
+	struct tty_struct *tty = driver->ttys[0];
+	struct hvc_struct *hp = tty->driver_data;
+	int n;
 
-On Thu, Aug 12, 2021 at 08:07:20AM +0100, Christoph Hellwig wrote:
-> On Wed, Aug 11, 2021 at 10:06:33AM +0200, Uwe Kleine-K??nig wrote:
-> >  static inline const char *eeh_driver_name(struct pci_dev *pdev)
-> >  {
-> > -	return (pdev && pdev->driver) ? pdev->driver->name : "<null>";
-> > +	const char *drvstr =3D pdev ? dev_driver_string(&pdev->dev) : "";
-> > +
-> > +	if (*drvstr =3D=3D '\0')
-> > +		return "<null>";
-> > +
-> > +	return drvstr;
->=20
-> This looks rather obsfucated due to the fact that dev_driver_string
-> never returns '\0', and due to the strange mix of a tenary operation
-> and the if on a related condition.
+	do {
+		n = hp->ops->put_chars(hp->vtermno, &ch, 1);
+	} while (n <= 0);
+   }
 
-dev_driver_string() might return "" (via dev_bus_name()). If that happens
-*drvstr =3D=3D '\0' becomes true.
+Commit c4baad5029 is just the fix to avoid DMA from stack memory, which
+is passed to virtio-console by hvc framework in above code. But I think
+the fix is aggressive, it directly uses kmemdup() to alloc new buffer
+from kmalloc area and do memcpy no matter the memory is in kmalloc area
+or not. But most importantly, it should better be fixed in the hvc
+framework, by changing it to never pass stack memory to the put_chars()
+function in the first place. Otherwise, we still face the same issue if
+a new hvc backend using dma added in the furture.
 
-Would the following be better?:
+We make 'char c[N_OUTBUF]' part of 'struct hvc_struct', so hp->c is no
+longer the stack memory. we can use it in above two cases.
 
-	const char *drvstr;
+Other cleanup is use ARCH_DMA_MINALIGN for align, and make 'hp->outbuf'
+aligned and use struct_size() for the size parameter of kzalloc().
 
-	if (pdev)
-		return "<null>";
+With the patch, we can remove the fix c4baad5029.
 
-	drvstr =3D dev_driver_string(&pdev->dev);
+Signed-off-by: Xianting Tian <xianting.tian@linux.alibaba.com>
+Tested-by: Xianting Tian <xianting.tian@linux.alibaba.com>
+---
+ drivers/tty/hvc/hvc_console.c | 40 +++++++++++++++++++++--------------
+ drivers/tty/hvc/hvc_console.h | 16 ++++++++++++--
+ 2 files changed, 38 insertions(+), 18 deletions(-)
 
-	if (!strcmp(drvstr, ""))
-		return "<null>";
+diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+index 5bb8c4e44..c56564eb7 100644
+--- a/drivers/tty/hvc/hvc_console.c
++++ b/drivers/tty/hvc/hvc_console.c
+@@ -41,16 +41,6 @@
+  */
+ #define HVC_CLOSE_WAIT (HZ/100) /* 1/10 of a second */
+ 
+-/*
+- * These sizes are most efficient for vio, because they are the
+- * native transfer size. We could make them selectable in the
+- * future to better deal with backends that want other buffer sizes.
+- */
+-#define N_OUTBUF	16
+-#define N_INBUF		16
+-
+-#define __ALIGNED__ __attribute__((__aligned__(sizeof(long))))
+-
+ static struct tty_driver *hvc_driver;
+ static struct task_struct *hvc_task;
+ 
+@@ -142,6 +132,7 @@ static int hvc_flush(struct hvc_struct *hp)
+ static const struct hv_ops *cons_ops[MAX_NR_HVC_CONSOLES];
+ static uint32_t vtermnos[MAX_NR_HVC_CONSOLES] =
+ 	{[0 ... MAX_NR_HVC_CONSOLES - 1] = -1};
++static char *cons_outbuf[MAX_NR_HVC_CONSOLES];
+ 
+ /*
+  * Console APIs, NOT TTY.  These APIs are available immediately when
+@@ -151,18 +142,23 @@ static uint32_t vtermnos[MAX_NR_HVC_CONSOLES] =
+ static void hvc_console_print(struct console *co, const char *b,
+ 			      unsigned count)
+ {
+-	char c[N_OUTBUF] __ALIGNED__;
++	char *c;
+ 	unsigned i = 0, n = 0;
+ 	int r, donecr = 0, index = co->index;
++	unsigned long flags;
++	struct hvc_struct *hp;
+ 
+ 	/* Console access attempt outside of acceptable console range. */
+ 	if (index >= MAX_NR_HVC_CONSOLES)
+ 		return;
+ 
+ 	/* This console adapter was removed so it is not usable. */
+-	if (vtermnos[index] == -1)
++	if (vtermnos[index] == -1 || !cons_outbuf[index])
+ 		return;
+ 
++	c = cons_outbuf[index];
++
++	spin_lock_irqsave(&hp->c_lock, flags);
+ 	while (count > 0 || i > 0) {
+ 		if (count > 0 && i < sizeof(c)) {
+ 			if (b[n] == '\n' && !donecr) {
+@@ -191,6 +187,7 @@ static void hvc_console_print(struct console *co, const char *b,
+ 			}
+ 		}
+ 	}
++	spin_unlock_irqrestore(&hp->c_lock, flags);
+ 	hvc_console_flush(cons_ops[index], vtermnos[index]);
+ }
+ 
+@@ -878,9 +875,19 @@ static void hvc_poll_put_char(struct tty_driver *driver, int line, char ch)
+ 	struct tty_struct *tty = driver->ttys[0];
+ 	struct hvc_struct *hp = tty->driver_data;
+ 	int n;
++	unsigned long flags;
++	char *c;
++
++	if (!hp || !cons_outbuf[hp->index])
++		return;
++
++	c = cons_outbuf[hp->index];
+ 
+ 	do {
+-		n = hp->ops->put_chars(hp->vtermno, &ch, 1);
++		spin_lock_irqsave(&hp->c_lock, flags);
++		c[0] = ch;
++		n = hp->ops->put_chars(hp->vtermno, c, 1);
++		spin_unlock_irqrestore(&hp->c_lock, flags);
+ 	} while (n <= 0);
+ }
+ #endif
+@@ -922,8 +929,7 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
+ 			return ERR_PTR(err);
+ 	}
+ 
+-	hp = kzalloc(ALIGN(sizeof(*hp), sizeof(long)) + outbuf_size,
+-			GFP_KERNEL);
++	hp = kzalloc(struct_size(hp, outbuf, outbuf_size), GFP_KERNEL);
+ 	if (!hp)
+ 		return ERR_PTR(-ENOMEM);
+ 
+@@ -931,13 +937,13 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
+ 	hp->data = data;
+ 	hp->ops = ops;
+ 	hp->outbuf_size = outbuf_size;
+-	hp->outbuf = &((char *)hp)[ALIGN(sizeof(*hp), sizeof(long))];
+ 
+ 	tty_port_init(&hp->port);
+ 	hp->port.ops = &hvc_port_ops;
+ 
+ 	INIT_WORK(&hp->tty_resize, hvc_set_winsz);
+ 	spin_lock_init(&hp->lock);
++	spin_lock_init(&hp->c_lock);
+ 	mutex_lock(&hvc_structs_mutex);
+ 
+ 	/*
+@@ -964,6 +970,7 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
+ 	if (i < MAX_NR_HVC_CONSOLES) {
+ 		cons_ops[i] = ops;
+ 		vtermnos[i] = vtermno;
++		cons_outbuf[i] = hp->c;
+ 	}
+ 
+ 	list_add_tail(&(hp->next), &hvc_structs);
+@@ -988,6 +995,7 @@ int hvc_remove(struct hvc_struct *hp)
+ 	if (hp->index < MAX_NR_HVC_CONSOLES) {
+ 		vtermnos[hp->index] = -1;
+ 		cons_ops[hp->index] = NULL;
++		cons_outbuf[hp->index] = NULL;
+ 	}
+ 
+ 	/* Don't whack hp->irq because tty_hangup() will need to free the irq. */
+diff --git a/drivers/tty/hvc/hvc_console.h b/drivers/tty/hvc/hvc_console.h
+index 18d005814..52374e2da 100644
+--- a/drivers/tty/hvc/hvc_console.h
++++ b/drivers/tty/hvc/hvc_console.h
+@@ -32,13 +32,21 @@
+  */
+ #define HVC_ALLOC_TTY_ADAPTERS	8
+ 
++/*
++ * These sizes are most efficient for vio, because they are the
++ * native transfer size. We could make them selectable in the
++ * future to better deal with backends that want other buffer sizes.
++ */
++#define N_OUTBUF	16
++#define N_INBUF		16
++
++#define __ALIGNED__ __attribute__((__aligned__(sizeof(long))))
++
+ struct hvc_struct {
+ 	struct tty_port port;
+ 	spinlock_t lock;
+ 	int index;
+ 	int do_wakeup;
+-	char *outbuf;
+-	int outbuf_size;
+ 	int n_outbuf;
+ 	uint32_t vtermno;
+ 	const struct hv_ops *ops;
+@@ -48,6 +56,10 @@ struct hvc_struct {
+ 	struct work_struct tty_resize;
+ 	struct list_head next;
+ 	unsigned long flags;
++	spinlock_t c_lock;
++	char c[N_OUTBUF] __ALIGNED__;
++	int outbuf_size;
++	char outbuf[0] __ALIGNED__;
+ };
+ 
+ /* implemented by a low level driver */
+-- 
+2.17.1
 
-	return drvstr;
-
-When I thought about this hunk I considered it ugly to have "<null>" in
-it twice.
-
-> >  }
-> > =20
-> >  #endif /* CONFIG_EEH */
-> > diff --git a/drivers/bcma/host_pci.c b/drivers/bcma/host_pci.c
-> > index 69c10a7b7c61..dc2ffa686964 100644
-> > --- a/drivers/bcma/host_pci.c
-> > +++ b/drivers/bcma/host_pci.c
-> > @@ -175,9 +175,10 @@ static int bcma_host_pci_probe(struct pci_dev *dev,
-> >  	if (err)
-> >  		goto err_kfree_bus;
-> > =20
-> > -	name =3D dev_name(&dev->dev);
-> > -	if (dev->driver && dev->driver->name)
-> > -		name =3D dev->driver->name;
-> > +	name =3D dev_driver_string(&dev->dev);
-> > +	if (*name =3D=3D '\0')
-> > +		name =3D dev_name(&dev->dev);
->=20
-> Where does this '\0' check come from?
-
-The original code is equivalent to
-
-	if (dev->driver && dev->driver->name)
-		name =3D dev->driver->name;
-	else:
-		name =3D dev_name(...);
-
-As dev_driver_string() implements something like:
-
-	if (dev->driver && dev->driver->name)
-		return dev->driver->name;
-	else
-		return "";
-
-the change looks fine to me. (One could wonder if it's sensible to fall
-back to the device name if the driver has no nice name, but this isn't
-new with my change.)
-
-> > +	name =3D dev_driver_string(&dev->dev);
-> > +	if (*name =3D=3D '\0')
-> > +		name =3D dev_name(&dev->dev);
-> > +
->=20
-> More of this weirdness.
-
-I admit it's not pretty. Would it help to use !strcmp(name, "")
-instead of *name =3D=3D '\0'? Any other constructive suggestion?
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---n62mnckfisrc5gc5
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmEU2FkACgkQwfwUeK3K
-7An+dgf/QrRVML0a6qk3HkGyLdsB8Vz7TG3WIJF9aLj4O2kfcEPwkNYsSxN/21iu
-rEFabdOH9lU5Zd2HWHmas7GEMR232ZquxQiELI+9rh01/2S6Y/u/6AVGLvdzqFVZ
-rXTrEHH02r9SqMl/V0Z/M7VIltjkbZwF4eSLW4+5+hHb65DACabRPBWTAjvotPU4
-0WlKPyYnJf0uVw9UF7NqDkXjgdyYzRf0lM6Ie9SLp3JctB9pqnVCu4JQSqBln0Ri
-AoFiE71+XFMORrsnY4gr2qdjhzoIRRGvDVVZ1BqXx0WZ7ZTzxcWXBg4xzrjF5kw0
-FlVhUnMK0NFPQnBoNJXA7B6UG7ZkvA==
-=3HwH
------END PGP SIGNATURE-----
-
---n62mnckfisrc5gc5--
