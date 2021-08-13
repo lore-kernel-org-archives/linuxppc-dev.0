@@ -2,55 +2,47 @@ Return-Path: <SRS0=Hff1=NE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2331C4320A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 11:27:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9203AC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 11:59:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4536960FBF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 11:27:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4536960FBF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
+	by mail.kernel.org (Postfix) with ESMTPS id C44116109D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 11:59:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C44116109D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GmLrs4VJGz3bnG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 21:27:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GmMYC11M4z3cQm
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 21:59:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.54;
- helo=out30-54.freemail.mail.aliyun.com;
- envelope-from=xianting.tian@linux.alibaba.com; receiver=<UNKNOWN>)
-Received: from out30-54.freemail.mail.aliyun.com
- (out30-54.freemail.mail.aliyun.com [115.124.30.54])
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GmLrJ0WkHz3015
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Aug 2021 21:27:27 +1000 (AEST)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R601e4; CH=green; DM=||false|;
- DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04400;
- MF=xianting.tian@linux.alibaba.com; NM=1; PH=DS; RN=8; SR=0;
- TI=SMTPD_---0UitBNND_1628854029; 
-Received: from B-LB6YLVDL-0141.local(mailfrom:xianting.tian@linux.alibaba.com
- fp:SMTPD_---0UitBNND_1628854029) by smtp.aliyun-inc.com(127.0.0.1);
- Fri, 13 Aug 2021 19:27:10 +0800
-Subject: Re: [PATCH v6 1/2] tty: hvc: pass DMA capable memory to put_chars()
-To: Greg KH <gregkh@linuxfoundation.org>
-References: <20210812094532.145497-1-xianting.tian@linux.alibaba.com>
- <20210812094532.145497-2-xianting.tian@linux.alibaba.com>
- <YRYeyeZ/22rR26u7@kroah.com>
-From: Xianting TIan <xianting.tian@linux.alibaba.com>
-Message-ID: <aca8a77c-f608-ef2f-5bcb-9411cec3e99d@linux.alibaba.com>
-Date: Fri, 13 Aug 2021 19:27:09 +0800
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
- Gecko/20100101 Thunderbird/78.10.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GmMXk5J9lz30HV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Aug 2021 21:59:02 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4GmMXf6FRvz9t1s; Fri, 13 Aug 2021 21:58:58 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, fthain@linux-m68k.org,
+ npiggin@gmail.com, Michael Ellerman <mpe@ellerman.id.au>, userm57@yahoo.com,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Paul Mackerras <paulus@samba.org>
+In-Reply-To: <aed174f5cbc06f2cf95233c071d8aac948e46043.1628611921.git.christophe.leroy@csgroup.eu>
+References: <aed174f5cbc06f2cf95233c071d8aac948e46043.1628611921.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/interrupt: Do not call single_step_exception()
+ from other exceptions
+Message-Id: <162885586841.2317031.7293234034031355331.b4-ty@ellerman.id.au>
+Date: Fri, 13 Aug 2021 21:57:48 +1000
 MIME-Version: 1.0
-In-Reply-To: <YRYeyeZ/22rR26u7@kroah.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -63,84 +55,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: arnd@arndb.de, amit@kernel.org, jirislaby@kernel.org,
- linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, osandov@fb.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, 10 Aug 2021 16:13:17 +0000 (UTC), Christophe Leroy wrote:
+> single_step_exception() is called by emulate_single_step() which
+> is called from (at least) alignment exception() handler and
+> program_check_exception() handler.
+> 
+> Redefine it as a regular __single_step_exception() which is called
+> by both single_step_exception() handler and emulate_single_step()
+> function.
 
-在 2021/8/13 下午3:27, Greg KH 写道:
-> On Thu, Aug 12, 2021 at 05:45:31PM +0800, Xianting Tian wrote:
->> As well known, hvc backend can register its opertions to hvc backend.
->> the opertions contain put_chars(), get_chars() and so on.
->>
->> Some hvc backend may do dma in its opertions. eg, put_chars() of
->> virtio-console. But in the code of hvc framework, it may pass DMA
->> incapable memory to put_chars() under a specific configuration, which
->> is explained in commit c4baad5029(virtio-console: avoid DMA from stack):
->> 1, c[] is on stack,
->>     hvc_console_print():
->> 	char c[N_OUTBUF] __ALIGNED__;
->> 	cons_ops[index]->put_chars(vtermnos[index], c, i);
->> 2, ch is on stack,
->>     static void hvc_poll_put_char(,,char ch)
->>     {
->> 	struct tty_struct *tty = driver->ttys[0];
->> 	struct hvc_struct *hp = tty->driver_data;
->> 	int n;
->>
->> 	do {
->> 		n = hp->ops->put_chars(hp->vtermno, &ch, 1);
->> 	} while (n <= 0);
->>     }
->>
->> Commit c4baad5029 is just the fix to avoid DMA from stack memory, which
->> is passed to virtio-console by hvc framework in above code. But I think
->> the fix is aggressive, it directly uses kmemdup() to alloc new buffer
->> from kmalloc area and do memcpy no matter the memory is in kmalloc area
->> or not. But most importantly, it should better be fixed in the hvc
->> framework, by changing it to never pass stack memory to the put_chars()
->> function in the first place. Otherwise, we still face the same issue if
->> a new hvc backend using dma added in the furture.
->>
->> We make 'char c[N_OUTBUF]' part of 'struct hvc_struct', so hp->c is no
->> longer the stack memory. we can use it in above two cases.
->>
->> Other fix is use L1_CACHE_BYTES as the alignment, use 'sizeof(long)' as
->> dma alignment is wrong. And use struct_size() to calculate size of
->> hvc_struct.
->>
->> Introduce another array(cons_outbuf[]) for the hp->c pointers next to
->> the cons_ops[] and vtermnos[] arrays.
->>
->> With the patch, we can remove the fix c4baad5029.
->>
->> Signed-off-by: Xianting Tian <xianting.tian@linux.alibaba.com>
->> Tested-by: Xianting Tian <xianting.tian@linux.alibaba.com>
-> As the build shows, you obviously did not test this code :(
->
-> Also, no need to add a tested-by line as that should be implicit if you
-> wrote and signed off on it.
->
-> I am going to ask you to get some help from some other developers at
-> your company, and get them to test and sign off on this series before
-> sending it out again, as there seems to be a bit of a disconnect as to
-> what is actually needed to do when sending a patch for us to review.
->
-> That is now a requirement for us to be able to take your changes here.
->
-> thanks,
+Applied to powerpc/fixes.
 
-Sorry for this.
+[1/1] powerpc/interrupt: Do not call single_step_exception() from other exceptions
+      https://git.kernel.org/powerpc/c/01fcac8e4dfc112f420dcaeb70056a74e326cacf
 
-I tested V1-V4,  But for V6, I take it for granted that there is no 
-problem when I just switch to use array(cons_outbuf[]).  I indeed didn't 
-test it:(
-
-I will test it and find virtualization test expert to test again before 
-sending next patch.
-
->
-> greg k-h
+cheers
