@@ -2,84 +2,152 @@ Return-Path: <SRS0=Hff1=NE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FSL_HELO_FAKE,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MSGID_FROM_MTA_HEADER,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DD13C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 20:06:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE075C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 20:18:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C0EDD61042
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 20:06:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C0EDD61042
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id 49BEB610CC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 20:18:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 49BEB610CC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GmZML2lJfz3dDH
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Aug 2021 06:06:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GmZd15pBfz3cK4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Aug 2021 06:18:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=tsbCgqA+;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=MyTmwlzg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::62f;
- helo=mail-pl1-x62f.google.com; envelope-from=maskray@google.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=tsbCgqA+; dkim-atps=neutral
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com
- [IPv6:2607:f8b0:4864:20::62f])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=amd.com
+ (client-ip=2a01:111:f400:7e8a::623;
+ helo=nam10-bn7-obe.outbound.protection.outlook.com;
+ envelope-from=thomas.lendacky@amd.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256
+ header.s=selector1 header.b=MyTmwlzg; 
+ dkim-atps=neutral
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com
+ (mail-bn7nam10on20623.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:7e8a::623])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GmZKs0x72z3bjD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Aug 2021 06:05:19 +1000 (AEST)
-Received: by mail-pl1-x62f.google.com with SMTP id q2so13410940plr.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Aug 2021 13:05:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=LLGFAtJMn9/g+hSmBB/R1jZF7zawczzcNya/wcap1qw=;
- b=tsbCgqA+modt4I/2YcP2KWUIr4RPfsj/a17xi4tsOcqg4wa/GlfE5TSsBBNFw99QLi
- pMGX9DSZRnUrlqjyUXToXAR6sD86vRNQNlz4nMF2AKrymHZpWRZQwcKP9FDLCzYNQ1Iu
- d58Er7HLYcZQO7ECYbQ5V5QStHPe3CmEQmOK0RkAFYmAGNYejk1sQh+8G/zTwNeTIR+N
- fDujv5jrm5qVMi10Qc2I4qnlP5F3KGIUHg4l0jsZncetEFfczE0mabFWaZFVvY0UDSmI
- CPKyPM5pHZ/cQCY4UQ5/WhtfYRMRF/EfYmFkmC/ALo2H7gIz7ZmT/sVr9vg3uu30Omtq
- CBEQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=LLGFAtJMn9/g+hSmBB/R1jZF7zawczzcNya/wcap1qw=;
- b=QR1JftVT/nZZOXuMBG0uY3iSKVLy0sQF+wkVkXLqpcUkUWlVDyZZulODMA/qR9ObcP
- Ud2gUUfYVhL5LvWbEFF1xXhuVGf2VYD0PD7C6fp6AgoZy8GLUlUtONakmj4FsOrydYBk
- sA/wFNJaXp2WrUoQf4Iqo8KVw6FtmYn6i7zjr70J8HQdSYkMV/oe1tOw1C33c2wpQEp4
- viRC765kqbADUjiA9lIRjGbsLgJfvX+9a7HhIaLggZlWpjIX8J3FAfSaPxtmqjnNeBd1
- +rIdb0e3AIkc4l1dhOZs4JrDPAf2aaPhw1uqtIuj758mDUAa+ftYU2nB3rCe4RJsw+Xc
- fg1Q==
-X-Gm-Message-State: AOAM533xpsLL0GKB9oG5QuUG/oqdQcGlZP80Dp2uF6WqoHyZ3sre2WpY
- eJ/xXgAWgvMb8ulEz9kwqD1Lfg==
-X-Google-Smtp-Source: ABdhPJzaqRUcYvq8j5jCPYy5mlscmobnM6iUY4vm+qoKCyhKIYqI6qJp5w4VVR3JpQAMXU09d24Izw==
-X-Received: by 2002:a65:5686:: with SMTP id v6mr3851920pgs.174.1628885113391; 
- Fri, 13 Aug 2021 13:05:13 -0700 (PDT)
-Received: from google.com ([2620:15c:2ce:200:c94e:5de5:2819:8b32])
- by smtp.gmail.com with ESMTPSA id g20sm3204758pfo.20.2021.08.13.13.05.12
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 13 Aug 2021 13:05:12 -0700 (PDT)
-Date: Fri, 13 Aug 2021 13:05:08 -0700
-From: Fangrui Song <maskray@google.com>
-To: Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH] ppc: add "-z notext" flag to disable diagnostic
-Message-ID: <20210813200508.7bqehxgd6ruerds5@google.com>
-References: <20210812204951.1551782-1-morbo@google.com>
- <87sfzde8lk.fsf@linkitivity.dja.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GmZc65ns8z2xtv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Aug 2021 06:17:39 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=WGw0U9FkgKp4hxsvcFdS+Z7DUF2Um0cW04RoIpgi//zy5IZ39Kz1fCX2rVhK9AfVPCzIZx/VN+/c0vKLjcELXtCeqlZEkPZhhS2XiAfPgWhgMPuEdvIhHN7rBVvbCQams9QlvgTp5FsR8jCKuu39Gtbgm0OZ+Qn86bPCokiEi4UDBO+eeCQ7XyeWjdlfMm4hv3airl6E+yaPDId+2s512TtyQbjafNM0Gx3IYB4zzGH0ejWseKFeD1hF5InIjfRLO3d/akqNGHR0KClTwfFZljax2IYs8nKrhO2BbTW5mosq8j6ZERwGi2ni9faElRKE+XquZXbgcBbdvP+h87A36Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=DpwOvDM3GnwNTNcL815T+RSOydEG+h+3oDIg9dnFcc8=;
+ b=EMLZ5P4NMpgY2QIUrBxnmxGsz5hDMG67hy4Mog8GvtOJgYyqUItuz59aeYyBFPlRSns5aRKJYaYuB3r4WULP65T9OWtOv0RdVSGJu0Icg+VGxcNNUCgbMZFTV5Uairek2h2CXjpfoW01HVKZlpw3q+v1wM6g42M2n7dbFRJFxyWX+84zq9k25c7lFC0po7sv/rVgzcUxwaLNRYDAgcB61bcpPj46NVIOv6g5OLvE+va68vyZ8p1ex93HYhmoQhFd2O3SSzsJQZf/jjzLOe85x3iisIzBrCByNHjGXWr4CYrcpUHLMJmnaVZvTfqUucinEUcYywOo3H00deM7niXn4w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=DpwOvDM3GnwNTNcL815T+RSOydEG+h+3oDIg9dnFcc8=;
+ b=MyTmwlzgKeBu9Kr9AdaSE1zoak8QxWlRT/g45sd8A3BxVuycfnUWDTtSlbv7kbm+wPD+NOE8KuxfMaVbm1BHq28hmB5OTiCq1m8BAT98u8NbbFWus7koWMgW2ellOLwPUjgB57RbR3+znK3BrbrvmdTSLWxPBzjHKCg3KahE5E4=
+Authentication-Results: redhat.com; dkim=none (message not signed)
+ header.d=none;redhat.com; dmarc=none action=none header.from=amd.com;
+Received: from DM4PR12MB5229.namprd12.prod.outlook.com (2603:10b6:5:398::12)
+ by DM4PR12MB5056.namprd12.prod.outlook.com (2603:10b6:5:38b::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4415.16; Fri, 13 Aug
+ 2021 20:17:17 +0000
+Received: from DM4PR12MB5229.namprd12.prod.outlook.com
+ ([fe80::d560:d21:cd59:9418]) by DM4PR12MB5229.namprd12.prod.outlook.com
+ ([fe80::d560:d21:cd59:9418%6]) with mapi id 15.20.4415.019; Fri, 13 Aug 2021
+ 20:17:17 +0000
+Subject: Re: [PATCH 07/11] treewide: Replace the use of mem_encrypt_active()
+ with prot_guest_has()
+From: Tom Lendacky <thomas.lendacky@amd.com>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+References: <cover.1627424773.git.thomas.lendacky@amd.com>
+ <029791b24c6412f9427cfe6ec598156c64395964.1627424774.git.thomas.lendacky@amd.com>
+ <166f30d8-9abb-02de-70d8-6e97f44f85df@linux.intel.com>
+ <4b885c52-f70a-147e-86bd-c71a8f4ef564@amd.com>
+ <20210811121917.ghxi7g4mctuybhbk@box.shutemov.name>
+ <0a819549-e481-c004-7da8-82ba427b13ce@amd.com>
+ <20210812100724.t4cdh7xbkuqgnsc3@box.shutemov.name>
+ <943223d5-5949-6aba-8a49-0b07078d68e1@amd.com>
+Message-ID: <f6399958-d161-fd58-fac7-9b849bc4f05e@amd.com>
+Date: Fri, 13 Aug 2021 15:17:12 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
+In-Reply-To: <943223d5-5949-6aba-8a49-0b07078d68e1@amd.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SA9PR13CA0015.namprd13.prod.outlook.com
+ (2603:10b6:806:21::20) To DM4PR12MB5229.namprd12.prod.outlook.com
+ (2603:10b6:5:398::12)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <87sfzde8lk.fsf@linkitivity.dja.id.au>
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from office-ryzen.texastahm.com (67.79.209.213) by
+ SA9PR13CA0015.namprd13.prod.outlook.com (2603:10b6:806:21::20) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.4436.9 via Frontend Transport; Fri, 13 Aug 2021 20:17:14 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: fb04504a-2bc8-4b11-096f-08d95e97582d
+X-MS-TrafficTypeDiagnostic: DM4PR12MB5056:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <DM4PR12MB5056CC972FC97575617C9C45ECFA9@DM4PR12MB5056.namprd12.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:8882;
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: HeKYrRV7+y6fb+GcsgwZgLn6m+17BeFDzSYIRsWs+5gk/EvKWEu2gSmv8RvTO/nfbvLfTRsKb1Rmu/IiexH4OmM5yzL1S1M0b1KCFnlSqI8q07PgcARl23shuBOwuXMPNwYrnU2x5cFzlC5kpomANRa9DYwDAdniG9jn0sUdyUssSht9Fj45WNk5kKyCNOwzQkl4Uwfx4ThxvNPm/2ZDWUUaD9h4KXaJfbXl7FOnHluKIb2zyecyHHGHT9LymYEJz5S7RJOMqqWviTNVR18VwG2DXy3EdmYfOUSweCmgr1F5+YNeYL0xuLozBRA3iCSoJ8z186DXgEqoQzPLgGIGWaJStbn3sjliQijGiQArX8StUtsSdv7beBuRfFRJgjp+PMjE74m12pIzia7y7ArUN+9FQfFGXdeMHBWOuZEkY7sXKBpAYhVZL+IzHjCsiTDaKb1dI/aEvOT+HEP3+0pFhWM+gj7aw1TS6rvljuEKICCuVKQxw/iZMHPFqMACRshww9+CkZF74+BBgpYEEwnfE4ZD2OYbNPPAX6HfzpgGABkpn12jKR5rTpzx/1EipOB3U2sOxGm7Mj13MUhqX7AkZsVTyrgswRhjfQpHB54uounI8FMHqOtfgpkX9CKnV73XHRj3NzUtA9k4wwtBs2k808QhRQvjOOhAoq+3kMA1KWhfE7oPISSKTsZBbqCFcKnt8I9jsZEFVs34Lo4rTbbD3u/3KCSJ0GktcSNcge0JTXo=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:DM4PR12MB5229.namprd12.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(4636009)(396003)(346002)(376002)(39860400002)(136003)(366004)(8936002)(7416002)(86362001)(31696002)(6506007)(83380400001)(36756003)(6486002)(7406005)(66476007)(66556008)(53546011)(6512007)(31686004)(478600001)(316002)(2616005)(38100700002)(956004)(8676002)(66946007)(26005)(6916009)(2906002)(5660300002)(4326008)(186003)(54906003)(43740500002)(45980500001);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?QTZOV216SVRjR2pvTmN0RGhmT3VtRnJiQzVwZ1JSSTNSZXpET1RESUUzYVNY?=
+ =?utf-8?B?L1lpY2EreHNqWE1JTUpwRDhRckxnWmJSNHlqdmxva21GRXFTM2o4Q2tPeVlK?=
+ =?utf-8?B?N3UrZkNkcGhLc210WFlYTmtVL3FYcWVqamloTC9PWDVVSE5ySjQ0R2RyMHc4?=
+ =?utf-8?B?dFE4SmZDSFJUWnl4VldYNlFIbld2RTBCUVF2dVhuYm5UVnUwOVBRWHEyUGQ4?=
+ =?utf-8?B?amdPNGxtNkxBNkRsSXJhK0lPT2lIMUdNVlBaV1FwTWNNeE95c0hYZjQ0RlpZ?=
+ =?utf-8?B?YTJ5aEVHeE9VeXB0bWs0MVY4cVdqRzAyYUZLK21ScE9rbXdDNWh5a0lnZFlT?=
+ =?utf-8?B?aFVTaWlGUXBrYnNhcVExR1N6V1h2K01IU0JramhHeWZvV3M0RkZERkQ1M3NK?=
+ =?utf-8?B?TW5iaU1EcGEzS2hYUklXUkdLR3FmYTg0NmFPWTdmKzI4RzBUcGNnTzcxeElw?=
+ =?utf-8?B?NTVTeUJwcUVvWWFMWHp2ZjYvTEtuc09wQWF1MVErdHBodGlFQVZxRWVQMVNZ?=
+ =?utf-8?B?N01IbmEyQjRkUFZxcDFCOVc3SG9ERVJETnViSFBCQW1obzdUQS9ENmZ0aG9n?=
+ =?utf-8?B?OHhVamdFRXRWRnJNYWlJRTVIenVoK0Y2NE42V3FBS3R6Z0dEeFpRWVRSZXps?=
+ =?utf-8?B?WTNmZUNtYm5sRG8yL3RZa2FkNjQvVklLT2owWmNzUHd0K3NIQ1NZYXdIdjUr?=
+ =?utf-8?B?Wi92VG9pMG5NamNVeDF5YUpkaW9rUkRGM05EdXZUcTlDQk10ZjRpMVQrb3hr?=
+ =?utf-8?B?NDdjZzVZKy9XYUp1VmZSa3Rveng3RG9SOFhGWmtHVlBRVEdoV3orajVsRVlt?=
+ =?utf-8?B?bFJSNnJNMWV5WmRCbkFDYm5JQXF4cEtJZ2VRR1VPZ0NiOWdyUENHUUdqTERn?=
+ =?utf-8?B?NmxKM2tja0tDc2JPYUxsVFdMNXZQai96Z1c0VlgzTWxsdGFNaHFTRmI2cDNZ?=
+ =?utf-8?B?VTVMV0VBaUZBVjZlZVJ0aFhKWVBvZjZCZVhzb1NneG1wMlZtK0dTRTAveWsw?=
+ =?utf-8?B?V0lVYmxuNzBENlhibkV2bVVTdEZZSVhXK3B0TEozZGpZYzd4c2ZRNjE5cVhw?=
+ =?utf-8?B?RjB1Tk1DbkFDUXJycElqK0t5NGVaM3B6cTcvNVlReUxiR29jVnpVK0VOcFQy?=
+ =?utf-8?B?Q2xYR1JoYlJFYXlvZlJxUCtQeERlTCt5ZEl1WEsxQ3R1eVhuSUNpVEVaaE9o?=
+ =?utf-8?B?VHFwNnVzU0FPOHRQaUhFUWtLU1lBNlBtZ3RsNDBIMW5EMVhQYXVSZVpKREVN?=
+ =?utf-8?B?c21HQjV2RHVTK3hsazFzVEJPSzhVM1BWeEgyajZRcjk3Y0FWbG9NTWV2OXNQ?=
+ =?utf-8?B?WGQweHhuMURwc00xK0UvTVB1ek9VL2ZPcVNCdFNncWRzWm9ybFlvU2V2VnNB?=
+ =?utf-8?B?MlhiaThjc2FYbTdGNENXM3dRby83cTUvYWtJTmpMdjdUVlliL251QVh3QVNH?=
+ =?utf-8?B?MjBoTVpQOTMraUpGcnUvY1Z1aFJDQm5pQk9vY3JmaDJqYXY1QUtqQ1BIamo4?=
+ =?utf-8?B?MzRCVjJqYmdUbXRJUEN5cWJWdi8yNUZBejlPdkZVdjFwQjJoWDJtVFdGS0Q0?=
+ =?utf-8?B?d0MvU1JpZm4xKzNoejhlRlhaMUVEaUN3anJHdFJhdjcxUFh5OXlRd011R3RC?=
+ =?utf-8?B?NFFlVzhUcmFJcm1rL2xCY1hwK0YvVVdua0ZNSi9TaTg0cjl5YTFjbjJ4UTJ1?=
+ =?utf-8?B?TnQvbnVIS2Vvb2dsMWtQTFBPRFRmNFNDc0Q4dU1oLzNPYUZXTTJ0L0Z4aTdV?=
+ =?utf-8?Q?X4j/QZYAY5VhEB8ISJ7ENzxDr6z08b94zP1ag1f?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: fb04504a-2bc8-4b11-096f-08d95e97582d
+X-MS-Exchange-CrossTenant-AuthSource: DM4PR12MB5229.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Aug 2021 20:17:17.8323 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 5rYKyb1eg9llUGfYKNWymW6AFqmswxWINdi5GxJCtmBK1fz+zhjdQgfi1wjlNeI3FFBkBzHHXR4HqtkxkzDSzw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB5056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,102 +159,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- Nathan Chancellor <nathan@kernel.org>, clang-built-linux@googlegroups.com,
- Paul Mackerras <paulus@samba.org>, Bill Wendling <morbo@google.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: "Kuppuswamy, Sathyanarayanan" <sathyanarayanan.kuppuswamy@linux.intel.com>,
+ linux-efi@vger.kernel.org, Brijesh Singh <brijesh.singh@amd.com>,
+ kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org,
+ platform-driver-x86@vger.kernel.org, Will Deacon <will@kernel.org>,
+ linux-s390@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
+ Baoquan He <bhe@redhat.com>, Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ amd-gfx@lists.freedesktop.org, David Airlie <airlied@linux.ie>,
+ Ingo Molnar <mingo@redhat.com>, linux-graphics-maintainer@vmware.com,
+ Dave Young <dyoung@redhat.com>, Tianyu Lan <Tianyu.Lan@microsoft.com>,
+ Thomas Zimmermann <tzimmermann@suse.de>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Daniel Vetter <daniel@ffwll.ch>,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2021-08-14, Daniel Axtens wrote:
->Bill Wendling <morbo@google.com> writes:
->
->> The "-z notext" flag disables reporting an error if DT_TEXTREL is set on
->> PPC with CONFIG=kdump:
+On 8/13/21 12:08 PM, Tom Lendacky wrote:
+> On 8/12/21 5:07 AM, Kirill A. Shutemov wrote:
+>> On Wed, Aug 11, 2021 at 10:52:55AM -0500, Tom Lendacky wrote:
+>>> On 8/11/21 7:19 AM, Kirill A. Shutemov wrote:
+>>>> On Tue, Aug 10, 2021 at 02:48:54PM -0500, Tom Lendacky wrote:
+>>>>> On 8/10/21 1:45 PM, Kuppuswamy, Sathyanarayanan wrote:
+> ...
+>>>> Looking at code agains, now I *think* the reason is accessing a global
+>>>> variable from __startup_64() inside TDX version of prot_guest_has().
+>>>>
+>>>> __startup_64() is special. If you access any global variable you need to
+>>>> use fixup_pointer(). See comment before __startup_64().
+>>>>
+>>>> I'm not sure how you get away with accessing sme_me_mask directly from
+>>>> there. Any clues? Maybe just a luck and complier generates code just 
+>>>> right
+>>>> for your case, I donno.
+>>>
+>>> Hmm... yeah, could be that the compiler is using rip-relative addressing
+>>> for it because it lives in the .data section?
 >>
->>   ld.lld: error: can't create dynamic relocation R_PPC64_ADDR64 against
->>     local symbol in readonly segment; recompile object files with -fPIC
->>     or pass '-Wl,-z,notext' to allow text relocations in the output
->>   >>> defined in built-in.a(arch/powerpc/kernel/misc.o)
->>   >>> referenced by arch/powerpc/kernel/misc.o:(.text+0x20) in archive
->>       built-in.a
+>> I guess. It has to be fixed. It may break with complier upgrade or any
+>> random change around the code.
+> 
+> I'll look at doing that separate from this series.
+> 
 >>
->> The BFD linker disables this by default (though it's configurable in
->> current versions). LLD enables this by default. So we add the flag to
->> keep LLD from emitting the error.
->
->You didn't provide a huge amount of context but I was able to reproduce
->a similar set of errors with pseries_le_defconfig and
->
->make ARCH=powerpc CROSS_COMPILE=powerpc64-linux-gnu- CC="ccache clang-11" LD=ld.lld-11 AR=llvm-ar-11 -j4 vmlinux
->
->I also checked the manpage, and indeed the system ld does not issue this
->warning/error by default.
->
->> ---
->>  arch/powerpc/Makefile | 1 +
->>  1 file changed, 1 insertion(+)
+>> BTW, does it work with clang for you?
+> 
+> I haven't tried with clang, I'll check on that.
+
+Just as an fyi, clang also uses rip relative addressing for those 
+variables. No issues booting SME and SEV guests built with clang.
+
+Thanks,
+Tom
+
+> 
+> Thanks,
+> Tom
+> 
 >>
->> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
->> index 6505d66f1193..17a9fbf9b789 100644
->> --- a/arch/powerpc/Makefile
->> +++ b/arch/powerpc/Makefile
->> @@ -122,6 +122,7 @@ endif
->>
->>  LDFLAGS_vmlinux-y := -Bstatic
->>  LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie
->> +LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) += -z notext
->
->Is there any reason this should be gated on CONFIG_RELOCATABLE? (I tried
->without it and got different but possibly related linker errors...)
->
->Also, is this behaviour new?
-
-This is a longstanding behavior.
-
-https://maskray.me/blog/2020-12-19-lld-and-gnu-linker-incompatibilities
-See "Text relocations"
-
-.o files used to link .tmp_vmlinux.kallsyms1 have many R_PPC64_ADDR64
-relocations in non-SHF_WRITE sections. There are many text relocations (e.g. in
-.rela___ksymtab_gpl+* and .rela__mcount_loc sections) in a -pie link and are
-disallowed by LLD:
-
-   ld.lld: error: can't create dynamic relocation R_PPC64_ADDR64 against local symbol in readonly segment; recompile object files with -fPIC or pass '-Wl,-z,notext' to allow text relocations in the output
-   >>> defined in arch/powerpc/kernel/head_64.o
-   >>> referenced by arch/powerpc/kernel/head_64.o:(__restart_table+0x10)
-
-Newer GNU ld configured with --enable-textrel-check=error will report an error
-as well:
-
-   ld/ld-new: read-only segment has dynamic relocations
-
-
-
-Text relocations are considered very awful by linker developers.
-binutils 2.35 added --enable-textrel-check={no,warn,error}
-https://sourceware.org/bugzilla/show_bug.cgi?id=20824
-
-I can imagine that in the future some Linux distributions (especially those
-focusing on security) will default their binutils to use
---enable-textrel-check={no,warn,error}.  CONFIG_RELOCATABLE build will break
-sooner or later.
-
-
-In -no-pie links, R_PPC64_ADDR64 relocations are link-time constants.
-There are no text relocations, therefore no need for -z notext.
-
->Kind regards,
->Daniel
->
->>  LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
->>
->>  ifdef CONFIG_PPC64
->> --
->> 2.33.0.rc1.237.g0d66db33f3-goog
->
->-- 
->You received this message because you are subscribed to the Google Groups "Clang Built Linux" group.
->To unsubscribe from this group and stop receiving emails from it, send an email to clang-built-linux+unsubscribe@googlegroups.com.
->To view this discussion on the web visit https://groups.google.com/d/msgid/clang-built-linux/87sfzde8lk.fsf%40linkitivity.dja.id.au.
