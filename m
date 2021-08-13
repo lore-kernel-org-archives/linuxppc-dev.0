@@ -2,24 +2,24 @@ Return-Path: <SRS0=Hff1=NE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-20.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C818C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 09:30:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF7C5C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 09:35:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A7D260FC0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 09:30:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9A7D260FC0
+	by mail.kernel.org (Postfix) with ESMTPS id 1773760F00
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 09:35:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1773760F00
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GmJFB0NRvz3cWd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 19:30:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GmJLb4t9Tz3cLG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 19:35:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,28 +27,28 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GmJDj0zNwz302V
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Aug 2021 19:29:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GmJL65Lsvz30HV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Aug 2021 19:34:36 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4GmJDd04Qnz9sX0;
- Fri, 13 Aug 2021 11:29:53 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4GmJL14nljz9sWw;
+ Fri, 13 Aug 2021 11:34:33 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id m097KQtPVGvi; Fri, 13 Aug 2021 11:29:52 +0200 (CEST)
+ with ESMTP id 0xARgZC9h4Ox; Fri, 13 Aug 2021 11:34:33 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4GmJDc6DKcz9sWy;
- Fri, 13 Aug 2021 11:29:52 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4GmJL13qZcz9sWs;
+ Fri, 13 Aug 2021 11:34:33 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B78778B82E;
- Fri, 13 Aug 2021 11:29:52 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4863A8B82E;
+ Fri, 13 Aug 2021 11:34:33 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id il4_awmHn-5H; Fri, 13 Aug 2021 11:29:52 +0200 (CEST)
+ with ESMTP id eEpE6J1ORMKe; Fri, 13 Aug 2021 11:34:33 +0200 (CEST)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 546988B826;
- Fri, 13 Aug 2021 11:29:52 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D9AEB8B826;
+ Fri, 13 Aug 2021 11:34:32 +0200 (CEST)
 Subject: Re: [PATCH v2 2/2] powerpc/perf: Return regs->nip as instruction
  pointer value when SIAR is 0
 To: Kajol Jain <kjain@linux.ibm.com>, mpe@ellerman.id.au,
@@ -56,8 +56,8 @@ To: Kajol Jain <kjain@linux.ibm.com>, mpe@ellerman.id.au,
 References: <20210813082450.429320-1-kjain@linux.ibm.com>
  <20210813082450.429320-2-kjain@linux.ibm.com>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <95fc0f78-51d0-82f6-c9d6-de101fec445c@csgroup.eu>
-Date: Fri, 13 Aug 2021 11:29:33 +0200
+Message-ID: <c6110aa1-90e2-77aa-1ab5-355975037227@csgroup.eu>
+Date: Fri, 13 Aug 2021 11:34:14 +0200
 User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
  Thunderbird/78.12.0
 MIME-Version: 1.0
@@ -90,6 +90,15 @@ Le 13/08/2021 à 10:24, Kajol Jain a écrit :
 > pointer values as 0 in perf report.
 > Patch resolves this issue by adding a ternary condition to return
 > regs->nip incase SIAR is 0.
+
+Your description seems rather similar to 
+https://github.com/linuxppc/linux/commit/2ca13a4cc56c920a6c9fc8ee45d02bccacd7f46c
+
+Does it mean that the problem occurs on more than the power10 DD1 ?
+
+In that case, can the solution be common instead of doing something for power10 DD1 and something 
+for others ?
+
 > 
 > Fixes: 75382aa72f06 ("powerpc/perf: Move code to select SIAR or pt_regs
 > into perf_read_regs")
@@ -108,9 +117,6 @@ Le 13/08/2021 à 10:24, Kajol Jain a écrit :
 >   	} else if (use_siar && siar_valid(regs))
 > -		return siar + perf_ip_adjust(regs);
 > +		return siar ? siar + perf_ip_adjust(regs) : regs->nip;
-
-Why bother about returning SIAR at all if regs->nip is ok ? Why not just return regs->nip all the time ?
-
 >   	else if (use_siar)
 >   		return 0;		// no valid instruction pointer
 >   	else
