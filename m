@@ -2,78 +2,88 @@ Return-Path: <SRS0=Hff1=NE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-21.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3185DC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 19:00:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E8FEC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 20:06:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4E98F61038
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 19:00:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4E98F61038
+	by mail.kernel.org (Postfix) with ESMTPS id A96BE60E78
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Aug 2021 20:06:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A96BE60E78
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GmXtp4J8Dz3cWy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Aug 2021 05:00:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GmZLd56Gyz3cX6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Aug 2021 06:06:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=RLK3xUK3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=tDG79y8J;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::12d;
- helo=mail-lf1-x12d.google.com; envelope-from=ndesaulniers@google.com;
+ smtp.mailfrom=flex--morbo.bounces.google.com
+ (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com;
+ envelope-from=3fnawyqukdicxz2mzrzzrwp.nzxwty5800n-op6wt343.zawlm3.z2r@flex--morbo.bounces.google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=RLK3xUK3; dkim-atps=neutral
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com
- [IPv6:2a00:1450:4864:20::12d])
+ header.s=20161025 header.b=tDG79y8J; dkim-atps=neutral
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com
+ [IPv6:2607:f8b0:4864:20::b4a])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GmXt36z4fz3bjK
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Aug 2021 04:59:37 +1000 (AEST)
-Received: by mail-lf1-x12d.google.com with SMTP id r9so12140210lfn.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Aug 2021 11:59:37 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GmZKs07sPz3bW8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Aug 2021 06:05:18 +1000 (AEST)
+Received: by mail-yb1-xb4a.google.com with SMTP id
+ b12-20020a25cb0c0000b0290593e6b14f6aso9341134ybg.22
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Aug 2021 13:05:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=IkdhgNopT40xrLBIwsMwp7xot6YqUnlD6M0VTKI4Un8=;
- b=RLK3xUK3bEGpxgGuy1zLolLiG174+veKzBMATo6QlHmzBHc4J7r7zCAZaKUOnlyT3o
- VhYwJ3Dx9F5/D/0a7GzWt9jrGNDOoZ8bho0cljj00lDq96HAG+bvY8CiNZzDH16DBggV
- ETTzc+DhoDUeqllck8NFAwJ3jcXzaKpEEY2xzibqOz5w65AVE2C+smEKwXifwitKkWTO
- HkW00sUVzMhd3rB6NawIR1ih56hnF7xc8LfK28j4eXhMl1zoxI9RY5dFb3t9RAsXtOBg
- bxbshxVCu038Y8Z2Mm1wI29mVQo4QZ4gAk1o0x21UliOhLVHA3NV09KWJFkC7Td3wn8D
- LUww==
+ h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+ :cc; bh=4EYkfl7u3c0fe6BZm+nywHzPnvU49Nzp4mTk0DIT6Qs=;
+ b=tDG79y8JxkEeMITM/Dz4I+5ruSVrztX+8ungXNgGhNZjJf8sdiadYlyroOHQSkRkfh
+ Bl6lclrN2WWca0OdrkgyfALXglNegzaXZq46X6yOKy1VWa/8b/lJEmEbytlXQJ62OUHV
+ hFAoE27wYE7nhfiwyiC4XrPfhfuqGJS8647UVKLAujIMYmrS5/tVMdDuhQF5mnevCL+R
+ jkfHmduS826o4/5KDRsfdBviGLDVwRMWx16xPYTr1XCFAoJcjRIe507ct0XKZQXWDdCv
+ HKotn/TRxraXxsDE9+K/W0SQ2TqlA0vhIk0QOB9HIBaEWTl1rVT5bFhHPLcQtVuVjJnd
+ RQPQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=IkdhgNopT40xrLBIwsMwp7xot6YqUnlD6M0VTKI4Un8=;
- b=GvRXCL+0oh1Cy6OZtD7yREueX8s7w5N2beHgsRNyC8uuP/KfJMhdDP2jC/wLUoFTeD
- CasG1xICxGlde7ng1nL35OlkSkWVzOn/PBGYN0WE6Mo8A5POXZaZ3pVNBfqZsXhGL4to
- E9VfVY+XArb97Ur9SFobPbRL5kcFJXmFvdZZmb9EoIuV60Wtgev9kqbsSgr9+XN08gxT
- 0ItNf/zCnk/larQRPTH6nrVDVgT7J9JYk06cgcKRvmO48ffZ3eiqLC2d1zqBwzZfggV5
- +Fl5CtQ5lcXa9BqLZhTP9YNPqn+viEzbm1R8QxoIOlOyuRqDlwycKRbsjtlLMxF5KOme
- MpyQ==
-X-Gm-Message-State: AOAM53171ZAYykYs1gh+RyaF5nhSMAglFRd2TA8q5UfgZyyOFnrwHEO+
- d69bqHju7q661C7BqMWHL+6507qIPw5ovAPgSW+Tiw==
-X-Google-Smtp-Source: ABdhPJwsIOeMmC9VnBS83ZxAW4s1cMc3L/OGiW0XzMjYW2gzyzggGU/mQ9BcfuNqon7n/4/vbP5xAEnVWftjqmyMi4I=
-X-Received: by 2002:a05:6512:3041:: with SMTP id
- b1mr2588473lfb.122.1628881172555; 
- Fri, 13 Aug 2021 11:59:32 -0700 (PDT)
-MIME-Version: 1.0
+ h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+ :references:subject:from:to:cc;
+ bh=4EYkfl7u3c0fe6BZm+nywHzPnvU49Nzp4mTk0DIT6Qs=;
+ b=BTkK3jN/hXo3j9IFfG5h4tvyv6AS8DJQ+iaPPQevfM0ghaoZbI3JHDlSDwYoUCzFpx
+ 6pZ3vhIclYQPP2W1JfSKOH//WE2KKRsPsegGyoi1jHq30X+l5snsBs2AjgbF0n2uaYeM
+ w/T+PeQlcYJsS7J4U1jXLTosEfnJwS7iNPhakRhrgfUHXAZXorVM/7Z06DRpbHbggZDg
+ 9hSAzcF4chOWU+4tRjlIo+RIFseukqA2gpn/HGt1KR+1nlNQcuPDQCGNDmdDwOY09fJi
+ WxU67nJ7uYiUssJo2aGPFL6zTd6RlsVGH1so1916xBq0zMw8AwRiIh/Z0TeR9By3oU4f
+ OvGA==
+X-Gm-Message-State: AOAM533RpmMQMOo7TIvnKW27xhexgRzUuNL8fyxjrYxldAr4cAS3Wv5E
+ uPDouFugatz6m5drU8uYo34tJ3Wd
+X-Google-Smtp-Source: ABdhPJxOLdvxgHb9JGu7E7H94pvG+O55jjxNK8CLGUihMstI5TpU89TWclMjGii3Kz6pWo5nZlQMIyGZFg==
+X-Received: from fawn.svl.corp.google.com
+ ([2620:15c:2cd:202:47b8:ed1f:f8e9:a664])
+ (user=morbo job=sendgmr) by 2002:a25:bb13:: with SMTP id
+ z19mr5539560ybg.347.1628885116494; 
+ Fri, 13 Aug 2021 13:05:16 -0700 (PDT)
+Date: Fri, 13 Aug 2021 13:05:11 -0700
+In-Reply-To: <20210812204951.1551782-1-morbo@google.com>
+Message-Id: <20210813200511.1905703-1-morbo@google.com>
+Mime-Version: 1.0
 References: <20210812204951.1551782-1-morbo@google.com>
- <87sfzde8lk.fsf@linkitivity.dja.id.au>
- <CAGG=3QUz2LNgC8Hn6rU68ejjv4=J9Uidef0oH9A7=sKTs+vf7g@mail.gmail.com>
-In-Reply-To: <CAGG=3QUz2LNgC8Hn6rU68ejjv4=J9Uidef0oH9A7=sKTs+vf7g@mail.gmail.com>
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Fri, 13 Aug 2021 11:59:21 -0700
-Message-ID: <CAKwvOd=rN9s5YBtt-AMnaqXhYCsAT=6yp29_oomRvTaev6Q6zw@mail.gmail.com>
-Subject: Re: [PATCH] ppc: add "-z notext" flag to disable diagnostic
-To: Bill Wendling <morbo@google.com>
+X-Mailer: git-send-email 2.33.0.rc1.237.g0d66db33f3-goog
+Subject: [PATCH v2] ppc: add "-z notext" flag to disable diagnostic
+From: Bill Wendling <morbo@google.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
+ Paul Mackerras <paulus@samba.org>, Nathan Chancellor <nathan@kernel.org>, 
+ Nick Desaulniers <ndesaulniers@google.com>, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org, clang-built-linux@googlegroups.com, 
+ Daniel Axtens <dja@axtens.net>, Fangrui Song <maskray@google.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -86,28 +96,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Fangrui Song <maskray@google.com>, LKML <linux-kernel@vger.kernel.org>,
- Nathan Chancellor <nathan@kernel.org>,
- clang-built-linux <clang-built-linux@googlegroups.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Daniel Axtens <dja@axtens.net>
+Cc: Itaru Kitayama <itaru.kitayama@riken.jp>, Bill Wendling <morbo@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Aug 13, 2021 at 11:24 AM Bill Wendling <morbo@google.com> wrote:
->
-> BTW, this patch should more properly be attributed to Fangrui Song. I
-> can send a follow-up patch that reflects this and adds more context to
-> the commit message.
+From: Fangrui Song <maskray@google.com>
 
-Sounds good to me. The TL;DR is that LLD has a different implicit
-default for `-z text` vs `-z notext` than BFD.  We can emulate the
-behavior or BFD by simply being explicit about `-z notext` always.
+Object files used to link .tmp_vmlinux.kallsyms1 have many R_PPC64_ADDR64
+relocations in non-SHF_WRITE sections. There are many text relocations (e.g. in
+.rela___ksymtab_gpl+* and .rela__mcount_loc sections) in a -pie link and are
+disallowed by LLD:
 
-Or we can dig through why there are relocations in read only sections,
-fix those, then enable `-z text` for all linkers.  My recommendation
-would be get the thing building, then go digging time permitting.
+  ld.lld: error: can't create dynamic relocation R_PPC64_ADDR64 against local symbol in readonly segment; recompile object files with -fPIC or pass '-Wl,-z,notext' to allow text relocations in the output
+  >>> defined in arch/powerpc/kernel/head_64.o
+  >>> referenced by arch/powerpc/kernel/head_64.o:(__restart_table+0x10)
+
+Newer GNU ld configured with "--enable-textrel-check=error" will report an
+error as well:
+
+  $ ld-new -EL -m elf64lppc -pie ... -o .tmp_vmlinux.kallsyms1 ...
+  ld-new: read-only segment has dynamic relocations
+
+Add "-z notext" to suppress the errors. Non-CONFIG_RELOCATABLE builds use the
+default -no-pie mode and thus R_PPC64_ADDR64 relocations can be resolved at
+link-time.
+
+Link: https://github.com/ClangBuiltLinux/linux/issues/811
+Signed-off-by: Fangrui Song <maskray@google.com>
+Co-developed-by: Bill Wendling <morbo@google.com>
+Signed-off-by: Bill Wendling <morbo@google.com>
+Reported-by: Itaru Kitayama <itaru.kitayama@riken.jp>
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+---
+v2:
+  - Assign "Fangrui Song" as the proper author.
+  - Improve the commit message to add more context.
+  - Appending tags from original patch's review.
+---
+ arch/powerpc/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 6505d66f1193..17a9fbf9b789 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -122,6 +122,7 @@ endif
+ 
+ LDFLAGS_vmlinux-y := -Bstatic
+ LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie
++LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) += -z notext
+ LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
+ 
+ ifdef CONFIG_PPC64
 -- 
-Thanks,
-~Nick Desaulniers
+2.33.0.rc1.237.g0d66db33f3-goog
+
