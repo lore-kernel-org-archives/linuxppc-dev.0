@@ -2,65 +2,65 @@ Return-Path: <SRS0=7Aff=NG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1414C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Aug 2021 14:39:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D46A1C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Aug 2021 17:01:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C2D561151
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Aug 2021 14:39:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2C2D561151
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
+	by mail.kernel.org (Postfix) with ESMTPS id 2811460C40
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Aug 2021 17:01:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2811460C40
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gng0n2gntz3bhl
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 00:39:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gnk8b1rQQz3bbF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 03:01:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=Ynjh7QDJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c6/WvWhx;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=alien8.de (client-ip=5.9.137.197; helo=mail.skyhub.de;
- envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
- header.s=dkim header.b=Ynjh7QDJ; dkim-atps=neutral
-Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=c6/WvWhx; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gng0066rfz302N
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Aug 2021 00:38:39 +1000 (AEST)
-Received: from zn.tnic (p200300ec2f26310039d0ba97aac93c10.dip0.t-ipconnect.de
- [IPv6:2003:ec:2f26:3100:39d0:ba97:aac9:3c10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 5FF7A1EC0505;
- Sun, 15 Aug 2021 16:38:31 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
- t=1629038311;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
- bh=jL5qXq5tPSUlQog/FJ5eZ1GT2YpJvvVnQmTTUk0cbrA=;
- b=Ynjh7QDJnobQuRzRBtXZMflPEf0vTQxZ/1e/DI2MnZmP0BU3+0pTK5ZZQ5Gk5RnrPuYHa6
- IdpdAyOEUiLJZd8HI6wSzceOtBbAWAY0K9LHdKOg+Qfc/RBmkhxNql4Enc7Gc4LTKOJnaI
- 0ETWtaeGc2m89ri2xInjGo/yEh1iYis=
-Date: Sun, 15 Aug 2021 16:39:09 +0200
-From: Borislav Petkov <bp@alien8.de>
-To: Tom Lendacky <thomas.lendacky@amd.com>
-Subject: Re: [PATCH v2 03/12] x86/sev: Add an x86 version of prot_guest_has()
-Message-ID: <YRknDQGUJJ/j9pth@zn.tnic>
-References: <cover.1628873970.git.thomas.lendacky@amd.com>
- <7d55bac0cf2e73f53816bce3a3097877ed9663f3.1628873970.git.thomas.lendacky@amd.com>
- <YRgUxyhoqVJ0Kxvt@zn.tnic>
- <4710eb91-d054-7b31-5106-09e3e54bba9e@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4710eb91-d054-7b31-5106-09e3e54bba9e@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gnk7n6QL4z3035
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Aug 2021 03:00:37 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPS id 774D860C40;
+ Sun, 15 Aug 2021 17:00:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1629046833;
+ bh=LWofAuKgdrrv7tvkrVcI9fizKdir0cMFEtvUqwVIIx4=;
+ h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+ b=c6/WvWhxLqrOAUP3nqScBhI2mlDicd69OYWsQr+JujBzSM4bMDO8vIGypX0ByA310
+ v3wbvRbHgMsBO3k4J5fQWe2GJNiMLL0OXEkjU0L+eLcK49edQ575no6VeiwHV30BOD
+ g7Uedr4LoCNwNME4Xnbdse7iKj9Rvmnqjj9CgU5PaxC8VT5JLhIWjj0PaeFnVmAC8D
+ We2CRietVwStAzvKNb6H1tpwLyW85PQw/a18a/a+bqBsukRzPRU9gylT5Vu2aO9UDe
+ VeL3D/PiCQQ3cDOd6wo9VSQpkkebIcV12qOXH3xcUwazSIBO/UveasFsQ93gmDkXPc
+ GEsoprt/a6Ngg==
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.14-5 tag
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <87tujqlvpo.fsf@mpe.ellerman.id.au>
+References: <87tujqlvpo.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <87tujqlvpo.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+ tags/powerpc-5.14-5
+X-PR-Tracked-Commit-Id: cbc06f051c524dcfe52ef0d1f30647828e226d30
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: ecf93431963a95c0f475921101bedc0dd62ec96d
+Message-Id: <162904683343.11260.6565674688445410753.pr-tracker-bot@kernel.org>
+Date: Sun, 15 Aug 2021 17:00:33 +0000
+To: Michael Ellerman <mpe@ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,39 +72,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>,
- linux-efi@vger.kernel.org, Brijesh Singh <brijesh.singh@amd.com>,
- kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org,
- platform-driver-x86@vger.kernel.org, linux-s390@vger.kernel.org,
- Andi Kleen <ak@linux.intel.com>, Joerg Roedel <joro@8bytes.org>,
- x86@kernel.org, amd-gfx@lists.freedesktop.org, Ingo Molnar <mingo@redhat.com>,
- linux-graphics-maintainer@vmware.com, Joerg Roedel <jroedel@suse.de>,
- Tianyu Lan <Tianyu.Lan@microsoft.com>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ linux-kernel@vger.kernel.org, clg@kaod.org, pulehui@huawei.com,
+ ldufour@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Aug 15, 2021 at 08:53:31AM -0500, Tom Lendacky wrote:
-> It's not a cross-vendor thing as opposed to a KVM or other hypervisor
-> thing where the family doesn't have to be reported as AMD or HYGON.
+The pull request you sent on Sun, 15 Aug 2021 22:48:51 +1000:
 
-What would be the use case? A HV starts a guest which is supposed to be
-encrypted using the AMD's confidential guest technology but the HV tells
-the guest that it is not running on an AMD SVM HV but something else?
+> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.14-5
 
-Is that even an actual use case?
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/ecf93431963a95c0f475921101bedc0dd62ec96d
 
-Or am I way off?
-
-I know we have talked about this in the past but this still sounds
-insane.
+Thank you!
 
 -- 
-Regards/Gruss,
-    Boris.
-
-https://people.kernel.org/tglx/notes-about-netiquette
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
