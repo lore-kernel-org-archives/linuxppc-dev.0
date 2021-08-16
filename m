@@ -7,44 +7,45 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2190C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 02:06:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09333C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 02:07:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D8872613B3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 02:06:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D8872613B3
+	by mail.kernel.org (Postfix) with ESMTPS id 56FE8600D4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 02:07:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 56FE8600D4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GnyFr2QWSz3cVB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 12:06:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GnyGJ0FGRz3dBp
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 12:07:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.115; helo=mga14.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GnyFH4mLfz2ymN
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GnyFH4qDJz30DZ
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Aug 2021 12:06:07 +1000 (AEST)
-X-IronPort-AV: E=McAfee;i="6200,9189,10077"; a="215509947"
-X-IronPort-AV: E=Sophos;i="5.84,324,1620716400"; d="scan'208";a="215509947"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Aug 2021 19:05:04 -0700
+X-IronPort-AV: E=McAfee;i="6200,9189,10077"; a="213931617"
+X-IronPort-AV: E=Sophos;i="5.84,324,1620716400"; d="scan'208";a="213931617"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 15 Aug 2021 19:05:03 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.84,324,1620716400"; d="scan'208";a="448295239"
+X-IronPort-AV: E=Sophos;i="5.84,324,1620716400"; d="scan'208";a="678919105"
 Received: from lkp-server01.sh.intel.com (HELO d053b881505b) ([10.239.97.150])
- by fmsmga007.fm.intel.com with ESMTP; 15 Aug 2021 19:05:02 -0700
+ by fmsmga005.fm.intel.com with ESMTP; 15 Aug 2021 19:05:01 -0700
 Received: from kbuild by d053b881505b with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1mFRzp-000QIV-IE; Mon, 16 Aug 2021 02:05:01 +0000
-Date: Mon, 16 Aug 2021 10:04:51 +0800
+ id 1mFRzp-000QIP-9C; Mon, 16 Aug 2021 02:05:01 +0000
+Date: Mon, 16 Aug 2021 10:04:53 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD SUCCESS 1e688dd2a3d6759d416616ff07afc4bb836c4213
-Message-ID: <6119c7c3.1Rwu4BvPkI6Zy7Jf%lkp@intel.com>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 0355785313e2191be4e1108cdbda94ddb0238c48
+Message-ID: <6119c7c5.dOAIrqNhqdlqAYXH%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -65,12 +66,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-branch HEAD: 1e688dd2a3d6759d416616ff07afc4bb836c4213  powerpc/bug: Provide better flexibility to WARN_ON/__WARN_FLAGS() with asm goto
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+branch HEAD: 0355785313e2191be4e1108cdbda94ddb0238c48  powerpc: Add "-z notext" flag to disable diagnostic
 
 elapsed time: 722m
 
-configs tested: 172
+configs tested: 176
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -88,6 +89,11 @@ nios2                         3c120_defconfig
 sh                          landisk_defconfig
 sh                           se7712_defconfig
 arm                        trizeps4_defconfig
+mips                      fuloong2e_defconfig
+powerpc                     asp8347_defconfig
+arm                             rpc_defconfig
+xtensa                       common_defconfig
+arm                      jornada720_defconfig
 sh                   secureedge5410_defconfig
 powerpc                     tqm8540_defconfig
 arm                        neponset_defconfig
@@ -116,7 +122,6 @@ sh                           se7619_defconfig
 arm                         orion5x_defconfig
 sh                          r7785rp_defconfig
 m68k                       m5275evb_defconfig
-xtensa                       common_defconfig
 mips                   sb1250_swarm_defconfig
 powerpc                         ps3_defconfig
 powerpc               mpc834x_itxgp_defconfig
