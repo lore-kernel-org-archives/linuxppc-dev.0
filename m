@@ -2,69 +2,85 @@ Return-Path: <SRS0=Fnpn=NH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA6F8C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 08:32:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E986DC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 08:33:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2BD8A61B21
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 08:32:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2BD8A61B21
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 8DC1861B21
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 08:33:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8DC1861B21
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gp6qB6Bytz3d81
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 18:32:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gp6qt1ngBz3cX6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 18:33:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=N6f7Yswk;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1029;
+ helo=mail-pj1-x1029.google.com; envelope-from=joel.stan@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=N6f7Yswk; dkim-atps=neutral
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com
+ [IPv6:2607:f8b0:4864:20::1029])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gp6p34hVCz3029
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Aug 2021 18:31:35 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4Gp6nw15cVz9sVG;
- Mon, 16 Aug 2021 10:31:32 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qIU4wgJ1r51a; Mon, 16 Aug 2021 10:31:32 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4Gp6nw06Nfz9sV8;
- Mon, 16 Aug 2021 10:31:32 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D82368B78C;
- Mon, 16 Aug 2021 10:31:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id jj1ANunAVcqM; Mon, 16 Aug 2021 10:31:31 +0200 (CEST)
-Received: from [172.25.230.100] (po15451.idsi0.si.c-s.fr [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 690FA8B788;
- Mon, 16 Aug 2021 10:31:31 +0200 (CEST)
-Subject: Re: [PATCH 1/3] powerpc/64s: Fix build when !PPC_BARRIER_NOSPEC
-To: Joel Stanley <joel@jms.id.au>, Paul Mackerras <paulus@samba.org>,
- Michael Neuling <mikey@neuling.org>, Anton Blanchard <anton@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gp6p60jyjz3bWS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Aug 2021 18:31:41 +1000 (AEST)
+Received: by mail-pj1-x1029.google.com with SMTP id
+ w13-20020a17090aea0db029017897a5f7bcso26208980pjy.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Aug 2021 01:31:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:from:to:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=d9JrVAkdSMVbC/HBVkCccWsydVJtIdh5qQXcFgOlh3w=;
+ b=N6f7YswkZGpCAhBNOwkK64InCQDDfF6doJzXolvb8bXLENEhSi7uTzAKEMn8J0lY41
+ t5UgL0E8Zfm/BppdirhuauuC1ZK19dr0cKPrG8g0dtTC28+eHi7NiyCMkJYhSs1WyeY/
+ DE44FvO8AxRQNYoCMcs7QaXDbLB6v/Zr+AbsD7tze9TQoWYM8kSKsSMQ8hYS+FQA9LQB
+ txZMFstzrTV94IzNeYcdl2P8zVJ76zH91vD5YVDoNCBjJbOf0Dxs7l3sa3VLY3u5/Pp8
+ 5uV+JYWtvbKsw/NDExkYX/4HOMUpQcuzpSWiorVChgG3ZkB8zfSvHKcdoq7hTZj/siY5
+ Fw+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:from:to:subject:date:message-id
+ :in-reply-to:references:mime-version:content-transfer-encoding;
+ bh=d9JrVAkdSMVbC/HBVkCccWsydVJtIdh5qQXcFgOlh3w=;
+ b=htYKubuO4vVEaXkchcysu9M0NA10mDMF8wTKZ97R52Oh/pbZvlc0xNIGR1W6bexfwr
+ uTaSZthtA6kCYpuf1qGSc9R2k3JLtPhu7fkbQHuQRxx7mQg4erpL7DrRpSRReR0za7ZN
+ bxVHNn395T1p4UqFfRvaNOaPj9mSxP8tBhT/GtlC/VdFP1vKCpEBmaZAs+4rP2zPP5ys
+ D1/0FbIYLhIZrrDbTeNABwD96l4OfNCf/OiPlf8xTc60jRUZpWWJx5qTArzjhKnGpULb
+ bEW8x+1xl+vOfdekinsh46lHi6x+VElN0QOg+5xVUxtTtbVNB0jXL54QzlbREDCRkGgu
+ CQcA==
+X-Gm-Message-State: AOAM530NJGNy1p55Bv5T2NxHoJTFghimVm/ZI71UHJu7MQYxMmf22gkj
+ pqTgXJmRC0S0UcCOpIoWMAk=
+X-Google-Smtp-Source: ABdhPJwhnwLlp1aSnb7ZsVXLQ4rCJ82TaKllySc91qxiiJzAnUqr7NKndVykBKdBCQfVFITnp8Q/ng==
+X-Received: by 2002:a65:5186:: with SMTP id h6mr14910936pgq.62.1629102698902; 
+ Mon, 16 Aug 2021 01:31:38 -0700 (PDT)
+Received: from voyager.lan ([45.124.203.15])
+ by smtp.gmail.com with ESMTPSA id mr18sm8715684pjb.39.2021.08.16.01.31.35
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 16 Aug 2021 01:31:38 -0700 (PDT)
+From: Joel Stanley <joel@jms.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
  linuxppc-dev@lists.ozlabs.org
-References: <20210816082403.2293846-1-joel@jms.id.au>
- <20210816082403.2293846-2-joel@jms.id.au>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <71820896-9c74-bc68-79c5-cc6d6d63fb65@csgroup.eu>
-Date: Mon, 16 Aug 2021 10:31:23 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
+Subject: [PATCH 1/2] powerpc/config: Fix IPV6 warning in mpc855_ads
+Date: Mon, 16 Aug 2021 18:01:25 +0930
+Message-Id: <20210816083126.2294522-2-joel@jms.id.au>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20210816083126.2294522-1-joel@jms.id.au>
+References: <20210816083126.2294522-1-joel@jms.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20210816082403.2293846-2-joel@jms.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,51 +93,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+When building this config there's a warning:
 
+  79:warning: override: reassigning to symbol IPV6
 
-Le 16/08/2021 à 10:24, Joel Stanley a écrit :
-> When disabling PPC_BARRIER_NOSPEC the do_barrier_nospec_fixups_range
-> definition is still included, as well as a stub in asm/setup.h:
-> 
-> ../arch/powerpc/lib/feature-fixups.c:502:6: error: redefinition of ‘do_barrier_nospec_fixu>
->    502 | void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_en>
->        |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> In file included from ../arch/powerpc/lib/feature-fixups.c:23:
-> ../arch/powerpc/include/asm/setup.h:70:20: note: previous definition of ‘do_barrier_nospec>
->     70 | static inline void do_barrier_nospec_fixups_range(bool enable, void *start, void *>
->        |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> 
-> I assume the intent was to put the just do_barrier_nospec_fixups
-> behind PPC_BARRIER_NOSPEC and let the compiler drop _range when there
-> are no users. (There is a caller in module.c, but this is behind
-> PPC_BARRIER_NOSPEC).
+Commit 9a1762a4a4ff ("powerpc/8xx: Update mpc885_ads_defconfig to
+improve CI") added CONFIG_IPV6=y, but left '# CONFIG_IPV6 is not set'
+in.
 
-The compiler won't drop do_barrier_nospec_fixups_range() because it is not static.
+IPV6 is default y, so remove both to clean up the build.
 
-> 
-> This makes PPC_BOOK3S_64 match how the PPC_FSL_BOOK3E build works.
-> 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
->   arch/powerpc/include/asm/setup.h | 2 --
->   1 file changed, 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-> index 6c1a7d217d1a..71012284c044 100644
-> --- a/arch/powerpc/include/asm/setup.h
-> +++ b/arch/powerpc/include/asm/setup.h
-> @@ -66,8 +66,6 @@ extern bool barrier_nospec_enabled;
->   
->   #ifdef CONFIG_PPC_BARRIER_NOSPEC
->   void do_barrier_nospec_fixups_range(bool enable, void *start, void *end);
-> -#else
-> -static inline void do_barrier_nospec_fixups_range(bool enable, void *start, void *end) { }
->   #endif
->   
->   #ifdef CONFIG_PPC_FSL_BOOK3E
-> 
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/powerpc/configs/mpc885_ads_defconfig | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/powerpc/configs/mpc885_ads_defconfig b/arch/powerpc/configs/mpc885_ads_defconfig
+index d21f266cea9a..5cd17adf903f 100644
+--- a/arch/powerpc/configs/mpc885_ads_defconfig
++++ b/arch/powerpc/configs/mpc885_ads_defconfig
+@@ -21,7 +21,6 @@ CONFIG_INET=y
+ CONFIG_IP_MULTICAST=y
+ CONFIG_IP_PNP=y
+ CONFIG_SYN_COOKIES=y
+-# CONFIG_IPV6 is not set
+ # CONFIG_FW_LOADER is not set
+ CONFIG_MTD=y
+ CONFIG_MTD_BLOCK=y
+@@ -76,7 +75,6 @@ CONFIG_PERF_EVENTS=y
+ CONFIG_MATH_EMULATION=y
+ CONFIG_VIRT_CPU_ACCOUNTING_NATIVE=y
+ CONFIG_STRICT_KERNEL_RWX=y
+-CONFIG_IPV6=y
+ CONFIG_BPF_JIT=y
+ CONFIG_DEBUG_VM_PGTABLE=y
+ CONFIG_BDI_SWITCH=y
+-- 
+2.32.0
+
