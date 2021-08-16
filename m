@@ -2,54 +2,60 @@ Return-Path: <SRS0=Fnpn=NH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 082E4C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 02:44:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24775C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 04:11:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0584E61151
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 02:44:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0584E61151
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
+	by mail.kernel.org (Postfix) with ESMTPS id 97C3361356
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 04:11:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 97C3361356
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gnz60201Pz3cV2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 12:44:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gp1210Y8Wz3cV2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 14:11:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=FyQWuOlc;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18;
- helo=deadmen.hmeau.com; envelope-from=herbert@gondor.apana.org.au;
- receiver=<UNKNOWN>)
-Received: from deadmen.hmeau.com (helcar.hmeau.com [216.24.177.18])
+ smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=FyQWuOlc; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gnz5W1WGhz2yNW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Aug 2021 12:44:31 +1000 (AEST)
-Received: from gondobar.mordor.me.apana.org.au ([192.168.128.4] helo=gondobar)
- by deadmen.hmeau.com with esmtp (Exim 4.92 #5 (Debian))
- id 1mFSby-0002zU-RT; Mon, 16 Aug 2021 10:44:26 +0800
-Received: from herbert by gondobar with local (Exim 4.92)
- (envelope-from <herbert@gondor.apana.org.au>)
- id 1mFSbw-0002eg-OE; Mon, 16 Aug 2021 10:44:24 +0800
-Date: Mon, 16 Aug 2021 10:44:24 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] crypto: DRBG - select SHA512
-Message-ID: <20210816024424.GA10184@gondor.apana.org.au>
-References: <304ee0376383d9ceecddbfd216c035215bbff861.camel@chronox.de>
- <20210716081411.GA2062@gondor.apana.org.au>
- <YRft/tuKE6MjHhY7@zn.tnic>
- <20210816020735.GA10021@gondor.apana.org.au>
- <20210816044514.Horde.WAvjInneMUMGu0ryEZHgrQ8@messagerie.c-s.fr>
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gp11H211Jz301J
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Aug 2021 14:10:59 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4Gp11C0SrQz9sWw; Mon, 16 Aug 2021 14:10:54 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1629087055;
+ bh=vL6PDLUTi4v2XAGCSY2os4ZBsblrndcYDG5h8EUgeyo=;
+ h=From:To:Cc:Subject:Date:From;
+ b=FyQWuOlcZm2GrjoI6G0//rqi8i1tuL9CU94oKd3rbEHKouH26AYEtSAhcNCxmJ+zB
+ ZFwbav5AXgmvGoOt0NqZWYtlCUkJk6ZQXD3eZR/2L2CN+W9WiWUGWTqfKUAnHzShGH
+ 7pSFSiIAgzs1Znu/axkbl0T/PPmUcd3Rde1lu+JmLW9wR4p4ww/H8/Ri9yfhazFZXW
+ t161L7RhS3C2XzwZhyFmMrf1KbjOk51ADNQ4E2nkzA2tdg351bbVlpWLviKOe1Gw+b
+ Wb3UUXym2cwQg7/bhJND/Ab9OkgNRYHwVaeh4mKExDu0/Un+yBmbEW/bCqF5MPCD2w
+ 0/Qb41mS7V68Q==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/pseries: Fix build error when NUMA=n
+Date: Mon, 16 Aug 2021 14:10:32 +1000
+Message-Id: <20210816041032.2839343-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210816044514.Horde.WAvjInneMUMGu0ryEZHgrQ8@messagerie.c-s.fr>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,22 +67,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sachinp@linux.vnet.ibm.com, Stephan Mueller <smueller@chronox.de>,
- lkml <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@alien8.de>,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: ldufour@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Aug 16, 2021 at 04:45:14AM +0200, Christophe Leroy wrote:
->
-> The fixes tag has a problem it seems. Should be corrected before pushing.
+As reported by lkp, if NUMA=n we see a build error:
 
-It's too late for that.  This commit is at the base of many other
-subsequent changes.
+   arch/powerpc/platforms/pseries/hotplug-cpu.c: In function 'pseries_cpu_hotplug_init':
+   arch/powerpc/platforms/pseries/hotplug-cpu.c:1022:8: error: 'node_to_cpumask_map' undeclared
+    1022 |        node_to_cpumask_map[node]);
 
-Cheers,
+Use cpumask_of_node() which has an empty stub for NUMA=n, and when
+NUMA=y does a lookup from node_to_cpumask_map[].
+
+Fixes: bd1dd4c5f528 ("powerpc/pseries: Prevent free CPU ids being reused on another node")
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/platforms/pseries/hotplug-cpu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 1ef40ef699a6..d646c22e94ab 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -1021,7 +1021,7 @@ static int __init pseries_cpu_hotplug_init(void)
+ 			/* Record ids of CPU added at boot time */
+ 			cpumask_or(node_recorded_ids_map[node],
+ 				   node_recorded_ids_map[node],
+-				   node_to_cpumask_map[node]);
++				   cpumask_of_node(node));
+ 		}
+ 
+ 		of_reconfig_notifier_register(&pseries_smp_nb);
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+2.25.1
+
