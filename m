@@ -2,81 +2,84 @@ Return-Path: <SRS0=Fnpn=NH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ECA90C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 07:31:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17777C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 07:31:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D0EE61AA3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 07:31:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4D0EE61AA3
+	by mail.kernel.org (Postfix) with ESMTPS id 5193E61AAB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 07:31:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5193E61AAB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gp5SR4H4mz3bbF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 17:31:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gp5T85gflz3cP1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Aug 2021 17:31:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=rLV/P5f2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=AMXyeqEu;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102f;
- helo=mail-pj1-x102f.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::630;
+ helo=mail-pl1-x630.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=rLV/P5f2; dkim-atps=neutral
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com
- [IPv6:2607:f8b0:4864:20::102f])
+ header.s=20161025 header.b=AMXyeqEu; dkim-atps=neutral
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com
+ [IPv6:2607:f8b0:4864:20::630])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gp5Qz6sGpz30GM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Aug 2021 17:30:02 +1000 (AEST)
-Received: by mail-pj1-x102f.google.com with SMTP id
- w13-20020a17090aea0db029017897a5f7bcso25985231pjy.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Aug 2021 00:30:02 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gp5R21P2dz30GM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Aug 2021 17:30:06 +1000 (AEST)
+Received: by mail-pl1-x630.google.com with SMTP id a20so19843091plm.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Aug 2021 00:30:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=rWiAzCM64+4TyIiGEiyPoRwsmh+8vsLsCUdm+zSDXew=;
- b=rLV/P5f2/DoDMWId3nEtDSnvhD70uoBkxUQkQCzeunWVR3Tq49a8YDBokPGUTm2gp0
- WmV3nO+D0DM2xgOuL/FsCd0q2xBAJh/5X7T4NaQzAOHf5MM5nwwG0Kxj+6rpKXDFGj3X
- mdKk016l6B3H9W0hd0Hg6/Ezi6Dc3tuoGRZz8mjU5UTBrHoU5h7uMhVBBQY3Xhri8icm
- 90+YqzNrtNwU0528zPpBvN7sXVs2LpuygXmGVwuzB5BCtrCMv7Vd25LLOpU/CYjM/YW9
- Yq+hWYM/DI76UqONbLR/QAT/H3sNzjfRQwmA3oMMjf6CQ2WGhriHp+A4gunHyz+kk+HM
- 5CKA==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=m1IbMUZr64tIxxt6maNEwfTRa+n09Ar1wO7efkCJ4Ew=;
+ b=AMXyeqEuHNtBMscgwnyTA78joUrPfoa2pTunC9/AnRKvb8qv+zI0fw/KmGVbq26LIb
+ Bp4NCnL0hgXHK5SpB8oOCsig9bkgdeZBTtWF7CZ+yLsuecLqJZS6yzzfFYktQiUhMgif
+ y/Nb7FA1mSvwaN8Vh6ZNq/AyNvMfbdjxJje2ekMq9o5I1OWDhPa489e3RfJgeL6J/Xzk
+ A7fJ7cVO1ww5w8X26wqnWskKYPuzS7tmeFiRfWJ8lwHfnwCyGhkHJ5chpiWdAqTbNBUL
+ LZM7BA2USlMX0WU1wesVAaSG686ySgfJt4FVZXTsMqedV3A8CJINFnlOoOW/yGNcafsx
+ nSvA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=rWiAzCM64+4TyIiGEiyPoRwsmh+8vsLsCUdm+zSDXew=;
- b=P16ztmeP5nDGxCBtHsQ5ZXROKbgcEIRdcuYwscQVImDDEmXOq1+ewTfapjfKUg9ugz
- JxCqftJv6IiNq2plhl7CaRLcoJ1uaxEELHVH8YRlmP4athDqfEH71feGRrKw54e0ZCOF
- AGMgijh74XJ4Co55vfPNAjSAX54qwOV1shaN6azfcqrJqcw8MzlFIu1qHHjYXiTD7Kck
- FzCjcngPVXx6/eBxjkgJzDukQttIhvIDdDWk1hWTKQV5R7axUdOGucbpiHCsU+FfgEEM
- JwA7HqYI2CRhV/QQyhqq80VO2DyetgGXf2JJLJeqscdoWOf/eUgiuwhnDcJoedIR94OW
- WMDw==
-X-Gm-Message-State: AOAM531aO9KZclDkAK5E6cCMlZqpXCW5H2AL1waRXtrLZqUpTFrEk1Ef
- c6dQ96vmdbxGbNa2WYxQYgtMyh/qzaI=
-X-Google-Smtp-Source: ABdhPJyrEFHZNtMPJ2nn0tlhWEuH65IEDR49PtwoYWeFwa+8aifVIJTaJokzXUFIYBGIRQx5ezYVIA==
-X-Received: by 2002:a17:90a:d149:: with SMTP id
- t9mr12183208pjw.0.1629098999613; 
- Mon, 16 Aug 2021 00:29:59 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=m1IbMUZr64tIxxt6maNEwfTRa+n09Ar1wO7efkCJ4Ew=;
+ b=lI5Dv4UdyLpMWapTEEIeavCAbyZPXJyYA2l9XrwpTqk7qC+jqna4alpno17zkOpFzq
+ aapcp/KGTVnMYS+dYpxCZy7yRy5AEkOZKS9Wi8GEDCiNrxn+sIGJLMFUqlounmck6a4T
+ 3Gn7ynFvDPFzF8RQ/HS57/4n6UEwild/bd6lJ7qefUd2Iq/M0tKMccUvUv7dIoqzJJCd
+ XIbq0SdeJ5cALh0fdvKBTaSpGd7EQF0g1PCauvJN+aeVzUE1yx+3v9iqwVnJFXlcN/EP
+ 2FhbyvviDzTbjrx3niW8TLJI0Xtr/yxUyvz7FIHRiMOOW1TvY86SVZ5LSzo4FmfF6jK3
+ jzvg==
+X-Gm-Message-State: AOAM530e6ijl0+8LXK8SxKRBtkKrE+X5Z6JLz/35OajYfCUDrkLpB6vQ
+ 4bQApM/6MetrXo7QSDYSJ8e1SfpQDXU=
+X-Google-Smtp-Source: ABdhPJyfJ1YadIr6QV0wtXW8Imm31VJojJD/PoV3JIjnefR2GFvgF8H+w5d66lg0wvy/y78WcofvDw==
+X-Received: by 2002:a62:ee11:0:b029:3e0:88dc:193f with SMTP id
+ e17-20020a62ee110000b02903e088dc193fmr14696710pfi.78.1629099003867; 
+ Mon, 16 Aug 2021 00:30:03 -0700 (PDT)
 Received: from bobo.ibm.com (203-219-120-52.tpgi.com.au. [203.219.120.52])
- by smtp.gmail.com with ESMTPSA id e7sm10543887pfc.145.2021.08.16.00.29.57
+ by smtp.gmail.com with ESMTPSA id e7sm10543887pfc.145.2021.08.16.00.30.01
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 16 Aug 2021 00:29:59 -0700 (PDT)
+ Mon, 16 Aug 2021 00:30:03 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v1 0/4] powerpc/64s: interrupt speedups
-Date: Mon, 16 Aug 2021 17:29:49 +1000
-Message-Id: <20210816072953.1165964-1-npiggin@gmail.com>
+Subject: [PATCH v1 2/4] powerpc/64s/perf: add power_pmu_running to query
+ whether perf is being used
+Date: Mon, 16 Aug 2021 17:29:51 +1000
+Message-Id: <20210816072953.1165964-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20210816072953.1165964-1-npiggin@gmail.com>
+References: <20210816072953.1165964-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -90,46 +93,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Here's a few stragglers. The first patch was submitted already but had
-some bugs with unrecoverable exceptions on HPT (current->blah being
-accessed before MSR[RI] was enabled). Those should be fixed now.
+Interrupt handling code would like to know whether perf is enabled, to
+know whether it should enable MSR[EE] to improve PMI coverage.
 
-The others are generally for helping asynch interrupts, which are a bit
-harder to measure well but important for IO and IPIs.
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/hw_irq.h |  2 ++
+ arch/powerpc/perf/core-book3s.c   | 13 +++++++++++++
+ 2 files changed, 15 insertions(+)
 
-After this series, the SPR accesses of the interrupt handlers for radix
-are becoming pretty optimal except for PPR which we could improve on,
-and virt CPU accounting which is very costly -- we might disable that
-by default unless someone comes up with a good reason to keep it.
-
-Thanks,
-Nick
-
-Nicholas Piggin (4):
-  powerpc/64: handle MSR EE and RI in interrupt entry wrapper
-  powerpc/64s/perf: add power_pmu_running to query whether perf is being
-    used
-  powerpc/64s/interrupt: Don't enable MSR[EE] in irq handlers unless
-    perf is in use
-  powerpc/64s/interrupt: avoid saving CFAR in some asynchronous
-    interrupts
-
- arch/powerpc/include/asm/hw_irq.h    | 49 ++++++++++++---
- arch/powerpc/include/asm/interrupt.h | 31 ++++++++--
- arch/powerpc/kernel/dbell.c          |  3 +-
- arch/powerpc/kernel/exceptions-64s.S | 93 +++++++++++++++++++---------
- arch/powerpc/kernel/fpu.S            |  5 ++
- arch/powerpc/kernel/irq.c            |  3 +-
- arch/powerpc/kernel/time.c           | 30 ++++-----
- arch/powerpc/kernel/vector.S         |  8 +++
- arch/powerpc/perf/core-book3s.c      | 13 ++++
- 9 files changed, 175 insertions(+), 60 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 21cc571ea9c2..2d5c0d3ccbb6 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -306,6 +306,8 @@ static inline bool lazy_irq_pending_nocheck(void)
+ 	return __lazy_irq_pending(local_paca->irq_happened);
+ }
+ 
++bool power_pmu_running(void);
++
+ /*
+  * This is called by asynchronous interrupts to conditionally
+  * re-enable hard interrupts after having cleared the source
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index bb0ee716de91..76114a9afb2b 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -2380,6 +2380,19 @@ static void perf_event_interrupt(struct pt_regs *regs)
+ 	perf_sample_event_took(sched_clock() - start_clock);
+ }
+ 
++bool power_pmu_running(void)
++{
++	struct cpu_hw_events *cpuhw;
++
++	/* Could this simply test local_paca->pmcregs_in_use? */
++
++	if (!ppmu)
++		return false;
++
++	cpuhw = this_cpu_ptr(&cpu_hw_events);
++	return cpuhw->n_events;
++}
++
+ static int power_pmu_prepare_cpu(unsigned int cpu)
+ {
+ 	struct cpu_hw_events *cpuhw = &per_cpu(cpu_hw_events, cpu);
 -- 
 2.23.0
 
