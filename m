@@ -2,49 +2,80 @@ Return-Path: <SRS0=d/0/=NJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABAE5C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 13:54:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFE2AC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 14:00:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 30D3360EFE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 13:54:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 30D3360EFE
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 813E260238
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 14:00:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 813E260238
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GqTsR6Qmqz3ft8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 23:54:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
- envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GqV051pMXz3dLL
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 00:00:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=gX3udCcH;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kernel.org (client-ip=210.131.2.91;
+ helo=conssluserg-06.nifty.com; envelope-from=masahiroy@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
+ header.s=dec2015msa header.b=gX3udCcH; 
+ dkim-atps=neutral
+Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
+ [210.131.2.91])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GqThB3ZCBz3cTM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 23:46:18 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4GqTh13bTxz9t18; Wed, 18 Aug 2021 23:46:09 +1000 (AEST)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: pratik.r.sampat@gmail.com, rjw@rjwysocki.net,
- "Pratik R. Sampat" <psampat@linux.ibm.com>, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org, mpe@ellerman.id.au
-In-Reply-To: <20210728120500.87549-1-psampat@linux.ibm.com>
-References: <20210728120500.87549-1-psampat@linux.ibm.com>
-Subject: Re: [PATCH v2 0/1] cpufreq:powernv: Fix init_chip_info initialization
- in numa=off
-Message-Id: <162929392908.3619265.5755055049744911919.b4-ty@ellerman.id.au>
-Date: Wed, 18 Aug 2021 23:38:49 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GqTzJ6q5Hz2yWR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 23:59:24 +1000 (AEST)
+Received: from mail-pj1-f46.google.com (mail-pj1-f46.google.com
+ [209.85.216.46]) (authenticated)
+ by conssluserg-06.nifty.com with ESMTP id 17IDx8X4027812
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 22:59:08 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-06.nifty.com 17IDx8X4027812
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1629295148;
+ bh=vO1geDOQNqjzTTQB/B8cwaJY7jsdspX3Z/5frXYRJRA=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=gX3udCcHF7eqfIBq2adIBH9n5nUN5MLsKnG1Z0tGpdjwJi6uLWZAT2nGxcamvBxOD
+ qbCrpnHjdDHO5H0rGkHeZPP5dBv4AFmSFKHyYVv26suoL5h+ShLx8P31XpFR3XTsr7
+ GHfcYCP/XuxppKtfNgnBCNm3lvXDfyI/sAK+aqOS1eQcraeUkFjc6XnkOM57SUrt1t
+ Vm4sFm+w07CmDg4P8oRswyvMuPSPlS4IaqwaLRUQryJyxCGErLYHT3speGO3Ld+dwP
+ dqa7Oo4WolYPfe3WbDxHfIJSUiX4T79uDL7hVQSlmT2hiY6O8Bi3TjyzUav+F0c1/w
+ bYMMcoU1w2cIw==
+X-Nifty-SrcIP: [209.85.216.46]
+Received: by mail-pj1-f46.google.com with SMTP id
+ w13-20020a17090aea0db029017897a5f7bcso2355872pjy.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 06:59:08 -0700 (PDT)
+X-Gm-Message-State: AOAM5330nAvE4vnjnPDw3HwZDNS73R00qThnOFfH0nUUgrsVsdkZl9Sj
+ YrXwjfu5cEskxsmze1RNQkd5Gi7ik0d+4G4jnNU=
+X-Google-Smtp-Source: ABdhPJzFlnyln23/Ad0OfAS01oQY49jow7EywmiZ4IYXi6uyi1fdomL1ZKBqsTsbuBhf0Yg/ff0GiTxHmPeutlsz5o8=
+X-Received: by 2002:a17:902:a5c5:b029:12c:a867:a839 with SMTP id
+ t5-20020a170902a5c5b029012ca867a839mr7527205plq.71.1629295147564; Wed, 18 Aug
+ 2021 06:59:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+References: <20210729141937.445051-1-masahiroy@kernel.org>
+ <20210729141937.445051-3-masahiroy@kernel.org>
+ <CAKwvOdkRuxaUvAi4ik2SiDgEeNOX6D76aBtHDBPyDVTumWskLg@mail.gmail.com>
+In-Reply-To: <CAKwvOdkRuxaUvAi4ik2SiDgEeNOX6D76aBtHDBPyDVTumWskLg@mail.gmail.com>
+From: Masahiro Yamada <masahiroy@kernel.org>
+Date: Wed, 18 Aug 2021 22:58:31 +0900
+X-Gmail-Original-Message-ID: <CAK7LNAT4qPd2QdJ2=+yh2xH4ku97ykqOCgiCsHUHVo1QDR1qtQ@mail.gmail.com>
+Message-ID: <CAK7LNAT4qPd2QdJ2=+yh2xH4ku97ykqOCgiCsHUHVo1QDR1qtQ@mail.gmail.com>
+Subject: Re: [PATCH 3/3] powerpc: move the install rule to
+ arch/powerpc/Makefile
+To: Nick Desaulniers <ndesaulniers@google.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,25 +87,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Jordan Niethe <jniethe5@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Bill Wendling <morbo@google.com>, Miguel Ojeda <ojeda@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Joel Stanley <joel@jms.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 28 Jul 2021 17:34:59 +0530, Pratik R. Sampat wrote:
-> v1: https://lkml.org/lkml/2021/7/26/1509
-> Changelog v1-->v2:
-> Based on comments from Gautham,
-> 1. Included a #define for MAX_NR_CHIPS instead of hardcoding the
-> allocation.
-> 
-> Pratik R. Sampat (1):
->   cpufreq:powernv: Fix init_chip_info initialization in numa=off
-> 
-> [...]
+On Sat, Jul 31, 2021 at 5:30 AM Nick Desaulniers
+<ndesaulniers@google.com> wrote:
+>
+> On Thu, Jul 29, 2021 at 7:22 AM Masahiro Yamada <masahiroy@kernel.org> wrote:
+> >
+> > Currently, the install target in arch/powerpc/Makefile descends into
+> > arch/powerpc/boot/Makefile to invoke the shell script, but there is no
+> > good reason to do so.
+>
+> Sure, but there are more arch/ subdirs that DO invoke install.sh from
+> arch/<arch>/boot/Makefile than, not:
+>
+> arch/<arch>/boot/Makefile:
+> - parisc
+> - nios2
+> - arm
+> - nds32
+> - sparc
+> - riscv
+> - 390
+> - ppc (this patch)
+> - x86
+> - arm64
 
-Applied to powerpc/next.
+I sent patches for these architectures.
 
-[1/1] cpufreq:powernv: Fix init_chip_info initialization in numa=off
-      https://git.kernel.org/powerpc/c/f34ee9cb2c5ac5af426fee6fa4591a34d187e696
+Check LKML.
 
-cheers
+
+
+
+
+
+> arch/<arch>/Makefile:
+> - ia64
+> - m68k
+>
+> Patch is fine, but right now the tree is a bit inconsistent.
+>
+> >
+> > arch/powerpc/Makefile can run the shell script directly.
+> >
+> > Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+> > ---
+> >
+> >  arch/powerpc/Makefile      | 3 ++-
+> >  arch/powerpc/boot/Makefile | 6 ------
+> >  2 files changed, 2 insertions(+), 7 deletions(-)
+> >
+> > diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> > index 6505d66f1193..9aaf1abbc641 100644
+> > --- a/arch/powerpc/Makefile
+> > +++ b/arch/powerpc/Makefile
+> > @@ -407,7 +407,8 @@ endef
+> >
+> >  PHONY += install
+> >  install:
+> > -       $(Q)$(MAKE) $(build)=$(boot) install
+> > +       sh -x $(srctree)/$(boot)/install.sh "$(KERNELRELEASE)" vmlinux \
+> > +       System.map "$(INSTALL_PATH)"
+> >
+> >  archclean:
+> >         $(Q)$(MAKE) $(clean)=$(boot)
+> > diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> > index 0d165bd98b61..10c0fb306f15 100644
+> > --- a/arch/powerpc/boot/Makefile
+> > +++ b/arch/powerpc/boot/Makefile
+> > @@ -444,12 +444,6 @@ $(obj)/zImage:             $(addprefix $(obj)/, $(image-y))
+> >  $(obj)/zImage.initrd:  $(addprefix $(obj)/, $(initrd-y))
+> >         $(Q)rm -f $@; ln $< $@
+> >
+> > -# Only install the vmlinux
+> > -install:
+> > -       sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)"
+> > -
+> > -PHONY += install
+> > -
+> >  # anything not in $(targets)
+> >  clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
+> >         zImage zImage.initrd zImage.chrp zImage.coff zImage.holly \
+> > --
+> > 2.27.0
+> >
+>
+>
+> --
+> Thanks,
+> ~Nick Desaulniers
+
+
+
+-- 
+Best Regards
+Masahiro Yamada
