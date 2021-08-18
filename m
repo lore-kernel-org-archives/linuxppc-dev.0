@@ -2,68 +2,63 @@ Return-Path: <SRS0=d/0/=NJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72B6EC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 06:42:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ED66C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 06:50:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EDF4E60F39
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 06:42:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EDF4E60F39
+	by mail.kernel.org (Postfix) with ESMTPS id 7F3E16102A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 06:50:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7F3E16102A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GqJHf1nWxz3cWk
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 16:42:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GqJRq0HKQz3cVT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 16:49:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GqJH83rqyz2yMx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 16:42:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GqJRL14JJz2ymP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 16:49:32 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4GqJH06ckGz9sVX;
- Wed, 18 Aug 2021 08:42:20 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4GqJRF6Fn2z9sVm;
+ Wed, 18 Aug 2021 08:49:29 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BlboCUcmPLhC; Wed, 18 Aug 2021 08:42:20 +0200 (CEST)
+ with ESMTP id MpehLtEVfbmu; Wed, 18 Aug 2021 08:49:29 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4GqJH05SCXz9sVD;
- Wed, 18 Aug 2021 08:42:20 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4GqJRF5CjMz9sVQ;
+ Wed, 18 Aug 2021 08:49:29 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9988E8B7D3;
- Wed, 18 Aug 2021 08:42:20 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 947648B7D5;
+ Wed, 18 Aug 2021 08:49:29 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id KISUn5YdRZul; Wed, 18 Aug 2021 08:42:20 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B20628B766;
- Wed, 18 Aug 2021 08:42:19 +0200 (CEST)
-Subject: Re: [PATCH v2 61/63] powerpc: Split memset() to avoid multi-field
- overflow
-To: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org
-References: <20210818060533.3569517-1-keescook@chromium.org>
- <20210818060533.3569517-62-keescook@chromium.org>
+ with ESMTP id NPPUq-W1JVRY; Wed, 18 Aug 2021 08:49:29 +0200 (CEST)
+Received: from po9473vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4A3468B7D3;
+ Wed, 18 Aug 2021 08:49:29 +0200 (CEST)
+Received: by po9473vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 1FA456693C; Wed, 18 Aug 2021 06:49:29 +0000 (UTC)
+Message-Id: <4856f5574906e2aec0522be17bf3848a22b2cd0b.1629269345.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <7630b0bc-4389-6283-d8b9-c532df916d60@csgroup.eu>
-Date: Wed, 18 Aug 2021 08:42:18 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
-MIME-Version: 1.0
-In-Reply-To: <20210818060533.3569517-62-keescook@chromium.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH v2] powerpc/32s: Fix random crashes by adding isync() after
+ locking/unlocking KUEP
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ userm57@yahoo.com, fthain@linux-m68k.org
+Date: Wed, 18 Aug 2021 06:49:29 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,60 +70,155 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- clang-built-linux@googlegroups.com,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Wang Wensheng <wangwensheng4@huawei.com>, linux-staging@lists.linux.dev,
- linux-wireless@vger.kernel.org, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Qinglang Miao <miaoqinglang@huawei.com>, linux-block@vger.kernel.org,
- Hulk Robot <hulkci@huawei.com>, dri-devel@lists.freedesktop.org,
- netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org,
- linux-hardening@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Commit b5efec00b671 ("powerpc/32s: Move KUEP locking/unlocking in C")
+removed the 'isync' instruction after adding/removing NX bit in user
+segments. The reasoning behind this change was that when setting the
+NX bit we don't mind it taking effect with delay as the kernel never
+executes text from userspace, and when clearing the NX bit this is
+to return to userspace and then the 'rfi' should synchronise the
+context.
 
+However, it looks like on book3s/32 having a hash page table, at least
+on the G3 processor, we get an unexpected fault from userspace, then
+this is followed by something wrong in the verification of MSR_PR
+at end of another interrupt.
 
-Le 18/08/2021 à 08:05, Kees Cook a écrit :
-> In preparation for FORTIFY_SOURCE performing compile-time and run-time
-> field bounds checking for memset(), avoid intentionally writing across
-> neighboring fields.
-> 
-> Instead of writing across a field boundary with memset(), move the call
-> to just the array, and an explicit zeroing of the prior field.
-> 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Qinglang Miao <miaoqinglang@huawei.com>
-> Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-> Cc: Hulk Robot <hulkci@huawei.com>
-> Cc: Wang Wensheng <wangwensheng4@huawei.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> Reviewed-by: Michael Ellerman <mpe@ellerman.id.au>
-> Link: https://lore.kernel.org/lkml/87czqsnmw9.fsf@mpe.ellerman.id.au
-> ---
->   drivers/macintosh/smu.c | 3 ++-
->   1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
-> index 94fb63a7b357..59ce431da7ef 100644
-> --- a/drivers/macintosh/smu.c
-> +++ b/drivers/macintosh/smu.c
-> @@ -848,7 +848,8 @@ int smu_queue_i2c(struct smu_i2c_cmd *cmd)
->   	cmd->read = cmd->info.devaddr & 0x01;
->   	switch(cmd->info.type) {
->   	case SMU_I2C_TRANSFER_SIMPLE:
-> -		memset(&cmd->info.sublen, 0, 4);
-> +		cmd->info.sublen = 0;
-> +		memset(&cmd->info.subaddr, 0, 3);
+This is fixed by adding back the removed isync() following update
+of NX bit in user segment registers. Only do it for cores with an
+hash table, as 603 cores don't exhibit that problem and the two isync
+increase ./null_syscall selftest by 6 cycles on an MPC 832x.
 
-subaddr[] is a table, should the & be avoided ?
-And while at it, why not use sizeof(subaddr) instead of 3 ?
+First problem: unexpected WARN_ON() for mysterious PROTFAULT
 
+	[   62.896426] WARNING: CPU: 0 PID: 1660 at arch/powerpc/mm/fault.c:354 do_page_fault+0x6c/0x5b0
+	[   62.918111] Modules linked in:
+	[   62.923350] CPU: 0 PID: 1660 Comm: Xorg Not tainted 5.13.0-pmac-00028-gb3c15b60339a #40
+	[   62.943476] NIP:  c001b5c8 LR: c001b6f8 CTR: 00000000
+	[   62.954714] REGS: e2d09e40 TRAP: 0700   Not tainted  (5.13.0-pmac-00028-gb3c15b60339a)
+	[   62.974581] MSR:  00021032 <ME,IR,DR,RI>  CR: 42d04f30  XER: 20000000
+	[   62.990009]
+        	       GPR00: c000424c e2d09f00 c301b680 e2d09f40 0000001e 42000000 00cba028 00000000
+        	       GPR08: 08000000 48000010 c301b680 e2d09f30 22d09f30 00c1fff0 00cba000 a7b7ba4c
+        	       GPR16: 00000031 00000000 00000000 00000000 00000000 00000000 a7b7b0d0 00c5c010
+        	       GPR24: a7b7b64c a7b7d2f0 00000004 00000000 c1efa6c0 00cba02c 00000300 e2d09f40
+	[   63.075238] NIP [c001b5c8] do_page_fault+0x6c/0x5b0
+	[   63.085952] LR [c001b6f8] do_page_fault+0x19c/0x5b0
+	[   63.096678] Call Trace:
+	[   63.100075] [e2d09f00] [e2d09f04] 0xe2d09f04 (unreliable)
+	[   63.112359] [e2d09f30] [c000424c] DataAccess_virt+0xd4/0xe4
+	[   63.125168] --- interrupt: 300 at 0xa7a261dc
+	[   63.134060] NIP:  a7a261dc LR: a7a253bc CTR: 00000000
+	[   63.145302] REGS: e2d09f40 TRAP: 0300   Not tainted  (5.13.0-pmac-00028-gb3c15b60339a)
+	[   63.165167] MSR:  0000d032 <EE,PR,ME,IR,DR,RI>  CR: 228428e2  XER: 20000000
+	[   63.182162] DAR: 00cba02c DSISR: 42000000
+        	       GPR00: a7a27448 afa6b0e0 a74c35c0 a7b7b614 0000001e a7b7b614 00cba028 00000000
+        	       GPR08: 00020fd9 00000031 00cb9ff8 a7a273b0 220028e2 00c1fff0 00cba000 a7b7ba4c
+        	       GPR16: 00000031 00000000 00000000 00000000 00000000 00000000 a7b7b0d0 00c5c010
+        	       GPR24: a7b7b64c a7b7d2f0 00000004 00000002 0000001e a7b7b614 a7b7aff4 00000030
+	[   63.275233] NIP [a7a261dc] 0xa7a261dc
+	[   63.282291] LR [a7a253bc] 0xa7a253bc
+	[   63.289087] --- interrupt: 300
+	[   63.294322] Instruction dump:
+	[   63.299291] 7c4a1378 810300a0 75278410 83820298 83a300a4 553b018c 551e0036 4082038c
+	[   63.318630] 2e1b0000 40920228 75280800 41820220 <0fe00000> 3b600000 41920214 81420594
+	[   63.338503] ---[ end trace f642a84639cba377 ]---
 
->   		break;
->   	case SMU_I2C_TRANSFER_COMBINED:
->   		cmd->info.devaddr &= 0xfe;
-> 
+Second problem: MSR PR is seen unset allthough the interrupt frame shows it set
+
+	[   63.666846] kernel BUG at arch/powerpc/kernel/interrupt.c:458!
+	[   63.680633] Oops: Exception in kernel mode, sig: 5 [#1]
+	[   63.692201] BE PAGE_SIZE=4K MMU=Hash SMP NR_CPUS=2 PowerMac
+	[   63.705011] Modules linked in:
+	[   63.710247] CPU: 0 PID: 1660 Comm: Xorg Tainted: G        W         5.13.0-pmac-00028-gb3c15b60339a #40
+	[   63.734553] NIP:  c0011434 LR: c001629c CTR: 00000000
+	[   63.745796] REGS: e2d09e70 TRAP: 0700   Tainted: G        W          (5.13.0-pmac-00028-gb3c15b60339a)
+	[   63.769844] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 42d09f30  XER: 00000000
+	[   63.786052]
+        	       GPR00: 00000000 e2d09f30 c301b680 e2d09f40 83440000 c44d0e68 e2d09e8c 00000000
+        	       GPR08: 00000002 00dc228a 00004000 e2d09f30 22d09f30 00c1fff0 afa6ceb4 00c26144
+        	       GPR16: 00c25fb8 00c26140 afa6ceb8 90000000 00c944d8 0000001c 00000000 00200000
+        	       GPR24: 00000000 000001fb afa6d1b4 00000001 00000000 a539a2a0 a530fd80 00000089
+	[   63.871284] NIP [c0011434] interrupt_exit_kernel_prepare+0x10/0x70
+	[   63.885922] LR [c001629c] interrupt_return+0x9c/0x144
+	[   63.897168] Call Trace:
+	[   63.900562] [e2d09f30] [c000424c] DataAccess_virt+0xd4/0xe4 (unreliable)
+	[   63.916773] --- interrupt: 300 at 0xa09be008
+	[   63.925659] NIP:  a09be008 LR: a09bdfe8 CTR: a09bdfc0
+	[   63.936903] REGS: e2d09f40 TRAP: 0300   Tainted: G        W          (5.13.0-pmac-00028-gb3c15b60339a)
+	[   63.960953] MSR:  0000d032 <EE,PR,ME,IR,DR,RI>  CR: 420028e2  XER: 20000000
+	[   63.977948] DAR: a539a308 DSISR: 0a000000
+        	       GPR00: a7b90d50 afa6b2d0 a74c35c0 a0a8b690 a0a8b698 a5365d70 a4fa82a8 00000004
+        	       GPR08: 00000000 a09bdfc0 00000000 a5360000 a09bde7c 00c1fff0 afa6ceb4 00c26144
+        	       GPR16: 00c25fb8 00c26140 afa6ceb8 90000000 00c944d8 0000001c 00000000 00200000
+        	       GPR24: 00000000 000001fb afa6d1b4 00000001 00000000 a539a2a0 a530fd80 00000089
+	[   64.071020] NIP [a09be008] 0xa09be008
+	[   64.078079] LR [a09bdfe8] 0xa09bdfe8
+	[   64.084874] --- interrupt: 300
+	[   64.090108] Instruction dump:
+	[   64.095074] 80010024 83e1001c 7c0803a6 4bffff80 3bc00800 4bffffd0 486b42fd 4bffffcc
+	[   64.114419] 81430084 71480002 41820038 554a0462 <0f0a0000> 80620060 74630001 40820034
+	[   64.134298] ---[ end trace f642a84639cba378 ]---
+
+Reported-by: Stan Johnson <userm57@yahoo.com>
+Fixes: b5efec00b671 ("powerpc/32s: Move KUEP locking/unlocking in C")
+Cc: stable@vger.kernel.org
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v2: Added comments to explain why we have a 'isync' for 604+ cores only.
+---
+ arch/powerpc/include/asm/book3s/32/kup.h | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+index 64201125a287..d4b145b279f6 100644
+--- a/arch/powerpc/include/asm/book3s/32/kup.h
++++ b/arch/powerpc/include/asm/book3s/32/kup.h
+@@ -4,6 +4,8 @@
+ 
+ #include <asm/bug.h>
+ #include <asm/book3s/32/mmu-hash.h>
++#include <asm/mmu.h>
++#include <asm/synch.h>
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -28,6 +30,15 @@ static inline void kuep_lock(void)
+ 		return;
+ 
+ 	update_user_segments(mfsr(0) | SR_NX);
++	/*
++	 * This isync() shouldn't be necessary as the kernel is not excepted to
++	 * run any instruction in userspace soon after the update of segments,
++	 * but hash based cores (at least G3) seem to exhibit a random
++	 * behaviour when the 'isync' is not there. 603 cores don't have this
++	 * behaviour so don't do the 'isync' as it saves several CPU cycles.
++	 */
++	if (mmu_has_feature(MMU_FTR_HPTE_TABLE))
++		isync();	/* Context sync required after mtsr() */
+ }
+ 
+ static inline void kuep_unlock(void)
+@@ -36,6 +47,15 @@ static inline void kuep_unlock(void)
+ 		return;
+ 
+ 	update_user_segments(mfsr(0) & ~SR_NX);
++	/*
++	 * This isync() shouldn't be necessary as a 'rfi' will soon be executed
++	 * to return to userspace, but hash based cores (at least G3) seem to
++	 * exhibit a random behaviour when the 'isync' is not there. 603 cores
++	 * don't have this behaviour so don't do the 'isync' as it saves several
++	 * CPU cycles.
++	 */
++	if (mmu_has_feature(MMU_FTR_HPTE_TABLE))
++		isync();	/* Context sync required after mtsr() */
+ }
+ 
+ #ifdef CONFIG_PPC_KUAP
+-- 
+2.25.0
+
