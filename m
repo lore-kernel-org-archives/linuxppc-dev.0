@@ -1,102 +1,99 @@
-Return-Path: <SRS0=mX83=NI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=d/0/=NJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82EF2C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Aug 2021 22:21:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 302FDC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 00:13:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 77DB660E90
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Aug 2021 22:21:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 77DB660E90
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5863360EBC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 00:13:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5863360EBC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gq59W68Jhz3cGL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 08:21:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gq7ds4YTPz3cQZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 10:13:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kt426Vh6;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=vajtP/F/;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
+ smtp.mailfrom=flex--seanjc.bounces.google.com
+ (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com;
+ envelope-from=3avacyqykdio6so1xqu22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--seanjc.bounces.google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=kt426Vh6; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20161025 header.b=vajtP/F/; dkim-atps=neutral
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com
+ [IPv6:2607:f8b0:4864:20::b4a])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gq58f4FlNz2yR4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 08:21:05 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 17HM2wau191455; Tue, 17 Aug 2021 18:21:02 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=vvFO4lOBX4sDfEhnNEZVfUYefoksHhEC8JsUilIfQLY=;
- b=kt426Vh6MhKxFh/aWFIWcXhk/ETMf9uZICj6yABwT/t9+7Ia+Z+3yyxABD3d1xJk2ogM
- KyU7y1QVx/7Mh+fJWCv3z9uIU2Zo6tJxIq5LCgk/UlxWFYiFlN4w/fuu3CbPyRGgumyL
- NjW/huV3nDHrEoJVmMf0stWK9YFzXXkk/BTYCnig+mEZ+YVTDrWTIti+6EMvYtHvtTtK
- aEOXqz7hqQ5JIgOUBwLdOYWZw7VmQ22CKMS8nrxUK4w+WGC1zot9nlXotYFhcs7xSPW0
- Ko17MyPFGucxT2aylMxcItyqZQTuFwLnc5AuSmIDrdY9/YjMtl8CmKiBFtUjupXXx1Xb 1Q== 
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3ag7bsauju-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 17 Aug 2021 18:21:02 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17HMD5B9031872;
- Tue, 17 Aug 2021 22:21:02 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma04dal.us.ibm.com with ESMTP id 3ae5fdjqbc-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 17 Aug 2021 22:21:02 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 17HML1T951183988
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 17 Aug 2021 22:21:01 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2A70EAE064;
- Tue, 17 Aug 2021 22:21:01 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4550BAE067;
- Tue, 17 Aug 2021 22:21:00 +0000 (GMT)
-Received: from localhost (unknown [9.211.107.102])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTPS;
- Tue, 17 Aug 2021 22:20:59 +0000 (GMT)
-From: Fabiano Rosas <farosas@linux.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH kernel] KVM: PPC: Book3S HV: Make unique debugfs nodename
-In-Reply-To: <be02290c-60a0-48af-0491-61e8a6d5b7b7@ozlabs.ru>
-References: <20210707041344.3803554-1-aik@ozlabs.ru>
- <be02290c-60a0-48af-0491-61e8a6d5b7b7@ozlabs.ru>
-Date: Tue, 17 Aug 2021 19:20:57 -0300
-Message-ID: <87pmubu306.fsf@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 627C7QllL2CLBbF8ps1glfa4cOcUce_J
-X-Proofpoint-GUID: 627C7QllL2CLBbF8ps1glfa4cOcUce_J
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-08-17_08:2021-08-17,
- 2021-08-17 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0
- priorityscore=1501 suspectscore=0 lowpriorityscore=0 clxscore=1015
- bulkscore=0 adultscore=0 mlxscore=0 impostorscore=0 spamscore=0
- mlxlogscore=999 malwarescore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2107140000 definitions=main-2108170139
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gq7d90XM6z2yxx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 10:12:28 +1000 (AEST)
+Received: by mail-yb1-xb4a.google.com with SMTP id
+ s4-20020a259004000000b005947575ac53so1004532ybl.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Aug 2021 17:12:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=reply-to:date:in-reply-to:message-id:mime-version:references
+ :subject:from:to:cc;
+ bh=0kmO0MXVdRK0WdAgg/6yMEC7RBXf+m4S57NGAaoueXI=;
+ b=vajtP/F/au1Tkxc/uMHpx+wr8aY1oET38J2sT1hES8QrTFB2Dr3oDgomOmJ/04aSMX
+ lPK1QrJIh+mzpGub10rTCHasL8utUkiKO5AujazcvozxMjzzzWE/06eICjttBqDW3wf+
+ L+e0XTHIKQBt1t0atCJyvQw6dljHh7sPVM+lNxiOVyhoa1DzUDDx6dQHJ2ZOrMCmt0xA
+ fFbKEG/o6KcSe6yZPj3GRHJnKKFGJyAKq2ptleprShB7iq6yF+/x+neqdnUnQI+JIIMX
+ VZ6h4TGr3Gq7pWzwv41cDDYdvfyYVIZwrxDQBv0kJyCpdV4sxAMmf3uwkTGRUUMGsrs7
+ dfXw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:reply-to:date:in-reply-to:message-id
+ :mime-version:references:subject:from:to:cc;
+ bh=0kmO0MXVdRK0WdAgg/6yMEC7RBXf+m4S57NGAaoueXI=;
+ b=rmiyA7IvRJSSlRUUiaZ1KSg9HKdyoIJJXUXu4hF4aRh9RoDtW0P2bV/wdId8BK8jJH
+ hWHShEzkMsyCTQum09+r/plmXmLtC/NEGVt2HchV2ncOXFwnJn+QOm6QDDOBwThLwdGt
+ wt2XSxd/bmowEGBI6N6hFcbRFGm9390eUWOLfNSHF4o1snQ9ikFQ0yaAyfCNZeCyKQje
+ nw87Cv7n0Oao7JcIMfCHEYJ0NrLV4OSxO4mtduwD3PFDMJB2UykjY2MIsDtSvfFrkI7r
+ VCFHJiNenownF4CO7iR9W0zOOULPQYMHBVXD9e/dJJAJYcT+7/6qFtGXDthnqgxs11Q9
+ Xk/Q==
+X-Gm-Message-State: AOAM532NqQUzYhbBs2hw1XDOTi2Awp2F6/IhQ3FK3nTCoJcmU493cnuU
+ 22QPhTiaJIYy97/YLJyIw73B1SEdhq8=
+X-Google-Smtp-Source: ABdhPJwj0XdhQo6iokvEKxnWDKRRiWaTrHjA6QIRd/4VPgyLOcTkIrMPZ6K8bZ+tJ3Cs7VZGVyliISEEGh0=
+X-Received: from seanjc798194.pdx.corp.google.com
+ ([2620:15c:90:200:158e:55a:74dd:5197])
+ (user=seanjc job=sendgmr) by 2002:a25:e60a:: with SMTP id
+ d10mr7393693ybh.56.1629245545888; 
+ Tue, 17 Aug 2021 17:12:25 -0700 (PDT)
+Date: Tue, 17 Aug 2021 17:12:06 -0700
+In-Reply-To: <20210818001210.4073390-1-seanjc@google.com>
+Message-Id: <20210818001210.4073390-2-seanjc@google.com>
+Mime-Version: 1.0
+References: <20210818001210.4073390-1-seanjc@google.com>
+X-Mailer: git-send-email 2.33.0.rc1.237.g0d66db33f3-goog
+Subject: [PATCH 1/5] KVM: rseq: Update rseq when processing NOTIFY_RESUME on
+ xfer to KVM guest
+From: Sean Christopherson <seanjc@google.com>
+To: Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, 
+ Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Michael Ellerman <mpe@ellerman.id.au>, 
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+ Christian Borntraeger <borntraeger@de.ibm.com>, Oleg Nesterov <oleg@redhat.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, 
+ Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, 
+ Andy Lutomirski <luto@kernel.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
+ "Paul E. McKenney" <paulmck@kernel.org>, Boqun Feng <boqun.feng@gmail.com>, 
+ Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,44 +105,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+Reply-To: Sean Christopherson <seanjc@google.com>
+Cc: linux-s390@vger.kernel.org, kvm@vger.kernel.org,
+ Ben Gardon <bgardon@google.com>, linux-kernel@vger.kernel.org,
+ linux-csky@vger.kernel.org, linux-mips@vger.kernel.org,
+ Peter Foley <pefoley@google.com>, Paul Mackerras <paulus@samba.org>,
+ linux-kselftest@vger.kernel.org, Sean Christopherson <seanjc@google.com>,
+ Shakeel Butt <shakeelb@google.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+Invoke rseq's NOTIFY_RESUME handler when processing the flag prior to
+transferring to a KVM guest, which is roughly equivalent to an exit to
+userspace and processes many of the same pending actions.  While the task
+cannot be in an rseq critical section as the KVM path is reachable only
+via ioctl(KVM_RUN), the side effects that apply to rseq outside of a
+critical section still apply, e.g. the CPU ID needs to be updated if the
+task is migrated.
 
-> On 07/07/2021 14:13, Alexey Kardashevskiy wrote:
+Clearing TIF_NOTIFY_RESUME without informing rseq can lead to segfaults
+and other badness in userspace VMMs that use rseq in combination with KVM,
+e.g. due to the CPU ID being stale after task migration.
 
-> alternatively move this debugfs stuff under the platform-independent
-> directory, how about that?
+Fixes: 72c3c0fe54a3 ("x86/kvm: Use generic xfer to guest work function")
+Reported-by: Peter Foley <pefoley@google.com>
+Bisected-by: Doug Evans <dje@google.com>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: stable@vger.kernel.org
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ kernel/entry/kvm.c | 4 +++-
+ kernel/rseq.c      | 4 ++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
-That's a good idea. I only now realized we have two separate directories
-for the same guest:
+diff --git a/kernel/entry/kvm.c b/kernel/entry/kvm.c
+index 49972ee99aff..049fd06b4c3d 100644
+--- a/kernel/entry/kvm.c
++++ b/kernel/entry/kvm.c
+@@ -19,8 +19,10 @@ static int xfer_to_guest_mode_work(struct kvm_vcpu *vcpu, unsigned long ti_work)
+ 		if (ti_work & _TIF_NEED_RESCHED)
+ 			schedule();
+ 
+-		if (ti_work & _TIF_NOTIFY_RESUME)
++		if (ti_work & _TIF_NOTIFY_RESUME) {
+ 			tracehook_notify_resume(NULL);
++			rseq_handle_notify_resume(NULL, NULL);
++		}
+ 
+ 		ret = arch_xfer_to_guest_mode_handle_work(vcpu, ti_work);
+ 		if (ret)
+diff --git a/kernel/rseq.c b/kernel/rseq.c
+index 35f7bd0fced0..58c79a7918cd 100644
+--- a/kernel/rseq.c
++++ b/kernel/rseq.c
+@@ -236,7 +236,7 @@ static bool in_rseq_cs(unsigned long ip, struct rseq_cs *rseq_cs)
+ 
+ static int rseq_ip_fixup(struct pt_regs *regs)
+ {
+-	unsigned long ip = instruction_pointer(regs);
++	unsigned long ip = regs ? instruction_pointer(regs) : 0;
+ 	struct task_struct *t = current;
+ 	struct rseq_cs rseq_cs;
+ 	int ret;
+@@ -250,7 +250,7 @@ static int rseq_ip_fixup(struct pt_regs *regs)
+ 	 * If not nested over a rseq critical section, restart is useless.
+ 	 * Clear the rseq_cs pointer and return.
+ 	 */
+-	if (!in_rseq_cs(ip, &rseq_cs))
++	if (!regs || !in_rseq_cs(ip, &rseq_cs))
+ 		return clear_rseq_cs(t);
+ 	ret = rseq_need_restart(t, rseq_cs.flags);
+ 	if (ret <= 0)
+-- 
+2.33.0.rc1.237.g0d66db33f3-goog
 
-$ ls /sys/kernel/debug/kvm/ | grep $pid
-19062-11
-vm19062               
-
-Looks like we would have to implement kvm_arch_create_vcpu_debugfs for
-the vcpu information and add a similar hook for the vm.
-
->> ---
->>   arch/powerpc/kvm/book3s_hv.c | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->> 
->> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
->> index 1d1fcc290fca..0223ddc0eed0 100644
->> --- a/arch/powerpc/kvm/book3s_hv.c
->> +++ b/arch/powerpc/kvm/book3s_hv.c
->> @@ -5227,7 +5227,7 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
->>   	/*
->>   	 * Create a debugfs directory for the VM
->>   	 */
->> -	snprintf(buf, sizeof(buf), "vm%d", current->pid);
->> +	snprintf(buf, sizeof(buf), "vm%d-lp%ld", current->pid, lpid);
->>   	kvm->arch.debugfs_dir = debugfs_create_dir(buf, kvm_debugfs_dir);
->>   	kvmppc_mmu_debugfs_init(kvm);
->>   	if (radix_enabled())
->> 
