@@ -4,41 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 050AEC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 13:49:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A5E5C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 13:49:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B8856109E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 13:49:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8B8856109E
+	by mail.kernel.org (Postfix) with ESMTPS id 2FABF610A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 13:49:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2FABF610A1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GqTlv1sbWz3dxZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 23:49:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GqTmK6ZLQz3f2b
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 23:49:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.org (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GqTgq5Y04z3cTM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 23:45:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GqTgq6GZTz3cTj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 23:45:59 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4GqTgl0rVwz9sRf; Wed, 18 Aug 2021 23:45:54 +1000 (AEST)
+ id 4GqTgq2rJ7z9t14; Wed, 18 Aug 2021 23:45:59 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <e9d501da0c59f60ca767b1b3ea4603fce6d02b9e.1625486440.git.christophe.leroy@csgroup.eu>
-References: <e9d501da0c59f60ca767b1b3ea4603fce6d02b9e.1625486440.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/non-smp: Inconditionaly call smp_mb() on switch_mm
-Message-Id: <162929391862.3619265.13703317304945129576.b4-ty@ellerman.id.au>
-Date: Wed, 18 Aug 2021 23:38:38 +1000
+To: linuxppc-dev@lists.ozlabs.org, Jordan Niethe <jniethe5@gmail.com>
+In-Reply-To: <20210804013724.514468-1-jniethe5@gmail.com>
+References: <20210804013724.514468-1-jniethe5@gmail.com>
+Subject: Re: [PATCH] powerpc: Always inline radix_enabled() to fix build
+ failure
+Message-Id: <162929392409.3619265.15852958754556713429.b4-ty@ellerman.id.au>
+Date: Wed, 18 Aug 2021 23:38:44 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -53,25 +52,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: erhard_f@mailbox.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 5 Jul 2021 12:00:50 +0000 (UTC), Christophe Leroy wrote:
-> Commit 3ccfebedd8cf ("powerpc, membarrier: Skip memory barrier in
-> switch_mm()") added some logic to skip the smp_mb() in
-> switch_mm_irqs_off() before the call to switch_mmu_context().
+On Wed, 4 Aug 2021 11:37:24 +1000, Jordan Niethe wrote:
+> This is the same as commit acdad8fb4a15 ("powerpc: Force inlining of
+> mmu_has_feature to fix build failure") but for radix_enabled().  The
+> config in the linked bugzilla causes the following build failure:
 > 
-> However, on non SMP smp_mb() is just a compiler barrier and doing
-> it inconditionaly is simpler than the logic used to check
-> whether the barrier is needed or not.
+> LD      .tmp_vmlinux.kallsyms1
+> powerpc64-linux-ld: arch/powerpc/mm/pgtable.o: in function `.__ptep_set_access_flags':
+> pgtable.c:(.text+0x17c): undefined reference to `.radix__ptep_set_access_flags'
+...
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/non-smp: Inconditionaly call smp_mb() on switch_mm
-      https://git.kernel.org/powerpc/c/c8a6d91005343dea0d53be0ff0620c66934dcd44
+[1/1] powerpc: Always inline radix_enabled() to fix build failure
+      https://git.kernel.org/powerpc/c/27fd1111051dc218e5b6cb2da5dbb3f342879ff1
 
 cheers
