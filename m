@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7207EC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 13:51:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10FF8C4320E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 13:51:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0EC4B60EFE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 13:51:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0EC4B60EFE
+	by mail.kernel.org (Postfix) with ESMTPS id AF513610CF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 13:51:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AF513610CF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GqTnf5JJyz3cWf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 23:51:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GqTp52YlZz3cSW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 23:51:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.org (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ozlabs.org; receiver=<UNKNOWN>)
@@ -26,19 +26,18 @@ Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GqTgt1pgfz3cWv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GqTgt2n00z3cQ8
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 23:46:02 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4GqTgs1XN2z9t23; Wed, 18 Aug 2021 23:46:00 +1000 (AEST)
+ id 4GqTgt12HPz9t1C; Wed, 18 Aug 2021 23:46:01 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: paulus@samba.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
  Laurent Dufour <ldufour@linux.ibm.com>
-In-Reply-To: <20210511073136.17795-1-ldufour@linux.ibm.com>
-References: <20210511073136.17795-1-ldufour@linux.ibm.com>
-Subject: Re: [PATCH v2] ppc64/numa: consider the max numa node for migratable
- LPAR
-Message-Id: <162929388912.3619265.15749940956800275665.b4-ty@ellerman.id.au>
-Date: Wed, 18 Aug 2021 23:38:09 +1000
+In-Reply-To: <20210517090606.56930-1-ldufour@linux.ibm.com>
+References: <20210517090606.56930-1-ldufour@linux.ibm.com>
+Subject: Re: [PATCH v5] pseries/drmem: update LMBs after LPM
+Message-Id: <162929391930.3619265.14579706708870831597.b4-ty@ellerman.id.au>
+Date: Wed, 18 Aug 2021 23:38:39 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -53,27 +52,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, Tyrel Datwyler <tyreld@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 11 May 2021 09:31:36 +0200, Laurent Dufour wrote:
-> When a LPAR is migratable, we should consider the maximum possible NUMA
-> node instead the number of NUMA node from the actual system.
+On Mon, 17 May 2021 11:06:06 +0200, Laurent Dufour wrote:
+> After a LPM, the device tree node ibm,dynamic-reconfiguration-memory may be
+> updated by the hypervisor in the case the NUMA topology of the LPAR's
+> memory is updated.
 > 
-> The DT property 'ibm,current-associativity-domains' is defining the maximum
-> number of nodes the LPAR can see when running on that box. But if the LPAR
-> is being migrated on another box, it may seen up to the nodes defined by
-> 'ibm,max-associativity-domains'. So if a LPAR is migratable, that value
-> should be used.
+> This is handled by the kernel, but the memory's node is not updated because
+> there is no way to move a memory block between nodes from the Linux kernel
+> point of view.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] ppc64/numa: consider the max numa node for migratable LPAR
-      https://git.kernel.org/powerpc/c/9c7248bb8de31f51c693bfa6a6ea53b1c07e0fa8
+[1/1] pseries/drmem: update LMBs after LPM
+      https://git.kernel.org/powerpc/c/d144f4d5a8a804133d20ff311d7be70bcdbfaac2
 
 cheers
