@@ -2,55 +2,68 @@ Return-Path: <SRS0=d/0/=NJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F473C432BE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 06:35:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72B6EC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 06:42:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B37DC60F11
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 06:35:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B37DC60F11
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id EDF4E60F39
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 06:42:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EDF4E60F39
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GqJ6w31rvz3cWr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 16:35:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 562 seconds by postgrey-1.36 at boromir;
- Wed, 18 Aug 2021 16:34:57 AEST
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GqJHf1nWxz3cWk
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Aug 2021 16:42:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GqJ6T0Ht3z302C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 16:34:56 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 629391A1481;
- Wed, 18 Aug 2021 08:25:30 +0200 (CEST)
-Received: from aprdc01srsp001v.ap-rdc01.nxp.com
- (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 2AD7D1A146D;
- Wed, 18 Aug 2021 08:25:30 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id BA890183AD27;
- Wed, 18 Aug 2021 14:25:28 +0800 (+08)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org
-Subject: [PATCH] ASoC: fsl_rpmsg: Check -EPROBE_DEFER for getting clocks
-Date: Wed, 18 Aug 2021 14:03:34 +0800
-Message-Id: <1629266614-6942-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GqJH83rqyz2yMx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Aug 2021 16:42:24 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4GqJH06ckGz9sVX;
+ Wed, 18 Aug 2021 08:42:20 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id BlboCUcmPLhC; Wed, 18 Aug 2021 08:42:20 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4GqJH05SCXz9sVD;
+ Wed, 18 Aug 2021 08:42:20 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9988E8B7D3;
+ Wed, 18 Aug 2021 08:42:20 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id KISUn5YdRZul; Wed, 18 Aug 2021 08:42:20 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B20628B766;
+ Wed, 18 Aug 2021 08:42:19 +0200 (CEST)
+Subject: Re: [PATCH v2 61/63] powerpc: Split memset() to avoid multi-field
+ overflow
+To: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org
+References: <20210818060533.3569517-1-keescook@chromium.org>
+ <20210818060533.3569517-62-keescook@chromium.org>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <7630b0bc-4389-6283-d8b9-c532df916d60@csgroup.eu>
+Date: Wed, 18 Aug 2021 08:42:18 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
+MIME-Version: 1.0
+In-Reply-To: <20210818060533.3569517-62-keescook@chromium.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,62 +75,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ clang-built-linux@googlegroups.com,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Wang Wensheng <wangwensheng4@huawei.com>, linux-staging@lists.linux.dev,
+ linux-wireless@vger.kernel.org, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Qinglang Miao <miaoqinglang@huawei.com>, linux-block@vger.kernel.org,
+ Hulk Robot <hulkci@huawei.com>, dri-devel@lists.freedesktop.org,
+ netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org,
+ linux-hardening@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The devm_clk_get() may return -EPROBE_DEFER, then clocks
-will be assigned to NULL wrongly. As the clocks are
-optional so we can use devm_clk_get_optional() instead of
-devm_clk_get().
 
-Fixes: b73d9e6225e8 ("ASoC: fsl_rpmsg: Add CPU DAI driver for audio base on rpmsg")
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/fsl_rpmsg.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_rpmsg.c b/sound/soc/fsl/fsl_rpmsg.c
-index ea5c973e2e84..d60f4dac6c1b 100644
---- a/sound/soc/fsl/fsl_rpmsg.c
-+++ b/sound/soc/fsl/fsl_rpmsg.c
-@@ -165,25 +165,25 @@ static int fsl_rpmsg_probe(struct platform_device *pdev)
- 	}
- 
- 	/* Get the optional clocks */
--	rpmsg->ipg = devm_clk_get(&pdev->dev, "ipg");
-+	rpmsg->ipg = devm_clk_get_optional(&pdev->dev, "ipg");
- 	if (IS_ERR(rpmsg->ipg))
--		rpmsg->ipg = NULL;
-+		return PTR_ERR(rpmsg->ipg);
- 
--	rpmsg->mclk = devm_clk_get(&pdev->dev, "mclk");
-+	rpmsg->mclk = devm_clk_get_optional(&pdev->dev, "mclk");
- 	if (IS_ERR(rpmsg->mclk))
--		rpmsg->mclk = NULL;
-+		return PTR_ERR(rpmsg->mclk);
- 
--	rpmsg->dma = devm_clk_get(&pdev->dev, "dma");
-+	rpmsg->dma = devm_clk_get_optional(&pdev->dev, "dma");
- 	if (IS_ERR(rpmsg->dma))
--		rpmsg->dma = NULL;
-+		return PTR_ERR(rpmsg->dma);
- 
--	rpmsg->pll8k = devm_clk_get(&pdev->dev, "pll8k");
-+	rpmsg->pll8k = devm_clk_get_optional(&pdev->dev, "pll8k");
- 	if (IS_ERR(rpmsg->pll8k))
--		rpmsg->pll8k = NULL;
-+		return PTR_ERR(rpmsg->pll8k);
- 
--	rpmsg->pll11k = devm_clk_get(&pdev->dev, "pll11k");
-+	rpmsg->pll11k = devm_clk_get_optional(&pdev->dev, "pll11k");
- 	if (IS_ERR(rpmsg->pll11k))
--		rpmsg->pll11k = NULL;
-+		return PTR_ERR(rpmsg->pll11k);
- 
- 	platform_set_drvdata(pdev, rpmsg);
- 	pm_runtime_enable(&pdev->dev);
--- 
-2.27.0
+Le 18/08/2021 à 08:05, Kees Cook a écrit :
+> In preparation for FORTIFY_SOURCE performing compile-time and run-time
+> field bounds checking for memset(), avoid intentionally writing across
+> neighboring fields.
+> 
+> Instead of writing across a field boundary with memset(), move the call
+> to just the array, and an explicit zeroing of the prior field.
+> 
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Qinglang Miao <miaoqinglang@huawei.com>
+> Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+> Cc: Hulk Robot <hulkci@huawei.com>
+> Cc: Wang Wensheng <wangwensheng4@huawei.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> Reviewed-by: Michael Ellerman <mpe@ellerman.id.au>
+> Link: https://lore.kernel.org/lkml/87czqsnmw9.fsf@mpe.ellerman.id.au
+> ---
+>   drivers/macintosh/smu.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+> index 94fb63a7b357..59ce431da7ef 100644
+> --- a/drivers/macintosh/smu.c
+> +++ b/drivers/macintosh/smu.c
+> @@ -848,7 +848,8 @@ int smu_queue_i2c(struct smu_i2c_cmd *cmd)
+>   	cmd->read = cmd->info.devaddr & 0x01;
+>   	switch(cmd->info.type) {
+>   	case SMU_I2C_TRANSFER_SIMPLE:
+> -		memset(&cmd->info.sublen, 0, 4);
+> +		cmd->info.sublen = 0;
+> +		memset(&cmd->info.subaddr, 0, 3);
 
+subaddr[] is a table, should the & be avoided ?
+And while at it, why not use sizeof(subaddr) instead of 3 ?
+
+
+>   		break;
+>   	case SMU_I2C_TRANSFER_COMBINED:
+>   		cmd->info.devaddr &= 0xfe;
+> 
