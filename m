@@ -2,77 +2,85 @@ Return-Path: <SRS0=S6eX=NK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7405C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 20:06:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3EB6C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 21:42:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 33D2960F14
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 20:06:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 33D2960F14
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id BB74F60EB5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 21:42:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BB74F60EB5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=efficios.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GrG3t3yXMz3cXm
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Aug 2021 06:06:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GrJBc6ph8z3cXm
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Aug 2021 07:42:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=FJybV/Ni;
+	dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=default header.b=pa3pYJ3c;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kernel.org (client-ip=210.131.2.83;
- helo=conssluserg-04.nifty.com; envelope-from=masahiroy@kernel.org;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=efficios.com (client-ip=167.114.26.124; helo=mail.efficios.com;
+ envelope-from=compudj@efficios.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=FJybV/Ni; 
- dkim-atps=neutral
-Received: from conssluserg-04.nifty.com (conssluserg-04.nifty.com
- [210.131.2.83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256
+ header.s=default header.b=pa3pYJ3c; dkim-atps=neutral
+X-Greylist: delayed 112 seconds by postgrey-1.36 at boromir;
+ Fri, 20 Aug 2021 07:41:14 AEST
+Received: from mail.efficios.com (mail.efficios.com [167.114.26.124])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GrG340gPqz2yR8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Aug 2021 06:05:19 +1000 (AEST)
-Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com
- [209.85.214.177]) (authenticated)
- by conssluserg-04.nifty.com with ESMTP id 17JK4ou7026786
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Aug 2021 05:04:51 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-04.nifty.com 17JK4ou7026786
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1629403491;
- bh=8hjQkClvKSbKvju+DhtDTCJuXhxcdg5TLaUR+EqdtQg=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=FJybV/NiBh+b5QWSjP8cl5qYq1ZNVBbZSco64rce4sOVnI0rd0qx+ihfdT1tVW5ha
- HfPejgLYLDPnPAvq2tOZ+KT9E4ylSJj43AL+1x7KBh44TircNetDJPmUioNuv+M9UW
- KzYVjRcizURSowJjLFzxo8cO810U0GhUofXfv78CMxYC9T44ZPqeRFNh3ZBsTPJD1S
- adAonPfbQB8ZMhu77FZSqtAH+XdyfrmtlyVDrJZPc0O53OPZf8ra+J4DRcpUt57p3s
- +vie6S2p2NqSD3gjLncpktxkXC21eTJHtWlir4ttEB71cY48i6MK+w+w/fL3lraG9C
- 8/k0kWpAwTaQQ==
-X-Nifty-SrcIP: [209.85.214.177]
-Received: by mail-pl1-f177.google.com with SMTP id j2so158153pll.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 13:04:51 -0700 (PDT)
-X-Gm-Message-State: AOAM532+aOo5aLWfq4jICDqQho4B9z+jKkcuEEL9SJ5M2mTH1v/nk6SV
- QzhNZb1zMNmp7MfyeU/skaFv2xFqCEohRULkNF4=
-X-Google-Smtp-Source: ABdhPJxnUC0AY//iMezqYAYLMqXCNtAJECV2jieKTY8HPz6eY4jOaI/yOn+2XM2h12nuQv/f8ZxczmP0Vxl7iVG4+tw=
-X-Received: by 2002:a17:90a:a581:: with SMTP id
- b1mr454883pjq.153.1629403490185; 
- Thu, 19 Aug 2021 13:04:50 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GrJ9k42gpz308G
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Aug 2021 07:41:14 +1000 (AEST)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.efficios.com (Postfix) with ESMTP id 3F7573781F6;
+ Thu, 19 Aug 2021 17:41:12 -0400 (EDT)
+Received: from mail.efficios.com ([127.0.0.1])
+ by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10032)
+ with ESMTP id ZGEgsUCEHpib; Thu, 19 Aug 2021 17:41:07 -0400 (EDT)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.efficios.com (Postfix) with ESMTP id B069F3783B1;
+ Thu, 19 Aug 2021 17:41:07 -0400 (EDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.efficios.com B069F3783B1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
+ s=default; t=1629409267;
+ bh=J2pdWpoMI+2vyTpqFQezmJJ20BZQemWJSr2tXYWs+kg=;
+ h=Date:From:To:Message-ID:MIME-Version;
+ b=pa3pYJ3cbUZgsy5RMEfVX06b5BMW15nJGybYKI80PCZtKT/loekIXo67iDkr3zw2o
+ AcQDjSUEvPWZkfXFa2MNL3M12qdedS0z+iwaLKmQvShFxf5k9up1UVkNLovNXP8sDY
+ bdA2RyTMR+fBhQ1QbBLFpUUMqTGJRnrvlAIYO29B4UKvWiSALIAw+bbwWQjH4594fa
+ f4hMQXetpOHKVNonM0bzEra3naNVB6D/IW5A3QgT+JlY4hoy7eTAZclpqOtXJ3eyZe
+ 4eLvEB8j4rfdfPDY0Vd+YVFdM2+RDHAKBJzLiMn18KxjxGQvY6sQUgo11F1HW7WM3d
+ KWwvfOAqkirvA==
+X-Virus-Scanned: amavisd-new at efficios.com
+Received: from mail.efficios.com ([127.0.0.1])
+ by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10026)
+ with ESMTP id lJ00l7vXwbaJ; Thu, 19 Aug 2021 17:41:07 -0400 (EDT)
+Received: from mail03.efficios.com (mail03.efficios.com [167.114.26.124])
+ by mail.efficios.com (Postfix) with ESMTP id 774CF37853B;
+ Thu, 19 Aug 2021 17:41:07 -0400 (EDT)
+Date: Thu, 19 Aug 2021 17:41:07 -0400 (EDT)
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Sean Christopherson <seanjc@google.com>
+Message-ID: <1359319445.19723.1629409267434.JavaMail.zimbra@efficios.com>
+In-Reply-To: <20210818001210.4073390-3-seanjc@google.com>
+References: <20210818001210.4073390-1-seanjc@google.com>
+ <20210818001210.4073390-3-seanjc@google.com>
+Subject: Re: [PATCH 2/5] entry: rseq: Call rseq_handle_notify_resume() in
+ tracehook_notify_resume()
 MIME-Version: 1.0
-References: <20210817002109.2736222-1-ndesaulniers@google.com>
- <20210817002109.2736222-4-ndesaulniers@google.com>
- <87a6lghkdj.fsf@mpe.ellerman.id.au>
-In-Reply-To: <87a6lghkdj.fsf@mpe.ellerman.id.au>
-From: Masahiro Yamada <masahiroy@kernel.org>
-Date: Fri, 20 Aug 2021 05:04:13 +0900
-X-Gmail-Original-Message-ID: <CAK7LNAR2E8XDRrfVCis_qxDs3-dnf-HfqxkcYOMemqns7pgcmQ@mail.gmail.com>
-Message-ID: <CAK7LNAR2E8XDRrfVCis_qxDs3-dnf-HfqxkcYOMemqns7pgcmQ@mail.gmail.com>
-Subject: Re: [PATCH 3/7] powerpc: replace cc-option-yn uses with cc-option
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [167.114.26.124]
+X-Mailer: Zimbra 8.8.15_GA_4101 (ZimbraWebClient - FF90 (Linux)/8.8.15_GA_4059)
+Thread-Topic: entry: rseq: Call rseq_handle_notify_resume() in
+ tracehook_notify_resume()
+Thread-Index: gCU2eWL1uMmIvUsMi61iATE69Brb6A==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,78 +92,199 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- Nick Desaulniers <ndesaulniers@google.com>,
- clang-built-linux <clang-built-linux@googlegroups.com>,
- Paul Mackerras <paulus@samba.org>,
+Cc: KVM list <kvm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Will Deacon <will@kernel.org>,
+ Guo Ren <guoren@kernel.org>, linux-kselftest <linux-kselftest@vger.kernel.org>,
+ Ben Gardon <bgardon@google.com>, shuah <shuah@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, linux-s390@vger.kernel.org,
+ gor <gor@linux.ibm.com>, "Russell King, ARM Linux" <linux@armlinux.org.uk>,
+ linux-csky <linux-csky@vger.kernel.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org,
+ Boqun Feng <boqun.feng@gmail.com>, paulmck <paulmck@kernel.org>,
+ Heiko Carstens <hca@linux.ibm.com>, rostedt <rostedt@goodmis.org>,
+ Shakeel Butt <shakeelb@google.com>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Peter Foley <pefoley@google.com>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Oleg Nesterov <oleg@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Aug 17, 2021 at 11:31 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> Nick Desaulniers <ndesaulniers@google.com> writes:
-> > cc-option-yn can be replaced with cc-option. ie.
-> > Checking for support:
-> > ifeq ($(call cc-option-yn,$(FLAG)),y)
-> > becomes:
-> > ifneq ($(call cc-option,$(FLAG)),)
-> >
-> > Checking for lack of support:
-> > ifeq ($(call cc-option-yn,$(FLAG)),n)
-> > becomes:
-> > ifeq ($(call cc-option,$(FLAG)),)
-> >
-> > This allows us to pursue removing cc-option-yn.
-> >
-> > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Signed-off-by: Nick Desaulniers <ndesaulniers@google.com>
-> > ---
-> >  arch/powerpc/Makefile      | 12 ++++++------
-> >  arch/powerpc/boot/Makefile |  5 +----
-> >  2 files changed, 7 insertions(+), 10 deletions(-)
-> >
-> > diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> > index 9aaf1abbc641..85e224536cf7 100644
-> > --- a/arch/powerpc/Makefile
-> > +++ b/arch/powerpc/Makefile
-> > @@ -12,12 +12,12 @@
-> >  # Rewritten by Cort Dougan and Paul Mackerras
-> >  #
-> >
-> > -HAS_BIARCH   := $(call cc-option-yn, -m32)
-> > +HAS_BIARCH   := $(call cc-option,-m32)
-> >
-> >  # Set default 32 bits cross compilers for vdso and boot wrapper
-> >  CROSS32_COMPILE ?=
-> >
-> > -ifeq ($(HAS_BIARCH),y)
-> > +ifeq ($(HAS_BIARCH),-m32)
->
-> I don't love that we have to repeat "-m32" in each check.
->
-> I'm pretty sure you can use ifdef here, because HAS_BIARCH is a simple
-> variable (assigned with ":=").
->
-> ie, this can be:
->
->   ifdef HAS_BIARCH
->
->
-> And that avoids having to spell out "-m32" everywhere.
->
-> cheers
+----- On Aug 17, 2021, at 8:12 PM, Sean Christopherson seanjc@google.com wrote:
 
+> Invoke rseq_handle_notify_resume() from tracehook_notify_resume() now
+> that the two function are always called back-to-back by architectures
+> that have rseq.  The rseq helper is stubbed out for architectures that
+> don't support rseq, i.e. this is a nop across the board.
+> 
+> Note, tracehook_notify_resume() is horribly named and arguably does not
+> belong in tracehook.h as literally every line of code in it has nothing
+> to do with tracing.  But, that's been true since commit a42c6ded827d
+> ("move key_repace_session_keyring() into tracehook_notify_resume()")
+> first usurped tracehook_notify_resume() back in 2012.  Punt cleaning that
+> mess up to future patches.
+> 
+> No functional change intended.
 
-Yes.
+This will make it harder to introduce new code paths which consume the
+NOTIFY_RESUME without calling the rseq callback, which introduces issues.
+Agreed.
 
-Comments from Nathan and Michael
-both sound good.
+Acked-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+
+> 
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+> arch/arm/kernel/signal.c     | 1 -
+> arch/arm64/kernel/signal.c   | 1 -
+> arch/csky/kernel/signal.c    | 4 +---
+> arch/mips/kernel/signal.c    | 4 +---
+> arch/powerpc/kernel/signal.c | 4 +---
+> arch/s390/kernel/signal.c    | 1 -
+> include/linux/tracehook.h    | 2 ++
+> kernel/entry/common.c        | 4 +---
+> kernel/entry/kvm.c           | 4 +---
+> 9 files changed, 7 insertions(+), 18 deletions(-)
+> 
+> diff --git a/arch/arm/kernel/signal.c b/arch/arm/kernel/signal.c
+> index a3a38d0a4c85..9df68d139965 100644
+> --- a/arch/arm/kernel/signal.c
+> +++ b/arch/arm/kernel/signal.c
+> @@ -670,7 +670,6 @@ do_work_pending(struct pt_regs *regs, unsigned int
+> thread_flags, int syscall)
+> 				uprobe_notify_resume(regs);
+> 			} else {
+> 				tracehook_notify_resume(regs);
+> -				rseq_handle_notify_resume(NULL, regs);
+> 			}
+> 		}
+> 		local_irq_disable();
+> diff --git a/arch/arm64/kernel/signal.c b/arch/arm64/kernel/signal.c
+> index 23036334f4dc..22b55db13da6 100644
+> --- a/arch/arm64/kernel/signal.c
+> +++ b/arch/arm64/kernel/signal.c
+> @@ -951,7 +951,6 @@ asmlinkage void do_notify_resume(struct pt_regs *regs,
+> 
+> 			if (thread_flags & _TIF_NOTIFY_RESUME) {
+> 				tracehook_notify_resume(regs);
+> -				rseq_handle_notify_resume(NULL, regs);
+> 
+> 				/*
+> 				 * If we reschedule after checking the affinity
+> diff --git a/arch/csky/kernel/signal.c b/arch/csky/kernel/signal.c
+> index 312f046d452d..bc4238b9f709 100644
+> --- a/arch/csky/kernel/signal.c
+> +++ b/arch/csky/kernel/signal.c
+> @@ -260,8 +260,6 @@ asmlinkage void do_notify_resume(struct pt_regs *regs,
+> 	if (thread_info_flags & (_TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL))
+> 		do_signal(regs);
+> 
+> -	if (thread_info_flags & _TIF_NOTIFY_RESUME) {
+> +	if (thread_info_flags & _TIF_NOTIFY_RESUME)
+> 		tracehook_notify_resume(regs);
+> -		rseq_handle_notify_resume(NULL, regs);
+> -	}
+> }
+> diff --git a/arch/mips/kernel/signal.c b/arch/mips/kernel/signal.c
+> index f1e985109da0..c9b2a75563e1 100644
+> --- a/arch/mips/kernel/signal.c
+> +++ b/arch/mips/kernel/signal.c
+> @@ -906,10 +906,8 @@ asmlinkage void do_notify_resume(struct pt_regs *regs, void
+> *unused,
+> 	if (thread_info_flags & (_TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL))
+> 		do_signal(regs);
+> 
+> -	if (thread_info_flags & _TIF_NOTIFY_RESUME) {
+> +	if (thread_info_flags & _TIF_NOTIFY_RESUME)
+> 		tracehook_notify_resume(regs);
+> -		rseq_handle_notify_resume(NULL, regs);
+> -	}
+> 
+> 	user_enter();
+> }
+> diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+> index e600764a926c..b93b87df499d 100644
+> --- a/arch/powerpc/kernel/signal.c
+> +++ b/arch/powerpc/kernel/signal.c
+> @@ -293,10 +293,8 @@ void do_notify_resume(struct pt_regs *regs, unsigned long
+> thread_info_flags)
+> 		do_signal(current);
+> 	}
+> 
+> -	if (thread_info_flags & _TIF_NOTIFY_RESUME) {
+> +	if (thread_info_flags & _TIF_NOTIFY_RESUME)
+> 		tracehook_notify_resume(regs);
+> -		rseq_handle_notify_resume(NULL, regs);
+> -	}
+> }
+> 
+> static unsigned long get_tm_stackpointer(struct task_struct *tsk)
+> diff --git a/arch/s390/kernel/signal.c b/arch/s390/kernel/signal.c
+> index 78ef53b29958..b307db26bf2d 100644
+> --- a/arch/s390/kernel/signal.c
+> +++ b/arch/s390/kernel/signal.c
+> @@ -537,5 +537,4 @@ void arch_do_signal_or_restart(struct pt_regs *regs, bool
+> has_signal)
+> void do_notify_resume(struct pt_regs *regs)
+> {
+> 	tracehook_notify_resume(regs);
+> -	rseq_handle_notify_resume(NULL, regs);
+> }
+> diff --git a/include/linux/tracehook.h b/include/linux/tracehook.h
+> index 3e80c4bc66f7..2564b7434b4d 100644
+> --- a/include/linux/tracehook.h
+> +++ b/include/linux/tracehook.h
+> @@ -197,6 +197,8 @@ static inline void tracehook_notify_resume(struct pt_regs
+> *regs)
+> 
+> 	mem_cgroup_handle_over_high();
+> 	blkcg_maybe_throttle_current();
+> +
+> +	rseq_handle_notify_resume(NULL, regs);
+> }
+> 
+> /*
+> diff --git a/kernel/entry/common.c b/kernel/entry/common.c
+> index bf16395b9e13..d5a61d565ad5 100644
+> --- a/kernel/entry/common.c
+> +++ b/kernel/entry/common.c
+> @@ -171,10 +171,8 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs
+> *regs,
+> 		if (ti_work & (_TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL))
+> 			handle_signal_work(regs, ti_work);
+> 
+> -		if (ti_work & _TIF_NOTIFY_RESUME) {
+> +		if (ti_work & _TIF_NOTIFY_RESUME)
+> 			tracehook_notify_resume(regs);
+> -			rseq_handle_notify_resume(NULL, regs);
+> -		}
+> 
+> 		/* Architecture specific TIF work */
+> 		arch_exit_to_user_mode_work(regs, ti_work);
+> diff --git a/kernel/entry/kvm.c b/kernel/entry/kvm.c
+> index 049fd06b4c3d..49972ee99aff 100644
+> --- a/kernel/entry/kvm.c
+> +++ b/kernel/entry/kvm.c
+> @@ -19,10 +19,8 @@ static int xfer_to_guest_mode_work(struct kvm_vcpu *vcpu,
+> unsigned long ti_work)
+> 		if (ti_work & _TIF_NEED_RESCHED)
+> 			schedule();
+> 
+> -		if (ti_work & _TIF_NOTIFY_RESUME) {
+> +		if (ti_work & _TIF_NOTIFY_RESUME)
+> 			tracehook_notify_resume(NULL);
+> -			rseq_handle_notify_resume(NULL, NULL);
+> -		}
+> 
+> 		ret = arch_xfer_to_guest_mode_handle_work(vcpu, ti_work);
+> 		if (ret)
+> --
+> 2.33.0.rc1.237.g0d66db33f3-goog
 
 -- 
-Best Regards
-Masahiro Yamada
+Mathieu Desnoyers
+EfficiOS Inc.
+http://www.efficios.com
