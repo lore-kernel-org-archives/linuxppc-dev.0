@@ -2,83 +2,83 @@ Return-Path: <SRS0=S6eX=NK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA12AC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 21:48:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18C70C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 21:53:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 007E46054E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 21:48:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 007E46054E
+	by mail.kernel.org (Postfix) with ESMTPS id 330946108F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 21:53:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 330946108F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=efficios.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GrJKY3xjLz3cQ7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Aug 2021 07:48:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GrJRj2klbz3cXR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Aug 2021 07:53:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=default header.b=MF1eZ97b;
+	dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=default header.b=ojeijnyp;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=efficios.com (client-ip=167.114.26.124; helo=mail.efficios.com;
  envelope-from=compudj@efficios.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256
- header.s=default header.b=MF1eZ97b; dkim-atps=neutral
+ header.s=default header.b=ojeijnyp; dkim-atps=neutral
 Received: from mail.efficios.com (mail.efficios.com [167.114.26.124])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GrJJp3NYrz2yfk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Aug 2021 07:47:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GrJQw0fkNz3bYp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Aug 2021 07:52:39 +1000 (AEST)
 Received: from localhost (localhost [127.0.0.1])
- by mail.efficios.com (Postfix) with ESMTP id 0AFE8378536;
- Thu, 19 Aug 2021 17:39:17 -0400 (EDT)
+ by mail.efficios.com (Postfix) with ESMTP id C4AC93785BB;
+ Thu, 19 Aug 2021 17:52:37 -0400 (EDT)
 Received: from mail.efficios.com ([127.0.0.1])
  by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10032)
- with ESMTP id sqgMh8PS9est; Thu, 19 Aug 2021 17:39:12 -0400 (EDT)
+ with ESMTP id q90BhJanX94H; Thu, 19 Aug 2021 17:52:36 -0400 (EDT)
 Received: from localhost (localhost [127.0.0.1])
- by mail.efficios.com (Postfix) with ESMTP id 7F9FE3784AD;
- Thu, 19 Aug 2021 17:39:12 -0400 (EDT)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.efficios.com 7F9FE3784AD
+ by mail.efficios.com (Postfix) with ESMTP id 981C1378471;
+ Thu, 19 Aug 2021 17:52:36 -0400 (EDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.efficios.com 981C1378471
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
- s=default; t=1629409152;
- bh=5UmwxCORiN5yLIQm2BJu9shxBCOVFj1bc8s4bRqQFQo=;
+ s=default; t=1629409956;
+ bh=FT/9tsRw4GHMRYZjMUjeW+dU3pWo2sTLu4BVILOQ3Vw=;
  h=Date:From:To:Message-ID:MIME-Version;
- b=MF1eZ97b/KNT5hI9VL2d8/bJnxRVnz1puSaP8aXdbA0Yr8sbq1UW1Xnp5ROlOTAxA
- BrBHYFiVE9fyDS+W6acYJK/dsDcXuZ5FxN6/TGgq81Ge5A7ri3UTyOOmZCNrrwpGaX
- CaJRQA/6RdzkBds+FVqCWioAvW9dS868z5YzJqUiWVEa1eSWq/ub7V3SdNutNGYaHW
- /BGNriEzzY77HlrWaGIlJrha5VHDUBgHaX9E9aF4RYwTeW4avIB2YHkFNmb79XRV+u
- RMSG+xk/uZO1X64FabUncXvFyriO1d5efn0OTQ8xv/HTN1zVXC9OXfvrjvq/mcfJyu
- 98fIeMx5uJpUQ==
+ b=ojeijnypP3ibFpXP9GNKQC8QIHrIsqnBvvg+UEcRGyTa1FEfNhNn8x208wd/fFwqK
+ l4eyPmQ5rRnhb9troaWdmxK9D9Evv+XIMyJFQCuftEfqk0wjU2POlBaXcUaVCTgxtW
+ Vo1/uOSpVLBZB4xKOPKTxe8Q8LbyfK3HVMrISp65jV9WWI4ghtodol8w+aFwXZmRRS
+ if6ZhAzSmtaA+QoIUip1h9ZuECrrxt/QgvDDIsnKdpaBH77xh4OEae/C83cxudANvB
+ Pg50WpzUclYjyihqu4XpgTA/XXyjqSfze5ZyC2oYsBYC2dN6eoVhXGuPn8jsIR2SGa
+ ykKv2wTVq8fjw==
 X-Virus-Scanned: amavisd-new at efficios.com
 Received: from mail.efficios.com ([127.0.0.1])
  by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10026)
- with ESMTP id gNagT47KYem3; Thu, 19 Aug 2021 17:39:12 -0400 (EDT)
+ with ESMTP id jWSv7EA9TFNO; Thu, 19 Aug 2021 17:52:36 -0400 (EDT)
 Received: from mail03.efficios.com (mail03.efficios.com [167.114.26.124])
- by mail.efficios.com (Postfix) with ESMTP id 5C6F23784AA;
- Thu, 19 Aug 2021 17:39:12 -0400 (EDT)
-Date: Thu, 19 Aug 2021 17:39:12 -0400 (EDT)
+ by mail.efficios.com (Postfix) with ESMTP id 74D7037846E;
+ Thu, 19 Aug 2021 17:52:36 -0400 (EDT)
+Date: Thu, 19 Aug 2021 17:52:36 -0400 (EDT)
 From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 To: Sean Christopherson <seanjc@google.com>
-Message-ID: <1673583543.19718.1629409152244.JavaMail.zimbra@efficios.com>
-In-Reply-To: <20210818001210.4073390-2-seanjc@google.com>
+Message-ID: <1540548616.19739.1629409956315.JavaMail.zimbra@efficios.com>
+In-Reply-To: <20210818001210.4073390-5-seanjc@google.com>
 References: <20210818001210.4073390-1-seanjc@google.com>
- <20210818001210.4073390-2-seanjc@google.com>
-Subject: Re: [PATCH 1/5] KVM: rseq: Update rseq when processing
- NOTIFY_RESUME on xfer to KVM guest
+ <20210818001210.4073390-5-seanjc@google.com>
+Subject: Re: [PATCH 4/5] KVM: selftests: Add a test for KVM_RUN+rseq to
+ detect task migration bugs
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 X-Originating-IP: [167.114.26.124]
 X-Mailer: Zimbra 8.8.15_GA_4101 (ZimbraWebClient - FF90 (Linux)/8.8.15_GA_4059)
-Thread-Topic: rseq: Update rseq when processing NOTIFY_RESUME on xfer to KVM
- guest
-Thread-Index: bvPQyLDSoOg+aSRtrktKYXzxAVZwCA==
+Thread-Topic: selftests: Add a test for KVM_RUN+rseq to detect task migration
+ bugs
+Thread-Index: ANwizCRJ0rGzNBwji1ThaEUA7GOz0w==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,102 +113,120 @@ Sender: "Linuxppc-dev"
 
 ----- On Aug 17, 2021, at 8:12 PM, Sean Christopherson seanjc@google.com wrote:
 
-> Invoke rseq's NOTIFY_RESUME handler when processing the flag prior to
-> transferring to a KVM guest, which is roughly equivalent to an exit to
-> userspace and processes many of the same pending actions.  While the task
-> cannot be in an rseq critical section as the KVM path is reachable only
-> via ioctl(KVM_RUN), the side effects that apply to rseq outside of a
-> critical section still apply, e.g. the CPU ID needs to be updated if the
-> task is migrated.
+> Add a test to verify an rseq's CPU ID is updated correctly if the task is
+> migrated while the kernel is handling KVM_RUN.  This is a regression test
+> for a bug introduced by commit 72c3c0fe54a3 ("x86/kvm: Use generic xfer
+> to guest work function"), where TIF_NOTIFY_RESUME would be cleared by KVM
+> without updating rseq, leading to a stale CPU ID and other badness.
 > 
-> Clearing TIF_NOTIFY_RESUME without informing rseq can lead to segfaults
-> and other badness in userspace VMMs that use rseq in combination with KVM,
-> e.g. due to the CPU ID being stale after task migration.
-
-I agree with the problem assessment, but I would recommend a small change
-to this fix.
-
-> 
-> Fixes: 72c3c0fe54a3 ("x86/kvm: Use generic xfer to guest work function")
-> Reported-by: Peter Foley <pefoley@google.com>
-> Bisected-by: Doug Evans <dje@google.com>
-> Cc: Shakeel Butt <shakeelb@google.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: stable@vger.kernel.org
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
-> kernel/entry/kvm.c | 4 +++-
-> kernel/rseq.c      | 4 ++--
-> 2 files changed, 5 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/entry/kvm.c b/kernel/entry/kvm.c
-> index 49972ee99aff..049fd06b4c3d 100644
-> --- a/kernel/entry/kvm.c
-> +++ b/kernel/entry/kvm.c
-> @@ -19,8 +19,10 @@ static int xfer_to_guest_mode_work(struct kvm_vcpu *vcpu,
-> unsigned long ti_work)
-> 		if (ti_work & _TIF_NEED_RESCHED)
-> 			schedule();
-> 
-> -		if (ti_work & _TIF_NOTIFY_RESUME)
-> +		if (ti_work & _TIF_NOTIFY_RESUME) {
-> 			tracehook_notify_resume(NULL);
-> +			rseq_handle_notify_resume(NULL, NULL);
-> +		}
-> 
-> 		ret = arch_xfer_to_guest_mode_handle_work(vcpu, ti_work);
-> 		if (ret)
-> diff --git a/kernel/rseq.c b/kernel/rseq.c
-> index 35f7bd0fced0..58c79a7918cd 100644
-> --- a/kernel/rseq.c
-> +++ b/kernel/rseq.c
-> @@ -236,7 +236,7 @@ static bool in_rseq_cs(unsigned long ip, struct rseq_cs
-> *rseq_cs)
-> 
-> static int rseq_ip_fixup(struct pt_regs *regs)
-> {
-> -	unsigned long ip = instruction_pointer(regs);
-> +	unsigned long ip = regs ? instruction_pointer(regs) : 0;
-> 	struct task_struct *t = current;
-> 	struct rseq_cs rseq_cs;
-> 	int ret;
-> @@ -250,7 +250,7 @@ static int rseq_ip_fixup(struct pt_regs *regs)
-> 	 * If not nested over a rseq critical section, restart is useless.
-> 	 * Clear the rseq_cs pointer and return.
-> 	 */
-> -	if (!in_rseq_cs(ip, &rseq_cs))
-> +	if (!regs || !in_rseq_cs(ip, &rseq_cs))
 
-I think clearing the thread's rseq_cs unconditionally here when regs is NULL
-is not the behavior we want when this is called from xfer_to_guest_mode_work.
+[...]
 
-If we have a scenario where userspace ends up calling this ioctl(KVM_RUN)
-from within a rseq c.s., we really want a CONFIG_DEBUG_RSEQ=y kernel to
-kill this application in the rseq_syscall handler when exiting back to usermode
-when the ioctl eventually returns.
+> +
+> +static void *migration_worker(void *ign)
+> +{
+> +	cpu_set_t allowed_mask;
+> +	int r, i, nr_cpus, cpu;
+> +
+> +	CPU_ZERO(&allowed_mask);
+> +
+> +	nr_cpus = CPU_COUNT(&possible_mask);
+> +
+> +	for (i = 0; i < 20000; i++) {
+> +		cpu = i % nr_cpus;
+> +		if (!CPU_ISSET(cpu, &possible_mask))
+> +			continue;
+> +
+> +		CPU_SET(cpu, &allowed_mask);
+> +
+> +		r = sched_setaffinity(0, sizeof(allowed_mask), &allowed_mask);
+> +		TEST_ASSERT(!r, "sched_setaffinity failed, errno = %d (%s)", errno,
+> +			    strerror(errno));
+> +
+> +		CPU_CLR(cpu, &allowed_mask);
+> +
+> +		usleep(10);
+> +	}
+> +	done = true;
+> +	return NULL;
+> +}
+> +
+> +int main(int argc, char *argv[])
+> +{
+> +	struct kvm_vm *vm;
+> +	u32 cpu, rseq_cpu;
+> +	int r;
+> +
+> +	/* Tell stdout not to buffer its content */
+> +	setbuf(stdout, NULL);
+> +
+> +	r = sched_getaffinity(0, sizeof(possible_mask), &possible_mask);
+> +	TEST_ASSERT(!r, "sched_getaffinity failed, errno = %d (%s)", errno,
+> +		    strerror(errno));
+> +
+> +	if (CPU_COUNT(&possible_mask) < 2) {
+> +		print_skip("Only one CPU, task migration not possible\n");
+> +		exit(KSFT_SKIP);
+> +	}
+> +
+> +	sys_rseq(0);
+> +
+> +	/*
+> +	 * Create and run a dummy VM that immediately exits to userspace via
+> +	 * GUEST_SYNC, while concurrently migrating the process by setting its
+> +	 * CPU affinity.
+> +	 */
+> +	vm = vm_create_default(VCPU_ID, 0, guest_code);
+> +
+> +	pthread_create(&migration_thread, NULL, migration_worker, 0);
+> +
+> +	while (!done) {
+> +		vcpu_run(vm, VCPU_ID);
+> +		TEST_ASSERT(get_ucall(vm, VCPU_ID, NULL) == UCALL_SYNC,
+> +			    "Guest failed?");
+> +
+> +		cpu = sched_getcpu();
+> +		rseq_cpu = READ_ONCE(__rseq.cpu_id);
+> +
+> +		/*
+> +		 * Verify rseq's CPU matches sched's CPU, and that sched's CPU
+> +		 * is stable.  This doesn't handle the case where the task is
+> +		 * migrated between sched_getcpu() and reading rseq, and again
+> +		 * between reading rseq and sched_getcpu(), but in practice no
+> +		 * false positives have been observed, while on the other hand
+> +		 * blocking migration while this thread reads CPUs messes with
+> +		 * the timing and prevents hitting failures on a buggy kernel.
+> +		 */
 
-However, clearing the thread's rseq_cs will prevent this from happening.
+I think you could get a stable cpu id between sched_getcpu and __rseq_abi.cpu_id
+if you add a pthread mutex to protect:
 
-So I would favor an approach where we simply do:
+sched_getcpu and __rseq_abi.cpu_id  reads
 
-if (!regs)
-     return 0;
+vs
 
-Immediately at the beginning of rseq_ip_fixup, before getting the instruction
-pointer, so effectively skip all side-effects of the ip fixup code. Indeed, it
-is not relevant to do any fixup here, because it is nested in a ioctl system
-call.
+sched_setaffinity calls within the migration thread.
 
-Effectively, this would preserve the SIGSEGV behavior when this ioctl is
-erroneously called by user-space from a rseq critical section.
+Thoughts ?
 
-Thanks for looking into this !
+Thanks,
 
 Mathieu
 
-> 		return clear_rseq_cs(t);
-> 	ret = rseq_need_restart(t, rseq_cs.flags);
-> 	if (ret <= 0)
+> +		TEST_ASSERT(rseq_cpu == cpu || cpu != sched_getcpu(),
+> +			    "rseq CPU = %d, sched CPU = %d\n", rseq_cpu, cpu);
+> +	}
+> +
+> +	pthread_join(migration_thread, NULL);
+> +
+> +	kvm_vm_free(vm);
+> +
+> +	sys_rseq(RSEQ_FLAG_UNREGISTER);
+> +
+> +	return 0;
+> +}
 > --
 > 2.33.0.rc1.237.g0d66db33f3-goog
 
