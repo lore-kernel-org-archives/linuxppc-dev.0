@@ -7,69 +7,69 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48719C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 12:58:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2338FC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 12:58:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C6D960F39
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 12:58:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6C6D960F39
+	by mail.kernel.org (Postfix) with ESMTPS id 6FFB160F39
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 12:58:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6FFB160F39
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gr4Z90dy9z3dFp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 22:58:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gr4Zc6dRXz3dLF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 22:58:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kaod.org (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gr4YG2SK6z308w
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gr4YG2rddz3bW7
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 22:57:21 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 17JCYUtl060999; Thu, 19 Aug 2021 08:57:07 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3agp1q5ekr-1
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 17JCbZaN020435; Thu, 19 Aug 2021 08:57:09 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3ahq8hrqqp-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 19 Aug 2021 08:57:06 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17JCmjQj021442;
- Thu, 19 Aug 2021 12:57:05 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma03ams.nl.ibm.com with ESMTP id 3ae5f8g9hf-1
+ Thu, 19 Aug 2021 08:57:09 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17JClQBd020742;
+ Thu, 19 Aug 2021 12:57:06 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma06ams.nl.ibm.com with ESMTP id 3ae53j0aff-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 19 Aug 2021 12:57:05 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 17JCv25651511552
+ Thu, 19 Aug 2021 12:57:06 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 17JCv4NG53543362
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 19 Aug 2021 12:57:02 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A782AA4053;
- Thu, 19 Aug 2021 12:57:02 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 69A45A4040;
- Thu, 19 Aug 2021 12:57:02 +0000 (GMT)
+ Thu, 19 Aug 2021 12:57:04 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 58B4D4C05A;
+ Thu, 19 Aug 2021 12:57:04 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 139C24C04E;
+ Thu, 19 Aug 2021 12:57:04 +0000 (GMT)
 Received: from smtp.tlslab.ibm.com (unknown [9.101.4.1])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Thu, 19 Aug 2021 12:57:02 +0000 (GMT)
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Thu, 19 Aug 2021 12:57:03 +0000 (GMT)
 Received: from yukon.ibmuc.com (unknown [9.171.93.229])
- by smtp.tlslab.ibm.com (Postfix) with ESMTP id ADFFC22003E;
- Thu, 19 Aug 2021 14:57:01 +0200 (CEST)
+ by smtp.tlslab.ibm.com (Postfix) with ESMTP id 66247220179;
+ Thu, 19 Aug 2021 14:57:03 +0200 (CEST)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/6] KVM: PPC: Book3S PR: Declare kvmppc_handle_exit_pr()
-Date: Thu, 19 Aug 2021 14:56:53 +0200
-Message-Id: <20210819125656.14498-4-clg@kaod.org>
+Subject: [PATCH 6/6] powerpc/compat_sys: Declare syscalls
+Date: Thu, 19 Aug 2021 14:56:56 +0200
+Message-Id: <20210819125656.14498-7-clg@kaod.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210819125656.14498-1-clg@kaod.org>
 References: <20210819125656.14498-1-clg@kaod.org>
@@ -77,17 +77,17 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: riVBH7UhdTANzYjf4yK1DhKe4U1eb1If
-X-Proofpoint-ORIG-GUID: riVBH7UhdTANzYjf4yK1DhKe4U1eb1If
+X-Proofpoint-GUID: oSxZXvoTH3BjVbGC4OQIK8bnLPruapvX
+X-Proofpoint-ORIG-GUID: oSxZXvoTH3BjVbGC4OQIK8bnLPruapvX
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-08-19_04:2021-08-17,
  2021-08-19 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1034 mlxlogscore=751
- mlxscore=0 suspectscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0
- phishscore=0 priorityscore=1501 spamscore=0 impostorscore=0 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2107140000
- definitions=main-2108190072
+ clxscore=1034 mlxscore=0
+ lowpriorityscore=0 bulkscore=0 spamscore=0 suspectscore=0 malwarescore=0
+ impostorscore=0 mlxlogscore=714 adultscore=0 priorityscore=1501
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2107140000 definitions=main-2108190072
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,25 +107,67 @@ Sender: "Linuxppc-dev"
 
 This fixes a compile error with W=3D1.
 
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
 Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/kvm/book3s.h | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/include/asm/syscalls.h | 31 +++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
 
-diff --git a/arch/powerpc/kvm/book3s.h b/arch/powerpc/kvm/book3s.h
-index 740e51def5a5..c08f93b7f523 100644
---- a/arch/powerpc/kvm/book3s.h
-+++ b/arch/powerpc/kvm/book3s.h
-@@ -24,6 +24,7 @@ extern int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu=
- *vcpu,
- 					int sprn, ulong *spr_val);
- extern int kvmppc_book3s_init_pr(void);
- extern void kvmppc_book3s_exit_pr(void);
-+extern int kvmppc_handle_exit_pr(struct kvm_vcpu *vcpu, unsigned int exi=
-t_nr);
+diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/a=
+sm/syscalls.h
+index 398171fdcd9f..1d5f2abaa38a 100644
+--- a/arch/powerpc/include/asm/syscalls.h
++++ b/arch/powerpc/include/asm/syscalls.h
+@@ -6,6 +6,7 @@
+ #include <linux/compiler.h>
+ #include <linux/linkage.h>
+ #include <linux/types.h>
++#include <linux/compat.h>
 =20
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- extern void kvmppc_emulate_tabort(struct kvm_vcpu *vcpu, int ra_val);
+ struct rtas_args;
+=20
+@@ -18,5 +19,35 @@ asmlinkage long sys_mmap2(unsigned long addr, size_t l=
+en,
+ asmlinkage long ppc64_personality(unsigned long personality);
+ asmlinkage long sys_rtas(struct rtas_args __user *uargs);
+=20
++#ifdef CONFIG_COMPAT
++unsigned long compat_sys_mmap2(unsigned long addr, size_t len,
++			       unsigned long prot, unsigned long flags,
++			       unsigned long fd, unsigned long pgoff);
++
++compat_ssize_t compat_sys_pread64(unsigned int fd, char __user *ubuf, co=
+mpat_size_t count,
++				  u32 reg6, u32 pos1, u32 pos2);
++
++compat_ssize_t compat_sys_pwrite64(unsigned int fd, const char __user *u=
+buf, compat_size_t count,
++				   u32 reg6, u32 pos1, u32 pos2);
++
++compat_ssize_t compat_sys_readahead(int fd, u32 r4, u32 offset1, u32 off=
+set2, u32 count);
++
++asmlinkage int compat_sys_truncate64(const char __user *path, u32 reg4,
++				     unsigned long len1, unsigned long len2);
++
++asmlinkage long compat_sys_fallocate(int fd, int mode, u32 offset1, u32 =
+offset2,
++				     u32 len1, u32 len2);
++
++asmlinkage int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigne=
+d long len1,
++				      unsigned long len2);
++
++long ppc32_fadvise64(int fd, u32 unused, u32 offset1, u32 offset2,
++		     size_t len, int advice);
++
++asmlinkage long compat_sys_sync_file_range2(int fd, unsigned int flags,
++					    unsigned int offset1, unsigned int offset2,
++					    unsigned int nbytes1, unsigned int nbytes2);
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_POWERPC_SYSCALLS_H */
 --=20
 2.31.1
 
