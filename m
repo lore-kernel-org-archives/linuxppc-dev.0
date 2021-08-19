@@ -8,79 +8,78 @@ X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 171DFC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 09:33:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6A9BC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 09:34:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 29624600D4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 09:33:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 29624600D4
+	by mail.kernel.org (Postfix) with ESMTPS id 6DC4760240
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 09:34:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6DC4760240
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gr02Q3rTvz3d8v
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 19:33:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gr0380gHzz3dGF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 19:34:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=tFZEIbDl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=BM4IKNhC;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32c;
- helo=mail-wm1-x32c.google.com; envelope-from=lukas.bulwahn@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::429;
+ helo=mail-wr1-x429.google.com; envelope-from=lukas.bulwahn@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=tFZEIbDl; dkim-atps=neutral
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com
- [IPv6:2a00:1450:4864:20::32c])
+ header.s=20161025 header.b=BM4IKNhC; dkim-atps=neutral
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com
+ [IPv6:2a00:1450:4864:20::429])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gr01C6wHYz3bYt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 19:32:47 +1000 (AEST)
-Received: by mail-wm1-x32c.google.com with SMTP id
- q11-20020a7bce8b0000b02902e6880d0accso6378984wmj.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 02:32:47 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gr01F5RZfz3cLk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 19:32:49 +1000 (AEST)
+Received: by mail-wr1-x429.google.com with SMTP id q11so8035883wrr.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 02:32:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=9E+b7yEFyl2AwVZRyoTJe5CWMWvjWa59eGiPsrwe3Mo=;
- b=tFZEIbDlHNE+xia5g8/hRiyMaPYwdmhyoL9uigWW2I+3GMS/h/BxVaRI9BRlTGzgaM
- 3zq8mZmaYkg06Bzc3/TM511P0YOg3YD1FH3toNrTY6xq9402Ndrn1a94K+2KS97AXIWE
- mGWS0oqr6BMMhPZYeBiCgjJXEhU0ZmyxrFbs43wvT9T85E51DqlAAqlwLK2nmNOO3OlR
- nSj2sPa1theke08K4vpuohL7HrOo9KM4O8YPLajfW5v1bKri3BvP3P3c/8Fnv1hcv8qp
- wAGePiin/nEJY8Q0Gvz9YdAF4Jd+JJKnLjHU4QIsFLLXrBz2sdnxW2h2H1l4NS5Ny6qd
- Gq3A==
+ bh=FO+lf3R/yjc9KGpGIWIOuNRXRBvu2rIu+mbHK5sUlLs=;
+ b=BM4IKNhCtQRKZxA0sZ4q1/jIzjHv+b7LZPW+AfBbbBQ0vP4MQlKD2NXPkieTMmquaD
+ kcLfOqxYwR9WnKn/TcY4IhyUUtuBXi0laK22N8HqvBPCS/HGQ7ha4TNeQUThChMpwL2t
+ xv7+CCGEd1IcRlV2AzP2hrh5omnShKYloHOw+uCVsvHLpiaOzNiTxgnzmQmb8z3272N1
+ M0WyPaS4B2PuFpjGPoU8W9Q3qGiKCVeaBlrPjz5sUJPlZbJm0wzxyxYKeExKrUP/G5ki
+ VliwdIAAhjkMCw0xOCmUp1eWu2bG1NPFs6Kf2Q6AmmdOaGl6+/kDVzap1r2qLSaMrTcQ
+ tpMg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=9E+b7yEFyl2AwVZRyoTJe5CWMWvjWa59eGiPsrwe3Mo=;
- b=Uimszh974J+/p7e0n+EkePlr1+98lrcZZLCUHy5XRehigXEpc0rBtBkKNaKWLrIN16
- yz+VKOSHefabGt4O/1GmI8X+58xlH9Ofg6qkIC7PCMUoS1vXRPfKoXEoRh8lPCIMKYO9
- 2wYaeGs5nJBCdndOwK9AYl/XUPli3WTESANxEkrSyD9XFjQ3TFhy5M9lP9kYGU67y9Dt
- Me3Q6TySmtZgg2sfcyRyYjaqlFD/eekTTzUCHtWw0No7qbdBMJGdobmpJ0qDz/nUfwxC
- jljGYHxnDbKREgN3H8CqK8Zt3P/TXldO0tLE5iJpNm4YB05VizfKkGMH3MwGmM1AWECk
- 3Mwg==
-X-Gm-Message-State: AOAM532unMnCB+yW5sSHCBLZN/bPKk+PHqvuKSldDW2vkkPrS8KICIri
- 18HeyYnvJca/GCnr1WfTpwI=
-X-Google-Smtp-Source: ABdhPJwIwVlI9d/xhjmdxG9trJ2BKi+LKFHcS50VjOHOgZfRQ86q4w2s4Ld6XT/GuXYT9nWNu28yFQ==
-X-Received: by 2002:a7b:cf37:: with SMTP id m23mr894890wmg.147.1629365564031; 
- Thu, 19 Aug 2021 02:32:44 -0700 (PDT)
+ bh=FO+lf3R/yjc9KGpGIWIOuNRXRBvu2rIu+mbHK5sUlLs=;
+ b=VDwcKSdoQv/P2yFeymg+e7OStcCsd+PtQ61+d3jMa5+bTcpZrwGdHLIYwn9gGj+WaB
+ PLc5Q4Way96yjzOXMyWCOMvUXAeYvc6yZ242yj8CJQIj+yiOLutHBdic9KWd2vJoENF9
+ cnUztmC94t5Tm7PgbBzuPz45LIPj4BHFcHQMWbMxV+2QypRmEPf+rO7A1U7Of4gKQxed
+ Zp7ny6TZgFNSUTFO0JDHS1iTuK0Jy56VaNNgZqpv6wFcaLeejaoqVsVXo3IVMk4urtS3
+ v0k89UAMtwdXz7ZLtSugHwSrot3kfH4SpI9VXPkXnyTDFMbYnyR403jy7kzJMp5cxolN
+ vYyw==
+X-Gm-Message-State: AOAM531EQz5yKDJNpMmJGr5w2T3EecYmVwy5RPFrZ2CENTNFveOnAWgM
+ +DekSoL3oqnrRHGPzdM/Fug=
+X-Google-Smtp-Source: ABdhPJwu7l1e14z3CvBWCEbrYHKKMJmpt16r4+Dcm6OhP5DvDOyQWjLUEWmRVRqIBmTBER8QJHSQKQ==
+X-Received: by 2002:a5d:4586:: with SMTP id p6mr2620112wrq.55.1629365566140;
+ Thu, 19 Aug 2021 02:32:46 -0700 (PDT)
 Received: from localhost.localdomain (arl-84-90-178-246.netvisao.pt.
  [84.90.178.246])
- by smtp.gmail.com with ESMTPSA id h11sm8485061wmc.23.2021.08.19.02.32.42
+ by smtp.gmail.com with ESMTPSA id h11sm8485061wmc.23.2021.08.19.02.32.44
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 19 Aug 2021 02:32:43 -0700 (PDT)
+ Thu, 19 Aug 2021 02:32:45 -0700 (PDT)
 From: Lukas Bulwahn <lukas.bulwahn@gmail.com>
 To: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Neuling <mikey@neuling.org>,
  Anshuman Khandual <anshuman.khandual@arm.com>, kvm-ppc@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc: kvm: rectify selection to PPC_DAWR
-Date: Thu, 19 Aug 2021 11:32:25 +0200
-Message-Id: <20210819093226.13955-2-lukas.bulwahn@gmail.com>
+Subject: [PATCH 2/2] powerpc: rectify selection to ARCH_ENABLE_SPLIT_PMD_PTLOCK
+Date: Thu, 19 Aug 2021 11:32:26 +0200
+Message-Id: <20210819093226.13955-3-lukas.bulwahn@gmail.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20210819093226.13955-1-lukas.bulwahn@gmail.com>
 References: <20210819093226.13955-1-lukas.bulwahn@gmail.com>
@@ -103,34 +102,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit a278e7ea608b ("powerpc: Fix compile issue with force DAWR")
-selects the non-existing config PPC_DAWR_FORCE_ENABLE for config
-KVM_BOOK3S_64_HANDLER. As this commit also introduces a config PPC_DAWR,
-it probably intends to select PPC_DAWR instead.
+Commit 66f24fa766e3 ("mm: drop redundant ARCH_ENABLE_SPLIT_PMD_PTLOCK")
+selects the non-existing config ARCH_ENABLE_PMD_SPLIT_PTLOCK in
+./arch/powerpc/platforms/Kconfig.cputype, but clearly it intends to select
+ARCH_ENABLE_SPLIT_PMD_PTLOCK here (notice the word swapping!), as this
+commit does select that for all other architectures.
 
-Rectify the selection in config KVM_BOOK3S_64_HANDLER to PPC_DAWR.
+Rectify selection to ARCH_ENABLE_SPLIT_PMD_PTLOCK instead.
 
-The issue was identified with ./scripts/checkkconfigsymbols.py.
-
-Fixes: a278e7ea608b ("powerpc: Fix compile issue with force DAWR")
+Fixes: 66f24fa766e3 ("mm: drop redundant ARCH_ENABLE_SPLIT_PMD_PTLOCK")
 Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
 ---
- arch/powerpc/kvm/Kconfig | 2 +-
+ arch/powerpc/platforms/Kconfig.cputype | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index e45644657d49..aa29ea56c80a 100644
---- a/arch/powerpc/kvm/Kconfig
-+++ b/arch/powerpc/kvm/Kconfig
-@@ -38,7 +38,7 @@ config KVM_BOOK3S_32_HANDLER
- config KVM_BOOK3S_64_HANDLER
- 	bool
- 	select KVM_BOOK3S_HANDLER
--	select PPC_DAWR_FORCE_ENABLE
-+	select PPC_DAWR
- 
- config KVM_BOOK3S_PR_POSSIBLE
- 	bool
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 6794145603de..a208997ade88 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -98,7 +98,7 @@ config PPC_BOOK3S_64
+ 	select PPC_HAVE_PMU_SUPPORT
+ 	select HAVE_ARCH_TRANSPARENT_HUGEPAGE
+ 	select ARCH_ENABLE_HUGEPAGE_MIGRATION if HUGETLB_PAGE && MIGRATION
+-	select ARCH_ENABLE_PMD_SPLIT_PTLOCK
++	select ARCH_ENABLE_SPLIT_PMD_PTLOCK
+ 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
+ 	select ARCH_SUPPORTS_HUGETLBFS
+ 	select ARCH_SUPPORTS_NUMA_BALANCING
 -- 
 2.26.2
 
