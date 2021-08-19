@@ -2,68 +2,91 @@ Return-Path: <SRS0=S6eX=NK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29038C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 09:57:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0356C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 11:40:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9DD726112E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 09:57:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9DD726112E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9B7F560560
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 11:40:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9B7F560560
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gr0YT1h1qz3cYr
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 19:57:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gr2s15ndDz3cVG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 21:40:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=KCUZCYiG;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=C550/W+6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
- helo=casper.infradead.org;
- envelope-from=batv+308e20cad7c5f5b5e2f7+6570+infradead.org+hch@casper.srs.infradead.org;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::333;
+ helo=mail-wm1-x333.google.com; envelope-from=lukas.bulwahn@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=KCUZCYiG; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=C550/W+6; dkim-atps=neutral
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com
+ [IPv6:2a00:1450:4864:20::333])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gr0Xn67mqz2xnf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 19:56:41 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=oIotVKt85Rb4zTbqb/WlmrAVapzeRtWFY/9pBR2nkhM=; b=KCUZCYiGDxEFK9dDcZ5QKZ8bho
- RMy0S/ROV6qOCIEOfE0tI+Td1tg2fq1UVCw4mJQFP3MO5TIgAl4+pgpQiWurXU5AMe38FMxZLBA6N
- akE0NycfmWpAniFPAt2d6OpT4G6TJFyWksA/qRNvncVBm9gEK0po7a5BpinSpT87nkiFz1w46U3KM
- jOTZAQ0XsTPq22JKVNPOo28l3qEoejUAS1U/1rb2Pwk/DMfmsr+qWjiXz8IkeO/Yj4gJ7I6FAzeqg
- lNwOEN78GvZAlBb9KGcP4L625TaSQVaKs8v1zGXZplsdSmmZfUgYAQ/wceqjbToyHb19QRVu6lhDW
- XQHPuWuw==;
-Received: from hch by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat
- Linux)) id 1mGelR-004tzP-3k; Thu, 19 Aug 2021 09:55:23 +0000
-Date: Thu, 19 Aug 2021 10:55:09 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Tom Lendacky <thomas.lendacky@amd.com>
-Subject: Re: [PATCH v2 04/12] powerpc/pseries/svm: Add a powerpc version of
- prot_guest_has()
-Message-ID: <YR4qfZdkv+91zNZk@infradead.org>
-References: <cover.1628873970.git.thomas.lendacky@amd.com>
- <000f627ce20c6504dd8d118d85bd69e7717b752f.1628873970.git.thomas.lendacky@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gr2rG4D4fz30KN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 21:40:12 +1000 (AEST)
+Received: by mail-wm1-x333.google.com with SMTP id
+ f9-20020a05600c1549b029025b0f5d8c6cso6593704wmg.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 04:40:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=LH0thD0+NKJpZwefQbdyB/s2IsVbxcK0p6p/WAbflT4=;
+ b=C550/W+6JNOG5Usrgj2d06WNFA7jHtLKfnCyiZeKt+9LfSl5AhYZ/wJNwW2NwU4nis
+ g0a1eIcDOhRuyPzDPtBa68XNNeG9Jo7gqVhEo1MKL7s2js0fVe/imvDDBWhlC6Wkcm10
+ jfTcCer5BA0v+l5jN5/8HKYMq+uwICHhww/DxpFr6jV3ADz/2TKu87UU14EAvCtaIndL
+ 6HJxc4W+mLWs4ls8kOw3bHoWRY6wVXE4UYRloRDnCeSecVlb+K4DvSzfdPd2/Pc3DMY5
+ owwLNCutgHbH35e4VGyMu7c9DEB0DP+ZZBC4QRV/ly874mBOUfJes8cqXsDttVQmUaIl
+ HkSQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=LH0thD0+NKJpZwefQbdyB/s2IsVbxcK0p6p/WAbflT4=;
+ b=KBNNb8vUK6uDGVg0qwf5pq9paM8XMCEa+NM5aoaDkCcgOQRYHtMIB6k14LKsgqSjIK
+ IeeOp/1QFDe6czPGTuqVYrjzobO//eYyBbByAKpIhF+m8ZUNmgLLzKPtvqa92TK5Ao+2
+ U5dg0rxWY5gqVsCwD4I3iVFMJe051IVcwx/8VAV6XG/Bl+LLccivxMsojZ4QVQ6RpDto
+ 6ftkqrQkE/pLxctySSlFscPnPYeTth4qbKUjXog6ES+tvtERtPwPaGH8RSkEzmnOtFjV
+ HFwb7bCmTBWEtHPWK3jWiZ9kw86QjhtN8HYqHdYjjy7Gna9m6WU3OdVjXed0PijMisrZ
+ s/Kw==
+X-Gm-Message-State: AOAM5331IjhVh+gDfKuXgcp+R3q6qbMTvxHsQk/m5PJ5U205gVWwBV+x
+ xsDMiQLoMPFbv8O1J4uIMag=
+X-Google-Smtp-Source: ABdhPJyJwLWLb/+v2ia2UarNfITG8IYmP5cNcCXX+LJHhLkfuq7vAagO8+tguzj1XUjjJcY97N4UHA==
+X-Received: by 2002:a05:600c:3589:: with SMTP id
+ p9mr3036312wmq.170.1629373207204; 
+ Thu, 19 Aug 2021 04:40:07 -0700 (PDT)
+Received: from localhost.localdomain (arl-84-90-178-246.netvisao.pt.
+ [84.90.178.246])
+ by smtp.gmail.com with ESMTPSA id b13sm2650891wrf.86.2021.08.19.04.40.06
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 19 Aug 2021 04:40:06 -0700 (PDT)
+From: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+To: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Anshuman Khandual <anshuman.khandual@arm.com>, kvm-ppc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 1/2] powerpc: kvm: remove obsolete and unneeded select
+Date: Thu, 19 Aug 2021 13:39:53 +0200
+Message-Id: <20210819113954.17515-2-lukas.bulwahn@gmail.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20210819113954.17515-1-lukas.bulwahn@gmail.com>
+References: <20210819113954.17515-1-lukas.bulwahn@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <000f627ce20c6504dd8d118d85bd69e7717b752f.1628873970.git.thomas.lendacky@amd.com>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- casper.infradead.org. See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,23 +98,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>,
- linux-efi@vger.kernel.org, Brijesh Singh <brijesh.singh@amd.com>,
- kvm@vger.kernel.org, dri-devel@lists.freedesktop.org,
- platform-driver-x86@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-s390@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
- Joerg Roedel <joro@8bytes.org>, x86@kernel.org, amd-gfx@lists.freedesktop.org,
- linux-graphics-maintainer@vmware.com, Tianyu Lan <Tianyu.Lan@microsoft.com>,
- Borislav Petkov <bp@alien8.de>, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>, kernel-janitors@vger.kernel.org,
+ stable@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Aug 13, 2021 at 11:59:23AM -0500, Tom Lendacky wrote:
-> +static inline bool prot_guest_has(unsigned int attr)
+Commit a278e7ea608b ("powerpc: Fix compile issue with force DAWR")
+selects the non-existing config PPC_DAWR_FORCE_ENABLE for config
+KVM_BOOK3S_64_HANDLER. As this commit also introduces a config PPC_DAWR
+and this config PPC_DAWR is selected with PPC if PPC64, there is no
+need for any further select in the KVM_BOOK3S_64_HANDLER.
 
-No reall need to have this inline.  In fact I'd suggest we havea the
-prototype in a common header so that everyone must implement it out
-of line.
+Remove an obsolete and unneeded select in config KVM_BOOK3S_64_HANDLER.
+
+The issue was identified with ./scripts/checkkconfigsymbols.py.
+
+Fixes: a278e7ea608b ("powerpc: Fix compile issue with force DAWR")
+Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+---
+ arch/powerpc/kvm/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index e45644657d49..ff581d70f20c 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -38,7 +38,6 @@ config KVM_BOOK3S_32_HANDLER
+ config KVM_BOOK3S_64_HANDLER
+ 	bool
+ 	select KVM_BOOK3S_HANDLER
+-	select PPC_DAWR_FORCE_ENABLE
+ 
+ config KVM_BOOK3S_PR_POSSIBLE
+ 	bool
+-- 
+2.26.2
+
