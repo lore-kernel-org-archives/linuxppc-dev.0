@@ -2,65 +2,86 @@ Return-Path: <SRS0=S6eX=NK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 764FFC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 06:32:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74164C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 09:33:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E37A610CF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 06:32:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7E37A610CF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id D006C600D4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 09:33:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D006C600D4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gqw0q67w1z3dLg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 16:32:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gr01j16V1z3bZr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 19:33:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=enn9Mp7+;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::436;
+ helo=mail-wr1-x436.google.com; envelope-from=lukas.bulwahn@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=enn9Mp7+; dkim-atps=neutral
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com
+ [IPv6:2a00:1450:4864:20::436])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GqvzZ5Qd0z3cRN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 16:31:06 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4GqvzF6qHmz9sWT;
- Thu, 19 Aug 2021 08:30:49 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id nPy7X1Q-Z3gN; Thu, 19 Aug 2021 08:30:49 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4GqvzF5tvKz9sWP;
- Thu, 19 Aug 2021 08:30:49 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9D63D8B822;
- Thu, 19 Aug 2021 08:30:49 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id t8nVhXpLBMk2; Thu, 19 Aug 2021 08:30:49 +0200 (CEST)
-Received: from po9473vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.230.102])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7770B8B764;
- Thu, 19 Aug 2021 08:30:49 +0200 (CEST)
-Received: by po9473vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 6F0F266973; Thu, 19 Aug 2021 06:30:49 +0000 (UTC)
-Message-Id: <d8983e24df420eae50a38f46e2459ddd638b0157.1629354625.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <385ead49ccb66a259b25fee3eebf0bd4094068f3.1629354625.git.christophe.leroy@csgroup.eu>
-References: <385ead49ccb66a259b25fee3eebf0bd4094068f3.1629354625.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 3/3] powerpc: Define and use MSR_RI only on non booke/40x
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- npiggin@gmail.com
-Date: Thu, 19 Aug 2021 06:30:49 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gr00x4rcVz2ymZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 19:32:32 +1000 (AEST)
+Received: by mail-wr1-x436.google.com with SMTP id x12so8000684wrr.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 02:32:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=jmf3umRfv4KMZ4uQ33/nDRLk5ExaW9fT/xorODYlDPc=;
+ b=enn9Mp7+BHj8C9UfShybnnOLllZFUZKmPD3lFyG54k9reTcqpk5AkxO9UJohwcucyj
+ iwQTIO2npa3wA1k0iA2wE7V6z7SL4ojVklZY5i3FEqRvn4HUvKcbQ+iVNkQcHlP7P8nr
+ dXs64snQ0/F7klMWbgLLpuhDGlDvVjRT9uF99TOej9/zM8aB3aYGTX9Hk99Aq3NgP67C
+ pvBBzhwuDuAw+apun2yEkKhFWNpwf6PX6pShYpQQ3XwfqIQk6/Ctee1Vw+Ufu54fgaqN
+ D2xY7doZWziyJqOA9Jdc0P2uVWDFEqq5lt2ctpWfR9hckwMDAbkGL8XMJ/LOJGqy4Wui
+ AlYg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=jmf3umRfv4KMZ4uQ33/nDRLk5ExaW9fT/xorODYlDPc=;
+ b=bYCKwDH0w9kU4Ieqa6p7tcMiqPCurvqECf8E+xJd4KhOH9pUJ7AipviZ0h8fZgosu5
+ YT5dY+QaEpye03SVyehufYBYL8pgqpZ2LOHH52aYtdHLJx4DKDdjo+3S7sJ0OZ91ZunF
+ GCDsTstb8leMDirvNc4PYxLalvQIdRrynMWj+RghWwlGadkoVt6BhskOmP5n8q1SaJHp
+ WyDnVZlkgofsvsA+ievbIBF9zz5p6HLYfrtm6nBnszUTzVjOQrjvFyFKJ80s6bHSQ8TX
+ rcSkIyL56r6fEwWPh33vdPDdvpk5c8+/xIMA0Q4StFSFLxkdACRIDqrvyvlf2uERcXat
+ Y9Og==
+X-Gm-Message-State: AOAM5306PKfq4BNl5k7yr+DPS9IrQHI3eGO4su+79ENGfvlKM6LFDu1F
+ MggIimUC+/4aORm0nRSu4SU=
+X-Google-Smtp-Source: ABdhPJyWWlLboikpd2then9nHSZfdRg9YfDbpOedyAGwGxARsjMptNU5YHc3mcTz52AsxgCxk/sorw==
+X-Received: by 2002:adf:fa11:: with SMTP id m17mr2592459wrr.323.1629365548547; 
+ Thu, 19 Aug 2021 02:32:28 -0700 (PDT)
+Received: from localhost.localdomain (arl-84-90-178-246.netvisao.pt.
+ [84.90.178.246])
+ by smtp.gmail.com with ESMTPSA id h11sm8485061wmc.23.2021.08.19.02.32.27
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 19 Aug 2021 02:32:28 -0700 (PDT)
+From: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+To: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Anshuman Khandual <anshuman.khandual@arm.com>, kvm-ppc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/2] Kconfig symbol fixes on powerpc
+Date: Thu, 19 Aug 2021 11:32:24 +0200
+Message-Id: <20210819093226.13955-1-lukas.bulwahn@gmail.com>
+X-Mailer: git-send-email 2.26.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,106 +93,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>, kernel-janitors@vger.kernel.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-40x and BOOKE don't have MSR_RI.
+Dear powerpc maintainers,
 
-Define MSR_RI only for platforms where it exists. For the other ones,
-defines it as BUILD_BUG for C and do not define it for ASM.
+The script ./scripts/checkkconfigsymbols.py warns on invalid references to
+Kconfig symbols (often, minor typos, name confusions or outdated references).
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/reg.h       | 4 ++++
- arch/powerpc/include/asm/reg_booke.h | 6 +++---
- arch/powerpc/kernel/head_32.h        | 4 ++++
- arch/powerpc/kernel/process.c        | 2 +-
- arch/powerpc/lib/sstep.c             | 2 +-
- 5 files changed, 13 insertions(+), 5 deletions(-)
+This patch series addresses all issues reported by
+./scripts/checkkconfigsymbols.py in ./drivers/usb/ for Kconfig and Makefile
+files. Issues in the Kconfig and Makefile files indicate some shortcomings in
+the overall build definitions, and often are true actionable issues to address.
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index be85cf156a1f..656a9aaa1e8e 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -109,7 +109,11 @@
- #ifndef MSR_PMM
- #define MSR_PMM		__MASK(MSR_PMM_LG)	/* Performance monitor */
- #endif
-+#if !defined(CONFIG_BOOKE) && !defined(CONFIG_40x)
- #define MSR_RI		__MASK(MSR_RI_LG)	/* Recoverable Exception */
-+#elif !defined(__ASSEMBLY__)
-+#define MSR_RI		({BUILD_BUG(); 0; })
-+#endif
- #define MSR_LE		__MASK(MSR_LE_LG)	/* Little Endian */
- 
- #define MSR_TM		__MASK(MSR_TM_LG)	/* Transactional Mem Available */
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index 17b8dcd9a40d..6f40a8420ad0 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -38,15 +38,15 @@
- #if defined(CONFIG_PPC_BOOK3E_64)
- #define MSR_64BIT	MSR_CM
- 
--#define MSR_		(MSR_ME | MSR_RI | MSR_CE)
-+#define MSR_		(MSR_ME | MSR_CE)
- #define MSR_KERNEL	(MSR_ | MSR_64BIT)
- #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
- #define MSR_USER64	(MSR_USER32 | MSR_64BIT)
- #elif defined (CONFIG_40x)
--#define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_IR|MSR_DR|MSR_CE)
-+#define MSR_KERNEL	(MSR_ME|MSR_IR|MSR_DR|MSR_CE)
- #define MSR_USER	(MSR_KERNEL|MSR_PR|MSR_EE)
- #else
--#define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_CE)
-+#define MSR_KERNEL	(MSR_ME|MSR_CE)
- #define MSR_USER	(MSR_KERNEL|MSR_PR|MSR_EE)
- #endif
- 
-diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index 6b1ec9e3541b..6c5f4183dc8e 100644
---- a/arch/powerpc/kernel/head_32.h
-+++ b/arch/powerpc/kernel/head_32.h
-@@ -63,7 +63,11 @@
- 	mtspr	SPRN_DAR, r11	/* Tag DAR, to be used in DTLB Error */
- 	.endif
- #endif
-+#ifdef CONFIG_40x
-+	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL) /* re-enable MMU */
-+#else
- 	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~MSR_RI) /* re-enable MMU */
-+#endif
- 	mtspr	SPRN_SRR1, r11
- 	lis	r11, 1f@h
- 	ori	r11, r11, 1f@l
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 185beb290580..5ba72e31de28 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1420,7 +1420,7 @@ static struct regbit msr_bits[] = {
- 	{MSR_IR,	"IR"},
- 	{MSR_DR,	"DR"},
- 	{MSR_PMM,	"PMM"},
--#ifndef CONFIG_BOOKE
-+#if !defined(CONFIG_BOOKE) && !defined(CONFIG_40x)
- 	{MSR_RI,	"RI"},
- 	{MSR_LE,	"LE"},
- #endif
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index d8d5f901cee1..357cc1fb4f67 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -3559,7 +3559,7 @@ int emulate_step(struct pt_regs *regs, struct ppc_inst instr)
- 
- 	case MTMSR:
- 		val = regs->gpr[op.reg];
--		if ((val & MSR_RI) == 0)
-+		if (cpu_has_msr_ri() && (val & MSR_RI) == 0)
- 			/* can't step mtmsr[d] that would clear MSR_RI */
- 			return -1;
- 		/* here op.val is the mask of bits to change */
+These issues can be identified and filtered by:
+
+  ./scripts/checkkconfigsymbols.py | grep -E "arch/powerpc/.*(Kconfig|Makefile)" -B 1 -A 1
+
+After applying this patch series on linux-next (next-20210817), the command
+above yields just two false positives (SHELL, r13) due to tool shortcomings.
+
+As these two patches are fixes, please consider if they are suitable for
+backporting to stable.
+
+
+Lukas
+
+Lukas Bulwahn (2):
+  powerpc: kvm: rectify selection to PPC_DAWR
+  powerpc: rectify selection to ARCH_ENABLE_SPLIT_PMD_PTLOCK
+
+ arch/powerpc/kvm/Kconfig               | 2 +-
+ arch/powerpc/platforms/Kconfig.cputype | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
 -- 
-2.25.0
+2.26.2
 
