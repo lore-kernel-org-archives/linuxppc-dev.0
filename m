@@ -2,56 +2,68 @@ Return-Path: <SRS0=S6eX=NK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E764C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 09:56:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29038C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 09:57:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F178561101
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 09:56:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org F178561101
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9DD726112E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 09:57:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9DD726112E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gr0Xg3qv1z3ck2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 19:56:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gr0YT1h1qz3cYr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Aug 2021 19:57:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Gr0XB6B9Rz2xnf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 19:56:09 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A2EDE1FB;
- Thu, 19 Aug 2021 02:56:05 -0700 (PDT)
-Received: from [10.163.69.73] (unknown [10.163.69.73])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 947EA3F70D;
- Thu, 19 Aug 2021 02:55:59 -0700 (PDT)
-Subject: Re: [PATCH 2/2] powerpc: rectify selection to
- ARCH_ENABLE_SPLIT_PMD_PTLOCK
-To: Lukas Bulwahn <lukas.bulwahn@gmail.com>,
- Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Neuling <mikey@neuling.org>, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <20210819093226.13955-1-lukas.bulwahn@gmail.com>
- <20210819093226.13955-3-lukas.bulwahn@gmail.com>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <12a996cb-5c54-afab-f095-708a08931cad@arm.com>
-Date: Thu, 19 Aug 2021 15:26:44 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=KCUZCYiG;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org;
+ envelope-from=batv+308e20cad7c5f5b5e2f7+6570+infradead.org+hch@casper.srs.infradead.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=KCUZCYiG; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gr0Xn67mqz2xnf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Aug 2021 19:56:41 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=oIotVKt85Rb4zTbqb/WlmrAVapzeRtWFY/9pBR2nkhM=; b=KCUZCYiGDxEFK9dDcZ5QKZ8bho
+ RMy0S/ROV6qOCIEOfE0tI+Td1tg2fq1UVCw4mJQFP3MO5TIgAl4+pgpQiWurXU5AMe38FMxZLBA6N
+ akE0NycfmWpAniFPAt2d6OpT4G6TJFyWksA/qRNvncVBm9gEK0po7a5BpinSpT87nkiFz1w46U3KM
+ jOTZAQ0XsTPq22JKVNPOo28l3qEoejUAS1U/1rb2Pwk/DMfmsr+qWjiXz8IkeO/Yj4gJ7I6FAzeqg
+ lNwOEN78GvZAlBb9KGcP4L625TaSQVaKs8v1zGXZplsdSmmZfUgYAQ/wceqjbToyHb19QRVu6lhDW
+ XQHPuWuw==;
+Received: from hch by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat
+ Linux)) id 1mGelR-004tzP-3k; Thu, 19 Aug 2021 09:55:23 +0000
+Date: Thu, 19 Aug 2021 10:55:09 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Tom Lendacky <thomas.lendacky@amd.com>
+Subject: Re: [PATCH v2 04/12] powerpc/pseries/svm: Add a powerpc version of
+ prot_guest_has()
+Message-ID: <YR4qfZdkv+91zNZk@infradead.org>
+References: <cover.1628873970.git.thomas.lendacky@amd.com>
+ <000f627ce20c6504dd8d118d85bd69e7717b752f.1628873970.git.thomas.lendacky@amd.com>
 MIME-Version: 1.0
-In-Reply-To: <20210819093226.13955-3-lukas.bulwahn@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <000f627ce20c6504dd8d118d85bd69e7717b752f.1628873970.git.thomas.lendacky@amd.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,45 +75,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org
+Cc: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>,
+ linux-efi@vger.kernel.org, Brijesh Singh <brijesh.singh@amd.com>,
+ kvm@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ platform-driver-x86@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linux-s390@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org, amd-gfx@lists.freedesktop.org,
+ linux-graphics-maintainer@vmware.com, Tianyu Lan <Tianyu.Lan@microsoft.com>,
+ Borislav Petkov <bp@alien8.de>, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Fri, Aug 13, 2021 at 11:59:23AM -0500, Tom Lendacky wrote:
+> +static inline bool prot_guest_has(unsigned int attr)
 
-
-On 8/19/21 3:02 PM, Lukas Bulwahn wrote:
-> Commit 66f24fa766e3 ("mm: drop redundant ARCH_ENABLE_SPLIT_PMD_PTLOCK")
-> selects the non-existing config ARCH_ENABLE_PMD_SPLIT_PTLOCK in
-> ./arch/powerpc/platforms/Kconfig.cputype, but clearly it intends to select
-> ARCH_ENABLE_SPLIT_PMD_PTLOCK here (notice the word swapping!), as this
-> commit does select that for all other architectures.
-
-Right, indeed the words here got swapped. They look very similar and also
-a cross compile would not even detect the problem because the non-existent
-config option would simply evaluate to 0. Thanks for catching this.
-
-> 
-> Rectify selection to ARCH_ENABLE_SPLIT_PMD_PTLOCK instead.
-> 
-> Fixes: 66f24fa766e3 ("mm: drop redundant ARCH_ENABLE_SPLIT_PMD_PTLOCK")
-> Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
-> ---
->  arch/powerpc/platforms/Kconfig.cputype | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index 6794145603de..a208997ade88 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -98,7 +98,7 @@ config PPC_BOOK3S_64
->  	select PPC_HAVE_PMU_SUPPORT
->  	select HAVE_ARCH_TRANSPARENT_HUGEPAGE
->  	select ARCH_ENABLE_HUGEPAGE_MIGRATION if HUGETLB_PAGE && MIGRATION
-> -	select ARCH_ENABLE_PMD_SPLIT_PTLOCK
-> +	select ARCH_ENABLE_SPLIT_PMD_PTLOCK
->  	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
->  	select ARCH_SUPPORTS_HUGETLBFS
->  	select ARCH_SUPPORTS_NUMA_BALANCING
-> 
+No reall need to have this inline.  In fact I'd suggest we havea the
+prototype in a common header so that everyone must implement it out
+of line.
