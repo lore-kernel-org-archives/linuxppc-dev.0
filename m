@@ -2,67 +2,69 @@ Return-Path: <SRS0=1E/h=NL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B21BC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Aug 2021 12:15:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94323C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Aug 2021 12:23:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 55E9B6108F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Aug 2021 12:15:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 55E9B6108F
+	by mail.kernel.org (Postfix) with ESMTPS id 03B0F60FE6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Aug 2021 12:23:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 03B0F60FE6
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GrgZv6y2Cz3cXg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Aug 2021 22:15:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GrglG2HNGz3cmR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Aug 2021 22:23:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=f9PP9ngn;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=fcObJ9PK;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=f9PP9ngn; 
+ header.a=rsa-sha256 header.s=201909 header.b=fcObJ9PK; 
  dkim-atps=neutral
-Received: from ozlabs.org (ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GrgZ84bCBz30FB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Aug 2021 22:15:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Grgkb3G5wz30FB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Aug 2021 22:22:31 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4GrgZ76jtVz9sSs;
- Fri, 20 Aug 2021 22:15:11 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4GrgkP6qBnz9sSs;
+ Fri, 20 Aug 2021 22:22:21 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1629461712;
- bh=609cs8/ZKSokRrE5mm7yk2+EH7BrmOScRj51bRNnHGc=;
+ s=201909; t=1629462142;
+ bh=FwqhrW0jlcaccscWe7HSecqPt23K1sWrCz8sv2I2U8o=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=f9PP9ngn8mbR1XFMZkHqpg+kv5siFN27WlLpKJIciuS1c5jsP3d7q1Z80nfJDoUgP
- KzEkad0pPoYc6Gl45PfQ7OFetPHwpu+qU+K8wiCC7LZ8sIQzFhahLu1BohB5gPqG7f
- 2d+HNjE2Sc7P0ojy3h+xUBOknEsCkFwOP5xQwySZRWJpx1N0257yV2GAqElDMvy9uo
- r2FwlCIRx/Xu5r0OAojiYEh7qJxaDn0VLDJDj/l376Z/bWt9O3lHzBc3tJ7y7ulqb9
- flrfj2Gqi4w9Q+3jCoIuMoEblOwyein3gZLuAqdJ+WP/mLHCxizfkK94S/x3Z28vy8
- 980Kas9oeGpow==
+ b=fcObJ9PKBbwD+oswsEJuJeMThfuMjw1vDwSUNYw468/Ilt2GmgYr15jDY9cwtL8jf
+ BPscAHen458rR3lm/o/5EMVvv2A/qHTzeDuJA8xzDa2a/Q7fR1WsKfFO12uCR7yQvJ
+ WUpPh4XBpVxukv7RUwr3UWAplz7ghkHQPb+U5UngRUp761+I5UBch1ULt8j3TSffrj
+ cmHD1N8uvlDHeGSJs1PsY6uQsh1Un9wS5Y4X5SoMiaIMiQP2y08/vomeiDO4szLfQn
+ Gudb63hzYwDt6fb5VeAajz9fzkTTsiyeJAylm7/1qFnx07W1lrZ+K+tGaP9FUk2oZk
+ JsrjOVOA1MXKg==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc/32: indirect function call use bctrl rather
- than blrl in ret_from_kernel_thread
-In-Reply-To: <91b1d242525307ceceec7ef6e832bfbacdd4501b.1629436472.git.christophe.leroy@csgroup.eu>
-References: <91b1d242525307ceceec7ef6e832bfbacdd4501b.1629436472.git.christophe.leroy@csgroup.eu>
-Date: Fri, 20 Aug 2021 22:15:11 +1000
-Message-ID: <871r6oe2i8.fsf@mpe.ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, =?utf-8?Q?C=C3=A9dric?=
+ Le Goater <clg@kaod.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/6] powerpc/prom: Introduce early_reserve_mem_old()
+In-Reply-To: <d79611e0-b42b-e74b-d628-5db718e6ebfa@csgroup.eu>
+References: <20210819125656.14498-1-clg@kaod.org>
+ <20210819125656.14498-2-clg@kaod.org>
+ <d79611e0-b42b-e74b-d628-5db718e6ebfa@csgroup.eu>
+Date: Fri, 20 Aug 2021 22:22:21 +1000
+Message-ID: <87y28wcnlu.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,46 +76,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> Copied from commit 89bbe4c798bc ("powerpc/64: indirect function call
-> use bctrl rather than blrl in ret_from_kernel_thread")
+> Le 19/08/2021 =C3=A0 14:56, C=C3=A9dric Le Goater a =C3=A9crit=C2=A0:
+>> and condition its call with IS_ENABLED(CONFIG_PPC32). This fixes a
+>> compile error with W=3D1.
+>>=20
+>> arch/powerpc/kernel/prom.c: In function =E2=80=98early_reserve_mem=E2=80=
+=99:
+>> arch/powerpc/kernel/prom.c:625:10: error: variable =E2=80=98reserve_map=
+=E2=80=99 set but not used [-Werror=3Dunused-but-set-variable]
+>>    __be64 *reserve_map;
+>>            ^~~~~~~~~~~
+>> cc1: all warnings being treated as errors
+>>=20
+>> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+>> Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+>> ---
+>>=20
+>>   Christophe, I think you had comments on this one ? Yes, I am being a b=
+it lazy.
 >
-> blrl is not recommended to use as an indirect function call, as it may
-> corrupt the link stack predictor.
+>
+> Yeah, my comment was to leave thing almost as is, just drop the #ifdef CO=
+NFIG_PPC32 and instead put=20
+> something like:
+>
+> 	if (!IS_ENABLED(CONFIG_PPC32))
+> 		return;
 
-Do we know if any 32-bit CPUs have a link stack predictor or similar?
+Yeah that's cleaner, let's do that.
 
 cheers
-
-> This is not a performance critical path but this should be fixed for
-> consistency.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
->  arch/powerpc/kernel/entry_32.S | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-> index 0273a1349006..61fdd53cdd9a 100644
-> --- a/arch/powerpc/kernel/entry_32.S
-> +++ b/arch/powerpc/kernel/entry_32.S
-> @@ -161,10 +161,10 @@ ret_from_fork:
->  ret_from_kernel_thread:
->  	REST_NVGPRS(r1)
->  	bl	schedule_tail
-> -	mtlr	r14
-> +	mtctr	r14
->  	mr	r3,r15
->  	PPC440EP_ERR42
-> -	blrl
-> +	bctrl
->  	li	r3,0
->  	b	ret_from_syscall
->  
-> -- 
-> 2.25.0
