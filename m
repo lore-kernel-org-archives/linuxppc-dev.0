@@ -2,126 +2,98 @@ Return-Path: <SRS0=pcIm=NN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54CEDC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Aug 2021 02:12:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8937AC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Aug 2021 07:52:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B780F6124D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Aug 2021 02:12:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B780F6124D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=nvidia.com
+	by mail.kernel.org (Postfix) with ESMTPS id C932D61220
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Aug 2021 07:52:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C932D61220
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gsf5S2RzLz3bfS
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Aug 2021 12:12:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gsndr6vK6z3bPZ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Aug 2021 17:52:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=IISxpUq6;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=A29wjJma;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=40.107.94.44;
- helo=nam10-mw2-obe.outbound.protection.outlook.com;
- envelope-from=sdonthineni@nvidia.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256
- header.s=selector2 header.b=IISxpUq6; 
- dkim-atps=neutral
-Received: from NAM10-MW2-obe.outbound.protection.outlook.com
- (mail-mw2nam10on2044.outbound.protection.outlook.com [40.107.94.44])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1030;
+ helo=mail-pj1-x1030.google.com; envelope-from=keescook@chromium.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=A29wjJma; dkim-atps=neutral
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com
+ [IPv6:2607:f8b0:4864:20::1030])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GsMmd6nG2z30Cj
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Aug 2021 01:26:38 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=KSRHI4UNmIxkZZlNxMdmF/de+5Yi8Hi/OP/gSygU/vI3c+mXpU6kgenqRN7V86lQAEP9GLwC5fyy+SawdvSdvyOFgSaXy8XXCm/XN2824mUYqSPe3lMQEEF/Dvix3HEXaypket7ds3Bv7uoOcUsarGMaIw51yOS3DOKwjtvWT0dgUWLCF435IWkF8XixfHoPpUWzx87uew/ZS6l0rfEBx5pV7aTberJhpUfCuf0t+px2TAl6pTWKRTVRqqDy5weZewTdvfYBVu0EXqn6FrHNGfRsB26dF0nBZLPF068xhOhbAP+usY4aQWWcoWOza5Ulbx2WR3D0PU9Zm68W9ZplXQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=xwjPogDO3TSbsa82gbCFuwOlaaer8naLrSo43m9KRuw=;
- b=eG4py7hW0IcCR8LgVCXK/u4F+ZY7yGH/tBKY3Q0Fotg5mZI+lAVN2ItKx3SSr02wJolCbUFfBjs990I8uKj9uHE3+wJJoVNxiwFO0GTe0AdPCo6NqwzdAKcsEBCmd8+6+2kg1GuH/gBMBCMw2p+m08vLd0vTBBJpXBZILZH5iidhJvMyXkIfuqDznOsGRBDQjREV31JywBXTcuOQrzqOm0G0m23tuwRXFyfS/oTGeC/2T5oiS2qJxNp2Tz2+8MW7XdzQTH5q4cP1nR0bSvJD8mA4KOFUo6Xq2BZMi6+B4cnR0FT9zFCG1T00arxvYXDfY0mCFsNwWU+I8JHxIPmGAg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.112.36) smtp.rcpttodomain=russell.cc smtp.mailfrom=nvidia.com;
- dmarc=pass (p=quarantine sp=none pct=100) action=none header.from=nvidia.com; 
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=xwjPogDO3TSbsa82gbCFuwOlaaer8naLrSo43m9KRuw=;
- b=IISxpUq6mdFEhrOMTm/m0t+icIIrVBexkPfaf56r7/K00CZuYepEDnie8TiYeqsQga3j0/mc7EkPq6Mq8a/9qDq8tqo9nVPQd/nx9z4QAjezBbMmmjyiP/dQloQMHRdpVuRqeqfNITJ81FECRk2On9MJYwnujtYQTQQLV6S1c10A2gUtRgoe+HaAPiB3ot+2IAAMK4LyV+ejhTE42H1P/FwhJUuQ1ImeqEMX8cfndS/pbvI5jFJ0syfEhva1kfMdo2OjiEgJmwAWUEpW9cRwMtkCr+59uarKU+y75b7ABZFzKehUlet4YekZRrhM1ESTjKqGrAMhd9wYA+fT3576zw==
-Received: from BN9PR03CA0562.namprd03.prod.outlook.com (2603:10b6:408:138::27)
- by DM6PR12MB4370.namprd12.prod.outlook.com (2603:10b6:5:2aa::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4436.19; Sat, 21 Aug
- 2021 15:26:20 +0000
-Received: from BN8NAM11FT059.eop-nam11.prod.protection.outlook.com
- (2603:10b6:408:138:cafe::9a) by BN9PR03CA0562.outlook.office365.com
- (2603:10b6:408:138::27) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4436.19 via Frontend
- Transport; Sat, 21 Aug 2021 15:26:20 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.112.36)
- smtp.mailfrom=nvidia.com; russell.cc; dkim=none (message not signed)
- header.d=none;russell.cc; dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.112.36 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.112.36; helo=mail.nvidia.com;
-Received: from mail.nvidia.com (216.228.112.36) by
- BN8NAM11FT059.mail.protection.outlook.com (10.13.177.120) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.20.4436.19 via Frontend Transport; Sat, 21 Aug 2021 15:26:19 +0000
-Received: from DRHQMAIL107.nvidia.com (10.27.9.16) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Sat, 21 Aug
- 2021 15:26:19 +0000
-Received: from [10.20.115.83] (172.20.187.6) by DRHQMAIL107.nvidia.com
- (10.27.9.16) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Sat, 21 Aug
- 2021 15:26:17 +0000
-Subject: Re: [PATCH] PCI/AER: Continue AER recovery of device with
- NO_BUS_RESET set
-To: Bjorn Helgaas <bhelgaas@google.com>
-References: <20210821133058.31583-1-sdonthineni@nvidia.com>
-From: Shanker R Donthineni <sdonthineni@nvidia.com>
-Message-ID: <f8719589-e56a-25c1-b955-4abd67cf7490@nvidia.com>
-Date: Sat, 21 Aug 2021 10:26:16 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gsnd21nggz2yxP
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Aug 2021 17:51:32 +1000 (AEST)
+Received: by mail-pj1-x1030.google.com with SMTP id
+ m24-20020a17090a7f98b0290178b1a81700so10057213pjl.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Aug 2021 00:51:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=swoxKUxBx5afVLnEB5LhIDPkkheQprnH5K11Nt9R4rs=;
+ b=A29wjJmazwrwxGZxMq+h34s9h8NzAPtZ5DxKcdKlMgNObBxVDvNDynzqlcY71e41mj
+ U4426P8/21pDEkSEQl5Vye5goYrgP8qo83lOcPnb8Mluvdkf2mU/RrS+84b6r0rkTA7n
+ NWDx2rvLg8JBxbks9wmwuHN3s+p3Igzuid9d8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=swoxKUxBx5afVLnEB5LhIDPkkheQprnH5K11Nt9R4rs=;
+ b=azX8pb3uY6P4I9droDI3ucl3fHA1qhPI2zDgfciCj0y7aqsQdUqP1mwpFekOkBc1de
+ agjLYZKsdkt245v/ki+MiIm/fhsizgFAhGsuuQ/oKCCljsGqS7lG+WWxDKr68IcRgYe2
+ +xSQlJ4U5FBwPntNAJRjDA35zt+4QQ3PQIlw4II8v3sOW1TBb84a1y5WSCBUZfSDbTgM
+ WDxCvXYUyH0hnN8Qyj7sJwSyHI7Lut5ndFL+dEGADcMXt0ag6QxHb7XMW5n8dV2mnP8s
+ +M1uztGfbP2KEg7kKR1GFyX9mMNMHUawzyoZWtSH9t7PV+13sj+PhHnQox3QB2mUFHvt
+ v8Jw==
+X-Gm-Message-State: AOAM5308eZG9d67MDb8F8qVAwlcTKfLbMPrOdu23meoL5rhpykjAXM//
+ UUy4/7X0Kd5hzGB0stH5hxPvTw==
+X-Google-Smtp-Source: ABdhPJxCvC5U8Hsd1nche8TY3/3w65Fwg7CcKKRcABytGvVOTqdPGhB5VrMGcJgmSP25a1YwSAnEXg==
+X-Received: by 2002:a17:90a:9205:: with SMTP id
+ m5mr13759811pjo.172.1629618687826; 
+ Sun, 22 Aug 2021 00:51:27 -0700 (PDT)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+ by smtp.gmail.com with ESMTPSA id x4sm784551pjq.20.2021.08.22.00.51.26
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 22 Aug 2021 00:51:27 -0700 (PDT)
+From: Kees Cook <keescook@chromium.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH for-next 02/25] powerpc: Split memset() to avoid multi-field
+ overflow
+Date: Sun, 22 Aug 2021 00:50:59 -0700
+Message-Id: <20210822075122.864511-3-keescook@chromium.org>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210822075122.864511-1-keescook@chromium.org>
+References: <20210822075122.864511-1-keescook@chromium.org>
 MIME-Version: 1.0
-In-Reply-To: <20210821133058.31583-1-sdonthineni@nvidia.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-Originating-IP: [172.20.187.6]
-X-ClientProxiedBy: HQMAIL111.nvidia.com (172.20.187.18) To
- DRHQMAIL107.nvidia.com (10.27.9.16)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: c13ad4fc-55e3-4433-ae4e-08d964b806b3
-X-MS-TrafficTypeDiagnostic: DM6PR12MB4370:
-X-Microsoft-Antispam-PRVS: <DM6PR12MB437017EFF3C560E7E60DA2DDC7C29@DM6PR12MB4370.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:2000;
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: pqdH+0qm0zQk6qkauCbc7r0woW9uftT4l/da0vnpqpyi93tJGJ4YlWDEgc6l5yCZeq9RewpNUmsl8Z4uDvG6hcGg4bgClVfy9L9Z+peMAKLM5bxr9pNvs3T9qRivNrCPd79cn/uQMOlsWC/kCK3wCkvvUJ7/Mdxs3XMjVuzqZaLYp76gZVbCAX8IuFn0NiAqL4C8LPCrtFCs+lu6GZLVIQhjECgqlcx9KTbOTdVufr3TD7sfRUClL7tp5MQ2KKjTYpG3OiVzdHrgBHC0k1xbCB2czrQxDCUDGG4EsnIu9CtAiZoRFkWn+3fV5bC1oKMSOB/JoTGco6EI3SYxGu6px8AtpBCmygTu8ueYtBuRjPDDAvy47/uCVDN953OcJD1KKVdtRC4VTnSo3yc4qlrCJ2ruMam5ft6JCIVwevy6SklrEwyJHPepNrtEh07kp1fjaLxUQ5zaQhHFQRJCyuann1jPzvJObFbIasJSCC/krh9KYLl3cl3Vn/FwB3dfAtvlftiOz/rphsnIzCdkfBWUDp19E9UhZ8EhYAmb1K4hQK06PHYJLUEbiid5GZP3hwcDMPOiTxeKhx9jgsMZipZ+2lUk5dctwN6/wGPFVHQEt38LYWHOA6STcabvnvj/1UD4yaFhqmJap3PJ9OcwWROsvM/ESit3wYOHMfx2fKefB+7J5ruWNNxDL7AMHhrW9JJEQKaVRJHn7X8nrilkxmOcUICP9f4P97g5TUup0REeZbyRL3ojSHRRIzkVkobGc7boS97Kjcm36aEA5X/rNTRhwA==
-X-Forefront-Antispam-Report: CIP:216.228.112.36; CTRY:US; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:mail.nvidia.com; PTR:schybrid05.nvidia.com; CAT:NONE;
- SFS:(4636009)(136003)(376002)(396003)(346002)(39860400002)(36840700001)(46966006)(31696002)(82310400003)(8676002)(47076005)(2906002)(478600001)(36756003)(426003)(316002)(70206006)(16576012)(336012)(70586007)(8936002)(36906005)(2616005)(54906003)(36860700001)(31686004)(26005)(16526019)(82740400003)(53546011)(83380400001)(5660300002)(4326008)(186003)(6916009)(86362001)(356005)(7636003)(21314003)(43740500002);
- DIR:OUT; SFP:1101; 
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Aug 2021 15:26:19.7325 (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: c13ad4fc-55e3-4433-ae4e-08d964b806b3
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a; Ip=[216.228.112.36];
- Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT059.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR12MB4370
-X-Mailman-Approved-At: Sun, 22 Aug 2021 12:10:44 +1000
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1383; h=from:subject;
+ bh=fQWaTRNAnHwzjDX7zkAYJFkFU9dO7FLED20FxzY84uw=;
+ b=owEBbQKS/ZANAwAKAYly9N/cbcAmAcsmYgBhIgH0nC39QXqUTtg73y7LwI1M2THJ6kxy1tIRNS78
+ 0fFAH3qJAjMEAAEKAB0WIQSlw/aPIp3WD3I+bhOJcvTf3G3AJgUCYSIB9AAKCRCJcvTf3G3AJnv2D/
+ wObLbEonTkdJhW6C+/WSz4E6oGnBggzSnLMUS882u8jeYadM5HfcUGcFJ1IZoQ6kX6jFoodlo/qVnf
+ lv6ENdcXT7oa5GLQDJd4zp1Un3jz2a3qKkKwRJJSPIvUcVqp9VUZniIeP+gfhhYaPISc6W1RDet5PU
+ ROdHz5TDjq6eCQV5GY1zKOsKcoUcvC0OVslx6dQsCCfN8mKnM3iHXqaPAB7G5IuV403ICtdQhZvuJH
+ FJuzCsKGcftKt80P0Zoel7L966sN/WwnqiHtjEj5Q4Ha+cpB4OZbMjB+2+M/jH0QC3oVuUo3AU3yj0
+ ok95VgvvkcJN0Htt9NFvC5AlZBlnB5QI8JUP8jSvS4z1ZL/G4JQLsEr1riP0klpc4IOAfStks3pI70
+ FKMswg8epOans0r7tNzpu4yUEjM53slyrCrPKvmlCkCQH6PZ9HpL5UeSdjvmKMkopb4mcKpOJKZpPV
+ 2y8VLpuG0jg5g4hX+/itWAXGLAwnR7BX1ZxzgZ28P0SF6/C4DDHWrrDeF9XVdF9bcQkO4TLjui7wbi
+ nL4Fc4wq+gL4gtVmXqAAe18gdYsilyD4H0XXHcga+xLL80dr04yJe/zWFZWwb7pCdm/o3CVYxCoA4Y
+ oQBZ3nMgYoV4HF+OrXkF4vTxkiD1vjqS4oYPHI5RM0UIBNPZH+F7nsJ6feWg==
+X-Developer-Key: i=keescook@chromium.org; a=openpgp;
+ fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -133,73 +105,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>, Oliver
- O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Francis Laniel <laniel_francis@privacyrequired.com>,
+ Kees Cook <keescook@chromium.org>, linux-mm@kvack.org,
+ Wang Wensheng <wangwensheng4@huawei.com>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Qinglang Miao <miaoqinglang@huawei.com>, Hulk Robot <hulkci@huawei.com>,
+ Daniel Micay <danielmicay@gmail.com>, linux-hardening@vger.kernel.org,
+ clang-built-linux@googlegroups.com, David Gow <davidgow@google.com>,
+ linuxppc-dev@lists.ozlabs.org, Bart Van Assche <bvanassche@acm.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+In preparation for FORTIFY_SOURCE performing compile-time and run-time
+field bounds checking for memset(), avoid intentionally writing across
+neighboring fields.
 
+Instead of writing across a field boundary with memset(), move the call
+to just the array, and an explicit zeroing of the prior field.
 
-On 8/21/21 8:30 AM, Shanker Donthineni wrote:
-> External email: Use caution opening links or attachments
->
->
-> In the current implementation, the AER FATAL and NONFTAL recovery will be
-> terminated for the device that exhibits NO_BUS_RESET quirk. The non-zero
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Qinglang Miao <miaoqinglang@huawei.com>
+Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Cc: Hulk Robot <hulkci@huawei.com>
+Cc: Wang Wensheng <wangwensheng4@huawei.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Kees Cook <keescook@chromium.org>
+Reviewed-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://lore.kernel.org/lkml/87czqsnmw9.fsf@mpe.ellerman.id.au
+---
+ drivers/macintosh/smu.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Correction, this problem happens only for AER_FATAL recovery case.
-
-> return value from pci_bus_error_reset() is treated as an error condition
-> in aer_root_reset() which leads to return PCI_ERS_RESULT_DISCONNECT.
->
->   aer_recover_work_func()
->     pcie_do_recovery()
->       report_frozen_detected()
->       if (aer_root_reset() == PCI_ERS_RESULT_DISCONNECT)
->          goto failed           # termimates here because of NO_BUS_RESET
->
->       ...
->       report_mmio_enabled()
->       report_resume()
->       pcie_clear_xxx_status()
->       ...
->       return 0
->   failed:
->       pci_uevent_ers(PCI_ERS_RESULT_DISCONNECT);
->
-> The return value -ENOTTY from pci_bus_error_reset() indicates SBR was
-> skipped but no real errors were encountered. This scenario could be
-> considered as a non-error case so that the PCI device driver gets the
-> opportunity to recover the device back to an operational state instead
-> of keeping it in the DISCONNECT state.
->
-> Signed-off-by: Shanker Donthineni <sdonthineni@nvidia.com>
-> ---
->  drivers/pci/pcie/aer.c | 8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index 9784fdcf30061..8cf6bd6a3376d 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -1414,8 +1414,12 @@ static pci_ers_result_t aer_root_reset(struct pci_dev *dev)
->                         pci_info(dev, "not reset (no FLR support: %d)\n", rc);
->         } else {
->                 rc = pci_bus_error_reset(dev);
-> -               pci_info(dev, "%s Port link has been reset (%d)\n",
-> -                       pci_is_root_bus(dev->bus) ? "Root" : "Downstream", rc);
-> +               pci_info(dev, "%s Port link has %sbeen reset (%d)\n",
-> +                       pci_is_root_bus(dev->bus) ? "Root" : "Downstream",
-> +                       rc == -ENOTTY ? "not " : "", rc);
-> +
-> +               if (rc == -ENOTTY)
-> +                       rc = 0;
->         }
->
->         if ((host->native_aer || pcie_ports_native) && aer) {
-> --
-> 2.25.1
->
+diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+index 94fb63a7b357..3e2b25ea58a3 100644
+--- a/drivers/macintosh/smu.c
++++ b/drivers/macintosh/smu.c
+@@ -848,7 +848,8 @@ int smu_queue_i2c(struct smu_i2c_cmd *cmd)
+ 	cmd->read = cmd->info.devaddr & 0x01;
+ 	switch(cmd->info.type) {
+ 	case SMU_I2C_TRANSFER_SIMPLE:
+-		memset(&cmd->info.sublen, 0, 4);
++		cmd->info.sublen = 0;
++		memset(cmd->info.subaddr, 0, sizeof(cmd->info.subaddr));
+ 		break;
+ 	case SMU_I2C_TRANSFER_COMBINED:
+ 		cmd->info.devaddr &= 0xfe;
+-- 
+2.30.2
 
