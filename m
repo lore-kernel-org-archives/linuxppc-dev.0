@@ -7,64 +7,66 @@ X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDE82C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 08:29:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53F44C4320A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 08:31:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4375D61357
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 08:29:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4375D61357
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 8456361008
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 08:31:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8456361008
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GtQPr5Tm0z2yb5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 18:29:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GtQS702Xnz2xsr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 18:31:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=kaod.org (client-ip=178.32.125.2;
+ helo=smtpout1.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ receiver=<UNKNOWN>)
+X-Greylist: delayed 572 seconds by postgrey-1.36 at boromir;
+ Mon, 23 Aug 2021 18:30:34 AEST
+Received: from smtpout1.mo529.mail-out.ovh.net
+ (smtpout1.mo529.mail-out.ovh.net [178.32.125.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GtQPL0rbqz2xZm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 18:28:37 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4GtQPG4KRPz9sWx;
- Mon, 23 Aug 2021 10:28:34 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ziZo7kWfVZ-c; Mon, 23 Aug 2021 10:28:34 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4GtQP93kVXz9sTv;
- Mon, 23 Aug 2021 10:28:29 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 34CBE8B780;
- Mon, 23 Aug 2021 10:28:29 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id jk5eCs7qyjjO; Mon, 23 Aug 2021 10:28:29 +0200 (CEST)
-Received: from [172.25.230.100] (po15451.idsi0.si.c-s.fr [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0B6C28B78F;
- Mon, 23 Aug 2021 10:28:29 +0200 (CEST)
-Subject: Re: [PATCH 5/6] audit: Declare ppc32_classify_syscall()
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GtQRZ0bQmz2xXh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 18:30:33 +1000 (AEST)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.1.108])
+ by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 54235BA8158A;
+ Mon, 23 Aug 2021 10:20:54 +0200 (CEST)
+Received: from kaod.org (37.59.142.96) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Mon, 23 Aug
+ 2021 10:20:53 +0200
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-96R0015d4601f9-e0fb-4695-8867-0b4476002d43,
+ 6C3DA580BFD2A03B9CD9C7EDF86CA127720438B1) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 83.199.102.86
+Subject: Re: [PATCH 1/6] powerpc/prom: Introduce early_reserve_mem_old()
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ <linuxppc-dev@lists.ozlabs.org>
 References: <20210819125656.14498-1-clg@kaod.org>
- <20210819125656.14498-6-clg@kaod.org>
- <d268f141-4ec3-eb1d-a6c1-4cd5f535ea49@csgroup.eu>
-Message-ID: <e1acf07a-772d-101d-2f28-24965f630248@csgroup.eu>
-Date: Mon, 23 Aug 2021 10:28:20 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
+ <20210819125656.14498-2-clg@kaod.org>
+ <d79611e0-b42b-e74b-d628-5db718e6ebfa@csgroup.eu>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <8c9d3bfa-bf4c-900c-6746-7c0988b57a44@kaod.org>
+Date: Mon, 23 Aug 2021 10:20:53 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 MIME-Version: 1.0
-In-Reply-To: <d268f141-4ec3-eb1d-a6c1-4cd5f535ea49@csgroup.eu>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+In-Reply-To: <d79611e0-b42b-e74b-d628-5db718e6ebfa@csgroup.eu>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.96]
+X-ClientProxiedBy: DAG8EX2.mxp5.local (172.16.2.72) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: d21427e2-007d-4a28-a8e9-bc079d85b400
+X-Ovh-Tracer-Id: 6513893914420218848
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddruddthedgtdefucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepjeekudeuudevleegudeugeekleffveeludejteffiedvledvgfekueefudehheefnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrdelieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghhrhhishhtohhphhgvrdhlvghrohihsegtshhgrhhouhhprdgvuh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,64 +83,110 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 19/08/2021 à 16:56, Christophe Leroy a écrit :
+On 8/19/21 4:42 PM, Christophe Leroy wrote:
 > 
 > 
 > Le 19/08/2021 à 14:56, Cédric Le Goater a écrit :
->> This fixes a compile error with W=1.
+>> and condition its call with IS_ENABLED(CONFIG_PPC32). This fixes a
+>> compile error with W=1.
+>>
+>> arch/powerpc/kernel/prom.c: In function ‘early_reserve_mem’:
+>> arch/powerpc/kernel/prom.c:625:10: error: variable ‘reserve_map’ set but not used [-Werror=unused-but-set-variable]
+>>    __be64 *reserve_map;
+>>            ^~~~~~~~~~~
+>> cc1: all warnings being treated as errors
 >>
 >> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
 >> Signed-off-by: Cédric Le Goater <clg@kaod.org>
 >> ---
 >>
->>   I don't think this is correct. Which file could we use ?
+>>   Christophe, I think you had comments on this one ? Yes, I am being a bit lazy.
 > 
-> I think you can completely remove ppc32_classify_syscall(), and instead add the following in the 
-> default case in audit_classify_syscall():
 > 
->       default:
-> +        if (IS_ENABLED(CONFIG_PPC64) && abi == AUDIT_ARCH_PPC)
-> +            return 1;
->           return 0;
+> Yeah, my comment was to leave thing almost as is, just drop the #ifdef CONFIG_PPC32 and instead put something like:
 > 
-
-Forget that comment, it was crazy, because PPC32 and PPC64 use different syscall numbers.
-
-By the way, I have submitted a patch to completely remove this stuff, see 
-https://patchwork.ozlabs.org/project/linuxppc-dev/patch/dc14509a28a993738b1325211f412be72a4f9b1e.1629701132.git.christophe.leroy@csgroup.eu/
-
+>     if (!IS_ENABLED(CONFIG_PPC32))
+>         return;
 > 
 >>
->>   arch/powerpc/include/asm/unistd.h | 3 +++
->>   arch/powerpc/kernel/audit.c       | 1 -
->>   2 files changed, 3 insertions(+), 1 deletion(-)
+>>   arch/powerpc/kernel/prom.c | 37 ++++++++++++++++++++-----------------
+>>   1 file changed, 20 insertions(+), 17 deletions(-)
 >>
->> diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
->> index b541c690a31c..d9025a7e973c 100644
->> --- a/arch/powerpc/include/asm/unistd.h
->> +++ b/arch/powerpc/include/asm/unistd.h
->> @@ -47,6 +47,9 @@
->>   #define __ARCH_WANT_SYS_UTIME
->>   #define __ARCH_WANT_SYS_NEWFSTATAT
->>   #define __ARCH_WANT_COMPAT_SYS_SENDFILE
->> +#ifdef CONFIG_AUDIT
->> +extern int ppc32_classify_syscall(unsigned int syscall);
->> +#endif
->>   #endif
->>   #define __ARCH_WANT_SYS_FORK
->>   #define __ARCH_WANT_SYS_VFORK
->> diff --git a/arch/powerpc/kernel/audit.c b/arch/powerpc/kernel/audit.c
->> index a2dddd7f3d09..c3c6c6a1069b 100644
->> --- a/arch/powerpc/kernel/audit.c
->> +++ b/arch/powerpc/kernel/audit.c
->> @@ -41,7 +41,6 @@ int audit_classify_arch(int arch)
->>   int audit_classify_syscall(int abi, unsigned syscall)
+>> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+>> index f620e04dc9bf..52869d12bc1d 100644
+>> --- a/arch/powerpc/kernel/prom.c
+>> +++ b/arch/powerpc/kernel/prom.c
+>> @@ -621,27 +621,14 @@ static void __init early_reserve_mem_dt(void)
+>>       }
+>>   }
+>>   -static void __init early_reserve_mem(void)
+>> +static void __init early_reserve_mem_old(void)
+> 
+> Why old ? Because ppc32 ?
+
+No. because there is message a bit below saying :
+
+		DBG("Found old 32-bit reserve map\n");
+
+> I think that's more changes than needed.
+
+OK. np. I will use your suggestion.
+
+Thanks,
+
+C. 
+
+ 
+> 
+> 
 >>   {
->>   #ifdef CONFIG_PPC64
->> -    extern int ppc32_classify_syscall(unsigned);
->>       if (abi == AUDIT_ARCH_PPC)
->>           return ppc32_classify_syscall(syscall);
->>   #endif
+>>       __be64 *reserve_map;
+>>         reserve_map = (__be64 *)(((unsigned long)initial_boot_params) +
+>>               fdt_off_mem_rsvmap(initial_boot_params));
+>>   -    /* Look for the new "reserved-regions" property in the DT */
+>> -    early_reserve_mem_dt();
+>> -
+>> -#ifdef CONFIG_BLK_DEV_INITRD
+>> -    /* Then reserve the initrd, if any */
+>> -    if (initrd_start && (initrd_end > initrd_start)) {
+>> -        memblock_reserve(ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
+>> -            ALIGN(initrd_end, PAGE_SIZE) -
+>> -            ALIGN_DOWN(initrd_start, PAGE_SIZE));
+>> -    }
+>> -#endif /* CONFIG_BLK_DEV_INITRD */
+>> -
+>> -#ifdef CONFIG_PPC32
+>> -    /*
+>> +    /*
+>>        * Handle the case where we might be booting from an old kexec
+>>        * image that setup the mem_rsvmap as pairs of 32-bit values
+>>        */
+>> @@ -659,9 +646,25 @@ static void __init early_reserve_mem(void)
+>>               DBG("reserving: %x -> %x\n", base_32, size_32);
+>>               memblock_reserve(base_32, size_32);
+>>           }
+>> -        return;
+>>       }
+>> -#endif
+>> +}
+>> +
+>> +static void __init early_reserve_mem(void)
+>> +{
+>> +    /* Look for the new "reserved-regions" property in the DT */
+>> +    early_reserve_mem_dt();
+>> +
+>> +#ifdef CONFIG_BLK_DEV_INITRD
+>> +    /* Then reserve the initrd, if any */
+>> +    if (initrd_start && (initrd_end > initrd_start)) {
+>> +        memblock_reserve(ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
+>> +            ALIGN(initrd_end, PAGE_SIZE) -
+>> +            ALIGN_DOWN(initrd_start, PAGE_SIZE));
+>> +    }
+>> +#endif /* CONFIG_BLK_DEV_INITRD */
+>> +
+>> +    if (IS_ENABLED(CONFIG_PPC32))
+>> +        early_reserve_mem_old();
+>>   }
+>>     #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
 >>
+
