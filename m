@@ -2,71 +2,101 @@ Return-Path: <SRS0=9U3E=NO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9143C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:34:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24E62C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:35:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C4D3A613A1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:34:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C4D3A613A1
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 95A11613A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:35:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 95A11613A1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GtRsV2ML1z2yQy
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 19:34:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=178.32.121.110;
- helo=1.mo548.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 1200 seconds by postgrey-1.36 at boromir;
- Mon, 23 Aug 2021 19:34:08 AEST
-Received: from 1.mo548.mail-out.ovh.net (1.mo548.mail-out.ovh.net
- [178.32.121.110])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GtRtv6d13z2xsS
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 19:35:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=llkPhJCX;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=llkPhJCX; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GtRrw55Kjz2xZH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 19:34:07 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.138.5])
- by mo548.mail-out.ovh.net (Postfix) with ESMTPS id 01DE01FED9;
- Mon, 23 Aug 2021 08:56:19 +0000 (UTC)
-Received: from kaod.org (37.59.142.106) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Mon, 23 Aug
- 2021 10:56:19 +0200
-Authentication-Results: garm.ovh; auth=pass
- (GARM-106R0065799e57a-66fe-451c-a3d9-b40df5884a81,
- 6C3DA580BFD2A03B9CD9C7EDF86CA127720438B1) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 83.199.102.86
-Subject: Re: [PATCH v2] powerpc/audit: Convert powerpc to
- AUDIT_ARCH_COMPAT_GENERIC
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>
-References: <dc14509a28a993738b1325211f412be72a4f9b1e.1629701132.git.christophe.leroy@csgroup.eu>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <753e61fc-aab5-7797-d344-b15e9f4d6d5c@kaod.org>
-Date: Mon, 23 Aug 2021 10:56:18 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GtRt24vDnz2xZL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 19:35:06 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 17N9WjUJ046726; Mon, 23 Aug 2021 05:34:52 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : to : cc :
+ subject : message-id : reply-to : references : mime-version : content-type
+ : in-reply-to; s=pp1; bh=3QJ4OmrOIzDV2QzO2G78sOlCHz+aIT5IWeo//eLPi3M=;
+ b=llkPhJCXF8lXRCkZDLfIvAOHW/YcIwJfqo2z9eCQ3kHnMIR77rkAEVUCo6Z+CSFyYe2P
+ el3WJVbWt/rAQ8I9W7YAbqYql9Sg0HGEvCdZVxDI61jW76GrGkfxGjq5/VqZTZAsFmgv
+ 8KDnp0DoPEQ/LyfXeL7gFHV82ZlRQ11jG3kThnbqeoHewob+XYAEQRdqRUavzVQSVWnE
+ swTCgbnrRLEmrtKzFKxprqfM4BW7AxSbPhgqg6aC+/bKdGgAaCS0SHmCG0TFkXU9y453
+ TVmduz+lnKXw7p1uXz0nlksBcnprHjomKwnP7YjdWqgutkdbrqLMPLMcWJxpV1jvSjFh 2A== 
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3am6nkc83f-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 23 Aug 2021 05:34:52 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17N9XMtQ005169;
+ Mon, 23 Aug 2021 09:34:50 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma04ams.nl.ibm.com with ESMTP id 3ajs48ty8p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 23 Aug 2021 09:34:50 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 17N9V3SK47120708
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 23 Aug 2021 09:31:03 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5AFC442047;
+ Mon, 23 Aug 2021 09:34:44 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0942E4203F;
+ Mon, 23 Aug 2021 09:34:39 +0000 (GMT)
+Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon, 23 Aug 2021 09:34:38 +0000 (GMT)
+Date: Mon, 23 Aug 2021 15:04:37 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 0/3] Updates to powerpc for robust CPU online/offline
+Message-ID: <20210823093437.GJ21942@linux.vnet.ibm.com>
+References: <20210821102535.169643-1-srikar@linux.vnet.ibm.com>
+ <YSNdWhxVWtMJKAWi@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-In-Reply-To: <dc14509a28a993738b1325211f412be72a4f9b1e.1629701132.git.christophe.leroy@csgroup.eu>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.106]
-X-ClientProxiedBy: DAG3EX2.mxp5.local (172.16.2.22) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: 72695990-56d4-485e-b4e1-f8349831bb03
-X-Ovh-Tracer-Id: 7112028239204944678
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddruddthedguddtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepjeekudeuudevleegudeugeekleffveeludejteffiedvledvgfekueefudehheefnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutdeinecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopegthhhrihhsthhophhhvgdrlhgvrhhohiestghsghhrohhuphdrvghu
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <YSNdWhxVWtMJKAWi@hirez.programming.kicks-ass.net>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: nJv4KbHtS6P07IiJGzovXibfb70xi5jt
+X-Proofpoint-ORIG-GUID: nJv4KbHtS6P07IiJGzovXibfb70xi5jt
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-08-23_02:2021-08-23,
+ 2021-08-23 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 bulkscore=0
+ malwarescore=0 lowpriorityscore=0 phishscore=0 spamscore=0 clxscore=1015
+ priorityscore=1501 impostorscore=0 mlxscore=0 suspectscore=0
+ mlxlogscore=687 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2107140000 definitions=main-2108230063
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,233 +108,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
+ Valentin Schneider <valentin.schneider@arm.com>,
+ Laurent Dufour <ldufour@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 8/23/21 8:49 AM, Christophe Leroy wrote:
-> Commit e65e1fc2d24b ("[PATCH] syscall class hookup for all normal
-> targets") added generic support for AUDIT but that didn't include
-> support for bi-arch like powerpc.
-> 
-> Commit 4b58841149dc ("audit: Add generic compat syscall support")
-> added generic support for bi-arch.
-> 
-> Convert powerpc to that bi-arch generic audit support.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+* Peter Zijlstra <peterz@infradead.org> [2021-08-23 10:33:30]:
 
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
-
-Thanks,
-
-C. 
-
-> ---
-> v2:
-> - Missing 'git add' for arch/powerpc/include/asm/unistd32.h
-> - Finalised commit description
-> ---
->  arch/powerpc/Kconfig                |  5 +-
->  arch/powerpc/include/asm/unistd32.h |  7 +++
->  arch/powerpc/kernel/Makefile        |  3 --
->  arch/powerpc/kernel/audit.c         | 84 -----------------------------
->  arch/powerpc/kernel/compat_audit.c  | 44 ---------------
->  5 files changed, 8 insertions(+), 135 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/unistd32.h
->  delete mode 100644 arch/powerpc/kernel/audit.c
->  delete mode 100644 arch/powerpc/kernel/compat_audit.c
+> On Sat, Aug 21, 2021 at 03:55:32PM +0530, Srikar Dronamraju wrote:
+> > Scheduler expects unique number of node distances to be available
+> > at boot. It uses node distance to calculate this unique node
+> > distances. On Power Servers, node distances for offline nodes is not
+> > available. However, Power Servers already knows unique possible node
+> > distances. Fake the offline node's distance_lookup_table entries so
+> > that all possible node distances are updated.
+> > 
+> > For example distance info from numactl from a fully populated 8 node
+> > system at boot may look like this.
+> > 
+> > node distances:
+> > node   0   1   2   3   4   5   6   7
+> >   0:  10  20  40  40  40  40  40  40
+> >   1:  20  10  40  40  40  40  40  40
+> >   2:  40  40  10  20  40  40  40  40
+> >   3:  40  40  20  10  40  40  40  40
+> >   4:  40  40  40  40  10  20  40  40
+> >   5:  40  40  40  40  20  10  40  40
+> >   6:  40  40  40  40  40  40  10  20
+> >   7:  40  40  40  40  40  40  20  10
+> > 
+> > However the same system when only two nodes are online at boot, then
+> > distance info from numactl will look like
+> > node distances:
+> > node   0   1
+> >   0:  10  20
+> >   1:  20  10
+> > 
+> > With the faked numa distance at boot, the node distance table will look
+> > like
+> > node   0   1   2
+> >   0:  10  20  40
+> >   1:  20  10  40
+> >   2:  40  40  10
+> > 
+> > The actual distance will be populated once the nodes are onlined.
 > 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 663766fbf505..5472358609d2 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -163,6 +163,7 @@ config PPC
->  	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
->  	select ARCH_WANT_LD_ORPHAN_WARN
->  	select ARCH_WEAK_RELEASE_ACQUIRE
-> +	select AUDIT_ARCH_COMPAT_GENERIC
->  	select BINFMT_ELF
->  	select BUILDTIME_TABLE_SORT
->  	select CLONE_BACKWARDS
-> @@ -316,10 +317,6 @@ config GENERIC_TBSYNC
->  	bool
->  	default y if PPC32 && SMP
->  
-> -config AUDIT_ARCH
-> -	bool
-> -	default y
-> -
->  config GENERIC_BUG
->  	bool
->  	default y
-> diff --git a/arch/powerpc/include/asm/unistd32.h b/arch/powerpc/include/asm/unistd32.h
-> new file mode 100644
-> index 000000000000..07689897d206
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/unistd32.h
-> @@ -0,0 +1,7 @@
-> +/* SPDX-License-Identifier: GPL-2.0-or-later */
-> +#ifndef _ASM_POWERPC_UNISTD32_H_
-> +#define _ASM_POWERPC_UNISTD32_H_
-> +
-> +#include <asm/unistd_32.h>
-> +
-> +#endif /* _ASM_POWERPC_UNISTD32_H_ */
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index 7be36c1e1db6..825121eba3c2 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -125,9 +125,6 @@ obj-$(CONFIG_PCI)		+= pci_$(BITS).o $(pci64-y) \
->  				   pci-common.o pci_of_scan.o
->  obj-$(CONFIG_PCI_MSI)		+= msi.o
->  
-> -obj-$(CONFIG_AUDIT)		+= audit.o
-> -obj64-$(CONFIG_AUDIT)		+= compat_audit.o
-> -
->  obj-$(CONFIG_PPC_IO_WORKAROUNDS)	+= io-workarounds.o
->  
->  obj-y				+= trace/
-> diff --git a/arch/powerpc/kernel/audit.c b/arch/powerpc/kernel/audit.c
-> deleted file mode 100644
-> index a2dddd7f3d09..000000000000
-> --- a/arch/powerpc/kernel/audit.c
-> +++ /dev/null
-> @@ -1,84 +0,0 @@
-> -// SPDX-License-Identifier: GPL-2.0
-> -#include <linux/init.h>
-> -#include <linux/types.h>
-> -#include <linux/audit.h>
-> -#include <asm/unistd.h>
-> -
-> -static unsigned dir_class[] = {
-> -#include <asm-generic/audit_dir_write.h>
-> -~0U
-> -};
-> -
-> -static unsigned read_class[] = {
-> -#include <asm-generic/audit_read.h>
-> -~0U
-> -};
-> -
-> -static unsigned write_class[] = {
-> -#include <asm-generic/audit_write.h>
-> -~0U
-> -};
-> -
-> -static unsigned chattr_class[] = {
-> -#include <asm-generic/audit_change_attr.h>
-> -~0U
-> -};
-> -
-> -static unsigned signal_class[] = {
-> -#include <asm-generic/audit_signal.h>
-> -~0U
-> -};
-> -
-> -int audit_classify_arch(int arch)
-> -{
-> -#ifdef CONFIG_PPC64
-> -	if (arch == AUDIT_ARCH_PPC)
-> -		return 1;
-> -#endif
-> -	return 0;
-> -}
-> -
-> -int audit_classify_syscall(int abi, unsigned syscall)
-> -{
-> -#ifdef CONFIG_PPC64
-> -	extern int ppc32_classify_syscall(unsigned);
-> -	if (abi == AUDIT_ARCH_PPC)
-> -		return ppc32_classify_syscall(syscall);
-> -#endif
-> -	switch(syscall) {
-> -	case __NR_open:
-> -		return 2;
-> -	case __NR_openat:
-> -		return 3;
-> -	case __NR_socketcall:
-> -		return 4;
-> -	case __NR_execve:
-> -		return 5;
-> -	default:
-> -		return 0;
-> -	}
-> -}
-> -
-> -static int __init audit_classes_init(void)
-> -{
-> -#ifdef CONFIG_PPC64
-> -	extern __u32 ppc32_dir_class[];
-> -	extern __u32 ppc32_write_class[];
-> -	extern __u32 ppc32_read_class[];
-> -	extern __u32 ppc32_chattr_class[];
-> -	extern __u32 ppc32_signal_class[];
-> -	audit_register_class(AUDIT_CLASS_WRITE_32, ppc32_write_class);
-> -	audit_register_class(AUDIT_CLASS_READ_32, ppc32_read_class);
-> -	audit_register_class(AUDIT_CLASS_DIR_WRITE_32, ppc32_dir_class);
-> -	audit_register_class(AUDIT_CLASS_CHATTR_32, ppc32_chattr_class);
-> -	audit_register_class(AUDIT_CLASS_SIGNAL_32, ppc32_signal_class);
-> -#endif
-> -	audit_register_class(AUDIT_CLASS_WRITE, write_class);
-> -	audit_register_class(AUDIT_CLASS_READ, read_class);
-> -	audit_register_class(AUDIT_CLASS_DIR_WRITE, dir_class);
-> -	audit_register_class(AUDIT_CLASS_CHATTR, chattr_class);
-> -	audit_register_class(AUDIT_CLASS_SIGNAL, signal_class);
-> -	return 0;
-> -}
-> -
-> -__initcall(audit_classes_init);
-> diff --git a/arch/powerpc/kernel/compat_audit.c b/arch/powerpc/kernel/compat_audit.c
-> deleted file mode 100644
-> index 55c6ccda0a85..000000000000
-> --- a/arch/powerpc/kernel/compat_audit.c
-> +++ /dev/null
-> @@ -1,44 +0,0 @@
-> -// SPDX-License-Identifier: GPL-2.0
-> -#undef __powerpc64__
-> -#include <asm/unistd.h>
-> -
-> -unsigned ppc32_dir_class[] = {
-> -#include <asm-generic/audit_dir_write.h>
-> -~0U
-> -};
-> -
-> -unsigned ppc32_chattr_class[] = {
-> -#include <asm-generic/audit_change_attr.h>
-> -~0U
-> -};
-> -
-> -unsigned ppc32_write_class[] = {
-> -#include <asm-generic/audit_write.h>
-> -~0U
-> -};
-> -
-> -unsigned ppc32_read_class[] = {
-> -#include <asm-generic/audit_read.h>
-> -~0U
-> -};
-> -
-> -unsigned ppc32_signal_class[] = {
-> -#include <asm-generic/audit_signal.h>
-> -~0U
-> -};
-> -
-> -int ppc32_classify_syscall(unsigned syscall)
-> -{
-> -	switch(syscall) {
-> -	case __NR_open:
-> -		return 2;
-> -	case __NR_openat:
-> -		return 3;
-> -	case __NR_socketcall:
-> -		return 4;
-> -	case __NR_execve:
-> -		return 5;
-> -	default:
-> -		return 1;
-> -	}
-> -}
-> 
+> How did you want all this merged? I picked up Valentin's patch, do you
+> want me to pick up these PowerPC patches in the same tree, or do you
+> want to route them seperately?
 
+While both (the patch you accepted and this series) together help solve the
+problem, I think there is no hard dependency between the two. Hence I would
+think it should be okay to go through the powerpc tree.
+
+
+-- 
+Thanks and Regards
+Srikar Dronamraju
