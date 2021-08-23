@@ -2,67 +2,68 @@ Return-Path: <SRS0=9U3E=NO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FB23C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:26:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5F3EC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:27:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5D3D76054E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:26:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5D3D76054E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id AC492613A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:27:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AC492613A1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GtRgW4d2pz2xrZ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 19:25:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GtRjf2jJ3z2yJT
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 19:27:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=G3WVQLYV;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=188.165.45.220; helo=5.mo52.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 1486 seconds by postgrey-1.36 at boromir;
- Mon, 23 Aug 2021 19:25:33 AEST
-Received: from 5.mo52.mail-out.ovh.net (5.mo52.mail-out.ovh.net
- [188.165.45.220])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=G3WVQLYV; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GtRg10pxBz2xY7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 19:25:31 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.4.240])
- by mo52.mail-out.ovh.net (Postfix) with ESMTPS id E0FDA28F1C4;
- Mon, 23 Aug 2021 11:00:41 +0200 (CEST)
-Received: from kaod.org (37.59.142.100) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Mon, 23 Aug
- 2021 11:00:41 +0200
-Authentication-Results: garm.ovh; auth=pass
- (GARM-100R003faa793e4-d8a5-4939-8e11-0b0a392d9b83,
- 6C3DA580BFD2A03B9CD9C7EDF86CA127720438B1) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 83.199.102.86
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 1/2] =?UTF-8?q?powerpc/prom:=20Fix=20unused=20variable?=
- =?UTF-8?q?=20=E2=80=98reserve=5Fmap=E2=80=99=20when=20CONFIG=5FPPC32=20is?=
- =?UTF-8?q?=20not=20set?=
-Date: Mon, 23 Aug 2021 11:00:38 +0200
-Message-ID: <20210823090039.166120-2-clg@kaod.org>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20210823090039.166120-1-clg@kaod.org>
-References: <20210823090039.166120-1-clg@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GtRhr5y16z2xXT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 19:27:08 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4GtRhp4y77z9sX2;
+ Mon, 23 Aug 2021 19:27:05 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1629710827;
+ bh=8BXXBtQt+1six414IipXx+ZF0Q+/K8eZxJyi7uOZhx0=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=G3WVQLYVSGPUp+NSZIpreMKRAr7Ct6YGNWAsxdtSSrH9hTjHCu9kZEE8UFTGXCHUE
+ 9X6ZVr8mb/t1M0ionAwn2+39MHkBea/2LQhhYGIlkulmf447bspR4kQvebMAeFT21T
+ kfOWkBf8xDOAx0/eIQuo1EAH2niYTwT39JLRoG1fY+boekcvc5uFMDAKs/YRo49hKD
+ wRati/Hx/is1ls7Xj2jk1VBxsBw36AijIebf91QJeWdOceRhpzHJGCgVdK53Seb5pK
+ khUi3GSOKSYVE/MyZxTHTSQ4JTFcLrMNV+RuBHti6LQg0rEkPgUjowOpF9gf7G/Z/5
+ O/It9AdVbEkRg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Andreas Schwab
+ <schwab@linux-m68k.org>
+Subject: Re: [PATCH] powerpc/syscalls: Remove __NR__exit
+In-Reply-To: <ac141039-ace3-c068-41fa-ec5781750114@csgroup.eu>
+References: <6457eb4f327313323ed1f70e540bbb4ddc9178fa.1629701106.git.christophe.leroy@csgroup.eu>
+ <87y28ssgpx.fsf@igel.home>
+ <ac141039-ace3-c068-41fa-ec5781750114@csgroup.eu>
+Date: Mon, 23 Aug 2021 19:27:04 +1000
+Message-ID: <87h7fgcxzr.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.100]
-X-ClientProxiedBy: DAG2EX1.mxp5.local (172.16.2.11) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: d24395b4-3de3-483b-ac9b-e7e3d51ed194
-X-Ovh-Tracer-Id: 7185774680826743776
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddruddthedgudduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkffojghfgggtgfhisehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepheehfeegjeeitdfffeetjeduveejueefuefgtdefueelueetveeliefhhffgtdelnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutddtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopegtlhhgsehkrghougdrohhrgh
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,48 +75,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This fixes a compile error with W=1.
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> Le 23/08/2021 =C3=A0 10:33, Andreas Schwab a =C3=A9crit=C2=A0:
+>> On Aug 23 2021, Christophe Leroy wrote:
+>>=20
+>>> __NR_exit is nowhere used. On most architectures it was removed by
+>>=20
+>> ITYM __NR__exit, which is what you are removing.
+>>=20
+>
+> Indeed.
+>
+> Michael, can you fix when applying or do you prefer a new patch ?
 
-arch/powerpc/kernel/prom.c: In function ‘early_reserve_mem’:
-arch/powerpc/kernel/prom.c:625:10: error: variable ‘reserve_map’ set but not used [-Werror=unused-but-set-variable]
-  __be64 *reserve_map;
-          ^~~~~~~~~~~
-cc1: all warnings being treated as errors
+I can fix.
 
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
----
- arch/powerpc/kernel/prom.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index f620e04dc9bf..44b2cdc0aae3 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -640,7 +640,9 @@ static void __init early_reserve_mem(void)
- 	}
- #endif /* CONFIG_BLK_DEV_INITRD */
- 
--#ifdef CONFIG_PPC32
-+	if (!IS_ENABLED(CONFIG_PPC32))
-+		return;
-+
- 	/* 
- 	 * Handle the case where we might be booting from an old kexec
- 	 * image that setup the mem_rsvmap as pairs of 32-bit values
-@@ -661,7 +663,6 @@ static void __init early_reserve_mem(void)
- 		}
- 		return;
- 	}
--#endif
- }
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--- 
-2.31.1
-
+cheers
