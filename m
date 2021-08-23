@@ -2,71 +2,64 @@ Return-Path: <SRS0=9U3E=NO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53F44C4320A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 08:31:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E15B8C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 08:34:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8456361008
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 08:31:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8456361008
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 527B161262
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 08:34:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 527B161262
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GtQS702Xnz2xsr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 18:31:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GtQWc652Tz2yZv
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 18:34:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=178.32.125.2;
- helo=smtpout1.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 572 seconds by postgrey-1.36 at boromir;
- Mon, 23 Aug 2021 18:30:34 AEST
-Received: from smtpout1.mo529.mail-out.ovh.net
- (smtpout1.mo529.mail-out.ovh.net [178.32.125.2])
+ smtp.mailfrom=nefkom.net (client-ip=212.18.0.9; helo=mail-out.m-online.net;
+ envelope-from=whitebox@nefkom.net; receiver=<UNKNOWN>)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GtQRZ0bQmz2xXh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 18:30:33 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.1.108])
- by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 54235BA8158A;
- Mon, 23 Aug 2021 10:20:54 +0200 (CEST)
-Received: from kaod.org (37.59.142.96) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Mon, 23 Aug
- 2021 10:20:53 +0200
-Authentication-Results: garm.ovh; auth=pass
- (GARM-96R0015d4601f9-e0fb-4695-8867-0b4476002d43,
- 6C3DA580BFD2A03B9CD9C7EDF86CA127720438B1) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 83.199.102.86
-Subject: Re: [PATCH 1/6] powerpc/prom: Introduce early_reserve_mem_old()
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- <linuxppc-dev@lists.ozlabs.org>
-References: <20210819125656.14498-1-clg@kaod.org>
- <20210819125656.14498-2-clg@kaod.org>
- <d79611e0-b42b-e74b-d628-5db718e6ebfa@csgroup.eu>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <8c9d3bfa-bf4c-900c-6746-7c0988b57a44@kaod.org>
-Date: Mon, 23 Aug 2021 10:20:53 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GtQW81xhVz2xKY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 18:33:38 +1000 (AEST)
+Received: from frontend01.mail.m-online.net (unknown [192.168.8.182])
+ by mail-out.m-online.net (Postfix) with ESMTP id 4GtQVz6xw4z1qwy3;
+ Mon, 23 Aug 2021 10:33:31 +0200 (CEST)
+Received: from localhost (dynscan1.mnet-online.de [192.168.6.70])
+ by mail.m-online.net (Postfix) with ESMTP id 4GtQVz5854z1qqkb;
+ Mon, 23 Aug 2021 10:33:31 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at mnet-online.de
+Received: from mail.mnet-online.de ([192.168.8.182])
+ by localhost (dynscan1.mail.m-online.net [192.168.6.70]) (amavisd-new,
+ port 10024)
+ with ESMTP id GGDnTnGS58eH; Mon, 23 Aug 2021 10:33:31 +0200 (CEST)
+X-Auth-Info: a+1O7isek3JZDPNKtVNsCYwHfVgro13FVrH+P18vbWUWubMUmcVgyl/tu9OSSa3n
+Received: from igel.home (ppp-46-244-177-181.dynamic.mnet-online.de
+ [46.244.177.181])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.mnet-online.de (Postfix) with ESMTPSA;
+ Mon, 23 Aug 2021 10:33:30 +0200 (CEST)
+Received: by igel.home (Postfix, from userid 1000)
+ id 3F0B32C07D8; Mon, 23 Aug 2021 10:33:30 +0200 (CEST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/syscalls: Remove __NR__exit
+References: <6457eb4f327313323ed1f70e540bbb4ddc9178fa.1629701106.git.christophe.leroy@csgroup.eu>
+X-Yow: Is this BOISE??
+Date: Mon, 23 Aug 2021 10:33:30 +0200
+In-Reply-To: <6457eb4f327313323ed1f70e540bbb4ddc9178fa.1629701106.git.christophe.leroy@csgroup.eu>
+ (Christophe Leroy's message of "Mon, 23 Aug 2021 06:45:20 +0000
+ (UTC)")
+Message-ID: <87y28ssgpx.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <d79611e0-b42b-e74b-d628-5db718e6ebfa@csgroup.eu>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.96]
-X-ClientProxiedBy: DAG8EX2.mxp5.local (172.16.2.72) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: d21427e2-007d-4a28-a8e9-bc079d85b400
-X-Ovh-Tracer-Id: 6513893914420218848
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddruddthedgtdefucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepjeekudeuudevleegudeugeekleffveeludejteffiedvledvgfekueefudehheefnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrdelieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghhrhhishhtohhphhgvrdhlvghrohihsegtshhgrhhouhhprdgvuh
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,115 +71,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 8/19/21 4:42 PM, Christophe Leroy wrote:
-> 
-> 
-> Le 19/08/2021 à 14:56, Cédric Le Goater a écrit :
->> and condition its call with IS_ENABLED(CONFIG_PPC32). This fixes a
->> compile error with W=1.
->>
->> arch/powerpc/kernel/prom.c: In function ‘early_reserve_mem’:
->> arch/powerpc/kernel/prom.c:625:10: error: variable ‘reserve_map’ set but not used [-Werror=unused-but-set-variable]
->>    __be64 *reserve_map;
->>            ^~~~~~~~~~~
->> cc1: all warnings being treated as errors
->>
->> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->> ---
->>
->>   Christophe, I think you had comments on this one ? Yes, I am being a bit lazy.
-> 
-> 
-> Yeah, my comment was to leave thing almost as is, just drop the #ifdef CONFIG_PPC32 and instead put something like:
-> 
->     if (!IS_ENABLED(CONFIG_PPC32))
->         return;
-> 
->>
->>   arch/powerpc/kernel/prom.c | 37 ++++++++++++++++++++-----------------
->>   1 file changed, 20 insertions(+), 17 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
->> index f620e04dc9bf..52869d12bc1d 100644
->> --- a/arch/powerpc/kernel/prom.c
->> +++ b/arch/powerpc/kernel/prom.c
->> @@ -621,27 +621,14 @@ static void __init early_reserve_mem_dt(void)
->>       }
->>   }
->>   -static void __init early_reserve_mem(void)
->> +static void __init early_reserve_mem_old(void)
-> 
-> Why old ? Because ppc32 ?
+On Aug 23 2021, Christophe Leroy wrote:
 
-No. because there is message a bit below saying :
+> __NR_exit is nowhere used. On most architectures it was removed by
 
-		DBG("Found old 32-bit reserve map\n");
+ITYM __NR__exit, which is what you are removing.
 
-> I think that's more changes than needed.
+Andreas.
 
-OK. np. I will use your suggestion.
-
-Thanks,
-
-C. 
-
- 
-> 
-> 
->>   {
->>       __be64 *reserve_map;
->>         reserve_map = (__be64 *)(((unsigned long)initial_boot_params) +
->>               fdt_off_mem_rsvmap(initial_boot_params));
->>   -    /* Look for the new "reserved-regions" property in the DT */
->> -    early_reserve_mem_dt();
->> -
->> -#ifdef CONFIG_BLK_DEV_INITRD
->> -    /* Then reserve the initrd, if any */
->> -    if (initrd_start && (initrd_end > initrd_start)) {
->> -        memblock_reserve(ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
->> -            ALIGN(initrd_end, PAGE_SIZE) -
->> -            ALIGN_DOWN(initrd_start, PAGE_SIZE));
->> -    }
->> -#endif /* CONFIG_BLK_DEV_INITRD */
->> -
->> -#ifdef CONFIG_PPC32
->> -    /*
->> +    /*
->>        * Handle the case where we might be booting from an old kexec
->>        * image that setup the mem_rsvmap as pairs of 32-bit values
->>        */
->> @@ -659,9 +646,25 @@ static void __init early_reserve_mem(void)
->>               DBG("reserving: %x -> %x\n", base_32, size_32);
->>               memblock_reserve(base_32, size_32);
->>           }
->> -        return;
->>       }
->> -#endif
->> +}
->> +
->> +static void __init early_reserve_mem(void)
->> +{
->> +    /* Look for the new "reserved-regions" property in the DT */
->> +    early_reserve_mem_dt();
->> +
->> +#ifdef CONFIG_BLK_DEV_INITRD
->> +    /* Then reserve the initrd, if any */
->> +    if (initrd_start && (initrd_end > initrd_start)) {
->> +        memblock_reserve(ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
->> +            ALIGN(initrd_end, PAGE_SIZE) -
->> +            ALIGN_DOWN(initrd_start, PAGE_SIZE));
->> +    }
->> +#endif /* CONFIG_BLK_DEV_INITRD */
->> +
->> +    if (IS_ENABLED(CONFIG_PPC32))
->> +        early_reserve_mem_old();
->>   }
->>     #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->>
-
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+"And now for something completely different."
