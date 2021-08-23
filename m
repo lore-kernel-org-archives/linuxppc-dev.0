@@ -6,72 +6,60 @@ X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7E92C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:39:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 567F5C43214
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:56:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 306B261186
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:39:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 306B261186
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 544A161057
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:56:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 544A161057
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GtRzS69lVz2yn8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 19:39:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GtSLf6FSkz2yNN
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 19:56:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=kSkRM+Ll;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=Ldz2Hmwx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=canb.auug.org.au (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=sfr@canb.auug.org.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=kSkRM+Ll; 
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.a=rsa-sha256 header.s=201702 header.b=Ldz2Hmwx; 
  dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GtRyF4fQ5z2xtM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 19:38:44 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=TFmRCKg4zXF97Z6BgErRkb8Iycca9xXXxIRl12/WHgg=; b=kSkRM+LlJJrTsSvfM6O/7XH1Tz
- Ci3sp3o7sH6IKjlsicobpfxSPyEeMfpXnArHbkefEJF2Q29bAGCkeVGrZxZ00i5Ss9dkR6qeO04zY
- +WtCnQlwHA7stH2WCpaf4bMAkw5MEoL2Z6JwtYV1lW2N4MNElr0rAo/azyGIlWKOwWhSdnGzRsrFX
- itE5xwH0nBbNlt6ecP134A5E2Iai0zu59/BEFcgfoC+lpMtjoUJX0gOTm33t3/LPrm7kQ4QHllPZp
- NzJ2vFtruTSN+pGNTBuFtxA24L5vbWM2VYfdZpm8SrQg57PSIthkMKP99J5xu1l0UB+A27wgIs6kl
- cMdIAgIQ==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1mI6OP-009YNm-5D; Mon, 23 Aug 2021 09:37:34 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 5169C300399;
- Mon, 23 Aug 2021 11:37:19 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 2FE8F202294B8; Mon, 23 Aug 2021 11:37:19 +0200 (CEST)
-Date: Mon, 23 Aug 2021 11:37:19 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 0/3] Updates to powerpc for robust CPU online/offline
-Message-ID: <YSNsT1Mr1hcNr6iz@hirez.programming.kicks-ass.net>
-References: <20210821102535.169643-1-srikar@linux.vnet.ibm.com>
- <YSNdWhxVWtMJKAWi@hirez.programming.kicks-ass.net>
- <20210823093437.GJ21942@linux.vnet.ibm.com>
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GtSKs2Pggz2xrG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 19:55:43 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4GtSKp4R2pz9sW8;
+ Mon, 23 Aug 2021 19:55:42 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
+ s=201702; t=1629712542;
+ bh=zwzpiVdFpUOY3sgpUH9+i47HU7keaNx8ICF/xEg2hKY=;
+ h=Date:From:To:Cc:Subject:From;
+ b=Ldz2HmwxLh7cUWHIhCxZj5vYjNzl7SWL3bsnjAU6T8556c06n6QdNJRBkwCkGx6R7
+ LW5E4tfDMsVyafrAkVGfF7n9wjnKz4DZ38rvLkndsoOFGvrjibQeKLySV28x4loW7X
+ sfyb4eV4cba+P4/miXxfvsmpLa9xjZLpYo2+hnKIk9LUOFUUDgz0xggolkTbRpUa2U
+ 7fStyKn8qcQI3GRiX2wUFrFrMuDk6+2WRuN00kvJUGOH6uFEjkhJEmjGyfoMlhIcxV
+ N/YwuzAnjP8jSuKP3DpS3VSW3fnXKpYhGWSKpjv3eshJjT25xN2hVGu6+dN7VX8cBx
+ lB7Ji5T6Hg06A==
+Date: Mon, 23 Aug 2021 19:55:40 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build warning after merge of the powerpc tree
+Message-ID: <20210823195540.4d7363ed@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210823093437.GJ21942@linux.vnet.ibm.com>
+Content-Type: multipart/signed; boundary="Sig_/OD3gpQqjzB8vriqSeKQB=VJ";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,65 +71,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
- Valentin Schneider <valentin.schneider@arm.com>,
- Laurent Dufour <ldufour@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Daniel Henrique Barboza <danielhb413@gmail.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Aug 23, 2021 at 03:04:37PM +0530, Srikar Dronamraju wrote:
-> * Peter Zijlstra <peterz@infradead.org> [2021-08-23 10:33:30]:
-> 
-> > On Sat, Aug 21, 2021 at 03:55:32PM +0530, Srikar Dronamraju wrote:
-> > > Scheduler expects unique number of node distances to be available
-> > > at boot. It uses node distance to calculate this unique node
-> > > distances. On Power Servers, node distances for offline nodes is not
-> > > available. However, Power Servers already knows unique possible node
-> > > distances. Fake the offline node's distance_lookup_table entries so
-> > > that all possible node distances are updated.
-> > > 
-> > > For example distance info from numactl from a fully populated 8 node
-> > > system at boot may look like this.
-> > > 
-> > > node distances:
-> > > node   0   1   2   3   4   5   6   7
-> > >   0:  10  20  40  40  40  40  40  40
-> > >   1:  20  10  40  40  40  40  40  40
-> > >   2:  40  40  10  20  40  40  40  40
-> > >   3:  40  40  20  10  40  40  40  40
-> > >   4:  40  40  40  40  10  20  40  40
-> > >   5:  40  40  40  40  20  10  40  40
-> > >   6:  40  40  40  40  40  40  10  20
-> > >   7:  40  40  40  40  40  40  20  10
-> > > 
-> > > However the same system when only two nodes are online at boot, then
-> > > distance info from numactl will look like
-> > > node distances:
-> > > node   0   1
-> > >   0:  10  20
-> > >   1:  20  10
-> > > 
-> > > With the faked numa distance at boot, the node distance table will look
-> > > like
-> > > node   0   1   2
-> > >   0:  10  20  40
-> > >   1:  20  10  40
-> > >   2:  40  40  10
-> > > 
-> > > The actual distance will be populated once the nodes are onlined.
-> > 
-> > How did you want all this merged? I picked up Valentin's patch, do you
-> > want me to pick up these PowerPC patches in the same tree, or do you
-> > want to route them seperately?
-> 
-> While both (the patch you accepted and this series) together help solve the
-> problem, I think there is no hard dependency between the two. Hence I would
-> think it should be okay to go through the powerpc tree.
-> 
+--Sig_/OD3gpQqjzB8vriqSeKQB=VJ
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-OK, works for me, thanks!
+Hi all,
+
+After merging the powerpc tree, today's linux-next build (htmldocs)
+produced this warning:
+
+docutils.utils.SystemMessage: Documentation/powerpc/associativity.rst:1: (S=
+EVERE/4) Title overline & underline mismatch.
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+NUMA resource associativity
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D
+
+Introduced by commit
+
+  1c6b5a7e7405 ("powerpc/pseries: Add support for FORM2 associativity")
+
+There are other obvious problems with this document (but sphinx seems
+to have hung before it reported them).
+
+Like
+
+Form 0
+-----
+
+and
+
+Form 1
+-----
+
+and
+
+Form 2
+-------
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/OD3gpQqjzB8vriqSeKQB=VJ
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmEjcJwACgkQAVBC80lX
+0Gwknwf/eh5eOVTLm0/phY7/CRqjgQcgkibEQyOqtvv75dvTPGVX/nZtzfRp9n0p
+Xqyk/sWo7FldmiKb3mp8me9CnTaEDayf46TVX8VqxNx5o82CAHbtEymja9SBces5
+trw5sejneOtOWhPF9yIYTXTVy1Q9PDiLbJQCcRfFP5piFGVUDTiTqadPbFDdGWbO
+CASRhJVras/MoOdKEpF7fy6iED0BDTn/gU1Oi0jqPrC6H0euL5TRgDfaTRqsJhol
+BRtytK/oM4n7PBLbyC50pjsoOGGFmZ2xGP2YosqR3bWAaN/h95v0bvoK0IX8bWUI
+iGIu6DbGTceYrOMcXM8CrQ34b9TtzA==
+=UOWd
+-----END PGP SIGNATURE-----
+
+--Sig_/OD3gpQqjzB8vriqSeKQB=VJ--
