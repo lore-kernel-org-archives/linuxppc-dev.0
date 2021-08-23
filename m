@@ -2,66 +2,63 @@ Return-Path: <SRS0=9U3E=NO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED128C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 08:36:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A98AC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:01:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8ED3F61262
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 08:36:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8ED3F61262
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 4F34061248
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 09:01:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4F34061248
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GtQZs6yqcz3c6x
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 18:36:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GtR6z6kYQz2yQy
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 19:01:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=kaod.org (client-ip=87.98.187.244; helo=10.mo52.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Received: from 10.mo52.mail-out.ovh.net (10.mo52.mail-out.ovh.net
+ [87.98.187.244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GtQZQ5Vczz2xXh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 18:36:30 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4GtQZM1wZGz9sWx;
- Mon, 23 Aug 2021 10:36:27 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BvwU9v0iWPKl; Mon, 23 Aug 2021 10:36:27 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4GtQZM0xMwz9sTv;
- Mon, 23 Aug 2021 10:36:27 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id ED3018B78B;
- Mon, 23 Aug 2021 10:36:26 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 4H0dZqJ3An7z; Mon, 23 Aug 2021 10:36:26 +0200 (CEST)
-Received: from [172.25.230.100] (po15451.idsi0.si.c-s.fr [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C28AD8B780;
- Mon, 23 Aug 2021 10:36:26 +0200 (CEST)
-Subject: Re: [PATCH] powerpc/syscalls: Remove __NR__exit
-To: Andreas Schwab <schwab@linux-m68k.org>
-References: <6457eb4f327313323ed1f70e540bbb4ddc9178fa.1629701106.git.christophe.leroy@csgroup.eu>
- <87y28ssgpx.fsf@igel.home>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <ac141039-ace3-c068-41fa-ec5781750114@csgroup.eu>
-Date: Mon, 23 Aug 2021 10:36:20 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GtR6R4WKHz2xfG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 19:00:47 +1000 (AEST)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.4.240])
+ by mo52.mail-out.ovh.net (Postfix) with ESMTPS id A4803290990;
+ Mon, 23 Aug 2021 11:00:42 +0200 (CEST)
+Received: from kaod.org (37.59.142.100) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Mon, 23 Aug
+ 2021 11:00:41 +0200
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-100R003b42d35a6-e6aa-4550-a6d0-b0a15466c2c4,
+ 6C3DA580BFD2A03B9CD9C7EDF86CA127720438B1) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 83.199.102.86
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2 2/2] powerpc/compat_sys: Declare syscalls
+Date: Mon, 23 Aug 2021 11:00:39 +0200
+Message-ID: <20210823090039.166120-3-clg@kaod.org>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20210823090039.166120-1-clg@kaod.org>
+References: <20210823090039.166120-1-clg@kaod.org>
 MIME-Version: 1.0
-In-Reply-To: <87y28ssgpx.fsf@igel.home>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.100]
+X-ClientProxiedBy: DAG2EX1.mxp5.local (172.16.2.11) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: 8252262d-1bc2-49ca-9097-abe62e7f30d7
+X-Ovh-Tracer-Id: 7186056157125250016
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddruddthedgudduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkffojghfgggtgfhisehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepheehfeegjeeitdfffeetjeduveejueefuefgtdefueelueetveeliefhhffgtdelnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutddtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopegtlhhgsehkrghougdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,22 +70,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+This fixes a compile error with W=1.
 
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
+---
+ arch/powerpc/include/asm/syscalls.h | 30 +++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-Le 23/08/2021 à 10:33, Andreas Schwab a écrit :
-> On Aug 23 2021, Christophe Leroy wrote:
-> 
->> __NR_exit is nowhere used. On most architectures it was removed by
-> 
-> ITYM __NR__exit, which is what you are removing.
-> 
+diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
+index 398171fdcd9f..7ee66ae5444d 100644
+--- a/arch/powerpc/include/asm/syscalls.h
++++ b/arch/powerpc/include/asm/syscalls.h
+@@ -6,6 +6,7 @@
+ #include <linux/compiler.h>
+ #include <linux/linkage.h>
+ #include <linux/types.h>
++#include <linux/compat.h>
+ 
+ struct rtas_args;
+ 
+@@ -18,5 +19,34 @@ asmlinkage long sys_mmap2(unsigned long addr, size_t len,
+ asmlinkage long ppc64_personality(unsigned long personality);
+ asmlinkage long sys_rtas(struct rtas_args __user *uargs);
+ 
++#ifdef CONFIG_COMPAT
++unsigned long compat_sys_mmap2(unsigned long addr, size_t len,
++			       unsigned long prot, unsigned long flags,
++			       unsigned long fd, unsigned long pgoff);
++
++compat_ssize_t compat_sys_pread64(unsigned int fd, char __user *ubuf, compat_size_t count,
++				  u32 reg6, u32 pos1, u32 pos2);
++
++compat_ssize_t compat_sys_pwrite64(unsigned int fd, const char __user *ubuf, compat_size_t count,
++				   u32 reg6, u32 pos1, u32 pos2);
++
++compat_ssize_t compat_sys_readahead(int fd, u32 r4, u32 offset1, u32 offset2, u32 count);
++
++int compat_sys_truncate64(const char __user *path, u32 reg4,
++			  unsigned long len1, unsigned long len2);
++
++long compat_sys_fallocate(int fd, int mode, u32 offset1, u32 offset2, u32 len1, u32 len2);
++
++int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long len1,
++			   unsigned long len2);
++
++long ppc32_fadvise64(int fd, u32 unused, u32 offset1, u32 offset2,
++		     size_t len, int advice);
++
++long compat_sys_sync_file_range2(int fd, unsigned int flags,
++				 unsigned int offset1, unsigned int offset2,
++				 unsigned int nbytes1, unsigned int nbytes2);
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_POWERPC_SYSCALLS_H */
+-- 
+2.31.1
 
-Indeed.
-
-Michael, can you fix when applying or do you prefer a new patch ?
