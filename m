@@ -7,57 +7,59 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8E9EC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 07:57:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DA7CC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 08:25:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3AFFD6126A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 07:57:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3AFFD6126A
+	by mail.kernel.org (Postfix) with ESMTPS id DF77B61357
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 08:25:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DF77B61357
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GtPjS6yrYz305K
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 17:57:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GtQKf6BXhz2yLb
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Aug 2021 18:25:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GtPhh32k2z2xnf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 17:56:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GtQK91Nytz2xYG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Aug 2021 18:24:59 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4GtPhZ18Dnz9sh6;
- Mon, 23 Aug 2021 09:56:46 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4GtQK44DCZz9sXW;
+ Mon, 23 Aug 2021 10:24:56 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BW8ee6j24zPd; Mon, 23 Aug 2021 09:56:46 +0200 (CEST)
+ with ESMTP id LCLwRsP_MEaD; Mon, 23 Aug 2021 10:24:56 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4GtPgr62mKz9shw;
- Mon, 23 Aug 2021 09:56:08 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4GtQJP4L7qz9sXd;
+ Mon, 23 Aug 2021 10:24:21 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B66198B780;
- Mon, 23 Aug 2021 09:56:08 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 695458B78C;
+ Mon, 23 Aug 2021 10:24:21 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id g5F9dprrNvfB; Mon, 23 Aug 2021 09:56:08 +0200 (CEST)
+ with ESMTP id 4w-KcZf10o0n; Mon, 23 Aug 2021 10:24:21 +0200 (CEST)
 Received: from po9473vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 439AA8B796;
- Mon, 23 Aug 2021 09:56:08 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 310F78B788;
+ Mon, 23 Aug 2021 10:24:21 +0200 (CEST)
 Received: by po9473vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id A8EF36BB19; Mon, 23 Aug 2021 06:45:20 +0000 (UTC)
-Message-Id: <6457eb4f327313323ed1f70e540bbb4ddc9178fa.1629701106.git.christophe.leroy@csgroup.eu>
+ id 019496BC75; Mon, 23 Aug 2021 08:24:20 +0000 (UTC)
+Message-Id: <385ead49ccb66a259b25fee3eebf0bd4094068f3.1629707037.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH] powerpc/syscalls: Remove __NR__exit
+Subject: [PATCH v3 1/3] powerpc: Remove MSR_PR check in
+ interrupt_exit_{user/kernel}_prepare()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 23 Aug 2021 06:45:20 +0000 (UTC)
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ npiggin@gmail.com
+Date: Mon, 23 Aug 2021 08:24:20 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,32 +76,75 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-__NR_exit is nowhere used. On most architectures it was removed by
-commit 135ab6ec8fda ("[PATCH] remove remaining errno and
-__KERNEL_SYSCALLS__ references") but not on powerpc.
+In those hot functions that are called at every interrupt, any saved
+cycle is worth it.
 
-powerpc removed __KERNEL_SYSCALLS__ in commit 3db03b4afb3e ("[PATCH]
-rename the provided execve functions to kernel_execve"), but __NR_exit
-was left over.
+interrupt_exit_user_prepare() and interrupt_exit_kernel_prepare() are
+called from three places:
+- From entry_32.S
+- From interrupt_64.S
+- From interrupt_exit_user_restart() and interrupt_exit_kernel_restart()
+
+In entry_32.S, there are inambiguously called based on MSR_PR:
+
+	interrupt_return:
+		lwz	r4,_MSR(r1)
+		addi	r3,r1,STACK_FRAME_OVERHEAD
+		andi.	r0,r4,MSR_PR
+		beq	.Lkernel_interrupt_return
+		bl	interrupt_exit_user_prepare
+	...
+	.Lkernel_interrupt_return:
+		bl	interrupt_exit_kernel_prepare
+
+In interrupt_64.S, that's similar:
+
+	interrupt_return_\srr\():
+		ld	r4,_MSR(r1)
+		andi.	r0,r4,MSR_PR
+		beq	interrupt_return_\srr\()_kernel
+	interrupt_return_\srr\()_user: /* make backtraces match the _kernel variant */
+		addi	r3,r1,STACK_FRAME_OVERHEAD
+		bl	interrupt_exit_user_prepare
+	...
+	interrupt_return_\srr\()_kernel:
+		addi	r3,r1,STACK_FRAME_OVERHEAD
+		bl	interrupt_exit_kernel_prepare
+
+In interrupt_exit_user_restart() and interrupt_exit_kernel_restart(),
+MSR_PR is verified respectively by BUG_ON(!user_mode(regs)) and
+BUG_ON(user_mode(regs)) prior to calling interrupt_exit_user_prepare()
+and interrupt_exit_kernel_prepare().
+
+The verification in interrupt_exit_user_prepare() and
+interrupt_exit_kernel_prepare() are therefore useless and can be removed.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Acked-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/unistd.h | 2 --
+ arch/powerpc/kernel/interrupt.c | 2 --
  1 file changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index b541c690a31c..5eb462af6766 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -9,8 +9,6 @@
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index 21bbd615ca41..f26caf911ab5 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -465,7 +465,6 @@ notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs)
  
- #define NR_syscalls	__NR_syscalls
+ 	if (!IS_ENABLED(CONFIG_BOOKE) && !IS_ENABLED(CONFIG_40x))
+ 		BUG_ON(!(regs->msr & MSR_RI));
+-	BUG_ON(!(regs->msr & MSR_PR));
+ 	BUG_ON(arch_irq_disabled_regs(regs));
+ 	CT_WARN_ON(ct_state() == CONTEXT_USER);
  
--#define __NR__exit __NR_exit
--
- #ifndef __ASSEMBLY__
- 
- #include <linux/types.h>
+@@ -499,7 +498,6 @@ notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs)
+ 	if (!IS_ENABLED(CONFIG_BOOKE) && !IS_ENABLED(CONFIG_40x) &&
+ 	    unlikely(!(regs->msr & MSR_RI)))
+ 		unrecoverable_exception(regs);
+-	BUG_ON(regs->msr & MSR_PR);
+ 	/*
+ 	 * CT_WARN_ON comes here via program_check_exception,
+ 	 * so avoid recursion.
 -- 
 2.25.0
 
