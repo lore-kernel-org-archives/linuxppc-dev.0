@@ -2,54 +2,67 @@ Return-Path: <SRS0=KHR7=NP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C9DCC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Aug 2021 13:18:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF8BFC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Aug 2021 13:25:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B0600610D0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Aug 2021 13:18:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B0600610D0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id BA41261262
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Aug 2021 13:25:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BA41261262
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gv8np6qp8z2ypY
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Aug 2021 23:18:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gv8xP6dwKz2yN4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Aug 2021 23:25:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Gv8nH166gz2xZB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Aug 2021 23:18:26 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 17ODG1TV005019;
- Tue, 24 Aug 2021 08:16:01 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 17ODG02l005018;
- Tue, 24 Aug 2021 08:16:00 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Tue, 24 Aug 2021 08:16:00 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/32: Don't use lmw/stmw for saving/restoring non
- volatile regs
-Message-ID: <20210824131600.GF1583@gate.crashing.org>
-References: <316c543b8906712c108985c8463eec09c8db577b.1629732542.git.christophe.leroy@csgroup.eu>
- <20210823184648.GY1583@gate.crashing.org>
- <9bbc9797-cfc7-1484-90ad-2146ff1a5e18@csgroup.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9bbc9797-cfc7-1484-90ad-2146ff1a5e18@csgroup.eu>
-User-Agent: Mutt/1.4.2.3i
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mkARf6/b;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=mkARf6/b; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gv8wh39Wsz2xZL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Aug 2021 23:24:52 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gv8wg40tBz9ssP;
+ Tue, 24 Aug 2021 23:24:51 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1629811492;
+ bh=hDmMWgLZDKPhAUavmwMYjiIkTsL9aGJyOGWvyuQf6/w=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=mkARf6/bwM+bNJncHzWWvTnHKV3p34icQ8fmrgNOyJb+LkedTebgCbW6JKsRrF2jl
+ VvAokAkuVHwPr289qzS925UF9anXbLm40l2YiZJLV8vl5I2qTO6qJqrDUoA9YOk/0q
+ Yfza1le7LdcqFZA/uWuAn/24p7LwdN43mvEF1DXCCnbNzHCpsjnytvyNMCibAh/j1R
+ jg1RTl15r5J8lEGJzwYQuMN/B3F01raFYfnjMkKcW2CV6ExgKfftlF1TBwRvVFMg6o
+ 8XUcf71WJJh4UygSvih7uo0sfgTVkSvY6mRdpygHZKa7swWaTCJkqyegFoFbvpCtsk
+ Mh7krD2BMdqQQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v2] powerpc/audit: Convert powerpc to
+ AUDIT_ARCH_COMPAT_GENERIC
+In-Reply-To: <dc14509a28a993738b1325211f412be72a4f9b1e.1629701132.git.christophe.leroy@csgroup.eu>
+References: <dc14509a28a993738b1325211f412be72a4f9b1e.1629701132.git.christophe.leroy@csgroup.eu>
+Date: Tue, 24 Aug 2021 23:24:50 +1000
+Message-ID: <877dgbc6vx.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,82 +74,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi!
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> Commit e65e1fc2d24b ("[PATCH] syscall class hookup for all normal
+> targets") added generic support for AUDIT but that didn't include
+> support for bi-arch like powerpc.
+>
+> Commit 4b58841149dc ("audit: Add generic compat syscall support")
+> added generic support for bi-arch.
+>
+> Convert powerpc to that bi-arch generic audit support.
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+> v2:
+> - Missing 'git add' for arch/powerpc/include/asm/unistd32.h
+> - Finalised commit description
+> ---
+>  arch/powerpc/Kconfig                |  5 +-
+>  arch/powerpc/include/asm/unistd32.h |  7 +++
+>  arch/powerpc/kernel/Makefile        |  3 --
+>  arch/powerpc/kernel/audit.c         | 84 -----------------------------
+>  arch/powerpc/kernel/compat_audit.c  | 44 ---------------
+>  5 files changed, 8 insertions(+), 135 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/unistd32.h
+>  delete mode 100644 arch/powerpc/kernel/audit.c
+>  delete mode 100644 arch/powerpc/kernel/compat_audit.c
 
-On Tue, Aug 24, 2021 at 07:54:22AM +0200, Christophe Leroy wrote:
-> Le 23/08/2021 à 20:46, Segher Boessenkool a écrit :
-> >On Mon, Aug 23, 2021 at 03:29:12PM +0000, Christophe Leroy wrote:
-> >>Instructions lmw/stmw are interesting for functions that are rarely
-> >>used and not in the cache, because only one instruction is to be
-> >>copied into the instruction cache instead of 19. However those
-> >>instruction are less performant than 19x raw lwz/stw as they require
-> >>synchronisation plus one additional cycle.
-> >
-> >lmw takes N+2 cycles for loading N words on 603/604/750/7400, and N+3 on
-> >7450.  stmw takes N+1 cycles for storing N words on 603, N+2 on 604/750/
-> >7400, and N+3 on 7450 (load latency is 3 instead of 2 on 7450).
-> >
-> >There is no synchronisation needed, although there is some serialisation,
-> >which of course doesn't mean much since there can be only 6 or 8 or so
-> >insns executing at once anyway.
-> 
-> Yes I meant serialisation, isn't it the same as synchronisation ?
+This looks OK, but I don't know much about audit.
 
-Ha no, synchronisation are insns like sync and eieio :-)  Synchronisation
-is architectural, serialisation is (mostly) not, it is a feature of the
-specific core.
+Can you resend with the audit maintainers on Cc?
 
-> >So, these insns are almost never slower, they can easily win cycles back
-> >because of the smaller code, too.
-> >
-> >What 32-bit core do you see where load/store multiple are more than a
-> >fraction of a cycle (per memory access) slower?
-> >
-> >>SAVE_NVGPRS / REST_NVGPRS are used in only a few places which are
-> >>mostly in interrupts entries/exits and in task switch so they are
-> >>likely already in the cache.
-> >
-> >Nothing is likely in the cache on the older cores (except in
-> >microbenchmarks), the caches are not big enough for that!
-> 
-> Even syscall entries/exit pathes and/or most frequent interrupts entries 
-> and interrupt exit ?
-
-It has to be measured.  You are probably right for programs that use a
-lot of system calls, and (unmeasurably :-) ) wrong for those that don't.
-
-So that is a good argument: it speeds up some scenarios, and does not
-make any real impact on anything else.
-
-This also does not replace all {l,st}mw in the kernel, only those on
-interrupt paths.  So it is not necessarily bad :-)
-
-> >>Using standard lwz improves null_syscall selftest by:
-> >>- 10 cycles on mpc832x.
-> >>- 2 cycles on mpc8xx.
-> >
-> >And in real benchmarks?
-> 
-> Don't know, what benchmark should I use to evaluate syscall entry/exit if 
-> 'null_syscall' selftest is not relevant ?
-
-Some real workload (something that uses memory and computational insns a
-lot, in addition to many syscalls).
-
-> >On mpccore both lmw and stmw are only N+1 btw.  But the serialization
-> >might cost another cycle here?
-> 
-> That coherent on MPC8xx, that's only 2 cycles.
-> But on the mpc832x which has a e300c2 core, it looks like I have 10 cycles 
-> difference. Is anything wrong ?
-
-I don't know that core very well, I'll have a look.
-
-
-Segher
+cheers
