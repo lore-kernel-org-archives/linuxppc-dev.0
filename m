@@ -2,115 +2,71 @@ Return-Path: <SRS0=pi+/=NQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D36DC4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 12:44:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D238C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 13:02:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BF3DB60F35
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 12:44:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BF3DB60F35
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 75D8461101
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 13:02:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 75D8461101
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GvlzP2LjYz3cHg
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 22:44:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GvmNJ4kkZz2yQG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 23:02:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QegzOFN7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=R7JmSuS5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=QegzOFN7; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=R7JmSuS5; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GvkTW08h4z2yJS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Aug 2021 21:36:46 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 17PBYgwA134112; Wed, 25 Aug 2021 07:36:38 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type; s=pp1; bh=62lkoYQmLmGF0N4Iuiouh6JMk8Ku+TPsGB4x8irlGEA=;
- b=QegzOFN7li28FIyQeML6zEUHkPdjeZITk8N5y0ipYt3oK5DO6GrNuLQIGYoUcR1Lm85D
- 2hovh5+aXJfKZ6jNikit/ql8rGoJayjYSYNLgQvPrBaZJNZFZ61+p4hVhrpu6JSXp2x4
- C9+Ozaxht+HYd2BoWuCG+clAuPSjonM7rppD/7F5jcGc9xR/WWnw+KxxxR3SeIW8xXiC
- EHxT1X8TeJdJUa58TjCrTCBIh6lc+R2saxJuBwPl8uqB/rFB/wuMexBzeohw0yzc76mx
- 6NvmjLI/vujltZPGzjMm4oRjPtTqmMr5gcwkT7q/3NCGK010bfu+zPt/fIohw/rR1f+8 fg== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3anm5t2c6b-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 25 Aug 2021 07:36:38 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 17PBYnHn134596;
- Wed, 25 Aug 2021 07:36:37 -0400
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3anm5t2c5r-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 25 Aug 2021 07:36:37 -0400
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17PBJW8D019562;
- Wed, 25 Aug 2021 11:36:35 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma03fra.de.ibm.com with ESMTP id 3ajs48dujd-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 25 Aug 2021 11:36:35 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 17PBaW1x37159174
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 25 Aug 2021 11:36:32 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B0A72AE061;
- Wed, 25 Aug 2021 11:36:32 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C63F6AE051;
- Wed, 25 Aug 2021 11:36:30 +0000 (GMT)
-Received: from li-c7b85bcc-2727-11b2-a85c-a9ba7f3a2193.ibm.com (unknown
- [9.43.52.60]) by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 25 Aug 2021 11:36:30 +0000 (GMT)
-Subject: Re: [PATCH v2 1/3] powerpc/pseries: Parse control memory access error
-To: Segher Boessenkool <segher@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <20210805092025.272871-1-ganeshgr@linux.ibm.com>
- <87eeajcpmq.fsf@mpe.ellerman.id.au> <20210824212420.GL1583@gate.crashing.org>
-From: Ganesh <ganeshgr@linux.ibm.com>
-Message-ID: <92790955-ce8d-1826-2317-c889038545fc@linux.ibm.com>
-Date: Wed, 25 Aug 2021 17:06:29 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GvmMh6NDbz2yK4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Aug 2021 23:01:52 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4GvmMZ5Ctlz9sT6;
+ Wed, 25 Aug 2021 23:01:46 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1629896507;
+ bh=xEKYhQmoeZ40Z/IFIiSPaR07LgLYP9hueUuQZNMFQiU=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=R7JmSuS59v1F8P8//rjUs011XnLPCjyL6A3d7bP1/JZVzHB1YfmKpJBONDWK8lgeL
+ KrcAowLYnHBbO10h9nHaopxUsx8dZcfoYCmns7oXBLqEFq9vomc/ScHBVcOzIgqAoG
+ jwza8REBtMStaybiTCzmz1xO2awowXjVF1rgwirSSqr62KWpjxtKoRFjrzke+8o4lk
+ fnDZiciZBkzYXB5xQnIJl7Um9FXEYA9tvbkRzPLjmmHXc0b1gr8f4i/BzXNgAvxQEA
+ Ekq3lm2Bupx0lHVA850IPBe6mow7QhYu/z0t3fdS/dpPuzxlsLmKsIWLAYBcRB/z8Q
+ nmyhuj6NQ5x6A==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Laurent Dufour
+ <ldufour@linux.ibm.com>
+Subject: Re: [PATCH v2 1/3] powerpc/numa: Print debug statements only when
+ required
+In-Reply-To: <20210823093801.GK21942@linux.vnet.ibm.com>
+References: <20210821102535.169643-1-srikar@linux.vnet.ibm.com>
+ <20210821102535.169643-2-srikar@linux.vnet.ibm.com>
+ <b8bbc10b-5432-512f-5899-455302a59d01@linux.ibm.com>
+ <20210823093801.GK21942@linux.vnet.ibm.com>
+Date: Wed, 25 Aug 2021 23:01:42 +1000
+Message-ID: <87r1ehbrux.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20210824212420.GL1583@gate.crashing.org>
-Content-Type: multipart/alternative;
- boundary="------------49958F2D7870C013C4983E08"
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: DAIvs7mZn8qoEGL3V6PyVpTZaAGW7CPs
-X-Proofpoint-ORIG-GUID: 7EvZvDwtRtWSSAQ7KUoEdZ14J8KBTLyt
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-08-25_05:2021-08-25,
- 2021-08-25 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 mlxscore=0
- clxscore=1011 mlxlogscore=999 lowpriorityscore=0 spamscore=0 phishscore=0
- adultscore=0 malwarescore=0 priorityscore=1501 bulkscore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2107140000
- definitions=main-2108250068
-X-Mailman-Approved-At: Wed, 25 Aug 2021 22:42:10 +1000
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -122,80 +78,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, mahesh@linux.ibm.com,
- npiggin@gmail.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
+ Valentin Schneider <valentin.schneider@arm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a multi-part message in MIME format.
---------------49958F2D7870C013C4983E08
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-
-
-On 8/25/21 2:54 AM, Segher Boessenkool wrote:
-> On Tue, Aug 24, 2021 at 04:39:57PM +1000, Michael Ellerman wrote:
->>> +		case MC_ERROR_CTRL_MEM_ACCESS_PTABLE_WALK:
->>> +			mce_err.u.ra_error_type =
->>> +				MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE_FOREIGN;
->> That name is ridiculously long, but I guess that's not your fault :)
->> We can fix it up in a later patch.
-> It also has surprisingly little information content for the 47 chars
-> length it has :-)  What does this even mean?!
-
-It means control memory access error/real address error is detected during page
-table walk.
-
+Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
+> * Laurent Dufour <ldufour@linux.ibm.com> [2021-08-23 11:21:33]:
+>> Le 21/08/2021 =C3=A0 12:25, Srikar Dronamraju a =C3=A9crit=C2=A0:
+>> > Currently, a debug message gets printed every time an attempt to
+>> > add(remove) a CPU. However this is redundant if the CPU is already add=
+ed
+>> > (removed) from the node.
+>> >=20
+>> > Cc: linuxppc-dev@lists.ozlabs.org
+>> > Cc: Nathan Lynch <nathanl@linux.ibm.com>
+>> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> > Cc: Ingo Molnar <mingo@kernel.org>
+>> > Cc: Peter Zijlstra <peterz@infradead.org>
+>> > Cc: Valentin Schneider <valentin.schneider@arm.com>
+>> > Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+>> > Cc: Vincent Guittot <vincent.guittot@linaro.org>
+>> > Cc: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>
+>> > Cc: Laurent Dufour <ldufour@linux.ibm.com>
+>> > Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+>> > ---
+>> >   arch/powerpc/mm/numa.c | 11 +++++------
+>> >   1 file changed, 5 insertions(+), 6 deletions(-)
+>> >=20
+>> > diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+>> > index f2bf98bdcea2..fbe03f6840e0 100644
+>> > --- a/arch/powerpc/mm/numa.c
+>> > +++ b/arch/powerpc/mm/numa.c
+>> > @@ -141,10 +141,11 @@ static void map_cpu_to_node(int cpu, int node)
+>> >   {
+>> >   	update_numa_cpu_lookup_table(cpu, node);
+>> > -	dbg("adding cpu %d to node %d\n", cpu, node);
+>> > -	if (!(cpumask_test_cpu(cpu, node_to_cpumask_map[node])))
+>> > +	if (!(cpumask_test_cpu(cpu, node_to_cpumask_map[node]))) {
+>> > +		dbg("adding cpu %d to node %d\n", cpu, node);
+>> >   		cpumask_set_cpu(cpu, node_to_cpumask_map[node]);
+>> > +	}
+>> >   }
+>> >   #if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_PPC_SPLPAR)
+>> > @@ -152,13 +153,11 @@ static void unmap_cpu_from_node(unsigned long cp=
+u)
+>> >   {
+>> >   	int node =3D numa_cpu_lookup_table[cpu];
+>> > -	dbg("removing cpu %lu from node %d\n", cpu, node);
+>> > -
+>> >   	if (cpumask_test_cpu(cpu, node_to_cpumask_map[node])) {
+>> >   		cpumask_clear_cpu(cpu, node_to_cpumask_map[node]);
+>> > +		dbg("removing cpu %lu from node %d\n", cpu, node);
+>> >   	} else {
+>> > -		printk(KERN_ERR "WARNING: cpu %lu not found in node %d\n",
+>> > -		       cpu, node);
+>> > +		pr_err("WARNING: cpu %lu not found in node %d\n", cpu, node);
+>>=20
+>> Would pr_warn() be more appropriate here (or removing the "WARNING" stat=
+ement)?
 >
-> Segher
+> Its a fair point.
+>
+> Michael,
+>
+> Do you want me to resend this patch with s/pr_err/pr_warn for the above
+> line?
 
---------------49958F2D7870C013C4983E08
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
+I think what I'd prefer is if we stopped using this custom dbg() stuff
+in numa.c, and cleaned up all the messages to use pr_xxx().
 
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <p><br>
-    </p>
-    <div class="moz-cite-prefix">On 8/25/21 2:54 AM, Segher Boessenkool
-      wrote:<br>
-    </div>
-    <blockquote type="cite"
-      cite="mid:20210824212420.GL1583@gate.crashing.org">
-      <pre class="moz-quote-pre" wrap="">On Tue, Aug 24, 2021 at 04:39:57PM +1000, Michael Ellerman wrote:
-</pre>
-      <blockquote type="cite">
-        <blockquote type="cite">
-          <pre class="moz-quote-pre" wrap="">+		case MC_ERROR_CTRL_MEM_ACCESS_PTABLE_WALK:
-+			mce_err.u.ra_error_type =
-+				MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE_FOREIGN;
-</pre>
-        </blockquote>
-        <pre class="moz-quote-pre" wrap="">
-That name is ridiculously long, but I guess that's not your fault :)
-We can fix it up in a later patch.
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-It also has surprisingly little information content for the 47 chars
-length it has :-)  What does this even mean?!</pre>
-    </blockquote>
-    <pre>It means control memory access error/real address error is detected during page
-table walk. 
-</pre>
-    <blockquote type="cite"
-      cite="mid:20210824212420.GL1583@gate.crashing.org">
-      <pre class="moz-quote-pre" wrap="">
+Those debug statements only appear if you boot with numa=3Ddebug, which is
+not documented anywhere and I had completely forgotten existed TBH.
 
-Segher
-</pre>
-    </blockquote>
-  </body>
-</html>
+These days there's CONFIG_DYNAMIC_DEBUG for turning on/off messages,
+which is much more flexible.
 
---------------49958F2D7870C013C4983E08--
+So can we drop the numa=3Ddebug bits, and convert all the dbg()s to
+pr_debug().
 
+And then do a pass converting all the printk("NUMA: ") to pr_xxx() which
+will get "numa:" from pr_fmt().
+
+cheers
