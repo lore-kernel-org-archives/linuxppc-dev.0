@@ -2,87 +2,114 @@ Return-Path: <SRS0=pi+/=NQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6E53C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 12:40:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EAEDC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 12:42:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5C22E61101
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 12:40:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5C22E61101
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9E61460F35
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 12:42:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9E61460F35
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GvlvB5JKgz2yn2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 22:40:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gvlxl1vfkz3blb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 22:42:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=kfLbTaat;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YdjQqqCb;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42d;
- helo=mail-pf1-x42d.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=kfLbTaat; dkim-atps=neutral
-Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com
- [IPv6:2607:f8b0:4864:20::42d])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=YdjQqqCb; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GvlqZ1V99z2yQ8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Aug 2021 22:37:30 +1000 (AEST)
-Received: by mail-pf1-x42d.google.com with SMTP id g14so21154610pfm.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Aug 2021 05:37:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=WdMIcmDur/dEOnJ/wcZTWJ1H/0AhuxtCMQJS6VSmg/w=;
- b=kfLbTaatQo+AHcUCb6fYHRlDJeBhFFqp3NAlqof2252tHsfvZFyX4leKIHrgtr5S9u
- PHRHgGLttsTF1kOxkWI43wCqfsflPU6CXHZws984BTn5UC3irTEbuGtHwiH6PQNV3X4G
- QuuhjN8fjVLlbbLN/KTYudt1+ReLegg1uY4L/9H9Ld/+lHJ5aD+jXeUCA4WUJxHZQ8vz
- 1evvZqkneym1uVGJoKzgib2aXVdgpldG1VmV4iXDX2yS3eC84BqxHFu5AZG1CYXK4t7K
- 0zoi6Y+k7XXjdorGBaQtZaAnpMgW6kcyd8/vww39s5ONLrXBmrmRC42L8aDoPrv/kXQd
- DS8Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=WdMIcmDur/dEOnJ/wcZTWJ1H/0AhuxtCMQJS6VSmg/w=;
- b=JjK/NkWRrYlaQ9/dWL73p677hue1m9nAaGovhmpWHfmFFfVlEoU2iaHVbQQyfkqOTr
- Ne3fP7nJPHV+CzUTGHcAPDy17OV/4HRciaTADHcjKn0P1ocExRHhT9Zr5AYDoHP4RQAb
- 5gEgCkYM2mR4OMTQPWDFo8H9bEPjJ40GwbbrM0Ho6cPHBZOjfBUat9nTPE5OUrYk2AoG
- k5dJUv54PStoFJwHYet9J0i4WmihxGUlU/QDUFYn08YMEwRKLqqelZyob0MPWWhBkh73
- 03zOUOJvcfPofJCEKuf6OWDTau+0aXPipXmksOP4mLcJi207Xnv+G3EtIGd5USwHrYVY
- d/ug==
-X-Gm-Message-State: AOAM532dSdbqFzW9vGlbGy9wnVWxBWJG6r3/kNqswiLVT79P3dyeEOh2
- R1+BoqwpEAU1g9Bk/CjJcuPZFJjxmDI=
-X-Google-Smtp-Source: ABdhPJwRrW9eGCNHI8LasAl+z2VmQH3+TT0EgUua9IYBYQza0R+5HVhNr8A+LaT+OyyuvQCOci11HQ==
-X-Received: by 2002:a05:6a00:791:b0:3e1:3316:2e8 with SMTP id
- g17-20020a056a00079100b003e1331602e8mr44938663pfu.10.1629895047773; 
- Wed, 25 Aug 2021 05:37:27 -0700 (PDT)
-Received: from bobo.ozlabs.ibm.com (193-116-119-33.tpgi.com.au.
- [193.116.119.33])
- by smtp.gmail.com with ESMTPSA id j6sm22043162pfi.220.2021.08.25.05.37.26
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 25 Aug 2021 05:37:27 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 4/4] powerpc/64s/interrupt: avoid saving CFAR in some
- asynchronous interrupts
-Date: Wed, 25 Aug 2021 22:37:14 +1000
-Message-Id: <20210825123714.706201-5-npiggin@gmail.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20210825123714.706201-1-npiggin@gmail.com>
-References: <20210825123714.706201-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gvjs13WsNz2yJf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Aug 2021 21:08:36 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 17PB8HC7043862; Wed, 25 Aug 2021 07:08:28 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type; s=pp1; bh=5TgmaDLWzka5YfES9KgXi41NK/iRSjFOxvBSk7GsO5Q=;
+ b=YdjQqqCbLEjEKBCsrJiK+iVlAD7tmq/jG26N/mzW0Y/rhVbV1azQQeC7W++n4K0V73FC
+ D1gj/m3MQId0meWbby4I7e1yrZhMtLlnfw9xKwqdX5L1tBuQGtLEn+3CNRS5Q2JsWAJh
+ AO9iUc/Knd6FCAQfXfHzzOcJ5Nk9RKHPu954OeUZvxRr8UHZML4AvS7CtfeMrj2odPlo
+ eHJSDK9cJ/vHKeg6Zf357Q2cRlkzKDFtw4Lv3O0bQ3KlSuzqMCeKKXfJLr+ILx/3eNDC
+ DsU2Qp0vd6wW4n4Uis/gtZIEMcGmjjr9NYnPc9AN+F+ssta9JW/6koLPL9BGzSzWah7V pA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3anmks843h-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 25 Aug 2021 07:08:28 -0400
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 17PB8QxX044796;
+ Wed, 25 Aug 2021 07:08:27 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3anmks83by-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 25 Aug 2021 07:08:25 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17PB1QVx013190;
+ Wed, 25 Aug 2021 11:03:46 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma06ams.nl.ibm.com with ESMTP id 3ajrrheyhn-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 25 Aug 2021 11:03:46 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 17PB3itS47186282
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 25 Aug 2021 11:03:44 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 203A1AE3F0;
+ Wed, 25 Aug 2021 11:03:44 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D7857AE422;
+ Wed, 25 Aug 2021 11:03:41 +0000 (GMT)
+Received: from li-c7b85bcc-2727-11b2-a85c-a9ba7f3a2193.ibm.com (unknown
+ [9.43.52.60]) by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 25 Aug 2021 11:03:41 +0000 (GMT)
+Subject: Re: [PATCH v2 1/3] powerpc/pseries: Parse control memory access error
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <20210805092025.272871-1-ganeshgr@linux.ibm.com>
+ <87eeajcpmq.fsf@mpe.ellerman.id.au>
+From: Ganesh <ganeshgr@linux.ibm.com>
+Message-ID: <9734b599-eb00-a1d6-cd3c-ed6d0441f240@linux.ibm.com>
+Date: Wed, 25 Aug 2021 16:33:40 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <87eeajcpmq.fsf@mpe.ellerman.id.au>
+Content-Type: multipart/alternative;
+ boundary="------------36E6B48FEAC961647B5A90F4"
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: ENR2cFPhssmkWK9EuxxtUNv8SLwGu2NY
+X-Proofpoint-ORIG-GUID: 1CZs97s0STgCQzze1Ws8735bobIlEZDb
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-08-25_04:2021-08-25,
+ 2021-08-25 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 adultscore=0
+ mlxscore=0 suspectscore=0 lowpriorityscore=0 clxscore=1015 mlxlogscore=999
+ malwarescore=0 bulkscore=0 phishscore=0 spamscore=0 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2107140000
+ definitions=main-2108250066
+X-Mailman-Approved-At: Wed, 25 Aug 2021 22:42:10 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,232 +121,226 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: mikey@neuling.org, mahesh@linux.ibm.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Reading the CFAR register is quite costly (~20 cycles on POWER9). It is
-a good idea to have for most synchronous interrupts, but for async ones
-it is much less important.
+This is a multi-part message in MIME format.
+--------------36E6B48FEAC961647B5A90F4
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Doorbell, external, and decrementer interrupts are the important
-asynchronous ones. HV interrupts can't skip CFAR if KVM HV is possible,
-because it might be a guest exit that requires CFAR preserved. But for
-now the important pseries interrupts can avoid loading CFAR.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+On 8/24/21 12:09 PM, Michael Ellerman wrote:
+
+> Hi Ganesh,
+>
+> Some comments below ...
+>
+> Ganesh Goudar <ganeshgr@linux.ibm.com> writes:
+>> Add support to parse and log control memory access
+>> error for pseries.
+>>
+>> Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
+>> ---
+>> v2: No changes in this patch.
+>> ---
+>>   arch/powerpc/platforms/pseries/ras.c | 21 +++++++++++++++++++++
+>>   1 file changed, 21 insertions(+)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+>> index 167f2e1b8d39..608c35cad0c3 100644
+>> --- a/arch/powerpc/platforms/pseries/ras.c
+>> +++ b/arch/powerpc/platforms/pseries/ras.c
+>> @@ -80,6 +80,7 @@ struct pseries_mc_errorlog {
+>>   #define MC_ERROR_TYPE_TLB		0x04
+>>   #define MC_ERROR_TYPE_D_CACHE		0x05
+>>   #define MC_ERROR_TYPE_I_CACHE		0x07
+>> +#define MC_ERROR_TYPE_CTRL_MEM_ACCESS	0x08
+> ...
+>>   
+>> +#define MC_ERROR_CTRL_MEM_ACCESS_PTABLE_WALK	0
+>> +#define MC_ERROR_CTRL_MEM_ACCESS_OP_ACCESS	1
+>
+> Where do the above values come from?
+
+It is from latest PAPR that added support for control memory error.
+
+>> +
+>>   static inline u8 rtas_mc_error_sub_type(const struct pseries_mc_errorlog *mlog)
+>>   {
+>>   	switch (mlog->error_type) {
+>> @@ -112,6 +116,8 @@ static inline u8 rtas_mc_error_sub_type(const struct pseries_mc_errorlog *mlog)
+>>   	case	MC_ERROR_TYPE_ERAT:
+>>   	case	MC_ERROR_TYPE_TLB:
+>>   		return (mlog->sub_err_type & 0x03);
+>> +	case	MC_ERROR_TYPE_CTRL_MEM_ACCESS:
+>> +		return (mlog->sub_err_type & 0x70) >> 4;
+> Can you add to the comment above sub_err_type explaining what these bits are.
+
+Sure, for other errors it is explained in pseries_mc_errorlog definition, ill add it there.
+
+>>   	default:
+>>   		return 0;
+>>   	}
+>> @@ -699,6 +705,21 @@ static int mce_handle_err_virtmode(struct pt_regs *regs,
+>>   	case MC_ERROR_TYPE_I_CACHE:
+>>   		mce_err.error_type = MCE_ERROR_TYPE_ICACHE;
+>>   		break;
+>> +	case MC_ERROR_TYPE_CTRL_MEM_ACCESS:
+>> +		mce_err.error_type = MCE_ERROR_TYPE_RA;
+>> +		if (mce_log->sub_err_type & 0x80)
+> This appears many times in the file.
+>
+> Can we add eg. MC_EFFECTIVE_ADDR_PROVIDED?
+
+ok, thanks.
+
+>> +			eaddr = be64_to_cpu(mce_log->effective_address);
+>> +		switch (err_sub_type) {
+>> +		case MC_ERROR_CTRL_MEM_ACCESS_PTABLE_WALK:
+>> +			mce_err.u.ra_error_type =
+>> +				MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE_FOREIGN;
+> That name is ridiculously long, but I guess that's not your fault :)
+> We can fix it up in a later patch.
+>
+>> +			break;
+>> +		case MC_ERROR_CTRL_MEM_ACCESS_OP_ACCESS:
+>> +			mce_err.u.ra_error_type =
+>> +				MCE_RA_ERROR_LOAD_STORE_FOREIGN;
+>> +			break;
+>> +		}
+>> +		break;
+> cheers
+
+--------------36E6B48FEAC961647B5A90F4
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p><br>
+    </p>
+    <div class="moz-cite-prefix">
+      <pre>On 8/24/21 12:09 PM, Michael Ellerman wrote:</pre>
+    </div>
+    <blockquote type="cite" cite="mid:87eeajcpmq.fsf@mpe.ellerman.id.au">
+      <pre class="moz-quote-pre" wrap="">Hi Ganesh,
+
+Some comments below ...
+
+Ganesh Goudar <a class="moz-txt-link-rfc2396E" href="mailto:ganeshgr@linux.ibm.com">&lt;ganeshgr@linux.ibm.com&gt;</a> writes:
+</pre>
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap="">Add support to parse and log control memory access
+error for pseries.
+
+Signed-off-by: Ganesh Goudar <a class="moz-txt-link-rfc2396E" href="mailto:ganeshgr@linux.ibm.com">&lt;ganeshgr@linux.ibm.com&gt;</a>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 63 ++++++++++++++++++++++++++++
- 1 file changed, 63 insertions(+)
+v2: No changes in this patch.
+---
+ arch/powerpc/platforms/pseries/ras.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 69a472c38f62..42badd7beaf0 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -111,6 +111,8 @@ name:
- #define IAREA		.L_IAREA_\name\()	/* PACA save area */
- #define IVIRT		.L_IVIRT_\name\()	/* Has virt mode entry point */
- #define IISIDE		.L_IISIDE_\name\()	/* Uses SRR0/1 not DAR/DSISR */
-+#define ICFAR		.L_ICFAR_\name\()	/* Uses CFAR */
-+#define ICFAR_IF_HVMODE	.L_ICFAR_IF_HVMODE_\name\() /* Uses CFAR if HV */
- #define IDAR		.L_IDAR_\name\()	/* Uses DAR (or SRR0) */
- #define IDSISR		.L_IDSISR_\name\()	/* Uses DSISR (or SRR1) */
- #define IBRANCH_TO_COMMON	.L_IBRANCH_TO_COMMON_\name\() /* ENTRY branch to common */
-@@ -150,6 +152,12 @@ do_define_int n
- 	.ifndef IISIDE
- 		IISIDE=0
- 	.endif
-+	.ifndef ICFAR
-+		ICFAR=1
-+	.endif
-+	.ifndef ICFAR_IF_HVMODE
-+		ICFAR_IF_HVMODE=0
-+	.endif
- 	.ifndef IDAR
- 		IDAR=0
- 	.endif
-@@ -287,9 +295,21 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	HMT_MEDIUM
- 	std	r10,IAREA+EX_R10(r13)		/* save r10 - r12 */
-+	.if ICFAR
- BEGIN_FTR_SECTION
- 	mfspr	r10,SPRN_CFAR
- END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
-+	.elseif ICFAR_IF_HVMODE
-+BEGIN_FTR_SECTION
-+  BEGIN_FTR_SECTION_NESTED(69)
-+	mfspr	r10,SPRN_CFAR
-+  END_FTR_SECTION_NESTED(CPU_FTR_CFAR, CPU_FTR_CFAR, 69)
-+FTR_SECTION_ELSE
-+  BEGIN_FTR_SECTION_NESTED(69)
-+	li	r10,0
-+  END_FTR_SECTION_NESTED(CPU_FTR_CFAR, CPU_FTR_CFAR, 69)
-+ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
-+	.endif
- 	.if \ool
- 	.if !\virt
- 	b	tramp_real_\name
-@@ -305,9 +325,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
- BEGIN_FTR_SECTION
- 	std	r9,IAREA+EX_PPR(r13)
- END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
-+	.if ICFAR || ICFAR_IF_HVMODE
- BEGIN_FTR_SECTION
- 	std	r10,IAREA+EX_CFAR(r13)
- END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
-+	.endif
- 	INTERRUPT_TO_KERNEL
- 	mfctr	r10
- 	std	r10,IAREA+EX_CTR(r13)
-@@ -559,7 +581,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	.endif
- 
- BEGIN_FTR_SECTION
-+	.if ICFAR || ICFAR_IF_HVMODE
- 	ld	r10,IAREA+EX_CFAR(r13)
-+	.else
-+	li	r10,0
-+	.endif
- 	std	r10,ORIG_GPR3(r1)
- END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
- 	ld	r10,IAREA+EX_CTR(r13)
-@@ -1501,6 +1527,12 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
-  *
-  * If soft masked, the masked handler will note the pending interrupt for
-  * replay, and clear MSR[EE] in the interrupted context.
-+ *
-+ * CFAR is not required because this is an asynchronous interrupt that in
-+ * general won't have much bearing on the state of the CPU, with the possible
-+ * exception of crash/debug IPIs, but those are generally moving to use SRESET
-+ * IPIs. Unless this is an HV interrupt and KVM HV is possible, in which case
-+ * it may be exiting the guest and need CFAR to be saved.
-  */
- INT_DEFINE_BEGIN(hardware_interrupt)
- 	IVEC=0x500
-@@ -1508,6 +1540,10 @@ INT_DEFINE_BEGIN(hardware_interrupt)
- 	IMASK=IRQS_DISABLED
- 	IKVM_REAL=1
- 	IKVM_VIRT=1
-+	ICFAR=0
-+#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	ICFAR_IF_HVMODE=1
-+#endif
- INT_DEFINE_END(hardware_interrupt)
- 
- EXC_REAL_BEGIN(hardware_interrupt, 0x500, 0x100)
-@@ -1726,6 +1762,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
-  * If PPC_WATCHDOG is configured, the soft masked handler will actually set
-  * things back up to run soft_nmi_interrupt as a regular interrupt handler
-  * on the emergency stack.
-+ *
-+ * CFAR is not required because this is asynchronous (see hardware_interrupt).
-+ * A watchdog interrupt may like to have CFAR, but usually the interesting
-+ * branch is long gone by that point (e.g., infinite loop).
-  */
- INT_DEFINE_BEGIN(decrementer)
- 	IVEC=0x900
-@@ -1733,6 +1773,7 @@ INT_DEFINE_BEGIN(decrementer)
- #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
- #endif
-+	ICFAR=0
- INT_DEFINE_END(decrementer)
- 
- EXC_REAL_BEGIN(decrementer, 0x900, 0x80)
-@@ -1808,6 +1849,8 @@ EXC_COMMON_BEGIN(hdecrementer_common)
-  * If soft masked, the masked handler will note the pending interrupt for
-  * replay, leaving MSR[EE] enabled in the interrupted context because the
-  * doorbells are edge triggered.
-+ *
-+ * CFAR is not required, similarly to hardware_interrupt.
-  */
- INT_DEFINE_BEGIN(doorbell_super)
- 	IVEC=0xa00
-@@ -1815,6 +1858,7 @@ INT_DEFINE_BEGIN(doorbell_super)
- #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
- #endif
-+	ICFAR=0
- INT_DEFINE_END(doorbell_super)
- 
- EXC_REAL_BEGIN(doorbell_super, 0xa00, 0x100)
-@@ -1866,6 +1910,7 @@ INT_DEFINE_BEGIN(system_call)
- 	IVEC=0xc00
- 	IKVM_REAL=1
- 	IKVM_VIRT=1
-+	ICFAR=0
- INT_DEFINE_END(system_call)
- 
- .macro SYSTEM_CALL virt
-@@ -2164,6 +2209,11 @@ EXC_COMMON_BEGIN(hmi_exception_common)
-  * Interrupt 0xe80 - Directed Hypervisor Doorbell Interrupt.
-  * This is an asynchronous interrupt in response to a msgsnd doorbell.
-  * Similar to the 0xa00 doorbell but for host rather than guest.
-+ *
-+ * CFAR is not required (similar to doorbell_interrupt), unless KVM HV
-+ * is enabled, in which case it may be a guest exit. Most PowerNV kernels
-+ * include KVM support so it would be nice if this could be dynamically
-+ * patched out if KVM was not currently running any guests.
-  */
- INT_DEFINE_BEGIN(h_doorbell)
- 	IVEC=0xe80
-@@ -2171,6 +2221,9 @@ INT_DEFINE_BEGIN(h_doorbell)
- 	IMASK=IRQS_DISABLED
- 	IKVM_REAL=1
- 	IKVM_VIRT=1
-+#ifndef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	ICFAR=0
-+#endif
- INT_DEFINE_END(h_doorbell)
- 
- EXC_REAL_BEGIN(h_doorbell, 0xe80, 0x20)
-@@ -2194,6 +2247,9 @@ EXC_COMMON_BEGIN(h_doorbell_common)
-  * Interrupt 0xea0 - Hypervisor Virtualization Interrupt.
-  * This is an asynchronous interrupt in response to an "external exception".
-  * Similar to 0x500 but for host only.
-+ *
-+ * Like h_doorbell, CFAR is only required for KVM HV because this can be
-+ * a guest exit.
-  */
- INT_DEFINE_BEGIN(h_virt_irq)
- 	IVEC=0xea0
-@@ -2201,6 +2257,9 @@ INT_DEFINE_BEGIN(h_virt_irq)
- 	IMASK=IRQS_DISABLED
- 	IKVM_REAL=1
- 	IKVM_VIRT=1
-+#ifndef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	ICFAR=0
-+#endif
- INT_DEFINE_END(h_virt_irq)
- 
- EXC_REAL_BEGIN(h_virt_irq, 0xea0, 0x20)
-@@ -2237,6 +2296,8 @@ EXC_VIRT_NONE(0x4ee0, 0x20)
-  *
-  * If soft masked, the masked handler will note the pending interrupt for
-  * replay, and clear MSR[EE] in the interrupted context.
-+ *
-+ * CFAR is not used by perf interrupts so not required.
-  */
- INT_DEFINE_BEGIN(performance_monitor)
- 	IVEC=0xf00
-@@ -2244,6 +2305,7 @@ INT_DEFINE_BEGIN(performance_monitor)
- #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	IKVM_REAL=1
- #endif
-+	ICFAR=0
- INT_DEFINE_END(performance_monitor)
- 
- EXC_REAL_BEGIN(performance_monitor, 0xf00, 0x20)
-@@ -2668,6 +2730,7 @@ EXC_VIRT_NONE(0x5800, 0x100)
- INT_DEFINE_BEGIN(soft_nmi)
- 	IVEC=0x900
- 	ISTACK=0
-+	ICFAR=0
- INT_DEFINE_END(soft_nmi)
- 
- /*
--- 
-2.23.0
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index 167f2e1b8d39..608c35cad0c3 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -80,6 +80,7 @@ struct pseries_mc_errorlog {
+ #define MC_ERROR_TYPE_TLB		0x04
+ #define MC_ERROR_TYPE_D_CACHE		0x05
+ #define MC_ERROR_TYPE_I_CACHE		0x07
++#define MC_ERROR_TYPE_CTRL_MEM_ACCESS	0x08
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">...
+</pre>
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap=""> 
++#define MC_ERROR_CTRL_MEM_ACCESS_PTABLE_WALK	0
++#define MC_ERROR_CTRL_MEM_ACCESS_OP_ACCESS	1
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+
+Where do the above values come from?</pre>
+    </blockquote>
+    <pre class="moz-quote-pre" wrap="">It is from latest PAPR that added support for control memory error.
+</pre>
+    <blockquote type="cite" cite="mid:87eeajcpmq.fsf@mpe.ellerman.id.au">
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap="">+
+ static inline u8 rtas_mc_error_sub_type(const struct pseries_mc_errorlog *mlog)
+ {
+ 	switch (mlog-&gt;error_type) {
+@@ -112,6 +116,8 @@ static inline u8 rtas_mc_error_sub_type(const struct pseries_mc_errorlog *mlog)
+ 	case	MC_ERROR_TYPE_ERAT:
+ 	case	MC_ERROR_TYPE_TLB:
+ 		return (mlog-&gt;sub_err_type &amp; 0x03);
++	case	MC_ERROR_TYPE_CTRL_MEM_ACCESS:
++		return (mlog-&gt;sub_err_type &amp; 0x70) &gt;&gt; 4;
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+Can you add to the comment above sub_err_type explaining what these bits are.</pre>
+    </blockquote>
+    <pre class="moz-quote-pre" wrap="">Sure, for other errors it is explained in pseries_mc_errorlog definition, ill add it there. 
+</pre>
+    <blockquote type="cite" cite="mid:87eeajcpmq.fsf@mpe.ellerman.id.au">
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap=""> 	default:
+ 		return 0;
+ 	}
+@@ -699,6 +705,21 @@ static int mce_handle_err_virtmode(struct pt_regs *regs,
+ 	case MC_ERROR_TYPE_I_CACHE:
+ 		mce_err.error_type = MCE_ERROR_TYPE_ICACHE;
+ 		break;
++	case MC_ERROR_TYPE_CTRL_MEM_ACCESS:
++		mce_err.error_type = MCE_ERROR_TYPE_RA;
++		if (mce_log-&gt;sub_err_type &amp; 0x80)
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+This appears many times in the file.
+
+Can we add eg. MC_EFFECTIVE_ADDR_PROVIDED?</pre>
+    </blockquote>
+    <pre>ok, thanks.
+</pre>
+    <blockquote type="cite" cite="mid:87eeajcpmq.fsf@mpe.ellerman.id.au">
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap="">+			eaddr = be64_to_cpu(mce_log-&gt;effective_address);
++		switch (err_sub_type) {
++		case MC_ERROR_CTRL_MEM_ACCESS_PTABLE_WALK:
++			mce_err.u.ra_error_type =
++				MCE_RA_ERROR_PAGE_TABLE_WALK_LOAD_STORE_FOREIGN;
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+That name is ridiculously long, but I guess that's not your fault :)
+We can fix it up in a later patch.
+
+</pre>
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap="">+			break;
++		case MC_ERROR_CTRL_MEM_ACCESS_OP_ACCESS:
++			mce_err.u.ra_error_type =
++				MCE_RA_ERROR_LOAD_STORE_FOREIGN;
++			break;
++		}
++		break;
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+cheers
+</pre>
+    </blockquote>
+  </body>
+</html>
+
+--------------36E6B48FEAC961647B5A90F4--
 
