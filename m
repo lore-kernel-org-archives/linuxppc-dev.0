@@ -7,62 +7,61 @@ X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EE34C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 04:55:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28795C4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 05:28:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BA59A61176
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 04:55:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BA59A61176
+	by mail.kernel.org (Postfix) with ESMTPS id 30A206128A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 05:28:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 30A206128A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GvYZr16cMz2yg1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 14:55:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GvZJ75DYfz2ymP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 15:28:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=D2Nwdl+Z;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=HwJnYeTK;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=D2Nwdl+Z; 
+ header.a=rsa-sha256 header.s=201909 header.b=HwJnYeTK; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GvYYY2kgNz2yPB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Aug 2021 14:54:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GvZHM4yhBz2xjR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Aug 2021 15:27:27 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4GvYYV4ptyz9sW4;
- Wed, 25 Aug 2021 14:54:38 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4GvZHH0xwTz9sW8;
+ Wed, 25 Aug 2021 15:27:23 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1629867279;
- bh=6USkAhJ0oXluViRbqhukVgyp9Ff7O5VeFJemuQn0/z0=;
+ s=201909; t=1629869244;
+ bh=piMp678SY23RlkKblnlJz3x7vve0PTSeMYbmkKycX6E=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=D2Nwdl+ZVgX3SeYJ2ojs0HTtnSjp/ebc7zdM9XMo70wcykh9w69FAZguzIykAggIT
- gP2IjEe2OpeLyOJC1U/IKVmcxeqhXZDL69Tn7QVrvPTTzKIwUotqVshZn48lr0qTzX
- trmBFTGN1Ojx37NzfaEIvLa7SP6LFDJsU6e9dtyKqbTHvoubOhluSK7h0Q7DpmUY32
- b1lLJbGeeVggmb+9YkX4UjsoP+Uh8JH4kYMkZW48AF6iTV2oMmMvwoxx8oUPc5Gnpx
- ooq6Vj+n4kdfga4chsOukErEhGdcsEnwnT9/lc28RHBRqN1sJf8uOwsUCTVJjMcToM
- hXnLapTZCVWMw==
+ b=HwJnYeTKh8xD9IFZCs53L4xkr1Usjvrd6AS9CTigFtJMcrqlVTfbidEeDj38/w3VG
+ flLS25RORjjXJqRqSKiPBxfa1P/VGGbbAIZq2p77HTSxVZQpUmYvMh57uokmK4lmnZ
+ FFqmjK1Qn3CkJkprLbxVCiXwoSV2M9czV7wzvLiW+ULPWmh/O0rH5zRDsD01Of2n82
+ ewgPWCmspZXFsE4PZ1asTmSCOZvwFznLZtz1F4YVj0axH8zDQAYjHmMhxUabEFlDxO
+ WUx6mXn7UF8BPKQdwt8nJbtQFYeFy9wPMBwam7V6ApFAi+rIXRXIyiXrHOEVqhzcWC
+ bqq0kCM1NdfsA==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
  npiggin@gmail.com
-Subject: Re: [PATCH v3 3/3] powerpc: Define and use MSR_RI only on non
- booke/40x
-In-Reply-To: <627ead32d40c840f9e8a329b60647b649eceb2aa.1629707037.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v3 1/3] powerpc: Remove MSR_PR check in
+ interrupt_exit_{user/kernel}_prepare()
+In-Reply-To: <385ead49ccb66a259b25fee3eebf0bd4094068f3.1629707037.git.christophe.leroy@csgroup.eu>
 References: <385ead49ccb66a259b25fee3eebf0bd4094068f3.1629707037.git.christophe.leroy@csgroup.eu>
- <627ead32d40c840f9e8a329b60647b649eceb2aa.1629707037.git.christophe.leroy@csgroup.eu>
-Date: Wed, 25 Aug 2021 14:54:32 +1000
-Message-ID: <8735qyceev.fsf@mpe.ellerman.id.au>
+Date: Wed, 25 Aug 2021 15:27:22 +1000
+Message-ID: <87zgt6aybp.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -82,62 +81,55 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> 40x and BOOKE don't have MSR_RI.
+> In those hot functions that are called at every interrupt, any saved
+> cycle is worth it.
 >
-> Define MSR_RI only for platforms where it exists. For the other ones,
-> defines it as BUILD_BUG for C and do not define it for ASM.
+> interrupt_exit_user_prepare() and interrupt_exit_kernel_prepare() are
+> called from three places:
+> - From entry_32.S
+> - From interrupt_64.S
+> - From interrupt_exit_user_restart() and interrupt_exit_kernel_restart()
+>
+> In entry_32.S, there are inambiguously called based on MSR_PR:
+>
+> 	interrupt_return:
+> 		lwz	r4,_MSR(r1)
+> 		addi	r3,r1,STACK_FRAME_OVERHEAD
+> 		andi.	r0,r4,MSR_PR
+> 		beq	.Lkernel_interrupt_return
+> 		bl	interrupt_exit_user_prepare
+> 	...
+> 	.Lkernel_interrupt_return:
+> 		bl	interrupt_exit_kernel_prepare
+>
+> In interrupt_64.S, that's similar:
+>
+> 	interrupt_return_\srr\():
+> 		ld	r4,_MSR(r1)
+> 		andi.	r0,r4,MSR_PR
+> 		beq	interrupt_return_\srr\()_kernel
+> 	interrupt_return_\srr\()_user: /* make backtraces match the _kernel variant */
+> 		addi	r3,r1,STACK_FRAME_OVERHEAD
+> 		bl	interrupt_exit_user_prepare
+> 	...
+> 	interrupt_return_\srr\()_kernel:
+> 		addi	r3,r1,STACK_FRAME_OVERHEAD
+> 		bl	interrupt_exit_kernel_prepare
+>
+> In interrupt_exit_user_restart() and interrupt_exit_kernel_restart(),
+> MSR_PR is verified respectively by BUG_ON(!user_mode(regs)) and
+> BUG_ON(user_mode(regs)) prior to calling interrupt_exit_user_prepare()
+> and interrupt_exit_kernel_prepare().
+>
+> The verification in interrupt_exit_user_prepare() and
+> interrupt_exit_kernel_prepare() are therefore useless and can be removed.
 >
 > Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Acked-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
-> v3: Fixes kvm_emul.S and include <linux/bug.h> in <asm/reg.h>
-> ---
->  arch/powerpc/include/asm/reg.h       |  5 +++++
->  arch/powerpc/include/asm/reg_booke.h |  6 +++---
->  arch/powerpc/kernel/head_32.h        |  4 ++++
->  arch/powerpc/kernel/kvm_emul.S       | 13 +++++++++++++
->  arch/powerpc/kernel/process.c        |  2 +-
->  arch/powerpc/lib/sstep.c             |  2 +-
->  6 files changed, 27 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index be85cf156a1f..b270b570fb51 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -109,7 +109,12 @@
->  #ifndef MSR_PMM
->  #define MSR_PMM		__MASK(MSR_PMM_LG)	/* Performance monitor */
->  #endif
-> +#if !defined(CONFIG_BOOKE) && !defined(CONFIG_40x)
->  #define MSR_RI		__MASK(MSR_RI_LG)	/* Recoverable Exception */
+>  arch/powerpc/kernel/interrupt.c | 2 --
+>  1 file changed, 2 deletions(-)
 
-This breaks 64-bit BookE, which is using MSR_RI in bookehv_interrupts.S.
-
-eg. ppc64_book3e_allmodconfig gives:
-
-  arch/powerpc/kvm/bookehv_interrupts.S: Assembler messages:
-  arch/powerpc/kvm/bookehv_interrupts.S:221: Error: invalid operands (*ABS* and *UND* sections) for `|'
-  etc.
-
-ISA v2.07B says MSR_RI is Book3S only, but looking at the e500mc manual
-it does have bit 62 defined as RI.
-
-I can fix it with:
-
-+#if !(defined(CONFIG_BOOKE) && !defined(CONFIG_PPC_BOOK3E)) && !defined(CONFIG_40x)
- #define MSR_RI         __MASK(MSR_RI_LG)       /* Recoverable Exception */
-
-
-But that's getting really ugly, and we'd have to repeat it elsewhere.
-
-I think we need a kconfig symbol that captures which platforms should
-use MSR_RI, something like:
-
-  CONFIG PPC_MSR_RI
-    def_bool y
-    depends on !40x && (!BOOKE || PPC_BOOK3E)
-
-
-Or maybe we should just define MSR_RI to 0 for platforms that don't use
-it, to avoid so much ifdefing?
+I'll pick this one up independent of the other two patches.
 
 cheers
