@@ -2,87 +2,100 @@ Return-Path: <SRS0=pi+/=NQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2ED0C4338F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 03:50:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 380BAC4338F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 04:26:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 344B0613D2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 03:50:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 344B0613D2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=dabbelt.com
+	by mail.kernel.org (Postfix) with ESMTPS id 89289610C7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 04:26:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 89289610C7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GvX7R2nM3z2yWL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 13:50:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GvXwV30fdz2yQ0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Aug 2021 14:26:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=dabbelt-com.20150623.gappssmtp.com header.i=@dabbelt-com.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=SNHYHGi1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=atbj+tZO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=dabbelt.com (client-ip=2607:f8b0:4864:20::62e;
- helo=mail-pl1-x62e.google.com; envelope-from=palmer@dabbelt.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=dabbelt-com.20150623.gappssmtp.com
- header.i=@dabbelt-com.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=SNHYHGi1; dkim-atps=neutral
-Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com
- [IPv6:2607:f8b0:4864:20::62e])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=atbj+tZO; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GvX6b6wyPz2xrT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Aug 2021 13:49:42 +1000 (AEST)
-Received: by mail-pl1-x62e.google.com with SMTP id m17so6475716plc.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Aug 2021 20:49:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=dabbelt-com.20150623.gappssmtp.com; s=20150623;
- h=date:subject:in-reply-to:cc:from:to:message-id:mime-version
- :content-transfer-encoding;
- bh=9sHfdiClg+ir79cDPtKTL0W793DnT07IRwQSqAPFHp4=;
- b=SNHYHGi1ywjzqrjN4Vr5b6iNJuFzuwLqCq5u/T+Vfl6bT/nVDfak3HIZ/5zzUaXBLx
- qHXc5HMhjunz5Tcci8T3BtPjccUPo9lQag2yq3MXOA8dzmHpPURkp4Phyb+NMOiA8uHu
- mAk3iNIjgmeySpy814cH9pbwf2U7WobmCunvxbey2Y5JK954SHN6j+FOB7BhcUUV6fy6
- b2YKJhK2R6UhdDgyj6KV0/AwH80guc1lwrwNI99/pqR9LOlSlx+tvHE2KYpVFMgq+70x
- D/65PWFVp2fnw4Ly+nACy81jTlmetYbczposURZHXwCv83wJ8N9j9QIOFTbcm721nckF
- YnBg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:subject:in-reply-to:cc:from:to:message-id
- :mime-version:content-transfer-encoding;
- bh=9sHfdiClg+ir79cDPtKTL0W793DnT07IRwQSqAPFHp4=;
- b=TdztUFKEyFNEcBn/xAKWQs4BYuxMgFjyrmD2GS8UMVrTJTQHb9gtwozTo+btnnodRZ
- Wz2dX/gDI0gCBYsZVCbDbG5lkyDEcwkDVEgt5x5bDfl9lZqiz3OwTpKmzg62DuYnmmuR
- 0LnacRRidm1LWSzbCf1aWLhN1TND44gz63ysTHy2hZS6Tw7D4X2H64LSu4BqfljQlIaY
- QsAD/MVcqVnxwzW+/QB4Lvg917L1CFB7BTajMgU2MsE01m9wdZTgGDFAaSDXYM00/iQ+
- 9ddaWZJhUz6jvL3l1F6gPu/2ATYDRjebcLxx4oWY5ccKh/dAG/sCS9LnQNwN61TS1bn+
- tXNQ==
-X-Gm-Message-State: AOAM532rcEjiDvNCHRxtCglV+B34T+L/Dqsk+WgmIkXHM8vbeIY/YVgt
- mfdYN9lQViETE/raZS38uUhqYQ==
-X-Google-Smtp-Source: ABdhPJxItrgE+EVFUgM4xk5y1cyovfSflBdGl/ZTQWYSibONNZyb8WQmjv4eJYMsWeIsNWXL/FrN5w==
-X-Received: by 2002:a17:902:9008:b0:12d:8258:e07c with SMTP id
- a8-20020a170902900800b0012d8258e07cmr36851163plp.42.1629863379987; 
- Tue, 24 Aug 2021 20:49:39 -0700 (PDT)
-Received: from localhost (76-210-143-223.lightspeed.sntcca.sbcglobal.net.
- [76.210.143.223])
- by smtp.gmail.com with ESMTPSA id x26sm20744756pfm.77.2021.08.24.20.49.39
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 24 Aug 2021 20:49:39 -0700 (PDT)
-Date: Tue, 24 Aug 2021 20:49:39 -0700 (PDT)
-X-Google-Original-Date: Tue, 24 Aug 2021 20:43:54 PDT (-0700)
-Subject: Re: [PATCH] arch: vdso: remove if-conditionals of $(c-gettimeofday-y)
-In-Reply-To: <20210731055733.12332-1-masahiroy@kernel.org>
-From: Palmer Dabbelt <palmer@dabbelt.com>
-To: masahiroy@kernel.org
-Message-ID: <mhng-2a609a54-0d13-4fb3-9966-086357936773@palmerdabbelt-glaptop>
-Mime-Version: 1.0 (MHng)
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GvXvd4Rfdz2xxn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Aug 2021 14:25:16 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 17P45bfQ176035; Wed, 25 Aug 2021 00:24:58 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=RZ1uIbuxfzIzbnGOm+nWbAoArO5aFmFS2Ua/vLkzoiw=;
+ b=atbj+tZO8Hcg3StO3CZ/T8m4Fq8zvIyQlNeAu4vm1nUwvRD83lHLwDv5MwNC3PRCpUHJ
+ BBsZlkfjotNXQX7/OlPgJIOZXIo/KI4TQ/7Hae3Jj0Tod4EjT9VUj6YPhNTsCvKLiKBg
+ 5qMuJ+l4G0equzTgtXG/6Fs4RWvWbXnuu2jUn8mJL8EjjlQGdJrnZ25cmDJw7EhoDRiu
+ mwrKI/PSFbwJhSToO1bQ8uFA8QCwC8Aja+/nd+z8kwTYg0phFaFb5SN1pr/M8dlpg4YA
+ OPE0Ip0/1ckUdN680tnisWslnBJnGtAOKeCo3z6t/lB4LIG8WCOGu0IN7NU1tk4m72ps pg== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3anebkrqj7-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 25 Aug 2021 00:24:58 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17P4NIf8021182;
+ Wed, 25 Aug 2021 04:24:57 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma03dal.us.ibm.com with ESMTP id 3ajs4dxy69-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 25 Aug 2021 04:24:57 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 17P4Otua40829224
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 25 Aug 2021 04:24:55 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CBCFA78068;
+ Wed, 25 Aug 2021 04:24:55 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 352677805E;
+ Wed, 25 Aug 2021 04:24:53 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.43.51.106])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 25 Aug 2021 04:24:52 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [PATCH] powerpc/doc: Fix htmldocs errors
+Date: Wed, 25 Aug 2021 09:54:47 +0530
+Message-Id: <20210825042447.106219-1-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.31.1
+MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: cEXAARAlou_jeEb3w5KlsLrv96xy29TA
+X-Proofpoint-ORIG-GUID: cEXAARAlou_jeEb3w5KlsLrv96xy29TA
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-08-25_01:2021-08-25,
+ 2021-08-25 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 mlxlogscore=999
+ impostorscore=0 suspectscore=0 bulkscore=0 priorityscore=1501 spamscore=0
+ mlxscore=0 malwarescore=0 phishscore=0 lowpriorityscore=0 clxscore=1015
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2107140000
+ definitions=main-2108250023
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,30 +107,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tsbogend@alpha.franken.de, masahiroy@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-mips@vger.kernel.org, Paul Walmsley <paul.walmsley@sifive.com>,
- aou@eecs.berkeley.edu, paulus@samba.org, luto@kernel.org,
- catalin.marinas@arm.com, linux@armlinux.org.uk, tglx@linutronix.de,
- vincenzo.frascino@arm.com, will@kernel.org, linux-riscv@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, Jonathan Corbet <corbet@lwn.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 30 Jul 2021 22:57:33 PDT (-0700), masahiroy@kernel.org wrote:
-> arm, arm64, mips, powerpc always select GENERIC_GETTIMEOFDAY, hence
-> $(gettimeofday-y) never becomes empty.
->
-> riscv conditionally selects GENERIC_GETTIMEOFDAY when MMU=y && 64BIT=y,
-> but arch/riscv/kernel/vdso/vgettimeofday.o is built only under that
-> condition. So, you can always define CFLAGS_vgettimeofday.o
->
-> Remove all the meaningless conditionals.
->
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-> ---
->
->  arch/riscv/kernel/vdso/Makefile     |  5 +----
+Fix make htmldocs related errors with the newly added associativity.rst
+doc file.
 
-Acked-by: Palmer Dabbelt <palmerdabbelt@google.com>
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ Documentation/powerpc/associativity.rst | 29 +++++++++++++------------
+ Documentation/powerpc/index.rst         |  1 +
+ 2 files changed, 16 insertions(+), 14 deletions(-)
+
+diff --git a/Documentation/powerpc/associativity.rst b/Documentation/powerpc/associativity.rst
+index 07e7dd3d6c87..4d01c7368561 100644
+--- a/Documentation/powerpc/associativity.rst
++++ b/Documentation/powerpc/associativity.rst
+@@ -1,6 +1,6 @@
+ ============================
+ NUMA resource associativity
+-=============================
++============================
+ 
+ Associativity represents the groupings of the various platform resources into
+ domains of substantially similar mean performance relative to resources outside
+@@ -20,11 +20,11 @@ A value of 1 indicates the usage of Form 1 associativity. For Form 2 associativi
+ bit 2 of byte 5 in the "ibm,architecture-vec-5" property is used.
+ 
+ Form 0
+------
++------
+ Form 0 associativity supports only two NUMA distances (LOCAL and REMOTE).
+ 
+ Form 1
+------
++------
+ With Form 1 a combination of ibm,associativity-reference-points, and ibm,associativity
+ device tree properties are used to determine the NUMA distance between resource groups/domains.
+ 
+@@ -78,17 +78,18 @@ numa-lookup-index-table.
+ 
+ For ex:
+ ibm,numa-lookup-index-table = <3 0 8 40>;
+-ibm,numa-distace-table = <9>, /bits/ 8 < 10  20  80
+-					 20  10 160
+-					 80 160  10>;
+-  | 0    8   40
+---|------------
+-  |
+-0 | 10   20  80
+-  |
+-8 | 20   10  160
+-  |
+-40| 80   160  10
++ibm,numa-distace-table = <9>, /bits/ 8 < 10  20  80 20  10 160 80 160  10>;
++
++::
++
++	  | 0    8   40
++	--|------------
++	  |
++	0 | 10   20  80
++	  |
++	8 | 20   10  160
++	  |
++	40| 80   160  10
+ 
+ A possible "ibm,associativity" property for resources in node 0, 8 and 40
+ 
+diff --git a/Documentation/powerpc/index.rst b/Documentation/powerpc/index.rst
+index bf5f1a2bdbdf..0f7d3c495693 100644
+--- a/Documentation/powerpc/index.rst
++++ b/Documentation/powerpc/index.rst
+@@ -7,6 +7,7 @@ powerpc
+ .. toctree::
+     :maxdepth: 1
+ 
++    associativity
+     booting
+     bootwrapper
+     cpu_families
+-- 
+2.31.1
+
