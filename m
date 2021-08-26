@@ -7,99 +7,98 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDBD1C432BE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 10:10:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DDB1C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 10:11:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 43C0F610FA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 10:10:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 43C0F610FA
+	by mail.kernel.org (Postfix) with ESMTPS id DA36860240
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 10:11:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DA36860240
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GwJWw6rbkz3bg4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 20:10:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GwJXk40xjz3bYW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 20:11:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tfHZHle+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pLPOMBT6;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=tfHZHle+; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ header.s=pp1 header.b=pLPOMBT6; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GwJQY4N6kz3c4g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Aug 2021 20:06:13 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 17QA3WoI066238; Thu, 26 Aug 2021 06:05:59 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GwJQb6f35z3bmk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Aug 2021 20:06:15 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 17QA3UVs173466; Thu, 26 Aug 2021 06:05:40 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : in-reply-to : references : content-transfer-encoding
- : mime-version; s=pp1; bh=VP+B0KnRS6rU4WavJQMVD5cx+wlQvTWVEaPc9e+/zFE=;
- b=tfHZHle+MT9gvHZvAi8xTx4zRz7z6bHi/apwnhW5uJjELc1m6Xx9+9bVRFXGo1jMI/F4
- AAjOOU4vCVVGAPW/WoWfpMqqik9teNHIFNnxj9PvwmLRWTyb0qS3aKGSjKFSgFW2tfL7
- 67qB/faArK+3GaS7Cco2YQ4hgDUXVAyh1gAA0IfDO/NAThTBUNI+7CWv6Pi6MM3um4ck
- yDxBfMuObH1G3gKlsI+UY101ksKs5wHORgaXRnX/dE9eKktjhN7QkWlUfpzTFRSavCbC
- dvYtgDSG8Mp4nsFns9iZzKe4pNKb8gNwJQwdzkMRAyKg0lf0GvYgv9Ebt8XWfwtW3Kn9 fA== 
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3ap3u9yar3-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=jGpsByp0FRxL91Eq3oNPREb0QUHDWvNdQLWOj+mLqrs=;
+ b=pLPOMBT6qevJU1HxOL+hihlByyJq19Djj75+/VQpQQpqorSa6DEDlC8rgFPKbC2tW0Zx
+ IffJRGKAhbSTECHA08YRdq2KWi+LnQEam1pGwBXEx65JRTrijOKXIGPYuvvhZ59o11MJ
+ pTCnYVSaDm7iQPpjuMptBHnRH4OX6xByXVfItCKA0MJtcpPadhGzTrifltUUMQVdAl0C
+ t9fvm+8D4irFURkfLB29hkZZc8jBXmCj8wKvHfoxsPnj9sMk2bfBx7zIvsWs1J/jGKWP
+ QyJXD4sF6eo+//3EiQz5fo7bPRFtIrG18apN4P8jewMoVHKd45/FWbXyTku/Zo12tMus kw== 
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3ap7x79r1d-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Aug 2021 06:05:59 -0400
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17QA2uBG018611;
- Thu, 26 Aug 2021 10:05:57 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma03fra.de.ibm.com with ESMTP id 3ajs48fnna-1
+ Thu, 26 Aug 2021 06:05:39 -0400
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+ by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17QA2qu9028462;
+ Thu, 26 Aug 2021 10:05:38 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma05fra.de.ibm.com with ESMTP id 3ajs48fp2q-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Aug 2021 10:05:57 +0000
+ Thu, 26 Aug 2021 10:05:37 +0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 17QA5prE35979632
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 17QA5WRK51118446
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 26 Aug 2021 10:05:51 GMT
+ Thu, 26 Aug 2021 10:05:32 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 48ABEAE053;
- Thu, 26 Aug 2021 10:05:51 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 6D9FAAE045;
+ Thu, 26 Aug 2021 10:05:32 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EB92AAE061;
- Thu, 26 Aug 2021 10:05:46 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 98C4BAE065;
+ Thu, 26 Aug 2021 10:05:28 +0000 (GMT)
 Received: from saptagiri.in.ibm.com (unknown [9.43.43.205])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 26 Aug 2021 10:05:46 +0000 (GMT)
+ Thu, 26 Aug 2021 10:05:28 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 5/5] powerpc/numa: Fill distance_lookup_table for offline
- nodes
-Date: Thu, 26 Aug 2021 15:35:21 +0530
-Message-Id: <20210826100521.412639-6-srikar@linux.vnet.ibm.com>
+Subject: [PATCH v5 1/5] powerpc/numa: Drop dbg in favour of pr_debug
+Date: Thu, 26 Aug 2021 15:35:17 +0530
+Message-Id: <20210826100521.412639-2-srikar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210826100521.412639-1-srikar@linux.vnet.ibm.com>
 References: <20210826100521.412639-1-srikar@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: U5po7jAXND8PaILeZwGxQEnSJCVOt-g6
-X-Proofpoint-ORIG-GUID: U5po7jAXND8PaILeZwGxQEnSJCVOt-g6
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: DlXyyP2sUrh1l6swkvtsxKcddXHbAeGT
+X-Proofpoint-GUID: DlXyyP2sUrh1l6swkvtsxKcddXHbAeGT
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-08-26_02:2021-08-26,
  2021-08-26 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 mlxlogscore=999
- impostorscore=0 clxscore=1015 adultscore=0 phishscore=0 lowpriorityscore=0
- priorityscore=1501 mlxscore=0 spamscore=0 suspectscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2107140000
- definitions=main-2108260061
+ spamscore=0 suspectscore=0
+ mlxscore=0 lowpriorityscore=0 priorityscore=1501 malwarescore=0
+ bulkscore=0 clxscore=1015 impostorscore=0 mlxlogscore=999 adultscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2107140000 definitions=main-2108260061
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,24 +118,16 @@ Cc: Nathan Lynch <nathanl@linux.ibm.com>,
  Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
  Ingo Molnar <mingo@kernel.org>, Laurent Dufour <ldufour@linux.ibm.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Valentin Schneider <valentin.schneider@arm.com>,
- kernel test robot <lkp@intel.com>
+ Valentin Schneider <valentin.schneider@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Scheduler expects unique number of node distances to be available at
-boot. It uses node distance to calculate this unique node distances.
-On POWER, node distances for offline nodes is not available. However,
-POWER already knows unique possible node distances. Fake the offline
-node's distance_lookup_table entries so that all possible node
-distances are updated.
+PowerPc supported numa=debug which is not documented. This option was
+used to print early debug output. However something more flexible can be
+achieved by using CONFIG_DYNAMIC_DEBUG.
 
-However this only needs to be done if the number of unique node
-distances that can be computed for online nodes is less than the
-number of possible unique node distances as represented by
-distance_ref_points_depth. When the node is actually onlined,
-distance_lookup_table will be updated with actual entries.
+Hence drop dbg (and numa=debug) in favour of pr_debug
 
 Cc: linuxppc-dev@lists.ozlabs.org
 Cc: Nathan Lynch <nathanl@linux.ibm.com>
@@ -148,104 +139,108 @@ Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
 Cc: Vincent Guittot <vincent.guittot@linaro.org>
 Cc: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>
 Cc: Laurent Dufour <ldufour@linux.ibm.com>
-Cc: kernel test robot <lkp@intel.com>
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/numa.c | 70 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 70 insertions(+)
-
-Changelog:
-v1: https://lore.kernel.org/linuxppc-dev/20210701041552.112072-3-srikar@linux.vnet.ibm.com/t/#u
-[ Fixed a missing prototype warning Reported-by: kernel test robot <lkp@intel.com>]
+ arch/powerpc/mm/numa.c | 22 ++++++++--------------
+ 1 file changed, 8 insertions(+), 14 deletions(-)
 
 diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 87ade2f56f45..afa2ede4ac53 100644
+index f2bf98bdcea2..5e9b777a1151 100644
 --- a/arch/powerpc/mm/numa.c
 +++ b/arch/powerpc/mm/numa.c
-@@ -849,6 +849,75 @@ void __init dump_numa_cpu_topology(void)
- 	}
+@@ -40,9 +40,6 @@ static int numa_enabled = 1;
+ 
+ static char *cmdline __initdata;
+ 
+-static int numa_debug;
+-#define dbg(args...) if (numa_debug) { printk(KERN_INFO args); }
+-
+ int numa_cpu_lookup_table[NR_CPUS];
+ cpumask_var_t node_to_cpumask_map[MAX_NUMNODES];
+ struct pglist_data *node_data[MAX_NUMNODES];
+@@ -79,7 +76,7 @@ static void __init setup_node_to_cpumask_map(void)
+ 		alloc_bootmem_cpumask_var(&node_to_cpumask_map[node]);
+ 
+ 	/* cpumask_of_node() will now work */
+-	dbg("Node to cpumask map for %u nodes\n", nr_node_ids);
++	pr_debug("Node to cpumask map for %u nodes\n", nr_node_ids);
  }
  
-+/*
-+ * Scheduler expects unique number of node distances to be available at
-+ * boot. It uses node distance to calculate this unique node distances. On
-+ * POWER, node distances for offline nodes is not available. However, POWER
-+ * already knows unique possible node distances. Fake the offline node's
-+ * distance_lookup_table entries so that all possible node distances are
-+ * updated.
-+ */
-+static void __init fake_update_distance_lookup_table(void)
-+{
-+	unsigned long distance_map;
-+	int i, nr_levels, nr_depth, node;
-+
-+	if (!numa_enabled)
-+		return;
-+
-+	if (!form1_affinity)
-+		return;
-+
-+	/*
-+	 * distance_ref_points_depth lists the unique numa domains
-+	 * available. However it ignore LOCAL_DISTANCE. So add +1
-+	 * to get the actual number of unique distances.
-+	 */
-+	nr_depth = distance_ref_points_depth + 1;
-+
-+	WARN_ON(nr_depth > sizeof(distance_map));
-+
-+	bitmap_zero(&distance_map, nr_depth);
-+	bitmap_set(&distance_map, 0, 1);
-+
-+	for_each_online_node(node) {
-+		int nd, distance = LOCAL_DISTANCE;
-+
-+		if (node == first_online_node)
-+			continue;
-+
-+		nd = __node_distance(node, first_online_node);
-+		for (i = 0; i < nr_depth; i++, distance *= 2) {
-+			if (distance == nd) {
-+				bitmap_set(&distance_map, i, 1);
-+				break;
-+			}
-+		}
-+		nr_levels = bitmap_weight(&distance_map, nr_depth);
-+		if (nr_levels == nr_depth)
-+			return;
-+	}
-+
-+	for_each_node(node) {
-+		if (node_online(node))
-+			continue;
-+
-+		i = find_first_zero_bit(&distance_map, nr_depth);
-+		if (i >= nr_depth || i == 0) {
-+			pr_warn("Levels(%d) not matching levels(%d)", nr_levels, nr_depth);
-+			return;
-+		}
-+
-+		bitmap_set(&distance_map, i, 1);
-+		while (i--)
-+			distance_lookup_table[node][i] = node;
-+
-+		nr_levels = bitmap_weight(&distance_map, nr_depth);
-+		if (nr_levels == nr_depth)
-+			return;
-+	}
-+}
-+
- /* Initialize NODE_DATA for a node on the local memory */
- static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
+ static int __init fake_numa_create_new_node(unsigned long end_pfn,
+@@ -123,7 +120,7 @@ static int __init fake_numa_create_new_node(unsigned long end_pfn,
+ 		cmdline = p;
+ 		fake_nid++;
+ 		*nid = fake_nid;
+-		dbg("created new fake_node with id %d\n", fake_nid);
++		pr_debug("created new fake_node with id %d\n", fake_nid);
+ 		return 1;
+ 	}
+ 	return 0;
+@@ -141,7 +138,7 @@ static void map_cpu_to_node(int cpu, int node)
  {
-@@ -964,6 +1033,7 @@ void __init mem_topology_setup(void)
- 		 */
- 		numa_setup_cpu(cpu);
- 	}
-+	fake_update_distance_lookup_table();
- }
+ 	update_numa_cpu_lookup_table(cpu, node);
  
- void __init initmem_init(void)
+-	dbg("adding cpu %d to node %d\n", cpu, node);
++	pr_debug("adding cpu %d to node %d\n", cpu, node);
+ 
+ 	if (!(cpumask_test_cpu(cpu, node_to_cpumask_map[node])))
+ 		cpumask_set_cpu(cpu, node_to_cpumask_map[node]);
+@@ -152,7 +149,7 @@ static void unmap_cpu_from_node(unsigned long cpu)
+ {
+ 	int node = numa_cpu_lookup_table[cpu];
+ 
+-	dbg("removing cpu %lu from node %d\n", cpu, node);
++	pr_debug("removing cpu %lu from node %d\n", cpu, node);
+ 
+ 	if (cpumask_test_cpu(cpu, node_to_cpumask_map[node])) {
+ 		cpumask_clear_cpu(cpu, node_to_cpumask_map[node]);
+@@ -313,7 +310,7 @@ static int __init find_min_common_depth(void)
+ 					&distance_ref_points_depth);
+ 
+ 	if (!distance_ref_points) {
+-		dbg("NUMA: ibm,associativity-reference-points not found.\n");
++		pr_debug("NUMA: ibm,associativity-reference-points not found.\n");
+ 		goto err;
+ 	}
+ 
+@@ -321,7 +318,7 @@ static int __init find_min_common_depth(void)
+ 
+ 	if (firmware_has_feature(FW_FEATURE_OPAL) ||
+ 	    firmware_has_feature(FW_FEATURE_TYPE1_AFFINITY)) {
+-		dbg("Using form 1 affinity\n");
++		pr_debug("Using form 1 affinity\n");
+ 		form1_affinity = 1;
+ 	}
+ 
+@@ -719,7 +716,7 @@ static int __init parse_numa_properties(void)
+ 		return min_common_depth;
+ 	}
+ 
+-	dbg("NUMA associativity depth for CPU/Memory: %d\n", min_common_depth);
++	pr_debug("NUMA associativity depth for CPU/Memory: %d\n", min_common_depth);
+ 
+ 	/*
+ 	 * Even though we connect cpus to numa domains later in SMP
+@@ -1014,9 +1011,6 @@ static int __init early_numa(char *p)
+ 	if (strstr(p, "off"))
+ 		numa_enabled = 0;
+ 
+-	if (strstr(p, "debug"))
+-		numa_debug = 1;
+-
+ 	p = strstr(p, "fake=");
+ 	if (p)
+ 		cmdline = p + strlen("fake=");
+@@ -1179,7 +1173,7 @@ static long vphn_get_associativity(unsigned long cpu,
+ 
+ 	switch (rc) {
+ 	case H_SUCCESS:
+-		dbg("VPHN hcall succeeded. Reset polling...\n");
++		pr_debug("VPHN hcall succeeded. Reset polling...\n");
+ 		goto out;
+ 
+ 	case H_FUNCTION:
 -- 
 2.18.2
 
