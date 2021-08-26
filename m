@@ -2,26 +2,26 @@ Return-Path: <SRS0=FZqe=NR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CC0FC432BE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 10:08:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31BA9C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 10:08:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8520A610E6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 10:08:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8520A610E6
+	by mail.kernel.org (Postfix) with ESMTPS id 62318610E6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 10:08:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 62318610E6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GwJSc6dx6z3bYW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 20:08:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GwJTR0PCVz3cLC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 20:08:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jjy+KA5M;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MMRKlfzg;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
@@ -29,73 +29,75 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=jjy+KA5M; dkim-atps=neutral
+ header.s=pp1 header.b=MMRKlfzg; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GwJQ25nTtz2yxv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Aug 2021 20:05:46 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GwJQB4Lcqz3bXP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Aug 2021 20:05:54 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 17QA4AZS116360; Thu, 26 Aug 2021 06:05:36 -0400
+ 17QA2q1x168326; Thu, 26 Aug 2021 06:05:45 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=sAqns7ZU5Ni3lw1Lh1fFs2ZEiw3H3h0Pcqe6HzzN8dE=;
- b=jjy+KA5MyPmnYON1k/yIw5qDclRC9y5BxcMP8za/n9SHZOBL5k5dyMW1c/XMi6VwmYj2
- fnzHfljwiTtFNagreHUL5UAzT2pOVmFUXA3146ndjxuZQftvdThk0vR16pMijcEsB5Bk
- ni0c7mvuukmZH6w/LWJ+qGxc12HK6qyQOQ7rbbCVZfAOiTRt96uQ3XaJI/s7ogzQfgJR
- KG11R1aaEtxq5ROZfcsdxXew6HFfmogbD7UXxBB+9oaoLIvUKkKgd+AEf42fAmVXsItL
- lMen0E7yw0vlB8+x6XP4FcICb3RFXYCQNzOv3ZrTGsrlsZSr4KO/p0Nd3rKCsuaYZuX1 1w== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3ap8vp01ec-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=YpOB85s9qts8kVDG5SLlOn194fYJ9WV6lZzZHD6I0BI=;
+ b=MMRKlfzg982sSs6TLffcavqHWBPH1Jzo2EwzdaEPJLuCcqvVv8d1Awq5OhFyqwqYdP8L
+ oUbZf4nyt8yAp96flA44Dpfin+lAOBNbYdJLoUo8gCcRmcmfFftpWpwGYxEyNKvXqEtv
+ IJq6sdUQIvZuLLuHrEiqnbiHdUkymAESJnOCHjUty0lBrxa1PMuEumz/VopoAAma8LGN
+ WkDrqe16eXNIoawo5ROlMygcinDSnXaWL/9hbcVGTi901/Nhcq7LDVjsqW9Ad6zvWono
+ JhGWcx9kExXsfAOOdzNRSrf4nFYVszuhkCN/H1BFN2IBw9gEMMx+BhI8Ex3nl9anwxim +A== 
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3ap4n96mxb-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Aug 2021 06:05:35 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17QA2tk1014191;
- Thu, 26 Aug 2021 10:05:33 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma06ams.nl.ibm.com with ESMTP id 3ajrrhh576-1
+ Thu, 26 Aug 2021 06:05:44 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 17QA2lmi006480;
+ Thu, 26 Aug 2021 10:05:42 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma03ams.nl.ibm.com with ESMTP id 3ajs48h4eg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 26 Aug 2021 10:05:33 +0000
+ Thu, 26 Aug 2021 10:05:42 +0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 17QA5SHi55836936
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 17QA5btk29032944
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 26 Aug 2021 10:05:28 GMT
+ Thu, 26 Aug 2021 10:05:37 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E70F7AE068;
- Thu, 26 Aug 2021 10:05:27 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id DA890AE08B;
+ Thu, 26 Aug 2021 10:05:36 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1D969AE04D;
- Thu, 26 Aug 2021 10:05:24 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 148A1AE07F;
+ Thu, 26 Aug 2021 10:05:33 +0000 (GMT)
 Received: from saptagiri.in.ibm.com (unknown [9.43.43.205])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 26 Aug 2021 10:05:23 +0000 (GMT)
+ Thu, 26 Aug 2021 10:05:32 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 0/5] Updates to powerpc for robust CPU online/offline
-Date: Thu, 26 Aug 2021 15:35:16 +0530
-Message-Id: <20210826100521.412639-1-srikar@linux.vnet.ibm.com>
+Subject: [PATCH v5 2/5] powerpc/numa: convert printk to pr_xxx
+Date: Thu, 26 Aug 2021 15:35:18 +0530
+Message-Id: <20210826100521.412639-3-srikar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.31.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: SLmg2l4KfCjUQxhIXiLO8MK1NyspxM3n
-X-Proofpoint-GUID: SLmg2l4KfCjUQxhIXiLO8MK1NyspxM3n
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+In-Reply-To: <20210826100521.412639-1-srikar@linux.vnet.ibm.com>
+References: <20210826100521.412639-1-srikar@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Chn1dE0-JaL81oF0bPM-2ud3Y6M6u8rM
+X-Proofpoint-GUID: Chn1dE0-JaL81oF0bPM-2ud3Y6M6u8rM
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
  definitions=2021-08-26_02:2021-08-26,
  2021-08-26 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0
- lowpriorityscore=0 malwarescore=0 spamscore=0 clxscore=1015 phishscore=0
- bulkscore=0 mlxlogscore=866 priorityscore=1501 mlxscore=0 adultscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ adultscore=0 impostorscore=0
+ mlxlogscore=999 mlxscore=0 phishscore=0 bulkscore=0 suspectscore=0
+ clxscore=1015 malwarescore=0 priorityscore=1501 spamscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2107140000 definitions=main-2108260061
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -121,99 +123,9 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Changelog v2 -> v3:
-v2: https://lore.kernel.org/linuxppc-dev/20210821102535.169643-1-srikar@linux.vnet.ibm.com/t/#u
-Add patch 1: to drop dbg and numa=debug (Suggested by Michael Ellerman)
-Add patch 2: to convert printk to pr_xxx (Suggested by Michael Ellerman)
-	Use pr_warn instead of pr_debug(WARNING) (Suggested by Laurent)
-
-Changelog v1 -> v2:
-Moved patch to this series: powerpc/numa: Fill distance_lookup_table for offline nodes
-fixed a missing prototype warning
-
-Scheduler expects unique number of node distances to be available
-at boot. It uses node distance to calculate this unique node
-distances. On Power Servers, node distances for offline nodes is not
-available. However, Power Servers already knows unique possible node
-distances. Fake the offline node's distance_lookup_table entries so
-that all possible node distances are updated.
-
-For example distance info from numactl from a fully populated 8 node
-system at boot may look like this.
-
-node distances:
-node   0   1   2   3   4   5   6   7
-  0:  10  20  40  40  40  40  40  40
-  1:  20  10  40  40  40  40  40  40
-  2:  40  40  10  20  40  40  40  40
-  3:  40  40  20  10  40  40  40  40
-  4:  40  40  40  40  10  20  40  40
-  5:  40  40  40  40  20  10  40  40
-  6:  40  40  40  40  40  40  10  20
-  7:  40  40  40  40  40  40  20  10
-
-However the same system when only two nodes are online at boot, then
-distance info from numactl will look like
-node distances:
-node   0   1
-  0:  10  20
-  1:  20  10
-
-With the faked numa distance at boot, the node distance table will look
-like
-node   0   1   2
-  0:  10  20  40
-  1:  20  10  40
-  2:  40  40  10
-
-The actual distance will be populated once the nodes are onlined.
-
-Also when simultaneously running CPU online/offline with CPU
-add/remove in a loop, we see a WARNING messages.
-
-WARNING: CPU: 13 PID: 1142 at kernel/sched/topology.c:898 build_sched_domains+0xd48/0x1720
-Modules linked in: rpadlpar_io rpaphp mptcp_diag xsk_diag tcp_diag udp_diag
-raw_diag inet_diag unix_diag af_packet_diag netlink_diag bonding tls
-nft_fib_inet nft_fib_ipv4 nft_fib_ipv6 nft_fib nft_reject_inet
-nf_reject_ipv4 nf_reject_ipv6 nft_reject nft_ct nft_chain_nat nf_nat
-nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 ip_set rfkill nf_tables nfnetlink
-pseries_rng xts vmx_crypto uio_pdrv_genirq uio binfmt_misc ip_tables xfs
-libcrc32c dm_service_time sd_mod t10_pi sg ibmvfc scsi_transport_fc ibmveth
-dm_multipath dm_mirror dm_region_hash dm_log dm_mod fuse
-CPU: 13 PID: 1142 Comm: kworker/13:2 Not tainted 5.13.0-rc6+ #28
-Workqueue: events cpuset_hotplug_workfn
-NIP:  c0000000001caac8 LR: c0000000001caac4 CTR: 00000000007088ec
-REGS: c00000005596f220 TRAP: 0700   Not tainted  (5.13.0-rc6+)
-MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 48828222  XER: 00000009
-CFAR: c0000000001ea698 IRQMASK: 0
-GPR00: c0000000001caac4 c00000005596f4c0 c000000001c4a400 0000000000000036
-GPR04: 00000000fffdffff c00000005596f1d0 0000000000000027 c0000018cfd07f90
-GPR08: 0000000000000023 0000000000000001 0000000000000027 c0000018fe68ffe8
-GPR12: 0000000000008000 c00000001e9d1880 c00000013a047200 0000000000000800
-GPR16: c000000001d3c7d0 0000000000000240 0000000000000048 c000000010aacd18
-GPR20: 0000000000000001 c000000010aacc18 c00000013a047c00 c000000139ec2400
-GPR24: 0000000000000280 c000000139ec2520 c000000136c1b400 c000000001c93060
-GPR28: c00000013a047c20 c000000001d3c6c0 c000000001c978a0 000000000000000d
-NIP [c0000000001caac8] build_sched_domains+0xd48/0x1720
-LR [c0000000001caac4] build_sched_domains+0xd44/0x1720
-Call Trace:
-[c00000005596f4c0] [c0000000001caac4] build_sched_domains+0xd44/0x1720 (unreliable)
-[c00000005596f670] [c0000000001cc5ec] partition_sched_domains_locked+0x3ac/0x4b0
-[c00000005596f710] [c0000000002804e4] rebuild_sched_domains_locked+0x404/0x9e0
-[c00000005596f810] [c000000000283e60] rebuild_sched_domains+0x40/0x70
-[c00000005596f840] [c000000000284124] cpuset_hotplug_workfn+0x294/0xf10
-[c00000005596fc60] [c000000000175040] process_one_work+0x290/0x590
-[c00000005596fd00] [c0000000001753c8] worker_thread+0x88/0x620
-[c00000005596fda0] [c000000000181704] kthread+0x194/0x1a0
-[c00000005596fe10] [c00000000000ccec] ret_from_kernel_thread+0x5c/0x70
-Instruction dump:
-485af049 60000000 2fa30800 409e0028 80fe0000 e89a00f8 e86100e8 38da0120
-7f88e378 7ce53b78 4801fb91 60000000 <0fe00000> 39000000 38e00000 38c00000
-
-This was because cpu_cpu_mask() was not getting updated on CPU
-online/offline but would be only updated when add/remove of CPUs.
-Other cpumasks get updated both on CPU online/offline and add/remove
-Update cpu_cpu_mask() on CPU online/offline too.
+Convert the remaining printk to pr_xxx
+One advantage would be all prints will now have prefix "numa:" from
+pr_fmt().
 
 Cc: linuxppc-dev@lists.ozlabs.org
 Cc: Nathan Lynch <nathanl@linux.ibm.com>
@@ -225,19 +137,77 @@ Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
 Cc: Vincent Guittot <vincent.guittot@linaro.org>
 Cc: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>
 Cc: Laurent Dufour <ldufour@linux.ibm.com>
+[ convert printk(KERN_ERR) to pr_warn : Suggested by Laurent Dufour ]
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/numa.c | 18 +++++++-----------
+ 1 file changed, 7 insertions(+), 11 deletions(-)
 
-Srikar Dronamraju (5):
-  powerpc/numa: Drop dbg in favour of pr_debug
-  powerpc/numa: convert printk to pr_xxx
-  powerpc/numa: Print debug statements only when required
-  powerpc/numa: Update cpu_cpu_map on CPU online/offline
-  powerpc/numa: Fill distance_lookup_table for offline nodes
-
- arch/powerpc/include/asm/topology.h |  12 +++
- arch/powerpc/kernel/smp.c           |   3 +
- arch/powerpc/mm/numa.c              | 120 ++++++++++++++++++++--------
- 3 files changed, 103 insertions(+), 32 deletions(-)
-
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 5e9b777a1151..9af38b1c618b 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -154,8 +154,7 @@ static void unmap_cpu_from_node(unsigned long cpu)
+ 	if (cpumask_test_cpu(cpu, node_to_cpumask_map[node])) {
+ 		cpumask_clear_cpu(cpu, node_to_cpumask_map[node]);
+ 	} else {
+-		printk(KERN_ERR "WARNING: cpu %lu not found in node %d\n",
+-		       cpu, node);
++		pr_warn("WARNING: cpu %lu not found in node %d\n", cpu, node);
+ 	}
+ }
+ #endif /* CONFIG_HOTPLUG_CPU || CONFIG_PPC_SPLPAR */
+@@ -326,8 +325,7 @@ static int __init find_min_common_depth(void)
+ 		depth = of_read_number(distance_ref_points, 1);
+ 	} else {
+ 		if (distance_ref_points_depth < 2) {
+-			printk(KERN_WARNING "NUMA: "
+-				"short ibm,associativity-reference-points\n");
++			pr_warn("short ibm,associativity-reference-points\n");
+ 			goto err;
+ 		}
+ 
+@@ -339,7 +337,7 @@ static int __init find_min_common_depth(void)
+ 	 * MAX_DISTANCE_REF_POINTS domains.
+ 	 */
+ 	if (distance_ref_points_depth > MAX_DISTANCE_REF_POINTS) {
+-		printk(KERN_WARNING "NUMA: distance array capped at "
++		pr_warn("distance array capped at "
+ 			"%d entries\n", MAX_DISTANCE_REF_POINTS);
+ 		distance_ref_points_depth = MAX_DISTANCE_REF_POINTS;
+ 	}
+@@ -701,7 +699,7 @@ static int __init parse_numa_properties(void)
+ 	unsigned long i;
+ 
+ 	if (numa_enabled == 0) {
+-		printk(KERN_WARNING "NUMA disabled by user\n");
++		pr_warn("disabled by user\n");
+ 		return -1;
+ 	}
+ 
+@@ -716,7 +714,7 @@ static int __init parse_numa_properties(void)
+ 		return min_common_depth;
+ 	}
+ 
+-	pr_debug("NUMA associativity depth for CPU/Memory: %d\n", min_common_depth);
++	pr_debug("associativity depth for CPU/Memory: %d\n", min_common_depth);
+ 
+ 	/*
+ 	 * Even though we connect cpus to numa domains later in SMP
+@@ -808,10 +806,8 @@ static void __init setup_nonnuma(void)
+ 	unsigned int nid = 0;
+ 	int i;
+ 
+-	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
+-	       top_of_ram, total_ram);
+-	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
+-	       (top_of_ram - total_ram) >> 20);
++	pr_debug("Top of RAM: 0x%lx, Total RAM: 0x%lx\n", top_of_ram, total_ram);
++	pr_debug("Memory hole size: %ldMB\n", (top_of_ram - total_ram) >> 20);
+ 
+ 	for_each_mem_pfn_range(i, MAX_NUMNODES, &start_pfn, &end_pfn, NULL) {
+ 		fake_numa_create_new_node(end_pfn, &nid);
 -- 
 2.18.2
 
