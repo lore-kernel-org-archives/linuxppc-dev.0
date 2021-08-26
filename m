@@ -2,59 +2,67 @@ Return-Path: <SRS0=FZqe=NR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	TVD_SUBJ_WIPE_DEBT,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB6D6C432BE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 15:34:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FDA9C43216
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 16:32:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6CFC360F25
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 15:34:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6CFC360F25
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3148C60F5B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Aug 2021 16:32:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3148C60F5B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GwRjb6JZpz3bP4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 01:34:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GwT0h4By4z308M
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 02:32:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4GwRj52jCvz2yKV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 01:34:15 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 17QFUnw3025834;
- Thu, 26 Aug 2021 10:30:49 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 17QFUmZn025833;
- Thu, 26 Aug 2021 10:30:48 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Thu, 26 Aug 2021 10:30:48 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 1/2] powerpc/bug: Remove specific powerpc BUG_ON() and
- WARN_ON() on PPC32
-Message-ID: <20210826153048.GD1583@gate.crashing.org>
-References: <b286e07fb771a664b631cd07a40b09c06f26e64b.1618331881.git.christophe.leroy@csgroup.eu>
- <1628834356.pr4zgn1xf1.astroid@bobo.none>
- <20210818150653.GJ1583@gate.crashing.org>
- <1629946707.f6ptz0tgle.astroid@bobo.none>
- <20210826124901.GY1583@gate.crashing.org>
- <1629983260.5jkx2jf0y8.astroid@bobo.none>
- <20210826143708.GC1583@gate.crashing.org>
- <1629989540.drlhb24t2w.astroid@bobo.none>
-Mime-Version: 1.0
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=bykCvx5Q;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org;
+ envelope-from=batv+f446f559853770003669+6577+infradead.org+hch@casper.srs.infradead.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=bykCvx5Q; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GwSzt6QjMz2yZd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 02:32:05 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=vwCaRlHdeFqTGdftXcHYxGmcrUpfebbr5m9LF/gvgDk=; b=bykCvx5QsfuXXmjZrcaoBhSpUt
+ 3dJb1z9QCYjDp2rreZvtVBhlWluqU3zc53DGBC6f7D5zMjjZDzjf/tWpFvLXZGIqwaIQizs/AMfFl
+ q7t/qq3NMK5DT1OPqWnpFZq6dPvTFVhtwRuE+vyos0mGT3XV5i25QKy1c9w8FeHXnxFnuQaqbmLa/
+ ohTjq/ktLWuiGjHz4UGxjDOumjISMERe509C11ppLyNfy2uokv0Fe/GbOyVJQUgjyDGzvclt4Azoy
+ AhalNIBiSQfcQytfZP+dQLgnLluue+hr8kkGW9vo/v4jYLhr6cj9G6E38Daj2PK7vy5r/dsX4a9Bq
+ /mtQaopw==;
+Received: from hch by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat
+ Linux)) id 1mJIHK-00DTRX-Vh; Thu, 26 Aug 2021 16:31:17 +0000
+Date: Thu, 26 Aug 2021 17:30:58 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Subject: Re: [next-20210820][ppc][nvme/raid] pci unbind WARNS at
+ fs/kernfs/dir.c:1524 kernfs_remove_by_name_ns+
+Message-ID: <YSfBwj1zo/w2GCH4@infradead.org>
+References: <063e6cf0-94ab-26f2-4fed-aebf1499127c@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1629989540.drlhb24t2w.astroid@bobo.none>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <063e6cf0-94ab-26f2-4fed-aebf1499127c@linux.vnet.ibm.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,80 +74,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Brian King <brking@linux.vnet.ibm.com>,
+ linux-next <linux-next@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-scsi <linux-scsi@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Aug 27, 2021 at 01:04:36AM +1000, Nicholas Piggin wrote:
-> Excerpts from Segher Boessenkool's message of August 27, 2021 12:37 am:
-> >> No, they are all dispatched and issue to the BRU for execution. It's 
-> >> trivial to construct a test of a lot of not taken branches in a row
-> >> and time a loop of it to see it executes at 1 cycle per branch.
-> > 
-> > (s/dispatched/issued/)
-> 
-> ?
+Are you sure this is the very latest linux-next?  This should hav been
+fixed by:
 
-Dispatch is from decode to the issue queues.  Issue is from there to
-execution units.  Dispatch is in-order, issue is not.
-
-> >> How could it validate prediction without issuing? It wouldn't know when
-> >> sources are ready.
-> > 
-> > In the backend.  But that is just how it worked on older cores :-/
-> 
-> Okay. I don't know about older cores than POWER9. Backend would normally 
-> include execution though.
-> Only other place you could do it if you don't
-> issue/exec would be after it goes back in order, like completion.
-
-You do not have to do the verification in-order: the insn cannot finish
-until it is no longer speculative, that takes care of all ordering
-needed.
-
-> But that would be horrible for mispredict penalty.
-
-See the previous point.  Also, any insn known to be mispredicted can be
-flushed immediately anyway.
-
-> >> >> The first problem seems like the show stopper though. AFAIKS it would 
-> >> >> need a special builtin support that does something to create the table
-> >> >> entry, or a guarantee that we could put an inline asm right after the
-> >> >> builtin as a recognized pattern and that would give us the instruction
-> >> >> following the trap.
-> >> > 
-> >> > I'm not quite sure what this means.  Can't you always just put a
-> >> > 
-> >> > bla:	asm("");
-> >> > 
-> >> > in there, and use the address of "bla"?
-> >> 
-> >> Not AFAIKS. Put it where?
-> > 
-> > After wherever you want to know the address after.  You will have to
-> > make sure they stay together somehow.
-> 
-> I still don't follow.
-
-some_thing_you_want_to_know_the_address_after_let_us_call_it_A;
-empty_asm_that_we_can_take_the_address_of_known_as_B;
-
-You have to make sure the compiler keeps A and B together, does not
-insert anything between them, does put them in the assembler output in
-the same fragment, etc.
-
-> If you could give a built in that put a label at the address of the trap 
-> instruction that could be used later by inline asm then that could work
-> too:
-> 
->     __builtin_labeled_trap("1:");
->     asm ("    .section __bug_table,\"aw\"  \n\t"
->          "2:  .4byte 1b - 2b               \n\t"
->          "    .previous");
-
-How could a compiler do anything like that?!
-
-
-Segher
+    "block: add back the bd_holder_dir reference in bd_link_disk_holder"
