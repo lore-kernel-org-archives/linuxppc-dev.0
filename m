@@ -6,42 +6,42 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03B6FC4320A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:28:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BECFBC432BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:29:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA6B560EB0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:28:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AA6B560EB0
+	by mail.kernel.org (Postfix) with ESMTPS id 61B9160EB0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:29:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 61B9160EB0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx0sq2hLsz3fQK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 23:28:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx0tG0dysz3cbn
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 23:29:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ellerman.id.au; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx0kd0s3xz2ynj
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 23:22:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx0kh5x9sz3c6q
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 23:22:36 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gx0kb67Ftz9sWq;
- Fri, 27 Aug 2021 23:22:31 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gx0kf47Ktz9t1Q;
+ Fri, 27 Aug 2021 23:22:34 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Jordan Niethe <jniethe5@gmail.com>
-In-Reply-To: <20210729041317.366612-1-jniethe5@gmail.com>
-References: <20210729041317.366612-1-jniethe5@gmail.com>
-Subject: Re: [PATCH v2 1/2] selftests/powerpc: Add missing clobbered register
- to to ptrace TM tests
-Message-Id: <163007016833.52768.1911021541749287636.b4-ty@ellerman.id.au>
-Date: Fri, 27 Aug 2021 23:16:08 +1000
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Joel Stanley <joel@jms.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20210817045407.2445664-1-joel@jms.id.au>
+References: <20210817045407.2445664-1-joel@jms.id.au>
+Subject: Re: [PATCH v2 0/3] powerpc: mpc855_ads defconfig fixes
+Message-Id: <163007013701.52768.10491223554831404392.b4-ty@ellerman.id.au>
+Date: Fri, 27 Aug 2021 23:15:37 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -56,39 +56,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 29 Jul 2021 14:13:16 +1000, Jordan Niethe wrote:
-> ISA v3.1 removes TM but includes a synthetic implementation for
-> backwards compatibility.  With this implementation,  the tests
-> ptrace-tm-spd-gpr and ptrace-tm-gpr should never be able to make any
-> forward progress and eventually should be killed by the timeout.
-> Instead on a P10 running in P9 mode, ptrace_tm_gpr fails like so:
+On Tue, 17 Aug 2021 14:24:04 +0930, Joel Stanley wrote:
+> v2: fix typos, split out mtd fix from savedefconfig patch
 > 
-> test: ptrace_tm_gpr
-> tags: git_version:unknown
-> Starting the child
-> ...
-> ...
-> GPR[27]: 1 Expected: 2
-> GPR[28]: 1 Expected: 2
-> GPR[29]: 1 Expected: 2
-> GPR[30]: 1 Expected: 2
-> GPR[31]: 1 Expected: 2
-> [FAIL] Test FAILED on line 98
-> failure: ptrace_tm_gpr
-> selftests:  ptrace-tm-gpr [FAIL]
+> The first patch fixes a build warning I noticed when testing something
+> unrelated.
+> 
+> The second fixes a regression where the MTD partition support dropped out
+> of the config. I have enabled the dependency so this is still part of
+> the config.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] selftests/powerpc: Add missing clobbered register to to ptrace TM tests
-      https://git.kernel.org/powerpc/c/c95278a0534449efc64ac8169382bce217963be2
-[2/2] selftests: Skip TM tests on synthetic TM implementations
-      https://git.kernel.org/powerpc/c/e42edf9b9d126bb1c743f2e7984877ba27f09fe7
+[1/3] powerpc/config: Fix IPV6 warning in mpc855_ads
+      https://git.kernel.org/powerpc/c/c5ac55b6cbc604ad4144c380feae20f69453df91
+[2/3] powerpc/config: Renable MTD_PHYSMAP_OF
+      https://git.kernel.org/powerpc/c/d0e28a6145c3455b69991245e7f6147eb914b34a
+[3/3] powerpc/configs: Regenerate mpc885_ads_defconfig
+      https://git.kernel.org/powerpc/c/87e0d46bf68913f4c87dba94aadc00da658a874b
 
 cheers
