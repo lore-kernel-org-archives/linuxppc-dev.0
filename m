@@ -2,53 +2,81 @@ Return-Path: <SRS0=kkFw=NS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E58AC4320A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 06:23:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99886C4320A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 06:59:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4AAAA60EFE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 06:23:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4AAAA60EFE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 68A3E60FD8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 06:59:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 68A3E60FD8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GwqR85Nzqz307D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 16:23:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GwrF54VGjz3096
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 16:59:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=Ahob/aCa;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::632;
+ helo=mail-pl1-x632.google.com; envelope-from=andy.shevchenko@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=Ahob/aCa; dkim-atps=neutral
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com
+ [IPv6:2607:f8b0:4864:20::632])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GwqQh3Crkz2yJ6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 16:23:07 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 55FD1200FE7;
- Fri, 27 Aug 2021 08:23:04 +0200 (CEST)
-Received: from aprdc01srsp001v.ap-rdc01.nxp.com
- (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id DBF18200E4B;
- Fri, 27 Aug 2021 08:23:03 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 6E4D8183AC8B;
- Fri, 27 Aug 2021 14:23:02 +0800 (+08)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org
-Subject: [PATCH v2] ASoC: fsl_rpmsg: add soc specific data structure
-Date: Fri, 27 Aug 2021 14:00:38 +0800
-Message-Id: <1630044038-19036-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GwrDK4rwrz2yPq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 16:59:11 +1000 (AEST)
+Received: by mail-pl1-x632.google.com with SMTP id m4so3389897pll.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Aug 2021 23:59:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc:content-transfer-encoding;
+ bh=Rqn+GrCddwb17438Eb7/acjTBeKWly1ebyK4GCadnFc=;
+ b=Ahob/aCaoxGGmBX3uT/2Oo+coR/T1tys8xgPUYlJZHQ+79x1W7tMhNYHihEb3g00Pw
+ m+dgL0BLb9DG6XuqQrGIlpqK11vUr+Y2ytYHZ7LdTBFa1tFBJE3STgSjF41FypNGQroh
+ EB33JFOQSvpQcvOA/KVG6FqtXl7O0+BT+q4qQg5vtIojCX29E2kJoRY1MRvb3ovAgDbp
+ aFXAm0ssP0g7n3TLr2XOHHUaLQbsPjFKeMCjJaff6OnyliY0dDUUm9ACwqxN5BizOny5
+ 6o6R1k1p3THp4VGKPD1gPgbF9N5SJmHFccehHvyHptaqGZoYeq1bOsTJYfzYeYbXFcTi
+ n8+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=Rqn+GrCddwb17438Eb7/acjTBeKWly1ebyK4GCadnFc=;
+ b=FstEEy/AisEuN8d3AMzeUqzleDXv13mISTcI61sbNnGOT8ni0Uv8XWpg8ko6s1ELOn
+ m/zhSD6tJZsfZ/S20f11rMkSL8zcWWe9hLjEnDJl2WQUm/xXoj7okpJzXWopEaJcSjk8
+ +0G0W90ZltcPnmQyL924GqJCsNa3GQ4BBHm6q4r/OV5bK8HEouaxOiKxzbM6Q6/QsbJd
+ 6MnknNmvAIHRngYoPWjesq9T4sKfURxv9jMt98MZgEHgDPmNOV1WSSgBwx6d+zrZ0Ry8
+ NGiKz7qzXEqtCGrw1fR4d2mBHWuFOaD0UPncgVsT2VFuU8h+khYy6JXDvIqmF/T6QXUI
+ TeUw==
+X-Gm-Message-State: AOAM5330BjDwr9NOL+00GrOkCxWgoC1cin/H7K/p+iUdGdkPXy5W/PUo
+ hzIO/L8TgxoMMFoBFS2KscUPrZrikXBr+qQIE4E=
+X-Google-Smtp-Source: ABdhPJzbMPfKsiNwRsmJ6wf35o+bM3Vsllxj/xaKs1Zg3gEKi2+LtrBilr6TwQqyx2Jk+YbMtx83ULLwDM5rxvcqh8o=
+X-Received: by 2002:a17:902:bb81:b0:12d:a7ec:3d85 with SMTP id
+ m1-20020a170902bb8100b0012da7ec3d85mr7349833pls.17.1630047548297; Thu, 26 Aug
+ 2021 23:59:08 -0700 (PDT)
+MIME-Version: 1.0
+References: <20210624155526.2775863-1-tientzu@chromium.org>
+ <20210624155526.2775863-11-tientzu@chromium.org>
+In-Reply-To: <20210624155526.2775863-11-tientzu@chromium.org>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Fri, 27 Aug 2021 09:58:32 +0300
+Message-ID: <CAHp75VfVhVGFEQGeUKajrUKmkx_et_KakDDgroC2BrMMhd62yg@mail.gmail.com>
+Subject: Re: [PATCH v15 10/12] swiotlb: Add restricted DMA pool initialization
+To: Claire Chang <tientzu@chromium.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,128 +88,152 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: heikki.krogerus@linux.intel.com, thomas.hellstrom@linux.intel.com,
+ peterz@infradead.org, joonas.lahtinen@linux.intel.com,
+ dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk,
+ grant.likely@arm.com, paulus@samba.org, Frank Rowand <frowand.list@gmail.com>,
+ mingo@kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>,
+ sstabellini@kernel.org, Saravana Kannan <saravanak@google.com>,
+ Joerg Roedel <joro@8bytes.org>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Christoph Hellwig <hch@lst.de>,
+ Bartosz Golaszewski <bgolaszewski@baylibre.com>, bskeggs@redhat.com,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Thierry Reding <treding@nvidia.com>, intel-gfx@lists.freedesktop.org,
+ matthew.auld@intel.com, linux-devicetree <devicetree@vger.kernel.org>,
+ jxgao@google.com, daniel@ffwll.ch, Will Deacon <will@kernel.org>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ maarten.lankhorst@linux.intel.com, airlied@linux.ie,
+ Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ jani.nikula@linux.intel.com, Rob Herring <robh+dt@kernel.org>,
+ rodrigo.vivi@intel.com, bhelgaas@google.com,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Juergen Gross <jgross@suse.com>, Nicolas Boichat <drinkcat@chromium.org>,
+ Greg KH <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
+ quic_qiancai@quicinc.com, lkml <linux-kernel@vger.kernel.org>,
+ tfiga@chromium.org,
+ "list@263.net:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+ Jim Quinlan <james.quinlan@broadcom.com>, xypron.glpk@gmx.de,
+ thomas.lendacky@amd.com, Robin Murphy <robin.murphy@arm.com>,
+ bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Each platform has different supported rates and
-formats, so add soc specific data for each platform.
-This soc specific data is attached with compatible string.
+On Thu, Jun 24, 2021 at 6:59 PM Claire Chang <tientzu@chromium.org> wrote:
+>
+> Add the initialization function to create restricted DMA pools from
+> matching reserved-memory nodes.
+>
+> Regardless of swiotlb setting, the restricted DMA pool is preferred if
+> available.
+>
+> The restricted DMA pools provide a basic level of protection against the
+> DMA overwriting buffer contents at unexpected times. However, to protect
+> against general data leakage and system memory corruption, the system
+> needs to provide a way to lock down the memory access, e.g., MPU.
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Reviewed-by: Fabio Estevam <festevam@gmail.com>
----
-changes in v2:
-- remove checking rpmsg->soc_data is NULL
-- add Reviewed-by Fabio
 
- sound/soc/fsl/fsl_rpmsg.c | 46 +++++++++++++++++++++++++++++++++++----
- sound/soc/fsl/fsl_rpmsg.h | 12 ++++++++++
- 2 files changed, 54 insertions(+), 4 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_rpmsg.c b/sound/soc/fsl/fsl_rpmsg.c
-index d60f4dac6c1b..07abad7fe372 100644
---- a/sound/soc/fsl/fsl_rpmsg.c
-+++ b/sound/soc/fsl/fsl_rpmsg.c
-@@ -138,11 +138,42 @@ static const struct snd_soc_component_driver fsl_component = {
- 	.name           = "fsl-rpmsg",
- };
- 
-+static const struct fsl_rpmsg_soc_data imx7ulp_data = {
-+	.rates = SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |
-+		 SNDRV_PCM_RATE_48000,
-+	.formats = SNDRV_PCM_FMTBIT_S16_LE,
-+};
-+
-+static const struct fsl_rpmsg_soc_data imx8mm_data = {
-+	.rates = SNDRV_PCM_RATE_KNOT,
-+	.formats = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE |
-+		   SNDRV_PCM_FMTBIT_S32_LE | SNDRV_PCM_FMTBIT_DSD_U8 |
-+		   SNDRV_PCM_FMTBIT_DSD_U16_LE | SNDRV_PCM_FMTBIT_DSD_U32_LE,
-+};
-+
-+static const struct fsl_rpmsg_soc_data imx8mn_data = {
-+	.rates = SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 |
-+		 SNDRV_PCM_RATE_48000 | SNDRV_PCM_RATE_88200 |
-+		 SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_176400 |
-+		 SNDRV_PCM_RATE_192000,
-+	.formats = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE |
-+		   SNDRV_PCM_FMTBIT_S32_LE,
-+};
-+
-+static const struct fsl_rpmsg_soc_data imx8mp_data = {
-+	.rates = SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 |
-+		 SNDRV_PCM_RATE_48000 | SNDRV_PCM_RATE_88200 |
-+		 SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_176400 |
-+		 SNDRV_PCM_RATE_192000,
-+	.formats = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE |
-+		   SNDRV_PCM_FMTBIT_S32_LE,
-+};
-+
- static const struct of_device_id fsl_rpmsg_ids[] = {
--	{ .compatible = "fsl,imx7ulp-rpmsg-audio"},
--	{ .compatible = "fsl,imx8mm-rpmsg-audio"},
--	{ .compatible = "fsl,imx8mn-rpmsg-audio"},
--	{ .compatible = "fsl,imx8mp-rpmsg-audio"},
-+	{ .compatible = "fsl,imx7ulp-rpmsg-audio", .data = &imx7ulp_data},
-+	{ .compatible = "fsl,imx8mm-rpmsg-audio", .data = &imx8mm_data},
-+	{ .compatible = "fsl,imx8mn-rpmsg-audio", .data = &imx8mn_data},
-+	{ .compatible = "fsl,imx8mp-rpmsg-audio", .data = &imx8mp_data},
- 	{ /* sentinel */ }
- };
- MODULE_DEVICE_TABLE(of, fsl_rpmsg_ids);
-@@ -157,6 +188,13 @@ static int fsl_rpmsg_probe(struct platform_device *pdev)
- 	if (!rpmsg)
- 		return -ENOMEM;
- 
-+	rpmsg->soc_data = of_device_get_match_data(&pdev->dev);
-+
-+	fsl_rpmsg_dai.playback.rates = rpmsg->soc_data->rates;
-+	fsl_rpmsg_dai.capture.rates = rpmsg->soc_data->rates;
-+	fsl_rpmsg_dai.playback.formats = rpmsg->soc_data->formats;
-+	fsl_rpmsg_dai.capture.formats = rpmsg->soc_data->formats;
-+
- 	if (of_property_read_bool(np, "fsl,enable-lpa")) {
- 		rpmsg->enable_lpa = 1;
- 		rpmsg->buffer_size = LPA_LARGE_BUFFER_SIZE;
-diff --git a/sound/soc/fsl/fsl_rpmsg.h b/sound/soc/fsl/fsl_rpmsg.h
-index 4f5b49eb18d8..b04086fbf828 100644
---- a/sound/soc/fsl/fsl_rpmsg.h
-+++ b/sound/soc/fsl/fsl_rpmsg.h
-@@ -6,6 +6,16 @@
- #ifndef __FSL_RPMSG_H
- #define __FSL_RPMSG_H
- 
-+/*
-+ * struct fsl_rpmsg_soc_data
-+ * @rates: supported rates
-+ * @formats: supported formats
-+ */
-+struct fsl_rpmsg_soc_data {
-+	int rates;
-+	u64 formats;
-+};
-+
- /*
-  * struct fsl_rpmsg - rpmsg private data
-  *
-@@ -15,6 +25,7 @@
-  * @pll8k: parent clock for multiple of 8kHz frequency
-  * @pll11k: parent clock for multiple of 11kHz frequency
-  * @card_pdev: Platform_device pointer to register a sound card
-+ * @soc_data: soc specific data
-  * @mclk_streams: Active streams that are using baudclk
-  * @force_lpa: force enable low power audio routine if condition satisfy
-  * @enable_lpa: enable low power audio routine according to dts setting
-@@ -27,6 +38,7 @@ struct fsl_rpmsg {
- 	struct clk *pll8k;
- 	struct clk *pll11k;
- 	struct platform_device *card_pdev;
-+	const struct fsl_rpmsg_soc_data *soc_data;
- 	unsigned int mclk_streams;
- 	int force_lpa;
- 	int enable_lpa;
--- 
-2.17.1
 
+
+> +static int rmem_swiotlb_device_init(struct reserved_mem *rmem,
+> +                                   struct device *dev)
+> +{
+> +       struct io_tlb_mem *mem =3D rmem->priv;
+> +       unsigned long nslabs =3D rmem->size >> IO_TLB_SHIFT;
+> +
+> +       /*
+> +        * Since multiple devices can share the same pool, the private da=
+ta,
+> +        * io_tlb_mem struct, will be initialized by the first device att=
+ached
+> +        * to it.
+> +        */
+
+> +       if (!mem) {
+
+Can it be rather
+
+if (mem)
+  goto out_assign;
+
+or so?
+
+> +               mem =3D kzalloc(struct_size(mem, slots, nslabs), GFP_KERN=
+EL);
+> +               if (!mem)
+> +                       return -ENOMEM;
+> +
+> +               set_memory_decrypted((unsigned long)phys_to_virt(rmem->ba=
+se),
+> +                                    rmem->size >> PAGE_SHIFT);
+
+Below you are using a macro from pfn.h, but not here, I think it's PFN_DOWN=
+().
+
+> +               swiotlb_init_io_tlb_mem(mem, rmem->base, nslabs, false);
+> +               mem->force_bounce =3D true;
+> +               mem->for_alloc =3D true;
+> +
+> +               rmem->priv =3D mem;
+> +
+> +               if (IS_ENABLED(CONFIG_DEBUG_FS)) {
+> +                       mem->debugfs =3D
+> +                               debugfs_create_dir(rmem->name, debugfs_di=
+r);
+> +                       swiotlb_create_debugfs_files(mem);
+> +               }
+> +       }
+> +
+> +       dev->dma_io_tlb_mem =3D mem;
+> +
+> +       return 0;
+> +}
+> +
+> +static void rmem_swiotlb_device_release(struct reserved_mem *rmem,
+> +                                       struct device *dev)
+> +{
+> +       dev->dma_io_tlb_mem =3D io_tlb_default_mem;
+> +}
+> +
+> +static const struct reserved_mem_ops rmem_swiotlb_ops =3D {
+> +       .device_init =3D rmem_swiotlb_device_init,
+> +       .device_release =3D rmem_swiotlb_device_release,
+> +};
+> +
+> +static int __init rmem_swiotlb_setup(struct reserved_mem *rmem)
+> +{
+> +       unsigned long node =3D rmem->fdt_node;
+> +
+> +       if (of_get_flat_dt_prop(node, "reusable", NULL) ||
+> +           of_get_flat_dt_prop(node, "linux,cma-default", NULL) ||
+> +           of_get_flat_dt_prop(node, "linux,dma-default", NULL) ||
+> +           of_get_flat_dt_prop(node, "no-map", NULL))
+> +               return -EINVAL;
+> +
+> +       if (PageHighMem(pfn_to_page(PHYS_PFN(rmem->base)))) {
+> +               pr_err("Restricted DMA pool must be accessible within the=
+ linear mapping.");
+> +               return -EINVAL;
+> +       }
+> +
+> +       rmem->ops =3D &rmem_swiotlb_ops;
+> +       pr_info("Reserved memory: created restricted DMA pool at %pa, siz=
+e %ld MiB\n",
+> +               &rmem->base, (unsigned long)rmem->size / SZ_1M);
+
+Oh l=C3=A0 l=C3=A0, besides explicit casting that I believe can be avoided,=
+ %ld
+!=3D unsigned long. Can you check the printk-formats.rst document?
+
+> +       return 0;
+> +}
+> +
+> +RESERVEDMEM_OF_DECLARE(dma, "restricted-dma-pool", rmem_swiotlb_setup);
+>  #endif /* CONFIG_DMA_RESTRICTED_POOL */
+
+--=20
+With Best Regards,
+Andy Shevchenko
