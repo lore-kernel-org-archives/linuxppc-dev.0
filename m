@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 959C5C4320E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:24:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF78FC432BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:24:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2DC15604AC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:24:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2DC15604AC
+	by mail.kernel.org (Postfix) with ESMTPS id 5EF3C60F91
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:24:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5EF3C60F91
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx0mW5g6Wz3cl9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 23:24:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx0my0XBKz3dYW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 23:24:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ellerman.id.au; receiver=<UNKNOWN>)
@@ -26,24 +26,24 @@ Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx0k84GXfz2xXT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 23:22:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx0kB1Lvnz2ypP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 23:22:10 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gx0k76mjHz9sXN;
- Fri, 27 Aug 2021 23:22:07 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gx0k94crDz9ssD;
+ Fri, 27 Aug 2021 23:22:09 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
  Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <000a28c51808bbd802b505af42d2cb316c2be7d3.1629216000.git.christophe.leroy@csgroup.eu>
-References: <000a28c51808bbd802b505af42d2cb316c2be7d3.1629216000.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/ptrace: Make user_mode() common to PPC32 and PPC64
-Message-Id: <163007016280.52768.4828261616849206237.b4-ty@ellerman.id.au>
-Date: Fri, 27 Aug 2021 23:16:02 +1000
+In-Reply-To: <6457eb4f327313323ed1f70e540bbb4ddc9178fa.1629701106.git.christophe.leroy@csgroup.eu>
+References: <6457eb4f327313323ed1f70e540bbb4ddc9178fa.1629701106.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/syscalls: Remove __NR__exit
+Message-Id: <163007015022.52768.8922934112571254736.b4-ty@ellerman.id.au>
+Date: Fri, 27 Aug 2021 23:15:50 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -63,20 +63,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 17 Aug 2021 16:00:14 +0000 (UTC), Christophe Leroy wrote:
-> Today we have:
+On Mon, 23 Aug 2021 06:45:20 +0000 (UTC), Christophe Leroy wrote:
+> __NR_exit is nowhere used. On most architectures it was removed by
+> commit 135ab6ec8fda ("[PATCH] remove remaining errno and
+> __KERNEL_SYSCALLS__ references") but not on powerpc.
 > 
-> 	#ifdef __powerpc64__
-> 	#define user_mode(regs) ((((regs)->msr) >> MSR_PR_LG) & 0x1)
-> 	#else
-> 	#define user_mode(regs) (((regs)->msr & MSR_PR) != 0)
-> 	#endif
+> powerpc removed __KERNEL_SYSCALLS__ in commit 3db03b4afb3e ("[PATCH]
+> rename the provided execve functions to kernel_execve"), but __NR_exit
+> was left over.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/ptrace: Make user_mode() common to PPC32 and PPC64
-      https://git.kernel.org/powerpc/c/19e932eb6ea47f4f37513eb2ae0daee19117765c
+[1/1] powerpc/syscalls: Remove __NR__exit
+      https://git.kernel.org/powerpc/c/a00ea5b6f2bbef8b004b0b7228c61680a50c7c3f
 
 cheers
