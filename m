@@ -2,51 +2,82 @@ Return-Path: <SRS0=kkFw=NS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E0C6C432BE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 16:07:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2C75C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 16:34:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8DB02601FF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 16:07:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8DB02601FF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id DBA0660F14
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 16:34:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DBA0660F14
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx4PF3wNQz306F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Aug 2021 02:07:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx50W0sxvz3069
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Aug 2021 02:34:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Gx4Nk3dXHz2ypP
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Aug 2021 02:07:17 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 17RG4ccs010710;
- Fri, 27 Aug 2021 11:04:38 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 17RG4ajV010707;
- Fri, 27 Aug 2021 11:04:36 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Fri, 27 Aug 2021 11:04:36 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH] powerpc: Investigate static_call concept
-Message-ID: <20210827160436.GQ1583@gate.crashing.org>
-References: <8077899fee81f08a7dffbf185569d3a1f7a2ab68.1630057495.git.christophe.leroy@csgroup.eu>
- <YSj0R6g6HeboSk9n@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YSj0R6g6HeboSk9n@hirez.programming.kicks-ass.net>
-User-Agent: Mutt/1.4.2.3i
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=UxEhwv13;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429;
+ helo=mail-pf1-x429.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=UxEhwv13; dkim-atps=neutral
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
+ [IPv6:2607:f8b0:4864:20::429])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx4zw74w8z2yd6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Aug 2021 02:34:19 +1000 (AEST)
+Received: by mail-pf1-x429.google.com with SMTP id e16so5710333pfc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 09:34:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=wY8+szznmE152jYf8mqg/hGPdJjKzi+Dd5U0xnmTLEI=;
+ b=UxEhwv13lEE8IsmsIS1A/oE2ZAIMn7MahYfo99hGTtkWctlP3b7px7W2BBFOr/8jBh
+ uLrlp4rI3DB9x4tNjwswQT3tJGwX6VEmRMGKZ+TLKYY8ZjJ38T/ps5nSn7VFFKgd0oAr
+ fxHhvjcDCPpX4D+ogDr1Zu7IoICZPxhfSWl5udDRsf1eqXnbwUjcxW1gXE1viTxBqcMC
+ dMqxRfYoqES8+MJdOjqqkbSLsX7ySNEhD/zRKuWSxVl+dAgJw/U7En/YdGCfu4dG/6wa
+ EHYPA14MjZ9A1eAxtFhQrTh6LbMl/FOYjtbnxCtqBhdp+S+syskuJ5DuNCofW90lQgPN
+ oNEw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=wY8+szznmE152jYf8mqg/hGPdJjKzi+Dd5U0xnmTLEI=;
+ b=oEljHfqk+b8UzHOPP8MuP3mNIUD/e5sFoeIdtBBD65Y47RIGBqiZ8UwJrHZpEOr7EI
+ ZtxLiE9Kp/0zNv/AZsrFrt3qrcBFMjY2+76rQrPbAv7j6SOmOwcZjvrXSm4JrJ/7bNj/
+ UNnhSDAc3eOJcK2VbiA21cOZV0gxi83wGLbi65Lvi55WExuGn+FNwcJ41QV4zcQV/+fN
+ oA5b9xkfOWeLLNofYZ7BLNaxTopw6mD3nOiH20qXb56oGNbCj7vVwekjniGyj6wUH5mx
+ Son8dfi4GmTLNKynFuHXWOp5TWVPhbkGaR/lsmvu2pgZnacXfx/FXMoAQnv3J/fpAZzG
+ OSpQ==
+X-Gm-Message-State: AOAM5316tcGUhfducsSHUaK1bZTBbheQv3dD79AKRvs2Npj4hp+zWAU2
+ 9+3N+ecra8Wm5GQY8awE7XN8LDwX/q0=
+X-Google-Smtp-Source: ABdhPJyi+MQpkccdiubmw36IpNuLPMY5Hlz/MF9DQRQ+tA+Uqrmx8tVB5hbAv/T/JmWMg0TIt9YlTw==
+X-Received: by 2002:aa7:80d9:0:b029:2ed:49fa:6dc5 with SMTP id
+ a25-20020aa780d90000b02902ed49fa6dc5mr9867444pfn.3.1630082056791; 
+ Fri, 27 Aug 2021 09:34:16 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com (220-244-72-10.tpgi.com.au. [220.244.72.10])
+ by smtp.gmail.com with ESMTPSA id u24sm7083852pfm.85.2021.08.27.09.34.14
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 27 Aug 2021 09:34:16 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 0/6] powerpc: Make hash MMU code build configurable
+Date: Sat, 28 Aug 2021 02:34:04 +1000
+Message-Id: <20210827163410.1177154-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,39 +89,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
- Jason Baron <jbaron@akamai.com>, Paul Mackerras <paulus@samba.org>,
- Josh Poimboeuf <jpoimboe@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- Ard Biesheuvel <ardb@kernel.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Aug 27, 2021 at 04:18:47PM +0200, Peter Zijlstra wrote:
-> On Fri, Aug 27, 2021 at 09:45:37AM +0000, Christophe Leroy wrote:
-> > This RFC is to validate the concept of static_call on powerpc.
-> > 
-> > Highly copied from x86.
-> > 
-> > It replaces ppc_md.get_irq() which is called at every IRQ, by
-> > a static call.
-> 
-> The code looks saner, but does it actually improve performance? I'm
-> thinking the double branch also isn't free.
+Now that there's a platform that can make good use of it, here's
+a series that can prevent the hash MMU code being built for 64s
+platforms that don't need it.
 
-It isn't, but it is very cheap, while the branch-to-count is not, even
-*if* it is correctly predicted.
+Thanks,
+Nick
 
-> The paranoid in me would've made it:
-> 
-> 	BUG_ON(patch_branch(...));
-> 
-> just to make sure to notice the target not fitting. Ohh, patch_branch()
-> doesn't return the create_branch() error, perhaps that wants to be
-> fixed?
+Nicholas Piggin (6):
+  powerpc: Remove unused FW_FEATURE_NATIVE references
+  powerpc: Rename PPC_NATIVE to PPC_HASH_MMU_NATIVE
+  powerpc/pseries: Stop selecting PPC_HASH_MMU_NATIVE
+  powerpc/64s: Make hash MMU code build configurable
+  powerpc/microwatt: select POWER9_CPU
+  powerpc/microwatt: Stop building the hash MMU code
 
-Should that be allowed to fail ever?  I.e., should a failure be a fatal
-error?  Sounds very fragile otherwise.
+ arch/powerpc/Kconfig                          |   1 +
+ arch/powerpc/configs/microwatt_defconfig      |   2 +-
+ arch/powerpc/include/asm/book3s/64/mmu.h      |  22 +++-
+ .../include/asm/book3s/64/tlbflush-hash.h     |   7 ++
+ arch/powerpc/include/asm/book3s/64/tlbflush.h |   4 -
+ arch/powerpc/include/asm/book3s/pgtable.h     |   4 +
+ arch/powerpc/include/asm/firmware.h           |   8 --
+ arch/powerpc/include/asm/mmu.h                |  38 +++++-
+ arch/powerpc/include/asm/mmu_context.h        |   2 +
+ arch/powerpc/include/asm/paca.h               |   8 ++
+ arch/powerpc/kernel/asm-offsets.c             |   2 +
+ arch/powerpc/kernel/dt_cpu_ftrs.c             |  10 +-
+ arch/powerpc/kernel/entry_64.S                |   4 +-
+ arch/powerpc/kernel/exceptions-64s.S          |  16 +++
+ arch/powerpc/kernel/mce.c                     |   2 +-
+ arch/powerpc/kernel/mce_power.c               |  10 +-
+ arch/powerpc/kernel/paca.c                    |  18 ++-
+ arch/powerpc/kernel/process.c                 |  13 +-
+ arch/powerpc/kernel/prom.c                    |   2 +
+ arch/powerpc/kernel/setup_64.c                |   4 +
+ arch/powerpc/kexec/core_64.c                  |   4 +-
+ arch/powerpc/kexec/ranges.c                   |   4 +
+ arch/powerpc/kvm/Kconfig                      |   1 +
+ arch/powerpc/mm/book3s64/Makefile             |  19 +--
+ arch/powerpc/mm/book3s64/hash_native.c        | 104 ----------------
+ arch/powerpc/mm/book3s64/hash_pgtable.c       |   1 -
+ arch/powerpc/mm/book3s64/hash_utils.c         | 116 ++++++++++++++++--
+ .../{hash_hugetlbpage.c => hugetlbpage.c}     |   6 +
+ arch/powerpc/mm/book3s64/mmu_context.c        |  16 +++
+ arch/powerpc/mm/book3s64/pgtable.c            |  22 +++-
+ arch/powerpc/mm/book3s64/radix_pgtable.c      |   4 +
+ arch/powerpc/mm/book3s64/slb.c                |  16 ---
+ arch/powerpc/mm/copro_fault.c                 |   2 +
+ arch/powerpc/mm/fault.c                       |  17 +++
+ arch/powerpc/mm/pgtable.c                     |  10 +-
+ arch/powerpc/platforms/52xx/Kconfig           |   2 +-
+ arch/powerpc/platforms/Kconfig                |   4 +-
+ arch/powerpc/platforms/Kconfig.cputype        |  21 +++-
+ arch/powerpc/platforms/cell/Kconfig           |   3 +-
+ arch/powerpc/platforms/chrp/Kconfig           |   2 +-
+ arch/powerpc/platforms/embedded6xx/Kconfig    |   2 +-
+ arch/powerpc/platforms/maple/Kconfig          |   3 +-
+ arch/powerpc/platforms/microwatt/Kconfig      |   2 +-
+ arch/powerpc/platforms/pasemi/Kconfig         |   3 +-
+ arch/powerpc/platforms/powermac/Kconfig       |   3 +-
+ arch/powerpc/platforms/powernv/Kconfig        |   2 +-
+ arch/powerpc/platforms/powernv/idle.c         |   2 +
+ arch/powerpc/platforms/powernv/setup.c        |   2 +
+ arch/powerpc/platforms/pseries/Kconfig        |   1 -
+ arch/powerpc/platforms/pseries/lpar.c         |  68 +++++-----
+ arch/powerpc/platforms/pseries/lparcfg.c      |   2 +-
+ arch/powerpc/platforms/pseries/mobility.c     |   6 +
+ arch/powerpc/platforms/pseries/ras.c          |   4 +
+ arch/powerpc/platforms/pseries/reconfig.c     |   2 +
+ arch/powerpc/platforms/pseries/setup.c        |   6 +-
+ arch/powerpc/xmon/xmon.c                      |   8 +-
+ 56 files changed, 427 insertions(+), 240 deletions(-)
+ rename arch/powerpc/mm/book3s64/{hash_hugetlbpage.c => hugetlbpage.c} (95%)
 
+-- 
+2.23.0
 
-Segher
