@@ -2,78 +2,53 @@ Return-Path: <SRS0=kkFw=NS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90B35C432BE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 06:15:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E58AC4320A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 06:23:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EA6BD60F6F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 06:15:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EA6BD60F6F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4AAAA60EFE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 06:23:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4AAAA60EFE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GwqFq0Kn6z307x
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 16:15:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GwqR85Nzqz307D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 16:23:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=NHZ1G+5i;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::832;
- helo=mail-qt1-x832.google.com; envelope-from=shengjiu.wang@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=NHZ1G+5i; dkim-atps=neutral
-Received: from mail-qt1-x832.google.com (mail-qt1-x832.google.com
- [IPv6:2607:f8b0:4864:20::832])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GwqF14j30z2yHD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 16:14:43 +1000 (AEST)
-Received: by mail-qt1-x832.google.com with SMTP id t9so4549215qtp.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Aug 2021 23:14:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=J6wH6VQ81UagFZrBDuQfg5acAy2kFwSXlQ1BsRDUlyk=;
- b=NHZ1G+5iMYP+XgOXH5UWH9rl5MgrCTsw24zUz0jzVVBz+Xmrufgkm+tVgv6ucD2UWG
- S74VU3T8byNcrBZ2G9VlqPDsKNIlVcW/r7j+CkdQxc+++4BXjItHwYo0t3ILCKB/wnAp
- CEKmr9AqAKKl9+MtHquG8IriOb8ywV+JJXsBmM4iUSnhM+hUfB9rj8osl8FsghWTCPB0
- Ed0v7eB71ig5k51ZQTX8nfHtVuy+Qq6tE+lYQcDGYTg2vpU35rphOC1jKOIDR2H4eiDT
- x2wJV28v4xylCa/M7SwI2380goxX5k+D7RH3VvD14mxt3AKl2gBkdxxTn6eiGYI3K//B
- 0PEw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=J6wH6VQ81UagFZrBDuQfg5acAy2kFwSXlQ1BsRDUlyk=;
- b=l3S+ty25AiY5GYNVQvH9fAGiXnE921EceFm0DI31oV0nCzMuYx00hbDAjw8bJdOw2l
- Rig8qq/Yg8hHoeMcLRbbcGzPHPJSPKThMaMWaB7oS2v6bUfMQqgceD+Xs02fZXGmfc/U
- R0LhqVOBmPC0XZMEydGf+39gFqFYV37V/pWp1gkUb4QAcdeocsJz8AUfznvly8YK2JUi
- lJjW5wtfuVvSm7jJok1+6/yc/emZJupfjRaSydINydyCffh4IS8aTuqn2ByGr4HblYwK
- oM/RzZ3vqwxT7ofarc2DbQ+gnYhNJ1A0KFkpP5UCrLWU2jQybMMiGvrPveG1VA9w+zD4
- rNdw==
-X-Gm-Message-State: AOAM530Hnkgs83N8AVNrNfMppaxxSQ9fFRN5Qo/pbu8EHwPV7BrEdEGd
- ng35fJUIcgHXToypm6SmsswTUc9ugsHmZfiZ/Vc=
-X-Google-Smtp-Source: ABdhPJyrAdL7K8XPjqcwtnfWW1RsdpvIxn2uSbruNkxA69ge/iKoWUvnFJynkt+EtCBZhj7XUF4HWM80qKarwD1AKt8=
-X-Received: by 2002:ac8:5805:: with SMTP id g5mr6951210qtg.360.1630044880150; 
- Thu, 26 Aug 2021 23:14:40 -0700 (PDT)
-MIME-Version: 1.0
-References: <1629975460-17990-1-git-send-email-shengjiu.wang@nxp.com>
- <CAOMZO5BCsTMjJJPtLN6_seVcWb24A2ms11FP3HzR0i7t3GLSuA@mail.gmail.com>
-In-Reply-To: <CAOMZO5BCsTMjJJPtLN6_seVcWb24A2ms11FP3HzR0i7t3GLSuA@mail.gmail.com>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Fri, 27 Aug 2021 14:14:29 +0800
-Message-ID: <CAA+D8AOTAL9H8mr819v9VTQmJvNyKjnRNGPOX64LekjvXXGEcg@mail.gmail.com>
-Subject: Re: [PATCH 1/2] ASoC: fsl_rpmsg: add soc specific data structure
-To: Fabio Estevam <festevam@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GwqQh3Crkz2yJ6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 16:23:07 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 55FD1200FE7;
+ Fri, 27 Aug 2021 08:23:04 +0200 (CEST)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com
+ (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id DBF18200E4B;
+ Fri, 27 Aug 2021 08:23:03 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 6E4D8183AC8B;
+ Fri, 27 Aug 2021 14:23:02 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ alsa-devel@alsa-project.org
+Subject: [PATCH v2] ASoC: fsl_rpmsg: add soc specific data structure
+Date: Fri, 27 Aug 2021 14:00:38 +0800
+Message-Id: <1630044038-19036-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,31 +60,128 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-ALSA <alsa-devel@alsa-project.org>, Timur Tabi <timur@kernel.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Shengjiu Wang <shengjiu.wang@nxp.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.com>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Aug 26, 2021 at 7:54 PM Fabio Estevam <festevam@gmail.com> wrote:
->
-> Hi Shengjiu,
->
-> On Thu, Aug 26, 2021 at 8:19 AM Shengjiu Wang <shengjiu.wang@nxp.com> wrote:
->
-> > +       rpmsg->soc_data = of_device_get_match_data(&pdev->dev);
-> > +       if (rpmsg->soc_data) {
->
-> This check is not necessary, because rpmsg->soc_data is always non-NULL.
->
-> Other than that:
->
-> Reviewed-by: Fabio Estevam <festevam@gmail.com>
+Each platform has different supported rates and
+formats, so add soc specific data for each platform.
+This soc specific data is attached with compatible string.
 
-Thanks, I will update in v2.
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Reviewed-by: Fabio Estevam <festevam@gmail.com>
+---
+changes in v2:
+- remove checking rpmsg->soc_data is NULL
+- add Reviewed-by Fabio
 
-Best regards
-wang shengjiu
+ sound/soc/fsl/fsl_rpmsg.c | 46 +++++++++++++++++++++++++++++++++++----
+ sound/soc/fsl/fsl_rpmsg.h | 12 ++++++++++
+ 2 files changed, 54 insertions(+), 4 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_rpmsg.c b/sound/soc/fsl/fsl_rpmsg.c
+index d60f4dac6c1b..07abad7fe372 100644
+--- a/sound/soc/fsl/fsl_rpmsg.c
++++ b/sound/soc/fsl/fsl_rpmsg.c
+@@ -138,11 +138,42 @@ static const struct snd_soc_component_driver fsl_component = {
+ 	.name           = "fsl-rpmsg",
+ };
+ 
++static const struct fsl_rpmsg_soc_data imx7ulp_data = {
++	.rates = SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |
++		 SNDRV_PCM_RATE_48000,
++	.formats = SNDRV_PCM_FMTBIT_S16_LE,
++};
++
++static const struct fsl_rpmsg_soc_data imx8mm_data = {
++	.rates = SNDRV_PCM_RATE_KNOT,
++	.formats = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE |
++		   SNDRV_PCM_FMTBIT_S32_LE | SNDRV_PCM_FMTBIT_DSD_U8 |
++		   SNDRV_PCM_FMTBIT_DSD_U16_LE | SNDRV_PCM_FMTBIT_DSD_U32_LE,
++};
++
++static const struct fsl_rpmsg_soc_data imx8mn_data = {
++	.rates = SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 |
++		 SNDRV_PCM_RATE_48000 | SNDRV_PCM_RATE_88200 |
++		 SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_176400 |
++		 SNDRV_PCM_RATE_192000,
++	.formats = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE |
++		   SNDRV_PCM_FMTBIT_S32_LE,
++};
++
++static const struct fsl_rpmsg_soc_data imx8mp_data = {
++	.rates = SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 |
++		 SNDRV_PCM_RATE_48000 | SNDRV_PCM_RATE_88200 |
++		 SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_176400 |
++		 SNDRV_PCM_RATE_192000,
++	.formats = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE |
++		   SNDRV_PCM_FMTBIT_S32_LE,
++};
++
+ static const struct of_device_id fsl_rpmsg_ids[] = {
+-	{ .compatible = "fsl,imx7ulp-rpmsg-audio"},
+-	{ .compatible = "fsl,imx8mm-rpmsg-audio"},
+-	{ .compatible = "fsl,imx8mn-rpmsg-audio"},
+-	{ .compatible = "fsl,imx8mp-rpmsg-audio"},
++	{ .compatible = "fsl,imx7ulp-rpmsg-audio", .data = &imx7ulp_data},
++	{ .compatible = "fsl,imx8mm-rpmsg-audio", .data = &imx8mm_data},
++	{ .compatible = "fsl,imx8mn-rpmsg-audio", .data = &imx8mn_data},
++	{ .compatible = "fsl,imx8mp-rpmsg-audio", .data = &imx8mp_data},
+ 	{ /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(of, fsl_rpmsg_ids);
+@@ -157,6 +188,13 @@ static int fsl_rpmsg_probe(struct platform_device *pdev)
+ 	if (!rpmsg)
+ 		return -ENOMEM;
+ 
++	rpmsg->soc_data = of_device_get_match_data(&pdev->dev);
++
++	fsl_rpmsg_dai.playback.rates = rpmsg->soc_data->rates;
++	fsl_rpmsg_dai.capture.rates = rpmsg->soc_data->rates;
++	fsl_rpmsg_dai.playback.formats = rpmsg->soc_data->formats;
++	fsl_rpmsg_dai.capture.formats = rpmsg->soc_data->formats;
++
+ 	if (of_property_read_bool(np, "fsl,enable-lpa")) {
+ 		rpmsg->enable_lpa = 1;
+ 		rpmsg->buffer_size = LPA_LARGE_BUFFER_SIZE;
+diff --git a/sound/soc/fsl/fsl_rpmsg.h b/sound/soc/fsl/fsl_rpmsg.h
+index 4f5b49eb18d8..b04086fbf828 100644
+--- a/sound/soc/fsl/fsl_rpmsg.h
++++ b/sound/soc/fsl/fsl_rpmsg.h
+@@ -6,6 +6,16 @@
+ #ifndef __FSL_RPMSG_H
+ #define __FSL_RPMSG_H
+ 
++/*
++ * struct fsl_rpmsg_soc_data
++ * @rates: supported rates
++ * @formats: supported formats
++ */
++struct fsl_rpmsg_soc_data {
++	int rates;
++	u64 formats;
++};
++
+ /*
+  * struct fsl_rpmsg - rpmsg private data
+  *
+@@ -15,6 +25,7 @@
+  * @pll8k: parent clock for multiple of 8kHz frequency
+  * @pll11k: parent clock for multiple of 11kHz frequency
+  * @card_pdev: Platform_device pointer to register a sound card
++ * @soc_data: soc specific data
+  * @mclk_streams: Active streams that are using baudclk
+  * @force_lpa: force enable low power audio routine if condition satisfy
+  * @enable_lpa: enable low power audio routine according to dts setting
+@@ -27,6 +38,7 @@ struct fsl_rpmsg {
+ 	struct clk *pll8k;
+ 	struct clk *pll11k;
+ 	struct platform_device *card_pdev;
++	const struct fsl_rpmsg_soc_data *soc_data;
+ 	unsigned int mclk_streams;
+ 	int force_lpa;
+ 	int enable_lpa;
+-- 
+2.17.1
+
