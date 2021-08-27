@@ -4,21 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ECE51C432BE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:26:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 693D7C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:27:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5147F60EE7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:26:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5147F60EE7
+	by mail.kernel.org (Postfix) with ESMTPS id ED9D760EE7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:27:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ED9D760EE7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx0qX07Y8z3cJw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 23:26:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx0r54ngjz3cQZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 23:27:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ellerman.id.au; receiver=<UNKNOWN>)
@@ -26,24 +26,21 @@ Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx0kQ61FRz3bjG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 23:22:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx0kT6whFz2ymg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 23:22:25 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gx0kP4mPBz9t5K;
- Fri, 27 Aug 2021 23:22:21 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gx0kS2flKz9t54;
+ Fri, 27 Aug 2021 23:22:24 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <b864a92693ca8413ef0b19f0c12065c212899b6e.1625762905.git.christophe.leroy@csgroup.eu>
-References: <b864a92693ca8413ef0b19f0c12065c212899b6e.1625762905.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v4 1/4] powerpc/ptdump: Use DEFINE_SHOW_ATTRIBUTE()
-Message-Id: <163007016107.52768.13539127295741805273.b4-ty@ellerman.id.au>
-Date: Fri, 27 Aug 2021 23:16:01 +1000
+To: linuxppc-dev@lists.ozlabs.org, Cédric Le Goater <clg@kaod.org>
+In-Reply-To: <20210819125656.14498-1-clg@kaod.org>
+References: <20210819125656.14498-1-clg@kaod.org>
+Subject: Re: [PATCH 0/6] W=1 fixes
+Message-Id: <163007014714.52768.12295409571909724728.b4-ty@ellerman.id.au>
+Date: Fri, 27 Aug 2021 23:15:47 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -58,28 +55,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 8 Jul 2021 16:49:40 +0000 (UTC), Christophe Leroy wrote:
-> Use DEFINE_SHOW_ATTRIBUTE() instead of open coding
-> open() and fops.
+On Thu, 19 Aug 2021 14:56:50 +0200, Cédric Le Goater wrote:
+> With this small series, I could compile the ppc kernel with W=1. There
+> are certainly other configs which will need more fixes but it's a good
+> start.
 > 
+> The last 2 patches look hacky. Christophe, could you help with these
+> to find a better place to include the declarations ?
 > 
-> 
-> 
+> [...]
 
-Applied to powerpc/next.
+Patches 2-4 applied to powerpc/next.
 
-[1/4] powerpc/ptdump: Use DEFINE_SHOW_ATTRIBUTE()
-      https://git.kernel.org/powerpc/c/11f27a7fa4ca27935de74e3eb052bdc430d5f8d8
-[2/4] powerpc/ptdump: Remove unused 'page_size' parameter
-      https://git.kernel.org/powerpc/c/64b87b0c70e0fd28352895cba3c0a9631e0072dd
-[3/4] powerpc/ptdump: Reduce level numbers by 1 in note_page() and add p4d level
-      https://git.kernel.org/powerpc/c/cf98d2b6eea6a1b2c43f85680ad58fcc3ea9496b
-[4/4] powerpc/ptdump: Convert powerpc to GENERIC_PTDUMP
-      https://git.kernel.org/powerpc/c/e084728393a58e7fdafeee2e6b20e0faff09b557
+[2/6] powerpc/pseries/vas: Declare pseries_vas_fault_thread_fn() as static
+      https://git.kernel.org/powerpc/c/4cb266074aa17e9cafed3a92e9f43b161516569f
+[3/6] KVM: PPC: Book3S PR: Declare kvmppc_handle_exit_pr()
+      https://git.kernel.org/powerpc/c/cb53a93e33e108bfec00a13cd12696e1c0ccc8b6
+[4/6] KVM: PPC: Book3S PR: Remove unused variable
+      https://git.kernel.org/powerpc/c/b352ddae7b2ccd2cb29f495ca0a7c9b6848b623f
 
 cheers
