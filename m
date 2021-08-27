@@ -6,41 +6,42 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C650C432BE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:27:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16C32C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:28:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1847A60EE7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:27:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1847A60EE7
+	by mail.kernel.org (Postfix) with ESMTPS id B3D6760EE7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:28:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B3D6760EE7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx0rW5fZXz3c4f
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 23:27:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx0ry35Pwz3fGJ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 23:28:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
+ smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ellerman.id.au; receiver=<UNKNOWN>)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx0kW4YRNz3c52
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 23:22:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx0kX6nHDz3c5Z
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 23:22:28 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gx0kV5wMqz9sXk;
- Fri, 27 Aug 2021 23:22:26 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gx0kX2MvGz9t56;
+ Fri, 27 Aug 2021 23:22:28 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Cédric Le Goater <clg@kaod.org>
-In-Reply-To: <20210823090039.166120-1-clg@kaod.org>
-References: <20210823090039.166120-1-clg@kaod.org>
-Subject: Re: [PATCH v2 0/2] W=1 fixes
-Message-Id: <163007015205.52768.17096257536174291230.b4-ty@ellerman.id.au>
-Date: Fri, 27 Aug 2021 23:15:52 +1000
+To: Fabiano Rosas <farosas@linux.ibm.com>, kvm-ppc@vger.kernel.org
+In-Reply-To: <20210805212616.2641017-1-farosas@linux.ibm.com>
+References: <20210805212616.2641017-1-farosas@linux.ibm.com>
+Subject: Re: [PATCH v2 0/3] KVM: PPC: Book3S HV: kvmhv_copy_tofrom_guest_radix
+ changes
+Message-Id: <163007015492.52768.12349053667840423308.b4-ty@ellerman.id.au>
+Date: Fri, 27 Aug 2021 23:15:54 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -55,26 +56,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: christophe.leroy@c-s.fr, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 23 Aug 2021 11:00:37 +0200, Cédric Le Goater wrote:
-> These are the remaining patches needed to compile the ppc kernel with
-> W=1. Audit issues are now being addressed by Christophe in patch :
+On Thu, 5 Aug 2021 18:26:13 -0300, Fabiano Rosas wrote:
+> This series contains the fix for __kvmhv_copy_tofrom_guest_radix plus
+> a couple of changes.
 > 
-> [v2] powerpc/audit: Convert powerpc to AUDIT_ARCH_COMPAT_GENERIC
-> http://patchwork.ozlabs.org/project/linuxppc-dev/patch/dc14509a28a993738b1325211f412be72a4f9b1e.1629701132.git.christophe.leroy@csgroup.eu/
+> - Patch 1: The fix itself. I thought a smaller fix upfront would be
+>            better to facilitate any backports.
 > 
-> Thanks,
+> - Patch 2: Adds a sanity check to the low level function. Since the
+>            hcall API already enforces that the effective address must
+>            be on quadrant 0, moving the checks from the high level
+>            function would only add overhead to the hcall path, so I
+>            opted for a lightweight check at the low level.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc/prom: Fix unused variable ‘reserve_map’ when CONFIG_PPC32 is not set
-      https://git.kernel.org/powerpc/c/3accc0faef081b6813967b34f7d05a3edb855cbd
-[2/2] powerpc/compat_sys: Declare syscalls
-      https://git.kernel.org/powerpc/c/cc47ad409ba9cc950e9c492c8ba653dabd392148
+[1/3] KVM: PPC: Book3S HV: Fix copy_tofrom_guest routines
+      https://git.kernel.org/powerpc/c/5d7d6dac8fe99ed59eee2300e4a03370f94d5222
+[2/3] KVM: PPC: Book3S HV: Add sanity check to copy_tofrom_guest
+      https://git.kernel.org/powerpc/c/c232461c0c3b0aca637f0d7658a7f5d0bb393a4e
+[3/3] KVM: PPC: Book3S HV: Stop exporting symbols from book3s_64_mmu_radix
+      https://git.kernel.org/powerpc/c/0eb596f1e6103ebe122792a425b88c5dc21c4087
 
 cheers
