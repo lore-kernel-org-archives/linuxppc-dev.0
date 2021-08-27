@@ -4,49 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43D4AC432BE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:30:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83B3BC432BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:31:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E093560FC4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:30:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E093560FC4
+	by mail.kernel.org (Postfix) with ESMTPS id 2C451600CD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:31:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2C451600CD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx0w04RhFz3dF8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 23:30:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx0wZ6DZsz3fvb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 23:31:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ellerman.id.au; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx0ks5Cmhz3c7D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 23:22:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx0kw1SSjz3cBN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 23:22:48 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gx0kr2Q7Lz9sXN;
- Fri, 27 Aug 2021 23:22:44 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gx0kv2jnYz9tJD;
+ Fri, 27 Aug 2021 23:22:47 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Daniel Axtens <dja@axtens.net>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, clang-built-linux@googlegroups.com,
- Nathan Chancellor <nathan@kernel.org>, Fangrui Song <maskray@google.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- Nick Desaulniers <ndesaulniers@google.com>, Bill Wendling <morbo@google.com>
-In-Reply-To: <20210813200511.1905703-1-morbo@google.com>
-References: <20210812204951.1551782-1-morbo@google.com>
- <20210813200511.1905703-1-morbo@google.com>
-Subject: Re: [PATCH v2] ppc: add "-z notext" flag to disable diagnostic
-Message-Id: <163007013373.52768.2144821424552273961.b4-ty@ellerman.id.au>
-Date: Fri, 27 Aug 2021 23:15:33 +1000
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20210816041032.2839343-1-mpe@ellerman.id.au>
+References: <20210816041032.2839343-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/pseries: Fix build error when NUMA=n
+Message-Id: <163007014079.52768.17457843527177515212.b4-ty@ellerman.id.au>
+Date: Fri, 27 Aug 2021 23:15:40 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -61,26 +55,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Itaru Kitayama <itaru.kitayama@riken.jp>
+Cc: ldufour@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 13 Aug 2021 13:05:11 -0700, Bill Wendling wrote:
-> Object files used to link .tmp_vmlinux.kallsyms1 have many R_PPC64_ADDR64
-> relocations in non-SHF_WRITE sections. There are many text relocations (e.g. in
-> .rela___ksymtab_gpl+* and .rela__mcount_loc sections) in a -pie link and are
-> disallowed by LLD:
+On Mon, 16 Aug 2021 14:10:32 +1000, Michael Ellerman wrote:
+> As reported by lkp, if NUMA=n we see a build error:
 > 
->   ld.lld: error: can't create dynamic relocation R_PPC64_ADDR64 against local symbol in readonly segment; recompile object files with -fPIC or pass '-Wl,-z,notext' to allow text relocations in the output
->   >>> defined in arch/powerpc/kernel/head_64.o
->   >>> referenced by arch/powerpc/kernel/head_64.o:(__restart_table+0x10)
+>    arch/powerpc/platforms/pseries/hotplug-cpu.c: In function 'pseries_cpu_hotplug_init':
+>    arch/powerpc/platforms/pseries/hotplug-cpu.c:1022:8: error: 'node_to_cpumask_map' undeclared
+>     1022 |        node_to_cpumask_map[node]);
+> 
+> Use cpumask_of_node() which has an empty stub for NUMA=n, and when
+> NUMA=y does a lookup from node_to_cpumask_map[].
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] ppc: add "-z notext" flag to disable diagnostic
-      https://git.kernel.org/powerpc/c/0355785313e2191be4e1108cdbda94ddb0238c48
+[1/1] powerpc/pseries: Fix build error when NUMA=n
+      https://git.kernel.org/powerpc/c/8b893ef190b0c440877de04f767efca4bf4d6af8
 
 cheers
