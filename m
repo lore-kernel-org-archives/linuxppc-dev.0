@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 291EEC432BE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:30:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43D4AC432BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:30:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C9E8560FC4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:30:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C9E8560FC4
+	by mail.kernel.org (Postfix) with ESMTPS id E093560FC4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 13:30:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E093560FC4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx0vY3wsxz3cp0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 23:30:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Gx0w04RhFz3dF8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 23:30:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
  envelope-from=michael@ellerman.id.au; receiver=<UNKNOWN>)
@@ -26,25 +26,27 @@ Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx0kq2tvkz3c6n
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 23:22:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Gx0ks5Cmhz3c7D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 23:22:45 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gx0kp4HDfz9tjx;
- Fri, 27 Aug 2021 23:22:42 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Gx0kr2Q7Lz9sXN;
+ Fri, 27 Aug 2021 23:22:44 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Lukas Bulwahn <lukas.bulwahn@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Michael Neuling <mikey@neuling.org>, kvm-ppc@vger.kernel.org,
+To: Daniel Axtens <dja@axtens.net>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, clang-built-linux@googlegroups.com,
+ Nathan Chancellor <nathan@kernel.org>, Fangrui Song <maskray@google.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>,
- Anshuman Khandual <anshuman.khandual@arm.com>
-In-Reply-To: <20210819113954.17515-1-lukas.bulwahn@gmail.com>
-References: <20210819113954.17515-1-lukas.bulwahn@gmail.com>
-Subject: Re: [PATCH v2 0/2] Kconfig symbol fixes on powerpc
-Message-Id: <163007014161.52768.9837791663447874626.b4-ty@ellerman.id.au>
-Date: Fri, 27 Aug 2021 23:15:41 +1000
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ Nick Desaulniers <ndesaulniers@google.com>, Bill Wendling <morbo@google.com>
+In-Reply-To: <20210813200511.1905703-1-morbo@google.com>
+References: <20210812204951.1551782-1-morbo@google.com>
+ <20210813200511.1905703-1-morbo@google.com>
+Subject: Re: [PATCH v2] ppc: add "-z notext" flag to disable diagnostic
+Message-Id: <163007013373.52768.2144821424552273961.b4-ty@ellerman.id.au>
+Date: Fri, 27 Aug 2021 23:15:33 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -59,26 +61,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, stable@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Cc: Itaru Kitayama <itaru.kitayama@riken.jp>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 19 Aug 2021 13:39:52 +0200, Lukas Bulwahn wrote:
-> The script ./scripts/checkkconfigsymbols.py warns on invalid references to
-> Kconfig symbols (often, minor typos, name confusions or outdated references).
+On Fri, 13 Aug 2021 13:05:11 -0700, Bill Wendling wrote:
+> Object files used to link .tmp_vmlinux.kallsyms1 have many R_PPC64_ADDR64
+> relocations in non-SHF_WRITE sections. There are many text relocations (e.g. in
+> .rela___ksymtab_gpl+* and .rela__mcount_loc sections) in a -pie link and are
+> disallowed by LLD:
 > 
-> This patch series addresses all issues reported by
-> ./scripts/checkkconfigsymbols.py in ./drivers/usb/ for Kconfig and Makefile
-> files. Issues in the Kconfig and Makefile files indicate some shortcomings in
-> the overall build definitions, and often are true actionable issues to address.
+>   ld.lld: error: can't create dynamic relocation R_PPC64_ADDR64 against local symbol in readonly segment; recompile object files with -fPIC or pass '-Wl,-z,notext' to allow text relocations in the output
+>   >>> defined in arch/powerpc/kernel/head_64.o
+>   >>> referenced by arch/powerpc/kernel/head_64.o:(__restart_table+0x10)
 > 
 > [...]
 
-Patch 1 applied to powerpc/next.
+Applied to powerpc/next.
 
-[1/2] powerpc: kvm: remove obsolete and unneeded select
-      https://git.kernel.org/powerpc/c/c26d4c5d4f0df7207da3975458261927f9305465
+[1/1] ppc: add "-z notext" flag to disable diagnostic
+      https://git.kernel.org/powerpc/c/0355785313e2191be4e1108cdbda94ddb0238c48
 
 cheers
