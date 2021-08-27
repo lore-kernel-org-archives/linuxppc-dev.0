@@ -2,41 +2,78 @@ Return-Path: <SRS0=kkFw=NS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D14BC432BE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 04:07:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90B35C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 06:15:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 47B6460EE5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 04:07:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 47B6460EE5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id EA6BD60F6F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 06:15:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EA6BD60F6F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GwmQS66BVz2yn9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 14:07:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GwqFq0Kn6z307x
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Aug 2021 16:15:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20161025 header.b=NHZ1G+5i;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4GwmPx53pXz2yJT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 14:07:16 +1000 (AEST)
-Received: from fstn1-p1.ozlabs.ibm.com. (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 4666FAE80030;
- Fri, 27 Aug 2021 00:07:09 -0400 (EDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] KVM: PPC: Fix clearing never mapped TCEs in realmode
-Date: Fri, 27 Aug 2021 14:07:06 +1000
-Message-Id: <20210827040706.517652-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.30.2
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::832;
+ helo=mail-qt1-x832.google.com; envelope-from=shengjiu.wang@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=NHZ1G+5i; dkim-atps=neutral
+Received: from mail-qt1-x832.google.com (mail-qt1-x832.google.com
+ [IPv6:2607:f8b0:4864:20::832])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GwqF14j30z2yHD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Aug 2021 16:14:43 +1000 (AEST)
+Received: by mail-qt1-x832.google.com with SMTP id t9so4549215qtp.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Aug 2021 23:14:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=J6wH6VQ81UagFZrBDuQfg5acAy2kFwSXlQ1BsRDUlyk=;
+ b=NHZ1G+5iMYP+XgOXH5UWH9rl5MgrCTsw24zUz0jzVVBz+Xmrufgkm+tVgv6ucD2UWG
+ S74VU3T8byNcrBZ2G9VlqPDsKNIlVcW/r7j+CkdQxc+++4BXjItHwYo0t3ILCKB/wnAp
+ CEKmr9AqAKKl9+MtHquG8IriOb8ywV+JJXsBmM4iUSnhM+hUfB9rj8osl8FsghWTCPB0
+ Ed0v7eB71ig5k51ZQTX8nfHtVuy+Qq6tE+lYQcDGYTg2vpU35rphOC1jKOIDR2H4eiDT
+ x2wJV28v4xylCa/M7SwI2380goxX5k+D7RH3VvD14mxt3AKl2gBkdxxTn6eiGYI3K//B
+ 0PEw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=J6wH6VQ81UagFZrBDuQfg5acAy2kFwSXlQ1BsRDUlyk=;
+ b=l3S+ty25AiY5GYNVQvH9fAGiXnE921EceFm0DI31oV0nCzMuYx00hbDAjw8bJdOw2l
+ Rig8qq/Yg8hHoeMcLRbbcGzPHPJSPKThMaMWaB7oS2v6bUfMQqgceD+Xs02fZXGmfc/U
+ R0LhqVOBmPC0XZMEydGf+39gFqFYV37V/pWp1gkUb4QAcdeocsJz8AUfznvly8YK2JUi
+ lJjW5wtfuVvSm7jJok1+6/yc/emZJupfjRaSydINydyCffh4IS8aTuqn2ByGr4HblYwK
+ oM/RzZ3vqwxT7ofarc2DbQ+gnYhNJ1A0KFkpP5UCrLWU2jQybMMiGvrPveG1VA9w+zD4
+ rNdw==
+X-Gm-Message-State: AOAM530Hnkgs83N8AVNrNfMppaxxSQ9fFRN5Qo/pbu8EHwPV7BrEdEGd
+ ng35fJUIcgHXToypm6SmsswTUc9ugsHmZfiZ/Vc=
+X-Google-Smtp-Source: ABdhPJyrAdL7K8XPjqcwtnfWW1RsdpvIxn2uSbruNkxA69ge/iKoWUvnFJynkt+EtCBZhj7XUF4HWM80qKarwD1AKt8=
+X-Received: by 2002:ac8:5805:: with SMTP id g5mr6951210qtg.360.1630044880150; 
+ Thu, 26 Aug 2021 23:14:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <1629975460-17990-1-git-send-email-shengjiu.wang@nxp.com>
+ <CAOMZO5BCsTMjJJPtLN6_seVcWb24A2ms11FP3HzR0i7t3GLSuA@mail.gmail.com>
+In-Reply-To: <CAOMZO5BCsTMjJJPtLN6_seVcWb24A2ms11FP3HzR0i7t3GLSuA@mail.gmail.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Fri, 27 Aug 2021 14:14:29 +0800
+Message-ID: <CAA+D8AOTAL9H8mr819v9VTQmJvNyKjnRNGPOX64LekjvXXGEcg@mail.gmail.com>
+Subject: Re: [PATCH 1/2] ASoC: fsl_rpmsg: add soc specific data structure
+To: Fabio Estevam <festevam@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,69 +85,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Leonardo Bras <leobras.c@gmail.com>,
- kvm-ppc@vger.kernel.org
+Cc: Linux-ALSA <alsa-devel@alsa-project.org>, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Shengjiu Wang <shengjiu.wang@nxp.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since e1a1ef84cd07, pages for TCE tables for KVM guests are allocated
-only when needed. This allows skipping any update when clearing TCEs.
-This works mostly fine as TCE updates are handled when MMU is enabled.
-The realmode handlers fail with H_TOO_HARD when pages are not yet
-allocated except when clearing a TCE in which case KVM prints a warning
-but proceeds to dereference a NULL pointer which crashes the host OS.
+On Thu, Aug 26, 2021 at 7:54 PM Fabio Estevam <festevam@gmail.com> wrote:
+>
+> Hi Shengjiu,
+>
+> On Thu, Aug 26, 2021 at 8:19 AM Shengjiu Wang <shengjiu.wang@nxp.com> wrote:
+>
+> > +       rpmsg->soc_data = of_device_get_match_data(&pdev->dev);
+> > +       if (rpmsg->soc_data) {
+>
+> This check is not necessary, because rpmsg->soc_data is always non-NULL.
+>
+> Other than that:
+>
+> Reviewed-by: Fabio Estevam <festevam@gmail.com>
 
-This has not been caught so far as the change is reasonably new,
-POWER9 runs mostly radix which does not use realmode handlers.
-With hash, the default TCE table is memset() by QEMU the machine reset
-which triggers page faults and the KVM TCE device's kvm_spapr_tce_fault()
-handles those with MMU on. And the huge DMA windows are not cleared
-by VMs whicn instead successfully create a DMA window big enough to map
-the VM memory 1:1 and then VMs just map everything without clearing.
+Thanks, I will update in v2.
 
-This started crashing now as upcoming sriov-under-powervm support added
-a mode when a dymanic DMA window not big enough to map the VM memory 1:1
-but it is used anyway, and the VM now is the first (i.e. not QEMU) to
-clear a just created table. Note that the upstream QEMU needs to be
-modified to trigger the VM to trigger the host OS crash.
-
-This replaces WARN_ON_ONCE_RM() with a check and return.
-This adds another warning if TCE is not being cleared.
-
-Cc: Leonardo Bras <leobras.c@gmail.com>
-Fixes: e1a1ef84cd07 ("KVM: PPC: Book3S: Allocate guest TCEs on demand too")
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-
-With recent changes in the printk() department, calling pr_err() when MMU
-off causes lockdep lockups which I did not dig any further so we should
-start getting rid of the realmode's WARN_ON_ONCE_RM().
----
- arch/powerpc/kvm/book3s_64_vio_hv.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index 083a4e037718..e5ba96c41f3f 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -173,10 +173,13 @@ static void kvmppc_rm_tce_put(struct kvmppc_spapr_tce_table *stt,
- 	idx -= stt->offset;
- 	page = stt->pages[idx / TCES_PER_PAGE];
- 	/*
--	 * page must not be NULL in real mode,
--	 * kvmppc_rm_ioba_validate() must have taken care of this.
-+	 * kvmppc_rm_ioba_validate() allows pages not be allocated if TCE is
-+	 * being cleared, otherwise it returns H_TOO_HARD and we skip this.
- 	 */
--	WARN_ON_ONCE_RM(!page);
-+	if (!page) {
-+		WARN_ON_ONCE_RM(tce != 0);
-+		return;
-+	}
- 	tbl = kvmppc_page_address(page);
- 
- 	tbl[idx % TCES_PER_PAGE] = tce;
--- 
-2.30.2
-
+Best regards
+wang shengjiu
