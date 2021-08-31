@@ -2,70 +2,69 @@ Return-Path: <SRS0=qVND=NW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A577EC432BE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Aug 2021 08:54:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88015C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Aug 2021 08:55:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B67A560F46
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Aug 2021 08:54:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B67A560F46
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id E20CD604D7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Aug 2021 08:55:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E20CD604D7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GzLbz0h76z2ynB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Aug 2021 18:54:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=FhH9lOPu;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Received: from desiato.infradead.org (desiato.infradead.org
- [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GzLcQ27b9z30Pd
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Aug 2021 18:55:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GzLb570GNz2xh1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Aug 2021 18:54:09 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=f3fv6g3WY1dNgkG1wWMP0wIKttOnssZK8A7WNBphc38=; b=FhH9lOPu/UT4X9v1NnmpLuw2EZ
- 5m6zNh3HxcxPVEZn9orUKyQESgZfnWmM4cBdWQHXL17LPDEJ9M+eVFGkzzzKpGYvyHKkg8bN3kq2h
- PWlMv4gbuCOGgWN7uF/wQSmnk1dBVkHbFDnZJ+sgqH5+GNdmgi7aIGFuiYeBoixBVvax+BVhG2zgU
- Yn6gokFvr+M0kPUDN0x+cQHeN3lElOwiCSFdcTlTmWstGKTTZwBXyBVUr/lVR8d7XHL1AoOIj3j6X
- lMDMIwUF+KEY8oe88w2E8SIYJpuw9sPoaFm6faSl7xDW9z/xZA4giX4VDdmmQDFhzsjBOfxga65Nw
- t8vfKdZw==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1mKzWD-00Eeoz-Hi; Tue, 31 Aug 2021 08:53:21 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 3D918300109;
- Tue, 31 Aug 2021 10:53:18 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 1780A2C7BAE48; Tue, 31 Aug 2021 10:53:18 +0200 (CEST)
-Date: Tue, 31 Aug 2021 10:53:18 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/32: Add support for out-of-line static calls
-Message-ID: <YS3t/s9nojyCn9ev@hirez.programming.kicks-ass.net>
-References: <cbfc0376461d02867c75cee72bb9167e16f4d0b0.1630396954.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GzLbt2kJnz2yfn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Aug 2021 18:54:47 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4GzLbm5bJSz9sTZ;
+ Tue, 31 Aug 2021 10:54:44 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 7g6dDEZLufQh; Tue, 31 Aug 2021 10:54:44 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4GzLbm4cx0z9sTX;
+ Tue, 31 Aug 2021 10:54:44 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8243C8B7DE;
+ Tue, 31 Aug 2021 10:54:44 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id ETEfsJj37GqN; Tue, 31 Aug 2021 10:54:44 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 14BA48B7DD;
+ Tue, 31 Aug 2021 10:54:44 +0200 (CEST)
+Subject: Re: [PATCH] powerpc/64: Avoid link stack corruption in kexec_wait()
+To: Daniel Axtens <dja@axtens.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <3ffe7775f3fcda8e5fca6a7bc7db0b8251153c67.1629705147.git.christophe.leroy@csgroup.eu>
+ <87ilzm6str.fsf@dja-thinkpad.axtens.net>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <9f43118b-ef81-9a80-0e0b-5e74433e0b8c@csgroup.eu>
+Date: Tue, 31 Aug 2021 10:54:38 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cbfc0376461d02867c75cee72bb9167e16f4d0b0.1630396954.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <87ilzm6str.fsf@dja-thinkpad.axtens.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,104 +76,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
- Jason Baron <jbaron@akamai.com>, Paul Mackerras <paulus@samba.org>,
- Josh Poimboeuf <jpoimboe@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- Ard Biesheuvel <ardb@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Aug 31, 2021 at 08:05:21AM +0000, Christophe Leroy wrote:
-
-> +#define ARCH_DEFINE_STATIC_CALL_NULL_TRAMP(name)			\
-> +	asm(".pushsection .text, \"ax\"				\n"	\
-> +	    ".align 4						\n"	\
-> +	    ".globl " STATIC_CALL_TRAMP_STR(name) "		\n"	\
-> +	    STATIC_CALL_TRAMP_STR(name) ":			\n"	\
-> +	    "	blr						\n"	\
-> +	    "	nop						\n"	\
-> +	    "	nop						\n"	\
-> +	    "	nop						\n"	\
-> +	    ".type " STATIC_CALL_TRAMP_STR(name) ", @function	\n"	\
-> +	    ".size " STATIC_CALL_TRAMP_STR(name) ", . - " STATIC_CALL_TRAMP_STR(name) " \n" \
-> +	    ".popsection					\n")
-
-> +static int patch_trampoline_32(u32 *addr, unsigned long target)
-> +{
-> +	int err;
-> +
-> +	err = patch_instruction(addr++, ppc_inst(PPC_RAW_LIS(_R12, PPC_HA(target))));
-> +	err |= patch_instruction(addr++, ppc_inst(PPC_RAW_ADDI(_R12, _R12, PPC_LO(target))));
-> +	err |= patch_instruction(addr++, ppc_inst(PPC_RAW_MTCTR(_R12)));
-> +	err |= patch_instruction(addr, ppc_inst(PPC_RAW_BCTR()));
-> +
-> +	return err;
-> +}
-
-There can be concurrent execution and modification; the above doesn't
-look safe in that regard. What happens if you've say, done the first
-two, but not the latter two and execution happens (on a different
-CPU or through IRQ context, etc..)?
-
-> +void arch_static_call_transform(void *site, void *tramp, void *func, bool tail)
-> +{
-> +	int err;
-> +	unsigned long target = (long)func;
-> +
-> +	if (!tramp)
-> +		return;
-> +
-> +	mutex_lock(&text_mutex);
-> +
-> +	if (!func)
-> +		err = patch_instruction(tramp, ppc_inst(PPC_RAW_BLR()));
-> +	else if (is_offset_in_branch_range((long)target - (long)tramp))
-> +		err = patch_branch(tramp, target, 0);
-
-These two are single instruction modifications and I'm assuming the
-hardware is sane enough that execution sees either the old or the new
-instruction. So this should work.
-
-> +	else if (IS_ENABLED(CONFIG_PPC32))
-> +		err = patch_trampoline_32(tramp, target);
-> +	else
-> +		BUILD_BUG();
-> +
-> +	mutex_unlock(&text_mutex);
-> +
-> +	if (err)
-> +		panic("%s: patching failed %pS at %pS\n", __func__, func, tramp);
-> +}
-> +EXPORT_SYMBOL_GPL(arch_static_call_transform);
-
-One possible solution that we explored on ARM64, was having the
-trampoline be in 2 slots:
 
 
-	b 1f
+Le 31/08/2021 à 08:17, Daniel Axtens a écrit :
+> Hi Christophe,
+> 
+>> Use bcl 20,31,+4 instead of bl in order to preserve link stack.
+>>
+>> See commit c974809a26a1 ("powerpc/vdso: Avoid link stack corruption
+>> in __get_datapage()") for details.
+> 
+>  From my understanding of that commit message, the change helps to keep
+> the link stack correctly balanced which is helpful for performance,
+> rather than for correctness. If I understand correctly, kexec_wait is
+> not in a hot path - rather it is where CPUs spin while waiting for
+> kexec. Is there any benefit in using the more complicated opcode in this
+> situation?
 
-1:	blr
-	nop
-	nop
-	nop
+AFAICS the main benefit is to keep things consistent over the kernel and not have to wonder "is it a 
+hot path or not ? If it is I use bcl 20,31, if it is not I use bl". The best way to keep things in 
+order is to always use the right instruction.
 
-2:	blr
-	nop
-	nop
-	nop
+> 
+>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>> ---
+>>   arch/powerpc/kernel/misc_64.S | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+>> index 4b761a18a74d..613509907166 100644
+>> --- a/arch/powerpc/kernel/misc_64.S
+>> +++ b/arch/powerpc/kernel/misc_64.S
+>> @@ -255,7 +255,7 @@ _GLOBAL(scom970_write)
+>>    * Physical (hardware) cpu id should be in r3.
+>>    */
+>>   _GLOBAL(kexec_wait)
+>> -	bl	1f
+>> +	bcl	20,31,1f
+>>   1:	mflr	r5
+> 
+> Would it be better to create a macro of some sort to wrap this unusual
+> special form so that the meaning is more clear?
 
-Where initially the first slot is active (per "b 1f"), then you write
-the second slot, and as a final act, re-write the initial branch to
-point to slot 2.
+Not sure, I think people working with assembly will easily recognise that form whereas an obscure 
+macro is always puzzling.
 
-Then you execute synchronize_rcu_tasks() under your text mutex
-(careful!) to ensure all users of your slot1 are gone and the next
-modification repeats the whole thing, except for using slot1 etc..
+I like macros when they allow you to not repeat again and again the same sequence of several 
+instructions, but here it is a single quite simple instruction which is not worth a macro in my mind.
 
-Eventually I think Ard came up with the latest ARM64 proposal which puts
-a literal in a RO section (could be the text section I suppose) and
-loads and branches to that.
-
-Anyway, the thing is, you can really only modify a single instruction at
-the time and need to ensure concurrent execution is correct.
+Christophe
