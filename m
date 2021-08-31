@@ -6,44 +6,43 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FB13C432BE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Aug 2021 13:58:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A67A0C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Aug 2021 13:59:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 015DA60241
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Aug 2021 13:58:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 015DA60241
+	by mail.kernel.org (Postfix) with ESMTPS id 4A73B60241
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Aug 2021 13:59:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4A73B60241
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GzTLS3Jrzz2yKB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Aug 2021 23:58:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GzTLv0HgDz2ymx
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Aug 2021 23:59:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
+ smtp.mailfrom=ellerman.id.au (client-ip=2401:3900:2:1::2; helo=ozlabs.org;
  envelope-from=michael@ellerman.id.au; receiver=<UNKNOWN>)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4GzTL23YLrz2yHp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Aug 2021 23:58:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4GzTL3319Bz2yHp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Aug 2021 23:58:19 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4GzTL141Fwz9sxS;
- Tue, 31 Aug 2021 23:58:17 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4GzTL30Rc2z9t0J;
+ Tue, 31 Aug 2021 23:58:19 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
+To: Michael Neuling <mikey@neuling.org>, Anton Blanchard <anton@ozlabs.org>,
+ Joel Stanley <joel@jms.id.au>, Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <c5a07fadea33d640ad10cecf0ac8faaec1c524e0.1629898474.git.christophe.leroy@csgroup.eu>
-References: <c5a07fadea33d640ad10cecf0ac8faaec1c524e0.1629898474.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Redefine HMT_xxx macros as empty on PPC32
-Message-Id: <163041821923.889087.15635336796899145978.b4-ty@ellerman.id.au>
-Date: Tue, 31 Aug 2021 23:56:59 +1000
+In-Reply-To: <20210826122653.3236867-1-joel@jms.id.au>
+References: <20210826122653.3236867-1-joel@jms.id.au>
+Subject: Re: [PATCH 0/3] powerpc/microwatt: Device tree and config updates
+Message-Id: <163041822670.889087.3318911277057471191.b4-ty@ellerman.id.au>
+Date: Tue, 31 Aug 2021 23:57:06 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -58,24 +57,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 25 Aug 2021 13:34:45 +0000 (UTC), Christophe Leroy wrote:
-> HMT_xxx macros are macros for adjusting thread priority
-> (hardware multi-threading) are macros inherited from PPC64
-> via commit 5f7c690728ac ("[PATCH] powerpc: Merged ppc_asm.h")
+On Thu, 26 Aug 2021 21:56:50 +0930, Joel Stanley wrote:
+> This enables the liteeth network device for microwatt which will be
+> merged in v5.15.
 > 
-> Those instructions are pointless on PPC32, but some common
-> fonctions like arch_cpu_idle() use them.
+> It also turns on some options so the microwatt defconfig can be used to
+> boot a userspace with systemd.
+> 
+> Joel Stanley (3):
+>   powerpc/microwatt: Add Ethernet to device tree
+>   powerpc/configs/microwattt: Enable Liteeth
+>   powerpc/configs/microwatt: Enable options for systemd
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Redefine HMT_xxx macros as empty on PPC32
-      https://git.kernel.org/powerpc/c/8149238ffd210875f5a77e3c654bb59b58da35e3
+[1/3] powerpc/microwatt: Add Ethernet to device tree
+      https://git.kernel.org/powerpc/c/602d0f96563c2e0b8e1ddb22ac46bf7f58480d64
+[2/3] powerpc/configs/microwattt: Enable Liteeth
+      https://git.kernel.org/powerpc/c/ef4fcaf99cd27eb48790f2adc4eff456dbe1dec4
+[3/3] powerpc/configs/microwatt: Enable options for systemd
+      https://git.kernel.org/powerpc/c/3e18e271182206c996a3a7efbbe70c66307ef137
 
 cheers
