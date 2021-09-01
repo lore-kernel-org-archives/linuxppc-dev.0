@@ -2,95 +2,69 @@ Return-Path: <SRS0=Ph+o=NX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62273C432BE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 20:34:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BE83C4320A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 21:02:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D52D56109E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 20:34:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D52D56109E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id B31A26069E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 21:02:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B31A26069E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H0G4q44C5z3cJn
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 06:34:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H0Ghm2Chnz2yP5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 07:02:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20161025 header.b=d1pxFxqJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=dbtMU/12;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=flex--seanjc.bounces.google.com
- (client-ip=2607:f8b0:4864:20::849; helo=mail-qt1-x849.google.com;
- envelope-from=39-ivyqykdiw8uq3zsw44w1u.s421y3ad55s-tub1y898.4f1qr8.47w@flex--seanjc.bounces.google.com;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=d1pxFxqJ; dkim-atps=neutral
-Received: from mail-qt1-x849.google.com (mail-qt1-x849.google.com
- [IPv6:2607:f8b0:4864:20::849])
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=bombadil.20210309 header.b=dbtMU/12; 
+ dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H0G0V0XBhz2yJj
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Sep 2021 06:30:49 +1000 (AEST)
-Received: by mail-qt1-x849.google.com with SMTP id
- k3-20020ac80203000000b0029f2c3c6b34so855927qtg.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Sep 2021 13:30:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=reply-to:date:in-reply-to:message-id:mime-version:references
- :subject:from:to:cc;
- bh=6ZnGJJdv4n8mbt+RRpvBUW8D60FX4+hBHNzvuCZCTkM=;
- b=d1pxFxqJMbf3szpeZg0swAOEez6wH0zflg3vAq4KGbMImJ4S+KcHkhLB2r/3ioVEjj
- ZLhMOpEXMbzCd0IWl9AkSsBlcbzJmd/lYcIK62ZIhRKzL4NvbVpZZVPoNMVqdiHHbt4l
- QbALEWkmHHyf/Sxszih3MXmSDzw28c9uX4Z6jqZP9TuQMex85DDMRFWrKHdddQ1LfBDG
- HR2V+1v5QBtwvPNmJM7wbgXhZ/x0UcPvJa2o/Y/oXzQq4oHwW3F/hSIbY0H235BKyazb
- jt7ElehpbA0TgSdQZQHpNpry8CrPH3K3ffwS8r087C919IqMkZVLjJpdsnXa0ZlxJf0O
- /VMg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:reply-to:date:in-reply-to:message-id
- :mime-version:references:subject:from:to:cc;
- bh=6ZnGJJdv4n8mbt+RRpvBUW8D60FX4+hBHNzvuCZCTkM=;
- b=Th3hG4wWDJAopZl41gkrpbhihbIhsaKUpxMzJVP5VcL5KmMdkl0uKd+ch6hOBMZRzb
- C9KfIJ+wV0EJskHpRautVQWZkzbEQj//s0q5/wS0WanKe6w1laB8kaYE2fclMnGJJJwP
- 6kclmfNLOO1aDyIyYORuAxZz2tC/T8H5jrZXMkUCeR9zmKTBQIo5D6qUWlrlmvn8aQqV
- y/JTiJPSuWk/Ea22E2ohZRw2x42rkkVoPhPMkEpYk0lx0C+Ww9M+Zm4MiG9YYgW8hT0W
- Cn2b+kGZEkC6lQY7p833ZO6l6EDYHKjvc533o2GvfrFrcKay5ylUL1paGnVU79UwdbnB
- kquA==
-X-Gm-Message-State: AOAM5330pWXdMrWoUtJoRVydPhZcqAf2BjUiOUA6A5ZXDNTw0hK1wlB6
- nEZZrqRPfsm5iH3bkXYX9+JJRBDyYrA=
-X-Google-Smtp-Source: ABdhPJwYmVdzRr+jSYE642JvpN+Oe5nX73xj03Cuo8ty9uFNk/pmfGvXKihV+8dOLi2D30iy1yma/XQrogE=
-X-Received: from seanjc798194.pdx.corp.google.com
- ([2620:15c:90:200:9935:5a5e:c7b6:e649])
- (user=seanjc job=sendgmr) by 2002:a05:6214:104d:: with SMTP id
- l13mr1694132qvr.13.1630528247381; Wed, 01 Sep 2021 13:30:47 -0700 (PDT)
-Date: Wed,  1 Sep 2021 13:30:30 -0700
-In-Reply-To: <20210901203030.1292304-1-seanjc@google.com>
-Message-Id: <20210901203030.1292304-6-seanjc@google.com>
-Mime-Version: 1.0
-References: <20210901203030.1292304-1-seanjc@google.com>
-X-Mailer: git-send-email 2.33.0.153.gba50c8fa24-goog
-Subject: [PATCH v3 5/5] KVM: selftests: Remove __NR_userfaultfd syscall
- fallback
-From: Sean Christopherson <seanjc@google.com>
-To: Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, 
- Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Michael Ellerman <mpe@ellerman.id.au>, 
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- Oleg Nesterov <oleg@redhat.com>, 
- Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, 
- Andy Lutomirski <luto@kernel.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
- "Paul E. McKenney" <paulmck@kernel.org>, Boqun Feng <boqun.feng@gmail.com>, 
- Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H0Gh422zZz2xtj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Sep 2021 07:01:40 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
+ Reply-To:Content-Type:Content-ID:Content-Description;
+ bh=o2jFAXs2S20ugcqcgWqTKDs1dtJRAdxtjSIxmQce0yE=; b=dbtMU/12XHhPiB9HTZczz4LIbL
+ /SGIKdCY+MBcFiD6mSeE2V0upDnAm0UTQt69AsWTcGeJPTyukWEtJzB+8dKexiUmI6K+N0ZvKWbdJ
+ VccAlCXnv79qwvdgVpOHFZlxYmCySO1bBcO5FC20wsXdFFrVWqISnO8yNKqMTttDTypOPmbpA+lnr
+ 7yGKtvOKhzeSvCksN8fjFTeu1vXblO9nV8CW4WTdSdvPZ4lAJvZosM5WETwI/JVjVXymr6V9JI4dV
+ b0sWE7OTUZY6z39q2bMgKPla8ajMRMcIgtJqWHuAe96VaI+ewqEYt5IhI+bazR2V87pIsp4nnEkeC
+ En+/5xnw==;
+Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
+ (Red Hat Linux)) id 1mLXLR-007LWF-Ik; Wed, 01 Sep 2021 21:00:29 +0000
+From: Luis Chamberlain <mcgrof@kernel.org>
+To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
+ thunder.leizhen@huawei.com, lee.jones@linaro.org, geoff@infradead.org,
+ mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ jim@jtan.com, haris.iqbal@ionos.com, jinpu.wang@ionos.com,
+ josh.h.morris@us.ibm.com, pjk1939@linux.ibm.com, tim@cyberelk.net,
+ richard@nod.at, miquel.raynal@bootlin.com, vigneshr@ti.com
+Subject: [PATCH 06/10] block/rsxx: add error handling support for add_disk()
+Date: Wed,  1 Sep 2021 14:00:24 -0700
+Message-Id: <20210901210028.1750956-7-mcgrof@kernel.org>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20210901210028.1750956-1-mcgrof@kernel.org>
+References: <20210901210028.1750956-1-mcgrof@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,42 +76,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Sean Christopherson <seanjc@google.com>
-Cc: kvm@vger.kernel.org, Ben Gardon <bgardon@google.com>,
- linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
- linux-mips@vger.kernel.org, Peter Foley <pefoley@google.com>,
- Paul Mackerras <paulus@samba.org>, linux-kselftest@vger.kernel.org,
- Sean Christopherson <seanjc@google.com>, Shakeel Butt <shakeelb@google.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-block@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Luis Chamberlain <mcgrof@kernel.org>, linux-mtd@lists.infradead.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Revert the __NR_userfaultfd syscall fallback added for KVM selftests now
-that x86's unistd_{32,63}.h overrides are under uapi/ and thus not in
-KVM sefltests' search path, i.e. now that KVM gets x86 syscall numbers
-from the installed kernel headers.
+We never checked for errors on add_disk() as this function
+returned void. Now that this is fixed, use the shiny new
+error handling.
 
-No functional change intended.
-
-Reviewed-by: Ben Gardon <bgardon@google.com>
-Signed-off-by: Sean Christopherson <seanjc@google.com>
+Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- tools/arch/x86/include/uapi/asm/unistd_64.h | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/block/rsxx/core.c |  4 +++-
+ drivers/block/rsxx/dev.c  | 12 +++++++++---
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/tools/arch/x86/include/uapi/asm/unistd_64.h b/tools/arch/x86/include/uapi/asm/unistd_64.h
-index 4205ed4158bf..cb52a3a8b8fc 100644
---- a/tools/arch/x86/include/uapi/asm/unistd_64.h
-+++ b/tools/arch/x86/include/uapi/asm/unistd_64.h
-@@ -1,7 +1,4 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--#ifndef __NR_userfaultfd
--#define __NR_userfaultfd 282
--#endif
- #ifndef __NR_perf_event_open
- # define __NR_perf_event_open 298
- #endif
+diff --git a/drivers/block/rsxx/core.c b/drivers/block/rsxx/core.c
+index 83636714b8d7..8d9d69f5dfbc 100644
+--- a/drivers/block/rsxx/core.c
++++ b/drivers/block/rsxx/core.c
+@@ -935,7 +935,9 @@ static int rsxx_pci_probe(struct pci_dev *dev,
+ 			card->size8 = 0;
+ 	}
+ 
+-	rsxx_attach_dev(card);
++	st = rsxx_attach_dev(card);
++	if (st)
++		goto failed_create_dev;
+ 
+ 	/************* Setup Debugfs *************/
+ 	rsxx_debugfs_dev_new(card);
+diff --git a/drivers/block/rsxx/dev.c b/drivers/block/rsxx/dev.c
+index 1cc40b0ea761..b2d3ac3efce2 100644
+--- a/drivers/block/rsxx/dev.c
++++ b/drivers/block/rsxx/dev.c
+@@ -192,6 +192,8 @@ static bool rsxx_discard_supported(struct rsxx_cardinfo *card)
+ 
+ int rsxx_attach_dev(struct rsxx_cardinfo *card)
+ {
++	int err = 0;
++
+ 	mutex_lock(&card->dev_lock);
+ 
+ 	/* The block device requires the stripe size from the config. */
+@@ -200,13 +202,17 @@ int rsxx_attach_dev(struct rsxx_cardinfo *card)
+ 			set_capacity(card->gendisk, card->size8 >> 9);
+ 		else
+ 			set_capacity(card->gendisk, 0);
+-		device_add_disk(CARD_TO_DEV(card), card->gendisk, NULL);
+-		card->bdev_attached = 1;
++		err = device_add_disk(CARD_TO_DEV(card), card->gendisk, NULL);
++		if (err == 0)
++			card->bdev_attached = 1;
+ 	}
+ 
+ 	mutex_unlock(&card->dev_lock);
+ 
+-	return 0;
++	if (err)
++		blk_cleanup_disk(card->gendisk);
++
++	return err;
+ }
+ 
+ void rsxx_detach_dev(struct rsxx_cardinfo *card)
 -- 
-2.33.0.153.gba50c8fa24-goog
+2.30.2
 
