@@ -2,52 +2,101 @@ Return-Path: <SRS0=Ph+o=NX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6804C432BE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 14:46:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40B7EC432BE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 15:00:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F3E9261056
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 14:46:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org F3E9261056
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 55D7060BD3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 15:00:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 55D7060BD3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H06MM48Lpz306d
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 00:46:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H06gR5GNSz2yMN
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 01:00:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4H06Ls1dQbz2xXd
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Sep 2021 00:46:12 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 181Ei1DX012275;
- Wed, 1 Sep 2021 09:44:01 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 181Ei1Gd012274;
- Wed, 1 Sep 2021 09:44:01 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Wed, 1 Sep 2021 09:44:01 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/bug: Cast to unsigned long before passing to
- inline asm
-Message-ID: <20210901144401.GI1583@gate.crashing.org>
-References: <20210831132720.881643-1-mpe@ellerman.id.au>
- <20210831213432.GF1583@gate.crashing.org> <87tuj43gu1.fsf@mpe.ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87tuj43gu1.fsf@mpe.ellerman.id.au>
-User-Agent: Mutt/1.4.2.3i
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lO5+1LsN;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=lO5+1LsN; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H06fg2w5Sz2xrK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Sep 2021 00:59:55 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 181EXajC176326; Wed, 1 Sep 2021 10:59:52 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=DE+zEGVSgps8UbDhuMftMtxqsMyLrYMHG/Y1RglHNuo=;
+ b=lO5+1LsNAgq2jj+YeNk6nrf6n0/Uq+AtYf9r5dKoCkqc18EhyHhK9OwXae35LaNd9a5/
+ gpgV+sUPeyNmz58mWQyrwmonpBPn4HyrMofNd7iFzHlV6hYy7yekZwWeHRHR6+AZBvxw
+ 10Z4v1FAE4a+FuLjAVx3onpraJ8w8JeSXwfUaRRTPm4eeE+gB1UvJb8q2VQ3+z0m0Bgk
+ WuQqvSFqU0wtEJIBbcYRt7pOGxayAk2qSfUn7fyQrkW9Zp/26yc50O1KpV4oX3JPnEYa
+ 6u46ohkNAbb000IVe95ZuLLwYduihdSXViZgDSgLaHaqhxw242BAOmHR2HXGiqst8Ei0 jA== 
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3atawast66-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 01 Sep 2021 10:59:52 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 181EulqT007141;
+ Wed, 1 Sep 2021 14:59:52 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma02dal.us.ibm.com with ESMTP id 3aqcse6c63-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 01 Sep 2021 14:59:51 +0000
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 181ExoXk36897200
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 1 Sep 2021 14:59:50 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CC314112070;
+ Wed,  1 Sep 2021 14:59:50 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AEA0D112067;
+ Wed,  1 Sep 2021 14:59:49 +0000 (GMT)
+Received: from localhost (unknown [9.211.58.54])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTPS;
+ Wed,  1 Sep 2021 14:59:49 +0000 (GMT)
+From: Fabiano Rosas <farosas@linux.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH kernel] KVM: PPC: Book3S: Suppress warnings when
+ allocating too big memory slots
+In-Reply-To: <20210901084512.1658628-1-aik@ozlabs.ru>
+References: <20210901084512.1658628-1-aik@ozlabs.ru>
+Date: Wed, 01 Sep 2021 11:59:47 -0300
+Message-ID: <87fsuouysc.fsf@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 9DQBmeqPLuaSHabJAhppr2AOjPjnuUJ6
+X-Proofpoint-ORIG-GUID: 9DQBmeqPLuaSHabJAhppr2AOjPjnuUJ6
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-09-01_04:2021-09-01,
+ 2021-09-01 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015
+ lowpriorityscore=0 suspectscore=0 mlxscore=0 phishscore=0 spamscore=0
+ impostorscore=0 bulkscore=0 malwarescore=0 mlxlogscore=999 adultscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2107140000 definitions=main-2109010085
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,75 +108,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathan@kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Sep 01, 2021 at 05:17:26PM +1000, Michael Ellerman wrote:
-> Segher Boessenkool <segher@kernel.crashing.org> writes:
-> > On Tue, Aug 31, 2021 at 11:27:20PM +1000, Michael Ellerman wrote:
-> >> Nathan filed an LLVM bug [2], in which Eli Friedman explained that "if
-> >> you pass a value of a type that's narrower than a register to an inline
-> >> asm, the high bits are undefined". In this case we are passing a bool
-> >> to the inline asm, which is a single bit value, and so the compiler
-> >> thinks it can leave the high bits of r30 unmasked, because only the
-> >> value of bit 0 matters.
-> >> 
-> >> Because the inline asm compares the full width of the register (32 or
-> >> 64-bit) we need to ensure the value passed to the inline asm has all
-> >> bits defined. So fix it by casting to long.
-> >> 
-> >> We also already cast to long for the similar case in BUG_ENTRY(), which
-> >> it turns out was added to fix a similar bug in 2005 in commit
-> >> 32818c2eb6b8 ("[PATCH] ppc64: Fix issue with gcc 4.0 compiled kernels").
-> >
-> > That points to <https://gcc.gnu.org/PR23422>, which shows the correct
-> > explanation.
-> 
-> That's a pity because I don't understand that explanation ^_^
-> 
-> Why does sign extension matter when we're comparing against zero?
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
 
-The "td" insn wants a 64-bit quantity.  You have to provide one, the
-compiler will not do an extend itself, it does not try to understand the
-asm template in any way.
+> The userspace can trigger "vmalloc size %lu allocation failure: exceeds
+> total pages" via the KVM_SET_USER_MEMORY_REGION ioctl.
+>
+> This silences the warning by checking the limit before calling vzalloc()
+> and returns ENOMEM if failed.
+>
+> This does not call underlying valloc helpers as __vmalloc_node() is only
+> exported when CONFIG_TEST_VMALLOC_MODULE and __vmalloc_node_range() is not
+> exported at all.
+>
+> Spotted by syzkaller.
+>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  arch/powerpc/kvm/book3s_hv.c | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 474c0cfde384..a59f1cccbcf9 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -4830,8 +4830,12 @@ static int kvmppc_core_prepare_memory_region_hv(struct kvm *kvm,
+>  	unsigned long npages = mem->memory_size >> PAGE_SHIFT;
+>
+>  	if (change == KVM_MR_CREATE) {
+> -		slot->arch.rmap = vzalloc(array_size(npages,
+> -					  sizeof(*slot->arch.rmap)));
+> +		unsigned long cb = array_size(npages, sizeof(*slot->arch.rmap));
 
-> > The code as it was did **not** pass a bool.  It perhaps passed an int
-> > (so many macros in play, it is hard to tell for sure, but it is int or
-> > long int, perhaps unsigned (which does not change anything here).
-> 
-> I don't understand that. It definitely is passing a bool at the source
-> level. Are you saying it's getting promoted somehow?
-> 
-> It expands to:
+What does cb mean?
 
-<snip>
-
-> And knode_dead() returns bool:
-> 
->   static bool knode_dead(struct klist_node *knode)
->   {
->   	return (unsigned long)knode->n_klist & KNODE_DEAD;
->   }
-> 
-> So in my book that means the type there is bool. But I'm not a compiler
-> guy so I guessing I'm missing something.
-
-I was confused by all the macros and stuff.  And "bool" in the kernel
-means "_Bool" now (so it is a character type, with GCC).
-
-> > If this is not the correct explanation for LLVM, it needs to solve some
-> > other bug.
-> 
-> OK. I just need to get this fixed in the kernel, so I'll do a new
-> version with a changelog that is ~= "shrug not sure what's going on" and
-> merge that. Then we can argue about what is really going on later :)
-
-One thing you should probably do is never pass expressions as asm
-operands that are "r".  Instead, make a temporary var and assign to that,
-so it will have the type you want, without being able to forget to add
-a cast :-)
-
-
-Segher
+> +
+> +		if ((cb >> PAGE_SHIFT) > totalram_pages())
+> +			return -ENOMEM;
+> +
+> +		slot->arch.rmap = vzalloc(cb);
+>  		if (!slot->arch.rmap)
+>  			return -ENOMEM;
+>  	}
