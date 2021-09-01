@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B85DAC432BE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 21:05:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6C43C4320E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 21:05:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5214C6056C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 21:05:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5214C6056C
+	by mail.kernel.org (Postfix) with ESMTPS id 2C8C16056C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 21:05:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2C8C16056C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H0GmD09Z1z3cKX
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 07:05:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H0Gmv5nPDz2yn2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 07:05:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=IIPX+4lg;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=a2Rfm3WY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -29,27 +29,27 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=IIPX+4lg; 
+ header.s=bombadil.20210309 header.b=a2Rfm3WY; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H0Gh409z2z2xtg
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Sep 2021 07:01:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H0Gh36thtz2xtf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Sep 2021 07:01:39 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
  Reply-To:Content-Type:Content-ID:Content-Description;
- bh=xF9PVD7Ak7b7GuU3fNOPsWCRtdNWIk6mhEkq/XYjRic=; b=IIPX+4lgHPMvrA2kWbqHJjbvcO
- Og6N+aQ91JcErUj3gisaqoYlJpzMIxKNZN9Wpuhq3xsO9tTuVzfn+iCL/tvt/HzjFq/ivq07Ig0XT
- MCOOSWx1O2pGcHxt6qkScHqJZT1pKtJjPJQy6jjBUxu1oK2ATkt4qM2+L6dETjyLNE2k3GNZLsiGM
- TEI+8NPoQMC4Q+R+WEx41PvIHQRWRluMsZFLvSjaKneNeiLRu0mFN8jE/JurNBwqJIcDoJSVQHot0
- OEAFjW3wIh3/ieurXo93Wle7XQmI6ch24aZ/ZImvIln4KkvKm+Bej+6O1o5ocbCVL/aQaymiFOw3y
- +AvcMSlg==;
+ bh=04BFNx7N8AagL+vNhaEBLuBBGegCSEgU71z7cal6rBA=; b=a2Rfm3WYHPSjWFgE/uOw0Syt8o
+ kSumcGeM9ydP9COGnikr1e9X5VHlm70Iz8IB5sW3pQx7Vw1x8gOr4gbqt9FkIcwOaaT4G3POAbwD0
+ S2IbV0iAFlPsxHneY2cgG1ZTZ29+QzzDf2DuyrggHf54BrJoBl28Mi3lZV21wekrhhtV+JR4ASMU1
+ HyqD6z9tJCeJi0AxqYp7EIypGoTizN6C1D2HNnJ2OCHRDojKIglWqWebZJKoGqv9MAZaQZd/YXTME
+ goMp2yU6KOiIMEBNCG5ro/UI5snOEuI2Cc4M7vY9EH+mJP2EE2joSCzt7z00uy9IAqY2eflcw7b2q
+ 2/XUv0fQ==;
 Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mLXLR-007LWL-Md; Wed, 01 Sep 2021 21:00:29 +0000
+ (Red Hat Linux)) id 1mLXLR-007LWJ-LJ; Wed, 01 Sep 2021 21:00:29 +0000
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
  thunder.leizhen@huawei.com, lee.jones@linaro.org, geoff@infradead.org,
@@ -57,9 +57,9 @@ To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
  jim@jtan.com, haris.iqbal@ionos.com, jinpu.wang@ionos.com,
  josh.h.morris@us.ibm.com, pjk1939@linux.ibm.com, tim@cyberelk.net,
  richard@nod.at, miquel.raynal@bootlin.com, vigneshr@ti.com
-Subject: [PATCH 09/10] pf: add error handling support for add_disk()
-Date: Wed,  1 Sep 2021 14:00:27 -0700
-Message-Id: <20210901210028.1750956-10-mcgrof@kernel.org>
+Subject: [PATCH 08/10] block/sx8: add error handling support for add_disk()
+Date: Wed,  1 Sep 2021 14:00:26 -0700
+Message-Id: <20210901210028.1750956-9-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210901210028.1750956-1-mcgrof@kernel.org>
 References: <20210901210028.1750956-1-mcgrof@kernel.org>
@@ -87,26 +87,68 @@ We never checked for errors on add_disk() as this function
 returned void. Now that this is fixed, use the shiny new
 error handling.
 
+A completion is used to notify the initial probe what is
+happening and so we must defer error handling on completion.
+Do this by remembering the error and using the shared cleanup
+function.
+
+The tags are shared and so are hanlded later for the
+driver already.
+
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- drivers/block/paride/pf.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/block/sx8.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/block/paride/pf.c b/drivers/block/paride/pf.c
-index f471d48a87bc..380d80e507c7 100644
---- a/drivers/block/paride/pf.c
-+++ b/drivers/block/paride/pf.c
-@@ -962,7 +962,9 @@ static int __init pf_init_unit(struct pf_unit *pf, bool autoprobe, int port,
- 	if (pf_probe(pf))
- 		goto out_pi_release;
+diff --git a/drivers/block/sx8.c b/drivers/block/sx8.c
+index 420cd952ddc4..1c79248c4826 100644
+--- a/drivers/block/sx8.c
++++ b/drivers/block/sx8.c
+@@ -297,6 +297,7 @@ struct carm_host {
  
--	add_disk(disk);
-+	ret = add_disk(disk);
-+	if (ret)
-+		goto out_pi_release;
- 	pf->present = 1;
- 	return 0;
+ 	struct work_struct		fsm_task;
  
++	int probe_err;
+ 	struct completion		probe_comp;
+ };
+ 
+@@ -1181,8 +1182,11 @@ static void carm_fsm_task (struct work_struct *work)
+ 				struct gendisk *disk = port->disk;
+ 
+ 				set_capacity(disk, port->capacity);
+-				add_disk(disk);
+-				activated++;
++				host->probe_err = add_disk(disk);
++				if (!host->probe_err)
++					activated++;
++				else
++					break;
+ 			}
+ 
+ 		printk(KERN_INFO DRV_NAME "(%s): %d ports activated\n",
+@@ -1192,11 +1196,9 @@ static void carm_fsm_task (struct work_struct *work)
+ 		reschedule = 1;
+ 		break;
+ 	}
+-
+ 	case HST_PROBE_FINISHED:
+ 		complete(&host->probe_comp);
+ 		break;
+-
+ 	case HST_ERROR:
+ 		/* FIXME: TODO */
+ 		break;
+@@ -1507,7 +1509,10 @@ static int carm_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		goto err_out_free_irq;
+ 
+ 	DPRINTK("waiting for probe_comp\n");
++	host->probe_err = -ENODEV;
+ 	wait_for_completion(&host->probe_comp);
++	if (host->probe_err)
++		goto err_out_free_irq;
+ 
+ 	printk(KERN_INFO "%s: pci %s, ports %d, io %llx, irq %u, major %d\n",
+ 	       host->name, pci_name(pdev), (int) CARM_MAX_PORTS,
 -- 
 2.30.2
 
