@@ -7,34 +7,34 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AC13C432BE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 08:46:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D9EFC432BE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 08:46:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F37796103D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 08:46:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org F37796103D
+	by mail.kernel.org (Postfix) with ESMTPS id 46C7160C3E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 08:46:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 46C7160C3E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4GzyMb4S1Bz2ymx
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 18:46:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4GzyN25SBKz30HX
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Sep 2021 18:46:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4GzyM73T0hz2xKP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Sep 2021 18:45:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4GzyM82hJFz2xXN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Sep 2021 18:45:56 +1000 (AEST)
 Received: from fstn1-p1.ozlabs.ibm.com. (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 4AD66AE801F8;
- Wed,  1 Sep 2021 04:45:18 -0400 (EDT)
+ by ozlabs.ru (Postfix) with ESMTP id 5A385AE80203;
+ Wed,  1 Sep 2021 04:45:52 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] KVM: PPC: Book3S: Suppress warnings when allocating
- too big memory slots
-Date: Wed,  1 Sep 2021 18:45:12 +1000
-Message-Id: <20210901084512.1658628-1-aik@ozlabs.ru>
+Subject: [PATCH kernel] KVM: PPC: Book3S: Suppress failed alloc warning in
+ H_COPY_TOFROM_GUEST
+Date: Wed,  1 Sep 2021 18:45:50 +1000
+Message-Id: <20210901084550.1658699-1-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -54,42 +54,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The userspace can trigger "vmalloc size %lu allocation failure: exceeds
-total pages" via the KVM_SET_USER_MEMORY_REGION ioctl.
+H_COPY_TOFROM_GUEST is an hcall for an upper level VM to access its nested
+VMs memory. The userspace can trigger WARN_ON_ONCE(!(gfp & __GFP_NOWARN))
+in __alloc_pages() by constructing a tiny VM which only does
+H_COPY_TOFROM_GUEST with a too big GPR9 (number of bytes to copy).
 
-This silences the warning by checking the limit before calling vzalloc()
-and returns ENOMEM if failed.
-
-This does not call underlying valloc helpers as __vmalloc_node() is only
-exported when CONFIG_TEST_VMALLOC_MODULE and __vmalloc_node_range() is not
-exported at all.
+This silences the warning by adding __GFP_NOWARN.
 
 Spotted by syzkaller.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/kvm/book3s_hv.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/kvm/book3s_hv_nested.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 474c0cfde384..a59f1cccbcf9 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4830,8 +4830,12 @@ static int kvmppc_core_prepare_memory_region_hv(struct kvm *kvm,
- 	unsigned long npages = mem->memory_size >> PAGE_SHIFT;
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index e57c08b968c0..a2e34efb8d31 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -580,7 +580,7 @@ long kvmhv_copy_tofrom_guest_nested(struct kvm_vcpu *vcpu)
+ 	if (eaddr & (0xFFFUL << 52))
+ 		return H_PARAMETER;
  
- 	if (change == KVM_MR_CREATE) {
--		slot->arch.rmap = vzalloc(array_size(npages,
--					  sizeof(*slot->arch.rmap)));
-+		unsigned long cb = array_size(npages, sizeof(*slot->arch.rmap));
-+
-+		if ((cb >> PAGE_SHIFT) > totalram_pages())
-+			return -ENOMEM;
-+
-+		slot->arch.rmap = vzalloc(cb);
- 		if (!slot->arch.rmap)
- 			return -ENOMEM;
- 	}
+-	buf = kzalloc(n, GFP_KERNEL);
++	buf = kzalloc(n, GFP_KERNEL | __GFP_NOWARN);
+ 	if (!buf)
+ 		return H_NO_MEM;
+ 
 -- 
 2.30.2
 
