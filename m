@@ -2,61 +2,68 @@ Return-Path: <SRS0=INWp=NY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B564C83026
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 16:48:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52E3AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 18:43:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B26DE60F12
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 16:48:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B26DE60F12
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 67FA1610CF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 18:43:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 67FA1610CF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H0n1m1JN2z2yK7
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 02:48:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H0qZW4qKFz2yNQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 04:43:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.222.48; helo=mail-ua1-f48.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-ua1-f48.google.com (mail-ua1-f48.google.com
- [209.85.222.48])
+ smtp.mailfrom=xmission.com (client-ip=166.70.13.231;
+ helo=out01.mta.xmission.com; envelope-from=ebiederm@xmission.com;
+ receiver=<UNKNOWN>)
+X-Greylist: delayed 260 seconds by postgrey-1.36 at boromir;
+ Fri, 03 Sep 2021 04:43:16 AEST
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H0n1H6zXHz2xXd
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Sep 2021 02:48:19 +1000 (AEST)
-Received: by mail-ua1-f48.google.com with SMTP id l24so1253625uai.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Sep 2021 09:48:19 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=XhkscD4eQg3gMjYYcjIloMpyH+TEyxkuIO5LmcQoPWs=;
- b=GqMLFHMpfGtlMioMSPkc18SvX1VMP9+qPXQZn/6jq4DgrHHFG/y7RGFYVc8nqiAsTI
- 7XAE1LU1eJAFs1/o+5STWHLsZKYCodEe/Ab1mdsgNOm9lNWGFlg2BA30mwWQz4LvBhKv
- XaHveb690jOj1JYELNis+kSOCGPf/Kp2VQ5eXhUVHZHR4Mrp8FRMFiMYDEJv6D2joYPm
- G379Ge9nwUI1Vhg11zcj3iALCJwUQUkowK3gwcxjgHEQMEUCyRT1nQQdM7Flj7o+kaPc
- NwsiF8LOVydIb6yDZvq3xNgatC1DBLHxEZKzO2JXx0zmNHAeMXCBSsj5H5bgXFw/MCd6
- nOzA==
-X-Gm-Message-State: AOAM531GXZHohYtw5Z1XRVj35lPulMcpk1Ao1NmWem+eslvgcWRFKhSQ
- ox8q45EgMWIXzr05L2LJoXc4oWlq8n+/XZpQl18=
-X-Google-Smtp-Source: ABdhPJyuhec501quue5johUkVxFJO20CoY6RBbUUFUt2/IiM8feEkGMBc4qTFxABKXXzXDsZOcNKxYozPx3hZ3ZWp0g=
-X-Received: by 2002:ab0:4d5b:: with SMTP id k27mr2702126uag.78.1630601295450; 
- Thu, 02 Sep 2021 09:48:15 -0700 (PDT)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H0qYw1ksHz2xXm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Sep 2021 04:43:16 +1000 (AEST)
+Received: from in01.mta.xmission.com ([166.70.13.51]:53998)
+ by out01.mta.xmission.com with esmtps (TLS1.3) tls
+ TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1mLrg9-00DUWH-8w; Thu, 02 Sep 2021 12:43:13 -0600
+Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]:33786
+ helo=email.xmission.com)
+ by in01.mta.xmission.com with esmtpsa (TLS1.3) tls
+ TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1mLrg8-00GaA4-8v; Thu, 02 Sep 2021 12:43:12 -0600
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+References: <fd7938d94008711d441551c06b25a033669a0618.1629732940.git.christophe.leroy@csgroup.eu>
+ <a94be61f008ab29c231b805e1a97e9dab35cb0cc.1629732940.git.christophe.leroy@csgroup.eu>
+Date: Thu, 02 Sep 2021 13:43:05 -0500
+In-Reply-To: <a94be61f008ab29c231b805e1a97e9dab35cb0cc.1629732940.git.christophe.leroy@csgroup.eu>
+ (Christophe Leroy's message of "Mon, 23 Aug 2021 15:35:53 +0000
+ (UTC)")
+Message-ID: <87mtoux1hi.fsf@disp2133>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
 MIME-Version: 1.0
-References: <20210715193359.25946-1-john.ogness@linutronix.de>
- <20210715193359.25946-4-john.ogness@linutronix.de>
-In-Reply-To: <20210715193359.25946-4-john.ogness@linutronix.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 2 Sep 2021 18:48:04 +0200
-Message-ID: <CAMuHMdXa-ahzQX2FMb-YZ9Yc4Z=72JpaN8Z9bC5htmyvEDSh+w@mail.gmail.com>
-Subject: Re: [PATCH printk v4 3/6] printk: remove safe buffers
-To: John Ogness <john.ogness@linutronix.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
+X-XM-SPF: eid=1mLrg8-00GaA4-8v; ; ; mid=<87mtoux1hi.fsf@disp2133>; ; ;
+ hst=in01.mta.xmission.com; ; ; ip=68.227.160.95; ; ; frm=ebiederm@xmission.com;
+ ; ; spf=neutral
+X-XM-AID: U2FsdGVkX1+mQ5IOX/RusWRKxSCXXYWUBmlaH17KK1A=
+X-SA-Exim-Connect-IP: 68.227.160.95
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH v2 3/5] signal: Add unsafe_copy_siginfo_to_user()
+X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,51 +75,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Petr Mladek <pmladek@suse.com>, Kees Cook <keescook@chromium.org>,
- "Paul E. McKenney" <paulmck@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Nicholas Piggin <npiggin@gmail.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, kexec@lists.infradead.org,
- Sergey Senozhatsky <senozhatsky@chromium.org>, Yue Hu <huyue2@yulong.com>,
- Paul Mackerras <paulus@samba.org>, Eric Biederman <ebiederm@xmission.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Tiezhu Yang <yangtiezhu@loongson.cn>,
- =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi John,
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
 
-On Thu, Jul 15, 2021 at 9:53 PM John Ogness <john.ogness@linutronix.de> wrote:
-> With @logbuf_lock removed, the high level printk functions for
-> storing messages are lockless. Messages can be stored from any
-> context, so there is no need for the NMI and safe buffers anymore.
-> Remove the NMI and safe buffers.
+> In the same spirit as commit fb05121fd6a2 ("signal: Add
+> unsafe_get_compat_sigset()"), implement an 'unsafe' version of
+> copy_siginfo_to_user() in order to use it within user access blocks.
 >
-> Although the safe buffers are removed, the NMI and safe context
-> tracking is still in place. In these contexts, store the message
-> immediately but still use irq_work to defer the console printing.
+> For that, also add an 'unsafe' version of clear_user().
+
+Looking at your use cases you need the 32bit compat version of this
+as well.
+
+The 32bit compat version is too complicated to become a macro, so I
+don't think you can make this work correctly for the 32bit compat case.
+
+Probably-Not-by: "Eric W. Biederman" <ebiederm@xmission.com>
+
+Eric
+
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  include/linux/signal.h  | 15 +++++++++++++++
+>  include/linux/uaccess.h |  1 +
+>  kernel/signal.c         |  5 -----
+>  3 files changed, 16 insertions(+), 5 deletions(-)
 >
-> Since printk recursion tracking is in place, safe context tracking
-> for most of printk is not needed. Remove it. Only safe context
-> tracking relating to the console and console_owner locks is left
-> in place. This is because the console and console_owner locks are
-> needed for the actual printing.
->
-> Signed-off-by: John Ogness <john.ogness@linutronix.de>
-
-Thank you very much for reducing kernel size by ca. 8 KiB!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> diff --git a/include/linux/signal.h b/include/linux/signal.h
+> index 3454c7ff0778..659bd43daf10 100644
+> --- a/include/linux/signal.h
+> +++ b/include/linux/signal.h
+> @@ -35,6 +35,21 @@ static inline void copy_siginfo_to_external(siginfo_t *to,
+>  int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from);
+>  int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from);
+>  
+> +static __always_inline char __user *si_expansion(const siginfo_t __user *info)
+> +{
+> +	return ((char __user *)info) + sizeof(struct kernel_siginfo);
+> +}
+> +
+> +#define unsafe_copy_siginfo_to_user(to, from, label) do {		\
+> +	siginfo_t __user *__ucs_to = to;				\
+> +	const kernel_siginfo_t *__ucs_from = from;			\
+> +	char __user *__ucs_expansion = si_expansion(__ucs_to);		\
+> +									\
+> +	unsafe_copy_to_user(__ucs_to, __ucs_from,			\
+> +			    sizeof(struct kernel_siginfo), label);	\
+> +	unsafe_clear_user(__ucs_expansion, SI_EXPANSION_SIZE, label);	\
+> +} while (0)
+> +
+>  enum siginfo_layout {
+>  	SIL_KILL,
+>  	SIL_TIMER,
+> diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
+> index c05e903cef02..37073caac474 100644
+> --- a/include/linux/uaccess.h
+> +++ b/include/linux/uaccess.h
+> @@ -398,6 +398,7 @@ long strnlen_user_nofault(const void __user *unsafe_addr, long count);
+>  #define unsafe_put_user(x,p,e) unsafe_op_wrap(__put_user(x,p),e)
+>  #define unsafe_copy_to_user(d,s,l,e) unsafe_op_wrap(__copy_to_user(d,s,l),e)
+>  #define unsafe_copy_from_user(d,s,l,e) unsafe_op_wrap(__copy_from_user(d,s,l),e)
+> +#define unsafe_clear_user(d, l, e) unsafe_op_wrap(__clear_user(d, l), e)
+>  static inline unsigned long user_access_save(void) { return 0UL; }
+>  static inline void user_access_restore(unsigned long flags) { }
+>  #endif
+> diff --git a/kernel/signal.c b/kernel/signal.c
+> index a3229add4455..83b5971e4304 100644
+> --- a/kernel/signal.c
+> +++ b/kernel/signal.c
+> @@ -3261,11 +3261,6 @@ enum siginfo_layout siginfo_layout(unsigned sig, int si_code)
+>  	return layout;
+>  }
+>  
+> -static inline char __user *si_expansion(const siginfo_t __user *info)
+> -{
+> -	return ((char __user *)info) + sizeof(struct kernel_siginfo);
+> -}
+> -
+>  int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from)
+>  {
+>  	char __user *expansion = si_expansion(to);
