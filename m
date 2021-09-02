@@ -2,108 +2,104 @@ Return-Path: <SRS0=INWp=NY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-12.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F9ECC432BE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 07:36:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1922AC432BE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 13:09:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CFE616054E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 07:35:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CFE616054E
+	by mail.kernel.org (Postfix) with ESMTPS id 75AF2610D0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 13:09:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 75AF2610D0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H0Xly1WX5z2yS9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 17:35:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H0h8H2TMjz2ybC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 23:09:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k4FaKyUH;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dFPgt341;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=k4FaKyUH; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=dFPgt341; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H0Xl24k37z2xsj
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Sep 2021 17:35:10 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 1827Wj2R034706; Thu, 2 Sep 2021 03:35:01 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H0h7N5mMQz2xZs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Sep 2021 23:08:15 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 182D3heT017467; Thu, 2 Sep 2021 09:08:12 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=U09cb4nfZo4pbpTcJxbWIBzk5iG8iee8vnxVdFTAA5o=;
- b=k4FaKyUHrdvBiMrMPiJm2K4TuCUXXcecfumO0mQS0BYEgRS8NV/TBUrtCawatRt2siEj
- 61BQ324ZI+R6u2zoo8s8AQ/IQxQnff6MGICuyjYnHwmyrvpi16rUEFNaoELcSQl83ijt
- mS0CV18JyFnamQSCHbfTGt3cpSwfg/p0HOIJ/2mPyc5rCbam/BtM9nHt/yziwXxqAG4N
- wgSqeUnCKS6t4SwX2HACN9OHIZkMfxvjJYPpncihnV0FxLzMoiC4hahpA2n1aKfOIfYc
- Wd207q3mAAz1eTYLiFKa6GAocebcAGoNkCi6mR7VEUOlVM6m8XZGlNqHiRS2pxU9eVaS sw== 
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3att9gr22j-1
+ h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : content-type :
+ mime-version; s=pp1; bh=eThGAUXXmw+IkLaHbn+zHjlR21pCpK6b0ul2tukVdFQ=;
+ b=dFPgt341xOyElVA88qiOCzyU+5AY2F7+CcodH+C/JgjxXW/9AG6k8ivaOJe1b153Cp1g
+ uoz4geM+3KmUbiZ7XuU4wpEPSYp9gR1F+iJkRaPsvLwjp0kCgc8ttarHfz0oIOhMT58c
+ DX+s6C9SIxu+yKuSW7CtnIUbARifH7QpvlUFZCw1tLEepChVr6PLRvCc0EGG36W1hp0u
+ perv7raDXZzR6X0QFxJYyEURZ5+HKXvypY6d/eXO9L6YQ/15+Q/L6rDYN/MQ0NN9DlXn
+ RsQe1AHj/7lm9RuA/q5VBgZ19qT+aQq13UcVVynjUN24e2+GntWcGwv0o+uD2z5AUbq0 Fw== 
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3atx7thv44-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Sep 2021 03:35:01 -0400
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1827QqBd024770;
- Thu, 2 Sep 2021 07:35:01 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma05wdc.us.ibm.com with ESMTP id 3atdxdd02h-1
+ Thu, 02 Sep 2021 09:08:12 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 182CuoGv029968;
+ Thu, 2 Sep 2021 13:08:11 GMT
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27]) by ppma04dal.us.ibm.com with ESMTP id 3atdxbqhtn-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Sep 2021 07:35:01 +0000
-Received: from b03ledav003.gho.boulder.ibm.com
- (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1827YxU635455358
+ Thu, 02 Sep 2021 13:08:11 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 182D897644499304
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 2 Sep 2021 07:34:59 GMT
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 339E16A04D;
- Thu,  2 Sep 2021 07:34:59 +0000 (GMT)
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BB35F6A047;
- Thu,  2 Sep 2021 07:34:56 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.43.51.175])
- by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu,  2 Sep 2021 07:34:56 +0000 (GMT)
-Subject: Re: [PATCH 0/2] powerpc/perf: Add instruction and data address
- registers to extended regs
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, mpe@ellerman.id.au,
- acme@kernel.org, jolsa@kernel.org
-References: <1624200360-1429-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-From: kajoljain <kjain@linux.ibm.com>
-Message-ID: <bd5a9388-483d-91ca-b371-ab92ae4c08bc@linux.ibm.com>
-Date: Thu, 2 Sep 2021 13:04:55 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
-MIME-Version: 1.0
-In-Reply-To: <1624200360-1429-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+ Thu, 2 Sep 2021 13:08:10 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CF865AE066;
+ Thu,  2 Sep 2021 13:08:09 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E7E28AE064;
+ Thu,  2 Sep 2021 13:08:08 +0000 (GMT)
+Received: from localhost (unknown [9.211.46.111])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTPS;
+ Thu,  2 Sep 2021 13:08:08 +0000 (GMT)
+From: Fabiano Rosas <farosas@linux.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH kernel] KVM: PPC: Book3S: Suppress warnings when
+ allocating too big memory slots
+In-Reply-To: <a72edcd2-a990-a549-2f31-dab134bef6a6@ozlabs.ru>
+References: <20210901084512.1658628-1-aik@ozlabs.ru>
+ <87fsuouysc.fsf@linux.ibm.com>
+ <a72edcd2-a990-a549-2f31-dab134bef6a6@ozlabs.ru>
+Date: Thu, 02 Sep 2021 10:08:05 -0300
+Message-ID: <878s0funuy.fsf@linux.ibm.com>
+Content-Type: text/plain
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: QV34mpE7L08Ujcg6DzZxZ73zum7xGS-Q
-X-Proofpoint-ORIG-GUID: QV34mpE7L08Ujcg6DzZxZ73zum7xGS-Q
+X-Proofpoint-ORIG-GUID: TCkyYlb5QNUlbed3M7FdwT0Ke8NBK1N7
+X-Proofpoint-GUID: TCkyYlb5QNUlbed3M7FdwT0Ke8NBK1N7
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-09-02_02:2021-09-01,
+ definitions=2021-09-02_04:2021-09-02,
  2021-09-02 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 lowpriorityscore=0
- bulkscore=0 malwarescore=0 mlxlogscore=999 clxscore=1011 adultscore=0
- phishscore=0 priorityscore=1501 suspectscore=0 spamscore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2108310000
- definitions=main-2109020049
+ mlxlogscore=999
+ malwarescore=0 bulkscore=0 priorityscore=1501 impostorscore=0
+ lowpriorityscore=0 phishscore=0 spamscore=0 mlxscore=0 adultscore=0
+ clxscore=1015 suspectscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2108310000 definitions=main-2109020080
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,41 +111,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, rnsastry@linux.ibm.com
+Cc: kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
 
+> On 02/09/2021 00:59, Fabiano Rosas wrote:
+>> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+>> 
+>>> The userspace can trigger "vmalloc size %lu allocation failure: exceeds
+>>> total pages" via the KVM_SET_USER_MEMORY_REGION ioctl.
+>>>
+>>> This silences the warning by checking the limit before calling vzalloc()
+>>> and returns ENOMEM if failed.
+>>>
+>>> This does not call underlying valloc helpers as __vmalloc_node() is only
+>>> exported when CONFIG_TEST_VMALLOC_MODULE and __vmalloc_node_range() is not
+>>> exported at all.
+>>>
+>>> Spotted by syzkaller.
+>>>
+>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>> ---
+>>>   arch/powerpc/kvm/book3s_hv.c | 8 ++++++--
+>>>   1 file changed, 6 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+>>> index 474c0cfde384..a59f1cccbcf9 100644
+>>> --- a/arch/powerpc/kvm/book3s_hv.c
+>>> +++ b/arch/powerpc/kvm/book3s_hv.c
+>>> @@ -4830,8 +4830,12 @@ static int kvmppc_core_prepare_memory_region_hv(struct kvm *kvm,
+>>>   	unsigned long npages = mem->memory_size >> PAGE_SHIFT;
+>>>
+>>>   	if (change == KVM_MR_CREATE) {
+>>> -		slot->arch.rmap = vzalloc(array_size(npages,
+>>> -					  sizeof(*slot->arch.rmap)));
+>>> +		unsigned long cb = array_size(npages, sizeof(*slot->arch.rmap));
+>> 
+>> What does cb mean?
+>
+> "count of bytes"
+>
+> This is from my deep Windows past :)
+>
+> https://docs.microsoft.com/en-us/windows/win32/stg/coding-style-conventions
 
-On 6/20/21 8:15 PM, Athira Rajeev wrote:
-> Patch set adds PMU registers namely Sampled Instruction Address Register
-> (SIAR) and Sampled Data Address Register (SDAR) as part of extended regs
-> in PowerPC. These registers provides the instruction/data address and
-> adding these to extended regs helps in debug purposes.
-> 
-> Patch 1/2 adds SIAR and SDAR as part of the extended regs mask.
-> Patch 2/2 includes perf tools side changes to add the SPRs to
-> sample_reg_mask to use with -I? option.
-> 
-> Athira Rajeev (2):
->   powerpc/perf: Expose instruction and data address registers as part of
->     extended regs
->   tools/perf: Add perf tools support to expose instruction and data
->     address registers as part of extended regs
-> 
+=D How interesting! And according to that link 'sz' means "Zero terminated
+String". Imagine the confusion.. haha
 
-Patchset looks good to me.
-
-Reviewed-By: kajol Jain<kjain@linux.ibm.com>
-
-Thanks,
-Kajol Jain
-
->  arch/powerpc/include/uapi/asm/perf_regs.h       | 12 +++++++-----
->  arch/powerpc/perf/perf_regs.c                   |  4 ++++
->  tools/arch/powerpc/include/uapi/asm/perf_regs.h | 12 +++++++-----
->  tools/perf/arch/powerpc/include/perf_regs.h     |  2 ++
->  tools/perf/arch/powerpc/util/perf_regs.c        |  2 ++
->  5 files changed, 22 insertions(+), 10 deletions(-)
-> 
+>> 
+>>> +
+>>> +		if ((cb >> PAGE_SHIFT) > totalram_pages())
+>>> +			return -ENOMEM;
+>>> +
+>>> +		slot->arch.rmap = vzalloc(cb);
+>>>   		if (!slot->arch.rmap)
+>>>   			return -ENOMEM;
+>>>   	}
