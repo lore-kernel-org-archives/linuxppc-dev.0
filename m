@@ -2,52 +2,74 @@ Return-Path: <SRS0=INWp=NY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AECFBC4320E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 13:10:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 531A7C432BE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 13:25:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 23754610D0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 13:10:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 23754610D0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id A97AA60F42
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 13:25:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A97AA60F42
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H0h9f5S1Rz2yQK
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 23:10:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H0hWP0dPpz2ywR
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Sep 2021 23:25:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ smtp.mailfrom=aculab.com (client-ip=185.58.86.151;
+ helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
+ receiver=<UNKNOWN>)
+X-Greylist: delayed 65 seconds by postgrey-1.36 at boromir;
+ Thu, 02 Sep 2021 23:25:06 AEST
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H0h976LdZz2xWg
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Sep 2021 23:09:46 +1000 (AEST)
-X-IronPort-AV: E=McAfee;i="6200,9189,10094"; a="217246848"
-X-IronPort-AV: E=Sophos;i="5.84,372,1620716400"; d="scan'208";a="217246848"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Sep 2021 06:08:43 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.84,372,1620716400"; d="scan'208";a="461647131"
-Received: from lkp-server01.sh.intel.com (HELO 4fbc2b3ce5aa) ([10.239.97.150])
- by fmsmga007.fm.intel.com with ESMTP; 02 Sep 2021 06:08:42 -0700
-Received: from kbuild by 4fbc2b3ce5aa with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1mLmSP-0008yv-IB; Thu, 02 Sep 2021 13:08:41 +0000
-Date: Thu, 02 Sep 2021 21:07:59 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD SUCCESS e432fe97f3e5de325b40021e505cce53877586c5
-Message-ID: <6130ccaf.lIP1oUDCaoyBdsG9%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H0hVp6Qttz2xr7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Sep 2021 23:25:06 +1000 (AEST)
+Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) (Using
+ TLS) by relay.mimecast.com with ESMTP id
+ uk-mta-179-p9qiScvWMG6-RCRrz6y5Wg-1; Thu, 02 Sep 2021 14:23:52 +0100
+X-MC-Unique: p9qiScvWMG6-RCRrz6y5Wg-1
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
+ AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
+ Server (TLS) id 15.0.1497.23; Thu, 2 Sep 2021 14:23:51 +0100
+Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
+ AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
+ 15.00.1497.023; Thu, 2 Sep 2021 14:23:51 +0100
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Fabiano Rosas' <farosas@linux.ibm.com>, Alexey Kardashevskiy
+ <aik@ozlabs.ru>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH kernel] KVM: PPC: Book3S: Suppress warnings when
+ allocating too big memory slots
+Thread-Topic: [PATCH kernel] KVM: PPC: Book3S: Suppress warnings when
+ allocating too big memory slots
+Thread-Index: AQHXn/uuqy9zH8mqjEavl+BakB/R26uQuo6Q
+Date: Thu, 2 Sep 2021 13:23:51 +0000
+Message-ID: <58cdff0ef02346f2990bddd526f08f34@AcuMS.aculab.com>
+References: <20210901084512.1658628-1-aik@ozlabs.ru>
+ <87fsuouysc.fsf@linux.ibm.com>
+ <a72edcd2-a990-a549-2f31-dab134bef6a6@ozlabs.ru>
+ <878s0funuy.fsf@linux.ibm.com>
+In-Reply-To: <878s0funuy.fsf@linux.ibm.com>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,179 +81,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-branch HEAD: e432fe97f3e5de325b40021e505cce53877586c5  powerpc/bug: Cast to unsigned long before passing to inline asm
+...
+> > This is from my deep Windows past :)
+> >
+> > https://docs.microsoft.com/en-us/windows/win32/stg/coding-style-convent=
+ions
+>=20
+> =3DD How interesting! And according to that link 'sz' means "Zero termina=
+ted
+> String". Imagine the confusion.. haha
 
-elapsed time: 1390m
+Is that document responsible for some of the general unreadability
+of windows code?
+(I'm not going to addle by brain by trying to read it.)
 
-configs tested: 152
-configs skipped: 3
+Types like DWORD_PTR really shouldn't exist.
+You won't guess what it is...
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+=09David
 
-gcc tested configs:
-arm64                               defconfig
-arm                                 defconfig
-arm64                            allyesconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20210831
-powerpc                 mpc8540_ads_defconfig
-sh                          sdk7786_defconfig
-arm                            xcep_defconfig
-arm                          ep93xx_defconfig
-arm                         cm_x300_defconfig
-powerpc                     sequoia_defconfig
-mips                            e55_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                   rts7751r2dplus_defconfig
-powerpc                 linkstation_defconfig
-sparc64                             defconfig
-arm                           corgi_defconfig
-mips                           jazz_defconfig
-powerpc                      acadia_defconfig
-arm                          moxart_defconfig
-sh                        edosk7760_defconfig
-riscv                            alldefconfig
-arm                          pxa168_defconfig
-sh                        edosk7705_defconfig
-mips                   sb1250_swarm_defconfig
-powerpc                      tqm8xx_defconfig
-xtensa                generic_kc705_defconfig
-x86_64                           alldefconfig
-riscv             nommu_k210_sdcard_defconfig
-sh                        sh7785lcr_defconfig
-powerpc                 mpc836x_rdk_defconfig
-sh                      rts7751r2d1_defconfig
-powerpc                     kmeter1_defconfig
-mips                         cobalt_defconfig
-arm                        trizeps4_defconfig
-sh                          rsk7269_defconfig
-mips                     decstation_defconfig
-arm                           spitz_defconfig
-powerpc                     tqm8540_defconfig
-arm                            mps2_defconfig
-sh                           se7750_defconfig
-arm                       aspeed_g5_defconfig
-sparc64                          alldefconfig
-sh                           sh2007_defconfig
-arm                     davinci_all_defconfig
-powerpc                     tqm5200_defconfig
-riscv                    nommu_virt_defconfig
-arm                           h5000_defconfig
-arc                              alldefconfig
-sh                              ul2_defconfig
-powerpc64                           defconfig
-sh                           se7712_defconfig
-powerpc                      bamboo_defconfig
-ia64                             alldefconfig
-powerpc                 mpc837x_rdb_defconfig
-alpha                               defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a005-20210831
-x86_64               randconfig-a001-20210831
-x86_64               randconfig-a003-20210831
-x86_64               randconfig-a002-20210831
-x86_64               randconfig-a004-20210831
-x86_64               randconfig-a006-20210831
-i386                 randconfig-a005-20210831
-i386                 randconfig-a002-20210831
-i386                 randconfig-a003-20210831
-i386                 randconfig-a006-20210831
-i386                 randconfig-a001-20210831
-i386                 randconfig-a004-20210831
-x86_64               randconfig-a016-20210901
-x86_64               randconfig-a011-20210901
-x86_64               randconfig-a012-20210901
-x86_64               randconfig-a015-20210901
-x86_64               randconfig-a014-20210901
-x86_64               randconfig-a013-20210901
-arc                  randconfig-r043-20210831
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+-
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
+PT, UK
+Registration No: 1397386 (Wales)
 
-clang tested configs:
-i386                 randconfig-c001-20210831
-s390                 randconfig-c005-20210831
-riscv                randconfig-c006-20210831
-powerpc              randconfig-c003-20210831
-mips                 randconfig-c004-20210831
-arm                  randconfig-c002-20210831
-x86_64               randconfig-c007-20210831
-s390                 randconfig-c005-20210901
-mips                 randconfig-c004-20210901
-x86_64               randconfig-c007-20210901
-powerpc              randconfig-c003-20210901
-i386                 randconfig-c001-20210901
-arm                  randconfig-c002-20210901
-riscv                randconfig-c006-20210901
-x86_64               randconfig-a014-20210831
-x86_64               randconfig-a015-20210831
-x86_64               randconfig-a013-20210831
-x86_64               randconfig-a016-20210831
-x86_64               randconfig-a012-20210831
-x86_64               randconfig-a011-20210831
-i386                 randconfig-a016-20210831
-i386                 randconfig-a011-20210831
-i386                 randconfig-a015-20210831
-i386                 randconfig-a014-20210831
-i386                 randconfig-a012-20210831
-i386                 randconfig-a013-20210831
-s390                 randconfig-r044-20210831
-hexagon              randconfig-r041-20210831
-hexagon              randconfig-r045-20210831
-riscv                randconfig-r042-20210831
-hexagon              randconfig-r045-20210901
-hexagon              randconfig-r041-20210901
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
