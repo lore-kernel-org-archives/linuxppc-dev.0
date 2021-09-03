@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 739A8C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 08:56:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED61DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 09:17:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C426E61051
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 08:56:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C426E61051
+	by mail.kernel.org (Postfix) with ESMTPS id 1AC3A60462
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 09:17:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1AC3A60462
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H1BVs3jyvz3015
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 18:56:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H1Byf4Kqqz2yxF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 19:17:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,40 +27,40 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H1BVP40wvz2xY5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Sep 2021 18:56:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H1By85K30z2yHW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Sep 2021 19:17:01 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4H1BVL6bMpz9sTr;
- Fri,  3 Sep 2021 10:56:26 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4H1By25Mpvz9sTF;
+ Fri,  3 Sep 2021 11:16:58 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id K3RKjrD-w8d1; Fri,  3 Sep 2021 10:56:26 +0200 (CEST)
+ with ESMTP id ij6FTKTMMlQS; Fri,  3 Sep 2021 11:16:58 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4H1BVL5L22z9sTN;
- Fri,  3 Sep 2021 10:56:26 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4H1By249hhz9sTB;
+ Fri,  3 Sep 2021 11:16:58 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 93B3B8B8D5;
- Fri,  3 Sep 2021 10:56:26 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 767348B8DB;
+ Fri,  3 Sep 2021 11:16:58 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id DZQ-ShpYtKAd; Fri,  3 Sep 2021 10:56:26 +0200 (CEST)
+ with ESMTP id jM0WhLpLl04Y; Fri,  3 Sep 2021 11:16:58 +0200 (CEST)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0DFFA8B764;
- Fri,  3 Sep 2021 10:56:26 +0200 (CEST)
-Subject: Re: [PATCH v2 3/5] signal: Add unsafe_copy_siginfo_to_user()
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-References: <fd7938d94008711d441551c06b25a033669a0618.1629732940.git.christophe.leroy@csgroup.eu>
- <a94be61f008ab29c231b805e1a97e9dab35cb0cc.1629732940.git.christophe.leroy@csgroup.eu>
- <87mtoux1hi.fsf@disp2133>
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F37BF8B764;
+ Fri,  3 Sep 2021 11:16:57 +0200 (CEST)
+Subject: Re: [PATCH -next] powerpc/mm: check base flags in ioremap_prot
+To: Nanyong Sun <sunnanyong@huawei.com>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org, akpm@linux-foundation.org,
+ npiggin@gmail.com, christophe.leroy@c-s.fr
+References: <20210903090339.3671524-1-sunnanyong@huawei.com>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <2715792c-eb10-eeb8-3d49-24486abe953b@csgroup.eu>
-Date: Fri, 3 Sep 2021 10:56:14 +0200
+Message-ID: <90aa2b67-24c8-4a5f-d91a-b562054d5c5d@csgroup.eu>
+Date: Fri, 3 Sep 2021 11:16:56 +0200
 User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
  Thunderbird/78.13.0
 MIME-Version: 1.0
-In-Reply-To: <87mtoux1hi.fsf@disp2133>
+In-Reply-To: <20210903090339.3671524-1-sunnanyong@huawei.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -75,95 +75,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-Le 02/09/2021 à 20:43, Eric W. Biederman a écrit :
-> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+Le 03/09/2021 à 11:03, Nanyong Sun a écrit :
+> Some drivers who call ioremap_prot without setting base flags like
+> ioremap_prot(addr, len, 0) may work well before
+> commit 56f3c1413f5c ("powerpc/mm: properly set PAGE_KERNEL flags in
+> ioremap()"), but now they will get a virtual address "successfully"
+> from ioremap_prot and badly fault on memory access later because that
+> patch also dropped the hack adding of base flags for ioremap_prot.
 > 
->> In the same spirit as commit fb05121fd6a2 ("signal: Add
->> unsafe_get_compat_sigset()"), implement an 'unsafe' version of
->> copy_siginfo_to_user() in order to use it within user access blocks.
->>
->> For that, also add an 'unsafe' version of clear_user().
-> 
-> Looking at your use cases you need the 32bit compat version of this
-> as well.
-> 
-> The 32bit compat version is too complicated to become a macro, so I
-> don't think you can make this work correctly for the 32bit compat case.
+> So return NULL and throw a warning if the caller of ioremap_prot did
+> not set base flags properly. Why not just hack adding PAGE_KERNEL flags
+> in the ioremap_prot, because most scenarios can be covered by high level
+> functions like ioremap(), ioremap_coherent(), ioremap_cache()...
+> so it is better to keep max flexibility for this low level api.
 
-When looking into patch 5/5 that you nacked, I think you missed the fact that we keep using 
-copy_siginfo_to_user32() as it for the 32 bit compat case.
+As far as I can see, there is no user of this fonction that sets flags to 0 in the kernel tree.
+
+Did you find any ? If you did, I think it is better to fix the caller.
+
+Christophe
 
 > 
-> Probably-Not-by: "Eric W. Biederman" <ebiederm@xmission.com>
+> Signed-off-by: Nanyong Sun <sunnanyong@huawei.com>
+> ---
+>   arch/powerpc/mm/ioremap.c | 4 ++++
+>   1 file changed, 4 insertions(+)
 > 
-> Eric
+> diff --git a/arch/powerpc/mm/ioremap.c b/arch/powerpc/mm/ioremap.c
+> index 57342154d2b0..b7eda0f0d04d 100644
+> --- a/arch/powerpc/mm/ioremap.c
+> +++ b/arch/powerpc/mm/ioremap.c
+> @@ -46,6 +46,10 @@ void __iomem *ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long f
+>   	pte_t pte = __pte(flags);
+>   	void *caller = __builtin_return_address(0);
+>   
+> +	/* The caller should set base page flags properly */
+> +	if (WARN_ON((flags & _PAGE_PRESENT) == 0))
+
+This probably doesn't work for some plateforms like book3s/64. You should use helpers like 
+pte_present().
+
+See the comment at 
+https://elixir.bootlin.com/linux/v5.14/source/arch/powerpc/include/asm/book3s/64/pgtable.h#L591
+
+> +		return NULL;
+> +
+>   	/* writeable implies dirty for kernel addresses */
+>   	if (pte_write(pte))
+>   		pte = pte_mkdirty(pte);
 > 
->> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->> ---
->>   include/linux/signal.h  | 15 +++++++++++++++
->>   include/linux/uaccess.h |  1 +
->>   kernel/signal.c         |  5 -----
->>   3 files changed, 16 insertions(+), 5 deletions(-)
->>
->> diff --git a/include/linux/signal.h b/include/linux/signal.h
->> index 3454c7ff0778..659bd43daf10 100644
->> --- a/include/linux/signal.h
->> +++ b/include/linux/signal.h
->> @@ -35,6 +35,21 @@ static inline void copy_siginfo_to_external(siginfo_t *to,
->>   int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from);
->>   int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from);
->>   
->> +static __always_inline char __user *si_expansion(const siginfo_t __user *info)
->> +{
->> +	return ((char __user *)info) + sizeof(struct kernel_siginfo);
->> +}
->> +
->> +#define unsafe_copy_siginfo_to_user(to, from, label) do {		\
->> +	siginfo_t __user *__ucs_to = to;				\
->> +	const kernel_siginfo_t *__ucs_from = from;			\
->> +	char __user *__ucs_expansion = si_expansion(__ucs_to);		\
->> +									\
->> +	unsafe_copy_to_user(__ucs_to, __ucs_from,			\
->> +			    sizeof(struct kernel_siginfo), label);	\
->> +	unsafe_clear_user(__ucs_expansion, SI_EXPANSION_SIZE, label);	\
->> +} while (0)
->> +
->>   enum siginfo_layout {
->>   	SIL_KILL,
->>   	SIL_TIMER,
->> diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
->> index c05e903cef02..37073caac474 100644
->> --- a/include/linux/uaccess.h
->> +++ b/include/linux/uaccess.h
->> @@ -398,6 +398,7 @@ long strnlen_user_nofault(const void __user *unsafe_addr, long count);
->>   #define unsafe_put_user(x,p,e) unsafe_op_wrap(__put_user(x,p),e)
->>   #define unsafe_copy_to_user(d,s,l,e) unsafe_op_wrap(__copy_to_user(d,s,l),e)
->>   #define unsafe_copy_from_user(d,s,l,e) unsafe_op_wrap(__copy_from_user(d,s,l),e)
->> +#define unsafe_clear_user(d, l, e) unsafe_op_wrap(__clear_user(d, l), e)
->>   static inline unsigned long user_access_save(void) { return 0UL; }
->>   static inline void user_access_restore(unsigned long flags) { }
->>   #endif
->> diff --git a/kernel/signal.c b/kernel/signal.c
->> index a3229add4455..83b5971e4304 100644
->> --- a/kernel/signal.c
->> +++ b/kernel/signal.c
->> @@ -3261,11 +3261,6 @@ enum siginfo_layout siginfo_layout(unsigned sig, int si_code)
->>   	return layout;
->>   }
->>   
->> -static inline char __user *si_expansion(const siginfo_t __user *info)
->> -{
->> -	return ((char __user *)info) + sizeof(struct kernel_siginfo);
->> -}
->> -
->>   int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from)
->>   {
->>   	char __user *expansion = si_expansion(to);
