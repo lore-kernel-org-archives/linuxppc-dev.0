@@ -2,64 +2,61 @@ Return-Path: <SRS0=Q8z7=NZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35D86C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 11:23:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 214BCC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 12:35:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5585F608FB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 11:23:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5585F608FB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 19DFB61057
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 12:35:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 19DFB61057
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H1FmM6G55z3dq4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 21:23:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H1HMM2q0qz2ynr
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 22:35:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H1FgK1S4Xz3bjP
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Sep 2021 21:19:25 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4H1Ffc2bcsz9sV8;
- Fri,  3 Sep 2021 13:18:48 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Wew_VNpGKzbI; Fri,  3 Sep 2021 13:18:48 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4H1Ffc08p1z9sT4;
- Fri,  3 Sep 2021 13:18:48 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E4BBA8B764;
- Fri,  3 Sep 2021 13:18:47 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id y7g5z1zsqt52; Fri,  3 Sep 2021 13:18:47 +0200 (CEST)
-Received: from po18078vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E39BE8B8E3;
- Fri,  3 Sep 2021 13:18:45 +0200 (CEST)
-Received: by po18078vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 6C05463D75; Fri,  3 Sep 2021 11:18:45 +0000 (UTC)
-Message-Id: <89f6b6743a970e8f6fafc51499f673c6a3dbcf1f.1630667612.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1630667612.git.christophe.leroy@csgroup.eu>
-References: <cover.1630667612.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [RFC PATCH v1 10/11] powerpc/platforms: Use ppc_md_update() instead
- of define_machine()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri,  3 Sep 2021 11:18:45 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H1HLn6YNPz2yJS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Sep 2021 22:35:07 +1000 (AEST)
+X-IronPort-AV: E=McAfee;i="6200,9189,10095"; a="206631479"
+X-IronPort-AV: E=Sophos;i="5.85,265,1624345200"; 
+ d="gz'50?scan'50,208,50";a="206631479"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Sep 2021 05:33:56 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.85,265,1624345200"; 
+ d="gz'50?scan'50,208,50";a="428965611"
+Received: from lkp-server01.sh.intel.com (HELO 2115029a3e5c) ([10.239.97.150])
+ by orsmga006.jf.intel.com with ESMTP; 03 Sep 2021 05:33:52 -0700
+Received: from kbuild by 2115029a3e5c with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1mM8OF-0000RH-LB; Fri, 03 Sep 2021 12:33:51 +0000
+Date: Fri, 3 Sep 2021 20:32:49 +0800
+From: kernel test robot <lkp@intel.com>
+To: Kajol Jain <kjain@linux.ibm.com>, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, nvdimm@lists.linux.dev,
+ linux-kernel@vger.kernel.org, dan.j.williams@intel.com,
+ ira.weiny@intel.com, vishal.l.verma@intel.com
+Subject: Re: [RESEND PATCH v4 2/4] drivers/nvdimm: Add perf interface to
+ expose nvdimm performance stats
+Message-ID: <202109032018.93hIkJcK-lkp@intel.com>
+References: <20210903050914.273525-3-kjain@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="8t9RHnE3ZwKMSgU+"
+Content-Disposition: inline
+In-Reply-To: <20210903050914.273525-3-kjain@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,3785 +68,735 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: santosh@fossix.org, llvm@lists.linux.dev, kbuild-all@lists.01.org,
+ maddy@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As a preparation of converting ppc_md into static calls, use our
-new ppc_md helpers to setup platform functions instead of
-define_machine() macro.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+--8t9RHnE3ZwKMSgU+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi Kajol,
+
+Thank you for the patch! Perhaps something to improve:
+
+[auto build test WARNING on linux-nvdimm/libnvdimm-for-next]
+[also build test WARNING on powerpc/next linus/master v5.14 next-20210903]
+[cannot apply to mpe/next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
+
+url:    https://github.com/0day-ci/linux/commits/Kajol-Jain/Add-perf-interface-to-expose-nvdimm/20210903-131212
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/nvdimm/nvdimm.git libnvdimm-for-next
+config: x86_64-randconfig-a005-20210903 (attached as .config)
+compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project 1104e3258b5064e7110cc297e2cec60ac9acfc0a)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/f841601cc058e6033761bd2157b886a30190fc3a
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review Kajol-Jain/Add-perf-interface-to-expose-nvdimm/20210903-131212
+        git checkout f841601cc058e6033761bd2157b886a30190fc3a
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=x86_64 
+
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All warnings (new ones prefixed by >>):
+
+>> drivers/nvdimm/nd_perf.c:159:6: warning: no previous prototype for function 'nvdimm_pmu_free_hotplug_memory' [-Wmissing-prototypes]
+   void nvdimm_pmu_free_hotplug_memory(struct nvdimm_pmu *nd_pmu)
+        ^
+   drivers/nvdimm/nd_perf.c:159:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+   void nvdimm_pmu_free_hotplug_memory(struct nvdimm_pmu *nd_pmu)
+   ^
+   static 
+   1 warning generated.
+
+
+vim +/nvdimm_pmu_free_hotplug_memory +159 drivers/nvdimm/nd_perf.c
+
+   158	
+ > 159	void nvdimm_pmu_free_hotplug_memory(struct nvdimm_pmu *nd_pmu)
+   160	{
+   161		cpuhp_state_remove_instance_nocalls(nd_pmu->cpuhp_state, &nd_pmu->node);
+   162		cpuhp_remove_multi_state(nd_pmu->cpuhp_state);
+   163	
+   164		if (nd_pmu->attr_groups[NVDIMM_PMU_CPUMASK_ATTR])
+   165			kfree(nd_pmu->attr_groups[NVDIMM_PMU_CPUMASK_ATTR]->attrs);
+   166		kfree(nd_pmu->attr_groups[NVDIMM_PMU_CPUMASK_ATTR]);
+   167	}
+   168	
+
 ---
- arch/powerpc/platforms/40x/ppc40x_simple.c    |  20 +-
- arch/powerpc/platforms/44x/canyonlands.c      |  21 +-
- arch/powerpc/platforms/44x/ebony.c            |  11 +-
- arch/powerpc/platforms/44x/fsp2.c             |  11 +-
- arch/powerpc/platforms/44x/iss4xx.c           |  11 +-
- arch/powerpc/platforms/44x/ppc44x_simple.c    |  11 +-
- arch/powerpc/platforms/44x/ppc476.c           |  22 +--
- arch/powerpc/platforms/44x/sam440ep.c         |  11 +-
- arch/powerpc/platforms/44x/warp.c             |  11 +-
- arch/powerpc/platforms/512x/mpc5121_ads.c     |  15 +-
- arch/powerpc/platforms/512x/mpc512x_generic.c |  13 +-
- arch/powerpc/platforms/512x/pdm360ng.c        |  13 +-
- arch/powerpc/platforms/52xx/efika.c           |  33 ++--
- arch/powerpc/platforms/52xx/lite5200.c        |  20 +-
- arch/powerpc/platforms/52xx/media5200.c       |  20 +-
- arch/powerpc/platforms/52xx/mpc5200_simple.c  |  20 +-
- arch/powerpc/platforms/82xx/ep8248e.c         |  18 +-
- arch/powerpc/platforms/82xx/km82xx.c          |  18 +-
- arch/powerpc/platforms/82xx/mpc8272_ads.c     |  20 +-
- arch/powerpc/platforms/82xx/pq2fads.c         |  20 +-
- arch/powerpc/platforms/83xx/asp834x.c         |  22 ++-
- arch/powerpc/platforms/83xx/km83xx.c          |  22 ++-
- arch/powerpc/platforms/83xx/mpc830x_rdb.c     |  22 ++-
- arch/powerpc/platforms/83xx/mpc831x_rdb.c     |  22 ++-
- arch/powerpc/platforms/83xx/mpc832x_mds.c     |  14 +-
- arch/powerpc/platforms/83xx/mpc832x_rdb.c     |  22 ++-
- arch/powerpc/platforms/83xx/mpc834x_itx.c     |  22 ++-
- arch/powerpc/platforms/83xx/mpc834x_mds.c     |  22 ++-
- arch/powerpc/platforms/83xx/mpc836x_mds.c     |  22 ++-
- arch/powerpc/platforms/83xx/mpc836x_rdk.c     |  22 ++-
- arch/powerpc/platforms/83xx/mpc837x_mds.c     |  22 ++-
- arch/powerpc/platforms/83xx/mpc837x_rdb.c     |  22 ++-
- arch/powerpc/platforms/85xx/bsc913x_qds.c     |  22 ++-
- arch/powerpc/platforms/85xx/bsc913x_rdb.c     |  16 +-
- arch/powerpc/platforms/85xx/c293pcie.c        |  18 +-
- arch/powerpc/platforms/85xx/corenet_generic.c |  58 +++---
- arch/powerpc/platforms/85xx/ge_imp3a.c        |  26 +--
- arch/powerpc/platforms/85xx/ksi8560.c         |  18 +-
- arch/powerpc/platforms/85xx/mpc8536_ds.c      |  24 ++-
- arch/powerpc/platforms/85xx/mpc85xx_ads.c     |  18 +-
- arch/powerpc/platforms/85xx/mpc85xx_cds.c     |  26 +--
- arch/powerpc/platforms/85xx/mpc85xx_ds.c      |  72 ++++---
- arch/powerpc/platforms/85xx/mpc85xx_mds.c     |  71 ++++---
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c     | 181 +++++++-----------
- arch/powerpc/platforms/85xx/mvme2500.c        |  24 ++-
- arch/powerpc/platforms/85xx/p1010rdb.c        |  29 +--
- arch/powerpc/platforms/85xx/p1022_ds.c        |  24 ++-
- arch/powerpc/platforms/85xx/p1022_rdk.c       |  24 ++-
- arch/powerpc/platforms/85xx/p1023_rdb.c       |  23 ++-
- arch/powerpc/platforms/85xx/ppa8548.c         |  18 +-
- arch/powerpc/platforms/85xx/qemu_e500.c       |  24 ++-
- arch/powerpc/platforms/85xx/socrates.c        |  17 +-
- arch/powerpc/platforms/85xx/stx_gp3.c         |  18 +-
- arch/powerpc/platforms/85xx/tqm85xx.c         |  18 +-
- arch/powerpc/platforms/85xx/twr_p102x.c       |  22 ++-
- arch/powerpc/platforms/85xx/xes_mpc85xx.c     |  61 +++---
- arch/powerpc/platforms/86xx/gef_ppc9a.c       |  27 +--
- arch/powerpc/platforms/86xx/gef_sbc310.c      |  27 +--
- arch/powerpc/platforms/86xx/gef_sbc610.c      |  27 +--
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c    |  25 +--
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c    |  27 +--
- arch/powerpc/platforms/86xx/mvme7100.c        |  24 ++-
- arch/powerpc/platforms/8xx/adder875.c         |  18 +-
- arch/powerpc/platforms/8xx/ep88xc.c           |  18 +-
- arch/powerpc/platforms/8xx/mpc86xads_setup.c  |  22 ++-
- arch/powerpc/platforms/8xx/mpc885ads_setup.c  |  18 +-
- arch/powerpc/platforms/8xx/tqm8xx_setup.c     |  22 ++-
- arch/powerpc/platforms/amigaone/setup.c       |  42 ++--
- arch/powerpc/platforms/cell/setup.c           |  23 +--
- arch/powerpc/platforms/chrp/setup.c           |  25 +--
- arch/powerpc/platforms/embedded6xx/gamecube.c |  15 +-
- arch/powerpc/platforms/embedded6xx/holly.c    |  20 +-
- .../platforms/embedded6xx/linkstation.c       |  17 +-
- .../platforms/embedded6xx/mpc7448_hpc2.c      |  20 +-
- arch/powerpc/platforms/embedded6xx/mvme5100.c |  22 ++-
- .../platforms/embedded6xx/storcenter.c        |  18 +-
- arch/powerpc/platforms/embedded6xx/wii.c      |  17 +-
- arch/powerpc/platforms/maple/setup.c          |  27 +--
- arch/powerpc/platforms/microwatt/setup.c      |  12 +-
- arch/powerpc/platforms/pasemi/setup.c         |  19 +-
- arch/powerpc/platforms/powermac/setup.c       |  47 ++---
- arch/powerpc/platforms/powernv/setup.c        |  91 ++++-----
- arch/powerpc/platforms/ps3/setup.c            |  53 ++---
- arch/powerpc/platforms/pseries/setup.c        |  49 ++---
- 84 files changed, 1217 insertions(+), 1002 deletions(-)
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
 
-diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
-index e70b42729322..9a059891e711 100644
---- a/arch/powerpc/platforms/40x/ppc40x_simple.c
-+++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
-@@ -60,20 +60,20 @@ static const char * const board[] __initconst = {
- 
- static int __init ppc40x_probe(void)
- {
--	if (of_device_compatible_match(of_root, board)) {
--		pci_set_flags(PCI_REASSIGN_ALL_RSRC);
--		return 1;
--	}
-+	if (!of_device_compatible_match(of_root, board))
-+		return 0;
- 
--	return 0;
-+	ppc_md_update(progress, udbg_progress);
-+	ppc_md_update(init_IRQ, uic_init_tree);
-+	ppc_md_update(get_irq, uic_get_irq);
-+	ppc_md_update(restart, ppc4xx_reset_system);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
-+	pci_set_flags(PCI_REASSIGN_ALL_RSRC);
-+	return 1;
- }
- 
- define_machine(ppc40x_simple) {
- 	.name = "PowerPC 40x Platform",
- 	.probe = ppc40x_probe,
--	.progress = udbg_progress,
--	.init_IRQ = uic_init_tree,
--	.get_irq = uic_get_irq,
--	.restart = ppc4xx_reset_system,
--	.calibrate_decr = generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/44x/canyonlands.c b/arch/powerpc/platforms/44x/canyonlands.c
-index 807968a755ef..e8ff83d67f46 100644
---- a/arch/powerpc/platforms/44x/canyonlands.c
-+++ b/arch/powerpc/platforms/44x/canyonlands.c
-@@ -38,11 +38,17 @@ machine_device_initcall(canyonlands, ppc460ex_device_probe);
- 
- static int __init ppc460ex_probe(void)
- {
--	if (of_machine_is_compatible("amcc,canyonlands")) {
--		pci_set_flags(PCI_REASSIGN_ALL_RSRC);
--		return 1;
--	}
--	return 0;
-+	if (of_machine_is_compatible("amcc,canyonlands"))
-+		return 0;
-+
-+	ppc_md_update(progress, udbg_progress);
-+	ppc_md_update(init_IRQ, uic_init_tree);
-+	ppc_md_update(get_irq, uic_get_irq);
-+	ppc_md_update(restart, ppc4xx_reset_system);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
-+	pci_set_flags(PCI_REASSIGN_ALL_RSRC);
-+	return 1;
- }
- 
- /* USB PHY fixup code on Canyonlands kit. */
-@@ -110,9 +116,4 @@ machine_device_initcall(canyonlands, ppc460ex_canyonlands_fixup);
- define_machine(canyonlands) {
- 	.name = "Canyonlands",
- 	.probe = ppc460ex_probe,
--	.progress = udbg_progress,
--	.init_IRQ = uic_init_tree,
--	.get_irq = uic_get_irq,
--	.restart = ppc4xx_reset_system,
--	.calibrate_decr = generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/44x/ebony.c b/arch/powerpc/platforms/44x/ebony.c
-index 0d8f202bc45f..000184b9401e 100644
---- a/arch/powerpc/platforms/44x/ebony.c
-+++ b/arch/powerpc/platforms/44x/ebony.c
-@@ -48,6 +48,12 @@ static int __init ebony_probe(void)
- 	if (!of_machine_is_compatible("ibm,ebony"))
- 		return 0;
- 
-+	ppc_md_update(progress, udbg_progress);
-+	ppc_md_update(init_IRQ, uic_init_tree);
-+	ppc_md_update(get_irq, uic_get_irq);
-+	ppc_md_update(restart, ppc4xx_reset_system);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
- 	pci_set_flags(PCI_REASSIGN_ALL_RSRC);
- 
- 	return 1;
-@@ -56,9 +62,4 @@ static int __init ebony_probe(void)
- define_machine(ebony) {
- 	.name			= "Ebony",
- 	.probe			= ebony_probe,
--	.progress		= udbg_progress,
--	.init_IRQ		= uic_init_tree,
--	.get_irq		= uic_get_irq,
--	.restart		= ppc4xx_reset_system,
--	.calibrate_decr		= generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/44x/fsp2.c b/arch/powerpc/platforms/44x/fsp2.c
-index b299e43f5ef9..a2a99e94f9a8 100644
---- a/arch/powerpc/platforms/44x/fsp2.c
-+++ b/arch/powerpc/platforms/44x/fsp2.c
-@@ -245,6 +245,12 @@ static int __init fsp2_probe(void)
- 	if (!of_flat_dt_is_compatible(root, "ibm,fsp2"))
- 		return 0;
- 
-+	ppc_md_update(progress, udbg_progress);
-+	ppc_md_update(init_IRQ, fsp2_irq_init);
-+	ppc_md_update(get_irq, uic_get_irq);
-+	ppc_md_update(restart, ppc4xx_reset_system);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
- 	/* Clear BC_ERR and mask snoopable request plb errors. */
- 	val = mfdcr(DCRN_PLB6_CR0);
- 	val |= 0x20000000;
-@@ -307,9 +313,4 @@ static void __init fsp2_irq_init(void)
- define_machine(fsp2) {
- 	.name			= "FSP-2",
- 	.probe			= fsp2_probe,
--	.progress		= udbg_progress,
--	.init_IRQ		= fsp2_irq_init,
--	.get_irq		= uic_get_irq,
--	.restart		= ppc4xx_reset_system,
--	.calibrate_decr		= generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/44x/iss4xx.c b/arch/powerpc/platforms/44x/iss4xx.c
-index 37cc6551f0d4..0262815634ac 100644
---- a/arch/powerpc/platforms/44x/iss4xx.c
-+++ b/arch/powerpc/platforms/44x/iss4xx.c
-@@ -148,15 +148,16 @@ static int __init iss4xx_probe(void)
- 	if (!of_machine_is_compatible("ibm,iss-4xx"))
- 		return 0;
- 
-+	ppc_md_update(progress, udbg_progress);
-+	ppc_md_update(init_IRQ, iss4xx_init_irq);
-+	ppc_md_update(setup_arch, iss4xx_setup_arch);
-+	ppc_md_update(restart, ppc4xx_reset_system);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
- 	return 1;
- }
- 
- define_machine(iss4xx) {
- 	.name			= "ISS-4xx",
- 	.probe			= iss4xx_probe,
--	.progress		= udbg_progress,
--	.init_IRQ		= iss4xx_init_irq,
--	.setup_arch		= iss4xx_setup_arch,
--	.restart		= ppc4xx_reset_system,
--	.calibrate_decr		= generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/44x/ppc44x_simple.c b/arch/powerpc/platforms/44x/ppc44x_simple.c
-index 3dbd8ddd734a..1aee9812a1a6 100644
---- a/arch/powerpc/platforms/44x/ppc44x_simple.c
-+++ b/arch/powerpc/platforms/44x/ppc44x_simple.c
-@@ -68,6 +68,12 @@ static int __init ppc44x_probe(void)
- 
- 	for (i = 0; i < ARRAY_SIZE(board); i++) {
- 		if (of_machine_is_compatible(board[i])) {
-+			ppc_md_update(progress, udbg_progress);
-+			ppc_md_update(init_IRQ, uic_init_tree);
-+			ppc_md_update(get_irq, uic_get_irq);
-+			ppc_md_update(restart, ppc4xx_reset_system);
-+			ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
- 			pci_set_flags(PCI_REASSIGN_ALL_RSRC);
- 			return 1;
- 		}
-@@ -79,9 +85,4 @@ static int __init ppc44x_probe(void)
- define_machine(ppc44x_simple) {
- 	.name = "PowerPC 44x Platform",
- 	.probe = ppc44x_probe,
--	.progress = udbg_progress,
--	.init_IRQ = uic_init_tree,
--	.get_irq = uic_get_irq,
--	.restart = ppc4xx_reset_system,
--	.calibrate_decr = generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/44x/ppc476.c b/arch/powerpc/platforms/44x/ppc476.c
-index f905bed1dadf..22d1659f664e 100644
---- a/arch/powerpc/platforms/44x/ppc476.c
-+++ b/arch/powerpc/platforms/44x/ppc476.c
-@@ -271,23 +271,23 @@ static void ppc47x_pci_irq_fixup(struct pci_dev *dev)
-  */
- static int __init ppc47x_probe(void)
- {
--	if (of_machine_is_compatible("ibm,akebono"))
--		return 1;
-+	if (!of_machine_is_compatible("ibm,akebono") &&
-+	    !of_machine_is_compatible("ibm,currituck"))
-+		return 0;
- 
--	if (of_machine_is_compatible("ibm,currituck")) {
-+	ppc_md_update(progress, udbg_progress);
-+	ppc_md_update(init_IRQ, ppc47x_init_irq);
-+	ppc_md_update(setup_arch, ppc47x_setup_arch);
-+	ppc_md_update(restart, ppc4xx_reset_system);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
-+	if (of_machine_is_compatible("ibm,currituck"))
- 		ppc_md_update(pci_irq_fixup, ppc47x_pci_irq_fixup);
--		return 1;
--	}
- 
--	return 0;
-+	return 1;
- }
- 
- define_machine(ppc47x) {
- 	.name			= "PowerPC 47x",
- 	.probe			= ppc47x_probe,
--	.progress		= udbg_progress,
--	.init_IRQ		= ppc47x_init_irq,
--	.setup_arch		= ppc47x_setup_arch,
--	.restart		= ppc4xx_reset_system,
--	.calibrate_decr		= generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/44x/sam440ep.c b/arch/powerpc/platforms/44x/sam440ep.c
-index 68ba4b009da0..04a387164081 100644
---- a/arch/powerpc/platforms/44x/sam440ep.c
-+++ b/arch/powerpc/platforms/44x/sam440ep.c
-@@ -45,6 +45,12 @@ static int __init sam440ep_probe(void)
- 	if (!of_machine_is_compatible("acube,sam440ep"))
- 		return 0;
- 
-+	ppc_md_update(progress, udbg_progress);
-+	ppc_md_update(init_IRQ, uic_init_tree);
-+	ppc_md_update(get_irq, uic_get_irq);
-+	ppc_md_update(restart, ppc4xx_reset_system);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
- 	pci_set_flags(PCI_REASSIGN_ALL_RSRC);
- 
- 	return 1;
-@@ -53,11 +59,6 @@ static int __init sam440ep_probe(void)
- define_machine(sam440ep) {
- 	.name 			= "Sam440ep",
- 	.probe 			= sam440ep_probe,
--	.progress 		= udbg_progress,
--	.init_IRQ 		= uic_init_tree,
--	.get_irq 		= uic_get_irq,
--	.restart		= ppc4xx_reset_system,
--	.calibrate_decr 	= generic_calibrate_decr,
- };
- 
- static struct i2c_board_info sam440ep_rtc_info = {
-diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
-index 665f18e37efb..1d1320919950 100644
---- a/arch/powerpc/platforms/44x/warp.c
-+++ b/arch/powerpc/platforms/44x/warp.c
-@@ -43,17 +43,18 @@ static int __init warp_probe(void)
- 	if (!of_machine_is_compatible("pika,warp"))
- 		return 0;
- 
-+	ppc_md_update(progress, udbg_progress);
-+	ppc_md_update(init_IRQ, uic_init_tree);
-+	ppc_md_update(get_irq, uic_get_irq);
-+	ppc_md_update(restart, ppc4xx_reset_system);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
- 	return 1;
- }
- 
- define_machine(warp) {
- 	.name		= "Warp",
- 	.probe 		= warp_probe,
--	.progress 	= udbg_progress,
--	.init_IRQ 	= uic_init_tree,
--	.get_irq 	= uic_get_irq,
--	.restart	= ppc4xx_reset_system,
--	.calibrate_decr = generic_calibrate_decr,
- };
- 
- 
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
-index 9d030c2e0004..5c3839d7fbf5 100644
---- a/arch/powerpc/platforms/512x/mpc5121_ads.c
-+++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
-@@ -57,6 +57,14 @@ static int __init mpc5121_ads_probe(void)
- 	if (!of_machine_is_compatible("fsl,mpc5121ads"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch, mpc5121_ads_setup_arch);
-+	ppc_md_update(discover_phbs, mpc5121_ads_setup_pci);
-+	ppc_md_update(init, mpc512x_init);
-+	ppc_md_update(init_IRQ, mpc5121_ads_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(restart, mpc512x_restart);
-+
- 	mpc512x_init_early();
- 
- 	return 1;
-@@ -65,11 +73,4 @@ static int __init mpc5121_ads_probe(void)
- define_machine(mpc5121_ads) {
- 	.name			= "MPC5121 ADS",
- 	.probe			= mpc5121_ads_probe,
--	.setup_arch		= mpc5121_ads_setup_arch,
--	.discover_phbs		= mpc5121_ads_setup_pci,
--	.init			= mpc512x_init,
--	.init_IRQ		= mpc5121_ads_init_IRQ,
--	.get_irq		= ipic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.restart		= mpc512x_restart,
- };
-diff --git a/arch/powerpc/platforms/512x/mpc512x_generic.c b/arch/powerpc/platforms/512x/mpc512x_generic.c
-index 303bc308b2e6..1a90ca674ff1 100644
---- a/arch/powerpc/platforms/512x/mpc512x_generic.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_generic.c
-@@ -36,6 +36,13 @@ static int __init mpc512x_generic_probe(void)
- 	if (!of_device_compatible_match(of_root, board))
- 		return 0;
- 
-+	ppc_md_update(init, mpc512x_init);
-+	ppc_md_update(setup_arch, mpc512x_setup_arch);
-+	ppc_md_update(init_IRQ, mpc512x_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(restart, mpc512x_restart);
-+
- 	mpc512x_init_early();
- 
- 	return 1;
-@@ -44,10 +51,4 @@ static int __init mpc512x_generic_probe(void)
- define_machine(mpc512x_generic) {
- 	.name			= "MPC512x generic",
- 	.probe			= mpc512x_generic_probe,
--	.init			= mpc512x_init,
--	.setup_arch		= mpc512x_setup_arch,
--	.init_IRQ		= mpc512x_init_IRQ,
--	.get_irq		= ipic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.restart		= mpc512x_restart,
- };
-diff --git a/arch/powerpc/platforms/512x/pdm360ng.c b/arch/powerpc/platforms/512x/pdm360ng.c
-index 1e911f42697d..a2fe160b8774 100644
---- a/arch/powerpc/platforms/512x/pdm360ng.c
-+++ b/arch/powerpc/platforms/512x/pdm360ng.c
-@@ -111,6 +111,13 @@ static int __init pdm360ng_probe(void)
- 	if (!of_machine_is_compatible("ifm,pdm360ng"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch, mpc512x_setup_arch);
-+	ppc_md_update(init, pdm360ng_init);
-+	ppc_md_update(init_IRQ, mpc512x_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(restart, mpc512x_restart);
-+
- 	mpc512x_init_early();
- 
- 	return 1;
-@@ -119,10 +126,4 @@ static int __init pdm360ng_probe(void)
- define_machine(pdm360ng) {
- 	.name			= "PDM360NG",
- 	.probe			= pdm360ng_probe,
--	.setup_arch		= mpc512x_setup_arch,
--	.init			= pdm360ng_init,
--	.init_IRQ		= mpc512x_init_IRQ,
--	.get_irq		= ipic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.restart		= mpc512x_restart,
- };
-diff --git a/arch/powerpc/platforms/52xx/efika.c b/arch/powerpc/platforms/52xx/efika.c
-index c3f43da64f68..8480d7a7bcd6 100644
---- a/arch/powerpc/platforms/52xx/efika.c
-+++ b/arch/powerpc/platforms/52xx/efika.c
-@@ -202,6 +202,23 @@ static int __init efika_probe(void)
- 	if (strcmp(model, "EFIKA5K2"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch, efika_setup_arch);
-+	ppc_md_update(discover_phbs, efika_pcisetup);
-+	ppc_md_update(init, mpc52xx_declare_of_platform_devices);
-+	ppc_md_update(show_cpuinfo, efika_show_cpuinfo);
-+	ppc_md_update(init_IRQ, mpc52xx_init_irq);
-+	ppc_md_update(get_irq, mpc52xx_get_irq);
-+	ppc_md_update(restart, rtas_restart);
-+	ppc_md_update(halt, rtas_halt);
-+	ppc_md_update(set_rtc_time, rtas_set_rtc_time);
-+	ppc_md_update(get_rtc_time, rtas_get_rtc_time);
-+	ppc_md_update(progress, rtas_progress);
-+	ppc_md_update(get_boot_time, rtas_get_boot_time);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(phys_mem_access_prot, pci_phys_mem_access_prot);
-+#endif
-+
- 	DMA_MODE_READ = 0x44;
- 	DMA_MODE_WRITE = 0x48;
- 
-@@ -214,21 +231,5 @@ define_machine(efika)
- {
- 	.name			= EFIKA_PLATFORM_NAME,
- 	.probe			= efika_probe,
--	.setup_arch		= efika_setup_arch,
--	.discover_phbs		= efika_pcisetup,
--	.init			= mpc52xx_declare_of_platform_devices,
--	.show_cpuinfo		= efika_show_cpuinfo,
--	.init_IRQ		= mpc52xx_init_irq,
--	.get_irq		= mpc52xx_get_irq,
--	.restart		= rtas_restart,
--	.halt			= rtas_halt,
--	.set_rtc_time		= rtas_set_rtc_time,
--	.get_rtc_time		= rtas_get_rtc_time,
--	.progress		= rtas_progress,
--	.get_boot_time		= rtas_get_boot_time,
--	.calibrate_decr		= generic_calibrate_decr,
--#ifdef CONFIG_PCI
--	.phys_mem_access_prot	= pci_phys_mem_access_prot,
--#endif
- };
- 
-diff --git a/arch/powerpc/platforms/52xx/lite5200.c b/arch/powerpc/platforms/52xx/lite5200.c
-index c39601b995f6..6972f3cbd7c7 100644
---- a/arch/powerpc/platforms/52xx/lite5200.c
-+++ b/arch/powerpc/platforms/52xx/lite5200.c
-@@ -177,17 +177,21 @@ static const char * const board[] __initconst = {
-  */
- static int __init lite5200_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	if (!of_device_compatible_match(of_root, board))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, lite5200_setup_arch);
-+	ppc_md_update(discover_phbs, mpc52xx_setup_pci);
-+	ppc_md_update(init, mpc52xx_declare_of_platform_devices);
-+	ppc_md_update(init_IRQ, mpc52xx_init_irq);
-+	ppc_md_update(get_irq, mpc52xx_get_irq);
-+	ppc_md_update(restart, mpc52xx_restart);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
-+	return 1;
- }
- 
- define_machine(lite5200) {
- 	.name 		= "lite5200",
- 	.probe 		= lite5200_probe,
--	.setup_arch 	= lite5200_setup_arch,
--	.discover_phbs	= mpc52xx_setup_pci,
--	.init		= mpc52xx_declare_of_platform_devices,
--	.init_IRQ 	= mpc52xx_init_irq,
--	.get_irq 	= mpc52xx_get_irq,
--	.restart	= mpc52xx_restart,
--	.calibrate_decr	= generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/52xx/media5200.c b/arch/powerpc/platforms/52xx/media5200.c
-index dbf32604f1f6..632f72798727 100644
---- a/arch/powerpc/platforms/52xx/media5200.c
-+++ b/arch/powerpc/platforms/52xx/media5200.c
-@@ -233,17 +233,21 @@ static const char * const board[] __initconst = {
-  */
- static int __init media5200_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	if (!of_device_compatible_match(of_root, board))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, media5200_setup_arch);
-+	ppc_md_update(discover_phbs, mpc52xx_setup_pci);
-+	ppc_md_update(init, mpc52xx_declare_of_platform_devices);
-+	ppc_md_update(init_IRQ, media5200_init_irq);
-+	ppc_md_update(get_irq, mpc52xx_get_irq);
-+	ppc_md_update(restart, mpc52xx_restart);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
-+	return 1;
- }
- 
- define_machine(media5200_platform) {
- 	.name		= "media5200-platform",
- 	.probe		= media5200_probe,
--	.setup_arch	= media5200_setup_arch,
--	.discover_phbs	= mpc52xx_setup_pci,
--	.init		= mpc52xx_declare_of_platform_devices,
--	.init_IRQ	= media5200_init_irq,
--	.get_irq	= mpc52xx_get_irq,
--	.restart	= mpc52xx_restart,
--	.calibrate_decr	= generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-index 18eb74a323ec..ea5d631312f1 100644
---- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
-+++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-@@ -63,17 +63,21 @@ static const char *board[] __initdata = {
-  */
- static int __init mpc5200_simple_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	if (!of_device_compatible_match(of_root, board))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc5200_simple_setup_arch);
-+	ppc_md_update(discover_phbs, mpc52xx_setup_pci);
-+	ppc_md_update(init, mpc52xx_declare_of_platform_devices);
-+	ppc_md_update(init_IRQ, mpc52xx_init_irq);
-+	ppc_md_update(get_irq, mpc52xx_get_irq);
-+	ppc_md_update(restart, mpc52xx_restart);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
-+	return 1;
- }
- 
- define_machine(mpc5200_simple_platform) {
- 	.name		= "mpc5200-simple-platform",
- 	.probe		= mpc5200_simple_probe,
--	.setup_arch	= mpc5200_simple_setup_arch,
--	.discover_phbs	= mpc52xx_setup_pci,
--	.init		= mpc52xx_declare_of_platform_devices,
--	.init_IRQ	= mpc52xx_init_irq,
--	.get_irq	= mpc52xx_get_irq,
--	.restart	= mpc52xx_restart,
--	.calibrate_decr	= generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/82xx/ep8248e.c b/arch/powerpc/platforms/82xx/ep8248e.c
-index 3ca47f8a212e..23196a4138e4 100644
---- a/arch/powerpc/platforms/82xx/ep8248e.c
-+++ b/arch/powerpc/platforms/82xx/ep8248e.c
-@@ -305,17 +305,21 @@ machine_device_initcall(ep8248e, declare_of_platform_devices);
-  */
- static int __init ep8248e_probe(void)
- {
--	return of_machine_is_compatible("fsl,ep8248e");
-+	if (!of_machine_is_compatible("fsl,ep8248e"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, ep8248e_setup_arch);
-+	ppc_md_update(init_IRQ, ep8248e_pic_init);
-+	ppc_md_update(get_irq, cpm2_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(restart, pq2_restart);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(ep8248e)
- {
- 	.name = "Embedded Planet EP8248E",
- 	.probe = ep8248e_probe,
--	.setup_arch = ep8248e_setup_arch,
--	.init_IRQ = ep8248e_pic_init,
--	.get_irq = cpm2_get_irq,
--	.calibrate_decr = generic_calibrate_decr,
--	.restart = pq2_restart,
--	.progress = udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/82xx/km82xx.c b/arch/powerpc/platforms/82xx/km82xx.c
-index 31fd4a5be0ee..74f75032439d 100644
---- a/arch/powerpc/platforms/82xx/km82xx.c
-+++ b/arch/powerpc/platforms/82xx/km82xx.c
-@@ -192,17 +192,21 @@ machine_device_initcall(km82xx, declare_of_platform_devices);
-  */
- static int __init km82xx_probe(void)
- {
--	return of_machine_is_compatible("keymile,km82xx");
-+	if (!of_machine_is_compatible("keymile,km82xx"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, km82xx_setup_arch);
-+	ppc_md_update(init_IRQ, km82xx_pic_init);
-+	ppc_md_update(get_irq, cpm2_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(restart, pq2_restart);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(km82xx)
- {
- 	.name = "Keymile km82xx",
- 	.probe = km82xx_probe,
--	.setup_arch = km82xx_setup_arch,
--	.init_IRQ = km82xx_pic_init,
--	.get_irq = cpm2_get_irq,
--	.calibrate_decr = generic_calibrate_decr,
--	.restart = pq2_restart,
--	.progress = udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-index deacb2fa84f4..e4608ac9742b 100644
---- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
-+++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-@@ -194,18 +194,22 @@ machine_device_initcall(mpc8272_ads, declare_of_platform_devices);
-  */
- static int __init mpc8272_ads_probe(void)
- {
--	return of_machine_is_compatible("fsl,mpc8272ads");
-+	if (!of_machine_is_compatible("fsl,mpc8272ads"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc8272_ads_setup_arch);
-+	ppc_md_update(discover_phbs, pq2_init_pci);
-+	ppc_md_update(init_IRQ, mpc8272_ads_pic_init);
-+	ppc_md_update(get_irq, cpm2_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(restart, pq2_restart);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc8272_ads)
- {
- 	.name = "Freescale MPC8272 ADS",
- 	.probe = mpc8272_ads_probe,
--	.setup_arch = mpc8272_ads_setup_arch,
--	.discover_phbs = pq2_init_pci,
--	.init_IRQ = mpc8272_ads_pic_init,
--	.get_irq = cpm2_get_irq,
--	.calibrate_decr = generic_calibrate_decr,
--	.restart = pq2_restart,
--	.progress = udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/82xx/pq2fads.c b/arch/powerpc/platforms/82xx/pq2fads.c
-index 794349c53f59..2ce3466a30b0 100644
---- a/arch/powerpc/platforms/82xx/pq2fads.c
-+++ b/arch/powerpc/platforms/82xx/pq2fads.c
-@@ -157,7 +157,18 @@ static void __init pq2fads_setup_arch(void)
-  */
- static int __init pq2fads_probe(void)
- {
--	return of_machine_is_compatible("fsl,pq2fads");
-+	if (!of_machine_is_compatible("fsl,pq2fads"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, pq2fads_setup_arch);
-+	ppc_md_update(discover_phbs, pq2_init_pci);
-+	ppc_md_update(init_IRQ, pq2fads_pic_init);
-+	ppc_md_update(get_irq, cpm2_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(restart, pq2_restart);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- static const struct of_device_id of_bus_ids[] __initconst = {
-@@ -179,11 +190,4 @@ define_machine(pq2fads)
- {
- 	.name = "Freescale PQ2FADS",
- 	.probe = pq2fads_probe,
--	.setup_arch = pq2fads_setup_arch,
--	.discover_phbs = pq2_init_pci,
--	.init_IRQ = pq2fads_pic_init,
--	.get_irq = cpm2_get_irq,
--	.calibrate_decr = generic_calibrate_decr,
--	.restart = pq2_restart,
--	.progress = udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/83xx/asp834x.c b/arch/powerpc/platforms/83xx/asp834x.c
-index 68061c2a57c1..1aafb506b1b0 100644
---- a/arch/powerpc/platforms/83xx/asp834x.c
-+++ b/arch/powerpc/platforms/83xx/asp834x.c
-@@ -37,18 +37,22 @@ machine_device_initcall(asp834x, mpc83xx_declare_of_platform_devices);
-  */
- static int __init asp834x_probe(void)
- {
--	return of_machine_is_compatible("analogue-and-micro,asp8347e");
-+	if (!of_machine_is_compatible("analogue-and-micro,asp8347e"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, asp834x_setup_arch);
-+	ppc_md_update(discover_phbs, mpc83xx_setup_pci);
-+	ppc_md_update(init_IRQ, mpc83xx_ipic_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(restart, mpc83xx_restart);
-+	ppc_md_update(time_init, mpc83xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(asp834x) {
- 	.name			= "ASP8347E",
- 	.probe			= asp834x_probe,
--	.setup_arch		= asp834x_setup_arch,
--	.discover_phbs		= mpc83xx_setup_pci,
--	.init_IRQ		= mpc83xx_ipic_init_IRQ,
--	.get_irq		= ipic_get_irq,
--	.restart		= mpc83xx_restart,
--	.time_init		= mpc83xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/83xx/km83xx.c b/arch/powerpc/platforms/83xx/km83xx.c
-index 108e1e4d2683..949b7a776853 100644
---- a/arch/powerpc/platforms/83xx/km83xx.c
-+++ b/arch/powerpc/platforms/83xx/km83xx.c
-@@ -173,18 +173,22 @@ static int __init mpc83xx_km_probe(void)
- 			break;
- 		i++;
- 	}
--	return (board[i] != NULL);
-+	if (!board[i])
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc83xx_km_setup_arch);
-+	ppc_md_update(discover_phbs, mpc83xx_setup_pci);
-+	ppc_md_update(init_IRQ, mpc83xx_ipic_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(restart, mpc83xx_restart);
-+	ppc_md_update(time_init, mpc83xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc83xx_km) {
- 	.name		= "mpc83xx-km-platform",
- 	.probe		= mpc83xx_km_probe,
--	.setup_arch	= mpc83xx_km_setup_arch,
--	.discover_phbs	= mpc83xx_setup_pci,
--	.init_IRQ	= mpc83xx_ipic_init_IRQ,
--	.get_irq	= ipic_get_irq,
--	.restart	= mpc83xx_restart,
--	.time_init	= mpc83xx_time_init,
--	.calibrate_decr	= generic_calibrate_decr,
--	.progress	= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/83xx/mpc830x_rdb.c b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-index 956d4389effa..a4d7b0b29dd1 100644
---- a/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-@@ -39,7 +39,19 @@ static const char *board[] __initdata = {
-  */
- static int __init mpc830x_rdb_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	if (!of_device_compatible_match(of_root, board))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc830x_rdb_setup_arch);
-+	ppc_md_update(discover_phbs, mpc83xx_setup_pci);
-+	ppc_md_update(init_IRQ, mpc83xx_ipic_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(restart, mpc83xx_restart);
-+	ppc_md_update(time_init, mpc83xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- machine_device_initcall(mpc830x_rdb, mpc83xx_declare_of_platform_devices);
-@@ -47,12 +59,4 @@ machine_device_initcall(mpc830x_rdb, mpc83xx_declare_of_platform_devices);
- define_machine(mpc830x_rdb) {
- 	.name			= "MPC830x RDB",
- 	.probe			= mpc830x_rdb_probe,
--	.setup_arch		= mpc830x_rdb_setup_arch,
--	.discover_phbs		= mpc83xx_setup_pci,
--	.init_IRQ		= mpc83xx_ipic_init_IRQ,
--	.get_irq		= ipic_get_irq,
--	.restart		= mpc83xx_restart,
--	.time_init		= mpc83xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-index 3b578f080e3b..52b1facb2c45 100644
---- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-@@ -39,7 +39,19 @@ static const char *board[] __initdata = {
-  */
- static int __init mpc831x_rdb_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	if (!of_device_compatible_match(of_root, board))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc831x_rdb_setup_arch);
-+	ppc_md_update(discover_phbs, mpc83xx_setup_pci);
-+	ppc_md_update(init_IRQ, mpc83xx_ipic_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(restart, mpc83xx_restart);
-+	ppc_md_update(time_init, mpc83xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- machine_device_initcall(mpc831x_rdb, mpc83xx_declare_of_platform_devices);
-@@ -47,12 +59,4 @@ machine_device_initcall(mpc831x_rdb, mpc83xx_declare_of_platform_devices);
- define_machine(mpc831x_rdb) {
- 	.name			= "MPC831x RDB",
- 	.probe			= mpc831x_rdb_probe,
--	.setup_arch		= mpc831x_rdb_setup_arch,
--	.discover_phbs		= mpc83xx_setup_pci,
--	.init_IRQ		= mpc83xx_ipic_init_IRQ,
--	.get_irq		= ipic_get_irq,
--	.restart		= mpc83xx_restart,
--	.time_init		= mpc83xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-index 850d566ef900..1ab1874b448b 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-@@ -94,7 +94,19 @@ machine_device_initcall(mpc832x_mds, mpc83xx_declare_of_platform_devices);
-  */
- static int __init mpc832x_sys_probe(void)
- {
--	return of_machine_is_compatible("MPC832xMDS");
-+	if (!of_machine_is_compatible("MPC832xMDS"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc831x_rdb_setup_arch);
-+	ppc_md_update(discover_phbs, mpc83xx_setup_pci);
-+	ppc_md_update(init_IRQ, mpc83xx_ipic_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(restart, mpc83xx_restart);
-+	ppc_md_update(time_init, mpc83xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc832x_mds) {
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index b6133a237a70..42399b438f8e 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -212,18 +212,22 @@ machine_device_initcall(mpc832x_rdb, mpc83xx_declare_of_platform_devices);
-  */
- static int __init mpc832x_rdb_probe(void)
- {
--	return of_machine_is_compatible("MPC832xRDB");
-+	if (!of_machine_is_compatible("MPC832xRDB"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc832x_rdb_setup_arch);
-+	ppc_md_update(discover_phbs, mpc83xx_setup_pci);
-+	ppc_md_update(init_IRQ, mpc83xx_ipic_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(restart, mpc83xx_restart);
-+	ppc_md_update(time_init, mpc83xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc832x_rdb) {
- 	.name		= "MPC832x RDB",
- 	.probe		= mpc832x_rdb_probe,
--	.setup_arch	= mpc832x_rdb_setup_arch,
--	.discover_phbs  = mpc83xx_setup_pci,
--	.init_IRQ	= mpc83xx_ipic_init_IRQ,
--	.get_irq	= ipic_get_irq,
--	.restart	= mpc83xx_restart,
--	.time_init	= mpc83xx_time_init,
--	.calibrate_decr	= generic_calibrate_decr,
--	.progress	= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-index 9630f3aa4d9c..cbfd35273b24 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-@@ -63,18 +63,22 @@ static void __init mpc834x_itx_setup_arch(void)
-  */
- static int __init mpc834x_itx_probe(void)
- {
--	return of_machine_is_compatible("MPC834xMITX");
-+	if (!of_machine_is_compatible("MPC834xMITX"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc834x_itx_setup_arch);
-+	ppc_md_update(discover_phbs, mpc83xx_setup_pci);
-+	ppc_md_update(init_IRQ, mpc83xx_ipic_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(restart, mpc83xx_restart);
-+	ppc_md_update(time_init, mpc83xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc834x_itx) {
- 	.name			= "MPC834x ITX",
- 	.probe			= mpc834x_itx_probe,
--	.setup_arch		= mpc834x_itx_setup_arch,
--	.discover_phbs  	= mpc83xx_setup_pci,
--	.init_IRQ		= mpc83xx_ipic_init_IRQ,
--	.get_irq		= ipic_get_irq,
--	.restart		= mpc83xx_restart,
--	.time_init		= mpc83xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_mds.c b/arch/powerpc/platforms/83xx/mpc834x_mds.c
-index 6d91bdce0a18..d5829a90cbad 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_mds.c
-@@ -84,18 +84,22 @@ machine_device_initcall(mpc834x_mds, mpc83xx_declare_of_platform_devices);
-  */
- static int __init mpc834x_mds_probe(void)
- {
--	return of_machine_is_compatible("MPC834xMDS");
-+	if (!of_machine_is_compatible("MPC834xMDS"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc834x_mds_setup_arch);
-+	ppc_md_update(discover_phbs, mpc83xx_setup_pci);
-+	ppc_md_update(init_IRQ, mpc83xx_ipic_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(restart, mpc83xx_restart);
-+	ppc_md_update(time_init, mpc83xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc834x_mds) {
- 	.name			= "MPC834x MDS",
- 	.probe			= mpc834x_mds_probe,
--	.setup_arch		= mpc834x_mds_setup_arch,
--	.discover_phbs  	= mpc83xx_setup_pci,
--	.init_IRQ		= mpc83xx_ipic_init_IRQ,
--	.get_irq		= ipic_get_irq,
--	.restart		= mpc83xx_restart,
--	.time_init		= mpc83xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-index da4cf52cb55b..5091f53f558c 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-@@ -194,18 +194,22 @@ machine_arch_initcall(mpc836x_mds, mpc836x_usb_cfg);
-  */
- static int __init mpc836x_mds_probe(void)
- {
--	return of_machine_is_compatible("MPC836xMDS");
-+	if (!of_machine_is_compatible("MPC836xMDS"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc836x_mds_setup_arch);
-+	ppc_md_update(discover_phbs, mpc83xx_setup_pci);
-+	ppc_md_update(init_IRQ, mpc83xx_ipic_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(restart, mpc83xx_restart);
-+	ppc_md_update(time_init, mpc83xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc836x_mds) {
- 	.name		= "MPC836x MDS",
- 	.probe		= mpc836x_mds_probe,
--	.setup_arch	= mpc836x_mds_setup_arch,
--	.discover_phbs  = mpc83xx_setup_pci,
--	.init_IRQ	= mpc83xx_ipic_init_IRQ,
--	.get_irq	= ipic_get_irq,
--	.restart	= mpc83xx_restart,
--	.time_init	= mpc83xx_time_init,
--	.calibrate_decr	= generic_calibrate_decr,
--	.progress	= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_rdk.c b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-index 3427ad0d9d38..19a86612c579 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-@@ -34,18 +34,22 @@ static void __init mpc836x_rdk_setup_arch(void)
-  */
- static int __init mpc836x_rdk_probe(void)
- {
--	return of_machine_is_compatible("fsl,mpc8360rdk");
-+	if (!of_machine_is_compatible("fsl,mpc8360rdk"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc836x_rdk_setup_arch);
-+	ppc_md_update(discover_phbs, mpc83xx_setup_pci);
-+	ppc_md_update(init_IRQ, mpc83xx_ipic_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(restart, mpc83xx_restart);
-+	ppc_md_update(time_init, mpc83xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc836x_rdk) {
- 	.name		= "MPC836x RDK",
- 	.probe		= mpc836x_rdk_probe,
--	.setup_arch	= mpc836x_rdk_setup_arch,
--	.discover_phbs  = mpc83xx_setup_pci,
--	.init_IRQ	= mpc83xx_ipic_init_IRQ,
--	.get_irq	= ipic_get_irq,
--	.restart	= mpc83xx_restart,
--	.time_init	= mpc83xx_time_init,
--	.calibrate_decr	= generic_calibrate_decr,
--	.progress	= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-index f28d166ea7db..dab4343b8a19 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-@@ -86,18 +86,22 @@ machine_device_initcall(mpc837x_mds, mpc83xx_declare_of_platform_devices);
-  */
- static int __init mpc837x_mds_probe(void)
- {
--	return of_machine_is_compatible("fsl,mpc837xmds");
-+	if (!of_machine_is_compatible("fsl,mpc837xmds"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc837x_mds_setup_arch);
-+	ppc_md_update(discover_phbs, mpc83xx_setup_pci);
-+	ppc_md_update(init_IRQ, mpc83xx_ipic_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(restart, mpc83xx_restart);
-+	ppc_md_update(time_init, mpc83xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc837x_mds) {
- 	.name			= "MPC837x MDS",
- 	.probe			= mpc837x_mds_probe,
--	.setup_arch		= mpc837x_mds_setup_arch,
--	.discover_phbs  	= mpc83xx_setup_pci,
--	.init_IRQ		= mpc83xx_ipic_init_IRQ,
--	.get_irq		= ipic_get_irq,
--	.restart		= mpc83xx_restart,
--	.time_init		= mpc83xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_rdb.c b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-index 7fb7684c256b..a542cb240c3e 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-@@ -66,18 +66,22 @@ static const char * const board[] __initconst = {
-  */
- static int __init mpc837x_rdb_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	if (!of_device_compatible_match(of_root, board))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc837x_rdb_setup_arch);
-+	ppc_md_update(discover_phbs, mpc83xx_setup_pci);
-+	ppc_md_update(init_IRQ, mpc83xx_ipic_init_IRQ);
-+	ppc_md_update(get_irq, ipic_get_irq);
-+	ppc_md_update(restart, mpc83xx_restart);
-+	ppc_md_update(time_init, mpc83xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc837x_rdb) {
- 	.name			= "MPC837x RDB/WLAN",
- 	.probe			= mpc837x_rdb_probe,
--	.setup_arch		= mpc837x_rdb_setup_arch,
--	.discover_phbs  	= mpc83xx_setup_pci,
--	.init_IRQ		= mpc83xx_ipic_init_IRQ,
--	.get_irq		= ipic_get_irq,
--	.restart		= mpc83xx_restart,
--	.time_init		= mpc83xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/bsc913x_qds.c b/arch/powerpc/platforms/85xx/bsc913x_qds.c
-index bad1423d012d..bdb148d96d9a 100644
---- a/arch/powerpc/platforms/85xx/bsc913x_qds.c
-+++ b/arch/powerpc/platforms/85xx/bsc913x_qds.c
-@@ -55,18 +55,22 @@ machine_arch_initcall(bsc9132_qds, mpc85xx_common_publish_devices);
- 
- static int __init bsc9132_qds_probe(void)
- {
--	return of_machine_is_compatible("fsl,bsc9132qds");
-+	if (!of_machine_is_compatible("fsl,bsc9132qds"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, bsc913x_qds_setup_arch);
-+	ppc_md_update(init_IRQ, bsc913x_qds_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(bsc9132_qds) {
- 	.name			= "BSC9132 QDS",
- 	.probe			= bsc9132_qds_probe,
--	.setup_arch		= bsc913x_qds_setup_arch,
--	.init_IRQ		= bsc913x_qds_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/bsc913x_rdb.c b/arch/powerpc/platforms/85xx/bsc913x_rdb.c
-index 6dc34569a940..5c66df5c4cc5 100644
---- a/arch/powerpc/platforms/85xx/bsc913x_rdb.c
-+++ b/arch/powerpc/platforms/85xx/bsc913x_rdb.c
-@@ -45,15 +45,19 @@ machine_device_initcall(bsc9131_rdb, mpc85xx_common_publish_devices);
- 
- static int __init bsc9131_rdb_probe(void)
- {
--	return of_machine_is_compatible("fsl,bsc9131rdb");
-+	if (!of_machine_is_compatible("fsl,bsc9131rdb"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, bsc913x_rdb_setup_arch);
-+	ppc_md_update(init_IRQ, bsc913x_rdb_pic_init);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(bsc9131_rdb) {
- 	.name			= "BSC9131 RDB",
- 	.probe			= bsc9131_rdb_probe,
--	.setup_arch		= bsc913x_rdb_setup_arch,
--	.init_IRQ		= bsc913x_rdb_pic_init,
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/c293pcie.c b/arch/powerpc/platforms/85xx/c293pcie.c
-index 8c59eeb92507..1f4eca71624d 100644
---- a/arch/powerpc/platforms/85xx/c293pcie.c
-+++ b/arch/powerpc/platforms/85xx/c293pcie.c
-@@ -49,17 +49,19 @@ machine_arch_initcall(c293_pcie, mpc85xx_common_publish_devices);
-  */
- static int __init c293_pcie_probe(void)
- {
--	if (of_machine_is_compatible("fsl,C293PCIE"))
--		return 1;
--	return 0;
-+	if (!of_machine_is_compatible("fsl,C293PCIE"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, c293_pcie_setup_arch);
-+	ppc_md_update(init_IRQ, c293_pcie_pic_init);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(c293_pcie) {
- 	.name			= "C293 PCIE",
- 	.probe			= c293_pcie_probe,
--	.setup_arch		= c293_pcie_setup_arch,
--	.init_IRQ		= c293_pcie_pic_init,
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index f2da4d23da23..28cbf45398fe 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -139,6 +139,34 @@ static const char * const boards[] __initconst = {
- 	NULL
- };
- 
-+static void __init corenet_generic_populate(void)
-+{
-+	ppc_md_update(setup_arch, corenet_gen_setup_arch);
-+	ppc_md_update(init_IRQ, corenet_gen_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+/*
-+ * Core reset may cause issues if using the proxy mode of MPICppc_md_update(
-+ * So); use the mixed mode of MPIC if enabling CPU hotplugppc_md_update(
-+ *
-+ * Likewise); problems have been seen with kexec when coreint is enabledppc_md_update(
-+ */
-+#if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_KEXEC_CORE)
-+	ppc_md_update(get_irq, mpic_get_irq);
-+#else
-+	ppc_md_update(get_irq, mpic_get_coreint_irq);
-+#endif
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+#ifdef CONFIG_PPC64
-+	ppc_md_update(power_save, book3e_idle);
-+#else
-+	ppc_md_update(power_save, e500_idle);
-+#endif
-+}
-+
- /*
-  * Called very early, device-tree isn't unflattened
-  */
-@@ -150,13 +178,17 @@ static int __init corenet_generic_probe(void)
- 	extern struct smp_ops_t smp_85xx_ops;
- #endif
- 
--	if (of_device_compatible_match(of_root, boards))
-+	if (of_device_compatible_match(of_root, boards)) {
-+		corenet_generic_populate();
- 		return 1;
-+	}
- 
- 	/* Check if we're running under the Freescale hypervisor */
- 	for (i = 0; boards[i]; i++) {
- 		snprintf(hv_compat, sizeof(hv_compat), "%s-hv", boards[i]);
- 		if (of_machine_is_compatible(hv_compat)) {
-+			corenet_generic_populate();
-+
- 			ppc_md_update(init_IRQ, ehv_pic_init);
- 
- 			ppc_md_update(get_irq, ehv_pic_get_irq);
-@@ -182,28 +214,4 @@ static int __init corenet_generic_probe(void)
- define_machine(corenet_generic) {
- 	.name			= "CoreNet Generic",
- 	.probe			= corenet_generic_probe,
--	.setup_arch		= corenet_gen_setup_arch,
--	.init_IRQ		= corenet_gen_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--/*
-- * Core reset may cause issues if using the proxy mode of MPIC.
-- * So, use the mixed mode of MPIC if enabling CPU hotplug.
-- *
-- * Likewise, problems have been seen with kexec when coreint is enabled.
-- */
--#if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_KEXEC_CORE)
--	.get_irq		= mpic_get_irq,
--#else
--	.get_irq		= mpic_get_coreint_irq,
--#endif
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--#ifdef CONFIG_PPC64
--	.power_save		= book3e_idle,
--#else
--	.power_save		= e500_idle,
--#endif
- };
-diff --git a/arch/powerpc/platforms/85xx/ge_imp3a.c b/arch/powerpc/platforms/85xx/ge_imp3a.c
-index 24a16c29c4a5..3df4339125a8 100644
---- a/arch/powerpc/platforms/85xx/ge_imp3a.c
-+++ b/arch/powerpc/platforms/85xx/ge_imp3a.c
-@@ -192,7 +192,21 @@ static void ge_imp3a_show_cpuinfo(struct seq_file *m)
-  */
- static int __init ge_imp3a_probe(void)
- {
--	return of_machine_is_compatible("ge,IMP3A");
-+	if (!of_machine_is_compatible("ge,IMP3A"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, ge_imp3a_setup_arch);
-+	ppc_md_update(init_IRQ, ge_imp3a_pic_init);
-+	ppc_md_update(show_cpuinfo, ge_imp3a_show_cpuinfo);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- machine_arch_initcall(ge_imp3a, mpc85xx_common_publish_devices);
-@@ -200,14 +214,4 @@ machine_arch_initcall(ge_imp3a, mpc85xx_common_publish_devices);
- define_machine(ge_imp3a) {
- 	.name			= "GE_IMP3A",
- 	.probe			= ge_imp3a_probe,
--	.setup_arch		= ge_imp3a_setup_arch,
--	.init_IRQ		= ge_imp3a_pic_init,
--	.show_cpuinfo		= ge_imp3a_show_cpuinfo,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/ksi8560.c b/arch/powerpc/platforms/85xx/ksi8560.c
-index 67b6cdad925b..b5eccfc1a81c 100644
---- a/arch/powerpc/platforms/85xx/ksi8560.c
-+++ b/arch/powerpc/platforms/85xx/ksi8560.c
-@@ -175,16 +175,20 @@ machine_device_initcall(ksi8560, mpc85xx_common_publish_devices);
-  */
- static int __init ksi8560_probe(void)
- {
--	return of_machine_is_compatible("emerson,KSI8560");
-+	if (!of_machine_is_compatible("emerson,KSI8560"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, ksi8560_setup_arch);
-+	ppc_md_update(init_IRQ, ksi8560_pic_init);
-+	ppc_md_update(show_cpuinfo, ksi8560_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(restart, machine_restart);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
-+	return 1;
- }
- 
- define_machine(ksi8560) {
- 	.name			= "KSI8560",
- 	.probe			= ksi8560_probe,
--	.setup_arch		= ksi8560_setup_arch,
--	.init_IRQ		= ksi8560_pic_init,
--	.show_cpuinfo		= ksi8560_show_cpuinfo,
--	.get_irq		= mpic_get_irq,
--	.restart		= machine_restart,
--	.calibrate_decr		= generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-index 78ce62e645e6..66b7bf93a935 100644
---- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-@@ -57,19 +57,23 @@ machine_arch_initcall(mpc8536_ds, mpc85xx_common_publish_devices);
-  */
- static int __init mpc8536_ds_probe(void)
- {
--	return of_machine_is_compatible("fsl,mpc8536ds");
-+	if (!of_machine_is_compatible("fsl,mpc8536ds"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc8536_ds_setup_arch);
-+	ppc_md_update(init_IRQ, mpc8536_ds_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc8536_ds) {
- 	.name			= "MPC8536 DS",
- 	.probe			= mpc8536_ds_probe,
--	.setup_arch		= mpc8536_ds_setup_arch,
--	.init_IRQ		= mpc8536_ds_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-index e1d24b78725b..52e98a5b06eb 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-@@ -155,16 +155,20 @@ machine_arch_initcall(mpc85xx_ads, mpc85xx_common_publish_devices);
-  */
- static int __init mpc85xx_ads_probe(void)
- {
--	return of_machine_is_compatible("MPC85xxADS");
-+	if (!of_machine_is_compatible("MPC85xxADS"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc85xx_ads_setup_arch);
-+	ppc_md_update(init_IRQ, mpc85xx_ads_pic_init);
-+	ppc_md_update(show_cpuinfo, mpc85xx_ads_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc85xx_ads) {
- 	.name			= "MPC85xx ADS",
- 	.probe			= mpc85xx_ads_probe,
--	.setup_arch		= mpc85xx_ads_setup_arch,
--	.init_IRQ		= mpc85xx_ads_pic_init,
--	.show_cpuinfo		= mpc85xx_ads_show_cpuinfo,
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index bc7bdf0cab6e..14bb9e9c1637 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-@@ -373,7 +373,21 @@ static void mpc85xx_cds_show_cpuinfo(struct seq_file *m)
-  */
- static int __init mpc85xx_cds_probe(void)
- {
--	return of_machine_is_compatible("MPC85xxCDS");
-+	if (!of_machine_is_compatible("MPC85xxCDS"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc85xx_cds_setup_arch);
-+	ppc_md_update(init_IRQ, mpc85xx_cds_pic_init);
-+	ppc_md_update(show_cpuinfo, mpc85xx_cds_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, mpc85xx_cds_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- machine_arch_initcall(mpc85xx_cds, mpc85xx_common_publish_devices);
-@@ -381,14 +395,4 @@ machine_arch_initcall(mpc85xx_cds, mpc85xx_common_publish_devices);
- define_machine(mpc85xx_cds) {
- 	.name		= "MPC85xx CDS",
- 	.probe		= mpc85xx_cds_probe,
--	.setup_arch	= mpc85xx_cds_setup_arch,
--	.init_IRQ	= mpc85xx_cds_pic_init,
--	.show_cpuinfo	= mpc85xx_cds_show_cpuinfo,
--	.get_irq	= mpic_get_irq,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= mpc85xx_cds_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.calibrate_decr = generic_calibrate_decr,
--	.progress	= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 960203bd83cd..6d541f43b58f 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -162,7 +162,20 @@ static void __init mpc85xx_ds_setup_arch(void)
-  */
- static int __init mpc8544_ds_probe(void)
- {
--	return !!of_machine_is_compatible("MPC8544DS");
-+	if (!of_machine_is_compatible("MPC8544DS"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc85xx_ds_setup_arch);
-+	ppc_md_update(init_IRQ, mpc85xx_ds_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- machine_arch_initcall(mpc8544_ds, mpc85xx_common_publish_devices);
-@@ -174,7 +187,20 @@ machine_arch_initcall(p2020_ds, mpc85xx_common_publish_devices);
-  */
- static int __init mpc8572_ds_probe(void)
- {
--	return !!of_machine_is_compatible("fsl,MPC8572DS");
-+	if (!of_machine_is_compatible("fsl,MPC8572DS"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc85xx_ds_setup_arch);
-+	ppc_md_update(init_IRQ, mpc85xx_ds_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- /*
-@@ -182,47 +208,33 @@ static int __init mpc8572_ds_probe(void)
-  */
- static int __init p2020_ds_probe(void)
- {
--	return !!of_machine_is_compatible("fsl,P2020DS");
-+	if (!of_machine_is_compatible("fsl,P2020DS"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc85xx_ds_setup_arch);
-+	ppc_md_update(init_IRQ, mpc85xx_ds_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mpc8544_ds) {
- 	.name			= "MPC8544 DS",
- 	.probe			= mpc8544_ds_probe,
--	.setup_arch		= mpc85xx_ds_setup_arch,
--	.init_IRQ		= mpc85xx_ds_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(mpc8572_ds) {
- 	.name			= "MPC8572 DS",
- 	.probe			= mpc8572_ds_probe,
--	.setup_arch		= mpc85xx_ds_setup_arch,
--	.init_IRQ		= mpc85xx_ds_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(p2020_ds) {
- 	.name			= "P2020 DS",
- 	.probe			= p2020_ds_probe,
--	.setup_arch		= mpc85xx_ds_setup_arch,
--	.init_IRQ		= mpc85xx_ds_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index a74c1e9520f7..6aeaaea305b4 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -341,58 +341,69 @@ static void __init mpc85xx_mds_pic_init(void)
- 
- static int __init mpc85xx_mds_probe(void)
- {
--	return of_machine_is_compatible("MPC85xxMDS");
-+	if (!of_machine_is_compatible("MPC85xxMDS"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc85xx_mds_setup_arch);
-+	ppc_md_update(init_IRQ, mpc85xx_mds_pic_init);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+	#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+	#endif
-+
-+	return 1;
- }
- 
- define_machine(mpc8568_mds) {
- 	.name		= "MPC8568 MDS",
- 	.probe		= mpc85xx_mds_probe,
--	.setup_arch	= mpc85xx_mds_setup_arch,
--	.init_IRQ	= mpc85xx_mds_pic_init,
--	.get_irq	= mpic_get_irq,
--	.calibrate_decr	= generic_calibrate_decr,
--	.progress	= udbg_progress,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
- };
- 
- static int __init mpc8569_mds_probe(void)
- {
--	return of_machine_is_compatible("fsl,MPC8569EMDS");
-+	if (!of_machine_is_compatible("fsl,MPC8569EMDS"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc85xx_mds_setup_arch);
-+	ppc_md_update(init_IRQ, mpc85xx_mds_pic_init);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+
-+	return 1;
- }
- 
- define_machine(mpc8569_mds) {
- 	.name		= "MPC8569 MDS",
- 	.probe		= mpc8569_mds_probe,
--	.setup_arch	= mpc85xx_mds_setup_arch,
--	.init_IRQ	= mpc85xx_mds_pic_init,
--	.get_irq	= mpic_get_irq,
--	.calibrate_decr	= generic_calibrate_decr,
--	.progress	= udbg_progress,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
- };
- 
- static int __init p1021_mds_probe(void)
- {
--	return of_machine_is_compatible("fsl,P1021MDS");
-+	if (!of_machine_is_compatible("fsl,P1021MDS"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc85xx_mds_setup_arch);
-+	ppc_md_update(init_IRQ, mpc85xx_mds_pic_init);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
- 
-+	return 1;
- }
- 
- define_machine(p1021_mds) {
- 	.name		= "P1021 MDS",
- 	.probe		= p1021_mds_probe,
--	.setup_arch	= mpc85xx_mds_setup_arch,
--	.init_IRQ	= mpc85xx_mds_pic_init,
--	.get_irq	= mpic_get_irq,
--	.calibrate_decr	= generic_calibrate_decr,
--	.progress	= udbg_progress,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
- };
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index 14cad0505d82..a0976c5f834c 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -119,203 +119,168 @@ machine_arch_initcall(p1021_rdb_pc, mpc85xx_common_publish_devices);
- machine_arch_initcall(p1025_rdb, mpc85xx_common_publish_devices);
- machine_arch_initcall(p1024_rdb, mpc85xx_common_publish_devices);
- 
-+static void __init mpc85xx_rdb_populate(void)
-+{
-+	ppc_md_update(setup_arch, mpc85xx_rdb_setup_arch);
-+	ppc_md_update(init_IRQ, mpc85xx_rdb_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+}
-+
- /*
-  * Called very early, device-tree isn't unflattened
-  */
- static int __init p2020_rdb_probe(void)
- {
--	if (of_machine_is_compatible("fsl,P2020RDB"))
--		return 1;
--	return 0;
-+	if (!of_machine_is_compatible("fsl,P2020RDB"))
-+		return 0;
-+
-+	mpc85xx_rdb_populate();
-+
-+	return 1;
- }
- 
- static int __init p1020_rdb_probe(void)
- {
--	if (of_machine_is_compatible("fsl,P1020RDB"))
--		return 1;
--	return 0;
-+	if (!of_machine_is_compatible("fsl,P1020RDB"))
-+		return 0;
-+
-+	mpc85xx_rdb_populate();
-+
-+	return 1;
- }
- 
- static int __init p1020_rdb_pc_probe(void)
- {
--	return of_machine_is_compatible("fsl,P1020RDB-PC");
-+	if (!of_machine_is_compatible("fsl,P1020RDB-PC"))
-+		return 0;
-+
-+	mpc85xx_rdb_populate();
-+
-+	return 1;
- }
- 
- static int __init p1020_rdb_pd_probe(void)
- {
--	return of_machine_is_compatible("fsl,P1020RDB-PD");
-+	if (!of_machine_is_compatible("fsl,P1020RDB-PD"))
-+		return 0;
-+
-+	mpc85xx_rdb_populate();
-+
-+	return 1;
- }
- 
- static int __init p1021_rdb_pc_probe(void)
- {
--	if (of_machine_is_compatible("fsl,P1021RDB-PC"))
--		return 1;
--	return 0;
-+	if (!of_machine_is_compatible("fsl,P1021RDB-PC"))
-+		return 0;
-+
-+	mpc85xx_rdb_populate();
-+
-+	return 1;
- }
- 
- static int __init p2020_rdb_pc_probe(void)
- {
--	if (of_machine_is_compatible("fsl,P2020RDB-PC"))
--		return 1;
--	return 0;
-+	if (!of_machine_is_compatible("fsl,P2020RDB-PC"))
-+		return 0;
-+
-+	mpc85xx_rdb_populate();
-+
-+	return 1;
- }
- 
- static int __init p1025_rdb_probe(void)
- {
--	return of_machine_is_compatible("fsl,P1025RDB");
-+	if (!of_machine_is_compatible("fsl,P1025RDB"))
-+		return 0;
-+
-+	mpc85xx_rdb_populate();
-+
-+	return 1;
- }
- 
- static int __init p1020_mbg_pc_probe(void)
- {
--	return of_machine_is_compatible("fsl,P1020MBG-PC");
-+	if (!of_machine_is_compatible("fsl,P1020MBG-PC"))
-+		return 0;
-+
-+	mpc85xx_rdb_populate();
-+
-+	return 1;
- }
- 
- static int __init p1020_utm_pc_probe(void)
- {
--	return of_machine_is_compatible("fsl,P1020UTM-PC");
-+	if (!of_machine_is_compatible("fsl,P1020UTM-PC"))
-+		return 0;
-+
-+	mpc85xx_rdb_populate();
-+
-+	return 1;
- }
- 
- static int __init p1024_rdb_probe(void)
- {
--	return of_machine_is_compatible("fsl,P1024RDB");
-+	if (!of_machine_is_compatible("fsl,P1024RDB"))
-+		return 0;
-+
-+	mpc85xx_rdb_populate();
-+
-+	return 1;
- }
- 
- define_machine(p2020_rdb) {
- 	.name			= "P2020 RDB",
- 	.probe			= p2020_rdb_probe,
--	.setup_arch		= mpc85xx_rdb_setup_arch,
--	.init_IRQ		= mpc85xx_rdb_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(p1020_rdb) {
- 	.name			= "P1020 RDB",
- 	.probe			= p1020_rdb_probe,
--	.setup_arch		= mpc85xx_rdb_setup_arch,
--	.init_IRQ		= mpc85xx_rdb_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(p1021_rdb_pc) {
- 	.name			= "P1021 RDB-PC",
- 	.probe			= p1021_rdb_pc_probe,
--	.setup_arch		= mpc85xx_rdb_setup_arch,
--	.init_IRQ		= mpc85xx_rdb_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(p2020_rdb_pc) {
- 	.name			= "P2020RDB-PC",
- 	.probe			= p2020_rdb_pc_probe,
--	.setup_arch		= mpc85xx_rdb_setup_arch,
--	.init_IRQ		= mpc85xx_rdb_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(p1025_rdb) {
- 	.name			= "P1025 RDB",
- 	.probe			= p1025_rdb_probe,
--	.setup_arch		= mpc85xx_rdb_setup_arch,
--	.init_IRQ		= mpc85xx_rdb_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(p1020_mbg_pc) {
- 	.name			= "P1020 MBG-PC",
- 	.probe			= p1020_mbg_pc_probe,
--	.setup_arch		= mpc85xx_rdb_setup_arch,
--	.init_IRQ		= mpc85xx_rdb_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(p1020_utm_pc) {
- 	.name			= "P1020 UTM-PC",
- 	.probe			= p1020_utm_pc_probe,
--	.setup_arch		= mpc85xx_rdb_setup_arch,
--	.init_IRQ		= mpc85xx_rdb_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(p1020_rdb_pc) {
- 	.name			= "P1020RDB-PC",
- 	.probe			= p1020_rdb_pc_probe,
--	.setup_arch		= mpc85xx_rdb_setup_arch,
--	.init_IRQ		= mpc85xx_rdb_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(p1020_rdb_pd) {
- 	.name			= "P1020RDB-PD",
- 	.probe			= p1020_rdb_pd_probe,
--	.setup_arch		= mpc85xx_rdb_setup_arch,
--	.init_IRQ		= mpc85xx_rdb_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(p1024_rdb) {
- 	.name			= "P1024 RDB",
- 	.probe			= p1024_rdb_probe,
--	.setup_arch		= mpc85xx_rdb_setup_arch,
--	.init_IRQ		= mpc85xx_rdb_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/mvme2500.c b/arch/powerpc/platforms/85xx/mvme2500.c
-index 1dc98fb60c1a..115e0c5f5fb6 100644
---- a/arch/powerpc/platforms/85xx/mvme2500.c
-+++ b/arch/powerpc/platforms/85xx/mvme2500.c
-@@ -47,19 +47,23 @@ machine_arch_initcall(mvme2500, mpc85xx_common_publish_devices);
-  */
- static int __init mvme2500_probe(void)
- {
--	return of_machine_is_compatible("artesyn,MVME2500");
-+	if (!of_machine_is_compatible("artesyn,MVME2500"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mvme2500_setup_arch);
-+	ppc_md_update(init_IRQ, mvme2500_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(mvme2500) {
- 	.name			= "MVME2500",
- 	.probe			= mvme2500_probe,
--	.setup_arch		= mvme2500_setup_arch,
--	.init_IRQ		= mvme2500_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/p1010rdb.c b/arch/powerpc/platforms/85xx/p1010rdb.c
-index 7ec9ced12eb3..187b78fb298b 100644
---- a/arch/powerpc/platforms/85xx/p1010rdb.c
-+++ b/arch/powerpc/platforms/85xx/p1010rdb.c
-@@ -56,23 +56,24 @@ machine_arch_initcall(p1010_rdb, mpc85xx_common_publish_devices);
-  */
- static int __init p1010_rdb_probe(void)
- {
--	if (of_machine_is_compatible("fsl,P1010RDB"))
--		return 1;
--	if (of_machine_is_compatible("fsl,P1010RDB-PB"))
--		return 1;
--	return 0;
-+	if (!of_machine_is_compatible("fsl,P1010RDB") &&
-+	    !of_machine_is_compatible("fsl,P1010RDB-PB"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, p1010_rdb_setup_arch);
-+	ppc_md_update(init_IRQ, p1010_rdb_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(p1010_rdb) {
- 	.name			= "P1010 RDB",
- 	.probe			= p1010_rdb_probe,
--	.setup_arch		= p1010_rdb_setup_arch,
--	.init_IRQ		= p1010_rdb_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index 0fc89543235d..82a32a36114c 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -552,19 +552,23 @@ machine_arch_initcall(p1022_ds, mpc85xx_common_publish_devices);
-  */
- static int __init p1022_ds_probe(void)
- {
--	return of_machine_is_compatible("fsl,p1022ds");
-+	if (!of_machine_is_compatible("fsl,p1022ds"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, p1022_ds_setup_arch);
-+	ppc_md_update(init_IRQ, p1022_ds_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(p1022_ds) {
- 	.name			= "P1022 DS",
- 	.probe			= p1022_ds_probe,
--	.setup_arch		= p1022_ds_setup_arch,
--	.init_IRQ		= p1022_ds_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb	= fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/p1022_rdk.c b/arch/powerpc/platforms/85xx/p1022_rdk.c
-index c3a9ca9a216b..e22b26ef2d7d 100644
---- a/arch/powerpc/platforms/85xx/p1022_rdk.c
-+++ b/arch/powerpc/platforms/85xx/p1022_rdk.c
-@@ -132,19 +132,23 @@ machine_arch_initcall(p1022_rdk, mpc85xx_common_publish_devices);
-  */
- static int __init p1022_rdk_probe(void)
- {
--	return of_machine_is_compatible("fsl,p1022rdk");
-+	if (!of_machine_is_compatible("fsl,p1022rdk"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, p1022_rdk_setup_arch);
-+	ppc_md_update(init_IRQ, p1022_rdk_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+		
-+	return 1;
- }
- 
- define_machine(p1022_rdk) {
- 	.name			= "P1022 RDK",
- 	.probe			= p1022_rdk_probe,
--	.setup_arch		= p1022_rdk_setup_arch,
--	.init_IRQ		= p1022_rdk_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/p1023_rdb.c b/arch/powerpc/platforms/85xx/p1023_rdb.c
-index 8189838a5343..fd651ba84d43 100644
---- a/arch/powerpc/platforms/85xx/p1023_rdb.c
-+++ b/arch/powerpc/platforms/85xx/p1023_rdb.c
-@@ -95,20 +95,23 @@ static void __init mpc85xx_rdb_pic_init(void)
- 
- static int __init p1023_rdb_probe(void)
- {
--	return of_machine_is_compatible("fsl,P1023RDB");
-+	if (!of_machine_is_compatible("fsl,P1023RDB"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc85xx_rdb_setup_arch);
-+	ppc_md_update(init_IRQ, mpc85xx_rdb_pic_init);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
- 
-+	return 1;
- }
- 
- define_machine(p1023_rdb) {
- 	.name			= "P1023 RDB",
- 	.probe			= p1023_rdb_probe,
--	.setup_arch		= mpc85xx_rdb_setup_arch,
--	.init_IRQ		= mpc85xx_rdb_pic_init,
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
- };
-diff --git a/arch/powerpc/platforms/85xx/ppa8548.c b/arch/powerpc/platforms/85xx/ppa8548.c
-index 70df147419fa..cdb556523fb2 100644
---- a/arch/powerpc/platforms/85xx/ppa8548.c
-+++ b/arch/powerpc/platforms/85xx/ppa8548.c
-@@ -76,16 +76,20 @@ machine_device_initcall(ppa8548, declare_of_platform_devices);
-  */
- static int __init ppa8548_probe(void)
- {
--	return of_machine_is_compatible("ppa8548");
-+	if (!of_machine_is_compatible("ppa8548"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, ppa8548_setup_arch);
-+	ppc_md_update(init_IRQ, ppa8548_pic_init);
-+	ppc_md_update(show_cpuinfo, ppa8548_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(ppa8548) {
- 	.name		= "ppa8548",
- 	.probe		= ppa8548_probe,
--	.setup_arch	= ppa8548_setup_arch,
--	.init_IRQ	= ppa8548_pic_init,
--	.show_cpuinfo	= ppa8548_show_cpuinfo,
--	.get_irq	= mpic_get_irq,
--	.calibrate_decr = generic_calibrate_decr,
--	.progress	= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/qemu_e500.c b/arch/powerpc/platforms/85xx/qemu_e500.c
-index 873a27a384a3..04aed233a31b 100644
---- a/arch/powerpc/platforms/85xx/qemu_e500.c
-+++ b/arch/powerpc/platforms/85xx/qemu_e500.c
-@@ -50,7 +50,20 @@ static void __init qemu_e500_setup_arch(void)
-  */
- static int __init qemu_e500_probe(void)
- {
--	return !!of_machine_is_compatible("fsl,qemu-e500");
-+	if (!of_machine_is_compatible("fsl,qemu-e500"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, qemu_e500_setup_arch);
-+	ppc_md_update(init_IRQ, qemu_e500_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_coreint_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- machine_arch_initcall(qemu_e500, mpc85xx_common_publish_devices);
-@@ -58,13 +71,4 @@ machine_arch_initcall(qemu_e500, mpc85xx_common_publish_devices);
- define_machine(qemu_e500) {
- 	.name			= "QEMU e500",
- 	.probe			= qemu_e500_probe,
--	.setup_arch		= qemu_e500_setup_arch,
--	.init_IRQ		= qemu_e500_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_coreint_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/socrates.c b/arch/powerpc/platforms/85xx/socrates.c
-index 8bdd925f936c..382488abc067 100644
---- a/arch/powerpc/platforms/85xx/socrates.c
-+++ b/arch/powerpc/platforms/85xx/socrates.c
-@@ -74,18 +74,19 @@ machine_arch_initcall(socrates, mpc85xx_common_publish_devices);
-  */
- static int __init socrates_probe(void)
- {
--	if (of_machine_is_compatible("abb,socrates"))
--		return 1;
-+	if (!of_machine_is_compatible("abb,socrates"))
-+		return 0;
- 
--	return 0;
-+	ppc_md_update(setup_arch, socrates_setup_arch);
-+	ppc_md_update(init_IRQ, socrates_pic_init);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(socrates) {
- 	.name			= "Socrates",
- 	.probe			= socrates_probe,
--	.setup_arch		= socrates_setup_arch,
--	.init_IRQ		= socrates_pic_init,
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/stx_gp3.c b/arch/powerpc/platforms/85xx/stx_gp3.c
-index 1d943461955e..188272917b94 100644
---- a/arch/powerpc/platforms/85xx/stx_gp3.c
-+++ b/arch/powerpc/platforms/85xx/stx_gp3.c
-@@ -88,16 +88,20 @@ machine_arch_initcall(stx_gp3, mpc85xx_common_publish_devices);
-  */
- static int __init stx_gp3_probe(void)
- {
--	return of_machine_is_compatible("stx,gp3-8560");
-+	if (!of_machine_is_compatible("stx,gp3-8560"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, stx_gp3_setup_arch);
-+	ppc_md_update(init_IRQ, stx_gp3_pic_init);
-+	ppc_md_update(show_cpuinfo, stx_gp3_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(stx_gp3) {
- 	.name			= "STX GP3",
- 	.probe			= stx_gp3_probe,
--	.setup_arch		= stx_gp3_setup_arch,
--	.init_IRQ		= stx_gp3_pic_init,
--	.show_cpuinfo		= stx_gp3_show_cpuinfo,
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/tqm85xx.c b/arch/powerpc/platforms/85xx/tqm85xx.c
-index 70c1ec342092..d5af4ed66923 100644
---- a/arch/powerpc/platforms/85xx/tqm85xx.c
-+++ b/arch/powerpc/platforms/85xx/tqm85xx.c
-@@ -117,16 +117,20 @@ static const char * const board[] __initconst = {
-  */
- static int __init tqm85xx_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	if (!of_device_compatible_match(of_root, board))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, tqm85xx_setup_arch);
-+	ppc_md_update(init_IRQ, tqm85xx_pic_init);
-+	ppc_md_update(show_cpuinfo, tqm85xx_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(tqm85xx) {
- 	.name			= "TQM85xx",
- 	.probe			= tqm85xx_probe,
--	.setup_arch		= tqm85xx_setup_arch,
--	.init_IRQ		= tqm85xx_pic_init,
--	.show_cpuinfo		= tqm85xx_show_cpuinfo,
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
-index 03d76552aa19..b24c4bcd5430 100644
---- a/arch/powerpc/platforms/85xx/twr_p102x.c
-+++ b/arch/powerpc/platforms/85xx/twr_p102x.c
-@@ -104,18 +104,22 @@ machine_arch_initcall(twr_p1025, mpc85xx_common_publish_devices);
- 
- static int __init twr_p1025_probe(void)
- {
--	return of_machine_is_compatible("fsl,TWR-P1025");
-+	if (!of_machine_is_compatible("fsl,TWR-P1025"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, twr_p1025_setup_arch);
-+	ppc_md_update(init_IRQ, twr_p1025_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- define_machine(twr_p1025) {
- 	.name			= "TWR-P1025",
- 	.probe			= twr_p1025_probe,
--	.setup_arch		= twr_p1025_setup_arch,
--	.init_IRQ		= twr_p1025_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/85xx/xes_mpc85xx.c b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
-index d54e1ae56997..3193ba517575 100644
---- a/arch/powerpc/platforms/85xx/xes_mpc85xx.c
-+++ b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
-@@ -136,62 +136,63 @@ machine_arch_initcall(xes_mpc8572, mpc85xx_common_publish_devices);
- machine_arch_initcall(xes_mpc8548, mpc85xx_common_publish_devices);
- machine_arch_initcall(xes_mpc8540, mpc85xx_common_publish_devices);
- 
-+static void __init xes_mpc85xx_populate(void)
-+{
-+	ppc_md_update(setup_arch, xes_mpc85xx_setup_arch);
-+	ppc_md_update(init_IRQ, xes_mpc85xx_pic_init);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+	ppc_md_update(pcibios_fixup_phb, fsl_pcibios_fixup_phb);
-+#endif
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+}
-+
- /*
-  * Called very early, device-tree isn't unflattened
-  */
- static int __init xes_mpc8572_probe(void)
- {
--	return of_machine_is_compatible("xes,MPC8572");
-+	if (!of_machine_is_compatible("xes,MPC8572"))
-+		return 0;
-+
-+	xes_mpc85xx_populate();
-+
-+	return 1;
- }
- 
- static int __init xes_mpc8548_probe(void)
- {
--	return of_machine_is_compatible("xes,MPC8548");
-+	if (!of_machine_is_compatible("xes,MPC8548"))
-+		return 0;
-+
-+	xes_mpc85xx_populate();
-+
-+	return 1;
- }
- 
- static int __init xes_mpc8540_probe(void)
- {
--	return of_machine_is_compatible("xes,MPC8540");
-+	if (!of_machine_is_compatible("xes,MPC8540"))
-+		return 0;
-+
-+	xes_mpc85xx_populate();
-+
-+	return 1;
- }
- 
- define_machine(xes_mpc8572) {
- 	.name			= "X-ES MPC8572",
- 	.probe			= xes_mpc8572_probe,
--	.setup_arch		= xes_mpc85xx_setup_arch,
--	.init_IRQ		= xes_mpc85xx_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(xes_mpc8548) {
- 	.name			= "X-ES MPC8548",
- 	.probe			= xes_mpc8548_probe,
--	.setup_arch		= xes_mpc85xx_setup_arch,
--	.init_IRQ		= xes_mpc85xx_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
- 
- define_machine(xes_mpc8540) {
- 	.name			= "X-ES MPC8540",
- 	.probe			= xes_mpc8540_probe,
--	.setup_arch		= xes_mpc85xx_setup_arch,
--	.init_IRQ		= xes_mpc85xx_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/86xx/gef_ppc9a.c b/arch/powerpc/platforms/86xx/gef_ppc9a.c
-index 44bbbc535e1d..897be72b49c2 100644
---- a/arch/powerpc/platforms/86xx/gef_ppc9a.c
-+++ b/arch/powerpc/platforms/86xx/gef_ppc9a.c
-@@ -185,10 +185,21 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NEC, PCI_DEVICE_ID_NEC_USB,
-  */
- static int __init gef_ppc9a_probe(void)
- {
--	if (of_machine_is_compatible("gef,ppc9a"))
--		return 1;
-+	if (!of_machine_is_compatible("gef,ppc9a"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, gef_ppc9a_setup_arch);
-+	ppc_md_update(init_IRQ, gef_ppc9a_init_irq);
-+	ppc_md_update(show_cpuinfo, gef_ppc9a_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(time_init, mpc86xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+#endif
- 
--	return 0;
-+	return 1;
- }
- 
- machine_arch_initcall(gef_ppc9a, mpc86xx_common_publish_devices);
-@@ -196,14 +207,4 @@ machine_arch_initcall(gef_ppc9a, mpc86xx_common_publish_devices);
- define_machine(gef_ppc9a) {
- 	.name			= "GE PPC9A",
- 	.probe			= gef_ppc9a_probe,
--	.setup_arch		= gef_ppc9a_setup_arch,
--	.init_IRQ		= gef_ppc9a_init_irq,
--	.show_cpuinfo		= gef_ppc9a_show_cpuinfo,
--	.get_irq		= mpic_get_irq,
--	.time_init		= mpc86xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--#endif
- };
-diff --git a/arch/powerpc/platforms/86xx/gef_sbc310.c b/arch/powerpc/platforms/86xx/gef_sbc310.c
-index 46d6d3d4957a..b4d3b4346192 100644
---- a/arch/powerpc/platforms/86xx/gef_sbc310.c
-+++ b/arch/powerpc/platforms/86xx/gef_sbc310.c
-@@ -172,10 +172,21 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NEC, PCI_DEVICE_ID_NEC_USB,
-  */
- static int __init gef_sbc310_probe(void)
- {
--	if (of_machine_is_compatible("gef,sbc310"))
--		return 1;
-+	if (!of_machine_is_compatible("gef,sbc310"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, gef_sbc310_setup_arch);
-+	ppc_md_update(init_IRQ, gef_sbc310_init_irq);
-+	ppc_md_update(show_cpuinfo, gef_sbc310_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(time_init, mpc86xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+#endif
- 
--	return 0;
-+	return 1;
- }
- 
- machine_arch_initcall(gef_sbc310, mpc86xx_common_publish_devices);
-@@ -183,14 +194,4 @@ machine_arch_initcall(gef_sbc310, mpc86xx_common_publish_devices);
- define_machine(gef_sbc310) {
- 	.name			= "GE SBC310",
- 	.probe			= gef_sbc310_probe,
--	.setup_arch		= gef_sbc310_setup_arch,
--	.init_IRQ		= gef_sbc310_init_irq,
--	.show_cpuinfo		= gef_sbc310_show_cpuinfo,
--	.get_irq		= mpic_get_irq,
--	.time_init		= mpc86xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--#endif
- };
-diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
-index acf2c6c3c1eb..6d051877963c 100644
---- a/arch/powerpc/platforms/86xx/gef_sbc610.c
-+++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
-@@ -162,10 +162,21 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NEC, PCI_DEVICE_ID_NEC_USB,
-  */
- static int __init gef_sbc610_probe(void)
- {
--	if (of_machine_is_compatible("gef,sbc610"))
--		return 1;
-+	if (!of_machine_is_compatible("gef,sbc610"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, gef_sbc610_setup_arch);
-+	ppc_md_update(init_IRQ, gef_sbc610_init_irq);
-+	ppc_md_update(show_cpuinfo, gef_sbc610_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(time_init, mpc86xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+#endif
- 
--	return 0;
-+	return 1;
- }
- 
- machine_arch_initcall(gef_sbc610, mpc86xx_common_publish_devices);
-@@ -173,14 +184,4 @@ machine_arch_initcall(gef_sbc610, mpc86xx_common_publish_devices);
- define_machine(gef_sbc610) {
- 	.name			= "GE SBC610",
- 	.probe			= gef_sbc610_probe,
--	.setup_arch		= gef_sbc610_setup_arch,
--	.init_IRQ		= gef_sbc610_init_irq,
--	.show_cpuinfo		= gef_sbc610_show_cpuinfo,
--	.get_irq		= mpic_get_irq,
--	.time_init		= mpc86xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--#endif
- };
-diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-index f3aa916ace73..a83cfaefbd9c 100644
---- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-+++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-@@ -310,22 +310,23 @@ static void __init mpc86xx_hpcd_setup_arch(void)
-  */
- static int __init mpc86xx_hpcd_probe(void)
- {
--	if (of_machine_is_compatible("fsl,MPC8610HPCD"))
--		return 1;	/* Looks good */
-+	if (!of_machine_is_compatible("fsl,MPC8610HPCD"))
-+		return 0;	/* Looks good */
-+
-+	ppc_md_update(setup_arch, mpc86xx_hpcd_setup_arch);
-+	ppc_md_update(init_IRQ, mpc86xx_init_irq);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(time_init, mpc86xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+#endif
- 
--	return 0;
-+	return 1;
- }
- 
- define_machine(mpc86xx_hpcd) {
- 	.name			= "MPC86xx HPCD",
- 	.probe			= mpc86xx_hpcd_probe,
--	.setup_arch		= mpc86xx_hpcd_setup_arch,
--	.init_IRQ		= mpc86xx_init_irq,
--	.get_irq		= mpic_get_irq,
--	.time_init		= mpc86xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--#endif
- };
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index caa47e2c9313..c8316ffec569 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -91,10 +91,21 @@ mpc86xx_hpcn_show_cpuinfo(struct seq_file *m)
-  */
- static int __init mpc86xx_hpcn_probe(void)
- {
--	if (of_machine_is_compatible("fsl,mpc8641hpcn"))
--		return 1;	/* Looks good */
-+	if (!of_machine_is_compatible("fsl,mpc8641hpcn"))
-+		return 0;	/* Looks good */
-+
-+	ppc_md_update(setup_arch, mpc86xx_hpcn_setup_arch);
-+	ppc_md_update(init_IRQ, mpc86xx_init_irq);
-+	ppc_md_update(show_cpuinfo, mpc86xx_hpcn_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(time_init, mpc86xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+#endif
- 
--	return 0;
-+	return 1;
- }
- 
- static const struct of_device_id of_bus_ids[] __initconst = {
-@@ -114,14 +125,4 @@ machine_arch_initcall(mpc86xx_hpcn, declare_of_platform_devices);
- define_machine(mpc86xx_hpcn) {
- 	.name			= "MPC86xx HPCN",
- 	.probe			= mpc86xx_hpcn_probe,
--	.setup_arch		= mpc86xx_hpcn_setup_arch,
--	.init_IRQ		= mpc86xx_init_irq,
--	.show_cpuinfo		= mpc86xx_hpcn_show_cpuinfo,
--	.get_irq		= mpic_get_irq,
--	.time_init		= mpc86xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--#endif
- };
-diff --git a/arch/powerpc/platforms/86xx/mvme7100.c b/arch/powerpc/platforms/86xx/mvme7100.c
-index c6af6e333e2e..598068326ec2 100644
---- a/arch/powerpc/platforms/86xx/mvme7100.c
-+++ b/arch/powerpc/platforms/86xx/mvme7100.c
-@@ -77,7 +77,20 @@ static int __init mvme7100_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
- 
--	return of_flat_dt_is_compatible(root, "artesyn,MVME7100");
-+	if (!of_flat_dt_is_compatible(root, "artesyn,MVME7100"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mvme7100_setup_arch);
-+	ppc_md_update(init_IRQ, mpc86xx_init_irq);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(time_init, mpc86xx_time_init);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+#ifdef CONFIG_PCI
-+	ppc_md_update(pcibios_fixup_bus, fsl_pcibios_fixup_bus);
-+#endif
-+
-+	return 1;
- }
- 
- static void mvme7100_usb_host_fixup(struct pci_dev *pdev)
-@@ -102,13 +115,4 @@ machine_arch_initcall(mvme7100, mpc86xx_common_publish_devices);
- define_machine(mvme7100) {
- 	.name			= "MVME7100",
- 	.probe			= mvme7100_probe,
--	.setup_arch		= mvme7100_setup_arch,
--	.init_IRQ		= mpc86xx_init_irq,
--	.get_irq		= mpic_get_irq,
--	.time_init		= mpc86xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--#endif
- };
-diff --git a/arch/powerpc/platforms/8xx/adder875.c b/arch/powerpc/platforms/8xx/adder875.c
-index 651486acb896..bb626adcc1d3 100644
---- a/arch/powerpc/platforms/8xx/adder875.c
-+++ b/arch/powerpc/platforms/8xx/adder875.c
-@@ -85,7 +85,17 @@ static void __init adder875_setup(void)
- 
- static int __init adder875_probe(void)
- {
--	return of_machine_is_compatible("analogue-and-micro,adder875");
-+	if (!of_machine_is_compatible("analogue-and-micro,adder875"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, adder875_setup);
-+	ppc_md_update(init_IRQ, mpc8xx_pics_init);
-+	ppc_md_update(get_irq, mpc8xx_get_irq);
-+	ppc_md_update(restart, mpc8xx_restart);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- static const struct of_device_id of_bus_ids[] __initconst = {
-@@ -103,10 +113,4 @@ machine_device_initcall(adder875, declare_of_platform_devices);
- define_machine(adder875) {
- 	.name = "Adder MPC875",
- 	.probe = adder875_probe,
--	.setup_arch = adder875_setup,
--	.init_IRQ = mpc8xx_pics_init,
--	.get_irq = mpc8xx_get_irq,
--	.restart = mpc8xx_restart,
--	.calibrate_decr = generic_calibrate_decr,
--	.progress = udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/8xx/ep88xc.c b/arch/powerpc/platforms/8xx/ep88xc.c
-index ebcf34a14789..ff898f966d75 100644
---- a/arch/powerpc/platforms/8xx/ep88xc.c
-+++ b/arch/powerpc/platforms/8xx/ep88xc.c
-@@ -143,7 +143,17 @@ static void __init ep88xc_setup_arch(void)
- 
- static int __init ep88xc_probe(void)
- {
--	return of_machine_is_compatible("fsl,ep88xc");
-+	if (!of_machine_is_compatible("fsl,ep88xc"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, ep88xc_setup_arch);
-+	ppc_md_update(init_IRQ, mpc8xx_pics_init);
-+	ppc_md_update(get_irq, mpc8xx_get_irq);
-+	ppc_md_update(restart, mpc8xx_restart);
-+	ppc_md_update(calibrate_decr, mpc8xx_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- static const struct of_device_id of_bus_ids[] __initconst = {
-@@ -165,10 +175,4 @@ machine_device_initcall(ep88xc, declare_of_platform_devices);
- define_machine(ep88xc) {
- 	.name = "Embedded Planet EP88xC",
- 	.probe = ep88xc_probe,
--	.setup_arch = ep88xc_setup_arch,
--	.init_IRQ = mpc8xx_pics_init,
--	.get_irq	= mpc8xx_get_irq,
--	.restart = mpc8xx_restart,
--	.calibrate_decr = mpc8xx_calibrate_decr,
--	.progress = udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/8xx/mpc86xads_setup.c b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-index 8d02f5ff4481..26d6358a83c4 100644
---- a/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-@@ -118,7 +118,19 @@ static void __init mpc86xads_setup_arch(void)
- 
- static int __init mpc86xads_probe(void)
- {
--	return of_machine_is_compatible("fsl,mpc866ads");
-+	if (!of_machine_is_compatible("fsl,mpc866ads"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc86xads_setup_arch);
-+	ppc_md_update(init_IRQ, mpc8xx_pics_init);
-+	ppc_md_update(get_irq, mpc8xx_get_irq);
-+	ppc_md_update(restart, mpc8xx_restart);
-+	ppc_md_update(calibrate_decr, mpc8xx_calibrate_decr);
-+	ppc_md_update(set_rtc_time, mpc8xx_set_rtc_time);
-+	ppc_md_update(get_rtc_time, mpc8xx_get_rtc_time);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- static const struct of_device_id of_bus_ids[] __initconst = {
-@@ -139,12 +151,4 @@ machine_device_initcall(mpc86x_ads, declare_of_platform_devices);
- define_machine(mpc86x_ads) {
- 	.name			= "MPC86x ADS",
- 	.probe			= mpc86xads_probe,
--	.setup_arch		= mpc86xads_setup_arch,
--	.init_IRQ		= mpc8xx_pics_init,
--	.get_irq		= mpc8xx_get_irq,
--	.restart		= mpc8xx_restart,
--	.calibrate_decr		= mpc8xx_calibrate_decr,
--	.set_rtc_time		= mpc8xx_set_rtc_time,
--	.get_rtc_time		= mpc8xx_get_rtc_time,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-index a0c83c1905c6..2c137412f4db 100644
---- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-@@ -193,7 +193,17 @@ static void __init mpc885ads_setup_arch(void)
- 
- static int __init mpc885ads_probe(void)
- {
--	return of_machine_is_compatible("fsl,mpc885ads");
-+	if (!of_machine_is_compatible("fsl,mpc885ads"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mpc885ads_setup_arch);
-+	ppc_md_update(init_IRQ, mpc8xx_pics_init);
-+	ppc_md_update(get_irq, mpc8xx_get_irq);
-+	ppc_md_update(restart, mpc8xx_restart);
-+	ppc_md_update(calibrate_decr, mpc8xx_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- static const struct of_device_id of_bus_ids[] __initconst = {
-@@ -215,10 +225,4 @@ machine_device_initcall(mpc885_ads, declare_of_platform_devices);
- define_machine(mpc885_ads) {
- 	.name			= "Freescale MPC885 ADS",
- 	.probe			= mpc885ads_probe,
--	.setup_arch		= mpc885ads_setup_arch,
--	.init_IRQ		= mpc8xx_pics_init,
--	.get_irq		= mpc8xx_get_irq,
--	.restart		= mpc8xx_restart,
--	.calibrate_decr		= mpc8xx_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/8xx/tqm8xx_setup.c b/arch/powerpc/platforms/8xx/tqm8xx_setup.c
-index 4cea8b1afa44..e9ebe66a2ab9 100644
---- a/arch/powerpc/platforms/8xx/tqm8xx_setup.c
-+++ b/arch/powerpc/platforms/8xx/tqm8xx_setup.c
-@@ -119,7 +119,19 @@ static void __init tqm8xx_setup_arch(void)
- 
- static int __init tqm8xx_probe(void)
- {
--	return of_machine_is_compatible("tqc,tqm8xx");
-+	if (!of_machine_is_compatible("tqc,tqm8xx"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, tqm8xx_setup_arch);
-+	ppc_md_update(init_IRQ, mpc8xx_pics_init);
-+	ppc_md_update(get_irq, mpc8xx_get_irq);
-+	ppc_md_update(restart, mpc8xx_restart);
-+	ppc_md_update(calibrate_decr, mpc8xx_calibrate_decr);
-+	ppc_md_update(set_rtc_time, mpc8xx_set_rtc_time);
-+	ppc_md_update(get_rtc_time, mpc8xx_get_rtc_time);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- static const struct of_device_id of_bus_ids[] __initconst = {
-@@ -141,12 +153,4 @@ machine_device_initcall(tqm8xx, declare_of_platform_devices);
- define_machine(tqm8xx) {
- 	.name			= "TQM8xx",
- 	.probe			= tqm8xx_probe,
--	.setup_arch		= tqm8xx_setup_arch,
--	.init_IRQ		= mpc8xx_pics_init,
--	.get_irq		= mpc8xx_get_irq,
--	.restart		= mpc8xx_restart,
--	.calibrate_decr		= mpc8xx_calibrate_decr,
--	.set_rtc_time		= mpc8xx_set_rtc_time,
--	.get_rtc_time		= mpc8xx_get_rtc_time,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/amigaone/setup.c b/arch/powerpc/platforms/amigaone/setup.c
-index dc09a0d99e43..324e256a61e2 100644
---- a/arch/powerpc/platforms/amigaone/setup.c
-+++ b/arch/powerpc/platforms/amigaone/setup.c
-@@ -141,30 +141,30 @@ void __noreturn amigaone_restart(char *cmd)
- 
- static int __init amigaone_probe(void)
- {
--	if (of_machine_is_compatible("eyetech,amigaone")) {
--		/*
--		 * Coherent memory access cause complete system lockup! Thus
--		 * disable this CPU feature, even if the CPU needs it.
--		 */
--		cur_cpu_spec->cpu_features &= ~CPU_FTR_NEED_COHERENT;
--
--		DMA_MODE_READ = 0x44;
--		DMA_MODE_WRITE = 0x48;
--
--		return 1;
--	}
--
--	return 0;
-+	if (!of_machine_is_compatible("eyetech,amigaone"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, amigaone_setup_arch);
-+	ppc_md_update(discover_phbs, amigaone_discover_phbs);
-+	ppc_md_update(show_cpuinfo, amigaone_show_cpuinfo);
-+	ppc_md_update(init_IRQ, amigaone_init_IRQ);
-+	ppc_md_update(restart, amigaone_restart);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	/*
-+	 * Coherent memory access cause complete system lockup! Thus
-+	 * disable this CPU feature, even if the CPU needs it.
-+	 */
-+	cur_cpu_spec->cpu_features &= ~CPU_FTR_NEED_COHERENT;
-+
-+	DMA_MODE_READ = 0x44;
-+	DMA_MODE_WRITE = 0x48;
-+
-+	return 1;
- }
- 
- define_machine(amigaone) {
- 	.name			= "AmigaOne",
- 	.probe			= amigaone_probe,
--	.setup_arch		= amigaone_setup_arch,
--	.discover_phbs		= amigaone_discover_phbs,
--	.show_cpuinfo		= amigaone_show_cpuinfo,
--	.init_IRQ		= amigaone_init_IRQ,
--	.restart		= amigaone_restart,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
-index edefa785d2ef..ffd50587e327 100644
---- a/arch/powerpc/platforms/cell/setup.c
-+++ b/arch/powerpc/platforms/cell/setup.c
-@@ -249,6 +249,18 @@ static int __init cell_probe(void)
- 	    !of_machine_is_compatible("IBM,CPBW-1.0"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch, cell_setup_arch);
-+	ppc_md_update(show_cpuinfo, cell_show_cpuinfo);
-+	ppc_md_update(restart, rtas_restart);
-+	ppc_md_update(halt, rtas_halt);
-+	ppc_md_update(get_boot_time, rtas_get_boot_time);
-+	ppc_md_update(get_rtc_time, rtas_get_rtc_time);
-+	ppc_md_update(set_rtc_time, rtas_set_rtc_time);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, cell_progress);
-+	ppc_md_update(init_IRQ, cell_init_irq);
-+	ppc_md_update(pci_setup_phb, cell_setup_phb);
-+
- 	pm_power_off = rtas_power_off;
- 
- 	return 1;
-@@ -257,17 +269,6 @@ static int __init cell_probe(void)
- define_machine(cell) {
- 	.name			= "Cell",
- 	.probe			= cell_probe,
--	.setup_arch		= cell_setup_arch,
--	.show_cpuinfo		= cell_show_cpuinfo,
--	.restart		= rtas_restart,
--	.halt			= rtas_halt,
--	.get_boot_time		= rtas_get_boot_time,
--	.get_rtc_time		= rtas_get_rtc_time,
--	.set_rtc_time		= rtas_set_rtc_time,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= cell_progress,
--	.init_IRQ       	= cell_init_irq,
--	.pci_setup_phb		= cell_setup_phb,
- };
- 
- struct pci_controller_ops cell_pci_controller_ops;
-diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index 6fad19201f5b..f33535b03d50 100644
---- a/arch/powerpc/platforms/chrp/setup.c
-+++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -556,6 +556,19 @@ static int __init chrp_probe(void)
-  	if (strcmp(dtype, "chrp"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch, chrp_setup_arch);
-+	ppc_md_update(discover_phbs, chrp_find_bridges);
-+	ppc_md_update(init, chrp_init2);
-+	ppc_md_update(show_cpuinfo, chrp_show_cpuinfo);
-+	ppc_md_update(init_IRQ, chrp_init_IRQ);
-+	ppc_md_update(restart, rtas_restart);
-+	ppc_md_update(halt, rtas_halt);
-+	ppc_md_update(time_init, chrp_time_init);
-+	ppc_md_update(set_rtc_time, chrp_set_rtc_time);
-+	ppc_md_update(get_rtc_time, chrp_get_rtc_time);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(phys_mem_access_prot, pci_phys_mem_access_prot);
-+
- 	DMA_MODE_READ = 0x44;
- 	DMA_MODE_WRITE = 0x48;
- 
-@@ -569,16 +582,4 @@ static int __init chrp_probe(void)
- define_machine(chrp) {
- 	.name			= "CHRP",
- 	.probe			= chrp_probe,
--	.setup_arch		= chrp_setup_arch,
--	.discover_phbs		= chrp_find_bridges,
--	.init			= chrp_init2,
--	.show_cpuinfo		= chrp_show_cpuinfo,
--	.init_IRQ		= chrp_init_IRQ,
--	.restart		= rtas_restart,
--	.halt			= rtas_halt,
--	.time_init		= chrp_time_init,
--	.set_rtc_time		= chrp_set_rtc_time,
--	.get_rtc_time		= chrp_get_rtc_time,
--	.calibrate_decr		= generic_calibrate_decr,
--	.phys_mem_access_prot	= pci_phys_mem_access_prot,
- };
-diff --git a/arch/powerpc/platforms/embedded6xx/gamecube.c b/arch/powerpc/platforms/embedded6xx/gamecube.c
-index ade928f7ea73..6d493e3f5f68 100644
---- a/arch/powerpc/platforms/embedded6xx/gamecube.c
-+++ b/arch/powerpc/platforms/embedded6xx/gamecube.c
-@@ -54,6 +54,14 @@ static int __init gamecube_probe(void)
- 	if (!of_machine_is_compatible("nintendo,gamecube"))
- 		return 0;
- 
-+	ppc_md_update(restart, gamecube_restart);
-+	ppc_md_update(halt, gamecube_halt);
-+	ppc_md_update(init_IRQ, flipper_pic_probe);
-+	ppc_md_update(get_irq, flipper_pic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+	ppc_md_update(machine_shutdown, gamecube_shutdown);
-+
- 	pm_power_off = gamecube_power_off;
- 
- 	ug_udbg_init();
-@@ -69,13 +77,6 @@ static void gamecube_shutdown(void)
- define_machine(gamecube) {
- 	.name			= "gamecube",
- 	.probe			= gamecube_probe,
--	.restart		= gamecube_restart,
--	.halt			= gamecube_halt,
--	.init_IRQ		= flipper_pic_probe,
--	.get_irq		= flipper_pic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--	.machine_shutdown	= gamecube_shutdown,
- };
- 
- 
-diff --git a/arch/powerpc/platforms/embedded6xx/holly.c b/arch/powerpc/platforms/embedded6xx/holly.c
-index 5dac4067a3a0..248dbcb12e17 100644
---- a/arch/powerpc/platforms/embedded6xx/holly.c
-+++ b/arch/powerpc/platforms/embedded6xx/holly.c
-@@ -239,6 +239,17 @@ static int __init holly_probe(void)
- {
- 	if (!of_machine_is_compatible("ibm,holly"))
- 		return 0;
-+
-+	ppc_md_update(setup_arch, holly_setup_arch);
-+	ppc_md_update(discover_phbs, holly_init_pci);
-+	ppc_md_update(init_IRQ, holly_init_IRQ);
-+	ppc_md_update(show_cpuinfo, holly_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(restart, holly_restart);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(machine_check_exception, ppc750_machine_check_exception);
-+	ppc_md_update(progress, udbg_progress);
-+
- 	return 1;
- }
- 
-@@ -259,13 +270,4 @@ static int ppc750_machine_check_exception(struct pt_regs *regs)
- define_machine(holly){
- 	.name                   	= "PPC750 GX/CL TSI",
- 	.probe                  	= holly_probe,
--	.setup_arch             	= holly_setup_arch,
--	.discover_phbs			= holly_init_pci,
--	.init_IRQ               	= holly_init_IRQ,
--	.show_cpuinfo           	= holly_show_cpuinfo,
--	.get_irq                	= mpic_get_irq,
--	.restart                	= holly_restart,
--	.calibrate_decr         	= generic_calibrate_decr,
--	.machine_check_exception	= ppc750_machine_check_exception,
--	.progress               	= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
-index eb8342e7f84e..a81f30897087 100644
---- a/arch/powerpc/platforms/embedded6xx/linkstation.c
-+++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
-@@ -147,6 +147,15 @@ static int __init linkstation_probe(void)
- 	if (!of_machine_is_compatible("linkstation"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch , linkstation_setup_arch);
-+	ppc_md_update(discover_phbs, linkstation_setup_pci);
-+	ppc_md_update(init_IRQ, linkstation_init_IRQ);
-+	ppc_md_update(show_cpuinfo, linkstation_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(restart, linkstation_restart);
-+	ppc_md_update(halt, linkstation_halt);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
- 	pm_power_off = linkstation_power_off;
- 
- 	return 1;
-@@ -155,12 +164,4 @@ static int __init linkstation_probe(void)
- define_machine(linkstation){
- 	.name 			= "Buffalo Linkstation",
- 	.probe 			= linkstation_probe,
--	.setup_arch 		= linkstation_setup_arch,
--	.discover_phbs		= linkstation_setup_pci,
--	.init_IRQ 		= linkstation_init_IRQ,
--	.show_cpuinfo 		= linkstation_show_cpuinfo,
--	.get_irq 		= mpic_get_irq,
--	.restart 		= linkstation_restart,
--	.halt	 		= linkstation_halt,
--	.calibrate_decr 	= generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-index f833624a8532..26e86c974315 100644
---- a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-+++ b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-@@ -162,6 +162,17 @@ static int __init mpc7448_hpc2_probe(void)
- {
- 	if (!of_machine_is_compatible("mpc74xx"))
- 		return 0;
-+
-+	ppc_md_update(setup_arch, mpc7448_hpc2_setup_arch);
-+	ppc_md_update(discover_phbs, mpc7448_hpc2_setup_pci);
-+	ppc_md_update(init_IRQ, mpc7448_hpc2_init_IRQ);
-+	ppc_md_update(show_cpuinfo, mpc7448_hpc2_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(restart, mpc7448_hpc2_restart);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(machine_check_exception, mpc7448_machine_check_exception);
-+	ppc_md_update(progress, udbg_progress);
-+
- 	return 1;
- }
- 
-@@ -182,13 +193,4 @@ static int mpc7448_machine_check_exception(struct pt_regs *regs)
- define_machine(mpc7448_hpc2){
- 	.name 			= "MPC7448 HPC2",
- 	.probe 			= mpc7448_hpc2_probe,
--	.setup_arch 		= mpc7448_hpc2_setup_arch,
--	.discover_phbs		= mpc7448_hpc2_setup_pci,
--	.init_IRQ 		= mpc7448_hpc2_init_IRQ,
--	.show_cpuinfo 		= mpc7448_hpc2_show_cpuinfo,
--	.get_irq 		= mpic_get_irq,
--	.restart 		= mpc7448_hpc2_restart,
--	.calibrate_decr 	= generic_calibrate_decr,
--	.machine_check_exception= mpc7448_machine_check_exception,
--	.progress 		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/embedded6xx/mvme5100.c b/arch/powerpc/platforms/embedded6xx/mvme5100.c
-index 04a98cb1c53c..22cb6d732989 100644
---- a/arch/powerpc/platforms/embedded6xx/mvme5100.c
-+++ b/arch/powerpc/platforms/embedded6xx/mvme5100.c
-@@ -190,7 +190,19 @@ static void __noreturn mvme5100_restart(char *cmd)
-  */
- static int __init mvme5100_probe(void)
- {
--	return of_machine_is_compatible("MVME5100");
-+	if (!of_machine_is_compatible("MVME5100"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, mvme5100_setup_arch);
-+	ppc_md_update(discover_phbs, mvme5100_setup_pci);
-+	ppc_md_update(init_IRQ, mvme5100_pic_init);
-+	ppc_md_update(show_cpuinfo, mvme5100_show_cpuinfo);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(restart, mvme5100_restart);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+
-+	return 1;
- }
- 
- static int __init probe_of_platform_devices(void)
-@@ -205,12 +217,4 @@ machine_device_initcall(mvme5100, probe_of_platform_devices);
- define_machine(mvme5100) {
- 	.name			= "MVME5100",
- 	.probe			= mvme5100_probe,
--	.setup_arch		= mvme5100_setup_arch,
--	.discover_phbs		= mvme5100_setup_pci,
--	.init_IRQ		= mvme5100_pic_init,
--	.show_cpuinfo		= mvme5100_show_cpuinfo,
--	.get_irq		= mpic_get_irq,
--	.restart		= mvme5100_restart,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
- };
-diff --git a/arch/powerpc/platforms/embedded6xx/storcenter.c b/arch/powerpc/platforms/embedded6xx/storcenter.c
-index e188b90f7016..66a99612517e 100644
---- a/arch/powerpc/platforms/embedded6xx/storcenter.c
-+++ b/arch/powerpc/platforms/embedded6xx/storcenter.c
-@@ -113,16 +113,20 @@ static void __noreturn storcenter_restart(char *cmd)
- 
- static int __init storcenter_probe(void)
- {
--	return of_machine_is_compatible("iomega,storcenter");
-+	if (!of_machine_is_compatible("iomega,storcenter"))
-+		return 0;
-+
-+	ppc_md_update(setup_arch, storcenter_setup_arch);
-+	ppc_md_update(discover_phbs, storcenter_setup_pci);
-+	ppc_md_update(init_IRQ, storcenter_init_IRQ);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(restart, storcenter_restart);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
-+	return 1;
- }
- 
- define_machine(storcenter){
- 	.name 			= "IOMEGA StorCenter",
- 	.probe 			= storcenter_probe,
--	.setup_arch 		= storcenter_setup_arch,
--	.discover_phbs 		= storcenter_setup_pci,
--	.init_IRQ 		= storcenter_init_IRQ,
--	.get_irq 		= mpic_get_irq,
--	.restart 		= storcenter_restart,
--	.calibrate_decr 	= generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
-index d8b005d7ef79..53d927e7b463 100644
---- a/arch/powerpc/platforms/embedded6xx/wii.c
-+++ b/arch/powerpc/platforms/embedded6xx/wii.c
-@@ -158,6 +158,15 @@ static int __init wii_probe(void)
- 	if (!of_machine_is_compatible("nintendo,wii"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch, wii_setup_arch);
-+	ppc_md_update(restart, wii_restart);
-+	ppc_md_update(halt, wii_halt);
-+	ppc_md_update(init_IRQ, wii_pic_probe);
-+	ppc_md_update(get_irq, flipper_pic_get_irq);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, udbg_progress);
-+	ppc_md_update(machine_shutdown, wii_shutdown);
-+
- 	pm_power_off = wii_power_off;
- 
- 	ug_udbg_init();
-@@ -189,12 +198,4 @@ device_initcall(wii_device_probe);
- define_machine(wii) {
- 	.name			= "wii",
- 	.probe			= wii_probe,
--	.setup_arch		= wii_setup_arch,
--	.restart		= wii_restart,
--	.halt			= wii_halt,
--	.init_IRQ		= wii_pic_probe,
--	.get_irq		= flipper_pic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--	.machine_shutdown	= wii_shutdown,
- };
-diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
-index a60aaa13b265..0c6a400cd7fd 100644
---- a/arch/powerpc/platforms/maple/setup.c
-+++ b/arch/powerpc/platforms/maple/setup.c
-@@ -280,6 +280,20 @@ static int __init maple_probe(void)
- 	    !of_machine_is_compatible("Momentum,Apache"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch, maple_setup_arch);
-+	ppc_md_update(discover_phbs, maple_pci_init);
-+	ppc_md_update(init_IRQ, maple_init_IRQ);
-+	ppc_md_update(pci_irq_fixup, maple_pci_irq_fixup);
-+	ppc_md_update(pci_get_legacy_ide_irq, maple_pci_get_legacy_ide_irq);
-+	ppc_md_update(restart, maple_restart);
-+	ppc_md_update(halt, maple_halt);
-+	ppc_md_update(get_boot_time, maple_get_boot_time);
-+	ppc_md_update(set_rtc_time, maple_set_rtc_time);
-+	ppc_md_update(get_rtc_time, maple_get_rtc_time);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, maple_progress);
-+	ppc_md_update(power_save, power4_idle);
-+
- 	pm_power_off = maple_power_off;
- 
- 	iommu_init_early_dart(&maple_pci_controller_ops);
-@@ -347,17 +361,4 @@ machine_device_initcall(maple, maple_cpc925_edac_setup);
- define_machine(maple) {
- 	.name			= "Maple",
- 	.probe			= maple_probe,
--	.setup_arch		= maple_setup_arch,
--	.discover_phbs		= maple_pci_init,
--	.init_IRQ		= maple_init_IRQ,
--	.pci_irq_fixup		= maple_pci_irq_fixup,
--	.pci_get_legacy_ide_irq	= maple_pci_get_legacy_ide_irq,
--	.restart		= maple_restart,
--	.halt			= maple_halt,
--	.get_boot_time		= maple_get_boot_time,
--	.set_rtc_time		= maple_set_rtc_time,
--	.get_rtc_time		= maple_get_rtc_time,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= maple_progress,
--	.power_save		= power4_idle,
- };
-diff --git a/arch/powerpc/platforms/microwatt/setup.c b/arch/powerpc/platforms/microwatt/setup.c
-index 0b02603bdb74..4347bd4fb320 100644
---- a/arch/powerpc/platforms/microwatt/setup.c
-+++ b/arch/powerpc/platforms/microwatt/setup.c
-@@ -23,7 +23,14 @@ static void __init microwatt_init_IRQ(void)
- 
- static int __init microwatt_probe(void)
- {
--	return of_machine_is_compatible("microwatt-soc");
-+	if (!of_machine_is_compatible("microwatt-soc"))
-+		return 0;
-+
-+	ppc_md_update(init_IRQ, microwatt_init_IRQ);
-+	ppc_md_update(progress, udbg_progress);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+
-+	return 1;
- }
- 
- static int __init microwatt_populate(void)
-@@ -35,7 +42,4 @@ machine_arch_initcall(microwatt, microwatt_populate);
- define_machine(microwatt) {
- 	.name			= "microwatt",
- 	.probe			= microwatt_probe,
--	.init_IRQ		= microwatt_init_IRQ,
--	.progress		= udbg_progress,
--	.calibrate_decr		= generic_calibrate_decr,
- };
-diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index 376797eb7894..66e909029eb7 100644
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -424,6 +424,16 @@ static int __init pas_probe(void)
- 	    !of_machine_is_compatible("pasemi,pwrficient"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch, pas_setup_arch);
-+	ppc_md_update(discover_phbs, pas_pci_init);
-+	ppc_md_update(init_IRQ, pas_init_IRQ);
-+	ppc_md_update(get_irq, mpic_get_irq);
-+	ppc_md_update(restart, pas_restart);
-+	ppc_md_update(get_boot_time, pas_get_boot_time);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, pas_progress);
-+	ppc_md_update(machine_check_exception , pas_machine_check_handler);
-+
- #ifdef CONFIG_PPC_PASEMI_NEMO
- 	/*
- 	 * Check for the Nemo motherboard here, if we are running on one
-@@ -443,13 +453,4 @@ static int __init pas_probe(void)
- define_machine(pasemi) {
- 	.name			= "PA Semi PWRficient",
- 	.probe			= pas_probe,
--	.setup_arch		= pas_setup_arch,
--	.discover_phbs		= pas_pci_init,
--	.init_IRQ		= pas_init_IRQ,
--	.get_irq		= mpic_get_irq,
--	.restart		= pas_restart,
--	.get_boot_time		= pas_get_boot_time,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= pas_progress,
--	.machine_check_exception = pas_machine_check_handler,
- };
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index 86aee3f2483f..93d763a0b6d0 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -580,6 +580,30 @@ static int __init pmac_probe(void)
- 	    !of_machine_is_compatible("MacRISC"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch, pmac_setup_arch);
-+	ppc_md_update(discover_phbs, pmac_pci_init);
-+	ppc_md_update(show_cpuinfo, pmac_show_cpuinfo);
-+	ppc_md_update(init_IRQ, pmac_pic_init);
-+	ppc_md_update(get_irq, NULL);/* changed later */
-+	ppc_md_update(pci_irq_fixup, pmac_pci_irq_fixup);
-+	ppc_md_update(restart, pmac_restart);
-+	ppc_md_update(halt, pmac_halt);
-+	ppc_md_update(time_init, pmac_time_init);
-+	ppc_md_update(get_boot_time, pmac_get_boot_time);
-+	ppc_md_update(set_rtc_time, pmac_set_rtc_time);
-+	ppc_md_update(get_rtc_time, pmac_get_rtc_time);
-+	ppc_md_update(calibrate_decr, pmac_calibrate_decr);
-+	ppc_md_update(feature_call, pmac_do_feature_call);
-+	ppc_md_update(progress, udbg_progress);
-+#ifdef CONFIG_PPC64
-+	ppc_md_update(power_save, power4_idle);
-+	ppc_md_update(enable_pmcs, power4_enable_pmcs);
-+#endif /* CONFIG_PPC64 */
-+#ifdef CONFIG_PPC32
-+	ppc_md_update(pcibios_after_init, pmac_pcibios_after_init);
-+	ppc_md_update(phys_mem_access_prot, pci_phys_mem_access_prot);
-+#endif
-+
- #ifdef CONFIG_PPC32
- 	/* isa_io_base gets set in pmac_pci_init */
- 	DMA_MODE_READ = 1;
-@@ -596,27 +620,4 @@ static int __init pmac_probe(void)
- define_machine(powermac) {
- 	.name			= "PowerMac",
- 	.probe			= pmac_probe,
--	.setup_arch		= pmac_setup_arch,
--	.discover_phbs		= pmac_pci_init,
--	.show_cpuinfo		= pmac_show_cpuinfo,
--	.init_IRQ		= pmac_pic_init,
--	.get_irq		= NULL,	/* changed later */
--	.pci_irq_fixup		= pmac_pci_irq_fixup,
--	.restart		= pmac_restart,
--	.halt			= pmac_halt,
--	.time_init		= pmac_time_init,
--	.get_boot_time		= pmac_get_boot_time,
--	.set_rtc_time		= pmac_set_rtc_time,
--	.get_rtc_time		= pmac_get_rtc_time,
--	.calibrate_decr		= pmac_calibrate_decr,
--	.feature_call		= pmac_do_feature_call,
--	.progress		= udbg_progress,
--#ifdef CONFIG_PPC64
--	.power_save		= power4_idle,
--	.enable_pmcs		= power4_enable_pmcs,
--#endif /* CONFIG_PPC64 */
--#ifdef CONFIG_PPC32
--	.pcibios_after_init	= pmac_pcibios_after_init,
--	.phys_mem_access_prot	= pci_phys_mem_access_prot,
--#endif
- };
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 6f6ceef2a9f5..ba0ac4738488 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -471,11 +471,57 @@ static void __init pnv_setup_machdep_opal(void)
- 	ppc_md_update(handle_hmi_exception, opal_handle_hmi_exception);
- }
- 
-+/*
-+ * Returns the cpu frequency for 'cpu' in Hz. This is used by
-+ * /proc/cpuinfo
-+ */
-+static unsigned long pnv_get_proc_freq(unsigned int cpu)
-+{
-+	unsigned long ret_freq;
-+
-+	ret_freq = cpufreq_get(cpu) * 1000ul;
-+
-+	/*
-+	 * If the backend cpufreq driver does not exist,
-+         * then fallback to old way of reporting the clockrate.
-+	 */
-+	if (!ret_freq)
-+		ret_freq = ppc_proc_freq;
-+	return ret_freq;
-+}
-+
-+static long pnv_machine_check_early(struct pt_regs *regs)
-+{
-+	long handled = 0;
-+
-+	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
-+		handled = cur_cpu_spec->machine_check_early(regs);
-+
-+	return handled;
-+}
-+
- static int __init pnv_probe(void)
- {
- 	if (!of_machine_is_compatible("ibm,powernv"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch, pnv_setup_arch);
-+	ppc_md_update(init_IRQ, pnv_init_IRQ);
-+	ppc_md_update(show_cpuinfo, pnv_show_cpuinfo);
-+	ppc_md_update(get_proc_freq, pnv_get_proc_freq);
-+	ppc_md_update(discover_phbs, pnv_pci_init);
-+	ppc_md_update(progress, pnv_progress);
-+	ppc_md_update(machine_shutdown, pnv_shutdown);
-+	ppc_md_update(power_save, NULL);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(machine_check_early, pnv_machine_check_early);
-+#ifdef CONFIG_KEXEC_CORE
-+	ppc_md_update(kexec_cpu_down, pnv_kexec_cpu_down);
-+#endif
-+#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
-+	ppc_md_update(memory_block_size, pnv_memory_block_size);
-+#endif
-+
- 	if (firmware_has_feature(FW_FEATURE_OPAL))
- 		pnv_setup_machdep_opal();
- 
-@@ -508,52 +554,7 @@ void __init pnv_tm_init(void)
- }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- 
--/*
-- * Returns the cpu frequency for 'cpu' in Hz. This is used by
-- * /proc/cpuinfo
-- */
--static unsigned long pnv_get_proc_freq(unsigned int cpu)
--{
--	unsigned long ret_freq;
--
--	ret_freq = cpufreq_get(cpu) * 1000ul;
--
--	/*
--	 * If the backend cpufreq driver does not exist,
--         * then fallback to old way of reporting the clockrate.
--	 */
--	if (!ret_freq)
--		ret_freq = ppc_proc_freq;
--	return ret_freq;
--}
--
--static long pnv_machine_check_early(struct pt_regs *regs)
--{
--	long handled = 0;
--
--	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
--		handled = cur_cpu_spec->machine_check_early(regs);
--
--	return handled;
--}
--
- define_machine(powernv) {
- 	.name			= "PowerNV",
- 	.probe			= pnv_probe,
--	.setup_arch		= pnv_setup_arch,
--	.init_IRQ		= pnv_init_IRQ,
--	.show_cpuinfo		= pnv_show_cpuinfo,
--	.get_proc_freq          = pnv_get_proc_freq,
--	.discover_phbs		= pnv_pci_init,
--	.progress		= pnv_progress,
--	.machine_shutdown	= pnv_shutdown,
--	.power_save             = NULL,
--	.calibrate_decr		= generic_calibrate_decr,
--	.machine_check_early	= pnv_machine_check_early,
--#ifdef CONFIG_KEXEC_CORE
--	.kexec_cpu_down		= pnv_kexec_cpu_down,
--#endif
--#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
--	.memory_block_size	= pnv_memory_block_size,
--#endif
- };
-diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
-index 04c037ec8b79..57d89c741bb4 100644
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -260,6 +260,20 @@ void __init ps3_early_mm_init(void)
- 	ps3_hpte_init(htab_size);
- }
- 
-+#if defined(CONFIG_KEXEC_CORE)
-+static void ps3_kexec_cpu_down(int crash_shutdown, int secondary)
-+{
-+	int cpu = smp_processor_id();
-+
-+	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
-+
-+	ps3_smp_cleanup_cpu(cpu);
-+	ps3_shutdown_IRQ(cpu);
-+
-+	DBG(" <- %s:%d\n", __func__, __LINE__);
-+}
-+#endif
-+
- static int __init ps3_probe(void)
- {
- 	DBG(" -> %s:%d\n", __func__, __LINE__);
-@@ -267,6 +281,19 @@ static int __init ps3_probe(void)
- 	if (!of_machine_is_compatible("sony,ps3"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch, ps3_setup_arch);
-+	ppc_md_update(init_IRQ, ps3_init_IRQ);
-+	ppc_md_update(panic, ps3_panic);
-+	ppc_md_update(get_boot_time, ps3_get_boot_time);
-+	ppc_md_update(set_dabr, ps3_set_dabr);
-+	ppc_md_update(calibrate_decr, ps3_calibrate_decr);
-+	ppc_md_update(progress, ps3_progress);
-+	ppc_md_update(restart, ps3_restart);
-+	ppc_md_update(halt, ps3_halt);
-+#if defined(CONFIG_KEXEC_CORE)
-+	ppc_md_update(kexec_cpu_down, ps3_kexec_cpu_down);
-+#endif
-+
- 	ps3_os_area_save_params();
- 
- 	pm_power_off = ps3_power_off;
-@@ -275,33 +302,7 @@ static int __init ps3_probe(void)
- 	return 1;
- }
- 
--#if defined(CONFIG_KEXEC_CORE)
--static void ps3_kexec_cpu_down(int crash_shutdown, int secondary)
--{
--	int cpu = smp_processor_id();
--
--	DBG(" -> %s:%d: (%d)\n", __func__, __LINE__, cpu);
--
--	ps3_smp_cleanup_cpu(cpu);
--	ps3_shutdown_IRQ(cpu);
--
--	DBG(" <- %s:%d\n", __func__, __LINE__);
--}
--#endif
--
- define_machine(ps3) {
- 	.name				= "PS3",
- 	.probe				= ps3_probe,
--	.setup_arch			= ps3_setup_arch,
--	.init_IRQ			= ps3_init_IRQ,
--	.panic				= ps3_panic,
--	.get_boot_time			= ps3_get_boot_time,
--	.set_dabr			= ps3_set_dabr,
--	.calibrate_decr			= ps3_calibrate_decr,
--	.progress			= ps3_progress,
--	.restart			= ps3_restart,
--	.halt				= ps3_halt,
--#if defined(CONFIG_KEXEC_CORE)
--	.kexec_cpu_down			= ps3_kexec_cpu_down,
--#endif
- };
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index e14abc326a49..7a96dc1388ca 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -1041,6 +1041,31 @@ static int __init pSeries_probe(void)
- 	    of_machine_is_compatible("IBM,CBEA"))
- 		return 0;
- 
-+	ppc_md_update(setup_arch, pSeries_setup_arch);
-+	ppc_md_update(init_IRQ, pseries_init_irq);
-+	ppc_md_update(show_cpuinfo, pSeries_show_cpuinfo);
-+	ppc_md_update(log_error, pSeries_log_error);
-+	ppc_md_update(discover_phbs, pSeries_discover_phbs);
-+	ppc_md_update(pcibios_fixup, pSeries_final_fixup);
-+	ppc_md_update(restart, rtas_restart);
-+	ppc_md_update(halt, rtas_halt);
-+	ppc_md_update(panic, pseries_panic);
-+	ppc_md_update(get_boot_time, rtas_get_boot_time);
-+	ppc_md_update(get_rtc_time, rtas_get_rtc_time);
-+	ppc_md_update(set_rtc_time, rtas_set_rtc_time);
-+	ppc_md_update(calibrate_decr, generic_calibrate_decr);
-+	ppc_md_update(progress, rtas_progress);
-+	ppc_md_update(system_reset_exception , pSeries_system_reset_exception);
-+	ppc_md_update(machine_check_early, pseries_machine_check_realmode);
-+	ppc_md_update(machine_check_exception , pSeries_machine_check_exception);
-+#ifdef CONFIG_KEXEC_CORE
-+	ppc_md_update(machine_kexec, pSeries_machine_kexec);
-+	ppc_md_update(kexec_cpu_down, pseries_kexec_cpu_down);
-+#endif
-+#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
-+	ppc_md_update(memory_block_size, pseries_memory_block_size);
-+#endif
-+
- 	pm_power_off = pseries_power_off;
- 
- 	pr_debug("Machine is%s LPAR !\n",
-@@ -1065,28 +1090,4 @@ struct pci_controller_ops pseries_pci_controller_ops = {
- define_machine(pseries) {
- 	.name			= "pSeries",
- 	.probe			= pSeries_probe,
--	.setup_arch		= pSeries_setup_arch,
--	.init_IRQ		= pseries_init_irq,
--	.show_cpuinfo		= pSeries_show_cpuinfo,
--	.log_error		= pSeries_log_error,
--	.discover_phbs		= pSeries_discover_phbs,
--	.pcibios_fixup		= pSeries_final_fixup,
--	.restart		= rtas_restart,
--	.halt			= rtas_halt,
--	.panic			= pseries_panic,
--	.get_boot_time		= rtas_get_boot_time,
--	.get_rtc_time		= rtas_get_rtc_time,
--	.set_rtc_time		= rtas_set_rtc_time,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= rtas_progress,
--	.system_reset_exception = pSeries_system_reset_exception,
--	.machine_check_early	= pseries_machine_check_realmode,
--	.machine_check_exception = pSeries_machine_check_exception,
--#ifdef CONFIG_KEXEC_CORE
--	.machine_kexec          = pSeries_machine_kexec,
--	.kexec_cpu_down         = pseries_kexec_cpu_down,
--#endif
--#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
--	.memory_block_size	= pseries_memory_block_size,
--#endif
- };
--- 
-2.25.0
+--8t9RHnE3ZwKMSgU+
+Content-Type: application/gzip
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
 
+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
+
+--8t9RHnE3ZwKMSgU+--
