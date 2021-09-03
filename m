@@ -2,57 +2,53 @@ Return-Path: <SRS0=Q8z7=NZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54525C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 10:06:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 678E2C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 10:53:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A01B1610F9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 10:06:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A01B1610F9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id A8EB960698
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 10:53:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A8EB960698
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H1D2z1900z3bZx
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 20:06:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
- envelope-from=sunnanyong@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H1B1b5ptNz2xtf
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Sep 2021 18:34:57 +1000 (AEST)
-Received: from dggemv703-chm.china.huawei.com (unknown [172.30.72.56])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4H19wr218mzbgyS;
- Fri,  3 Sep 2021 16:30:52 +0800 (CST)
-Received: from kwepemm600003.china.huawei.com (7.193.23.202) by
- dggemv703-chm.china.huawei.com (10.3.19.46) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Fri, 3 Sep 2021 16:34:39 +0800
-Received: from huawei.com (10.175.113.32) by kwepemm600003.china.huawei.com
- (7.193.23.202) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.8; Fri, 3 Sep 2021
- 16:34:38 +0800
-From: Nanyong Sun <sunnanyong@huawei.com>
-To: <mpe@ellerman.id.au>, <benh@kernel.crashing.org>, <paulus@samba.org>,
- <akpm@linux-foundation.org>, <npiggin@gmail.com>, <christophe.leroy@c-s.fr>
-Subject: [PATCH -next] powerpc/mm: check base flags in ioremap_prot
-Date: Fri, 3 Sep 2021 17:03:39 +0800
-Message-ID: <20210903090339.3671524-1-sunnanyong@huawei.com>
-X-Mailer: git-send-email 2.18.0.huawei.25
-MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.175.113.32]
-X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
- kwepemm600003.china.huawei.com (7.193.23.202)
-X-CFilter-Loop: Reflected
-X-Mailman-Approved-At: Fri, 03 Sep 2021 20:05:16 +1000
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H1F575MWHz303x
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 20:53:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H1F4c1l5Qz2y0C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Sep 2021 20:52:47 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 2FD5E1A301E;
+ Fri,  3 Sep 2021 12:52:44 +0200 (CEST)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com
+ (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id ECEA21A3028;
+ Fri,  3 Sep 2021 12:52:43 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 87113183AC8B;
+ Fri,  3 Sep 2021 18:52:42 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ alsa-devel@alsa-project.org
+Subject: [PATCH for-5.15 0/5] ASoC: fsl: register platform component before
+ registering cpu dai
+Date: Fri,  3 Sep 2021 18:30:01 +0800
+Message-Id: <1630665006-31437-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,39 +65,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some drivers who call ioremap_prot without setting base flags like
-ioremap_prot(addr, len, 0) may work well before
-commit 56f3c1413f5c ("powerpc/mm: properly set PAGE_KERNEL flags in
-ioremap()"), but now they will get a virtual address "successfully"
-from ioremap_prot and badly fault on memory access later because that
-patch also dropped the hack adding of base flags for ioremap_prot.
+There is no defer probe when adding platform component to
+snd_soc_pcm_runtime(rtd), the code is in snd_soc_add_pcm_runtime()
 
-So return NULL and throw a warning if the caller of ioremap_prot did
-not set base flags properly. Why not just hack adding PAGE_KERNEL flags
-in the ioremap_prot, because most scenarios can be covered by high level
-functions like ioremap(), ioremap_coherent(), ioremap_cache()...
-so it is better to keep max flexibility for this low level api.
+snd_soc_register_card()
+  -> snd_soc_bind_card()
+    -> snd_soc_add_pcm_runtime()
+      -> adding cpu dai
+      -> adding codec dai
+      -> adding platform component.
 
-Signed-off-by: Nanyong Sun <sunnanyong@huawei.com>
----
- arch/powerpc/mm/ioremap.c | 4 ++++
- 1 file changed, 4 insertions(+)
+So if the platform component is not ready at that time, then the
+sound card still registered successfully, but platform component
+is empty, the sound card can't be used.
 
-diff --git a/arch/powerpc/mm/ioremap.c b/arch/powerpc/mm/ioremap.c
-index 57342154d2b0..b7eda0f0d04d 100644
---- a/arch/powerpc/mm/ioremap.c
-+++ b/arch/powerpc/mm/ioremap.c
-@@ -46,6 +46,10 @@ void __iomem *ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long f
- 	pte_t pte = __pte(flags);
- 	void *caller = __builtin_return_address(0);
- 
-+	/* The caller should set base page flags properly */
-+	if (WARN_ON((flags & _PAGE_PRESENT) == 0))
-+		return NULL;
-+
- 	/* writeable implies dirty for kernel addresses */
- 	if (pte_write(pte))
- 		pte = pte_mkdirty(pte);
+As there is defer probe checking for cpu dai component, then register
+platform component before cpu dai to avoid such issue.
+
+This patch set is to fix this issue for SAI, ESAI, MICFIL, SPDIF,
+XCVR drivers.
+
+Shengjiu Wang (5):
+  ASoC: fsl_sai: register platform component before registering cpu dai
+  ASoC: fsl_esai: register platform component before registering cpu dai
+  ASoC: fsl_micfil: register platform component before registering cpu
+    dai
+  ASoC: fsl_spdif: register platform component before registering cpu
+    dai
+  ASoC: fsl_xcvr: register platform component before registering cpu dai
+
+ sound/soc/fsl/fsl_esai.c   | 16 ++++++++++------
+ sound/soc/fsl/fsl_micfil.c | 15 ++++++++++-----
+ sound/soc/fsl/fsl_sai.c    | 14 +++++++++-----
+ sound/soc/fsl/fsl_spdif.c  | 14 +++++++++-----
+ sound/soc/fsl/fsl_xcvr.c   | 15 ++++++++++-----
+ 5 files changed, 48 insertions(+), 26 deletions(-)
+
 -- 
-2.18.0.huawei.25
+2.17.1
 
