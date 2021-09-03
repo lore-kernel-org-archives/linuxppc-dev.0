@@ -2,81 +2,62 @@ Return-Path: <SRS0=Q8z7=NZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F7F1C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 07:03:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1478CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 08:23:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 62F1860F9C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 07:03:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 62F1860F9C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id 4FD0960F92
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 08:23:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4FD0960F92
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H17zW6Gylz2yp5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 17:03:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=PRH/6+LL;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H19mh5r2tz2yxv
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 18:23:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::102e;
- helo=mail-pj1-x102e.google.com; envelope-from=dja@axtens.net;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=PRH/6+LL; dkim-atps=neutral
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com
- [IPv6:2607:f8b0:4864:20::102e])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H17ym2fXSz2xYJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Sep 2021 17:02:22 +1000 (AEST)
-Received: by mail-pj1-x102e.google.com with SMTP id j1so3052599pjv.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Sep 2021 00:02:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=tX5qYs0dETvoqBWPP8HUyqwljyhj3JImYoPGL2w/Zd8=;
- b=PRH/6+LLhOSqbVBzSZru0205gmu8g6INkPK22GFwFBSTnWVCfPw+AC61/LaLUG1DH4
- 47VkeuctfiFS7/CZVN4Pb0VyuyUekqKBRstv8iJMmLG3FBMr26b+4/w/4YwR+h1D+z9i
- gF2+KtIF/ynk9pbTb2ELc3RSH2aOSMP0rm+cw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=tX5qYs0dETvoqBWPP8HUyqwljyhj3JImYoPGL2w/Zd8=;
- b=ZXSgN8tmbqBNDlGnmXJW7elNvOvvR0iya4bgJ+/Kf784JK/frc3q0PtqXuiwySHJhJ
- vPAs6BvC7tN34dU9uSfRU5Oxxoskxqd3WhEIUiC1el1wTlv2D2cqzYI9ndCH8rbGRuru
- xIiZuSZmZFJMqsuxRQGkGCjoLFRm/fo8rGVEavtMGZMBho7dfWkm4183UqJ3ZUCkw2+0
- 3lpmBotx4HTpV008N/3LnSNdCCFGBXhxeGhcNfl3+A7CQI83w8dKI6yR06wyeZnjZOH3
- vn4LJQUeS8vzEOQzNUH1OUH5V4diDhUONT3d1r07Nd8F97fxqZ9485VRTtl76OG1Og2D
- cMdA==
-X-Gm-Message-State: AOAM531xG47COz+EUxmGYMKGxDxBfKXJW+nCyVhEj67xmatCsBHPdzkx
- LvSDiixx+QzldOdKmNq3YOjshA==
-X-Google-Smtp-Source: ABdhPJwsTOxyAZHH5DdU+UKyd/usnRPUaX8BNpHXz1U2nfu+DzPEh9rxZPDzBA+N0Zb2ucVYoZkdOA==
-X-Received: by 2002:a17:902:848c:b029:12c:daf3:94f1 with SMTP id
- c12-20020a170902848cb029012cdaf394f1mr1865204plo.50.1630652540381; 
- Fri, 03 Sep 2021 00:02:20 -0700 (PDT)
-Received: from localhost ([2001:4479:e200:df00:ddd7:1b3:9327:fcf5])
- by smtp.gmail.com with ESMTPSA id v7sm4030673pjg.34.2021.09.03.00.02.19
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 03 Sep 2021 00:02:19 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H19mC6D7Dz2yHX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Sep 2021 18:23:19 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4H19m46hDrz9sSn;
+ Fri,  3 Sep 2021 10:23:16 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id de8gBBbTdkSi; Fri,  3 Sep 2021 10:23:16 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4H19m45p0Mz9sSl;
+ Fri,  3 Sep 2021 10:23:16 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B08F48B8C9;
+ Fri,  3 Sep 2021 10:23:16 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Dcg43qvru4RO; Fri,  3 Sep 2021 10:23:16 +0200 (CEST)
+Received: from po18078vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 294FB8B764;
+ Fri,  3 Sep 2021 10:23:16 +0200 (CEST)
+Received: by po18078vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id DAEDC6BCC3; Fri,  3 Sep 2021 08:23:15 +0000 (UTC)
+Message-Id: <4940b03de220d1dfe2c6b47a41e60925497ce125.1630657331.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH] powerpc/code-patching: Return error on patch_branch()
+ out-of-range failure
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/time: Remove generic_suspend_{dis/en}able_irqs()
-In-Reply-To: <c3f9ec9950394ef939014f7934268e6ee30ca04f.1630398566.git.christophe.leroy@csgroup.eu>
-References: <c3f9ec9950394ef939014f7934268e6ee30ca04f.1630398566.git.christophe.leroy@csgroup.eu>
-Date: Fri, 03 Sep 2021 17:02:16 +1000
-Message-ID: <87fsum5eh3.fsf@linkitivity.dja.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Date: Fri,  3 Sep 2021 08:23:15 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,16 +74,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+Do not silentely ignore a failure of create_branch() in
+patch_branch(). Return -ERANGE.
 
-> Commit d75d68cfef49 ("powerpc: Clean up obsolete code relating to
-> decrementer and timebase") made generic_suspend_enable_irqs() and
-> generic_suspend_disable_irqs() static.
->
-> Fold them into their only caller.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/lib/code-patching.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-This does what it says, and simplifies the code.
-Reviewed-by: Daniel Axtens <dja@axtens.net>
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index f9a3019e37b4..0bc9cc0416b8 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -202,7 +202,9 @@ int patch_branch(u32 *addr, unsigned long target, int flags)
+ {
+ 	struct ppc_inst instr;
+ 
+-	create_branch(&instr, addr, target, flags);
++	if (create_branch(&instr, addr, target, flags))
++		return -ERANGE;
++
+ 	return patch_instruction(addr, instr);
+ }
+ 
+-- 
+2.25.0
 
-Kind regards,
-Daniel
