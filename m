@@ -2,62 +2,109 @@ Return-Path: <SRS0=Q8z7=NZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1478CC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 08:23:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D426FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 08:24:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4FD0960F92
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 08:23:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4FD0960F92
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 384F860FD7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 08:24:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 384F860FD7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H19mh5r2tz2yxv
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 18:23:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H19nd4c6rz3bWw
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Sep 2021 18:24:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sxqFHGBu;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=sxqFHGBu; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H19mC6D7Dz2yHX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Sep 2021 18:23:19 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4H19m46hDrz9sSn;
- Fri,  3 Sep 2021 10:23:16 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id de8gBBbTdkSi; Fri,  3 Sep 2021 10:23:16 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4H19m45p0Mz9sSl;
- Fri,  3 Sep 2021 10:23:16 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B08F48B8C9;
- Fri,  3 Sep 2021 10:23:16 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Dcg43qvru4RO; Fri,  3 Sep 2021 10:23:16 +0200 (CEST)
-Received: from po18078vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 294FB8B764;
- Fri,  3 Sep 2021 10:23:16 +0200 (CEST)
-Received: by po18078vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id DAEDC6BCC3; Fri,  3 Sep 2021 08:23:15 +0000 (UTC)
-Message-Id: <4940b03de220d1dfe2c6b47a41e60925497ce125.1630657331.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH] powerpc/code-patching: Return error on patch_branch()
- out-of-range failure
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri,  3 Sep 2021 08:23:15 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H19mM4Bfsz2ymf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Sep 2021 18:23:30 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 18384kVk094606; Fri, 3 Sep 2021 04:22:03 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=yvn3uRltpD6qua2hyp0D2c7Lx/IW7lVKvIh+1+hY8jc=;
+ b=sxqFHGBuVldPs6+5K/rqtVS9JHaQU11EacvwcMXWaBbncc1l8OOnAuO55qpy/Yz7lvG8
+ fHBGcdKnfMjUhSSKgEXpC9tfhTNXhCD4RL1rLoTx+ouZqYUheCwxI6sQQRKrEw+MIkfP
+ NvtrSkjS+pOzrkJLiM4WrfcV3fsDP5VKqrtC2E9soOQhjwnWHr03qec/WayDpr2td3x+
+ 3dJLfkNMsgjwswwo311zitvpYu/rAJHq1kjaBUQjEZ5HM8L/YTyT0zKUTr/71/uf3dON
+ n8LL5RnLa43g60fHv/kVumN2Z4k8oa5+mK/9XJPoCXZpMKfS4mcMm6AYJ7LnhFAdfrNc 2Q== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3auftc8fse-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 03 Sep 2021 04:22:03 -0400
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18384pMm095198;
+ Fri, 3 Sep 2021 04:22:02 -0400
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3auftc8frg-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 03 Sep 2021 04:22:02 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18388C9c028085;
+ Fri, 3 Sep 2021 08:21:59 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma04fra.de.ibm.com with ESMTP id 3au6q74x6c-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 03 Sep 2021 08:21:59 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1838LtB930671224
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 3 Sep 2021 08:21:55 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 50DCEA4054;
+ Fri,  3 Sep 2021 08:21:55 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D5A24A405B;
+ Fri,  3 Sep 2021 08:21:53 +0000 (GMT)
+Received: from osiris (unknown [9.145.159.114])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Fri,  3 Sep 2021 08:21:53 +0000 (GMT)
+Date: Fri, 3 Sep 2021 10:21:52 +0200
+From: Heiko Carstens <hca@linux.ibm.com>
+To: Weizhao Ouyang <o451686892@gmail.com>
+Subject: Re: [PATCH] ftrace: Cleanup ftrace_dyn_arch_init()
+Message-ID: <YTHbIMVw2EhNpDwO@osiris>
+References: <20210903071817.1162938-1-o451686892@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210903071817.1162938-1-o451686892@gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: v7gSly151gMH4jiswwJLQJyae83ofpqz
+X-Proofpoint-ORIG-GUID: 5AAR1uAs7Bex_EJmpFQlQUops1ZiOFiF
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-09-03_02:2021-09-03,
+ 2021-09-03 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ clxscore=1011 adultscore=0 spamscore=0 bulkscore=0 phishscore=0
+ impostorscore=0 lowpriorityscore=0 mlxlogscore=634 suspectscore=0
+ malwarescore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2108310000 definitions=main-2109030048
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,34 +116,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-mips@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+ guoren@kernel.org, hpa@zytor.com, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org, deanbo422@gmail.com, will@kernel.org,
+ linux-s390@vger.kernel.org, ysato@users.sourceforge.jp, deller@gmx.de,
+ x86@kernel.org, linux@armlinux.org.uk, linux-csky@vger.kernel.org,
+ borntraeger@de.ibm.com, mingo@redhat.com, catalin.marinas@arm.com,
+ aou@eecs.berkeley.edu, gor@linux.ibm.com, rostedt@goodmis.org, bp@alien8.de,
+ green.hu@gmail.com, paul.walmsley@sifive.com, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, monstr@monstr.eu,
+ tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, nickhu@andestech.com,
+ linux-kernel@vger.kernel.org, palmer@dabbelt.com, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Do not silentely ignore a failure of create_branch() in
-patch_branch(). Return -ERANGE.
+On Fri, Sep 03, 2021 at 03:18:17PM +0800, Weizhao Ouyang wrote:
+> Most ARCHs use empty ftrace_dyn_arch_init(), introduce a weak common
+> ftrace_dyn_arch_init() to cleanup them.
+> 
+> Signed-off-by: Weizhao Ouyang <o451686892@gmail.com>
+> ---
+>  arch/arm/kernel/ftrace.c          | 5 -----
+>  arch/arm64/kernel/ftrace.c        | 5 -----
+>  arch/csky/kernel/ftrace.c         | 5 -----
+>  arch/ia64/kernel/ftrace.c         | 6 ------
+>  arch/microblaze/kernel/ftrace.c   | 5 -----
+>  arch/mips/include/asm/ftrace.h    | 2 ++
+>  arch/nds32/kernel/ftrace.c        | 5 -----
+>  arch/parisc/kernel/ftrace.c       | 5 -----
+>  arch/powerpc/include/asm/ftrace.h | 4 ++++
+>  arch/riscv/kernel/ftrace.c        | 5 -----
+>  arch/s390/kernel/ftrace.c         | 5 -----
+>  arch/sh/kernel/ftrace.c           | 5 -----
+>  arch/sparc/kernel/ftrace.c        | 5 -----
+>  arch/x86/kernel/ftrace.c          | 5 -----
+>  include/linux/ftrace.h            | 1 -
+>  kernel/trace/ftrace.c             | 5 +++++
+>  16 files changed, 11 insertions(+), 62 deletions(-)
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/lib/code-patching.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index f9a3019e37b4..0bc9cc0416b8 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -202,7 +202,9 @@ int patch_branch(u32 *addr, unsigned long target, int flags)
- {
- 	struct ppc_inst instr;
- 
--	create_branch(&instr, addr, target, flags);
-+	if (create_branch(&instr, addr, target, flags))
-+		return -ERANGE;
-+
- 	return patch_instruction(addr, instr);
- }
- 
--- 
-2.25.0
-
+For s390:
+Acked-by: Heiko Carstens <hca@linux.ibm.com>
