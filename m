@@ -2,52 +2,112 @@ Return-Path: <SRS0=6gsd=N2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E635C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 03:40:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B67EC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 06:40:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C64F660F9C
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 03:40:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C64F660F9C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9185460EE6
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 06:40:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9185460EE6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H1gRC0tSNz305c
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 13:40:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H1lQq6yKfz2yNp
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 16:40:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=o2uj8e/E;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=o2uj8e/E; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H1gQh4vg3z2xr9
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Sep 2021 13:39:51 +1000 (AEST)
-X-IronPort-AV: E=McAfee;i="6200,9189,10096"; a="199791662"
-X-IronPort-AV: E=Sophos;i="5.85,267,1624345200"; d="scan'208";a="199791662"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Sep 2021 20:38:48 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.85,267,1624345200"; d="scan'208";a="603509982"
-Received: from lkp-server01.sh.intel.com (HELO 2115029a3e5c) ([10.239.97.150])
- by fmsmga001.fm.intel.com with ESMTP; 03 Sep 2021 20:38:47 -0700
-Received: from kbuild by 2115029a3e5c with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1mMMVy-0001AT-Gs; Sat, 04 Sep 2021 03:38:46 +0000
-Date: Sat, 04 Sep 2021 11:38:33 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS 8d4e8a236506000f4802d83e507c2e61cfabc69a
-Message-ID: <6132ea39.YDc5Fr+0swo7Cnwd%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H1lPz5Wr1z2xr9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Sep 2021 16:39:35 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 1846XOTW018101; Sat, 4 Sep 2021 02:39:08 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=DU9459HyLfoFSrkTE5ucAOWmbmD78IKFAVxR3c5PQIc=;
+ b=o2uj8e/EgwtVfEwTJSp/BIGOHnFh+dBgSkkOnSr49aKgQUWXAHa3aP3TKF9yUbkCoeH5
+ CORsN87w1FDWFAfmkR3b83DKvGyPppG6VO78Da6KE4cp4c6jqONSXdtIwWg0ylcgDl+Z
+ 8r+XGeP9TtCKmDlNNXmXVY4Sg5t5YOR+qKXTWHf0q3IvNjb/L948sp/l9uXS8KA0KMK7
+ 70MMxGFX8t+901oekv8gZwJ2JXwKXIZSVrLY4nOO71L+2IVy/EQSOI/UpUFTkCNd1Qiy
+ 6+3i8DiV1Jmf25VpEuRu8fzTEpmGav64xcV6CvJFObRZzRKHpYgfYp8OuIMc1n57fCh2 ag== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3av3m6g2th-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sat, 04 Sep 2021 02:39:07 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1846Y0bS026010;
+ Sat, 4 Sep 2021 06:39:07 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma03dal.us.ibm.com with ESMTP id 3av0e8tepe-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sat, 04 Sep 2021 06:39:07 +0000
+Received: from b03ledav002.gho.boulder.ibm.com
+ (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1846d6Ah18023150
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sat, 4 Sep 2021 06:39:06 GMT
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1D845136061;
+ Sat,  4 Sep 2021 06:39:06 +0000 (GMT)
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E74C513605D;
+ Sat,  4 Sep 2021 06:39:01 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.43.55.112])
+ by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Sat,  4 Sep 2021 06:39:01 +0000 (GMT)
+Subject: Re: [RESEND PATCH v4 2/4] drivers/nvdimm: Add perf interface to
+ expose nvdimm performance stats
+To: kernel test robot <lkp@intel.com>, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, nvdimm@lists.linux.dev,
+ linux-kernel@vger.kernel.org, peterz@infradead.org,
+ dan.j.williams@intel.com, ira.weiny@intel.com, vishal.l.verma@intel.com
+References: <20210903050914.273525-3-kjain@linux.ibm.com>
+ <202109032341.mgqAHURT-lkp@intel.com>
+From: kajoljain <kjain@linux.ibm.com>
+Message-ID: <b18af051-1652-baba-5a6e-95a4194d6ef1@linux.ibm.com>
+Date: Sat, 4 Sep 2021 12:08:59 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.1
+In-Reply-To: <202109032341.mgqAHURT-lkp@intel.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: GrcAAByAMKRhtspIanR6z6Pc1uPv3DoW
+X-Proofpoint-ORIG-GUID: GrcAAByAMKRhtspIanR6z6Pc1uPv3DoW
 Content-Transfer-Encoding: 7bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-09-04_02:2021-09-03,
+ 2021-09-04 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 suspectscore=0
+ spamscore=0 impostorscore=0 bulkscore=0 phishscore=0 clxscore=1011
+ mlxlogscore=999 adultscore=0 priorityscore=1501 lowpriorityscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2108310000 definitions=main-2109040044
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,130 +119,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: santosh@fossix.org, maddy@linux.ibm.com, kbuild-all@lists.01.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: 8d4e8a236506000f4802d83e507c2e61cfabc69a  powerpc/ci: Disable corenet32_smp_defconfig on clang / GCC 4.9
 
-elapsed time: 927m
 
-configs tested: 104
-configs skipped: 3
+On 9/3/21 8:49 PM, kernel test robot wrote:
+> Hi Kajol,
+> 
+> Thank you for the patch! Perhaps something to improve:
+> 
+> [auto build test WARNING on linux-nvdimm/libnvdimm-for-next]
+> [also build test WARNING on powerpc/next linus/master v5.14 next-20210903]
+> [If your patch is applied to the wrong git tree, kindly drop us a note.
+> And when submitting patch, we suggest to use '--base' as documented in
+> https://git-scm.com/docs/git-format-patch]
+> 
+> url:    https://github.com/0day-ci/linux/commits/Kajol-Jain/Add-perf-interface-to-expose-nvdimm/20210903-131212
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/nvdimm/nvdimm.git libnvdimm-for-next
+> config: x86_64-randconfig-s021-20210903 (attached as .config)
+> compiler: gcc-9 (Debian 9.3.0-22) 9.3.0
+> reproduce:
+>         # apt-get install sparse
+>         # sparse version: v0.6.4-rc1-dirty
+>         # https://github.com/0day-ci/linux/commit/f841601cc058e6033761bd2157b886a30190fc3a
+>         git remote add linux-review https://github.com/0day-ci/linux
+>         git fetch --no-tags linux-review Kajol-Jain/Add-perf-interface-to-expose-nvdimm/20210903-131212
+>         git checkout f841601cc058e6033761bd2157b886a30190fc3a
+>         # save the attached .config to linux build tree
+>         make W=1 C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__' O=build_dir ARCH=x86_64 SHELL=/bin/bash drivers/nvdimm/
+> 
+> If you fix the issue, kindly add following tag as appropriate
+> Reported-by: kernel test robot <lkp@intel.com>
+> 
+> 
+> sparse warnings: (new ones prefixed by >>)
+>>> drivers/nvdimm/nd_perf.c:159:6: sparse: sparse: symbol 'nvdimm_pmu_free_hotplug_memory' was not declared. Should it be static?
+> 
+> Please review and possibly fold the followup patch.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Hi,
+  Sure I will correct it and send follow-up patchset.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                     tqm5200_defconfig
-sh                   sh7770_generic_defconfig
-arm                  colibri_pxa270_defconfig
-arm                          simpad_defconfig
-sh                          urquell_defconfig
-microblaze                      mmu_defconfig
-xtensa                  nommu_kc705_defconfig
-powerpc                  mpc866_ads_defconfig
-powerpc                 mpc8313_rdb_defconfig
-arm                      pxa255-idp_defconfig
-ia64                         bigsur_defconfig
-powerpc                     akebono_defconfig
-powerpc                      pasemi_defconfig
-sh                         microdev_defconfig
-mips                      maltaaprp_defconfig
-powerpc                 mpc85xx_cds_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20210904
-x86_64               randconfig-a004-20210904
-x86_64               randconfig-a003-20210904
-x86_64               randconfig-a005-20210904
-x86_64               randconfig-a001-20210904
-x86_64               randconfig-a002-20210904
-x86_64               randconfig-a016-20210903
-x86_64               randconfig-a011-20210903
-x86_64               randconfig-a012-20210903
-x86_64               randconfig-a015-20210903
-x86_64               randconfig-a014-20210903
-x86_64               randconfig-a013-20210903
-arc                  randconfig-r043-20210904
-riscv                randconfig-r042-20210903
-s390                 randconfig-r044-20210903
-arc                  randconfig-r043-20210903
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
+Thanks,
+Kajol Jain
 
-clang tested configs:
-i386                 randconfig-a005-20210903
-i386                 randconfig-a004-20210903
-i386                 randconfig-a006-20210903
-i386                 randconfig-a002-20210903
-i386                 randconfig-a001-20210903
-i386                 randconfig-a003-20210903
-x86_64               randconfig-a011-20210904
-x86_64               randconfig-a016-20210904
-x86_64               randconfig-a012-20210904
-x86_64               randconfig-a015-20210904
-x86_64               randconfig-a014-20210904
-x86_64               randconfig-a013-20210904
-i386                 randconfig-a012-20210904
-i386                 randconfig-a015-20210904
-i386                 randconfig-a011-20210904
-i386                 randconfig-a013-20210904
-i386                 randconfig-a014-20210904
-i386                 randconfig-a016-20210904
-hexagon              randconfig-r045-20210903
-hexagon              randconfig-r041-20210903
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+> 
+> ---
+> 0-DAY CI Kernel Test Service, Intel Corporation
+> https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+> 
