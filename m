@@ -2,63 +2,93 @@ Return-Path: <SRS0=6gsd=N2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7E86C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 07:12:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29AC4C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 07:58:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0D38160F22
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 07:12:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0D38160F22
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6B80E60FC0
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 07:58:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6B80E60FC0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H1m8M2L2Mz304y
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 17:12:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H1n8Z41kqz2ywm
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 17:58:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256 header.s=20150623 header.b=xtfl4wl+;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
- envelope-from=sunnanyong@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H1lPG3qxCz2xth
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Sep 2021 16:38:55 +1000 (AEST)
-Received: from dggemv703-chm.china.huawei.com (unknown [172.30.72.56])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4H1lJ24SbKz8xB6;
- Sat,  4 Sep 2021 14:34:26 +0800 (CST)
-Received: from kwepemm600003.china.huawei.com (7.193.23.202) by
- dggemv703-chm.china.huawei.com (10.3.19.46) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Sat, 4 Sep 2021 14:38:43 +0800
-Received: from [10.174.179.79] (10.174.179.79) by
- kwepemm600003.china.huawei.com (7.193.23.202) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.8; Sat, 4 Sep 2021 14:38:42 +0800
-Subject: Re: [PATCH -next] powerpc/mm: check base flags in ioremap_prot
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, <mpe@ellerman.id.au>,
- <benh@kernel.crashing.org>, <paulus@samba.org>, <akpm@linux-foundation.org>,
- <npiggin@gmail.com>, <christophe.leroy@c-s.fr>
-References: <20210903090339.3671524-1-sunnanyong@huawei.com>
- <90aa2b67-24c8-4a5f-d91a-b562054d5c5d@csgroup.eu>
-From: Nanyong Sun <sunnanyong@huawei.com>
-Message-ID: <e27f8786-7d43-4191-9b65-5a55a64cf158@huawei.com>
-Date: Sat, 4 Sep 2021 14:38:42 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
+ smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::632;
+ helo=mail-pl1-x632.google.com; envelope-from=aik@ozlabs.ru;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=xtfl4wl+; dkim-atps=neutral
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com
+ [IPv6:2607:f8b0:4864:20::632])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H1n7m44Vwz2xg6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Sep 2021 17:57:21 +1000 (AEST)
+Received: by mail-pl1-x632.google.com with SMTP id q21so890168plq.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Sep 2021 00:57:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=message-id:date:mime-version:user-agent:subject:content-language:to
+ :cc:references:from:in-reply-to:content-transfer-encoding;
+ bh=Zg/5AKd9rdTjuzlyeiWM5OX1JBziXc62n7CLuQ994yM=;
+ b=xtfl4wl+NWVGH7rOUy0KNcIxiDObzlRzsF3RwGJ8Hq+T5o8wW1yfBMndLkDEbJVuwS
+ O96pOsSBunZsOV4VAiMINHYv8fxaJvTapgpafMMiL0EBNA0an0LG4IPFNh1X7stjlEFW
+ rMQz7NmuU+NqFWUOy/rFGB9ESbAzgXhpmKkfVMurVfpwSaPl9rTx7pufjGRl3RNHHY37
+ K1M8/MoBKxilbApE8WoMNjvplmaFRDZQYIia5IJVpExvnqTjFYa1FdDTR94jbuMNiD4c
+ ec4kK9qRrYJw3MC9nyBzBgAD25l+VbN02/zhFK+UDG6NhYNltqu4O7B5E5Kh14QUmmFS
+ VLUQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+ :content-language:to:cc:references:from:in-reply-to
+ :content-transfer-encoding;
+ bh=Zg/5AKd9rdTjuzlyeiWM5OX1JBziXc62n7CLuQ994yM=;
+ b=hhPe3jfNPOR3wHYQzaDZg23smbR97jGHyhl692TEyu5cPpb7aqA8YHveaRBz8FClVs
+ djm+Cr8KEAfjHHeKz9QvU9orHpaztrmXfm/5dLnqGYlZ1m9ROiGHdu/gn0vItWlVJiMm
+ KreRgeg3sNZXtEVe0BS4nVlvNZ4UBdqPnzySk7R0jf5ZKh9pawK++uaMpnYJmJc+dpyo
+ /AiAj5TPc9+79012ihsQvO5/o1JCZoK97wrMx29vT9U5KaA3QNvsKCPjqInEQL6lyiFa
+ eMNlpClIf+ruSqhVg7e7FWCivtFXT9XwoIAAw0m4EmaoUBm9bQ/tkG26tVMKIe4i05Oy
+ bnmQ==
+X-Gm-Message-State: AOAM531iSbs89PQE/yzFzz4rZucnYV7MbavPvkZMyqpKE9/Uf6D0MC4+
+ klU4Xv5H2xwTGRkknqcdUd/R1w==
+X-Google-Smtp-Source: ABdhPJx+UeSZg4JLkZTUSXeiLtdyFeKDx7uVNh7Vt19oevVW0XSdIQYPrdN5KEmR9Wkqd95uZG7KXg==
+X-Received: by 2002:a17:90a:1b2a:: with SMTP id
+ q39mr2996000pjq.219.1630742237827; 
+ Sat, 04 Sep 2021 00:57:17 -0700 (PDT)
+Received: from [192.168.10.23] (124-171-108-209.dyn.iinet.net.au.
+ [124.171.108.209])
+ by smtp.gmail.com with ESMTPSA id v6sm1506534pfv.83.2021.09.04.00.57.14
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Sat, 04 Sep 2021 00:57:17 -0700 (PDT)
+Message-ID: <327b1ca9-f05e-dfc0-7d59-7b7b6bda5394@ozlabs.ru>
+Date: Sat, 4 Sep 2021 17:57:12 +1000
 MIME-Version: 1.0
-In-Reply-To: <90aa2b67-24c8-4a5f-d91a-b562054d5c5d@csgroup.eu>
-Content-Type: multipart/alternative;
- boundary="------------F7F047D03684CB910C170F53"
-X-Originating-IP: [10.174.179.79]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- kwepemm600003.china.huawei.com (7.193.23.202)
-X-CFilter-Loop: Reflected
-X-Mailman-Approved-At: Sat, 04 Sep 2021 17:12:27 +1000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:92.0) Gecko/20100101
+ Thunderbird/92.0
+Subject: Re: [PATCH kernel] KVM: PPC: Book3S: Merge powerpc's debugfs entry
+ content into generic entry
+Content-Language: en-US
+To: Fabiano Rosas <farosas@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <20210903052257.2348036-1-aik@ozlabs.ru>
+ <87v93hens6.fsf@linux.ibm.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+In-Reply-To: <87v93hens6.fsf@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,376 +100,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wangkefeng 00584194 <wangkefeng.wang@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Paolo Bonzini <pbonzini@redhat.com>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---------------F7F047D03684CB910C170F53
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8bit
 
 
-On 2021/9/3 17:16, Christophe Leroy wrote:
->
->
-> Le 03/09/2021 à 11:03, Nanyong Sun a écrit :
->> Some drivers who call ioremap_prot without setting base flags like
->> ioremap_prot(addr, len, 0) may work well before
->> commit 56f3c1413f5c ("powerpc/mm: properly set PAGE_KERNEL flags in
->> ioremap()"), but now they will get a virtual address "successfully"
->> from ioremap_prot and badly fault on memory access later because that
->> patch also dropped the hack adding of base flags for ioremap_prot.
+On 04/09/2021 00:28, Fabiano Rosas wrote:
+> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+> 
+>> At the moment the generic KVM code creates an "%pid-%fd" entry per a KVM
+>> instance; and the PPC HV KVM creates its own at "vm%pid".
 >>
->> So return NULL and throw a warning if the caller of ioremap_prot did
->> not set base flags properly. Why not just hack adding PAGE_KERNEL flags
->> in the ioremap_prot, because most scenarios can be covered by high level
->> functions like ioremap(), ioremap_coherent(), ioremap_cache()...
->> so it is better to keep max flexibility for this low level api.
->
-> As far as I can see, there is no user of this fonction that sets flags 
-> to 0 in the kernel tree.
->
-> Did you find any ? If you did, I think it is better to fix the caller.
->
-> Christophe
->
-I see some vendor's drivers which are not on upstream has used 
-ioremap_prot like
-
-ioremap_prot(addr,len, _PAGE_NO_CACHE | _PAGE_GUARDED) or
-
-ioremap_prot(addr,len, 0), and they worked well on old kernel versions 
-before commit
-
-56f3c1413f5c ("powerpc/mm: properly set PAGE_KERNEL flags in ioremap()").
-
-Actually, in the commit( git show 56f3c1413f5c ), you can see that in old
-
-kernel versions, the implementations of ioremap_xxx just set flags as 
-_PAGE_xxx or 0,
-
-Code examples of the commit:
-
-In arch/powerpc/mm/pgtable_32.c
-
-ioremap(phys_addr_t addr, unsigned long size)
-  {
--       return __ioremap_caller(addr, size, _PAGE_NO_CACHE | _PAGE_GUARDED,
--                               __builtin_return_address(0));
-+       unsigned long flags = pgprot_val(pgprot_noncached(PAGE_KERNEL));
-+
-+       return __ioremap_caller(addr, size, flags, 
-__builtin_return_address(0));
-  }
-
-In arch/powerpc/mm/pgtable_64.c
-
-void __iomem * ioremap(phys_addr_t addr, unsigned long size)
-  {
--       unsigned long flags = pgprot_val(pgprot_noncached(__pgprot(0)));
-+       unsigned long flags = pgprot_val(pgprot_noncached(PAGE_KERNEL));
-         void *caller = __builtin_return_address(0);
-
-
-They rely on the low level functions to add base flags.
-
-So, these driver codes like 'ioremap_prot(addr,len, _PAGE_NO_CACHE) '
-
-in old kernel version is**not very improper.
-
-Ofcourse, when porting new kernel versions, they need to change because the
-
-api implementation has changed, but it's difficult for driver developer 
-to find out what
-
-happend and how to change, because they still get a virtual address 
-"successfully"
-
-from ioremap_prot without base flags and then page fault on memory 
-access later.
-
-So, it is necessary to check and report base flags missing in 
-ioremap_prot() timely.
-
-Secondly, the commit 56f3c1413f5c ("powerpc/mm: properly set PAGE_KERNEL
-
-flags in ioremap()") delete the hack adding of PAGE_KERNEL flags in low 
-level
-
-implementation and add flags properly for all ioremap_xx() APIs except 
-ioreamp_prot,
-
-for ioreamp_prot, it not only loss the hack adding, but also loss the 
-basic flags check
-
-which is necessary.
-
-So we need add this basic check for this API.
-
-Nanyong
-
+>> The rproblems with the PPC entries are:
+>> 1. they do not allow multiple VMs in the same process (which is extremely
+>> rare case mostly used by syzkaller fuzzer);
+>> 2. prone to race bugs like the generic KVM code had fixed in
+>> commit 85cd39af14f4 ("KVM: Do not leak memory for duplicate debugfs
+>> directories").
 >>
->> Signed-off-by: Nanyong Sun <sunnanyong@huawei.com>
->> ---
->>   arch/powerpc/mm/ioremap.c | 4 ++++
->>   1 file changed, 4 insertions(+)
+>> This defines kvm_arch_create_kvm_debugfs() similar to one for vcpus.
+> 
+> I think kvm_arch_create_vm_debugfs is a bit mode accurate?
+
+
+ah yes, it is better.
+
+>                          ^
+>> This defines 2 hooks in kvmppc_ops for allowing specific KVM
+>> implementations to add necessary entries.
 >>
->> diff --git a/arch/powerpc/mm/ioremap.c b/arch/powerpc/mm/ioremap.c
->> index 57342154d2b0..b7eda0f0d04d 100644
->> --- a/arch/powerpc/mm/ioremap.c
->> +++ b/arch/powerpc/mm/ioremap.c
->> @@ -46,6 +46,10 @@ void __iomem *ioremap_prot(phys_addr_t addr, 
->> unsigned long size, unsigned long f
->>       pte_t pte = __pte(flags);
->>       void *caller = __builtin_return_address(0);
->>   +    /* The caller should set base page flags properly */
->> +    if (WARN_ON((flags & _PAGE_PRESENT) == 0))
->
-> This probably doesn't work for some plateforms like book3s/64. You 
-> should use helpers like pte_present().
->
-> See the comment at 
-> https://elixir.bootlin.com/linux/v5.14/source/arch/powerpc/include/asm/book3s/64/pgtable.h#L591
->
-I'm afraid that pte_present() is not ok for book3s/64, because it also 
-check _PAGE_PTE which will be set in the bottom
-
-half of ioremap, so it would always return fail because the caller of 
-ioremap_prot wouldn't set _PAGE_PTE. I think it's ok that
-
-not check _PAGE_INVALID here because we intend to create a new valid PTE 
-here.
-
-And I think check _PAGE_PRESENT is ok  because in kernel version before 
-commit 56f3c1413f5c , the function __ioremap_at()
-
-and __ioremap_caller() used _PAGE_PRESENT to check base flags, book3s/64 
-was also present by then.
-
-Nanyong
-
->> +        return NULL;
->> +
->>       /* writeable implies dirty for kernel addresses */
->>       if (pte_write(pte))
->>           pte = pte_mkdirty(pte);
+>> This makes use of already existing kvm_arch_create_vcpu_debugfs.
 >>
-> .
+>> This removes no more used debugfs_dir pointers from PPC kvm_arch structs.
+>>
+>> Suggested-by: Fabiano Rosas <farosas@linux.ibm.com>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> 
+> ...
+> 
+>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+>> index c8f12b056968..325b388c725a 100644
+>> --- a/arch/powerpc/kvm/book3s_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_hv.c
+>> @@ -2771,19 +2771,14 @@ static const struct file_operations debugfs_timings_ops = {
+>>   };
+>>   
+>>   /* Create a debugfs directory for the vcpu */
+>> -static void debugfs_vcpu_init(struct kvm_vcpu *vcpu, unsigned int id)
+>> +static void kvmppc_arch_create_vcpu_debugfs_hv(struct kvm_vcpu *vcpu, struct dentry *debugfs_dentry)
+> 
+> This could lose the 'arch' since it is already inside our code and
+> accessed only via ops. I see that we already have a
+> kvmppc_create_vcpu_debugfs that's used for some BookE processor, this
 
---------------F7F047D03684CB910C170F53
-Content-Type: text/html; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Ouch, missed kvmppc_create_vcpu_debugfs(). Good eye :)
 
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <p><br>
-    </p>
-    <div class="moz-cite-prefix">On 2021/9/3 17:16, Christophe Leroy
-      wrote:<br>
-    </div>
-    <blockquote type="cite"
-      cite="mid:90aa2b67-24c8-4a5f-d91a-b562054d5c5d@csgroup.eu">
-      <br>
-      <br>
-      Le 03/09/2021 à 11:03, Nanyong Sun a écrit :
-      <br>
-      <blockquote type="cite">Some drivers who call ioremap_prot without
-        setting base flags like
-        <br>
-        ioremap_prot(addr, len, 0) may work well before
-        <br>
-        commit 56f3c1413f5c ("powerpc/mm: properly set PAGE_KERNEL flags
-        in
-        <br>
-        ioremap()"), but now they will get a virtual address
-        "successfully"
-        <br>
-        from ioremap_prot and badly fault on memory access later because
-        that
-        <br>
-        patch also dropped the hack adding of base flags for
-        ioremap_prot.
-        <br>
-        <br>
-        So return NULL and throw a warning if the caller of ioremap_prot
-        did
-        <br>
-        not set base flags properly. Why not just hack adding
-        PAGE_KERNEL flags
-        <br>
-        in the ioremap_prot, because most scenarios can be covered by
-        high level
-        <br>
-        functions like ioremap(), ioremap_coherent(), ioremap_cache()...
-        <br>
-        so it is better to keep max flexibility for this low level api.
-        <br>
-      </blockquote>
-      <br>
-      As far as I can see, there is no user of this fonction that sets
-      flags to 0 in the kernel tree.
-      <br>
-      <br>
-      Did you find any ? If you did, I think it is better to fix the
-      caller.
-      <br>
-      <br>
-      Christophe
-      <br>
-      <br>
-    </blockquote>
-    <p>I see some vendor's drivers which are not on upstream has used
-      ioremap_prot like <br>
-    </p>
-    <p>ioremap_prot(addr,len, _PAGE_NO_CACHE | _PAGE_GUARDED) or</p>
-    <p>ioremap_prot(addr,len, 0), and they worked well on old kernel
-      versions before commit</p>
-    <p>56f3c1413f5c ("powerpc/mm: properly set PAGE_KERNEL flags in
-      ioremap()").</p>
-    <p>Actually, in the commit( git show 56f3c1413f5c ), you can see
-      that in old</p>
-    <p>kernel versions, the implementations of ioremap_xxx just set
-      flags as _PAGE_xxx or 0,</p>
-    <p>Code examples of the commit:</p>
-    <p>In arch/powerpc/mm/pgtable_32.c<br>
-    </p>
-    <p>ioremap(phys_addr_t addr, unsigned long size)<br>
-       {<br>
-      -       return __ioremap_caller(addr, size, _PAGE_NO_CACHE |
-      _PAGE_GUARDED,<br>
-      -                               __builtin_return_address(0));<br>
-      +       unsigned long flags =
-      pgprot_val(pgprot_noncached(PAGE_KERNEL));<br>
-      +<br>
-      +       return __ioremap_caller(addr, size, flags,
-      __builtin_return_address(0));<br>
-       }</p>
-    <p>In arch/powerpc/mm/pgtable_64.c</p>
-    <p> void __iomem * ioremap(phys_addr_t addr, unsigned long size)<br>
-       {<br>
-      -       unsigned long flags =
-      pgprot_val(pgprot_noncached(__pgprot(0)));<br>
-      +       unsigned long flags =
-      pgprot_val(pgprot_noncached(PAGE_KERNEL));<br>
-              void *caller = __builtin_return_address(0);</p>
-    <p><br>
-    </p>
-    <p>They rely on the low level functions to add base flags.<br>
-    </p>
-    <p>So, these driver codes like 'ioremap_prot(addr,len,
-      _PAGE_NO_CACHE) '</p>
-    <p>in old kernel version is<b> </b>not very improper. <br>
-    </p>
-    <p>Ofcourse, when porting new kernel versions, they need to change
-      because the</p>
-    <p>api implementation has changed, but it's difficult for driver
-      developer to find out what</p>
-    <p>happend and how to change, because they still get a virtual
-      address "successfully" <br>
-    </p>
-    <p>from ioremap_prot without base flags and then page fault on
-      memory access later.<br>
-    </p>
-    <p></p>
-    So, it is necessary to check and report base flags missing in
-    ioremap_prot() timely.
-    <p>Secondly, the commit 56f3c1413f5c ("powerpc/mm: properly set
-      PAGE_KERNEL</p>
-    <p> flags in ioremap()") delete the hack adding of PAGE_KERNEL flags
-      in low level</p>
-    <p>implementation and add flags properly for all ioremap_xx() APIs
-      except ioreamp_prot,</p>
-    <p>for ioreamp_prot, it not only loss the hack adding, but also loss
-      the basic flags check <br>
-    </p>
-    <p>which is necessary.</p>
-    <p>So we need add this basic check for this API.</p>
-    <p>Nanyong<br>
-    </p>
-    <blockquote type="cite"
-      cite="mid:90aa2b67-24c8-4a5f-d91a-b562054d5c5d@csgroup.eu">
-      <blockquote type="cite">
-        <br>
-        Signed-off-by: Nanyong Sun <a class="moz-txt-link-rfc2396E" href="mailto:sunnanyong@huawei.com">&lt;sunnanyong@huawei.com&gt;</a>
-        <br>
-        ---
-        <br>
-          arch/powerpc/mm/ioremap.c | 4 ++++
-        <br>
-          1 file changed, 4 insertions(+)
-        <br>
-        <br>
-        diff --git a/arch/powerpc/mm/ioremap.c
-        b/arch/powerpc/mm/ioremap.c
-        <br>
-        index 57342154d2b0..b7eda0f0d04d 100644
-        <br>
-        --- a/arch/powerpc/mm/ioremap.c
-        <br>
-        +++ b/arch/powerpc/mm/ioremap.c
-        <br>
-        @@ -46,6 +46,10 @@ void __iomem *ioremap_prot(phys_addr_t addr,
-        unsigned long size, unsigned long f
-        <br>
-              pte_t pte = __pte(flags);
-        <br>
-              void *caller = __builtin_return_address(0);
-        <br>
-          +    /* The caller should set base page flags properly */
-        <br>
-        +    if (WARN_ON((flags &amp; _PAGE_PRESENT) == 0))
-        <br>
-      </blockquote>
-      <br>
-      This probably doesn't work for some plateforms like book3s/64. You
-      should use helpers like pte_present().
-      <br>
-      <br>
-      See the comment at
-<a class="moz-txt-link-freetext" href="https://elixir.bootlin.com/linux/v5.14/source/arch/powerpc/include/asm/book3s/64/pgtable.h#L591">https://elixir.bootlin.com/linux/v5.14/source/arch/powerpc/include/asm/book3s/64/pgtable.h#L591</a><br>
-      <br>
-    </blockquote>
-    <p>I'm afraid that pte_present() is not ok for 
-      book3s/64, because it also check _PAGE_PTE which will be set in
-      the bottom <br>
-    </p>
-    <p>half of ioremap, so it would always return fail because the
-      caller of ioremap_prot wouldn't set _PAGE_PTE. I think it's ok
-      that <br>
-    </p>
-    <p>not check _PAGE_INVALID here because we intend to create a new
-      valid PTE here.<br>
-    </p>
-    <p>And I think check _PAGE_PRESENT is ok  because in kernel version
-      before commit 56f3c1413f5c , the function __ioremap_at()<br>
-    </p>
-    <p>and __ioremap_caller() used _PAGE_PRESENT to check base flags,
-      book3s/64 was also present by then.</p>
-    <p>Nanyong<br>
-    </p>
-    <blockquote type="cite"
-      cite="mid:90aa2b67-24c8-4a5f-d91a-b562054d5c5d@csgroup.eu">
-      <blockquote type="cite">+        return NULL;
-        <br>
-        +
-        <br>
-              /* writeable implies dirty for kernel addresses */
-        <br>
-              if (pte_write(pte))
-        <br>
-                  pte = pte_mkdirty(pte);
-        <br>
-        <br>
-      </blockquote>
-      .
-      <br>
-    </blockquote>
-  </body>
-</html>
 
---------------F7F047D03684CB910C170F53--
+> would make:
+> 
+> kvmppc_create_vcpu_debugfs
+> kvmppc_create_vcpu_debugfs_hv
+> kvmppc_create_vcpu_debugfs_pr (possibly)
+> 
+> which perhaps is more consistent.
+
+
+Or  kvm_arch_vm_ioctl_hv(). I really like having "arch" in the name, 
+tells right away what it is about. "kvmppc" might be excessive. Thanks,
+
+
+
+>>   {
+>> -	char buf[16];
+>> -	struct kvm *kvm = vcpu->kvm;
+>> -
+>> -	snprintf(buf, sizeof(buf), "vcpu%u", id);
+>> -	vcpu->arch.debugfs_dir = debugfs_create_dir(buf, kvm->arch.debugfs_dir);
+>> -	debugfs_create_file("timings", 0444, vcpu->arch.debugfs_dir, vcpu,
+>> +	debugfs_create_file("timings", 0444, debugfs_dentry, vcpu,
+>>   			    &debugfs_timings_ops);
+>>   }
+>>   
+>>   #else /* CONFIG_KVM_BOOK3S_HV_EXIT_TIMING */
+>> -static void debugfs_vcpu_init(struct kvm_vcpu *vcpu, unsigned int id)
+>> +static void kvmppc_arch_create_vcpu_debugfs_hv(struct kvm_vcpu *vcpu, struct dentry *debugfs_dentry)
+>>   {
+>>   }
+>>   #endif /* CONFIG_KVM_BOOK3S_HV_EXIT_TIMING */
+
+-- 
+Alexey
