@@ -2,113 +2,63 @@ Return-Path: <SRS0=6gsd=N2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 120B7C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 06:52:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7E86C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 07:12:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 91F6660184
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 06:52:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 91F6660184
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0D38160F22
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 07:12:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0D38160F22
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H1ljC6KW8z3c5j
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 16:52:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lKE29/9G;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H1m8M2L2Mz304y
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Sep 2021 17:12:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=lKE29/9G; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H1lgM6XN8z2ywT
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Sep 2021 16:51:11 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 1846YXoj130163; Sat, 4 Sep 2021 02:50:47 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=XULLM14JX9ja9L+uM8EWAcfZjA0rLcJ4qhh6BkVq230=;
- b=lKE29/9GLJKg1EBkE3/WlULZ3AblhPicfaJ6MqPzyqqVs2JgyJAKycE0bDGU9jcS/Rez
- 3eC7eaVWxjgKDDoucC/eVECBGanRl72V3wH5KGAUj7Aznxzs58g/FAofapFFRtjayzQO
- HJ/nzUKcNqiD/32oanjrDxvmmueOdNX/Yi6b2uo1qb9BPpzkaUUq3A78G9PZEjkzflMV
- VfqhPaxv28YapNmtAC0UX4RDom60sTAr1wNU3R1Y7D7ZrTiufRlYTDJ9svSYdpa/8X+3
- NFC9d0lQN+f27egS8IrpfO7SE/8XcRPybavkGlRL7PrvI5anH1tvYZLi20jUHU+ADODI YQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3av026kcqp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sat, 04 Sep 2021 02:50:47 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1846bhgd143006;
- Sat, 4 Sep 2021 02:50:46 -0400
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3av026kcq7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sat, 04 Sep 2021 02:50:46 -0400
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1846WLVb000872;
- Sat, 4 Sep 2021 06:50:44 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma04fra.de.ibm.com with ESMTP id 3av0e8saj2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sat, 04 Sep 2021 06:50:44 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1846oeJ056951176
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sat, 4 Sep 2021 06:50:40 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B73F04C04E;
- Sat,  4 Sep 2021 06:50:40 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EEEA14C058;
- Sat,  4 Sep 2021 06:50:33 +0000 (GMT)
-Received: from localhost.localdomain.com (unknown [9.43.55.112])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Sat,  4 Sep 2021 06:50:33 +0000 (GMT)
-From: Kajol Jain <kjain@linux.ibm.com>
-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, peterz@infradead.org, mingo@redhat.com,
- acme@kernel.org, jolsa@kernel.org, namhyung@kernel.org,
- linux-perf-users@vger.kernel.org, ak@linux.intel.com
-Subject: [PATCH 3/3] powerpc/perf: Fix data source encodings for power10
-Date: Sat,  4 Sep 2021 12:19:32 +0530
-Message-Id: <20210904064932.307610-3-kjain@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20210904064932.307610-1-kjain@linux.ibm.com>
-References: <20210904064932.307610-1-kjain@linux.ibm.com>
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
+ envelope-from=sunnanyong@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H1lPG3qxCz2xth
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Sep 2021 16:38:55 +1000 (AEST)
+Received: from dggemv703-chm.china.huawei.com (unknown [172.30.72.56])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4H1lJ24SbKz8xB6;
+ Sat,  4 Sep 2021 14:34:26 +0800 (CST)
+Received: from kwepemm600003.china.huawei.com (7.193.23.202) by
+ dggemv703-chm.china.huawei.com (10.3.19.46) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.2; Sat, 4 Sep 2021 14:38:43 +0800
+Received: from [10.174.179.79] (10.174.179.79) by
+ kwepemm600003.china.huawei.com (7.193.23.202) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2308.8; Sat, 4 Sep 2021 14:38:42 +0800
+Subject: Re: [PATCH -next] powerpc/mm: check base flags in ioremap_prot
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, <mpe@ellerman.id.au>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>, <akpm@linux-foundation.org>,
+ <npiggin@gmail.com>, <christophe.leroy@c-s.fr>
+References: <20210903090339.3671524-1-sunnanyong@huawei.com>
+ <90aa2b67-24c8-4a5f-d91a-b562054d5c5d@csgroup.eu>
+From: Nanyong Sun <sunnanyong@huawei.com>
+Message-ID: <e27f8786-7d43-4191-9b65-5a55a64cf158@huawei.com>
+Date: Sat, 4 Sep 2021 14:38:42 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: hvWsGLgcM6egtU7QGVsj0IXZ8h8hU2Wq
-X-Proofpoint-GUID: 4LsCmH2U8QPO7-YdpJMTCsrXmE-ui4oh
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-09-04_02:2021-09-03,
- 2021-09-04 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999
- malwarescore=0 bulkscore=0 clxscore=1015 suspectscore=0 mlxscore=0
- phishscore=0 priorityscore=1501 lowpriorityscore=0 impostorscore=0
- adultscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2108310000 definitions=main-2109040040
+In-Reply-To: <90aa2b67-24c8-4a5f-d91a-b562054d5c5d@csgroup.eu>
+Content-Type: multipart/alternative;
+ boundary="------------F7F047D03684CB910C170F53"
+X-Originating-IP: [10.174.179.79]
+X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
+ kwepemm600003.china.huawei.com (7.193.23.202)
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Sat, 04 Sep 2021 17:12:27 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,57 +70,376 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, songliubraving@fb.com, atrajeev@linux.vnet.ibm.com,
- daniel@iogearbox.net, rnsastry@linux.ibm.com,
- alexander.shishkin@linux.intel.com, kjain@linux.ibm.com, ast@kernel.org,
- yao.jin@linux.intel.com, maddy@linux.ibm.com, paulus@samba.org,
- kan.liang@linux.intel.com
+Cc: wangkefeng 00584194 <wangkefeng.wang@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix the data source encodings for power10 to represent
-onchip L2/L3 accesses properly.
+--------------F7F047D03684CB910C170F53
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Fixes: 79e96f8f930d ("powerpc/perf: Export memory hierarchy info to user
-space")
-Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
----
- arch/powerpc/perf/isa207-common.c | 21 ++++++++++++++++-----
- 1 file changed, 16 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index f92bf5f6b74f..9630a17c5da4 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -238,11 +238,22 @@ static inline u64 isa207_find_source(u64 idx, u32 sub_idx)
- 		ret |= P(SNOOP, HIT);
- 		break;
- 	case 5:
--		ret = PH(LVL, REM_CCE1);
--		if ((sub_idx == 0) || (sub_idx == 2) || (sub_idx == 4))
--			ret |= P(SNOOP, HIT);
--		else if ((sub_idx == 1) || (sub_idx == 3) || (sub_idx == 5))
--			ret |= P(SNOOP, HITM);
-+		if (cpu_has_feature(CPU_FTR_ARCH_31)) {
-+			if (sub_idx == 0 || sub_idx == 4)
-+				ret = PH(LVLNUM, OC_L2) | P(SNOOP, HIT);
-+			else if (sub_idx == 1 || sub_idx == 5)
-+				ret = PH(LVLNUM, OC_L2) | P(SNOOP, HITM);
-+			else if (sub_idx == 2 || sub_idx == 6)
-+				ret = PH(LVLNUM, OC_L3) | P(SNOOP, HIT);
-+			else if (sub_idx == 3 || sub_idx == 7)
-+				ret = PH(LVLNUM, OC_L3) | P(SNOOP, HITM);
-+		} else {
-+			ret = PH(LVL, REM_CCE1);
-+			if ((sub_idx == 0) || (sub_idx == 2) || (sub_idx == 4))
-+				ret |= P(SNOOP, HIT);
-+			else if ((sub_idx == 1) || (sub_idx == 3) || (sub_idx == 5))
-+				ret |= P(SNOOP, HITM);
-+		}
- 		break;
- 	case 6:
- 		ret = PH(LVL, REM_CCE2);
--- 
-2.26.2
+On 2021/9/3 17:16, Christophe Leroy wrote:
+>
+>
+> Le 03/09/2021 à 11:03, Nanyong Sun a écrit :
+>> Some drivers who call ioremap_prot without setting base flags like
+>> ioremap_prot(addr, len, 0) may work well before
+>> commit 56f3c1413f5c ("powerpc/mm: properly set PAGE_KERNEL flags in
+>> ioremap()"), but now they will get a virtual address "successfully"
+>> from ioremap_prot and badly fault on memory access later because that
+>> patch also dropped the hack adding of base flags for ioremap_prot.
+>>
+>> So return NULL and throw a warning if the caller of ioremap_prot did
+>> not set base flags properly. Why not just hack adding PAGE_KERNEL flags
+>> in the ioremap_prot, because most scenarios can be covered by high level
+>> functions like ioremap(), ioremap_coherent(), ioremap_cache()...
+>> so it is better to keep max flexibility for this low level api.
+>
+> As far as I can see, there is no user of this fonction that sets flags 
+> to 0 in the kernel tree.
+>
+> Did you find any ? If you did, I think it is better to fix the caller.
+>
+> Christophe
+>
+I see some vendor's drivers which are not on upstream has used 
+ioremap_prot like
 
+ioremap_prot(addr,len, _PAGE_NO_CACHE | _PAGE_GUARDED) or
+
+ioremap_prot(addr,len, 0), and they worked well on old kernel versions 
+before commit
+
+56f3c1413f5c ("powerpc/mm: properly set PAGE_KERNEL flags in ioremap()").
+
+Actually, in the commit( git show 56f3c1413f5c ), you can see that in old
+
+kernel versions, the implementations of ioremap_xxx just set flags as 
+_PAGE_xxx or 0,
+
+Code examples of the commit:
+
+In arch/powerpc/mm/pgtable_32.c
+
+ioremap(phys_addr_t addr, unsigned long size)
+  {
+-       return __ioremap_caller(addr, size, _PAGE_NO_CACHE | _PAGE_GUARDED,
+-                               __builtin_return_address(0));
++       unsigned long flags = pgprot_val(pgprot_noncached(PAGE_KERNEL));
++
++       return __ioremap_caller(addr, size, flags, 
+__builtin_return_address(0));
+  }
+
+In arch/powerpc/mm/pgtable_64.c
+
+void __iomem * ioremap(phys_addr_t addr, unsigned long size)
+  {
+-       unsigned long flags = pgprot_val(pgprot_noncached(__pgprot(0)));
++       unsigned long flags = pgprot_val(pgprot_noncached(PAGE_KERNEL));
+         void *caller = __builtin_return_address(0);
+
+
+They rely on the low level functions to add base flags.
+
+So, these driver codes like 'ioremap_prot(addr,len, _PAGE_NO_CACHE) '
+
+in old kernel version is**not very improper.
+
+Ofcourse, when porting new kernel versions, they need to change because the
+
+api implementation has changed, but it's difficult for driver developer 
+to find out what
+
+happend and how to change, because they still get a virtual address 
+"successfully"
+
+from ioremap_prot without base flags and then page fault on memory 
+access later.
+
+So, it is necessary to check and report base flags missing in 
+ioremap_prot() timely.
+
+Secondly, the commit 56f3c1413f5c ("powerpc/mm: properly set PAGE_KERNEL
+
+flags in ioremap()") delete the hack adding of PAGE_KERNEL flags in low 
+level
+
+implementation and add flags properly for all ioremap_xx() APIs except 
+ioreamp_prot,
+
+for ioreamp_prot, it not only loss the hack adding, but also loss the 
+basic flags check
+
+which is necessary.
+
+So we need add this basic check for this API.
+
+Nanyong
+
+>>
+>> Signed-off-by: Nanyong Sun <sunnanyong@huawei.com>
+>> ---
+>>   arch/powerpc/mm/ioremap.c | 4 ++++
+>>   1 file changed, 4 insertions(+)
+>>
+>> diff --git a/arch/powerpc/mm/ioremap.c b/arch/powerpc/mm/ioremap.c
+>> index 57342154d2b0..b7eda0f0d04d 100644
+>> --- a/arch/powerpc/mm/ioremap.c
+>> +++ b/arch/powerpc/mm/ioremap.c
+>> @@ -46,6 +46,10 @@ void __iomem *ioremap_prot(phys_addr_t addr, 
+>> unsigned long size, unsigned long f
+>>       pte_t pte = __pte(flags);
+>>       void *caller = __builtin_return_address(0);
+>>   +    /* The caller should set base page flags properly */
+>> +    if (WARN_ON((flags & _PAGE_PRESENT) == 0))
+>
+> This probably doesn't work for some plateforms like book3s/64. You 
+> should use helpers like pte_present().
+>
+> See the comment at 
+> https://elixir.bootlin.com/linux/v5.14/source/arch/powerpc/include/asm/book3s/64/pgtable.h#L591
+>
+I'm afraid that pte_present() is not ok for book3s/64, because it also 
+check _PAGE_PTE which will be set in the bottom
+
+half of ioremap, so it would always return fail because the caller of 
+ioremap_prot wouldn't set _PAGE_PTE. I think it's ok that
+
+not check _PAGE_INVALID here because we intend to create a new valid PTE 
+here.
+
+And I think check _PAGE_PRESENT is ok  because in kernel version before 
+commit 56f3c1413f5c , the function __ioremap_at()
+
+and __ioremap_caller() used _PAGE_PRESENT to check base flags, book3s/64 
+was also present by then.
+
+Nanyong
+
+>> +        return NULL;
+>> +
+>>       /* writeable implies dirty for kernel addresses */
+>>       if (pte_write(pte))
+>>           pte = pte_mkdirty(pte);
+>>
+> .
+
+--------------F7F047D03684CB910C170F53
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p><br>
+    </p>
+    <div class="moz-cite-prefix">On 2021/9/3 17:16, Christophe Leroy
+      wrote:<br>
+    </div>
+    <blockquote type="cite"
+      cite="mid:90aa2b67-24c8-4a5f-d91a-b562054d5c5d@csgroup.eu">
+      <br>
+      <br>
+      Le 03/09/2021 à 11:03, Nanyong Sun a écrit :
+      <br>
+      <blockquote type="cite">Some drivers who call ioremap_prot without
+        setting base flags like
+        <br>
+        ioremap_prot(addr, len, 0) may work well before
+        <br>
+        commit 56f3c1413f5c ("powerpc/mm: properly set PAGE_KERNEL flags
+        in
+        <br>
+        ioremap()"), but now they will get a virtual address
+        "successfully"
+        <br>
+        from ioremap_prot and badly fault on memory access later because
+        that
+        <br>
+        patch also dropped the hack adding of base flags for
+        ioremap_prot.
+        <br>
+        <br>
+        So return NULL and throw a warning if the caller of ioremap_prot
+        did
+        <br>
+        not set base flags properly. Why not just hack adding
+        PAGE_KERNEL flags
+        <br>
+        in the ioremap_prot, because most scenarios can be covered by
+        high level
+        <br>
+        functions like ioremap(), ioremap_coherent(), ioremap_cache()...
+        <br>
+        so it is better to keep max flexibility for this low level api.
+        <br>
+      </blockquote>
+      <br>
+      As far as I can see, there is no user of this fonction that sets
+      flags to 0 in the kernel tree.
+      <br>
+      <br>
+      Did you find any ? If you did, I think it is better to fix the
+      caller.
+      <br>
+      <br>
+      Christophe
+      <br>
+      <br>
+    </blockquote>
+    <p>I see some vendor's drivers which are not on upstream has used
+      ioremap_prot like <br>
+    </p>
+    <p>ioremap_prot(addr,len, _PAGE_NO_CACHE | _PAGE_GUARDED) or</p>
+    <p>ioremap_prot(addr,len, 0), and they worked well on old kernel
+      versions before commit</p>
+    <p>56f3c1413f5c ("powerpc/mm: properly set PAGE_KERNEL flags in
+      ioremap()").</p>
+    <p>Actually, in the commit( git show 56f3c1413f5c ), you can see
+      that in old</p>
+    <p>kernel versions, the implementations of ioremap_xxx just set
+      flags as _PAGE_xxx or 0,</p>
+    <p>Code examples of the commit:</p>
+    <p>In arch/powerpc/mm/pgtable_32.c<br>
+    </p>
+    <p>ioremap(phys_addr_t addr, unsigned long size)<br>
+       {<br>
+      -       return __ioremap_caller(addr, size, _PAGE_NO_CACHE |
+      _PAGE_GUARDED,<br>
+      -                               __builtin_return_address(0));<br>
+      +       unsigned long flags =
+      pgprot_val(pgprot_noncached(PAGE_KERNEL));<br>
+      +<br>
+      +       return __ioremap_caller(addr, size, flags,
+      __builtin_return_address(0));<br>
+       }</p>
+    <p>In arch/powerpc/mm/pgtable_64.c</p>
+    <p> void __iomem * ioremap(phys_addr_t addr, unsigned long size)<br>
+       {<br>
+      -       unsigned long flags =
+      pgprot_val(pgprot_noncached(__pgprot(0)));<br>
+      +       unsigned long flags =
+      pgprot_val(pgprot_noncached(PAGE_KERNEL));<br>
+              void *caller = __builtin_return_address(0);</p>
+    <p><br>
+    </p>
+    <p>They rely on the low level functions to add base flags.<br>
+    </p>
+    <p>So, these driver codes like 'ioremap_prot(addr,len,
+      _PAGE_NO_CACHE) '</p>
+    <p>in old kernel version is<b> </b>not very improper. <br>
+    </p>
+    <p>Ofcourse, when porting new kernel versions, they need to change
+      because the</p>
+    <p>api implementation has changed, but it's difficult for driver
+      developer to find out what</p>
+    <p>happend and how to change, because they still get a virtual
+      address "successfully" <br>
+    </p>
+    <p>from ioremap_prot without base flags and then page fault on
+      memory access later.<br>
+    </p>
+    <p></p>
+    So, it is necessary to check and report base flags missing in
+    ioremap_prot() timely.
+    <p>Secondly, the commit 56f3c1413f5c ("powerpc/mm: properly set
+      PAGE_KERNEL</p>
+    <p> flags in ioremap()") delete the hack adding of PAGE_KERNEL flags
+      in low level</p>
+    <p>implementation and add flags properly for all ioremap_xx() APIs
+      except ioreamp_prot,</p>
+    <p>for ioreamp_prot, it not only loss the hack adding, but also loss
+      the basic flags check <br>
+    </p>
+    <p>which is necessary.</p>
+    <p>So we need add this basic check for this API.</p>
+    <p>Nanyong<br>
+    </p>
+    <blockquote type="cite"
+      cite="mid:90aa2b67-24c8-4a5f-d91a-b562054d5c5d@csgroup.eu">
+      <blockquote type="cite">
+        <br>
+        Signed-off-by: Nanyong Sun <a class="moz-txt-link-rfc2396E" href="mailto:sunnanyong@huawei.com">&lt;sunnanyong@huawei.com&gt;</a>
+        <br>
+        ---
+        <br>
+          arch/powerpc/mm/ioremap.c | 4 ++++
+        <br>
+          1 file changed, 4 insertions(+)
+        <br>
+        <br>
+        diff --git a/arch/powerpc/mm/ioremap.c
+        b/arch/powerpc/mm/ioremap.c
+        <br>
+        index 57342154d2b0..b7eda0f0d04d 100644
+        <br>
+        --- a/arch/powerpc/mm/ioremap.c
+        <br>
+        +++ b/arch/powerpc/mm/ioremap.c
+        <br>
+        @@ -46,6 +46,10 @@ void __iomem *ioremap_prot(phys_addr_t addr,
+        unsigned long size, unsigned long f
+        <br>
+              pte_t pte = __pte(flags);
+        <br>
+              void *caller = __builtin_return_address(0);
+        <br>
+          +    /* The caller should set base page flags properly */
+        <br>
+        +    if (WARN_ON((flags &amp; _PAGE_PRESENT) == 0))
+        <br>
+      </blockquote>
+      <br>
+      This probably doesn't work for some plateforms like book3s/64. You
+      should use helpers like pte_present().
+      <br>
+      <br>
+      See the comment at
+<a class="moz-txt-link-freetext" href="https://elixir.bootlin.com/linux/v5.14/source/arch/powerpc/include/asm/book3s/64/pgtable.h#L591">https://elixir.bootlin.com/linux/v5.14/source/arch/powerpc/include/asm/book3s/64/pgtable.h#L591</a><br>
+      <br>
+    </blockquote>
+    <p>I'm afraid that pte_present() is not ok for 
+      book3s/64, because it also check _PAGE_PTE which will be set in
+      the bottom <br>
+    </p>
+    <p>half of ioremap, so it would always return fail because the
+      caller of ioremap_prot wouldn't set _PAGE_PTE. I think it's ok
+      that <br>
+    </p>
+    <p>not check _PAGE_INVALID here because we intend to create a new
+      valid PTE here.<br>
+    </p>
+    <p>And I think check _PAGE_PRESENT is ok  because in kernel version
+      before commit 56f3c1413f5c , the function __ioremap_at()<br>
+    </p>
+    <p>and __ioremap_caller() used _PAGE_PRESENT to check base flags,
+      book3s/64 was also present by then.</p>
+    <p>Nanyong<br>
+    </p>
+    <blockquote type="cite"
+      cite="mid:90aa2b67-24c8-4a5f-d91a-b562054d5c5d@csgroup.eu">
+      <blockquote type="cite">+        return NULL;
+        <br>
+        +
+        <br>
+              /* writeable implies dirty for kernel addresses */
+        <br>
+              if (pte_write(pte))
+        <br>
+                  pte = pte_mkdirty(pte);
+        <br>
+        <br>
+      </blockquote>
+      .
+      <br>
+    </blockquote>
+  </body>
+</html>
+
+--------------F7F047D03684CB910C170F53--
