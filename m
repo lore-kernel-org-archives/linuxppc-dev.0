@@ -1,80 +1,109 @@
 Return-Path: <SRS0=mwa9=N5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: **
-X-Spam-Status: No, score=2.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Level: 
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FB3CC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 03:00:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E709C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 07:50:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA6256109F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 03:00:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DA6256109F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 39CC561102
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 07:50:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 39CC561102
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H3VPC1Tqrz2yJp
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 12:59:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H3cqz0yC8z2yJl
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 17:50:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=YOnlee9U;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cAvh6O1j;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::e2c;
- helo=mail-vs1-xe2c.google.com; envelope-from=linasvepstas@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=schnelle@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=YOnlee9U; dkim-atps=neutral
-Received: from mail-vs1-xe2c.google.com (mail-vs1-xe2c.google.com
- [IPv6:2607:f8b0:4864:20::e2c])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=cAvh6O1j; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H3TBK3FRBz2yQH
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Sep 2021 12:05:29 +1000 (AEST)
-Received: by mail-vs1-xe2c.google.com with SMTP id a25so7008839vso.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Sep 2021 19:05:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=mime-version:references:in-reply-to:reply-to:from:date:message-id
- :subject:to:cc;
- bh=SrlvKqARGDivXRKXI4A7Tvn+WMDYjDuveWi0cEI2VFw=;
- b=YOnlee9U5jHYMdEdc7ovcoxTmZVwWMSQHQTOAWkw0Jan28COHSFrGcrucjqvpyCRKd
- 6QQUMz4iZWvM9xhlv4YExn/UB6xuzECUUrVh3aKkZOcjWcYY39XLTXJfKGvTamW5Kyej
- v5SJg4AnS8ceemgX2V93aYw3Lx1dSu46/7RcRE0GYZqFs3wtSlYb+QENtLSCtdxjsVLn
- E6kB7L+/E2Mlk2vr2PtApiqB8gibqGW1UwNkLaie5AbLCN1ituR/8It1TTnsjwT1LaJ/
- HVv+TgeFQRACBJ1/FmlppHc4QpMjF4PrvcxEfAgVunrBLIcqluwAQqLd5GlvlPzVW1sW
- JhBg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:reply-to
- :from:date:message-id:subject:to:cc;
- bh=SrlvKqARGDivXRKXI4A7Tvn+WMDYjDuveWi0cEI2VFw=;
- b=mxgQL2AyD/q6EfQGLHp9vvmMN/hUS7vVtz39eeVVWvMPMHtwUHO3v0epb//zNayogb
- M/nOQSUgG8rKslrvJecBUt/9KPrBjoJjAhi3HfXKUwwgMoMHnpXYJWzwFBtAf9flaSYB
- D4ZC6lf905cYPmwJykOAQSWgO9GpkpqHizxutxsx6+QmRnaauLiD/seTaEeHxwBNhbD6
- jfb189zLxXiE0LkVFw2EQECCoswZgmWl3Rc3m7QSBte+/nSakhUbs4c0TDwv/q9xdp4C
- 1xZxAPqeKgf8xK+Ndlf8oSKJVyuTV0Gbneat98SnzbWzO3HIC+/hOnCHGmKdNi/Rb2Yn
- 01Qg==
-X-Gm-Message-State: AOAM531TSOY4ys4bJTFBfLE73q/oC8On/SrU2YkBEK7WNc3HJxel/y6J
- npx+etiUyoYd+ryKPBq0qYclpPPInYXdARh5tIw=
-X-Google-Smtp-Source: ABdhPJyRZy4lP0Yep+BISyfv2BdSr49tUZuqQReOujWXZK0Nbj3We5Aq2/RH4A/a3kIZG/y7A3zCbHKUwb09wfxbhwI=
-X-Received: by 2002:a67:c009:: with SMTP id v9mr7526674vsi.47.1630980326280;
- Mon, 06 Sep 2021 19:05:26 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210906094927.524106-1-schnelle@linux.ibm.com>
-In-Reply-To: <20210906094927.524106-1-schnelle@linux.ibm.com>
-From: Linas Vepstas <linasvepstas@gmail.com>
-Date: Mon, 6 Sep 2021 21:05:14 -0500
-Message-ID: <CAHrUA34TK6U4TB34FHejott9TdFvSgAedOpmro-Uj2ZwnvzecQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H3cq52Bxqz2xfP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Sep 2021 17:49:20 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 1877YDaJ150443; Tue, 7 Sep 2021 03:49:15 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ mime-version : content-transfer-encoding; s=pp1;
+ bh=WJWyf84RAX/0ZkWwXIUGLHrz9cHuR/afqYqiTEBsuKA=;
+ b=cAvh6O1jVkmxvWAt9LNPpQBui1Q1dXL4JRPbVLyUIt3rrT31sZ8BMoi3kBRWvXZnM4Q/
+ jhEdtQTzNm+WvLV1/ewm8kwRii8DZF3oKs/L8p8iXSjThysX0me52Z5Iw3cCRk+Y7jF/
+ T8AKlX3ifTKUv+MjaT7w3nUHTBHCapwN9cgJYxuYNGZAU0ePdqyTj0+5x6DBuTh0chyZ
+ jc1hddbmoF2d6WVy4U2JYvSWguaQRDNp7UF/7PoFQa3U3z3n/X3U3WYoo7AcSc7beUHA
+ SI5MLnT67xY71QkTQz/acDmkvWtuKg16wNEhgmNPtM8nefiWMP10EdsrHZnoAWwneo0u Fg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3ax3qsrdgd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 07 Sep 2021 03:49:15 -0400
+Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1877aw42158665;
+ Tue, 7 Sep 2021 03:49:15 -0400
+Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.70])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3ax3qsrdg3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 07 Sep 2021 03:49:15 -0400
+Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
+ by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1877ltNG019758;
+ Tue, 7 Sep 2021 07:49:13 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma01fra.de.ibm.com with ESMTP id 3av0e9jx2f-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 07 Sep 2021 07:49:13 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1877nAUV44106174
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 7 Sep 2021 07:49:10 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0143452050;
+ Tue,  7 Sep 2021 07:49:10 +0000 (GMT)
+Received: from sig-9-145-36-222.uk.ibm.com (unknown [9.145.36.222])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 89B9A52059;
+ Tue,  7 Sep 2021 07:49:09 +0000 (GMT)
+Message-ID: <bddf2d1867585427680cb093cb10d5d15d7aa8d3.camel@linux.ibm.com>
 Subject: Re: [PATCH 0/5] s390/pci: automatic error recovery
-To: Niklas Schnelle <schnelle@linux.ibm.com>
-Content-Type: multipart/alternative; boundary="000000000000fbd2e805cb5e325a"
-X-Mailman-Approved-At: Tue, 07 Sep 2021 12:59:20 +1000
+From: Niklas Schnelle <schnelle@linux.ibm.com>
+To: linasvepstas@gmail.com
+Date: Tue, 07 Sep 2021 09:49:09 +0200
+In-Reply-To: <CAHrUA34TK6U4TB34FHejott9TdFvSgAedOpmro-Uj2ZwnvzecQ@mail.gmail.com>
+References: <20210906094927.524106-1-schnelle@linux.ibm.com>
+ <CAHrUA34TK6U4TB34FHejott9TdFvSgAedOpmro-Uj2ZwnvzecQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5 (3.28.5-16.el8) 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: C0aRTjjmQNKpk3SN8yudqLi9VZzVvfpX
+X-Proofpoint-ORIG-GUID: pjkFZ4ivwDdWIA9TGUakMx88a4X8WhVD
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-09-07_02:2021-09-03,
+ 2021-09-07 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0
+ lowpriorityscore=0 spamscore=0 suspectscore=0 priorityscore=1501
+ malwarescore=0 phishscore=0 adultscore=0 bulkscore=0 mlxlogscore=999
+ clxscore=1015 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2108310000 definitions=main-2109070049
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,7 +115,6 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: linasvepstas@gmail.com
 Cc: linux-s390@vger.kernel.org, Pierre Morel <pmorel@linux.ibm.com>,
  Matthew Rosato <mjrosato@linux.ibm.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -96,65 +124,58 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---000000000000fbd2e805cb5e325a
-Content-Type: text/plain; charset="UTF-8"
+On Mon, 2021-09-06 at 21:05 -0500, Linas Vepstas wrote:
+> On Mon, Sep 6, 2021 at 4:49 AM Niklas Schnelle <schnelle@linux.ibm.com>
+> wrote:
+> 
+> >  I believe we might be the first
+> > implementation of PCI device recovery in a virtualized setting requiring
+> > us to
+> > coordinate the device reset with the hypervisor platform by issuing a
+> > disable
+> > and re-enable to the platform as well as starting the recovery following
+> > a platform event.
+> > 
+> 
+> I recall none of the details, but SRIOV is a standardized system for
+> sharing a PCI device across multiple virtual machines. It has detailed info
+> on what the hypervisor must do, and what the local OS instance must do to
+> accomplish this.  
 
-On Mon, Sep 6, 2021 at 4:49 AM Niklas Schnelle <schnelle@linux.ibm.com>
-wrote:
+Yes and in fact on s390 we make heavy use of SR-IOV.
 
->  I believe we might be the first
-> implementation of PCI device recovery in a virtualized setting requiring
-> us to
-> coordinate the device reset with the hypervisor platform by issuing a
-> disable
-> and re-enable to the platform as well as starting the recovery following
-> a platform event.
->
+> It's part of the PCI standard, and its more than a decade
+> old now, maybe two. Being a part of the PCI standard, it was interoperable
+> with error recovery, to the best of my recollection. 
 
-I recall none of the details, but SRIOV is a standardized system for
-sharing a PCI device across multiple virtual machines. It has detailed info
-on what the hypervisor must do, and what the local OS instance must do to
-accomplish this.  It's part of the PCI standard, and its more than a decade
-old now, maybe two. Being a part of the PCI standard, it was interoperable
-with error recovery, to the best of my recollection. At the time it was
-introduced, it got pushed very aggressively.  The x86 hypervisor vendors
-were aiming at the heart of zseries, and were militant about it.
+Maybe I worded things with a bit too much sensationalism and it might
+even be that POWER supports error recovery also with virtualization,
+though I'm not sure how far that goes.
 
--- Linas
+I believe you are right in that SR-IOV supports the error recovery,
+after all this patch set also has to work together with SRIOV enabled
+devices. At least on s390 though until this patch set the error
+recovery performed by the hypervisor stopped in the hypervisor.
 
--- 
-Patrick: Are they laughing at us?
-Sponge Bob: No, Patrick, they are laughing next to us.
+The missing part added by this patch set is coordinating with device
+drivers in Linux to determine where use of a recovered device can pick
+up after the PCIe level error recovery is done.
 
---000000000000fbd2e805cb5e325a
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+As for virtualization this coordination of course needs to cross the
+hypervisor/guest boundary and at least for KVM+QEMU I know for a fact
+that reporting a PCI error to the guest is currently just a stub that
+actually completely stops the guest, so you definitely don't get smooth
+error recovery there yet.
 
-<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
-<div dir=3D"ltr" class=3D"gmail_attr">On Mon, Sep 6, 2021 at 4:49 AM Niklas=
- Schnelle &lt;<a href=3D"mailto:schnelle@linux.ibm.com">schnelle@linux.ibm.=
-com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=3D"marg=
-in:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1e=
-x">=C2=A0I believe we might be the first<br>
-implementation of PCI device recovery in a virtualized setting requiring us=
- to<br>
-coordinate the device reset with the hypervisor platform by issuing a disab=
-le<br>
-and re-enable to the platform as well as starting the recovery following<br=
->
-a platform event.<br></blockquote><div><br></div><div>I recall none of the =
-details, but SRIOV is a standardized system for sharing a PCI device across=
- multiple virtual machines. It has detailed info on what the hypervisor mus=
-t do, and what the local OS instance must do to accomplish this.=C2=A0 It&#=
-39;s part of the PCI standard, and its more than a decade old now, maybe tw=
-o. Being a part of the PCI standard, it was interoperable with error recove=
-ry, to the best of my recollection. At the time it was introduced, it got p=
-ushed very aggressively.=C2=A0 The x86 hypervisor vendors were aiming at th=
-e heart of zseries, and were militant about it. <br></div></div><div class=
-=3D"gmail_quote"><br></div><div class=3D"gmail_quote">-- Linas<br clear=3D"=
-all"></div><br>-- <br><div dir=3D"ltr" class=3D"gmail_signature"><div dir=
-=3D"ltr"><div>Patrick: Are they laughing at us?</div><div>Sponge Bob: No, P=
-atrick, they are laughing next to us.</div><div>=C2=A0<br></div><br></div><=
-/div></div>
+> At the time it was
+> introduced, it got pushed very aggressively.  The x86 hypervisor vendors
+> were aiming at the heart of zseries, and were militant about it.
 
---000000000000fbd2e805cb5e325a--
+And yet we're still here, use SR-IOV ourselves and even support Linux +
+KVM as a hypervisor you can use just the same on a mainframe, an x86,
+POWER, or ARM system.
+
+> 
+> -- Linas
+> 
+
