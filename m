@@ -2,60 +2,113 @@ Return-Path: <SRS0=mwa9=N5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0F61C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 11:24:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15070C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 12:22:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 21C1C6109F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 11:24:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 21C1C6109F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 5818660F01
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 12:22:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5818660F01
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H3jbh3hTZz2yJp
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 21:24:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H3ksw66lXz2ybH
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 22:22:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sZpmFKcR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ixNa7tN0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=schnelle@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=sZpmFKcR; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=ixNa7tN0; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H3jZz2b37z2xvV
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Sep 2021 21:24:11 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 7D782610FF;
- Tue,  7 Sep 2021 11:24:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1631013847;
- bh=+upmPCkRhPM+Pwqhf6/lViXSAyGhcvV26ITuL5tT+Ek=;
- h=Date:From:To:Cc:Subject:In-Reply-To:From;
- b=sZpmFKcR7IaO2ztw7+k5Ozy5Lp081oRiqMMSmn69Y2I9QiOVvshOGCLPQIznSBvmW
- ipO/GVR3iq5WGhoYfEVH6B6eayBhf38jE9N9bAur8iwHP5LCYNeK17ujEOW+VC5D6x
- sEuoAgcONere0v0QMNN8iCN/tMOfud8qi+0k5Zq8dqHogLupmhi7OBGqNZxd7cL0dU
- pnJ00Gfl8Eh2Vj/STXy7YBcf8B257W5t4+jWamTtD5xaz4EFXFvzfgu44G4KFe0RF7
- 71RTADvDtW9bE16DwHbb43gYE3eYhDmdQu7lGrj7xxKz1LldcOK1qUSgRKBiIakVQ4
- H4041Xt9q1AFQ==
-Date: Tue, 7 Sep 2021 06:24:05 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Xu Wang <vulab@iscas.ac.cn>
-Subject: Re: [PATCH] pci/hotplug/pnv-php: Remove probable double put
-Message-ID: <20210907112405.GA722145@bjorn-Precision-5520>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H3ks50kGvz2xlC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Sep 2021 22:21:28 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 187CEc8t072075; Tue, 7 Sep 2021 08:21:25 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=vxQ/lViwCp7JVm6b0LeU8qRx+E3t5GMVDImyOrpR9rQ=;
+ b=ixNa7tN0mDYkql1x5Ty1elg3Yc7ohP3qKNgrX0AH1eO3vu9ZZYweuMlLTFKpEHi2KtgM
+ 24yXnbDLgfl9xW858lVjKTP1x4451AEElmHIM96Q9S5cbi/X6GEFedDvprDabEJuGMSn
+ /VDEslLP+2V9FY21hsbpUGYKvhLPxHuSErDAOyPLCMUFkmRTubmRRWKlz38WaSSed48W
+ cxrpUTNo+z3s2jR3MUXzO8vaiwNwyGx0D3RjP9YhwyVrf5aiJeTIUesBnfObkTHJWouD
+ bwv5ZC3Qy8wCPjCGUc+4zOLim+kyuj7x00bXD1NPaVuQp7PVDOm1WPowAGtTjAi09017 YA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3ax78m96me-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 07 Sep 2021 08:21:24 -0400
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 187CEuCF072919;
+ Tue, 7 Sep 2021 08:21:24 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3ax78m96kx-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 07 Sep 2021 08:21:24 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 187CC3DU028211;
+ Tue, 7 Sep 2021 12:21:22 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma04ams.nl.ibm.com with ESMTP id 3av0e9eyhh-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 07 Sep 2021 12:21:22 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 187CH60t60752128
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 7 Sep 2021 12:17:06 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C7255A4054;
+ Tue,  7 Sep 2021 12:21:18 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 49E49A405C;
+ Tue,  7 Sep 2021 12:21:18 +0000 (GMT)
+Received: from sig-9-145-36-222.uk.ibm.com (unknown [9.145.36.222])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue,  7 Sep 2021 12:21:18 +0000 (GMT)
+Message-ID: <0c9326c943c0e6aa572cc132ee2deb952bf41c7f.camel@linux.ibm.com>
+Subject: Re: [PATCH 0/5] s390/pci: automatic error recovery
+From: Niklas Schnelle <schnelle@linux.ibm.com>
+To: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Tue, 07 Sep 2021 14:21:17 +0200
+In-Reply-To: <e739c2919f97e277849a1bc1324a20df6a7d59eb.camel@linux.ibm.com>
+References: <20210906094927.524106-1-schnelle@linux.ibm.com>
+ <CAOSf1CFyuf9FaeSNparj+7W0mKTPvtcM8vxjHDSFsNDC6k_7xQ@mail.gmail.com>
+ <e739c2919f97e277849a1bc1324a20df6a7d59eb.camel@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5 (3.28.5-16.el8) 
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: SkUon7ztrKqjkeIh7btB_xV5c0wMpkDT
+X-Proofpoint-GUID: qZD9o8qgwlzYyZe-rDOYlYcLItkcgiQA
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210907085946.21694-1-vulab@iscas.ac.cn>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-09-07_04:2021-09-07,
+ 2021-09-07 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 malwarescore=0
+ bulkscore=0 spamscore=0 impostorscore=0 priorityscore=1501 clxscore=1015
+ suspectscore=0 mlxlogscore=904 phishscore=0 lowpriorityscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2108310000 definitions=main-2109070080
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,39 +120,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, linux-pci@vger.kernel.org,
- bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org, Pierre Morel <pmorel@linux.ibm.com>,
+ Matthew Rosato <mjrosato@linux.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, Linas Vepstas <linasvepstas@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Make your subject line follow the previous convention.
+On Tue, 2021-09-07 at 10:45 +0200, Niklas Schnelle wrote:
+> On Tue, 2021-09-07 at 12:04 +1000, Oliver O'Halloran wrote:
+> > On Mon, Sep 6, 2021 at 7:49 PM Niklas Schnelle <schnelle@linux.ibm.com> wrote:
+> > > Patch 3 I already sent separately resulting in the discussion below but without
+> > > a final conclusion.
+> > > 
+> > > https://lore.kernel.org/lkml/20210720150145.640727-1-schnelle@linux.ibm.com/
+> > > 
+> > > I believe even though there were some doubts about the use of
+> > > pci_dev_is_added() by arch code the existing uses as well as the use in the
+> > > final patch of this series warrant this export.
+> > 
+> > The use of pci_dev_is_added() in arch/powerpc was because in the past
+> > pci_bus_add_device() could be called before pci_device_add(). That was
+> > fixed a while ago so It should be safe to remove those calls now.
+> 
+> Hmm, ok that confirms Bjorns suspicion and explains how it came to be.
+> I can certainly sent a patch for that. This would then leave only the
+> existing use in s390 which I added because of a dead lock prevention
+> and explained here:
+> https://lore.kernel.org/lkml/87d15d5eead35c9eaa667958d057cf4a81a8bf13.camel@linux.ibm.com/
+> 
+> Plus the need to use it in the recovery code of this series. I think in
+> the EEH code the need for a similar check is alleviated by the checks
+> in the beginning of
+> arch/powerpc/kernel/eeh_driver.c:eeh_handle_normal_event() especially
+> eeh_slot_presence_check() which checks presence via the hotplug slot.
+> I guess we could use our own state tracking in a similar way but felt
+> like pci_dev_is_added() is the more logical choice.
 
-Figure out if this is a "probable" or a real double put.  If it's a
-real double put, we should fix it.  If it's only "probable," that
-means we don't understand the problem yet.
+Looking into this again, I think we actually can't easily track this
+state ourselves outside struct pci_dev. The reason for this is that
+when e.g. arch/s390/pci/pci_sysfs.c:recover_store() removes the struct
+pci_dev and scans it again the new struct pci_dev re-uses the same
+struct zpci_dev because from a platform point of view the PCI device
+was never removed but only disabled and re-enabled. Thus we can only
+distinguish the stale struct pci_dev by looking at things stored in
+struct pci_dev itself.
 
-On Tue, Sep 07, 2021 at 08:59:46AM +0000, Xu Wang wrote:
-> Device node iterators put the previous value of the index variable,
-> so an explicit put causes a double put.
-> 
-> Signed-off-by: Xu Wang <vulab@iscas.ac.cn>
-> ---
->  drivers/pci/hotplug/pnv_php.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-> index 04565162a449..ed4d1a2c3f22 100644
-> --- a/drivers/pci/hotplug/pnv_php.c
-> +++ b/drivers/pci/hotplug/pnv_php.c
-> @@ -158,7 +158,6 @@ static void pnv_php_detach_device_nodes(struct device_node *parent)
->  	for_each_child_of_node(parent, dn) {
->  		pnv_php_detach_device_nodes(dn);
->  
-> -		of_node_put(dn);
->  		of_detach_node(dn);
->  	}
->  }
-> -- 
-> 2.17.1
-> 
+That said, I think for the recovery case we might be able to drop the
+pci_dev_is_added() and rely on pdev->driver != NULL which we check
+anyway and that should catch any PCI device that was already removed.
+
