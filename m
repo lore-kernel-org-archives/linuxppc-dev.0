@@ -2,114 +2,89 @@ Return-Path: <SRS0=mwa9=N5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63899C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 12:44:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C854C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 14:39:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 494F560F92
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 12:44:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 494F560F92
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C500B61102
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 14:39:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C500B61102
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H3lMZ212Hz2yMq
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Sep 2021 22:44:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H3nwF0sg5z2ybL
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 00:39:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NULnDwMm;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=dDM249O1;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
+ smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::435;
+ helo=mail-pf1-x435.google.com; envelope-from=seanjc@google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=NULnDwMm; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20210112 header.b=dDM249O1; dkim-atps=neutral
+Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com
+ [IPv6:2607:f8b0:4864:20::435])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H3dJk00FZz2xfn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Sep 2021 18:11:33 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
- 18783TcC114571; Tue, 7 Sep 2021 04:11:27 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type; s=pp1; bh=rpbxg2gOjRL0ZJiIN7CNHShIynRyI260d/Ip0UFLCKM=;
- b=NULnDwMmIRgmGm9+eBhPCDlpIGGSMxD4PaWvmqiDfEvUY7izFVZgoJO9/J4Zs972vfZH
- vzGFtzI+lifqpPA4SB0ep4iqJr1SXe6NflOz+TDOx7sPlPZTCmYDnKiOorYX9Qy62RxZ
- AT52LUVsyXHNbdQuFcTZ6VqzWeJpX3Hz76CWcQC5X6k/0oQ8qXU0M+jWbOYflRGdrkCv
- goaxJCsaZYk3C4Y0xCZIlCdO1Agn3lI8j/nN8AYDJcCvXdzJZxkX9TKlEQLt29Y/PurT
- a4etx0Bg6SSlv9DITffk+7/VoeTQN5Cy7Xr4irljPwRiWz8OBP1fNGjij+nfIhwc5DwM Sw== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3awsmeu0ge-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 07 Sep 2021 04:11:27 -0400
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18783pgL115631;
- Tue, 7 Sep 2021 04:11:26 -0400
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3awsmeu0ej-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 07 Sep 2021 04:11:26 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 187887xk024391;
- Tue, 7 Sep 2021 08:11:24 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma05fra.de.ibm.com with ESMTP id 3av0e9354t-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 07 Sep 2021 08:11:24 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 187875Fg58130708
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 7 Sep 2021 08:07:05 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 86D52AE061;
- Tue,  7 Sep 2021 08:11:20 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D93E7AE056;
- Tue,  7 Sep 2021 08:11:17 +0000 (GMT)
-Received: from li-c7b85bcc-2727-11b2-a85c-a9ba7f3a2193.ibm.com (unknown
- [9.43.58.182]) by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  7 Sep 2021 08:11:17 +0000 (GMT)
-Subject: Re: [PATCH] powerpc/mce: Fix access error in mce handler
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <20210906081823.181509-1-ganeshgr@linux.ibm.com>
- <87y289natb.fsf@mpe.ellerman.id.au>
-From: Ganesh <ganeshgr@linux.ibm.com>
-Message-ID: <f14cb57a-5ae0-f867-1e18-004f34a3b320@linux.ibm.com>
-Date: Tue, 7 Sep 2021 13:41:14 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H3nvR255Jz2xfn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Sep 2021 00:38:40 +1000 (AEST)
+Received: by mail-pf1-x435.google.com with SMTP id y17so8304593pfl.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Sep 2021 07:38:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20210112;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=qhhCof7Bxt7WkPbfZU7ElxFgFbYJKUpmBYIoqT3FQG0=;
+ b=dDM249O1jyYEP+sPZcNiaaYYByaEMpzFEK/dirlDIZo1llr4qtiA9AwONG4gfWFxuh
+ GI+LHZeQL/xeGEQ7Yfkgt3/vvEePqhDwrmKdVjtWDvjOavLauOARfD2emyCkCFDIZ3e5
+ RZJODDFiVIiw9T1gza4f7jn3IWawg1iNUGGJLjWdnuO+yJ9asXLrHQr2+tGWyM13pjym
+ 1+byStjxJrGiqSwx/wJlrs7mmw75bxC4tAQmD1XUWS2Kmf6OB7eQm5ViyURea6XHmtW+
+ mck5xXQNXvsw8NgSA/A4XmTbdZUQ2dwVHhPiE7RfQH0O5+QpGIXptx+UdEU6zgDpgmg+
+ vWmQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=qhhCof7Bxt7WkPbfZU7ElxFgFbYJKUpmBYIoqT3FQG0=;
+ b=t+WkEE0IJt70aKWfeNH0/hQVktHQ7uLk278new1uToUo0xykFb/tRcq2tvAIoKy879
+ DeOpPbFTCabeF3OtLpNyjCTy/sIW17+L+QZdbheq6NJzD9cwLPEtoHHX4nvzZ8OcaEvX
+ cZoQMxfsvyHH/pUnKbjC5LReOwRSs7Rt1NBoNMAdKcu9e0FnPd3uDlYCroey8hWIZF9M
+ fHIaHds1DTFnhfgqBRcnq2eGFzfGxE35iRxM9WabltrqY+sIIXgHHam70bOavJTZpXKb
+ BzxqZK9wtpNEyHgmoF3g6DuQKPHWdZZevm61za4UvcSyjufgDX8CLQiOO9T2NBl62jkb
+ stoA==
+X-Gm-Message-State: AOAM531j6ZLaC2K88xWvkWbqhnGgH9DMEBFP1NWFwnkSeGqvt/gT2WVL
+ XtGcCA2TyDPhCIsGzHD4OJDOwg==
+X-Google-Smtp-Source: ABdhPJzl5tT+vIOlvAuqK2CqdOtw1QALWHjYejAcBedH1JDRDyFV2NrE6Q9L+J99MDm/UGDNVHbaHA==
+X-Received: by 2002:a63:c10b:: with SMTP id w11mr17484810pgf.228.1631025516087; 
+ Tue, 07 Sep 2021 07:38:36 -0700 (PDT)
+Received: from google.com (157.214.185.35.bc.googleusercontent.com.
+ [35.185.214.157])
+ by smtp.gmail.com with ESMTPSA id j6sm13428682pgq.0.2021.09.07.07.38.35
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 07 Sep 2021 07:38:35 -0700 (PDT)
+Date: Tue, 7 Sep 2021 14:38:31 +0000
+From: Sean Christopherson <seanjc@google.com>
+To: Paolo Bonzini <pbonzini@redhat.com>
+Subject: Re: [PATCH 1/5] KVM: rseq: Update rseq when processing NOTIFY_RESUME
+ on xfer to KVM guest
+Message-ID: <YTd5Z91j9N2LuuIr@google.com>
+References: <20210818001210.4073390-1-seanjc@google.com>
+ <20210818001210.4073390-2-seanjc@google.com>
+ <1673583543.19718.1629409152244.JavaMail.zimbra@efficios.com>
+ <YR7tzZ98XC6OV2vu@google.com>
+ <1872633041.20290.1629485463253.JavaMail.zimbra@efficios.com>
+ <425456d3-4772-2a1b-9cf3-a5b750b95c2e@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <87y289natb.fsf@mpe.ellerman.id.au>
-Content-Type: multipart/alternative;
- boundary="------------915519113E99BF591FB6FD99"
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: bGJ4XgMcJvPRW49dIkGsx0E--Kyhd_Tb
-X-Proofpoint-ORIG-GUID: PUnMjB4-1jB6lr8F75IFW5k3mnc1jX3K
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
- definitions=2021-09-07_02:2021-09-03,
- 2021-09-07 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0
- mlxlogscore=999 suspectscore=0 lowpriorityscore=0 mlxscore=0 bulkscore=0
- adultscore=0 clxscore=1015 spamscore=0 priorityscore=1501 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2108310000
- definitions=main-2109070053
-X-Mailman-Approved-At: Tue, 07 Sep 2021 22:43:44 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <425456d3-4772-2a1b-9cf3-a5b750b95c2e@redhat.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,288 +96,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mahesh@linux.ibm.com, npiggin@gmail.com
+Cc: KVM list <kvm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Will Deacon <will@kernel.org>,
+ Guo Ren <guoren@kernel.org>, linux-kselftest <linux-kselftest@vger.kernel.org>,
+ Ben Gardon <bgardon@google.com>, shuah <shuah@kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Shakeel Butt <shakeelb@google.com>,
+ gor <gor@linux.ibm.com>, "Russell King, ARM Linux" <linux@armlinux.org.uk>,
+ linux-csky <linux-csky@vger.kernel.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ linux-mips <linux-mips@vger.kernel.org>, Boqun Feng <boqun.feng@gmail.com>,
+ paulmck <paulmck@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
+ rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Peter Foley <pefoley@google.com>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Oleg Nesterov <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a multi-part message in MIME format.
---------------915519113E99BF591FB6FD99
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Mon, Sep 06, 2021, Paolo Bonzini wrote:
+> On 20/08/21 20:51, Mathieu Desnoyers wrote:
+> > > Ah, or is it the case that rseq_cs is non-NULL if and only if userspace is in an
+> > > rseq critical section, and because syscalls in critical sections are illegal, by
+> > > definition clearing rseq_cs is a nop unless userspace is misbehaving.
+> > Not quite, as I described above. But we want it to stay set so the CONFIG_DEBUG_RSEQ
+> > code executed when returning from ioctl to userspace will be able to validate that
+> > it is not nested within a rseq critical section.
+> > 
+> > > If that's true, what about explicitly checking that at NOTIFY_RESUME?  Or is it
+> > > not worth the extra code to detect an error that will likely be caught anyways?
+> > The error will indeed already be caught on return from ioctl to userspace, so I
+> > don't see any added value in duplicating this check.
+> 
+> Sean, can you send a v2 (even for this patch only would be okay)?
 
+Made it all the way to v3 while you were out :-)
 
-On 9/6/21 6:03 PM, Michael Ellerman wrote:
-
-> Ganesh Goudar <ganeshgr@linux.ibm.com> writes:
->> We queue an irq work for deferred processing of mce event
->> in realmode mce handler, where translation is disabled.
->> Queuing of the work may result in accessing memory outside
->> RMO region, such access needs the translation to be enabled
->> for an LPAR running with hash mmu else the kernel crashes.
->>
->> So enable the translation before queuing the work.
->>
->> Without this change following trace is seen on injecting machine
->> check error in an LPAR running with hash mmu.
-> What type of error are you injecting?
-
-SLB multihit in kernel mode.
-
->
->> Oops: Kernel access of bad area, sig: 11 [#1]
->> LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
->> CPU: 5 PID: 1883 Comm: insmod Tainted: G        OE     5.14.0-mce+ #137
->> NIP:  c000000000735d60 LR: c000000000318640 CTR: 0000000000000000
->> REGS: c00000001ebff9a0 TRAP: 0300   Tainted: G       OE      (5.14.0-mce+)
->> MSR:  8000000000001003 <SF,ME,RI,LE>  CR: 28008228  XER: 00000001
->> CFAR: c00000000031863c DAR: c00000027fa8fe08 DSISR: 40000000 IRQMASK: 0
->> GPR00: c0000000003186d0 c00000001ebffc40 c000000001b0df00 c0000000016337e8
->> GPR04: c0000000016337e8 c00000027fa8fe08 0000000000000023 c0000000016337f0
->> GPR08: 0000000000000023 c0000000012ffe08 0000000000000000 c008000001460240
->> GPR12: 0000000000000000 c00000001ec9a900 c00000002ac4bd00 0000000000000000
->> GPR16: 00000000000005a0 c0080000006b0000 c0080000006b05a0 c000000000ff3068
->> GPR20: c00000002ac4bbc0 0000000000000001 c00000002ac4bbc0 c008000001490298
->> GPR24: c008000001490108 c000000001636198 c008000001470090 c008000001470058
->> GPR28: 0000000000000510 c008000001000000 c008000008000019 0000000000000019
->> NIP [c000000000735d60] llist_add_batch+0x0/0x40
->> LR [c000000000318640] __irq_work_queue_local+0x70/0xc0
->> Call Trace:
->> [c00000001ebffc40] [c00000001ebffc0c] 0xc00000001ebffc0c (unreliable)
->> [c00000001ebffc60] [c0000000003186d0] irq_work_queue+0x40/0x70
->> [c00000001ebffc80] [c00000000004425c] machine_check_queue_event+0xbc/0xd0
->> [c00000001ebffcf0] [c00000000000838c] machine_check_early_common+0x16c/0x1f4
->>
->> Fixes: 74c3354bc1d89 ("powerpc/pseries/mce: restore msr before returning from handler")
-> Please explain in more detail why that commit caused this breakage.
-
-After enabling translation in mce_handle_error() we used to leave it enabled to avoid
-crashing here, but now with this commit we are restoring the MSR to disable translation.
-Missed to mention it in commit log, I will add it.
-
->
->> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
->> index 47a683cd00d2..9d1e39d42e3e 100644
->> --- a/arch/powerpc/kernel/mce.c
->> +++ b/arch/powerpc/kernel/mce.c
->> @@ -249,6 +249,7 @@ void machine_check_queue_event(void)
->>   {
->>   	int index;
->>   	struct machine_check_event evt;
->> +	unsigned long msr;
->>   
->>   	if (!get_mce_event(&evt, MCE_EVENT_RELEASE))
->>   		return;
->> @@ -262,8 +263,19 @@ void machine_check_queue_event(void)
->>   	memcpy(&local_paca->mce_info->mce_event_queue[index],
->>   	       &evt, sizeof(evt));
->>   
->> -	/* Queue irq work to process this event later. */
->> -	irq_work_queue(&mce_event_process_work);
->> +	/* Queue irq work to process this event later. Before
->> +	 * queuing the work enable translation for non radix LPAR,
->> +	 * as irq_work_queue may try to access memory outside RMO
->> +	 * region.
->> +	 */
->> +	if (!radix_enabled() && firmware_has_feature(FW_FEATURE_LPAR)) {
->> +		msr = mfmsr();
->> +		mtmsr(msr | MSR_IR | MSR_DR);
->> +		irq_work_queue(&mce_event_process_work);
->> +		mtmsr(msr);
->> +	} else {
->> +		irq_work_queue(&mce_event_process_work);
->> +	}
->>   }
-> We already went to virtual mode and queued (different) irq work in
-> arch/powerpc/platforms/pseries/ras.c:mce_handle_error()
->
-> We also called save_mce_event() which also might have queued irq work,
-> via machine_check_ue_event().
->
-> So it really feels like something about the design is wrong if we have
-> to go to virtual mode again and queue more irq work here.
->
-> I guess we can probably merge this as a backportable fix, doing anything
-> else would be a bigger change.
-
-I agree.
-
->
-> Looking at ras.c there's the comment:
->
-> 	 * Enable translation as we will be accessing per-cpu variables
-> 	 * in save_mce_event() which may fall outside RMO region, also
->
-> But AFAICS it's only irq_work_queue() that touches anything percpu?
-
-Yeah, we left the comment unchanged after doing some modifications around it,
-It needs to be updated, ill send a separate patch for it.
-
->
-> So maybe we should just not be using irq_work_queue(). It's a pretty
-> thin wrapper around set_dec(1), perhaps we just need to hand-roll some
-> real-mode friendly way of doing that.
-
-You mean, have separate queue and run the work from timer handler?
-
->
-> cheers
-
---------------915519113E99BF591FB6FD99
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <p><br>
-    </p>
-    <div class="moz-cite-prefix">
-      <pre>On 9/6/21 6:03 PM, Michael Ellerman wrote:</pre>
-    </div>
-    <blockquote type="cite" cite="mid:87y289natb.fsf@mpe.ellerman.id.au">
-      <pre class="moz-quote-pre" wrap="">Ganesh Goudar <a class="moz-txt-link-rfc2396E" href="mailto:ganeshgr@linux.ibm.com">&lt;ganeshgr@linux.ibm.com&gt;</a> writes:
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">We queue an irq work for deferred processing of mce event
-in realmode mce handler, where translation is disabled.
-Queuing of the work may result in accessing memory outside
-RMO region, such access needs the translation to be enabled
-for an LPAR running with hash mmu else the kernel crashes.
-
-So enable the translation before queuing the work.
-
-Without this change following trace is seen on injecting machine
-check error in an LPAR running with hash mmu.
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-What type of error are you injecting?</pre>
-    </blockquote>
-    <pre>SLB multihit in kernel mode.</pre>
-    <blockquote type="cite" cite="mid:87y289natb.fsf@mpe.ellerman.id.au">
-      <pre class="moz-quote-pre" wrap="">
-
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">Oops: Kernel access of bad area, sig: 11 [#1]
-LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
-CPU: 5 PID: 1883 Comm: insmod Tainted: G        OE     5.14.0-mce+ #137
-NIP:  c000000000735d60 LR: c000000000318640 CTR: 0000000000000000
-REGS: c00000001ebff9a0 TRAP: 0300   Tainted: G       OE      (5.14.0-mce+)
-MSR:  8000000000001003 &lt;SF,ME,RI,LE&gt;  CR: 28008228  XER: 00000001
-CFAR: c00000000031863c DAR: c00000027fa8fe08 DSISR: 40000000 IRQMASK: 0
-GPR00: c0000000003186d0 c00000001ebffc40 c000000001b0df00 c0000000016337e8
-GPR04: c0000000016337e8 c00000027fa8fe08 0000000000000023 c0000000016337f0
-GPR08: 0000000000000023 c0000000012ffe08 0000000000000000 c008000001460240
-GPR12: 0000000000000000 c00000001ec9a900 c00000002ac4bd00 0000000000000000
-GPR16: 00000000000005a0 c0080000006b0000 c0080000006b05a0 c000000000ff3068
-GPR20: c00000002ac4bbc0 0000000000000001 c00000002ac4bbc0 c008000001490298
-GPR24: c008000001490108 c000000001636198 c008000001470090 c008000001470058
-GPR28: 0000000000000510 c008000001000000 c008000008000019 0000000000000019
-NIP [c000000000735d60] llist_add_batch+0x0/0x40
-LR [c000000000318640] __irq_work_queue_local+0x70/0xc0
-Call Trace:
-[c00000001ebffc40] [c00000001ebffc0c] 0xc00000001ebffc0c (unreliable)
-[c00000001ebffc60] [c0000000003186d0] irq_work_queue+0x40/0x70
-[c00000001ebffc80] [c00000000004425c] machine_check_queue_event+0xbc/0xd0
-[c00000001ebffcf0] [c00000000000838c] machine_check_early_common+0x16c/0x1f4
-
-Fixes: 74c3354bc1d89 ("powerpc/pseries/mce: restore msr before returning from handler")
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-Please explain in more detail why that commit caused this breakage.</pre>
-    </blockquote>
-    <pre>After enabling translation in mce_handle_error() we used to leave it enabled to avoid
-crashing here, but now with this commit we are restoring the MSR to disable translation.
-Missed to mention it in commit log, I will add it.</pre>
-    <blockquote type="cite" cite="mid:87y289natb.fsf@mpe.ellerman.id.au">
-      <pre class="moz-quote-pre" wrap="">
-
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index 47a683cd00d2..9d1e39d42e3e 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -249,6 +249,7 @@ void machine_check_queue_event(void)
- {
- 	int index;
- 	struct machine_check_event evt;
-+	unsigned long msr;
- 
- 	if (!get_mce_event(&amp;evt, MCE_EVENT_RELEASE))
- 		return;
-@@ -262,8 +263,19 @@ void machine_check_queue_event(void)
- 	memcpy(&amp;local_paca-&gt;mce_info-&gt;mce_event_queue[index],
- 	       &amp;evt, sizeof(evt));
- 
--	/* Queue irq work to process this event later. */
--	irq_work_queue(&amp;mce_event_process_work);
-+	/* Queue irq work to process this event later. Before
-+	 * queuing the work enable translation for non radix LPAR,
-+	 * as irq_work_queue may try to access memory outside RMO
-+	 * region.
-+	 */
-+	if (!radix_enabled() &amp;&amp; firmware_has_feature(FW_FEATURE_LPAR)) {
-+		msr = mfmsr();
-+		mtmsr(msr | MSR_IR | MSR_DR);
-+		irq_work_queue(&amp;mce_event_process_work);
-+		mtmsr(msr);
-+	} else {
-+		irq_work_queue(&amp;mce_event_process_work);
-+	}
- }
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-We already went to virtual mode and queued (different) irq work in
-arch/powerpc/platforms/pseries/ras.c:mce_handle_error()
-
-We also called save_mce_event() which also might have queued irq work,
-via machine_check_ue_event().
-
-So it really feels like something about the design is wrong if we have
-to go to virtual mode again and queue more irq work here.
-
-I guess we can probably merge this as a backportable fix, doing anything
-else would be a bigger change.</pre>
-    </blockquote>
-    <pre>I agree.
-</pre>
-    <blockquote type="cite" cite="mid:87y289natb.fsf@mpe.ellerman.id.au">
-      <pre class="moz-quote-pre" wrap="">
-
-Looking at ras.c there's the comment:
-
-	 * Enable translation as we will be accessing per-cpu variables
-	 * in save_mce_event() which may fall outside RMO region, also
-
-But AFAICS it's only irq_work_queue() that touches anything percpu?</pre>
-    </blockquote>
-    <pre>Yeah, we left the comment unchanged after doing some modifications around it,
-It needs to be updated, ill send a separate patch for it. 
-</pre>
-    <blockquote type="cite" cite="mid:87y289natb.fsf@mpe.ellerman.id.au">
-      <pre class="moz-quote-pre" wrap="">
-
-So maybe we should just not be using irq_work_queue(). It's a pretty
-thin wrapper around set_dec(1), perhaps we just need to hand-roll some
-real-mode friendly way of doing that.</pre>
-    </blockquote>
-    <pre>You mean, have separate queue and run the work from timer handler?  
-</pre>
-    <blockquote type="cite" cite="mid:87y289natb.fsf@mpe.ellerman.id.au">
-      <pre class="moz-quote-pre" wrap="">
-
-cheers
-</pre>
-    </blockquote>
-  </body>
-</html>
-
---------------915519113E99BF591FB6FD99--
-
+https://lkml.kernel.org/r/20210901203030.1292304-1-seanjc@google.com
