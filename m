@@ -2,82 +2,108 @@ Return-Path: <SRS0=K8Qv=N6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E009AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 10:18:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB2B2C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 10:47:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 06FAE61132
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 10:18:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 06FAE61132
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1257961104
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 10:47:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1257961104
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H4J5932x3z304j
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 20:18:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H4Jjk25w5z2ynM
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 20:47:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=GsTHxmt7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tE8QpkXA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42d;
- helo=mail-pf1-x42d.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=GsTHxmt7; dkim-atps=neutral
-Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com
- [IPv6:2607:f8b0:4864:20::42d])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=tE8QpkXA; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H4J3g3QCZz2yHJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Sep 2021 20:17:33 +1000 (AEST)
-Received: by mail-pf1-x42d.google.com with SMTP id e16so1628226pfc.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Sep 2021 03:17:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=XJL6i+YCXvCo5U+3ydR+e/rNKFY7FEPlcahYujkfk38=;
- b=GsTHxmt7/p0l7lRb3A8EU9YOngEBaP/k7avWA0s8IGPIgRutpXhKuVMVx9hdwn6MtX
- aijnWx0rKArojVNf997GWPApjUz06PzUNhk8jdFUkXur36htDJIM5YokkqLBQZooiAXX
- pYbVwmm43MvFOVLZTKAMG0tRls2km1S6n3KEu/39ALHSwGqEk1Mp+iASv5wWj3yrgZBv
- xDXB9qv2seGhd5wcryuwcSXCc3T/iBCWocoDxAwWUQYLFhQlYQvqTlornNewy5rP3SiK
- BeE8ZkEUstHDTt/S9XHw3he163PtdZdj2rnet2UIPHLKlqUFOYdAe4y1frrnLlLyQK8l
- 04bQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=XJL6i+YCXvCo5U+3ydR+e/rNKFY7FEPlcahYujkfk38=;
- b=tUMSvb7nomZjxekkxnJTJURIJEjRwAWGGjXvTA7wLSzaAxG1xpSBCOh5HXSA/xTuZ9
- nr0qkwGek8CH3lcT03fnXy8U+Rtpnfb2JDRW6gePjKBOE+aff81Pkr3Edh+0wLWWx8Ni
- dN6Gxjlm5nA0zky0v5TSSJ9fiMi2xUE+EP5FXGWZRkHGMjyjwCrNBFswnwJQx/AT0rND
- T30KwUwlblZS9ZYPPKvl7tYWsjzW96tlWT8ZifZhtZOqzxSs92nO3qHxGWRzLR81MCT+
- wlbPlXYz4emZ/OBtA/A3z1Z5hE5yKn5/M4NUpC6CJx2mLpc/K7tEI6bVK1vdU1BR2xg8
- Q+6Q==
-X-Gm-Message-State: AOAM5315CASeKUZU3bRd1hPZqjGaRqCeOdW7l9JbWPlYECB2ucrFFgU/
- v/AgXCUSoUmjSoMLmXNw+8fnNviQ47M=
-X-Google-Smtp-Source: ABdhPJziM6Ow0sUvG+SQ6pzjdoiUoFSffznbPeovqLT8kJ7D3AiFrv6xbYsegIKORt/mF7lwG/K1PA==
-X-Received: by 2002:a63:b40a:: with SMTP id s10mr2986935pgf.481.1631096248831; 
- Wed, 08 Sep 2021 03:17:28 -0700 (PDT)
-Received: from bobo.ibm.com (115-64-207-17.tpgi.com.au. [115.64.207.17])
- by smtp.gmail.com with ESMTPSA id bj13sm1722019pjb.28.2021.09.08.03.17.26
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 08 Sep 2021 03:17:28 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v1 1/2] powerpc/64s: system call rfscv workaround for TM bugs
-Date: Wed,  8 Sep 2021 20:17:17 +1000
-Message-Id: <20210908101718.118522-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.23.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H4Jhw22Pcz2yHP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Sep 2021 20:46:23 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id
+ 188AYM8W007749; Wed, 8 Sep 2021 06:46:11 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : content-type :
+ mime-version; s=pp1; bh=Bf1jLT0XZ2n0j8yKCerL0h64crrSOksW2ucsLj/LGGg=;
+ b=tE8QpkXA80ZTCkAmqrc34c+F5IdNNtZ6n/g/pvPmUIvs4+RBZQJfzNcs7Wj6VtrfwtR4
+ SHZEBp9/rWnyVCfiM5FObFIXAz1Euy6tUr5U0YNb3h6nr3T2Wz7tBxzTU8Qtr9NkhR62
+ pfQMg/N78GyFtr9FllF9krsGtU/vUysaYhomub3gmPu/bR8+xni1OuSJbifqag7bsevl
+ 9P+sGAQj3WCqZa/jbBNWOyCEGmCB3TDGncEjwFO+Cawg9YVvnbXHgdampJIT+DmuASUQ
+ wlp7yrqPa13xiMHtOYPlXp6DK0TErKIjKlSoG2ArAk57YE1wneVKzoR+FLKiDTKl6Qce tw== 
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3axhcendy3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 08 Sep 2021 06:46:11 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 188AhPVM025426;
+ Wed, 8 Sep 2021 10:46:09 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma04ams.nl.ibm.com with ESMTP id 3axcnp7gh3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 08 Sep 2021 10:46:09 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 188Ak6Z445023498
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 8 Sep 2021 10:46:06 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EE942AE05D;
+ Wed,  8 Sep 2021 10:46:05 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6D3EAAE051;
+ Wed,  8 Sep 2021 10:46:02 +0000 (GMT)
+Received: from vajain21.in.ibm.com (unknown [9.43.55.200])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Wed,  8 Sep 2021 10:46:02 +0000 (GMT)
+Received: by vajain21.in.ibm.com (sSMTP sendmail emulation);
+ Wed, 08 Sep 2021 16:16:01 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Shivaprasad G Bhat
+ <sbhat@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH v2] powerpc/papr_scm: Move duplicate definitions to
+ common header files
+In-Reply-To: <87sfyfmzhh.fsf@mpe.ellerman.id.au>
+References: <163092037510.812.12838160593592476913.stgit@82313cf9f602>
+ <87sfyfmzhh.fsf@mpe.ellerman.id.au>
+Date: Wed, 08 Sep 2021 16:16:00 +0530
+Message-ID: <878s07s5uf.fsf@vajain21.in.ibm.com>
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: KhecTvEg0T7ZqrdissAhXJUgmvbPa4ZT
+X-Proofpoint-ORIG-GUID: KhecTvEg0T7ZqrdissAhXJUgmvbPa4ZT
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391, 18.0.790
+ definitions=2021-09-08_05:2021-09-07,
+ 2021-09-08 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=999
+ priorityscore=1501 adultscore=0 phishscore=0 impostorscore=0 clxscore=1011
+ mlxscore=0 malwarescore=0 suspectscore=0 lowpriorityscore=0 spamscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2109030001 definitions=main-2109080067
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,53 +115,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Eirik Fuller <efuller@redhat.com>, kvm-ppc@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: nvdimm@lists.linux.dev, dan.j.williams@intel.com, sbhat@linux.ibm.com,
+ aneesh.kumar@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The rfscv instruction does not work correctly with the fake-suspend mode
-in POWER9, which can end up with the hypervisor restoring an incorrect
-checkpoint.
+Hi Mpe,
 
-Work around this by setting the _TIF_RESTOREALL flag if a system call
-returns to a transaction active state, causing rfid to be used instead
-of rfscv to return, which will do the right thing. The contents of the
-registers are irrelevant because they will be overwritten in this case
-anyway.
+Thanks for looking into this patch.
 
-Reported-by: Eirik Fuller <efuller@redhat.com>
-Fixes: 7fa95f9adaee7 ("powerpc/64s: system call support for scv/rfscv instructions")
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/interrupt.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
-index c77c80214ad3..917a2ac4def6 100644
---- a/arch/powerpc/kernel/interrupt.c
-+++ b/arch/powerpc/kernel/interrupt.c
-@@ -139,6 +139,19 @@ notrace long system_call_exception(long r3, long r4, long r5,
- 	 */
- 	irq_soft_mask_regs_set_state(regs, IRQS_ENABLED);
- 
-+	/*
-+	 * If system call is called with TM active, set _TIF_RESTOREALL to
-+	 * prevent RFSCV being used to return to userspace, because POWER9
-+	 * TM implementation has problems with this instruction returning to
-+	 * transactional state. Final register values are not relevant because
-+	 * the transaction will be aborted upon return anyway. Or in the case
-+	 * of unsupported_scv SIGILL fault, the return state does not much
-+	 * matter because it's an edge case.
-+	 */
-+	if (IS_ENABLED(CONFIG_PPC_TRANSACTIONAL_MEM) &&
-+			unlikely(MSR_TM_TRANSACTIONAL(regs->msr)))
-+		current_thread_info()->flags |= _TIF_RESTOREALL;
-+
- 	/*
- 	 * If the system call was made with a transaction active, doom it and
- 	 * return without performing the system call. Unless it was an
+> Shivaprasad G Bhat <sbhat@linux.ibm.com> writes:
+>> papr_scm and ndtest share common PDSM payload structs like
+>> nd_papr_pdsm_health. Presently these structs are duplicated across papr_pdsm.h
+>> and ndtest.h header files. Since 'ndtest' is essentially arch independent and can
+>> run on platforms other than PPC64, a way needs to be deviced to avoid redundancy
+>> and duplication of PDSM structs in future.
+>>
+>> So the patch proposes moving the PDSM header from arch/powerpc/include/uapi/ to
+>> the generic include/uapi/linux directory. Also, there are some #defines common
+>> between papr_scm and ndtest which are not exported to the user space. So, move
+>> them to a header file which can be shared across ndtest and papr_scm via newly
+>> introduced include/linux/papr_scm.h.
+>>
+>> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+>> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+>> Suggested-by: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+>> ---
+>> Changelog:
+>>
+>> Since v1:
+>> Link: https://patchwork.kernel.org/project/linux-nvdimm/patch/162505488483.72147.12741153746322191381.stgit@56e104a48989/
+>> * Removed dependency on this patch for the other patches
+>>
+>>  MAINTAINERS                               |    2 
+>>  arch/powerpc/include/uapi/asm/papr_pdsm.h |  165 -----------------------------
+>>  arch/powerpc/platforms/pseries/papr_scm.c |   43 --------
+>>  include/linux/papr_scm.h                  |   48 ++++++++
+>>  include/uapi/linux/papr_pdsm.h            |  165 +++++++++++++++++++++++++++++
+>
+> This doesn't make sense to me.
+>
+> Anything with papr (or PAPR) in the name is fundamentally powerpc
+> specific, it doesn't belong in a generic header, or in a generic
+> location.
+>
+> What's the actual problem you're trying to solve?
+>
+The ndtest module (tools/testing/nvdimm/test/ndtest.c) is implemented in
+an arch independed way to enable testing of PAPR PDSMs on non ppc64
+platforms like x86_64. It uses the same PDSM structs as used by papr_scm
+to communicate with libndctl userspace. 
+
+Since papr_scm is ppc64 arch specific we were so far duplicating the
+PDSM structures between ndtest and papr_scm. The patch tries to solve
+this duplication by moving the shared structs to arch independent common
+include dirs.
+
+Secondly, PDSMs describes how userspace can use NVDIMM_FAMILY_PAPR to
+interact with NVDIMMs. So potentially a new NVDIMM beyond powerpc arch
+can add its support and would need access to the same structs used by
+papr_scm and ndtest. In that context it would make sense to move PDSM
+headers to generic include dirs.
+
+> If it's just including papr_scm bits into ndtest.c then that should be
+> as simple as:
+>
+> #ifdef __powerpc__
+> #include <asm/papr_scm.h>
+> #endif
+>
+> Shouldn't it?
+>
+No, as ndtest implements support for NVDIMM_FAMILY_PAPR and would need
+access to PDSM related structs which presently are only available for
+powerpc.
+
+> cheers
+>
+
 -- 
-2.23.0
-
+Cheers
+~ Vaibhav
