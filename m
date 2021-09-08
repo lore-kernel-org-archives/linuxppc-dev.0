@@ -7,42 +7,42 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF8FFC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 07:28:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD300C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 07:29:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 710D361078
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 07:28:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 710D361078
+	by mail.kernel.org (Postfix) with ESMTPS id 2F08D61078
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 07:29:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2F08D61078
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baidu.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H4DK119ylz3cC9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 17:28:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H4DKS69dyz3cJt
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 17:29:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baidu.com (client-ip=111.202.115.85; helo=baidu.com;
  envelope-from=caihuoqing@baidu.com; receiver=<UNKNOWN>)
 Received: from baidu.com (mx20.baidu.com [111.202.115.85])
- by lists.ozlabs.org (Postfix) with ESMTP id 4H4DJD5gBnz3bhf
+ by lists.ozlabs.org (Postfix) with ESMTP id 4H4DJD649xz2yfn
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Sep 2021 17:28:12 +1000 (AEST)
-Received: from BC-Mail-Ex29.internal.baidu.com (unknown [172.31.51.23])
- by Forcepoint Email with ESMTPS id 742E91BCB78B461E2E17;
- Wed,  8 Sep 2021 15:11:41 +0800 (CST)
+Received: from BC-Mail-Ex27.internal.baidu.com (unknown [172.31.51.21])
+ by Forcepoint Email with ESMTPS id 6A44F5619AF682181CA5;
+ Wed,  8 Sep 2021 15:11:48 +0800 (CST)
 Received: from BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) by
- BC-Mail-Ex29.internal.baidu.com (172.31.51.23) with Microsoft SMTP Server
+ BC-Mail-Ex27.internal.baidu.com (172.31.51.21) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2242.12; Wed, 8 Sep 2021 15:11:41 +0800
+ 15.1.2176.2; Wed, 8 Sep 2021 15:11:48 +0800
 Received: from LAPTOP-UKSR4ENP.internal.baidu.com (172.31.63.8) by
  BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2308.14; Wed, 8 Sep 2021 15:11:40 +0800
+ 15.1.2308.14; Wed, 8 Sep 2021 15:11:47 +0800
 From: Cai Huoqing <caihuoqing@baidu.com>
 To: <caihuoqing@baidu.com>
-Subject: [PATCH] soc: ixp4xx/qmgr: Make use of the helper function
+Subject: [PATCH] soc: sunxi_sram: Make use of the helper function
  devm_platform_ioremap_resource()
-Date: Wed, 8 Sep 2021 15:11:14 +0800
-Message-ID: <20210908071123.348-4-caihuoqing@baidu.com>
+Date: Wed, 8 Sep 2021 15:11:16 +0800
+Message-ID: <20210908071123.348-6-caihuoqing@baidu.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20210908071123.348-1-caihuoqing@baidu.com>
 References: <20210908071123.348-1-caihuoqing@baidu.com>
@@ -88,27 +88,30 @@ separately
 
 Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
 ---
- drivers/soc/ixp4xx/ixp4xx-qmgr.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/soc/sunxi/sunxi_sram.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/soc/ixp4xx/ixp4xx-qmgr.c b/drivers/soc/ixp4xx/ixp4xx-qmgr.c
-index 9154c7029b05..72b5a10e3104 100644
---- a/drivers/soc/ixp4xx/ixp4xx-qmgr.c
-+++ b/drivers/soc/ixp4xx/ixp4xx-qmgr.c
-@@ -377,13 +377,9 @@ static int ixp4xx_qmgr_probe(struct platform_device *pdev)
- 	int i, err;
- 	irq_handler_t handler1, handler2;
- 	struct device *dev = &pdev->dev;
+diff --git a/drivers/soc/sunxi/sunxi_sram.c b/drivers/soc/sunxi/sunxi_sram.c
+index 42833e33a96c..a8f3876963a0 100644
+--- a/drivers/soc/sunxi/sunxi_sram.c
++++ b/drivers/soc/sunxi/sunxi_sram.c
+@@ -331,7 +331,6 @@ static struct regmap_config sunxi_sram_emac_clock_regmap = {
+ 
+ static int sunxi_sram_probe(struct platform_device *pdev)
+ {
 -	struct resource *res;
- 	int irq1, irq2;
+ 	struct dentry *d;
+ 	struct regmap *emac_clock;
+ 	const struct sunxi_sramc_variant *variant;
+@@ -342,8 +341,7 @@ static int sunxi_sram_probe(struct platform_device *pdev)
+ 	if (!variant)
+ 		return -EINVAL;
  
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!res)
--		return -ENODEV;
--	qmgr_regs = devm_ioremap_resource(dev, res);
-+	qmgr_regs = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(qmgr_regs))
- 		return PTR_ERR(qmgr_regs);
+-	base = devm_ioremap_resource(&pdev->dev, res);
++	base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(base))
+ 		return PTR_ERR(base);
  
 -- 
 2.25.1
