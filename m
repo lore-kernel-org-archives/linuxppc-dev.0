@@ -2,75 +2,85 @@ Return-Path: <SRS0=K8Qv=N6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4472CC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 09:28:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29E8AC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 10:18:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A2B8B61158
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 09:28:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A2B8B61158
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 25B2E61132
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 10:18:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 25B2E61132
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H4Gyw6NXkz2ynn
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 19:28:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H4J4Q4D9zz2ymv
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 20:18:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=cvLwcnMF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=d1FDrK4D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436;
+ helo=mail-pf1-x436.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=cvLwcnMF; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=d1FDrK4D; dkim-atps=neutral
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com
+ [IPv6:2607:f8b0:4864:20::436])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H4Gy40rLQz2xtY
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Sep 2021 19:27:36 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=XkMsv0U5b8POCiXTPKYIykquQ4WRiqRp/+CywSEeQKM=; b=cvLwcnMFIGRllbKwXrEE+bZePC
- SYvAY+GPndlL+z/BcUJ5g7TXR6D+jeHVQwudTo2w1fts68ld4gkSXBWBDP8SDpbQo3/Gu1Ju2rxSa
- 88VOQH2p6jhfjx6OjpoxugebWvkdYzRT+t3JOT83V/fEFHSXf6zkibnsgNIGH1X6RV5Zdo3kvZYeN
- JWNLj2Uo4fevyhsDOSzFQPF/YfDMDDcQccDOypH0pbyyPdXBPGqwUynNSVCuE66r0AE1txVfiYvYB
- zdYHsarQN8cplUpL3q+ADQW2Df6fofzCT0p8uI9x66u+CKrT0XAfYBoLEc78n80+fy6YfBczbiEsD
- JV9U0Csg==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1mNtqG-008gZD-Tx; Wed, 08 Sep 2021 09:26:15 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 0975F300454;
- Wed,  8 Sep 2021 11:26:01 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 90263212EAB70; Wed,  8 Sep 2021 11:26:01 +0200 (CEST)
-Date: Wed, 8 Sep 2021 11:26:01 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/3] perf: Add macros to specify onchip L2/L3 accesses
-Message-ID: <YTiBqbxe7ieqY2OE@hirez.programming.kicks-ass.net>
-References: <20210904064932.307610-1-kjain@linux.ibm.com>
- <87ilzbmt7i.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H4J3g38Tbz2xsN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Sep 2021 20:17:33 +1000 (AEST)
+Received: by mail-pf1-x436.google.com with SMTP id q22so1669901pfu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Sep 2021 03:17:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=sZpvq7x2lHuZWsil0sfaEPemJ8g24kmEc0HiGKQSHYo=;
+ b=d1FDrK4DwZVEKSJ+CCu2erJOj3mUVKWHDH4jl0iZnD/kwWvbrAenl2iXvHL4U795hF
+ STP8lnfwJzuw2GSezB2N6ayq8FbHEQnacWEOA4mkLCyAzGflTBviGZ1dYKxihLUHRdBT
+ VYjzuVytNWpwMIx64AOihV2JCvvadFbvO0OtSi5uwGfePngQZfQdcFyBKTtypZV46qNM
+ fDXYfbyt7ATTqwIkBZUfAypXbw6nfr4o4YwgMVHEc6e1tPW4cOimTHvx88goHbV23EVU
+ EoIElQcP4Vsv7dPsb2x+aogFTWVO4i33C0eIUIiBxQYcXlqf//baRBqY0uAIq+A3Z1ej
+ 4bxQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=sZpvq7x2lHuZWsil0sfaEPemJ8g24kmEc0HiGKQSHYo=;
+ b=yuLH8GrqagvxK8N5gHTS8ZQ1MRwOZ1jlDPTJrNO9uxx+4VXSv34A2G6GIA18URqc0m
+ Ghg7EPKvywDgfz5zQdFGsYS67z+3T97dxqwBZ2li+UcFu+U8Mhn1S+A9lrZr9ByQMx+I
+ ygrU5bFAV3Vk0465bPqG8N76CtgKtdkhoDdUcN/IOHpUm2mkWQP0//kZg7ApL4IFnV/B
+ OmoOP/X9o0udIG4P3icdNe7Kf9HMYKStdIVW1RSiMwpxJPkSdpvwFyXk7ic3OpDddbIE
+ U7nxvTot9hnuBKjhuWd8Ml4SVDEA7e+TDUOVo2zLheVDK8osyip7sF4N/cP93/9wctrM
+ oL/A==
+X-Gm-Message-State: AOAM533XWHHHuVZOjhyQn+jYytzdnND1uOM8mMMteja22yit5aO0GSmW
+ I3v6OsdO2Oxv9VAU0P0DMHovNemKvO0=
+X-Google-Smtp-Source: ABdhPJyiU+4j19v7oPN6Tl7GXyP+OVn/YtiRXqPOSVzWdoiB0Z3l1smI2rJU0h0lE/IZQupm+24FrQ==
+X-Received: by 2002:a63:1358:: with SMTP id 24mr2913654pgt.327.1631096251508; 
+ Wed, 08 Sep 2021 03:17:31 -0700 (PDT)
+Received: from bobo.ibm.com (115-64-207-17.tpgi.com.au. [115.64.207.17])
+ by smtp.gmail.com with ESMTPSA id bj13sm1722019pjb.28.2021.09.08.03.17.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 08 Sep 2021 03:17:31 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v1 2/2] KVM: PPC: Book3S HV: Tolerate treclaim. in
+ fake-suspend mode changing registers
+Date: Wed,  8 Sep 2021 20:17:18 +1000
+Message-Id: <20210908101718.118522-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20210908101718.118522-1-npiggin@gmail.com>
+References: <20210908101718.118522-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87ilzbmt7i.fsf@mpe.ellerman.id.au>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,86 +92,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, atrajeev@linux.vnet.ibm.com, ak@linux.intel.com,
- daniel@iogearbox.net, rnsastry@linux.ibm.com,
- alexander.shishkin@linux.intel.com, Kajol Jain <kjain@linux.ibm.com>,
- linux-kernel@vger.kernel.org, acme@kernel.org, ast@kernel.org,
- linux-perf-users@vger.kernel.org, yao.jin@linux.intel.com, mingo@redhat.com,
- paulus@samba.org, maddy@linux.ibm.com, jolsa@kernel.org, namhyung@kernel.org,
- songliubraving@fb.com, linuxppc-dev@lists.ozlabs.org,
- kan.liang@linux.intel.com
+Cc: Eirik Fuller <efuller@redhat.com>, kvm-ppc@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Sep 08, 2021 at 05:17:53PM +1000, Michael Ellerman wrote:
-> Kajol Jain <kjain@linux.ibm.com> writes:
+POWER9 DD2.2 and 2.3 hardware implements a "fake-suspend" mode where
+certain TM instructions executed in HV=0 mode cause softpatch interrupts
+so the hypervisor can emulate them and prevent problematic processor
+conditions. In this fake-suspend mode, the treclaim. instruction does
+not modify registers.
 
-> > diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-> > index f92880a15645..030b3e990ac3 100644
-> > --- a/include/uapi/linux/perf_event.h
-> > +++ b/include/uapi/linux/perf_event.h
-> > @@ -1265,7 +1265,9 @@ union perf_mem_data_src {
-> >  #define PERF_MEM_LVLNUM_L2	0x02 /* L2 */
-> >  #define PERF_MEM_LVLNUM_L3	0x03 /* L3 */
-> >  #define PERF_MEM_LVLNUM_L4	0x04 /* L4 */
-> > -/* 5-0xa available */
-> > +#define PERF_MEM_LVLNUM_OC_L2	0x05 /* On Chip L2 */
-> > +#define PERF_MEM_LVLNUM_OC_L3	0x06 /* On Chip L3 */
-> 
-> The obvious use for 5 is for "L5" and so on.
-> 
-> I'm not sure adding new levels is the best idea, because these don't fit
-> neatly into the hierarchy, they are off to the side.
-> 
-> 
-> I wonder if we should use the remote field.
-> 
-> ie. for another core's L2 we set:
-> 
->   mem_lvl = PERF_MEM_LVL_L2
->   mem_remote = 1
+Unfortunately the rfscv instruction executed by the guest do not
+generate softpatch interrupts, which can cause the hypervisor to lose
+track of the fake-suspend mode, and it can execute this treclaim. while
+not in fake-suspend mode. This modifies GPRs and crashes the hypervisor.
 
-This mixes APIs (see below), IIUC the correct usage would be something
-like: lvl_num=L2 remote=1
+It's not trivial to disable scv in the guest with HFSCR now, because
+they assume a POWER9 has scv available. So this fix saves and restores
+checkpointed registers across the treclaim.
 
-> Which would mean "remote L2", but not remote enough to be
-> lvl = PERF_MEM_LVL_REM_CCE1.
-> 
-> It would be printed by the existing tools/perf code as "Remote L2", vs
-> "Remote cache (1 hop)", which seems OK.
-> 
-> 
-> ie. we'd be able to express:
-> 
->   Current core's L2: LVL_L2
->   Other core's L2:   LVL_L2 | REMOTE
->   Other chip's L2:   LVL_REM_CCE1 | REMOTE
-> 
-> And similarly for L3.
-> 
-> I think that makes sense? Unless people think remote should be reserved
-> to mean on another chip, though we already have REM_CCE1 for that.
+Fixes: 7854f7545bff ("KVM: PPC: Book3S: Rework TM save/restore code and make it C-callable")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 36 +++++++++++++++++++++++--
+ 1 file changed, 34 insertions(+), 2 deletions(-)
 
-IIRC the PERF_MEM_LVL_* namespace is somewhat depricated in favour of
-the newer composite PERF_MEM_{LVLNUM_,REMOTE_,SNOOPX_} fields. Of
-course, ABIs being what they are, we get to support both :/ But I'm not
-sure mixing them is a great idea.
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 8dd437d7a2c6..dd18e1c44751 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -2578,7 +2578,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_P9_TM_HV_ASSIST)
+ 	/* The following code handles the fake_suspend = 1 case */
+ 	mflr	r0
+ 	std	r0, PPC_LR_STKOFF(r1)
+-	stdu	r1, -PPC_MIN_STKFRM(r1)
++	stdu	r1, -TM_FRAME_SIZE(r1)
+ 
+ 	/* Turn on TM. */
+ 	mfmsr	r8
+@@ -2593,10 +2593,42 @@ BEGIN_FTR_SECTION
+ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
+ 	nop
+ 
++	/*
++	 * It's possible that treclaim. may modify registers, if we have lost
++	 * track of fake-suspend state in the guest due to it using rfscv.
++	 * Save and restore registers in case this occurs.
++	 */
++	mfspr	r3, SPRN_DSCR
++	mfspr	r4, SPRN_XER
++	mfspr	r5, SPRN_AMR
++	/* SPRN_TAR would need to be saved here if the kernel ever used it */
++	mfcr	r12
++	SAVE_NVGPRS(r1)
++	SAVE_GPR(2, r1)
++	SAVE_GPR(3, r1)
++	SAVE_GPR(4, r1)
++	SAVE_GPR(5, r1)
++	stw	r12, 8(r1)
++	std	r1, HSTATE_HOST_R1(r13)
++
+ 	/* We have to treclaim here because that's the only way to do S->N */
+ 	li	r3, TM_CAUSE_KVM_RESCHED
+ 	TRECLAIM(R3)
+ 
++	GET_PACA(r13)
++	ld	r1, HSTATE_HOST_R1(r13)
++	REST_GPR(2, r1)
++	REST_GPR(3, r1)
++	REST_GPR(4, r1)
++	REST_GPR(5, r1)
++	lwz	r12, 8(r1)
++	REST_NVGPRS(r1)
++	mtspr	SPRN_DSCR, r3
++	mtspr	SPRN_XER, r4
++	mtspr	SPRN_AMR, r5
++	mtcr	r12
++	HMT_MEDIUM
++
+ 	/*
+ 	 * We were in fake suspend, so we are not going to save the
+ 	 * register state as the guest checkpointed state (since
+@@ -2624,7 +2656,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
+ 	std	r5, VCPU_TFHAR(r9)
+ 	std	r6, VCPU_TFIAR(r9)
+ 
+-	addi	r1, r1, PPC_MIN_STKFRM
++	addi	r1, r1, TM_FRAME_SIZE
+ 	ld	r0, PPC_LR_STKOFF(r1)
+ 	mtlr	r0
+ 	blr
+-- 
+2.23.0
 
-Also, clearly this could use a comment...
-
-The 'new' composite doesnt have a hops field because the hardware that
-nessecitated that change doesn't report it, but we could easily add a
-field there.
-
-Suppose we add, mem_hops:3 (would 6 hops be too small?) and the
-corresponding PERF_MEM_HOPS_{NA, 0..6}
-
-Then I suppose you can encode things like:
-
-	L2			- local L2
-	L2 | REMOTE		- remote L2 at an unspecified distance (NA)
-	L2 | REMOTE | HOPS_0	- remote L2 on the same node
-	L2 | REMOTE | HOPS_1	- remote L2 on a node 1 removed
-
-Would that work?
