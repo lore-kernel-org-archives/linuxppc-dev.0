@@ -2,56 +2,67 @@ Return-Path: <SRS0=K8Qv=N6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA208C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 07:18:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72554C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 07:19:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5CDE161163
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 07:18:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5CDE161163
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baidu.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2D6C061163
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 07:19:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2D6C061163
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H4D5F0ZNzz302G
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 17:18:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H4D5w697yz3brd
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Sep 2021 17:19:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hJ1SCoiu;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=baidu.com (client-ip=220.181.3.85; helo=baidu.com;
- envelope-from=caihuoqing@baidu.com; receiver=<UNKNOWN>)
-Received: from baidu.com (mx21.baidu.com [220.181.3.85])
- by lists.ozlabs.org (Postfix) with ESMTP id 4H4D2z66qHz2xYB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Sep 2021 17:16:43 +1000 (AEST)
-Received: from BJHW-Mail-Ex11.internal.baidu.com (unknown [10.127.64.34])
- by Forcepoint Email with ESMTPS id 9FBFE19BFA08E349972A;
- Wed,  8 Sep 2021 15:16:41 +0800 (CST)
-Received: from BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) by
- BJHW-Mail-Ex11.internal.baidu.com (10.127.64.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2308.14; Wed, 8 Sep 2021 15:16:41 +0800
-Received: from LAPTOP-UKSR4ENP.internal.baidu.com (172.31.63.8) by
- BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2308.14; Wed, 8 Sep 2021 15:16:41 +0800
-From: Cai Huoqing <caihuoqing@baidu.com>
-To: <caihuoqing@baidu.com>
-Subject: [PATCH 2/2] soc: fsl: rcpm: Make use of the helper function
- devm_platform_ioremap_resource()
-Date: Wed, 8 Sep 2021 15:16:30 +0800
-Message-ID: <20210908071631.660-2-caihuoqing@baidu.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210908071631.660-1-caihuoqing@baidu.com>
-References: <20210908071631.660-1-caihuoqing@baidu.com>
+ smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=hJ1SCoiu; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H4D4V6XGFz2yP6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Sep 2021 17:18:02 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1631085481;
+ bh=w0M7G5ASfYWvcGPFot2QE8lkLjYhB1FteWbIE/Al0E0=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=hJ1SCoiuc/gGNb5N/rFfi2g/aqxg8B78zb3TwGnFoFZM/cKl+h8o/XIWGfDtaK5E6
+ IeADsfIMT7wh7KtJgtWYN/FYdS5z6dnrIyAsnwsEPGCFuQEoljwSSZIVPgv1i/Xnnm
+ X1ZApP5T0twDD7BLnNGjjcsvNyhsmZ1WMhNShuHbEKBI3rNfm1UZaX2wKYSPICtTn2
+ NfFZHSJelK9CM1AuDOoIaHC58EUACOT484+1j2K4DJIKJFWCHu+6ShjO/2DF6NCHWI
+ nyXDuwcOISS6459NjcXgreseilBHUSIvjobTuEb03Ix8AifL+aW3wCQu1rOKn+UR39
+ aAxpXX3Z4t1Gw==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4H4D4Q54S8z9sW5;
+ Wed,  8 Sep 2021 17:17:58 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kajol Jain <kjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, peterz@infradead.org, mingo@redhat.com,
+ acme@kernel.org, jolsa@kernel.org, namhyung@kernel.org,
+ linux-perf-users@vger.kernel.org, ak@linux.intel.com
+Subject: Re: [PATCH 1/3] perf: Add macros to specify onchip L2/L3 accesses
+In-Reply-To: <20210904064932.307610-1-kjain@linux.ibm.com>
+References: <20210904064932.307610-1-kjain@linux.ibm.com>
+Date: Wed, 08 Sep 2021 17:17:53 +1000
+Message-ID: <87ilzbmt7i.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Originating-IP: [172.31.63.8]
-X-ClientProxiedBy: BJHW-Mail-Ex11.internal.baidu.com (10.127.64.34) To
- BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42)
-X-Mailman-Approved-At: Wed, 08 Sep 2021 17:17:56 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,46 +74,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Li Yang <leoyang.li@nxp.com>
+Cc: mark.rutland@arm.com, songliubraving@fb.com, atrajeev@linux.vnet.ibm.com,
+ daniel@iogearbox.net, rnsastry@linux.ibm.com,
+ alexander.shishkin@linux.intel.com, kjain@linux.ibm.com, ast@kernel.org,
+ yao.jin@linux.intel.com, maddy@linux.ibm.com, paulus@samba.org,
+ kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use the devm_platform_ioremap_resource() helper instead of
-calling platform_get_resource() and devm_ioremap_resource()
-separately
+Kajol Jain <kjain@linux.ibm.com> writes:
+> Add couple of new macros to represent onchip L2 and onchip L3 accesses.
 
-Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
----
- drivers/soc/fsl/rcpm.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+It would be "on chip". But I think this needs much more explanation,
+this is a generic header so these definitions need to make sense, and
+have an understood meaning, across all architectures.
 
-diff --git a/drivers/soc/fsl/rcpm.c b/drivers/soc/fsl/rcpm.c
-index 90d3f4060b0c..3d0cae30c769 100644
---- a/drivers/soc/fsl/rcpm.c
-+++ b/drivers/soc/fsl/rcpm.c
-@@ -146,7 +146,6 @@ static const struct dev_pm_ops rcpm_pm_ops = {
- static int rcpm_probe(struct platform_device *pdev)
- {
- 	struct device	*dev = &pdev->dev;
--	struct resource *r;
- 	struct rcpm	*rcpm;
- 	int ret;
- 
-@@ -154,11 +153,7 @@ static int rcpm_probe(struct platform_device *pdev)
- 	if (!rcpm)
- 		return -ENOMEM;
- 
--	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!r)
--		return -ENODEV;
--
--	rcpm->ippdexpcr_base = devm_ioremap_resource(&pdev->dev, r);
-+	rcpm->ippdexpcr_base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(rcpm->ippdexpcr_base)) {
- 		ret =  PTR_ERR(rcpm->ippdexpcr_base);
- 		return ret;
--- 
-2.25.1
+I think most people are going to read "on chip" as differentiating
+between an L2/L3 that is "on chip" vs "off chip".
+
+But the case you're trying to express is "another core's L2/L3 on the
+same chip as the CPU", vs "the current CPU's L2/L3".
+
+
+> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+> index f92880a15645..030b3e990ac3 100644
+> --- a/include/uapi/linux/perf_event.h
+> +++ b/include/uapi/linux/perf_event.h
+> @@ -1265,7 +1265,9 @@ union perf_mem_data_src {
+>  #define PERF_MEM_LVLNUM_L2	0x02 /* L2 */
+>  #define PERF_MEM_LVLNUM_L3	0x03 /* L3 */
+>  #define PERF_MEM_LVLNUM_L4	0x04 /* L4 */
+> -/* 5-0xa available */
+> +#define PERF_MEM_LVLNUM_OC_L2	0x05 /* On Chip L2 */
+> +#define PERF_MEM_LVLNUM_OC_L3	0x06 /* On Chip L3 */
+
+The obvious use for 5 is for "L5" and so on.
+
+I'm not sure adding new levels is the best idea, because these don't fit
+neatly into the hierarchy, they are off to the side.
+
+
+I wonder if we should use the remote field.
+
+ie. for another core's L2 we set:
+
+  mem_lvl = PERF_MEM_LVL_L2
+  mem_remote = 1
+
+Which would mean "remote L2", but not remote enough to be
+lvl = PERF_MEM_LVL_REM_CCE1.
+
+It would be printed by the existing tools/perf code as "Remote L2", vs
+"Remote cache (1 hop)", which seems OK.
+
+
+ie. we'd be able to express:
+
+  Current core's L2: LVL_L2
+  Other core's L2:   LVL_L2 | REMOTE
+  Other chip's L2:   LVL_REM_CCE1 | REMOTE
+
+And similarly for L3.
+
+I think that makes sense? Unless people think remote should be reserved
+to mean on another chip, though we already have REM_CCE1 for that.
+
+cheers
+
 
