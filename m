@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9405BC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Sep 2021 11:43:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 234B2C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Sep 2021 11:48:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F9FA61247
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Sep 2021 11:43:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9F9FA61247
+	by mail.kernel.org (Postfix) with ESMTPS id 4F16461A4E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Sep 2021 11:48:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4F16461A4E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H4xwP5hnNz2ynx
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Sep 2021 21:43:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H4y2M5tMhz2yPQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Sep 2021 21:48:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Z22Ueqz1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YBssv2GL;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=Z22Ueqz1; 
+ header.s=k20201202 header.b=YBssv2GL; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H4xvb6m0vz2xvF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Sep 2021 21:42:51 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id ECBE5611AF;
- Thu,  9 Sep 2021 11:42:47 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H4y1g1Dktz2xXP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Sep 2021 21:48:07 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id F2449619E8;
+ Thu,  9 Sep 2021 11:48:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1631187768;
- bh=feZctuRMHO3yQPCszFkVhvDJ3n8/xXu4EUqmJR3PgeQ=;
+ s=k20201202; t=1631188084;
+ bh=HJZadhkc3lcjE7AapxAuKY6kRDDcL5N6KsyajWYJPs4=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Z22Ueqz1Ret0oTLDAegPT9G32l5jRc67FaavZP6DrwRSQuF0uR3dxwAx1IkTW+YqM
- iRRhf6KKglwcrpXCaitvcMqxxZdOemlcvGzZEgnJWo4qW1OIn3O395MD4qw5KarA1F
- mW8v4NDjZ7CBadCPJqaDNXOD59iOFTzw8nVXqYxKQNXiczm8NtZ6FJ1tHIBhZW6DeH
- 6CmfgT39p/diGXgLFlnjjyTm21/HaryYP/ku8mAPZSlaqG8RnS7r04gKkmYuJxaNMP
- OHV2wS2Lf+XvqCi10L6vJHYV82kKXhS7yoV7gCb/J/3BxDSAvEOUEaoe+wE5Gsg5uE
- FJFRIBKEP+Brw==
+ b=YBssv2GLFsoH14fuVM1xuBnFjBpFlYl8hHqoHVk32UKhtc7UeWv2nL9r9hFjc0HsK
+ zJBBe5+Ceid8+TlgyOkK/RCPf7tzFDlLTcD6vnJA3Y8bPnqrzFuzGj3A/LbIQQJ+JZ
+ 1KPe6fP0aiO/HSj2l7fsOwjBiQ7RSTLT7Jmu32E6XgZtfD6Bu5d7HTGFgO89SlKlxC
+ 2qjep1kiGadNWWOlx4RKUE0WaAwQwi7UEcBa9iSPeTnWxFRq6gQ7fHMUlc50MQIvF2
+ TjNe0XELYRtCSUFrRql/ZagJXPzGytmQz3nJ6rpyY447oZ8WEiJPMjP5GHxRS0SMth
+ o9Tl/WbwZlGmg==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.14 080/252] hvsi: don't panic on tty_register_driver
+Subject: [PATCH AUTOSEL 5.13 069/219] hvsi: don't panic on tty_register_driver
  failure
-Date: Thu,  9 Sep 2021 07:38:14 -0400
-Message-Id: <20210909114106.141462-80-sashal@kernel.org>
+Date: Thu,  9 Sep 2021 07:44:05 -0400
+Message-Id: <20210909114635.143983-69-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210909114106.141462-1-sashal@kernel.org>
-References: <20210909114106.141462-1-sashal@kernel.org>
+In-Reply-To: <20210909114635.143983-1-sashal@kernel.org>
+References: <20210909114635.143983-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -103,7 +103,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 16 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/tty/hvc/hvsi.c b/drivers/tty/hvc/hvsi.c
-index bfc15279d5bc..f0bc8e780051 100644
+index e8c58f9bd263..d6afaae1729a 100644
 --- a/drivers/tty/hvc/hvsi.c
 +++ b/drivers/tty/hvc/hvsi.c
 @@ -1038,7 +1038,7 @@ static const struct tty_operations hvsi_ops = {
