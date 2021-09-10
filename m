@@ -1,50 +1,66 @@
-Return-Path: <SRS0=vwdz=N7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=wfsy=OA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04327C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Sep 2021 23:37:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A516FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Sep 2021 00:17:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ED5A76115A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Sep 2021 23:37:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ED5A76115A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
+	by mail.kernel.org (Postfix) with ESMTPS id EE56D611BD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Sep 2021 00:17:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EE56D611BD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H5FmC1Yn4z2ywK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Sep 2021 09:37:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H5Gf83NJvz2xrT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Sep 2021 10:17:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DsykcG7L;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=/11f=n7=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=DsykcG7L; 
+ dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H5Flh1k9hz2yJq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Sep 2021 09:37:04 +1000 (AEST)
-Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com
- [66.24.58.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2AF536108D;
- Thu,  9 Sep 2021 23:36:57 +0000 (UTC)
-Date: Thu, 9 Sep 2021 19:36:55 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Weizhao Ouyang <o451686892@gmail.com>
-Subject: Re: [PATCH v4] ftrace: Cleanup ftrace_dyn_arch_init()
-Message-ID: <20210909193655.7bc715af@gandalf.local.home>
-In-Reply-To: <20210909090216.1955240-1-o451686892@gmail.com>
-References: <20210909090216.1955240-1-o451686892@gmail.com>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H5GdT5lvmz2xsg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Sep 2021 10:16:45 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 1C91461186;
+ Fri, 10 Sep 2021 00:16:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1631233003;
+ bh=rrP6UZKWyt1RVKSSBV5KUzVqgGPtefHEyDItHTegIAA=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=DsykcG7LrQ/IhV5CLKEBeAYD5sZPC6r6z5wh8l9vtNmhgdstBuhsd2zHYp8J90CbV
+ PMTjhN/HpNyUJmDpni1B6vSGy7esFATYd6W9LyTOebp3RGzC+XsuspQutPueikurWI
+ c/cc4oKo48OhTs9p48x3vLg6hTgOtKxlO2idTt61sdw1pZXNhsl0cZh+1k5lWn6NzO
+ WiXlhTujcPnTjpKK4nRU1ahLIgHa7Q+1YOAhr1OHR5W6m9THkbOcZz00/vpKHsGvxH
+ X7kx/uphQUuU+MWlWiHTM6mmqNchmyd4QfKaLR8wuuHNIgHUlIph9f2cD33QW8lTYI
+ ZKBwOOhIe7fTg==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.14 32/99] powerpc: make the install target not
+ depend on any build artifact
+Date: Thu,  9 Sep 2021 20:14:51 -0400
+Message-Id: <20210910001558.173296-32-sashal@kernel.org>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210910001558.173296-1-sashal@kernel.org>
+References: <20210910001558.173296-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,73 +72,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-mips@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- Vincent Chen <deanbo422@gmail.com>, Will Deacon <will@kernel.org>,
- linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Helge Deller <deller@gmx.de>, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
- Borislav Petkov <bp@alien8.de>, Greentime Hu <green.hu@gmail.com>,
- Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
- Nick Hu <nickhu@andestech.com>, linux-kernel@vger.kernel.org,
- Palmer Dabbelt <palmer@dabbelt.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Sasha Levin <sashal@kernel.org>, Masahiro Yamada <masahiroy@kernel.org>,
+ Nick Desaulniers <ndesaulniers@google.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu,  9 Sep 2021 17:02:16 +0800
-Weizhao Ouyang <o451686892@gmail.com> wrote:
+From: Masahiro Yamada <masahiroy@kernel.org>
 
-> Most of ARCHs use empty ftrace_dyn_arch_init(), introduce a weak common
-> ftrace_dyn_arch_init() to cleanup them.
+[ Upstream commit 9bef456b20581e630ef9a13555ca04fed65a859d ]
 
-FYI,
+The install target should not depend on any build artifact.
 
-I'm not ignoring this patch. I just wont be able to look at it until the
-merge window is over.
+The reason is explained in commit 19514fc665ff ("arm, kbuild: make
+"make install" not depend on vmlinux").
 
--- Steve
+Change the PowerPC installation code in a similar way.
 
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://lore.kernel.org/r/20210729141937.445051-2-masahiroy@kernel.org
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/powerpc/boot/Makefile   |  2 +-
+ arch/powerpc/boot/install.sh | 14 ++++++++++++++
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
-> 
-> Signed-off-by: Weizhao Ouyang <o451686892@gmail.com>
-> Acked-by: Heiko Carstens <hca@linux.ibm.com> (s390)
-> Acked-by: Helge Deller <deller@gmx.de> (parisc)
-> 
-> ---
-> Changes in v4:
-> -- revert the generic declaration
-> 
-> Changes in v3:
-> -- fix unrecognized opcode on PowerPC
-> 
-> Changes in v2:
-> -- correct CONFIG_DYNAMIC_FTRACE on PowerPC
-> -- add Acked-by tag
-> 
-> ---
->  arch/arm/kernel/ftrace.c        | 5 -----
->  arch/arm64/kernel/ftrace.c      | 5 -----
->  arch/csky/kernel/ftrace.c       | 5 -----
->  arch/ia64/kernel/ftrace.c       | 6 ------
->  arch/microblaze/kernel/ftrace.c | 5 -----
->  arch/nds32/kernel/ftrace.c      | 5 -----
->  arch/parisc/kernel/ftrace.c     | 5 -----
->  arch/riscv/kernel/ftrace.c      | 5 -----
->  arch/s390/kernel/ftrace.c       | 5 -----
->  arch/sh/kernel/ftrace.c         | 5 -----
->  arch/sparc/kernel/ftrace.c      | 5 -----
->  arch/x86/kernel/ftrace.c        | 5 -----
->  kernel/trace/ftrace.c           | 5 +++++
->  13 files changed, 5 insertions(+), 61 deletions(-)
-> 
->
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index e312ea802aa6..b90e53e413c8 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -445,7 +445,7 @@ $(obj)/zImage.initrd:	$(addprefix $(obj)/, $(initrd-y))
+ 	$(Q)rm -f $@; ln $< $@
+ 
+ # Only install the vmlinux
+-install: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
++install:
+ 	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)"
+ 
+ # Install the vmlinux and other built boot targets.
+diff --git a/arch/powerpc/boot/install.sh b/arch/powerpc/boot/install.sh
+index b6a256bc96ee..8d669cf1ccda 100644
+--- a/arch/powerpc/boot/install.sh
++++ b/arch/powerpc/boot/install.sh
+@@ -21,6 +21,20 @@
+ # Bail with error code if anything goes wrong
+ set -e
+ 
++verify () {
++	if [ ! -f "$1" ]; then
++		echo ""                                                   1>&2
++		echo " *** Missing file: $1"                              1>&2
++		echo ' *** You need to run "make" before "make install".' 1>&2
++		echo ""                                                   1>&2
++		exit 1
++	fi
++}
++
++# Make sure the files actually exist
++verify "$2"
++verify "$3"
++
+ # User may have a custom install script
+ 
+ if [ -x ~/bin/${INSTALLKERNEL} ]; then exec ~/bin/${INSTALLKERNEL} "$@"; fi
+-- 
+2.30.2
+
