@@ -2,72 +2,79 @@ Return-Path: <SRS0=wfsy=OA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.6 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18476C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Sep 2021 05:55:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C956CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Sep 2021 09:41:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 497BE6113E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Sep 2021 05:55:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 497BE6113E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1ACD861074
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Sep 2021 09:41:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1ACD861074
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H5Q8n5YzCz2yb2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Sep 2021 15:55:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H5W9323s6z2yws
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Sep 2021 19:41:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eZq41meV;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.54.81;
- helo=smtpout2.3005.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
  receiver=<UNKNOWN>)
-X-Greylist: delayed 417 seconds by postgrey-1.36 at boromir;
- Fri, 10 Sep 2021 15:55:24 AEST
-Received: from smtpout2.3005.mail-out.ovh.net (smtpout2.3005.mail-out.ovh.net
- [46.105.54.81])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=eZq41meV; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H5Q8D2dnWz2yMP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Sep 2021 15:55:23 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.146.51])
- by mo3005.mail-out.ovh.net (Postfix) with ESMTPS id ECA4513EFE4;
- Fri, 10 Sep 2021 05:48:19 +0000 (UTC)
-Received: from kaod.org (37.59.142.100) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Fri, 10 Sep
- 2021 07:48:19 +0200
-Authentication-Results: garm.ovh; auth=pass
- (GARM-100R003b2afc9eb-92ed-4917-a57a-8775a7168fc9,
- 7E3151BA03BDFE499776E315E3312AC0A00E288C) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 82.64.250.170
-Subject: Re: [PATCH AUTOSEL 5.14 38/99] KVM: PPC: Book3S HV: XICS: Fix mapping
- of passthrough interrupts
-To: Sasha Levin <sashal@kernel.org>, <linux-kernel@vger.kernel.org>,
- <stable@vger.kernel.org>
-References: <20210910001558.173296-1-sashal@kernel.org>
- <20210910001558.173296-38-sashal@kernel.org>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <27739836-bad2-6b3f-7f40-e84663fbbf24@kaod.org>
-Date: Fri, 10 Sep 2021 07:48:18 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H5W8B1fRkz2yHw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Sep 2021 19:40:42 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPS id E3E42611B0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Sep 2021 09:40:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1631266838;
+ bh=d27uS/z0lXQOU31/7tRayHD8sEEM2bjiuaB76DBqdZ0=;
+ h=From:To:Subject:Date:In-Reply-To:References:From;
+ b=eZq41meVji7RRhCYvlFzqONV69Hj4FgiO3v1yJdwLcUyCEC9gKrK2SvwsHyA1quC7
+ OuXLVZovLaD6txUZEn3Uu7NcFI5mYq7Sk1nblFo+ST52CWdGp4y9PVdhQTU7TLmXXO
+ LOPR6nOLyq/mSCGGwY+qQxnFmh3OFDYkgm8iZ5necYAabV1Vfik4bi0wCrYSbWVgfn
+ cNF/CpD+GA6lP5GQ6Y6mtykAN+XvPWlgzYHcB5Ve6BnHl7SRvsjsyPHu7TDCIlkrRW
+ 0z9KObNK4Ir50bLqTAdu8TRvhSpMItc4Vl+tDQQKbZImnfXO+X0wsUaOPjvZNP55+l
+ wd3IP4bZCQ52Q==
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 206669] Little-endian kernel crashing on POWER8 on heavy
+ big-endian PowerKVM load
+Date: Fri, 10 Sep 2021 09:40:38 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: glaubitz@physik.fu-berlin.de
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-206669-206035-bHcZ5lKSPy@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-206669-206035@https.bugzilla.kernel.org/>
+References: <bug-206669-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-In-Reply-To: <20210910001558.173296-38-sashal@kernel.org>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.100]
-X-ClientProxiedBy: DAG1EX1.mxp5.local (172.16.2.1) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: c650a476-78a5-43c6-9aa9-2b943421663f
-X-Ovh-Tracer-Id: 17411760584997833510
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrudegtddgleekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepjeetfeejteefhfeuveethfduffeftdelvdeghfelhfeljeehheeuieevudeggefhnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddttdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtohepshgrshhhrghlsehkvghrnhgvlhdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,77 +86,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 9/10/21 2:14 AM, Sasha Levin wrote:
-> From: Cédric Le Goater <clg@kaod.org>
-> 
-> [ Upstream commit 1753081f2d445f9157550692fcc4221cd3ff0958 ]
-> 
-> PCI MSIs now live in an MSI domain but the underlying calls, which
-> will EOI the interrupt in real mode, need an HW IRQ number mapped in
-> the XICS IRQ domain. Grab it there.
-> 
-> Signed-off-by: Cédric Le Goater <clg@kaod.org>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Link: https://lore.kernel.org/r/20210701132750.1475580-31-clg@kaod.org
-> Signed-off-by: Sasha Levin <sashal@kernel.org>
+https://bugzilla.kernel.org/show_bug.cgi?id=3D206669
 
+--- Comment #14 from John Paul Adrian Glaubitz (glaubitz@physik.fu-berlin.d=
+e) ---
+Still reproduces with Linux 5.10.46 from Debian Bullseye.
 
-Why are we backporting this patch in stable trees ?
+--=20
+You may reply to this email to add a comment.
 
-It should be fine but to compile, we need a partial backport of commit
-51be9e51a800 ("KVM: PPC: Book3S HV: XIVE: Fix mapping of passthrough 
-interrupts") which exports irq_get_default_host().
-
-Thanks,
-
-C.
-
-
-> ---
->  arch/powerpc/kvm/book3s_hv.c | 12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 085fb8ecbf68..1ca0a4f760bc 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -5328,6 +5328,7 @@ static int kvmppc_set_passthru_irq(struct kvm *kvm, int host_irq, int guest_gsi)
->  	struct kvmppc_passthru_irqmap *pimap;
->  	struct irq_chip *chip;
->  	int i, rc = 0;
-> +	struct irq_data *host_data;
->  
->  	if (!kvm_irq_bypass)
->  		return 1;
-> @@ -5392,7 +5393,14 @@ static int kvmppc_set_passthru_irq(struct kvm *kvm, int host_irq, int guest_gsi)
->  	 * the KVM real mode handler.
->  	 */
->  	smp_wmb();
-> -	irq_map->r_hwirq = desc->irq_data.hwirq;
-> +
-> +	/*
-> +	 * The 'host_irq' number is mapped in the PCI-MSI domain but
-> +	 * the underlying calls, which will EOI the interrupt in real
-> +	 * mode, need an HW IRQ number mapped in the XICS IRQ domain.
-> +	 */
-> +	host_data = irq_domain_get_irq_data(irq_get_default_host(), host_irq);
-> +	irq_map->r_hwirq = (unsigned int)irqd_to_hwirq(host_data);
->  
->  	if (i == pimap->n_mapped)
->  		pimap->n_mapped++;
-> @@ -5400,7 +5408,7 @@ static int kvmppc_set_passthru_irq(struct kvm *kvm, int host_irq, int guest_gsi)
->  	if (xics_on_xive())
->  		rc = kvmppc_xive_set_mapped(kvm, guest_gsi, desc);
->  	else
-> -		kvmppc_xics_set_mapped(kvm, guest_gsi, desc->irq_data.hwirq);
-> +		kvmppc_xics_set_mapped(kvm, guest_gsi, irq_map->r_hwirq);
->  	if (rc)
->  		irq_map->r_hwirq = 0;
->  
-> 
-
+You are receiving this mail because:
+You are watching the assignee of the bug.=
