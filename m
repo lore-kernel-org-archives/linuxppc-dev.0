@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57979C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Sep 2021 01:21:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37D0FC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Sep 2021 01:22:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B4FBB610F8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Sep 2021 01:21:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B4FBB610F8
+	by mail.kernel.org (Postfix) with ESMTPS id 6BB9F6120A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Sep 2021 01:22:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6BB9F6120A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H5w2737dMz3cFs
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Sep 2021 11:21:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H5w2b17fGz30R2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Sep 2021 11:22:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linux.intel.com
  (client-ip=134.134.136.65; helo=mga03.intel.com;
@@ -27,24 +27,25 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H5w0H5vf1z2yHb
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Sep 2021 11:20:15 +1000 (AEST)
-X-IronPort-AV: E=McAfee;i="6200,9189,10103"; a="221271941"
-X-IronPort-AV: E=Sophos;i="5.85,284,1624345200"; d="scan'208";a="221271941"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H5w0J5Hndz2yHb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Sep 2021 11:20:16 +1000 (AEST)
+X-IronPort-AV: E=McAfee;i="6200,9189,10103"; a="221271942"
+X-IronPort-AV: E=Sophos;i="5.85,284,1624345200"; d="scan'208";a="221271942"
 Received: from fmsmga006.fm.intel.com ([10.253.24.20])
  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  10 Sep 2021 18:19:08 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.85,284,1624345200"; d="scan'208";a="695261629"
+X-IronPort-AV: E=Sophos;i="5.85,284,1624345200"; d="scan'208";a="695261638"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
- by fmsmga006.fm.intel.com with ESMTP; 10 Sep 2021 18:19:07 -0700
+ by fmsmga006.fm.intel.com with ESMTP; 10 Sep 2021 18:19:08 -0700
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To: "Peter Zijlstra (Intel)" <peterz@infradead.org>,
  Ingo Molnar <mingo@kernel.org>, Juri Lelli <juri.lelli@redhat.com>,
  Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH v5 3/6] sched/fair: Optimize checking for group_asym_packing
-Date: Fri, 10 Sep 2021 18:18:16 -0700
-Message-Id: <20210911011819.12184-4-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v5 4/6] sched/fair: Provide update_sg_lb_stats() with sched
+ domain statistics
+Date: Fri, 10 Sep 2021 18:18:17 -0700
+Message-Id: <20210911011819.12184-5-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20210911011819.12184-1-ricardo.neri-calderon@linux.intel.com>
 References: <20210911011819.12184-1-ricardo.neri-calderon@linux.intel.com>
@@ -76,10 +77,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-sched_asmy_prefer() always returns false when called on the local group. By
-checking local_group, we can avoid additional checks and invoking
-sched_asmy_prefer() when it is not needed. No functional changes are
-introduced.
+Before deciding to pull tasks when using asymmetric packing of tasks,
+on some architectures (e.g., x86) it is necessary to know not only the
+state of dst_cpu but also of its SMT siblings. The decision to classify
+a candidate busiest group as group_asym_packing is done in
+update_sg_lb_stats(). Give this function access to the scheduling domain
+statistics, which contains the statistics of the local group.
 
 Cc: Aubrey Li <aubrey.li@intel.com>
 Cc: Ben Segall <bsegall@google.com>
@@ -93,36 +96,55 @@ Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Tim Chen <tim.c.chen@linux.intel.com>
 Reviewed-by: Joel Fernandes (Google) <joel@joelfernandes.org>
 Reviewed-by: Len Brown <len.brown@intel.com>
+Originally-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
 Changes since v4:
   * None
 
 Changes since v3:
-  * Further rewording of the commit message. (Len)
+  * None
 
 Changes since v2:
-  * Reworded the commit message for clarity. (Peter Z)
+  * Introduced this patch.
 
 Changes since v1:
-  * None
+  * N/A
 ---
- kernel/sched/fair.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/sched/fair.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index ff69f245b939..7a054f528bcc 100644
+index 7a054f528bcc..c5851260b4d8 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -8657,7 +8657,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
- 	}
+@@ -8605,6 +8605,7 @@ group_type group_classify(unsigned int imbalance_pct,
+  * @sg_status: Holds flag indicating the status of the sched_group
+  */
+ static inline void update_sg_lb_stats(struct lb_env *env,
++				      struct sd_lb_stats *sds,
+ 				      struct sched_group *group,
+ 				      struct sg_lb_stats *sgs,
+ 				      int *sg_status)
+@@ -8613,7 +8614,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
  
- 	/* Check if dst CPU is idle and preferred to this group */
--	if (env->sd->flags & SD_ASYM_PACKING &&
-+	if (!local_group && env->sd->flags & SD_ASYM_PACKING &&
- 	    env->idle != CPU_NOT_IDLE &&
- 	    sgs->sum_h_nr_running &&
- 	    sched_asym_prefer(env->dst_cpu, group->asym_prefer_cpu)) {
+ 	memset(sgs, 0, sizeof(*sgs));
+ 
+-	local_group = cpumask_test_cpu(env->dst_cpu, sched_group_span(group));
++	local_group = group == sds->local;
+ 
+ 	for_each_cpu_and(i, sched_group_span(group), env->cpus) {
+ 		struct rq *rq = cpu_rq(i);
+@@ -9176,7 +9177,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+ 				update_group_capacity(env->sd, env->dst_cpu);
+ 		}
+ 
+-		update_sg_lb_stats(env, sg, sgs, &sg_status);
++		update_sg_lb_stats(env, sds, sg, sgs, &sg_status);
+ 
+ 		if (local_group)
+ 			goto next_group;
 -- 
 2.17.1
 
