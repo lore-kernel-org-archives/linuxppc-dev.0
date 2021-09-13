@@ -5,67 +5,70 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFF01C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 15:18:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A1C9C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 15:19:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DAB6C60FE6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 15:18:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DAB6C60FE6
+	by mail.kernel.org (Postfix) with ESMTPS id 9E1EC60FF2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 15:19:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9E1EC60FF2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H7VVF0GKPz303f
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 01:18:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H7VXF12rtz2ywH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 01:19:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H7VTg6T2Xz2xrL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Sep 2021 01:17:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H7VWm3fTsz2xrL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Sep 2021 01:19:31 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4H7VTY747jz9sVX;
- Mon, 13 Sep 2021 17:17:37 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4H7VWh46wMz9sVt;
+ Mon, 13 Sep 2021 17:19:28 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id KtPPYtUP-FMq; Mon, 13 Sep 2021 17:17:37 +0200 (CEST)
+ with ESMTP id Czid7jzSJVH2; Mon, 13 Sep 2021 17:19:28 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4H7VTY6LMXz9sV3;
- Mon, 13 Sep 2021 17:17:37 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4H7VWh3KbNz9sV3;
+ Mon, 13 Sep 2021 17:19:28 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C644F8B76E;
- Mon, 13 Sep 2021 17:17:37 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5ABEE8B779;
+ Mon, 13 Sep 2021 17:19:28 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 9g2vTJsU-2uC; Mon, 13 Sep 2021 17:17:37 +0200 (CEST)
+ with ESMTP id qYQffU0wI8o9; Mon, 13 Sep 2021 17:19:28 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.107])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AD5F58B763;
- Mon, 13 Sep 2021 17:17:37 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2CF478B774;
+ Mon, 13 Sep 2021 17:19:28 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18DFHSgd157650
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18DFJKIo157776
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 13 Sep 2021 17:17:28 +0200
+ Mon, 13 Sep 2021 17:19:20 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18DFHS4k157649;
- Mon, 13 Sep 2021 17:17:28 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18DFJKIR157775;
+ Mon, 13 Sep 2021 17:19:20 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/mem: Fix arch/powerpc/mm/mem.c:53:12: error: no
- previous prototype for 'create_section_mapping'
-Date: Mon, 13 Sep 2021 17:17:26 +0200
-Message-Id: <025754fde3d027904ae9d0191f395890bec93369.1631541649.git.christophe.leroy@csgroup.eu>
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, ebiederm@xmission.com,
+ hch@infradead.org
+Subject: [PATCH RESEND v3 5/6] powerpc/uaccess: Add unsafe_clear_user()
+Date: Mon, 13 Sep 2021 17:19:09 +0200
+Message-Id: <9e73ef4ae948d232e344db461829cc7699f43eda.1631537060.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <1718f38859d5366f82d5bef531f255cedf537b5d.1631537060.git.christophe.leroy@csgroup.eu>
+References: <1718f38859d5366f82d5bef531f255cedf537b5d.1631537060.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -79,39 +82,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel test robot <lkp@intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 8e11d62e2e87 ("powerpc/mem: Add back missing header to fix 'no
-previous prototype' error") was supposed to fix the problem, but in
-the meantime commit a927bd6ba952 ("mm: fix phys_to_target_node() and*
-memory_add_physaddr_to_nid() exports") moved create_section_mapping()
-prototype from asm/sparsemem.h to asm/mmzone.h
+Implement unsafe_clear_user() for powerpc.
+It's a copy/paste of unsafe_copy_to_user() with value 0 as source.
 
-Reported-by: kernel test robot <lkp@intel.com>
-Fixes: 8e11d62e2e87 ("powerpc/mem: Add back missing header to fix 'no previous prototype' error")
+It may be improved in a later patch by using 'dcbz' instruction
+to zeroize full cache lines at once.
+
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/mm/mem.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/uaccess.h | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index ad198b439222..0380efff535a 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -20,8 +20,8 @@
- #include <asm/machdep.h>
- #include <asm/rtas.h>
- #include <asm/kasan.h>
--#include <asm/sparsemem.h>
- #include <asm/svm.h>
-+#include <asm/mmzone.h>
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 22c79ab40006..962b675485ff 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -467,6 +467,26 @@ do {									\
+ 		unsafe_put_user(*(u8*)(_src + _i), (u8 __user *)(_dst + _i), e); \
+ } while (0)
  
- #include <mm/mmu_decl.h>
++#define unsafe_clear_user(d, l, e)					\
++do {									\
++	u8 __user *_dst = (u8 __user *)(d);				\
++	size_t _len = (l);						\
++	int _i;								\
++									\
++	for (_i = 0; _i < (_len & ~(sizeof(u64) - 1)); _i += sizeof(u64)) \
++		unsafe_put_user(0, (u64 __user *)(_dst + _i), e);	\
++	if (_len & 4) {							\
++		unsafe_put_user(0, (u32 __user *)(_dst + _i), e);	\
++		_i += 4;						\
++	}								\
++	if (_len & 2) {							\
++		unsafe_put_user(0, (u16 __user *)(_dst + _i), e);	\
++		_i += 2;						\
++	}								\
++	if (_len & 1)							\
++		unsafe_put_user(0, (u8 __user *)(_dst + _i), e);	\
++} while (0)
++
+ #define HAVE_GET_KERNEL_NOFAULT
  
+ #define __get_kernel_nofault(dst, src, type, err_label)			\
 -- 
 2.31.1
 
