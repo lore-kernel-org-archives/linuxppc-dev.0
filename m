@@ -2,66 +2,85 @@ Return-Path: <SRS0=+bYb=OD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11E2FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 16:22:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CD12C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 16:25:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 226E860295
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 16:22:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 226E860295
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
+	by mail.kernel.org (Postfix) with ESMTPS id 828B160187
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 16:24:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 828B160187
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H7WwC4pzVz2yyh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 02:22:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H7WzF730vz2ynm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 02:24:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=RKVTfzY0;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=xmission.com (client-ip=166.70.13.233;
- helo=out03.mta.xmission.com; envelope-from=ebiederm@xmission.com;
+ smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1032;
+ helo=mail-pj1-x1032.google.com; envelope-from=seanjc@google.com;
  receiver=<UNKNOWN>)
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20210112 header.b=RKVTfzY0; dkim-atps=neutral
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com
+ [IPv6:2607:f8b0:4864:20::1032])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H7Wvj5x2lz2xg3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Sep 2021 02:21:53 +1000 (AEST)
-Received: from in02.mta.xmission.com ([166.70.13.52]:36934)
- by out03.mta.xmission.com with esmtps (TLS1.3) tls
- TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
- (envelope-from <ebiederm@xmission.com>)
- id 1mPoiL-003rDB-KW; Mon, 13 Sep 2021 10:21:49 -0600
-Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]:47520
- helo=email.xmission.com)
- by in02.mta.xmission.com with esmtpsa (TLS1.3) tls
- TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
- (envelope-from <ebiederm@xmission.com>)
- id 1mPoiJ-00GFz6-JY; Mon, 13 Sep 2021 10:21:48 -0600
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-References: <1718f38859d5366f82d5bef531f255cedf537b5d.1631537060.git.christophe.leroy@csgroup.eu>
- <2b179deba4fd4ec0868cdc48a0230dfa3aa5a22f.1631537060.git.christophe.leroy@csgroup.eu>
- <87h7eopixa.fsf@disp2133>
-Date: Mon, 13 Sep 2021 11:21:41 -0500
-In-Reply-To: <87h7eopixa.fsf@disp2133> (Eric W. Biederman's message of "Mon,
- 13 Sep 2021 10:57:37 -0500")
-Message-ID: <87y280o38q.fsf@disp2133>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H7WyX1dglz2xrS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Sep 2021 02:24:19 +1000 (AEST)
+Received: by mail-pj1-x1032.google.com with SMTP id v19so4044496pjh.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Sep 2021 09:24:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20210112;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=Q0CGByNGBLX5VAdHy/UUqDDhbh6zFNghWMoOnFHZGGw=;
+ b=RKVTfzY0+sEOlHZwMw4vPz+GvPXyX750p2mC7wWOXKxWfCoapA8MjCsz6G9dj02/wG
+ B3XA0COQxzdKlQnGZdkEIklM+WI1cCOz+NXBUmQAkuk6QYoRk2zuC5o5qdb+Waer+AG6
+ OJfpQmWIx+uSLeokuBis+oQjVfX0ehooADGOWTQJL7kvEiY2whnhENiIBsCY1yS7miFs
+ eIwDCSG3arqEXzSdyaQ8k4NCpo1gSL9V/1EeiI4I0/s0VJZhs1z0e/EcQVIbBvac32A4
+ s/tiDk2BF9PVxJ1n8cTLxrdDzppZo/ZkmBIG/TmGcUI4PbafbQvkNhTqwB0iH4JdKWBE
+ B1fw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=Q0CGByNGBLX5VAdHy/UUqDDhbh6zFNghWMoOnFHZGGw=;
+ b=bm+hg6xYCw9I3zI7YHw0+o8SR8NtFcpe9Ia4hfK/zGzZQQ08Aurm03f5chE3vl2c2K
+ cT1hBq4Dam3VPwFKAkCrOJb2nCujqENT/7jBMm3PibObJMxNeQmL4RQjLG37oJr/BY+9
+ v81KSMSNyEtbONg2n54afqN9yXN2FMUyW9EX/QGJDroimQSBRBnRP4iRKLz3117ZFUqd
+ /7rvs9uvjnR4m/lbQsfDS7ELSbVUrmg4jhxZ/HOEGF0sUUSk2hx12DHV7PYH/DG+fbe3
+ bU6itJpqDRcvmSTQQPCqKQDymi93iOI/6yG9J7ZTwT3+a6qV4e7gS9Lxtw1y7eFcLcoh
+ Wv3Q==
+X-Gm-Message-State: AOAM5319wtDsr7BN/UfS1qRNWsw9kzBUbKA4I29TTidqRhMhRV9k7GHU
+ Ao86flWGJF1fabI4q+iXoqHyRw==
+X-Google-Smtp-Source: ABdhPJxf1CW8M7Ti4tr+U9bXba0ZjdRcakxdnIlaD1AcyqYZi788mkJc1rFObUJoedvExK8OgSG5Tw==
+X-Received: by 2002:a17:902:c94f:b0:13b:8359:9506 with SMTP id
+ i15-20020a170902c94f00b0013b83599506mr9519028pla.33.1631550255767; 
+ Mon, 13 Sep 2021 09:24:15 -0700 (PDT)
+Received: from google.com (157.214.185.35.bc.googleusercontent.com.
+ [35.185.214.157])
+ by smtp.gmail.com with ESMTPSA id b16sm7768188pfr.138.2021.09.13.09.24.15
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 13 Sep 2021 09:24:15 -0700 (PDT)
+Date: Mon, 13 Sep 2021 16:24:11 +0000
+From: Sean Christopherson <seanjc@google.com>
+To: Juergen Gross <jgross@suse.com>
+Subject: Re: [PATCH 2/2] kvm: rename KVM_MAX_VCPU_ID to KVM_MAX_VCPU_IDS
+Message-ID: <YT97K7yXyCrphyCt@google.com>
+References: <20210913135745.13944-1-jgross@suse.com>
+ <20210913135745.13944-3-jgross@suse.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-XM-SPF: eid=1mPoiJ-00GFz6-JY; ; ; mid=<87y280o38q.fsf@disp2133>; ; ;
- hst=in02.mta.xmission.com; ; ; ip=68.227.160.95; ; ; frm=ebiederm@xmission.com;
- ; ; spf=neutral
-X-XM-AID: U2FsdGVkX19YOxK9unwbVjxKnnW7IzmHNswDYE8PXPw=
-X-SA-Exim-Connect-IP: 68.227.160.95
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: [PATCH RESEND v3 6/6] powerpc/signal: Use
- unsafe_copy_siginfo_to_user()
-X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210913135745.13944-3-jgross@suse.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,98 +92,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org, Wanpeng Li <wanpengli@tencent.com>, kvm@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linux-kselftest@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Shuah Khan <shuah@kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>, Joerg Roedel <joro@8bytes.org>,
+ Huacai Chen <chenhuacai@kernel.org>,
+ Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>,
+ Ingo Molnar <mingo@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
+ kvm-ppc@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
+ Shuah Khan <skhan@linuxfoundation.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Jim Mattson <jmattson@google.com>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-mips@vger.kernel.org,
+ Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ebiederm@xmission.com (Eric W. Biederman) writes:
+On Mon, Sep 13, 2021, Juergen Gross wrote:
+> KVM_MAX_VCPU_ID is not specifying the highest allowed vcpu-id, but the
+> number of allowed vcpu-ids. This has already led to confusion, so
+> rename KVM_MAX_VCPU_ID to KVM_MAX_VCPU_IDS to make its semantics more
+> clear
 
-> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
->
->> Use unsafe_copy_siginfo_to_user() in order to do the copy
->> within the user access block.
->>
->> On an mpc 8321 (book3s/32) the improvment is about 5% on a process
->> sending a signal to itself.
-
-If you can't make function calls from an unsafe macro there is another
-way to handle this that doesn't require everything to be inline.
-
-From a safety perspective it is probably even a better approach.
-
-Eric
-
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 0608581967f0..1b30bb78b863 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -205,6 +205,12 @@ struct sigframe {
- 	int			abigap[56];
- };
- 
-+#ifdef CONFIG_PPC64
-+# define user_siginfo_t		compat_siginfo_t
-+#else
-+# define user_siginfo_t		siginfo_t
-+#endif
-+
- /*
-  *  When we have rt signals to deliver, we set up on the
-  *  user stack, going down from the original stack pointer:
-@@ -217,11 +223,7 @@ struct sigframe {
-  *
-  */
- struct rt_sigframe {
--#ifdef CONFIG_PPC64
--	compat_siginfo_t info;
--#else
--	struct siginfo info;
--#endif
-+	user_siginfo_t info;
- 	struct ucontext	uc;
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	struct ucontext	uc_transact;
-@@ -712,7 +714,7 @@ static long restore_tm_user_regs(struct pt_regs *regs, struct mcontext __user *s
- 
- #ifdef CONFIG_PPC64
- 
--#define copy_siginfo_to_user	copy_siginfo_to_user32
-+#define copy_siginfo_to_external	copy_siginfo_to_external32
- 
- #endif /* CONFIG_PPC64 */
- 
-@@ -731,6 +733,7 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	struct pt_regs *regs = tsk->thread.regs;
- 	/* Save the thread's msr before get_tm_stackpointer() changes it */
- 	unsigned long msr = regs->msr;
-+	user_siginfo_t uinfo;
- 
- 	/* Set up Signal Frame */
- 	frame = get_sigframe(ksig, tsk, sizeof(*frame), 1);
-@@ -743,6 +746,8 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	else
- 		prepare_save_user_regs(1);
- 
-+	copy_siginfo_to_external(&uinfo, &ksig->info);
-+
- 	if (!user_access_begin(frame, sizeof(*frame)))
- 		goto badframe;
- 
-@@ -778,12 +783,10 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 		asm("dcbst %y0; sync; icbi %y0; sync" :: "Z" (mctx->mc_pad[0]));
- 	}
- 	unsafe_put_sigset_t(&frame->uc.uc_sigmask, oldset, failed);
-+	unsafe_copy_to_user(&frame->info, &uinfo, failed);
- 
- 	user_access_end();
- 
--	if (copy_siginfo_to_user(&frame->info, &ksig->info))
--		goto badframe;
--
- 	regs->link = tramp;
- 
- #ifdef CONFIG_PPC_FPU_REGS
-
-Eric
+My hesitation with this rename is that the max _number_ of IDs is not the same
+thing as the max allowed ID.  E.g. on x86, given a capability that enumerates the
+max number of IDs, I would expect to be able to create vCPUs with arbitrary 32-bit
+x2APIC IDs so long as the total number of IDs is below the max.
