@@ -2,67 +2,64 @@ Return-Path: <SRS0=+bYb=OD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57960C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 12:59:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78D74C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 13:48:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 98EF260FDA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 12:59:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 98EF260FDA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id CA37061355
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 13:48:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CA37061355
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H7RQB1YzWz3052
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 22:59:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H7SVZ2YHdz3000
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 23:48:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ smtp.mailfrom=kaod.org (client-ip=178.33.105.233;
+ helo=2.mo552.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+X-Greylist: delayed 363 seconds by postgrey-1.36 at boromir;
+ Mon, 13 Sep 2021 23:47:38 AEST
+Received: from 2.mo552.mail-out.ovh.net (2.mo552.mail-out.ovh.net
+ [178.33.105.233])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H7RPj2Qyzz2xtL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Sep 2021 22:59:04 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4H7RPd63znz9sXR;
- Mon, 13 Sep 2021 14:59:01 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id KLpZEGWF4n4X; Mon, 13 Sep 2021 14:59:01 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4H7RPc3jNcz9sXP;
- Mon, 13 Sep 2021 14:59:00 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 69FD78B767;
- Mon, 13 Sep 2021 14:59:00 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id lqhF7-Io2zmO; Mon, 13 Sep 2021 14:59:00 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.107])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 459F88B763;
- Mon, 13 Sep 2021 14:59:00 +0200 (CEST)
-Subject: Re: [PATCH v2 3/5] signal: Add unsafe_copy_siginfo_to_user()
-To: Christoph Hellwig <hch@infradead.org>
-References: <fd7938d94008711d441551c06b25a033669a0618.1629732940.git.christophe.leroy@csgroup.eu>
- <a94be61f008ab29c231b805e1a97e9dab35cb0cc.1629732940.git.christophe.leroy@csgroup.eu>
- <YTB1F7o15FrxmmP1@infradead.org>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <a98f9e92-f304-9f69-c5b2-eed628846e4c@csgroup.eu>
-Date: Mon, 13 Sep 2021 14:59:00 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H7STk5MFgz2yKR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Sep 2021 23:47:38 +1000 (AEST)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.1.237])
+ by mo552.mail-out.ovh.net (Postfix) with ESMTPS id 2CB1321542;
+ Mon, 13 Sep 2021 13:41:27 +0000 (UTC)
+Received: from kaod.org (37.59.142.98) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Mon, 13 Sep
+ 2021 15:41:27 +0200
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-98R002c3902780-574b-4e3f-813f-8b4d8019164a,
+ 7CA125ACC991A0BE3D2311CBE60F5A293341D68C) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 82.64.250.170
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/xics: Set the IRQ chip data for the ICS native backend
+Date: Mon, 13 Sep 2021 15:40:56 +0200
+Message-ID: <20210913134056.3761960-1-clg@kaod.org>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-In-Reply-To: <YTB1F7o15FrxmmP1@infradead.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr-FR
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.98]
+X-ClientProxiedBy: DAG5EX2.mxp5.local (172.16.2.42) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: a08d4afa-d702-4c46-aa61-47f32c369449
+X-Ovh-Tracer-Id: 6126865821078293469
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: 0
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrudegjedgieehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucenucfjughrpefhvffufffkofggtgfgihesthekredtredtjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeefvdeutddvieekkeeuhfekudejjefggffghfetgfelgfevveefgefhvdegtdelveenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddrleeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopegtlhhgsehkrghougdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,31 +71,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Paul Mackerras <paulus@samba.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The ICS native driver relies on the IRQ chip data to find the struct
+'ics_native' describing the ICS controller but it was removed by commit
+248af248a8f4 ("powerpc/xics: Rename the map handler in a check handler").
+Revert this change to fix the Microwatt SoC platform.
 
+Fixes: 248af248a8f4 ("powerpc/xics: Rename the map handler in a check handler")
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
+---
+ arch/powerpc/sysdev/xics/xics-common.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Le 02/09/2021 à 08:54, Christoph Hellwig a écrit :
-> On Mon, Aug 23, 2021 at 03:35:53PM +0000, Christophe Leroy wrote:
->> In the same spirit as commit fb05121fd6a2 ("signal: Add
->> unsafe_get_compat_sigset()"), implement an 'unsafe' version of
->> copy_siginfo_to_user() in order to use it within user access blocks.
->>
->> For that, also add an 'unsafe' version of clear_user().
-> 
-> I'm a little worried about all these unsafe helper in powerpc and the
-> ever increasing scope of the unsafe sections.  Can you at least at
-> powerpc support to objtool to verify them?  objtool verifications has
-> helped to find quite a few bugs in unsafe sections on x86.
+diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
+index 5c1a157a83b8..244a727c6ba4 100644
+--- a/arch/powerpc/sysdev/xics/xics-common.c
++++ b/arch/powerpc/sysdev/xics/xics-common.c
+@@ -348,9 +348,9 @@ static int xics_host_map(struct irq_domain *domain, unsigned int virq,
+ 	if (xics_ics->check(xics_ics, hwirq))
+ 		return -EINVAL;
+ 
+-	/* No chip data for the XICS domain */
++	/* Let the ICS be the chip data for the XICS domain. For ICS native */
+ 	irq_domain_set_info(domain, virq, hwirq, xics_ics->chip,
+-			    NULL, handle_fasteoi_irq, NULL, NULL);
++			    xics_ics, handle_fasteoi_irq, NULL, NULL);
+ 
+ 	return 0;
+ }
+-- 
+2.31.1
 
-Ok, I've started looking at it, I have not found any work at all on 
-objtool for powerpc. I'll see if I can draft something from the ARM64 
-tentatives.
-
-Christophe
