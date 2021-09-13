@@ -2,76 +2,81 @@ Return-Path: <SRS0=+bYb=OD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17AD6C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 14:10:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A84F4C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 14:59:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 99B9060EE0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 14:10:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 99B9060EE0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=suse.com
+	by mail.kernel.org (Postfix) with ESMTPS id B74F260F6D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Sep 2021 14:59:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B74F260F6D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H7T0Y1Vcwz307x
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 00:10:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H7V4N72gkz2yNY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 00:59:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=SppJC966;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=qnKybz0B;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=suse.com (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
- envelope-from=jgross@suse.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=susede1 header.b=SppJC966; dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::735;
+ helo=mail-qk1-x735.google.com; envelope-from=oohall@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=qnKybz0B; dkim-atps=neutral
+Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com
+ [IPv6:2607:f8b0:4864:20::735])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H7SzF5jXxz2yLV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Sep 2021 00:09:45 +1000 (AEST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
- (No client certificate requested)
- by smtp-out1.suse.de (Postfix) with ESMTPS id 5A2BB21E9F;
- Mon, 13 Sep 2021 13:57:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
- t=1631541470; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=xJEQIgnm1bmcNwzuG5m4RwXUlGdjbwBKYPhETx8x9T4=;
- b=SppJC966jR24NoJJCtelnYM/GwS+HnuxXgAyhhwfiHlT68GxC5oRuf9dfylpsoVz4vbsCM
- yhoWzylsRQYhrOWqirpfhZncs5cXGrEoRdPGjUHuC1RbzS/ozy8YMOkJeAYnhpONXZsMAg
- SamdwZZojI6B4jKKkB9KAZ3uub1koGQ=
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
- (No client certificate requested)
- by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7B98113AB2;
- Mon, 13 Sep 2021 13:57:49 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
- by imap2.suse-dmz.suse.de with ESMTPSA id 6MxvHN1YP2FMUwAAMHmgww
- (envelope-from <jgross@suse.com>); Mon, 13 Sep 2021 13:57:49 +0000
-From: Juergen Gross <jgross@suse.com>
-To: kvm@vger.kernel.org, x86@kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
- kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kselftest@vger.kernel.org
-Subject: [PATCH 2/2] kvm: rename KVM_MAX_VCPU_ID to KVM_MAX_VCPU_IDS
-Date: Mon, 13 Sep 2021 15:57:44 +0200
-Message-Id: <20210913135745.13944-3-jgross@suse.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20210913135745.13944-1-jgross@suse.com>
-References: <20210913135745.13944-1-jgross@suse.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H7V3d0kdXz2xrT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Sep 2021 00:58:34 +1000 (AEST)
+Received: by mail-qk1-x735.google.com with SMTP id t190so10781941qke.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Sep 2021 07:58:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=PFD9mJaBzJKTsxm4rXZDM/y2enE6R8R76CfOiZbw4HU=;
+ b=qnKybz0B5oVmKPyqgPGoezg+mvumei8Ol/qbWrUBL+z62ewI9zUSkCFC3ftaPqEqcc
+ gLXcRv87aSGCie0vaSkzGAl3kQXgkC4/cMVUpMQKuDFKsBoAS1IHqTdxQysnbdczJOs9
+ Pu4STzHY57inMcRXJrQE9hKsnpZnUcw1041ZMn2SnOmiKaSW4im8jgqnPDHDkRaS2hMO
+ FCbdndbc1iePtXhGd4fN5oN1itGrF+DfjK1T8umBrN34OGUzoiXQwF4C2w00P084yeq2
+ OrUAHxHaX2SdmfZ1QcojHh7rP7jANKFxLBSi96UHn/K2atcNAZ+bcklkrFxEjvEReeXV
+ MQ/Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=PFD9mJaBzJKTsxm4rXZDM/y2enE6R8R76CfOiZbw4HU=;
+ b=AFmrqnO1yUoqYewD3TcVdhDaFA1Cv/4OBaVBq1jXrsprww7i8/Ia0++xBVPO6rXyPi
+ 1N9nI7KdMftY5wW28Oifvh2tpNq9yaWiCU/uH8EVj/4lZjwW60gf7KQLjPgVCpZRa42F
+ g3W58ql7tQYXNfCnELq7j0GRBdZcvDxIzQk5SvBOO+9Argmh+sVf6G5SXiVpQagI7Bps
+ yv2//H04/u014dhhTATxi8uuwto6/pm7gpz90BsKaiEMkY37hAthPTCLD2nlfKnt8JHn
+ WYNZpgeTVZ5hOBvIottiSmMDdWpgr4CKY6gllukQN88pYsCGA/rkL/IauSjp+zvE/0Ed
+ d9rQ==
+X-Gm-Message-State: AOAM532izI/zQxX8ZkjeX9xPLRcpv+aPlE1Bz6eb6G3St6gpwhR11E0g
+ HhrNDshCBCPlkElwNjkNEWHZx1tT/GJIkIyRsYY=
+X-Google-Smtp-Source: ABdhPJwh26MSRjVjkR7VkLGGkQY2c6BDDe1IfCUBySjVHMeGamtvhofk0Vh4g8ftw3wylX8g4u0wJNN4bwP+UgU/wSA=
+X-Received: by 2002:a05:620a:254d:: with SMTP id
+ s13mr16048qko.264.1631545111542; 
+ Mon, 13 Sep 2021 07:58:31 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20210910141940.2598035-1-schnelle@linux.ibm.com>
+ <20210910141940.2598035-2-schnelle@linux.ibm.com>
+ <87wnnnl67a.fsf@mpe.ellerman.id.au>
+In-Reply-To: <87wnnnl67a.fsf@mpe.ellerman.id.au>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Tue, 14 Sep 2021 00:58:20 +1000
+Message-ID: <CAOSf1CEQB_Fz_yF0pgs6xqJJ2Say1a2XFjOedO2mE=Qn_BgbnQ@mail.gmail.com>
+Subject: Re: [PATCH 1/1] powerpc: Drop superfluous pci_dev_is_added() calls
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,242 +88,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Wanpeng Li <wanpengli@tencent.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Shuah Khan <shuah@kernel.org>,
- Jonathan Corbet <corbet@lwn.net>, Joerg Roedel <joro@8bytes.org>,
- Huacai Chen <chenhuacai@kernel.org>,
- Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>,
- Ingo Molnar <mingo@redhat.com>, Eduardo Habkost <ehabkost@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Shuah Khan <skhan@linuxfoundation.org>,
- Thomas Gleixner <tglx@linutronix.de>, Jim Mattson <jmattson@google.com>,
- Juergen Gross <jgross@suse.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Sean Christopherson <seanjc@google.com>, Paolo Bonzini <pbonzini@redhat.com>,
- Vitaly Kuznetsov <vkuznets@redhat.com>
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Niklas Schnelle <schnelle@linux.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-pci <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-KVM_MAX_VCPU_ID is not specifying the highest allowed vcpu-id, but the
-number of allowed vcpu-ids. This has already led to confusion, so
-rename KVM_MAX_VCPU_ID to KVM_MAX_VCPU_IDS to make its semantics more
-clear
+On Sat, Sep 11, 2021 at 9:09 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> Niklas Schnelle <schnelle@linux.ibm.com> writes:
+> > On powerpc, pci_dev_is_added() is called as part of SR-IOV fixups
+> > that are done under pcibios_add_device() which in turn is only called in
+> > pci_device_add() whih is called when a PCI device is scanned.
+>
+> Thanks for cleaning this up for us.
+>
+> > Now pci_dev_assign_added() is called in pci_bus_add_device() which is
+> > only called after scanning the device. Thus pci_dev_is_added() is always
+> > false and can be dropped.
+>
+> My only query is whether we can pin down when that changed.
+>
+> Oliver said:
+>
+>   The use of pci_dev_is_added() in arch/powerpc was because in the past
+>   pci_bus_add_device() could be called before pci_device_add(). That was
+>   fixed a while ago so It should be safe to remove those calls now.
+>
+> I trawled back through the history a bit but I can't remember/find which
+> commit changed that, Oliver can you remember?
 
-Suggested-by: Eduardo Habkost <ehabkost@redhat.com>
-Signed-off-by: Juergen Gross <jgross@suse.com>
----
- Documentation/virt/kvm/devices/xics.rst            | 2 +-
- Documentation/virt/kvm/devices/xive.rst            | 2 +-
- arch/mips/kvm/mips.c                               | 2 +-
- arch/powerpc/include/asm/kvm_book3s.h              | 2 +-
- arch/powerpc/include/asm/kvm_host.h                | 4 ++--
- arch/powerpc/kvm/book3s_xive.c                     | 2 +-
- arch/powerpc/kvm/powerpc.c                         | 2 +-
- arch/x86/include/asm/kvm_host.h                    | 2 +-
- arch/x86/kvm/ioapic.c                              | 2 +-
- arch/x86/kvm/ioapic.h                              | 4 ++--
- arch/x86/kvm/x86.c                                 | 2 +-
- include/linux/kvm_host.h                           | 4 ++--
- tools/testing/selftests/kvm/kvm_create_max_vcpus.c | 2 +-
- virt/kvm/kvm_main.c                                | 2 +-
- 14 files changed, 17 insertions(+), 17 deletions(-)
+Yeah, on closer inspection that never happened. The re-ordering I was
+thinking of was when the boot-time BAR assignments were moved in
+3f068aae7a95 so they'd always occur before pci_bus_add_device() was
+called. I think I got that change mixed up with commit 30d87ef8b38d
+("powerpc/pci: Fix pcibios_setup_device() ordering") which moved some
+of what what pcibios_device_add() did into pcibios_bus_add_device() to
+harmonise the hot and coldplug paths.
 
-diff --git a/Documentation/virt/kvm/devices/xics.rst b/Documentation/virt/kvm/devices/xics.rst
-index 2d6927e0b776..bf32c77174ab 100644
---- a/Documentation/virt/kvm/devices/xics.rst
-+++ b/Documentation/virt/kvm/devices/xics.rst
-@@ -22,7 +22,7 @@ Groups:
-   Errors:
- 
-     =======  ==========================================
--    -EINVAL  Value greater than KVM_MAX_VCPU_ID.
-+    -EINVAL  Value greater than KVM_MAX_VCPU_IDS.
-     -EFAULT  Invalid user pointer for attr->addr.
-     -EBUSY   A vcpu is already connected to the device.
-     =======  ==========================================
-diff --git a/Documentation/virt/kvm/devices/xive.rst b/Documentation/virt/kvm/devices/xive.rst
-index 8bdf3dc38f01..8b5e7b40bdf8 100644
---- a/Documentation/virt/kvm/devices/xive.rst
-+++ b/Documentation/virt/kvm/devices/xive.rst
-@@ -91,7 +91,7 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
-     Errors:
- 
-       =======  ==========================================
--      -EINVAL  Value greater than KVM_MAX_VCPU_ID.
-+      -EINVAL  Value greater than KVM_MAX_VCPU_IDS.
-       -EFAULT  Invalid user pointer for attr->addr.
-       -EBUSY   A vCPU is already connected to the device.
-       =======  ==========================================
-diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index 75c6f264c626..562aa878b266 100644
---- a/arch/mips/kvm/mips.c
-+++ b/arch/mips/kvm/mips.c
-@@ -1073,7 +1073,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		r = KVM_MAX_VCPUS;
- 		break;
- 	case KVM_CAP_MAX_VCPU_ID:
--		r = KVM_MAX_VCPU_ID;
-+		r = KVM_MAX_VCPU_IDS;
- 		break;
- 	case KVM_CAP_MIPS_FPU:
- 		/* We don't handle systems with inconsistent cpu_has_fpu */
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index caaa0f592d8e..3d31f2c59e43 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -434,7 +434,7 @@ extern int kvmppc_h_logical_ci_store(struct kvm_vcpu *vcpu);
- #define SPLIT_HACK_OFFS			0xfb000000
- 
- /*
-- * This packs a VCPU ID from the [0..KVM_MAX_VCPU_ID) space down to the
-+ * This packs a VCPU ID from the [0..KVM_MAX_VCPU_IDS) space down to the
-  * [0..KVM_MAX_VCPUS) space, using knowledge of the guest's core stride
-  * (but not its actual threading mode, which is not available) to avoid
-  * collisions.
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 080a7feb7731..59cb38b04ede 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -33,11 +33,11 @@
- 
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- #include <asm/kvm_book3s_asm.h>		/* for MAX_SMT_THREADS */
--#define KVM_MAX_VCPU_ID		(MAX_SMT_THREADS * KVM_MAX_VCORES)
-+#define KVM_MAX_VCPU_IDS	(MAX_SMT_THREADS * KVM_MAX_VCORES)
- #define KVM_MAX_NESTED_GUESTS	KVMPPC_NR_LPIDS
- 
- #else
--#define KVM_MAX_VCPU_ID		KVM_MAX_VCPUS
-+#define KVM_MAX_VCPU_IDS	KVM_MAX_VCPUS
- #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
- 
- #define __KVM_HAVE_ARCH_INTC_INITIALIZED
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index a18db9e16ea4..225008882958 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -1928,7 +1928,7 @@ int kvmppc_xive_set_nr_servers(struct kvmppc_xive *xive, u64 addr)
- 
- 	pr_devel("%s nr_servers=%u\n", __func__, nr_servers);
- 
--	if (!nr_servers || nr_servers > KVM_MAX_VCPU_ID)
-+	if (!nr_servers || nr_servers > KVM_MAX_VCPU_IDS)
- 		return -EINVAL;
- 
- 	mutex_lock(&xive->lock);
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index b4e6f70b97b9..8ab90ce8738f 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -649,7 +649,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		r = KVM_MAX_VCPUS;
- 		break;
- 	case KVM_CAP_MAX_VCPU_ID:
--		r = KVM_MAX_VCPU_ID;
-+		r = KVM_MAX_VCPU_IDS;
- 		break;
- #ifdef CONFIG_PPC_BOOK3S_64
- 	case KVM_CAP_PPC_GET_SMMU_INFO:
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index f8f48a7ec577..261b7d857fc0 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -50,7 +50,7 @@
-  * so ratio of 4 should be enough.
-  */
- #define KVM_VCPU_ID_RATIO 4
--#define KVM_MAX_VCPU_ID (KVM_MAX_VCPUS * KVM_VCPU_ID_RATIO)
-+#define KVM_MAX_VCPU_IDS (KVM_MAX_VCPUS * KVM_VCPU_ID_RATIO)
- 
- /* memory slots that are not exposed to userspace */
- #define KVM_PRIVATE_MEM_SLOTS 3
-diff --git a/arch/x86/kvm/ioapic.c b/arch/x86/kvm/ioapic.c
-index 698969e18fe3..3358123be946 100644
---- a/arch/x86/kvm/ioapic.c
-+++ b/arch/x86/kvm/ioapic.c
-@@ -96,7 +96,7 @@ static unsigned long ioapic_read_indirect(struct kvm_ioapic *ioapic,
- static void rtc_irq_eoi_tracking_reset(struct kvm_ioapic *ioapic)
- {
- 	ioapic->rtc_status.pending_eoi = 0;
--	bitmap_zero(ioapic->rtc_status.dest_map.map, KVM_MAX_VCPU_ID);
-+	bitmap_zero(ioapic->rtc_status.dest_map.map, KVM_MAX_VCPU_IDS);
- }
- 
- static void kvm_rtc_eoi_tracking_restore_all(struct kvm_ioapic *ioapic);
-diff --git a/arch/x86/kvm/ioapic.h b/arch/x86/kvm/ioapic.h
-index 27e61ff3ac3e..e66e620c3bed 100644
---- a/arch/x86/kvm/ioapic.h
-+++ b/arch/x86/kvm/ioapic.h
-@@ -39,13 +39,13 @@ struct kvm_vcpu;
- 
- struct dest_map {
- 	/* vcpu bitmap where IRQ has been sent */
--	DECLARE_BITMAP(map, KVM_MAX_VCPU_ID);
-+	DECLARE_BITMAP(map, KVM_MAX_VCPU_IDS);
- 
- 	/*
- 	 * Vector sent to a given vcpu, only valid when
- 	 * the vcpu's bit in map is set
- 	 */
--	u8 vectors[KVM_MAX_VCPU_ID];
-+	u8 vectors[KVM_MAX_VCPU_IDS];
- };
- 
- 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 28ef14155726..fec43997522b 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -4070,7 +4070,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		r = KVM_MAX_VCPUS;
- 		break;
- 	case KVM_CAP_MAX_VCPU_ID:
--		r = KVM_MAX_VCPU_ID;
-+		r = KVM_MAX_VCPU_IDS;
- 		break;
- 	case KVM_CAP_PV_MMU:	/* obsolete */
- 		r = 0;
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 041ca7f15ea4..d2b405170f6e 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -39,8 +39,8 @@
- #include <asm/kvm_host.h>
- #include <linux/kvm_dirty_ring.h>
- 
--#ifndef KVM_MAX_VCPU_ID
--#define KVM_MAX_VCPU_ID KVM_MAX_VCPUS
-+#ifndef KVM_MAX_VCPU_IDS
-+#define KVM_MAX_VCPU_IDS KVM_MAX_VCPUS
- #endif
- 
- /*
-diff --git a/tools/testing/selftests/kvm/kvm_create_max_vcpus.c b/tools/testing/selftests/kvm/kvm_create_max_vcpus.c
-index 0299cd81b8ba..f968dfd4ee88 100644
---- a/tools/testing/selftests/kvm/kvm_create_max_vcpus.c
-+++ b/tools/testing/selftests/kvm/kvm_create_max_vcpus.c
-@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
- 		kvm_max_vcpu_id = kvm_max_vcpus;
- 
- 	TEST_ASSERT(kvm_max_vcpu_id >= kvm_max_vcpus,
--		    "KVM_MAX_VCPU_ID (%d) must be at least as large as KVM_MAX_VCPUS (%d).",
-+		    "KVM_MAX_VCPU_IDS (%d) must be at least as large as KVM_MAX_VCPUS (%d).",
- 		    kvm_max_vcpu_id, kvm_max_vcpus);
- 
- 	test_vcpu_creation(0, kvm_max_vcpus);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 439d3b4cd1a9..62fcbc897e1c 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -3557,7 +3557,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
- 	struct kvm_vcpu *vcpu;
- 	struct page *page;
- 
--	if (id >= KVM_MAX_VCPU_ID)
-+	if (id >= KVM_MAX_VCPU_IDS)
- 		return -EINVAL;
- 
- 	mutex_lock(&kvm->lock);
--- 
-2.26.2
+As far as I can tell the pci_dev_is_added() check has been pointless
+since the code was added in 6e628c7d33d9 ("powerpc/powernv: Reserve
+additional space for IOV BAR according to the number of total_pe").
+Even back then pci_device_add() was called first in both the normal
+and OF based PCI probing paths so there's no circumstance where that
+code would see the added flag set.
 
+That patch was part of the PowerNV SRIOV support series which went
+through quite a few iterations. My best guess is that check might have
+been needed in an earlier version and was just carried forward until
+it got merged. I didn't dig too deeply into the history though.
+
+Reviewed-by: Oliver O'Halloran <oohall@gmail.com>
