@@ -2,91 +2,72 @@ Return-Path: <SRS0=BtxG=OE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,FAKE_REPLY_A1,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35342C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 16:00:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45E8FC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 16:00:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 70A1961155
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 16:00:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 70A1961155
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 593A561151
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 16:00:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 593A561151
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H87N66kmTz2yPT
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Sep 2021 02:00:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H87Nl5BX0z2yNT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Sep 2021 02:00:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=bXLrDvRw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=BjUFbC9I;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::236;
- helo=mail-lj1-x236.google.com; envelope-from=torvalds@linuxfoundation.org;
+ smtp.helo=mo4-p02-ob.smtp.rzone.de (client-ip=81.169.146.171;
+ helo=mo4-p02-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.a=rsa-sha256 header.s=google header.b=bXLrDvRw; 
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=BjUFbC9I; 
  dkim-atps=neutral
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com
- [IPv6:2a00:1450:4864:20::236])
+Received: from mo4-p02-ob.smtp.rzone.de (mo4-p02-ob.smtp.rzone.de
+ [81.169.146.171])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H87MQ1kF8z2xxn
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H87MQ2qZRz2xxn
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2021 01:59:28 +1000 (AEST)
-Received: by mail-lj1-x236.google.com with SMTP id f2so24847626ljn.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Sep 2021 08:59:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux-foundation.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=XpWi4volfcYSm2oFWphGxI70Xoc4gQDszmXfggbAPag=;
- b=bXLrDvRwiE9LUrsUdTaOb8qv3MpstEI39Z126QnyB2PTkNIRA+z5Ylw/tbECp2MHmV
- gX1JHV2JOFK1e1MJCTTlwV1kibUe3fFGD3LyBUKt18UoGfT0okDbQ+10t1fJme/j5P5U
- D2vgNrnv1RgcRafeCGUDJ8RsTcI/ITO4E3K7Y=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=XpWi4volfcYSm2oFWphGxI70Xoc4gQDszmXfggbAPag=;
- b=6nOPHNfgiMdiTi0B2K3aZrXIMHr9ybQz+d7gADdSSEbzf8+JcJe6n/V5qeMBqZEV5K
- AKY7y/6tlL5Suh9sNLfhVCYGGY41av+bv5XWOaneDIv/Bwl8sZXTPylQg7l8pN409+1b
- eTm2ViZGTbotlq+Ozcy1+mV88py/E+2WD14pAAwKCWbqJrCpf+19HHuXNDhmUYjGAfKL
- 4SSAD66FIGEuTnPyEbLCIhca7msDdD0NE4+f+IwiQSuvPwBDMLuZ8Tq2UKorfb38+lZw
- aqxY4fb/8b6sB1JpFd+jhe8LnYy5/TATgXUVub9KJWdb2qHZxc7pzsD02JMsxNazW+k7
- H6jA==
-X-Gm-Message-State: AOAM531rq7o1L47hRvQ+T1M84KVZZhKb1DDTPyMrYSVEThdWnLoU9rVu
- rzVfy5nu+J66azRAB41SpEMdIsRo4qp8eKWdCuk=
-X-Google-Smtp-Source: ABdhPJw/qsG4reje+RXXyWydLZHAIRH/xx9oJK7KufmhCYCq0X+s6dlQDxWJfAKtmNUi/KalPriKmg==
-X-Received: by 2002:a05:651c:3dd:: with SMTP id
- f29mr16359738ljp.69.1631635165038; 
- Tue, 14 Sep 2021 08:59:25 -0700 (PDT)
-Received: from mail-lj1-f175.google.com (mail-lj1-f175.google.com.
- [209.85.208.175])
- by smtp.gmail.com with ESMTPSA id r2sm1386658ljj.14.2021.09.14.08.59.24
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 14 Sep 2021 08:59:24 -0700 (PDT)
-Received: by mail-lj1-f175.google.com with SMTP id w4so24797281ljh.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Sep 2021 08:59:24 -0700 (PDT)
-X-Received: by 2002:a2e:8107:: with SMTP id d7mr16501365ljg.68.1631635154125; 
- Tue, 14 Sep 2021 08:59:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1631635156;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=Date:Message-ID:To:Subject:From:Cc:Cc:Date:From:Subject:Sender;
+ bh=k9TIbzaI6YCzIIim5KA1yto+Q6vQDBo2qeUwWSXaJAY=;
+ b=BjUFbC9IHKRz/mEX/uXthUk4lN1ChBd2iHCRaR8VepJ3H3lAfkD7yK3maQ51RTSZ4D
+ Ls3MIruKK2ozwMKjSbxiZp+NrZVrnZHUlv6bZXxVNg9ktcR8CLL/gLgSlr3hL2zEPj8W
+ 7XSqdxKM99U0Ia3zC9u0ljpuv0OUlD89jBqLZEy4DoehYIqy9raC92Dmg8KAP5ASiJkV
+ j6pFMkJR8RSL0Jvm1jsmb3uoq/XLdHrruKDxpSdH48ew8pIKqqNzuOPv5gbuNIs6LStP
+ tGv4H3WlWFzEnk7afaSEF4m5Xw5lh4u/5KG8LUvA2or7FeAwhsRDsxNfHN+KGej8Q22h
+ G+2g==
+Authentication-Results: strato.com;
+    dkim=none
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPhQJ6mmIg736XZSO7Y3Xb2NMPx2Lg=="
+X-RZG-CLASS-ID: mo00
+Received: from Christians-iMac.fritz.box by smtp.strato.de (RZmta 47.33.3 AUTH)
+ with ESMTPSA id a03989x8EFxEFP3
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Tue, 14 Sep 2021 17:59:14 +0200 (CEST)
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: Re: [PATCH 2/2] kvm: rename KVM_MAX_VCPU_ID to, KVM_MAX_VCPU_IDS
+To: Juergen Gross <jgross@suse.com>
+Message-ID: <6d3333b1-05cc-103b-4bdb-88bec5e3e9fd@xenosoft.de>
+Date: Tue, 14 Sep 2021 17:59:13 +0200
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
+ Gecko/20100101 Thunderbird/78.14.0
 MIME-Version: 1.0
-References: <20210914121036.3975026-1-ardb@kernel.org>
- <20210914121036.3975026-6-ardb@kernel.org>
- <CAHk-=whLEofPLzzTKXN5etnH5WqsTPQRLVv8uQgHnx7c59omBg@mail.gmail.com>
- <CAMj1kXH_Q4a4Gsi0Xuw=YsV-b7Mu8TQndk3Ei-JFaRV=GSiqUQ@mail.gmail.com>
-In-Reply-To: <CAMj1kXH_Q4a4Gsi0Xuw=YsV-b7Mu8TQndk3Ei-JFaRV=GSiqUQ@mail.gmail.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 14 Sep 2021 08:58:58 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wiaVLChOjJ=7fdoQXKE4JHb98MjDtg8pPkA8EYfd5aj3g@mail.gmail.com>
-Message-ID: <CAHk-=wiaVLChOjJ=7fdoQXKE4JHb98MjDtg8pPkA8EYfd5aj3g@mail.gmail.com>
-Subject: Re: [RFC PATCH 5/8] sched: move CPU field back into thread_info if
- THREAD_INFO_IN_TASK=y
-To: Ard Biesheuvel <ardb@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,43 +79,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul Mackerras <paulus@samba.org>,
- linux-riscv <linux-riscv@lists.infradead.org>, Will Deacon <will@kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Russell King <linux@armlinux.org.uk>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Kees Cook <keescook@chromium.org>, Vasily Gorbik <gor@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Keith Packard <keithpac@amazon.com>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: x86@kernel.org, Wanpeng Li <wanpengli@tencent.com>,
+ mad skateman <madskateman@gmail.com>, kvm@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Darren Stevens <darren@stevens-zone.net>, Paul Mackerras <paulus@samba.org>,
+ linux-kselftest@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ Shuah Khan <shuah@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ Joerg Roedel <joro@8bytes.org>, "Huacai Chen, " <chenhuacai@kernel.org>,
+ "Aleksandar Markovic, " <aleksandar.qemu.devel@gmail.com>,
+ Ingo Molnar <mingo@redhat.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ kvm-ppc@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
+ Shuah Khan <skhan@linuxfoundation.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Jim Mattson <jmattson@google.com>, "Thomas Bogendoerfer,
+ " <tsbogend@alpha.franken.de>, linux-mips@vger.kernel.org,
+ Paolo Bonzini <pbonzini@redhat.com>, "Vitaly, Kuznetsov" <vkuznets@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 14, 2021 at 8:53 AM Ard Biesheuvel <ardb@kernel.org> wrote:
->
-> task_cpu() takes a 'const struct task_struct *', whereas
-> task_thread_info() takes a 'struct task_struct *'.
+Hello Juergen,
+Hello All,
 
-Oh, annoying, but that's easily fixed. Just make that
+Since the RC1 of kernel 5.13, -smp 2 and -smp 4 don't work with a 
+virtual e5500 QEMU KVM-HV machine anymore. [1]
+I see in the serial console, that the uImage doesn't load. I use the 
+following QEMU command for booting:
 
-   static inline struct thread_info *task_thread_info(struct
-task_struct *task) ..
+qemu-system-ppc64 -M ppce500 -cpu e5500 -enable-kvm -m 1024 -kernel 
+uImage -drive format=raw,file=MintPPC32-X5000.img,index=0,if=virtio 
+-netdev user,id=mynet0 -device virtio-net,netdev=mynet0 -append "rw 
+root=/dev/vda" -device virtio-vga -device virtio-mouse-pci -device 
+virtio-keyboard-pci -device pci-ohci,id=newusb -device 
+usb-audio,bus=newusb.0 -smp 4
 
-be a simple
+The kernels boot without KVM-HV.
 
-  #define task_thread_info(tsk) (&(tsk)->thread_info)
+Summary for KVM-HV:
 
-instead. That actually then matches the !THREAD_INFO_IN_TASK case anyway.
+-smp 1 -> works
+-smp 2 -> doesn't work
+-smp 3 -> works
+-smp 4 -> doesn't work
 
-Make the commit comment be about how that fixes the type problem.
+I used -smp 4 before the RC1 of kernel 5.13 because my FSL P5040 BookE 
+machine [2] has 4 cores.
 
-Because while in many cases inline functions are superior to macros,
-it clearly isn't the case in this case.
+Does this patch solve this issue? [3]
 
-              Linus
+Thanks,
+Christian
+
+[1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2021-May/229103.html
+[2] http://wiki.amiga.org/index.php?title=X5000
+[3] 
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2021-September/234152.html
