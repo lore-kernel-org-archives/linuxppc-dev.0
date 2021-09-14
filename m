@@ -2,74 +2,60 @@ Return-Path: <SRS0=BtxG=OE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53AFCC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 14:34:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EA8DC43217
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 14:34:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CD9B36108B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 14:34:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CD9B36108B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id F1BF661165
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Sep 2021 14:34:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org F1BF661165
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H85Sx477Lz30R8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Sep 2021 00:34:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H85Tp3Sf5z3c56
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Sep 2021 00:34:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jfnoiHVx;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=mchehab@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=jfnoiHVx; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H85Qv5323z303f
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2021 00:32:23 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4H85QZ3LsNz9sTc;
- Tue, 14 Sep 2021 16:32:06 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ClDP1IH7Kv4s; Tue, 14 Sep 2021 16:32:06 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4H85QS5Cxtz9sTb;
- Tue, 14 Sep 2021 16:32:00 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9F87A8B763;
- Tue, 14 Sep 2021 16:32:00 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id UmrbPnpnmO5F; Tue, 14 Sep 2021 16:32:00 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.204.207])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2CB6F8B774;
- Tue, 14 Sep 2021 16:32:00 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18EEVoj3336572
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 14 Sep 2021 16:31:50 +0200
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18EEVnf4336571;
- Tue, 14 Sep 2021 16:31:49 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, ebiederm@xmission.com,
- hch@infradead.org
-Subject: [PATCH v4 2/5] powerpc/signal: Include the new stack frame inside the
- user access block
-Date: Tue, 14 Sep 2021 16:31:24 +0200
-Message-Id: <b30478312af9b7f2ff09443635c04e18ad187ce6.1631629700.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H85RV0btSz3bsp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Sep 2021 00:32:54 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 9A1DD6113E;
+ Tue, 14 Sep 2021 14:32:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1631629970;
+ bh=bx3eNw9JOL5+zZqI1OEY2aJtfPAlh9PS4CL694WVv58=;
+ h=From:To:Cc:Subject:Date:From;
+ b=jfnoiHVxtBYsUSxOV6zLXSMXfjiZsRkW/G+dJeExP4I1rpLyg1xu+brEzSXipnnUQ
+ G63mVRCVPptiA1YRc1OkfLV3Sq+kOQf1j8O1LmnDKAQLWu9BoXE82mGjpZzuZXqpNo
+ Wufz0EQJT7oanxewUmhkJeBN59hgNK1m9UGiUm6gugfzRhzgV7nIA6lf+ycHcD0GOf
+ gFquyg6rQqabKsni1qxB8MHSIg4kMXd05oQeZ2HyW220DCSiytcSgVHZmrK2hlX7fX
+ Rjwll/xj1x/9c1ZtAiYZKjbTgnyHlT47ggTuS4P9ao26PM9XWCkfGgpEBkbRlrsaj5
+ rlIOKnnXeiP6A==
+Received: by mail.kernel.org with local (Exim 4.94.2)
+ (envelope-from <mchehab@kernel.org>)
+ id 1mQ9UN-000KkD-8d; Tue, 14 Sep 2021 16:32:47 +0200
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Subject: [PATCH v2 00/29] Change wildcards on ABI files
+Date: Tue, 14 Sep 2021 16:32:15 +0200
+Message-Id: <cover.1631629496.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.31.1
-In-Reply-To: <1718f38859d5366f82d5bef531f255cedf537b5d.1631629700.git.christophe.leroy@csgroup.eu>
-References: <1718f38859d5366f82d5bef531f255cedf537b5d.1631629700.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -83,186 +69,111 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+ Kees Cook <keescook@chromium.org>, Jonathan Corbet <corbet@lwn.net>,
+ Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, netdev@vger.kernel.org,
+ Richard Cochran <richardcochran@gmail.com>, Anton Vorontsov <anton@enomsg.org>,
+ linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>,
+ Tony Luck <tony.luck@intel.com>, Colin Cross <ccross@android.com>,
+ linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Peter Rosin <peda@axentia.se>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Include the new stack frame inside the user access block and set it up
-using unsafe_put_user().
+The ABI files are meant to be parsed via a script (scripts/get_abi.pl).
 
-On an mpc 8321 (book3s/32) the improvment is about 4% on a process
-sending a signal to itself.
+A new improvement on it will allow it to help to detect if an ABI description
+is missing, or if the What: field won't match the actual location of the symbol.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/kernel/signal_32.c | 29 +++++++++++++----------------
- arch/powerpc/kernel/signal_64.c | 14 +++++++-------
- 2 files changed, 20 insertions(+), 23 deletions(-)
+In order for get_abi.pl to convert What: into regex, changes are needed on
+existing ABI files, as the conversion should not be ambiguous.
 
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 0608581967f0..ff101e2b3bab 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -726,7 +726,7 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	struct rt_sigframe __user *frame;
- 	struct mcontext __user *mctx;
- 	struct mcontext __user *tm_mctx = NULL;
--	unsigned long newsp = 0;
-+	unsigned long __user *newsp;
- 	unsigned long tramp;
- 	struct pt_regs *regs = tsk->thread.regs;
- 	/* Save the thread's msr before get_tm_stackpointer() changes it */
-@@ -734,6 +734,7 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 
- 	/* Set up Signal Frame */
- 	frame = get_sigframe(ksig, tsk, sizeof(*frame), 1);
-+	newsp = (unsigned long __user *)((unsigned long)frame - (__SIGNAL_FRAMESIZE + 16));
- 	mctx = &frame->uc.uc_mcontext;
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	tm_mctx = &frame->uc_transact.uc_mcontext;
-@@ -743,7 +744,7 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	else
- 		prepare_save_user_regs(1);
- 
--	if (!user_access_begin(frame, sizeof(*frame)))
-+	if (!user_access_begin(newsp, __SIGNAL_FRAMESIZE + 16 + sizeof(*frame)))
- 		goto badframe;
- 
- 	/* Put the siginfo & fill in most of the ucontext */
-@@ -779,6 +780,9 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	}
- 	unsafe_put_sigset_t(&frame->uc.uc_sigmask, oldset, failed);
- 
-+	/* create a stack frame for the caller of the handler */
-+	unsafe_put_user(regs->gpr[1], newsp, failed);
-+
- 	user_access_end();
- 
- 	if (copy_siginfo_to_user(&frame->info, &ksig->info))
-@@ -790,13 +794,8 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	tsk->thread.fp_state.fpscr = 0;	/* turn off all fp exceptions */
- #endif
- 
--	/* create a stack frame for the caller of the handler */
--	newsp = ((unsigned long)frame) - (__SIGNAL_FRAMESIZE + 16);
--	if (put_user(regs->gpr[1], (u32 __user *)newsp))
--		goto badframe;
--
- 	/* Fill registers for signal handler */
--	regs->gpr[1] = newsp;
-+	regs->gpr[1] = (unsigned long)newsp;
- 	regs->gpr[3] = ksig->sig;
- 	regs->gpr[4] = (unsigned long)&frame->info;
- 	regs->gpr[5] = (unsigned long)&frame->uc;
-@@ -826,7 +825,7 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	struct sigframe __user *frame;
- 	struct mcontext __user *mctx;
- 	struct mcontext __user *tm_mctx = NULL;
--	unsigned long newsp = 0;
-+	unsigned long __user *newsp;
- 	unsigned long tramp;
- 	struct pt_regs *regs = tsk->thread.regs;
- 	/* Save the thread's msr before get_tm_stackpointer() changes it */
-@@ -834,6 +833,7 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- 
- 	/* Set up Signal Frame */
- 	frame = get_sigframe(ksig, tsk, sizeof(*frame), 1);
-+	newsp = (unsigned long __user *)((unsigned long)frame - __SIGNAL_FRAMESIZE);
- 	mctx = &frame->mctx;
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	tm_mctx = &frame->mctx_transact;
-@@ -843,7 +843,7 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	else
- 		prepare_save_user_regs(1);
- 
--	if (!user_access_begin(frame, sizeof(*frame)))
-+	if (!user_access_begin(newsp, __SIGNAL_FRAMESIZE + sizeof(*frame)))
- 		goto badframe;
- 	sc = (struct sigcontext __user *) &frame->sctx;
- 
-@@ -873,6 +873,8 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- 		unsafe_put_user(PPC_RAW_SC(), &mctx->mc_pad[1], failed);
- 		asm("dcbst %y0; sync; icbi %y0; sync" :: "Z" (mctx->mc_pad[0]));
- 	}
-+	/* create a stack frame for the caller of the handler */
-+	unsafe_put_user(regs->gpr[1], newsp, failed);
- 	user_access_end();
- 
- 	regs->link = tramp;
-@@ -881,12 +883,7 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	tsk->thread.fp_state.fpscr = 0;	/* turn off all fp exceptions */
- #endif
- 
--	/* create a stack frame for the caller of the handler */
--	newsp = ((unsigned long)frame) - __SIGNAL_FRAMESIZE;
--	if (put_user(regs->gpr[1], (u32 __user *)newsp))
--		goto badframe;
--
--	regs->gpr[1] = newsp;
-+	regs->gpr[1] = (unsigned long)newsp;
- 	regs->gpr[3] = ksig->sig;
- 	regs->gpr[4] = (unsigned long) sc;
- 	regs_set_return_ip(regs, (unsigned long) ksig->ka.sa.sa_handler);
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 7b1cd50bc4fb..d80ff83cacb9 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -847,13 +847,14 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 		struct task_struct *tsk)
- {
- 	struct rt_sigframe __user *frame;
--	unsigned long newsp = 0;
-+	unsigned long __user *newsp;
- 	long err = 0;
- 	struct pt_regs *regs = tsk->thread.regs;
- 	/* Save the thread's msr before get_tm_stackpointer() changes it */
- 	unsigned long msr = regs->msr;
- 
- 	frame = get_sigframe(ksig, tsk, sizeof(*frame), 0);
-+	newsp = (unsigned long __user *)((unsigned long)frame - __SIGNAL_FRAMESIZE);
- 
- 	/*
- 	 * This only applies when calling unsafe_setup_sigcontext() and must be
-@@ -862,7 +863,7 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 	if (!MSR_TM_ACTIVE(msr))
- 		prepare_setup_sigcontext(tsk);
- 
--	if (!user_write_access_begin(frame, sizeof(*frame)))
-+	if (!user_write_access_begin(newsp, __SIGNAL_FRAMESIZE + sizeof(*frame)))
- 		goto badframe;
- 
- 	unsafe_put_user(&frame->info, &frame->pinfo, badframe_block);
-@@ -900,6 +901,9 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 	}
- 
- 	unsafe_copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set), badframe_block);
-+	/* Allocate a dummy caller frame for the signal handler. */
-+	unsafe_put_user(regs->gpr[1], newsp, badframe_block);
-+
- 	user_write_access_end();
- 
- 	/* Save the siginfo outside of the unsafe block. */
-@@ -919,10 +923,6 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 		regs_set_return_ip(regs, (unsigned long) &frame->tramp[0]);
- 	}
- 
--	/* Allocate a dummy caller frame for the signal handler. */
--	newsp = ((unsigned long)frame) - __SIGNAL_FRAMESIZE;
--	err |= put_user(regs->gpr[1], (unsigned long __user *)newsp);
--
- 	/* Set up "regs" so we "return" to the signal handler. */
- 	if (is_elf2_task()) {
- 		regs->ctr = (unsigned long) ksig->ka.sa.sa_handler;
-@@ -947,7 +947,7 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 
- 	/* enter the signal handler in native-endian mode */
- 	regs_set_return_msr(regs, (regs->msr & ~MSR_LE) | (MSR_KERNEL & MSR_LE));
--	regs->gpr[1] = newsp;
-+	regs->gpr[1] = (unsigned long)newsp;
- 	regs->gpr[3] = ksig->sig;
- 	regs->result = 0;
- 	if (ksig->ka.sa.sa_flags & SA_SIGINFO) {
+One alternative would be to convert everything into regexes, but this
+would generate a huge amount of patches/changes. So, instead, let's
+touch only the ABI files that aren't following the de-facto wildcard 
+standards already found on most of the ABI files, e. g.:
+
+	/.../
+	*
+	<foo>
+	(option1|option2)
+	X
+	Y
+	Z
+	[0-9] (and variants)
+
+A couple of the patches here came from v1, but most of the patches were
+written to address things like rcN, where N is a wildcard.
+
+We can't teach get_abi.pl to use an uppercase "N" letter to be a wildcard,
+as the USB ABI already uses "N" inside some of their symbols, like 
+bNumEndpoints.
+
+Mauro Carvalho Chehab (29):
+  ABI: sysfs-bus-usb: better document variable argument
+  ABI: sysfs-tty: better document module name parameter
+  ABI: sysfs-kernel-slab: use a wildcard for the cache name
+  ABI: security: fix location for evm and ima_policy
+  ABI: sysfs-class-tpm: use wildcards for pcr-* nodes
+  ABI: sysfs-bus-rapidio: use wildcards on What definitions
+  ABI: sysfs-class-cxl: place "not in a guest" at description
+  ABI: sysfs-class-devfreq-event: use the right wildcards on What
+  ABI: sysfs-class-mic: use the right wildcards on What definitions
+  ABI: pstore: Fix What field
+  ABI: sysfs-class-typec: fix a bad What field
+  ABI: sysfs-ata: use a proper wildcard for ata_*
+  ABI: sysfs-class-infiniband: use wildcards on What definitions
+  ABI: sysfs-bus-pci: use wildcards on What definitions
+  ABI: sysfs-bus-soundwire-master: use wildcards on What definitions
+  ABI: sysfs-bus-soundwire-slave: use wildcards on What definitions
+  ABI: sysfs-class-gnss: use wildcards on What definitions
+  ABI: sysfs-class-mei: use wildcards on What definitions
+  ABI: sysfs-class-mux: use wildcards on What definitions
+  ABI: sysfs-class-pwm: use wildcards on What definitions
+  ABI: sysfs-class-rc: use wildcards on What definitions
+  ABI: sysfs-class-rc-nuvoton: use wildcards on What definitions
+  ABI: sysfs-class-uwb_rc: use wildcards on What definitions
+  ABI: sysfs-class-uwb_rc-wusbhc: use wildcards on What definitions
+  ABI: sysfs-devices-platform-dock: use wildcards on What definitions
+  ABI: sysfs-devices-system-cpu: use wildcards on What definitions
+  ABI: sysfs-firmware-efi-esrt: use wildcards on What definitions
+  ABI: sysfs-platform-sst-atom: use wildcards on What definitions
+  ABI: sysfs-ptp: use wildcards on What definitions
+
+ .../ABI/stable/sysfs-class-infiniband         | 64 ++++++-------
+ Documentation/ABI/stable/sysfs-class-tpm      |  2 +-
+ Documentation/ABI/testing/evm                 |  4 +-
+ Documentation/ABI/testing/ima_policy          |  2 +-
+ Documentation/ABI/testing/pstore              |  3 +-
+ Documentation/ABI/testing/sysfs-ata           |  2 +-
+ Documentation/ABI/testing/sysfs-bus-pci       |  2 +-
+ Documentation/ABI/testing/sysfs-bus-rapidio   | 32 +++----
+ .../ABI/testing/sysfs-bus-soundwire-master    |  2 +-
+ .../ABI/testing/sysfs-bus-soundwire-slave     |  2 +-
+ Documentation/ABI/testing/sysfs-bus-usb       | 16 ++--
+ Documentation/ABI/testing/sysfs-class-cxl     | 15 ++-
+ .../ABI/testing/sysfs-class-devfreq-event     | 12 +--
+ Documentation/ABI/testing/sysfs-class-gnss    |  2 +-
+ Documentation/ABI/testing/sysfs-class-mei     | 18 ++--
+ Documentation/ABI/testing/sysfs-class-mic     | 24 ++---
+ Documentation/ABI/testing/sysfs-class-mux     |  2 +-
+ Documentation/ABI/testing/sysfs-class-pwm     | 20 ++--
+ Documentation/ABI/testing/sysfs-class-rc      | 14 +--
+ .../ABI/testing/sysfs-class-rc-nuvoton        |  2 +-
+ Documentation/ABI/testing/sysfs-class-typec   |  2 +-
+ Documentation/ABI/testing/sysfs-class-uwb_rc  | 26 ++---
+ .../ABI/testing/sysfs-class-uwb_rc-wusbhc     | 10 +-
+ .../ABI/testing/sysfs-devices-platform-dock   | 10 +-
+ .../ABI/testing/sysfs-devices-system-cpu      | 16 ++--
+ .../ABI/testing/sysfs-firmware-efi-esrt       | 16 ++--
+ Documentation/ABI/testing/sysfs-kernel-slab   | 94 +++++++++----------
+ .../ABI/testing/sysfs-platform-sst-atom       |  2 +-
+ Documentation/ABI/testing/sysfs-ptp           | 30 +++---
+ Documentation/ABI/testing/sysfs-tty           | 32 +++----
+ 30 files changed, 242 insertions(+), 236 deletions(-)
+
 -- 
 2.31.1
+
 
