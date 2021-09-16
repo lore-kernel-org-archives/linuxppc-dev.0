@@ -2,81 +2,70 @@ Return-Path: <SRS0=Iv+L=OG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D458DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 09:41:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90E05C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 10:58:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 503526112E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 09:41:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 503526112E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id B249461241
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 10:58:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B249461241
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H9BtK63rwz2yHJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 19:41:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H9Db74FkYz2yWr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 20:58:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=jPcF0P+c;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=j+eAgDzF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::131;
- helo=mail-lf1-x131.google.com; envelope-from=rm.skakun@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=ellerman.id.au (client-ip=203.11.71.1; helo=ozlabs.org;
+ envelope-from=mpe@ellerman.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=jPcF0P+c; dkim-atps=neutral
-Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com
- [IPv6:2a00:1450:4864:20::131])
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=j+eAgDzF; 
+ dkim-atps=neutral
+Received: from ozlabs.org (ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H9BsX2f3Xz2xfD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Sep 2021 19:40:47 +1000 (AEST)
-Received: by mail-lf1-x131.google.com with SMTP id c8so16149223lfi.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Sep 2021 02:40:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=f4r5L82T8lVgmjDxktA/sisuupFmx7x30+6IlhMnYag=;
- b=jPcF0P+cHfyIuFllT9s+XQDbpTKL/DP/WZ12xBmDnC0LZJsbJeGpydQ+nj1jG3vyhQ
- MXkF+s9f9DZe82C3OUmuCqssXSW6Xy1D8PFT7XMOVkyU74aEXJL7HBQJL//WLAcHnHlT
- 6JAWY0XBjZ7XwV9xpdiHpNmVxyHHj5cWcQPRN6QHBZx1dqJ5C5ttXeA+io6IcnyWEI1q
- dTKH6A8fDq2gQ2GNoUTTZGZkVAhST9ZUJ+pdKy05GPpnzXG3EkGwi93ZGAuCS4fkFkql
- PEeqVQZUULvnCU7rK1P4+9aDwbpW2w/MkOtNecCIBYtcqqkOy4RB/4LhCrlLfobSeeON
- wc2A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=f4r5L82T8lVgmjDxktA/sisuupFmx7x30+6IlhMnYag=;
- b=bNFZSb59s+ZpSzrJW7KNdjCiPQ/dfcmInx1B1kmBtV5A29i2NgLaGwfNlXez2jQjz+
- Fx0iooFUrsq1dqioky/8YGEj4T+XnJzD2UVEmL+aHE3jYldGCFSnRxOSnus/IfPBfqM8
- KFW/vFbFNjQc2o715+aRWDz72UpCNOHIEGv3RPy4hT+9a0nSfEkssisQ/U5SoIOuIKUJ
- v5cRey/8n4Z+YQx4+eqMEEDNSbv96rt2RK+L69h4GTC+AkLNEk/sQG/P1KQCKMb8XiJz
- qLW5/eLc3m8XNgWHXM+8XvfmWYv6fzqcPZuP6UUwP4jOnB6i+4o1Xl7rhOmh9uZqBHPg
- GBcA==
-X-Gm-Message-State: AOAM533wBnRCs5BsLmtCVqUBj1cIsCWgqiSr8412qsosnfRVT/tkELhW
- 3kY+4si58Ri/Xe0myrPGri26HZConHKUnCfKbwA=
-X-Google-Smtp-Source: ABdhPJyIIyf4A7fhfDx7l6dTfpk1Ec/zzEqy4u9mdnznrZCiaqfyA9V5XQj08EEuePeq9U7P318zvMYzkOuwjxToNGM=
-X-Received: by 2002:a2e:1508:: with SMTP id s8mr3587923ljd.240.1631785239506; 
- Thu, 16 Sep 2021 02:40:39 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H9DZN5f6mz2y6F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Sep 2021 20:57:47 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1631789866;
+ bh=ZispAWzioAVbjxueTjRm+hiDj1TZC69+PxYkYh1lWBA=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=j+eAgDzFwK8z9d+QuWLV+d7slJps5jsQp4dRysMAI+bc19oxRoC8W4gbJ+tvcEdnd
+ OV2H7AyiQ98cJ1M1hJPOy9WzyJZGxPXetztdknB+TV3itWhfCbwUYqNda2H7F5rKGl
+ v5PQOTfUBCoqPjOcUHDrFXrCHKBTRaWHnRljM57KoahGZ14xe4Sym8HQsqfCoxiGrL
+ yvcZVavQ4K++0YtDp2ga0MRoW53N+PSqS04tLBKAsidBQPPNGm8+aTwzrp5OpyqfRw
+ vzHUXrwm9n8fw2XHX9ZJzr30Rl33MOMtza+QITtUVgXy8QQfXoMkk9SAlT5UJ6ujxi
+ mleoa0SUsg08Q==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4H9DZJ1Ny9z9sW8;
+ Thu, 16 Sep 2021 20:57:44 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/3] perf: Add macros to specify onchip L2/L3 accesses
+In-Reply-To: <YUCMUZbchMjD54eY@hirez.programming.kicks-ass.net>
+References: <20210904064932.307610-1-kjain@linux.ibm.com>
+ <87ilzbmt7i.fsf@mpe.ellerman.id.au>
+ <YTiBqbxe7ieqY2OE@hirez.programming.kicks-ass.net>
+ <87czphnchp.fsf@mpe.ellerman.id.au>
+ <YTob/xfn1gt901K4@hirez.programming.kicks-ass.net>
+ <87k0jjl9sp.fsf@mpe.ellerman.id.au>
+ <YUCMUZbchMjD54eY@hirez.programming.kicks-ass.net>
+Date: Thu, 16 Sep 2021 20:57:33 +1000
+Message-ID: <87fsu4kcte.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-References: <20210914151016.3174924-1-Roman_Skakun@epam.com>
- <7c04db79-7de1-93ff-0908-9bad60a287b9@suse.com> <20210914153046.GB815@lst.de>
- <alpine.DEB.2.21.2109141838290.21985@sstabellini-ThinkPad-T480s>
-In-Reply-To: <alpine.DEB.2.21.2109141838290.21985@sstabellini-ThinkPad-T480s>
-From: Roman Skakun <rm.skakun@gmail.com>
-Date: Thu, 16 Sep 2021 12:40:28 +0300
-Message-ID: <CADu_u-OjpYB0-B=tLKYsZH=auvQF-o7PJb-11W=1emY8jaA-mg@mail.gmail.com>
-Subject: Re: [PATCH] swiotlb: set IO TLB segment size via cmdline
-To: Stefano Stabellini <sstabellini@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,64 +77,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Jan Beulich <jbeulich@suse.com>,
- Will Deacon <will@kernel.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>, Jonathan Corbet <corbet@lwn.net>,
- Christoph Hellwig <hch@lst.de>, xen-devel@lists.xenproject.org,
- "Paul E. McKenney" <paulmck@kernel.org>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Muchun Song <songmuchun@bytedance.com>, Thomas Gleixner <tglx@linutronix.de>,
- Juergen Gross <jgross@suse.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Andrii Anisov <andrii_anisov@epam.com>, linuxppc-dev@lists.ozlabs.org,
- Randy Dunlap <rdunlap@infradead.org>, linux-mips@vger.kernel.org,
- iommu <iommu@lists.linux-foundation.org>, Roman Skakun <roman_skakun@epam.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Maciej W. Rozycki" <macro@orcam.me.uk>, Robin Murphy <robin.murphy@arm.com>,
- Mike Rapoport <rppt@kernel.org>, Lu Baolu <baolu.lu@linux.intel.com>
+Cc: mark.rutland@arm.com, atrajeev@linux.vnet.ibm.com, ak@linux.intel.com,
+ daniel@iogearbox.net, rnsastry@linux.ibm.com,
+ alexander.shishkin@linux.intel.com, Kajol Jain <kjain@linux.ibm.com>,
+ linux-kernel@vger.kernel.org, acme@kernel.org, ast@kernel.org,
+ linux-perf-users@vger.kernel.org, yao.jin@linux.intel.com, mingo@redhat.com,
+ paulus@samba.org, maddy@linux.ibm.com, jolsa@kernel.org, namhyung@kernel.org,
+ songliubraving@fb.com, linuxppc-dev@lists.ozlabs.org,
+ kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Stefano,
-
-> Also, Option 1 listed in the webpage seems to be a lot better. Any
-> reason you can't do that? Because that option both solves the problem
-> and increases performance.
-
-Yes, Option 1 is probably more efficient.
-But I use another platform under Xen without DMA adjustment functionality.
-I pinned this webpage only for example to describe the similar problem I ha=
-d.
-
-Cheers,
-Roman
-
-=D1=81=D1=80, 15 =D1=81=D0=B5=D0=BD=D1=82. 2021 =D0=B3. =D0=B2 04:51, Stefa=
-no Stabellini <sstabellini@kernel.org>:
-
+Peter Zijlstra <peterz@infradead.org> writes:
+> On Tue, Sep 14, 2021 at 08:40:38PM +1000, Michael Ellerman wrote:
+>> Peter Zijlstra <peterz@infradead.org> writes:
 >
-> On Tue, 14 Sep 2021, Christoph Hellwig wrote:
-> > On Tue, Sep 14, 2021 at 05:29:07PM +0200, Jan Beulich wrote:
-> > > I'm not convinced the swiotlb use describe there falls under "intende=
-d
-> > > use" - mapping a 1280x720 framebuffer in a single chunk? (As an aside=
-,
-> > > the bottom of this page is also confusing, as following "Then we can
-> > > confirm the modified swiotlb size in the boot log:" there is a log
-> > > fragment showing the same original size of 64Mb.
-> >
-> > It doesn't.  We also do not add hacks to the kernel for whacky out
-> > of tree modules.
+>> > I'm thinking we ought to keep hops as steps along the NUMA fabric, with
+>> > 0 hops being the local node. That only gets us:
+>> >
+>> >  L2, remote=0, hops=HOPS_0 -- our L2
+>> >  L2, remote=1, hops=HOPS_0 -- L2 on the local node but not ours
+>> >  L2, remote=1, hops!=HOPS_0 -- L2 on a remote node
+>> 
+>> Hmm. I'm not sure about tying it directly to NUMA hops. I worry we're
+>> going to see more and more systems where there's a hierarchy within the
+>> chip/package, in addition to the traditional NUMA hierarchy.
+>> 
+>> Although then I guess it becomes a question of what exactly is a NUMA
+>> hop, maybe the answer is that on those future systems those
+>> intra-chip/package hops should be represented as NUMA hops.
+>> 
+>> It's not like we have a hard definition of what a NUMA hop is?
 >
-> Also, Option 1 listed in the webpage seems to be a lot better. Any
-> reason you can't do that? Because that option both solves the problem
-> and increases performance.
+> Not really, typically whatever the BIOS/DT/whatever tables tell us. I
+> think in case of Power you're mostly making things up in software :-)
 
+Firmware is software so yes :)
 
+> But yeah, I think we have plenty wriggle room there.
 
---
-Best Regards, Roman.
+OK.
+
+cheers
