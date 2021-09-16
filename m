@@ -2,51 +2,49 @@ Return-Path: <SRS0=Iv+L=OG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5DEBC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 12:18:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8963C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 14:23:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EEAD960EE4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 12:18:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EEAD960EE4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 3954E61212
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 14:23:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3954E61212
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H9GMk1Dcgz2yM7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 22:18:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H9K7S3fs4z2yPQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Sep 2021 00:23:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linkmauve.fr (client-ip=2a01:e0a:828:c7c0:49:5ff:fe41:d261;
- helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 322 seconds by postgrey-1.36 at boromir;
- Thu, 16 Sep 2021 22:18:14 AEST
-Received: from luna.linkmauve.fr (unknown
- [IPv6:2a01:e0a:828:c7c0:49:5ff:fe41:d261])
+ smtp.mailfrom=molgen.mpg.de (client-ip=141.14.17.11; helo=mx1.molgen.mpg.de;
+ envelope-from=pmenzel@molgen.mpg.de; receiver=<UNKNOWN>)
+Received: from mx1.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H9GMB16VFz2xvV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Sep 2021 22:18:14 +1000 (AEST)
-Received: by luna.linkmauve.fr (Postfix, from userid 1000)
- id 256ABF40B33; Thu, 16 Sep 2021 14:12:41 +0200 (CEST)
-Date: Thu, 16 Sep 2021 14:12:40 +0200
-From: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: Re: [PATCH] nvmem: NVMEM_NINTENDO_OTP should depend on WII
-Message-ID: <20210916121240.okknaglns4bjmczp@luna>
-Jabber-ID: linkmauve@linkmauve.fr
-References: <01318920709dddc4d85fe895e2083ca0eee234d8.1631611652.git.geert+renesas@glider.be>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H9K6z2zwdz2xv8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Sep 2021 00:22:48 +1000 (AEST)
+Received: from ersatz.molgen.mpg.de (g45.guest.molgen.mpg.de [141.14.220.45])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id C00FB61E64761;
+ Thu, 16 Sep 2021 16:22:39 +0200 (CEST)
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+To: Nathan Chancellor <nathan@kernel.org>,
+ Nick Desaulniers <ndesaulniers@google.com>
+Subject: [PATCH] lib/zlib_inflate/inffast: Check config in C to avoid unused
+ function warning
+Date: Thu, 16 Sep 2021 16:22:10 +0200
+Message-Id: <20210916142210.26722-1-pmenzel@molgen.mpg.de>
+X-Mailer: git-send-email 2.33.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="4qla4vdo44bvrd6u"
-Content-Disposition: inline
-In-Reply-To: <01318920709dddc4d85fe895e2083ca0eee234d8.1631611652.git.geert+renesas@glider.be>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,69 +56,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Paul Menzel <pmenzel@molgen.mpg.de>, llvm@lists.linux.dev,
+ Zhen Lei <thunder.leizhen@huawei.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Building Linux for ppc64le with Ubuntu clang version 12.0.0-3ubuntu1~21.04.1
+shows the warning below.
 
---4qla4vdo44bvrd6u
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+    arch/powerpc/boot/inffast.c:20:1: warning: unused function 'get_unaligned16' [-Wunused-function]
+    get_unaligned16(const unsigned short *p)
+    ^
+    1 warning generated.
 
-Hi, thanks for this patch, once the Wii=A0U platform will be added it will
-need an additional test for WIIU, but for now this is:
+Fix it, by moving the check from the preprocessor to C, so the compiler
+sees the use.
 
-Reviewed-by: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
+---
+ lib/zlib_inflate/inffast.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-On Tue, Sep 14, 2021 at 11:29:49AM +0200, Geert Uytterhoeven wrote:
-> The Nintendo Wii and Wii U OTP is only present on Nintendo Wii and Wii U
-> consoles.  Hence add a dependency on WII, to prevent asking the user
-> about this driver when configuring a kernel without Nintendo Wii and Wii
-> U console support.
->=20
-> Fixes: 3683b761fe3a10ad ("nvmem: nintendo-otp: Add new driver for the Wii=
- and Wii U OTP")
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->  drivers/nvmem/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/nvmem/Kconfig b/drivers/nvmem/Kconfig
-> index 39854d43758be3fb..da414617a54d4b99 100644
-> --- a/drivers/nvmem/Kconfig
-> +++ b/drivers/nvmem/Kconfig
-> @@ -109,6 +109,7 @@ config MTK_EFUSE
-> =20
->  config NVMEM_NINTENDO_OTP
->  	tristate "Nintendo Wii and Wii U OTP Support"
-> +	depends on WII || COMPILE_TEST
->  	help
->  	  This is a driver exposing the OTP of a Nintendo Wii or Wii U console.
-> =20
-> --=20
-> 2.25.1
+diff --git a/lib/zlib_inflate/inffast.c b/lib/zlib_inflate/inffast.c
+index f19c4fbe1be7..444ad3c3ccd3 100644
+--- a/lib/zlib_inflate/inffast.c
++++ b/lib/zlib_inflate/inffast.c
+@@ -254,11 +254,7 @@ void inflate_fast(z_streamp strm, unsigned start)
+ 			sfrom = (unsigned short *)(from);
+ 			loops = len >> 1;
+ 			do
+-#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+-			    *sout++ = *sfrom++;
+-#else
+-			    *sout++ = get_unaligned16(sfrom++);
+-#endif
++			    *sout++ = CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS ? *sfrom++ : get_unaligned16(sfrom++);
+ 			while (--loops);
+ 			out = (unsigned char *)sout;
+ 			from = (unsigned char *)sfrom;
+-- 
+2.33.0
 
---=20
-Emmanuel Gil Peyrot
-
---4qla4vdo44bvrd6u
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEjrVT1SzTln43kCLJOWgfYkb2LpAFAmFDNLQACgkQOWgfYkb2
-LpA6OQgAqnp5vZBBdcMfXSA8IEnqzcZRa0PHdW/d3FK7bczJocUPNc4mvQFexP0t
-7AuWaXNMOEWq2xOd05eggwhSQgB2OMZ/wtA63fKOrP5gq1QdzSN5hDzM2ew1MnyR
-x8x/CoMc4JOk/mmbZFSTiYx8wC3M37uCkfugZdS0actXv/2kuiWfPhUIvvlrZG92
-ebYlFUQMhQX43c62Au0DUCwRy0VQJW2+lRVlIHghtrSUfey1m79qfICnt5+g5Llv
-DA0kchTFuBpyO2s3pGAmKnd3fCOQ8jBtqLgg3ZJNrqbfwnl3ezoS7f0tw8qQeBQy
-4VVzKdfPm7I3b9Od3GDm8Suv9HIvtg==
-=6DDx
------END PGP SIGNATURE-----
-
---4qla4vdo44bvrd6u--
