@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21EEBC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 16:11:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F4EAC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 16:27:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 676A961356
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 16:11:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 676A961356
+	by mail.kernel.org (Postfix) with ESMTPS id 0C1C761A71
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Sep 2021 16:26:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0C1C761A71
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4H9MWx4qPnz306M
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Sep 2021 02:11:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4H9MtB2FZqz306Y
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Sep 2021 02:26:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=AVpe0Ipk;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=n+fu/LTs;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
@@ -29,30 +29,30 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=AVpe0Ipk; 
+ header.a=rsa-sha256 header.s=korg header.b=n+fu/LTs; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4H9MWD540Vz2xsB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Sep 2021 02:10:31 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id CDCB861251;
- Thu, 16 Sep 2021 16:10:27 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4H9MsW5LDlz2xbB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Sep 2021 02:26:22 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 874CD61269;
+ Thu, 16 Sep 2021 16:26:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
- s=korg; t=1631808628;
+ s=korg; t=1631809580;
  bh=HJZadhkc3lcjE7AapxAuKY6kRDDcL5N6KsyajWYJPs4=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=AVpe0Ipk99EfZZiChYmiykqT/haUIG2Oux5Wp033Ll6S8q7Kjgd4PYrFoCKpT/7NC
- +NJOin62nEXYmm1rkSHeeys8mrIQyftfGtLXLRN0Es8hXg1HRKq35hkvTbsnmHhair
- zbQcL22MbX/hKgjfreYQ8lBTOW7bVG03C+DMIqHU=
+ b=n+fu/LTsY4u5CM9PiD1tXSqusLN2bSQ+xdtIVfb5Bmw+YeN28ORzowB61UavB/Psc
+ EHqO5G5tEh8UzfrFD4PzgXBBrM4LEoutHKqQCuawiuaC6fFRWvpY9UFh8pSUDd/K/9
+ 5G8b6jmtH4/DvbM5+Hq8Ap/5NfDHBnL8RSCX6p0k=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 5.10 163/306] hvsi: dont panic on tty_register_driver failure
-Date: Thu, 16 Sep 2021 17:58:28 +0200
-Message-Id: <20210916155759.643929193@linuxfoundation.org>
+Subject: [PATCH 5.13 205/380] hvsi: dont panic on tty_register_driver failure
+Date: Thu, 16 Sep 2021 17:59:22 +0200
+Message-Id: <20210916155811.041705800@linuxfoundation.org>
 X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20210916155753.903069397@linuxfoundation.org>
-References: <20210916155753.903069397@linuxfoundation.org>
+In-Reply-To: <20210916155803.966362085@linuxfoundation.org>
+References: <20210916155803.966362085@linuxfoundation.org>
 User-Agent: quilt/0.66
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
