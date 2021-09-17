@@ -2,73 +2,73 @@ Return-Path: <SRS0=VBhC=OH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27CBCC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Sep 2021 18:39:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88C59C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Sep 2021 18:48:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79F2D61041
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Sep 2021 18:39:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 79F2D61041
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 1BFB561241
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Sep 2021 18:48:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1BFB561241
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HB2mc1fKnz3cH2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Sep 2021 04:39:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HB2ys3s8Zz305t
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Sep 2021 04:48:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=pvV3jZa3;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=desiato.20200630 header.b=pvV3jZa3; 
+ dkim-atps=neutral
+Received: from desiato.infradead.org (desiato.infradead.org
+ [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HB2lH5drRz305b
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Sep 2021 04:38:18 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HB2l46XR4z9sTL;
- Fri, 17 Sep 2021 20:38:08 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id g4DtabkXozOg; Fri, 17 Sep 2021 20:38:08 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HB2l21VMbz9sSQ;
- Fri, 17 Sep 2021 20:38:06 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 206A18B768;
- Fri, 17 Sep 2021 20:38:06 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id NZM3JAtS0Omp; Fri, 17 Sep 2021 20:38:06 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.36])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7E77C8B79C;
- Fri, 17 Sep 2021 20:38:05 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18HIbs18758061
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Fri, 17 Sep 2021 20:37:54 +0200
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18HIbsCl758060;
- Fri, 17 Sep 2021 20:37:54 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 2/3] powerpc/inst: Define ppc_inst_t
-Date: Fri, 17 Sep 2021 20:37:39 +0200
-Message-Id: <5bc5a86313b704519661f294ba31f9a46d84c029.1631903846.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <9607dfbecab2ecccb712bbd25d2d5da882239d4c.1631903846.git.christophe.leroy@csgroup.eu>
-References: <9607dfbecab2ecccb712bbd25d2d5da882239d4c.1631903846.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HB2y43Qq9z2ydk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Sep 2021 04:47:38 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=LHCw/WZExEGega1av8JENylG4x6TuzO3VNj5w/otKQk=; b=pvV3jZa3h3dBUduo85AtoocFKG
+ +rA/dYtIJWCYsehoprs12lJWa+AbyNfzBI1Lu2eA3wagOs2bvDGXDbvWrHxyKYzI+5l9XGzuDPkZh
+ hxXWNHJOHUPud4EzUhnNLkYhweuEjKptLLjQ49Pzlr8ppneTHwhtBJUlarUMd8agx10fbpIftfKAP
+ XBOutNfaFRd0ozS3DgnE1Qtg+0zrvWit9L7vjo23A39hX7twXv5VMDFWouyCtBpLSn6ltHGBQa60T
+ ljhdHIsOQd0B9mHctIwWhg4A7C1eahRBibLUqi+S+hCnLTBvbfZKiox5wBvJIkdHw84SKsLnHONP4
+ kq6ZJDmA==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=worktop.programming.kicks-ass.net)
+ by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+ id 1mRIt1-003vHw-Qu; Fri, 17 Sep 2021 18:47:00 +0000
+Received: by worktop.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 7B8FE986246; Fri, 17 Sep 2021 20:46:59 +0200 (CEST)
+Date: Fri, 17 Sep 2021 20:46:59 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v5 6/6] sched/fair: Consider SMT in ASYM_PACKING load
+ balance
+Message-ID: <20210917184659.GI4323@worktop.programming.kicks-ass.net>
+References: <20210911011819.12184-1-ricardo.neri-calderon@linux.intel.com>
+ <20210911011819.12184-7-ricardo.neri-calderon@linux.intel.com>
+ <CAKfTPtBcDP3Yp54sd4+1kP=o=4e_1HEmOf=eMXydag_J38CEng@mail.gmail.com>
+ <20210917010044.GA23727@ranerica-svr.sc.intel.com>
+ <CAKfTPtCh72m86pbT5vY_rWzU79Q9NP9t6mcrO8ewbZkBJdN03Q@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtCh72m86pbT5vY_rWzU79Q9NP9t6mcrO8ewbZkBJdN03Q@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,1008 +80,170 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Juri Lelli <juri.lelli@redhat.com>, Aubrey Li <aubrey.li@linux.intel.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
+ Ricardo Neri <ricardo.neri@intel.com>, Ben Segall <bsegall@google.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ "Joel Fernandes \(Google\)" <joel@joelfernandes.org>,
+ Ingo Molnar <mingo@kernel.org>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Mel Gorman <mgorman@suse.de>,
+ Len Brown <len.brown@intel.com>,
+ Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Aubrey Li <aubrey.li@intel.com>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Tim Chen <tim.c.chen@linux.intel.com>, Quentin Perret <qperret@google.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>,
+ Daniel Bristot de Oliveira <bristot@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to stop using 'struct ppc_inst' on PPC32,
-define a ppc_inst_t typedef.
+On Fri, Sep 17, 2021 at 05:25:02PM +0200, Vincent Guittot wrote:
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> With the removal of the condition !sds->local_stat.sum_nr_running
+> which seems useless because dst_cpu is idle and not SMT, this patch
+> looks good to me
+
+I've made it look like this. Thanks!
+
 ---
- arch/powerpc/include/asm/code-patching.h      | 18 +++----
- arch/powerpc/include/asm/hw_breakpoint.h      |  4 +-
- arch/powerpc/include/asm/inst.h               | 34 ++++++------
- arch/powerpc/include/asm/sstep.h              |  4 +-
- arch/powerpc/kernel/align.c                   |  4 +-
- arch/powerpc/kernel/epapr_paravirt.c          |  2 +-
- arch/powerpc/kernel/hw_breakpoint.c           |  4 +-
- .../kernel/hw_breakpoint_constraints.c        |  4 +-
- arch/powerpc/kernel/kprobes.c                 |  4 +-
- arch/powerpc/kernel/mce_power.c               |  2 +-
- arch/powerpc/kernel/optprobes.c               |  4 +-
- arch/powerpc/kernel/process.c                 |  2 +-
- arch/powerpc/kernel/setup_32.c                |  2 +-
- arch/powerpc/kernel/trace/ftrace.c            | 54 +++++++++----------
- arch/powerpc/kernel/vecemu.c                  |  2 +-
- arch/powerpc/lib/code-patching.c              | 38 ++++++-------
- arch/powerpc/lib/feature-fixups.c             |  4 +-
- arch/powerpc/lib/sstep.c                      |  4 +-
- arch/powerpc/lib/test_emulate_step.c          | 10 ++--
- arch/powerpc/mm/maccess.c                     |  2 +-
- arch/powerpc/perf/8xx-pmu.c                   |  2 +-
- arch/powerpc/xmon/xmon.c                      | 14 ++---
- arch/powerpc/xmon/xmon_bpts.h                 |  4 +-
- 23 files changed, 112 insertions(+), 110 deletions(-)
+Subject: sched/fair: Consider SMT in ASYM_PACKING load balance
+From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Date: Fri, 10 Sep 2021 18:18:19 -0700
 
-diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-index a95f63788c6b..a4ba9a5982fc 100644
---- a/arch/powerpc/include/asm/code-patching.h
-+++ b/arch/powerpc/include/asm/code-patching.h
-@@ -23,20 +23,20 @@
- #define BRANCH_ABSOLUTE	0x2
- 
- bool is_offset_in_branch_range(long offset);
--int create_branch(struct ppc_inst *instr, const u32 *addr,
-+int create_branch(ppc_inst_t *instr, const u32 *addr,
- 		  unsigned long target, int flags);
--int create_cond_branch(struct ppc_inst *instr, const u32 *addr,
-+int create_cond_branch(ppc_inst_t *instr, const u32 *addr,
- 		       unsigned long target, int flags);
- int patch_branch(u32 *addr, unsigned long target, int flags);
--int patch_instruction(u32 *addr, struct ppc_inst instr);
--int raw_patch_instruction(u32 *addr, struct ppc_inst instr);
-+int patch_instruction(u32 *addr, ppc_inst_t instr);
-+int raw_patch_instruction(u32 *addr, ppc_inst_t instr);
- 
- static inline unsigned long patch_site_addr(s32 *site)
- {
- 	return (unsigned long)site + *site;
+From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+
+When deciding to pull tasks in ASYM_PACKING, it is necessary not only to
+check for the idle state of the destination CPU, dst_cpu, but also of
+its SMT siblings.
+
+If dst_cpu is idle but its SMT siblings are busy, performance suffers
+if it pulls tasks from a medium priority CPU that does not have SMT
+siblings.
+
+Implement asym_smt_can_pull_tasks() to inspect the state of the SMT
+siblings of both dst_cpu and the CPUs in the candidate busiest group.
+
+Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Reviewed-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+Reviewed-by: Len Brown <len.brown@intel.com>
+Link: https://lkml.kernel.org/r/20210911011819.12184-7-ricardo.neri-calderon@linux.intel.com
+---
+ kernel/sched/fair.c |   92 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 92 insertions(+)
+
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -8538,10 +8538,96 @@ group_type group_classify(unsigned int i
+ 	return group_has_spare;
  }
  
--static inline int patch_instruction_site(s32 *site, struct ppc_inst instr)
-+static inline int patch_instruction_site(s32 *site, ppc_inst_t instr)
- {
- 	return patch_instruction((u32 *)patch_site_addr(site), instr);
- }
-@@ -57,11 +57,11 @@ static inline int modify_instruction_site(s32 *site, unsigned int clr, unsigned
- 	return modify_instruction((unsigned int *)patch_site_addr(site), clr, set);
- }
- 
--int instr_is_relative_branch(struct ppc_inst instr);
--int instr_is_relative_link_branch(struct ppc_inst instr);
-+int instr_is_relative_branch(ppc_inst_t instr);
-+int instr_is_relative_link_branch(ppc_inst_t instr);
- unsigned long branch_target(const u32 *instr);
--int translate_branch(struct ppc_inst *instr, const u32 *dest, const u32 *src);
--extern bool is_conditional_branch(struct ppc_inst instr);
-+int translate_branch(ppc_inst_t *instr, const u32 *dest, const u32 *src);
-+extern bool is_conditional_branch(ppc_inst_t instr);
- #ifdef CONFIG_PPC_BOOK3E_64
- void __patch_exception(int exc, unsigned long addr);
- #define patch_exception(exc, name) do { \
-diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
-index abebfbee5b1c..88053d3c68e6 100644
---- a/arch/powerpc/include/asm/hw_breakpoint.h
-+++ b/arch/powerpc/include/asm/hw_breakpoint.h
-@@ -56,11 +56,11 @@ static inline int nr_wp_slots(void)
- 	return cpu_has_feature(CPU_FTR_DAWR1) ? 2 : 1;
- }
- 
--bool wp_check_constraints(struct pt_regs *regs, struct ppc_inst instr,
-+bool wp_check_constraints(struct pt_regs *regs, ppc_inst_t instr,
- 			  unsigned long ea, int type, int size,
- 			  struct arch_hw_breakpoint *info);
- 
--void wp_get_instr_detail(struct pt_regs *regs, struct ppc_inst *instr,
-+void wp_get_instr_detail(struct pt_regs *regs, ppc_inst_t *instr,
- 			 int *type, int *size, unsigned long *ea);
- 
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
-diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
-index fea4d46155a9..c4775f4c93a4 100644
---- a/arch/powerpc/include/asm/inst.h
-+++ b/arch/powerpc/include/asm/inst.h
-@@ -8,7 +8,7 @@
- ({									\
- 	long __gui_ret;							\
- 	u32 __user *__gui_ptr = (u32 __user *)ptr;			\
--	struct ppc_inst __gui_inst;					\
-+	ppc_inst_t __gui_inst;						\
- 	unsigned int __prefix, __suffix;				\
- 									\
- 	__chk_user_ptr(ptr);						\
-@@ -41,22 +41,24 @@ struct ppc_inst {
- #endif
- } __packed;
- 
--static inline u32 ppc_inst_val(struct ppc_inst x)
-+typedef struct ppc_inst ppc_inst_t;
++/**
++ * asym_smt_can_pull_tasks - Check whether the load balancing CPU can pull tasks
++ * @dst_cpu:	Destination CPU of the load balancing
++ * @sds:	Load-balancing data with statistics of the local group
++ * @sgs:	Load-balancing statistics of the candidate busiest group
++ * @sg:		The candidate busiest group
++ *
++ * Check the state of the SMT siblings of both @sds::local and @sg and decide
++ * if @dst_cpu can pull tasks.
++ *
++ * If @dst_cpu does not have SMT siblings, it can pull tasks if two or more of
++ * the SMT siblings of @sg are busy. If only one CPU in @sg is busy, pull tasks
++ * only if @dst_cpu has higher priority.
++ *
++ * If both @dst_cpu and @sg have SMT siblings, and @sg has exactly one more
++ * busy CPU than @sds::local, let @dst_cpu pull tasks if it has higher priority.
++ * Bigger imbalances in the number of busy CPUs will be dealt with in
++ * update_sd_pick_busiest().
++ *
++ * If @sg does not have SMT siblings, only pull tasks if all of the SMT siblings
++ * of @dst_cpu are idle and @sg has lower priority.
++ */
++static bool asym_smt_can_pull_tasks(int dst_cpu, struct sd_lb_stats *sds,
++				    struct sg_lb_stats *sgs,
++				    struct sched_group *sg)
++{
++#ifdef CONFIG_SCHED_SMT
++	bool local_is_smt, sg_is_smt;
++	int sg_busy_cpus;
 +
-+static inline u32 ppc_inst_val(ppc_inst_t x)
++	local_is_smt = sds->local->flags & SD_SHARE_CPUCAPACITY;
++	sg_is_smt = sg->flags & SD_SHARE_CPUCAPACITY;
++
++	sg_busy_cpus = sgs->group_weight - sgs->idle_cpus;
++
++	if (!local_is_smt) {
++		/*
++		 * If we are here, @dst_cpu is idle and does not have SMT
++		 * siblings. Pull tasks if candidate group has two or more
++		 * busy CPUs.
++		 */
++		if (sg_busy_cpus >= 2) /* implies sg_is_smt */
++			return true;
++
++		/*
++		 * @dst_cpu does not have SMT siblings. @sg may have SMT
++		 * siblings and only one is busy. In such case, @dst_cpu
++		 * can help if it has higher priority and is idle (i.e.,
++		 * it has no running tasks).
++		 */
++		return sched_asym_prefer(dst_cpu, sg->asym_prefer_cpu);
++	}
++
++	/* @dst_cpu has SMT siblings. */
++
++	if (sg_is_smt) {
++		int local_busy_cpus = sds->local->group_weight -
++				      sds->local_stat.idle_cpus;
++		int busy_cpus_delta = sg_busy_cpus - local_busy_cpus;
++
++		if (busy_cpus_delta == 1)
++			return sched_asym_prefer(dst_cpu, sg->asym_prefer_cpu);
++
++		return false;
++	}
++
++	/*
++	 * @sg does not have SMT siblings. Ensure that @sds::local does not end
++	 * up with more than one busy SMT sibling and only pull tasks if there
++	 * are not busy CPUs (i.e., no CPU has running tasks).
++	 */
++	if (!sds->local_stat.sum_nr_running)
++		return sched_asym_prefer(dst_cpu, sg->asym_prefer_cpu);
++
++	return false;
++#else
++	/* Always return false so that callers deal with non-SMT cases. */
++	return false;
++#endif
++}
++
+ static inline bool
+ sched_asym(struct lb_env *env, struct sd_lb_stats *sds,  struct sg_lb_stats *sgs,
+ 	   struct sched_group *group)
  {
- 	return x.val;
++	/* Only do SMT checks if either local or candidate have SMT siblings */
++	if ((sds->local->flags & SD_SHARE_CPUCAPACITY) ||
++	    (group->flags & SD_SHARE_CPUCAPACITY))
++		return asym_smt_can_pull_tasks(env->dst_cpu, sds, sgs, group);
++
+ 	return sched_asym_prefer(env->dst_cpu, group->asym_prefer_cpu);
  }
  
--static inline int ppc_inst_primary_opcode(struct ppc_inst x)
-+static inline int ppc_inst_primary_opcode(ppc_inst_t x)
- {
- 	return ppc_inst_val(x) >> 26;
- }
- 
--#define ppc_inst(x) ((struct ppc_inst){ .val = (x) })
-+#define ppc_inst(x) ((ppc_inst_t){ .val = (x) })
- 
- #ifdef CONFIG_PPC64
--#define ppc_inst_prefix(x, y) ((struct ppc_inst){ .val = (x), .suffix = (y) })
-+#define ppc_inst_prefix(x, y) ((ppc_inst_t){ .val = (x), .suffix = (y) })
- 
--static inline u32 ppc_inst_suffix(struct ppc_inst x)
-+static inline u32 ppc_inst_suffix(ppc_inst_t x)
- {
- 	return x.suffix;
- }
-@@ -64,14 +66,14 @@ static inline u32 ppc_inst_suffix(struct ppc_inst x)
- #else
- #define ppc_inst_prefix(x, y) ppc_inst(x)
- 
--static inline u32 ppc_inst_suffix(struct ppc_inst x)
-+static inline u32 ppc_inst_suffix(ppc_inst_t x)
- {
- 	return 0;
- }
- 
- #endif /* CONFIG_PPC64 */
- 
--static inline struct ppc_inst ppc_inst_read(const u32 *ptr)
-+static inline ppc_inst_t ppc_inst_read(const u32 *ptr)
- {
- 	if (IS_ENABLED(CONFIG_PPC64) && (*ptr >> 26) == OP_PREFIX)
- 		return ppc_inst_prefix(*ptr, *(ptr + 1));
-@@ -79,17 +81,17 @@ static inline struct ppc_inst ppc_inst_read(const u32 *ptr)
- 		return ppc_inst(*ptr);
- }
- 
--static inline bool ppc_inst_prefixed(struct ppc_inst x)
-+static inline bool ppc_inst_prefixed(ppc_inst_t x)
- {
- 	return IS_ENABLED(CONFIG_PPC64) && ppc_inst_primary_opcode(x) == OP_PREFIX;
- }
- 
--static inline struct ppc_inst ppc_inst_swab(struct ppc_inst x)
-+static inline ppc_inst_t ppc_inst_swab(ppc_inst_t x)
- {
- 	return ppc_inst_prefix(swab32(ppc_inst_val(x)), swab32(ppc_inst_suffix(x)));
- }
- 
--static inline bool ppc_inst_equal(struct ppc_inst x, struct ppc_inst y)
-+static inline bool ppc_inst_equal(ppc_inst_t x, ppc_inst_t y)
- {
- 	if (ppc_inst_val(x) != ppc_inst_val(y))
- 		return false;
-@@ -98,7 +100,7 @@ static inline bool ppc_inst_equal(struct ppc_inst x, struct ppc_inst y)
- 	return ppc_inst_suffix(x) == ppc_inst_suffix(y);
- }
- 
--static inline int ppc_inst_len(struct ppc_inst x)
-+static inline int ppc_inst_len(ppc_inst_t x)
- {
- 	return ppc_inst_prefixed(x) ? 8 : 4;
- }
-@@ -109,14 +111,14 @@ static inline int ppc_inst_len(struct ppc_inst x)
-  */
- static inline u32 *ppc_inst_next(u32 *location, u32 *value)
- {
--	struct ppc_inst tmp;
-+	ppc_inst_t tmp;
- 
- 	tmp = ppc_inst_read(value);
- 
- 	return (void *)location + ppc_inst_len(tmp);
- }
- 
--static inline unsigned long ppc_inst_as_ulong(struct ppc_inst x)
-+static inline unsigned long ppc_inst_as_ulong(ppc_inst_t x)
- {
- 	if (IS_ENABLED(CONFIG_PPC32))
- 		return ppc_inst_val(x);
-@@ -128,7 +130,7 @@ static inline unsigned long ppc_inst_as_ulong(struct ppc_inst x)
- 
- #define PPC_INST_STR_LEN sizeof("00000000 00000000")
- 
--static inline char *__ppc_inst_as_str(char str[PPC_INST_STR_LEN], struct ppc_inst x)
-+static inline char *__ppc_inst_as_str(char str[PPC_INST_STR_LEN], ppc_inst_t x)
- {
- 	if (ppc_inst_prefixed(x))
- 		sprintf(str, "%08x %08x", ppc_inst_val(x), ppc_inst_suffix(x));
-@@ -145,6 +147,6 @@ static inline char *__ppc_inst_as_str(char str[PPC_INST_STR_LEN], struct ppc_ins
- 	__str;				\
- })
- 
--int copy_inst_from_kernel_nofault(struct ppc_inst *inst, u32 *src);
-+int copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src);
- 
- #endif /* _ASM_POWERPC_INST_H */
-diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
-index 1df867c2e054..9940f077d581 100644
---- a/arch/powerpc/include/asm/sstep.h
-+++ b/arch/powerpc/include/asm/sstep.h
-@@ -145,7 +145,7 @@ union vsx_reg {
-  * otherwise.
-  */
- extern int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
--			 struct ppc_inst instr);
-+			 ppc_inst_t instr);
- 
- /*
-  * Emulate an instruction that can be executed just by updating
-@@ -162,7 +162,7 @@ void emulate_update_regs(struct pt_regs *reg, struct instruction_op *op);
-  * 0 if it could not be emulated, or -1 for an instruction that
-  * should not be emulated (rfid, mtmsrd clearing MSR_RI, etc.).
-  */
--extern int emulate_step(struct pt_regs *regs, struct ppc_inst instr);
-+extern int emulate_step(struct pt_regs *regs, ppc_inst_t instr);
- 
- /*
-  * Emulate a load or store instruction by reading/writing the
-diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-index bbb4181621dd..c0c9ce1dbfa6 100644
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -105,7 +105,7 @@ static struct aligninfo spe_aligninfo[32] = {
-  * so we don't need the address swizzling.
-  */
- static int emulate_spe(struct pt_regs *regs, unsigned int reg,
--		       struct ppc_inst ppc_instr)
-+		       ppc_inst_t ppc_instr)
- {
- 	union {
- 		u64 ll;
-@@ -300,7 +300,7 @@ static int emulate_spe(struct pt_regs *regs, unsigned int reg,
- 
- int fix_alignment(struct pt_regs *regs)
- {
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 	struct instruction_op op;
- 	int r, type;
- 
-diff --git a/arch/powerpc/kernel/epapr_paravirt.c b/arch/powerpc/kernel/epapr_paravirt.c
-index 93b0f3ec8fb0..d4b8aff20815 100644
---- a/arch/powerpc/kernel/epapr_paravirt.c
-+++ b/arch/powerpc/kernel/epapr_paravirt.c
-@@ -37,7 +37,7 @@ static int __init early_init_dt_scan_epapr(unsigned long node,
- 		return -1;
- 
- 	for (i = 0; i < (len / 4); i++) {
--		struct ppc_inst inst = ppc_inst(be32_to_cpu(insts[i]));
-+		ppc_inst_t inst = ppc_inst(be32_to_cpu(insts[i]));
- 		patch_instruction(epapr_hypercall_start + i, inst);
- #if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
- 		patch_instruction(epapr_ev_idle_start + i, inst);
-diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
-index 91a3be14808b..2669f80b3a49 100644
---- a/arch/powerpc/kernel/hw_breakpoint.c
-+++ b/arch/powerpc/kernel/hw_breakpoint.c
-@@ -523,7 +523,7 @@ static void larx_stcx_err(struct perf_event *bp, struct arch_hw_breakpoint *info
- 
- static bool stepping_handler(struct pt_regs *regs, struct perf_event **bp,
- 			     struct arch_hw_breakpoint **info, int *hit,
--			     struct ppc_inst instr)
-+			     ppc_inst_t instr)
- {
- 	int i;
- 	int stepped;
-@@ -616,7 +616,7 @@ int hw_breakpoint_handler(struct die_args *args)
- 	int hit[HBP_NUM_MAX] = {0};
- 	int nr_hit = 0;
- 	bool ptrace_bp = false;
--	struct ppc_inst instr = ppc_inst(0);
-+	ppc_inst_t instr = ppc_inst(0);
- 	int type = 0;
- 	int size = 0;
- 	unsigned long ea;
-diff --git a/arch/powerpc/kernel/hw_breakpoint_constraints.c b/arch/powerpc/kernel/hw_breakpoint_constraints.c
-index 675d1f66ab72..484d285c4b86 100644
---- a/arch/powerpc/kernel/hw_breakpoint_constraints.c
-+++ b/arch/powerpc/kernel/hw_breakpoint_constraints.c
-@@ -80,7 +80,7 @@ static bool check_dawrx_constraints(struct pt_regs *regs, int type,
-  * Return true if the event is valid wrt dawr configuration,
-  * including extraneous exception. Otherwise return false.
-  */
--bool wp_check_constraints(struct pt_regs *regs, struct ppc_inst instr,
-+bool wp_check_constraints(struct pt_regs *regs, ppc_inst_t instr,
- 			  unsigned long ea, int type, int size,
- 			  struct arch_hw_breakpoint *info)
- {
-@@ -136,7 +136,7 @@ static int cache_op_size(void)
- #endif
- }
- 
--void wp_get_instr_detail(struct pt_regs *regs, struct ppc_inst *instr,
-+void wp_get_instr_detail(struct pt_regs *regs, ppc_inst_t *instr,
- 			 int *type, int *size, unsigned long *ea)
- {
- 	struct instruction_op op;
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index 7a7cd6bda53e..89173338e2fa 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -124,7 +124,7 @@ int arch_prepare_kprobe(struct kprobe *p)
- {
- 	int ret = 0;
- 	struct kprobe *prev;
--	struct ppc_inst insn = ppc_inst_read(p->addr);
-+	ppc_inst_t insn = ppc_inst_read(p->addr);
- 
- 	if ((unsigned long)p->addr & 0x03) {
- 		printk("Attempt to register kprobe at an unaligned address\n");
-@@ -244,7 +244,7 @@ NOKPROBE_SYMBOL(arch_prepare_kretprobe);
- static int try_to_emulate(struct kprobe *p, struct pt_regs *regs)
- {
- 	int ret;
--	struct ppc_inst insn = ppc_inst_read(p->ainsn.insn);
-+	ppc_inst_t insn = ppc_inst_read(p->ainsn.insn);
- 
- 	/* regs->nip is also adjusted if emulate_step returns 1 */
- 	ret = emulate_step(regs, insn);
-diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-index c2f55fe7092d..f2dd4daeddf8 100644
---- a/arch/powerpc/kernel/mce_power.c
-+++ b/arch/powerpc/kernel/mce_power.c
-@@ -455,7 +455,7 @@ static int mce_find_instr_ea_and_phys(struct pt_regs *regs, uint64_t *addr,
- 	 * in real-mode is tricky and can lead to recursive
- 	 * faults
- 	 */
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 	unsigned long pfn, instr_addr;
- 	struct instruction_op op;
- 	struct pt_regs tmp = *regs;
-diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
-index c79899abcec8..04b540c12800 100644
---- a/arch/powerpc/kernel/optprobes.c
-+++ b/arch/powerpc/kernel/optprobes.c
-@@ -153,7 +153,7 @@ static void patch_imm_load_insns(unsigned long val, int reg, kprobe_opcode_t *ad
- 
- int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
- {
--	struct ppc_inst branch_op_callback, branch_emulate_step, temp;
-+	ppc_inst_t branch_op_callback, branch_emulate_step, temp;
- 	unsigned long op_callback_addr, emulate_step_addr;
- 	kprobe_opcode_t *buff;
- 	long b_offset;
-@@ -269,7 +269,7 @@ int arch_check_optimized_kprobe(struct optimized_kprobe *op)
- 
- void arch_optimize_kprobes(struct list_head *oplist)
- {
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 	struct optimized_kprobe *op;
- 	struct optimized_kprobe *tmp;
- 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 50436b52c213..bcb7bfaea011 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -628,7 +628,7 @@ static void do_break_handler(struct pt_regs *regs)
- {
- 	struct arch_hw_breakpoint null_brk = {0};
- 	struct arch_hw_breakpoint *info;
--	struct ppc_inst instr = ppc_inst(0);
-+	ppc_inst_t instr = ppc_inst(0);
- 	int type = 0;
- 	int size = 0;
- 	unsigned long ea;
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 7ec5c47fce0e..4017b05ef643 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -75,7 +75,7 @@ EXPORT_SYMBOL(DMA_MODE_WRITE);
- notrace void __init machine_init(u64 dt_ptr)
- {
- 	u32 *addr = (u32 *)patch_site_addr(&patch__memset_nocache);
--	struct ppc_inst insn;
-+	ppc_inst_t insn;
- 
- 	/* Configure static keys first, now that we're relocated. */
- 	setup_feature_keys();
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index d89c5df4f206..f293294ef5da 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -41,10 +41,10 @@
- #define	NUM_FTRACE_TRAMPS	8
- static unsigned long ftrace_tramps[NUM_FTRACE_TRAMPS];
- 
--static struct ppc_inst
-+static ppc_inst_t
- ftrace_call_replace(unsigned long ip, unsigned long addr, int link)
- {
--	struct ppc_inst op;
-+	ppc_inst_t op;
- 
- 	addr = ppc_function_entry((void *)addr);
- 
-@@ -55,9 +55,9 @@ ftrace_call_replace(unsigned long ip, unsigned long addr, int link)
- }
- 
- static int
--ftrace_modify_code(unsigned long ip, struct ppc_inst old, struct ppc_inst new)
-+ftrace_modify_code(unsigned long ip, ppc_inst_t old, ppc_inst_t new)
- {
--	struct ppc_inst replaced;
-+	ppc_inst_t replaced;
- 
- 	/*
- 	 * Note:
-@@ -90,24 +90,24 @@ ftrace_modify_code(unsigned long ip, struct ppc_inst old, struct ppc_inst new)
-  */
- static int test_24bit_addr(unsigned long ip, unsigned long addr)
- {
--	struct ppc_inst op;
-+	ppc_inst_t op;
- 	addr = ppc_function_entry((void *)addr);
- 
- 	/* use the create_branch to verify that this offset can be branched */
- 	return create_branch(&op, (u32 *)ip, addr, 0) == 0;
- }
- 
--static int is_bl_op(struct ppc_inst op)
-+static int is_bl_op(ppc_inst_t op)
- {
- 	return (ppc_inst_val(op) & 0xfc000003) == 0x48000001;
- }
- 
--static int is_b_op(struct ppc_inst op)
-+static int is_b_op(ppc_inst_t op)
- {
- 	return (ppc_inst_val(op) & 0xfc000003) == 0x48000000;
- }
- 
--static unsigned long find_bl_target(unsigned long ip, struct ppc_inst op)
-+static unsigned long find_bl_target(unsigned long ip, ppc_inst_t op)
- {
- 	int offset;
- 
-@@ -127,7 +127,7 @@ __ftrace_make_nop(struct module *mod,
- {
- 	unsigned long entry, ptr, tramp;
- 	unsigned long ip = rec->ip;
--	struct ppc_inst op, pop;
-+	ppc_inst_t op, pop;
- 
- 	/* read where this goes */
- 	if (copy_inst_from_kernel_nofault(&op, (void *)ip)) {
-@@ -221,7 +221,7 @@ static int
- __ftrace_make_nop(struct module *mod,
- 		  struct dyn_ftrace *rec, unsigned long addr)
- {
--	struct ppc_inst op;
-+	ppc_inst_t op;
- 	unsigned int jmp[4];
- 	unsigned long ip = rec->ip;
- 	unsigned long tramp;
-@@ -291,7 +291,7 @@ __ftrace_make_nop(struct module *mod,
- static unsigned long find_ftrace_tramp(unsigned long ip)
- {
- 	int i;
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 
- 	/*
- 	 * We have the compiler generated long_branch tramps at the end
-@@ -329,9 +329,9 @@ static int add_ftrace_tramp(unsigned long tramp)
- static int setup_mcount_compiler_tramp(unsigned long tramp)
- {
- 	int i;
--	struct ppc_inst op;
-+	ppc_inst_t op;
- 	unsigned long ptr;
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 	static unsigned long ftrace_plt_tramps[NUM_FTRACE_TRAMPS];
- 
- 	/* Is this a known long jump tramp? */
-@@ -396,7 +396,7 @@ static int setup_mcount_compiler_tramp(unsigned long tramp)
- static int __ftrace_make_nop_kernel(struct dyn_ftrace *rec, unsigned long addr)
- {
- 	unsigned long tramp, ip = rec->ip;
--	struct ppc_inst op;
-+	ppc_inst_t op;
- 
- 	/* Read where this goes */
- 	if (copy_inst_from_kernel_nofault(&op, (void *)ip)) {
-@@ -436,7 +436,7 @@ int ftrace_make_nop(struct module *mod,
- 		    struct dyn_ftrace *rec, unsigned long addr)
- {
- 	unsigned long ip = rec->ip;
--	struct ppc_inst old, new;
-+	ppc_inst_t old, new;
- 
- 	/*
- 	 * If the calling address is more that 24 bits away,
-@@ -489,7 +489,7 @@ int ftrace_make_nop(struct module *mod,
-  */
- #ifndef CONFIG_MPROFILE_KERNEL
- static int
--expected_nop_sequence(void *ip, struct ppc_inst op0, struct ppc_inst op1)
-+expected_nop_sequence(void *ip, ppc_inst_t op0, ppc_inst_t op1)
- {
- 	/*
- 	 * We expect to see:
-@@ -507,7 +507,7 @@ expected_nop_sequence(void *ip, struct ppc_inst op0, struct ppc_inst op1)
- }
- #else
- static int
--expected_nop_sequence(void *ip, struct ppc_inst op0, struct ppc_inst op1)
-+expected_nop_sequence(void *ip, ppc_inst_t op0, ppc_inst_t op1)
- {
- 	/* look for patched "NOP" on ppc64 with -mprofile-kernel */
- 	if (!ppc_inst_equal(op0, ppc_inst(PPC_RAW_NOP())))
-@@ -519,8 +519,8 @@ expected_nop_sequence(void *ip, struct ppc_inst op0, struct ppc_inst op1)
- static int
- __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- {
--	struct ppc_inst op[2];
--	struct ppc_inst instr;
-+	ppc_inst_t op[2];
-+	ppc_inst_t instr;
- 	void *ip = (void *)rec->ip;
- 	unsigned long entry, ptr, tramp;
- 	struct module *mod = rec->arch.mod;
-@@ -588,7 +588,7 @@ static int
- __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- {
- 	int err;
--	struct ppc_inst op;
-+	ppc_inst_t op;
- 	u32 *ip = (u32 *)rec->ip;
- 
- 	/* read where this goes */
-@@ -626,7 +626,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 
- static int __ftrace_make_call_kernel(struct dyn_ftrace *rec, unsigned long addr)
- {
--	struct ppc_inst op;
-+	ppc_inst_t op;
- 	void *ip = (void *)rec->ip;
- 	unsigned long tramp, entry, ptr;
- 
-@@ -674,7 +674,7 @@ static int __ftrace_make_call_kernel(struct dyn_ftrace *rec, unsigned long addr)
- int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- {
- 	unsigned long ip = rec->ip;
--	struct ppc_inst old, new;
-+	ppc_inst_t old, new;
- 
- 	/*
- 	 * If the calling address is more that 24 bits away,
-@@ -713,7 +713,7 @@ static int
- __ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
- 					unsigned long addr)
- {
--	struct ppc_inst op;
-+	ppc_inst_t op;
- 	unsigned long ip = rec->ip;
- 	unsigned long entry, ptr, tramp;
- 	struct module *mod = rec->arch.mod;
-@@ -807,7 +807,7 @@ int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
- 			unsigned long addr)
- {
- 	unsigned long ip = rec->ip;
--	struct ppc_inst old, new;
-+	ppc_inst_t old, new;
- 
- 	/*
- 	 * If the calling address is more that 24 bits away,
-@@ -847,7 +847,7 @@ int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
- int ftrace_update_ftrace_func(ftrace_func_t func)
- {
- 	unsigned long ip = (unsigned long)(&ftrace_call);
--	struct ppc_inst old, new;
-+	ppc_inst_t old, new;
- 	int ret;
- 
- 	old = ppc_inst_read((u32 *)&ftrace_call);
-@@ -932,7 +932,7 @@ int ftrace_enable_ftrace_graph_caller(void)
- 	unsigned long ip = (unsigned long)(&ftrace_graph_call);
- 	unsigned long addr = (unsigned long)(&ftrace_graph_caller);
- 	unsigned long stub = (unsigned long)(&ftrace_graph_stub);
--	struct ppc_inst old, new;
-+	ppc_inst_t old, new;
- 
- 	old = ftrace_call_replace(ip, stub, 0);
- 	new = ftrace_call_replace(ip, addr, 0);
-@@ -945,7 +945,7 @@ int ftrace_disable_ftrace_graph_caller(void)
- 	unsigned long ip = (unsigned long)(&ftrace_graph_call);
- 	unsigned long addr = (unsigned long)(&ftrace_graph_caller);
- 	unsigned long stub = (unsigned long)(&ftrace_graph_stub);
--	struct ppc_inst old, new;
-+	ppc_inst_t old, new;
- 
- 	old = ftrace_call_replace(ip, addr, 0);
- 	new = ftrace_call_replace(ip, stub, 0);
-diff --git a/arch/powerpc/kernel/vecemu.c b/arch/powerpc/kernel/vecemu.c
-index ae632569446f..fd9432875ebc 100644
---- a/arch/powerpc/kernel/vecemu.c
-+++ b/arch/powerpc/kernel/vecemu.c
-@@ -261,7 +261,7 @@ static unsigned int rfin(unsigned int x)
- 
- int emulate_altivec(struct pt_regs *regs)
- {
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 	unsigned int i, word;
- 	unsigned int va, vb, vc, vd;
- 	vector128 *vrs;
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index f9a3019e37b4..d1fd21d254a1 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -18,7 +18,7 @@
- #include <asm/setup.h>
- #include <asm/inst.h>
- 
--static int __patch_instruction(u32 *exec_addr, struct ppc_inst instr, u32 *patch_addr)
-+static int __patch_instruction(u32 *exec_addr, ppc_inst_t instr, u32 *patch_addr)
- {
- 	if (!ppc_inst_prefixed(instr)) {
- 		u32 val = ppc_inst_val(instr);
-@@ -39,7 +39,7 @@ static int __patch_instruction(u32 *exec_addr, struct ppc_inst instr, u32 *patch
- 	return -EFAULT;
- }
- 
--int raw_patch_instruction(u32 *addr, struct ppc_inst instr)
-+int raw_patch_instruction(u32 *addr, ppc_inst_t instr)
- {
- 	return __patch_instruction(addr, instr, addr);
- }
-@@ -141,7 +141,7 @@ static inline int unmap_patch_area(unsigned long addr)
- 	return 0;
- }
- 
--static int do_patch_instruction(u32 *addr, struct ppc_inst instr)
-+static int do_patch_instruction(u32 *addr, ppc_inst_t instr)
- {
- 	int err;
- 	u32 *patch_addr = NULL;
-@@ -180,14 +180,14 @@ static int do_patch_instruction(u32 *addr, struct ppc_inst instr)
- }
- #else /* !CONFIG_STRICT_KERNEL_RWX */
- 
--static int do_patch_instruction(u32 *addr, struct ppc_inst instr)
-+static int do_patch_instruction(u32 *addr, ppc_inst_t instr)
- {
- 	return raw_patch_instruction(addr, instr);
- }
- 
- #endif /* CONFIG_STRICT_KERNEL_RWX */
- 
--int patch_instruction(u32 *addr, struct ppc_inst instr)
-+int patch_instruction(u32 *addr, ppc_inst_t instr)
- {
- 	/* Make sure we aren't patching a freed init section */
- 	if (init_mem_is_free && init_section_contains(addr, 4)) {
-@@ -200,7 +200,7 @@ NOKPROBE_SYMBOL(patch_instruction);
- 
- int patch_branch(u32 *addr, unsigned long target, int flags)
- {
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 
- 	create_branch(&instr, addr, target, flags);
- 	return patch_instruction(addr, instr);
-@@ -232,7 +232,7 @@ bool is_offset_in_branch_range(long offset)
-  * Helper to check if a given instruction is a conditional branch
-  * Derived from the conditional checks in analyse_instr()
-  */
--bool is_conditional_branch(struct ppc_inst instr)
-+bool is_conditional_branch(ppc_inst_t instr)
- {
- 	unsigned int opcode = ppc_inst_primary_opcode(instr);
- 
-@@ -250,7 +250,7 @@ bool is_conditional_branch(struct ppc_inst instr)
- }
- NOKPROBE_SYMBOL(is_conditional_branch);
- 
--int create_branch(struct ppc_inst *instr, const u32 *addr,
-+int create_branch(ppc_inst_t *instr, const u32 *addr,
- 		  unsigned long target, int flags)
- {
- 	long offset;
-@@ -270,7 +270,7 @@ int create_branch(struct ppc_inst *instr, const u32 *addr,
- 	return 0;
- }
- 
--int create_cond_branch(struct ppc_inst *instr, const u32 *addr,
-+int create_cond_branch(ppc_inst_t *instr, const u32 *addr,
- 		       unsigned long target, int flags)
- {
- 	long offset;
-@@ -289,22 +289,22 @@ int create_cond_branch(struct ppc_inst *instr, const u32 *addr,
- 	return 0;
- }
- 
--static unsigned int branch_opcode(struct ppc_inst instr)
-+static unsigned int branch_opcode(ppc_inst_t instr)
- {
- 	return ppc_inst_primary_opcode(instr) & 0x3F;
- }
- 
--static int instr_is_branch_iform(struct ppc_inst instr)
-+static int instr_is_branch_iform(ppc_inst_t instr)
- {
- 	return branch_opcode(instr) == 18;
- }
- 
--static int instr_is_branch_bform(struct ppc_inst instr)
-+static int instr_is_branch_bform(ppc_inst_t instr)
- {
- 	return branch_opcode(instr) == 16;
- }
- 
--int instr_is_relative_branch(struct ppc_inst instr)
-+int instr_is_relative_branch(ppc_inst_t instr)
- {
- 	if (ppc_inst_val(instr) & BRANCH_ABSOLUTE)
- 		return 0;
-@@ -312,7 +312,7 @@ int instr_is_relative_branch(struct ppc_inst instr)
- 	return instr_is_branch_iform(instr) || instr_is_branch_bform(instr);
- }
- 
--int instr_is_relative_link_branch(struct ppc_inst instr)
-+int instr_is_relative_link_branch(ppc_inst_t instr)
- {
- 	return instr_is_relative_branch(instr) && (ppc_inst_val(instr) & BRANCH_SET_LINK);
- }
-@@ -359,7 +359,7 @@ unsigned long branch_target(const u32 *instr)
- 	return 0;
- }
- 
--int translate_branch(struct ppc_inst *instr, const u32 *dest, const u32 *src)
-+int translate_branch(ppc_inst_t *instr, const u32 *dest, const u32 *src)
- {
- 	unsigned long target;
- 	target = branch_target(src);
-@@ -412,7 +412,7 @@ static void __init test_trampoline(void)
- static void __init test_branch_iform(void)
- {
- 	int err;
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 	u32 tmp[2];
- 	u32 *iptr = tmp;
- 	unsigned long addr = (unsigned long)tmp;
-@@ -494,7 +494,7 @@ static void __init test_create_function_call(void)
- {
- 	u32 *iptr;
- 	unsigned long dest;
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 
- 	/* Check we can create a function call */
- 	iptr = (u32 *)ppc_function_entry(test_trampoline);
-@@ -508,7 +508,7 @@ static void __init test_branch_bform(void)
- {
- 	int err;
- 	unsigned long addr;
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 	u32 tmp[2];
- 	u32 *iptr = tmp;
- 	unsigned int flags;
-@@ -586,7 +586,7 @@ static void __init test_translate_branch(void)
- {
- 	unsigned long addr;
- 	void *p, *q;
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 	void *buf;
- 
- 	buf = vmalloc(PAGE_ALIGN(0x2000000 + 1));
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index cda17bee5afe..e4502ab949ae 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -47,7 +47,7 @@ static u32 *calc_addr(struct fixup_entry *fcur, long offset)
- static int patch_alt_instruction(u32 *src, u32 *dest, u32 *alt_start, u32 *alt_end)
- {
- 	int err;
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 
- 	instr = ppc_inst_read(src);
- 
-@@ -613,7 +613,7 @@ void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
- static void do_final_fixups(void)
- {
- #if defined(CONFIG_PPC64) && defined(CONFIG_RELOCATABLE)
--	struct ppc_inst inst;
-+	ppc_inst_t inst;
- 	u32 *src, *dest, *end;
- 
- 	if (PHYSICAL_START == 0)
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index d8d5f901cee1..da8cd6a21ae2 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -1271,7 +1271,7 @@ static nokprobe_inline int trap_compare(long v1, long v2)
-  * otherwise.
-  */
- int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
--		  struct ppc_inst instr)
-+		  ppc_inst_t instr)
- {
- #ifdef CONFIG_PPC64
- 	unsigned int suffixopcode, prefixtype, prefix_r;
-@@ -3495,7 +3495,7 @@ NOKPROBE_SYMBOL(emulate_loadstore);
-  * or -1 if the instruction is one that should not be stepped,
-  * such as an rfid, or a mtmsrd that would clear MSR_RI.
-  */
--int emulate_step(struct pt_regs *regs, struct ppc_inst instr)
-+int emulate_step(struct pt_regs *regs, ppc_inst_t instr)
- {
- 	struct instruction_op op;
- 	int r, err, type;
-diff --git a/arch/powerpc/lib/test_emulate_step.c b/arch/powerpc/lib/test_emulate_step.c
-index 8b4f6b3e96c4..4f141daafcff 100644
---- a/arch/powerpc/lib/test_emulate_step.c
-+++ b/arch/powerpc/lib/test_emulate_step.c
-@@ -792,7 +792,7 @@ static void __init test_lxvpx_stxvpx(void)
- #ifdef CONFIG_VSX
- static void __init test_plxvp_pstxvp(void)
- {
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 	struct pt_regs regs;
- 	union {
- 		vector128 a;
-@@ -906,7 +906,7 @@ struct compute_test {
- 	struct {
- 		char *descr;
- 		unsigned long flags;
--		struct ppc_inst instr;
-+		ppc_inst_t instr;
- 		struct pt_regs regs;
- 	} subtests[MAX_SUBTESTS + 1];
- };
-@@ -1600,7 +1600,7 @@ static struct compute_test compute_tests[] = {
- };
- 
- static int __init emulate_compute_instr(struct pt_regs *regs,
--					struct ppc_inst instr,
-+					ppc_inst_t instr,
- 					bool negative)
- {
- 	int analysed;
-@@ -1627,7 +1627,7 @@ static int __init emulate_compute_instr(struct pt_regs *regs,
- }
- 
- static int __init execute_compute_instr(struct pt_regs *regs,
--					struct ppc_inst instr)
-+					ppc_inst_t instr)
- {
- 	extern int exec_instr(struct pt_regs *regs);
- 
-@@ -1658,7 +1658,7 @@ static void __init run_tests_compute(void)
- 	struct compute_test *test;
- 	struct pt_regs *regs, exp, got;
- 	unsigned int i, j, k;
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 	bool ignore_gpr, ignore_xer, ignore_ccr, passed, rc, negative;
- 
- 	for (i = 0; i < ARRAY_SIZE(compute_tests); i++) {
-diff --git a/arch/powerpc/mm/maccess.c b/arch/powerpc/mm/maccess.c
-index aad7c47e0030..5abae96b2b46 100644
---- a/arch/powerpc/mm/maccess.c
-+++ b/arch/powerpc/mm/maccess.c
-@@ -12,7 +12,7 @@ bool copy_from_kernel_nofault_allowed(const void *unsafe_src, size_t size)
- 	return is_kernel_addr((unsigned long)unsafe_src);
- }
- 
--int copy_inst_from_kernel_nofault(struct ppc_inst *inst, u32 *src)
-+int copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
- {
- 	unsigned int val, suffix;
- 	int err;
-diff --git a/arch/powerpc/perf/8xx-pmu.c b/arch/powerpc/perf/8xx-pmu.c
-index f970d1510d3d..4738c4dbf567 100644
---- a/arch/powerpc/perf/8xx-pmu.c
-+++ b/arch/powerpc/perf/8xx-pmu.c
-@@ -153,7 +153,7 @@ static void mpc8xx_pmu_read(struct perf_event *event)
- 
- static void mpc8xx_pmu_del(struct perf_event *event, int flags)
- {
--	struct ppc_inst insn = ppc_inst(PPC_RAW_MFSPR(10, SPRN_SPRG_SCRATCH2));
-+	ppc_inst_t insn = ppc_inst(PPC_RAW_MFSPR(10, SPRN_SPRG_SCRATCH2));
- 
- 	mpc8xx_pmu_read(event);
- 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index dd8241c009e5..da9e89485d7a 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -125,7 +125,7 @@ static unsigned bpinstr = 0x7fe00008;	/* trap */
- static int cmds(struct pt_regs *);
- static int mread(unsigned long, void *, int);
- static int mwrite(unsigned long, void *, int);
--static int mread_instr(unsigned long, struct ppc_inst *);
-+static int mread_instr(unsigned long, ppc_inst_t *);
- static int handle_fault(struct pt_regs *);
- static void byterev(unsigned char *, int);
- static void memex(void);
-@@ -908,7 +908,7 @@ static struct bpt *new_breakpoint(unsigned long a)
- static void insert_bpts(void)
- {
- 	int i;
--	struct ppc_inst instr, instr2;
-+	ppc_inst_t instr, instr2;
- 	struct bpt *bp, *bp2;
- 
- 	bp = bpts;
-@@ -988,7 +988,7 @@ static void remove_bpts(void)
- {
- 	int i;
- 	struct bpt *bp;
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 
- 	bp = bpts;
- 	for (i = 0; i < NBPTS; ++i, ++bp) {
-@@ -1204,7 +1204,7 @@ static int do_step(struct pt_regs *regs)
-  */
- static int do_step(struct pt_regs *regs)
- {
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 	int stepped;
- 
- 	force_enable_xmon();
-@@ -1459,7 +1459,7 @@ csum(void)
-  */
- static long check_bp_loc(unsigned long addr)
- {
--	struct ppc_inst instr;
-+	ppc_inst_t instr;
- 
- 	addr &= ~3;
- 	if (!is_kernel_addr(addr)) {
-@@ -2300,7 +2300,7 @@ mwrite(unsigned long adrs, void *buf, int size)
- }
- 
- static int
--mread_instr(unsigned long adrs, struct ppc_inst *instr)
-+mread_instr(unsigned long adrs, ppc_inst_t *instr)
- {
- 	volatile int n;
- 
-@@ -3020,7 +3020,7 @@ generic_inst_dump(unsigned long adr, long count, int praddr,
- {
- 	int nr, dotted;
- 	unsigned long first_adr;
--	struct ppc_inst inst, last_inst = ppc_inst(0);
-+	ppc_inst_t inst, last_inst = ppc_inst(0);
- 
- 	dotted = 0;
- 	for (first_adr = adr; count > 0; --count, adr += ppc_inst_len(inst)) {
-diff --git a/arch/powerpc/xmon/xmon_bpts.h b/arch/powerpc/xmon/xmon_bpts.h
-index 57e6fb03de48..377068f52edb 100644
---- a/arch/powerpc/xmon/xmon_bpts.h
-+++ b/arch/powerpc/xmon/xmon_bpts.h
-@@ -5,8 +5,8 @@
- #define NBPTS	256
- #ifndef __ASSEMBLY__
- #include <asm/inst.h>
--#define BPT_SIZE	(sizeof(struct ppc_inst) * 2)
--#define BPT_WORDS	(BPT_SIZE / sizeof(struct ppc_inst))
-+#define BPT_SIZE	(sizeof(ppc_inst_t) * 2)
-+#define BPT_WORDS	(BPT_SIZE / sizeof(ppc_inst_t))
- 
- extern unsigned int bpt_table[NBPTS * BPT_WORDS];
- #endif /* __ASSEMBLY__ */
--- 
-2.31.1
-
+@@ -9547,6 +9633,12 @@ static struct rq *find_busiest_queue(str
+ 		    nr_running == 1)
+ 			continue;
+ 
++		/* Make sure we only pull tasks from a CPU of lower priority */
++		if ((env->sd->flags & SD_ASYM_PACKING) &&
++		    sched_asym_prefer(i, env->dst_cpu) &&
++		    nr_running == 1)
++			continue;
++
+ 		switch (env->migration_type) {
+ 		case migrate_load:
+ 			/*
