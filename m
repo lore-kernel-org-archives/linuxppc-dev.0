@@ -2,61 +2,84 @@ Return-Path: <SRS0=EPkL=OK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A6A9C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Sep 2021 15:45:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ECAAC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Sep 2021 16:21:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA10D6115C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Sep 2021 15:45:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DA10D6115C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1A44F60F70
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Sep 2021 16:21:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1A44F60F70
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HCpn124LCz2yXc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 01:45:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HCqYz6BgDz2yP3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 02:21:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NQfTBETI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UonqQP4t;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=NQfTBETI; 
+ header.s=k20201202 header.b=UonqQP4t; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HCpmF0QyTz2xvf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Sep 2021 01:45:17 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id A27E761159;
- Mon, 20 Sep 2021 15:45:11 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HCqY90khbz2yLq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Sep 2021 02:20:44 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPS id 0EB8460F70
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Sep 2021 16:20:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1632152713;
- bh=EC+9dyajYM2OPNtBQsJoiGoRd9MZ5dbX2yOO9/Uoq6U=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=NQfTBETIlpVtKbA/+UDc+h1Ycdfi45SAPzATlwtFJTjYsBq6Mc3UvwPR2UUgVqSPq
- xMXRQo1l8idyhR9VJ30vQYai5gQlAlgRocso5YwY4Vcp9vzACHWjMQ3DDxSY762Zoa
- AIaqdF8h2C2XItW7pFDb/SjOj+f6fgKw7Ox/Nw/YJW/i6ZyOdiGkbruY6Ls6Z6VNBx
- g/AaCCjaTcD21MCKHy4OQH0nDr6o23qJlVRtwvqrcV7uNhudKLLt5z9KImL0KiPZJa
- APYEnZkJhTzK2mQVdHruVNHCkizkjfvMiP9HQ/PR1iX6fW3O1Z2fvNouaPyCv3RXJo
- 8YN/X+jF8hiuw==
-Date: Mon, 20 Sep 2021 08:45:08 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: Paul Menzel <pmenzel@molgen.mpg.de>
-Subject: Re: [PATCH v3] lib/zlib_inflate/inffast: Check config in C to avoid
- unused function warning
-Message-ID: <YUishGbHeaDMJDj+@archlinux-ax161>
-References: <20210920084332.5752-1-pmenzel@molgen.mpg.de>
+ s=k20201202; t=1632154835;
+ bh=VPlmxXIXBXIiNvvBXO+AQ/08tJbcfBj1cBjGvyoD8l0=;
+ h=From:To:Subject:Date:In-Reply-To:References:From;
+ b=UonqQP4tPY/dAJHBoQ02VCWqK9p6FdEb7O3yGlDGPZMqL22OSO0znhAxZjWTqUk8e
+ vJSMPaxlBJZWjJo5s0F4k1HYp/LaK5qZ8pcBd5nnDIQRzBB4/cTiob+KF4Jf+cqEcQ
+ lMYiu1MXDb0CP/FY3kTRJuDjTiOx81m1kne8Zlq/miDntJrBqcIAceJbGfXdrGrfmS
+ XoZ0sPvDv6QYir4RKNpAsx0sqPsEMSsxEkV2jJ22p6q8nLDZEauwypC0pXIgzDEIxc
+ 4Iy5RkUmBQTEHThBAvgWCLS0TDMvQW9IY0YDhYIX8UFREQUPzWHm8+sjI9ce/0jYGh
+ zvSYjgvVD8Cgg==
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: =?UTF-8?B?W0J1ZyAyMTM4MDNdIEc1IGtlcm5lbCBidWlsZCAodjUuMTQtcmMy?=
+ =?UTF-8?B?KSBmYWlscyBhdCBsaW5raW5nIHN0YWdlIC0gbGQ6IGFyY2gvcG93ZXJwYy9t?=
+ =?UTF-8?B?bS9wZ3RhYmxlLm86IGluIGZ1bmN0aW9uIGAuX19wdGVwX3NldF9hY2Nlc3Nf?=
+ =?UTF-8?B?ZmxhZ3MnOiAvdXNyL3NyYy9saW51eC1zdGFibGUvLi9hcmNoL3Bvd2VycGMv?=
+ =?UTF-8?B?aW5jbHVkZS9hc20vYm9vazNzLzY0L3BndGFibGUuaDo4MjQ6IHVuZGVmaW5l?=
+ =?UTF-8?B?ZCByZWZlcmVuY2UgdG8gYC5yYWRpeF9fcHRlcF9zZXRfYWNjZXNzX2ZsYWdz?=
+ =?UTF-8?B?Jw==?=
+Date: Mon, 20 Sep 2021 16:20:34 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: RESOLVED
+X-Bugzilla-Resolution: CODE_FIX
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_status resolution
+Message-ID: <bug-213803-206035-vMF9TU8O5D@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-213803-206035@https.bugzilla.kernel.org/>
+References: <bug-213803-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210920084332.5752-1-pmenzel@molgen.mpg.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,62 +91,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: llvm@lists.linux.dev, Zhen Lei <thunder.leizhen@huawei.com>,
- Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 20, 2021 at 10:43:33AM +0200, Paul Menzel wrote:
-> Building Linux for ppc64le with Ubuntu clang version 12.0.0-3ubuntu1~21.04.1
-> shows the warning below.
-> 
->     arch/powerpc/boot/inffast.c:20:1: warning: unused function 'get_unaligned16' [-Wunused-function]
->     get_unaligned16(const unsigned short *p)
->     ^
->     1 warning generated.
-> 
-> Fix it, by moving the check from the preprocessor to C, so the compiler
-> sees the use.
-> 
-> Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
+https://bugzilla.kernel.org/show_bug.cgi?id=3D213803
 
-Reviewed-by: Nathan Chancellor <nathan@kernel.org>
-Tested-by: Nathan Chancellor <nathan@kernel.org>
+Erhard F. (erhard_f@mailbox.org) changed:
 
-> ---
-> v2: Use IS_ENABLED
-> v3: Use if statement over ternary operator as requested by Christophe
-> 
->  lib/zlib_inflate/inffast.c | 13 ++++++-------
->  1 file changed, 6 insertions(+), 7 deletions(-)
-> 
-> diff --git a/lib/zlib_inflate/inffast.c b/lib/zlib_inflate/inffast.c
-> index f19c4fbe1be7..2843f9bb42ac 100644
-> --- a/lib/zlib_inflate/inffast.c
-> +++ b/lib/zlib_inflate/inffast.c
-> @@ -253,13 +253,12 @@ void inflate_fast(z_streamp strm, unsigned start)
->  
->  			sfrom = (unsigned short *)(from);
->  			loops = len >> 1;
-> -			do
-> -#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-> -			    *sout++ = *sfrom++;
-> -#else
-> -			    *sout++ = get_unaligned16(sfrom++);
-> -#endif
-> -			while (--loops);
-> +			do {
-> +			    if (IS_ENABLED(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS))
-> +				*sout++ = *sfrom++;
-> +			    else
-> +				*sout++ = get_unaligned16(sfrom++);
-> +			} while (--loops);
->  			out = (unsigned char *)sout;
->  			from = (unsigned char *)sfrom;
->  		    } else { /* dist == 1 or dist == 2 */
-> -- 
-> 2.33.0
-> 
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |RESOLVED
+         Resolution|---                         |CODE_FIX
+
+--- Comment #2 from Erhard F. (erhard_f@mailbox.org) ---
+The fix went into v5.15-rc2.
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are watching the assignee of the bug.=
