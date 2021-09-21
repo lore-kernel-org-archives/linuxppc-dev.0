@@ -2,90 +2,102 @@ Return-Path: <SRS0=NHc8=OL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.0 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C21F9C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 00:19:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F777C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 00:22:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2122C61242
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 00:19:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2122C61242
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9660C61184
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 00:22:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9660C61184
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HD29n5N2jz2ywW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 10:19:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HD2Dk23WKz2ymr
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 10:22:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=DXpmrRVT;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=embeddedor.com header.i=@embeddedor.com header.a=rsa-sha256 header.s=default header.b=eTNSUnUc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::829;
- helo=mail-qt1-x829.google.com; envelope-from=danielhb413@gmail.com;
+ smtp.mailfrom=embeddedor.com (client-ip=192.185.145.113;
+ helo=gateway32.websitewelcome.com; envelope-from=gustavo@embeddedor.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=DXpmrRVT; dkim-atps=neutral
-Received: from mail-qt1-x829.google.com (mail-qt1-x829.google.com
- [IPv6:2607:f8b0:4864:20::829])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=embeddedor.com header.i=@embeddedor.com
+ header.a=rsa-sha256 header.s=default header.b=eTNSUnUc; 
+ dkim-atps=neutral
+X-Greylist: delayed 1207 seconds by postgrey-1.36 at boromir;
+ Tue, 21 Sep 2021 10:21:32 AEST
+Received: from gateway32.websitewelcome.com (gateway32.websitewelcome.com
+ [192.185.145.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HD28z3FZ7z2xtv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Sep 2021 10:18:57 +1000 (AEST)
-Received: by mail-qt1-x829.google.com with SMTP id r1so3095609qta.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Sep 2021 17:18:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=message-id:date:mime-version:user-agent:subject:content-language:to
- :cc:references:from:in-reply-to:content-transfer-encoding;
- bh=oCWOCXYGgsypx9sXOpPbyUQrHWDjgDTaeWqfc0jiapg=;
- b=DXpmrRVTNnD/laPru+VuA9glQwFBdgzeLQkH+Nd4bun8JHKQbaLnJn5JDhLnC0Z3l2
- ha9AiRkGn2mT14s4iO+FYWtbZWb7JLmzs61oopmKaJ6a2wMz+qztbwRoNTb6k32RrbJ2
- 6iPkXr3o4L+TVHFBLftSjzfoao3oUFiOxjVNpFmcfVy4If6iZksaUaCRU6ejimooHX7j
- cbTDUW5OvuYZGxXXtvuxBMs7xsOP3naAYkp+fXgvWrI3pMWAacat3MXDHEtEwC8yH6BN
- gojtzQlSAMGv/NaAQ0DNSEWry8dQPv4LaUbQD0oTS9Jt4HiBWGXuIdbanVcBMTTJXLs1
- 6C2A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
- :content-language:to:cc:references:from:in-reply-to
- :content-transfer-encoding;
- bh=oCWOCXYGgsypx9sXOpPbyUQrHWDjgDTaeWqfc0jiapg=;
- b=iWGu2G90zHsZo9jWDwwpZUZ9UeyN+PiFlGVUwl5jn/m7OTQXAgLDD6s6GxDs+WouIb
- EGMocG2humvaB4Tz31ocwSzU2y2TWJ2x6xQaLD6gMBVqi1iJ3HA/OykccUcev8IlCnkE
- RvGyKLGgSBia2DemBGLUJaRlqarlr7pZwAIqqypp8DLywuXXncS6D+gt/6BAZTZvTjGU
- laRIbKMRI62bmueyYU7W+izzt3tlDy8/3ve4WjcCKKtvU1xKGfDMWolMZavA5mQP1DeE
- 2zFJse9eLIniTwnFF5I7e5/QkIjgS5NMPz3enTlSLQw67f/k67IG6oI5X1JX8AAVXsMZ
- j8xw==
-X-Gm-Message-State: AOAM530EAfSLQ17R/0P2YgGNJGiiM/8VDdh0q+Ru4DGVN/OC/4/p+For
- OPzlAWRgm4C7U9tWloVCeRc=
-X-Google-Smtp-Source: ABdhPJyThjaFidI+ysDxZeFgm4ghgJUQhW5ZWvfcTWznYjANgwczpibpG5qsse/iXIdpvwwin8L0Jg==
-X-Received: by 2002:a05:622a:18c:: with SMTP id
- s12mr22373771qtw.62.1632183534223; 
- Mon, 20 Sep 2021 17:18:54 -0700 (PDT)
-Received: from [192.168.10.222] ([177.189.43.50])
- by smtp.gmail.com with ESMTPSA id y12sm9758433qtj.3.2021.09.20.17.18.52
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 20 Sep 2021 17:18:54 -0700 (PDT)
-Message-ID: <19c1f412-ef08-f1ea-8c6b-45921bd1f627@gmail.com>
-Date: Mon, 20 Sep 2021 21:18:50 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HD2Cw61wTz2xYP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Sep 2021 10:21:32 +1000 (AEST)
+Received: from cm16.websitewelcome.com (cm16.websitewelcome.com [100.42.49.19])
+ by gateway32.websitewelcome.com (Postfix) with ESMTP id 23E76181721
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Sep 2021 19:01:20 -0500 (CDT)
+Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
+ id STDsmLCP3jSwzSTDsmoNBL; Mon, 20 Sep 2021 19:01:20 -0500
+X-Authority-Reason: nr=8
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=embeddedor.com; s=default; h=Content-Transfer-Encoding:Content-Type:
+ In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
+ :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+ Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=czSdDpNgb0Ii/RJWWpIWH8ssgyJ0ANHKIaZ5AJ+/NWg=; b=eTNSUnUcbS4YXJdyxijuf+L6bU
+ +3nwvc5H7uG93RrOlY4XaQr+WJ8j5NasVF1FSOVL0/lk0bOYG9UZE8acN2rotuQu6llY12vdmrkGU
+ V/wsZwwCXSGfqjcL47Efj5u5L7QG7rSltVQBuNf465bB8o++v9MW7Ru5j/oTS343jFEKZWZOwZPoZ
+ Pm+Cg0lzTlOKUEcweILPt8iBUx3r/LhGmgqJfKT7Ch/3zTdxNnb6PVKumenkJm9EbYGGsCCT1Rt1V
+ eT9MOfKYpHUcAA3fr58PiS5injGTx47qqOPbDuIfN/4ufmiTmASdY8S6YpDmURQ6RNucrEwqKf29z
+ PtygWsHw==;
+Received: from 187-162-31-110.static.axtel.net ([187.162.31.110]:33780
+ helo=[192.168.15.9])
+ by gator4166.hostgator.com with esmtpsa (TLS1.2) tls
+ TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (Exim 4.94.2)
+ (envelope-from <gustavo@embeddedor.com>)
+ id 1mSTDr-000Y7U-Iv; Mon, 20 Sep 2021 19:01:19 -0500
+Subject: Re: [PATCH] KVM: PPC: Replace zero-length array with flexible array
+ member
+To: Len Baker <len.baker@gmx.com>, Paul Mackerras <paulus@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <20210918142138.17709-1-len.baker@gmx.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Message-ID: <bb4faf3a-9fe9-280b-cb4c-e4904b0b2a8f@embeddedor.com>
+Date: Mon, 20 Sep 2021 19:05:07 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.1.0
-Subject: Re: [PATCH 3/3] powerpc/pseries/cpuhp: delete add/remove_by_count code
+In-Reply-To: <20210918142138.17709-1-len.baker@gmx.com>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <20210920135504.1792219-1-nathanl@linux.ibm.com>
- <20210920135504.1792219-4-nathanl@linux.ibm.com>
-From: Daniel Henrique Barboza <danielhb413@gmail.com>
-In-Reply-To: <20210920135504.1792219-4-nathanl@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse,
+ please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - lists.ozlabs.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 187.162.31.110
+X-Source-L: No
+X-Exim-ID: 1mSTDr-000Y7U-Iv
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: 187-162-31-110.static.axtel.net ([192.168.15.9])
+ [187.162.31.110]:33780
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 8
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,341 +109,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tyreld@linux.ibm.com, ldufour@linux.ibm.com, aneesh.kumar@linux.ibm.com
+Cc: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-On 9/20/21 10:55, Nathan Lynch wrote:
-> The core DLPAR code supports two actions (add and remove) and three
-> subtypes of action:
+On 9/18/21 09:21, Len Baker wrote:
+> There is a regular need in the kernel to provide a way to declare having
+> a dynamically sized set of trailing elements in a structure. Kernel code
+> should always use "flexible array members" [1] for these cases. The
+> older style of one-element or zero-length arrays should no longer be
+> used[2].
 > 
-> * By DRC index: the action is attempted on a single specified resource.
->    This is the usual case for processors.
-> * By indexed count: the action is attempted on a range of resources
->    beginning at the specified index. This is implemented only by the memory
->    DLPAR code.
-> * By count: the lower layer (CPU or memory) is responsible for locating the
->    specified number of resources to which the action can be applied.
+> Also, make use of the struct_size() helper in kzalloc().
 > 
-> I cannot find any evidence of the "by count" subtype being used by drmgr or
-> qemu for processors. And when I try to exercise this code, the add case
-> does not work:
+> [1] https://en.wikipedia.org/wiki/Flexible_array_member
+> [2] https://www.kernel.org/doc/html/latest/process/deprecated.html#zero-length-and-one-element-arrays
+> 
+> Signed-off-by: Len Baker <len.baker@gmx.com>
 
+Reviewed-by: Gustavo A. R. Silva <gustavoars@kernel.org>
 
-Just to clarify: did you check both CPU and memory cases and found out that the
-'by count' subtype isn't used with CPUs, but drmgr has some cases in which
-'by count' is used with LMBs?
+Thanks
+--
+Gustavo
 
-I'm asking because I worked with a part of the LMB removal code a few months ago,
-and got stuck in a situation in which the 'by count' and 'by indexed count' are
-similar enough to feel repetitive, but distinct enough to not be easily reduced
-into a single function. If drmgr wasn't using the 'by count' subtypes for LMBs
-that would be a good chance for more code redux.
-
-
-> 
->    $ ppc64_cpu --smt ; nproc
->    SMT=8
->    24
->    $ printf "cpu remove count 2" > /sys/kernel/dlpar
->    $ nproc
->    8
->    $ printf "cpu add count 2" > /sys/kernel/dlpar
->    -bash: printf: write error: Invalid argument
->    $ dmesg | tail -2
->    pseries-hotplug-cpu: Failed to find enough CPUs (1 of 2) to add
->    dlpar: Could not handle DLPAR request "cpu add count 2"
->    $ nproc
->    8
->    $ drmgr -c cpu -a -q 2         # this uses the by-index method
->    Validating CPU DLPAR capability...yes.
->    CPU 1
->    CPU 17
->    $ nproc
->    24
-> 
-> This is because find_drc_info_cpus_to_add() does not increment drc_index
-> appropriately during its search.
-> 
-> This is not hard to fix. But the _by_count() functions also have the
-> property that they attempt to roll back all prior operations if the entire
-> request cannot be satisfied, even though the rollback itself can encounter
-> errors. It's not possible to provide transaction-like behavior at this
-> level, and it's undesirable to have code that can only pretend to do that.
-> Any users of these functions cannot know what the state of the system is in
-> the error case. And the error paths are, to my knowledge, impossible to
-> test without adding custom error injection code.
-> 
-> Summary:
-> 
-> * This code has not worked reliably since its introduction.
-> * There is no evidence that it is used.
-> * It contains questionable rollback behaviors in error paths which are
->    difficult to test.
-> 
-> So let's remove it.
-> 
-> Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
-> Fixes: ac71380071d1 ("powerpc/pseries: Add CPU dlpar remove functionality")
-> Fixes: 90edf184b9b7 ("powerpc/pseries: Add CPU dlpar add functionality")
-> Fixes: b015f6bc9547 ("powerpc/pseries: Add cpu DLPAR support for drc-info property")
 > ---
-
-Tested with a QEMU pseries guest, no issues found.
-
-
-Reviewed-by: Daniel Henrique Barboza <danielhb413@gmail.com>
-Tested-by: Daniel Henrique Barboza <danielhb413@gmail.com>
-
-
-
->   arch/powerpc/platforms/pseries/hotplug-cpu.c | 218 +------------------
->   1 file changed, 2 insertions(+), 216 deletions(-)
+>  arch/powerpc/include/asm/kvm_host.h | 2 +-
+>  arch/powerpc/kvm/book3s_64_vio.c    | 3 +--
+>  2 files changed, 2 insertions(+), 3 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 87a0fbe9cf12..768997261ce8 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -741,216 +741,6 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
->   	return rc;
->   }
->   
-> -static int find_dlpar_cpus_to_remove(u32 *cpu_drcs, int cpus_to_remove)
-> -{
-> -	struct device_node *dn;
-> -	int cpus_found = 0;
-> -	int rc;
-> -
-> -	/* We want to find cpus_to_remove + 1 CPUs to ensure we do not
-> -	 * remove the last CPU.
-> -	 */
-> -	for_each_node_by_type(dn, "cpu") {
-> -		cpus_found++;
-> -
-> -		if (cpus_found > cpus_to_remove) {
-> -			of_node_put(dn);
-> -			break;
-> -		}
-> -
-> -		/* Note that cpus_found is always 1 ahead of the index
-> -		 * into the cpu_drcs array, so we use cpus_found - 1
-> -		 */
-> -		rc = of_property_read_u32(dn, "ibm,my-drc-index",
-> -					  &cpu_drcs[cpus_found - 1]);
-> -		if (rc) {
-> -			pr_warn("Error occurred getting drc-index for %pOFn\n",
-> -				dn);
-> -			of_node_put(dn);
-> -			return -1;
-> -		}
-> -	}
-> -
-> -	if (cpus_found < cpus_to_remove) {
-> -		pr_warn("Failed to find enough CPUs (%d of %d) to remove\n",
-> -			cpus_found, cpus_to_remove);
-> -	} else if (cpus_found == cpus_to_remove) {
-> -		pr_warn("Cannot remove all CPUs\n");
-> -	}
-> -
-> -	return cpus_found;
-> -}
-> -
-> -static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
-> -{
-> -	u32 *cpu_drcs;
-> -	int cpus_found;
-> -	int cpus_removed = 0;
-> -	int i, rc;
-> -
-> -	pr_debug("Attempting to hot-remove %d CPUs\n", cpus_to_remove);
-> -
-> -	cpu_drcs = kcalloc(cpus_to_remove, sizeof(*cpu_drcs), GFP_KERNEL);
-> -	if (!cpu_drcs)
-> -		return -EINVAL;
-> -
-> -	cpus_found = find_dlpar_cpus_to_remove(cpu_drcs, cpus_to_remove);
-> -	if (cpus_found <= cpus_to_remove) {
-> -		kfree(cpu_drcs);
-> -		return -EINVAL;
-> -	}
-> -
-> -	for (i = 0; i < cpus_to_remove; i++) {
-> -		rc = dlpar_cpu_remove_by_index(cpu_drcs[i]);
-> -		if (rc)
-> -			break;
-> -
-> -		cpus_removed++;
-> -	}
-> -
-> -	if (cpus_removed != cpus_to_remove) {
-> -		pr_warn("CPU hot-remove failed, adding back removed CPUs\n");
-> -
-> -		for (i = 0; i < cpus_removed; i++)
-> -			dlpar_cpu_add(cpu_drcs[i]);
-> -
-> -		rc = -EINVAL;
-> -	} else {
-> -		rc = 0;
-> -	}
-> -
-> -	kfree(cpu_drcs);
-> -	return rc;
-> -}
-> -
-> -static int find_drc_info_cpus_to_add(struct device_node *cpus,
-> -				     struct property *info,
-> -				     u32 *cpu_drcs, u32 cpus_to_add)
-> -{
-> -	struct of_drc_info drc;
-> -	const __be32 *value;
-> -	u32 count, drc_index;
-> -	int cpus_found = 0;
-> -	int i, j;
-> -
-> -	if (!info)
-> -		return -1;
-> -
-> -	value = of_prop_next_u32(info, NULL, &count);
-> -	if (value)
-> -		value++;
-> -
-> -	for (i = 0; i < count; i++) {
-> -		of_read_drc_info_cell(&info, &value, &drc);
-> -		if (strncmp(drc.drc_type, "CPU", 3))
-> -			break;
-> -
-> -		drc_index = drc.drc_index_start;
-> -		for (j = 0; j < drc.num_sequential_elems; j++) {
-> -			if (dlpar_cpu_exists(cpus, drc_index))
-> -				continue;
-> -
-> -			cpu_drcs[cpus_found++] = drc_index;
-> -
-> -			if (cpus_found == cpus_to_add)
-> -				return cpus_found;
-> -
-> -			drc_index += drc.sequential_inc;
-> -		}
-> -	}
-> -
-> -	return cpus_found;
-> -}
-> -
-> -static int find_drc_index_cpus_to_add(struct device_node *cpus,
-> -				      u32 *cpu_drcs, u32 cpus_to_add)
-> -{
-> -	int cpus_found = 0;
-> -	int index, rc;
-> -	u32 drc_index;
-> -
-> -	/* Search the ibm,drc-indexes array for possible CPU drcs to
-> -	 * add. Note that the format of the ibm,drc-indexes array is
-> -	 * the number of entries in the array followed by the array
-> -	 * of drc values so we start looking at index = 1.
-> -	 */
-> -	index = 1;
-> -	while (cpus_found < cpus_to_add) {
-> -		rc = of_property_read_u32_index(cpus, "ibm,drc-indexes",
-> -						index++, &drc_index);
-> -
-> -		if (rc)
-> -			break;
-> -
-> -		if (dlpar_cpu_exists(cpus, drc_index))
-> -			continue;
-> -
-> -		cpu_drcs[cpus_found++] = drc_index;
-> -	}
-> -
-> -	return cpus_found;
-> -}
-> -
-> -static int dlpar_cpu_add_by_count(u32 cpus_to_add)
-> -{
-> -	struct device_node *parent;
-> -	struct property *info;
-> -	u32 *cpu_drcs;
-> -	int cpus_added = 0;
-> -	int cpus_found;
-> -	int i, rc;
-> -
-> -	pr_debug("Attempting to hot-add %d CPUs\n", cpus_to_add);
-> -
-> -	cpu_drcs = kcalloc(cpus_to_add, sizeof(*cpu_drcs), GFP_KERNEL);
-> -	if (!cpu_drcs)
-> -		return -EINVAL;
-> -
-> -	parent = of_find_node_by_path("/cpus");
-> -	if (!parent) {
-> -		pr_warn("Could not find CPU root node in device tree\n");
-> -		kfree(cpu_drcs);
-> -		return -1;
-> -	}
-> -
-> -	info = of_find_property(parent, "ibm,drc-info", NULL);
-> -	if (info)
-> -		cpus_found = find_drc_info_cpus_to_add(parent, info, cpu_drcs, cpus_to_add);
-> -	else
-> -		cpus_found = find_drc_index_cpus_to_add(parent, cpu_drcs, cpus_to_add);
-> -
-> -	of_node_put(parent);
-> -
-> -	if (cpus_found < cpus_to_add) {
-> -		pr_warn("Failed to find enough CPUs (%d of %d) to add\n",
-> -			cpus_found, cpus_to_add);
-> -		kfree(cpu_drcs);
-> -		return -EINVAL;
-> -	}
-> -
-> -	for (i = 0; i < cpus_to_add; i++) {
-> -		rc = dlpar_cpu_add(cpu_drcs[i]);
-> -		if (rc)
-> -			break;
-> -
-> -		cpus_added++;
-> -	}
-> -
-> -	if (cpus_added < cpus_to_add) {
-> -		pr_warn("CPU hot-add failed, removing any added CPUs\n");
-> -
-> -		for (i = 0; i < cpus_added; i++)
-> -			dlpar_cpu_remove_by_index(cpu_drcs[i]);
-> -
-> -		rc = -EINVAL;
-> -	} else {
-> -		rc = 0;
-> -	}
-> -
-> -	kfree(cpu_drcs);
-> -	return rc;
-> -}
-> -
->   int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
->   {
->   	u32 count, drc_index;
-> @@ -963,9 +753,7 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
->   
->   	switch (hp_elog->action) {
->   	case PSERIES_HP_ELOG_ACTION_REMOVE:
-> -		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
-> -			rc = dlpar_cpu_remove_by_count(count);
-> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
-> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
->   			rc = dlpar_cpu_remove_by_index(drc_index);
->   			/*
->   			 * Setting the isolation state of an UNISOLATED/CONFIGURED
-> @@ -979,9 +767,7 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
->   			rc = -EINVAL;
->   		break;
->   	case PSERIES_HP_ELOG_ACTION_ADD:
-> -		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
-> -			rc = dlpar_cpu_add_by_count(count);
-> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
-> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
->   			rc = dlpar_cpu_add(drc_index);
->   		else
->   			rc = -EINVAL;
+> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+> index 080a7feb7731..3aed653373a5 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -190,7 +190,7 @@ struct kvmppc_spapr_tce_table {
+>  	u64 size;		/* window size in pages */
+>  	struct list_head iommu_tables;
+>  	struct mutex alloc_lock;
+> -	struct page *pages[0];
+> +	struct page *pages[];
+>  };
+> 
+>  /* XICS components, defined in book3s_xics.c */
+> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+> index 6365087f3160..d42b4b6d4a79 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio.c
+> @@ -295,8 +295,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+>  		return ret;
+> 
+>  	ret = -ENOMEM;
+> -	stt = kzalloc(sizeof(*stt) + npages * sizeof(struct page *),
+> -		      GFP_KERNEL);
+> +	stt = kzalloc(struct_size(stt, pages, npages), GFP_KERNEL);
+>  	if (!stt)
+>  		goto fail_acct;
+> 
+> --
+> 2.25.1
 > 
