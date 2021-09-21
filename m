@@ -2,67 +2,73 @@ Return-Path: <SRS0=NHc8=OL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63BA6C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 14:27:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC0F8C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 15:10:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 85E3860F9E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 14:27:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 85E3860F9E
+	by mail.kernel.org (Postfix) with ESMTPS id ED8F2610A0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 15:10:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ED8F2610A0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HDP0N1G1Yz2ymk
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 00:27:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HDPxl4gv2z2yP3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 01:10:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HDNzv1GC6z2xvf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 00:27:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HDPxG4cc5z2xrX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 01:10:07 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HDNzn6y2Kz9sT9;
- Tue, 21 Sep 2021 16:27:17 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HDPx81lGBz9sT9;
+ Tue, 21 Sep 2021 17:10:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BEkzd5toiTVu; Tue, 21 Sep 2021 16:27:17 +0200 (CEST)
+ with ESMTP id x7o_Pt_yIspL; Tue, 21 Sep 2021 17:10:04 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HDNzl2k51z9sTR;
- Tue, 21 Sep 2021 16:27:15 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HDPx80ZxCz9sSw;
+ Tue, 21 Sep 2021 17:10:04 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 48CC18B765;
- Tue, 21 Sep 2021 16:27:15 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F10708B773;
+ Tue, 21 Sep 2021 17:10:03 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id KS9e_7RDtzCp; Tue, 21 Sep 2021 16:27:15 +0200 (CEST)
+ with ESMTP id emZZtB7P4WA0; Tue, 21 Sep 2021 17:10:03 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.127])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2715B8B763;
- Tue, 21 Sep 2021 16:27:14 +0200 (CEST)
-Subject: Re: [PATCH v3 8/8] bpf ppc32: Access only if addr is kernel address
-To: Hari Bathini <hbathini@linux.ibm.com>, naveen.n.rao@linux.ibm.com,
- mpe@ellerman.id.au, ast@kernel.org, daniel@iogearbox.net
-References: <20210921132943.489732-1-hbathini@linux.ibm.com>
- <20210921132943.489732-9-hbathini@linux.ibm.com>
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 993F88B765;
+ Tue, 21 Sep 2021 17:10:03 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18LF9rjF1071866
+ (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+ Tue, 21 Sep 2021 17:09:53 +0200
+Received: (from chleroy@localhost)
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18LF9rkY1071865;
+ Tue, 21 Sep 2021 17:09:53 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
+ christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <f35f8859-5c6d-47ca-72ce-c1710171aafa@csgroup.eu>
-Date: Tue, 21 Sep 2021 16:27:13 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v5 3/3] powerpc/atomics: Remove atomic_inc()/atomic_dec() and
+ friends
+Date: Tue, 21 Sep 2021 17:09:49 +0200
+Message-Id: <0bc64a2f18726055093dbb2e479cefc60a409cfd.1632236981.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <e6f815d9181bab09df3b350af51149437863e9f9.1632236981.git.christophe.leroy@csgroup.eu>
+References: <e6f815d9181bab09df3b350af51149437863e9f9.1632236981.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-In-Reply-To: <20210921132943.489732-9-hbathini@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr-FR
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -75,96 +81,142 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: songliubraving@fb.com, netdev@vger.kernel.org, john.fastabend@gmail.com,
- andrii@kernel.org, kpsingh@kernel.org, paulus@samba.org, yhs@fb.com,
- bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kafai@fb.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Now that atomic_add() and atomic_sub() handle immediate operands,
+atomic_inc() and atomic_dec() have no added value compared to the
+generic fallback which calls atomic_add(1) and atomic_sub(1).
 
+Also remove atomic_inc_not_zero() which fallsback to
+atomic_add_unless() which itself fallsback to
+atomic_fetch_add_unless() which now handles immediate operands.
 
-Le 21/09/2021 à 15:29, Hari Bathini a écrit :
-> With KUAP enabled, any kernel code which wants to access userspace
-> needs to be surrounded by disable-enable KUAP. But that is not
-> happening for BPF_PROBE_MEM load instruction. Though PPC32 does not
-> support read protection, considering the fact that PTR_TO_BTF_ID
-> (which uses BPF_PROBE_MEM mode) could either be a valid kernel pointer
-> or NULL but should never be a pointer to userspace address, execute
-> BPF_PROBE_MEM load only if addr is kernel address, otherwise set
-> dst_reg=0 and move on.
-> 
-> This will catch NULL, valid or invalid userspace pointers. Only bad
-> kernel pointer will be handled by BPF exception table.
-> 
-> [Alexei suggested for x86]
-> Suggested-by: Alexei Starovoitov <ast@kernel.org>
-> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
-> ---
-> 
-> Changes in v3:
-> * Updated jump for PPC_BCC to always be the same while emitting
->    a NOP instruction when needed.
-> 
-> 
->   arch/powerpc/net/bpf_jit_comp32.c | 35 +++++++++++++++++++++++++++++++
->   1 file changed, 35 insertions(+)
-> 
-> diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
-> index 1239643f532c..59849e1230d2 100644
-> --- a/arch/powerpc/net/bpf_jit_comp32.c
-> +++ b/arch/powerpc/net/bpf_jit_comp32.c
-> @@ -825,6 +825,41 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
->   		case BPF_LDX | BPF_MEM | BPF_DW: /* dst = *(u64 *)(ul) (src + off) */
->   			fallthrough;
->   		case BPF_LDX | BPF_PROBE_MEM | BPF_DW:
-> +			/*
-> +			 * As PTR_TO_BTF_ID that uses BPF_PROBE_MEM mode could either be a valid
-> +			 * kernel pointer or NULL but not a userspace address, execute BPF_PROBE_MEM
-> +			 * load only if addr is kernel address (see is_kernel_addr()), otherwise
-> +			 * set dst_reg=0 and move on.
-> +			 */
-> +			if (BPF_MODE(code) == BPF_PROBE_MEM) {
-> +				EMIT(PPC_RAW_ADDI(b2p[TMP_REG], src_reg, off));
-> +				PPC_LI32(_R0, TASK_SIZE);
-> +				EMIT(PPC_RAW_CMPLW(b2p[TMP_REG], _R0));
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v4: rebased
 
-You may drop the ADDI and do:
+v2: New
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/atomic.h | 95 -------------------------------
+ 1 file changed, 95 deletions(-)
 
-			PPC_LI32(_R0, TASK_SIZE - off);
-			EMIT(PPC_RAW_CMPLW(src_reg, _R0));
+diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
+index ce0d5a013c58..395d1feb5790 100644
+--- a/arch/powerpc/include/asm/atomic.h
++++ b/arch/powerpc/include/asm/atomic.h
+@@ -118,71 +118,6 @@ ATOMIC_OPS(xor, xor, "", K)
+ #undef ATOMIC_OP_RETURN_RELAXED
+ #undef ATOMIC_OP
+ 
+-static __inline__ void arch_atomic_inc(atomic_t *v)
+-{
+-	int t;
+-
+-	__asm__ __volatile__(
+-"1:	lwarx	%0,0,%2		# atomic_inc\n\
+-	addic	%0,%0,1\n"
+-"	stwcx.	%0,0,%2 \n\
+-	bne-	1b"
+-	: "=&r" (t), "+m" (v->counter)
+-	: "r" (&v->counter)
+-	: "cc", "xer");
+-}
+-#define arch_atomic_inc arch_atomic_inc
+-
+-static __inline__ int arch_atomic_inc_return_relaxed(atomic_t *v)
+-{
+-	int t;
+-
+-	__asm__ __volatile__(
+-"1:	lwarx	%0,0,%2		# atomic_inc_return_relaxed\n"
+-"	addic	%0,%0,1\n"
+-"	stwcx.	%0,0,%2\n"
+-"	bne-	1b"
+-	: "=&r" (t), "+m" (v->counter)
+-	: "r" (&v->counter)
+-	: "cc", "xer");
+-
+-	return t;
+-}
+-
+-static __inline__ void arch_atomic_dec(atomic_t *v)
+-{
+-	int t;
+-
+-	__asm__ __volatile__(
+-"1:	lwarx	%0,0,%2		# atomic_dec\n\
+-	addic	%0,%0,-1\n"
+-"	stwcx.	%0,0,%2\n\
+-	bne-	1b"
+-	: "=&r" (t), "+m" (v->counter)
+-	: "r" (&v->counter)
+-	: "cc", "xer");
+-}
+-#define arch_atomic_dec arch_atomic_dec
+-
+-static __inline__ int arch_atomic_dec_return_relaxed(atomic_t *v)
+-{
+-	int t;
+-
+-	__asm__ __volatile__(
+-"1:	lwarx	%0,0,%2		# atomic_dec_return_relaxed\n"
+-"	addic	%0,%0,-1\n"
+-"	stwcx.	%0,0,%2\n"
+-"	bne-	1b"
+-	: "=&r" (t), "+m" (v->counter)
+-	: "r" (&v->counter)
+-	: "cc", "xer");
+-
+-	return t;
+-}
+-
+-#define arch_atomic_inc_return_relaxed arch_atomic_inc_return_relaxed
+-#define arch_atomic_dec_return_relaxed arch_atomic_dec_return_relaxed
+-
+ #define arch_atomic_cmpxchg(v, o, n) \
+ 	(arch_cmpxchg(&((v)->counter), (o), (n)))
+ #define arch_atomic_cmpxchg_relaxed(v, o, n) \
+@@ -255,36 +190,6 @@ static __inline__ int arch_atomic_fetch_add_unless(atomic_t *v, int a, int u)
+ }
+ #define arch_atomic_fetch_add_unless arch_atomic_fetch_add_unless
+ 
+-/**
+- * atomic_inc_not_zero - increment unless the number is zero
+- * @v: pointer of type atomic_t
+- *
+- * Atomically increments @v by 1, so long as @v is non-zero.
+- * Returns non-zero if @v was non-zero, and zero otherwise.
+- */
+-static __inline__ int arch_atomic_inc_not_zero(atomic_t *v)
+-{
+-	int t1, t2;
+-
+-	__asm__ __volatile__ (
+-	PPC_ATOMIC_ENTRY_BARRIER
+-"1:	lwarx	%0,0,%2		# atomic_inc_not_zero\n\
+-	cmpwi	0,%0,0\n\
+-	beq-	2f\n\
+-	addic	%1,%0,1\n"
+-"	stwcx.	%1,0,%2\n\
+-	bne-	1b\n"
+-	PPC_ATOMIC_EXIT_BARRIER
+-	"\n\
+-2:"
+-	: "=&r" (t1), "=&r" (t2)
+-	: "r" (&v->counter)
+-	: "cc", "xer", "memory");
+-
+-	return t1;
+-}
+-#define arch_atomic_inc_not_zero(v) arch_atomic_inc_not_zero((v))
+-
+ /*
+  * Atomically test *v and decrement if it is greater than 0.
+  * The function returns the old value of *v minus 1, even if
+-- 
+2.31.1
 
-
-It will likely be the same number of instructions because now the 
-PPC_LI32 will generate two instruction, but it avoids the use of TMP_REG.
-
-
-> +				PPC_BCC(COND_GT, (ctx->idx + 5) * 4);
-> +				EMIT(PPC_RAW_LI(dst_reg, 0));
-> +				/*
-> +				 * For BPF_DW case, "li reg_h,0" would be needed when
-> +				 * !fp->aux->verifier_zext. Emit NOP otherwise.
-> +				 *
-> +				 * Note that "li reg_h,0" is emitted for BPF_B/H/W case,
-> +				 * if necessary. So, jump there insted of emitting an
-> +				 * additional "li reg_h,0" instruction.
-> +				 */
-> +				if (size == BPF_DW && !fp->aux->verifier_zext)
-> +					EMIT(PPC_RAW_LI(dst_reg_h, 0));
-> +				else
-> +					EMIT(PPC_RAW_NOP());
-> +				/*
-> +				 * Need to jump two instructions instead of one for BPF_DW case
-> +				 * as there are two load instructions for dst_reg_h & dst_reg
-> +				 * respectively.
-> +				 */
-> +				if (size == BPF_DW)
-> +					PPC_JMP((ctx->idx + 3) * 4);
-> +				else
-> +					PPC_JMP((ctx->idx + 2) * 4);
-> +			}
-> +
->   			switch (size) {
->   			case BPF_B:
->   				EMIT(PPC_RAW_LBZ(dst_reg, src_reg, off));
-> 
