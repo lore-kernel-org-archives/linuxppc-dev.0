@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76B65C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 14:03:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3168CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 14:17:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E2F0260F6B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 14:03:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E2F0260F6B
+	by mail.kernel.org (Postfix) with ESMTPS id 0D8BA610A1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 14:17:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0D8BA610A1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HDNSF3ZDGz3bXt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 00:03:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HDNmN3hQsz306l
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 00:17:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HDNRk2rVXz2xvP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 00:02:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HDNlt53Rmz2xvP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 00:16:57 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HDNRY2f61z9sTT;
- Tue, 21 Sep 2021 16:02:49 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HDNlp2lz1z9sTH;
+ Tue, 21 Sep 2021 16:16:54 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id rj47LPgP1L37; Tue, 21 Sep 2021 16:02:49 +0200 (CEST)
+ with ESMTP id 9v6jz2QoEtml; Tue, 21 Sep 2021 16:16:54 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HDNRX21Fpz9sTR;
- Tue, 21 Sep 2021 16:02:48 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HDNlp173dz9sT9;
+ Tue, 21 Sep 2021 16:16:54 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2BC348B765;
- Tue, 21 Sep 2021 16:02:48 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DC6688B765;
+ Tue, 21 Sep 2021 16:16:53 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id NursZk3mkZf9; Tue, 21 Sep 2021 16:02:48 +0200 (CEST)
+ with ESMTP id 3Ybwe-PqMqd9; Tue, 21 Sep 2021 16:16:53 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.127])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 01A4F8B763;
- Tue, 21 Sep 2021 16:02:46 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4EEB68B763;
+ Tue, 21 Sep 2021 16:16:51 +0200 (CEST)
 Subject: Re: [PATCH v3 3/8] bpf powerpc: refactor JIT compiler code
 To: Hari Bathini <hbathini@linux.ibm.com>, naveen.n.rao@linux.ibm.com,
  mpe@ellerman.id.au, ast@kernel.org, daniel@iogearbox.net
 References: <20210921132943.489732-1-hbathini@linux.ibm.com>
  <20210921132943.489732-4-hbathini@linux.ibm.com>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <240d153b-8893-ae7c-03ea-bdaf1ae3c696@csgroup.eu>
-Date: Tue, 21 Sep 2021 16:02:46 +0200
+Message-ID: <177ed95d-6c83-948a-81a7-4592aeb52080@csgroup.eu>
+Date: Tue, 21 Sep 2021 16:16:49 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.11.0
 MIME-Version: 1.0
@@ -123,6 +123,16 @@ Le 21/09/2021 à 15:29, Hari Bathini a écrit :
 > -				EMIT(PPC_RAW_LI(dst_reg_h, 0));
 > -			break;
 > +			fallthrough;
+
+I know I commented to add 'fallthrough' ... In fact I missinterpreted 
+what I saw.
+
+
+fallthrough is required only if you have code inbetween two 'case'.
+
+When you have two following 'case' without code, you don't need 
+'fallthrough' I think.
+
 >   		case BPF_LDX | BPF_MEM | BPF_H: /* dst = *(u16 *)(ul) (src + off) */
 > -			EMIT(PPC_RAW_LHZ(dst_reg, src_reg, off));
 > -			if (!fp->aux->verifier_zext)
@@ -156,14 +166,6 @@ Le 21/09/2021 à 15:29, Hari Bathini a écrit :
 > +			 * With size not being an enum and BPF_B/H/W/DW being macros, ensure no
 > +			 * compiler warning/error by adding a default case that never reaches.
 > +			 */
-
-Thinking about it once more, in fact this is already bounded by the 
-upper switch/case, so there is no possibility to end up here with 
-something else than the 4 cases and that's probably the reason why GCC 
-says nothing about it, so I now think that a default is unnecessary and 
-should not be added. Sorry for that.
-
-
 > +			default:
 > +				break;
 > +			}
@@ -228,9 +230,6 @@ should not be added. Sorry for that.
 > +			 * With size not being an enum and BPF_B/H/W/DW being macros, ensure no
 > +			 * compiler warning/error by adding a default case that never reaches.
 > +			 */
-
-Same
-
 > +			default:
 > +				break;
 > +			}
