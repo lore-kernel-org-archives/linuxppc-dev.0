@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8288AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 21:48:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 142DEC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 21:48:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E36A60F3A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 21:48:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2E36A60F3A
+	by mail.kernel.org (Postfix) with ESMTPS id B679260E9B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Sep 2021 21:48:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B679260E9B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HDZmq6JMZz3fNk
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 07:48:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HDZnG35DRz3fS2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 07:48:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linkmauve.fr (client-ip=2a01:e0a:828:c7c0:49:5ff:fe41:d261;
  helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr;
@@ -29,17 +29,15 @@ Received: from luna.linkmauve.fr (unknown
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HDZb63pDXz3ccT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 07:40:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HDZb85Jbwz3ckl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 07:40:04 +1000 (AEST)
 Received: by luna.linkmauve.fr (Postfix, from userid 1000)
- id 0DF10F40B6A; Tue, 21 Sep 2021 23:39:48 +0200 (CEST)
+ id 6E105F40B6C; Tue, 21 Sep 2021 23:39:51 +0200 (CEST)
 From: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
-To: Rob Herring <robh+dt@kernel.org>,
-	devicetree@vger.kernel.org
-Subject: [PATCH 2/4] dt-bindings: nintendo-aes: Document the Wii and Wii U AES
- support
-Date: Tue, 21 Sep 2021 23:39:28 +0200
-Message-Id: <20210921213930.10366-3-linkmauve@linkmauve.fr>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 4/4] powerpc: wii_defconfig: Enable AES by default
+Date: Tue, 21 Sep 2021 23:39:30 +0200
+Message-Id: <20210921213930.10366-5-linkmauve@linkmauve.fr>
 X-Mailer: git-send-email 2.33.0
 In-Reply-To: <20210921213930.10366-1-linkmauve@linkmauve.fr>
 References: <20210921213930.10366-1-linkmauve@linkmauve.fr>
@@ -56,65 +54,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+Cc: devicetree@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
  Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>, linux-kernel@vger.kernel.org,
- linux-crypto@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Ash Logan <ash@heyquark.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Ash Logan <ash@heyquark.com>,
  "David S. Miller" <davem@davemloft.net>,
  =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.ne@posteo.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Both of these consoles use the exact same AES engine, which only
-supports CBC mode with 128-bit keys.
+This selects the nintendo-aes module when building for this platform.
 
 Signed-off-by: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
 ---
- .../bindings/crypto/nintendo-aes.yaml         | 34 +++++++++++++++++++
- 1 file changed, 34 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/crypto/nintendo-aes.yaml
+ arch/powerpc/configs/wii_defconfig | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/crypto/nintendo-aes.yaml b/Documentation/devicetree/bindings/crypto/nintendo-aes.yaml
-new file mode 100644
-index 000000000000..e62a2bfc571c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/crypto/nintendo-aes.yaml
-@@ -0,0 +1,34 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/crypto/nintendo-aes.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Nintendo Wii and Wii U AES engine
-+
-+maintainers:
-+  - Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
-+
-+description: |+
-+  The AES engine in the Nintendo Wii and Wii U supports the following:
-+  -- Advanced Encryption Standard (AES) in CBC mode, with 128-bit keys
-+
-+properties:
-+  compatible:
-+    items:
-+      - const: nintendo,hollywood-aes
-+      - const: nintendo,latte-aes
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    description: Not supported yet.
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+
-+additionalProperties: false
+diff --git a/arch/powerpc/configs/wii_defconfig b/arch/powerpc/configs/wii_defconfig
+index 379c171f3ddd..752e081d28d0 100644
+--- a/arch/powerpc/configs/wii_defconfig
++++ b/arch/powerpc/configs/wii_defconfig
+@@ -123,4 +123,6 @@ CONFIG_SCHED_TRACER=y
+ CONFIG_BLK_DEV_IO_TRACE=y
+ CONFIG_DMA_API_DEBUG=y
+ CONFIG_PPC_EARLY_DEBUG=y
+-# CONFIG_CRYPTO_HW is not set
++CONFIG_CRYPTO_HW=y
++CONFIG_CRYPTO_DEV_NINTENDO=y
++CONFIG_CRYPTO_USER_API_SKCIPHER=y
 -- 
 2.33.0
 
