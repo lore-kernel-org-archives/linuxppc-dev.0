@@ -2,72 +2,104 @@ Return-Path: <SRS0=3K4h=OM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D77ABC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 10:56:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01913C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 12:18:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0AD6E611C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 10:56:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0AD6E611C0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 10D3660F6E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 12:18:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 10D3660F6E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HDwG33tM6z2ypK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 20:56:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HDy5D3cZCz2ywn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 22:18:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QCEP+G15;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cX4dEBT0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=ardb@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=QCEP+G15; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=cX4dEBT0; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HDwFK584dz2xl7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 20:55:49 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 5241961242
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 10:55:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1632308147;
- bh=eAjFNRBpQJKeA1sNci8y8k2TEqXAjryf/cIS7pzJirs=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=QCEP+G1581rB04BPe3Ns/O394X5b8Ba7q+VHaQDL1b8X1BPSrfQpjPOcpBcLMCAuS
- gv3UxVglS9UADktg5d3pisfzQ9vKKZGc7t5pPPs08u4GyHyMNSfpzcSyEm/fsw4Cw/
- BjoNspbxfGjPbplbQYGWhVmno7s6G1dEiJDoiW8yq+0WSsjakT4P1o19UOmgXFrFhv
- J+W46rfqta8Sd3hHgObFRVwEY9tXCqcjfoqo4xiXzNhJpPuBvjy4FhkZfEILWKbZuK
- SMRvoAQ++tkJ9iI6nztBr/QY2zQ7Z0RdTojw/9AjLarMYai1HCdfcJcwP9JStfNUqJ
- yU/qilyuLazgA==
-Received: by mail-ot1-f54.google.com with SMTP id
- l16-20020a9d6a90000000b0053b71f7dc83so2858117otq.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 03:55:47 -0700 (PDT)
-X-Gm-Message-State: AOAM532/Qj85L5yR2+ZDU80TqgO1pQS6ZrGO2Wd8u2JPxarPoY0kGhwR
- Buqw3Gj8N5GjrF7wXod68MrDhVxAAXsPPuOzR4E=
-X-Google-Smtp-Source: ABdhPJykpzKGe8v1pBQ3CR/2JU5H8EOje8Gs9fBBAHsfXDt9bn4WoL7tIPW0f+zi7s4Ivo8L5iCPFwVLaWikTkzKmHU=
-X-Received: by 2002:a9d:12e2:: with SMTP id g89mr30492762otg.112.1632308146505; 
- Wed, 22 Sep 2021 03:55:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HDy4L0ltPz2yQ8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 22:18:09 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18MATFER000821; 
+ Wed, 22 Sep 2021 08:17:57 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : subject :
+ to : cc : references : in-reply-to : mime-version : message-id :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=uMYhEeygqZi5Bwzzgs/wBmN00eG/+HzNUrlxCC/8yFU=;
+ b=cX4dEBT0AnGfQi+DA2vdBY+rslRm8IDqYg9dtCProkPlYuM0wOCgOvJzzML94RbcWEZ5
+ luPQcAypAzwbBpfIGxqlsdx7eZV+mPbuhbtmJVqx5fVeGyff7JKiHQkgKAChR95asQh2
+ cJEehcHzNbW/NkiXo6hCsO6wQv6qBu/Io6tVRm1P5w410j+ZR2MdxyAN4qirxHk5HRNI
+ DvNsSt4W0vjzPdvZRkjGLtlIoHwxDoG6f3r//IT0uEFuOxhP+A+vOBdxiPZUhixHJ+5/
+ p8Aj7r3KYtbuYVCBl5vvw7tGF9j4ZUZh1caI5LxKWD6rrsvhf33k96moE3iDf54HxvDK yA== 
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3b82seaceb-3
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 22 Sep 2021 08:17:57 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18MBvrRg018051;
+ Wed, 22 Sep 2021 12:06:48 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma06ams.nl.ibm.com with ESMTP id 3b7q6npdp9-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 22 Sep 2021 12:06:48 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 18MC1wok61079918
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 22 Sep 2021 12:01:58 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A26CC5205A;
+ Wed, 22 Sep 2021 12:06:45 +0000 (GMT)
+Received: from localhost (unknown [9.43.116.92])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 3B47C5204F;
+ Wed, 22 Sep 2021 12:06:45 +0000 (GMT)
+Date: Wed, 22 Sep 2021 17:36:44 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/code-patching: Return error on patch_branch()
+ out-of-range failure
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christophe Leroy
+ <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>
+References: <4940b03de220d1dfe2c6b47a41e60925497ce125.1630657331.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <4940b03de220d1dfe2c6b47a41e60925497ce125.1630657331.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-References: <20210921213930.10366-1-linkmauve@linkmauve.fr>
- <20210921213930.10366-2-linkmauve@linkmauve.fr>
- <CAMj1kXF6RpaAsN2zUgkO0NW7gMwwhXMHEEM-wpQXxeNJbGJ79A@mail.gmail.com>
- <20210922104302.22pgaoy2vspranqj@luna>
-In-Reply-To: <20210922104302.22pgaoy2vspranqj@luna>
-From: Ard Biesheuvel <ardb@kernel.org>
-Date: Wed, 22 Sep 2021 12:55:34 +0200
-X-Gmail-Original-Message-ID: <CAMj1kXFMVQDe_t3Y3yh_VCGsW9x_PuhN-A9ACX2qVZAXYhYxHQ@mail.gmail.com>
-Message-ID: <CAMj1kXFMVQDe_t3Y3yh_VCGsW9x_PuhN-A9ACX2qVZAXYhYxHQ@mail.gmail.com>
-Subject: Re: [PATCH 1/4] crypto: nintendo-aes - add a new AES driver
-To: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: astroid/v0.15-23-gcdc62b30 (https://github.com/astroidmail/astroid)
+Message-Id: <1632312365.br7s4l3kzi.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: q2cbP6JIy7G3VzrP8OqV0bT7VbWPnbun
+X-Proofpoint-GUID: q2cbP6JIy7G3VzrP8OqV0bT7VbWPnbun
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
+ definitions=2021-09-22_04,2021-09-22_01,2020-04-07_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 bulkscore=0
+ adultscore=0 clxscore=1011 malwarescore=0 mlxlogscore=999 phishscore=0
+ priorityscore=1501 mlxscore=0 spamscore=0 lowpriorityscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2109200000 definitions=main-2109220086
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,306 +111,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>,
- Ash Logan <ash@heyquark.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
- "open list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
- <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>,
- =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.ne@posteo.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 22 Sept 2021 at 12:43, Emmanuel Gil Peyrot
-<linkmauve@linkmauve.fr> wrote:
->
-> On Wed, Sep 22, 2021 at 12:10:41PM +0200, Ard Biesheuvel wrote:
-> > On Tue, 21 Sept 2021 at 23:49, Emmanuel Gil Peyrot
-> > <linkmauve@linkmauve.fr> wrote:
-> > >
-> > > This engine implements AES in CBC mode, using 128-bit keys only.  It =
-is
-> > > present on both the Wii and the Wii U, and is apparently identical in
-> > > both consoles.
-> > >
-> > > The hardware is capable of firing an interrupt when the operation is
-> > > done, but this driver currently uses a busy loop, I=E2=80=99m not too=
- sure
-> > > whether it would be preferable to switch, nor how to achieve that.
-> > >
-> > > It also supports a mode where no operation is done, and thus could be
-> > > used as a DMA copy engine, but I don=E2=80=99t know how to expose tha=
-t to the
-> > > kernel or whether it would even be useful.
-> > >
-> > > In my testing, on a Wii U, this driver reaches 80.7 MiB/s, while the
-> > > aes-generic driver only reaches 30.9 MiB/s, so it is a quite welcome
-> > > speedup.
-> > >
-> > > This driver was written based on reversed documentation, see:
-> > > https://wiibrew.org/wiki/Hardware/AES
-> > >
-> > > Signed-off-by: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
-> > > Tested-by: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>  # on Wii U
-> >
-> > This is redundant - everybody should test the code they submit.
->
-> Indeed, except for the comment, as I haven=E2=80=99t been able to test on=
- the
-> Wii just yet and that=E2=80=99s kind of a call for doing exactly that. :)
->
-> >
-> > ...
-> > > +       /* TODO: figure out how to use interrupts here, this will pro=
-bably
-> > > +        * lower throughput but let the CPU do other things while the=
- AES
-> > > +        * engine is doing its work. */
-> >
-> > So is it worthwhile like this? How much faster is it to use this
-> > accelerator rather than the CPU?
->
-> As I mentioned above, on my hardware it reaches 80.7 MiB/s using this
-> busy loop instead of 30.9 MiB/s using aes-generic, measured using
-> `cryptsetup benchmark --cipher=3Daes --key-size=3D128`.  I expect the
-> difference would be even more pronounced on the Wii, with its CPU being
-> clocked lower.
->
+Christophe Leroy wrote:
+> Do not silentely ignore a failure of create_branch() in
+> patch_branch(). Return -ERANGE.
+>=20
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  arch/powerpc/lib/code-patching.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
-Ah apologies for not spotting that. This is a nice speedup.
-
-> I will give a try at using the interrupt, but I fully expect a lower
-> throughput alongside a lower CPU usage (for large requests).
->
-
-You should consider latency as well. Is it really necessary to disable
-interrupts as well? A scheduling blackout of ~1ms (for the worst case
-of 64k of input @ 80 MB/s) may be tolerable but keeping interrupts
-disabled for that long is probably not a great idea. (Just make sure
-you use spin_lock_bh() to prevent deadlocks that could occur if your
-code is called from softirq context)
-
-But using the interrupt is obviously preferred. What's wrong with it?
-
-Btw the crypto API does not permit AES-128 only - you will need to add
-a fallback for other key sizes as well.
+Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
 
-> >
-> > > +       do {
-> > > +               status =3D ioread32be(base + AES_CTRL);
-> > > +               cpu_relax();
-> > > +       } while ((status & AES_CTRL_EXEC) && --counter);
-> > > +
-> > > +       /* Do we ever get called with dst =E2=89=A0 src?  If so we ha=
-ve to invalidate
-> > > +        * dst in addition to the earlier flush of src. */
-> > > +       if (unlikely(dst !=3D src)) {
-> > > +               for (i =3D 0; i < len; i +=3D 32)
-> > > +                       __asm__("dcbi 0, %0" : : "r" (dst + i));
-> > > +               __asm__("sync" : : : "memory");
-> > > +       }
-> > > +
-> > > +       return counter ? 0 : 1;
-> > > +}
-> > > +
-> > > +static void
-> > > +nintendo_aes_crypt(const void *src, void *dst, u32 len, u8 *iv, int =
-dir,
-> > > +                  bool firstchunk)
-> > > +{
-> > > +       u32 flags =3D 0;
-> > > +       unsigned long iflags;
-> > > +       int ret;
-> > > +
-> > > +       flags |=3D AES_CTRL_EXEC_INIT /* | AES_CTRL_IRQ */ | AES_CTRL=
-_ENA;
-> > > +
-> > > +       if (dir =3D=3D AES_DIR_DECRYPT)
-> > > +               flags |=3D AES_CTRL_DEC;
-> > > +
-> > > +       if (!firstchunk)
-> > > +               flags |=3D AES_CTRL_IV;
-> > > +
-> > > +       /* Start the critical section */
-> > > +       spin_lock_irqsave(&lock, iflags);
-> > > +
-> > > +       if (firstchunk)
-> > > +               writefield(AES_IV, iv);
-> > > +
-> > > +       ret =3D do_crypt(src, dst, len, flags);
-> > > +       BUG_ON(ret);
-> > > +
-> > > +       spin_unlock_irqrestore(&lock, iflags);
-> > > +}
-> > > +
-> > > +static int nintendo_setkey_skcipher(struct crypto_skcipher *tfm, con=
-st u8 *key,
-> > > +                                   unsigned int len)
-> > > +{
-> > > +       /* The hardware only supports AES-128 */
-> > > +       if (len !=3D AES_KEYSIZE_128)
-> > > +               return -EINVAL;
-> > > +
-> > > +       writefield(AES_KEY, key);
-> > > +       return 0;
-> > > +}
-> > > +
-> > > +static int nintendo_skcipher_crypt(struct skcipher_request *req, int=
- dir)
-> > > +{
-> > > +       struct skcipher_walk walk;
-> > > +       unsigned int nbytes;
-> > > +       int err;
-> > > +       char ivbuf[AES_BLOCK_SIZE];
-> > > +       unsigned int ivsize;
-> > > +
-> > > +       bool firstchunk =3D true;
-> > > +
-> > > +       /* Reset the engine */
-> > > +       iowrite32be(0, base + AES_CTRL);
-> > > +
-> > > +       err =3D skcipher_walk_virt(&walk, req, false);
-> > > +       ivsize =3D min(sizeof(ivbuf), walk.ivsize);
-> > > +
-> > > +       while ((nbytes =3D walk.nbytes) !=3D 0) {
-> > > +               unsigned int chunkbytes =3D round_down(nbytes, AES_BL=
-OCK_SIZE);
-> > > +               unsigned int ret =3D nbytes % AES_BLOCK_SIZE;
-> > > +
-> > > +               if (walk.total =3D=3D chunkbytes && dir =3D=3D AES_DI=
-R_DECRYPT) {
-> > > +                       /* If this is the last chunk and we're decryp=
-ting, take
-> > > +                        * note of the IV (which is the last cipherte=
-xt block)
-> > > +                        */
-> > > +                       memcpy(ivbuf, walk.src.virt.addr + walk.total=
- - ivsize,
-> > > +                              ivsize);
-> > > +               }
-> > > +
-> > > +               nintendo_aes_crypt(walk.src.virt.addr, walk.dst.virt.=
-addr,
-> > > +                                  chunkbytes, walk.iv, dir, firstchu=
-nk);
-> > > +
-> > > +               if (walk.total =3D=3D chunkbytes && dir =3D=3D AES_DI=
-R_ENCRYPT) {
-> > > +                       /* If this is the last chunk and we're encryp=
-ting, take
-> > > +                        * note of the IV (which is the last cipherte=
-xt block)
-> > > +                        */
-> > > +                       memcpy(walk.iv,
-> > > +                              walk.dst.virt.addr + walk.total - ivsi=
-ze,
-> > > +                              ivsize);
-> > > +               } else if (walk.total =3D=3D chunkbytes && dir =3D=3D=
- AES_DIR_DECRYPT) {
-> > > +                       memcpy(walk.iv, ivbuf, ivsize);
-> > > +               }
-> > > +
-> > > +               err =3D skcipher_walk_done(&walk, ret);
-> > > +               firstchunk =3D false;
-> > > +       }
-> > > +
-> > > +       return err;
-> > > +}
-> > > +
-> > > +static int nintendo_cbc_encrypt(struct skcipher_request *req)
-> > > +{
-> > > +       return nintendo_skcipher_crypt(req, AES_DIR_ENCRYPT);
-> > > +}
-> > > +
-> > > +static int nintendo_cbc_decrypt(struct skcipher_request *req)
-> > > +{
-> > > +       return nintendo_skcipher_crypt(req, AES_DIR_DECRYPT);
-> > > +}
-> > > +
-> > > +static struct skcipher_alg nintendo_alg =3D {
-> > > +       .base.cra_name          =3D "cbc(aes)",
-> > > +       .base.cra_driver_name   =3D "cbc-aes-nintendo",
-> > > +       .base.cra_priority      =3D 400,
-> > > +       .base.cra_flags         =3D CRYPTO_ALG_KERN_DRIVER_ONLY,
-> > > +       .base.cra_blocksize     =3D AES_BLOCK_SIZE,
-> > > +       .base.cra_alignmask     =3D 15,
-> > > +       .base.cra_module        =3D THIS_MODULE,
-> > > +       .setkey                 =3D nintendo_setkey_skcipher,
-> > > +       .encrypt                =3D nintendo_cbc_encrypt,
-> > > +       .decrypt                =3D nintendo_cbc_decrypt,
-> > > +       .min_keysize            =3D AES_KEYSIZE_128,
-> > > +       .max_keysize            =3D AES_KEYSIZE_128,
-> > > +       .ivsize                 =3D AES_BLOCK_SIZE,
-> > > +};
-> > > +
-> > > +static int nintendo_aes_remove(struct platform_device *pdev)
-> > > +{
-> > > +       struct device *dev =3D &pdev->dev;
-> > > +
-> > > +       crypto_unregister_skcipher(&nintendo_alg);
-> > > +       devm_iounmap(dev, base);
-> > > +       base =3D NULL;
-> > > +
-> > > +       return 0;
-> > > +}
-> > > +
-> > > +static int nintendo_aes_probe(struct platform_device *pdev)
-> > > +{
-> > > +       struct device *dev =3D &pdev->dev;
-> > > +       struct resource *res;
-> > > +       int ret;
-> > > +
-> > > +       res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> > > +       base =3D devm_ioremap_resource(dev, res);
-> > > +       if (IS_ERR(base))
-> > > +               return PTR_ERR(base);
-> > > +
-> > > +       spin_lock_init(&lock);
-> > > +
-> > > +       ret =3D crypto_register_skcipher(&nintendo_alg);
-> > > +       if (ret)
-> > > +               goto eiomap;
-> > > +
-> > > +       dev_notice(dev, "Nintendo Wii and Wii U AES engine enabled\n"=
-);
-> > > +       return 0;
-> > > +
-> > > + eiomap:
-> > > +       devm_iounmap(dev, base);
-> > > +
-> > > +       dev_err(dev, "Nintendo Wii and Wii U AES initialization faile=
-d\n");
-> > > +       return ret;
-> > > +}
-> > > +
-> > > +static const struct of_device_id nintendo_aes_of_match[] =3D {
-> > > +       { .compatible =3D "nintendo,hollywood-aes", },
-> > > +       { .compatible =3D "nintendo,latte-aes", },
-> > > +       {/* sentinel */},
-> > > +};
-> > > +MODULE_DEVICE_TABLE(of, nintendo_aes_of_match);
-> > > +
-> > > +static struct platform_driver nintendo_aes_driver =3D {
-> > > +       .driver =3D {
-> > > +               .name =3D "nintendo-aes",
-> > > +               .of_match_table =3D nintendo_aes_of_match,
-> > > +       },
-> > > +       .probe =3D nintendo_aes_probe,
-> > > +       .remove =3D nintendo_aes_remove,
-> > > +};
-> > > +
-> > > +module_platform_driver(nintendo_aes_driver);
-> > > +
-> > > +MODULE_AUTHOR("Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>");
-> > > +MODULE_DESCRIPTION("Nintendo Wii and Wii U Hardware AES driver");
-> > > +MODULE_LICENSE("GPL");
-> > > --
-> > > 2.33.0
-> > >
->
-> --
-> Emmanuel Gil Peyrot
+>=20
+> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-pat=
+ching.c
+> index f9a3019e37b4..0bc9cc0416b8 100644
+> --- a/arch/powerpc/lib/code-patching.c
+> +++ b/arch/powerpc/lib/code-patching.c
+> @@ -202,7 +202,9 @@ int patch_branch(u32 *addr, unsigned long target, int=
+ flags)
+>  {
+>  	struct ppc_inst instr;
+> =20
+> -	create_branch(&instr, addr, target, flags);
+> +	if (create_branch(&instr, addr, target, flags))
+> +		return -ERANGE;
+> +
+>  	return patch_instruction(addr, instr);
+>  }
+> =20
+> --=20
+> 2.25.0
+>=20
+>=20
