@@ -2,106 +2,111 @@ Return-Path: <SRS0=3K4h=OM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B83BC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 16:06:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A54A5C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 16:34:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9FFDE60560
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 16:06:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9FFDE60560
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
+	by mail.kernel.org (Postfix) with ESMTPS id A6EE760F3A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 16:34:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A6EE760F3A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HF37y21NZz307l
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Sep 2021 02:06:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HF3mW6mwDz2yn5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Sep 2021 02:34:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=BSKFbjKQ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KeR6LnCY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=canonical.com (client-ip=185.125.188.122;
- helo=smtp-relay-internal-0.canonical.com;
- envelope-from=krzysztof.kozlowski@canonical.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20210705 header.b=BSKFbjKQ; 
- dkim-atps=neutral
-Received: from smtp-relay-internal-0.canonical.com
- (smtp-relay-internal-0.canonical.com [185.125.188.122])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=KeR6LnCY; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HF36S31bMz2yHX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Sep 2021 02:05:19 +1000 (AEST)
-Received: from mail-ed1-f70.google.com (mail-ed1-f70.google.com
- [209.85.208.70])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id C6DFE402D8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 16:05:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
- s=20210705; t=1632326714;
- bh=am6HvhYMUQG0l4YQDLjqW15GPRKaMpXA2sBsBZSwSw8=;
- h=From:To:Subject:Date:Message-Id:MIME-Version:Content-Type;
- b=BSKFbjKQJu2MGLI2h5Lc5HSvbmoyHWs7vsNhZc+55vnCUaknkiRodo+IRwrfr4iw0
- 2voceXrgKFCbAPDFiwURdf1mtTV453NwO7Wprc8QiV2Zr7Jl22YhYMTgvYyPQT539u
- Pqd1UtwlatksZT3nbPWZXcUVBppuJZpIEsubkDyQjU57a95IF6EFizSv2kIYSwSPkH
- PC9wqHWz27lQD/WF/tCYBBHhBDKp6EcEqMgr6yacH0lpM36fYHONC+FUv4FehquCSb
- fb1Isx8xxVZqmZOekmmoo7o/62zgb2N0QDXYCWUK9YbgM8OYDL2SaFcVwJUgsefpEe
- P7GOD1dpQ9ygQ==
-Received: by mail-ed1-f70.google.com with SMTP id
- m20-20020aa7c2d4000000b003d1add00b8aso3687111edp.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 09:05:14 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=am6HvhYMUQG0l4YQDLjqW15GPRKaMpXA2sBsBZSwSw8=;
- b=n0dhs/oCrqKM0GKKFO9fKharVLYNVFPlQ/kuR59gA17o+4fckBvP/Nu/NuMHvZWRxV
- ImDMYFZVJkO32LfvnCv60yZwc04dpwofgWighh4XyLQXtKuZSk5TVmciMzvWTrgAWiSE
- bY4UZpr4r3Ap5JFcjv1EWdp4bV02TCVU7hSgcSA4z7K85g8SOGgMETrS11bx049yAosZ
- gkG/O1vnMxSVyTsJVK7k3R6L+9l1V2HdBAep0WWoWVuwq8sYB7ZO5Vb/kNaXBUS2gGXM
- oFEY4vQZ/Vo9DB9nqYx0ttUf87vQMbI+qPhlcnmtfvF7SIJpKAHHCw5qtg/5Io4n7FrH
- vL1w==
-X-Gm-Message-State: AOAM531FCw9xvGDXFk3qlW3RYZ7LgzLGIfSkjKRDJfq/91qOGpIVu/ac
- 8lmOnkQ5CyHBWkdEwqM2VIOVcEzBhVOBWp9Q/riwnfqO/safu7nIikwdyyHrvQ0AHf500Q5On3m
- 8OwPUzEKcs05rRa6OYUPtfVGr334PqUfGrszSpKQ1OFk=
-X-Received: by 2002:a17:906:718e:: with SMTP id
- h14mr302544ejk.365.1632326713300; 
- Wed, 22 Sep 2021 09:05:13 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJx8bDWBvCoh+uqmD+95itTH1Ems+DKgL3XEMXBSbfrZ0KQf/4dDkPPwClcn682BfTFNhzCFcw==
-X-Received: by 2002:a17:906:718e:: with SMTP id
- h14mr302524ejk.365.1632326713104; 
- Wed, 22 Sep 2021 09:05:13 -0700 (PDT)
-Received: from localhost.localdomain
- (lk.84.20.244.219.dc.cable.static.lj-kabel.net. [84.20.244.219])
- by smtp.gmail.com with ESMTPSA id l7sm1511135edb.26.2021.09.22.09.05.12
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 22 Sep 2021 09:05:12 -0700 (PDT)
-From: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>,
- Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org
-Subject: [PATCH v2 1/2] powerpc/powermac: add missing g5_phy_disable_cpu1()
- declaration
-Date: Wed, 22 Sep 2021 18:04:35 +0200
-Message-Id: <20210922160436.130931-1-krzysztof.kozlowski@canonical.com>
-X-Mailer: git-send-email 2.30.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HF3lb4r9tz2yP3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Sep 2021 02:34:02 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18MFVCvH010392
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 12:34:00 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : to : cc :
+ subject : message-id : reply-to : references : mime-version : content-type
+ : in-reply-to; s=pp1; bh=AgdUYsal7sJkhd6dph81Ck0eONPaurQVwqNBeXugRo0=;
+ b=KeR6LnCYk2sPW/AZ2YS/+jA6mR11TU8YZL5btHwsziGkVUZqjIRFnONM7ocZAg+YW408
+ xL0IZmv4bRDqeOOxsklvvUL5f+U+IrJt7Ch9bxT7mdH3PCHZggt75mSR6O41vtTdE8m0
+ Ld96JUoK2kH91mMqCPoHUNQuIRdeot7ShhsATM9sbBEoHDUGigSqa6jLlL+6Nc55dWe6
+ lSR/Uudc5TGqFeNzLdF7KrB23k3qvczbu2WfRea9pjx517bTCRNbk9gErAc/Pu9nklbA
+ fOjBTdkUMRGWLRBPYw4YN+zv1PRp639FWdMvc8+DvITOIVGr1Io9/KYnI6GKPgRvzIb6 wg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3b876psk28-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 12:33:59 -0400
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18MFdllQ011062
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 12:33:59 -0400
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3b876psk1n-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 22 Sep 2021 12:33:59 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18MGRw7F032174;
+ Wed, 22 Sep 2021 16:33:57 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma03ams.nl.ibm.com with ESMTP id 3b7q6ps631-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 22 Sep 2021 16:33:56 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 18MGXsT566781498
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 22 Sep 2021 16:33:54 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5D99AA4054;
+ Wed, 22 Sep 2021 16:33:54 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 38C0CA405F;
+ Wed, 22 Sep 2021 16:33:53 +0000 (GMT)
+Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Wed, 22 Sep 2021 16:33:53 +0000 (GMT)
+Date: Wed, 22 Sep 2021 22:03:51 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Nathan Lynch <nathanl@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/paravirt: correct preempt debug splat in
+ vcpu_is_preempted()
+Message-ID: <20210922163351.GB2004@linux.vnet.ibm.com>
+References: <20210921031213.2029824-1-nathanl@linux.ibm.com>
+ <20210922075718.GA2004@linux.vnet.ibm.com>
+ <87ee9gob07.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <87ee9gob07.fsf@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: aGptHBu72SSwnoxZx9xSAFg1P20b0yrx
+X-Proofpoint-ORIG-GUID: T6o19Uw_vAQlFl9Nowy6g0sCzQM1pFRp
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
+ definitions=2021-09-22_06,2021-09-22_01,2020-04-07_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 spamscore=0
+ malwarescore=0 mlxscore=0 suspectscore=0 mlxlogscore=789 clxscore=1015
+ lowpriorityscore=0 adultscore=0 phishscore=0 bulkscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2109200000 definitions=main-2109220112
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,55 +118,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-g5_phy_disable_cpu1() is used outside of platforms/powermac/feature.c,
-so it should have a declaration to fix W=1 warning:
+* Nathan Lynch <nathanl@linux.ibm.com> [2021-09-22 11:01:12]:
 
-  arch/powerpc/platforms/powermac/feature.c:1533:6:
-    error: no previous prototype for ‘g5_phy_disable_cpu1’ [-Werror=missing-prototypes]
+> Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
+> > * Nathan Lynch <nathanl@linux.ibm.com> [2021-09-20 22:12:13]:
+> >
+> >> vcpu_is_preempted() can be used outside of preempt-disabled critical
+> >> sections, yielding warnings such as:
+> >> 
+> >> BUG: using smp_processor_id() in preemptible [00000000] code: systemd-udevd/185
+> >> caller is rwsem_spin_on_owner+0x1cc/0x2d0
+> >> CPU: 1 PID: 185 Comm: systemd-udevd Not tainted 5.15.0-rc2+ #33
+> >> Call Trace:
+> >> [c000000012907ac0] [c000000000aa30a8] dump_stack_lvl+0xac/0x108 (unreliable)
+> >> [c000000012907b00] [c000000001371f70] check_preemption_disabled+0x150/0x160
+> >> [c000000012907b90] [c0000000001e0e8c] rwsem_spin_on_owner+0x1cc/0x2d0
+> >> [c000000012907be0] [c0000000001e1408] rwsem_down_write_slowpath+0x478/0x9a0
+> >> [c000000012907ca0] [c000000000576cf4] filename_create+0x94/0x1e0
+> >> [c000000012907d10] [c00000000057ac08] do_symlinkat+0x68/0x1a0
+> >> [c000000012907d70] [c00000000057ae18] sys_symlink+0x58/0x70
+> >> [c000000012907da0] [c00000000002e448] system_call_exception+0x198/0x3c0
+> >> [c000000012907e10] [c00000000000c54c] system_call_common+0xec/0x250
+> >> 
+> >> The result of vcpu_is_preempted() is always subject to invalidation by
+> >> events inside and outside of Linux; it's just a best guess at a point in
+> >> time. Use raw_smp_processor_id() to avoid such warnings.
+> >
+> > Typically smp_processor_id() and raw_smp_processor_id() except for the
+> > CONFIG_DEBUG_PREEMPT.
+> 
+> Sorry, I don't follow...
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
+I meant, Unless CONFIG_DEBUG_PREEMPT, smp_processor_id() is defined as
+raw_processor_id().
 
----
+> 
+> > In the CONFIG_DEBUG_PREEMPT case, smp_processor_id()
+> > is actually debug_smp_processor_id(), which does all the checks.
+> 
+> Yes, OK.
+> 
+> > I believe these checks in debug_smp_processor_id() are only valid for x86
+> > case (aka cases were they have __smp_processor_id() defined.)
+> 
+> Hmm, I am under the impression that the checks in
+> debug_smp_processor_id() are valid regardless of whether the arch
+> overrides __smp_processor_id().
 
-Changes since v1:
-1. Drop declaration in powermac/smp.c
----
- arch/powerpc/include/asm/pmac_feature.h | 4 ++++
- arch/powerpc/platforms/powermac/smp.c   | 2 --
- 2 files changed, 4 insertions(+), 2 deletions(-)
+From include/linux/smp.h
 
-diff --git a/arch/powerpc/include/asm/pmac_feature.h b/arch/powerpc/include/asm/pmac_feature.h
-index e08e829261b6..7703e5bf1203 100644
---- a/arch/powerpc/include/asm/pmac_feature.h
-+++ b/arch/powerpc/include/asm/pmac_feature.h
-@@ -143,6 +143,10 @@
-  */
- struct device_node;
- 
-+#ifdef CONFIG_PPC64
-+void g5_phy_disable_cpu1(void);
-+#endif /* CONFIG_PPC64 */
-+
- static inline long pmac_call_feature(int selector, struct device_node* node,
- 					long param, long value)
- {
-diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-index 3256a316e884..5d0626f432d5 100644
---- a/arch/powerpc/platforms/powermac/smp.c
-+++ b/arch/powerpc/platforms/powermac/smp.c
-@@ -875,8 +875,6 @@ static int smp_core99_cpu_online(unsigned int cpu)
- 
- static void __init smp_core99_bringup_done(void)
- {
--	extern void g5_phy_disable_cpu1(void);
--
- 	/* Close i2c bus if it was used for tb sync */
- 	if (pmac_tb_clock_chip_host)
- 		pmac_i2c_close(pmac_tb_clock_chip_host);
+/*
+ * Allow the architecture to differentiate between a stable and unstable read.
+ * For example, x86 uses an IRQ-safe asm-volatile read for the unstable but a
+ * regular asm read for the stable.
+ */
+#ifndef __smp_processor_id
+#define __smp_processor_id(x) raw_smp_processor_id(x)
+#endif
+
+As far as I see, only x86 has a definition of __smp_processor_id.
+So for archs like Powerpc, __smp_processor_id(), is always
+defined as raw_smp_processor_id(). Right?
+
+I would think debug_smp_processor_id() would be useful if __smp_processor_id()
+is different from raw_smp_processor_id(). Do note debug_smp_processor_id() 
+calls raw_smp_processor_id().
+
+Or can I understand how debug_smp_processor_id() is useful if
+__smp_processor_id() is defined as raw_smp_processor_id()?
+
+> I think the stack trace here correctly identifies an incorrect use of
+> smp_processor_id(), and the call site needs to be changed. Do you
+> disagree?
+
+Yes the stack_trace shows that debug_smp_processor_id(). However what I want 
+to understand is why should we even call debug_smp_processor_id(), when our
+__smp_processor_id() is defined as raw_smp_processor_id().
+
 -- 
-2.30.2
-
+Thanks and Regards
+Srikar Dronamraju
