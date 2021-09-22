@@ -2,62 +2,61 @@ Return-Path: <SRS0=3K4h=OM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3D96C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 14:23:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D945C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 14:23:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 49398611C9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 14:23:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 49398611C9
+	by mail.kernel.org (Postfix) with ESMTPS id 7D4FA60F56
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 14:23:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7D4FA60F56
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HF0rb6ptPz30MC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Sep 2021 00:23:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HF0sJ5t0Vz3c4g
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Sep 2021 00:23:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vG5Z5JUR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gMbcjzNu;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=vG5Z5JUR; 
+ header.s=k20201202 header.b=gMbcjzNu; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HF0qt6Bfrz2yPK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Sep 2021 00:22:34 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 7A1786120E;
- Wed, 22 Sep 2021 14:22:31 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HF0qy5Db9z2yV6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Sep 2021 00:22:38 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id AAEEB611C9;
+ Wed, 22 Sep 2021 14:22:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1632320552;
- bh=I4JaBMBq3FqO33IuXZhnzeFZjFe/WGM1WxBSLHEcIv4=;
+ s=k20201202; t=1632320557;
+ bh=LonW076zV+ZmHH0/C7TgTIc7SC65dCJvPzK9G/Gby3U=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=vG5Z5JUR3JXwVWJidPdZVATV2PLkwziiPrgSwrRijnbeGIz1083V2GWZehJeBLReL
- p++eH240id5321byVFgX1hilQ9Z7XPu7n5LejE8atc/FiGD097sIAq0RmaPgNatY/N
- bOfeIUHInmlfWTwgC0zNRJ3qi0FzRnpL18LWCjADt5kRmhPQy65n8lUH9TY0r+BNoy
- O0KueQQviBmRvTOBMTL5SpDpz5E5prWo9KFi6IWz1pGN2mb43XxmK25PiOZzXIze7P
- XIj0X8LXeu5Y8mycOhTwTWAn3a/c4aY2Lu3gbOwUV4//byyd0V0uv7JbRMxWLWcDOi
- 2NmjXAp8qVI4A==
+ b=gMbcjzNu4FHJOK0rM+DzjX6Pg+XPTbuTN1x44tvD4+vzQnKBWpak8IugfmZjMIPLz
+ HUXREFxvBVVw28NcJUD52DIjkPaTpFgLTkTYAmmHpczWayJoQHwILX7bBSts2AmJsb
+ ZDQMGJQXJZ16JSG7LUdWzzycsC70Ys4M1WFkK4VHZHKNJxwbM9z0YF3/GFQrdyUPmR
+ ZpcrsFvMZRwYbC0T15YDokawxhlJ+xIKCGnyT+QUgN54mDCf/mUhaudVBjDQZzlSa0
+ iNqGl1icVYsd7fTSGp0ntMrV2MhViw2C5OVLS6LDWsKGlRV0HItv16cVRyumChwG0X
+ NdrgGLavYh+lw==
 From: Mark Brown <broonie@kernel.org>
 To: Fabio Estevam <festevam@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
  Mark Brown <broonie@kernel.org>, Shengjiu Wang <shengjiu.wang@gmail.com>,
  Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>
-Subject: Re: [PATCH v2 01/16] ASoC: eureka-tlv320: Update to modern clocking
+Subject: Re: [PATCH 01/16] ASoC: eureka-tlv320: Update to modern clocking
  terminology
-Date: Wed, 22 Sep 2021 15:21:39 +0100
-Message-Id: <163232020287.53242.69105803133049993.b4-ty@kernel.org>
+Date: Wed, 22 Sep 2021 15:21:41 +0100
+Message-Id: <163232020286.53242.17461329936887711763.b4-ty@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20210921213542.31688-1-broonie@kernel.org>
-References: <20210921213542.31688-1-broonie@kernel.org>
+In-Reply-To: <20210921211040.11624-1-broonie@kernel.org>
+References: <20210921211040.11624-1-broonie@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -78,7 +77,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 21 Sep 2021 22:35:27 +0100, Mark Brown wrote:
+On Tue, 21 Sep 2021 22:10:25 +0100, Mark Brown wrote:
 > As part of moving to remove the old style defines for the bus clocks update
 > the eureka-tlv320 driver to use more modern terminology for clocking.
 > 
