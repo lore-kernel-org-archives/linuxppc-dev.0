@@ -2,78 +2,77 @@ Return-Path: <SRS0=3K4h=OM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0DCCC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 00:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C300C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 02:03:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1AE5761107
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 00:50:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1AE5761107
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id EDA4460F41
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 02:03:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EDA4460F41
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HDfq045YBz3069
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 10:50:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HDhQZ1473z304x
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Sep 2021 12:03:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=gvliHsAG;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256 header.s=google header.b=e3dJJbTI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::130;
- helo=mail-lf1-x130.google.com; envelope-from=festevam@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::82b;
+ helo=mail-qt1-x82b.google.com; envelope-from=joel.stan@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=gvliHsAG; dkim-atps=neutral
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com
- [IPv6:2a00:1450:4864:20::130])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256
+ header.s=google header.b=e3dJJbTI; dkim-atps=neutral
+Received: from mail-qt1-x82b.google.com (mail-qt1-x82b.google.com
+ [IPv6:2607:f8b0:4864:20::82b])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HDfpG0510z2yKF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 10:49:57 +1000 (AEST)
-Received: by mail-lf1-x130.google.com with SMTP id i4so4927308lfv.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Sep 2021 17:49:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HDhPn2L4Wz2yKK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Sep 2021 12:02:19 +1000 (AEST)
+Received: by mail-qt1-x82b.google.com with SMTP id l13so1313342qtv.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Sep 2021 19:02:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jms.id.au; s=google;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=Tv5fKXYIZFS6wZNDvLpQ/fgZXC/CC1mUDyy/EpfS2IQ=;
- b=gvliHsAGaamg2kIqxz+iSvyn3KlgExNAnhHohYx+L+9g0NRuaER4y6/FG6Ryd0OcvT
- eWRLv1FZg58RO3I1T7nFEzpnS/gJugOCEnvjc1Db8eZf4hh4a0LwmU0bbdodoHHEe2a1
- QlJoJYqHHT2x+NFvZA1Ym+grW0NXCb7gNEzbHjdNlYtbaM2Ui9JStiFyAmhmkeQ9Ldfm
- uKD0UwM6CNCY3IC4xH25sZgUiTO+ybw/3vOW/9+lz1jwtf1e4rub1M+UZ0/tJwkuYh+K
- R2W+1W1i+2MI10K5wX0btzuWdceTtoZqZNW+aqxyVpHvCVMjbR43CcoK1WZKcmb/M112
- 9eFg==
+ :cc:content-transfer-encoding;
+ bh=mgCRAj8DzBJSfsE3q2tNnkO0IJ8gTb2jzC1NsaR7PCw=;
+ b=e3dJJbTI3j2a4UlsU42Mx8Izjnu4cn+MYwXRcLaBkKq3aPjTwiNdE/uPyyygnCwrYG
+ bEuZbnydfYaCTCaDmWuA6pdxrxvizY4MLLq3DHKqinBfzfhqek0FBVxEVbIg1PpE76c9
+ nhZiucwpaCgFyC1JuKoMYkCnJ4UU8QrWri+pQ=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=Tv5fKXYIZFS6wZNDvLpQ/fgZXC/CC1mUDyy/EpfS2IQ=;
- b=1fKcFIBTyjI/91PWsmB2pJQv7qd8KjeQwFVlfSED/H2GsliWb3SgKxw+xHukNljn0z
- Zm1I2qrf8qcRED7Vm3Y1NrEjrORlVZKo2kDHxRA6D5eG6MLE4fuP3Od16eI8hyrVPAJs
- 8R5wP88/zwC5lUIy47UBtGa06HSEXthtMmvBMMCm8HtFySIZel7ltByyTp0fN+ZLfZ/8
- 1pFZKNyer9ZYw/8Fy9bfyBn90gNSzEA+yLMrpOpGP6f/mORDNKzrKJoj2YTJxftCgX9Y
- QslWvRdBp4nk0mzzxONkzviZQBz8cKHbJhjicWtrohiE8AEdbd+FokXjw/TDUqxaUj/b
- D09Q==
-X-Gm-Message-State: AOAM531RMLWIgfCj8gGCqClGxqiiR7eDsOTjmJEdFGEPLM26B1qwK7YQ
- LRyHWo9OYtsYJDQ+ABzJXEZ67zruvzcNCDQ7t9w=
-X-Google-Smtp-Source: ABdhPJxxU59HXs6mR34sthMZMwwR1+DZTFwjJbrtlJqcbZfLIISBVBHlBwKlvYbIqKio5zDNru+hyKtg4SrW9ETSnEQ=
-X-Received: by 2002:ac2:514e:: with SMTP id q14mr25636935lfd.154.1632271794190; 
- Tue, 21 Sep 2021 17:49:54 -0700 (PDT)
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=mgCRAj8DzBJSfsE3q2tNnkO0IJ8gTb2jzC1NsaR7PCw=;
+ b=o9hjEmKbta55uuoTMPlYzCua15YWWRfJnWP3HJeeOeWCGS8kKjjLMpBFMR5rnkaqzj
+ kGV6m7sviFa6fHt2UQto02+WMn65oQOhwrkZqsrabb1sReXGqBUnnmV9Z44h2Ws8KJYO
+ iTcgqCq7GpRJK+00t8/RCOut5jhkhFLFsehDPej3A3Wf+76Bb64yR2MJMRbNuS2QmtFX
+ QMuB85yFxS2RCn8YDljDA9XAH6p+ifHvoLmZSO7JP9ZhYFAFaXnc62Ko2WCsRtgUFB/w
+ 1AzTlY+V4flny0I+sx3LK77YY0Ntjsljz3VI7diOMHrrz8PVKZE4P/jBMszuf9rwOFI4
+ CqjQ==
+X-Gm-Message-State: AOAM532PdrnjOOnTOWrUKv4KTZ3eoqzyUDHgcgaKCexUrXCSigzIeMOq
+ 2U8YHfsLMc7Jvsh6kY5Z22KdrNbRhYaJgYt8JsE=
+X-Google-Smtp-Source: ABdhPJzh6A9rX+IW79HZTeRbvve7SXL1Rw0lrxiKHDq8DtkRDywzrL3dBIAPBPhRqTX5kMpZIAcltvjZ6QcdFTZTOGM=
+X-Received: by 2002:ac8:7549:: with SMTP id b9mr22594619qtr.392.1632276134046; 
+ Tue, 21 Sep 2021 19:02:14 -0700 (PDT)
 MIME-Version: 1.0
-References: <20210921213542.31688-1-broonie@kernel.org>
-In-Reply-To: <20210921213542.31688-1-broonie@kernel.org>
-From: Fabio Estevam <festevam@gmail.com>
-Date: Tue, 21 Sep 2021 21:49:43 -0300
-Message-ID: <CAOMZO5Cu+dMSTioN7-16BDKE3g-mcs+hERJ-sbG23PaT-EEhxQ@mail.gmail.com>
-Subject: Re: [PATCH v2 01/16] ASoC: eureka-tlv320: Update to modern clocking
- terminology
-To: Mark Brown <broonie@kernel.org>
+References: <20210921213930.10366-1-linkmauve@linkmauve.fr>
+ <20210921213930.10366-2-linkmauve@linkmauve.fr>
+In-Reply-To: <20210921213930.10366-2-linkmauve@linkmauve.fr>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 22 Sep 2021 02:02:01 +0000
+Message-ID: <CACPK8Xc+J0PbCdgheRxJbOVZ=OyyfsCA=cwkneMoboJLzC8TZQ@mail.gmail.com>
+Subject: Re: [PATCH 1/4] crypto: nintendo-aes - add a new AES driver
+To: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,23 +84,162 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-ALSA <alsa-devel@alsa-project.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Shengjiu Wang <shengjiu.wang@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Nicolin Chen <nicoleotsuka@gmail.com>,
+Cc: devicetree <devicetree@vger.kernel.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+ =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.ne@posteo.net>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+ "David S. Miller" <davem@davemloft.net>, Ash Logan <ash@heyquark.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 21, 2021 at 6:36 PM Mark Brown <broonie@kernel.org> wrote:
+On Tue, 21 Sept 2021 at 21:47, Emmanuel Gil Peyrot
+<linkmauve@linkmauve.fr> wrote:
 >
-> As part of moving to remove the old style defines for the bus clocks update
-> the eureka-tlv320 driver to use more modern terminology for clocking.
+> This engine implements AES in CBC mode, using 128-bit keys only.  It is
+> present on both the Wii and the Wii U, and is apparently identical in
+> both consoles.
 >
-> Signed-off-by: Mark Brown <broonie@kernel.org>
+> The hardware is capable of firing an interrupt when the operation is
+> done, but this driver currently uses a busy loop, I=E2=80=99m not too sur=
+e
+> whether it would be preferable to switch, nor how to achieve that.
+>
+> It also supports a mode where no operation is done, and thus could be
+> used as a DMA copy engine, but I don=E2=80=99t know how to expose that to=
+ the
+> kernel or whether it would even be useful.
+>
+> In my testing, on a Wii U, this driver reaches 80.7 MiB/s, while the
+> aes-generic driver only reaches 30.9 MiB/s, so it is a quite welcome
+> speedup.
+>
+> This driver was written based on reversed documentation, see:
+> https://wiibrew.org/wiki/Hardware/AES
+>
+> Signed-off-by: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+> Tested-by: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>  # on Wii U
+> ---
+>  drivers/crypto/Kconfig        |  11 ++
+>  drivers/crypto/Makefile       |   1 +
+>  drivers/crypto/nintendo-aes.c | 273 ++++++++++++++++++++++++++++++++++
+>  3 files changed, 285 insertions(+)
+>  create mode 100644 drivers/crypto/nintendo-aes.c
+>
+> diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
+> index 9a4c275a1335..adc94ad7462d 100644
+> --- a/drivers/crypto/Kconfig
+> +++ b/drivers/crypto/Kconfig
+> @@ -871,4 +871,15 @@ config CRYPTO_DEV_SA2UL
+>
+>  source "drivers/crypto/keembay/Kconfig"
+>
+> +config CRYPTO_DEV_NINTENDO
+> +       tristate "Support for the Nintendo Wii U AES engine"
+> +       depends on WII || WIIU || COMPILE_TEST
 
-For the whole series:
+This current seteup will allow the driver to be compile tested for
+non-powerpc, which will fail on the dcbf instructions.
 
-Reviewed-by: Fabio Estevam <festevam@gmail.com>
+Perhaps use this instead:
+
+       depends on WII || WIIU || (COMPILE_TEST && PPC)
+
+> +       select CRYPTO_AES
+> +       help
+> +         Say 'Y' here to use the Nintendo Wii or Wii U on-board AES
+> +         engine for the CryptoAPI AES algorithm.
+> +
+> +         To compile this driver as a module, choose M here: the module
+> +         will be called nintendo-aes.
+> +
+>  endif # CRYPTO_HW
+> diff --git a/drivers/crypto/Makefile b/drivers/crypto/Makefile
+> index fa22cb19e242..004dae7bbf39 100644
+> --- a/drivers/crypto/Makefile
+> +++ b/drivers/crypto/Makefile
+> @@ -22,6 +22,7 @@ obj-$(CONFIG_CRYPTO_DEV_MARVELL) +=3D marvell/
+>  obj-$(CONFIG_CRYPTO_DEV_MXS_DCP) +=3D mxs-dcp.o
+>  obj-$(CONFIG_CRYPTO_DEV_NIAGARA2) +=3D n2_crypto.o
+>  n2_crypto-y :=3D n2_core.o n2_asm.o
+> +obj-$(CONFIG_CRYPTO_DEV_NINTENDO) +=3D nintendo-aes.o
+>  obj-$(CONFIG_CRYPTO_DEV_NX) +=3D nx/
+>  obj-$(CONFIG_CRYPTO_DEV_OMAP) +=3D omap-crypto.o
+>  obj-$(CONFIG_CRYPTO_DEV_OMAP_AES) +=3D omap-aes-driver.o
+> diff --git a/drivers/crypto/nintendo-aes.c b/drivers/crypto/nintendo-aes.=
+c
+> new file mode 100644
+> index 000000000000..79ae77500999
+> --- /dev/null
+> +++ b/drivers/crypto/nintendo-aes.c
+> @@ -0,0 +1,273 @@
+> +/*
+> + * Copyright (C) 2021 Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 and
+> + * only version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+
+The  kernel uses the SDPX header instead of pasting the text.
+
+> +static int
+> +do_crypt(const void *src, void *dst, u32 len, u32 flags)
+> +{
+> +       u32 blocks =3D ((len >> 4) - 1) & AES_CTRL_BLOCK;
+> +       u32 status;
+> +       u32 counter =3D OP_TIMEOUT;
+> +       u32 i;
+> +
+> +       /* Flush out all of src, we can=E2=80=99t know whether any of it =
+is in cache */
+> +       for (i =3D 0; i < len; i +=3D 32)
+> +               __asm__("dcbf 0, %0" : : "r" (src + i));
+> +       __asm__("sync" : : : "memory");
+
+This could be flush_dcache_range, from asm/cacheflush.h
+
+> +
+> +       /* Set the addresses for DMA */
+> +       iowrite32be(virt_to_phys((void *)src), base + AES_SRC);
+> +       iowrite32be(virt_to_phys(dst), base + AES_DEST);
+> +
+> +       /* Start the operation */
+> +       iowrite32be(flags | blocks, base + AES_CTRL);
+> +
+> +       /* TODO: figure out how to use interrupts here, this will probabl=
+y
+> +        * lower throughput but let the CPU do other things while the AES
+> +        * engine is doing its work. */
+> +       do {
+> +               status =3D ioread32be(base + AES_CTRL);
+> +               cpu_relax();
+> +       } while ((status & AES_CTRL_EXEC) && --counter);
+
+You could add a msleep in here?
+
+Consider using readl_poll_timeout().
+
+Cheers,
+
+Joel
+
+> +
+> +       /* Do we ever get called with dst =E2=89=A0 src?  If so we have t=
+o invalidate
+> +        * dst in addition to the earlier flush of src. */
+> +       if (unlikely(dst !=3D src)) {
+> +               for (i =3D 0; i < len; i +=3D 32)
+> +                       __asm__("dcbi 0, %0" : : "r" (dst + i));
+> +               __asm__("sync" : : : "memory");
+> +       }
+> +
+> +       return counter ? 0 : 1;
+> +}
