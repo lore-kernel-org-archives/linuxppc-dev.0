@@ -7,53 +7,53 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EE98C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Sep 2021 03:40:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66D7AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Sep 2021 03:40:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AD97061350
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Sep 2021 03:40:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AD97061350
+	by mail.kernel.org (Postfix) with ESMTPS id 03B3B6113E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Sep 2021 03:40:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 03B3B6113E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HFLXL09sXz3c9p
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Sep 2021 13:40:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HFLY24fB2z3bjX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Sep 2021 13:40:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pamJq0b7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JVoSXeP9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=pamJq0b7; 
+ header.s=k20201202 header.b=JVoSXeP9; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HFLVp1C5vz308w
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Sep 2021 13:38:57 +1000 (AEST)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id BF54561159;
- Thu, 23 Sep 2021 03:38:54 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HFLWV16lBz3c4f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Sep 2021 13:39:34 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 0A05961159;
+ Thu, 23 Sep 2021 03:39:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1632368335;
- bh=ovPK0b0UGAUB/ATjR7HCDiwgVXL/SYWi1hP/Q0Bqdg4=;
+ s=k20201202; t=1632368372;
+ bh=Q98ybQcWOxN8G81IMLn0gU6t4j12Of6eAZF3HnSzzaU=;
  h=From:To:Cc:Subject:Date:From;
- b=pamJq0b7ZcQdBhK2TjqEbtoGI9e4DJ0DGT4OcspakdjYjiV8wUrDWyCJ8/b1jNYT4
- vYLjGsOe/k+ggL9nL/nv431Nx0037XnAo23XphetKxrllJysp8/55RZx6dWuW0TwMG
- 8syu18f4mqp9Zb6W49cxDchMJTFJXBICz5iDZ2MbQ4v+Abj06g+7ncfqNEElEgVxfw
- nx7yKpJTKinv5y5izmBsVr/tztn20/AkFGmRPAZTCdiSJ4OGVFYhzcadQgYajUBoIM
- aCFQpuRu3J2GptjHCoNOMg/ekmJ5lub7dorAYFbQ3soIZYLSVVBoQ3ZS/L6Mi+p9K3
- xCdHk264uZrYA==
+ b=JVoSXeP9GQhyMspPo+2qd20lvUMDSOKr/JtUj5JYR2jEJzdiD574awf0A3dVSoRR/
+ 3o2YaWY/7PN6FsZ7VyVzb+CmWDRgr1H2AYIqDpWFGej4xgTZAFYcAIXDzSgXg16NeF
+ L5vJGQiWPrvI3Uec01FczHlzY1+K4f8FQnlLtWIfgFMAikOfyY7Pn7AdH8VoLVq8lF
+ fRv8iNaTEQNOVocew2+zgPR3LJUCRYMMBuBMbhpoIcfOhphprolt4I1dBehoRC9qH6
+ 0+GFT4tvrmY2v0LvY3EoV6OmpnZV/AgmSdqVSKjnj2vvglwHCykMp7YfeGO4quZvnN
+ HvOPG7T2mbq1A==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 01/19] ibmvnic: check failover_pending in login
+Subject: [PATCH AUTOSEL 4.19 01/15] ibmvnic: check failover_pending in login
  response
-Date: Wed, 22 Sep 2021 23:38:35 -0400
-Message-Id: <20210923033853.1421193-1-sashal@kernel.org>
+Date: Wed, 22 Sep 2021 23:39:15 -0400
+Message-Id: <20210923033929.1421446-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
 X-stable: review
@@ -93,10 +93,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 8 insertions(+)
 
 diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index ecfe588f330e..cfe7229593ea 100644
+index 4008007c2e34..d97641b9928b 100644
 --- a/drivers/net/ethernet/ibm/ibmvnic.c
 +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -4277,6 +4277,14 @@ static int handle_login_rsp(union ibmvnic_crq *login_rsp_crq,
+@@ -4038,6 +4038,14 @@ static int handle_login_rsp(union ibmvnic_crq *login_rsp_crq,
  		return 0;
  	}
  
