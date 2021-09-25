@@ -2,70 +2,61 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20718C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Sep 2021 09:50:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66BBDC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Sep 2021 12:24:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F75961279
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Sep 2021 09:50:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6F75961279
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 647A061038
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Sep 2021 12:24:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 647A061038
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HGkf35bWnz3c4p
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Sep 2021 19:50:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=eK2IM5UQ;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HGp4j3pXFz30J9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Sep 2021 22:24:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::430;
- helo=mail-pf1-x430.google.com; envelope-from=carlojpisani@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=eK2IM5UQ; dkim-atps=neutral
-Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com
- [IPv6:2607:f8b0:4864:20::430])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HGkdH1PMbz2yJw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Sep 2021 19:49:22 +1000 (AEST)
-Received: by mail-pf1-x430.google.com with SMTP id k26so6478726pfi.5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Sep 2021 02:49:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=mime-version:from:date:message-id:subject:to:cc;
- bh=qoUCKun9GOqpNGoTy8WaehZ/oDjPVJ/YWHnCEdsLlKI=;
- b=eK2IM5UQmZeWd3M74yPeXKWLnWuprO7vkbPPvLnnSKAdSDV08+NywCGvzKS31dTRQA
- MqpoZMBv/w0kBeYtGRANxtGCPpUgl5/BhEJlikqWEpQdXCffoiabCGNLH7aI/dOksfLu
- SclPzf68kmuQdWh21S5fq5m03jE5dyWNk4WWosj3MTJW0XCYbpgJCqck7Puyu+JUC6nm
- /81iHWh6uyij//McHywBGhITxfwAWeRNudWzVOe5k+bE0obqhxLwS/iWRkssVezh2Doe
- L9ICpkP9I53nWba3ptAEzw7EzCmuknMoSgNoZzI7B1x9b2kMnaFgZZughvZa1o9vc+YM
- dm1w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
- bh=qoUCKun9GOqpNGoTy8WaehZ/oDjPVJ/YWHnCEdsLlKI=;
- b=735tAN1EB7pmmMKECyf9LDK2TiRF4Gs+xFntwOOgNfRuzm5tuNmyfdyccm+E5zPOIL
- WWWLpKwz1wKBPpz8upl+Khgvm9YygZgR3bmq44njeuJ99hArHybXlhTKb/z7t4+ODCUx
- onSoQOIvkHZ9+Qiso1REy07BZxHB4Xo/DsSCWOjC0zcgr8SLKuFF1eY6X94E59CUuk4e
- sIy9PQcmXeJN7FCoNBxXdqbZIAMexBGM+VKF/tPUwIF0MbKBB51yr07HVRspSDKW2G9o
- a1sIFdoFav0jkQgTK80krjaxrtVg9nWoHSLE2DF0AYowWci2ARbC+oaxn15EK8fwZUnl
- l4wA==
-X-Gm-Message-State: AOAM533BbBbccgqD5oYAXR6Rgpw/ln3XcSkJvE9V9vV6maD0CFZclaT8
- kiYIXhmQTa22J1U+aHibcGAnnqXZrC9qsz/wLO3hVX1efK0=
-X-Google-Smtp-Source: ABdhPJxwz4sRl4hyWNYWeeYQ/NGfvW3SBpg41ENEFGYFEzK4HXbNMsSJwmCrsMJz1UzkRC3safjLUItV31F0hqaelco=
-X-Received: by 2002:a05:6a00:c8c:b0:447:bddb:c83 with SMTP id
- a12-20020a056a000c8c00b00447bddb0c83mr14140350pfv.1.1632563356318; Sat, 25
- Sep 2021 02:49:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HGp4D50sqz2yMG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Sep 2021 22:24:26 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4HGp441jPBz9sW7;
+ Sat, 25 Sep 2021 14:24:20 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id L3IbZzqePKhm; Sat, 25 Sep 2021 14:24:20 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HGp440gRfz9sW6;
+ Sat, 25 Sep 2021 14:24:20 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EFB3C8B76D;
+ Sat, 25 Sep 2021 14:24:19 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id nRAI_tahIF8c; Sat, 25 Sep 2021 14:24:19 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.8])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8F1E38B763;
+ Sat, 25 Sep 2021 14:24:19 +0200 (CEST)
+Subject: Re: ppc32 doesn't boot when linkaddr=0x00900000
+To: cp <carlojpisani@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <CA+QBN9AFNSf3+U4iMhwZx7c69MLk-BtSbVODBEA97ObYWRczbQ@mail.gmail.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <a2d5790b-dad3-f4a6-dbe1-ef33cbb13ff2@csgroup.eu>
+Date: Sat, 25 Sep 2021 14:24:18 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 MIME-Version: 1.0
-From: cp <carlojpisani@gmail.com>
-Date: Sat, 25 Sep 2021 11:49:13 +0200
-Message-ID: <CA+QBN9AFNSf3+U4iMhwZx7c69MLk-BtSbVODBEA97ObYWRczbQ@mail.gmail.com>
-Subject: ppc32 doesn't boot when linkaddr=0x00900000
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <CA+QBN9AFNSf3+U4iMhwZx7c69MLk-BtSbVODBEA97ObYWRczbQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr-FR
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,96 +68,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: torvalds@linux-foundation.org, paulus@samba.org
+Cc: paulus@samba.org, torvalds@linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-hi
-I am new to this list. Hope this is the right place to ask.
+Hi,
 
-I am working with a PPC405GP board, and as far as I understand, the
-support for ppc40x platforms like Acadia and Walnut were dropped with
-kernel 5.8.0, so this seems like a pretty straightforward question,
-but extensive experiments from kernel 4.11 to kernel 5.7.19 haven't
-shown a really clear, up-to-date answer.
+Le 25/09/2021 à 11:49, cp a écrit :
+> hi
+> I am new to this list. Hope this is the right place to ask.
+> 
+> I am working with a PPC405GP board, and as far as I understand, the
+> support for ppc40x platforms like Acadia and Walnut were dropped with
+> kernel 5.8.0, so this seems like a pretty straightforward question,
+> but extensive experiments from kernel 4.11 to kernel 5.7.19 haven't
+> shown a really clear, up-to-date answer.
+> 
+> In k4.11 .. k5.7.19, when the kernel size is bigger than 8 MB, the
+> final kernel doesn't boot but rather arch/powerpc/boot/main.c dies
+> before the first message from the kernel shows up.
+> 
+> Why?
 
-In k4.11 .. k5.7.19, when the kernel size is bigger than 8 MB, the
-final kernel doesn't boot but rather arch/powerpc/boot/main.c dies
-before the first message from the kernel shows up.
+That's the fourth time I receive your email. Please give us time to 
+analyse it, there is no point in sending it again and again unless you 
+have additional information to provide.
 
-Why?
-
-Digging deeper I see the relation between the kernel size and link_addr
-
-        # Round the size to next higher MB limit
-        round_size=$(((strip_size + 0xfffff) & 0xfff00000))
-
-        round_size=0x$(printf "%x" $round_size)
-        link_addr=$(printf "%d" $link_address)
-
-and this is where link_addr is involved
-
-        text_start="-Ttext $link_address"
-
-My kernels are compiled for cuboot, and the code that invokes "kentry"
-is entirely located in arch/powerpc/boot/main.c
-
-I instrumned that module, and this is what I see on the condole
-
-The following is the same kernel, compiled with the same .config, but
-with two link_addr values
-
-A) with link_addr=0x0080.0000
-image loaded from 0x00800000
-SP=0x03eb1b80
-kernel_size = 7411084 bytes
-copying 256 bytes from kernel-image at 0x0080f000 to elfheader
-elf_info.loadsize = 0x00700e68
-elf_info.memsize  = 0x0074234c
-allocating 7611212 bytes for the new kernel
-copying ...
-from = 0x0081f000
-to = 0x00000000
-size = 7343720
-flush_cache, 32Mbyte flushed
-cmdline: uboot bootargs overridden
-cmdline=[console=ttyS0,115200 root=/dev/sda2 rootfstype=ext2 rw
-init=/sbin/init ]
-Finalizing device tree... flat tree at 0xf23b80
-ft_addr=0xf23b80
-my tp1: success
-kernel booting ....
-(it boots)
-
-B) with link_addr=0x0080.0000
-image loaded from 0x00900000
-SP=0x03eb1b80
-kernel_size = 7411084
-copying 256 bytes from kernel-image at 0x0090f000 to elfheader
-elf_info.loadsize = 0x00700e68
-elf_info.memsize  = 0x0074234c
-allocating 7611212 bytes for the new kernel
-copying ...
-from = 0x0091f000
-to = 0x00000000
-size = 7343720
-flush_cache, 32Mbyte flushed
-cmdline: uboot bootargs overridden
-cmdline=[console=ttyS0,115200 root=/dev/sda2 rootfstype=ext2 rw
-init=/sbin/init ]
-Finalizing device tree... flat tree at 0x1023b80
-ft_addr=0x1023b80
-my tp2: success
-my tp3: success
-invalidate_cache 0x00000000+0x02000000
-my tp4: (point of no return)
-calling kentry()...
-kernel booting ....
-(it dies at this point, but without a debugger it's like watching
-something fall into a black hole)
-
-Any ideas?
-I am lost ...
-
-Carlo
+Christophe
