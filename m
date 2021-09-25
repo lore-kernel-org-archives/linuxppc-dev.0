@@ -2,68 +2,95 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C93A8C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Sep 2021 12:26:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A968CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Sep 2021 15:15:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0652861038
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Sep 2021 12:26:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0652861038
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id D0EB360EE9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Sep 2021 15:15:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D0EB360EE9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HGp635PFNz304x
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Sep 2021 22:26:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HGssK1JDTz3bmc
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 01:15:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=J5eodTOK;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=desnesn@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=J5eodTOK; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HGp4W5YLVz3bTS
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Sep 2021 22:24:43 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HGp4D4DHxz9sWB;
- Sat, 25 Sep 2021 14:24:28 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 1DwdK34FIWs6; Sat, 25 Sep 2021 14:24:28 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HGp4C2Wv2z9sW6;
- Sat, 25 Sep 2021 14:24:27 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 439E38B76D;
- Sat, 25 Sep 2021 14:24:27 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id OcVrmQgfaN-d; Sat, 25 Sep 2021 14:24:27 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.8])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0A00B8B763;
- Sat, 25 Sep 2021 14:24:26 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18P8VmQ81326004
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sat, 25 Sep 2021 10:31:49 +0200
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18P8VmZP1326003;
- Sat, 25 Sep 2021 10:31:48 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 3/3] powerpc: Remove init_mem_is_free
-Date: Sat, 25 Sep 2021 10:31:44 +0200
-Message-Id: <285bdad6b27146a4fc7237eefa7227b14b8366e0.1632558672.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HGsrR3pwgz2xtR
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Sep 2021 01:14:30 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18PBcxgg003061; 
+ Sat, 25 Sep 2021 11:14:27 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=ZaI3EcatiddSWtTxy8KDie+gV9GvILToE+ZVdnA8tzA=;
+ b=J5eodTOK9UET/2Li84QOFQiKzSYlBHYD52nNma3zXC9IRD5Q8JsNQqW+qd80IFDUUnha
+ 8MUFkmOYUtoe78livBjHdU6f4mPCnUEz9MTjV9lt46tlMM5aXqXCVCgQ4TlOoxTWUYF4
+ mIVQTPqEiPp+RquRQho9FInpvKQa1cD3KYs5GPBFIvI/0iT+9Ah6AS1qrrzwLiB/446r
+ LJfsIuC2kcCIYL6njttYIdnqvrmRVkaDpqRNK8kGs2pkcg6LxfnQ8YyYKU9xP7f0WXvl
+ VufVpplhVro6fV2xE6jBTle7u2QhwLD0SQt7KhS9+D6FHG6d3zjSUaII03K5iTdN7RL+ +g== 
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3b9yv8ctwr-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sat, 25 Sep 2021 11:14:27 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18PFCDjr000589;
+ Sat, 25 Sep 2021 15:14:26 GMT
+Received: from b03cxnp07027.gho.boulder.ibm.com
+ (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
+ by ppma04wdc.us.ibm.com with ESMTP id 3b9ud9d861-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sat, 25 Sep 2021 15:14:26 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 18PFEO0D11207104
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sat, 25 Sep 2021 15:14:24 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7AFAABE04F;
+ Sat, 25 Sep 2021 15:14:24 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BB7E4BE058;
+ Sat, 25 Sep 2021 15:14:22 +0000 (GMT)
+Received: from ibm.ibmuc.com (unknown [9.160.60.10])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Sat, 25 Sep 2021 15:14:22 +0000 (GMT)
+From: "Desnes A. Nunes do Rosario" <desnesn@linux.ibm.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH] Revert "ibmvnic: check failover_pending in login response"
+Date: Sat, 25 Sep 2021 12:14:18 -0300
+Message-Id: <20210925151418.1614874-1-desnesn@linux.ibm.com>
 X-Mailer: git-send-email 2.31.1
-In-Reply-To: <a7a35416ddab4b42617e2c81fe5816c7f8d0c63f.1632558672.git.christophe.leroy@csgroup.eu>
-References: <a7a35416ddab4b42617e2c81fe5816c7f8d0c63f.1632558672.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: tUBsjFbl1Dsx540taYQXCL5RpfvSXyDs
+X-Proofpoint-GUID: tUBsjFbl1Dsx540taYQXCL5RpfvSXyDs
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
+ definitions=2021-09-25_05,2021-09-24_02,2020-04-07_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 impostorscore=0
+ mlxscore=0 malwarescore=0 adultscore=0 mlxlogscore=999 suspectscore=0
+ lowpriorityscore=0 spamscore=0 phishscore=0 priorityscore=1501 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2109230001
+ definitions=main-2109250113
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,53 +102,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: drt@linux.ibm.com, tlfalcon@linux.ibm.com, sukadev@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org,
+ "Desnes A. Nunes do Rosario" <desnesn@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-init_mem_is_free is not used anymore. Remove it.
+This reverts commit d437f5aa23aa2b7bd07cd44b839d7546cc17166f.
 
-Cc: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Code has been duplicated through commit <273c29e944bd> "ibmvnic: check
+failover_pending in login response"
+
+Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.ibm.com>
 ---
- arch/powerpc/include/asm/setup.h | 1 -
- arch/powerpc/mm/mem.c            | 2 --
- 2 files changed, 3 deletions(-)
+ drivers/net/ethernet/ibm/ibmvnic.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 6c1a7d217d1a..426a2d8d028f 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -9,7 +9,6 @@ extern void ppc_printk_progress(char *s, unsigned short hex);
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index a4579b340120..6aa6ff89a765 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -4708,14 +4708,6 @@ static int handle_login_rsp(union ibmvnic_crq *login_rsp_crq,
+ 		return 0;
+ 	}
  
- extern unsigned int rtas_data;
- extern unsigned long long memory_limit;
--extern bool init_mem_is_free;
- extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+-	if (adapter->failover_pending) {
+-		adapter->init_done_rc = -EAGAIN;
+-		netdev_dbg(netdev, "Failover pending, ignoring login response\n");
+-		complete(&adapter->init_done);
+-		/* login response buffer will be released on reset */
+-		return 0;
+-	}
+-
+ 	netdev->mtu = adapter->req_mtu - ETH_HLEN;
  
- struct device_node;
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index c3c4e31462ec..5b1eae6c0356 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -26,7 +26,6 @@
- #include <mm/mmu_decl.h>
- 
- unsigned long long memory_limit;
--bool init_mem_is_free;
- 
- unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)] __page_aligned_bss;
- EXPORT_SYMBOL(empty_zero_page);
-@@ -312,7 +311,6 @@ void free_initmem(void)
- {
- 	ppc_md.progress = ppc_printk_progress;
- 	mark_initmem_nx();
--	init_mem_is_free = true;
- 	free_initmem_default(POISON_FREE_INITMEM);
- }
- 
+ 	netdev_dbg(adapter->netdev, "Login Response Buffer:\n");
 -- 
 2.31.1
 
