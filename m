@@ -2,48 +2,58 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F18F0C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 10:14:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9CA1C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:35:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 408BB61019
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 10:14:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 408BB61019
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id C201861019
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:35:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C201861019
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HHM7D6T1mz3c54
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 20:14:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HHM6n0HkKz2yV5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Sep 2021 20:13:35 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id E1D58200FF0;
- Sun, 26 Sep 2021 12:13:30 +0200 (CEST)
-Received: from aprdc01srsp001v.ap-rdc01.nxp.com
- (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 7E670200FCD;
- Sun, 26 Sep 2021 12:13:30 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 1B877183AD07;
- Sun, 26 Sep 2021 18:13:29 +0800 (+08)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org
-Subject: [PATCH] ASoC: fsl_spdif: implement bypass mode from in to out
-Date: Sun, 26 Sep 2021 17:49:20 +0800
-Message-Id: <1632649760-1651-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HHQGg68bJz3053
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 22:35:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
+ envelope-from=nixiaoming@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HHQG52Jltz2xr9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Sep 2021 22:35:05 +1000 (AEST)
+Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.53])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4HHQ8V1bs5z8yp5;
+ Sun, 26 Sep 2021 20:30:18 +0800 (CST)
+Received: from dggema774-chm.china.huawei.com (10.1.198.216) by
+ dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256) id
+ 15.1.2308.8; Sun, 26 Sep 2021 20:34:52 +0800
+Received: from [10.67.102.197] (10.67.102.197) by
+ dggema774-chm.china.huawei.com (10.1.198.216) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
+ 15.1.2308.8; Sun, 26 Sep 2021 20:34:51 +0800
+Subject: Re: [PATCH] powerpc:85xx: fix timebase sync issue when
+ CONFIG_HOTPLUG_CPU=n
+To: <linux-kernel@vger.kernel.org>, <oss@buserror.net>, <mpe@ellerman.id.au>, 
+ <benh@kernel.crashing.org>, <paulus@samba.org>,
+ <paul.gortmaker@windriver.com>, <Yuantian.Tang@feescale.com>,
+ <chenhui.zhao@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
+References: <20210926025144.55674-1-nixiaoming@huawei.com>
+From: Xiaoming Ni <nixiaoming@huawei.com>
+Message-ID: <021a5ee3-25ef-1de4-0111-d4c3281e0f45@huawei.com>
+Date: Sun, 26 Sep 2021 20:34:51 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.0.1
+MIME-Version: 1.0
+In-Reply-To: <20210926025144.55674-1-nixiaoming@huawei.com>
+Content-Type: text/plain; charset="gbk"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.102.197]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ dggema774-chm.china.huawei.com (10.1.198.216)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,147 +65,145 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: wangle6@huawei.com, wangxiongfeng2@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Viorel Suman <viorel.suman@nxp.com>
+On 2021/9/26 10:51, Xiaoming Ni wrote:
+> When CONFIG_SMP=y, timebase synchronization is required when the second
+>   kernel is started.
+> 	arch/powerpc/kernel/smp.c:
+> 	int __cpu_up(unsigned int cpu, struct task_struct *tidle)
+> 	{
+> 		...
+> 		if (smp_ops->give_timebase)
+> 			smp_ops->give_timebase();
+> 		...
+> 	}
+> 
+> 	void start_secondary(void *unused)
+> 	{
+> 		...
+> 		if (smp_ops->take_timebase)
+> 			smp_ops->take_timebase();
+> 		...
+> 	}
+> 
+> When CONFIG_HOTPLUG_CPU=n and CONFIG_KEXEC_CORE=n,
+>   smp_85xx_ops.give_timebase is NULL,
+>   smp_85xx_ops.take_timebase is NULL,
+> As a result, the timebase is not synchronized.
+> 
+> Timebase  synchronization does not depend on CONFIG_HOTPLUG_CPU.
+> 
+> Fixes: 56f1ba280719 ("powerpc/mpc85xx: refactor the PM operations")
+> Cc: stable@vger.kernel.org #v4.6
+> Signed-off-by: Xiaoming Ni <nixiaoming@huawei.com>
+> ---
+>   arch/powerpc/platforms/85xx/Makefile         | 2 +-
+>   arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c | 4 ++++
+>   arch/powerpc/platforms/85xx/smp.c            | 9 ++++-----
+>   3 files changed, 9 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+> index 60e4e97a929d..71ce1f6b6966 100644
+> --- a/arch/powerpc/platforms/85xx/Makefile
+> +++ b/arch/powerpc/platforms/85xx/Makefile
+> @@ -3,7 +3,7 @@
+>   # Makefile for the PowerPC 85xx linux kernel.
+>   #
+>   obj-$(CONFIG_SMP) += smp.o
+> -obj-$(CONFIG_FSL_PMC)		  += mpc85xx_pm_ops.o
+> +obj-$(CONFIG_SMP) += mpc85xx_pm_ops.o
+>   
+>   obj-y += common.o
+>   
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c b/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
+> index 7c0133f558d0..a5656b3e9701 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
+> @@ -17,6 +17,7 @@
+>   
+>   static struct ccsr_guts __iomem *guts;
+>   
+> +#ifdef CONFIG_FSL_PMC
+>   static void mpc85xx_irq_mask(int cpu)
+>   {
+>   
+> @@ -49,6 +50,7 @@ static void mpc85xx_cpu_up_prepare(int cpu)
+>   {
+>   
+>   }
+> +#endif
+>   
+>   static void mpc85xx_freeze_time_base(bool freeze)
+>   {
+> @@ -76,10 +78,12 @@ static const struct of_device_id mpc85xx_smp_guts_ids[] = {
+>   
+>   static const struct fsl_pm_ops mpc85xx_pm_ops = {
+>   	.freeze_time_base = mpc85xx_freeze_time_base,
+> +#ifdef CONFIG_FSL_PMC
+>   	.irq_mask = mpc85xx_irq_mask,
+>   	.irq_unmask = mpc85xx_irq_unmask,
+>   	.cpu_die = mpc85xx_cpu_die,
+>   	.cpu_up_prepare = mpc85xx_cpu_up_prepare,
+> +#endif
+>   };
+>   
+>   int __init mpc85xx_setup_pmc(void)
+> diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+> index c6df294054fe..349298cd9671 100644
+> --- a/arch/powerpc/platforms/85xx/smp.c
+> +++ b/arch/powerpc/platforms/85xx/smp.c
+> @@ -40,7 +40,6 @@ struct epapr_spin_table {
+>   	u32	pir;
+>   };
+>   
+> -#ifdef CONFIG_HOTPLUG_CPU
+>   static u64 timebase;
+>   static int tb_req;
+>   static int tb_valid;
+> @@ -112,6 +111,7 @@ static void mpc85xx_take_timebase(void)
+>   	local_irq_restore(flags);
+>   }
+>   
+> +#ifdef CONFIG_HOTPLUG_CPU
+>   static void smp_85xx_cpu_offline_self(void)
+>   {
+>   	unsigned int cpu = smp_processor_id();
+> @@ -499,17 +499,16 @@ void __init mpc85xx_smp_init(void)
+>   #ifdef CONFIG_FSL_CORENET_RCPM
+>   	fsl_rcpm_init();
+>   #endif
+> -
+> -#ifdef CONFIG_FSL_PMC
+> -	mpc85xx_setup_pmc();
+>   #endif
+> +	mpc85xx_setup_pmc();
+>   	if (qoriq_pm_ops) {
+>   		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
+>   		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
+> +#ifdef CONFIG_HOTPLUG_CPU
+>   		smp_85xx_ops.cpu_offline_self = smp_85xx_cpu_offline_self;
+>   		smp_85xx_ops.cpu_die = qoriq_cpu_kill;
+> -	}
+>   #endif
+> +	}
+>   	smp_ops = &smp_85xx_ops;
+>   
+>   #ifdef CONFIG_KEXEC_CORE
+> 
 
-Implement SPDIF bypass mode. It implies internal SoC
-routing of SPDIF input signal to SPDIF output signal. The
-test bed requires two boards: B1 configured in bypass mode,
-and B2 to feed B1 SPDIF RX port and read B1 SPDIF TX port:
-   B2 TX -> B1 RX,
-   B2 RX <- B1 TX.
-The test procedure:
- a) Boot both boards
- b) B2: start "arecord <spdifcard> -r 48kHz | aplay <local DAC>"
- c) B2: start "aplay <spdifcard> -r 48kHz <2ch 48kHz audio file>"
- d) B1: enable bypass mode:
-	amixer -cimxspdif cset numid=8,iface=PCM,name='Bypass Mode' on
- e) B2: check DAC audio, make sure the same sample rate is used at
-	steps b) and c), in example above the rate is 48kHz.
- f) B1: try to run "aplay" or "arecord" on imxspdif card while in
-	bypass mode - both must fail until bypass mode is disabled
- g) B1: disable bypass mode:
-	amixer -cimxspdif cset numid=8,iface=PCM,name='Bypass Mode' off
- h) B1: check the usual playback and capture on imxspdif card.
-	During this test try to set bypass mode - must not be allowed
-	while playback or capture is running.
 
-Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/fsl_spdif.c | 74 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 74 insertions(+)
+I found inconsistent time values on different CPUs on my mpc8572 and 
+used this patch to fix it.
+But today I found out in ppc64 testing that this patch causes the system 
+to trigger oops in the function mpc85xx_freeze_time_base(): the variable 
+"guts" is a null pointer.
 
-diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
-index 928b59069283..d178b479c8bd 100644
---- a/sound/soc/fsl/fsl_spdif.c
-+++ b/sound/soc/fsl/fsl_spdif.c
-@@ -111,6 +111,7 @@ struct spdif_mixer_control {
-  * @dma_params_tx: DMA parameters for transmit channel
-  * @dma_params_rx: DMA parameters for receive channel
-  * @regcache_srpc: regcache for SRPC
-+ * @bypass: status of bypass input to output
-  */
- struct fsl_spdif_priv {
- 	const struct fsl_spdif_soc_data *soc;
-@@ -133,6 +134,7 @@ struct fsl_spdif_priv {
- 	struct snd_dmaengine_dai_dma_data dma_params_rx;
- 	/* regcache for SRPC */
- 	u32 regcache_srpc;
-+	bool bypass;
- };
- 
- static struct fsl_spdif_soc_data fsl_spdif_vf610 = {
-@@ -905,6 +907,69 @@ static int fsl_spdif_rx_rcm_put(struct snd_kcontrol *kcontrol,
- 	return 0;
- }
- 
-+static int fsl_spdif_bypass_get(struct snd_kcontrol *kcontrol,
-+				struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-+	struct fsl_spdif_priv *priv = snd_soc_dai_get_drvdata(dai);
-+
-+	ucontrol->value.integer.value[0] = priv->bypass ? 1 : 0;
-+
-+	return 0;
-+}
-+
-+static int fsl_spdif_bypass_put(struct snd_kcontrol *kcontrol,
-+				struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-+	struct fsl_spdif_priv *priv = snd_soc_dai_get_drvdata(dai);
-+	struct snd_soc_card *card = dai->component->card;
-+	bool set = (ucontrol->value.integer.value[0] != 0);
-+	struct regmap *regmap = priv->regmap;
-+	struct snd_soc_pcm_runtime *rtd;
-+	u32 scr, mask;
-+	int stream;
-+
-+	rtd = snd_soc_get_pcm_runtime(card, card->dai_link);
-+
-+	if (priv->bypass == set)
-+		return 0; /* nothing to do */
-+
-+	if (snd_soc_dai_active(dai)) {
-+		dev_err(dai->dev, "Cannot change BYPASS mode while stream is running.\n");
-+		return -EBUSY;
-+	}
-+
-+	pm_runtime_get_sync(dai->dev);
-+
-+	if (set) {
-+		/* Disable interrupts */
-+		regmap_update_bits(regmap, REG_SPDIF_SIE, 0xffffff, 0);
-+
-+		/* Configure BYPASS mode */
-+		scr = SCR_TXSEL_RX | SCR_RXFIFO_OFF;
-+		mask = SCR_RXFIFO_FSEL_MASK | SCR_RXFIFO_AUTOSYNC_MASK |
-+			SCR_RXFIFO_CTL_MASK | SCR_RXFIFO_OFF_MASK | SCR_TXSEL_MASK;
-+		/* Power up SPDIF module */
-+		mask |= SCR_LOW_POWER;
-+	} else {
-+		/* Power down SPDIF module, disable TX */
-+		scr = SCR_LOW_POWER | SCR_TXSEL_OFF;
-+		mask = SCR_LOW_POWER | SCR_TXSEL_MASK;
-+	}
-+
-+	regmap_update_bits(regmap, REG_SPDIF_SCR, mask, scr);
-+
-+	/* Disable playback & capture if BYPASS mode is enabled, enable otherwise */
-+	for_each_pcm_streams(stream)
-+		rtd->pcm->streams[stream].substream_count = (set ? 0 : 1);
-+
-+	priv->bypass = set;
-+	pm_runtime_put_sync(dai->dev);
-+
-+	return 0;
-+}
-+
- /* DPLL lock information */
- static int fsl_spdif_rxrate_info(struct snd_kcontrol *kcontrol,
- 				struct snd_ctl_elem_info *uinfo)
-@@ -1075,6 +1140,15 @@ static struct snd_kcontrol_new fsl_spdif_ctrls[] = {
- 		.info = fsl_spdif_rxrate_info,
- 		.get = fsl_spdif_rxrate_get,
- 	},
-+	/* RX bypass controller */
-+	{
-+		.iface = SNDRV_CTL_ELEM_IFACE_PCM,
-+		.name = "Bypass Mode",
-+		.access = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-+		.info = snd_ctl_boolean_mono_info,
-+		.get = fsl_spdif_bypass_get,
-+		.put = fsl_spdif_bypass_put,
-+	},
- 	/* User bit sync mode set/get controller */
- 	{
- 		.iface = SNDRV_CTL_ELEM_IFACE_PCM,
--- 
-2.17.1
+I'm sorry to bother you.
+I'll fix it and resend v2 later,
 
+Thanks
+Xiaoming Ni
