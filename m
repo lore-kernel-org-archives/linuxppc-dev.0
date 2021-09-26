@@ -2,22 +2,22 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F875C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:49:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DE57C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:49:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 788C260F93
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:49:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 788C260F93
+	by mail.kernel.org (Postfix) with ESMTPS id A749560FC2
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:49:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A749560FC2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=svenpeter.dev
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HHQZJ57rcz3c52
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 22:49:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HHQb624PPz3c73
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 22:49:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev header.a=rsa-sha256 header.s=fm2 header.b=TboQyJyt;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=NxAyPacu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev header.a=rsa-sha256 header.s=fm2 header.b=J+sJvzwE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=CQdA+M9m;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=svenpeter.dev (client-ip=66.111.4.224;
@@ -25,48 +25,48 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev
- header.a=rsa-sha256 header.s=fm2 header.b=TboQyJyt; 
+ header.a=rsa-sha256 header.s=fm2 header.b=J+sJvzwE; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm3 header.b=NxAyPacu; 
+ header.a=rsa-sha256 header.s=fm3 header.b=CQdA+M9m; 
  dkim-atps=neutral
 Received: from new2-smtp.messagingengine.com (new2-smtp.messagingengine.com
  [66.111.4.224])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HHLxt4zqlz2yWL
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HHLxt4smqz2yWG
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Sep 2021 20:05:54 +1000 (AEST)
-Received: from compute2.internal (compute2.nyi.internal [10.202.2.42])
- by mailnew.nyi.internal (Postfix) with ESMTP id 547A3580FDE;
- Sun, 26 Sep 2021 06:00:01 -0400 (EDT)
+Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
+ by mailnew.nyi.internal (Postfix) with ESMTP id 65B07580FC9;
+ Sun, 26 Sep 2021 05:59:50 -0400 (EDT)
 Received: from mailfrontend1 ([10.202.2.162])
- by compute2.internal (MEProxy); Sun, 26 Sep 2021 06:00:01 -0400
+ by compute4.internal (MEProxy); Sun, 26 Sep 2021 05:59:50 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=svenpeter.dev;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding; s=fm2; bh=LP/8lz47saqkf
- hCVmeWif4VdrSPwoBp2uj9OD6MO2sI=; b=TboQyJyt4MGPZJh/xJ6qiczrTbGWj
- r5ApKe/VulYN+FhoEFA2Qa93FiZAbXkU1ZtaUwNCSiCTkM7hl0FX9DLDf+jafm3f
- ML33GGGZnp8Er/R2btTDv2FpAhfpz1+x/vLcShzcqnDh5KMv3csTx1pKg2qt2Hm0
- /UFXYA5NG4/gVSYBx6fUSeS8sBt2nV/Zy+VCZk/ZO/7i3diRgpap5XTrSuCsTbnH
- 74QM1QWjmIdItbseJZ8MYjXn7Ex9BL3qaTpC+6dmHWTAA8ULeCMj5bZU1vXr4oPz
- ZtXKW6NHxB50qxOiEEKfzobdWl9ffVpkMaDSh5P9e1riYsA8inkxZo8TQ==
+ :mime-version:content-transfer-encoding; s=fm2; bh=c7KwfXz039aW1
+ wfmY7eI8n7gO1ZrMIuHg4HVlfkwtsE=; b=J+sJvzwElGAyYmuAvc+rvWp0ItHSg
+ UkKXp+NTBtufjuhICbmcyyS2Y7XpX4ciCDBOSZ6cCr5HoMREX/78fOC8VPba+4Y3
+ ajmwYa2UkJh+c9eBEKkpyXvoxaMibp9C13GKrV/KdRR8l3N4EXQo0NYiz9BKDDz+
+ GC11uKyOW3445Pvm4hyG8nCT4vadtC0G3BeFO3fVPQAFNUTe1LUqhjMjHoLLw+P0
+ jqQHJkSzviLCaIBK/t16bFQltKEQat2mlb/MA+drT4p33AcdGtZe8rBqc5MlWi58
+ t7HLLniy9mKvTij2eYbNlOF/gME4ZJYfC+XJ0EBx6k0rYvlWuUZqfnkiA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
  :in-reply-to:message-id:mime-version:references:subject:to
  :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm3; bh=LP/8lz47saqkfhCVmeWif4VdrSPwoBp2uj9OD6MO2sI=; b=NxAyPacu
- lGio5pH75/BsAtFRtcWvrptpUnUxDJJjbRfdGf6+/V3X61T4rm7z+D4m3S/dKNN/
- UugMrelKaJ8AdH0p7lN0QCwSvJrLWpKPgwAlAYm17h5Uo5t0ZIZTGiHo09ud4K63
- N6U+7iP8DbcxjQnJ7oz1rC39WRsuofgUdAzRWJTExpc1N62l+C2Sb445bhMsmugi
- dO1hhWz6UaaRf6TZqEKim+KP9vk+8RcQ4u/RW6jlbdOBNsCDlX65pW74QeXdyrj0
- gYYZAfRWYnOPpqgaQnbcr6CAhyuMDhvcEmVLyLTIMPyee6M3eUKaXI54eriFTDtY
- Xnk91yd1fBBC5w==
-X-ME-Sender: <xms:oURQYW6lSjhpfTKbyCfHTwZMKa2urpOLUYQn5zBhmDMUDNiOwSMNFg>
- <xme:oURQYf5fxzX5na2HVZRUfewcI1zj0D7QVIYBWh3j-tcHzaGV_4EDX4YcGqeJP5DU6
- UCEwFgVPR2o3jES5k4>
-X-ME-Received: <xmr:oURQYVdrqr8DLl27asJv6excVrQEXxW1sHHlD8UQmgX-P-gA22DoGN4Y_MOd92rfV4EPvKHNgb4VKDl__dKjlZdVSW_IudK_dnfua0Ee5wkthPJA0kVKrQc>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvtddrudejiedgvdduucetufdoteggodetrfdotf
+ fm3; bh=c7KwfXz039aW1wfmY7eI8n7gO1ZrMIuHg4HVlfkwtsE=; b=CQdA+M9m
+ 8yYPyUKfAxMHgcy0vuzT9QRKKTgSfIcgujXFDNuOJufIWXQxvyEWEgURSKR4Ncen
+ 7QrcI8X2zCfQmCAxVpUyVj7+VeWPftpGuZOk9edB7s8AkkTyOgCFHCTmIF/8guUD
+ 93fOlr/KLdkUwBM7SqdKGt2GdlowekQZOnluj6+LD+L5xOKSrSrgrYksUNFpAIxl
+ BBNx38PGwEDGG5BG2eWE9ps9u2X8AceBorRhF+95MnAiaU/lx9nRFEKMTRTUYwYD
+ r9e0ai6Hf+MxzYozenUa0EEaf0gJQAi9RwjyGxbtH87T4aJejU7mD4L68MyzO7NJ
+ tYV8jj+rsphUig==
+X-ME-Sender: <xms:lkRQYeLNy5g_gbbhxN6eUauQG8lS2oOILrn8zMsWxBdHqTkDdHVhPg>
+ <xme:lkRQYWLRDTrTo0elW9sx2oez6T9DKJA3fVn0NRWrActx27VXOHfeGKk8fTVImXahI
+ aEJjoz2v-6RMBpVgCA>
+X-ME-Received: <xmr:lkRQYeuKuBtjrJY1u8QDK9ZzekrSGrpE-2Gx3DckFJcDwopQ5c07X1CPCQc_y73zSvuVc98cU_J8Izu68FTkuiRzpp8Ibj4IOcN_-r8fMaTsKrSemxS6_EA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvtddrudejiedgvddvucetufdoteggodetrfdotf
  fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
  uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
  cujfgurhephffvufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpefuvhgvnhcu
@@ -74,19 +74,19 @@ X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvtddrudejiedgvdduucetufdoteggod
  hrnheptedvkeetleeuffffhfekteetffeggffgveehieelueefvddtueffveevlefhfeej
  necuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepshhvvg
  hnsehsvhgvnhhpvghtvghrrdguvghv
-X-ME-Proxy: <xmx:oURQYTJKF2PL7JbAJxAMlBB0SbikpwIlZocBMD86dnoGhzw9pMjYog>
- <xmx:oURQYaJH7xtoAqBQUbEcEFUgsah3qTIKr7g8QPpq6-LnbUiybMQz0w>
- <xmx:oURQYUyoe-VxOkdI5BK3V_Gi6acHpUpniaDbfJIF6j-JQhXxKEE2aA>
- <xmx:oURQYVYz0wefuikiDeuRSykuuZ95ZGcm6SDQJ5chrpMvtAIqiEIuKg>
+X-ME-Proxy: <xmx:lkRQYTa06bnislySjDh8RbSjmfrXHf9YTH1bg_RMvH0wASbgR1qkCg>
+ <xmx:lkRQYVYDdlJ3zeDMsi84BSOkmEI8AmDAeskLlJye3Mr09oEHmN8jeQ>
+ <xmx:lkRQYfBLbUtOvl6FYiodksgIf47MPbAcouPnOaLnrQNFltPff1N1ZA>
+ <xmx:lkRQYZrS0c3De-7eMFCAtYKC5NYuMaEePOWfhVBlSYlC3ceiChIfzw>
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sun,
- 26 Sep 2021 05:59:59 -0400 (EDT)
+ 26 Sep 2021 05:59:48 -0400 (EDT)
 From: Sven Peter <sven@svenpeter.dev>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>
-Subject: [PATCH 10/10] i2c: pasemi: Set enable bit for Apple variant
-Date: Sun, 26 Sep 2021 11:58:47 +0200
-Message-Id: <20210926095847.38261-11-sven@svenpeter.dev>
+Subject: [PATCH 05/10] i2c: pasemi: Split pci driver to its own file
+Date: Sun, 26 Sep 2021 11:58:42 +0200
+Message-Id: <20210926095847.38261-6-sven@svenpeter.dev>
 X-Mailer: git-send-email 2.30.1 (Apple Git-130)
 In-Reply-To: <20210926095847.38261-1-sven@svenpeter.dev>
 References: <20210926095847.38261-1-sven@svenpeter.dev>
@@ -115,93 +115,272 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some later revisions after the original PASemi I2C controller introduce
-what likely is an enable bit to the CTL register. Without setting it the
-actual i2c transmission is never started.
+Split off the PCI driver so that we can reuse common code for the
+platform driver.
 
 Signed-off-by: Sven Peter <sven@svenpeter.dev>
 ---
- drivers/i2c/busses/i2c-pasemi-core.c | 8 ++++++++
- drivers/i2c/busses/i2c-pasemi-core.h | 3 +++
- drivers/i2c/busses/i2c-pasemi-pci.c  | 6 ++++++
- 3 files changed, 17 insertions(+)
+ drivers/i2c/busses/Makefile                   |  1 +
+ .../{i2c-pasemi.c => i2c-pasemi-core.c}       | 88 +----------------
+ drivers/i2c/busses/i2c-pasemi-core.h          | 19 ++++
+ drivers/i2c/busses/i2c-pasemi-pci.c           | 96 +++++++++++++++++++
+ 4 files changed, 118 insertions(+), 86 deletions(-)
+ rename drivers/i2c/busses/{i2c-pasemi.c => i2c-pasemi-core.c} (81%)
+ create mode 100644 drivers/i2c/busses/i2c-pasemi-core.h
+ create mode 100644 drivers/i2c/busses/i2c-pasemi-pci.c
 
-diff --git a/drivers/i2c/busses/i2c-pasemi-core.c b/drivers/i2c/busses/i2c-pasemi-core.c
-index 0ec65263fd08..b52a65beda99 100644
---- a/drivers/i2c/busses/i2c-pasemi-core.c
+diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
+index 1336b04f40e2..0ab1b4cb2228 100644
+--- a/drivers/i2c/busses/Makefile
++++ b/drivers/i2c/busses/Makefile
+@@ -84,6 +84,7 @@ obj-$(CONFIG_I2C_NPCM7XX)	+= i2c-npcm7xx.o
+ obj-$(CONFIG_I2C_OCORES)	+= i2c-ocores.o
+ obj-$(CONFIG_I2C_OMAP)		+= i2c-omap.o
+ obj-$(CONFIG_I2C_OWL)		+= i2c-owl.o
++i2c-pasemi-objs := i2c-pasemi-core.o i2c-pasemi-pci.o
+ obj-$(CONFIG_I2C_PASEMI)	+= i2c-pasemi.o
+ obj-$(CONFIG_I2C_PCA_PLATFORM)	+= i2c-pca-platform.o
+ obj-$(CONFIG_I2C_PNX)		+= i2c-pnx.o
+diff --git a/drivers/i2c/busses/i2c-pasemi.c b/drivers/i2c/busses/i2c-pasemi-core.c
+similarity index 81%
+rename from drivers/i2c/busses/i2c-pasemi.c
+rename to drivers/i2c/busses/i2c-pasemi-core.c
+index 9d69ff63f674..3eda5e375fa2 100644
+--- a/drivers/i2c/busses/i2c-pasemi.c
 +++ b/drivers/i2c/busses/i2c-pasemi-core.c
-@@ -22,6 +22,7 @@
- #define REG_MRXFIFO	0x04
- #define REG_SMSTA	0x14
- #define REG_CTL		0x1c
-+#define REG_REV		0x28
- 
- /* Register defs */
- #define MTXFIFO_READ	0x00000400
-@@ -37,6 +38,7 @@
- 
- #define CTL_MRR		0x00000400
- #define CTL_MTR		0x00000200
-+#define CTL_EN		0x00000800
- #define CTL_CLK_M	0x000000ff
- 
- static inline void reg_write(struct pasemi_smbus *smbus, int reg, int val)
-@@ -60,6 +62,9 @@ static void pasemi_reset(struct pasemi_smbus *smbus)
- {
- 	u32 val = (CTL_MTR | CTL_MRR | (smbus->clk_div & CTL_CLK_M));
- 
-+	if (smbus->hw_rev >= 6)
-+		val |= CTL_EN;
-+
- 	reg_write(smbus, REG_CTL, val);
- }
- 
-@@ -335,6 +340,9 @@ int pasemi_i2c_common_probe(struct pasemi_smbus *smbus)
- 	/* set up the sysfs linkage to our parent device */
- 	smbus->adapter.dev.parent = smbus->dev;
- 
-+	if (smbus->hw_rev != PASEMI_HW_REV_PCI)
-+		smbus->hw_rev = reg_read(smbus, REG_REV);
-+
- 	pasemi_reset(smbus);
- 
- 	error = devm_i2c_add_adapter(smbus->dev, &smbus->adapter);
-diff --git a/drivers/i2c/busses/i2c-pasemi-core.h b/drivers/i2c/busses/i2c-pasemi-core.h
-index aca4e2da9089..4655124a37f3 100644
---- a/drivers/i2c/busses/i2c-pasemi-core.h
-+++ b/drivers/i2c/busses/i2c-pasemi-core.h
-@@ -8,11 +8,14 @@
+@@ -15,15 +15,7 @@
+ #include <linux/slab.h>
  #include <linux/io.h>
- #include <linux/kernel.h>
  
-+#define PASEMI_HW_REV_PCI -1
-+
- struct pasemi_smbus {
- 	struct device		*dev;
- 	struct i2c_adapter	 adapter;
- 	void __iomem		*ioaddr;
- 	unsigned int		 clk_div;
-+	int			 hw_rev;
+-static struct pci_driver pasemi_smb_driver;
+-
+-struct pasemi_smbus {
+-	struct device           *dev;
+-	struct i2c_adapter	 adapter;
+-	void __iomem		*ioaddr;
+-	unsigned long		 base;
+-	int			 size;
+-};
++#include "i2c-pasemi-core.h"
+ 
+ /* Register offsets */
+ #define REG_MTXFIFO	0x00
+@@ -329,7 +321,7 @@ static const struct i2c_algorithm smbus_algorithm = {
+ 	.functionality	= pasemi_smb_func,
  };
  
- int pasemi_i2c_common_probe(struct pasemi_smbus *smbus);
-diff --git a/drivers/i2c/busses/i2c-pasemi-pci.c b/drivers/i2c/busses/i2c-pasemi-pci.c
-index c1b8901110c0..2b7be35421bc 100644
---- a/drivers/i2c/busses/i2c-pasemi-pci.c
-+++ b/drivers/i2c/busses/i2c-pasemi-pci.c
-@@ -42,6 +42,12 @@ static int pasemi_smb_pci_probe(struct pci_dev *dev,
- 	size = pci_resource_len(dev, 0);
- 	smbus->clk_div = CLK_100K_DIV;
+-static int pasemi_i2c_common_probe(struct pasemi_smbus *smbus)
++int pasemi_i2c_common_probe(struct pasemi_smbus *smbus)
+ {
+ 	int error;
  
-+	/*
-+	 * The original PASemi PCI controllers don't have a register for
-+	 * their HW revision.
-+	 */
-+	smbus->hw_rev = PASEMI_HW_REV_PCI;
+@@ -352,79 +344,3 @@ static int pasemi_i2c_common_probe(struct pasemi_smbus *smbus)
+ 
+ 	return 0;
+ }
+-
+-static int pasemi_smb_probe(struct pci_dev *dev,
+-				      const struct pci_device_id *id)
+-{
+-	struct pasemi_smbus *smbus;
+-	int error;
+-
+-	if (!(pci_resource_flags(dev, 0) & IORESOURCE_IO))
+-		return -ENODEV;
+-
+-	smbus = kzalloc(sizeof(struct pasemi_smbus), GFP_KERNEL);
+-	if (!smbus)
+-		return -ENOMEM;
+-
+-	smbus->dev = &dev->dev;
+-	smbus->base = pci_resource_start(dev, 0);
+-	smbus->size = pci_resource_len(dev, 0);
+-
+-	if (!request_region(smbus->base, smbus->size,
+-			    pasemi_smb_driver.name)) {
+-		error = -EBUSY;
+-		goto out_kfree;
+-	}
+-
+-	smbus->ioaddr = ioport_map(smbus->base, smbus->size);
+-	if (!smbus->ioaddr) {
+-		error = -EBUSY;
+-		goto out_release_region;
+-	}
+-
+-	int error = pasemi_i2c_common_probe(smbus);
+-	if (error)
+-		goto out_ioport_unmap;
+-
+-	pci_set_drvdata(dev, smbus);
+-
+-	return 0;
+-
+- out_ioport_unmap:
+-	ioport_unmap(smbus->ioaddr);
+- out_release_region:
+-	release_region(smbus->base, smbus->size);
+- out_kfree:
+-	kfree(smbus);
+-	return error;
+-}
+-
+-static void pasemi_smb_remove(struct pci_dev *dev)
+-{
+-	struct pasemi_smbus *smbus = pci_get_drvdata(dev);
+-
+-	i2c_del_adapter(&smbus->adapter);
+-	ioport_unmap(smbus->ioaddr);
+-	release_region(smbus->base, smbus->size);
+-	kfree(smbus);
+-}
+-
+-static const struct pci_device_id pasemi_smb_ids[] = {
+-	{ PCI_DEVICE(0x1959, 0xa003) },
+-	{ 0, }
+-};
+-
+-MODULE_DEVICE_TABLE(pci, pasemi_smb_ids);
+-
+-static struct pci_driver pasemi_smb_driver = {
+-	.name		= "i2c-pasemi",
+-	.id_table	= pasemi_smb_ids,
+-	.probe		= pasemi_smb_probe,
+-	.remove		= pasemi_smb_remove,
+-};
+-
+-module_pci_driver(pasemi_smb_driver);
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR ("Olof Johansson <olof@lixom.net>");
+-MODULE_DESCRIPTION("PA Semi PWRficient SMBus driver");
+diff --git a/drivers/i2c/busses/i2c-pasemi-core.h b/drivers/i2c/busses/i2c-pasemi-core.h
+new file mode 100644
+index 000000000000..7acc33de6ce1
+--- /dev/null
++++ b/drivers/i2c/busses/i2c-pasemi-core.h
+@@ -0,0 +1,19 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#include <linux/atomic.h>
++#include <linux/clk.h>
++#include <linux/delay.h>
++#include <linux/device.h>
++#include <linux/i2c.h>
++#include <linux/i2c-smbus.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
 +
- 	if (!devm_request_region(&dev->dev, base, size,
- 			    pasemi_smb_pci_driver.name))
- 		return -EBUSY;
++struct pasemi_smbus {
++	struct device		*dev;
++	struct i2c_adapter	 adapter;
++	void __iomem		*ioaddr;
++	unsigned long		 base;
++	int			 size;
++};
++
++int pasemi_i2c_common_probe(struct pasemi_smbus *smbus);
+diff --git a/drivers/i2c/busses/i2c-pasemi-pci.c b/drivers/i2c/busses/i2c-pasemi-pci.c
+new file mode 100644
+index 000000000000..9a19df31866b
+--- /dev/null
++++ b/drivers/i2c/busses/i2c-pasemi-pci.c
+@@ -0,0 +1,96 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2006-2007 PA Semi, Inc
++ *
++ * SMBus host driver for PA Semi PWRficient
++ */
++
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/kernel.h>
++#include <linux/stddef.h>
++#include <linux/sched.h>
++#include <linux/i2c.h>
++#include <linux/delay.h>
++#include <linux/slab.h>
++#include <linux/io.h>
++
++#include "i2c-pasemi-core.h"
++
++static struct pci_driver pasemi_smb_pci_driver;
++
++static int pasemi_smb_pci_probe(struct pci_dev *dev,
++				      const struct pci_device_id *id)
++{
++	struct pasemi_smbus *smbus;
++	int error;
++
++	if (!(pci_resource_flags(dev, 0) & IORESOURCE_IO))
++		return -ENODEV;
++
++	smbus = kzalloc(sizeof(struct pasemi_smbus), GFP_KERNEL);
++	if (!smbus)
++		return -ENOMEM;
++
++	smbus->dev = &dev->dev;
++	smbus->base = pci_resource_start(dev, 0);
++	smbus->size = pci_resource_len(dev, 0);
++
++	if (!request_region(smbus->base, smbus->size,
++			    pasemi_smb_pci_driver.name)) {
++		error = -EBUSY;
++		goto out_kfree;
++	}
++
++	smbus->ioaddr = ioport_map(smbus->base, smbus->size);
++	if (!smbus->ioaddr) {
++		error = -EBUSY;
++		goto out_release_region;
++	}
++
++	error = pasemi_i2c_common_probe(smbus);
++	if (error)
++		goto out_ioport_unmap;
++
++	pci_set_drvdata(dev, smbus);
++
++	return 0;
++
++ out_ioport_unmap:
++	ioport_unmap(smbus->ioaddr);
++ out_release_region:
++	release_region(smbus->base, smbus->size);
++ out_kfree:
++	kfree(smbus);
++	return error;
++}
++
++static void pasemi_smb_pci_remove(struct pci_dev *dev)
++{
++	struct pasemi_smbus *smbus = pci_get_drvdata(dev);
++
++	i2c_del_adapter(&smbus->adapter);
++	ioport_unmap(smbus->ioaddr);
++	release_region(smbus->base, smbus->size);
++	kfree(smbus);
++}
++
++static const struct pci_device_id pasemi_smb_pci_ids[] = {
++	{ PCI_DEVICE(0x1959, 0xa003) },
++	{ 0, }
++};
++
++MODULE_DEVICE_TABLE(pci, pasemi_smb_pci_ids);
++
++static struct pci_driver pasemi_smb_pci_driver = {
++	.name		= "i2c-pasemi",
++	.id_table	= pasemi_smb_pci_ids,
++	.probe		= pasemi_smb_pci_probe,
++	.remove		= pasemi_smb_pci_remove,
++};
++
++module_pci_driver(pasemi_smb_pci_driver);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Olof Johansson <olof@lixom.net>");
++MODULE_DESCRIPTION("PA Semi PWRficient SMBus driver");
 -- 
 2.25.1
 
