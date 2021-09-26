@@ -2,50 +2,57 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 480AFC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 07:08:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AD92C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 07:18:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 630656103D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 07:08:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 630656103D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baidu.com
+	by mail.kernel.org (Postfix) with ESMTPS id BBFFD60EE0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 07:18:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BBFFD60EE0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HHH1c6FfRz3bVs
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 17:08:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HHHDw2WxNz2ypC
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 17:18:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=baidu.com (client-ip=111.206.215.185; helo=baidu.com;
- envelope-from=caihuoqing@baidu.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 949 seconds by postgrey-1.36 at boromir;
- Sun, 26 Sep 2021 17:08:24 AEST
-Received: from baidu.com (mx24.baidu.com [111.206.215.185])
- by lists.ozlabs.org (Postfix) with ESMTP id 4HHH141QHXz2yNn
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Sep 2021 17:08:19 +1000 (AEST)
-Received: from BC-Mail-Ex11.internal.baidu.com (unknown [172.31.51.51])
- by Forcepoint Email with ESMTPS id C07ABCB2A5B8EE19BD12;
- Sun, 26 Sep 2021 14:52:22 +0800 (CST)
-Received: from BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) by
- BC-Mail-Ex11.internal.baidu.com (172.31.51.51) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2242.12; Sun, 26 Sep 2021 14:52:22 +0800
-Received: from LAPTOP-UKSR4ENP.internal.baidu.com (172.31.63.8) by
- BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2308.14; Sun, 26 Sep 2021 14:52:21 +0800
-From: Cai Huoqing <caihuoqing@baidu.com>
-To: <caihuoqing@baidu.com>
-Subject: [PATCH v2] ibmveth: Use dma_alloc_coherent() instead of
- kmalloc/dma_map_single()
-Date: Sun, 26 Sep 2021 14:52:14 +0800
-Message-ID: <20210926065214.495-1-caihuoqing@baidu.com>
-X-Mailer: git-send-email 2.17.1
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
+ envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HHHDR478Yz2yPT
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Sep 2021 17:18:15 +1000 (AEST)
+Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.53])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4HHH7R5LN6zRQ3R;
+ Sun, 26 Sep 2021 15:13:55 +0800 (CST)
+Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
+ dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2308.8; Sun, 26 Sep 2021 15:18:10 +0800
+Received: from localhost.localdomain.localdomain (10.175.113.25) by
+ dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2308.8; Sun, 26 Sep 2021 15:18:09 +0800
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+To: <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <rostedt@goodmis.org>, <mingo@redhat.com>, <davem@davemloft.net>,
+ <ast@kernel.org>, <ryabinin.a.a@gmail.com>, <akpm@linux-foundation.org>
+Subject: [PATCH v3 5/9] x86: mm: Rename __is_kernel_text() to
+ is_x86_32_kernel_text()
+Date: Sun, 26 Sep 2021 15:20:44 +0800
+Message-ID: <20210926072048.190336-6-wangkefeng.wang@huawei.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20210926072048.190336-1-wangkefeng.wang@huawei.com>
+References: <20210926072048.190336-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-Originating-IP: [172.31.63.8]
-X-ClientProxiedBy: BC-Mail-Ex13.internal.baidu.com (172.31.51.53) To
- BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42)
+X-Originating-IP: [10.175.113.25]
+X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
+ dggpemm500001.china.huawei.com (7.185.36.107)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,77 +64,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Cristobal Forno <cforno12@linux.ibm.com>, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Jakub Kicinski <kuba@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, x86@kernel.org, Borislav
+ Petkov <bp@alien8.de>, paulus@samba.org, bpf@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replacing kmalloc/kfree/dma_map_single/dma_unmap_single()
-with dma_alloc_coherent/dma_free_coherent() helps to reduce
-code size, and simplify the code, and coherent DMA will not
-clear the cache every time.
+Commit b56cd05c55a1 ("x86/mm: Rename is_kernel_text to __is_kernel_text"),
+add '__' prefix not to get in conflict with existing is_kernel_text() in
+<linux/kallsyms.h>.
 
-Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
+We will add __is_kernel_text() for the basic kernel text range check in the
+next patch, so use private is_x86_32_kernel_text() naming for x86 special
+check.
+
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: x86@kernel.org
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
 ---
-v1->v2: Remove extra change in Kconfig
+ arch/x86/mm/init_32.c | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
 
- drivers/net/ethernet/ibm/ibmveth.c | 25 +++++++++----------------
- 1 file changed, 9 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index 3d9b4f99d357..3aedb680adb8 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -605,17 +605,13 @@ static int ibmveth_open(struct net_device *netdev)
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index bd90b8fe81e4..523743ee9dea 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -238,11 +238,7 @@ page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base)
  	}
+ }
  
- 	rc = -ENOMEM;
--	adapter->bounce_buffer =
--	    kmalloc(netdev->mtu + IBMVETH_BUFF_OH, GFP_KERNEL);
--	if (!adapter->bounce_buffer)
--		goto out_free_irq;
+-/*
+- * The <linux/kallsyms.h> already defines is_kernel_text,
+- * using '__' prefix not to get in conflict.
+- */
+-static inline int __is_kernel_text(unsigned long addr)
++static inline int is_x86_32_kernel_text(unsigned long addr)
+ {
+ 	if (addr >= (unsigned long)_text && addr <= (unsigned long)__init_end)
+ 		return 1;
+@@ -333,8 +329,8 @@ kernel_physical_mapping_init(unsigned long start,
+ 				addr2 = (pfn + PTRS_PER_PTE-1) * PAGE_SIZE +
+ 					PAGE_OFFSET + PAGE_SIZE-1;
  
--	adapter->bounce_buffer_dma =
--	    dma_map_single(&adapter->vdev->dev, adapter->bounce_buffer,
--			   netdev->mtu + IBMVETH_BUFF_OH, DMA_BIDIRECTIONAL);
--	if (dma_mapping_error(dev, adapter->bounce_buffer_dma)) {
--		netdev_err(netdev, "unable to map bounce buffer\n");
--		goto out_free_bounce_buffer;
-+	adapter->bounce_buffer = dma_alloc_coherent(&adapter->vdev->dev,
-+						    netdev->mtu + IBMVETH_BUFF_OH,
-+						    &adapter->bounce_buffer_dma, GFP_KERNEL);
-+	if (!adapter->bounce_buffer) {
-+		netdev_err(netdev, "unable to alloc bounce buffer\n");
-+		goto out_free_irq;
- 	}
+-				if (__is_kernel_text(addr) ||
+-				    __is_kernel_text(addr2))
++				if (is_x86_32_kernel_text(addr) ||
++				    is_x86_32_kernel_text(addr2))
+ 					prot = PAGE_KERNEL_LARGE_EXEC;
  
- 	netdev_dbg(netdev, "initial replenish cycle\n");
-@@ -627,8 +623,6 @@ static int ibmveth_open(struct net_device *netdev)
+ 				pages_2m++;
+@@ -359,7 +355,7 @@ kernel_physical_mapping_init(unsigned long start,
+ 				 */
+ 				pgprot_t init_prot = __pgprot(PTE_IDENT_ATTR);
  
- 	return 0;
+-				if (__is_kernel_text(addr))
++				if (is_x86_32_kernel_text(addr))
+ 					prot = PAGE_KERNEL_EXEC;
  
--out_free_bounce_buffer:
--	kfree(adapter->bounce_buffer);
- out_free_irq:
- 	free_irq(netdev->irq, netdev);
- out_free_buffer_pools:
-@@ -702,10 +696,9 @@ static int ibmveth_close(struct net_device *netdev)
- 			ibmveth_free_buffer_pool(adapter,
- 						 &adapter->rx_buff_pool[i]);
- 
--	dma_unmap_single(&adapter->vdev->dev, adapter->bounce_buffer_dma,
--			 adapter->netdev->mtu + IBMVETH_BUFF_OH,
--			 DMA_BIDIRECTIONAL);
--	kfree(adapter->bounce_buffer);
-+	dma_free_coherent(&adapter->vdev->dev,
-+			  adapter->netdev->mtu + IBMVETH_BUFF_OH,
-+			  adapter->bounce_buffer, adapter->bounce_buffer_dma);
- 
- 	netdev_dbg(netdev, "close complete\n");
+ 				pages_4k++;
+@@ -820,7 +816,7 @@ static void mark_nxdata_nx(void)
+ 	 */
+ 	unsigned long start = PFN_ALIGN(_etext);
+ 	/*
+-	 * This comes from __is_kernel_text upper limit. Also HPAGE where used:
++	 * This comes from is_x86_32_kernel_text upper limit. Also HPAGE where used:
+ 	 */
+ 	unsigned long size = (((unsigned long)__init_end + HPAGE_SIZE) & HPAGE_MASK) - start;
  
 -- 
-2.25.1
+2.26.2
 
