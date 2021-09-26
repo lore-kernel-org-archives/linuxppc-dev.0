@@ -2,58 +2,96 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9CA1C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:35:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD60DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:47:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C201861019
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:35:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C201861019
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id E87CF60FED
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:47:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E87CF60FED
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=svenpeter.dev
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HHQGg68bJz3053
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 22:35:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HHQXm18wGz2ybK
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 22:47:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev header.a=rsa-sha256 header.s=fm2 header.b=UhHGVNov;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=C+k4X3XQ;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
- envelope-from=nixiaoming@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HHQG52Jltz2xr9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Sep 2021 22:35:05 +1000 (AEST)
-Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.53])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4HHQ8V1bs5z8yp5;
- Sun, 26 Sep 2021 20:30:18 +0800 (CST)
-Received: from dggema774-chm.china.huawei.com (10.1.198.216) by
- dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256) id
- 15.1.2308.8; Sun, 26 Sep 2021 20:34:52 +0800
-Received: from [10.67.102.197] (10.67.102.197) by
- dggema774-chm.china.huawei.com (10.1.198.216) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2308.8; Sun, 26 Sep 2021 20:34:51 +0800
-Subject: Re: [PATCH] powerpc:85xx: fix timebase sync issue when
- CONFIG_HOTPLUG_CPU=n
-To: <linux-kernel@vger.kernel.org>, <oss@buserror.net>, <mpe@ellerman.id.au>, 
- <benh@kernel.crashing.org>, <paulus@samba.org>,
- <paul.gortmaker@windriver.com>, <Yuantian.Tang@feescale.com>,
- <chenhui.zhao@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-References: <20210926025144.55674-1-nixiaoming@huawei.com>
-From: Xiaoming Ni <nixiaoming@huawei.com>
-Message-ID: <021a5ee3-25ef-1de4-0111-d4c3281e0f45@huawei.com>
-Date: Sun, 26 Sep 2021 20:34:51 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.0.1
+ smtp.mailfrom=svenpeter.dev (client-ip=66.111.4.224;
+ helo=new2-smtp.messagingengine.com; envelope-from=sven@svenpeter.dev;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev
+ header.a=rsa-sha256 header.s=fm2 header.b=UhHGVNov; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm3 header.b=C+k4X3XQ; 
+ dkim-atps=neutral
+X-Greylist: delayed 370 seconds by postgrey-1.36 at boromir;
+ Sun, 26 Sep 2021 20:05:54 AEST
+Received: from new2-smtp.messagingengine.com (new2-smtp.messagingengine.com
+ [66.111.4.224])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HHLxt1LP0z2yV4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Sep 2021 20:05:54 +1000 (AEST)
+Received: from compute2.internal (compute2.nyi.internal [10.202.2.42])
+ by mailnew.nyi.internal (Postfix) with ESMTP id 9036A580FBA;
+ Sun, 26 Sep 2021 05:59:38 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute2.internal (MEProxy); Sun, 26 Sep 2021 05:59:38 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=svenpeter.dev;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding; s=fm2; bh=mlHm6qJaY97xGTZYEJ3J85Alc/
+ WY1AV0Z5CGewPFjJw=; b=UhHGVNovPleofpk5mVBeMMls1i4coOXmt80/bw0HyF
+ HjTu8qNJvqq54MN3sIsFDgJESrj0RNMZQVjzoyzhPwXCLgqc0z0JmbbLEf6pOre9
+ c+CcG+SVsywGs5PAldJ2a19z4ybEbY9jo7cJ7LmvMxxNT5vvrukSFYw4cwEMS01R
+ ujwGvMLLRCnSKa/DRCd2Mud3MJCQjQEHYpbTww5DLoJydbzYNGM2Uat+qlrN4Vvc
+ HTAZVNJR+hLdwKt3idxcKDhuexrgtTNidldPmydKEvSsdif0gGL/ryQY2S8iPOHa
+ 1tUSNKw5fCCbzKo/NMvy6jcyHy/OuadCOfIaoil20A9Q==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
+ :x-me-sender:x-me-sender:x-sasl-enc; s=fm3; bh=mlHm6qJaY97xGTZYE
+ J3J85Alc/WY1AV0Z5CGewPFjJw=; b=C+k4X3XQGbpbimAylv7MAWKQt8i7EYeJd
+ KdPdfizHnI9ca95NaiC5zhGAh+s06MsAY/W7fz6IAOQZHhxdFjoeiIYMbtN7iZF1
+ Ovo0e/8qWR3+72b7d1rRJ7mgkmj1eCNdR3cVm9BybT1zlt67tDINx4ykXpKmY8yM
+ JVNF/Ye9/8XQ6iUxeOD5WoFtECxUhs5IEUAkEgMSOsuUwhTZiQbBmoNsYxHjqqs3
+ ltzsJUwRyQ+zA7eRECsryljZeAfH58l2UkGQINKWiu3PdayRIOMr8w9DfCIikwli
+ S+PpgH20QrEse5AvL8boFEyi9QWK7dHGT2JmgoD3NpuvxxhPhn0Wg==
+X-ME-Sender: <xms:h0RQYRXZiAuQLxu98WuzRA1GKAKo7lZ5TgkHGPzE6jQ_RBzvwyZAjA>
+ <xme:h0RQYRlon3kvGEoGf8ssQ7Zr1ey56tbFFgnGdcDxRNPSumxF69qUnFWqK00ncitYi
+ LsShmwu_tbpWd_H-tI>
+X-ME-Received: <xmr:h0RQYdYg0pyTyOsKq3dK4O0NYOPQTSq6_Ax9sMCZBEqLU6pz76G356hdZh7X5njEYyAw7XtCz49jYFnf-OFZGmxeRE6KUfM9VMGsMswQIJix3SDJH7PH8fs>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvtddrudejiedgvdduucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephffvufffkffoggfgsedtkeertdertddtnecuhfhrohhmpefuvhgvnhcurfgv
+ thgvrhcuoehsvhgvnhesshhvvghnphgvthgvrhdruggvvheqnecuggftrfgrthhtvghrnh
+ epuefgleekvddtjefffeejheevleefveekgfduudfhgefhfeegtdehveejfefffffgnecu
+ vehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepshhvvghnse
+ hsvhgvnhhpvghtvghrrdguvghv
+X-ME-Proxy: <xmx:h0RQYUWrI63n8st0IdGclKMwCsJ2qe7WGMSWb8aBL4Oq9tGwek7vmg>
+ <xmx:h0RQYbmu77l-RqrKLv9zxNFr5a5FHhgHbDfRXpOzobmf3klJAaIMOw>
+ <xmx:h0RQYRc3eoOzr42riAK7LCsVqofgE7BFY_vL0oBPd6mcaWQdO45vFw>
+ <xmx:ikRQYVkJatlsCRiix6nVZAl1km8f-nsgg35hdbY_krP7h4iwIZmTeg>
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sun,
+ 26 Sep 2021 05:59:33 -0400 (EDT)
+From: Sven Peter <sven@svenpeter.dev>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>
+Subject: [PATCH 00/10] Add Apple M1 support to PASemi i2c driver
+Date: Sun, 26 Sep 2021 11:58:37 +0200
+Message-Id: <20210926095847.38261-1-sven@svenpeter.dev>
+X-Mailer: git-send-email 2.30.1 (Apple Git-130)
 MIME-Version: 1.0
-In-Reply-To: <20210926025144.55674-1-nixiaoming@huawei.com>
-Content-Type: text/plain; charset="gbk"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.67.102.197]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggema774-chm.china.huawei.com (10.1.198.216)
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Sun, 26 Sep 2021 22:47:12 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,145 +103,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wangle6@huawei.com, wangxiongfeng2@huawei.com
+Cc: Arnd Bergmann <arnd@arndb.de>, Sven Peter <sven@svenpeter.dev>,
+ Hector Martin <marcan@marcan.st>, linux-kernel@vger.kernel.org,
+ linux-i2c@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Mohamed Mediouni <mohamed.mediouni@caramail.com>,
+ Stan Skowronek <stan@corellium.com>, linuxppc-dev@lists.ozlabs.org,
+ Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+ Mark Kettenis <mark.kettenis@xs4all.nl>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2021/9/26 10:51, Xiaoming Ni wrote:
-> When CONFIG_SMP=y, timebase synchronization is required when the second
->   kernel is started.
-> 	arch/powerpc/kernel/smp.c:
-> 	int __cpu_up(unsigned int cpu, struct task_struct *tidle)
-> 	{
-> 		...
-> 		if (smp_ops->give_timebase)
-> 			smp_ops->give_timebase();
-> 		...
-> 	}
-> 
-> 	void start_secondary(void *unused)
-> 	{
-> 		...
-> 		if (smp_ops->take_timebase)
-> 			smp_ops->take_timebase();
-> 		...
-> 	}
-> 
-> When CONFIG_HOTPLUG_CPU=n and CONFIG_KEXEC_CORE=n,
->   smp_85xx_ops.give_timebase is NULL,
->   smp_85xx_ops.take_timebase is NULL,
-> As a result, the timebase is not synchronized.
-> 
-> Timebase  synchronization does not depend on CONFIG_HOTPLUG_CPU.
-> 
-> Fixes: 56f1ba280719 ("powerpc/mpc85xx: refactor the PM operations")
-> Cc: stable@vger.kernel.org #v4.6
-> Signed-off-by: Xiaoming Ni <nixiaoming@huawei.com>
-> ---
->   arch/powerpc/platforms/85xx/Makefile         | 2 +-
->   arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c | 4 ++++
->   arch/powerpc/platforms/85xx/smp.c            | 9 ++++-----
->   3 files changed, 9 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-> index 60e4e97a929d..71ce1f6b6966 100644
-> --- a/arch/powerpc/platforms/85xx/Makefile
-> +++ b/arch/powerpc/platforms/85xx/Makefile
-> @@ -3,7 +3,7 @@
->   # Makefile for the PowerPC 85xx linux kernel.
->   #
->   obj-$(CONFIG_SMP) += smp.o
-> -obj-$(CONFIG_FSL_PMC)		  += mpc85xx_pm_ops.o
-> +obj-$(CONFIG_SMP) += mpc85xx_pm_ops.o
->   
->   obj-y += common.o
->   
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c b/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
-> index 7c0133f558d0..a5656b3e9701 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
-> @@ -17,6 +17,7 @@
->   
->   static struct ccsr_guts __iomem *guts;
->   
-> +#ifdef CONFIG_FSL_PMC
->   static void mpc85xx_irq_mask(int cpu)
->   {
->   
-> @@ -49,6 +50,7 @@ static void mpc85xx_cpu_up_prepare(int cpu)
->   {
->   
->   }
-> +#endif
->   
->   static void mpc85xx_freeze_time_base(bool freeze)
->   {
-> @@ -76,10 +78,12 @@ static const struct of_device_id mpc85xx_smp_guts_ids[] = {
->   
->   static const struct fsl_pm_ops mpc85xx_pm_ops = {
->   	.freeze_time_base = mpc85xx_freeze_time_base,
-> +#ifdef CONFIG_FSL_PMC
->   	.irq_mask = mpc85xx_irq_mask,
->   	.irq_unmask = mpc85xx_irq_unmask,
->   	.cpu_die = mpc85xx_cpu_die,
->   	.cpu_up_prepare = mpc85xx_cpu_up_prepare,
-> +#endif
->   };
->   
->   int __init mpc85xx_setup_pmc(void)
-> diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-> index c6df294054fe..349298cd9671 100644
-> --- a/arch/powerpc/platforms/85xx/smp.c
-> +++ b/arch/powerpc/platforms/85xx/smp.c
-> @@ -40,7 +40,6 @@ struct epapr_spin_table {
->   	u32	pir;
->   };
->   
-> -#ifdef CONFIG_HOTPLUG_CPU
->   static u64 timebase;
->   static int tb_req;
->   static int tb_valid;
-> @@ -112,6 +111,7 @@ static void mpc85xx_take_timebase(void)
->   	local_irq_restore(flags);
->   }
->   
-> +#ifdef CONFIG_HOTPLUG_CPU
->   static void smp_85xx_cpu_offline_self(void)
->   {
->   	unsigned int cpu = smp_processor_id();
-> @@ -499,17 +499,16 @@ void __init mpc85xx_smp_init(void)
->   #ifdef CONFIG_FSL_CORENET_RCPM
->   	fsl_rcpm_init();
->   #endif
-> -
-> -#ifdef CONFIG_FSL_PMC
-> -	mpc85xx_setup_pmc();
->   #endif
-> +	mpc85xx_setup_pmc();
->   	if (qoriq_pm_ops) {
->   		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
->   		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
-> +#ifdef CONFIG_HOTPLUG_CPU
->   		smp_85xx_ops.cpu_offline_self = smp_85xx_cpu_offline_self;
->   		smp_85xx_ops.cpu_die = qoriq_cpu_kill;
-> -	}
->   #endif
-> +	}
->   	smp_ops = &smp_85xx_ops;
->   
->   #ifdef CONFIG_KEXEC_CORE
-> 
+Hi,
+
+This series adds support for the I2C controller found on Apple Silicon Macs
+which has quite a bit of history:
+
+Apple bought P.A. Semi in 2008 and it looks like a part of its legacy continues
+to live on in the M1. This controller has actually been used since at least the
+iPhone 4S and hasn't changed much since then.
+Essentially, there are only a few differences that matter:
+
+	- The controller no longer is a PCI device
+	- Starting at some iPhone an additional bit in one register
+          must be set in order to start transmissions.
+	- The reference clock and hence the clock dividers are different
+
+In order to add support for a platform device I first replaced PCI-specific
+bits and split out the PCI driver to its own file. Then I added support
+to make the clock divider configurable and converted the driver to use
+managed device resources to make it a bit simpler.
+
+The Apple and PASemi driver will never be compiled in the same kernel
+since the Apple one will run on arm64 while the original PASemi driver
+will only be useful on powerpc.
+I've thus followed the octeon (mips)/thunderx(arm64) approach to do the
+split: I created a -core.c file which contains the shared logic and just
+compile that one for both the PASemi and the new Apple driver.
+
+Now unfortunately I don't have access to any old PASemi hardware and
+cannot confirm that my changes haven't broken anything for those.
+I believe Hector was in contact with Olof a few months ago who
+said that he might still have an old machine on which he could
+test this.
+I'd very much appreciate if he (or anyone else for that matter :-)) 
+could give this series a quick test on the old PASemi machines.
 
 
-I found inconsistent time values on different CPUs on my mpc8572 and 
-used this patch to fix it.
-But today I found out in ppc64 testing that this patch causes the system 
-to trigger oops in the function mpc85xx_freeze_time_base(): the variable 
-"guts" is a null pointer.
+Best,
 
-I'm sorry to bother you.
-I'll fix it and resend v2 later,
+Sven
 
-Thanks
-Xiaoming Ni
+Sven Peter (10):
+  dt-bindings: i2c: Add Apple I2C controller bindings
+  i2c: pasemi: Use io{read,write}32
+  i2c: pasemi: Remove usage of pci_dev
+  i2c: pasemi: Split off common probing code
+  i2c: pasemi: Split pci driver to its own file
+  i2c: pasemi: Move common reset code to own function
+  i2c: pasemi: Allow to configure bus frequency
+  i2c: pasemi: Refactor _probe to use devm_*
+  i2c: pasemi: Add Apple platform driver
+  i2c: pasemi: Set enable bit for Apple variant
+
+ .../devicetree/bindings/i2c/apple,i2c.yaml    |  61 +++++++++
+ MAINTAINERS                                   |   2 +
+ drivers/i2c/busses/Kconfig                    |  11 ++
+ drivers/i2c/busses/Makefile                   |   3 +
+ drivers/i2c/busses/i2c-pasemi-apple.c         | 122 ++++++++++++++++++
+ .../{i2c-pasemi.c => i2c-pasemi-core.c}       | 114 +++++-----------
+ drivers/i2c/busses/i2c-pasemi-core.h          |  21 +++
+ drivers/i2c/busses/i2c-pasemi-pci.c           |  85 ++++++++++++
+ 8 files changed, 334 insertions(+), 85 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/i2c/apple,i2c.yaml
+ create mode 100644 drivers/i2c/busses/i2c-pasemi-apple.c
+ rename drivers/i2c/busses/{i2c-pasemi.c => i2c-pasemi-core.c} (77%)
+ create mode 100644 drivers/i2c/busses/i2c-pasemi-core.h
+ create mode 100644 drivers/i2c/busses/i2c-pasemi-pci.c
+
+-- 
+2.25.1
+
