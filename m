@@ -2,47 +2,46 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AD92C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 07:18:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD00BC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 07:19:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BBFFD60EE0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 07:18:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BBFFD60EE0
+	by mail.kernel.org (Postfix) with ESMTPS id 6FFCD60EE0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 07:19:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6FFCD60EE0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HHHDw2WxNz2ypC
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 17:18:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HHHFM70GSz3c8T
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 17:19:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
  envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HHHDR478Yz2yPT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HHHDR5r8zz2yPv
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Sep 2021 17:18:15 +1000 (AEST)
-Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.53])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4HHH7R5LN6zRQ3R;
- Sun, 26 Sep 2021 15:13:55 +0800 (CST)
+Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.55])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4HHH7N6V0szRSS3;
+ Sun, 26 Sep 2021 15:13:52 +0800 (CST)
 Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
+ dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.8; Sun, 26 Sep 2021 15:18:10 +0800
+ 15.1.2308.8; Sun, 26 Sep 2021 15:18:07 +0800
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.8; Sun, 26 Sep 2021 15:18:09 +0800
+ 15.1.2308.8; Sun, 26 Sep 2021 15:18:06 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <rostedt@goodmis.org>, <mingo@redhat.com>, <davem@davemloft.net>,
  <ast@kernel.org>, <ryabinin.a.a@gmail.com>, <akpm@linux-foundation.org>
-Subject: [PATCH v3 5/9] x86: mm: Rename __is_kernel_text() to
- is_x86_32_kernel_text()
-Date: Sun, 26 Sep 2021 15:20:44 +0800
-Message-ID: <20210926072048.190336-6-wangkefeng.wang@huawei.com>
+Subject: [PATCH v3 1/9] kallsyms: Remove arch specific text and data check
+Date: Sun, 26 Sep 2021 15:20:40 +0800
+Message-ID: <20210926072048.190336-2-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20210926072048.190336-1-wangkefeng.wang@huawei.com>
 References: <20210926072048.190336-1-wangkefeng.wang@huawei.com>
@@ -64,74 +63,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, x86@kernel.org, Borislav
- Petkov <bp@alien8.de>, paulus@samba.org, bpf@vger.kernel.org
+Cc: bpf@vger.kernel.org, paulus@samba.org,
+ Kefeng Wang <wangkefeng.wang@huawei.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit b56cd05c55a1 ("x86/mm: Rename is_kernel_text to __is_kernel_text"),
-add '__' prefix not to get in conflict with existing is_kernel_text() in
-<linux/kallsyms.h>.
+After commit 4ba66a976072 ("arch: remove blackfin port"),
+no need arch-specific text/data check.
 
-We will add __is_kernel_text() for the basic kernel text range check in the
-next patch, so use private is_x86_32_kernel_text() naming for x86 special
-check.
-
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: x86@kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
 ---
- arch/x86/mm/init_32.c | 14 +++++---------
- 1 file changed, 5 insertions(+), 9 deletions(-)
+ include/asm-generic/sections.h | 16 ----------------
+ include/linux/kallsyms.h       |  3 +--
+ kernel/locking/lockdep.c       |  3 ---
+ 3 files changed, 1 insertion(+), 21 deletions(-)
 
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index bd90b8fe81e4..523743ee9dea 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -238,11 +238,7 @@ page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base)
- 	}
- }
+diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+index d16302d3eb59..817309e289db 100644
+--- a/include/asm-generic/sections.h
++++ b/include/asm-generic/sections.h
+@@ -64,22 +64,6 @@ extern __visible const void __nosave_begin, __nosave_end;
+ #define dereference_kernel_function_descriptor(p) ((void *)(p))
+ #endif
  
--/*
-- * The <linux/kallsyms.h> already defines is_kernel_text,
-- * using '__' prefix not to get in conflict.
-- */
--static inline int __is_kernel_text(unsigned long addr)
-+static inline int is_x86_32_kernel_text(unsigned long addr)
+-/* random extra sections (if any).  Override
+- * in asm/sections.h */
+-#ifndef arch_is_kernel_text
+-static inline int arch_is_kernel_text(unsigned long addr)
+-{
+-	return 0;
+-}
+-#endif
+-
+-#ifndef arch_is_kernel_data
+-static inline int arch_is_kernel_data(unsigned long addr)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * Check if an address is part of freed initmem. This is needed on architectures
+  * with virt == phys kernel mapping, for code that wants to check if an address
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index 6851c2313cad..2a241e3f063f 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -34,8 +34,7 @@ static inline int is_kernel_inittext(unsigned long addr)
+ 
+ static inline int is_kernel_text(unsigned long addr)
  {
- 	if (addr >= (unsigned long)_text && addr <= (unsigned long)__init_end)
+-	if ((addr >= (unsigned long)_stext && addr <= (unsigned long)_etext) ||
+-	    arch_is_kernel_text(addr))
++	if ((addr >= (unsigned long)_stext && addr <= (unsigned long)_etext))
  		return 1;
-@@ -333,8 +329,8 @@ kernel_physical_mapping_init(unsigned long start,
- 				addr2 = (pfn + PTRS_PER_PTE-1) * PAGE_SIZE +
- 					PAGE_OFFSET + PAGE_SIZE-1;
+ 	return in_gate_area_no_mm(addr);
+ }
+diff --git a/kernel/locking/lockdep.c b/kernel/locking/lockdep.c
+index 7096384dc60f..dcdbcee391cd 100644
+--- a/kernel/locking/lockdep.c
++++ b/kernel/locking/lockdep.c
+@@ -803,9 +803,6 @@ static int static_obj(const void *obj)
+ 	if ((addr >= start) && (addr < end))
+ 		return 1;
  
--				if (__is_kernel_text(addr) ||
--				    __is_kernel_text(addr2))
-+				if (is_x86_32_kernel_text(addr) ||
-+				    is_x86_32_kernel_text(addr2))
- 					prot = PAGE_KERNEL_LARGE_EXEC;
- 
- 				pages_2m++;
-@@ -359,7 +355,7 @@ kernel_physical_mapping_init(unsigned long start,
- 				 */
- 				pgprot_t init_prot = __pgprot(PTE_IDENT_ATTR);
- 
--				if (__is_kernel_text(addr))
-+				if (is_x86_32_kernel_text(addr))
- 					prot = PAGE_KERNEL_EXEC;
- 
- 				pages_4k++;
-@@ -820,7 +816,7 @@ static void mark_nxdata_nx(void)
- 	 */
- 	unsigned long start = PFN_ALIGN(_etext);
+-	if (arch_is_kernel_data(addr))
+-		return 1;
+-
  	/*
--	 * This comes from __is_kernel_text upper limit. Also HPAGE where used:
-+	 * This comes from is_x86_32_kernel_text upper limit. Also HPAGE where used:
+ 	 * in-kernel percpu var?
  	 */
- 	unsigned long size = (((unsigned long)__init_end + HPAGE_SIZE) & HPAGE_MASK) - start;
- 
 -- 
 2.26.2
 
