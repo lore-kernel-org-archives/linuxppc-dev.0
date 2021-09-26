@@ -2,49 +2,47 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D4A1C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 07:19:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A4E5C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 07:19:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 93A8260EE0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 07:19:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 93A8260EE0
+	by mail.kernel.org (Postfix) with ESMTPS id CEF6D60EE0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 07:19:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CEF6D60EE0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HHHFr1Bzfz3cB0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 17:19:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HHHGH4BVPz3c8q
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 17:19:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
  envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HHHDR6Cttz2yQ6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HHHDR4pDSz2yPY
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Sep 2021 17:18:15 +1000 (AEST)
-Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.54])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4HHH7P3s2rzRW6s;
- Sun, 26 Sep 2021 15:13:53 +0800 (CST)
+Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.55])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4HHH7N57H2zRSQg;
+ Sun, 26 Sep 2021 15:13:52 +0800 (CST)
 Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
+ dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.8; Sun, 26 Sep 2021 15:18:08 +0800
+ 15.1.2308.8; Sun, 26 Sep 2021 15:18:07 +0800
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.8; Sun, 26 Sep 2021 15:18:07 +0800
+ 15.1.2308.8; Sun, 26 Sep 2021 15:18:06 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <rostedt@goodmis.org>, <mingo@redhat.com>, <davem@davemloft.net>,
  <ast@kernel.org>, <ryabinin.a.a@gmail.com>, <akpm@linux-foundation.org>
-Subject: [PATCH v3 2/9] kallsyms: Fix address-checks for kernel related range
-Date: Sun, 26 Sep 2021 15:20:41 +0800
-Message-ID: <20210926072048.190336-3-wangkefeng.wang@huawei.com>
+Subject: [PATCH v3 0/9] sections: Unify kernel sections range check and use
+Date: Sun, 26 Sep 2021 15:20:39 +0800
+Message-ID: <20210926072048.190336-1-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20210926072048.190336-1-wangkefeng.wang@huawei.com>
-References: <20210926072048.190336-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -63,58 +61,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Petr Mladek <pmladek@suse.com>, Kefeng Wang <wangkefeng.wang@huawei.com>,
- Sergey Senozhatsky <senozhatsky@chromium.org>, Sergey
- Senozhatsky <sergey.senozhatsky@gmail.com>, paulus@samba.org,
- bpf@vger.kernel.org
+Cc: bpf@vger.kernel.org, paulus@samba.org,
+ Kefeng Wang <wangkefeng.wang@huawei.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The is_kernel_inittext/is_kernel_text/is_kernel function should not
-include the end address(the labels _einittext, _etext and _end) when
-check the address range, the issue exists since Linux v2.6.12.
+There are three head files(kallsyms.h, kernel.h and sections.h) which
+include the kernel sections range check, let's make some cleanup and
+unify them.
 
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Petr Mladek <pmladek@suse.com>
-Reviewed-by: Petr Mladek <pmladek@suse.com>
-Reviewed-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
-Acked-by: Sergey Senozhatsky <senozhatsky@chromium.org>
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
- include/linux/kallsyms.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+1. cleanup arch specific text/data check and fix address boundary check
+   in kallsyms.h
+2. make all the basic/core kernel range check function into sections.h
+3. update all the callers, and use the helper in sections.h to simplify
+   the code
 
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index 2a241e3f063f..b016c62f30a6 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -27,21 +27,21 @@ struct module;
- static inline int is_kernel_inittext(unsigned long addr)
- {
- 	if (addr >= (unsigned long)_sinittext
--	    && addr <= (unsigned long)_einittext)
-+	    && addr < (unsigned long)_einittext)
- 		return 1;
- 	return 0;
- }
- 
- static inline int is_kernel_text(unsigned long addr)
- {
--	if ((addr >= (unsigned long)_stext && addr <= (unsigned long)_etext))
-+	if ((addr >= (unsigned long)_stext && addr < (unsigned long)_etext))
- 		return 1;
- 	return in_gate_area_no_mm(addr);
- }
- 
- static inline int is_kernel(unsigned long addr)
- {
--	if (addr >= (unsigned long)_stext && addr <= (unsigned long)_end)
-+	if (addr >= (unsigned long)_stext && addr < (unsigned long)_end)
- 		return 1;
- 	return in_gate_area_no_mm(addr);
- }
+After this series, we have 5 APIs about kernel sections range check in
+sections.h
+
+ * is_kernel_rodata()		--- already in sections.h
+ * is_kernel_core_data()	--- come from core_kernel_data() in kernel.h
+ * is_kernel_inittext()		--- come from kernel.h and kallsyms.h
+ * __is_kernel_text()		--- add new internal helper
+ * __is_kernel()		--- add new internal helper
+
+Note: For the last two helpers, people should not use directly, consider to
+      use corresponding function in kallsyms.h.
+
+v3:
+- Add Steven's RB to patch2
+- Introduce two internal helper, then use is_kernel_text() in core_kernel_text()
+  and is_kernel() in kernel_or_module_addr() suggested by Steven
+
+v2:
+https://lore.kernel.org/linux-arch/20210728081320.20394-1-wangkefeng.wang@huawei.com/
+- add ACK/RW to patch2, and drop inappropriate fix tag
+- keep 'core' to check kernel data, suggestted by Steven Rostedt
+  <rostedt@goodmis.org>, rename is_kernel_data() to is_kernel_core_data()
+- drop patch8 which is merged
+- drop patch9 which is resend independently
+
+v1:
+https://lore.kernel.org/linux-arch/20210626073439.150586-1-wangkefeng.wang@huawei.com
+
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org 
+Cc: bpf@vger.kernel.org 
+
+Kefeng Wang (9):
+  kallsyms: Remove arch specific text and data check
+  kallsyms: Fix address-checks for kernel related range
+  sections: Move and rename core_kernel_data() to is_kernel_core_data()
+  sections: Move is_kernel_inittext() into sections.h
+  x86: mm: Rename __is_kernel_text() to is_x86_32_kernel_text()
+  sections: Provide internal __is_kernel() and __is_kernel_text() helper
+  mm: kasan: Use is_kernel() helper
+  extable: Use is_kernel_text() helper
+  powerpc/mm: Use is_kernel_text() and is_kernel_inittext() helper
+
+ arch/powerpc/mm/pgtable_32.c   |  7 +---
+ arch/x86/kernel/unwind_orc.c   |  2 +-
+ arch/x86/mm/init_32.c          | 14 +++----
+ include/asm-generic/sections.h | 75 ++++++++++++++++++++++++++--------
+ include/linux/kallsyms.h       | 13 +-----
+ include/linux/kernel.h         |  2 -
+ kernel/extable.c               | 33 ++-------------
+ kernel/locking/lockdep.c       |  3 --
+ kernel/trace/ftrace.c          |  2 +-
+ mm/kasan/report.c              |  2 +-
+ net/sysctl_net.c               |  2 +-
+ 11 files changed, 75 insertions(+), 80 deletions(-)
+
 -- 
 2.26.2
 
