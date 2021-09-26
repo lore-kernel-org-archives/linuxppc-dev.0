@@ -2,22 +2,22 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0A09C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:54:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1449C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:54:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E81D60FED
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:54:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2E81D60FED
+	by mail.kernel.org (Postfix) with ESMTPS id 837EA60FED
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 12:54:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 837EA60FED
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=svenpeter.dev
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HHQh26BSNz3cMS
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 22:54:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HHQhq16CDz3dcp
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Sep 2021 22:54:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev header.a=rsa-sha256 header.s=fm2 header.b=qUZpi53z;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=nyyiw9q+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev header.a=rsa-sha256 header.s=fm2 header.b=RiGy3SiN;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=dOAooaKv;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=svenpeter.dev (client-ip=66.111.4.224;
@@ -25,68 +25,70 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev
- header.a=rsa-sha256 header.s=fm2 header.b=qUZpi53z; 
+ header.a=rsa-sha256 header.s=fm2 header.b=RiGy3SiN; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm3 header.b=nyyiw9q+; 
+ header.a=rsa-sha256 header.s=fm3 header.b=dOAooaKv; 
  dkim-atps=neutral
 Received: from new2-smtp.messagingengine.com (new2-smtp.messagingengine.com
  [66.111.4.224])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HHLxy3WhQz2yWH
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Sep 2021 20:05:58 +1000 (AEST)
-Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
- by mailnew.nyi.internal (Postfix) with ESMTP id C4B8A580FD1;
- Sun, 26 Sep 2021 05:59:54 -0400 (EDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HHLxz4cFGz2yWH
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Sep 2021 20:05:59 +1000 (AEST)
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+ by mailnew.nyi.internal (Postfix) with ESMTP id 17140580FBB;
+ Sun, 26 Sep 2021 05:59:41 -0400 (EDT)
 Received: from mailfrontend1 ([10.202.2.162])
- by compute1.internal (MEProxy); Sun, 26 Sep 2021 05:59:54 -0400
+ by compute5.internal (MEProxy); Sun, 26 Sep 2021 05:59:41 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=svenpeter.dev;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding; s=fm2; bh=KbpD7QDsVxr0s
- hguUMq4LBuqqbF0i6Fnb7YHPNOz3ek=; b=qUZpi53zHUD80M8nqu661ADs8im9g
- H6m6Mzdi6cRJ8NlT1f0sYVYv/7lnNa2vam1C9M7qUXc8Ze1S2wScKJYYiXIBtbM+
- QX9LBZ0yXEU0nvI+Q7rC5udRfhf3J5gP1P/0lPDZ7xxosHFLeMy/EWkdXxIVqBsk
- ngsa4Mn/NZxRACP15t3rrjxZAA0GEAWqa/EYorxkfXUAtrcf1tNumgUwDbOOFlvm
- 0WEHWpi0Fi4WZSJGz4PVhkxdG415DFVMyqjNM9RFzHQgqtAU9+hl7QI+aamn2gJY
- BSr2rOUriYt/cj+aYQC/EfTuDwOSyeWmuyx7kmk+StJQCFDEI5jXbJHRQ==
+ :mime-version:content-transfer-encoding; s=fm2; bh=cWp5zIpWjNlKX
+ lE1CaQrGZSrcDn1/ZujYfNah3kcVMs=; b=RiGy3SiNA6RI3cbllOyPHwKSVL1Bl
+ vezDYajenNaEDI08pHR8v97sUkcOYK4TzaJzcCbIhTLTFHtW+tsRxguE1os8CFd3
+ FM2FvXyNnl25iMqW83XMseXo8guYPHyteRq98SK0KJUPUHPEP5U152RWrxEHzARh
+ HdJZzH3c3XsDNXXv+lswLm7LD9/+mTn7X6TtA5so13z+wX6ECSOZA6QeVkyIjYh8
+ HHci8jNtr1TPQ6WBBn7dwJMcyLX/2+jFBK2lYK7qruoVWPxmZC0hE8MSX3iaK0Xk
+ 8InE98JvrS2OMt3YWOX/wUKZUlGoBv4sMMe0Y82swXwMAOAEEe/hHhHSg==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
  :in-reply-to:message-id:mime-version:references:subject:to
  :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm3; bh=KbpD7QDsVxr0shguUMq4LBuqqbF0i6Fnb7YHPNOz3ek=; b=nyyiw9q+
- Cp+FfyGYWwkGuV6q61ImTxR7ybE9CossQWXltL7CYV5fGrBJ8NFESWwQFhv0sQKn
- yuHHHMX6NBQ7sk6gG+nw6ASpr7tp0GbvsaWoWgUaesN2hQB38Yo1TRS+T9H6bGbo
- Y4MKz8rpd065L+5YcYsOxm1LsUQ5WOkEEcsa22z23nzGPH40fZZu7/ltJ8c6/BC2
- BG7akP526ty4d6wHShl2bFyQBxMLUr7JXIen9yhOW/w1vP/RM3YHLcycZ5XpRLsn
- JLDV+Pqc0/C2pe/RHrNueacCEoMgbfy+HfJLDFBRaa/Ngbz7bW7XmW1tz266n168
- y5bbkaYgxCtr8Q==
-X-ME-Sender: <xms:mkRQYcGXwuhaRUvEmZRtsxt-DcPkwKCJGjM2FuazJDANj49lWSG7pw>
- <xme:mkRQYVUfFHvMx_oqde4HWaPwaYLSnnDq6Mh2dIuHGC_1kQvvEjrHWj6-5V5Az43yT
- wvbbpsStkQIUKRuhuA>
-X-ME-Received: <xmr:mkRQYWINdAsd491lSj1sxKX1kcuLygitrE7qn3lcqdMLxImm3h-HheOj1vpASPybPoL_lFUfJqT-qNfpelU8CbgBAhXzhp_8MP8ff2no-GE9H5a3a5OAGgU>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvtddrudejiedgvddvucetufdoteggodetrfdotf
+ fm3; bh=cWp5zIpWjNlKXlE1CaQrGZSrcDn1/ZujYfNah3kcVMs=; b=dOAooaKv
+ d1UCQiYYrQE2ROmpc0o7NXYmtaKnjpHKuFJEpXv+AZz3NSXbUADepGkrrBeOn58m
+ MXUBBe2Nsa94A2pQ8IwPHqxW9Y2tWZpULcRUzCwIVNtcLUR55jIh6WLi//QPiXcY
+ C0/CMcyMMXzGx0Q1tyCnGOugE8WFNYsecROLNa1THvNTChC9fZAJ+z5tTLHXXW+h
+ hkGnoWL1sjjEyv9LaOXRFhlYQf3k4zGnvxIxYRQKTofneon7T4TlH+1+3tNYkDuB
+ RH2bmQHL93iZLv1ryG2HbNlHCA17Zsj3AGjfNIwTLx9iTI54WpIReEV1faDIflO7
+ 6fa8f5ptKVX4nQ==
+X-ME-Sender: <xms:jERQYSYpLf-EL8E1qCbQpB_0eA0W_k9Y_VBbe_Lc94XiywM5cWD8Tg>
+ <xme:jERQYVbFMGTAQOpSr5EQ_mepv1p9wB7HB_xulcJEMZNRxyct8EmRQpfdqBIoZlS8i
+ 72Y2xB-TKbzOkLzGPc>
+X-ME-Received: <xmr:jERQYc-ht_D7umRuv1AZn2TH33xMw8VraY2umjqPflOv56CudOyYBbJ7c6_zti8dzqCL05Z0VPvGopbDFD0K1muZnSxrYjFhMc4r_GkCGNDsInF1gEdQBWA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvtddrudejiedgvdduucetufdoteggodetrfdotf
  fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
  uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
  cujfgurhephffvufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpefuvhgvnhcu
  rfgvthgvrhcuoehsvhgvnhesshhvvghnphgvthgvrhdruggvvheqnecuggftrfgrthhtvg
- hrnheptedvkeetleeuffffhfekteetffeggffgveehieelueefvddtueffveevlefhfeej
- necuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpehmrghilhhfrhhomhepshhvvg
- hnsehsvhgvnhhpvghtvghrrdguvghv
-X-ME-Proxy: <xmx:mkRQYeEqq7vPywGJxFw1B_Dmfp-rcN8_A29LRsWdzn6eFD9a8xOOcw>
- <xmx:mkRQYSUsF5JptwPyJPt0aKdDykdMPYcL0E-KX655jVMCQippbcjLsA>
- <xmx:mkRQYROmiU6Yd7WtM_I22qP789qdsRA9xyjFbjMVsv7jqcLkITpoNg>
- <xmx:mkRQYbV1lji43E9w4x5B4fwEhxE6pjyKlgLPyjtLdrfxi-uHGnTsmQ>
+ hrnhepiedvudfftedvieevieffvdejveeiveduhfeifeegheehhedtgfehffeuheefhfel
+ necuffhomhgrihhnpeguvghvihgtvghtrhgvvgdrohhrghdpghhithhhuhgsrdgtohhmpd
+ hofhhttgdrnhgvthenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhl
+ fhhrohhmpehsvhgvnhesshhvvghnphgvthgvrhdruggvvh
+X-ME-Proxy: <xmx:jERQYUpLR2sOUCNpQ3nGTr92Mv-FwDvotPNNPviidZqf64u55zD5_Q>
+ <xmx:jERQYdpOe4v0gD3VcCBGMUaDWOmBb7Y-lOVB-YfzOcRVO_u2zT_qOA>
+ <xmx:jERQYSQLN2pA-Haqq2OuRTA2pIOcQ8mjCGYi2HL8mhVrmFVeo5GN8g>
+ <xmx:jURQYVat6uq2YOMw_VYIpdR2huuW2HK4r45VtIgUOlUjIKe34RjAIQ>
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sun,
- 26 Sep 2021 05:59:52 -0400 (EDT)
+ 26 Sep 2021 05:59:38 -0400 (EDT)
 From: Sven Peter <sven@svenpeter.dev>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>
-Subject: [PATCH 07/10] i2c: pasemi: Allow to configure bus frequency
-Date: Sun, 26 Sep 2021 11:58:44 +0200
-Message-Id: <20210926095847.38261-8-sven@svenpeter.dev>
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ Rob Herring <robh+dt@kernel.org>
+Subject: [PATCH 01/10] dt-bindings: i2c: Add Apple I2C controller bindings
+Date: Sun, 26 Sep 2021 11:58:38 +0200
+Message-Id: <20210926095847.38261-2-sven@svenpeter.dev>
 X-Mailer: git-send-email 2.30.1 (Apple Git-130)
 In-Reply-To: <20210926095847.38261-1-sven@svenpeter.dev>
 References: <20210926095847.38261-1-sven@svenpeter.dev>
@@ -104,9 +106,10 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, Sven Peter <sven@svenpeter.dev>,
- Hector Martin <marcan@marcan.st>, linux-kernel@vger.kernel.org,
- linux-i2c@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+Cc: devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ Sven Peter <sven@svenpeter.dev>, Hector Martin <marcan@marcan.st>,
+ linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
  Mohamed Mediouni <mohamed.mediouni@caramail.com>,
  Stan Skowronek <stan@corellium.com>, linuxppc-dev@lists.ozlabs.org,
  Alyssa Rosenzweig <alyssa@rosenzweig.io>,
@@ -115,78 +118,95 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Right now the bus frequency has always been hardcoded as
-100 KHz with the specific reference clock used in the PASemi
-PCI controllers. Make this configurable to prepare for the
-platform driver.
+The Apple I2C controller is based on the PASemi I2C controller.
+It is present on Apple SoCs such as the M1.
 
 Signed-off-by: Sven Peter <sven@svenpeter.dev>
 ---
- drivers/i2c/busses/i2c-pasemi-core.c | 8 +++-----
- drivers/i2c/busses/i2c-pasemi-core.h | 1 +
- drivers/i2c/busses/i2c-pasemi-pci.c  | 4 ++++
- 3 files changed, 8 insertions(+), 5 deletions(-)
+ .../devicetree/bindings/i2c/apple,i2c.yaml    | 61 +++++++++++++++++++
+ MAINTAINERS                                   |  1 +
+ 2 files changed, 62 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/i2c/apple,i2c.yaml
 
-diff --git a/drivers/i2c/busses/i2c-pasemi-core.c b/drivers/i2c/busses/i2c-pasemi-core.c
-index 7c6715f5dbb8..a39e3258b162 100644
---- a/drivers/i2c/busses/i2c-pasemi-core.c
-+++ b/drivers/i2c/busses/i2c-pasemi-core.c
-@@ -39,9 +39,6 @@
- #define CTL_MTR		0x00000200
- #define CTL_CLK_M	0x000000ff
- 
--#define CLK_100K_DIV	84
--#define CLK_400K_DIV	21
--
- static inline void reg_write(struct pasemi_smbus *smbus, int reg, int val)
- {
- 	dev_dbg(smbus->dev, "smbus write reg %lx val %08x\n",
-@@ -63,8 +60,9 @@ static inline int reg_read(struct pasemi_smbus *smbus, int reg)
- 
- static void pasemi_reset(struct pasemi_smbus *smbus)
- {
--	reg_write(smbus, REG_CTL, (CTL_MTR | CTL_MRR |
--		  (CLK_100K_DIV & CTL_CLK_M)));
-+	u32 val = (CTL_MTR | CTL_MRR | (smbus->clk_div & CTL_CLK_M));
+diff --git a/Documentation/devicetree/bindings/i2c/apple,i2c.yaml b/Documentation/devicetree/bindings/i2c/apple,i2c.yaml
+new file mode 100644
+index 000000000000..22fc8483256f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/i2c/apple,i2c.yaml
+@@ -0,0 +1,61 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/i2c/apple,i2c.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+	reg_write(smbus, REG_CTL, val);
- }
- 
- static void pasemi_smb_clear(struct pasemi_smbus *smbus)
-diff --git a/drivers/i2c/busses/i2c-pasemi-core.h b/drivers/i2c/busses/i2c-pasemi-core.h
-index 7acc33de6ce1..30a7990825ef 100644
---- a/drivers/i2c/busses/i2c-pasemi-core.h
-+++ b/drivers/i2c/busses/i2c-pasemi-core.h
-@@ -14,6 +14,7 @@ struct pasemi_smbus {
- 	void __iomem		*ioaddr;
- 	unsigned long		 base;
- 	int			 size;
-+	unsigned int		 clk_div;
- };
- 
- int pasemi_i2c_common_probe(struct pasemi_smbus *smbus);
-diff --git a/drivers/i2c/busses/i2c-pasemi-pci.c b/drivers/i2c/busses/i2c-pasemi-pci.c
-index 9a19df31866b..7405e0b48514 100644
---- a/drivers/i2c/busses/i2c-pasemi-pci.c
-+++ b/drivers/i2c/busses/i2c-pasemi-pci.c
-@@ -17,6 +17,9 @@
- 
- #include "i2c-pasemi-core.h"
- 
-+#define CLK_100K_DIV	84
-+#define CLK_400K_DIV	21
++title: Apple/PASemi I2C controller
 +
- static struct pci_driver pasemi_smb_pci_driver;
- 
- static int pasemi_smb_pci_probe(struct pci_dev *dev,
-@@ -35,6 +38,7 @@ static int pasemi_smb_pci_probe(struct pci_dev *dev,
- 	smbus->dev = &dev->dev;
- 	smbus->base = pci_resource_start(dev, 0);
- 	smbus->size = pci_resource_len(dev, 0);
-+	smbus->clk_div = CLK_100K_DIV;
- 
- 	if (!request_region(smbus->base, smbus->size,
- 			    pasemi_smb_pci_driver.name)) {
++maintainers:
++  - Sven Peter <sven@svenpeter.dev>
++
++description: |
++  Apple SoCs such as the M1 come with a I2C controller based on the one found
++  in machines with P. A. Semi's PWRficient processors.
++  The bus is used to communicate with e.g. USB PD chips or the speaker
++  amp.
++
++allOf:
++  - $ref: /schemas/i2c/i2c-controller.yaml#
++
++properties:
++  compatible:
++    enum:
++      - apple,t8103-i2c
++      - apple,i2c
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    items:
++      - description: I2C bus reference clock
++
++  interrupts:
++    maxItems: 1
++
++  clock-frequency:
++    description: |
++      Desired I2C bus clock frequency in Hz. If not specified, 100 kHz will be
++      used. This frequency is generated by dividing the reference clock.
++      Allowed values are between ref_clk/(16*4) and ref_clk/(16*255).
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - interrupts
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    i2c@35010000 {
++      compatible = "apple,t8103-i2c";
++      reg = <0x35010000 0x4000>;
++      interrupt-parent = <&aic>;
++      interrupts = <0 627 4>;
++      clocks = <&ref_clk>;
++      #address-cells = <1>;
++      #size-cells = <0>;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 329d3a0a9fdb..380a680db92f 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1734,6 +1734,7 @@ B:	https://github.com/AsahiLinux/linux/issues
+ C:	irc://irc.oftc.net/asahi-dev
+ T:	git https://github.com/AsahiLinux/linux.git
+ F:	Documentation/devicetree/bindings/arm/apple.yaml
++F:	Documentation/devicetree/bindings/i2c/apple,i2c.yaml
+ F:	Documentation/devicetree/bindings/interrupt-controller/apple,aic.yaml
+ F:	Documentation/devicetree/bindings/pinctrl/apple,pinctrl.yaml
+ F:	arch/arm64/boot/dts/apple/
 -- 
 2.25.1
 
