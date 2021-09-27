@@ -2,105 +2,71 @@ Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67E4DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 20:23:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCDD4C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 20:45:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BEF1360EB4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 20:23:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BEF1360EB4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1CAF760EFD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 20:45:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1CAF760EFD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kleine-koenig.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HJDbg39V6z3cDV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 06:23:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=K4VQj+z3;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HJF553rFWz2yPc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 06:45:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
+ helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=K4VQj+z3; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HJDWl30csz2yLm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 06:19:46 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18RIojZG026801; 
- Mon, 27 Sep 2021 16:19:41 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=hbeA20nIDugP74s5Js7fYS7YbgB4kmXI+0qplx/QsUs=;
- b=K4VQj+z3G5UOztMCE6GdlvsHknIuOFp+hxcfHaQD++H/soxpKOuMpdxjoZZjnus0THcZ
- A1SPCOY3JJxjEw0hog+x0We01bvjgIvT1taTmTbXmQOX63l15+1a0keShmEf8fW4b961
- QoIPsvWYGGfW7cj+J5kOIJWbDHLq304Xt6WjAylA0H7dzfkTUHj7F97Tkv6a/ejOn56I
- zaD4VFfWBlFG4IOnKIJisGX57kj3B/FOCHInHUTecq0iWKFXoHIRREc5x8BGWLX6fdwc
- hizypTosdnPyuzlBuQY29PwJdRDhODe3taqL8HxQe3VhckOVx8QlhV5iJ9CsPyQ9s4dY Ew== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bagx55gbf-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Sep 2021 16:19:41 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18RKJbNn015122;
- Mon, 27 Sep 2021 16:19:40 -0400
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bagx55gb6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Sep 2021 16:19:40 -0400
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18RKHkc4026831;
- Mon, 27 Sep 2021 20:19:40 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma03dal.us.ibm.com with ESMTP id 3b9udaevcr-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Sep 2021 20:19:40 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 18RKJcfX30409042
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 27 Sep 2021 20:19:38 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6C207BE05D;
- Mon, 27 Sep 2021 20:19:38 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5752CBE059;
- Mon, 27 Sep 2021 20:19:38 +0000 (GMT)
-Received: from localhost (unknown [9.211.96.63])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 27 Sep 2021 20:19:38 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/4] powerpc/cpuhp: BUG -> WARN conversion in offline path
-Date: Mon, 27 Sep 2021 15:19:31 -0500
-Message-Id: <20210927201933.76786-3-nathanl@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20210927201933.76786-1-nathanl@linux.ibm.com>
-References: <20210927201933.76786-1-nathanl@linux.ibm.com>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HJF4Z0KwCz2xYX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 06:44:44 +1000 (AEST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+ by metis.ext.pengutronix.de with esmtps
+ (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1mUxTe-0001jp-DD; Mon, 27 Sep 2021 22:43:54 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+ by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1mUxTY-0001YX-J8; Mon, 27 Sep 2021 22:43:48 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1mUxTY-0001NN-Gx; Mon, 27 Sep 2021 22:43:48 +0200
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Subject: [PATCH v4 4/8] PCI: replace pci_dev::driver usage that gets the
+ driver name
+Date: Mon, 27 Sep 2021 22:43:22 +0200
+Message-Id: <20210927204326.612555-5-uwe@kleine-koenig.org>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210927204326.612555-1-uwe@kleine-koenig.org>
+References: <20210927204326.612555-1-uwe@kleine-koenig.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+X-Patch-Hashes: v=1; h=sha256; i=a2O0HTv4aJywRdn8Xll+BiOFc5OY645rbrBOo3iG86g=;
+ m=uiYraG79NtpzJXVYTkT2krJ2oKsGebV/4PDlvGFyew0=;
+ p=AUabNdK3Oc6hLf1u5raYHAjiFBP1NcdSOD8qDOCVVeY=;
+ g=9fc159a3b3d1c22b121315875a3324b706ea97b2
+X-Patch-Sig: m=pgp; i=uwe@kleine-koenig.org;
+ s=0x0D2511F322BFAB1C1580266BE2DCDD9132669BD6;
+ b=iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmFSLNEACgkQwfwUeK3K7Ak0WAf+LIC
+ 8H0Ni3FH7fEhqAxEC6O6fGPMdf/2Uz3OTec5bTRdY7DvxodsBp63bi7OJ13K5jPa7ij4bJOOWh7iX
+ pJU4IYM7ydRfA3q19o6WWuYtjfZosjDi6HAEfun5hNZVm8IkhodehHyfaIHhiMNizGFJedWzcZcfY
+ Aw529YNY7kWJ5QjJXMDNkwzTIQDFPVWiwpdvamB+NMXPd/DjyXJZVXhLX0DfW3eWzbCfO1cw55dfb
+ VSPPw0hnLPcjdx9BAevJ4yqd3ufOJmkp6oRrzBa7cyKnECkyCF4NPhfht2lE5njNfVlAfhAlwK6Yj
+ NnYPLRRXlhPvURkRF1X6bQKfT5KbHKQ==
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: pbY_4XodWYcU5UuIsIRe6y0rZWXhVkNN
-X-Proofpoint-ORIG-GUID: KAJSxIeGh8p5al9RSDkNdi7ylrAtSE00
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
- definitions=2021-09-27_07,2021-09-24_02,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 spamscore=0
- impostorscore=0 suspectscore=0 phishscore=0 priorityscore=1501
- lowpriorityscore=0 mlxscore=0 bulkscore=0 clxscore=1015 adultscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2109230001 definitions=main-2109270135
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
+ SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,36 +78,167 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tyreld@linux.ibm.com, ldufour@linux.ibm.com, aneesh.kumar@linux.ibm.com,
- danielhb413@gmail.com
+Cc: linux-pci@vger.kernel.org, Alexander Duyck <alexanderduyck@fb.com>,
+ oss-drivers@corigine.com, Paul Mackerras <paulus@samba.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Ido Schimmel <idosch@nvidia.com>, Jakub Kicinski <kuba@kernel.org>,
+ Yisen Zhuang <yisen.zhuang@huawei.com>, Vadym Kochan <vkochan@marvell.com>,
+ =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Michael Buesch <m@bues.ch>, Jiri Pirko <jiri@nvidia.com>,
+ Salil Mehta <salil.mehta@huawei.com>, netdev@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Taras Chornyi <tchornyi@marvell.com>, Zhou Wang <wangzhou1@hisilicon.com>,
+ linux-crypto@vger.kernel.org, kernel@pengutronix.de,
+ Simon Horman <simon.horman@corigine.com>, Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If, due to bugs elsewhere, we get into unregister_cpu_online() with a CPU
-that isn't marked hotpluggable, we can emit a warning and return an
-appropriate error instead of crashing.
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
-Reviewed-by: Daniel Henrique Barboza <danielhb413@gmail.com>
+struct pci_dev::driver holds (apart from a constant offset) the same
+data as struct pci_dev::dev->driver. With the goal to remove struct
+pci_dev::driver to get rid of data duplication replace getting the
+driver name by dev_driver_string() which implicitly makes use of struct
+pci_dev::dev->driver.
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- arch/powerpc/kernel/sysfs.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/ppc-pci.h                   | 9 ++++++++-
+ drivers/bcma/host_pci.c                              | 7 ++++---
+ drivers/crypto/hisilicon/qm.c                        | 2 +-
+ drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c   | 2 +-
+ drivers/net/ethernet/marvell/prestera/prestera_pci.c | 2 +-
+ drivers/net/ethernet/mellanox/mlxsw/pci.c            | 2 +-
+ drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c | 2 +-
+ drivers/ssb/pcihost_wrapper.c                        | 8 +++++---
+ 8 files changed, 22 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index defecb3b1b15..08d8072d6e7a 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -928,7 +928,8 @@ static int unregister_cpu_online(unsigned int cpu)
- 	struct device_attribute *attrs, *pmc_attrs;
- 	int i, nattrs;
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index 2b9edbf6e929..e8f1795a2acf 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -57,7 +57,14 @@ void eeh_sysfs_remove_device(struct pci_dev *pdev);
  
--	BUG_ON(!c->hotpluggable);
-+	if (WARN_RATELIMIT(!c->hotpluggable, "cpu %d can't be offlined\n", cpu))
-+		return -EBUSY;
+ static inline const char *eeh_driver_name(struct pci_dev *pdev)
+ {
+-	return (pdev && pdev->driver) ? pdev->driver->name : "<null>";
++	if (pdev) {
++		const char *drvstr = dev_driver_string(&pdev->dev);
++
++		if (strcmp(drvstr, ""))
++			return drvstr;
++	}
++
++	return "<null>";
+ }
  
- #ifdef CONFIG_PPC64
- 	if (cpu_has_feature(CPU_FTR_SMT))
+ #endif /* CONFIG_EEH */
+diff --git a/drivers/bcma/host_pci.c b/drivers/bcma/host_pci.c
+index 69c10a7b7c61..0973022d4b13 100644
+--- a/drivers/bcma/host_pci.c
++++ b/drivers/bcma/host_pci.c
+@@ -175,9 +175,10 @@ static int bcma_host_pci_probe(struct pci_dev *dev,
+ 	if (err)
+ 		goto err_kfree_bus;
+ 
+-	name = dev_name(&dev->dev);
+-	if (dev->driver && dev->driver->name)
+-		name = dev->driver->name;
++	name = dev_driver_string(&dev->dev);
++	if (!strcmp(name, ""))
++		name = dev_name(&dev->dev);
++
+ 	err = pci_request_regions(dev, name);
+ 	if (err)
+ 		goto err_pci_disable;
+diff --git a/drivers/crypto/hisilicon/qm.c b/drivers/crypto/hisilicon/qm.c
+index 369562d34d66..8f361e54e524 100644
+--- a/drivers/crypto/hisilicon/qm.c
++++ b/drivers/crypto/hisilicon/qm.c
+@@ -3085,7 +3085,7 @@ static int qm_alloc_uacce(struct hisi_qm *qm)
+ 	};
+ 	int ret;
+ 
+-	ret = strscpy(interface.name, pdev->driver->name,
++	ret = strscpy(interface.name, dev_driver_string(&pdev->dev),
+ 		      sizeof(interface.name));
+ 	if (ret < 0)
+ 		return -ENAMETOOLONG;
+diff --git a/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c b/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
+index 7ea511d59e91..f279edfce3f1 100644
+--- a/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
++++ b/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
+@@ -606,7 +606,7 @@ static void hns3_get_drvinfo(struct net_device *netdev,
+ 		return;
+ 	}
+ 
+-	strncpy(drvinfo->driver, h->pdev->driver->name,
++	strncpy(drvinfo->driver, dev_driver_string(&h->pdev->dev),
+ 		sizeof(drvinfo->driver));
+ 	drvinfo->driver[sizeof(drvinfo->driver) - 1] = '\0';
+ 
+diff --git a/drivers/net/ethernet/marvell/prestera/prestera_pci.c b/drivers/net/ethernet/marvell/prestera/prestera_pci.c
+index a250d394da38..a8f007f6dad2 100644
+--- a/drivers/net/ethernet/marvell/prestera/prestera_pci.c
++++ b/drivers/net/ethernet/marvell/prestera/prestera_pci.c
+@@ -720,7 +720,7 @@ static int prestera_fw_load(struct prestera_fw *fw)
+ static int prestera_pci_probe(struct pci_dev *pdev,
+ 			      const struct pci_device_id *id)
+ {
+-	const char *driver_name = pdev->driver->name;
++	const char *driver_name = dev_driver_string(&pdev->dev);
+ 	struct prestera_fw *fw;
+ 	int err;
+ 
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/pci.c b/drivers/net/ethernet/mellanox/mlxsw/pci.c
+index 13b0259f7ea6..8f306364f7bf 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/pci.c
++++ b/drivers/net/ethernet/mellanox/mlxsw/pci.c
+@@ -1876,7 +1876,7 @@ static void mlxsw_pci_cmd_fini(struct mlxsw_pci *mlxsw_pci)
+ 
+ static int mlxsw_pci_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ {
+-	const char *driver_name = pdev->driver->name;
++	const char *driver_name = dev_driver_string(&pdev->dev);
+ 	struct mlxsw_pci *mlxsw_pci;
+ 	int err;
+ 
+diff --git a/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c b/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c
+index 0685ece1f155..23dfb599c828 100644
+--- a/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c
++++ b/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c
+@@ -202,7 +202,7 @@ nfp_get_drvinfo(struct nfp_app *app, struct pci_dev *pdev,
+ {
+ 	char nsp_version[ETHTOOL_FWVERS_LEN] = {};
+ 
+-	strlcpy(drvinfo->driver, pdev->driver->name, sizeof(drvinfo->driver));
++	strlcpy(drvinfo->driver, dev_driver_string(&pdev->dev), sizeof(drvinfo->driver));
+ 	nfp_net_get_nspinfo(app, nsp_version);
+ 	snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
+ 		 "%s %s %s %s", vnic_version, nsp_version,
+diff --git a/drivers/ssb/pcihost_wrapper.c b/drivers/ssb/pcihost_wrapper.c
+index 410215c16920..4938ed5cfae5 100644
+--- a/drivers/ssb/pcihost_wrapper.c
++++ b/drivers/ssb/pcihost_wrapper.c
+@@ -78,9 +78,11 @@ static int ssb_pcihost_probe(struct pci_dev *dev,
+ 	err = pci_enable_device(dev);
+ 	if (err)
+ 		goto err_kfree_ssb;
+-	name = dev_name(&dev->dev);
+-	if (dev->driver && dev->driver->name)
+-		name = dev->driver->name;
++
++	name = dev_driver_string(&dev->dev);
++	if (*name == '\0')
++		name = dev_name(&dev->dev);
++
+ 	err = pci_request_regions(dev, name);
+ 	if (err)
+ 		goto err_pci_disable;
 -- 
-2.31.1
+2.30.2
 
