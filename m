@@ -2,21 +2,21 @@ Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34124C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:06:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10CE0C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:06:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C2AFE60EB6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:06:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C2AFE60EB6
+	by mail.kernel.org (Postfix) with ESMTPS id A13B060F4F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:06:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A13B060F4F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HJGtc2y38z2yPW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 08:06:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HJGvK2fXJz3cTJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 08:06:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=FxboHMaY;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=ln976+r6;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -24,27 +24,27 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=FxboHMaY; 
+ header.s=bombadil.20210309 header.b=ln976+r6; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HJGpM5BbNz2xtQ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HJGpM0V9hz2xs6
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 08:02:34 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
  Reply-To:Content-Type:Content-ID:Content-Description;
- bh=xF9PVD7Ak7b7GuU3fNOPsWCRtdNWIk6mhEkq/XYjRic=; b=FxboHMaYTcRPE6zSL8vDgOO6A1
- ZCQ+svz3/6fefs2Lhugt0Op+bLzO9Ihpq6RVFUUrAOCcQdsbZUPyuJFe8Hr+/aGTgEvWmXWEM8QT5
- OC81f0y4y/mjk8iXsaLmjmQ+Mfv4eXQW+8+dpCL33TiCeFDnVbQM1Hd8+8Vu4EHTYfnXjz79LEhC8
- FqHYGalj4UbkZE4F+apAdWMA+9bon9LkH0kzB8T1olRMvIYY3ye1qnjFAjWuHd6d+jk2lC8m8puJi
- C70TU3J3wPHgJS8n735wS9nVwvZnGKnwBALAkYCePhdYPwyD7z9L7nHiSxJpGZfHklm1In1nORh98
- xdgDNseQ==;
+ bh=adUhWGLmSwGDCmYJPL/wycZ+ESyOItTDyVeSKbBPSXk=; b=ln976+r6AHlYQ6p0Ges6IER5s8
+ MPl+7sPxPkyG/OoMQrAYGw6eVCfo5DobXvpsiPoemFpVVNidY/EqvDeDj/iHJb5AK+QV/PSPHJzxZ
+ MEu+/8Il3ODNCCTJvIgEHJmeacHxxtaAyiflR5+Vjqj8psNnJTU3E6HKG3F6NPayQ/pSSJeOLuOJr
+ G4X/6iQsum1AaLkf/nyM6LeexkyV5PS+3OnZ/VK7gHgNMrlJZPFi/datb1qHLzKBzf3Xzmmm09i20
+ lrvu+SxRLhM6QUVWIp6ioD95iJoNaVp1NdaD1ge2VazFolL2mBBTD3RERg8rEHH8rfvOpc0Mw5aJQ
+ 3kQmY/9w==;
 Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mUyhC-004UJr-N6; Mon, 27 Sep 2021 22:01:58 +0000
+ (Red Hat Linux)) id 1mUyhC-004UJE-Bd; Mon, 27 Sep 2021 22:01:58 +0000
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
  thunder.leizhen@huawei.com, lee.jones@linaro.org, geoff@infradead.org,
@@ -52,9 +52,9 @@ To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
  jim@jtan.com, haris.iqbal@ionos.com, jinpu.wang@ionos.com,
  josh.h.morris@us.ibm.com, pjk1939@linux.ibm.com, tim@cyberelk.net,
  richard@nod.at, miquel.raynal@bootlin.com, vigneshr@ti.com
-Subject: [PATCH v2 09/10] pf: add error handling support for add_disk()
-Date: Mon, 27 Sep 2021 15:01:56 -0700
-Message-Id: <20210927220157.1069658-10-mcgrof@kernel.org>
+Subject: [PATCH v2 01/10] mtip32xx: add error handling support for add_disk()
+Date: Mon, 27 Sep 2021 15:01:48 -0700
+Message-Id: <20210927220157.1069658-2-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210927220157.1069658-1-mcgrof@kernel.org>
 References: <20210927220157.1069658-1-mcgrof@kernel.org>
@@ -82,26 +82,29 @@ We never checked for errors on add_disk() as this function
 returned void. Now that this is fixed, use the shiny new
 error handling.
 
+The read_capacity_error error label already does what we need,
+so just re-use that.
+
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- drivers/block/paride/pf.c | 4 +++-
+ drivers/block/mtip32xx/mtip32xx.c | 4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/block/paride/pf.c b/drivers/block/paride/pf.c
-index f471d48a87bc..380d80e507c7 100644
---- a/drivers/block/paride/pf.c
-+++ b/drivers/block/paride/pf.c
-@@ -962,7 +962,9 @@ static int __init pf_init_unit(struct pf_unit *pf, bool autoprobe, int port,
- 	if (pf_probe(pf))
- 		goto out_pi_release;
+diff --git a/drivers/block/mtip32xx/mtip32xx.c b/drivers/block/mtip32xx/mtip32xx.c
+index 901855717cb5..d0b40309f47e 100644
+--- a/drivers/block/mtip32xx/mtip32xx.c
++++ b/drivers/block/mtip32xx/mtip32xx.c
+@@ -3633,7 +3633,9 @@ static int mtip_block_initialize(struct driver_data *dd)
+ 	set_capacity(dd->disk, capacity);
  
--	add_disk(disk);
-+	ret = add_disk(disk);
-+	if (ret)
-+		goto out_pi_release;
- 	pf->present = 1;
- 	return 0;
+ 	/* Enable the block device and add it to /dev */
+-	device_add_disk(&dd->pdev->dev, dd->disk, mtip_disk_attr_groups);
++	rv = device_add_disk(&dd->pdev->dev, dd->disk, mtip_disk_attr_groups);
++	if (rv)
++		goto read_capacity_error;
  
+ 	if (dd->mtip_svc_handler) {
+ 		set_bit(MTIP_DDF_INIT_DONE_BIT, &dd->dd_flag);
 -- 
 2.30.2
 
