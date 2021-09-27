@@ -2,21 +2,21 @@ Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9755C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 20:21:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23488C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 20:21:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B79CA60FF2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 20:21:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B79CA60FF2
+	by mail.kernel.org (Postfix) with ESMTPS id 430CB600CC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 20:21:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 430CB600CC
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HJDYK2Wyhz2ywR
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 06:21:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HJDZ66Vv2z3c6D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 06:21:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EEIHal/z;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Sha20OTI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
@@ -24,80 +24,83 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=EEIHal/z; dkim-atps=neutral
+ header.s=pp1 header.b=Sha20OTI; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HJDWl1Rfkz2xXB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HJDWl2Xgsz2xtr
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 06:19:46 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18RInTTO015170; 
- Mon, 27 Sep 2021 16:19:41 -0400
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18RJiJRT011473; 
+ Mon, 27 Sep 2021 16:19:42 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=aTuHyVnA/2jez5bcucd4cKqfUDAwqi3bP3jFzG9k11w=;
- b=EEIHal/zd0LzOYMsi3IlUV0zFGPCzMyUeRjy1yiSzGDeDn5zUECvlNFVInAQMrxZ88qH
- L2+Fw5ywpcjawQZs/XowVWTqVq/HD2I79CkiggbQoEqSIAfsRVclUe5F0WOsUGCJr+65
- 4RXmFrt1I+NSGYmTUqOHQ6oEJ/zIimpl1L4UfsIXSS1I9/01d0Du8lvLvAAmKu8FfgGO
- ukEHBhAAVMMs/HVd7UH0B/Z9XpxeWgzKjNAZ0lo5My7e4ovoJwdpXtUdrD8c5DsVHrN0
- ox+wt1SErhzKBFslI1vF0hcfdN52LY4mbI3inCwq7lipwQ9m7LjQTKDg/tu4O8Fjtj8r Fw== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=kiCEWel3MBHqc8net9nI8NXHWVaP6ynZ17C/+Ao1FA0=;
+ b=Sha20OTI3J9+/Fyp1+YRKw6rF7lgxsK0Fiu6KFeHVZmoAjgG2NShOyUPTyqMve4F1A0P
+ G3/WF3OJGbigMIf9PYDoHxlVnNXwLmLTp6xfgq1CN6H2vjuURfvfioCPrISBTu1g5tvT
+ 7r34a11V1/i0dOvgtaYEXtd2xPxjxou6lM5W/9H9ylf0HPmcSZgZntvV0ZGQPoRWx+ag
+ sSDZcpsyEcLWOqwGYGF/jDcacioaLiVjxPhb33mN2+yT8pRaGX/RqB7EAwhzdtFXfVOL
+ rzih3tt21to5jdBsmiDPiRQcUbmrjKacLs2QGDVszYkCq9T08/m8ELOnqZtonWXto1xk YQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bagub586a-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3baguam2gy-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Sep 2021 16:19:40 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18RKI4Tw000693;
- Mon, 27 Sep 2021 16:19:40 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bagub585w-1
+ Mon, 27 Sep 2021 16:19:42 -0400
+Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18RKJfYM027115;
+ Mon, 27 Sep 2021 16:19:41 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3baguam2gr-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Sep 2021 16:19:40 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18RKHP8I001276;
- Mon, 27 Sep 2021 20:19:39 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma01wdc.us.ibm.com with ESMTP id 3ba00cufpp-1
+ Mon, 27 Sep 2021 16:19:41 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18RKHkZu026843;
+ Mon, 27 Sep 2021 20:19:40 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma03dal.us.ibm.com with ESMTP id 3b9udaevcv-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Sep 2021 20:19:39 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 18RKJb2E16581266
+ Mon, 27 Sep 2021 20:19:40 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 18RKJc1c35520998
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 27 Sep 2021 20:19:37 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A623AC605A;
- Mon, 27 Sep 2021 20:19:37 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5A0BFC6063;
- Mon, 27 Sep 2021 20:19:34 +0000 (GMT)
+ Mon, 27 Sep 2021 20:19:39 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C4632BE05F;
+ Mon, 27 Sep 2021 20:19:38 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AEC13BE051;
+ Mon, 27 Sep 2021 20:19:38 +0000 (GMT)
 Received: from localhost (unknown [9.211.96.63])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 27 Sep 2021 20:19:34 +0000 (GMT)
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon, 27 Sep 2021 20:19:38 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 0/4] CPU DLPAR/hotplug for v5.16
-Date: Mon, 27 Sep 2021 15:19:29 -0500
-Message-Id: <20210927201933.76786-1-nathanl@linux.ibm.com>
+Subject: [PATCH v2 3/4] powerpc/pseries/cpuhp: delete add/remove_by_count code
+Date: Mon, 27 Sep 2021 15:19:32 -0500
+Message-Id: <20210927201933.76786-4-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20210927201933.76786-1-nathanl@linux.ibm.com>
+References: <20210927201933.76786-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: ph_0dcZVdzX-0ICVr_yzYZC5kAa6Tl04
-X-Proofpoint-GUID: BrGsIgPYP2x7m6dOGYLTegXlOTQB7qup
+X-Proofpoint-GUID: YqNhvRi7BAU7k_e5uEmmrV_F-i31V94d
+X-Proofpoint-ORIG-GUID: SzKWabYFq6EMb-qHgDo6IjnKVUn-7cXl
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
  definitions=2021-09-27_07,2021-09-24_02,2020-04-07_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0
- priorityscore=1501 clxscore=1015 phishscore=0 bulkscore=0 adultscore=0
- lowpriorityscore=0 impostorscore=0 mlxscore=0 mlxlogscore=543
- malwarescore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2109230001 definitions=main-2109270135
+ priorityscore=1501
+ suspectscore=0 impostorscore=0 mlxscore=0 bulkscore=0 adultscore=0
+ phishscore=0 clxscore=1015 spamscore=0 malwarescore=0 lowpriorityscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2109230001 definitions=main-2109270135
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,24 +118,315 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fixes for some vintage bugs in handling cache node addition and removal, a
-miscellaneous BUG->WARN conversion, and removal of the fragile "by count"
-CPU DLPAR code that probably has no users.
+The core DLPAR code supports two actions (add and remove) and three
+subtypes of action:
 
-Changes since v1:
-* Remove set but unused local variable (0day)
-* Additional comment cleanup patch
+* By DRC index: the action is attempted on a single specified resource.
+  This is the usual case for processors.
+* By indexed count: the action is attempted on a range of resources
+  beginning at the specified index. This is implemented only by the memory
+  DLPAR code.
+* By count: the lower layer (CPU or memory) is responsible for locating the
+  specified number of resources to which the action can be applied.
 
-Nathan Lynch (4):
-  powerpc/pseries/cpuhp: cache node corrections
-  powerpc/cpuhp: BUG -> WARN conversion in offline path
-  powerpc/pseries/cpuhp: delete add/remove_by_count code
-  powerpc/pseries/cpuhp: remove obsolete comment from pseries_cpu_die
+I cannot find any evidence of the "by count" subtype being used by drmgr or
+qemu for processors. And when I try to exercise this code, the add case
+does not work:
 
- arch/powerpc/kernel/sysfs.c                  |   3 +-
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 298 +++++--------------
- 2 files changed, 75 insertions(+), 226 deletions(-)
+  $ ppc64_cpu --smt ; nproc
+  SMT=8
+  24
+  $ printf "cpu remove count 2" > /sys/kernel/dlpar
+  $ nproc
+  8
+  $ printf "cpu add count 2" > /sys/kernel/dlpar
+  -bash: printf: write error: Invalid argument
+  $ dmesg | tail -2
+  pseries-hotplug-cpu: Failed to find enough CPUs (1 of 2) to add
+  dlpar: Could not handle DLPAR request "cpu add count 2"
+  $ nproc
+  8
+  $ drmgr -c cpu -a -q 2         # this uses the by-index method
+  Validating CPU DLPAR capability...yes.
+  CPU 1
+  CPU 17
+  $ nproc
+  24
 
+This is because find_drc_info_cpus_to_add() does not increment drc_index
+appropriately during its search.
+
+This is not hard to fix. But the _by_count() functions also have the
+property that they attempt to roll back all prior operations if the entire
+request cannot be satisfied, even though the rollback itself can encounter
+errors. It's not possible to provide transaction-like behavior at this
+level, and it's undesirable to have code that can only pretend to do that.
+Any users of these functions cannot know what the state of the system is in
+the error case. And the error paths are, to my knowledge, impossible to
+test without adding custom error injection code.
+
+Summary:
+
+* This code has not worked reliably since its introduction.
+* There is no evidence that it is used.
+* It contains questionable rollback behaviors in error paths which are
+  difficult to test.
+
+So let's remove it.
+
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+Fixes: ac71380071d1 ("powerpc/pseries: Add CPU dlpar remove functionality")
+Fixes: 90edf184b9b7 ("powerpc/pseries: Add CPU dlpar add functionality")
+Fixes: b015f6bc9547 ("powerpc/pseries: Add cpu DLPAR support for drc-info property")
+Reviewed-by: Daniel Henrique Barboza <danielhb413@gmail.com>
+Tested-by: Daniel Henrique Barboza <danielhb413@gmail.com>
+---
+ arch/powerpc/platforms/pseries/hotplug-cpu.c | 218 +------------------
+ 1 file changed, 2 insertions(+), 216 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 00ac7d7e63e5..b50f3e9aa259 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -741,216 +741,6 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
+ 	return rc;
+ }
+ 
+-static int find_dlpar_cpus_to_remove(u32 *cpu_drcs, int cpus_to_remove)
+-{
+-	struct device_node *dn;
+-	int cpus_found = 0;
+-	int rc;
+-
+-	/* We want to find cpus_to_remove + 1 CPUs to ensure we do not
+-	 * remove the last CPU.
+-	 */
+-	for_each_node_by_type(dn, "cpu") {
+-		cpus_found++;
+-
+-		if (cpus_found > cpus_to_remove) {
+-			of_node_put(dn);
+-			break;
+-		}
+-
+-		/* Note that cpus_found is always 1 ahead of the index
+-		 * into the cpu_drcs array, so we use cpus_found - 1
+-		 */
+-		rc = of_property_read_u32(dn, "ibm,my-drc-index",
+-					  &cpu_drcs[cpus_found - 1]);
+-		if (rc) {
+-			pr_warn("Error occurred getting drc-index for %pOFn\n",
+-				dn);
+-			of_node_put(dn);
+-			return -1;
+-		}
+-	}
+-
+-	if (cpus_found < cpus_to_remove) {
+-		pr_warn("Failed to find enough CPUs (%d of %d) to remove\n",
+-			cpus_found, cpus_to_remove);
+-	} else if (cpus_found == cpus_to_remove) {
+-		pr_warn("Cannot remove all CPUs\n");
+-	}
+-
+-	return cpus_found;
+-}
+-
+-static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
+-{
+-	u32 *cpu_drcs;
+-	int cpus_found;
+-	int cpus_removed = 0;
+-	int i, rc;
+-
+-	pr_debug("Attempting to hot-remove %d CPUs\n", cpus_to_remove);
+-
+-	cpu_drcs = kcalloc(cpus_to_remove, sizeof(*cpu_drcs), GFP_KERNEL);
+-	if (!cpu_drcs)
+-		return -EINVAL;
+-
+-	cpus_found = find_dlpar_cpus_to_remove(cpu_drcs, cpus_to_remove);
+-	if (cpus_found <= cpus_to_remove) {
+-		kfree(cpu_drcs);
+-		return -EINVAL;
+-	}
+-
+-	for (i = 0; i < cpus_to_remove; i++) {
+-		rc = dlpar_cpu_remove_by_index(cpu_drcs[i]);
+-		if (rc)
+-			break;
+-
+-		cpus_removed++;
+-	}
+-
+-	if (cpus_removed != cpus_to_remove) {
+-		pr_warn("CPU hot-remove failed, adding back removed CPUs\n");
+-
+-		for (i = 0; i < cpus_removed; i++)
+-			dlpar_cpu_add(cpu_drcs[i]);
+-
+-		rc = -EINVAL;
+-	} else {
+-		rc = 0;
+-	}
+-
+-	kfree(cpu_drcs);
+-	return rc;
+-}
+-
+-static int find_drc_info_cpus_to_add(struct device_node *cpus,
+-				     struct property *info,
+-				     u32 *cpu_drcs, u32 cpus_to_add)
+-{
+-	struct of_drc_info drc;
+-	const __be32 *value;
+-	u32 count, drc_index;
+-	int cpus_found = 0;
+-	int i, j;
+-
+-	if (!info)
+-		return -1;
+-
+-	value = of_prop_next_u32(info, NULL, &count);
+-	if (value)
+-		value++;
+-
+-	for (i = 0; i < count; i++) {
+-		of_read_drc_info_cell(&info, &value, &drc);
+-		if (strncmp(drc.drc_type, "CPU", 3))
+-			break;
+-
+-		drc_index = drc.drc_index_start;
+-		for (j = 0; j < drc.num_sequential_elems; j++) {
+-			if (dlpar_cpu_exists(cpus, drc_index))
+-				continue;
+-
+-			cpu_drcs[cpus_found++] = drc_index;
+-
+-			if (cpus_found == cpus_to_add)
+-				return cpus_found;
+-
+-			drc_index += drc.sequential_inc;
+-		}
+-	}
+-
+-	return cpus_found;
+-}
+-
+-static int find_drc_index_cpus_to_add(struct device_node *cpus,
+-				      u32 *cpu_drcs, u32 cpus_to_add)
+-{
+-	int cpus_found = 0;
+-	int index, rc;
+-	u32 drc_index;
+-
+-	/* Search the ibm,drc-indexes array for possible CPU drcs to
+-	 * add. Note that the format of the ibm,drc-indexes array is
+-	 * the number of entries in the array followed by the array
+-	 * of drc values so we start looking at index = 1.
+-	 */
+-	index = 1;
+-	while (cpus_found < cpus_to_add) {
+-		rc = of_property_read_u32_index(cpus, "ibm,drc-indexes",
+-						index++, &drc_index);
+-
+-		if (rc)
+-			break;
+-
+-		if (dlpar_cpu_exists(cpus, drc_index))
+-			continue;
+-
+-		cpu_drcs[cpus_found++] = drc_index;
+-	}
+-
+-	return cpus_found;
+-}
+-
+-static int dlpar_cpu_add_by_count(u32 cpus_to_add)
+-{
+-	struct device_node *parent;
+-	struct property *info;
+-	u32 *cpu_drcs;
+-	int cpus_added = 0;
+-	int cpus_found;
+-	int i, rc;
+-
+-	pr_debug("Attempting to hot-add %d CPUs\n", cpus_to_add);
+-
+-	cpu_drcs = kcalloc(cpus_to_add, sizeof(*cpu_drcs), GFP_KERNEL);
+-	if (!cpu_drcs)
+-		return -EINVAL;
+-
+-	parent = of_find_node_by_path("/cpus");
+-	if (!parent) {
+-		pr_warn("Could not find CPU root node in device tree\n");
+-		kfree(cpu_drcs);
+-		return -1;
+-	}
+-
+-	info = of_find_property(parent, "ibm,drc-info", NULL);
+-	if (info)
+-		cpus_found = find_drc_info_cpus_to_add(parent, info, cpu_drcs, cpus_to_add);
+-	else
+-		cpus_found = find_drc_index_cpus_to_add(parent, cpu_drcs, cpus_to_add);
+-
+-	of_node_put(parent);
+-
+-	if (cpus_found < cpus_to_add) {
+-		pr_warn("Failed to find enough CPUs (%d of %d) to add\n",
+-			cpus_found, cpus_to_add);
+-		kfree(cpu_drcs);
+-		return -EINVAL;
+-	}
+-
+-	for (i = 0; i < cpus_to_add; i++) {
+-		rc = dlpar_cpu_add(cpu_drcs[i]);
+-		if (rc)
+-			break;
+-
+-		cpus_added++;
+-	}
+-
+-	if (cpus_added < cpus_to_add) {
+-		pr_warn("CPU hot-add failed, removing any added CPUs\n");
+-
+-		for (i = 0; i < cpus_added; i++)
+-			dlpar_cpu_remove_by_index(cpu_drcs[i]);
+-
+-		rc = -EINVAL;
+-	} else {
+-		rc = 0;
+-	}
+-
+-	kfree(cpu_drcs);
+-	return rc;
+-}
+-
+ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+ {
+ 	u32 drc_index;
+@@ -962,9 +752,7 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+ 
+ 	switch (hp_elog->action) {
+ 	case PSERIES_HP_ELOG_ACTION_REMOVE:
+-		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+-			rc = dlpar_cpu_remove_by_count(count);
+-		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
++		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
+ 			rc = dlpar_cpu_remove_by_index(drc_index);
+ 			/*
+ 			 * Setting the isolation state of an UNISOLATED/CONFIGURED
+@@ -978,9 +766,7 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+ 			rc = -EINVAL;
+ 		break;
+ 	case PSERIES_HP_ELOG_ACTION_ADD:
+-		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+-			rc = dlpar_cpu_add_by_count(count);
+-		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
++		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+ 			rc = dlpar_cpu_add(drc_index);
+ 		else
+ 			rc = -EINVAL;
 -- 
 2.31.1
 
