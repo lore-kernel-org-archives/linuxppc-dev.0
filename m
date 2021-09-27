@@ -2,75 +2,66 @@ Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AAD0C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 14:48:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9D35C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 15:13:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9569F604DC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 14:48:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9569F604DC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id 0268D61058
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 15:13:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0268D61058
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HJ59P10MHz2ypg
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 00:48:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=lo2YMw8a;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HJ5kF3Pm3z2yWG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 01:13:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.52;
- helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
- header.s=strato-dkim-0002 header.b=lo2YMw8a; 
- dkim-atps=neutral
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de
- [85.215.255.52])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HJ58Z3DNmz2xfD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 00:47:40 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1632754010;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
- From:Subject:Sender;
- bh=G44RgpYWm1lf5aJbtqvM3dEwZV68hpUjNCbqcFai2VI=;
- b=lo2YMw8aaukGvNonTLkxYqC8YyZ9zP/V7FOgY7vzij69NlHvMd1lma39cgaAftn45E
- vpQAI2pt26HCzo9wF+VIvqsq+G+RoaE7QGmWmIpVoStaNyQO0A7L6eUAvvw0M4Umhkki
- jbFqvb+y0Wa872yzsWHFeWaUzbjnQGaeEuwtMyaI7fWXowDHXlnrU64OZ5ldXHsxvFMd
- buaVRTRjVM6Vn15/UVky/jNELgDyswPJ15Ba4ed0ALb8xBevCwlSr0i9R5V3lGXOrQGr
- PL/0OV+sY3JS4oPzVJwSy4spBAMURkePSy8IDPG8IY2yq0/wqkAjgpPh7Lw8WGzP+BCu
- 0SgQ==
-Authentication-Results: strato.com;
-    dkim=none
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHvJzedV4hp0mZXC9uZstB89hq66pCQ/IzAuyWHINmLRkeRKr"
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a01:598:b172:60ba:4101:c483:8872:ffac]
- by smtp.strato.de (RZmta 47.33.8 AUTH)
- with ESMTPSA id I00cdex8REklONq
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
- (Client did not present a certificate);
- Mon, 27 Sep 2021 16:46:47 +0200 (CEST)
-Subject: Re: Add Apple M1 support to PASemi i2c driver
-To: Michael Ellerman <mpe@ellerman.id.au>, Wolfram Sang <wsa@kernel.org>,
- Sven Peter <sven@svenpeter.dev>
-References: <6487d099-e0d6-4ea3-d312-6adbd94589f4@xenosoft.de>
- <3dcc6c36-a0dd-0cad-428d-a6ed0f73e687@xenosoft.de>
- <d0a646c7-426b-4b40-b3fc-9776c6a1025d@www.fastmail.com>
- <YVFtrpxfUbzv4XxT@shikoro> <87mtnylaam.fsf@mpe.ellerman.id.au>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <75053ff2-7adc-178c-81cd-e80a2732c5fc@xenosoft.de>
-Date: Mon, 27 Sep 2021 16:46:47 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HJ5jm2h5dz2xsm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 01:12:58 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4HJ5jg2nltz9sXx;
+ Mon, 27 Sep 2021 17:12:55 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id xJnomytv_UBi; Mon, 27 Sep 2021 17:12:55 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HJ5jg1sp6z9sXp;
+ Mon, 27 Sep 2021 17:12:55 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2CB358B76E;
+ Mon, 27 Sep 2021 17:12:55 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id KIprEdTxWZXS; Mon, 27 Sep 2021 17:12:55 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.103])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 149EB8B763;
+ Mon, 27 Sep 2021 17:12:55 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18RFCfR01436371
+ (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+ Mon, 27 Sep 2021 17:12:42 +0200
+Received: (from chleroy@localhost)
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18RFCfeD1436370;
+ Mon, 27 Sep 2021 17:12:41 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
+ christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v2] powerpc/40x: Map 32Mbytes of memory at startup
+Date: Mon, 27 Sep 2021 17:12:39 +0200
+Message-Id: <89b5f974a7fa5011206682cd092e2c905530ff46.1632755552.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-In-Reply-To: <87mtnylaam.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: de-DE
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,39 +73,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Darren Stevens <darren@stevens-zone.net>, Arnd Bergmann <arnd@arndb.de>,
- Hector Martin <marcan@marcan.st>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-i2c@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Alyssa Rosenzweig <alyssa@rosenzweig.io>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
- Olof Johansson <olof@lixom.net>, mohamed.mediouni@caramail.com,
- Matthew Leaman <matthew@a-eon.biz>, Mark Kettenis <mark.kettenis@xs4all.nl>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "R.T.Dickinson" <rtd@a-eon.com>,
- linux-arm-kernel@lists.infradead.org, Stan Skowronek <stan@corellium.com>
+Cc: cp <carlojpisani@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 27 September 2021 at 09:58 am, Michael Ellerman wrote:
-> Wolfram Sang <wsa@kernel.org> writes:
->>> Sure, will do that later as well!
->> But please do it privately. For upstreaming, the patch series you sent
->> is way better than a single patch.
-> Christian, the whole series is downloadable as a single mbox here:
->
-> https://patchwork.ozlabs.org/series/264134/mbox/
->
-> Save that to a file and apply with `git am`.
->
-> eg:
->
->   $ wget -O mbox https://patchwork.ozlabs.org/series/264134/mbox/
->   $ git am mbox
->
-> It applies cleanly on v5.15-rc3.
->
-> cheers
-I was able to patch it with the instructions above. Thanks! I will 
-compile and test the RC3 as soon as possible.
+As reported by Carlo, 16Mbytes is not enough with modern kernels
+that tend to be a bit big, so map another 16M page at boot.
 
--- Christian
+Cc: cp <carlojpisani@gmail.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v2: Add missing header and missing @h
+---
+ arch/powerpc/kernel/head_40x.S | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index 7d72ee5ab387..e783860bea83 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -27,6 +27,7 @@
+ 
+ #include <linux/init.h>
+ #include <linux/pgtable.h>
++#include <linux/sizes.h>
+ #include <asm/processor.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+@@ -650,7 +651,7 @@ start_here:
+ 	b	.		/* prevent prefetch past rfi */
+ 
+ /* Set up the initial MMU state so we can do the first level of
+- * kernel initialization.  This maps the first 16 MBytes of memory 1:1
++ * kernel initialization.  This maps the first 32 MBytes of memory 1:1
+  * virtual to physical and more importantly sets the cache mode.
+  */
+ initial_mmu:
+@@ -687,6 +688,12 @@ initial_mmu:
+ 	tlbwe	r4,r0,TLB_DATA		/* Load the data portion of the entry */
+ 	tlbwe	r3,r0,TLB_TAG		/* Load the tag portion of the entry */
+ 
++	li	r0,62			/* TLB slot 62 */
++	addis	r4,r4,SZ_16M@h
++	addis	r3,r3,SZ_16M@h
++	tlbwe	r4,r0,TLB_DATA		/* Load the data portion of the entry */
++	tlbwe	r3,r0,TLB_TAG		/* Load the tag portion of the entry */
++
+ 	isync
+ 
+ 	/* Establish the exception vector base
+-- 
+2.31.1
+
