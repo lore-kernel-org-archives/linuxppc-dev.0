@@ -2,105 +2,104 @@ Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A630C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 20:22:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67E4DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 20:23:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6FDAF60E94
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 20:22:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6FDAF60E94
+	by mail.kernel.org (Postfix) with ESMTPS id BEF1360EB4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 20:23:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BEF1360EB4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HJDZv1M4mz3c9G
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 06:22:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HJDbg39V6z3cDV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 06:23:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PEXbg6pq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=K4VQj+z3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=PEXbg6pq; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=K4VQj+z3; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HJDWl2p0nz2yHW
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HJDWl30csz2yLm
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 06:19:46 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18RInXC8003658; 
- Mon, 27 Sep 2021 16:19:42 -0400
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18RIojZG026801; 
+ Mon, 27 Sep 2021 16:19:41 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=vfh7/jREAbgBYL77RtiSaiA/oTpO6wNwvdheSexyfw4=;
- b=PEXbg6pqDANMPFEt4bkOXXNRZSSI3rCO3+TSUNLZGBZN5JlA3+DapGxdnc6n5Bb13AJ2
- 9s8OkCZIw0yS43+WZGhdo4R9I7FolQ6iBU2aoBNdqvPVTjaZGN6h2TdujlIKVzN0XZyI
- lX3Ek56NiRkYVRlzdVhtgGNJNpZeEummLLaGS+WGKZE9vU6u1e7oDc0AA1KwPnyYEctV
- TkNC8uQs9XImnFltE4VBtQUn09Pz33pthOdIL8G/I6rDWa1TdagLyLvYTayPm7knIoYX
- HjVvcB2bETtXLoYpjas+2Wy5A1x28aGWlNPpBL6k5lzQ2wIoyUotSRQ5f8Um27HQLW3p Iw== 
+ bh=hbeA20nIDugP74s5Js7fYS7YbgB4kmXI+0qplx/QsUs=;
+ b=K4VQj+z3G5UOztMCE6GdlvsHknIuOFp+hxcfHaQD++H/soxpKOuMpdxjoZZjnus0THcZ
+ A1SPCOY3JJxjEw0hog+x0We01bvjgIvT1taTmTbXmQOX63l15+1a0keShmEf8fW4b961
+ QoIPsvWYGGfW7cj+J5kOIJWbDHLq304Xt6WjAylA0H7dzfkTUHj7F97Tkv6a/ejOn56I
+ zaD4VFfWBlFG4IOnKIJisGX57kj3B/FOCHInHUTecq0iWKFXoHIRREc5x8BGWLX6fdwc
+ hizypTosdnPyuzlBuQY29PwJdRDhODe3taqL8HxQe3VhckOVx8QlhV5iJ9CsPyQ9s4dY Ew== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bagv8dd8m-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Sep 2021 16:19:42 -0400
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18RJso2q013548;
- Mon, 27 Sep 2021 16:19:41 -0400
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bagv8dd86-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3bagx55gbf-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Mon, 27 Sep 2021 16:19:41 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18RKHCdL017242;
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18RKJbNn015122;
+ Mon, 27 Sep 2021 16:19:40 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3bagx55gb6-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 27 Sep 2021 16:19:40 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18RKHkc4026831;
  Mon, 27 Sep 2021 20:19:40 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma02dal.us.ibm.com with ESMTP id 3b9udaevv4-1
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma03dal.us.ibm.com with ESMTP id 3b9udaevcr-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Mon, 27 Sep 2021 20:19:40 +0000
 Received: from b03ledav005.gho.boulder.ibm.com
  (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 18RKJdpK31916376
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 18RKJcfX30409042
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 27 Sep 2021 20:19:39 GMT
+ Mon, 27 Sep 2021 20:19:38 GMT
 Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 34ECDBE058;
- Mon, 27 Sep 2021 20:19:39 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 6C207BE05D;
+ Mon, 27 Sep 2021 20:19:38 +0000 (GMT)
 Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 16DCDBE04F;
- Mon, 27 Sep 2021 20:19:39 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 5752CBE059;
+ Mon, 27 Sep 2021 20:19:38 +0000 (GMT)
 Received: from localhost (unknown [9.211.96.63])
  by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 27 Sep 2021 20:19:39 +0000 (GMT)
+ Mon, 27 Sep 2021 20:19:38 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 4/4] powerpc/pseries/cpuhp: remove obsolete comment from
- pseries_cpu_die
-Date: Mon, 27 Sep 2021 15:19:33 -0500
-Message-Id: <20210927201933.76786-5-nathanl@linux.ibm.com>
+Subject: [PATCH v2 2/4] powerpc/cpuhp: BUG -> WARN conversion in offline path
+Date: Mon, 27 Sep 2021 15:19:31 -0500
+Message-Id: <20210927201933.76786-3-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210927201933.76786-1-nathanl@linux.ibm.com>
 References: <20210927201933.76786-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: H3nhnG9OqpMNn-V2OHWg-jpSw2VUMo8a
-X-Proofpoint-ORIG-GUID: 1itUI2ZnCHtCigG5NPDqGBTF55bevpc2
+X-Proofpoint-GUID: pbY_4XodWYcU5UuIsIRe6y0rZWXhVkNN
+X-Proofpoint-ORIG-GUID: KAJSxIeGh8p5al9RSDkNdi7ylrAtSE00
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
  definitions=2021-09-27_07,2021-09-24_02,2020-04-07_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- suspectscore=0 mlxlogscore=999 malwarescore=0 phishscore=0 adultscore=0
- spamscore=0 impostorscore=0 priorityscore=1501 mlxscore=0 bulkscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ mlxlogscore=999 spamscore=0
+ impostorscore=0 suspectscore=0 phishscore=0 priorityscore=1501
+ lowpriorityscore=0 mlxscore=0 bulkscore=0 clxscore=1015 adultscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2109230001 definitions=main-2109270135
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -119,35 +118,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This comment likely refers to the obsolete DLPAR workflow where some
-resource state transitions were driven more directly from user space
-utilities, but it also seems to contradict itself: "Change isolate state to
-Isolate [...]" is at odds with the preceding sentences, and it does not
-relate at all to the code that follows.
-
-Remove it to prevent confusion.
+If, due to bugs elsewhere, we get into unregister_cpu_online() with a CPU
+that isn't marked hotpluggable, we can emit a warning and return an
+appropriate error instead of crashing.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+Reviewed-by: Daniel Henrique Barboza <danielhb413@gmail.com>
 ---
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 5 -----
- 1 file changed, 5 deletions(-)
+ arch/powerpc/kernel/sysfs.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index b50f3e9aa259..5ab44600c8d3 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -137,11 +137,6 @@ static void pseries_cpu_die(unsigned int cpu)
- 			cpu, pcpu);
- 	}
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index defecb3b1b15..08d8072d6e7a 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -928,7 +928,8 @@ static int unregister_cpu_online(unsigned int cpu)
+ 	struct device_attribute *attrs, *pmc_attrs;
+ 	int i, nattrs;
  
--	/* Isolation and deallocation are definitely done by
--	 * drslot_chrp_cpu.  If they were not they would be
--	 * done here.  Change isolate state to Isolate and
--	 * change allocation-state to Unusable.
--	 */
- 	paca_ptrs[cpu]->cpu_start = 0;
- }
+-	BUG_ON(!c->hotpluggable);
++	if (WARN_RATELIMIT(!c->hotpluggable, "cpu %d can't be offlined\n", cpu))
++		return -EBUSY;
  
+ #ifdef CONFIG_PPC64
+ 	if (cpu_has_feature(CPU_FTR_SMT))
 -- 
 2.31.1
 
