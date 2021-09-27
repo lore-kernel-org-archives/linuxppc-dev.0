@@ -2,21 +2,21 @@ Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 307BAC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:05:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC51BC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:05:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F6766101A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:05:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9F6766101A
+	by mail.kernel.org (Postfix) with ESMTPS id 1DCD1610A2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:05:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1DCD1610A2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HJGsC2fvQz30hw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 08:05:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HJGsv5X0Wz2ywH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 08:05:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=37HYpCsz;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=iQqCgxcP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -24,27 +24,27 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=37HYpCsz; 
+ header.s=bombadil.20210309 header.b=iQqCgxcP; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HJGpM4fvwz2xtH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HJGpM2d72z2xsv
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 08:02:34 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
- MIME-Version:Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-Type:
- Content-ID:Content-Description:In-Reply-To:References;
- bh=Qm1LFoZMfn5lSLKsNTBNPz2MUy7MRXKY17ahzFVUS3I=; b=37HYpCszFL1/b0oe/u8pFd9QH4
- +c+3j84RuEtSW5Qk6nZIclMOP2UEhpq86fk3g/zNpEtdKHuNE5BW9aa9ZQimPbGtXQ5W1rodKdCwR
- /Zrz64kre/ZLz98Q0kSUgNiY3OmmRtSWOxnaOgzxEX7YPUEmIItcEVUI0UxGlhpoGvm0TBpDaFjM4
- f6ccW7cjGNpKb8t58ADq1tt16SwJ/oaYFuW0KmAPiB5snBepZsnNwg3H1tSeitacXdf9g8tsZBa/W
- NPmUVPHx9iHPOioxoiJc5dEFjQpzx8D7ZXWu3TZeiCzx19T2ruTWOCCouk4YwPTKCN1N9y8RbvfR/
- ltsoAbLA==;
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
+ Reply-To:Content-Type:Content-ID:Content-Description;
+ bh=o2jFAXs2S20ugcqcgWqTKDs1dtJRAdxtjSIxmQce0yE=; b=iQqCgxcPEfR/tT7BcOih0IqCUi
+ rZdLXA0BoJeyuJkOjXPbJPzPcoH/n8om7Tlhp3EbM7OSRMoMphiBNgLlwwBwNWALgBi+SXNBFIrcV
+ PztSxSBtZFEkZMGMUJH/VyeWYSs+3AukRv4/nVnwwqJTKR9J/mqF0WS2/8EZCDMu7s51CVp3tcs17
+ A6lsDP6CF3ZUUakYShG24S7IGolFmr38eHbCdQ5/dAImALfBYSOZCN9ZpgkGOryTnBnDnr71vzG6N
+ jXTHg5V26wp0VGHY1Vmzt2e3YBLG7cM1+PRa62Z67gQ1DmT6aJp1MlesGumQUbskBH1IsCi77cm5t
+ RmUC9XbQ==;
 Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mUyhC-004UJ9-A2; Mon, 27 Sep 2021 22:01:58 +0000
+ (Red Hat Linux)) id 1mUyhC-004UJX-Ie; Mon, 27 Sep 2021 22:01:58 +0000
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
  thunder.leizhen@huawei.com, lee.jones@linaro.org, geoff@infradead.org,
@@ -52,11 +52,12 @@ To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
  jim@jtan.com, haris.iqbal@ionos.com, jinpu.wang@ionos.com,
  josh.h.morris@us.ibm.com, pjk1939@linux.ibm.com, tim@cyberelk.net,
  richard@nod.at, miquel.raynal@bootlin.com, vigneshr@ti.com
-Subject: [PATCH v2 00/10] block: fourth batch of add_disk() error handling
- conversions
-Date: Mon, 27 Sep 2021 15:01:47 -0700
-Message-Id: <20210927220157.1069658-1-mcgrof@kernel.org>
+Subject: [PATCH v2 06/10] block/rsxx: add error handling support for add_disk()
+Date: Mon, 27 Sep 2021 15:01:53 -0700
+Message-Id: <20210927220157.1069658-7-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20210927220157.1069658-1-mcgrof@kernel.org>
+References: <20210927220157.1069658-1-mcgrof@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -77,44 +78,65 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is the fourth batch of add_disk() error handling driver
-conversions. This set along with the entire 7 set of driver conversions
-can be found on my 20210927-for-axboe-add-disk-error-handling branch
-[0].
+We never checked for errors on add_disk() as this function
+returned void. Now that this is fixed, use the shiny new
+error handling.
 
-On this v2 series the following modifications have been made since the
-last v1 series of this patch set:
+Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
+---
+ drivers/block/rsxx/core.c |  4 +++-
+ drivers/block/rsxx/dev.c  | 12 +++++++++---
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
-  - rebased onto linux-next tag 20210927
-  - added the only reviewed-by tag for this series for rnbd Jack Wang
-
-[0] https://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/linux-next.git/log/?h=20210927-for-axboe-add-disk-error-handling
-
-Luis Chamberlain (10):
-  mtip32xx: add error handling support for add_disk()
-  pktcdvd: add error handling support for add_disk()
-  ps3disk: add error handling support for add_disk()
-  ps3vram: add error handling support for add_disk()
-  rnbd: add error handling support for add_disk()
-  block/rsxx: add error handling support for add_disk()
-  block/sunvdc: add error handling support for add_disk()
-  block/sx8: add error handling support for add_disk()
-  pf: add error handling support for add_disk()
-  mtd/ubi/block: add error handling support for add_disk()
-
- drivers/block/mtip32xx/mtip32xx.c |  4 +++-
- drivers/block/paride/pf.c         |  4 +++-
- drivers/block/pktcdvd.c           |  4 +++-
- drivers/block/ps3disk.c           |  8 ++++++--
- drivers/block/ps3vram.c           |  7 ++++++-
- drivers/block/rnbd/rnbd-clt.c     | 13 +++++++++----
- drivers/block/rsxx/core.c         |  4 +++-
- drivers/block/rsxx/dev.c          | 12 +++++++++---
- drivers/block/sunvdc.c            | 14 +++++++++++---
- drivers/block/sx8.c               | 13 +++++++++----
- drivers/mtd/ubi/block.c           |  8 +++++++-
- 11 files changed, 69 insertions(+), 22 deletions(-)
-
+diff --git a/drivers/block/rsxx/core.c b/drivers/block/rsxx/core.c
+index 83636714b8d7..8d9d69f5dfbc 100644
+--- a/drivers/block/rsxx/core.c
++++ b/drivers/block/rsxx/core.c
+@@ -935,7 +935,9 @@ static int rsxx_pci_probe(struct pci_dev *dev,
+ 			card->size8 = 0;
+ 	}
+ 
+-	rsxx_attach_dev(card);
++	st = rsxx_attach_dev(card);
++	if (st)
++		goto failed_create_dev;
+ 
+ 	/************* Setup Debugfs *************/
+ 	rsxx_debugfs_dev_new(card);
+diff --git a/drivers/block/rsxx/dev.c b/drivers/block/rsxx/dev.c
+index 1cc40b0ea761..b2d3ac3efce2 100644
+--- a/drivers/block/rsxx/dev.c
++++ b/drivers/block/rsxx/dev.c
+@@ -192,6 +192,8 @@ static bool rsxx_discard_supported(struct rsxx_cardinfo *card)
+ 
+ int rsxx_attach_dev(struct rsxx_cardinfo *card)
+ {
++	int err = 0;
++
+ 	mutex_lock(&card->dev_lock);
+ 
+ 	/* The block device requires the stripe size from the config. */
+@@ -200,13 +202,17 @@ int rsxx_attach_dev(struct rsxx_cardinfo *card)
+ 			set_capacity(card->gendisk, card->size8 >> 9);
+ 		else
+ 			set_capacity(card->gendisk, 0);
+-		device_add_disk(CARD_TO_DEV(card), card->gendisk, NULL);
+-		card->bdev_attached = 1;
++		err = device_add_disk(CARD_TO_DEV(card), card->gendisk, NULL);
++		if (err == 0)
++			card->bdev_attached = 1;
+ 	}
+ 
+ 	mutex_unlock(&card->dev_lock);
+ 
+-	return 0;
++	if (err)
++		blk_cleanup_disk(card->gendisk);
++
++	return err;
+ }
+ 
+ void rsxx_detach_dev(struct rsxx_cardinfo *card)
 -- 
 2.30.2
 
