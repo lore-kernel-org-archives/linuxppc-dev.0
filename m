@@ -2,21 +2,21 @@ Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45F1DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:03:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3F2CC43217
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:03:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E4C960EB6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:03:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7E4C960EB6
+	by mail.kernel.org (Postfix) with ESMTPS id 505DA611ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:03:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 505DA611ED
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HJGq46chsz2yZx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 08:03:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HJGqn4PWZz3bjG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 08:03:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=moIXcrbm;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=bzTnyovP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -24,27 +24,27 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=moIXcrbm; 
+ header.s=bombadil.20210309 header.b=bzTnyovP; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HJGpM50cjz2xtM
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HJGpM37lRz2xt7
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 08:02:34 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
  Reply-To:Content-Type:Content-ID:Content-Description;
- bh=IGHq/zn5r0bFrYNjymK6TXitnBNWw/sSmMius/3bC28=; b=moIXcrbmWusHJ1/TJ7/4Mkb6zG
- dNqT6LaggsxiFyDwUnruYVVTTUY6JlN8S/t9JqxBXoJhXTXuvrlb7Q7fXg6la2qmQ8c7MGkqRl5p6
- DcDGffiuQ26Sj49ctiyfwODudZ5QygKVr+HQhAoVyZYUh9E/z/sAr4Al9goZO73vkh2Rvnm+3t/j3
- WBZWRIvUOQnoRvcrlt4vJ26SYn9bMpFUGIZTALggRWC8KH+t/oFO9Bp5tHXDOkyx6Armyc0iMJ/w+
- p8na638LZpqVYKz1zq76yX5XGEKnm5lFFLhM7fc8bqdBEdilBt7wtM6py/V+H1JHoJlEcYCtk7L0Q
- RIaa5UDg==;
+ bh=OEudjQURI1tjI6DN2XbbpoNvfS6WRIGCcJ/ZL9K/jW0=; b=bzTnyovPUthX3H21XVFmsdxAel
+ kBWDjWrBSO/gdazPlCqk4zeI2dU713YygQX4DNFesuD84yZnpFT/Q4UtGKabZR3p0jZzIgFQoDWsJ
+ Joi4g0pkOQRhQv4aKj8zCZZREyvc680EO8/x2Fk93DiqjevmEx5oo9yirHYEQlTuIpx0RRCUASyR+
+ 1FohoJpVcxV9GD3wpSh6YK0w6D2iv9ctLFqfKpg6W/ruDkxLyW/QOh3p47k3vkMU8PovrZ/N/3lhj
+ PoFFW5BSpA35XtTD+LaS1C1BgHDgZ3P17+k7of0RZ9JOcL5j8BdaD1UFn0Rgyrt2fwDCl4E+FGV7j
+ aqC8wuyA==;
 Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mUyhC-004UJM-EV; Mon, 27 Sep 2021 22:01:58 +0000
+ (Red Hat Linux)) id 1mUyhC-004UJu-OO; Mon, 27 Sep 2021 22:01:58 +0000
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
  thunder.leizhen@huawei.com, lee.jones@linaro.org, geoff@infradead.org,
@@ -52,9 +52,10 @@ To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
  jim@jtan.com, haris.iqbal@ionos.com, jinpu.wang@ionos.com,
  josh.h.morris@us.ibm.com, pjk1939@linux.ibm.com, tim@cyberelk.net,
  richard@nod.at, miquel.raynal@bootlin.com, vigneshr@ti.com
-Subject: [PATCH v2 03/10] ps3disk: add error handling support for add_disk()
-Date: Mon, 27 Sep 2021 15:01:50 -0700
-Message-Id: <20210927220157.1069658-4-mcgrof@kernel.org>
+Subject: [PATCH v2 10/10] mtd/ubi/block: add error handling support for
+ add_disk()
+Date: Mon, 27 Sep 2021 15:01:57 -0700
+Message-Id: <20210927220157.1069658-11-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210927220157.1069658-1-mcgrof@kernel.org>
 References: <20210927220157.1069658-1-mcgrof@kernel.org>
@@ -84,29 +85,33 @@ error handling.
 
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- drivers/block/ps3disk.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/mtd/ubi/block.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
-index 8d51efbe045d..3054adf77460 100644
---- a/drivers/block/ps3disk.c
-+++ b/drivers/block/ps3disk.c
-@@ -467,9 +467,13 @@ static int ps3disk_probe(struct ps3_system_bus_device *_dev)
- 		 gendisk->disk_name, priv->model, priv->raw_capacity >> 11,
- 		 get_capacity(gendisk) >> 11);
+diff --git a/drivers/mtd/ubi/block.c b/drivers/mtd/ubi/block.c
+index e003b4b44ffa..062e6c2c45f5 100644
+--- a/drivers/mtd/ubi/block.c
++++ b/drivers/mtd/ubi/block.c
+@@ -447,12 +447,18 @@ int ubiblock_create(struct ubi_volume_info *vi)
+ 	list_add_tail(&dev->list, &ubiblock_devices);
  
--	device_add_disk(&dev->sbd.core, gendisk, NULL);
--	return 0;
-+	error = device_add_disk(&dev->sbd.core, gendisk, NULL);
-+	if (error)
-+		goto fail_cleanup_disk;
+ 	/* Must be the last step: anyone can call file ops from now on */
+-	add_disk(dev->gd);
++	ret = add_disk(dev->gd);
++	if (ret)
++		goto out_destroy_wq;
++
+ 	dev_info(disk_to_dev(dev->gd), "created from ubi%d:%d(%s)",
+ 		 dev->ubi_num, dev->vol_id, vi->name);
+ 	mutex_unlock(&devices_mutex);
+ 	return 0;
  
-+	return 0;
-+fail_cleanup_disk:
-+	blk_cleanup_disk(gendisk);
- fail_free_tag_set:
- 	blk_mq_free_tag_set(&priv->tag_set);
- fail_teardown:
++out_destroy_wq:
++	list_del(&dev->list);
++	destroy_workqueue(dev->wq);
+ out_remove_minor:
+ 	idr_remove(&ubiblock_minor_idr, gd->first_minor);
+ out_cleanup_disk:
 -- 
 2.30.2
 
