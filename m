@@ -2,21 +2,21 @@ Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0908C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:08:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D717C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:08:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 41A5260F4F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:08:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 41A5260F4F
+	by mail.kernel.org (Postfix) with ESMTPS id DC35660F4F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:08:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DC35660F4F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HJGwk6ssyz3cjd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 08:08:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HJGxR4FmLz3cp0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 08:08:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=qoP1G2/E;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=PkFreus+;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -24,27 +24,27 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=qoP1G2/E; 
+ header.s=bombadil.20210309 header.b=PkFreus+; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HJGpM0wlGz2xsm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HJGpM1xd4z2xss
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 08:02:34 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
  Reply-To:Content-Type:Content-ID:Content-Description;
- bh=HyZ2KI/h/gpVdjlPSyGH7uhBE8wL3JrrLi6b2qQqvAU=; b=qoP1G2/EKd2PpB49LLfiUbqQI+
- /p3qDXl4nBuY2BBqbAnV6/2x1xwiWeIlQnQLNSGlQBMjG3EumpQiGMlEbDPdE/sn6CJiZw384K1td
- MeXB7ScLURlgpF+SnAEZE1FVvYviEHHrDXd2QpWkTKyrKQ1+OghEj5vl1k4ABOpTO9GDr2E/T1I0h
- QsPVixF84kTYPzRMfC2dQ1p8QfG2KM6hfko6QbFW0GHU5d49mc8eGWwMKCMRZhRj3f+IAg7GziBYX
- fquh1PR0qgNEnoUNkUFFEHKi+dd/QaHU3XTv9ml3cZHGejdpvpc3CFWuoVv0PRV2ZLnWGdtGg/yLi
- bJVXGJDg==;
+ bh=JRWTgzBcm05V8ySpKi+Sn387LcpeiWI92yzQrCXgXhI=; b=PkFreus+OyH9OhtirxXvpPHryN
+ E3CEpDcIJqXTbwH3Nn7zTHGIkjKDat1oUO+HMwRsegJ2duFMKCfKasb2I9MihJGYzIiXTk/Cw0M0e
+ b5T4RRN1axX1ux1NQ6NgGHkweaYtaGTypTFKKZQRZtidG1B8nU6kP9+r+9WcO2YTe+eGHiawDP7zl
+ Qq9RUWwfCC+iOtqeQ0lN/NBnuK39zbbhd0dvQPCKlLTubtUH4UgqGgAClSsGqDUAqxnJpURKoqfjW
+ 8juL0YNksH3DHVxMmU/M/8H7Qq75bBYOF5IKUlLW5ofE4D0oVTcGWjt/EjLE1WtMBkLalM2XNOWY6
+ Hsd20z5Q==;
 Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mUyhC-004UJb-K1; Mon, 27 Sep 2021 22:01:58 +0000
+ (Red Hat Linux)) id 1mUyhC-004UJI-DG; Mon, 27 Sep 2021 22:01:58 +0000
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
  thunder.leizhen@huawei.com, lee.jones@linaro.org, geoff@infradead.org,
@@ -52,10 +52,9 @@ To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
  jim@jtan.com, haris.iqbal@ionos.com, jinpu.wang@ionos.com,
  josh.h.morris@us.ibm.com, pjk1939@linux.ibm.com, tim@cyberelk.net,
  richard@nod.at, miquel.raynal@bootlin.com, vigneshr@ti.com
-Subject: [PATCH v2 07/10] block/sunvdc: add error handling support for
- add_disk()
-Date: Mon, 27 Sep 2021 15:01:54 -0700
-Message-Id: <20210927220157.1069658-8-mcgrof@kernel.org>
+Subject: [PATCH v2 02/10] pktcdvd: add error handling support for add_disk()
+Date: Mon, 27 Sep 2021 15:01:49 -0700
+Message-Id: <20210927220157.1069658-3-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210927220157.1069658-1-mcgrof@kernel.org>
 References: <20210927220157.1069658-1-mcgrof@kernel.org>
@@ -83,48 +82,29 @@ We never checked for errors on add_disk() as this function
 returned void. Now that this is fixed, use the shiny new
 error handling.
 
-We re-use the same free tag call, so we also add a label for
-that as well.
+The out_mem2 error label already does what we need so
+re-use that.
 
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- drivers/block/sunvdc.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ drivers/block/pktcdvd.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/block/sunvdc.c b/drivers/block/sunvdc.c
-index 4d4bb810c2ae..6f45a53f7cbf 100644
---- a/drivers/block/sunvdc.c
-+++ b/drivers/block/sunvdc.c
-@@ -826,8 +826,8 @@ static int probe_disk(struct vdc_port *port)
- 	if (IS_ERR(g)) {
- 		printk(KERN_ERR PFX "%s: Could not allocate gendisk.\n",
- 		       port->vio.name);
--		blk_mq_free_tag_set(&port->tag_set);
--		return PTR_ERR(g);
-+		err = PTR_ERR(g);
-+		goto out_free_tag;
- 	}
+diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+index 0f26b2510a75..415248962e67 100644
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -2729,7 +2729,9 @@ static int pkt_setup_dev(dev_t dev, dev_t* pkt_dev)
+ 	/* inherit events of the host device */
+ 	disk->events = pd->bdev->bd_disk->events;
  
- 	port->disk = g;
-@@ -879,9 +879,17 @@ static int probe_disk(struct vdc_port *port)
- 	       port->vdisk_size, (port->vdisk_size >> (20 - 9)),
- 	       port->vio.ver.major, port->vio.ver.minor);
+-	add_disk(disk);
++	ret = add_disk(disk);
++	if (ret)
++		goto out_mem2;
  
--	device_add_disk(&port->vio.vdev->dev, g, NULL);
-+	err = device_add_disk(&port->vio.vdev->dev, g, NULL);
-+	if (err)
-+		goto out_cleanup_disk;
- 
- 	return 0;
-+
-+out_cleanup_disk:
-+	blk_cleanup_disk(g);
-+out_free_tag:
-+	blk_mq_free_tag_set(&port->tag_set);
-+	return err;
- }
- 
- static struct ldc_channel_config vdc_ldc_cfg = {
+ 	pkt_sysfs_dev_new(pd);
+ 	pkt_debugfs_dev_new(pd);
 -- 
 2.30.2
 
