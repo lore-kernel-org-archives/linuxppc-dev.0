@@ -2,21 +2,21 @@ Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10CE0C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:06:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14D31C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:07:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A13B060F4F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:06:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A13B060F4F
+	by mail.kernel.org (Postfix) with ESMTPS id 7144F60F3A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Sep 2021 22:07:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7144F60F3A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HJGvK2fXJz3cTJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 08:06:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HJGw20xdfz3cYg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 08:07:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=ln976+r6;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=uCBCpVTC;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -24,27 +24,27 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=ln976+r6; 
+ header.s=bombadil.20210309 header.b=uCBCpVTC; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HJGpM0V9hz2xs6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 08:02:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HJGpL6xkbz2xr8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 08:02:33 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
  Reply-To:Content-Type:Content-ID:Content-Description;
- bh=adUhWGLmSwGDCmYJPL/wycZ+ESyOItTDyVeSKbBPSXk=; b=ln976+r6AHlYQ6p0Ges6IER5s8
- MPl+7sPxPkyG/OoMQrAYGw6eVCfo5DobXvpsiPoemFpVVNidY/EqvDeDj/iHJb5AK+QV/PSPHJzxZ
- MEu+/8Il3ODNCCTJvIgEHJmeacHxxtaAyiflR5+Vjqj8psNnJTU3E6HKG3F6NPayQ/pSSJeOLuOJr
- G4X/6iQsum1AaLkf/nyM6LeexkyV5PS+3OnZ/VK7gHgNMrlJZPFi/datb1qHLzKBzf3Xzmmm09i20
- lrvu+SxRLhM6QUVWIp6ioD95iJoNaVp1NdaD1ge2VazFolL2mBBTD3RERg8rEHH8rfvOpc0Mw5aJQ
- 3kQmY/9w==;
+ bh=6NZfHmNoX5N/dbslA9tEZ3wm71g//v2MOeHuD/3FoC0=; b=uCBCpVTCUYkKXcaxC2J6Gg0eBY
+ aKisKSe7MGIQIXELNWHMCTDE7nQgs2f69J7A3nT/B4AF4/RXdazlA0HZFHXf4VxeKibsbD5gKPZW6
+ kUTADjoumJ+NeA3Mkt0U4TvDC9YXlBMa2rB5e5egZwzs546G2FHE3UunW/Y3O494alfruSOiulWwH
+ inll5aH7pIhMVm124LgcaHJh2v5x64aek6z18eurwQgcc4n2roxEaZvp+7mscajssncgq0E3lWqTJ
+ eAusMvKcQ5JCNXBEW6cak+pHqGELN8t0vhZAjfquU0jL9xvCBkaBYS5E75wdC4TtMjVcA3l19ziqO
+ hsOs4VpQ==;
 Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mUyhC-004UJE-Bd; Mon, 27 Sep 2021 22:01:58 +0000
+ (Red Hat Linux)) id 1mUyhC-004UJP-G0; Mon, 27 Sep 2021 22:01:58 +0000
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
  thunder.leizhen@huawei.com, lee.jones@linaro.org, geoff@infradead.org,
@@ -52,9 +52,9 @@ To: axboe@kernel.dk, bhelgaas@google.com, liushixin2@huawei.com,
  jim@jtan.com, haris.iqbal@ionos.com, jinpu.wang@ionos.com,
  josh.h.morris@us.ibm.com, pjk1939@linux.ibm.com, tim@cyberelk.net,
  richard@nod.at, miquel.raynal@bootlin.com, vigneshr@ti.com
-Subject: [PATCH v2 01/10] mtip32xx: add error handling support for add_disk()
-Date: Mon, 27 Sep 2021 15:01:48 -0700
-Message-Id: <20210927220157.1069658-2-mcgrof@kernel.org>
+Subject: [PATCH v2 04/10] ps3vram: add error handling support for add_disk()
+Date: Mon, 27 Sep 2021 15:01:51 -0700
+Message-Id: <20210927220157.1069658-5-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210927220157.1069658-1-mcgrof@kernel.org>
 References: <20210927220157.1069658-1-mcgrof@kernel.org>
@@ -82,29 +82,31 @@ We never checked for errors on add_disk() as this function
 returned void. Now that this is fixed, use the shiny new
 error handling.
 
-The read_capacity_error error label already does what we need,
-so just re-use that.
-
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- drivers/block/mtip32xx/mtip32xx.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/block/ps3vram.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/block/mtip32xx/mtip32xx.c b/drivers/block/mtip32xx/mtip32xx.c
-index 901855717cb5..d0b40309f47e 100644
---- a/drivers/block/mtip32xx/mtip32xx.c
-+++ b/drivers/block/mtip32xx/mtip32xx.c
-@@ -3633,7 +3633,9 @@ static int mtip_block_initialize(struct driver_data *dd)
- 	set_capacity(dd->disk, capacity);
+diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
+index c7b19e128b03..af2a0d09c598 100644
+--- a/drivers/block/ps3vram.c
++++ b/drivers/block/ps3vram.c
+@@ -755,9 +755,14 @@ static int ps3vram_probe(struct ps3_system_bus_device *dev)
+ 	dev_info(&dev->core, "%s: Using %llu MiB of GPU memory\n",
+ 		 gendisk->disk_name, get_capacity(gendisk) >> 11);
  
- 	/* Enable the block device and add it to /dev */
--	device_add_disk(&dd->pdev->dev, dd->disk, mtip_disk_attr_groups);
-+	rv = device_add_disk(&dd->pdev->dev, dd->disk, mtip_disk_attr_groups);
-+	if (rv)
-+		goto read_capacity_error;
+-	device_add_disk(&dev->core, gendisk, NULL);
++	error = device_add_disk(&dev->core, gendisk, NULL);
++	if (error)
++		goto out_cleanup_disk;
++
+ 	return 0;
  
- 	if (dd->mtip_svc_handler) {
- 		set_bit(MTIP_DDF_INIT_DONE_BIT, &dd->dd_flag);
++out_cleanup_disk:
++	blk_cleanup_disk(gendisk);
+ out_cache_cleanup:
+ 	remove_proc_entry(DEVICE_NAME, NULL);
+ 	ps3vram_cache_cleanup(dev);
 -- 
 2.30.2
 
