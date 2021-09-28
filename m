@@ -2,108 +2,106 @@ Return-Path: <SRS0=n4RZ=OS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CADD6C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 11:52:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6FD9C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 11:53:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B23E361157
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 11:52:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B23E361157
+	by mail.kernel.org (Postfix) with ESMTPS id EF38260F44
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 11:53:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EF38260F44
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HJdDR1vLCz3bYW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 21:52:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HJdFC4l82z308h
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 21:53:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BD72vPlo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lVQG/EJA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=BD72vPlo; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=lVQG/EJA; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HJdBp3s95z2yJP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HJdBq1Bvjz2yJP
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Sep 2021 21:51:30 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18SAF2l4026529; 
- Tue, 28 Sep 2021 07:51:25 -0400
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18SApfwK021111; 
+ Tue, 28 Sep 2021 07:51:14 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : subject :
- date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=+5dr6xlj8qoY79+JHA0sHze00da8FJpvRmaJ5NEFTms=;
- b=BD72vPloAVscujrAxd91mbGQIItaT8m1CilLIpKjXFG37I1rTcos+BhrWGZUGO9DohOA
- hTle0g8rmuBzJ1PJeqj9ebkhhKb9HcV93sXnnfRTyIzcfq/BO27OHLnlgEmAYy1Szsrt
- cc+9O1kRwU9BQkEpZjgrikhACs4QOM7YmjtbFJ3N9wNj8gA5UUlo7It8beHfNcI2VkUd
- pOiXFkapbLsFhvKGYjwb2kNQ/SU8n9TqoioXmNM9mn0mTrPNMBQFxjVtNRxS5o7rSLDz
- lSDs7yRaouwpPtVWnvQIjbZavzdhLW/RJHT2Go8zrvJBHTc7JW+iuYMtb20UrRYx8a2X hg== 
+ date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=frlVS1az/WulHbrX6D1bYZP2D7LX8/U+EvRFZZvVv3Y=;
+ b=lVQG/EJAye4HaVBUbci1rvRpEFpzoSPx1TXIu2ijVJlj1tYGbNzdsQKFMNI//a7OISjq
+ BB7SPeBNhTNJySZKuL0G5OrsaBTYCkGiscpr5jiVIanvYYgMFfb7yX+Gq1k1yFaocXRC
+ C4nG05eqnfQwO86rdWWNF968lo6gSUFqs4jO4XFI3QYTcd5+xGZ8inuz9VkdsGHUPuZ8
+ fdZTOnM4VqIAnX97gUfHykpC55Yp4z2iTGFrW39+5Kj69om0AIXPdVzYFBCAy+P2A31f
+ paN+gM2LTFcXllhhadQsce4+9p+/GeCmsNhlb66y+LEBdVNwoNfdb/1J7xhMxzLGRbBJ 2Q== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bbxq7d0ta-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3bby6qcf4e-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 28 Sep 2021 07:51:24 -0400
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18SBDlVU034986;
- Tue, 28 Sep 2021 07:51:24 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bbxq7d0sn-1
+ Tue, 28 Sep 2021 07:51:14 -0400
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18SAv26Y023990;
+ Tue, 28 Sep 2021 07:51:13 -0400
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3bby6qcf41-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 28 Sep 2021 07:51:24 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18SBhKI8021670;
- Tue, 28 Sep 2021 11:51:21 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma04ams.nl.ibm.com with ESMTP id 3b9ud9na6h-1
+ Tue, 28 Sep 2021 07:51:13 -0400
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18SBhHbe012840;
+ Tue, 28 Sep 2021 11:51:12 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma06fra.de.ibm.com with ESMTP id 3b9u1jux9x-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 28 Sep 2021 11:51:21 +0000
+ Tue, 28 Sep 2021 11:51:12 +0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
  [9.149.105.61])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 18SBpHlB40829314
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 18SBp8uG000732
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 28 Sep 2021 11:51:17 GMT
+ Tue, 28 Sep 2021 11:51:08 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BC68E11C04A;
- Tue, 28 Sep 2021 11:51:17 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 3F9D011C05E;
+ Tue, 28 Sep 2021 11:51:08 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A7BF211C054;
- Tue, 28 Sep 2021 11:51:13 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id EB89B11C04C;
+ Tue, 28 Sep 2021 11:51:03 +0000 (GMT)
 Received: from pratiks-thinkpad.ibm.com (unknown [9.43.58.127])
  by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 28 Sep 2021 11:51:13 +0000 (GMT)
+ Tue, 28 Sep 2021 11:51:03 +0000 (GMT)
 From: "Pratik R. Sampat" <psampat@linux.ibm.com>
 To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
  shuah@kernel.org, farosas@linux.ibm.com, kjain@linux.ibm.com,
  linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
  linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
  psampat@linux.ibm.com, pratik.r.sampat@gmail.com
-Subject: [PATCH v8 2/2] selftest/powerpc: Add PAPR sysfs attributes sniff test
-Date: Tue, 28 Sep 2021 17:21:02 +0530
-Message-Id: <20210928115102.57117-3-psampat@linux.ibm.com>
+Subject: [PATCH v8 0/2] Interface to represent PAPR firmware attributes
+Date: Tue, 28 Sep 2021 17:21:00 +0530
+Message-Id: <20210928115102.57117-1-psampat@linux.ibm.com>
 X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20210928115102.57117-1-psampat@linux.ibm.com>
-References: <20210928115102.57117-1-psampat@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: _iqWDJ0KI134p2VWX7lrRNns_6aIVbRL
-X-Proofpoint-GUID: ayVoehO3e9g6cw3yyVAlfzIEaWY7AFgN
+X-Proofpoint-GUID: Hr71Fp_CKehqAkrOAFSu_7vVi5AF_6VR
+X-Proofpoint-ORIG-GUID: jjDfv2T8fmnGw42LRkoVeGaBqrtkaeGq
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
  definitions=2021-09-28_05,2021-09-28_01,2020-04-07_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- clxscore=1015 malwarescore=0 phishscore=0 mlxscore=0 spamscore=0
- adultscore=0 bulkscore=0 impostorscore=0 suspectscore=0 lowpriorityscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ bulkscore=0 mlxlogscore=999 impostorscore=0 suspectscore=0 phishscore=0
+ mlxscore=0 spamscore=0 adultscore=0 lowpriorityscore=0 malwarescore=0
+ clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2109230001 definitions=main-2109280065
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -120,167 +118,63 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Include a testcase to check if the sysfs files for energy and frequency
-related have its related attribute files exist and populated
+RFC: https://lkml.org/lkml/2021/6/4/791
+PATCH v1: https://lkml.org/lkml/2021/6/16/805
+PATCH v2: https://lkml.org/lkml/2021/7/6/138
+PATCH v3: https://lkml.org/lkml/2021/7/12/2799
+PATCH v4: https://lkml.org/lkml/2021/7/16/532
+PATCH v5: https://lkml.org/lkml/2021/7/19/247
+PATCH v6: https://lkml.org/lkml/2021/7/20/36
+PATCH v7: https://lkml.org/lkml/2021/7/23/26 
 
-Signed-off-by: Pratik R. Sampat <psampat@linux.ibm.com>
----
+Changelog v7-->v8
+1. Rebased and tested against 5.15
+2. Added a selftest to check if the energy and frequency attribues
+   exist and their files populated
+
+Also, have implemented a POC using this interface for the powerpc-utils'
+ppc64_cpu --frequency command-line tool to utilize this information
+in userspace.
+The POC for the new interface has been sent to the powerpc-utils mailing
+list for early review: https://groups.google.com/g/powerpc-utils-devel/c/r4i7JnlyQ8s
+
+Sample output from the powerpc-utils tool is as follows:
+
+# ppc64_cpu --frequency
+Power and Performance Mode: XXXX
+Idle Power Saver Status   : XXXX
+Processor Folding Status  : XXXX --> Printed if Idle power save status is supported
+
+Platform reported frequencies --> Frequencies reported from the platform's H_CALL i.e PAPR interface
+min        :    NNNN GHz
+max        :    NNNN GHz
+static     :    NNNN GHz
+
+Tool Computed frequencies
+min        :    NNNN GHz (cpu XX)
+max        :    NNNN GHz (cpu XX)
+avg        :    NNNN GHz
+
+Pratik R. Sampat (2):
+  powerpc/pseries: Interface to represent PAPR firmware attributes
+  selftest/powerpc: Add PAPR sysfs attributes sniff test
+
+ .../sysfs-firmware-papr-energy-scale-info     |  26 ++
+ arch/powerpc/include/asm/hvcall.h             |  24 +-
+ arch/powerpc/kvm/trace_hv.h                   |   1 +
+ arch/powerpc/platforms/pseries/Makefile       |   3 +-
+ .../pseries/papr_platform_attributes.c        | 312 ++++++++++++++++++
  tools/testing/selftests/powerpc/Makefile      |   1 +
  .../powerpc/papr_attributes/.gitignore        |   2 +
- .../powerpc/papr_attributes/Makefile          |   7 ++
- .../powerpc/papr_attributes/attr_test.c       | 107 ++++++++++++++++++
- 4 files changed, 117 insertions(+)
+ .../powerpc/papr_attributes/Makefile          |   7 +
+ .../powerpc/papr_attributes/attr_test.c       | 107 ++++++
+ 9 files changed, 481 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-firmware-papr-energy-scale-info
+ create mode 100644 arch/powerpc/platforms/pseries/papr_platform_attributes.c
  create mode 100644 tools/testing/selftests/powerpc/papr_attributes/.gitignore
  create mode 100644 tools/testing/selftests/powerpc/papr_attributes/Makefile
  create mode 100644 tools/testing/selftests/powerpc/papr_attributes/attr_test.c
 
-diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-index 0830e63818c1..c68c872efb23 100644
---- a/tools/testing/selftests/powerpc/Makefile
-+++ b/tools/testing/selftests/powerpc/Makefile
-@@ -30,6 +30,7 @@ SUB_DIRS = alignment		\
- 	   eeh			\
- 	   vphn         \
- 	   math		\
-+	   papr_attributes	\
- 	   ptrace	\
- 	   security
- 
-diff --git a/tools/testing/selftests/powerpc/papr_attributes/.gitignore b/tools/testing/selftests/powerpc/papr_attributes/.gitignore
-new file mode 100644
-index 000000000000..9c8cb54c8b28
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/papr_attributes/.gitignore
-@@ -0,0 +1,2 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+attr_test
-\ No newline at end of file
-diff --git a/tools/testing/selftests/powerpc/papr_attributes/Makefile b/tools/testing/selftests/powerpc/papr_attributes/Makefile
-new file mode 100644
-index 000000000000..135886f200ad
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/papr_attributes/Makefile
-@@ -0,0 +1,7 @@
-+# SPDX-License-Identifier: GPL-2.0
-+TEST_GEN_PROGS := attr_test
-+
-+top_srcdir = ../../../../..
-+include ../../lib.mk
-+
-+$(TEST_GEN_PROGS): ../harness.c ../utils.c
-diff --git a/tools/testing/selftests/powerpc/papr_attributes/attr_test.c b/tools/testing/selftests/powerpc/papr_attributes/attr_test.c
-new file mode 100644
-index 000000000000..905e2cbb3863
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/papr_attributes/attr_test.c
-@@ -0,0 +1,107 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * PAPR Energy attributes sniff test
-+ * This checks if the papr folders and contents are populated relating to
-+ * the energy and frequency attributes
-+ *
-+ * Copyright 2021, Pratik Rajesh Sampat, IBM Corp.
-+ */
-+
-+#include <stdio.h>
-+#include <string.h>
-+#include <dirent.h>
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <unistd.h>
-+#include <stdlib.h>
-+
-+#include "utils.h"
-+
-+enum energy_freq_attrs {
-+	POWER_PERFORMANCE_MODE = 1,
-+	IDLE_POWER_SAVER_STATUS = 2,
-+	MIN_FREQ = 3,
-+	STAT_FREQ = 4,
-+	MAX_FREQ = 6,
-+	PROC_FOLDING_STATUS = 8
-+};
-+
-+enum type {
-+	INVALID,
-+	STR_VAL,
-+	NUM_VAL
-+};
-+
-+int value_type(int id)
-+{
-+	int val_type;
-+
-+	switch(id) {
-+	case POWER_PERFORMANCE_MODE:
-+	case IDLE_POWER_SAVER_STATUS:
-+		val_type = STR_VAL;
-+		break;
-+	case MIN_FREQ:
-+	case STAT_FREQ:
-+	case MAX_FREQ:
-+	case PROC_FOLDING_STATUS:
-+		val_type = NUM_VAL;
-+		break;
-+	default:
-+		val_type = INVALID;
-+	}
-+
-+	return val_type;
-+}
-+
-+int verify_energy_info()
-+{
-+	const char *path = "/sys/firmware/papr/energy_scale_info";
-+	struct dirent *entry;
-+	struct stat s;
-+	DIR *dirp;
-+
-+	if (stat(path, &s) || !S_ISDIR(s.st_mode))
-+		return -1;
-+	dirp = opendir(path);
-+
-+	while ((entry = readdir(dirp)) != NULL) {
-+		char file_name[64];
-+		int id, attr_type;
-+		FILE *f;
-+
-+		if (strcmp(entry->d_name,".") == 0 ||
-+		    strcmp(entry->d_name,"..") == 0)
-+			continue;
-+
-+		id = atoi(entry->d_name);
-+		attr_type = value_type(id);
-+		if (attr_type == INVALID)
-+			return -1;
-+
-+		/* Check if the files exist and have data in them */
-+		sprintf(file_name, "%s/%d/desc", path, id);
-+		f = fopen(file_name, "r");
-+		if (!f || fgetc(f) == EOF)
-+			return -1;
-+
-+		sprintf(file_name, "%s/%d/value", path, id);
-+		f = fopen(file_name, "r");
-+		if (!f || fgetc(f) == EOF)
-+			return -1;
-+
-+		if (attr_type == STR_VAL) {
-+			sprintf(file_name, "%s/%d/value_desc", path, id);
-+			f = fopen(file_name, "r");
-+			if (!f || fgetc(f) == EOF)
-+				return -1;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(verify_energy_info, "papr_attributes");
-+}
 -- 
 2.31.1
 
