@@ -2,52 +2,55 @@ Return-Path: <SRS0=n4RZ=OS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07A31C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 19:11:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FC4DC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 19:11:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D39961209
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 19:11:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4D39961209
+	by mail.kernel.org (Postfix) with ESMTPS id 540DF61262
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 19:11:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 540DF61262
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HJpy24mqtz306n
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 05:11:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HJpyk6dcdz3c5v
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 05:11:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=JTRqt5L7;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=Yo909OX9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=alien8.de (client-ip=5.9.137.197; helo=mail.skyhub.de;
  envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
+ header.s=dkim header.b=Yo909OX9; dkim-atps=neutral
 Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HJpxF46r3z2xX5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HJpxG2Vytz2xXg
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Sep 2021 05:10:24 +1000 (AEST)
 Received: from zn.tnic (p200300ec2f13b20078349fd04295260b.dip0.t-ipconnect.de
  [IPv6:2003:ec:2f13:b200:7834:9fd0:4295:260b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id AD7FB1EC0755;
- Tue, 28 Sep 2021 21:10:21 +0200 (CEST)
+ by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 03EEF1EC0731;
+ Tue, 28 Sep 2021 21:10:20 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
- t=1632856221;
+ t=1632856220;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=Bn+ldNQSojq7g94kgPB0M3m7oPJwjEbDTTp9GiWtL3Q=;
- b=JTRqt5L7p2XB+noRvizMcYqBFPJCIsKRGXtHtH3AX0rH9U6I159zvaDC9hzZyb2cQuiOpV
- Bt8vBy63RtfeJs01lA5FUAi0uu7qmlI1sL+ESylxvloBdUs2LU/QydNe0FHshkxl9usKge
- U4A4i/2oYuLj/bRFWZsYQ6H2PWJxfpc=
+ bh=J+XdhoQGzIN8rz2Q4VHmTGzW5OUUAI4zbVurx/C+SFw=;
+ b=Yo909OX92n3M/cGLqS77ordtgA2tox4iPDFQFfqj90ti7VPQU2IrUuYwnMJGopwHyUg8Ex
+ 7pnCy6+oJgxD0E3vHZ0scxdMTXevKG3dVm9jvPA9z/Saeugp83kcj6Kifc6iNEhP1gH4KW
+ aK+6e6Rz0t6QBeUqkA4X9sqEff7rZcg=
 From: Borislav Petkov <bp@alien8.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/8] powerpc/pseries/svm: Add a powerpc version of
- cc_platform_has()
-Date: Tue, 28 Sep 2021 21:10:05 +0200
-Message-Id: <20210928191009.32551-5-bp@alien8.de>
+Subject: [PATCH 2/8] arch/cc: Introduce a function to check for confidential
+ computing features
+Date: Tue, 28 Sep 2021 21:10:03 +0200
+Message-Id: <20210928191009.32551-3-bp@alien8.de>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210928191009.32551-1-bp@alien8.de>
 References: <20210928191009.32551-1-bp@alien8.de>
@@ -64,7 +67,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Kuppuswamy, Sathyanarayanan" <sathyanarayanan.kuppuswamy@linux.intel.com>,
+Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
  linux-efi@vger.kernel.org, kvm@vger.kernel.org,
  David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org,
  platform-driver-x86@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
@@ -88,50 +91,48 @@ Sender: "Linuxppc-dev"
 
 From: Tom Lendacky <thomas.lendacky@amd.com>
 
-Introduce a powerpc version of the cc_platform_has() function. This will
-be used to replace the powerpc mem_encrypt_active() implementation, so
-the implementation will initially only support the CC_ATTR_MEM_ENCRYPT
-attribute.
+In preparation for other confidential computing technologies, introduce
+a generic helper function, cc_platform_has(), that can be used to
+check for specific active confidential computing attributes, like
+memory encryption. This is intended to eliminate having to add multiple
+technology-specific checks to the code (e.g. if (sev_active() ||
+tdx_active() || ... ).
 
+ [ bp: s/_CC_PLATFORM_H/_LINUX_CC_PLATFORM_H/g ]
+
+Co-developed-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Co-developed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
 Signed-off-by: Borislav Petkov <bp@suse.de>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/Kconfig       |  1 +
- arch/powerpc/platforms/pseries/Makefile      |  2 ++
- arch/powerpc/platforms/pseries/cc_platform.c | 26 ++++++++++++++++++++
- 3 files changed, 29 insertions(+)
- create mode 100644 arch/powerpc/platforms/pseries/cc_platform.c
+ arch/Kconfig                |  3 ++
+ include/linux/cc_platform.h | 88 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 91 insertions(+)
+ create mode 100644 include/linux/cc_platform.h
 
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index 5e037df2a3a1..2e57391e0778 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -159,6 +159,7 @@ config PPC_SVM
- 	select SWIOTLB
- 	select ARCH_HAS_MEM_ENCRYPT
- 	select ARCH_HAS_FORCE_DMA_UNENCRYPTED
-+	select ARCH_HAS_CC_PLATFORM
- 	help
- 	 There are certain POWER platforms which support secure guests using
- 	 the Protected Execution Facility, with the help of an Ultravisor
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index 4cda0ef87be0..41d8aee98da4 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -31,3 +31,5 @@ obj-$(CONFIG_FA_DUMP)		+= rtas-fadump.o
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 8df1c7102643..d1e69d6e8498 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -1234,6 +1234,9 @@ config RELR
+ config ARCH_HAS_MEM_ENCRYPT
+ 	bool
  
- obj-$(CONFIG_SUSPEND)		+= suspend.o
- obj-$(CONFIG_PPC_VAS)		+= vas.o
++config ARCH_HAS_CC_PLATFORM
++	bool
 +
-+obj-$(CONFIG_ARCH_HAS_CC_PLATFORM)	+= cc_platform.o
-diff --git a/arch/powerpc/platforms/pseries/cc_platform.c b/arch/powerpc/platforms/pseries/cc_platform.c
+ config HAVE_SPARSE_SYSCALL_NR
+        bool
+        help
+diff --git a/include/linux/cc_platform.h b/include/linux/cc_platform.h
 new file mode 100644
-index 000000000000..e8021af83a19
+index 000000000000..a075b70b9a70
 --- /dev/null
-+++ b/arch/powerpc/platforms/pseries/cc_platform.c
-@@ -0,0 +1,26 @@
-+// SPDX-License-Identifier: GPL-2.0-only
++++ b/include/linux/cc_platform.h
+@@ -0,0 +1,88 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
 + * Confidential Computing Platform Capability checks
 + *
@@ -140,23 +141,85 @@ index 000000000000..e8021af83a19
 + * Author: Tom Lendacky <thomas.lendacky@amd.com>
 + */
 +
-+#include <linux/export.h>
-+#include <linux/cc_platform.h>
++#ifndef _LINUX_CC_PLATFORM_H
++#define _LINUX_CC_PLATFORM_H
 +
-+#include <asm/machdep.h>
-+#include <asm/svm.h>
++#include <linux/types.h>
++#include <linux/stddef.h>
 +
-+bool cc_platform_has(enum cc_attr attr)
-+{
-+	switch (attr) {
-+	case CC_ATTR_MEM_ENCRYPT:
-+		return is_secure_guest();
++/**
++ * enum cc_attr - Confidential computing attributes
++ *
++ * These attributes represent confidential computing features that are
++ * currently active.
++ */
++enum cc_attr {
++	/**
++	 * @CC_ATTR_MEM_ENCRYPT: Memory encryption is active
++	 *
++	 * The platform/OS is running with active memory encryption. This
++	 * includes running either as a bare-metal system or a hypervisor
++	 * and actively using memory encryption or as a guest/virtual machine
++	 * and actively using memory encryption.
++	 *
++	 * Examples include SME, SEV and SEV-ES.
++	 */
++	CC_ATTR_MEM_ENCRYPT,
 +
-+	default:
-+		return false;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(cc_platform_has);
++	/**
++	 * @CC_ATTR_HOST_MEM_ENCRYPT: Host memory encryption is active
++	 *
++	 * The platform/OS is running as a bare-metal system or a hypervisor
++	 * and actively using memory encryption.
++	 *
++	 * Examples include SME.
++	 */
++	CC_ATTR_HOST_MEM_ENCRYPT,
++
++	/**
++	 * @CC_ATTR_GUEST_MEM_ENCRYPT: Guest memory encryption is active
++	 *
++	 * The platform/OS is running as a guest/virtual machine and actively
++	 * using memory encryption.
++	 *
++	 * Examples include SEV and SEV-ES.
++	 */
++	CC_ATTR_GUEST_MEM_ENCRYPT,
++
++	/**
++	 * @CC_ATTR_GUEST_STATE_ENCRYPT: Guest state encryption is active
++	 *
++	 * The platform/OS is running as a guest/virtual machine and actively
++	 * using memory encryption and register state encryption.
++	 *
++	 * Examples include SEV-ES.
++	 */
++	CC_ATTR_GUEST_STATE_ENCRYPT,
++};
++
++#ifdef CONFIG_ARCH_HAS_CC_PLATFORM
++
++/**
++ * cc_platform_has() - Checks if the specified cc_attr attribute is active
++ * @attr: Confidential computing attribute to check
++ *
++ * The cc_platform_has() function will return an indicator as to whether the
++ * specified Confidential Computing attribute is currently active.
++ *
++ * Context: Any context
++ * Return:
++ * * TRUE  - Specified Confidential Computing attribute is active
++ * * FALSE - Specified Confidential Computing attribute is not active
++ */
++bool cc_platform_has(enum cc_attr attr);
++
++#else	/* !CONFIG_ARCH_HAS_CC_PLATFORM */
++
++static inline bool cc_platform_has(enum cc_attr attr) { return false; }
++
++#endif	/* CONFIG_ARCH_HAS_CC_PLATFORM */
++
++#endif	/* _LINUX_CC_PLATFORM_H */
 -- 
 2.29.2
 
