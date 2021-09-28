@@ -2,55 +2,54 @@ Return-Path: <SRS0=n4RZ=OS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2178EC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 19:12:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDD4EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 19:12:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9E7E061262
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 19:12:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9E7E061262
+	by mail.kernel.org (Postfix) with ESMTPS id 5134F61262
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Sep 2021 19:12:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5134F61262
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HJpzR14hLz3c8w
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 05:12:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HJq0771WGz3cGf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 05:12:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=L15WdFBZ;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=jtxYO/r2;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=alien8.de (client-ip=5.9.137.197; helo=mail.skyhub.de;
- envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
+ smtp.mailfrom=alien8.de (client-ip=2a01:4f8:190:11c2::b:1457;
+ helo=mail.skyhub.de; envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
- header.s=dkim header.b=L15WdFBZ; dkim-atps=neutral
-Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
+ header.s=dkim header.b=jtxYO/r2; dkim-atps=neutral
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HJpxH4xvZz2yJ6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HJpxH6XrFz2yMy
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Sep 2021 05:10:27 +1000 (AEST)
 Received: from zn.tnic (p200300ec2f13b20078349fd04295260b.dip0.t-ipconnect.de
  [IPv6:2003:ec:2f13:b200:7834:9fd0:4295:260b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 1CB931EC06D9;
- Tue, 28 Sep 2021 21:10:19 +0200 (CEST)
+ by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id D3CBA1EC0752;
+ Tue, 28 Sep 2021 21:10:20 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
- t=1632856219;
+ t=1632856221;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=ezqIhy/GzEctU/BzXXa8nRx9BM/oenaY5A3bWVYyogc=;
- b=L15WdFBZiGsmF9pfPIN2c5ZAgIU4PtH28ptrgSgBhWpm+4j822yrxCFG5g1HkliRhUi5uF
- CRYVq82aPiFD57CtKa57/vA4L1iRWeGtkZ/r3TuxAhU5th8F6Q2wEbSDYpjVyB2e++vhJZ
- NSdeH98yXiBNfY80fDZLfpkLkYe+4+I=
+ bh=tI5EKQyiJ5raj9g6K0LwQyKzz9oZ1IWFygzYqGLLXlI=;
+ b=jtxYO/r269DfmnwCak/7lSzy7BxpGJEwUtOgQ1mfz1IJsyIbDJZwKE1zPG7z0Qr+qwkov1
+ 699yIvchf1BPahMru19zZ+k+cLw1QtutQLg0TfBisiMooan1gV7VAIrqrF6Adoj3KyA2OU
+ Wz9Rnc6x8btJ/HpB/iZkiCjypBwqRNY=
 From: Borislav Petkov <bp@alien8.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/8] x86/ioremap: Selectively build arch override encryption
- functions
-Date: Tue, 28 Sep 2021 21:10:02 +0200
-Message-Id: <20210928191009.32551-2-bp@alien8.de>
+Subject: [PATCH 3/8] x86/sev: Add an x86 version of cc_platform_has()
+Date: Tue, 28 Sep 2021 21:10:04 +0200
+Message-Id: <20210928191009.32551-4-bp@alien8.de>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210928191009.32551-1-bp@alien8.de>
 References: <20210928191009.32551-1-bp@alien8.de>
@@ -91,79 +90,170 @@ Sender: "Linuxppc-dev"
 
 From: Tom Lendacky <thomas.lendacky@amd.com>
 
-In preparation for other uses of the cc_platform_has() function
-besides AMD's memory encryption support, selectively build the
-AMD memory encryption architecture override functions only when
-CONFIG_AMD_MEM_ENCRYPT=y. These functions are:
-
-- early_memremap_pgprot_adjust()
-- arch_memremap_can_ram_remap()
-
-Additionally, routines that are only invoked by these architecture
-override functions can also be conditionally built. These functions are:
-
-- memremap_should_map_decrypted()
-- memremap_is_efi_data()
-- memremap_is_setup_data()
-- early_memremap_is_setup_data()
-
-And finally, phys_mem_access_encrypted() is conditionally built as well,
-but requires a static inline version of it when CONFIG_AMD_MEM_ENCRYPT is
-not set.
+Introduce an x86 version of the cc_platform_has() function. This will be
+used to replace vendor specific calls like sme_active(), sev_active(),
+etc.
 
 Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
 Signed-off-by: Borislav Petkov <bp@suse.de>
 ---
- arch/x86/include/asm/io.h | 8 ++++++++
- arch/x86/mm/ioremap.c     | 2 +-
- 2 files changed, 9 insertions(+), 1 deletion(-)
+ arch/x86/Kconfig                   |  1 +
+ arch/x86/include/asm/mem_encrypt.h |  1 +
+ arch/x86/kernel/Makefile           |  6 +++
+ arch/x86/kernel/cc_platform.c      | 69 ++++++++++++++++++++++++++++++
+ arch/x86/mm/mem_encrypt.c          |  1 +
+ 5 files changed, 78 insertions(+)
+ create mode 100644 arch/x86/kernel/cc_platform.c
 
-diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-index 841a5d104afa..5c6a4af0b911 100644
---- a/arch/x86/include/asm/io.h
-+++ b/arch/x86/include/asm/io.h
-@@ -391,6 +391,7 @@ extern void arch_io_free_memtype_wc(resource_size_t start, resource_size_t size)
- #define arch_io_reserve_memtype_wc arch_io_reserve_memtype_wc
- #endif
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index ab83c22d274e..9f190ec4f953 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1518,6 +1518,7 @@ config AMD_MEM_ENCRYPT
+ 	select ARCH_HAS_FORCE_DMA_UNENCRYPTED
+ 	select INSTRUCTION_DECODER
+ 	select ARCH_HAS_RESTRICTED_VIRTIO_MEMORY_ACCESS
++	select ARCH_HAS_CC_PLATFORM
+ 	help
+ 	  Say yes to enable support for the encryption of system memory.
+ 	  This requires an AMD processor that supports Secure Memory
+diff --git a/arch/x86/include/asm/mem_encrypt.h b/arch/x86/include/asm/mem_encrypt.h
+index 9c80c68d75b5..3fb9f5ebefa4 100644
+--- a/arch/x86/include/asm/mem_encrypt.h
++++ b/arch/x86/include/asm/mem_encrypt.h
+@@ -13,6 +13,7 @@
+ #ifndef __ASSEMBLY__
  
-+#ifdef CONFIG_AMD_MEM_ENCRYPT
- extern bool arch_memremap_can_ram_remap(resource_size_t offset,
- 					unsigned long size,
- 					unsigned long flags);
-@@ -398,6 +399,13 @@ extern bool arch_memremap_can_ram_remap(resource_size_t offset,
+ #include <linux/init.h>
++#include <linux/cc_platform.h>
  
- extern bool phys_mem_access_encrypted(unsigned long phys_addr,
- 				      unsigned long size);
-+#else
-+static inline bool phys_mem_access_encrypted(unsigned long phys_addr,
-+					     unsigned long size)
+ #include <asm/bootparam.h>
+ 
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 8f4e8fa6ed75..2ff3e600f426 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -21,6 +21,7 @@ CFLAGS_REMOVE_ftrace.o = -pg
+ CFLAGS_REMOVE_early_printk.o = -pg
+ CFLAGS_REMOVE_head64.o = -pg
+ CFLAGS_REMOVE_sev.o = -pg
++CFLAGS_REMOVE_cc_platform.o = -pg
+ endif
+ 
+ KASAN_SANITIZE_head$(BITS).o				:= n
+@@ -29,6 +30,7 @@ KASAN_SANITIZE_dumpstack_$(BITS).o			:= n
+ KASAN_SANITIZE_stacktrace.o				:= n
+ KASAN_SANITIZE_paravirt.o				:= n
+ KASAN_SANITIZE_sev.o					:= n
++KASAN_SANITIZE_cc_platform.o				:= n
+ 
+ # With some compiler versions the generated code results in boot hangs, caused
+ # by several compilation units. To be safe, disable all instrumentation.
+@@ -47,6 +49,7 @@ endif
+ KCOV_INSTRUMENT		:= n
+ 
+ CFLAGS_head$(BITS).o	+= -fno-stack-protector
++CFLAGS_cc_platform.o	+= -fno-stack-protector
+ 
+ CFLAGS_irq.o := -I $(srctree)/$(src)/../include/asm/trace
+ 
+@@ -147,6 +150,9 @@ obj-$(CONFIG_UNWINDER_FRAME_POINTER)	+= unwind_frame.o
+ obj-$(CONFIG_UNWINDER_GUESS)		+= unwind_guess.o
+ 
+ obj-$(CONFIG_AMD_MEM_ENCRYPT)		+= sev.o
++
++obj-$(CONFIG_ARCH_HAS_CC_PLATFORM)	+= cc_platform.o
++
+ ###
+ # 64 bit specific files
+ ifeq ($(CONFIG_X86_64),y)
+diff --git a/arch/x86/kernel/cc_platform.c b/arch/x86/kernel/cc_platform.c
+new file mode 100644
+index 000000000000..03bb2f343ddb
+--- /dev/null
++++ b/arch/x86/kernel/cc_platform.c
+@@ -0,0 +1,69 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Confidential Computing Platform Capability checks
++ *
++ * Copyright (C) 2021 Advanced Micro Devices, Inc.
++ *
++ * Author: Tom Lendacky <thomas.lendacky@amd.com>
++ */
++
++#include <linux/export.h>
++#include <linux/cc_platform.h>
++#include <linux/mem_encrypt.h>
++
++#include <asm/processor.h>
++
++static bool __maybe_unused intel_cc_platform_has(enum cc_attr attr)
 +{
-+	return true;
-+}
++#ifdef CONFIG_INTEL_TDX_GUEST
++	return false;
++#else
++	return false;
 +#endif
- 
- /**
-  * iosubmit_cmds512 - copy data to single MMIO location, in 512-bit units
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index 60ade7dd71bd..ccff76cedd8f 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -508,6 +508,7 @@ void unxlate_dev_mem_ptr(phys_addr_t phys, void *addr)
- 	memunmap((void *)((unsigned long)addr & PAGE_MASK));
- }
- 
++}
++
++/*
++ * SME and SEV are very similar but they are not the same, so there are
++ * times that the kernel will need to distinguish between SME and SEV. The
++ * cc_platform_has() function is used for this.  When a distinction isn't
++ * needed, the CC_ATTR_MEM_ENCRYPT attribute can be used.
++ *
++ * The trampoline code is a good example for this requirement.  Before
++ * paging is activated, SME will access all memory as decrypted, but SEV
++ * will access all memory as encrypted.  So, when APs are being brought
++ * up under SME the trampoline area cannot be encrypted, whereas under SEV
++ * the trampoline area must be encrypted.
++ */
++static bool amd_cc_platform_has(enum cc_attr attr)
++{
 +#ifdef CONFIG_AMD_MEM_ENCRYPT
- /*
-  * Examine the physical address to determine if it is an area of memory
-  * that should be mapped decrypted.  If the memory is not part of the
-@@ -746,7 +747,6 @@ bool phys_mem_access_encrypted(unsigned long phys_addr, unsigned long size)
- 	return arch_memremap_can_ram_remap(phys_addr, size, 0);
- }
++	switch (attr) {
++	case CC_ATTR_MEM_ENCRYPT:
++		return sme_me_mask;
++
++	case CC_ATTR_HOST_MEM_ENCRYPT:
++		return sme_me_mask && !(sev_status & MSR_AMD64_SEV_ENABLED);
++
++	case CC_ATTR_GUEST_MEM_ENCRYPT:
++		return sev_status & MSR_AMD64_SEV_ENABLED;
++
++	case CC_ATTR_GUEST_STATE_ENCRYPT:
++		return sev_status & MSR_AMD64_SEV_ES_ENABLED;
++
++	default:
++		return false;
++	}
++#else
++	return false;
++#endif
++}
++
++
++bool cc_platform_has(enum cc_attr attr)
++{
++	if (sme_me_mask)
++		return amd_cc_platform_has(attr);
++
++	return false;
++}
++EXPORT_SYMBOL_GPL(cc_platform_has);
+diff --git a/arch/x86/mm/mem_encrypt.c b/arch/x86/mm/mem_encrypt.c
+index ff08dc463634..e29b1418d00c 100644
+--- a/arch/x86/mm/mem_encrypt.c
++++ b/arch/x86/mm/mem_encrypt.c
+@@ -20,6 +20,7 @@
+ #include <linux/bitops.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/virtio_config.h>
++#include <linux/cc_platform.h>
  
--#ifdef CONFIG_AMD_MEM_ENCRYPT
- /* Remap memory with encryption */
- void __init *early_memremap_encrypted(resource_size_t phys_addr,
- 				      unsigned long size)
+ #include <asm/tlbflush.h>
+ #include <asm/fixmap.h>
 -- 
 2.29.2
 
