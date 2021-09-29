@@ -2,106 +2,105 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28F8CC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 11:25:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B082C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 11:25:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 92C2E613A9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 11:25:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 92C2E613A9
+	by mail.kernel.org (Postfix) with ESMTPS id 7097A61390
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 11:25:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7097A61390
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HKDYr1wCcz3bW6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 21:25:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HKDZd1Fq7z3cKD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 21:25:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GlelxGk+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r1aB7vwO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=GlelxGk+; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=r1aB7vwO; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HKDS80Y9cz2ywR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Sep 2021 21:20:07 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18TA4qC3030706; 
- Wed, 29 Sep 2021 07:19:27 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HKDSH33Ymz3bYL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Sep 2021 21:20:15 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18T9BfTU004513; 
+ Wed, 29 Sep 2021 07:19:55 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=w5BMI4jf7JbupfatK1eGMlJeM7pUt0KPcq2ugY/c8m8=;
- b=GlelxGk+5M3bHHP9uUaHv10jXMpgt0GtBYs4TcuiPjk+U2PPk0ldm03dczJSnyR2G34L
- ugPL/SqcVhGgA2pZxDg1wkw3S2vCD0NyfKojFHgDX1W/GjtLw3rRuE5E5KTSg3aeDhaR
- SBnSIIfDZ9zX7srcO3jyLsFHzbM9Jhjhwfa8fYEuR0j3tcEN3VPI1lmNpMrI5GIklaIl
- gAj/rBgXbLDKbXEbuM0T51d+66MZzKBsxF31IgKUMHidem7Cdhi9kANvqk2ZOoTUFW25
- F+T+inZ+n+dPBdTaaRWbl02IdjaXyHBtvtPAEkUpqF1D03J9fwN1hie2Z7iw0ucbmBPD kw== 
+ bh=+g8wp0I/DHpzgUrFDoHUxVuRI/eutiJXiCB45G6x38I=;
+ b=r1aB7vwOZYybRexjIDEUwEv/8TAYbYNwtIxrKA8b3JpEX8Not6xFrdCvgGk6ewXL1SxD
+ 6Nn3m5OLSYRFJUQ8vES3reoNrC90jYbsb0hFvMdiITZOk9oYt4JKO0lINN6SydnJ/Yp1
+ S1JudFd+CaNLTe0UCY16eRHVztnBSUIvfkbtZTtj9fAjb/IaCCe6t5sfiKp0r1IYZN8Z
+ fpY47Ja0Sjm+UNdolUC4r2264kbTVefmNq3EPy10tsWF1ooCbSrbMTsONMAlkm3VcJWA
+ 66bO8Y9WpfAOyJy7Wt+44Jy1HVZ3GXne/KoAkZAWb2uWDjz6nSLUmzzSZQzyb57Rw4DH lQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3bcp2w1epd-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3bcn9y2n6x-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 29 Sep 2021 07:19:27 -0400
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18TAhR28014252;
- Wed, 29 Sep 2021 07:19:26 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3bcp2w1ep3-1
+ Wed, 29 Sep 2021 07:19:54 -0400
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18TAR9Bc018533;
+ Wed, 29 Sep 2021 07:19:54 -0400
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3bcn9y2n69-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 29 Sep 2021 07:19:26 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18TBBRCu032680;
- Wed, 29 Sep 2021 11:19:24 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04ams.nl.ibm.com with ESMTP id 3b9ud9y45j-1
+ Wed, 29 Sep 2021 07:19:54 -0400
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18TBDLcu021974;
+ Wed, 29 Sep 2021 11:19:51 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma06fra.de.ibm.com with ESMTP id 3b9u1k58e7-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 29 Sep 2021 11:19:24 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 18TBEI5161473032
+ Wed, 29 Sep 2021 11:19:51 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 18TBJlrH46006534
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 29 Sep 2021 11:14:18 GMT
+ Wed, 29 Sep 2021 11:19:47 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0A23342072;
- Wed, 29 Sep 2021 11:19:21 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 6617842059;
+ Wed, 29 Sep 2021 11:19:47 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6F1154206E;
- Wed, 29 Sep 2021 11:19:16 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id BAD8242074;
+ Wed, 29 Sep 2021 11:19:42 +0000 (GMT)
 Received: from hbathini-workstation.ibm.com.com (unknown [9.43.83.199])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 29 Sep 2021 11:19:16 +0000 (GMT)
+ Wed, 29 Sep 2021 11:19:42 +0000 (GMT)
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: naveen.n.rao@linux.ibm.com, christophe.leroy@csgroup.eu,
  mpe@ellerman.id.au, ast@kernel.org, daniel@iogearbox.net
-Subject: [PATCH v4 3/8] bpf powerpc: refactor JIT compiler code
-Date: Wed, 29 Sep 2021 16:48:50 +0530
-Message-Id: <20210929111855.50254-4-hbathini@linux.ibm.com>
+Subject: [PATCH v4 8/8] bpf ppc32: Access only if addr is kernel address
+Date: Wed, 29 Sep 2021 16:48:55 +0530
+Message-Id: <20210929111855.50254-9-hbathini@linux.ibm.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210929111855.50254-1-hbathini@linux.ibm.com>
 References: <20210929111855.50254-1-hbathini@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: GJOsgWFkvgnwZ4-kwtafmRnMvLSuxdR_
-X-Proofpoint-ORIG-GUID: 2KQV42-eDfQT7sUYN_YFNvf5LKvHtmLr
+X-Proofpoint-GUID: 0r5rBPmu5aLXQxKkUK8bV1NpmjCe6INr
+X-Proofpoint-ORIG-GUID: pGdPj2uMhdqx_HZhWITf2bGg7EIsb0PY
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
  definitions=2021-09-29_04,2021-09-29_01,2020-04-07_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 bulkscore=0
- phishscore=0 priorityscore=1501 adultscore=0 suspectscore=0 clxscore=1015
- spamscore=0 lowpriorityscore=0 mlxlogscore=999 malwarescore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2109230001 definitions=main-2109290068
+ priorityscore=1501
+ suspectscore=0 mlxscore=0 malwarescore=0 mlxlogscore=999
+ lowpriorityscore=0 spamscore=0 adultscore=0 bulkscore=0 clxscore=1015
+ impostorscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2109230001 definitions=main-2109290068
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,130 +120,75 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Refactor powerpc LDX JITing code to simplify adding BPF_PROBE_MEM
-support.
+With KUAP enabled, any kernel code which wants to access userspace
+needs to be surrounded by disable-enable KUAP. But that is not
+happening for BPF_PROBE_MEM load instruction. Though PPC32 does not
+support read protection, considering the fact that PTR_TO_BTF_ID
+(which uses BPF_PROBE_MEM mode) could either be a valid kernel pointer
+or NULL but should never be a pointer to userspace address, execute
+BPF_PROBE_MEM load only if addr is kernel address, otherwise set
+dst_reg=0 and move on.
 
+This will catch NULL, valid or invalid userspace pointers. Only bad
+kernel pointer will be handled by BPF exception table.
+
+[Alexei suggested for x86]
+Suggested-by: Alexei Starovoitov <ast@kernel.org>
 Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 ---
 
 Changes in v4:
-* Dropped the default case in the switch statement for bpf size.
-* Dropped explicit fallthrough statement for empty switch cases.
+* Adjusted the emit code to avoid using temporary reg.
 
 
- arch/powerpc/net/bpf_jit_comp32.c | 33 ++++++++++++++++++-------------
- arch/powerpc/net/bpf_jit_comp64.c | 31 +++++++++++++++++------------
- 2 files changed, 37 insertions(+), 27 deletions(-)
+ arch/powerpc/net/bpf_jit_comp32.c | 34 +++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
 diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
-index b60b59426a24..65a4d1ed97bf 100644
+index 6ee13a09c70d..2ac81563c78d 100644
 --- a/arch/powerpc/net/bpf_jit_comp32.c
 +++ b/arch/powerpc/net/bpf_jit_comp32.c
-@@ -282,6 +282,7 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
- 		u32 src_reg = bpf_to_ppc(ctx, insn[i].src_reg);
- 		u32 src_reg_h = src_reg - 1;
- 		u32 tmp_reg = bpf_to_ppc(ctx, TMP_REG);
-+		u32 size = BPF_SIZE(code);
- 		s16 off = insn[i].off;
- 		s32 imm = insn[i].imm;
- 		bool func_addr_fixed;
-@@ -810,23 +811,27 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
- 		 * BPF_LDX
- 		 */
- 		case BPF_LDX | BPF_MEM | BPF_B: /* dst = *(u8 *)(ul) (src + off) */
--			EMIT(PPC_RAW_LBZ(dst_reg, src_reg, off));
--			if (!fp->aux->verifier_zext)
--				EMIT(PPC_RAW_LI(dst_reg_h, 0));
--			break;
- 		case BPF_LDX | BPF_MEM | BPF_H: /* dst = *(u16 *)(ul) (src + off) */
--			EMIT(PPC_RAW_LHZ(dst_reg, src_reg, off));
--			if (!fp->aux->verifier_zext)
--				EMIT(PPC_RAW_LI(dst_reg_h, 0));
--			break;
- 		case BPF_LDX | BPF_MEM | BPF_W: /* dst = *(u32 *)(ul) (src + off) */
--			EMIT(PPC_RAW_LWZ(dst_reg, src_reg, off));
--			if (!fp->aux->verifier_zext)
--				EMIT(PPC_RAW_LI(dst_reg_h, 0));
--			break;
+@@ -818,6 +818,40 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
+ 		case BPF_LDX | BPF_PROBE_MEM | BPF_W:
  		case BPF_LDX | BPF_MEM | BPF_DW: /* dst = *(u64 *)(ul) (src + off) */
--			EMIT(PPC_RAW_LWZ(dst_reg_h, src_reg, off));
--			EMIT(PPC_RAW_LWZ(dst_reg, src_reg, off + 4));
-+			switch (size) {
-+			case BPF_B:
-+				EMIT(PPC_RAW_LBZ(dst_reg, src_reg, off));
-+				break;
-+			case BPF_H:
-+				EMIT(PPC_RAW_LHZ(dst_reg, src_reg, off));
-+				break;
-+			case BPF_W:
-+				EMIT(PPC_RAW_LWZ(dst_reg, src_reg, off));
-+				break;
-+			case BPF_DW:
-+				EMIT(PPC_RAW_LWZ(dst_reg_h, src_reg, off));
-+				EMIT(PPC_RAW_LWZ(dst_reg, src_reg, off + 4));
-+				break;
+ 		case BPF_LDX | BPF_PROBE_MEM | BPF_DW:
++			/*
++			 * As PTR_TO_BTF_ID that uses BPF_PROBE_MEM mode could either be a valid
++			 * kernel pointer or NULL but not a userspace address, execute BPF_PROBE_MEM
++			 * load only if addr is kernel address (see is_kernel_addr()), otherwise
++			 * set dst_reg=0 and move on.
++			 */
++			if (BPF_MODE(code) == BPF_PROBE_MEM) {
++				PPC_LI32(_R0, TASK_SIZE - off);
++				EMIT(PPC_RAW_CMPLW(src_reg, _R0));
++				PPC_BCC(COND_GT, (ctx->idx + 5) * 4);
++				EMIT(PPC_RAW_LI(dst_reg, 0));
++				/*
++				 * For BPF_DW case, "li reg_h,0" would be needed when
++				 * !fp->aux->verifier_zext. Emit NOP otherwise.
++				 *
++				 * Note that "li reg_h,0" is emitted for BPF_B/H/W case,
++				 * if necessary. So, jump there insted of emitting an
++				 * additional "li reg_h,0" instruction.
++				 */
++				if (size == BPF_DW && !fp->aux->verifier_zext)
++					EMIT(PPC_RAW_LI(dst_reg_h, 0));
++				else
++					EMIT(PPC_RAW_NOP());
++				/*
++				 * Need to jump two instructions instead of one for BPF_DW case
++				 * as there are two load instructions for dst_reg_h & dst_reg
++				 * respectively.
++				 */
++				if (size == BPF_DW)
++					PPC_JMP((ctx->idx + 3) * 4);
++				else
++					PPC_JMP((ctx->idx + 2) * 4);
 +			}
 +
-+			if (size != BPF_DW && !fp->aux->verifier_zext)
-+				EMIT(PPC_RAW_LI(dst_reg_h, 0));
- 			break;
- 
- 		/*
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index 2a87da50d9a4..49e6e0b6e4d2 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -285,6 +285,7 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
- 		u32 code = insn[i].code;
- 		u32 dst_reg = b2p[insn[i].dst_reg];
- 		u32 src_reg = b2p[insn[i].src_reg];
-+		u32 size = BPF_SIZE(code);
- 		s16 off = insn[i].off;
- 		s32 imm = insn[i].imm;
- 		bool func_addr_fixed;
-@@ -716,25 +717,29 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
- 		 */
- 		/* dst = *(u8 *)(ul) (src + off) */
- 		case BPF_LDX | BPF_MEM | BPF_B:
--			EMIT(PPC_RAW_LBZ(dst_reg, src_reg, off));
--			if (insn_is_zext(&insn[i + 1]))
--				addrs[++i] = ctx->idx * 4;
--			break;
- 		/* dst = *(u16 *)(ul) (src + off) */
- 		case BPF_LDX | BPF_MEM | BPF_H:
--			EMIT(PPC_RAW_LHZ(dst_reg, src_reg, off));
--			if (insn_is_zext(&insn[i + 1]))
--				addrs[++i] = ctx->idx * 4;
--			break;
- 		/* dst = *(u32 *)(ul) (src + off) */
- 		case BPF_LDX | BPF_MEM | BPF_W:
--			EMIT(PPC_RAW_LWZ(dst_reg, src_reg, off));
--			if (insn_is_zext(&insn[i + 1]))
--				addrs[++i] = ctx->idx * 4;
--			break;
- 		/* dst = *(u64 *)(ul) (src + off) */
- 		case BPF_LDX | BPF_MEM | BPF_DW:
--			PPC_BPF_LL(dst_reg, src_reg, off);
-+			switch (size) {
-+			case BPF_B:
-+				EMIT(PPC_RAW_LBZ(dst_reg, src_reg, off));
-+				break;
-+			case BPF_H:
-+				EMIT(PPC_RAW_LHZ(dst_reg, src_reg, off));
-+				break;
-+			case BPF_W:
-+				EMIT(PPC_RAW_LWZ(dst_reg, src_reg, off));
-+				break;
-+			case BPF_DW:
-+				PPC_BPF_LL(dst_reg, src_reg, off);
-+				break;
-+			}
-+
-+			if (size != BPF_DW && insn_is_zext(&insn[i + 1]))
-+				addrs[++i] = ctx->idx * 4;
- 			break;
- 
- 		/*
+ 			switch (size) {
+ 			case BPF_B:
+ 				EMIT(PPC_RAW_LBZ(dst_reg, src_reg, off));
 -- 
 2.31.1
 
