@@ -2,22 +2,22 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42C57C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 14:39:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D12A3C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 14:40:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A6A6961288
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 14:39:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A6A6961288
+	by mail.kernel.org (Postfix) with ESMTPS id 599B6613CD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Sep 2021 14:40:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 599B6613CD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HKJt61PwQz3cJd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 00:39:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HKJtx5fhrz3cQN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 00:40:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ErXBGsml;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ErXBGsml;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GpaTbf4R;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GpaTbf4R;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
@@ -25,55 +25,54 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=ErXBGsml; 
+ header.s=mimecast20190719 header.b=GpaTbf4R; 
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=ErXBGsml; 
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=GpaTbf4R; 
  dkim-atps=neutral
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [216.205.24.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HKJqn0T7rz3bfl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 00:37:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HKJqz5BBLz30Pj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 00:37:35 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1632926242;
+ s=mimecast20190719; t=1632926253;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=hw0JON3PSPNzJHfAUlyfJy6KTExGOX1e2ePjdnrAKBE=;
- b=ErXBGsmlTsBqooD5ykB9qYw48gUG2aybKLFTrOL79/JBjiX/Y6vBttdGSvdlwPvuPo79bP
- Yl4auRUU9WNWPmwFKuE3zXl5bL6eWqh+Z7wjqhGpL3dopMX+JjxPYRjKlzQTEktbcO6WcL
- 78JIBoY3muQGOOf0ni3OpzR3EYp2oik=
+ bh=XLxcCiYIbNHJEkXFC5QxlI7iwOjqXPnMUZfpGd39ZZE=;
+ b=GpaTbf4R9Y9E941+W20tAZgsspkYOkhH7e1E505JJlVoxWlGod2/9807QrNoLVnKeixMxK
+ ru5BUfFbzW9ZXp0FFd0WY6KQR5xntgsLMKGPglDbT0IRCj1XosNh4XTPPKkFUyi3sY46Vn
+ hdZpZiJU6n4oXD/xB82sdnLIclnIB1Q=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1632926242;
+ s=mimecast20190719; t=1632926253;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=hw0JON3PSPNzJHfAUlyfJy6KTExGOX1e2ePjdnrAKBE=;
- b=ErXBGsmlTsBqooD5ykB9qYw48gUG2aybKLFTrOL79/JBjiX/Y6vBttdGSvdlwPvuPo79bP
- Yl4auRUU9WNWPmwFKuE3zXl5bL6eWqh+Z7wjqhGpL3dopMX+JjxPYRjKlzQTEktbcO6WcL
- 78JIBoY3muQGOOf0ni3OpzR3EYp2oik=
+ bh=XLxcCiYIbNHJEkXFC5QxlI7iwOjqXPnMUZfpGd39ZZE=;
+ b=GpaTbf4R9Y9E941+W20tAZgsspkYOkhH7e1E505JJlVoxWlGod2/9807QrNoLVnKeixMxK
+ ru5BUfFbzW9ZXp0FFd0WY6KQR5xntgsLMKGPglDbT0IRCj1XosNh4XTPPKkFUyi3sY46Vn
+ hdZpZiJU6n4oXD/xB82sdnLIclnIB1Q=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-519-Xso30JzGNKapCJmAP5WIeA-1; Wed, 29 Sep 2021 10:37:18 -0400
-X-MC-Unique: Xso30JzGNKapCJmAP5WIeA-1
+ us-mta-563--XXMhINBPL6qoUIRaZ8cFQ-1; Wed, 29 Sep 2021 10:37:31 -0400
+X-MC-Unique: -XXMhINBPL6qoUIRaZ8cFQ-1
 Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
  [10.5.11.22])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id F1D29802C94;
- Wed, 29 Sep 2021 14:37:14 +0000 (UTC)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 160F31926DA0;
+ Wed, 29 Sep 2021 14:37:28 +0000 (UTC)
 Received: from t480s.redhat.com (unknown [10.39.195.135])
- by smtp.corp.redhat.com (Postfix) with ESMTP id C6CE510016F4;
- Wed, 29 Sep 2021 14:37:08 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id E10931017CF5;
+ Wed, 29 Sep 2021 14:37:21 +0000 (UTC)
 From: David Hildenbrand <david@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v1 3/6] mm/memory_hotplug: restrict CONFIG_MEMORY_HOTPLUG to
- 64 bit
-Date: Wed, 29 Sep 2021 16:35:57 +0200
-Message-Id: <20210929143600.49379-4-david@redhat.com>
+Subject: [PATCH v1 5/6] mm/memory_hotplug: remove stale function declarations
+Date: Wed, 29 Sep 2021 16:35:59 +0200
+Message-Id: <20210929143600.49379-6-david@redhat.com>
 In-Reply-To: <20210929143600.49379-1-david@redhat.com>
 References: <20210929143600.49379-1-david@redhat.com>
 MIME-Version: 1.0
@@ -108,37 +107,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-32 bit support is broken in various ways: for example, we can online
-memory that should actually go to ZONE_HIGHMEM to ZONE_MOVABLE or in
-some cases even to one of the other kernel zones.
-
-We marked it BROKEN in commit b59d02ed0869 ("mm/memory_hotplug: disable the
-functionality for 32b") almost one year ago. According to that commit
-it might be broken at least since 2017. Further, there is hardly a sane use
-case nowadays.
-
-Let's just depend completely on 64bit, dropping the "BROKEN" dependency to
-make clear that we are not going to support it again. Next, we'll remove
-some HIGHMEM leftovers from memory hotplug code to clean up.
+These functions no longer exist.
 
 Signed-off-by: David Hildenbrand <david@redhat.com>
 ---
- mm/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/memory_hotplug.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index ea8762cd8e1e..88273dd5c6d6 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -125,7 +125,7 @@ config MEMORY_HOTPLUG
- 	select MEMORY_ISOLATION
- 	depends on SPARSEMEM
- 	depends on ARCH_ENABLE_MEMORY_HOTPLUG
--	depends on 64BIT || BROKEN
-+	depends on 64BIT
- 	select NUMA_KEEP_MEMINFO if NUMA
- 
- config MEMORY_HOTPLUG_DEFAULT_ONLINE
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+index e5a867c950b2..be48e003a518 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -98,9 +98,6 @@ static inline void zone_seqlock_init(struct zone *zone)
+ {
+ 	seqlock_init(&zone->span_seqlock);
+ }
+-extern int zone_grow_free_lists(struct zone *zone, unsigned long new_nr_pages);
+-extern int zone_grow_waitqueues(struct zone *zone, unsigned long nr_pages);
+-extern int add_one_highpage(struct page *page, int pfn, int bad_ppro);
+ extern void adjust_present_page_count(struct page *page,
+ 				      struct memory_group *group,
+ 				      long nr_pages);
 -- 
 2.31.1
 
