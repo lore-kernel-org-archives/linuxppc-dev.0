@@ -2,46 +2,46 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18E37C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 07:10:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16BD3C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 07:11:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 85558617E4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 07:10:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 85558617E4
+	by mail.kernel.org (Postfix) with ESMTPS id 60045617E6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 07:11:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 60045617E6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HKkt61gskz305W
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 17:10:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HKktZ0HDrz3cbW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 17:11:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
  envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HKkrP00nHz301N
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 17:09:24 +1000 (AEST)
-Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.54])
- by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4HKkpn0f1qz1DHQ8;
- Thu, 30 Sep 2021 15:08:01 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HKkrQ6yDVz308G
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 17:09:26 +1000 (AEST)
+Received: from dggemv703-chm.china.huawei.com (unknown [172.30.72.53])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4HKkkz4m1rz8yxW;
+ Thu, 30 Sep 2021 15:04:43 +0800 (CST)
 Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
+ dggemv703-chm.china.huawei.com (10.3.19.46) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.8; Thu, 30 Sep 2021 15:09:21 +0800
+ 15.1.2308.8; Thu, 30 Sep 2021 15:09:22 +0800
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.8; Thu, 30 Sep 2021 15:09:20 +0800
+ 15.1.2308.8; Thu, 30 Sep 2021 15:09:21 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <rostedt@goodmis.org>, <mingo@redhat.com>, <davem@davemloft.net>,
  <ast@kernel.org>, <ryabinin.a.a@gmail.com>, <akpm@linux-foundation.org>
-Subject: [PATCH v4 09/11] powerpc/mm: Use core_kernel_text() helper
-Date: Thu, 30 Sep 2021 15:11:41 +0800
-Message-ID: <20210930071143.63410-10-wangkefeng.wang@huawei.com>
+Subject: [PATCH v4 11/11] alpha: Use is_kernel_text() helper
+Date: Thu, 30 Sep 2021 15:11:43 +0800
+Message-ID: <20210930071143.63410-12-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20210930071143.63410-1-wangkefeng.wang@huawei.com>
 References: <20210930071143.63410-1-wangkefeng.wang@huawei.com>
@@ -64,55 +64,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, paulus@samba.org,
- linux-alpha@vger.kernel.org, bpf@vger.kernel.org
+ linux-alpha@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ bpf@vger.kernel.org, Matt Turner <mattst88@gmail.com>,
+ Richard Henderson <rth@twiddle.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use core_kernel_text() helper to simplify code, also drop etext,
-_stext, _sinittext, _einittext declaration which already declared
-in section.h.
+Use is_kernel_text() helper to simplify code.
 
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matt Turner <mattst88@gmail.com>
 Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
 ---
- arch/powerpc/mm/pgtable_32.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ arch/alpha/kernel/traps.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index dcf5ecca19d9..079abbf45a33 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -33,8 +33,6 @@
- 
- #include <mm/mmu_decl.h>
- 
--extern char etext[], _stext[], _sinittext[], _einittext[];
--
- static u8 early_fixmap_pagetable[FIXMAP_PTE_SIZE] __page_aligned_data;
- 
- notrace void __init early_ioremap_init(void)
-@@ -104,14 +102,13 @@ static void __init __mapin_ram_chunk(unsigned long offset, unsigned long top)
- {
- 	unsigned long v, s;
- 	phys_addr_t p;
--	int ktext;
-+	bool ktext;
- 
- 	s = offset;
- 	v = PAGE_OFFSET + s;
- 	p = memstart_addr + s;
- 	for (; s < top; s += PAGE_SIZE) {
--		ktext = ((char *)v >= _stext && (char *)v < etext) ||
--			((char *)v >= _sinittext && (char *)v < _einittext);
-+		ktext = core_kernel_text(v);
- 		map_kernel_page(v, p, ktext ? PAGE_KERNEL_TEXT : PAGE_KERNEL);
- 		v += PAGE_SIZE;
- 		p += PAGE_SIZE;
+diff --git a/arch/alpha/kernel/traps.c b/arch/alpha/kernel/traps.c
+index e805106409f7..2ae34702456c 100644
+--- a/arch/alpha/kernel/traps.c
++++ b/arch/alpha/kernel/traps.c
+@@ -129,9 +129,7 @@ dik_show_trace(unsigned long *sp, const char *loglvl)
+ 		extern char _stext[], _etext[];
+ 		unsigned long tmp = *sp;
+ 		sp++;
+-		if (tmp < (unsigned long) &_stext)
+-			continue;
+-		if (tmp >= (unsigned long) &_etext)
++		if (!is_kernel_text(tmp))
+ 			continue;
+ 		printk("%s[<%lx>] %pSR\n", loglvl, tmp, (void *)tmp);
+ 		if (i > 40) {
 -- 
 2.26.2
 
