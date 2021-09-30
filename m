@@ -2,19 +2,19 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF09FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 11:26:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12FE4C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 11:27:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 07A9460E74
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 11:26:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 07A9460E74
+	by mail.kernel.org (Postfix) with ESMTPS id 45BE9615E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 11:27:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 45BE9615E0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HKrYF4Bvqz3cCQ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 21:26:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HKrYk0424z3bXJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 21:27:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,44 +22,46 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HKrXK0tPTz2ypL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 21:25:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HKrXP2jDkz30BM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 21:25:57 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HKrX61cK6z9sX8;
- Thu, 30 Sep 2021 13:25:42 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HKrX70rlzz9sX9;
+ Thu, 30 Sep 2021 13:25:43 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id F5X513tfRdMv; Thu, 30 Sep 2021 13:25:42 +0200 (CEST)
+ with ESMTP id TpLfoGdbZD5Q; Thu, 30 Sep 2021 13:25:43 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HKrX55Q1dz9sX3;
- Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HKrX61Ytcz9sX5;
+ Thu, 30 Sep 2021 13:25:42 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A2DDC8B773;
- Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1F8EA8B773;
+ Thu, 30 Sep 2021 13:25:42 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id SqMd7MWu2jJd; Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
+ with ESMTP id KWkHm5QCjSZ6; Thu, 30 Sep 2021 13:25:42 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.149])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5E1DE8B763;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C3DA58B763;
  Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18UBO8dO1558818
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18UBO9ws1558822
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Thu, 30 Sep 2021 13:24:09 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18UBO7dr1558816;
- Thu, 30 Sep 2021 13:24:07 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18UBO9i81558821;
+ Thu, 30 Sep 2021 13:24:09 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Andrew Morton <akpm@linux-foundation.org>, arnd@arndb.de
-Subject: [PATCH v3 1/4] mm: Create a new system state and fix
- core_kernel_text()
-Date: Thu, 30 Sep 2021 13:23:43 +0200
-Message-Id: <9ecfdee7dd4d741d172cb93ff1d87f1c58127c9a.1633001016.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 2/4] mm: Make generic arch_is_kernel_initmem_freed() do
+ what it says
+Date: Thu, 30 Sep 2021 13:23:44 +0200
+Message-Id: <1d40783e676e07858be97d881f449ee7ea8adfb1.1633001016.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <9ecfdee7dd4d741d172cb93ff1d87f1c58127c9a.1633001016.git.christophe.leroy@csgroup.eu>
+References: <9ecfdee7dd4d741d172cb93ff1d87f1c58127c9a.1633001016.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -81,66 +83,85 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-core_kernel_text() considers that until system_state in at least
-SYSTEM_RUNNING, init memory is valid.
+Commit 7a5da02de8d6 ("locking/lockdep: check for freed initmem in
+static_obj()") added arch_is_kernel_initmem_freed() which is supposed
+to report whether an object is part of already freed init memory.
 
-But init memory is freed a few lines before setting SYSTEM_RUNNING,
-so we have a small period of time when core_kernel_text() is wrong.
+For the time being, the generic version of arch_is_kernel_initmem_freed()
+always reports 'false', allthough free_initmem() is generically called
+on all architectures.
 
-Create an intermediate system state called SYSTEM_FREEING_INIT that
-is set before starting freeing init memory, and use it in
-core_kernel_text() to report init memory invalid earlier.
+Therefore, change the generic version of arch_is_kernel_initmem_freed()
+to check whether free_initmem() has been called. If so, then check
+if a given address falls into init memory.
+
+To ease the use of system_state, move it out of line into its only
+caller which is lockdep.c
 
 Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
 Cc: Kefeng Wang <wangkefeng.wang@huawei.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v3: No change
-v2: New
----
- include/linux/kernel.h | 1 +
- init/main.c            | 2 ++
- kernel/extable.c       | 2 +-
- 3 files changed, 4 insertions(+), 1 deletion(-)
+v3: Move it out of sections.h into lockdep.c and fix the comment.
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 2776423a587e..471bc0593679 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -248,6 +248,7 @@ extern bool early_boot_irqs_disabled;
- extern enum system_states {
- 	SYSTEM_BOOTING,
- 	SYSTEM_SCHEDULING,
-+	SYSTEM_FREEING_INITMEM,
- 	SYSTEM_RUNNING,
- 	SYSTEM_HALT,
- 	SYSTEM_POWER_OFF,
-diff --git a/init/main.c b/init/main.c
-index 3f7216934441..c457d393fdd4 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -1505,6 +1505,8 @@ static int __ref kernel_init(void *unused)
- 	kernel_init_freeable();
- 	/* need to finish all async __init code before freeing the memory */
- 	async_synchronize_full();
-+
-+	system_state = SYSTEM_FREEING_INITMEM;
- 	kprobe_free_init_mem();
- 	ftrace_free_init_mem();
- 	kgdb_free_init_mem();
-diff --git a/kernel/extable.c b/kernel/extable.c
-index b0ea5eb0c3b4..290661f68e6b 100644
---- a/kernel/extable.c
-+++ b/kernel/extable.c
-@@ -76,7 +76,7 @@ int notrace core_kernel_text(unsigned long addr)
- 	    addr < (unsigned long)_etext)
- 		return 1;
+v2: Change to using the new SYSTEM_FREEING_INITMEM state
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ include/asm-generic/sections.h | 14 --------------
+ kernel/locking/lockdep.c       | 15 +++++++++++++++
+ 2 files changed, 15 insertions(+), 14 deletions(-)
+
+diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+index d16302d3eb59..596ab2092289 100644
+--- a/include/asm-generic/sections.h
++++ b/include/asm-generic/sections.h
+@@ -80,20 +80,6 @@ static inline int arch_is_kernel_data(unsigned long addr)
+ }
+ #endif
  
--	if (system_state < SYSTEM_RUNNING &&
-+	if (system_state < SYSTEM_FREEING_INITMEM &&
- 	    init_kernel_text(addr))
- 		return 1;
- 	return 0;
+-/*
+- * Check if an address is part of freed initmem. This is needed on architectures
+- * with virt == phys kernel mapping, for code that wants to check if an address
+- * is part of a static object within [_stext, _end]. After initmem is freed,
+- * memory can be allocated from it, and such allocations would then have
+- * addresses within the range [_stext, _end].
+- */
+-#ifndef arch_is_kernel_initmem_freed
+-static inline int arch_is_kernel_initmem_freed(unsigned long addr)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /**
+  * memory_contains - checks if an object is contained within a memory region
+  * @begin: virtual address of the beginning of the memory region
+diff --git a/kernel/locking/lockdep.c b/kernel/locking/lockdep.c
+index bf1c00c881e4..8e118caf835e 100644
+--- a/kernel/locking/lockdep.c
++++ b/kernel/locking/lockdep.c
+@@ -788,6 +788,21 @@ static int very_verbose(struct lock_class *class)
+  * Is this the address of a static object:
+  */
+ #ifdef __KERNEL__
++/*
++ * Check if an address is part of freed initmem. After initmem is freed,
++ * memory can be allocated from it, and such allocations would then have
++ * addresses within the range [_stext, _end].
++ */
++#ifndef arch_is_kernel_initmem_freed
++static int arch_is_kernel_initmem_freed(unsigned long addr)
++{
++	if (system_state < SYSTEM_FREEING_INITMEM)
++		return 0;
++
++	return init_section_contains((void *)addr, 1);
++}
++#endif
++
+ static int static_obj(const void *obj)
+ {
+ 	unsigned long start = (unsigned long) &_stext,
 -- 
 2.31.1
 
