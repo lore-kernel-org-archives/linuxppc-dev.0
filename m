@@ -2,114 +2,59 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F7DEC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 13:50:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7407AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 15:00:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 931496187A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 13:50:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 931496187A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A32BD61994
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 15:00:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A32BD61994
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HKvkk6cblz3c5d
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 23:50:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HKxJC08xDz3c5b
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 01:00:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lQgzyUqX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OFFtJpMc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=fbarrat@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=lQgzyUqX; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=OFFtJpMc; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HKvjs1np8z2yy3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 23:49:20 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 18UCBxYt019958; 
- Thu, 30 Sep 2021 09:48:44 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=Q+AzT0Ijwdw7ICtovDN1my42gJlkON+amsvj9v8ooiM=;
- b=lQgzyUqXVkfGYfIt0Ch8RaKtlmIO6gizazSCeTsQzOdqLwcuzmMl4mFsZAnyWbwIp4FP
- 6DPoyR44kXJJZ7lmHh9ozPD83SUDnbwObYunomLIOYbRNofigHr7W9owQJVPIP2u5PDl
- scdMAbKBB/ZsfyiQfRjbBG3urvEypmfqvptUmDx86XfEU90JuutbQpCroOqtimmJ09Gh
- ViMuqNernMb0exN9vnb0YA6w6iPkNqWWei+kMGtd6YDcHT8Ydk3Yta5cyWRODcb4ZK7k
- RURHAnrkOzxAIeIYtMoDQcv/ZnZ+yEWpBxNEfXrPaFCZxPwzSjZH+em+PjODNqawGzU7 8w== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3bdd18tfqq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Sep 2021 09:48:44 -0400
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 18UDMbpq025093;
- Thu, 30 Sep 2021 09:48:43 -0400
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3bdd18tfq0-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Sep 2021 09:48:43 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 18UDlI4r026910;
- Thu, 30 Sep 2021 13:48:41 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma06ams.nl.ibm.com with ESMTP id 3b9u1k4bx8-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Sep 2021 13:48:41 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 18UDmc3x46334294
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 30 Sep 2021 13:48:38 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C8532A4040;
- Thu, 30 Sep 2021 13:48:38 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BA81EA405D;
- Thu, 30 Sep 2021 13:48:37 +0000 (GMT)
-Received: from [9.145.153.93] (unknown [9.145.153.93])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 30 Sep 2021 13:48:37 +0000 (GMT)
-Message-ID: <e53a8113-5037-db2a-7313-d1ef5e430682@linux.ibm.com>
-Date: Thu, 30 Sep 2021 15:48:37 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HKxHR5Kz5z3036
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Oct 2021 01:00:03 +1000 (AEST)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 0067F619E2;
+ Thu, 30 Sep 2021 14:59:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1633014000;
+ bh=Myi37bbes7ETlK+tTGsWiTVP6FIl//3fgtuWHuTBhDw=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=OFFtJpMcjNsnftt04Ivbz2T2tRgic6D9Un4vw/o86TzAuw9aJ/aVTnxLUIiw6q8S1
+ 5N1Wli7R4d/+eV/aLakuxtvB58TpqKU5Ksx7n0Oe+fzVohhFpe9gQLq0wHbjcixAMy
+ S64RJCx92qqJyp8NDpP7rivlmJXDq/lVgkeFUoUs/+W30FXMngGBLg8U0nE6sAELcK
+ RSeIEBODMRHyFDhb/X5LHRZyWM/seesrrLlaA9/PAT6ozZUZ4nuLbUAjIhxBNn5xCN
+ q5zBnzFViNN+x2qr7L+ibzDa6BiJIybpr5EqAzNeEFB9uNFugRxEJ6G2QQeAA8GExu
+ lY+F4mWsgq/wg==
+From: Mark Brown <broonie@kernel.org>
+To: Xiubo.Lee@gmail.com, tiwai@suse.com, alsa-devel@alsa-project.org,
+ festevam@gmail.com, Shengjiu Wang <shengjiu.wang@nxp.com>,
+ nicoleotsuka@gmail.com, perex@perex.cz, lgirdwood@gmail.com
+Subject: Re: [PATCH] ASoC: fsl_rpmsg: Add rpmsg audio support for i.MX8ULP
+Date: Thu, 30 Sep 2021 15:58:53 +0100
+Message-Id: <163301248179.43045.2909499493214533743.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <1632972413-22130-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1632972413-22130-1-git-send-email-shengjiu.wang@nxp.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.1.0
-Subject: Re: [PATCH v5 10/11] PCI: Replace pci_dev::driver usage by
- pci_dev::dev.driver
-Content-Language: en-US
-To: Andrew Donnellan <ajd@linux.ibm.com>,
- =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>
-References: <20210929085306.2203850-1-u.kleine-koenig@pengutronix.de>
- <20210929085306.2203850-11-u.kleine-koenig@pengutronix.de>
- <75dd6d60-08b9-fa68-352c-3a0c5a04c0ab@linux.ibm.com>
- <20210929134330.e5c57t7mtwu5iner@pengutronix.de>
- <1414b3c5-167c-c271-baed-d3d7f6cd0309@linux.ibm.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-In-Reply-To: <1414b3c5-167c-c271-baed-d3d7f6cd0309@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: ydDkSS-JwggQoWGJmx2KVo1ai4eV3eaN
-X-Proofpoint-ORIG-GUID: _H8ui1Jc9Hf375ilmtd2tw6D1AxPAzql
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
- definitions=2021-09-30_04,2021-09-30_01,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0
- lowpriorityscore=0 bulkscore=0 mlxscore=0 malwarescore=0 mlxlogscore=999
- priorityscore=1501 adultscore=0 clxscore=1011 spamscore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2109230001
- definitions=main-2109300085
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,81 +66,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Oliver O'Halloran <oohall@gmail.com>,
- Jiri Olsa <jolsa@redhat.com>, Christoph Hellwig <hch@lst.de>,
- Stefano Stabellini <sstabellini@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, x86@kernel.org,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, Bjorn Helgaas <helgaas@kernel.org>,
- linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
- Mathias Nyman <mathias.nyman@intel.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Bjorn Helgaas <bhelgaas@google.com>, Namhyung Kim <namhyung@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linux-perf-users@vger.kernel.org, kernel@pengutronix.de,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 29/09/2021 17:44, Andrew Donnellan wrote:
-> On 29/9/21 11:43 pm, Uwe Kleine-König wrote:> I'm not a huge fan either, 
-> I used it to keep the control flow as is and
->> without introducing several calls to to_pci_driver.
->>
->> The whole code looks as follows:
->>
->>     list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
->>         struct pci_driver *afu_drv;
->>         if (afu_dev->dev.driver &&
->>             (afu_drv = 
->> to_pci_driver(afu_dev->dev.driver))->err_handler &&
->>             afu_drv->err_handler->resume)
->>             afu_drv->err_handler->resume(afu_dev);
->>     }
->>
->> Without assignment in the if it could look as follows:
->>
->>     list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
->>         struct pci_driver *afu_drv;
->>
->>         if (!afu_dev->dev.driver)
->>             continue;
->>
->>         afu_drv = to_pci_driver(afu_dev->dev.driver));
->>
->>         if (afu_drv->err_handler && afu_drv->err_handler->resume)
->>             afu_drv->err_handler->resume(afu_dev);
->>     }
->>
->> Fine for me.
+On Thu, 30 Sep 2021 11:26:53 +0800, Shengjiu Wang wrote:
+> On i.MX8ULP the audio interface and codec are controlled
+> by Cortex-M domain, Cortex-M core provides audio service
+> over rpmsg.
 > 
-> This looks fine.
+> The rpmsg audio function is almost same as i.MX7ULP
+> platform, so share same configuration.
 > 
-> As an aside while writing my email I discovered the existence of 
-> container_of_safe(), a version of container_of() that handles the null 
-> and err ptr cases... if to_pci_driver() used that, the null check in the 
-> caller could be moved until after the to_pci_driver() call which would 
-> be neater.
-> 
-> But then, grep tells me that container_of_safe() is used precisely zero 
-> times in the entire tree. Interesting.
-> 
->> (Sidenote: What happens if the device is unbound directly after the
->> check for afu_dev->dev.driver? This is a problem the old code had, too
->> (assuming it is a real problem, didn't check deeply).)
-> 
-> Looking at any of the cxl PCI error handling paths brings back 
-> nightmares from a few years ago... Fred: I wonder if we need to add a 
-> lock here?
+> [...]
 
-Yes, it's indeed a potential issue, there's nothing to prevent the afu 
-driver to unbind during that window. Sigh..
+Applied to
 
-   Fred
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
+Thanks!
+
+[1/1] ASoC: fsl_rpmsg: Add rpmsg audio support for i.MX8ULP
+      commit: 2cbf90a6d52d52fc017f3caf36f7b516f689150e
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
