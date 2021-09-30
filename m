@@ -2,60 +2,68 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24F3AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 11:01:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C5A0C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 11:26:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 98E7760F57
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 11:01:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 98E7760F57
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8A8C0615E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 11:26:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8A8C0615E0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HKr0F1qlPz3bW6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 21:01:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HKrXm6YS9z3c4f
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 21:26:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=87.98.187.244;
- helo=10.mo552.mail-out.ovh.net; envelope-from=clg@kaod.org;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 1799 seconds by postgrey-1.36 at boromir;
- Thu, 30 Sep 2021 21:01:07 AEST
-Received: from 10.mo552.mail-out.ovh.net (10.mo552.mail-out.ovh.net
- [87.98.187.244])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HKqzl2TWPz2ynN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 21:01:05 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.143.118])
- by mo552.mail-out.ovh.net (Postfix) with ESMTPS id 00BE922290;
- Thu, 30 Sep 2021 10:25:36 +0000 (UTC)
-Received: from kaod.org (37.59.142.100) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Thu, 30 Sep
- 2021 12:25:36 +0200
-Authentication-Results: garm.ovh; auth=pass
- (GARM-100R00317568bc6-bbdc-486b-8c81-81b7f8d096e3,
- 7F6F77616FEFA4DE1E608E9282B3397E3DBDA81F) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 82.64.250.170
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/pseries/msi: Add an empty irq_write_msi_msg() handler
-Date: Thu, 30 Sep 2021 12:25:35 +0200
-Message-ID: <20210930102535.1047230-1-clg@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HKrXD22Jtz2ypL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 21:25:45 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4HKrX53XdRz9sX4;
+ Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id LzOt_4N5Ef7X; Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HKrX52fN1z9sX3;
+ Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 41DAD8B773;
+ Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id UPPPsYZg8-CX; Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.149])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 085B38B763;
+ Thu, 30 Sep 2021 13:25:40 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18UBO9xY1558826
+ (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+ Thu, 30 Sep 2021 13:24:09 +0200
+Received: (from chleroy@localhost)
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18UBO9lm1558825;
+ Thu, 30 Sep 2021 13:24:09 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
+ christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Andrew Morton <akpm@linux-foundation.org>, arnd@arndb.de
+Subject: [PATCH v3 3/4] powerpc: Use generic version of
+ arch_is_kernel_initmem_freed()
+Date: Thu, 30 Sep 2021 13:23:45 +0200
+Message-Id: <c53764eb45d41491e2b21da2e7812239897dbebb.1633001016.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <9ecfdee7dd4d741d172cb93ff1d87f1c58127c9a.1633001016.git.christophe.leroy@csgroup.eu>
+References: <9ecfdee7dd4d741d172cb93ff1d87f1c58127c9a.1633001016.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.100]
-X-ClientProxiedBy: DAG5EX1.mxp5.local (172.16.2.41) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: b9b31a8e-dd9f-46d6-8555-b708e2364621
-X-Ovh-Tracer-Id: 10421329540951345958
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrudekgedgvdejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkffogggtgfhisehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepgfegkeefieffhfdvjefftdeiteelueekjeduudduudfhgeehhfehueelgeefuddtnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddttdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,89 +75,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Brian King <brking@linux.vnet.ibm.com>,
- Wen Xiong <wenxiong@linux.vnet.ibm.com>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- Douglas Miller <dougmill@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Kefeng Wang <wangkefeng.wang@huawei.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The IPR drivers tests for MSI support at probe time with MSI vector 0
-and when done, frees the IRQ with free_irq(). This test was introduced
-by 95fecd90397e ("ipr: add test for MSI interrupt support") as an
-improvement of commit 5a9ef25b14d3 ("[SCSI] ipr: add MSI support")
-because a boot failure was reported on a Bimini PowerPC system :
+Generic version of arch_is_kernel_initmem_freed() now does the same
+as powerpc version.
 
-  https://x-lore.kernel.org/all/1242926159.3007.5.camel@localhost.localdomain/
+Remove the powerpc version.
 
-It was finally decided to remove MSI support on Bimini systems in
-6eb0ac03899a ("powerpc/maple: Add a quirk to disable MSI for IPR on
-Bimini").
-
-Linux 5.15-rc1 added MSI domain support to the pseries machine and
-when free_irq is called() in the driver, msi_domain_deactivate() also
-is. This resets the MSI table entry of the associate vector by calling
-__pci_write_msi_msg() with an empty message and breaks any further
-activation of the same vector. In the case of the IPR driver, it
-breaks the initialization sequence of the IOA.
-
-Introduce an empty irq_write_msi_msg() handler in the MSI domain of
-the pseries machine to avoid clearing the MSI vector entry. Updating
-the entry is not strictly necessary since it is initialized by the
-underlying hypervisor, PowerVM or QEMU/KVM.
-
-Cc: Wen Xiong <wenxiong@linux.vnet.ibm.com>
-Cc: Douglas Miller <dougmill@linux.vnet.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>
-Fixes: a5f3d2c17b07 ("powerpc/pseries/pci: Add MSI domains")
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
+v3: No change
+v2: No change
+---
+ arch/powerpc/include/asm/sections.h | 13 -------------
+ 1 file changed, 13 deletions(-)
 
- We could also revert commit 95fecd90397e ("ipr: add test for MSI
- interrupt support") which doesn't seem very useful nowdays. Or
- rewrite the test to improve how MSI vectors are used.
-
- Please advise !
-
- Thanks,
-
-
- arch/powerpc/platforms/pseries/msi.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
-
-diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
-index 1b305e411862..37eb35f5194d 100644
---- a/arch/powerpc/platforms/pseries/msi.c
-+++ b/arch/powerpc/platforms/pseries/msi.c
-@@ -507,12 +507,27 @@ static void pseries_msi_unmask(struct irq_data *d)
- 	irq_chip_unmask_parent(d);
- }
+diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+index 6e4af4492a14..79cb7a25a5fb 100644
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -6,21 +6,8 @@
+ #include <linux/elf.h>
+ #include <linux/uaccess.h>
  
-+static void pseries_msi_write_msg(struct irq_data *data, struct msi_msg *msg)
-+{
-+	struct msi_desc *entry = irq_data_get_msi_desc(data);
-+
-+	/* Do not update the MSIx vector table. This is not strictly
-+	 * necessary since the table is initialized by the underlying
-+	 * hypervisor, PowerVM or QEMU/KVM. However, if the MSIx
-+	 * vector entry is cleared, any further activation will fail.
-+	 * This can happen in some drivers (IPR) which deactivate the
-+	 * IRQ used for testing MSI support.
-+	 */
-+	entry->msg = *msg;
-+}
-+
- static struct irq_chip pseries_pci_msi_irq_chip = {
- 	.name		= "pSeries-PCI-MSI",
- 	.irq_shutdown	= pseries_msi_shutdown,
- 	.irq_mask	= pseries_msi_mask,
- 	.irq_unmask	= pseries_msi_unmask,
- 	.irq_eoi	= irq_chip_eoi_parent,
-+	.irq_write_msi_msg	= pseries_msi_write_msg,
- };
+-#define arch_is_kernel_initmem_freed arch_is_kernel_initmem_freed
+-
+ #include <asm-generic/sections.h>
  
- static struct msi_domain_info pseries_msi_domain_info = {
+-extern bool init_mem_is_free;
+-
+-static inline int arch_is_kernel_initmem_freed(unsigned long addr)
+-{
+-	if (!init_mem_is_free)
+-		return 0;
+-
+-	return addr >= (unsigned long)__init_begin &&
+-		addr < (unsigned long)__init_end;
+-}
+-
+ extern char __head_end[];
+ 
+ #ifdef __powerpc64__
 -- 
 2.31.1
 
