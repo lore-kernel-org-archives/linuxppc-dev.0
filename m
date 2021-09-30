@@ -2,66 +2,64 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C5A0C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 11:26:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF09FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 11:26:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A8C0615E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 11:26:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8A8C0615E0
+	by mail.kernel.org (Postfix) with ESMTPS id 07A9460E74
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 11:26:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 07A9460E74
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HKrXm6YS9z3c4f
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 21:26:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HKrYF4Bvqz3cCQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 21:26:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HKrXD22Jtz2ypL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 21:25:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HKrXK0tPTz2ypL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 21:25:52 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HKrX53XdRz9sX4;
- Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HKrX61cK6z9sX8;
+ Thu, 30 Sep 2021 13:25:42 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id LzOt_4N5Ef7X; Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
+ with ESMTP id F5X513tfRdMv; Thu, 30 Sep 2021 13:25:42 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HKrX52fN1z9sX3;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HKrX55Q1dz9sX3;
  Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 41DAD8B773;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A2DDC8B773;
  Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id UPPPsYZg8-CX; Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
+ with ESMTP id SqMd7MWu2jJd; Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.149])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 085B38B763;
- Thu, 30 Sep 2021 13:25:40 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5E1DE8B763;
+ Thu, 30 Sep 2021 13:25:41 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18UBO9xY1558826
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18UBO8dO1558818
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Thu, 30 Sep 2021 13:24:09 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18UBO9lm1558825;
- Thu, 30 Sep 2021 13:24:09 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18UBO7dr1558816;
+ Thu, 30 Sep 2021 13:24:07 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Andrew Morton <akpm@linux-foundation.org>, arnd@arndb.de
-Subject: [PATCH v3 3/4] powerpc: Use generic version of
- arch_is_kernel_initmem_freed()
-Date: Thu, 30 Sep 2021 13:23:45 +0200
-Message-Id: <c53764eb45d41491e2b21da2e7812239897dbebb.1633001016.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 1/4] mm: Create a new system state and fix
+ core_kernel_text()
+Date: Thu, 30 Sep 2021 13:23:43 +0200
+Message-Id: <9ecfdee7dd4d741d172cb93ff1d87f1c58127c9a.1633001016.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
-In-Reply-To: <9ecfdee7dd4d741d172cb93ff1d87f1c58127c9a.1633001016.git.christophe.leroy@csgroup.eu>
-References: <9ecfdee7dd4d741d172cb93ff1d87f1c58127c9a.1633001016.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -77,51 +75,72 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
  Kefeng Wang <wangkefeng.wang@huawei.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
+ linux-mm@kvack.org, Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Generic version of arch_is_kernel_initmem_freed() now does the same
-as powerpc version.
+core_kernel_text() considers that until system_state in at least
+SYSTEM_RUNNING, init memory is valid.
 
-Remove the powerpc version.
+But init memory is freed a few lines before setting SYSTEM_RUNNING,
+so we have a small period of time when core_kernel_text() is wrong.
 
+Create an intermediate system state called SYSTEM_FREEING_INIT that
+is set before starting freeing init memory, and use it in
+core_kernel_text() to report init memory invalid earlier.
+
+Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
 Cc: Kefeng Wang <wangkefeng.wang@huawei.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
 v3: No change
-v2: No change
+v2: New
 ---
- arch/powerpc/include/asm/sections.h | 13 -------------
- 1 file changed, 13 deletions(-)
+ include/linux/kernel.h | 1 +
+ init/main.c            | 2 ++
+ kernel/extable.c       | 2 +-
+ 3 files changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
-index 6e4af4492a14..79cb7a25a5fb 100644
---- a/arch/powerpc/include/asm/sections.h
-+++ b/arch/powerpc/include/asm/sections.h
-@@ -6,21 +6,8 @@
- #include <linux/elf.h>
- #include <linux/uaccess.h>
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 2776423a587e..471bc0593679 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -248,6 +248,7 @@ extern bool early_boot_irqs_disabled;
+ extern enum system_states {
+ 	SYSTEM_BOOTING,
+ 	SYSTEM_SCHEDULING,
++	SYSTEM_FREEING_INITMEM,
+ 	SYSTEM_RUNNING,
+ 	SYSTEM_HALT,
+ 	SYSTEM_POWER_OFF,
+diff --git a/init/main.c b/init/main.c
+index 3f7216934441..c457d393fdd4 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -1505,6 +1505,8 @@ static int __ref kernel_init(void *unused)
+ 	kernel_init_freeable();
+ 	/* need to finish all async __init code before freeing the memory */
+ 	async_synchronize_full();
++
++	system_state = SYSTEM_FREEING_INITMEM;
+ 	kprobe_free_init_mem();
+ 	ftrace_free_init_mem();
+ 	kgdb_free_init_mem();
+diff --git a/kernel/extable.c b/kernel/extable.c
+index b0ea5eb0c3b4..290661f68e6b 100644
+--- a/kernel/extable.c
++++ b/kernel/extable.c
+@@ -76,7 +76,7 @@ int notrace core_kernel_text(unsigned long addr)
+ 	    addr < (unsigned long)_etext)
+ 		return 1;
  
--#define arch_is_kernel_initmem_freed arch_is_kernel_initmem_freed
--
- #include <asm-generic/sections.h>
- 
--extern bool init_mem_is_free;
--
--static inline int arch_is_kernel_initmem_freed(unsigned long addr)
--{
--	if (!init_mem_is_free)
--		return 0;
--
--	return addr >= (unsigned long)__init_begin &&
--		addr < (unsigned long)__init_end;
--}
--
- extern char __head_end[];
- 
- #ifdef __powerpc64__
+-	if (system_state < SYSTEM_RUNNING &&
++	if (system_state < SYSTEM_FREEING_INITMEM &&
+ 	    init_kernel_text(addr))
+ 		return 1;
+ 	return 0;
 -- 
 2.31.1
 
