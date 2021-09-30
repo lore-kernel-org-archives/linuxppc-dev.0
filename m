@@ -2,47 +2,46 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50DC7C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 07:10:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18E37C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 07:10:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E0086617E6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 07:10:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E0086617E6
+	by mail.kernel.org (Postfix) with ESMTPS id 85558617E4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 07:10:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 85558617E4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HKksf4hDFz3cFm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 17:10:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HKkt61gskz305W
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 17:10:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com;
  envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HKkrM5zH0z2ynw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 17:09:23 +1000 (AEST)
-Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.53])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4HKkkt5J6Bz8yyF;
- Thu, 30 Sep 2021 15:04:38 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HKkrP00nHz301N
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 17:09:24 +1000 (AEST)
+Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.54])
+ by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4HKkpn0f1qz1DHQ8;
+ Thu, 30 Sep 2021 15:08:01 +0800 (CST)
 Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
  dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.8; Thu, 30 Sep 2021 15:09:17 +0800
+ 15.1.2308.8; Thu, 30 Sep 2021 15:09:21 +0800
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.8; Thu, 30 Sep 2021 15:09:17 +0800
+ 15.1.2308.8; Thu, 30 Sep 2021 15:09:20 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <rostedt@goodmis.org>, <mingo@redhat.com>, <davem@davemloft.net>,
  <ast@kernel.org>, <ryabinin.a.a@gmail.com>, <akpm@linux-foundation.org>
-Subject: [PATCH v4 06/11] sections: Provide internal __is_kernel() and
- __is_kernel_text() helper
-Date: Thu, 30 Sep 2021 15:11:38 +0800
-Message-ID: <20210930071143.63410-7-wangkefeng.wang@huawei.com>
+Subject: [PATCH v4 09/11] powerpc/mm: Use core_kernel_text() helper
+Date: Thu, 30 Sep 2021 15:11:41 +0800
+Message-ID: <20210930071143.63410-10-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20210930071143.63410-1-wangkefeng.wang@huawei.com>
 References: <20210930071143.63410-1-wangkefeng.wang@huawei.com>
@@ -70,75 +69,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-An internal __is_kernel() helper which only check the
-kernel address ranges, and an internal __is_kernel_text()
-helper which only check text section ranges.
+Use core_kernel_text() helper to simplify code, also drop etext,
+_stext, _sinittext, _einittext declaration which already declared
+in section.h.
 
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
 ---
- include/asm-generic/sections.h | 29 +++++++++++++++++++++++++++++
- include/linux/kallsyms.h       |  4 ++--
- 2 files changed, 31 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/pgtable_32.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
-index 811583ca8bd0..a7abeadddc7a 100644
---- a/include/asm-generic/sections.h
-+++ b/include/asm-generic/sections.h
-@@ -186,4 +186,33 @@ static inline bool is_kernel_inittext(unsigned long addr)
- 	       addr < (unsigned long)_einittext;
- }
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index dcf5ecca19d9..079abbf45a33 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -33,8 +33,6 @@
  
-+/**
-+ * __is_kernel_text - checks if the pointer address is located in the
-+ *                    .text section
-+ *
-+ * @addr: address to check
-+ *
-+ * Returns: true if the address is located in .text, false otherwise.
-+ * Note: an internal helper, only check the range of _stext to _etext.
-+ */
-+static inline bool __is_kernel_text(unsigned long addr)
-+{
-+	return addr >= (unsigned long)_stext &&
-+	       addr < (unsigned long)_etext;
-+}
-+
-+/**
-+ * __is_kernel - checks if the pointer address is located in the kernel range
-+ *
-+ * @addr: address to check
-+ *
-+ * Returns: true if the address is located in the kernel range, false otherwise.
-+ * Note: an internal helper, only check the range of _stext to _end.
-+ */
-+static inline bool __is_kernel(unsigned long addr)
-+{
-+	return addr >= (unsigned long)_stext &&
-+	       addr < (unsigned long)_end;
-+}
-+
- #endif /* _ASM_GENERIC_SECTIONS_H_ */
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index 8a9d329c927c..5fb17dd4b6fa 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -26,14 +26,14 @@ struct module;
+ #include <mm/mmu_decl.h>
  
- static inline int is_kernel_text(unsigned long addr)
+-extern char etext[], _stext[], _sinittext[], _einittext[];
+-
+ static u8 early_fixmap_pagetable[FIXMAP_PTE_SIZE] __page_aligned_data;
+ 
+ notrace void __init early_ioremap_init(void)
+@@ -104,14 +102,13 @@ static void __init __mapin_ram_chunk(unsigned long offset, unsigned long top)
  {
--	if ((addr >= (unsigned long)_stext && addr < (unsigned long)_etext))
-+	if (__is_kernel_text(addr))
- 		return 1;
- 	return in_gate_area_no_mm(addr);
- }
+ 	unsigned long v, s;
+ 	phys_addr_t p;
+-	int ktext;
++	bool ktext;
  
- static inline int is_kernel(unsigned long addr)
- {
--	if (addr >= (unsigned long)_stext && addr < (unsigned long)_end)
-+	if (__is_kernel(addr))
- 		return 1;
- 	return in_gate_area_no_mm(addr);
- }
+ 	s = offset;
+ 	v = PAGE_OFFSET + s;
+ 	p = memstart_addr + s;
+ 	for (; s < top; s += PAGE_SIZE) {
+-		ktext = ((char *)v >= _stext && (char *)v < etext) ||
+-			((char *)v >= _sinittext && (char *)v < _einittext);
++		ktext = core_kernel_text(v);
+ 		map_kernel_page(v, p, ktext ? PAGE_KERNEL_TEXT : PAGE_KERNEL);
+ 		v += PAGE_SIZE;
+ 		p += PAGE_SIZE;
 -- 
 2.26.2
 
