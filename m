@@ -2,47 +2,50 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82AE8C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 07:09:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28858C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 07:10:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B9D60617E6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 07:09:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B9D60617E6
+	by mail.kernel.org (Postfix) with ESMTPS id 8D113617E4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 07:10:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8D113617E4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HKkrn0rNyz3c59
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 17:09:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HKksC20ggz3cCr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Sep 2021 17:10:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com;
  envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HKkrK1SlPz2yHt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 17:09:20 +1000 (AEST)
-Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.56])
- by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4HKkpd19fvz1DHJf;
- Thu, 30 Sep 2021 15:07:53 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HKkrL2dK1z2yHt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Sep 2021 17:09:21 +1000 (AEST)
+Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.55])
+ by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4HKkqB6SYQz8tXV;
+ Thu, 30 Sep 2021 15:08:22 +0800 (CST)
 Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
  dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.8; Thu, 30 Sep 2021 15:09:13 +0800
+ 15.1.2308.8; Thu, 30 Sep 2021 15:09:15 +0800
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.8; Thu, 30 Sep 2021 15:09:12 +0800
+ 15.1.2308.8; Thu, 30 Sep 2021 15:09:14 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <rostedt@goodmis.org>, <mingo@redhat.com>, <davem@davemloft.net>,
  <ast@kernel.org>, <ryabinin.a.a@gmail.com>, <akpm@linux-foundation.org>
-Subject: [PATCH v4 00/11] sections: Unify kernel sections range check and use
-Date: Thu, 30 Sep 2021 15:11:32 +0800
-Message-ID: <20210930071143.63410-1-wangkefeng.wang@huawei.com>
+Subject: [PATCH v4 03/11] sections: Move and rename core_kernel_data() to
+ is_kernel_core_data()
+Date: Thu, 30 Sep 2021 15:11:35 +0800
+Message-ID: <20210930071143.63410-4-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20210930071143.63410-1-wangkefeng.wang@huawei.com>
+References: <20210930071143.63410-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -67,80 +70,117 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are three head files(kallsyms.h, kernel.h and sections.h) which
-include the kernel sections range check, let's make some cleanup and
-unify them.
+Move core_kernel_data() into sections.h and rename it to
+is_kernel_core_data(), also make it return bool value, then
+update all the callers.
 
-1. cleanup arch specific text/data check and fix address boundary check
-   in kallsyms.h
-2. make all the basic/core kernel range check function into sections.h
-3. update all the callers, and use the helper in sections.h to simplify
-   the code
-
-After this series, we have 5 APIs about kernel sections range check in
-sections.h
-
- * is_kernel_rodata()		--- already in sections.h
- * is_kernel_core_data()	--- come from core_kernel_data() in kernel.h
- * is_kernel_inittext()		--- come from kernel.h and kallsyms.h
- * __is_kernel_text()		--- add new internal helper
- * __is_kernel()		--- add new internal helper
-
-Note: For the last two helpers, people should not use directly, consider to
-      use corresponding function in kallsyms.h.
-
-v4:
-- Use core_kernel_text() in powerpc sugguested Christophe Leroy, build
-  test only
-- Use is_kernel_text() in alpha and microblaze, build test only on
-  next-20210929
-
-v3:
-https://lore.kernel.org/linux-arch/20210926072048.190336-1-wangkefeng.wang@huawei.com/
-- Add Steven's RB to patch2
-- Introduce two internal helper, then use is_kernel_text() in core_kernel_text()
-  and is_kernel() in kernel_or_module_addr() suggested by Steven
-
-v2:
-https://lore.kernel.org/linux-arch/20210728081320.20394-1-wangkefeng.wang@huawei.com/
-- add ACK/RW to patch2, and drop inappropriate fix tag
-- keep 'core' to check kernel data, suggestted by Steven Rostedt
-  <rostedt@goodmis.org>, rename is_kernel_data() to is_kernel_core_data()
-- drop patch8 which is merged
-- drop patch9 which is resend independently
-
-v1:
-https://lore.kernel.org/linux-arch/20210626073439.150586-1-wangkefeng.wang@huawei.com
-
-
-Kefeng Wang (11):
-  kallsyms: Remove arch specific text and data check
-  kallsyms: Fix address-checks for kernel related range
-  sections: Move and rename core_kernel_data() to is_kernel_core_data()
-  sections: Move is_kernel_inittext() into sections.h
-  x86: mm: Rename __is_kernel_text() to is_x86_32_kernel_text()
-  sections: Provide internal __is_kernel() and __is_kernel_text() helper
-  mm: kasan: Use is_kernel() helper
-  extable: Use is_kernel_text() helper
-  powerpc/mm: Use core_kernel_text() helper
-  microblaze: Use is_kernel_text() helper
-  alpha: Use is_kernel_text() helper
-
- arch/alpha/kernel/traps.c      |  4 +-
- arch/microblaze/mm/pgtable.c   |  3 +-
- arch/powerpc/mm/pgtable_32.c   |  7 +---
- arch/x86/kernel/unwind_orc.c   |  2 +-
- arch/x86/mm/init_32.c          | 14 +++----
- include/asm-generic/sections.h | 75 ++++++++++++++++++++++++++--------
- include/linux/kallsyms.h       | 13 +-----
- include/linux/kernel.h         |  2 -
- kernel/extable.c               | 33 ++-------------
- kernel/locking/lockdep.c       |  3 --
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+---
+ include/asm-generic/sections.h | 16 ++++++++++++++++
+ include/linux/kernel.h         |  1 -
+ kernel/extable.c               | 18 ------------------
  kernel/trace/ftrace.c          |  2 +-
- mm/kasan/report.c              |  2 +-
  net/sysctl_net.c               |  2 +-
- 13 files changed, 78 insertions(+), 84 deletions(-)
+ 5 files changed, 18 insertions(+), 21 deletions(-)
 
+diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+index 817309e289db..24780c0f40b1 100644
+--- a/include/asm-generic/sections.h
++++ b/include/asm-generic/sections.h
+@@ -142,6 +142,22 @@ static inline bool init_section_intersects(void *virt, size_t size)
+ 	return memory_intersects(__init_begin, __init_end, virt, size);
+ }
+ 
++/**
++ * is_kernel_core_data - checks if the pointer address is located in the
++ *			 .data section
++ *
++ * @addr: address to check
++ *
++ * Returns: true if the address is located in .data, false otherwise.
++ * Note: On some archs it may return true for core RODATA, and false
++ *       for others. But will always be true for core RW data.
++ */
++static inline bool is_kernel_core_data(unsigned long addr)
++{
++	return addr >= (unsigned long)_sdata &&
++	       addr < (unsigned long)_edata;
++}
++
+ /**
+  * is_kernel_rodata - checks if the pointer address is located in the
+  *                    .rodata section
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 2776423a587e..e5a9af8a4e20 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -230,7 +230,6 @@ extern char *next_arg(char *args, char **param, char **val);
+ 
+ extern int core_kernel_text(unsigned long addr);
+ extern int init_kernel_text(unsigned long addr);
+-extern int core_kernel_data(unsigned long addr);
+ extern int __kernel_text_address(unsigned long addr);
+ extern int kernel_text_address(unsigned long addr);
+ extern int func_ptr_is_kernel_text(void *ptr);
+diff --git a/kernel/extable.c b/kernel/extable.c
+index b0ea5eb0c3b4..da26203841d4 100644
+--- a/kernel/extable.c
++++ b/kernel/extable.c
+@@ -82,24 +82,6 @@ int notrace core_kernel_text(unsigned long addr)
+ 	return 0;
+ }
+ 
+-/**
+- * core_kernel_data - tell if addr points to kernel data
+- * @addr: address to test
+- *
+- * Returns true if @addr passed in is from the core kernel data
+- * section.
+- *
+- * Note: On some archs it may return true for core RODATA, and false
+- *  for others. But will always be true for core RW data.
+- */
+-int core_kernel_data(unsigned long addr)
+-{
+-	if (addr >= (unsigned long)_sdata &&
+-	    addr < (unsigned long)_edata)
+-		return 1;
+-	return 0;
+-}
+-
+ int __kernel_text_address(unsigned long addr)
+ {
+ 	if (kernel_text_address(addr))
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 7efbc8aaf7f6..f15badf31f52 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -323,7 +323,7 @@ int __register_ftrace_function(struct ftrace_ops *ops)
+ 	if (!ftrace_enabled && (ops->flags & FTRACE_OPS_FL_PERMANENT))
+ 		return -EBUSY;
+ 
+-	if (!core_kernel_data((unsigned long)ops))
++	if (!is_kernel_core_data((unsigned long)ops))
+ 		ops->flags |= FTRACE_OPS_FL_DYNAMIC;
+ 
+ 	add_ftrace_ops(&ftrace_ops_list, ops);
+diff --git a/net/sysctl_net.c b/net/sysctl_net.c
+index f6cb0d4d114c..4b45ed631eb8 100644
+--- a/net/sysctl_net.c
++++ b/net/sysctl_net.c
+@@ -144,7 +144,7 @@ static void ensure_safe_net_sysctl(struct net *net, const char *path,
+ 		addr = (unsigned long)ent->data;
+ 		if (is_module_address(addr))
+ 			where = "module";
+-		else if (core_kernel_data(addr))
++		else if (is_kernel_core_data(addr))
+ 			where = "kernel";
+ 		else
+ 			continue;
 -- 
 2.26.2
 
