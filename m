@@ -2,60 +2,103 @@ Return-Path: <SRS0=1eNT=OV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1662C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 10:00:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31DEEC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 10:19:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D621261881
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 10:00:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D621261881
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=Huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 61049619E7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 10:19:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 61049619E7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HLQbk2KX4z3c7D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 20:00:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=185.176.79.56;
- helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HLR0w0SyGz2ymZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 20:19:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M1IiTZ5a;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-X-Greylist: delayed 1049 seconds by postgrey-1.36 at boromir;
- Fri, 01 Oct 2021 20:00:21 AEST
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com
- [185.176.79.56])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=M1IiTZ5a; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HLQb96XG2z3c5k
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Oct 2021 20:00:21 +1000 (AEST)
-Received: from fraeml737-chm.china.huawei.com (unknown [172.18.147.200])
- by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4HLQ7S3HQwz67D3k;
- Fri,  1 Oct 2021 17:39:48 +0800 (CST)
-Received: from lhreml710-chm.china.huawei.com (10.201.108.61) by
- fraeml737-chm.china.huawei.com (10.206.15.218) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.8; Fri, 1 Oct 2021 11:42:44 +0200
-Received: from localhost (10.52.123.156) by lhreml710-chm.china.huawei.com
- (10.201.108.61) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.8; Fri, 1 Oct 2021
- 10:42:43 +0100
-Date: Fri, 1 Oct 2021 10:42:26 +0100
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-To: Ben Widawsky <ben.widawsky@intel.com>
-Subject: Re: [PATCH v2 6/9] PCI: Add pci_find_dvsec_capability to find
- designated VSEC
-Message-ID: <20211001104226.00000add@Huawei.com>
-In-Reply-To: <20210923172647.72738-7-ben.widawsky@intel.com>
-References: <20210923172647.72738-1-ben.widawsky@intel.com>
- <20210923172647.72738-7-ben.widawsky@intel.com>
-Organization: Huawei Technologies Research and Development (UK) Ltd.
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; i686-w64-mingw32)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.52.123.156]
-X-ClientProxiedBy: lhreml722-chm.china.huawei.com (10.201.108.73) To
- lhreml710-chm.china.huawei.com (10.201.108.61)
-X-CFilter-Loop: Reflected
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HLR012Mh7z2yZf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Oct 2021 20:18:23 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1919lw43005813; 
+ Fri, 1 Oct 2021 06:18:15 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=content-type :
+ mime-version : subject : from : in-reply-to : date : cc :
+ content-transfer-encoding : message-id : references : to; s=pp1;
+ bh=ET5dTl0melZO642r57Ft73+CnYCkGIC7Aer0oigetZ0=;
+ b=M1IiTZ5ast1vBvb2/AtTqTzynuyNzcjHZMeyjB/YrAzKxiXy8gTv4CXoCix8FKo1SCtG
+ SimlsJ+InUcenYwA4c4kwmZJsDbp5HCTtW+dVUJsZrrWoKhhBLKCwoJpH3QwegIYsH9p
+ PkL09MhEtaxvMcphBqJFnVehwU5ksMRGlKcnTJ2hnOsNNpVW7c2DBm/x8TjfSbsc8KhF
+ O5QhJ2bodNQq16EXtObLjRYh2AgXCnm/yKatWJ7IaAjEqb8FJOCemWnNVgQBXKJuG3Dg
+ +rSOPv65xqlHOXop8RVYGRZYazHIDkztwYbf6ilKimFeqA3wB8PGvqcqvJ7hVg2zNWRu HA== 
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3bdyrm0vch-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 01 Oct 2021 06:18:14 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 191AGPmb012187;
+ Fri, 1 Oct 2021 10:18:13 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma04ams.nl.ibm.com with ESMTP id 3b9udan0tm-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 01 Oct 2021 10:18:12 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 191AD2m360359100
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 1 Oct 2021 10:13:02 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 702E14C04A;
+ Fri,  1 Oct 2021 10:18:09 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B27044C050;
+ Fri,  1 Oct 2021 10:18:07 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.79.193.131])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Fri,  1 Oct 2021 10:18:07 +0000 (GMT)
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 14.0 \(3654.120.0.1.13\))
+Subject: Re: [V2 2/4] tools/perf: Refactor the code definition of perf reg
+ extended mask in tools side header file
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+In-Reply-To: <87o889mfl3.fsf@linkitivity.dja.id.au>
+Date: Fri, 1 Oct 2021 15:48:05 +0530
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <D220C664-003D-4E7F-94DF-77B69BD29904@linux.vnet.ibm.com>
+References: <20210930122055.1390-1-atrajeev@linux.vnet.ibm.com>
+ <20210930122055.1390-3-atrajeev@linux.vnet.ibm.com>
+ <87o889mfl3.fsf@linkitivity.dja.id.au>
+To: Daniel Axtens <dja@axtens.net>
+X-Mailer: Apple Mail (2.3654.120.0.1.13)
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 9XnxGQPKnPjdEAVgiWLy4I9ugvpYIj8-
+X-Proofpoint-ORIG-GUID: 9XnxGQPKnPjdEAVgiWLy4I9ugvpYIj8-
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
+ definitions=2021-10-01_01,2021-10-01_01,2020-04-07_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 spamscore=0 phishscore=0 adultscore=0 lowpriorityscore=0
+ clxscore=1011 mlxlogscore=999 suspectscore=0 bulkscore=0 impostorscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2109230001 definitions=main-2110010067
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,104 +110,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Donnellan <ajd@linux.ibm.com>, linux-pci@vger.kernel.org,
- linux-cxl@vger.kernel.org, Frederic Barrat <fbarrat@linux.ibm.com>,
- iommu@lists.linux-foundation.org, Bjorn Helgaas <helgaas@kernel.org>,
- "David E . Box" <david.e.box@linux.intel.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Dan
- Williams <dan.j.williams@intel.com>, Kan Liang <kan.liang@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, David Woodhouse <dwmw2@infradead.org>, Lu
- Baolu <baolu.lu@linux.intel.com>
+Cc: maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, jolsa@kernel.org,
+ kjain@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 23 Sep 2021 10:26:44 -0700
-Ben Widawsky <ben.widawsky@intel.com> wrote:
 
-> Add pci_find_dvsec_capability to locate a Designated Vendor-Specific
-> Extended Capability with the specified DVSEC ID.
-> 
-> The Designated Vendor-Specific Extended Capability (DVSEC) allows one or
-> more vendor specific capabilities that aren't tied to the vendor ID of
-> the PCI component.
-> 
-> DVSEC is critical for both the Compute Express Link (CXL) driver as well
-> as the driver for OpenCAPI coherent accelerator (OCXL).
-> 
-> Cc: David E. Box <david.e.box@linux.intel.com>
-> Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Cc: Dan Williams <dan.j.williams@intel.com>
-> Cc: linux-pci@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: Andrew Donnellan <ajd@linux.ibm.com>
-> Cc: Lu Baolu <baolu.lu@linux.intel.com>
-> Reviewed-by: Frederic Barrat <fbarrat@linux.ibm.com>
-> Signed-off-by: Ben Widawsky <ben.widawsky@intel.com>
 
-Great to see this cleaned up.
+> On 01-Oct-2021, at 11:50 AM, Daniel Axtens <dja@axtens.net> wrote:
+>=20
+> Hi Athira,
+>=20
+>> PERF_REG_PMU_MASK_300 and PERF_REG_PMU_MASK_31 defines the mask
+>> value for extended registers. Current definition of these mask values
+>> uses hex constant and does not use registers by name, making it less
+>> readable. Patch refactor the macro values in perf tools side header =
+file
+>> by or'ing together the actual register value constants.
+>>=20
+> This looks like a good simplification.
+>=20
+>> -/* Exclude MMCR3, SIER2, SIER3 for CPU_FTR_ARCH_300 */
+>> -#define	PERF_EXCLUDE_REG_EXT_300	(7ULL << =
+PERF_REG_POWERPC_MMCR3)
+>=20
+> This file is uAPI - are we allowed to remove a define? Could a program
+> built against these headers now fail to compile because we've removed =
+it?
 
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Hi Daniel,
 
-> ---
->  drivers/pci/pci.c   | 32 ++++++++++++++++++++++++++++++++
->  include/linux/pci.h |  1 +
->  2 files changed, 33 insertions(+)
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index ce2ab62b64cf..94ac86ff28b0 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -732,6 +732,38 @@ u16 pci_find_vsec_capability(struct pci_dev *dev, u16 vendor, int cap)
->  }
->  EXPORT_SYMBOL_GPL(pci_find_vsec_capability);
->  
-> +/**
-> + * pci_find_dvsec_capability - Find DVSEC for vendor
-> + * @dev: PCI device to query
-> + * @vendor: Vendor ID to match for the DVSEC
-> + * @dvsec: Designated Vendor-specific capability ID
-> + *
-> + * If DVSEC has Vendor ID @vendor and DVSEC ID @dvsec return the capability
-> + * offset in config space; otherwise return 0.
-> + */
-> +u16 pci_find_dvsec_capability(struct pci_dev *dev, u16 vendor, u16 dvsec)
-> +{
-> +	int pos;
-> +
-> +	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_DVSEC);
-> +	if (!pos)
-> +		return 0;
-> +
-> +	while (pos) {
-> +		u16 v, id;
-> +
-> +		pci_read_config_word(dev, pos + PCI_DVSEC_HEADER1, &v);
-> +		pci_read_config_word(dev, pos + PCI_DVSEC_HEADER2, &id);
-> +		if (vendor == v && dvsec == id)
-> +			return pos;
-> +
-> +		pos = pci_find_next_ext_capability(dev, pos, PCI_EXT_CAP_ID_DVSEC);
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(pci_find_dvsec_capability);
-> +
->  /**
->   * pci_find_parent_resource - return resource region of parent bus of given
->   *			      region
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index cd8aa6fce204..c93ccfa4571b 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -1130,6 +1130,7 @@ u16 pci_find_ext_capability(struct pci_dev *dev, int cap);
->  u16 pci_find_next_ext_capability(struct pci_dev *dev, u16 pos, int cap);
->  struct pci_bus *pci_find_next_bus(const struct pci_bus *from);
->  u16 pci_find_vsec_capability(struct pci_dev *dev, u16 vendor, int cap);
-> +u16 pci_find_dvsec_capability(struct pci_dev *dev, u16 vendor, u16 dvsec);
->  
->  u64 pci_get_dsn(struct pci_dev *dev);
->  
+Thanks for the review.
+My bad, you are right. I will correct this in version3 by retaining this =
+define and refactoring the macro.
+
+>=20
+>> -
+>> /*
+>>  * PERF_REG_EXTENDED_MASK value for CPU_FTR_ARCH_300
+>>  * includes 9 SPRS from MMCR0 to PMC6 excluding the
+>> - * unsupported SPRS in PERF_EXCLUDE_REG_EXT_300.
+>> + * unsupported SPRS MMCR3, SIER2 and SIER3.
+>>  */
+>> -#define PERF_REG_PMU_MASK_300   ((0xfffULL << =
+PERF_REG_POWERPC_MMCR0) - PERF_EXCLUDE_REG_EXT_300)
+>> +#define PERF_REG_PMU_MASK_300	\
+>> +	((1ul << PERF_REG_POWERPC_MMCR0) | (1ul << =
+PERF_REG_POWERPC_MMCR1) | \
+>> +	(1ul << PERF_REG_POWERPC_MMCR2) | (1ul << PERF_REG_POWERPC_PMC1) =
+| \
+>> +	(1ul << PERF_REG_POWERPC_PMC2) | (1ul << PERF_REG_POWERPC_PMC3) =
+| \
+>> +	(1ul << PERF_REG_POWERPC_PMC4) | (1ul << PERF_REG_POWERPC_PMC5) =
+| \
+>> +	(1ul << PERF_REG_POWERPC_PMC6))
+>>=20
+>> /*
+>>  * PERF_REG_EXTENDED_MASK value for CPU_FTR_ARCH_31
+>>  * includes 12 SPRs from MMCR0 to PMC6.
+>>  */
+>> -#define PERF_REG_PMU_MASK_31   (0xfffULL << PERF_REG_POWERPC_MMCR0)
+>> +#define PERF_REG_PMU_MASK_31	\
+>> +	(PERF_REG_PMU_MASK_300 | (1ul << PERF_REG_POWERPC_MMCR3) | \
+>> +	(1ul << PERF_REG_POWERPC_SIER2) | (1ul << =
+PERF_REG_POWERPC_SIER3))
+>>=20
+>> -#define PERF_REG_EXTENDED_MAX  (PERF_REG_POWERPC_PMC6 + 1)
+>=20
+> Likewise for this define?
+>=20
+> I think this might also be an issue for some of your other patches =
+which
+> change an include/uapi/ file.
+
+Though I am removing PERF_REG_EXTENDED_MAX define from end of this uapi =
+file, it is moved along with enum definition of perf_event_powerpc_regs.
+So we should be good with moving this define from this place.
+
+Thanks
+Athira=20
+>=20
+> Kind regards,
+> Daniel
+>=20
+>> --=20
+>> 2.30.1 (Apple Git-130)
 
