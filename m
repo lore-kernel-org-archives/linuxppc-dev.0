@@ -2,52 +2,64 @@ Return-Path: <SRS0=1eNT=OV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4E1DC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 12:26:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7425C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 13:17:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 40095611C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 12:26:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 40095611C0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=collabora.com
+	by mail.kernel.org (Postfix) with ESMTPS id E43CC61263
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 13:17:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E43CC61263
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HLTqz6jl3z3cFS
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 22:26:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HLVyg1pcFz304v
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 23:17:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=collabora.com (client-ip=2a00:1098:0:82:1000:25:2eeb:e3e3;
- helo=bhuna.collabora.co.uk; envelope-from=guillaume.tucker@collabora.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.167.173;
+ helo=mail-oi1-f173.google.com; envelope-from=robherring2@gmail.com;
  receiver=<UNKNOWN>)
-X-Greylist: delayed 452 seconds by postgrey-1.36 at boromir;
- Fri, 01 Oct 2021 19:41:24 AEST
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk
- [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f173.google.com (mail-oi1-f173.google.com
+ [209.85.167.173])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HLQ9J3WbVz2xXN
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Oct 2021 19:41:24 +1000 (AEST)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
- (Authenticated sender: gtucker) with ESMTPSA id BBE1C1F4539F
-Subject: Re: [PATCH v5 6/6] sched/fair: Consider SMT in ASYM_PACKING load
- balance
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- "Peter Zijlstra (Intel)" <peterz@infradead.org>,
- Ingo Molnar <mingo@kernel.org>, Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>
-References: <20210911011819.12184-1-ricardo.neri-calderon@linux.intel.com>
- <20210911011819.12184-7-ricardo.neri-calderon@linux.intel.com>
-From: Guillaume Tucker <guillaume.tucker@collabora.com>
-Message-ID: <78608a82-93b8-8036-2bf0-65f53f2f5120@collabora.com>
-Date: Fri, 1 Oct 2021 11:33:34 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.14.0
-MIME-Version: 1.0
-In-Reply-To: <20210911011819.12184-7-ricardo.neri-calderon@linux.intel.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Fri, 01 Oct 2021 22:25:51 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HLVy74b9jz2yPK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Oct 2021 23:17:02 +1000 (AEST)
+Received: by mail-oi1-f173.google.com with SMTP id 24so11450583oix.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Oct 2021 06:17:02 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
+ :message-id;
+ bh=s93FCbEY6wiV8iS/EDoBTCM7Mo8XJASc8RhUVRLOCxo=;
+ b=OGgYCik7KreMEqPkqRQ3qTfeeF9sfK/1QMJH/Pu7PqVg34VZJLer7vy4SyYvOxfd/D
+ /Be5f0FAoEKNueVc/NT2V/7FL+kC4FxepZCAq2tb8jmgLzk08n71aLmow0JHjqSaBd85
+ 6If6tEHk68n9spcFzoE54k6yE4KCVCKuOvWtbj6ghIv3dxNW0DGhMWFnZsI32Y0Q/hyr
+ /QIYdY+1eDKQRjxV+/5vOEaymY03lSUcj0aqEsNQvZNF0agU8T5vcEsjYi6Y7eKjiGOI
+ YMZa1dnm6i3hBJBY/5iYkzSD66FhXQUZ+zlwRK4zvls0D/vw5xb1smgmMtj69TCWdcg7
+ DrXw==
+X-Gm-Message-State: AOAM533MbV6Hepmi3X5E62kau8vymcxLyOy7Rc8FJZtVqFnwoitat57H
+ sPt9u5X871rDyTtUv5xJWR2irBkCqQ==
+X-Google-Smtp-Source: ABdhPJxqIZBVEGOYTlvgGELRTch2AV0JHIMbH+6kmz85mv3lykRhU/J6zCE6YTwRePhunB+9Higd6A==
+X-Received: by 2002:aca:d686:: with SMTP id n128mr3734516oig.144.1633094219252; 
+ Fri, 01 Oct 2021 06:16:59 -0700 (PDT)
+Received: from robh.at.kernel.org (66-90-148-213.dyn.grandenetworks.net.
+ [66.90.148.213])
+ by smtp.gmail.com with ESMTPSA id c21sm1124500oiy.18.2021.10.01.06.16.58
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 01 Oct 2021 06:16:58 -0700 (PDT)
+Received: (nullmailer pid 3666441 invoked by uid 1000);
+ Fri, 01 Oct 2021 13:16:57 -0000
+From: Rob Herring <robh@kernel.org>
+To: Li Yang <leoyang.li@nxp.com>
+In-Reply-To: <20211001000924.15421-2-leoyang.li@nxp.com>
+References: <20211001000924.15421-1-leoyang.li@nxp.com>
+ <20211001000924.15421-2-leoyang.li@nxp.com>
+Subject: Re: [PATCH 1/5] dt-bindings: memory: fsl: convert ifc binding to yaml
+ schema
+Date: Fri, 01 Oct 2021 08:16:57 -0500
+Message-Id: <1633094217.843390.3666440.nullmailer@robh.at.kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,279 +71,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Len Brown <len.brown@intel.com>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- "kernelci-results@groups.io" <kernelci-results@groups.io>,
- "Ravi V. Shankar" <ravi.v.shankar@intel.com>, linuxppc-dev@lists.ozlabs.org,
- Aubrey Li <aubrey.li@linux.intel.com>, Nicholas Piggin <npiggin@gmail.com>,
- Ricardo Neri <ricardo.neri@intel.com>, Steven Rostedt <rostedt@goodmis.org>,
- Quentin Perret <qperret@google.com>, Ben Segall <bsegall@google.com>,
- Mel Gorman <mgorman@suse.de>, Daniel Bristot de Oliveira <bristot@redhat.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- "Joel Fernandes \(Google\)" <joel@joelfernandes.org>,
- Tim Chen <tim.c.chen@linux.intel.com>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel@vger.kernel.org,
- Aubrey Li <aubrey.li@intel.com>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>,
+ Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Ricardo,
-
-Please see the bisection report below about a boot failure on
-rk3288-rock64.
-
-Reports aren't automatically sent to the public while we're
-trialing new bisection features on kernelci.org but this one
-looks valid.
-
-Some more details can be found here:
-
-  https://linux.kernelci.org/test/case/id/6155a4b0836c79a98f99a31d/
-
-It looks like some i.MX arm64 platforms also regressed with
-next-20210920 although it hasn't been verified yet whether that's
-due to the same commit:
-
-  https://linux.kernelci.org/test/job/next/branch/master/kernel/next-20210930/plan/baseline/
-
-The x86 platforms don't seem to be impacted though.
-
-Please let us know if you need help debugging the issue or if you
-have a fix to try.
-
-Best wishes,
-Guillaume
-
-
-GitHub: https://github.com/kernelci/kernelci-project/issues/65
-
--------------------------------------------------------------------------------
-
-
-* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-* This automated bisection report was sent to you on the basis  *
-* that you may be involved with the breaking commit it has      *
-* found.  No manual investigation has been done to verify it,   *
-* and the root cause of the problem may be somewhere else.      *
-*                                                               *
-* If you do send a fix, please include this trailer:            *
-*   Reported-by: "kernelci.org bot" <bot@kernelci.org>          *
-*                                                               *
-* Hope this helps!                                              *
-* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-next/master bisection: baseline.login on rk3328-rock64
-
-Summary:
-  Start:      2d02a18f75fc Add linux-next specific files for 20210929
-  Plain log:  https://storage.kernelci.org/next/master/next-20210929/arm64/defconfig+CONFIG_RANDOMIZE_BASE=y/gcc-8/lab-baylibre/baseline-rk3328-rock64.txt
-  HTML log:   https://storage.kernelci.org/next/master/next-20210929/arm64/defconfig+CONFIG_RANDOMIZE_BASE=y/gcc-8/lab-baylibre/baseline-rk3328-rock64.html
-  Result:     eac6f3841f1d sched/fair: Consider SMT in ASYM_PACKING load balance
-
-Checks:
-  revert:     PASS
-  verify:     PASS
-
-Parameters:
-  Tree:       next
-  URL:        https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-  Branch:     master
-  Target:     rk3328-rock64
-  CPU arch:   arm64
-  Lab:        lab-baylibre
-  Compiler:   gcc-8
-  Config:     defconfig+CONFIG_RANDOMIZE_BASE=y
-  Test case:  baseline.login
-
-Breaking commit found:
-
--------------------------------------------------------------------------------
-commit eac6f3841f1dac7b6f43002056b63f44cc1f1543
-Author: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Date:   Fri Sep 10 18:18:19 2021 -0700
-
-    sched/fair: Consider SMT in ASYM_PACKING load balance
-
-
-On 11/09/2021 03:18, Ricardo Neri wrote:
-> When deciding to pull tasks in ASYM_PACKING, it is necessary not only to
-> check for the idle state of the destination CPU, dst_cpu, but also of
-> its SMT siblings.
+On Thu, 30 Sep 2021 19:09:20 -0500, Li Yang wrote:
+> Convert the txt binding to yaml format and add description.  Drop the
+> "simple-bus" compatible string from the example and not allowed by the
+> binding any more.  This will help to enforce the correct probe order
+> between parent device and child devices, but will require the ifc driver
+> to probe the child devices to work properly.
 > 
-> If dst_cpu is idle but its SMT siblings are busy, performance suffers
-> if it pulls tasks from a medium priority CPU that does not have SMT
-> siblings.
-> 
-> Implement asym_smt_can_pull_tasks() to inspect the state of the SMT
-> siblings of both dst_cpu and the CPUs in the candidate busiest group.
-> 
-> Cc: Aubrey Li <aubrey.li@intel.com>
-> Cc: Ben Segall <bsegall@google.com>
-> Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
-> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> Cc: Mel Gorman <mgorman@suse.de>
-> Cc: Quentin Perret <qperret@google.com>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Tim Chen <tim.c.chen@linux.intel.com>
-> Reviewed-by: Joel Fernandes (Google) <joel@joelfernandes.org>
-> Reviewed-by: Len Brown <len.brown@intel.com>
-> Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+> Signed-off-by: Li Yang <leoyang.li@nxp.com>
 > ---
-> Changes since v4:
->   * Use sg_lb_stats::sum_nr_running the idle state of a scheduling group.
->     (Vincent, Peter)
->   * Do not even idle CPUs in asym_smt_can_pull_tasks(). (Vincent)
->   * Updated function documentation and corrected a typo.
+> updates from previous submission:
+> - Drop "simple-bus" from binding and only "fsl,ifc" as compatible
+> - Fix one identiation problem of "reg"
+> - Add type restriction to "little-endian" property
 > 
-> Changes since v3:
->   * Removed the arch_asym_check_smt_siblings() hook. Discussions with the
->     powerpc folks showed that this patch should not impact them. Also, more
->     recent powerpc processor no longer use asym_packing. (PeterZ)
->   * Removed unnecessary local variable in asym_can_pull_tasks(). (Dietmar)
->   * Removed unnecessary check for local CPUs when the local group has zero
->     utilization. (Joel)
->   * Renamed asym_can_pull_tasks() as asym_smt_can_pull_tasks() to reflect
->     the fact that it deals with SMT cases.
->   * Made asym_smt_can_pull_tasks() return false for !CONFIG_SCHED_SMT so
->     that callers can deal with non-SMT cases.
+>  .../bindings/memory-controllers/fsl/ifc.txt   |  82 -----------
+>  .../bindings/memory-controllers/fsl/ifc.yaml  | 137 ++++++++++++++++++
+>  2 files changed, 137 insertions(+), 82 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
+>  create mode 100644 Documentation/devicetree/bindings/memory-controllers/fsl/ifc.yaml
 > 
-> Changes since v2:
->   * Reworded the commit message to reflect updates in code.
->   * Corrected misrepresentation of dst_cpu as the CPU doing the load
->     balancing. (PeterZ)
->   * Removed call to arch_asym_check_smt_siblings() as it is now called in
->     sched_asym().
-> 
-> Changes since v1:
->   * Don't bailout in update_sd_pick_busiest() if dst_cpu cannot pull
->     tasks. Instead, reclassify the candidate busiest group, as it
->     may still be selected. (PeterZ)
->   * Avoid an expensive and unnecessary call to cpumask_weight() when
->     determining if a sched_group is comprised of SMT siblings.
->     (PeterZ).
-> ---
->  kernel/sched/fair.c | 94 +++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 94 insertions(+)
-> 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 26db017c14a3..8d763dd0174b 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -8597,10 +8597,98 @@ group_type group_classify(unsigned int imbalance_pct,
->  	return group_has_spare;
->  }
->  
-> +/**
-> + * asym_smt_can_pull_tasks - Check whether the load balancing CPU can pull tasks
-> + * @dst_cpu:	Destination CPU of the load balancing
-> + * @sds:	Load-balancing data with statistics of the local group
-> + * @sgs:	Load-balancing statistics of the candidate busiest group
-> + * @sg:		The candidate busiest group
-> + *
-> + * Check the state of the SMT siblings of both @sds::local and @sg and decide
-> + * if @dst_cpu can pull tasks.
-> + *
-> + * If @dst_cpu does not have SMT siblings, it can pull tasks if two or more of
-> + * the SMT siblings of @sg are busy. If only one CPU in @sg is busy, pull tasks
-> + * only if @dst_cpu has higher priority.
-> + *
-> + * If both @dst_cpu and @sg have SMT siblings, and @sg has exactly one more
-> + * busy CPU than @sds::local, let @dst_cpu pull tasks if it has higher priority.
-> + * Bigger imbalances in the number of busy CPUs will be dealt with in
-> + * update_sd_pick_busiest().
-> + *
-> + * If @sg does not have SMT siblings, only pull tasks if all of the SMT siblings
-> + * of @dst_cpu are idle and @sg has lower priority.
-> + */
-> +static bool asym_smt_can_pull_tasks(int dst_cpu, struct sd_lb_stats *sds,
-> +				    struct sg_lb_stats *sgs,
-> +				    struct sched_group *sg)
-> +{
-> +#ifdef CONFIG_SCHED_SMT
-> +	bool local_is_smt, sg_is_smt;
-> +	int sg_busy_cpus;
-> +
-> +	local_is_smt = sds->local->flags & SD_SHARE_CPUCAPACITY;
-> +	sg_is_smt = sg->flags & SD_SHARE_CPUCAPACITY;
-> +
-> +	sg_busy_cpus = sgs->group_weight - sgs->idle_cpus;
-> +
-> +	if (!local_is_smt) {
-> +		/*
-> +		 * If we are here, @dst_cpu is idle and does not have SMT
-> +		 * siblings. Pull tasks if candidate group has two or more
-> +		 * busy CPUs.
-> +		 */
-> +		if (sg_is_smt && sg_busy_cpus >= 2)
-> +			return true;
-> +
-> +		/*
-> +		 * @dst_cpu does not have SMT siblings. @sg may have SMT
-> +		 * siblings and only one is busy. In such case, @dst_cpu
-> +		 * can help if it has higher priority and is idle (i.e.,
-> +		 * it has no running tasks).
-> +		 */
-> +		return !sds->local_stat.sum_nr_running &&
-> +		       sched_asym_prefer(dst_cpu, sg->asym_prefer_cpu);
-> +	}
-> +
-> +	/* @dst_cpu has SMT siblings. */
-> +
-> +	if (sg_is_smt) {
-> +		int local_busy_cpus = sds->local->group_weight -
-> +				      sds->local_stat.idle_cpus;
-> +		int busy_cpus_delta = sg_busy_cpus - local_busy_cpus;
-> +
-> +		if (busy_cpus_delta == 1)
-> +			return sched_asym_prefer(dst_cpu,
-> +						 sg->asym_prefer_cpu);
-> +
-> +		return false;
-> +	}
-> +
-> +	/*
-> +	 * @sg does not have SMT siblings. Ensure that @sds::local does not end
-> +	 * up with more than one busy SMT sibling and only pull tasks if there
-> +	 * are not busy CPUs (i.e., no CPU has running tasks).
-> +	 */
-> +	if (!sds->local_stat.sum_nr_running)
-> +		return sched_asym_prefer(dst_cpu, sg->asym_prefer_cpu);
-> +
-> +	return false;
-> +#else
-> +	/* Always return false so that callers deal with non-SMT cases. */
-> +	return false;
-> +#endif
-> +}
-> +
->  static inline bool
->  sched_asym(struct lb_env *env, struct sd_lb_stats *sds,  struct sg_lb_stats *sgs,
->  	   struct sched_group *group)
->  {
-> +	/* Only do SMT checks if either local or candidate have SMT siblings */
-> +	if ((sds->local->flags & SD_SHARE_CPUCAPACITY) ||
-> +	    (group->flags & SD_SHARE_CPUCAPACITY))
-> +		return asym_smt_can_pull_tasks(env->dst_cpu, sds, sgs, group);
-> +
->  	return sched_asym_prefer(env->dst_cpu, group->asym_prefer_cpu);
->  }
->  
-> @@ -9606,6 +9694,12 @@ static struct rq *find_busiest_queue(struct lb_env *env,
->  		    nr_running == 1)
->  			continue;
->  
-> +		/* Make sure we only pull tasks from a CPU of lower priority */
-> +		if ((env->sd->flags & SD_ASYM_PACKING) &&
-> +		    sched_asym_prefer(i, env->dst_cpu) &&
-> +		    nr_running == 1)
-> +			continue;
-> +
->  		switch (env->migration_type) {
->  		case migrate_load:
->  			/*
-> 
+
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
+
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+Documentation/devicetree/bindings/memory-controllers/fsl/ifc.example.dt.yaml:0:0: /example-0/soc/ifc@ffe1e000/flash@1,0: failed to match any schema with compatible: ['fsl,ifc-nand']
+Documentation/devicetree/bindings/memory-controllers/fsl/ifc.example.dt.yaml:0:0: /example-0/soc/ifc@ffe1e000/cpld@3,0: failed to match any schema with compatible: ['fsl,p1010rdb-cpld']
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/patch/1535102
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
 
