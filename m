@@ -2,102 +2,60 @@ Return-Path: <SRS0=1eNT=OV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0598FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 10:00:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1662C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 10:00:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36E7461A50
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 10:00:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 36E7461A50
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
+	by mail.kernel.org (Postfix) with ESMTPS id D621261881
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 10:00:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D621261881
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=Huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HLQbD57yzz3c6G
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 20:00:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=pvIfmLzT;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HLQbk2KX4z3c7D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 20:00:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=canonical.com (client-ip=185.125.188.123;
- helo=smtp-relay-internal-1.canonical.com;
- envelope-from=krzysztof.kozlowski@canonical.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20210705 header.b=pvIfmLzT; 
- dkim-atps=neutral
-Received: from smtp-relay-internal-1.canonical.com
- (smtp-relay-internal-1.canonical.com [185.125.188.123])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=huawei.com (client-ip=185.176.79.56;
+ helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com;
+ receiver=<UNKNOWN>)
+X-Greylist: delayed 1049 seconds by postgrey-1.36 at boromir;
+ Fri, 01 Oct 2021 20:00:21 AEST
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com
+ [185.176.79.56])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HLQZV25R4z2xt8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Oct 2021 19:59:45 +1000 (AEST)
-Received: from mail-lf1-f70.google.com (mail-lf1-f70.google.com
- [209.85.167.70])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id BDDED402CD
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Oct 2021 09:59:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
- s=20210705; t=1633082381;
- bh=XvBtYpd6FqXvAho3dxZm+PpxswCp7x5pHh71VzW8gVQ=;
- h=To:References:From:Subject:Message-ID:Date:MIME-Version:
- In-Reply-To:Content-Type;
- b=pvIfmLzT/YsNK8zT0Cc0O1PucDTSf6GsP0f3oJEDOQnLijhWgUshcnsXkY72EwQge
- gYU2HD9AGRdaW4g8ZNloSS4xQ8uhLpehNSCT2dFrDBuxrJarJVW709F9Dbqqczctif
- f8m9RbpOEupxzGRFTQIiYgFbUn2YHO4bd/3VoSdopRW4cArcr5LU9w6sY07xzSqRfY
- YO8ek6ngdyu6x2GzVOZmsSqnejOEpizv8/QA10SW5dBl7CPKYdFDVW3PAZ7/DnLdW+
- /6gYua8IKdcqPCvQ5LxhuQygkpa3iAC4MUIgyE27KAPA7Lc5cZcswC1h0CCECv6I6U
- RjAIPRjlKFEZQ==
-Received: by mail-lf1-f70.google.com with SMTP id
- f32-20020a0565123b2000b003fd19ba9acaso3399284lfv.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Oct 2021 02:59:41 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:to:references:from:subject:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=XvBtYpd6FqXvAho3dxZm+PpxswCp7x5pHh71VzW8gVQ=;
- b=sYynuAlDSXeK+dmgsJ0og9qTLughz2mDAHNUO6vqd2197UHT/yC/Qmbe2dyHOwyGnY
- nL51XUPvCpy3e3KWfeG1uwMzZxDouWpEf4LiwwOr5M8CSNk5zXXA6ilQGxR7Qe1VzxrG
- 9xMVCR5x3U744TOSPU5lnnfJ7qWiWu+ABSnqDLDTrIffOVP7kUAbzOyqFZ2SM5aha/ar
- sjKf/zbr1Ylk060aED+0rbdKMgWkzmaYwwDM7XZBFbuY3RnhQB0cY2PzdbtSTSybwwyu
- CHU6FYfLcCWKvLiqFjieMiRRjSvhPY7MRVAdCNjlSAJ+ESmdDmn02vTs5ZnQQhA5l5US
- tNfw==
-X-Gm-Message-State: AOAM530vsmVCG2x2LZyM1ua9FmrTmgduVmxuVCVu6xz/n1c7y0nLqc/6
- gpEg+4wXlKFVgZ+yGIeWyvQIiSF0+SvqoS4jDugnfalkf5l0Gs3i3yFIzwJGJMzyrtdDJ+xVuU5
- BR1ljpoh1TYE06OyyFATpcIGgpjv2arMwNvVIuWcfNe8=
-X-Received: by 2002:a05:6512:3a83:: with SMTP id
- q3mr4490905lfu.115.1633082381016; 
- Fri, 01 Oct 2021 02:59:41 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJwE4xVtYRkN3ExixwoIin7RBkVLFi0ZIpX7EdzRx7TRZxY0JsIDH34WfjoPl+fR5DKnh4nqdA==
-X-Received: by 2002:a05:6512:3a83:: with SMTP id
- q3mr4490886lfu.115.1633082380803; 
- Fri, 01 Oct 2021 02:59:40 -0700 (PDT)
-Received: from [192.168.0.197] ([193.178.187.25])
- by smtp.gmail.com with ESMTPSA id i8sm682004lfb.227.2021.10.01.02.59.40
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Fri, 01 Oct 2021 02:59:40 -0700 (PDT)
-To: Li Yang <leoyang.li@nxp.com>, Shawn Guo <shawnguo@kernel.org>,
- Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20211001000924.15421-1-leoyang.li@nxp.com>
- <20211001000924.15421-2-leoyang.li@nxp.com>
-From: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
-Subject: Re: [PATCH 1/5] dt-bindings: memory: fsl: convert ifc binding to yaml
- schema
-Message-ID: <db751cb1-9107-3857-7576-644bde4c28e5@canonical.com>
-Date: Fri, 1 Oct 2021 11:59:39 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HLQb96XG2z3c5k
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Oct 2021 20:00:21 +1000 (AEST)
+Received: from fraeml737-chm.china.huawei.com (unknown [172.18.147.200])
+ by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4HLQ7S3HQwz67D3k;
+ Fri,  1 Oct 2021 17:39:48 +0800 (CST)
+Received: from lhreml710-chm.china.huawei.com (10.201.108.61) by
+ fraeml737-chm.china.huawei.com (10.206.15.218) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2308.8; Fri, 1 Oct 2021 11:42:44 +0200
+Received: from localhost (10.52.123.156) by lhreml710-chm.china.huawei.com
+ (10.201.108.61) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.8; Fri, 1 Oct 2021
+ 10:42:43 +0100
+Date: Fri, 1 Oct 2021 10:42:26 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Ben Widawsky <ben.widawsky@intel.com>
+Subject: Re: [PATCH v2 6/9] PCI: Add pci_find_dvsec_capability to find
+ designated VSEC
+Message-ID: <20211001104226.00000add@Huawei.com>
+In-Reply-To: <20210923172647.72738-7-ben.widawsky@intel.com>
+References: <20210923172647.72738-1-ben.widawsky@intel.com>
+ <20210923172647.72738-7-ben.widawsky@intel.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; i686-w64-mingw32)
 MIME-Version: 1.0
-In-Reply-To: <20211001000924.15421-2-leoyang.li@nxp.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.52.123.156]
+X-ClientProxiedBy: lhreml722-chm.china.huawei.com (10.201.108.73) To
+ lhreml710-chm.china.huawei.com (10.201.108.61)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,200 +67,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Andrew Donnellan <ajd@linux.ibm.com>, linux-pci@vger.kernel.org,
+ linux-cxl@vger.kernel.org, Frederic Barrat <fbarrat@linux.ibm.com>,
+ iommu@lists.linux-foundation.org, Bjorn Helgaas <helgaas@kernel.org>,
+ "David E . Box" <david.e.box@linux.intel.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Dan
+ Williams <dan.j.williams@intel.com>, Kan Liang <kan.liang@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, David Woodhouse <dwmw2@infradead.org>, Lu
+ Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 01/10/2021 02:09, Li Yang wrote:
-> Convert the txt binding to yaml format and add description.  Drop the
-> "simple-bus" compatible string from the example and not allowed by the
-> binding any more.  This will help to enforce the correct probe order
-> between parent device and child devices, but will require the ifc driver
-> to probe the child devices to work properly.
+On Thu, 23 Sep 2021 10:26:44 -0700
+Ben Widawsky <ben.widawsky@intel.com> wrote:
+
+> Add pci_find_dvsec_capability to locate a Designated Vendor-Specific
+> Extended Capability with the specified DVSEC ID.
 > 
-> Signed-off-by: Li Yang <leoyang.li@nxp.com>
+> The Designated Vendor-Specific Extended Capability (DVSEC) allows one or
+> more vendor specific capabilities that aren't tied to the vendor ID of
+> the PCI component.
+> 
+> DVSEC is critical for both the Compute Express Link (CXL) driver as well
+> as the driver for OpenCAPI coherent accelerator (OCXL).
+> 
+> Cc: David E. Box <david.e.box@linux.intel.com>
+> Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Cc: linux-pci@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Andrew Donnellan <ajd@linux.ibm.com>
+> Cc: Lu Baolu <baolu.lu@linux.intel.com>
+> Reviewed-by: Frederic Barrat <fbarrat@linux.ibm.com>
+> Signed-off-by: Ben Widawsky <ben.widawsky@intel.com>
+
+Great to see this cleaned up.
+
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
 > ---
-> updates from previous submission:
-> - Drop "simple-bus" from binding and only "fsl,ifc" as compatible
-> - Fix one identiation problem of "reg"
-> - Add type restriction to "little-endian" property
+>  drivers/pci/pci.c   | 32 ++++++++++++++++++++++++++++++++
+>  include/linux/pci.h |  1 +
+>  2 files changed, 33 insertions(+)
 > 
->  .../bindings/memory-controllers/fsl/ifc.txt   |  82 -----------
->  .../bindings/memory-controllers/fsl/ifc.yaml  | 137 ++++++++++++++++++
->  2 files changed, 137 insertions(+), 82 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
->  create mode 100644 Documentation/devicetree/bindings/memory-controllers/fsl/ifc.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
-> deleted file mode 100644
-> index 89427b018ba7..000000000000
-> --- a/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
-> +++ /dev/null
-> @@ -1,82 +0,0 @@
-> -Integrated Flash Controller
-> -
-> -Properties:
-> -- name : Should be ifc
-> -- compatible : should contain "fsl,ifc". The version of the integrated
-> -               flash controller can be found in the IFC_REV register at
-> -               offset zero.
-> -
-> -- #address-cells : Should be either two or three.  The first cell is the
-> -                   chipselect number, and the remaining cells are the
-> -                   offset into the chipselect.
-> -- #size-cells : Either one or two, depending on how large each chipselect
-> -                can be.
-> -- reg : Offset and length of the register set for the device
-> -- interrupts: IFC may have one or two interrupts.  If two interrupt
-> -              specifiers are present, the first is the "common"
-> -              interrupt (CM_EVTER_STAT), and the second is the NAND
-> -              interrupt (NAND_EVTER_STAT).  If there is only one,
-> -              that interrupt reports both types of event.
-> -
-> -- little-endian : If this property is absent, the big-endian mode will
-> -                  be in use as default for registers.
-> -
-> -- ranges : Each range corresponds to a single chipselect, and covers
-> -           the entire access window as configured.
-> -
-> -Child device nodes describe the devices connected to IFC such as NOR (e.g.
-> -cfi-flash) and NAND (fsl,ifc-nand). There might be board specific devices
-> -like FPGAs, CPLDs, etc.
-> -
-> -Example:
-> -
-> -	ifc@ffe1e000 {
-> -		compatible = "fsl,ifc", "simple-bus";
-> -		#address-cells = <2>;
-> -		#size-cells = <1>;
-> -		reg = <0x0 0xffe1e000 0 0x2000>;
-> -		interrupts = <16 2 19 2>;
-> -		little-endian;
-> -
-> -		/* NOR, NAND Flashes and CPLD on board */
-> -		ranges = <0x0 0x0 0x0 0xee000000 0x02000000
-> -			  0x1 0x0 0x0 0xffa00000 0x00010000
-> -			  0x3 0x0 0x0 0xffb00000 0x00020000>;
-> -
-> -		flash@0,0 {
-> -			#address-cells = <1>;
-> -			#size-cells = <1>;
-> -			compatible = "cfi-flash";
-> -			reg = <0x0 0x0 0x2000000>;
-> -			bank-width = <2>;
-> -			device-width = <1>;
-> -
-> -			partition@0 {
-> -				/* 32MB for user data */
-> -				reg = <0x0 0x02000000>;
-> -				label = "NOR Data";
-> -			};
-> -		};
-> -
-> -		flash@1,0 {
-> -			#address-cells = <1>;
-> -			#size-cells = <1>;
-> -			compatible = "fsl,ifc-nand";
-> -			reg = <0x1 0x0 0x10000>;
-> -
-> -			partition@0 {
-> -				/* This location must not be altered  */
-> -				/* 1MB for u-boot Bootloader Image */
-> -				reg = <0x0 0x00100000>;
-> -				label = "NAND U-Boot Image";
-> -				read-only;
-> -			};
-> -		};
-> -
-> -		cpld@3,0 {
-> -			#address-cells = <1>;
-> -			#size-cells = <1>;
-> -			compatible = "fsl,p1010rdb-cpld";
-> -			reg = <0x3 0x0 0x000001f>;
-> -		};
-> -	};
-> diff --git a/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.yaml b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.yaml
-> new file mode 100644
-> index 000000000000..19871ce39fe3
-
-Thanks for the patch.
-
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.yaml
-> @@ -0,0 +1,137 @@
-> +# SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
-
-Checkpatch should scream here. If it doesn't, maybe you work on some old
-tree, which would also explain why you send it to my old address (not
-the one from get_maintainers). Please use both checkpatch and
-get_maintainers.
-
-You basically relicense bindings from GPL-2.0 only to new license,
-including GPL-3.0.
-
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/memory-controllers/fsl/ifc.yaml#
-
-File name should be "fsl,ifc.yaml"
-
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index ce2ab62b64cf..94ac86ff28b0 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -732,6 +732,38 @@ u16 pci_find_vsec_capability(struct pci_dev *dev, u16 vendor, int cap)
+>  }
+>  EXPORT_SYMBOL_GPL(pci_find_vsec_capability);
+>  
+> +/**
+> + * pci_find_dvsec_capability - Find DVSEC for vendor
+> + * @dev: PCI device to query
+> + * @vendor: Vendor ID to match for the DVSEC
+> + * @dvsec: Designated Vendor-specific capability ID
+> + *
+> + * If DVSEC has Vendor ID @vendor and DVSEC ID @dvsec return the capability
+> + * offset in config space; otherwise return 0.
+> + */
+> +u16 pci_find_dvsec_capability(struct pci_dev *dev, u16 vendor, u16 dvsec)
+> +{
+> +	int pos;
 > +
-> +title: FSL/NXP Integrated Flash Controller
+> +	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_DVSEC);
+> +	if (!pos)
+> +		return 0;
 > +
-> +maintainers:
-> +  - Li Yang <leoyang.li@nxp.com>
+> +	while (pos) {
+> +		u16 v, id;
 > +
-> +description: |
-> +  NXP's integrated flash controller (IFC) is an advanced version of the
-> +  enhanced local bus controller which includes similar programming and signal
-> +  interfaces with an extended feature set. The IFC provides access to multiple
-> +  external memory types, such as NAND flash (SLC and MLC), NOR flash, EPROM,
-> +  SRAM and other memories where address and data are shared on a bus.
+> +		pci_read_config_word(dev, pos + PCI_DVSEC_HEADER1, &v);
+> +		pci_read_config_word(dev, pos + PCI_DVSEC_HEADER2, &id);
+> +		if (vendor == v && dvsec == id)
+> +			return pos;
 > +
-> +properties:
-> +  $nodename:
-> +    pattern: "^ifc@[0-9a-f]+$"
+> +		pos = pci_find_next_ext_capability(dev, pos, PCI_EXT_CAP_ID_DVSEC);
+> +	}
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(pci_find_dvsec_capability);
+> +
+>  /**
+>   * pci_find_parent_resource - return resource region of parent bus of given
+>   *			      region
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index cd8aa6fce204..c93ccfa4571b 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -1130,6 +1130,7 @@ u16 pci_find_ext_capability(struct pci_dev *dev, int cap);
+>  u16 pci_find_next_ext_capability(struct pci_dev *dev, u16 pos, int cap);
+>  struct pci_bus *pci_find_next_bus(const struct pci_bus *from);
+>  u16 pci_find_vsec_capability(struct pci_dev *dev, u16 vendor, int cap);
+> +u16 pci_find_dvsec_capability(struct pci_dev *dev, u16 vendor, u16 dvsec);
+>  
+>  u64 pci_get_dsn(struct pci_dev *dev);
+>  
 
-Nodes should be generic, so this looks like "memory-controller".
-
-> +
-> +  compatible:
-> +    const: fsl,ifc
-> +
-> +  "#address-cells":
-> +    enum: [2, 3]
-> +    description: |
-> +      Should be either two or three.  The first cell is the chipselect
-> +      number, and the remaining cells are the offset into the chipselect.
-> +
-> +  "#size-cells":
-> +    enum: [1, 2]
-> +    description: |
-> +      Either one or two, depending on how large each chipselect can be.
-> +
-> +  reg:
-> +    maxItems: 1
-> +    description: |
-> +      Offset and length of the register set for the device.
-
-Skip the description, it's obvious.
-
-> +
-> +  interrupts:
-> +    minItems: 1
-> +    maxItems: 2
-> +    description: |
-> +      IFC may have one or two interrupts.  If two interrupt specifiers are
-> +      present, the first is the "common" interrupt (CM_EVTER_STAT), and the
-> +      second is the NAND interrupt (NAND_EVTER_STAT).  If there is only one,
-> +      that interrupt reports both types of event.
-> +
-> +  little-endian:
-> +    $ref: '/schemas/types.yaml#/definitions/flag'
-
-type: boolean
-
-
-Best regards,
-Krzysztof
