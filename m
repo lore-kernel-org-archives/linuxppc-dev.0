@@ -2,77 +2,100 @@ Return-Path: <SRS0=1eNT=OV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49000C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 07:15:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1C44C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 09:46:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5657761A78
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 07:15:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5657761A78
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id 14AFD613A0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 09:46:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 14AFD613A0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HLLws5PTlz3c77
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 17:15:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HLQH73fzbz3c5h
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 19:46:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=fe9H/w2X;
+	dkim=pass (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=VvNWzCBK;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::530;
- helo=mail-pg1-x530.google.com; envelope-from=dja@axtens.net;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=fe9H/w2X; dkim-atps=neutral
-Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com
- [IPv6:2607:f8b0:4864:20::530])
+ smtp.mailfrom=canonical.com (client-ip=185.125.188.122;
+ helo=smtp-relay-internal-0.canonical.com;
+ envelope-from=krzysztof.kozlowski@canonical.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=canonical.com header.i=@canonical.com
+ header.a=rsa-sha256 header.s=20210705 header.b=VvNWzCBK; 
+ dkim-atps=neutral
+Received: from smtp-relay-internal-0.canonical.com
+ (smtp-relay-internal-0.canonical.com [185.125.188.122])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HLLw83yFjz2yM4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Oct 2021 17:14:47 +1000 (AEST)
-Received: by mail-pg1-x530.google.com with SMTP id s75so8620252pgs.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Oct 2021 00:14:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=hQ5Dp9x0o7vj9OmS5x46emFCr7Zl/nJolk9+Z2BpJ/M=;
- b=fe9H/w2X2vuAp8bhFAjKcirq956EvG0Xsc4F/qPYLCr7shEcx/7zVRCvPxYTKIseYq
- cM0bGEaE6AOBmeVWMByscucDo3qj28Mo1bYpVvfDkpGyt16RzahFoQ3vLK88+7PljDI8
- g4xwbvUg0m6Q0tlQhV1A905dnxfllF0FbKG5g=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HLQGG2T2Mz2yQB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Oct 2021 19:45:41 +1000 (AEST)
+Received: from mail-lf1-f71.google.com (mail-lf1-f71.google.com
+ [209.85.167.71])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id 8CDD44076E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Oct 2021 09:45:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+ s=20210705; t=1633081535;
+ bh=nyiRnY3elhBK73ooOJVOmC06zf7y6SkVvSwcrbkre8k=;
+ h=Subject:To:References:From:Message-ID:Date:MIME-Version:
+ In-Reply-To:Content-Type;
+ b=VvNWzCBK1u+EHfVcuw9ufCyerXXjOAThwphROSK1zH7ge7hXvoc53jy9ZggaWYr9y
+ kU20TK+ERhFIwfQRIW5geDRbA3rBO0iJBwJTd85o2wDb8raZSxObs+nrQdr64IKlAh
+ l8/Gat9XrRUAteq+HwyOXgN3flOzz+CDoyFERV/yzEiNVQzObfh/2hrX5qWj6pF216
+ P9SWIrJe++D1fkqkd6Zpnd+yzXuOLViZiTXEaSijg4W9dYWC8+ZvNHRRl8Z5mcaM52
+ Ihgbvu3mkBSQVOVkvgvw3gacGAtUHx94/RUvqpLJiyoImb/0gqLHAzazRT4RdWgGKN
+ 93eB3KvfEMkHg==
+Received: by mail-lf1-f71.google.com with SMTP id
+ i40-20020a0565123e2800b003f53da59009so8450403lfv.16
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Oct 2021 02:45:35 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=hQ5Dp9x0o7vj9OmS5x46emFCr7Zl/nJolk9+Z2BpJ/M=;
- b=aK8Do0ftydrM2rDyr8WJRes7yaP2u5IMLu4e8mZyxHeRlcJm1egI4o3OdUaVSxjAKs
- DNTcec9mVXweu98OJvX3x4BP6eIfwcmTfsX9p4x8HGSIrymSecDpOAuZneLHNh+lGx98
- 7Eqr7bgkim32hkeHuj3XKvw6zPujTWwGiAIFqRg06diabun2jYh9+vN31cwoMp7h2bAz
- dO/zuwJ9X4u77g8TaJxPnIAfS/v9OtWL4Q8kVmQvgwYNlulxjkLd8febu0YNTdkChw+9
- /1d6GAvAHyBgA6yUxhNd14B348N2djC4LhbY6gj3jiPFauI74+a1EBYiwr+/BSLQGPec
- vTkQ==
-X-Gm-Message-State: AOAM532GB8lU8yUPyNbwiiRM8a7H1Nxp+4F5Zk/KvGjFpARBYv5ggIJB
- e+9u5uES0xLF5yb1EnrT30OVZQ==
-X-Google-Smtp-Source: ABdhPJybs5wSHjwxNYuL3Oj52Xlb/bebURrnTQ6GT1WSxewTOdLpU3woiWbsUUuDzK3q3lC/kp1vUA==
-X-Received: by 2002:aa7:9a0e:0:b0:44a:3ae2:825c with SMTP id
- w14-20020aa79a0e000000b0044a3ae2825cmr8564635pfj.28.1633072484450; 
- Fri, 01 Oct 2021 00:14:44 -0700 (PDT)
-Received: from localhost ([2001:4479:e200:df00:c98c:9868:6328:c144])
- by smtp.gmail.com with ESMTPSA id k12sm1219967pjf.32.2021.10.01.00.14.43
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 01 Oct 2021 00:14:43 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Andrew Morton <akpm@linux-foundation.org>, arnd@arndb.de
-Subject: Re: [PATCH v3 2/4] mm: Make generic arch_is_kernel_initmem_freed() do
- what it says
-In-Reply-To: <1d40783e676e07858be97d881f449ee7ea8adfb1.1633001016.git.christophe.leroy@csgroup.eu>
-References: <9ecfdee7dd4d741d172cb93ff1d87f1c58127c9a.1633001016.git.christophe.leroy@csgroup.eu>
- <1d40783e676e07858be97d881f449ee7ea8adfb1.1633001016.git.christophe.leroy@csgroup.eu>
-Date: Fri, 01 Oct 2021 17:14:41 +1000
-Message-ID: <87ilyhmd26.fsf@linkitivity.dja.id.au>
+ h=x-gm-message-state:subject:to:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=nyiRnY3elhBK73ooOJVOmC06zf7y6SkVvSwcrbkre8k=;
+ b=z+/kZGECponTCB/Pi7/ZgwPbvF0t2T05qapB3w8PnGyELBAdnGf5ZRWBtZ80qyy4tw
+ uTt3l98kisT3dzrWz2TRQdV5sLmhVJU/IosmonBAQd+YrKzS8r8dFik585hc+G4di5GZ
+ 0MCtWRzZ1y4xme+49jQ2SG1xBiP8LBIg2O9P8aVRYL0wnoA9G5jb1eyN7fuSNz23PdLe
+ oKJ4+FOzdxwBZASZGsX8OOW6mnYDxKBid2WP1wgAHXzudy1LK3mtxpSSudh2QzNl/6mQ
+ MqDygN04z2Cvo+oyJav4YUuW4ps1ojksU+AdaoSQotF985nUd9t/ZySpD7+vZ0Myq2ow
+ smKw==
+X-Gm-Message-State: AOAM530tLWC+EoyErxe05wBZpeNhzfLQYIfJlUJ5QHyVHXlEygwTvEJW
+ eZUHlCUGHD1+45KrliuOx5yXArqG54bFzoh5KZGAEazy732AWqxswwCzXF9u0C+RwiwtF8R8eL5
+ jpgZf3lAH5YWRrYGJ1tyGUFa02y4vhefYtr+GWGXZ23E=
+X-Received: by 2002:a05:651c:228:: with SMTP id
+ z8mr10685024ljn.507.1633081534984; 
+ Fri, 01 Oct 2021 02:45:34 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJzKxIyWWFkeio1hNSB5XH6CFTmHBcLzDsp3ogVtdLYpiKKaILO3Bn+smaXb0XrSby27toXy1g==
+X-Received: by 2002:a05:651c:228:: with SMTP id
+ z8mr10685010ljn.507.1633081534783; 
+ Fri, 01 Oct 2021 02:45:34 -0700 (PDT)
+Received: from [192.168.0.197] ([193.178.187.25])
+ by smtp.gmail.com with ESMTPSA id c14sm485059lfc.49.2021.10.01.02.45.33
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Fri, 01 Oct 2021 02:45:34 -0700 (PDT)
+Subject: Re: [PATCH 0/5] convert ifc binding to yaml and drop "simple-bus"
+To: Li Yang <leoyang.li@nxp.com>, Shawn Guo <shawnguo@kernel.org>,
+ Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20211001000924.15421-1-leoyang.li@nxp.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
+Message-ID: <4697aa5c-35de-8331-e7a9-831837618477@canonical.com>
+Date: Fri, 1 Oct 2021 11:45:33 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20211001000924.15421-1-leoyang.li@nxp.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,47 +107,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Kefeng Wang <wangkefeng.wang@huawei.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->  #ifdef __KERNEL__
-> +/*
-> + * Check if an address is part of freed initmem. After initmem is freed,
-> + * memory can be allocated from it, and such allocations would then have
-> + * addresses within the range [_stext, _end].
-> + */
-> +#ifndef arch_is_kernel_initmem_freed
-> +static int arch_is_kernel_initmem_freed(unsigned long addr)
-> +{
-> +	if (system_state < SYSTEM_FREEING_INITMEM)
-> +		return 0;
-> +
-> +	return init_section_contains((void *)addr, 1);
+On 01/10/2021 02:09, Li Yang wrote:
+> Convert the ifc binding to yaml schema, in the mean while remove the
+> "simple-bus" compatible from the binding to make sure ifc device probes
+> before any of the child devices.  Update the driver and existing DTSes
+> accordingly.
+> 
+> DTS changes should be merged together with the driver/binding changes
+> if DTS maintainer is ok with it or after the driver changes are applied.
+> 
 
-Is init_section_contains sufficient here?
+It's discouraged to merge DTS along with drivers (e.g. soc folks don't
+accept such pull requests), so I propose to apply it in the next cycle.
 
-include/asm-generic/sections.h says:
- * [__init_begin, __init_end]: contains .init.* sections, but .init.text.*
- *                   may be out of this range on some architectures.
- * [_sinittext, _einittext]: contains .init.text.* sections
-
-init_section_contains only checks __init_*:
-static inline bool init_section_contains(void *virt, size_t size)
-{
-	return memory_contains(__init_begin, __init_end, virt, size);
-}
-
-Do we need to check against _sinittext and _einittext?
-
-Your proposed generic code will work for powerpc and s390 because those
-archs only test against __init_* anyway. I don't know if any platform
-actually does place .init.text outside of __init_begin=>__init_end, but
-the comment seems to suggest that they could.
-
-Kind regards,
-Daniel
+Best regards,
+Krzysztof
