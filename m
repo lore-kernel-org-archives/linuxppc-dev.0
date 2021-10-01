@@ -2,21 +2,21 @@ Return-Path: <SRS0=1eNT=OV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A673C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 21:21:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89A99C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 21:22:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B1C5461029
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 21:21:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B1C5461029
+	by mail.kernel.org (Postfix) with ESMTPS id 0680B61A58
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Oct 2021 21:22:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0680B61A58
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HLjjK2dhGz3clS
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Oct 2021 07:21:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HLjk73lfjz3cDR
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Oct 2021 07:22:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WsXGEtHr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aD3xzTE5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
@@ -24,88 +24,88 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=WsXGEtHr; dkim-atps=neutral
+ header.s=pp1 header.b=aD3xzTE5; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HLjZy1xNQz3bXP
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Oct 2021 07:16:10 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 191Km1pm001023; 
- Fri, 1 Oct 2021 17:15:49 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HLjb15qQkz305K
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Oct 2021 07:16:13 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 191KkWVo023193; 
+ Fri, 1 Oct 2021 17:15:56 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=xJu39RyhWcLezfza2Ro0r8fgSJGBqiE5rg6KnvD2dTA=;
- b=WsXGEtHrsT90SGCA6ZzgIrQ8lbv+shCAUBC/DV/YZ1pEcvD2X3UHmn96W810P585kMrN
- P5FQc1MsilARFkR0OWnvEQMLMLnzb106GYwm8uG9KXPyZEfCe+81ogH9tL4pAJyI9GE5
- 3v/aUyogLHTolAaQIyL7xPg1W7Tq/bxTRJEIOQbkTkFdo1pVdLjpmrdGW2XaqjalxDSy
- g5ia+e1YYX1WPB5MS1wLqFm0JhSsECFpjOCOZgbKdRmZd23ealj/Rmubkhs6aRQsg45u
- wlj0AKaTUE34aKlhKjAlygX+dBeq61sE2OYY6rRALCnlKmnDpHKmt/LUqB1fDSEzvn6F 8A== 
+ bh=iM2mvOKciFkIXKzRPMxQtTeRSIpyCM96WtRa/48dpoM=;
+ b=aD3xzTE5SlzPC4nX6qsaYWsfu/kfxDIgHy68D+7u2RPQUVHJ8TT6Zha02+i6hdPo7+cF
+ q+jUpSVZstZj4H+Arg3vYunwhSGyERWyh96rKFd1V5lvwYDysx2in4pohisO6vm+5Kac
+ CJVi4KTSX5860N+FAiq6i3UZOgkEj6OGoKqRhTD+n51xMVPdGPeYtUswqu8qY+v28sBF
+ hqnTC72KjRMLy0fjqMzWuWjjv0kiV8GHDJjiu4+AT1HAYtypUohrv1TYiCu+OZBuma5J
+ FI542YZuEYezSYteDT5STeqno0jEcOKt/na6Pjck/wjOKdUXx2HnbvCTy/islkf0HjW6 kw== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3be9p60f3v-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3be9nr8hbq-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 01 Oct 2021 17:15:49 -0400
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 191LDu8d006046;
- Fri, 1 Oct 2021 17:15:48 -0400
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3be9p60f3c-1
+ Fri, 01 Oct 2021 17:15:55 -0400
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 191L9oYV006745;
+ Fri, 1 Oct 2021 17:15:55 -0400
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3be9nr8hb0-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 01 Oct 2021 17:15:48 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 191L6UmY019880;
- Fri, 1 Oct 2021 21:15:46 GMT
+ Fri, 01 Oct 2021 17:15:55 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 191L6n7j007337;
+ Fri, 1 Oct 2021 21:15:52 GMT
 Received: from b06cxnps3074.portsmouth.uk.ibm.com
  (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma02fra.de.ibm.com with ESMTP id 3b9udae6kx-1
+ by ppma03ams.nl.ibm.com with ESMTP id 3b9udb201n-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 01 Oct 2021 21:15:46 +0000
+ Fri, 01 Oct 2021 21:15:52 +0000
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
  by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 191LFhWL43647234
+ 191LFoo134275828
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 1 Oct 2021 21:15:43 GMT
+ Fri, 1 Oct 2021 21:15:50 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4C74E4C04A;
- Fri,  1 Oct 2021 21:15:43 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 171D44C040;
+ Fri,  1 Oct 2021 21:15:50 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7BD194C059;
- Fri,  1 Oct 2021 21:15:40 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 3CBE14C046;
+ Fri,  1 Oct 2021 21:15:47 +0000 (GMT)
 Received: from naverao1-tp.ibm.com (unknown [9.43.54.98])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri,  1 Oct 2021 21:15:40 +0000 (GMT)
+ Fri,  1 Oct 2021 21:15:46 +0000 (GMT)
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
  Daniel Borkmann <daniel@iogearbox.net>,
  Alexei Starovoitov <alexei.starovoitov@gmail.com>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
  Johan Almbladh <johan.almbladh@anyfinetworks.com>
-Subject: [PATCH 7/9] powerpc/bpf: Limit 'ldbrx' to processors compliant with
- ISA v2.06
-Date: Sat,  2 Oct 2021 02:44:53 +0530
-Message-Id: <b7024b63a5501bbb67699da2345250deeea03d7e.1633104510.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: [PATCH 9/9] powerpc/bpf: Emit stf barrier instruction sequences for
+ BPF_NOSPEC
+Date: Sat,  2 Oct 2021 02:44:55 +0530
+Message-Id: <82534be8b7c02e1c0bab5cd07d4afa0f723150b8.1633104510.git.naveen.n.rao@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1633104510.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1633104510.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: YgdJxNf6O_MA0H_OToDO_z_px3GA3gZk
-X-Proofpoint-ORIG-GUID: rxhKdQGdXmZQSEYaBzn0STv6XLnIwxEy
+X-Proofpoint-GUID: lBAedsCvOWOVV9wRQtVYMm3f9IvKNJz8
+X-Proofpoint-ORIG-GUID: Wsxj6GFgMe3h18TrDYKZvgdkn0luBF5U
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
  definitions=2021-10-01_05,2021-10-01_02,2020-04-07_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 spamscore=0
- adultscore=0 mlxscore=0 mlxlogscore=899 lowpriorityscore=0 malwarescore=0
- phishscore=0 clxscore=1015 priorityscore=1501 bulkscore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2109230001
- definitions=main-2110010147
+ mlxscore=0 mlxlogscore=999
+ suspectscore=0 adultscore=0 clxscore=1015 spamscore=0 malwarescore=0
+ impostorscore=0 priorityscore=1501 phishscore=0 lowpriorityscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2109230001 definitions=main-2110010147
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -122,93 +122,155 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Johan reported the below crash with test_bpf on ppc64 e5500:
+Emit similar instruction sequences to commit a048a07d7f4535
+("powerpc/64s: Add support for a store forwarding barrier at kernel
+entry/exit") when encountering BPF_NOSPEC.
 
-  test_bpf: #296 ALU_END_FROM_LE 64: 0x0123456789abcdef -> 0x67452301 jited:1
-  Oops: Exception in kernel mode, sig: 4 [#1]
-  BE PAGE_SIZE=4K SMP NR_CPUS=24 QEMU e500
-  Modules linked in: test_bpf(+)
-  CPU: 0 PID: 76 Comm: insmod Not tainted 5.14.0-03771-g98c2059e008a-dirty #1
-  NIP:  8000000000061c3c LR: 80000000006dea64 CTR: 8000000000061c18
-  REGS: c0000000032d3420 TRAP: 0700   Not tainted (5.14.0-03771-g98c2059e008a-dirty)
-  MSR:  0000000080089000 <EE,ME>  CR: 88002822  XER: 20000000 IRQMASK: 0
-  <...>
-  NIP [8000000000061c3c] 0x8000000000061c3c
-  LR [80000000006dea64] .__run_one+0x104/0x17c [test_bpf]
-  Call Trace:
-   .__run_one+0x60/0x17c [test_bpf] (unreliable)
-   .test_bpf_init+0x6a8/0xdc8 [test_bpf]
-   .do_one_initcall+0x6c/0x28c
-   .do_init_module+0x68/0x28c
-   .load_module+0x2460/0x2abc
-   .__do_sys_init_module+0x120/0x18c
-   .system_call_exception+0x110/0x1b8
-   system_call_common+0xf0/0x210
-  --- interrupt: c00 at 0x101d0acc
-  <...>
-  ---[ end trace 47b2bf19090bb3d0 ]---
+Mitigations are enabled depending on what the firmware advertises. In
+particular, we do not gate these mitigations based on current settings,
+just like in x86. Due to this, we don't need to take any action if
+mitigations are enabled or disabled at runtime.
 
-  Illegal instruction
-
-The illegal instruction turned out to be 'ldbrx' emitted for
-BPF_FROM_[L|B]E, which was only introduced in ISA v2.06. Guard use of
-the same and implement an alternative approach for older processors.
-
-Fixes: 156d0e290e969c ("powerpc/ebpf/jit: Implement JIT compiler for extended BPF")
-Reported-by: Johan Almbladh <johan.almbladh@anyfinetworks.com>
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/ppc-opcode.h |  1 +
- arch/powerpc/net/bpf_jit_comp64.c     | 22 +++++++++++++---------
- 2 files changed, 14 insertions(+), 9 deletions(-)
+Thanks to Daniel Borkmann and Nick Piggin for their help in putting 
+together this patch!
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index baea657bc8687e..bca31a61e57f88 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -498,6 +498,7 @@
- #define PPC_RAW_LDX(r, base, b)		(0x7c00002a | ___PPC_RT(r) | ___PPC_RA(base) | ___PPC_RB(b))
- #define PPC_RAW_LHZ(r, base, i)		(0xa0000000 | ___PPC_RT(r) | ___PPC_RA(base) | IMM_L(i))
- #define PPC_RAW_LHBRX(r, base, b)	(0x7c00062c | ___PPC_RT(r) | ___PPC_RA(base) | ___PPC_RB(b))
-+#define PPC_RAW_LWBRX(r, base, b)	(0x7c00042c | ___PPC_RT(r) | ___PPC_RA(base) | ___PPC_RB(b))
- #define PPC_RAW_LDBRX(r, base, b)	(0x7c000428 | ___PPC_RT(r) | ___PPC_RA(base) | ___PPC_RB(b))
- #define PPC_RAW_STWCX(s, a, b)		(0x7c00012d | ___PPC_RS(s) | ___PPC_RA(a) | ___PPC_RB(b))
- #define PPC_RAW_CMPWI(a, i)		(0x2c000000 | ___PPC_RA(a) | IMM_L(i))
+
+ arch/powerpc/net/bpf_jit64.h      |  8 ++---
+ arch/powerpc/net/bpf_jit_comp64.c | 55 ++++++++++++++++++++++++++++---
+ 2 files changed, 55 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/net/bpf_jit64.h b/arch/powerpc/net/bpf_jit64.h
+index 7b713edfa7e261..b63b35e45e558c 100644
+--- a/arch/powerpc/net/bpf_jit64.h
++++ b/arch/powerpc/net/bpf_jit64.h
+@@ -16,18 +16,18 @@
+  * with our redzone usage.
+  *
+  *		[	prev sp		] <-------------
+- *		[   nv gpr save area	] 6*8		|
++ *		[   nv gpr save area	] 5*8		|
+  *		[    tail_call_cnt	] 8		|
+- *		[    local_tmp_var	] 8		|
++ *		[    local_tmp_var	] 16		|
+  * fp (r31) -->	[   ebpf stack space	] upto 512	|
+  *		[     frame header	] 32/112	|
+  * sp (r1) --->	[    stack pointer	] --------------
+  */
+ 
+ /* for gpr non volatile registers BPG_REG_6 to 10 */
+-#define BPF_PPC_STACK_SAVE	(6*8)
++#define BPF_PPC_STACK_SAVE	(5*8)
+ /* for bpf JIT code internal usage */
+-#define BPF_PPC_STACK_LOCALS	16
++#define BPF_PPC_STACK_LOCALS	24
+ /* stack frame excluding BPF stack, ensure this is quadword aligned */
+ #define BPF_PPC_STACKFRAME	(STACK_FRAME_MIN_SIZE + \
+ 				 BPF_PPC_STACK_LOCALS + BPF_PPC_STACK_SAVE)
 diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index 4641a50e82d50d..097d1ecfb9f562 100644
+index 097d1ecfb9f562..df1666f0b54d9b 100644
 --- a/arch/powerpc/net/bpf_jit_comp64.c
 +++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -601,17 +601,21 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
- 				EMIT(PPC_RAW_MR(dst_reg, b2p[TMP_REG_1]));
- 				break;
- 			case 64:
--				/*
--				 * Way easier and faster(?) to store the value
--				 * into stack and then use ldbrx
--				 *
--				 * ctx->seen will be reliable in pass2, but
--				 * the instructions generated will remain the
--				 * same across all passes
--				 */
-+				/* Store the value to stack and then use byte-reverse loads */
- 				PPC_BPF_STL(dst_reg, 1, bpf_jit_stack_local(ctx));
- 				EMIT(PPC_RAW_ADDI(b2p[TMP_REG_1], 1, bpf_jit_stack_local(ctx)));
--				EMIT(PPC_RAW_LDBRX(dst_reg, 0, b2p[TMP_REG_1]));
-+				if (cpu_has_feature(CPU_FTR_ARCH_206)) {
-+					EMIT(PPC_RAW_LDBRX(dst_reg, 0, b2p[TMP_REG_1]));
-+				} else {
-+					EMIT(PPC_RAW_LWBRX(dst_reg, 0, b2p[TMP_REG_1]));
-+					if (IS_ENABLED(CONFIG_CPU_LITTLE_ENDIAN))
-+						EMIT(PPC_RAW_SLDI(dst_reg, dst_reg, 32));
-+					EMIT(PPC_RAW_LI(b2p[TMP_REG_2], 4));
-+					EMIT(PPC_RAW_LWBRX(b2p[TMP_REG_2], b2p[TMP_REG_2], b2p[TMP_REG_1]));
-+					if (IS_ENABLED(CONFIG_CPU_BIG_ENDIAN))
-+						EMIT(PPC_RAW_SLDI(b2p[TMP_REG_2], b2p[TMP_REG_2], 32));
-+					EMIT(PPC_RAW_OR(dst_reg, dst_reg, b2p[TMP_REG_2]));
-+				}
- 				break;
- 			}
+@@ -15,6 +15,7 @@
+ #include <linux/if_vlan.h>
+ #include <asm/kprobes.h>
+ #include <linux/bpf.h>
++#include <asm/security_features.h>
+ 
+ #include "bpf_jit64.h"
+ 
+@@ -35,9 +36,9 @@ static inline bool bpf_has_stack_frame(struct codegen_context *ctx)
+  *		[	prev sp		] <-------------
+  *		[	  ...       	] 		|
+  * sp (r1) --->	[    stack pointer	] --------------
+- *		[   nv gpr save area	] 6*8
++ *		[   nv gpr save area	] 5*8
+  *		[    tail_call_cnt	] 8
+- *		[    local_tmp_var	] 8
++ *		[    local_tmp_var	] 16
+  *		[   unused red zone	] 208 bytes protected
+  */
+ static int bpf_jit_stack_local(struct codegen_context *ctx)
+@@ -45,12 +46,12 @@ static int bpf_jit_stack_local(struct codegen_context *ctx)
+ 	if (bpf_has_stack_frame(ctx))
+ 		return STACK_FRAME_MIN_SIZE + ctx->stack_size;
+ 	else
+-		return -(BPF_PPC_STACK_SAVE + 16);
++		return -(BPF_PPC_STACK_SAVE + 24);
+ }
+ 
+ static int bpf_jit_stack_tailcallcnt(struct codegen_context *ctx)
+ {
+-	return bpf_jit_stack_local(ctx) + 8;
++	return bpf_jit_stack_local(ctx) + 16;
+ }
+ 
+ static int bpf_jit_stack_offsetof(struct codegen_context *ctx, int reg)
+@@ -272,10 +273,33 @@ static int bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32 o
+ 	return 0;
+ }
+ 
++/*
++ * We spill into the redzone always, even if the bpf program has its own stackframe.
++ * Offsets hardcoded based on BPF_PPC_STACK_SAVE -- see bpf_jit_stack_local()
++ */
++void bpf_stf_barrier(void);
++
++asm (
++"		.global bpf_stf_barrier		;"
++"	bpf_stf_barrier:			;"
++"		std	21,-64(1)		;"
++"		std	22,-56(1)		;"
++"		sync				;"
++"		ld	21,-64(1)		;"
++"		ld	22,-56(1)		;"
++"		ori	31,31,0			;"
++"		.rept 14			;"
++"		b	1f			;"
++"	1:					;"
++"		.endr				;"
++"		blr				;"
++);
++
+ /* Assemble the body code between the prologue & epilogue */
+ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *ctx,
+ 		       u32 *addrs, bool extra_pass)
+ {
++	enum stf_barrier_type stf_barrier = stf_barrier_type_get();
+ 	const struct bpf_insn *insn = fp->insnsi;
+ 	int flen = fp->len;
+ 	int i, ret;
+@@ -643,6 +667,29 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
+ 		 * BPF_ST NOSPEC (speculation barrier)
+ 		 */
+ 		case BPF_ST | BPF_NOSPEC:
++			if (!security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) ||
++					!security_ftr_enabled(SEC_FTR_STF_BARRIER))
++				break;
++
++			switch (stf_barrier) {
++			case STF_BARRIER_EIEIO:
++				EMIT(PPC_RAW_EIEIO() | 0x02000000);
++				break;
++			case STF_BARRIER_SYNC_ORI:
++				EMIT(PPC_RAW_SYNC());
++				EMIT(PPC_RAW_LD(b2p[TMP_REG_1], _R13, 0));
++				EMIT(PPC_RAW_ORI(_R31, _R31, 0));
++				break;
++			case STF_BARRIER_FALLBACK:
++				EMIT(PPC_RAW_MFLR(b2p[TMP_REG_1]));
++				PPC_LI64(12, dereference_kernel_function_descriptor(bpf_stf_barrier));
++				EMIT(PPC_RAW_MTCTR(12));
++				EMIT(PPC_RAW_BCTRL());
++				EMIT(PPC_RAW_MTLR(b2p[TMP_REG_1]));
++				break;
++			case STF_BARRIER_NONE:
++				break;
++			}
  			break;
+ 
+ 		/*
 -- 
 2.33.0
 
