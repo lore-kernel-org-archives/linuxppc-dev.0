@@ -2,117 +2,67 @@ Return-Path: <SRS0=/PaX=OY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6226C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 16:38:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5259C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 16:38:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 283716126A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 16:38:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 283716126A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5DFCD6126A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 16:38:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5DFCD6126A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HNRGh3r1xz307B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Oct 2021 03:38:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dhTcbDEY;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HNRH90S5Wz3hGJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Oct 2021 03:38:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::22b;
+ helo=mail-oi1-x22b.google.com; envelope-from=robherring2@gmail.com;
+ receiver=<UNKNOWN>)
+Received: from mail-oi1-x22b.google.com (mail-oi1-x22b.google.com
+ [IPv6:2607:f8b0:4864:20::22b])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HNQtm4x43z3cVb
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Oct 2021 03:20:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=dhTcbDEY; dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
- [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
- by gandalf.ozlabs.org (Postfix) with ESMTP id 4HNQtl4ZCWz4xbV
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Oct 2021 03:20:47 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
- id 4HNQtl4Ws8z4xb9; Tue,  5 Oct 2021 03:20:47 +1100 (AEDT)
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: gandalf.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=dhTcbDEY; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by gandalf.ozlabs.org (Postfix) with ESMTPS id 4HNQtk6HSWz4xLs;
- Tue,  5 Oct 2021 03:20:46 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 194G1hPr019235; 
- Mon, 4 Oct 2021 12:20:44 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=8mEx5a8kxg3IoTWi18BowCAvWWuK7NgNGuxSUB31DL4=;
- b=dhTcbDEYYhXVs/Zf/JRoOWEZmnJ2AOIPALxDIc/FXxPUyfqRJi6caxEdFcOx2ynUOBBC
- 9uBJ3xpzfE5xgNl8LI7DyUlCsisUjNC4Wb8puj2KxOtBLbSj2a2xmlKF62v8CHxQfP2T
- B2fxOXtAjZtnmJp+ssgKjj5K1gmtLA5idiIiU7KrDpqlOX6I/SB/4CZMm0/b2ko2n8EV
- Hje6PsiRR86DS21DFC8c0fvx4fkl2T0ub/ehzKUwIJfniLn/+RgN7p0W53+4iXO58i9/
- YTydb8tZOg9D4MsZoTcbt/8fyM1rb7lsv8c2O6ix7tz1nfPYI7XfnYgmpAQ8AKtx05Iq Lg== 
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3bg4s98fwq-3
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 04 Oct 2021 12:20:43 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 194G2VqS027596;
- Mon, 4 Oct 2021 16:06:47 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma02fra.de.ibm.com with ESMTP id 3bef29fwe4-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 04 Oct 2021 16:06:47 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 194G6hal5243392
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 4 Oct 2021 16:06:44 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E27DEAE073;
- Mon,  4 Oct 2021 16:06:43 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A8CFEAE06A;
- Mon,  4 Oct 2021 16:06:40 +0000 (GMT)
-Received: from [9.43.47.122] (unknown [9.43.47.122])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon,  4 Oct 2021 16:06:40 +0000 (GMT)
-Message-ID: <f13e218e-4e38-4076-672f-d555d7abfc02@linux.ibm.com>
-Date: Mon, 4 Oct 2021 21:36:38 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HNRDN6D0Wz3drt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Oct 2021 03:36:03 +1100 (AEDT)
+Received: by mail-oi1-x22b.google.com with SMTP id q16so22340672oiw.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Oct 2021 09:36:03 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=0dpw/V8bg0MxBudexnCNVse/yhrpLd1wrwigqMt/Mf4=;
+ b=rdzRIlWKK5O7AJKtGMWJqNvLOoq0nIRVR5lU1J+KTVTvBT9Fh5ajR0Y60ZWSq5AuwL
+ oZ+30MCFIEZZGWyMsGXjLlS3rpl3RW6F3jj70uX8qihdzIhi8GCGQUk/G1xRjOFSZwFm
+ c9KyAk3VxeqHq1yjm0WgUZZhTMHCQByKG24B6M/pDWv3yoVoHAqfMAyju4isjSwGCH0z
+ 0MdEZIxh/0KeBfKQwbsKxsDdKPfbHOGRlV3YVEIhXnMy5kwpsX+wqdpoQSwh+ZSvaPJo
+ l3QsrtXvOWnvL24nWmwEPdfonZsK4p0FY3ZtkQM92nUyDIa3ZlnsXmrGp8GXThEyejg7
+ acnw==
+X-Gm-Message-State: AOAM531AfWHiT/1b9l91vkutrvjrzJjF7B2HXKcyxgejQxwMRyX6/uDB
+ HfleGv4X3L1rOT7jIPMekZs88gfmcw==
+X-Google-Smtp-Source: ABdhPJyWs8jPtI7Az6impbOs6RYLWqtQA6g7t7PUwbGnr6ooHx6OyIrt5yr6QR8S2RGXjkrcVH6Pcw==
+X-Received: by 2002:aca:30c9:: with SMTP id w192mr13601001oiw.93.1633364836818; 
+ Mon, 04 Oct 2021 09:27:16 -0700 (PDT)
+Received: from robh.at.kernel.org (66-90-148-213.dyn.grandenetworks.net.
+ [66.90.148.213])
+ by smtp.gmail.com with ESMTPSA id d21sm2868961ooh.43.2021.10.04.09.27.15
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 04 Oct 2021 09:27:15 -0700 (PDT)
+Received: (nullmailer pid 1418805 invoked by uid 1000);
+ Mon, 04 Oct 2021 16:27:14 -0000
+Date: Mon, 4 Oct 2021 11:27:14 -0500
+From: Rob Herring <robh@kernel.org>
+To: Li Yang <leoyang.li@nxp.com>
+Subject: Re: [PATCH 2/5] memory: fsl_ifc: populate child devices without
+ relying on simple-bus
+Message-ID: <YVsrYp3kZNmB1CIu@robh.at.kernel.org>
+References: <20211001000924.15421-1-leoyang.li@nxp.com>
+ <20211001000924.15421-3-leoyang.li@nxp.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.1.0
-Subject: Re: [PATCH 3/3] powerpc: Set crashkernel offset to mid of RMA region
-Content-Language: en-US
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, mpe@ellerman.id.au
-References: <20211004151142.256251-1-sourabhjain@linux.ibm.com>
- <20211004151142.256251-4-sourabhjain@linux.ibm.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-In-Reply-To: <20211004151142.256251-4-sourabhjain@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 61JBjjd8jZRKX-tCbnGeSiqOHzgJ8QbI
-X-Proofpoint-ORIG-GUID: 61JBjjd8jZRKX-tCbnGeSiqOHzgJ8QbI
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
- definitions=2021-10-04_05,2021-10-04_01,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0
- lowpriorityscore=0 adultscore=0 phishscore=0 mlxlogscore=999 clxscore=1015
- mlxscore=0 bulkscore=0 spamscore=0 priorityscore=1501 impostorscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2109230001 definitions=main-2110040110
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211001000924.15421-3-leoyang.li@nxp.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -124,85 +74,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Abdul haleem <abdhalee@linux.vnet.ibm.com>, mahesh@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, hbathini@linux.ibm.com, linuxppc-dev@ozlabs.org
+Cc: devicetree@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>,
+ linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/4/21 20:41, Sourabh Jain wrote:
-> On large config LPARs (having 192 and more cores), Linux fails to boot
-> due to insufficient memory in the first memory block. It is due to the
-> reserve crashkernel area starts at 128MB offset by default and which
-> doesn't leave enough space in the first memory block to accommodate
-> memory for other essential system resources.
+On Thu, Sep 30, 2021 at 07:09:21PM -0500, Li Yang wrote:
+> After we update the binding to not use simple-bus compatible for the
+> controller, we need the driver to populate the child devices explicitly.
 > 
-> Given that the RMA region size can be 512MB or more, setting the
-> crashkernel offset to mid of RMA size will leave enough space to
-> kernel to allocate memory for other system resources in the first
-> memory block.
-> 
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> Reported-and-tested-by: Abdul haleem <abdhalee@linux.vnet.ibm.com>
+> Signed-off-by: Li Yang <leoyang.li@nxp.com>
 > ---
->   arch/powerpc/kernel/rtas.c |  3 +++
->   arch/powerpc/kexec/core.c  | 13 +++++++++----
->   2 files changed, 12 insertions(+), 4 deletions(-)
+>  drivers/memory/fsl_ifc.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 > 
-> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-> index ff80bbad22a5..ce5e62bb4d8e 100644
-> --- a/arch/powerpc/kernel/rtas.c
-> +++ b/arch/powerpc/kernel/rtas.c
-> @@ -1235,6 +1235,9 @@ int __init early_init_dt_scan_rtas(unsigned long node,
->   	entryp = of_get_flat_dt_prop(node, "linux,rtas-entry", NULL);
->   	sizep  = of_get_flat_dt_prop(node, "rtas-size", NULL);
->   
-> +	if (of_get_flat_dt_prop(node, "ibm,hypertas-functions", NULL))
-> +		powerpc_firmware_features |= FW_FEATURE_LPAR;
-> +
+> diff --git a/drivers/memory/fsl_ifc.c b/drivers/memory/fsl_ifc.c
+> index d062c2f8250f..251d713cd50b 100644
+> --- a/drivers/memory/fsl_ifc.c
+> +++ b/drivers/memory/fsl_ifc.c
+> @@ -88,6 +88,7 @@ static int fsl_ifc_ctrl_remove(struct platform_device *dev)
+>  {
+>  	struct fsl_ifc_ctrl *ctrl = dev_get_drvdata(&dev->dev);
+>  
+> +	of_platform_depopulate(&dev->dev);
+>  	free_irq(ctrl->nand_irq, ctrl);
+>  	free_irq(ctrl->irq, ctrl);
+>  
+> @@ -285,6 +286,14 @@ static int fsl_ifc_ctrl_probe(struct platform_device *dev)
+>  		}
+>  	}
+>  
+> +	/* legacy dts may still use "simple-bus" compatible */
+> +	if (!of_device_is_compatible(dev->dev.of_node, "simple-bus")) {
+> +	        ret = of_platform_populate(dev->dev.of_node, NULL, NULL,
+> +						&dev->dev);
 
-The equivalent check that we currently do more than checking 
-ibm,hypertas-functions.
+There's no need to make this conditional. of_platform_populate() is safe 
+to call multiple times. If that doesn't work, it's a bug.
 
-	if (!strcmp(uname, "rtas") || !strcmp(uname, "rtas@0")) {
-		prop = of_get_flat_dt_prop(node, "ibm,hypertas-functions",
-					   &len);
-		if (prop) {
-			powerpc_firmware_features |= FW_FEATURE_LPAR;
-			fw_hypertas_feature_init(prop, len);
-		}
-
-
-also do we expect other firmware features to be set along with 
-FW_FEATURE_LPAR?
-
->   	if (basep && entryp && sizep) {
->   		rtas.base = *basep;
->   		rtas.entry = *entryp;
-> diff --git a/arch/powerpc/kexec/core.c b/arch/powerpc/kexec/core.c
-> index 48525e8b5730..f69cf3e370ec 100644
-> --- a/arch/powerpc/kexec/core.c
-> +++ b/arch/powerpc/kexec/core.c
-> @@ -147,11 +147,16 @@ void __init reserve_crashkernel(void)
->   	if (!crashk_res.start) {
->   #ifdef CONFIG_PPC64
->   		/*
-> -		 * On 64bit we split the RMO in half but cap it at half of
-> -		 * a small SLB (128MB) since the crash kernel needs to place
-> -		 * itself and some stacks to be in the first segment.
-> +		 * crash kernel needs to placed in the first segment. On LPAR
-> +		 * setting crash kernel start to mid of RMA size (512MB or more)
-> +		 * would help primary kernel to boot properly on large config
-> +		 * LPAR (with core count 192 or more) and for the reset keep
-> +		 * cap the crash kernel start at 128MB offse.
->   		 */
-> -		crashk_res.start = min(0x8000000ULL, (ppc64_rma_size / 2));
-> +		if (firmware_has_feature(FW_FEATURE_LPAR))
-> +			crashk_res.start = ppc64_rma_size / 2;
-> +		else
-> +			crashk_res.start = min(0x8000000ULL, (ppc64_rma_size / 2));
->   #else
->   		crashk_res.start = KDUMP_KERNELBASE;
->   #endif
-> 
-
+Rob
