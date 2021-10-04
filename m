@@ -2,75 +2,112 @@ Return-Path: <SRS0=/PaX=OY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E7A0C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 09:55:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69479C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 11:23:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 291946126A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 09:55:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 291946126A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6C2506136F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 11:23:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6C2506136F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=svenpeter.dev
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HNGLh4ld0z2ybB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 20:55:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HNJHh4y4dz2yHt
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 22:23:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HiukkA2c;
+	dkim=pass (2048-bit key; unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev header.a=rsa-sha256 header.s=fm2 header.b=FVMajL3l;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=k2cptf8T;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=wsa@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=svenpeter.dev (client-ip=66.111.4.221;
+ helo=new1-smtp.messagingengine.com; envelope-from=sven@svenpeter.dev;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=HiukkA2c; 
+ unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev
+ header.a=rsa-sha256 header.s=fm2 header.b=FVMajL3l; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm1 header.b=k2cptf8T; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from new1-smtp.messagingengine.com (new1-smtp.messagingengine.com
+ [66.111.4.221])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HNGKz4SRWz2yLv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Oct 2021 20:55:19 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 28450610A2;
- Mon,  4 Oct 2021 09:55:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1633341314;
- bh=YFCi2y5We01CO4jWthApcileUf1E68BaLX3HsCWtl4g=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=HiukkA2c94NU48TdEzLg8LZww7TRptX/ah4YMnIYPeRxf3NmkhissA/Zc3/wOXQJI
- pVJSjAzNHxbRN6YV/OCJNcDnqpAw3dgH24DfzlEmPIiupYstfw/K/DKleugtzY0Bps
- kqDgqs4M04+9SSJ52oOkU4Iz4T5tTGDk4npv4E3lAcQSNAUAEC6RgyQk7ybH1kC7SF
- 6uXD4GFixHgvMpFGn2QgIpa9IHTbEivmQeXb+klw4nNn6jdi07tIXR1qTPwA8GxEGY
- NaPqsewByR+1pj7ZrxA9OX+8AYPTNqB92a9ek8N8iNTvQBaiKB0dRrLkaZ291mfZ7s
- 2RtwJ2BJUXWPg==
-Date: Mon, 4 Oct 2021 11:55:11 +0200
-From: Wolfram Sang <wsa@kernel.org>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: Add Apple M1 support to PASemi i2c driver
-Message-ID: <YVrPf4yVFm184LEG@shikoro>
-Mail-Followup-To: Wolfram Sang <wsa@kernel.org>,
- Christian Zigotzky <chzigotzky@xenosoft.de>,
- Sven Peter <sven@svenpeter.dev>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- Arnd Bergmann <arnd@arndb.de>, Hector Martin <marcan@marcan.st>,
- mohamed.mediouni@caramail.com, Stan Skowronek <stan@corellium.com>,
- Mark Kettenis <mark.kettenis@xs4all.nl>,
- linux-arm-kernel@lists.infradead.org,
- Alyssa Rosenzweig <alyssa@rosenzweig.io>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-i2c@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "R.T.Dickinson" <rtd2@xtra.co.nz>,
- Darren Stevens <darren@stevens-zone.net>,
- Matthew Leaman <matthew@a-eon.biz>, "R.T.Dickinson" <rtd@a-eon.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HNJGr4pJvz2yHX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Oct 2021 22:22:43 +1100 (AEDT)
+Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
+ by mailnew.nyi.internal (Postfix) with ESMTP id 26DFD580865;
+ Mon,  4 Oct 2021 07:22:40 -0400 (EDT)
+Received: from imap47 ([10.202.2.97])
+ by compute1.internal (MEProxy); Mon, 04 Oct 2021 07:22:40 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=svenpeter.dev;
+ h=mime-version:message-id:in-reply-to:references:date:from:to
+ :subject:content-type; s=fm2; bh=k4eiDbO0S0GhIIy1Ulz4BubSgS8pg11
+ RI+l3/cVsvRw=; b=FVMajL3lBrk3yevNtB/+RlBjXU38ww0iW9Aut7eCmNXwzk/
+ 3CCMgVJkarHg9wrCUY9FNeAQhA2Gr4yEiGk5aV9aQp2bZ6iUOPKmcinG8i48xwxx
+ a0+WpS7yLnZQSS5Qu7hxXQ5QSXe7ts4lKpeCVaLDD5Vj0VAtH/qlaX4eTGRNTeI1
+ gpOPKw6LOO9YOb4Y3kttlqmBf7WpggzozTFl6DGkHwDwXx9/pDPfRmnslJPd/zhH
+ doBnV+b6G6rXyxLlRIphsqG6bl4KsXKObtv+qLcojY8NH57QJvmlVUV9E0UJ3RL5
+ ZE6pate8E4spyEfqfY2aknqaCRmWbUSzH3vkeMQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=content-type:date:from:in-reply-to
+ :message-id:mime-version:references:subject:to:x-me-proxy
+ :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=k4eiDb
+ O0S0GhIIy1Ulz4BubSgS8pg11RI+l3/cVsvRw=; b=k2cptf8TqB4+1ARafPyM/x
+ AobSopKb+S3F2nYZ3rA2Vj1HiLSnQ82uU+Ilcnl3s4+l6KipS3raruEKTTcX3+IX
+ si4phykkN40eZe8zM5inMzJkz7Xi1bv40z13Oe0fCHawoIQNs3nzm9jcgmypGJWr
+ SHT+/CKJzsv1bGyFBZ69aoNpX31PL+pvvXcUgGX27eQB47nzJnRghhUU8L/RBScx
+ z2Td0KAIPo0h+0j2jXnouRXRYw9MHL2U2MNmUAtcABTxolR95H3qPK0EHrgcSA+r
+ mGPYNgjqMhsg5YFFEwkXLdRBu6r89jYQvr/jqaOlBQso6XhfvVIBv4a3R7G3LEIA
+ ==
+X-ME-Sender: <xms:_uNaYeeIloEZiV5tPLSJcj-1PrtmfPA6geWWDB531Z0sfw4_cZTj1Q>
+ <xme:_uNaYYPwATvFmpOj4JtGacmNJj5A4J-4TIW-FxHPIeoQGakvIfz5Bo9_1qFGmyY8Y
+ JDUe-DoP8ucGBh91Dk>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvtddrudelvddgfeejucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhepofgfggfkjghffffhvffutgesthdtredtreertdenucfhrhhomhepfdfuvhgv
+ nhcurfgvthgvrhdfuceoshhvvghnsehsvhgvnhhpvghtvghrrdguvghvqeenucggtffrrg
+ htthgvrhhnpefgieegieffuefhtedtjefgteejteefleefgfefgfdvvddtgffhffduhedv
+ feekffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
+ hsvhgvnhesshhvvghnphgvthgvrhdruggvvh
+X-ME-Proxy: <xmx:_uNaYfhxDSjkyTqgJBKRZDmhso2zVEqE0GneAQfVlieAnXlZy2kxmg>
+ <xmx:_uNaYb_CoYdj4ozDQa58TAmJDFwZTT3-gRkzsIFPhQN2PUHpJHTgZQ>
+ <xmx:_uNaYatJL3tEG5Y8EaYI-xCZU5YTUJaHd0L6yXbuopD87WR1hJHupQ>
+ <xmx:AORaYSSTr6C6ox_bOktGQhj7oubkMBu4s087EhGDZGGlSvsom_g94Q>
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+ id 84C0C2740061; Mon,  4 Oct 2021 07:22:38 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.5.0-alpha0-1322-g921842b88a-fm-20210929.001-g921842b8
+Mime-Version: 1.0
+Message-Id: <afd4c1a8-4230-4757-a373-027812ec0ca6@www.fastmail.com>
+In-Reply-To: <CAK8P3a2760x4OYbNBuFCv32Tgt7K3MdJna4qXvPchdKhV8-8vQ@mail.gmail.com>
 References: <49890226-cf04-46ff-bc37-33d1643faea2@www.fastmail.com>
- <1B71F6A3-6467-46EF-858F-82E93D54365D@xenosoft.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="ZuPCIRixoUsFfcCu"
-Content-Disposition: inline
-In-Reply-To: <1B71F6A3-6467-46EF-858F-82E93D54365D@xenosoft.de>
+ <1B71F6A3-6467-46EF-858F-82E93D54365D@xenosoft.de> <YVrPf4yVFm184LEG@shikoro>
+ <CAK8P3a2760x4OYbNBuFCv32Tgt7K3MdJna4qXvPchdKhV8-8vQ@mail.gmail.com>
+Date: Mon, 04 Oct 2021 13:22:18 +0200
+From: "Sven Peter" <sven@svenpeter.dev>
+To: "Arnd Bergmann" <arnd@arndb.de>, "Wolfram Sang" <wsa@kernel.org>,
+ "Christian Zigotzky" <chzigotzky@xenosoft.de>,
+ "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+ "Paul Mackerras" <paulus@samba.org>, "Olof Johansson" <olof@lixom.net>,
+ "Hector Martin" <marcan@marcan.st>,
+ "Mohamed Mediouni" <mohamed.mediouni@caramail.com>,
+ "Stan Skowronek" <stan@corellium.com>,
+ "Mark Kettenis" <mark.kettenis@xs4all.nl>,
+ "Linux ARM" <linux-arm-kernel@lists.infradead.org>,
+ "Alyssa Rosenzweig" <alyssa@rosenzweig.io>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "Linux I2C" <linux-i2c@vger.kernel.org>,
+ "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+ "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ "Darren Stevens" <darren@stevens-zone.net>,
+ "Matthew Leaman" <matthew@a-eon.biz>, "R.T.Dickinson" <rtd@a-eon.com>
+Subject: Re: Add Apple M1 support to PASemi i2c driver
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,51 +119,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Darren Stevens <darren@stevens-zone.net>, Arnd Bergmann <arnd@arndb.de>,
- Sven Peter <sven@svenpeter.dev>, Hector Martin <marcan@marcan.st>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-i2c@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Alyssa Rosenzweig <alyssa@rosenzweig.io>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
- Olof Johansson <olof@lixom.net>, mohamed.mediouni@caramail.com,
- Matthew Leaman <matthew@a-eon.biz>, Mark Kettenis <mark.kettenis@xs4all.nl>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "R.T.Dickinson" <rtd@a-eon.com>,
- linux-arm-kernel@lists.infradead.org, Stan Skowronek <stan@corellium.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---ZuPCIRixoUsFfcCu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+
+On Mon, Oct 4, 2021, at 13:20, Arnd Bergmann wrote:
+> On Mon, Oct 4, 2021 at 11:55 AM Wolfram Sang <wsa@kernel.org> wrote:
+>>
+>>
+>> > i2c-8 i2c             PA Semi SMBus adapter at 0x(____ptrval____)     I2C adapter
+>> > i2c-9 i2c             PA Semi SMBus adapter at 0x(____ptrval____)     I2C adapter
+>> > i2c-10        i2c             PA Semi SMBus adapter at 0x(____ptrval____)     I2C adapter
+>>
+>> As Sven correctly switched from %lx to %p, this is intended behaviour.
+>> Run 'i2cdetect' as root to see the values again.
+>
+> I think the address could just get removed here, as this is clearly not helpful.
+> port number, which is somewhat useful for identifying the device, now
+> it's either the pointless string, or the virtual address that the
+> device is mapped
+> to, which is not helpful either and potentially leaks information about kernel
+> internal structures.
+
+Yeah, now that I'm looking at it again it doesn't make much sense to
+include it there. Maybe just dev_name(smbus->dev) instead of the address?
 
 
-> i2c-8	i2c       	PA Semi SMBus adapter at 0x(____ptrval____)	I2C adapter
-> i2c-9	i2c       	PA Semi SMBus adapter at 0x(____ptrval____)	I2C adapter
-> i2c-10	i2c       	PA Semi SMBus adapter at 0x(____ptrval____)	I2C adapter
-
-As Sven correctly switched from %lx to %p, this is intended behaviour.
-Run 'i2cdetect' as root to see the values again.
-
-
---ZuPCIRixoUsFfcCu
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAmFaz38ACgkQFA3kzBSg
-KbbRJw//SKg3woVJNLP5I2QTmOHwRjX94iyEpd1AYK4npUv2H1H2YFfpN91e3rt8
-I3315rsWg3EABiiMS2ssAv3lNfSIXZcGTaGpFAb6mWYtXr42otvLDhl71AlXxRIZ
-QnvyJziR6z7jgWMIxLIW2Wo8dAw9GxTd1UKEQOFSldRIQ1mQ3FXeGjjqWTFyQWGH
-8R8ntfHWURCH8+BdZ4UnSPi7RkaTBiVDn3IkmSUZmkleD2in0U998vl0AZ8zJ2of
-8iTbqX8Lbrah6p8pEu9zxzvhOQB/BR28LhFEpaDuaq2ikBxmR1uY7GG+PHlhwBHD
-YjxMWsm9nZiYWbmrW1c/pBvNwsgpc/VbB04X2JlujXTacsVQmIPqPei3GMRpHWiY
-3KhyfByT0tSy48s/Nly59uimegO/dVYmCK90T17POjga6srqkAYHU7yM336bMgwO
-hayW1aWjCKyx+AwI0169BKOlo2ODPmDldBqm7jOb/a89jg/28fvqmP8i+B2h4ckc
-09b4HHvLt4lC8xNPIS5nxqoTKuHVe5SwJpeirKW8Af02yL40ypnSxiyjBG/BGeOd
-xGdX1clp0VpJZvHw1IMDWVj0T3yo6Y8MrLDLEX6hHakpcgixl08s46qOpDcGwUdX
-0sJ3EkOqDTCraHZak/wJTI1AIipKxJ0MurcmUYLx+ArrgtjalVQ=
-=PnxX
------END PGP SIGNATURE-----
-
---ZuPCIRixoUsFfcCu--
+Sven
