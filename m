@@ -2,85 +2,71 @@ Return-Path: <SRS0=/PaX=OY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 666C0C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 11:26:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22B8BC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 13:00:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D200D613A8
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 11:26:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D200D613A8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id 197326137D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 13:00:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 197326137D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HNJM51spCz2ynf
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 22:26:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=217.72.192.75; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HNLRh3wByz301N
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Oct 2021 00:00:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
+ helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de;
+ receiver=<UNKNOWN>)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HNJLb0GVtz2yHt
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Oct 2021 22:25:58 +1100 (AEDT)
-Received: from mail-wr1-f53.google.com ([209.85.221.53]) by
- mrelayeu.kundenserver.de (mreue109 [213.165.67.113]) with ESMTPSA (Nemesis)
- id 1N63NW-1mqwDZ0vP6-016L2J for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Oct
- 2021 13:20:41 +0200
-Received: by mail-wr1-f53.google.com with SMTP id v25so19432076wra.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Oct 2021 04:20:40 -0700 (PDT)
-X-Gm-Message-State: AOAM533G0nM2TL0XCmtyBscHrdh5zdRX6Auj26fQFwS01WZNNNhApo4N
- q0s7UtuPTWryTAVuPfuIXXcl3lnwhlGBMfE5zqs=
-X-Google-Smtp-Source: ABdhPJwhFhZN1/rLzElq8LxHI+vYWGkiTfpWXOOqhx7kKzXCSyCUhYRu/5RoeP1GLfBuA250yguyI6fH/b4xP7cPZqg=
-X-Received: by 2002:adf:f481:: with SMTP id l1mr13368134wro.411.1633346439970; 
- Mon, 04 Oct 2021 04:20:39 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HNLR71XWlz2xtF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Oct 2021 00:00:01 +1100 (AEDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+ by metis.ext.pengutronix.de with esmtps
+ (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1mXNZN-0005K3-Lr; Mon, 04 Oct 2021 14:59:49 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+ by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1mXNZN-0000MV-3l; Mon, 04 Oct 2021 14:59:49 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1mXNZF-0000ci-Qr; Mon, 04 Oct 2021 14:59:41 +0200
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Bjorn Helgaas <helgaas@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v6 05/11] powerpc/eeh: Don't use driver member of struct
+ pci_dev and further cleanups
+Date: Mon,  4 Oct 2021 14:59:29 +0200
+Message-Id: <20211004125935.2300113-6-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20211004125935.2300113-1-u.kleine-koenig@pengutronix.de>
+References: <20211004125935.2300113-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-References: <49890226-cf04-46ff-bc37-33d1643faea2@www.fastmail.com>
- <1B71F6A3-6467-46EF-858F-82E93D54365D@xenosoft.de> <YVrPf4yVFm184LEG@shikoro>
-In-Reply-To: <YVrPf4yVFm184LEG@shikoro>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 4 Oct 2021 13:20:23 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a2760x4OYbNBuFCv32Tgt7K3MdJna4qXvPchdKhV8-8vQ@mail.gmail.com>
-Message-ID: <CAK8P3a2760x4OYbNBuFCv32Tgt7K3MdJna4qXvPchdKhV8-8vQ@mail.gmail.com>
-Subject: Re: Add Apple M1 support to PASemi i2c driver
-To: Wolfram Sang <wsa@kernel.org>, Christian Zigotzky <chzigotzky@xenosoft.de>,
- Sven Peter <sven@svenpeter.dev>, Michael Ellerman <mpe@ellerman.id.au>, 
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, 
- Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>,
- Hector Martin <marcan@marcan.st>, 
- Mohamed Mediouni <mohamed.mediouni@caramail.com>,
- Stan Skowronek <stan@corellium.com>, 
- Mark Kettenis <mark.kettenis@xs4all.nl>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>, 
- Alyssa Rosenzweig <alyssa@rosenzweig.io>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, 
- Linux I2C <linux-i2c@vger.kernel.org>, 
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "R.T.Dickinson" <rtd2@xtra.co.nz>, 
- Darren Stevens <darren@stevens-zone.net>, Matthew Leaman <matthew@a-eon.biz>, 
- "R.T.Dickinson" <rtd@a-eon.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:zGd7fiUUIJSarpnsN85muLMoCIiIjpJk4dflcwc4FzKSfGnoSN/
- ZNHD/VqvmMFFOzcCF8vCn10Ftpr2XHBvQ5aIDB5XY13IF6MV07fw+gW/2vwg77JyFNRfcd1
- 1c0iOP5yURwPL8x0N24XPU7LTuXYasdoEXRtszsdf75RuPHZVd2PPHkAtMmkH8E7L40iphz
- s3cbK0IAIy67bDL6k7Ixg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:BP/mjXkMXjw=:xruHxFTnXu1lLSxfQhBpeR
- 8/pBJ5nv+EiSSLQ+DgcumAfPLXeu6/FvZYeuXJMYbtYJIa6q5U31Z6Q4ng4tG9EeQ6H4axzl+
- WTEt5X+qC6UgnoEhZWiPbWsGPClGZJx1CgxfyKuOjP37Slttidral7HsAi8VaY1q2R1ON/J0W
- JHCXKJA4QdTtq/mgShONwwiWHegVPd7NHbupakaOAh0/t+S5h+DdbD3V2W8M4qrnG4bcJizrW
- LV9MdF91RRnCjRoSaY3nZAJm8IjWnN2YuvmWxLxlYmCRqjPkmGlN9is/fvB0SHEoFqGGCStsZ
- 9l42QQjgE2jap4PD93dQ2/c640Fqr1U/3W1UlWhYaPWjw+i7xioacdfNnTEXlg9Oet/OiEH22
- FohTva9uXxbB0lqOEEk7IaI+uAvZk1d17rnKMXQ1zirKcLSyxh1co8g/BV0ljAMPi+AWycJvF
- mjoFrp3h0TSMOuki6RsG0fvZ8VVHmFZ6DyW2MlnoVgE1aptf125dkASi/aykuYOIkSdYDwxjL
- 438VT1jcq6kROeF3svZzrmCnjQYqGkKpuhXdkLbTCVkYmMkq8n81nxGf8DNvEaOYphKBnzlvx
- B6JZ2iTEPxcSp+1p5IpSBDZ3hHKY9Vo/j06+zs7fc1fm6dUn00LgxUZgW7/8tCvHyEmbU0ew1
- wVTNKWeMQdqwTU+5vEpuP3yMG88xXTCw1jrO2lmhzjN4oKeOXg4RcPiBCdpK5WOt1DRbR+Y+/
- IOl4udbeJYm4siZZavzFv7kt1mYxi8gSwBSDAA/s2Jx6i6cMMdkqPaEcW62WyfvtEJJ8BJX3q
- +PGQ7P5fNrCwVbG1jb24NIznhATG1h46Olr7o1RA43hSAILg8GdxU91+QifvGnwNo+GbF2yt7
- Ry8KT/YJN0B3dDxzpD/w==
+Content-Type: text/plain; charset=UTF-8
+X-Patch-Hashes: v=1; h=sha256; i=Zpj0MfNpdqb/t0RctaGob3+oRuWP4Yx6JOoywu4XRsI=;
+ m=qLVHAb7UOiGrqQuPN/p5loiFStoGSa1I5N8zuOAmNU8=;
+ p=0U5IO+Yv/dUfU3ayUE/9KpmDUjFv5zoIY+LRFqJ9Pw0=;
+ g=70976583fe04d220fe4cb7c498cea58f830f1545
+X-Patch-Sig: m=pgp; i=u.kleine-koenig@pengutronix.de;
+ s=0x0D2511F322BFAB1C1580266BE2DCDD9132669BD6;
+ b=iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmFa+pMACgkQwfwUeK3K7An2DQf7BwJ
+ +5mTDkIUqy7dufqTCmfUL/PuOO3mdLaN1UMkgI+kPHMqsXVfWtUV44UIB4C931RElHQkQMHbdzind
+ MaO/mCm0chUWdShL8e7yyolxTjG9jIOFeJ8djp7717jyeRduuYev+tzQHfZtVlzf+gZ0fUhDceib9
+ zbLjwW63K/k14aNwXGpoaQjI8l98vZkZJdvXd8thLuKZt3md1tCPZmB47YRaA/kALD/jXtqmM2geN
+ dp6ooS4aElGr+AodCUYLzzzx+Agh0Zj5+KJ21gckCg7UtotQIwH78aOEpP/C1QIVQUXpwxBWhNHZm
+ Whg67TxzuSne0ilvaKGdceDZvjcEUhg==
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
+ SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,25 +78,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-pci@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>,
+ kernel@pengutronix.de, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 4, 2021 at 11:55 AM Wolfram Sang <wsa@kernel.org> wrote:
->
->
-> > i2c-8 i2c             PA Semi SMBus adapter at 0x(____ptrval____)     I2C adapter
-> > i2c-9 i2c             PA Semi SMBus adapter at 0x(____ptrval____)     I2C adapter
-> > i2c-10        i2c             PA Semi SMBus adapter at 0x(____ptrval____)     I2C adapter
->
-> As Sven correctly switched from %lx to %p, this is intended behaviour.
-> Run 'i2cdetect' as root to see the values again.
+The driver member of struct pci_dev is to be removed as it tracks
+information already present by tracking of the driver core. So replace
+pdev->driver->name by dev_driver_string() for the corresponding struct
+device.
 
-I think the address could just get removed here, as this is clearly not helpful.
-port number, which is somewhat useful for identifying the device, now
-it's either the pointless string, or the virtual address that the
-device is mapped
-to, which is not helpful either and potentially leaks information about kernel
-internal structures.
+Also move the function nearer to its only user and instead of the ?:
+operator use a normal if which is more readable.
 
-       Arnd
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ arch/powerpc/include/asm/ppc-pci.h | 5 -----
+ arch/powerpc/kernel/eeh.c          | 8 ++++++++
+ 2 files changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index 2b9edbf6e929..f6cf0159024e 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -55,11 +55,6 @@ void eeh_pe_dev_mode_mark(struct eeh_pe *pe, int mode);
+ void eeh_sysfs_add_device(struct pci_dev *pdev);
+ void eeh_sysfs_remove_device(struct pci_dev *pdev);
+ 
+-static inline const char *eeh_driver_name(struct pci_dev *pdev)
+-{
+-	return (pdev && pdev->driver) ? pdev->driver->name : "<null>";
+-}
+-
+ #endif /* CONFIG_EEH */
+ 
+ #define PCI_BUSNO(bdfn) ((bdfn >> 8) & 0xff)
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index e9b597ed423c..4b08881c4a1e 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -399,6 +399,14 @@ static int eeh_phb_check_failure(struct eeh_pe *pe)
+ 	return ret;
+ }
+ 
++static inline const char *eeh_driver_name(struct pci_dev *pdev)
++{
++	if (pdev)
++		return dev_driver_string(&pdev->dev);
++
++	return "<null>";
++}
++
+ /**
+  * eeh_dev_check_failure - Check if all 1's data is due to EEH slot freeze
+  * @edev: eeh device
+-- 
+2.30.2
+
