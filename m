@@ -2,83 +2,85 @@ Return-Path: <SRS0=/PaX=OY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB62DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 22:35:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42148C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 22:37:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2AD29611AE
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 22:35:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2AD29611AE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9E2CB610FB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 22:37:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9E2CB610FB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=idosch.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HNbCS5tCvz3ftf
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Oct 2021 09:35:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HNbFG1nMVz3dnc
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Oct 2021 09:37:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=DCLTSaQ0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=gM59//Us;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102f;
- helo=mail-pj1-x102f.google.com; envelope-from=naveennaidu479@gmail.com;
+ smtp.helo=new3-smtp.messagingengine.com (client-ip=66.111.4.229;
+ helo=new3-smtp.messagingengine.com; envelope-from=idosch@idosch.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=DCLTSaQ0; dkim-atps=neutral
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com
- [IPv6:2607:f8b0:4864:20::102f])
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm1 header.b=gM59//Us; 
+ dkim-atps=neutral
+Received: from new3-smtp.messagingengine.com (new3-smtp.messagingengine.com
+ [66.111.4.229])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HNT6n2YKGz2xfD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Oct 2021 05:01:21 +1100 (AEDT)
-Received: by mail-pj1-x102f.google.com with SMTP id ls18so2027194pjb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Oct 2021 11:01:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=B7sq5HEJs5lGnG+J8tujUids2AjtGM7weFegW7/rlp0=;
- b=DCLTSaQ07PyQGYWXH1+2Xsfdvw5DGV/I8XtRyOJbPaLb7kUI5hE9bZs5tBKfKfnEZv
- yJWA9rYnr0brHhmOMVeV+trr2fiBrUYwjSZbYSZwDmP9r/JS76OU6s/3AdycKZWfYTFw
- CIclJY0tQH0UeDsZcm6RtmrZGNXAT160EC6VgsC9hOtIq0iSkaWcZ0KkM1D96wVVTdxM
- U+yKA9jvbDs9v12WOHtt4EpvmMzklJn+8vLlgMBPU0VuViSjzLx2CwTYViJ73cL/+5xP
- vGqSeNgUdhH7az1nnmJYLp6QV6XxCG8nLT0xkZmBoClJDUKZ/T4ZfTcgZV5MYU4BQyQC
- CewA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=B7sq5HEJs5lGnG+J8tujUids2AjtGM7weFegW7/rlp0=;
- b=ACyDxeGtP1/swUrcGypeiCq1KPB8wFRCkWREanK8Jeyvg9CTJ/3oY8N74gjsptAGqi
- TUm02uvnR83zpIUq/k9aOwMJdXu0dPcLIjK5OOZUKiyoVOH1rVU9eINipzyg98kozGfd
- CDvbLJ2d1XVghYx0r41dzmUepZt9eBixVRMr+fAvv3ALSarKHyEU8OFCxlBttRoAhd8L
- G387VXB/xStuPlivdT3GVmx7FFrGz+zvhtSNHank9FDeHmm1Cw8KZ17udICJEK3sqHM+
- V0nWsapgIrCTk/7g8d+xDtnQMNQ6cbunqHk/p9Cl/Gr5NsiO04gpJR252lNzD7MtScl1
- jr0g==
-X-Gm-Message-State: AOAM5323sPxWqGCNxpd5x2CxQgABNH6fDLqX1dGkCv7Ibe6mMhY0JHS7
- BFUxZ49k7amExtHA0RUSzis=
-X-Google-Smtp-Source: ABdhPJxqQ1dbB0F5R2hGORk15/5zZpFg9rCi0DkVZQ7y0tE2wiTwWP4DlAOal+8YQvciNlfn7Vn2pw==
-X-Received: by 2002:a17:902:a503:b029:12b:2429:385e with SMTP id
- s3-20020a170902a503b029012b2429385emr966754plq.64.1633370478701; 
- Mon, 04 Oct 2021 11:01:18 -0700 (PDT)
-Received: from localhost.localdomain ([2406:7400:63:e8f0:c2a7:3579:5fe8:31d9])
- by smtp.gmail.com with ESMTPSA id
- z2sm3641004pfe.210.2021.10.04.11.01.14
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 04 Oct 2021 11:01:18 -0700 (PDT)
-From: Naveen Naidu <naveennaidu479@gmail.com>
-To: bhelgaas@google.com, tsbogend@alpha.franken.de, ruscur@russell.cc,
- oohall@gmail.com
-Subject: [PATCH 1/6] PCI/AER: Enable COR/UNCOR error reporting in
- set_device_error_reporting()
-Date: Mon,  4 Oct 2021 23:29:27 +0530
-Message-Id: <b583172ece1fb1dab3d75c6007ec8c443323158d.1633369560.git.naveennaidu479@gmail.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <cover.1633369560.git.naveennaidu479@gmail.com>
-References: <cover.1633369560.git.naveennaidu479@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HNQZf6Vc3z3djM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Oct 2021 03:06:50 +1100 (AEDT)
+Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
+ by mailnew.nyi.internal (Postfix) with ESMTP id DCB33580A24;
+ Mon,  4 Oct 2021 12:06:45 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute1.internal (MEProxy); Mon, 04 Oct 2021 12:06:45 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:content-type
+ :date:from:in-reply-to:message-id:mime-version:references
+ :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+ :x-sasl-enc; s=fm1; bh=UUDC4YPuEtCCTitozLyUXSQK64PbAa0gIhVIGJmIS
+ k8=; b=gM59//UsggGrtqThRY9sJqyp8D+9kxjC+UvC7jenhj+AROpr2V0dfX/fq
+ h6ehvCOLyj1zbY13J0RFv4HpMy6SMAEX5K/uwt2bcfpRtPSpV3rFp+/j5p5rgavJ
+ NUyyosal30d0QXln5Q8fjxIIkwHXSAzv8sdGRmRetfikyw/8NylOSLiIaeHcXLZs
+ YnaQzu/hGWx1xjutunU4A8MqMaIbIvUXaFJWF+sjfSBezb9G0uo907QDhO7iF4aw
+ 7fC70puO9Bw3YWecSEMZGNFm8zpFdi6oYbLiFHdf0ITrk8yAsZ2S/bYEurSItMlo
+ SOkfWQhrsVpq5DpSXCXcRtiveKNYA==
+X-ME-Sender: <xms:kiZbYZK76wrajKm36pl4y5bzwireSQ2PWq2QzmRyqpJBHcInWhTmoQ>
+ <xme:kiZbYVIlcj87gCVjNNPK5QPTqd8t1YcvnICIJfanlnR6x2MMVbKa5jV0o1rEMslHs
+ 2KNk7EnlWn1VY0>
+X-ME-Received: <xmr:kiZbYRvoGQyS69DlOaXpRPdTlLNyTDyV8yIB-2TQIn8Qxic2MNEvxz1D6gmBj2QJR9O2mzQBZIJXGdgSNGBPLYHwahPH7w>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvtddrudelvddgleefucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhepfffhvffukfhfgggtugfgjgesthekredttddtudenucfhrhhomhepkfguohcu
+ ufgthhhimhhmvghluceoihguohhstghhsehiughoshgthhdrohhrgheqnecuggftrfgrth
+ htvghrnhepvdffveekfeeiieeuieetudefkeevkeeuhfeuieduudetkeegleefvdegheej
+ hefhnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepih
+ guohhstghhsehiughoshgthhdrohhrgh
+X-ME-Proxy: <xmx:kiZbYaaBVxWoLW4HGq7VH3nQiN1XEhlUkUC98apwzk7l6Fx4FErx0w>
+ <xmx:kiZbYQYcCWruVgLFP-TF0YGUHpZOeSxmY5m5m6oa68X5U2Ddai6Mag>
+ <xmx:kiZbYeDufN_iwdYLwtcWcpJme_iAsTm2JZudp2486KUXMZDUiY1Kzw>
+ <xmx:lSZbYbv6xGNDhED2lZiFwGSYztonTM5evW1J9XCSbgxJbNzywj8tBQ>
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 4 Oct 2021 12:06:41 -0400 (EDT)
+Date: Mon, 4 Oct 2021 19:06:38 +0300
+From: Ido Schimmel <idosch@idosch.org>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH v6 07/11] PCI: Replace pci_dev::driver usage that gets
+ the driver name
+Message-ID: <YVsmjpUYk8P1X6Fr@shredder>
+References: <20211004125935.2300113-1-u.kleine-koenig@pengutronix.de>
+ <20211004125935.2300113-8-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Tue, 05 Oct 2021 09:16:56 +1100
+In-Reply-To: <20211004125935.2300113-8-u.kleine-koenig@pengutronix.de>
+X-Mailman-Approved-At: Tue, 05 Oct 2021 09:25:25 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,60 +92,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
- Naveen Naidu <naveennaidu479@gmail.com>, skhan@linuxfoundation.org,
- linux-kernel-mentees@lists.linuxfoundation.org
+Cc: linux-pci@vger.kernel.org, Alexander Duyck <alexanderduyck@fb.com>,
+ oss-drivers@corigine.com, Paul Mackerras <paulus@samba.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Bjorn Helgaas <helgaas@kernel.org>, Ido Schimmel <idosch@nvidia.com>,
+ Jakub Kicinski <kuba@kernel.org>, Yisen Zhuang <yisen.zhuang@huawei.com>,
+ Vadym Kochan <vkochan@marvell.com>, Michael Buesch <m@bues.ch>,
+ Jiri Pirko <jiri@nvidia.com>, Salil Mehta <salil.mehta@huawei.com>,
+ netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Taras Chornyi <tchornyi@marvell.com>,
+ Zhou Wang <wangzhou1@hisilicon.com>, linux-crypto@vger.kernel.org,
+ kernel@pengutronix.de, Simon Horman <simon.horman@corigine.com>,
+ Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The (PCIe r5.0, sec 7.6.4.3, Table 7-101) and  (PCIe r5.0, sec 7.8.4.6,
-Table 7-104) states that the default values for the Uncorrectable Error
-Mask and Correctable Error Mask should be 0b. But the current code does
-not set the default value of these registers when the PCIe bus loads the
-AER service driver.
+On Mon, Oct 04, 2021 at 02:59:31PM +0200, Uwe Kleine-König wrote:
+> struct pci_dev::driver holds (apart from a constant offset) the same
+> data as struct pci_dev::dev->driver. With the goal to remove struct
+> pci_dev::driver to get rid of data duplication replace getting the
+> driver name by dev_driver_string() which implicitly makes use of struct
+> pci_dev::dev->driver.
+> 
+> Acked-by: Simon Horman <simon.horman@corigine.com> (for NFP)
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-Enable reporting of all correctable and uncorrectable errors during
-aer_probe()
+For mlxsw:
 
-Signed-off-by: Naveen Naidu <naveennaidu479@gmail.com>
----
- drivers/pci/pcie/aer.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+Reviewed-by: Ido Schimmel <idosch@nvidia.com>
+Tested-by: Ido Schimmel <idosch@nvidia.com>
 
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index 9784fdcf3006..88c4ca6098fb 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -1212,6 +1212,7 @@ static int set_device_error_reporting(struct pci_dev *dev, void *data)
- {
- 	bool enable = *((bool *)data);
- 	int type = pci_pcie_type(dev);
-+	int aer = dev->aer_cap;
- 
- 	if ((type == PCI_EXP_TYPE_ROOT_PORT) ||
- 	    (type == PCI_EXP_TYPE_RC_EC) ||
-@@ -1223,8 +1224,18 @@ static int set_device_error_reporting(struct pci_dev *dev, void *data)
- 			pci_disable_pcie_error_reporting(dev);
- 	}
- 
--	if (enable)
-+	if (enable) {
-+
-+		/* Enable reporting of all uncorrectable errors */
-+		/* Uncorrectable Error Mask - turned on bits disable errors */
-+		pci_write_config_dword(dev, aer + PCI_ERR_UNCOR_MASK, 0);
-+
-+		/* Enable reporting of all correctable errors */
-+		/* Correctable Error Mask - turned on bits disable errors */
-+		pci_write_config_dword(dev, aer + PCI_ERR_COR_MASK, 0);
-+
- 		pcie_set_ecrc_checking(dev);
-+	}
- 
- 	return 0;
- }
--- 
-2.25.1
+Tested with the kexec flow that I mentioned last time. Works fine now.
 
+Thanks
