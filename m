@@ -2,77 +2,78 @@ Return-Path: <SRS0=/PaX=OY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E990C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 22:30:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51BEEC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 22:30:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ACAC66108F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 22:30:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ACAC66108F
+	by mail.kernel.org (Postfix) with ESMTPS id 95AB66108F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 22:30:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 95AB66108F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HNb4v2cdHz3ddd
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Oct 2021 09:30:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HNb5c5z4Dz3fHB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Oct 2021 09:30:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=OYkLF4jR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=qv8zIopX;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c;
- helo=mail-pl1-x62c.google.com; envelope-from=naveennaidu479@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102c;
+ helo=mail-pj1-x102c.google.com; envelope-from=naveennaidu479@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=OYkLF4jR; dkim-atps=neutral
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com
- [IPv6:2607:f8b0:4864:20::62c])
+ header.s=20210112 header.b=qv8zIopX; dkim-atps=neutral
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com
+ [IPv6:2607:f8b0:4864:20::102c])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HNNSL2qysz2yPN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Oct 2021 01:31:14 +1100 (AEDT)
-Received: by mail-pl1-x62c.google.com with SMTP id w14so20350pll.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Oct 2021 07:31:14 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HNNSv1snmz2yPW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Oct 2021 01:31:43 +1100 (AEDT)
+Received: by mail-pj1-x102c.google.com with SMTP id
+ cs11-20020a17090af50b00b0019fe3df3dddso105190pjb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Oct 2021 07:31:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=TGisZgUAndR6vbypwD4J77Oe+tJJydzPHMGBtKSc8nM=;
- b=OYkLF4jRenzIQdzKZe4qmQGMnvSK+jQXdQiOwjvl48ofn2l4BMD6xrqcWDUEhBcG52
- H0YZnDmK586+ADSnkPq2vWqxLpYoz+Dq9/jsl1ayWVFRsgrTR2HscGQxMv5QIypM6J8w
- IF921DChGFUU0Ubx8nyIOpaVWw+LRHsR/bbCwxOtGcPsWid9Gjvlmxq8ZiVPAUKx9lfH
- x74zbeEid+g9DBFRkWoOpQxyrXXRmSqTa8vzd+rpaYP+vP04HOdRd74zaMY+qd3Zu6/l
- 1AfQmiDWypumIYTdoL0WXRc3u7ol/OuF0/2xM7m+HWWZZ7aIrfErYnFcc2d9kxS+SbNf
- qNig==
+ bh=FR6K5YUYcCv1FDH4y5DK0PhIoCQEDWlRf94cnPNCwds=;
+ b=qv8zIopXqjv7B/cSRZ3wFwRISLoio93IP+EmFxrBZNfRmhYbTplZEVW9dbeqkXSexO
+ xC3ATUpxmJRydYGgHKT3jX9RRk2qOU7MqZ9BmxZ6Y3BlGHKqMrtbglNX/7S3JP+vJVNU
+ U3qE9ecrnlJ5AaPehV0/Eud3IiTAY7+4moUA9fpjiLZjPLT92K24ftq6+UvV2j5Lovtd
+ tqH2P7rgEp32UWbjhvU8aMXRoDyzlxgoq4DkDk/g6hBpL/LgNHnzh7D4kCZjvD9R7RYq
+ yHs67pCK6OfFDCdXNQDTate3xFUKIr+gHHSHRPSOFAa4I1B0hh4WRKbU4PFzYDYT26Fl
+ LsAQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=TGisZgUAndR6vbypwD4J77Oe+tJJydzPHMGBtKSc8nM=;
- b=szz8g2aDTJJyfk7jeppEEZAaGR4PBhuRY7rFSb/WzOZrVHd+6g3OEhLEerAicjkk+a
- FSdAHbwseHaZudhZ+zrhZvScFJU9g9VYNUJ72LYVjFTaGUgFLLIDiQ6E4jQbzZzvt0E7
- CHnKGsxMbR7QHG5/bGY/31p1454fAlQaMVXGasN5MyIrdVLYircXNogippmwb03xkEgk
- lCgvZSqAKiTQGbwKD4gT2yChacpmtW2DVu5urZ7MVY0YcgBEskhkKzdTc4s2JbV9KiQ2
- BlbmFduwuQZ9qVXZQlu08izpiTLeOI6PBq3Lm2R/9xZxjcXuPa8jcoOA1l46EbdeR9/j
- U1kA==
-X-Gm-Message-State: AOAM533RlrD83pYTo31qR+zkBdyg8iyaAPCe+9UdPc/8k2AZYN82zwID
- PVu90/Gy5+9Ts8M9bJRCXNw=
-X-Google-Smtp-Source: ABdhPJwRGQEgFTrP/TcZFfidHVNYaV6yZnACSRUkg8OiMIzlF+QimixqzYdMrw3SzsANwkLpwHyDkQ==
-X-Received: by 2002:a17:902:d50d:b0:13e:a44e:2d2a with SMTP id
- b13-20020a170902d50d00b0013ea44e2d2amr10557059plg.89.1633357872271; 
- Mon, 04 Oct 2021 07:31:12 -0700 (PDT)
+ bh=FR6K5YUYcCv1FDH4y5DK0PhIoCQEDWlRf94cnPNCwds=;
+ b=dZW+eH9XfBn/Og4bvF44D3HHhRaluCRYLYLF36pHCrc380tLf6f2Akk7r5RtFD9/Za
+ kiEbr7hdLne6nzNKibtv+b8RPvw8P+IR/COngUUCWKKIQ9Bn1YK0ZroD+5mrmCAsRw5Y
+ kBVIO2FU9Ux95O5Amc2mAqb94Sq8Qzev8BweyPLkF/mMlczYMaosMvk2FpSx1nuei50c
+ aur3i+b7WoOdsGWYmkQp/lda7GIJ00tZ6ygT1rfSmB8tAefM0u9RrQBVsYKyEAdTKQd4
+ 0gpjSw85V+4ukVUqjdYlzJDQwQmGk8fd3GUk+Pn1MEob5p0WoVblHIhP56/dzpu91mpK
+ sTAw==
+X-Gm-Message-State: AOAM531l3OpvAMmt0LNbB5TaVg8d/Rp9Zh1RDwDaAi44WLY93rFh2504
+ 5a8L7HCC1AXX4PximdL6NKcQMf801keojRxc
+X-Google-Smtp-Source: ABdhPJzR4Ghi3JFA5L9/8cvKQIXgFoRIAEnS77Xg6YAAEkbaN1BHaaNb+r1kBF2MKHApzqX5Ds9q0g==
+X-Received: by 2002:a17:90a:f287:: with SMTP id
+ fs7mr9466092pjb.98.1633357901102; 
+ Mon, 04 Oct 2021 07:31:41 -0700 (PDT)
 Received: from localhost.localdomain ([2406:7400:63:e8f0:c2a7:3579:5fe8:31d9])
  by smtp.gmail.com with ESMTPSA id
- q3sm14489146pgf.18.2021.10.04.07.31.08
+ q3sm14489146pgf.18.2021.10.04.07.31.36
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 04 Oct 2021 07:31:11 -0700 (PDT)
+ Mon, 04 Oct 2021 07:31:39 -0700 (PDT)
 From: Naveen Naidu <naveennaidu479@gmail.com>
 To: bhelgaas@google.com,
 	ruscur@russell.cc,
 	oohall@gmail.com
-Subject: [PATCH v3 1/8] PCI/AER: Remove ID from aer_agent_string[]
-Date: Mon,  4 Oct 2021 19:59:57 +0530
-Message-Id: <b4c5a5005d4549420cf6e86f31a01d3fb2876731.1633357368.git.naveennaidu479@gmail.com>
+Subject: [PATCH v3 2/8] PCI: Cleanup struct aer_err_info
+Date: Mon,  4 Oct 2021 19:59:58 +0530
+Message-Id: <247efb0e4168393f4aee5e267a9aa8b3a8adff0f.1633357368.git.naveennaidu479@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <cover.1633357368.git.naveennaidu479@gmail.com>
 References: <cover.1633357368.git.naveennaidu479@gmail.com>
@@ -97,68 +98,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Before 010caed4ccb6 ("PCI/AER: Decode Error Source RequesterID")
-the AER error logs looked like:
+The id, status and the mask fields of the struct aer_err_info comes
+directly from the registers, hence their sizes should be explicit.
 
-  pcieport 0000:00:03.0: AER: Corrected error received: id=0018
-  pcieport 0000:00:03.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, id=0018 (Receiver ID)
-  pcieport 0000:00:03.0:   device [1b36:000c] error status/mask=00000040/0000e000
-  pcieport 0000:00:03.0:    [ 6] BadTLP
+The length of these registers are:
+  - id: 16 bits - Represents the Error Source Requester ID
+  - status: 32 bits - COR/UNCOR Error Status
+  - mask: 32 bits - COR/UNCOR Error Mask
 
-In 010caed4ccb6 ("PCI/AER: Decode Error Source Requester ID"),
-the "id" field was removed from the AER error logs, so currently AER
-logs look like:
+Since the length of the above registers are even, use u16 and u32
+to represent their values.
 
-  pcieport 0000:00:03.0: AER: Corrected error received: 0000:00:03:0
-  pcieport 0000:00:03.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver ID)
-  pcieport 0000:00:03.0:   device [1b36:000c] error status/mask=00000040/0000e000
-  pcieport 0000:00:03.0:    [ 6] BadTLP
+Also remove the __pad fields.
 
-The second line in the above logs prints "(Receiver ID)", even when
-there is no "id" in the log line. This is confusing.
+"pahole" was run on the modified struct aer_err_info and the size
+remains unchanged.
 
-Remove the "ID" from the aer_agent_string[]. The error logs will
-look as follows (Sample from dummy error injected by aer-inject):
-
-  pcieport 0000:00:03.0: AER: Corrected error received: 0000:00:03.0
-  pcieport 0000:00:03.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver)
-  pcieport 0000:00:03.0:   device [1b36:000c] error status/mask=00000040/0000e000
-  pcieport 0000:00:03.0:    [ 6] BadTLP
-
-Signed-off-by: Naveen Naidu <naveennaidu479@gmail.com
 Signed-off-by: Naveen Naidu <naveennaidu479@gmail.com>
 ---
- drivers/pci/pcie/aer.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/pci/pci.h | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index 9784fdcf3006..241ff361b43c 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -516,10 +516,10 @@ static const char *aer_uncorrectable_error_string[] = {
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 1cce56c2aea0..9be7a966fda7 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -427,18 +427,16 @@ struct aer_err_info {
+ 	struct pci_dev *dev[AER_MAX_MULTI_ERR_DEVICES];
+ 	int error_dev_num;
+ 
+-	unsigned int id:16;
++	u16	id;
+ 
+ 	unsigned int severity:2;	/* 0:NONFATAL | 1:FATAL | 2:COR */
+-	unsigned int __pad1:5;
+ 	unsigned int multi_error_valid:1;
+ 
+ 	unsigned int first_error:5;
+-	unsigned int __pad2:2;
+ 	unsigned int tlp_header_valid:1;
+ 
+-	unsigned int status;		/* COR/UNCOR Error Status */
+-	unsigned int mask;		/* COR/UNCOR Error Mask */
++	u32 status;		/* COR/UNCOR Error Status */
++	u32 mask;		/* COR/UNCOR Error Mask */
+ 	struct aer_header_log_regs tlp;	/* TLP Header */
  };
  
- static const char *aer_agent_string[] = {
--	"Receiver ID",
--	"Requester ID",
--	"Completer ID",
--	"Transmitter ID"
-+	"Receiver",
-+	"Requester",
-+	"Completer",
-+	"Transmitter"
- };
- 
- #define aer_stats_dev_attr(name, stats_array, strings_array,		\
-@@ -703,7 +703,7 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
- 	const char *level;
- 
- 	if (!info->status) {
--		pci_err(dev, "PCIe Bus Error: severity=%s, type=Inaccessible, (Unregistered Agent ID)\n",
-+		pci_err(dev, "PCIe Bus Error: severity=%s, type=Inaccessible, (Unregistered Agent)\n",
- 			aer_error_severity_string[info->severity]);
- 		goto out;
- 	}
 -- 
 2.25.1
 
