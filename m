@@ -2,79 +2,76 @@ Return-Path: <SRS0=/PaX=OY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44F90C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 16:36:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ABC63C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 16:37:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B428461269
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 16:36:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B428461269
+	by mail.kernel.org (Postfix) with ESMTPS id ECC9161269
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Oct 2021 16:37:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ECC9161269
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HNRDv2lcSz3fFJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Oct 2021 03:36:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HNRFg44v8z3fgQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Oct 2021 03:37:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Iwuc5/Be;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=gcgnCZEB;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102c;
- helo=mail-pj1-x102c.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52b;
+ helo=mail-pg1-x52b.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=Iwuc5/Be; dkim-atps=neutral
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com
- [IPv6:2607:f8b0:4864:20::102c])
+ header.s=20210112 header.b=gcgnCZEB; dkim-atps=neutral
+Received: from mail-pg1-x52b.google.com (mail-pg1-x52b.google.com
+ [IPv6:2607:f8b0:4864:20::52b])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HNQVM0zlLz3cYf
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Oct 2021 03:03:06 +1100 (AEDT)
-Received: by mail-pj1-x102c.google.com with SMTP id
- d13-20020a17090ad3cd00b0019e746f7bd4so4286771pjw.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Oct 2021 09:03:06 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HNQgQ5HrKz3f4J
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Oct 2021 03:10:57 +1100 (AEDT)
+Received: by mail-pg1-x52b.google.com with SMTP id v11so4406823pgb.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Oct 2021 09:10:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=YDapZeq+Cy3m4K/ha0FiUOzYZwT+p/FpOvrkM+uM8lQ=;
- b=Iwuc5/BeQEGbDH9HFCxyQmkwx/v0mQd/vNNky/r0eKdQSWoFzgcR4n+X0nDvL8MBRv
- CIjt1+IriqKuBXtUXpgffvMClEU9Q35eLHLNiZqQ43J5pdDej5gbZIf53pHJ9No8IEpG
- 5bRL8Y0fs9foTn1QU3wunMaW6VpjcTWoTeG+Dd1RAaT9MtZWHIJ0WqgbyMKS7QGbgxlF
- ADHwsTp8MgUztZ5GucriEPyyfU1H9wbb8VECM12iN7Wyjss1j6P+xRoOJH8ExBmjk9wD
- vA/t8nydvb7HiDUR2iFDyMkyLEKwKc8LJ/5W0FLIljO6zxWuDYgYBdSAkU5jryzIIdx+
- UxjA==
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=0xHApedBwdkV8/VxE9KrIbt5h6CxgC8qD90Q7T0YrQU=;
+ b=gcgnCZEBPm0tWhwCGPQ6D+2q0ZRRwRUiWUH2loWtJ9oWk4PiNBIPUBY0G+5Uap4/YF
+ 8lMjbVGFw5gd5G1MaFAK4tWWkhoOAtHndLlus48/pAxDVV+EmMLUBVwWcgcYd4htDZLp
+ 5jgxJ2G0I8c6WDs7f6ZIMWgRMmo+6nyF6weoFWUnq8NqApkRt88fPEVbhNCVD8b0gbHq
+ TdMWH0UxNbojBCkCBNnT/Adj1SyTZDSajev5+jqzVsVoBYj/senIG+jKXc+HhCOQsfu4
+ GeOJIqvIM+i4rn0/5hYkwkFD8MgR6aNP6mUEWXWQ9X/E60lvnpKyjqywEWKMsQoEjU52
+ CzoQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=YDapZeq+Cy3m4K/ha0FiUOzYZwT+p/FpOvrkM+uM8lQ=;
- b=i48pXz3OlEIiYJyo7SHzBFhkAqFcgbEPaxVYCbrVI1DiREhOl9sgRIxZuLriX3Sbaz
- wrglQahzdSMc7qas735SD5vmrsBLUowwlE6ATv5bFJnKWAfJq4Hjl/0DGACwRDinITcE
- Xk5nSyLMYAAnte5hTO9uc+67U+eLa0T/RyZ6UoYgW1QMKFR5e86mEwOKDtN593m7XFl/
- CfTqt/mggEvGmpE8elZH8eBoRpn1giEglPgKh6GX5ppeqDAT34+d1RVFC+aGsw/3w5Ig
- vh5IqD0+wQcP9PyMZRVMaBdThFvetY5t6tz8Ar47GsDbsgCJAIxpJZlACEr8RCju4xZ2
- ++DA==
-X-Gm-Message-State: AOAM530yYlrtJ30RrqI0vNx/aHwVW1iozxCR7jZ+aHqxRto1L7i77AIA
- IZpmSy5E7bjflC0R573Oum8=
-X-Google-Smtp-Source: ABdhPJy/apREgMGxV3J8KWmaYig1di0dorNMqQ75JWm2ocp7vQ9l8cznQW55+rHuzKVb+Y7THN9n9A==
-X-Received: by 2002:a17:90a:8b8d:: with SMTP id
- z13mr33340553pjn.214.1633363384700; 
- Mon, 04 Oct 2021 09:03:04 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=0xHApedBwdkV8/VxE9KrIbt5h6CxgC8qD90Q7T0YrQU=;
+ b=3I3LN2CWU7CePH5fUZtTOuQ0OHTL8tkY7i3r8DWNBMpTfwUpX4jp1vMP6mv/LeXnsK
+ GsIbpuhAwbDaDMN1pMNy9ylnNauM74y5hHzT0t5ns9rJ01A/xbrit/Sxvj3/tYOhHD9q
+ ml4Iihxj6V/uzASogrypWkCxJbzrzdLz+I/bFWI11mo0aR5JYWO9C7lIcaWbAH39hVOy
+ N2I8PJO64TOcDDShQzSjXMvz/kjy8GkVussUL1O8Jz/XQxqAYmLqTFgEIKQ6K33eleIK
+ ykAusxf1N/Zer2ol04vKO49dFoJnf5pYPAamlLOZlTji7ASLk4XebQi45jQJGmDk4hQs
+ 0dgQ==
+X-Gm-Message-State: AOAM531y+yfccsrZsRvHzZR+Qrt5g0JnXN5k/+YWCt82fyaakgig7Ipq
+ MGetdYj7henaAueDmU++xIw=
+X-Google-Smtp-Source: ABdhPJz8tK92gwyEVbhnZzMCT+XRoRLZSkcjotOWWC7so6DzEC0NY985/G5gzlAj+IaJFiRc6qtoCQ==
+X-Received: by 2002:a65:6a0f:: with SMTP id m15mr11647983pgu.298.1633363855795; 
+ Mon, 04 Oct 2021 09:10:55 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com (115-64-153-41.tpgi.com.au. [115.64.153.41])
- by smtp.gmail.com with ESMTPSA id 130sm15557223pfz.77.2021.10.04.09.03.02
+ by smtp.gmail.com with ESMTPSA id n14sm15063968pgd.48.2021.10.04.09.10.53
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 04 Oct 2021 09:03:04 -0700 (PDT)
+ Mon, 04 Oct 2021 09:10:55 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: kvm-ppc@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 52/52] KVM: PPC: Book3S HV P9: Remove subcore HMI handling
-Date: Tue,  5 Oct 2021 02:00:49 +1000
-Message-Id: <20211004160049.1338837-53-npiggin@gmail.com>
+Subject: [RFC PATCH] KVM: PPC: Book3S HV P9: Move H_CEDE logic mostly to one
+ place
+Date: Tue,  5 Oct 2021 02:10:50 +1000
+Message-Id: <20211004161050.1341845-1-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20211004160049.1338837-1-npiggin@gmail.com>
-References: <20211004160049.1338837-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -93,171 +90,346 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On POWER9 and newer, rather than the complex HMI synchronisation and
-subcore state, have each thread un-apply the guest TB offset before
-calling into the early HMI handler.
+Move the vcpu->arch.ceded, hrtimer, and blocking handling to one place,
+except the xive escalation rearm case. The only special case is the
+xive handling, as it is to be done before the xive context is pulled.
 
-This allows the subcore state to be avoided, including subcore enter
-/ exit guest, which includes an expensive divide that shows up
-slightly in profiles.
+This means the P9 path does not run with ceded==1 or the hrtimer armed
+except in the kvmhv_handle_cede function, and hopefully cede handling is
+a bit more understandable.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/kvm_ppc.h    |  1 +
- arch/powerpc/kvm/book3s_hv.c          | 12 +++---
- arch/powerpc/kvm/book3s_hv_hmi.c      |  7 +++-
- arch/powerpc/kvm/book3s_hv_p9_entry.c |  2 +-
- arch/powerpc/kvm/book3s_hv_ras.c      | 54 +++++++++++++++++++++++++++
- 5 files changed, 67 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h    |   4 +-
+ arch/powerpc/kvm/book3s_hv.c          | 137 +++++++++++++-------------
+ arch/powerpc/kvm/book3s_hv_p9_entry.c |   3 +-
+ arch/powerpc/kvm/book3s_xive.c        |  26 ++---
+ 4 files changed, 88 insertions(+), 82 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 671fbd1a765e..70ffcb3c91bf 100644
+index 70ffcb3c91bf..e2e6cee9dddf 100644
 --- a/arch/powerpc/include/asm/kvm_ppc.h
 +++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -760,6 +760,7 @@ void kvmppc_realmode_machine_check(struct kvm_vcpu *vcpu);
- void kvmppc_subcore_enter_guest(void);
- void kvmppc_subcore_exit_guest(void);
- long kvmppc_realmode_hmi_handler(void);
-+long kvmppc_p9_realmode_hmi_handler(struct kvm_vcpu *vcpu);
- long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
-                     long pte_index, unsigned long pteh, unsigned long ptel);
- long kvmppc_h_remove(struct kvm_vcpu *vcpu, unsigned long flags,
+@@ -674,7 +674,7 @@ extern int kvmppc_xive_set_irq(struct kvm *kvm, int irq_source_id, u32 irq,
+ 			       int level, bool line_status);
+ extern void kvmppc_xive_push_vcpu(struct kvm_vcpu *vcpu);
+ extern void kvmppc_xive_pull_vcpu(struct kvm_vcpu *vcpu);
+-extern void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu);
++extern bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu);
+ 
+ static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
+ {
+@@ -712,7 +712,7 @@ static inline int kvmppc_xive_set_irq(struct kvm *kvm, int irq_source_id, u32 ir
+ 				      int level, bool line_status) { return -ENODEV; }
+ static inline void kvmppc_xive_push_vcpu(struct kvm_vcpu *vcpu) { }
+ static inline void kvmppc_xive_pull_vcpu(struct kvm_vcpu *vcpu) { }
+-static inline void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu) { }
++static inline bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu) { return false; }
+ 
+ static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
+ 	{ return 0; }
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 351018f617fb..449ac0a19ceb 100644
+index 36c54f483a02..230f10b67f98 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4014,8 +4014,6 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
+@@ -1019,6 +1019,8 @@ static long kvmppc_h_rpt_invalidate(struct kvm_vcpu *vcpu,
+ 	return H_SUCCESS;
+ }
  
- 	vcpu->arch.ceded = 0;
++static int kvmhv_handle_cede(struct kvm_vcpu *vcpu);
++
+ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm *kvm = vcpu->kvm;
+@@ -1080,7 +1082,9 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ 		break;
  
--	kvmppc_subcore_enter_guest();
+ 	case H_CEDE:
++		ret = kvmhv_handle_cede(vcpu);
+ 		break;
++
+ 	case H_PROD:
+ 		target = kvmppc_get_gpr(vcpu, 4);
+ 		tvcpu = kvmppc_find_vcpu(kvm, target);
+@@ -1292,25 +1296,6 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ 	return RESUME_GUEST;
+ }
+ 
+-/*
+- * Handle H_CEDE in the P9 path where we don't call the real-mode hcall
+- * handlers in book3s_hv_rmhandlers.S.
+- *
+- * This has to be done early, not in kvmppc_pseries_do_hcall(), so
+- * that the cede logic in kvmppc_run_single_vcpu() works properly.
+- */
+-static void kvmppc_cede(struct kvm_vcpu *vcpu)
+-{
+-	vcpu->arch.shregs.msr |= MSR_EE;
+-	vcpu->arch.ceded = 1;
+-	smp_mb();
+-	if (vcpu->arch.prodded) {
+-		vcpu->arch.prodded = 0;
+-		smp_mb();
+-		vcpu->arch.ceded = 0;
+-	}
+-}
+-
+ static int kvmppc_hcall_impl_hv(unsigned long cmd)
+ {
+ 	switch (cmd) {
+@@ -2971,7 +2956,7 @@ static int kvmppc_core_check_requests_hv(struct kvm_vcpu *vcpu)
+ 	return 1;
+ }
+ 
+-static void kvmppc_set_timer(struct kvm_vcpu *vcpu)
++static bool kvmppc_set_timer(struct kvm_vcpu *vcpu)
+ {
+ 	unsigned long dec_nsec, now;
+ 
+@@ -2980,11 +2965,12 @@ static void kvmppc_set_timer(struct kvm_vcpu *vcpu)
+ 		/* decrementer has already gone negative */
+ 		kvmppc_core_queue_dec(vcpu);
+ 		kvmppc_core_prepare_to_enter(vcpu);
+-		return;
++		return false;
+ 	}
+ 	dec_nsec = tb_to_ns(kvmppc_dec_expires_host_tb(vcpu) - now);
+ 	hrtimer_start(&vcpu->arch.dec_timer, dec_nsec, HRTIMER_MODE_REL);
+ 	vcpu->arch.timer_running = 1;
++	return true;
+ }
+ 
+ extern int __kvmppc_vcore_entry(void);
+@@ -4015,21 +4001,11 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	else if (*tb >= time_limit) /* nested time limit */
+ 		return BOOK3S_INTERRUPT_NESTED_HV_DECREMENTER;
+ 
+-	vcpu->arch.ceded = 0;
 -
  	vcpu_vpa_increment_dispatch(vcpu);
  
  	if (kvmhv_on_pseries()) {
-@@ -4068,8 +4066,6 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
+ 		trap = kvmhv_vcpu_entry_p9_nested(vcpu, time_limit, lpcr, tb);
  
- 	vcpu_vpa_increment_dispatch(vcpu);
- 
--	kvmppc_subcore_exit_guest();
+-		/* H_CEDE has to be handled now, not later */
+-		if (trap == BOOK3S_INTERRUPT_SYSCALL && !vcpu->arch.nested &&
+-		    kvmppc_get_gpr(vcpu, 3) == H_CEDE) {
+-			kvmppc_cede(vcpu);
+-			kvmppc_set_gpr(vcpu, 3, 0);
+-			trap = 0;
+-		}
 -
- 	return trap;
+ 	} else {
+ 		struct kvm *kvm = vcpu->kvm;
+ 
+@@ -4043,12 +4019,14 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
+ 		    !(vcpu->arch.shregs.msr & MSR_PR)) {
+ 			unsigned long req = kvmppc_get_gpr(vcpu, 3);
+ 
+-			/* H_CEDE has to be handled now, not later */
++			/* Have to rearm before pulling xive, may abort cede */
+ 			if (req == H_CEDE) {
+-				kvmppc_cede(vcpu);
+-				kvmppc_xive_rearm_escalation(vcpu); /* may un-cede */
+-				kvmppc_set_gpr(vcpu, 3, 0);
+-				trap = 0;
++				if (kvmppc_xive_rearm_escalation(vcpu)) {
++					vcpu->arch.shregs.msr |= MSR_EE;
++					vcpu->arch.prodded = 0;
++					kvmppc_set_gpr(vcpu, 3, H_SUCCESS);
++					trap = 0;
++				}
+ 
+ 			/* XICS hcalls must be handled before xive is pulled */
+ 			} else if (hcall_is_xics(req)) {
+@@ -4423,6 +4401,63 @@ static int kvmppc_run_vcpu(struct kvm_vcpu *vcpu)
+ 	return vcpu->arch.ret;
  }
  
-@@ -6069,9 +6065,11 @@ static int kvmppc_book3s_init_hv(void)
- 	if (r)
- 		return r;
- 
--	r = kvm_init_subcore_bitmap();
--	if (r)
--		return r;
-+	if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		r = kvm_init_subcore_bitmap();
-+		if (r)
-+			return r;
-+	}
- 
- 	/*
- 	 * We need a way of accessing the XICS interrupt controller,
-diff --git a/arch/powerpc/kvm/book3s_hv_hmi.c b/arch/powerpc/kvm/book3s_hv_hmi.c
-index 9af660476314..1ec50c69678b 100644
---- a/arch/powerpc/kvm/book3s_hv_hmi.c
-+++ b/arch/powerpc/kvm/book3s_hv_hmi.c
-@@ -20,10 +20,15 @@ void wait_for_subcore_guest_exit(void)
- 
- 	/*
- 	 * NULL bitmap pointer indicates that KVM module hasn't
--	 * been loaded yet and hence no guests are running.
-+	 * been loaded yet and hence no guests are running, or running
-+	 * on POWER9 or newer CPU.
-+	 *
- 	 * If no KVM is in use, no need to co-ordinate among threads
- 	 * as all of them will always be in host and no one is going
- 	 * to modify TB other than the opal hmi handler.
-+	 *
-+	 * POWER9 and newer don't need this synchronisation.
-+	 *
- 	 * Hence, just return from here.
- 	 */
- 	if (!local_paca->sibling_subcore_state)
-diff --git a/arch/powerpc/kvm/book3s_hv_p9_entry.c b/arch/powerpc/kvm/book3s_hv_p9_entry.c
-index fbecbdc42c26..86a222f97e8e 100644
---- a/arch/powerpc/kvm/book3s_hv_p9_entry.c
-+++ b/arch/powerpc/kvm/book3s_hv_p9_entry.c
-@@ -938,7 +938,7 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
- 		kvmppc_realmode_machine_check(vcpu);
- 
- 	} else if (unlikely(trap == BOOK3S_INTERRUPT_HMI)) {
--		kvmppc_realmode_hmi_handler();
-+		kvmppc_p9_realmode_hmi_handler(vcpu);
- 
- 	} else if (trap == BOOK3S_INTERRUPT_H_EMUL_ASSIST) {
- 		vcpu->arch.emul_inst = mfspr(SPRN_HEIR);
-diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
-index d4bca93b79f6..ccfd96965630 100644
---- a/arch/powerpc/kvm/book3s_hv_ras.c
-+++ b/arch/powerpc/kvm/book3s_hv_ras.c
-@@ -136,6 +136,60 @@ void kvmppc_realmode_machine_check(struct kvm_vcpu *vcpu)
- 	vcpu->arch.mce_evt = mce_evt;
- }
- 
-+
-+long kvmppc_p9_realmode_hmi_handler(struct kvm_vcpu *vcpu)
++/* H_CEDE for the P9 path, P7/8 is handled by realmode handlers */
++static int kvmhv_handle_cede(struct kvm_vcpu *vcpu)
 +{
 +	struct kvmppc_vcore *vc = vcpu->arch.vcore;
-+	long ret = 0;
++	struct kvm_run *run = vcpu->run;
 +
-+	/*
-+	 * Unapply and clear the offset first. That way, if the TB was not
-+	 * resynced then it will remain in host-offset, and if it was resynced
-+	 * then it is brought into host-offset. Then the tb offset is
-+	 * re-applied before continuing with the KVM exit.
-+	 *
-+	 * This way, we don't need to actually know whether not OPAL resynced
-+	 * the timebase or do any of the complicated dance that the P7/8
-+	 * path requires.
-+	 */
-+	if (vc->tb_offset_applied) {
-+		u64 new_tb = mftb() - vc->tb_offset_applied;
-+		mtspr(SPRN_TBU40, new_tb);
-+		if ((mftb() & 0xffffff) < (new_tb & 0xffffff)) {
-+			new_tb += 0x1000000;
-+			mtspr(SPRN_TBU40, new_tb);
++	kvmppc_set_gpr(vcpu, 3, H_SUCCESS);
++	vcpu->arch.trap = 0;
++	vcpu->arch.shregs.msr |= MSR_EE;
++
++	vcpu->arch.ceded = 1;
++	smp_mb();
++	if (vcpu->arch.prodded) {
++		vcpu->arch.prodded = 0;
++		smp_mb();
++		vcpu->arch.ceded = 0;
++		return RESUME_GUEST;
++	}
++
++	if (kvmppc_vcpu_woken(vcpu)) {
++		vcpu->arch.ceded = 0;
++		return RESUME_GUEST;
++	}
++
++	if (!kvmppc_set_timer(vcpu)) {
++		vcpu->arch.ceded = 0;
++		return RESUME_GUEST;
++	}
++
++	prepare_to_rcuwait(&vcpu->wait);
++	for (;;) {
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (signal_pending(current)) {
++			vcpu->stat.signal_exits++;
++			run->exit_reason = KVM_EXIT_INTR;
++			vcpu->arch.ret = -EINTR;
++			break;
 +		}
-+		vc->tb_offset_applied = 0;
++
++		if (kvmppc_vcpu_woken(vcpu) || !vcpu->arch.ceded)
++			break;
++
++		trace_kvmppc_vcore_blocked(vc, 0);
++		schedule();
++		trace_kvmppc_vcore_blocked(vc, 1);
++	}
++	finish_rcuwait(&vcpu->wait);
++
++	if (vcpu->arch.timer_running) {
++		hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
++		vcpu->arch.timer_running = 0;
 +	}
 +
-+	local_paca->hmi_irqs++;
-+
-+	if (hmi_handle_debugtrig(NULL) >= 0) {
-+		ret = 1;
-+		goto out;
-+	}
-+
-+	if (ppc_md.hmi_exception_early)
-+		ppc_md.hmi_exception_early(NULL);
-+
-+out:
-+	if (vc->tb_offset) {
-+		u64 new_tb = mftb() + vc->tb_offset;
-+		mtspr(SPRN_TBU40, new_tb);
-+		if ((mftb() & 0xffffff) < (new_tb & 0xffffff)) {
-+			new_tb += 0x1000000;
-+			mtspr(SPRN_TBU40, new_tb);
-+		}
-+		vc->tb_offset_applied = vc->tb_offset;
-+	}
-+
-+	return ret;
++	vcpu->arch.ceded = 0;
++	return RESUME_GUEST;
 +}
 +
-+/*
-+ * The following subcore HMI handling is all only for pre-POWER9 CPUs.
-+ */
-+
- /* Check if dynamic split is in force and return subcore size accordingly. */
- static inline int kvmppc_cur_subcore_size(void)
+ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+ 			  unsigned long lpcr)
  {
+@@ -4442,7 +4477,6 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	vcpu->arch.trap = 0;
+ 
+ 	vc = vcpu->arch.vcore;
+-	vcpu->arch.ceded = 0;
+ 	vcpu->arch.run_task = current;
+ 	vcpu->arch.state = KVMPPC_VCPU_RUNNABLE;
+ 	vcpu->arch.last_inst = KVM_INST_FETCH_FAILED;
+@@ -4488,11 +4522,6 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+ 		goto out;
+ 	}
+ 
+-	if (vcpu->arch.timer_running) {
+-		hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
+-		vcpu->arch.timer_running = 0;
+-	}
+-
+ 	tb = mftb();
+ 
+ 	vcpu->cpu = pcpu;
+@@ -4555,30 +4584,6 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	}
+ 	vcpu->arch.ret = r;
+ 
+-	if (is_kvmppc_resume_guest(r) && !kvmppc_vcpu_check_block(vcpu)) {
+-		kvmppc_set_timer(vcpu);
+-
+-		prepare_to_rcuwait(&vcpu->wait);
+-		for (;;) {
+-			set_current_state(TASK_INTERRUPTIBLE);
+-			if (signal_pending(current)) {
+-				vcpu->stat.signal_exits++;
+-				run->exit_reason = KVM_EXIT_INTR;
+-				vcpu->arch.ret = -EINTR;
+-				break;
+-			}
+-
+-			if (kvmppc_vcpu_check_block(vcpu))
+-				break;
+-
+-			trace_kvmppc_vcore_blocked(vc, 0);
+-			schedule();
+-			trace_kvmppc_vcore_blocked(vc, 1);
+-		}
+-		finish_rcuwait(&vcpu->wait);
+-	}
+-	vcpu->arch.ceded = 0;
+-
+  done:
+ 	trace_kvmppc_run_vcpu_exit(vcpu);
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_p9_entry.c b/arch/powerpc/kvm/book3s_hv_p9_entry.c
+index 86a222f97e8e..a1fdfcba608f 100644
+--- a/arch/powerpc/kvm/book3s_hv_p9_entry.c
++++ b/arch/powerpc/kvm/book3s_hv_p9_entry.c
+@@ -713,11 +713,10 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
+ 
+ 	WARN_ON_ONCE(vcpu->arch.shregs.msr & MSR_HV);
+ 	WARN_ON_ONCE(!(vcpu->arch.shregs.msr & MSR_ME));
++	WARN_ON_ONCE(vcpu->arch.ceded);
+ 
+ 	start_timing(vcpu, &vcpu->arch.rm_entry);
+ 
+-	vcpu->arch.ceded = 0;
+-
+ 	/* Save MSR for restore, with EE clear. */
+ 	msr = mfmsr() & ~MSR_EE;
+ 
+diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+index a18db9e16ea4..7d45764fd6a8 100644
+--- a/arch/powerpc/kvm/book3s_xive.c
++++ b/arch/powerpc/kvm/book3s_xive.c
+@@ -179,37 +179,39 @@ void kvmppc_xive_pull_vcpu(struct kvm_vcpu *vcpu)
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_xive_pull_vcpu);
+ 
+-void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu)
++/* Return true if H_CEDE is to be aborted */
++bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu)
+ {
+ 	void __iomem *esc_vaddr = (void __iomem *)vcpu->arch.xive_esc_vaddr;
+ 
+ 	if (!esc_vaddr)
+-		return;
++		return false;
+ 
+ 	/* we are using XIVE with single escalation */
+ 
+ 	if (vcpu->arch.xive_esc_on) {
+ 		/*
+-		 * If we still have a pending escalation, abort the cede,
+-		 * and we must set PQ to 10 rather than 00 so that we don't
+-		 * potentially end up with two entries for the escalation
+-		 * interrupt in the XIVE interrupt queue.  In that case
+-		 * we also don't want to set xive_esc_on to 1 here in
+-		 * case we race with xive_esc_irq().
+-		 */
+-		vcpu->arch.ceded = 0;
+-		/*
++		 * If we still have a pending escalation, return true to abort
++		 * the cede, and we must set PQ to 10 rather than 00 so that we
++		 * don't potentially end up with two entries for the escalation
++		 * interrupt in the XIVE interrupt queue.  In that case we also
++		 * don't want to set xive_esc_on to 1 here in case we race with
++		 * xive_esc_irq().
++		 *
+ 		 * The escalation interrupts are special as we don't EOI them.
+ 		 * There is no need to use the load-after-store ordering offset
+ 		 * to set PQ to 10 as we won't use StoreEOI.
+ 		 */
+ 		__raw_readq(esc_vaddr + XIVE_ESB_SET_PQ_10);
++		mb();
++		return true;
+ 	} else {
+ 		vcpu->arch.xive_esc_on = true;
+ 		mb();
+ 		__raw_readq(esc_vaddr + XIVE_ESB_SET_PQ_00);
++		mb();
++		return false;
+ 	}
+-	mb();
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_xive_rearm_escalation);
+ 
 -- 
 2.23.0
 
