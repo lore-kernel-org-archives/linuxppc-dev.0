@@ -2,19 +2,19 @@ Return-Path: <SRS0=wNeI=O2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A715C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 04:56:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AC60C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 04:56:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AE6FB61037
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 04:56:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AE6FB61037
+	by mail.kernel.org (Postfix) with ESMTPS id 8BC5B6113E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 04:56:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8BC5B6113E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HPMbp0DZwz305G
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 15:56:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HPMck0RKVz306M
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 15:56:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,29 +22,29 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HPMbK5LVwz2yKJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Oct 2021 15:55:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HPMcD4Xj8z2yKJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Oct 2021 15:56:28 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HPMbG03prz9sVL;
- Wed,  6 Oct 2021 06:55:38 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HPMc93jg4z9sVL;
+ Wed,  6 Oct 2021 06:56:25 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id tDM3FMpnLmzo; Wed,  6 Oct 2021 06:55:37 +0200 (CEST)
+ with ESMTP id tNlxHWF2q9jc; Wed,  6 Oct 2021 06:56:25 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HPMbF6MC4z9sVK;
- Wed,  6 Oct 2021 06:55:37 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HPMc92xF5z9sVK;
+ Wed,  6 Oct 2021 06:56:25 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C2DA78B765;
- Wed,  6 Oct 2021 06:55:37 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4D2568B765;
+ Wed,  6 Oct 2021 06:56:25 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id MB898tySZN-z; Wed,  6 Oct 2021 06:55:37 +0200 (CEST)
+ with ESMTP id SBhqc5Gm290q; Wed,  6 Oct 2021 06:56:25 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.204.229])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F202F8B763;
- Wed,  6 Oct 2021 06:55:36 +0200 (CEST)
-Subject: Re: [PATCH v2 04/10] powerpc/bpf: Fix BPF_SUB when imm == 0x80000000
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 813A28B763;
+ Wed,  6 Oct 2021 06:56:24 +0200 (CEST)
+Subject: Re: [PATCH v2 07/10] powerpc/bpf ppc32: Fix ALU32 BPF_ARSH operation
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
  Jordan Niethe <jniethe5@gmail.com>, Daniel Borkmann <daniel@iogearbox.net>,
@@ -52,14 +52,14 @@ To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
  Johan Almbladh <johan.almbladh@anyfinetworks.com>,
  Song Liu <songliubraving@fb.com>
 References: <cover.1633464148.git.naveen.n.rao@linux.vnet.ibm.com>
- <fc4b1276eb10761fd7ce0814c8dd089da2815251.1633464148.git.naveen.n.rao@linux.vnet.ibm.com>
+ <6d24c1f9e79b6f61f5135eaf2ea1e8bcd4dac87b.1633464148.git.naveen.n.rao@linux.vnet.ibm.com>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <90494652-7551-7ecb-e44d-a2adbb6a1afe@csgroup.eu>
-Date: Wed, 6 Oct 2021 06:55:35 +0200
+Message-ID: <4c9ac9a0-369f-8df0-c753-8104b8cc9c31@csgroup.eu>
+Date: Wed, 6 Oct 2021 06:56:23 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.11.0
 MIME-Version: 1.0
-In-Reply-To: <fc4b1276eb10761fd7ce0814c8dd089da2815251.1633464148.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <6d24c1f9e79b6f61f5135eaf2ea1e8bcd4dac87b.1633464148.git.naveen.n.rao@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr-FR
 Content-Transfer-Encoding: 8bit
@@ -82,64 +82,28 @@ Sender: "Linuxppc-dev"
 
 
 Le 05/10/2021 à 22:25, Naveen N. Rao a écrit :
-> We aren't handling subtraction involving an immediate value of
-> 0x80000000 properly. Fix the same.
+> Correct the destination register used for ALU32 BPF_ARSH operation.
 > 
-> Fixes: 156d0e290e969c ("powerpc/ebpf/jit: Implement JIT compiler for extended BPF")
+> Fixes: 51c66ad849a703 ("powerpc/bpf: Implement extended BPF on PPC32")
 > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
-> Changelog:
-> - Split up BPF_ADD and BPF_SUB cases per Christophe's comments
-> 
->   arch/powerpc/net/bpf_jit_comp64.c | 27 +++++++++++++++++----------
->   1 file changed, 17 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-> index d67f6d62e2e1ff..6626e6c17d4ed2 100644
-> --- a/arch/powerpc/net/bpf_jit_comp64.c
-> +++ b/arch/powerpc/net/bpf_jit_comp64.c
-> @@ -330,18 +330,25 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
->   			EMIT(PPC_RAW_SUB(dst_reg, dst_reg, src_reg));
->   			goto bpf_alu32_trunc;
->   		case BPF_ALU | BPF_ADD | BPF_K: /* (u32) dst += (u32) imm */
-> -		case BPF_ALU | BPF_SUB | BPF_K: /* (u32) dst -= (u32) imm */
->   		case BPF_ALU64 | BPF_ADD | BPF_K: /* dst += imm */
-> +			if (!imm) {
-> +				goto bpf_alu32_trunc;
-> +			} else if (imm >= -32768 && imm < 32768) {
-> +				EMIT(PPC_RAW_ADDI(dst_reg, dst_reg, IMM_L(imm)));
-> +			} else {
-> +				PPC_LI32(b2p[TMP_REG_1], imm);
-> +				EMIT(PPC_RAW_ADD(dst_reg, dst_reg, b2p[TMP_REG_1]));
-> +			}
-> +			goto bpf_alu32_trunc;
-> +		case BPF_ALU | BPF_SUB | BPF_K: /* (u32) dst -= (u32) imm */
->   		case BPF_ALU64 | BPF_SUB | BPF_K: /* dst -= imm */
-> -			if (BPF_OP(code) == BPF_SUB)
-> -				imm = -imm;
-> -			if (imm) {
-> -				if (imm >= -32768 && imm < 32768)
-> -					EMIT(PPC_RAW_ADDI(dst_reg, dst_reg, IMM_L(imm)));
-> -				else {
-> -					PPC_LI32(b2p[TMP_REG_1], imm);
-> -					EMIT(PPC_RAW_ADD(dst_reg, dst_reg, b2p[TMP_REG_1]));
-> -				}
-> +			if (!imm) {
-> +				goto bpf_alu32_trunc;
-> +			} else if (imm > -32768 && imm < 32768) {
-
-Why do you exclude imm == 32768 ?
-
 
 Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-
-
-> +				EMIT(PPC_RAW_ADDI(dst_reg, dst_reg, IMM_L(-imm)));
-> +			} else {
-> +				PPC_LI32(b2p[TMP_REG_1], imm);
-> +				EMIT(PPC_RAW_SUB(dst_reg, dst_reg, b2p[TMP_REG_1]));
->   			}
->   			goto bpf_alu32_trunc;
->   		case BPF_ALU | BPF_MUL | BPF_X: /* (u32) dst *= (u32) src */
+> ---
+>   arch/powerpc/net/bpf_jit_comp32.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
+> index a74d52204f8da2..519ecb9ab67266 100644
+> --- a/arch/powerpc/net/bpf_jit_comp32.c
+> +++ b/arch/powerpc/net/bpf_jit_comp32.c
+> @@ -625,7 +625,7 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
+>   			EMIT(PPC_RAW_LI(dst_reg_h, 0));
+>   			break;
+>   		case BPF_ALU | BPF_ARSH | BPF_X: /* (s32) dst >>= src */
+> -			EMIT(PPC_RAW_SRAW(dst_reg_h, dst_reg, src_reg));
+> +			EMIT(PPC_RAW_SRAW(dst_reg, dst_reg, src_reg));
+>   			break;
+>   		case BPF_ALU64 | BPF_ARSH | BPF_X: /* (s64) dst >>= src */
+>   			bpf_set_seen_register(ctx, tmp_reg);
 > 
