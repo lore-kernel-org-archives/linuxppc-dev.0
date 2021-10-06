@@ -2,66 +2,65 @@ Return-Path: <SRS0=wNeI=O2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14F6BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 06:08:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6684AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 06:28:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7150B61037
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 06:08:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7150B61037
+	by mail.kernel.org (Postfix) with ESMTPS id B136D60EC0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 06:28:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B136D60EC0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HPPCG6dknz3bWq
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 17:08:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HPPff1dJWz3029
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 17:28:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=178.33.255.19; helo=2.mo548.mail-out.ovh.net;
+ smtp.mailfrom=kaod.org (client-ip=46.105.48.137; helo=9.mo548.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 297 seconds by postgrey-1.36 at boromir;
- Wed, 06 Oct 2021 17:07:56 AEDT
-Received: from 2.mo548.mail-out.ovh.net (2.mo548.mail-out.ovh.net
- [178.33.255.19])
+X-Greylist: delayed 1642 seconds by postgrey-1.36 at boromir;
+ Wed, 06 Oct 2021 17:28:11 AEDT
+Received: from 9.mo548.mail-out.ovh.net (9.mo548.mail-out.ovh.net
+ [46.105.48.137])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HPPBh1XTYz2yHT
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Oct 2021 17:07:55 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.138.238])
- by mo548.mail-out.ovh.net (Postfix) with ESMTPS id 5EE0220B14;
- Wed,  6 Oct 2021 06:00:40 +0000 (UTC)
-Received: from kaod.org (37.59.142.100) by DAG4EX1.mxp5.local (172.16.2.31)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HPPf31q0Yz2yPh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Oct 2021 17:28:09 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.1.235])
+ by mo548.mail-out.ovh.net (Postfix) with ESMTPS id 6048320A88;
+ Wed,  6 Oct 2021 06:02:54 +0000 (UTC)
+Received: from kaod.org (37.59.142.95) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Wed, 6 Oct
- 2021 08:00:40 +0200
+ 2021 08:02:53 +0200
 Authentication-Results: garm.ovh; auth=pass
- (GARM-100R003ae6c2257-eca0-4216-9115-56ba6af917a8,
+ (GARM-95G001fa6f42e6-782a-4766-933d-98acbaf81629,
  5A4A34E2598F7A0FA378A7207C32B8AA1DF96388) smtp.auth=clg@kaod.org
 X-OVh-ClientIp: 82.64.250.170
-Message-ID: <2ac16748-11a6-59d4-4462-ecdf53a3d0af@kaod.org>
-Date: Wed, 6 Oct 2021 08:00:40 +0200
+Message-ID: <ca9ad223-81e1-00af-b433-8ab57021e6da@kaod.org>
+Date: Wed, 6 Oct 2021 08:02:53 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.1.0
-Subject: Re: [RFC 5/5] ipmi:bt-bmc: Add Microwatt
+Subject: Re: [RFC 1/5] ipmi:bt-bmc: Separate out ASPEED specific bits
 Content-Language: en-US
 To: Anton Blanchard <anton@ozlabs.org>, <alistair@popple.id.au>,
  <joel@jms.id.au>, <andrew@aj.id.au>, <mikey@neuling.org>,
  <jk@codeconstruct.com.au>
 References: <20211006021205.2579057-1-anton@ozlabs.org>
- <20211006021205.2579057-5-anton@ozlabs.org>
 From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-In-Reply-To: <20211006021205.2579057-5-anton@ozlabs.org>
+In-Reply-To: <20211006021205.2579057-1-anton@ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [37.59.142.100]
-X-ClientProxiedBy: DAG1EX2.mxp5.local (172.16.2.2) To DAG4EX1.mxp5.local
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.95]
+X-ClientProxiedBy: DAG4EX2.mxp5.local (172.16.2.32) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: 0fc0b99d-7c16-400e-bae1-423feb95e592
-X-Ovh-Tracer-Id: 4289678645680573289
+X-Ovh-Tracer-GUID: 0a516c31-0cfd-4c73-98f8-b3be28ee1393
+X-Ovh-Tracer-Id: 4327396295824083817
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrudelhedgleelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepkfffgggfuffvfhfhjggtgfhisehtjeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepkeefiedukefhueejteffvedthffhkeehhefhtdejkeefheeifeejvdfgfffgieefnecuffhomhgrihhnpehgihhthhhusgdrtghomhenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddttdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrudelhedgleelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepkfffgggfuffvfhfhjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepieegvdffkeegfeetuddttddtveduiefhgeduffekiedtkeekteekhfffleevleelnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrdelheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,158 +78,102 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 10/6/21 04:12, Anton Blanchard wrote:
-> This adds the Microwatt specific bits, including interrupt support.
+> Most of the IPMI BT BMC driver is architecture agnostic - it deals with
+> architected registers and behaviour in the IPMI specification.
+> 
+> Separate out the few ASPEED specific bits into their own functions
+> so we can use this driver on other architectures.
 > 
 > Signed-off-by: Anton Blanchard <anton@ozlabs.org>
+
+Reviewed-by: Cédric Le Goater <clg@kaod.org>
+
+Thanks,
+
+C.
+
 > ---
->   .../devicetree/bindings/ipmi/ibt-bmc.txt      |  1 +
->   drivers/char/ipmi/Kconfig                     |  8 ++-
->   drivers/char/ipmi/bt-bmc.c                    | 69 +++++++++++++++++++
->   3 files changed, 75 insertions(+), 3 deletions(-)
+>   drivers/char/ipmi/bt-bmc.c | 26 ++++++++++++++++----------
+>   1 file changed, 16 insertions(+), 10 deletions(-)
 > 
-> diff --git a/Documentation/devicetree/bindings/ipmi/ibt-bmc.txt b/Documentation/devicetree/bindings/ipmi/ibt-bmc.txt
-> index 78ee716a950e..1b661daf0193 100644
-> --- a/Documentation/devicetree/bindings/ipmi/ibt-bmc.txt
-> +++ b/Documentation/devicetree/bindings/ipmi/ibt-bmc.txt
-> @@ -9,6 +9,7 @@ Required properties:
->   - compatible : should be one of
->   	"aspeed,ast2400-ibt-bmc"
->   	"aspeed,ast2500-ibt-bmc"
-> +	"ibm,microwatt-ibt-bmc"
->   - reg: physical address and size of the registers
->   
->   Optional properties:
-> diff --git a/drivers/char/ipmi/Kconfig b/drivers/char/ipmi/Kconfig
-> index 8b2f0f675e5f..079302f4eef2 100644
-> --- a/drivers/char/ipmi/Kconfig
-> +++ b/drivers/char/ipmi/Kconfig
-> @@ -152,13 +152,15 @@ config IPMI_KCS_BMC_SERIO
->   	  called kcs_bmc_serio.
->   
->   config BT_IPMI_BMC
-> -	depends on ARCH_ASPEED || COMPILE_TEST
-> +	depends on ARCH_ASPEED || PPC_MICROWATT || COMPILE_TEST
->   	depends on REGMAP && REGMAP_MMIO && MFD_SYSCON
->   	tristate "BT IPMI bmc driver"
->   	help
->   	  Provides a driver for the BT (Block Transfer) IPMI interface
-> -	  found on Aspeed SOCs (AST2400 and AST2500). The driver
-> -	  implements the BMC side of the BT interface.
-> +	  found on Aspeed SOCs (AST2400 and AST2500) as well as the OpenPOWER
-> +	  LPC peripheral macro at
-> +	  <https://github.com/OpenPOWERFoundation/lpcperipheral>
-> +	  The driver implements the BMC side of the BT interface.
->   
->   config IPMB_DEVICE_INTERFACE
->   	tristate 'IPMB Interface handler'
 > diff --git a/drivers/char/ipmi/bt-bmc.c b/drivers/char/ipmi/bt-bmc.c
-> index b48e04405ac4..24327b57c60b 100644
+> index 6e3d247b55d1..f85fafc96ef6 100644
 > --- a/drivers/char/ipmi/bt-bmc.c
 > +++ b/drivers/char/ipmi/bt-bmc.c
-> @@ -41,6 +41,11 @@
+> @@ -39,6 +39,7 @@
+>   #define   BT_CR2_IRQ_H2B	0x01
 >   #define   BT_CR2_IRQ_HBUSY	0x40
->   #define ASPEED_BT_CR3	0xc
->   
-> +#define MICROWATT_IRQ_MASK	0x0
-> +#define MICROWATT_IRQ_STATUS	0x4
-> +#define   IRQ_HOST_TO_BMC_ATTN	0x1
-> +#define   IRQ_HOST_NOT_BUSY	0x2
+>   #define BT_CR3		0xc
 > +
 >   #define BT_CTRL		0x10
 >   #define   BT_CTRL_B_BUSY		0x80
 >   #define   BT_CTRL_H_BUSY		0x40
-> @@ -395,6 +400,27 @@ static irqreturn_t aspeed_bt_bmc_irq(int irq, void *arg)
+> @@ -372,7 +373,7 @@ static void poll_timer(struct timer_list *t)
+>   	add_timer(&bt_bmc->poll_timer);
+>   }
+>   
+> -static irqreturn_t bt_bmc_irq(int irq, void *arg)
+> +static irqreturn_t aspeed_bt_bmc_irq(int irq, void *arg)
+>   {
+>   	struct bt_bmc *bt_bmc = arg;
+>   	u32 reg;
+> @@ -393,7 +394,7 @@ static irqreturn_t bt_bmc_irq(int irq, void *arg)
 >   	return IRQ_HANDLED;
 >   }
 >   
-> +static irqreturn_t microwatt_bt_bmc_irq(int irq, void *arg)
-> +{
-> +	struct bt_bmc *bt_bmc = arg;
-> +	u32 reg;
-> +	int rc;
-> +
-> +	rc = regmap_read(bt_bmc->map, bt_bmc->offset + MICROWATT_IRQ_STATUS, &reg);
-> +	if (rc)
-> +		return IRQ_NONE;
-> +
-> +	/* Interrupt wasn't something we knew about */
-> +	if (!(reg & (IRQ_HOST_TO_BMC_ATTN | IRQ_HOST_NOT_BUSY)))
-> +		return IRQ_NONE;
-> +
-> +	/* ack all pending IRQs */
-> +	regmap_write(bt_bmc->map, bt_bmc->offset + MICROWATT_IRQ_STATUS, 0);
-> +
-> +	wake_up(&bt_bmc->queue);
-> +	return IRQ_HANDLED;
-> +}
-> +
->   static int aspeed_bt_bmc_config_irq(struct bt_bmc *bt_bmc,
+> -static int bt_bmc_config_irq(struct bt_bmc *bt_bmc,
+> +static int aspeed_bt_bmc_config_irq(struct bt_bmc *bt_bmc,
 >   			     struct platform_device *pdev)
 >   {
-> @@ -446,6 +472,48 @@ static const struct bt_bmc_ops aspeed_bt_bmc_ops = {
->   	.enable_bt = aspeed_enable_bt,
->   };
+>   	struct device *dev = &pdev->dev;
+> @@ -403,7 +404,7 @@ static int bt_bmc_config_irq(struct bt_bmc *bt_bmc,
+>   	if (bt_bmc->irq < 0)
+>   		return bt_bmc->irq;
 >   
-> +static int microwatt_bt_bmc_config_irq(struct bt_bmc *bt_bmc,
-> +			     struct platform_device *pdev)
+> -	rc = devm_request_irq(dev, bt_bmc->irq, bt_bmc_irq, IRQF_SHARED,
+> +	rc = devm_request_irq(dev, bt_bmc->irq, aspeed_bt_bmc_irq, IRQF_SHARED,
+>   			      DEVICE_NAME, bt_bmc);
+>   	if (rc < 0) {
+>   		dev_warn(dev, "Unable to request IRQ %d\n", bt_bmc->irq);
+> @@ -424,6 +425,16 @@ static int bt_bmc_config_irq(struct bt_bmc *bt_bmc,
+>   	return rc;
+>   }
+>   
+> +static void aspeed_enable_bt(struct bt_bmc *bt_bmc)
 > +{
-> +	struct device *dev = &pdev->dev;
-> +	int rc;
-> +
-> +	bt_bmc->irq = platform_get_irq_optional(pdev, 0);
-> +	if (bt_bmc->irq < 0)
-> +		return bt_bmc->irq;
-> +
-> +	rc = devm_request_irq(dev, bt_bmc->irq, microwatt_bt_bmc_irq, IRQF_SHARED,
-> +			      DEVICE_NAME, bt_bmc);
-> +	if (rc < 0) {
-> +		dev_warn(dev, "Unable to request IRQ %d\n", bt_bmc->irq);
-> +		bt_bmc->irq = rc;
-> +		return rc;
-> +	}
-> +
-> +	/*
-> +	 * Configure the hardware to give us an interrupt whenever the H2B
-> +	 * bit is set or the HBUSY bit is cleared.
-> +	 *
-> +	 * H2B will be asserted when the bmc has data for us; HBUSY
-> +	 * will be cleared (along with B2H) when we can write the next
-> +	 * message to the BT buffer
-> +	 */
-> +	rc = regmap_update_bits(bt_bmc->map, bt_bmc->offset + MICROWATT_IRQ_MASK,
-> +				(IRQ_HOST_TO_BMC_ATTN | IRQ_HOST_NOT_BUSY),
-> +				(IRQ_HOST_TO_BMC_ATTN | IRQ_HOST_NOT_BUSY));
-
-This is the only difference. May be we could introduce a ->config_irq_hw()
-handler to keep a larger part common. No big deal.
-
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
-
-C.
-
-
-> +	return rc;
+> +	regmap_write(bt_bmc->map, bt_bmc->offset + BT_CR0,
+> +		     (BT_IO_BASE << BT_CR0_IO_BASE) |
+> +		     (BT_IRQ << BT_CR0_IRQ) |
+> +		     BT_CR0_EN_CLR_SLV_RDP |
+> +		     BT_CR0_EN_CLR_SLV_WRP |
+> +		     BT_CR0_ENABLE_IBT);
 > +}
-> +
-> +static void microwatt_enable_bt(struct bt_bmc *bt_bmc)
-> +{
-> +}
-> +
-> +static const struct bt_bmc_ops microwatt_bt_bmc_ops = {
-> +	.config_irq = microwatt_bt_bmc_config_irq,
-> +	.enable_bt = microwatt_enable_bt,
-> +};
 > +
 >   static int bt_bmc_probe(struct platform_device *pdev)
 >   {
 >   	struct bt_bmc *bt_bmc;
-> @@ -530,6 +598,7 @@ static int bt_bmc_remove(struct platform_device *pdev)
->   static const struct of_device_id bt_bmc_match[] = {
->   	{ .compatible = "aspeed,ast2400-ibt-bmc", .data = &aspeed_bt_bmc_ops },
->   	{ .compatible = "aspeed,ast2500-ibt-bmc", .data = &aspeed_bt_bmc_ops },
-> +	{ .compatible = "ibm,microwatt-ibt-bmc", .data = &microwatt_bt_bmc_ops },
->   	{ },
->   };
+> @@ -472,7 +483,7 @@ static int bt_bmc_probe(struct platform_device *pdev)
+>   		return rc;
+>   	}
+>   
+> -	bt_bmc_config_irq(bt_bmc, pdev);
+> +	aspeed_bt_bmc_config_irq(bt_bmc, pdev);
+>   
+>   	if (bt_bmc->irq >= 0) {
+>   		dev_info(dev, "Using IRQ %d\n", bt_bmc->irq);
+> @@ -483,12 +494,7 @@ static int bt_bmc_probe(struct platform_device *pdev)
+>   		add_timer(&bt_bmc->poll_timer);
+>   	}
+>   
+> -	regmap_write(bt_bmc->map, bt_bmc->offset + BT_CR0,
+> -		     (BT_IO_BASE << BT_CR0_IO_BASE) |
+> -		     (BT_IRQ << BT_CR0_IRQ) |
+> -		     BT_CR0_EN_CLR_SLV_RDP |
+> -		     BT_CR0_EN_CLR_SLV_WRP |
+> -		     BT_CR0_ENABLE_IBT);
+> +	aspeed_enable_bt(bt_bmc);
+>   
+>   	clr_b_busy(bt_bmc);
 >   
 > 
 
