@@ -2,51 +2,53 @@ Return-Path: <SRS0=wNeI=O2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82B81C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 02:12:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ADD7C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 02:13:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F61C6113A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 02:12:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9F61C6113A
+	by mail.kernel.org (Postfix) with ESMTPS id 4995F611C6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 02:13:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4995F611C6
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HPHzQ2TRfz306h
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 13:12:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HPJ065qgdz304m
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 13:13:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=hv2oKxRG;
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=G/yurCq3;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
  [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HPHyl1pK4z2xr4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Oct 2021 13:12:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HPHym1XbTz2xr4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Oct 2021 13:12:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=hv2oKxRG; dkim-atps=neutral
+ header.s=201707 header.b=G/yurCq3; dkim-atps=neutral
 Received: by gandalf.ozlabs.org (Postfix, from userid 1010)
- id 4HPHyl0jzWz4xbP; Wed,  6 Oct 2021 13:12:15 +1100 (AEDT)
+ id 4HPHym15XQz4xbV; Wed,  6 Oct 2021 13:12:16 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
- s=201707; t=1633486335;
- bh=Y8EIfZGeynOigqULIjhBSM4nEZDVsGoKGIQz5Y8SVYU=;
- h=From:To:Cc:Subject:Date:From;
- b=hv2oKxRGbo22pkulj9Lc7eJNhkvhc+j3abZBWZ8nA1SmNlkA8Q8dTz8LFW7gM0dOB
- Bt4kK382P4pzBkFAOhGs0la2MftWlMNce6E3wwkmUZ+6oOl4LiuuMHkA0wgj8eD6EK
- gytB4UjQQ3sQYzaU7H0ViEFZVCgdfqeI3QEfocSh4MC6I8Gsz36T9YO6uKEOs0ww7Z
- AbyJ62g09meuFxzmmNiDJHu0KToeVZ1EjULRJrZDG3U4wyFRLFb48q1r5ECmGvqljl
- 7cVZKzct9JlwmLOIpa0xdi8RE359sSk7vlbmHoxDW1/mjInkM5R8KSvEAtqU4Ncpdo
- X2kU6BbtMp3Rw==
+ s=201707; t=1633486336;
+ bh=eVFqeu6gtrpCX/MVgIBNrUK2StKPGHzmh/wNXLS7aEI=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=G/yurCq3QDxMXPIVgIo7NvHfR8yJHsfkMw9vNMgchjnA2lYJkQBMDg9OTmQqGcGDc
+ yCgkZBl25i3y2KpQT7RFpl+wQsPV9Lr50EO8JiUUG8UDmJiwNBgzWYIlNUGUF/LJ2h
+ 4FhwkKaE4PpKqSlAmFTKz+iT44zWL1Z3iloBM8kL8dnOikXx/xmTIBVdJKfXL1KK7S
+ nvv+3Cu9IdbPJZmBil4IT7CRsIwVbnzPO4dhuCp7FyxWHqcU0BuwoJ1OtGhN0y7JG3
+ wevolnfQKjiBOW9ofgVxBSvmTmzRzgK4lRzV0eJjDKOQBeUMmzK5jZs7HbfVOOZnxF
+ 5DaboHs3dpbDQ==
 From: Anton Blanchard <anton@ozlabs.org>
 To: alistair@popple.id.au, joel@jms.id.au, andrew@aj.id.au, clg@kaod.org,
  mikey@neuling.org, jk@codeconstruct.com.au
-Subject: [RFC 1/5] ipmi:bt-bmc: Separate out ASPEED specific bits
-Date: Wed,  6 Oct 2021 13:12:01 +1100
-Message-Id: <20211006021205.2579057-1-anton@ozlabs.org>
+Subject: [RFC 2/5] ipmi:bt-bmc: Prefix ASPEED specific registers with ASPEED_
+Date: Wed,  6 Oct 2021 13:12:02 +1100
+Message-Id: <20211006021205.2579057-2-anton@ozlabs.org>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20211006021205.2579057-1-anton@ozlabs.org>
+References: <20211006021205.2579057-1-anton@ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -65,96 +67,75 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Most of the IPMI BT BMC driver is architecture agnostic - it deals with
-architected registers and behaviour in the IPMI specification.
-
-Separate out the few ASPEED specific bits into their own functions
-so we can use this driver on other architectures.
-
 Signed-off-by: Anton Blanchard <anton@ozlabs.org>
 ---
- drivers/char/ipmi/bt-bmc.c | 26 ++++++++++++++++----------
- 1 file changed, 16 insertions(+), 10 deletions(-)
+ drivers/char/ipmi/bt-bmc.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/char/ipmi/bt-bmc.c b/drivers/char/ipmi/bt-bmc.c
-index 6e3d247b55d1..f85fafc96ef6 100644
+index f85fafc96ef6..2b0fe1255026 100644
 --- a/drivers/char/ipmi/bt-bmc.c
 +++ b/drivers/char/ipmi/bt-bmc.c
-@@ -39,6 +39,7 @@
+@@ -26,19 +26,19 @@
+ #define BT_IO_BASE	0xe4
+ #define BT_IRQ		10
+ 
+-#define BT_CR0		0x0
++#define ASPEED_BT_CR0	0x0
+ #define   BT_CR0_IO_BASE		16
+ #define   BT_CR0_IRQ			12
+ #define   BT_CR0_EN_CLR_SLV_RDP		0x8
+ #define   BT_CR0_EN_CLR_SLV_WRP		0x4
+ #define   BT_CR0_ENABLE_IBT		0x1
+-#define BT_CR1		0x4
++#define ASPEED_BT_CR1	0x4
+ #define   BT_CR1_IRQ_H2B	0x01
+ #define   BT_CR1_IRQ_HBUSY	0x40
+-#define BT_CR2		0x8
++#define ASPEED_BT_CR2	0x8
  #define   BT_CR2_IRQ_H2B	0x01
  #define   BT_CR2_IRQ_HBUSY	0x40
- #define BT_CR3		0xc
-+
+-#define BT_CR3		0xc
++#define ASPEED_BT_CR3	0xc
+ 
  #define BT_CTRL		0x10
  #define   BT_CTRL_B_BUSY		0x80
- #define   BT_CTRL_H_BUSY		0x40
-@@ -372,7 +373,7 @@ static void poll_timer(struct timer_list *t)
- 	add_timer(&bt_bmc->poll_timer);
- }
- 
--static irqreturn_t bt_bmc_irq(int irq, void *arg)
-+static irqreturn_t aspeed_bt_bmc_irq(int irq, void *arg)
- {
- 	struct bt_bmc *bt_bmc = arg;
+@@ -379,7 +379,7 @@ static irqreturn_t aspeed_bt_bmc_irq(int irq, void *arg)
  	u32 reg;
-@@ -393,7 +394,7 @@ static irqreturn_t bt_bmc_irq(int irq, void *arg)
+ 	int rc;
+ 
+-	rc = regmap_read(bt_bmc->map, bt_bmc->offset + BT_CR2, &reg);
++	rc = regmap_read(bt_bmc->map, bt_bmc->offset + ASPEED_BT_CR2, &reg);
+ 	if (rc)
+ 		return IRQ_NONE;
+ 
+@@ -388,7 +388,7 @@ static irqreturn_t aspeed_bt_bmc_irq(int irq, void *arg)
+ 		return IRQ_NONE;
+ 
+ 	/* ack pending IRQs */
+-	regmap_write(bt_bmc->map, bt_bmc->offset + BT_CR2, reg);
++	regmap_write(bt_bmc->map, bt_bmc->offset + ASPEED_BT_CR2, reg);
+ 
+ 	wake_up(&bt_bmc->queue);
  	return IRQ_HANDLED;
- }
+@@ -418,7 +418,7 @@ static int aspeed_bt_bmc_config_irq(struct bt_bmc *bt_bmc,
+ 	 * will be cleared (along with B2H) when we can write the next
+ 	 * message to the BT buffer
+ 	 */
+-	rc = regmap_update_bits(bt_bmc->map, bt_bmc->offset + BT_CR1,
++	rc = regmap_update_bits(bt_bmc->map, bt_bmc->offset + ASPEED_BT_CR1,
+ 				(BT_CR1_IRQ_H2B | BT_CR1_IRQ_HBUSY),
+ 				(BT_CR1_IRQ_H2B | BT_CR1_IRQ_HBUSY));
  
--static int bt_bmc_config_irq(struct bt_bmc *bt_bmc,
-+static int aspeed_bt_bmc_config_irq(struct bt_bmc *bt_bmc,
- 			     struct platform_device *pdev)
+@@ -427,7 +427,7 @@ static int aspeed_bt_bmc_config_irq(struct bt_bmc *bt_bmc,
+ 
+ static void aspeed_enable_bt(struct bt_bmc *bt_bmc)
  {
- 	struct device *dev = &pdev->dev;
-@@ -403,7 +404,7 @@ static int bt_bmc_config_irq(struct bt_bmc *bt_bmc,
- 	if (bt_bmc->irq < 0)
- 		return bt_bmc->irq;
- 
--	rc = devm_request_irq(dev, bt_bmc->irq, bt_bmc_irq, IRQF_SHARED,
-+	rc = devm_request_irq(dev, bt_bmc->irq, aspeed_bt_bmc_irq, IRQF_SHARED,
- 			      DEVICE_NAME, bt_bmc);
- 	if (rc < 0) {
- 		dev_warn(dev, "Unable to request IRQ %d\n", bt_bmc->irq);
-@@ -424,6 +425,16 @@ static int bt_bmc_config_irq(struct bt_bmc *bt_bmc,
- 	return rc;
- }
- 
-+static void aspeed_enable_bt(struct bt_bmc *bt_bmc)
-+{
-+	regmap_write(bt_bmc->map, bt_bmc->offset + BT_CR0,
-+		     (BT_IO_BASE << BT_CR0_IO_BASE) |
-+		     (BT_IRQ << BT_CR0_IRQ) |
-+		     BT_CR0_EN_CLR_SLV_RDP |
-+		     BT_CR0_EN_CLR_SLV_WRP |
-+		     BT_CR0_ENABLE_IBT);
-+}
-+
- static int bt_bmc_probe(struct platform_device *pdev)
- {
- 	struct bt_bmc *bt_bmc;
-@@ -472,7 +483,7 @@ static int bt_bmc_probe(struct platform_device *pdev)
- 		return rc;
- 	}
- 
--	bt_bmc_config_irq(bt_bmc, pdev);
-+	aspeed_bt_bmc_config_irq(bt_bmc, pdev);
- 
- 	if (bt_bmc->irq >= 0) {
- 		dev_info(dev, "Using IRQ %d\n", bt_bmc->irq);
-@@ -483,12 +494,7 @@ static int bt_bmc_probe(struct platform_device *pdev)
- 		add_timer(&bt_bmc->poll_timer);
- 	}
- 
 -	regmap_write(bt_bmc->map, bt_bmc->offset + BT_CR0,
--		     (BT_IO_BASE << BT_CR0_IO_BASE) |
--		     (BT_IRQ << BT_CR0_IRQ) |
--		     BT_CR0_EN_CLR_SLV_RDP |
--		     BT_CR0_EN_CLR_SLV_WRP |
--		     BT_CR0_ENABLE_IBT);
-+	aspeed_enable_bt(bt_bmc);
- 
- 	clr_b_busy(bt_bmc);
- 
++	regmap_write(bt_bmc->map, bt_bmc->offset + ASPEED_BT_CR0,
+ 		     (BT_IO_BASE << BT_CR0_IO_BASE) |
+ 		     (BT_IRQ << BT_CR0_IRQ) |
+ 		     BT_CR0_EN_CLR_SLV_RDP |
 -- 
 2.31.1
 
