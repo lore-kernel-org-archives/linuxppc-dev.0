@@ -2,62 +2,65 @@ Return-Path: <SRS0=wNeI=O2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77303C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 05:56:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93187C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 06:02:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B87D2610EA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 05:56:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B87D2610EA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 7B4BC610E6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 06:02:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7B4BC610E6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HPNxx5yhzz2yn4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 16:56:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hfVgrO7I;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HPP4Q4lxqz305Z
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 17:02:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kaod.org (client-ip=87.98.187.244;
+ helo=10.mo552.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ receiver=<UNKNOWN>)
+Received: from 10.mo552.mail-out.ovh.net (10.mo552.mail-out.ovh.net
+ [87.98.187.244])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HPNxC6brhz2y8R
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Oct 2021 16:56:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=hfVgrO7I; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4HPNx844mYz4xR9;
- Wed,  6 Oct 2021 16:56:12 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1633499775;
- bh=yAmQoNe4QQh6i00NhuH34dqGowIW44cpaMTI9W4YrSU=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=hfVgrO7IF1qsS481zscMUiiK48SJzKENC+N3Ctiddk8MqqpJwPzIuFdUjBfq7Xm3v
- /gnsvRiospeRnRfb8N076aAlV/UeoXUK56yAV6cm/Dl+Dqp4yErjZNvwYxop/rk8o6
- 6dXxyNH42jyYrIFFSY6E5BL3ercij5batzZN+L2XKaQ988U4LYykffnL/j9+8Agw/p
- ZdSXjbcUg5zc0oB3qcIDZIM6QjkEykPilZyoJ1d4zRKIsOvKWTjxdth5BPcZg+mv/J
- gqmVR9AoPsNHAZUhxlhfIsIB0+nhee8rOgyR44bVrDaUw+3okL07EmxboIbVD2/mYe
- 41sqv6HoKV8Tw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring
- <robh+dt@kernel.org>, "linuxppc-dev@lists.ozlabs.org list"
- <linuxppc-dev@lists.ozlabs.org>, opensuse-ppc@opensuse.org
-Subject: Re: [PATCH v5 00/14] PCI: Add support for Apple M1
-In-Reply-To: <CACRpkdaL=YEfqSmAogLcP0Gn2gUqSaEXZQrJD1GR5QU+DyuyDQ@mail.gmail.com>
-References: <20210929163847.2807812-1-maz@kernel.org>
- <20211004083845.GA22336@lpieralisi>
- <CAL_Jsq+4FF9QYy87aYhJ-AS78qyHp0NkLrL492+WmdyWj-NKaw@mail.gmail.com>
- <CACRpkdaL=YEfqSmAogLcP0Gn2gUqSaEXZQrJD1GR5QU+DyuyDQ@mail.gmail.com>
-Date: Wed, 06 Oct 2021 16:56:07 +1100
-Message-ID: <87o882ofwo.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HPP3v5dwgz2yHP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Oct 2021 17:02:03 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.146.68])
+ by mo552.mail-out.ovh.net (Postfix) with ESMTPS id 14E45209D7;
+ Wed,  6 Oct 2021 06:01:57 +0000 (UTC)
+Received: from kaod.org (37.59.142.97) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Wed, 6 Oct
+ 2021 08:01:57 +0200
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-97G002699eac54-7c48-48bd-88e1-bd1a466ed729,
+ 5A4A34E2598F7A0FA378A7207C32B8AA1DF96388) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 82.64.250.170
+Message-ID: <15d051c0-cf77-1a02-fa27-d99757aa4d1e@kaod.org>
+Date: Wed, 6 Oct 2021 08:01:56 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.1.0
+Subject: Re: [RFC 3/5] ipmi:bt-bmc: Put arch specific function into bt_bmc_ops
+Content-Language: en-US
+To: Anton Blanchard <anton@ozlabs.org>, <alistair@popple.id.au>,
+ <joel@jms.id.au>, <andrew@aj.id.au>, <mikey@neuling.org>,
+ <jk@codeconstruct.com.au>
+References: <20211006021205.2579057-1-anton@ozlabs.org>
+ <20211006021205.2579057-3-anton@ozlabs.org>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+In-Reply-To: <20211006021205.2579057-3-anton@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.97]
+X-ClientProxiedBy: DAG2EX1.mxp5.local (172.16.2.11) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: e90aa22c-00af-4f5e-b5c7-7a99b6413df4
+X-Ovh-Tracer-Id: 4311352219073547113
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrudelhedgleelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepkfffgggfuffvfhfhjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepieegvdffkeegfeetuddttddtveduiefhgeduffekiedtkeekteekhfffleevleelnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrdeljeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,35 +72,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE
- BINDINGS" <devicetree@vger.kernel.org>, Mark Kettenis <kettenis@openbsd.org>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
- Marc Zyngier <maz@kernel.org>, Joerg Roedel <joro@8bytes.org>,
- Sven Peter <sven@svenpeter.dev>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Joey Gouly <joey.gouly@arm.com>, Hector Martin <marcan@marcan.st>,
- PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Android Kernel Team <kernel-team@android.com>,
- Robin Murphy <Robin.Murphy@arm.com>, Alyssa Rosenzweig <alyssa@rosenzweig.io>,
- Stan Skowronek <stan@corellium.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Linus Walleij <linus.walleij@linaro.org> writes:
-> On Mon, Oct 4, 2021 at 9:52 PM Rob Herring <robh+dt@kernel.org> wrote:
->
->> FYI, I pushed patches 1-3 to kernelCI and didn't see any regressions.
->> I am a bit worried about changes to the DT interrupt parsing and
->> ancient platforms (such as PowerMacs). Most likely there wouldn't be
->> any report until -rc1 or months later on those old systems.
->
-> Lets page the PPC lists to see if someone can test on some powermac.
+On 10/6/21 04:12, Anton Blanchard wrote:
+> While most of the driver is arch agnostic, setting up and handling
+> interrupts, and enabling the hardware is not. Create bt_bmc_ops to
+> handle these functions.
+> 
+> Signed-off-by: Anton Blanchard <anton@ozlabs.org>
 
-It boots and everything seems fine on an iMac-G5 of mine.
+See comment on patch 5. Any how,
 
-I don't have access to any other powermac hardware at the moment due to
-the lockdown here.
+Reviewed-by: Cédric Le Goater <clg@kaod.org>
 
-cheers
+Thanks
+
+C.
+
+> ---
+>   drivers/char/ipmi/bt-bmc.c | 24 ++++++++++++++++++++----
+>   1 file changed, 20 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/char/ipmi/bt-bmc.c b/drivers/char/ipmi/bt-bmc.c
+> index 2b0fe1255026..b48e04405ac4 100644
+> --- a/drivers/char/ipmi/bt-bmc.c
+> +++ b/drivers/char/ipmi/bt-bmc.c
+> @@ -17,6 +17,7 @@
+>   #include <linux/regmap.h>
+>   #include <linux/sched.h>
+>   #include <linux/timer.h>
+> +#include <linux/of_device.h>
+>   
+>   /*
+>    * This is a BMC device used to communicate to the host
+> @@ -435,15 +436,30 @@ static void aspeed_enable_bt(struct bt_bmc *bt_bmc)
+>   		     BT_CR0_ENABLE_IBT);
+>   }
+>   
+> +struct bt_bmc_ops {
+> +	int (*config_irq)(struct bt_bmc *bt_bmc, struct platform_device *pdev);
+> +	void (*enable_bt)(struct bt_bmc *bt_bmc);
+> +};
+> +
+> +static const struct bt_bmc_ops aspeed_bt_bmc_ops = {
+> +	.config_irq = aspeed_bt_bmc_config_irq,
+> +	.enable_bt = aspeed_enable_bt,
+> +};
+> +
+>   static int bt_bmc_probe(struct platform_device *pdev)
+>   {
+>   	struct bt_bmc *bt_bmc;
+>   	struct device *dev;
+>   	int rc;
+> +	const struct bt_bmc_ops *ops;
+>   
+>   	dev = &pdev->dev;
+>   	dev_info(dev, "Found bt bmc device\n");
+>   
+> +	ops = of_device_get_match_data(&pdev->dev);
+> +	if (!ops)
+> +		return -ENODEV;
+> +
+>   	bt_bmc = devm_kzalloc(dev, sizeof(*bt_bmc), GFP_KERNEL);
+>   	if (!bt_bmc)
+>   		return -ENOMEM;
+> @@ -483,7 +499,7 @@ static int bt_bmc_probe(struct platform_device *pdev)
+>   		return rc;
+>   	}
+>   
+> -	aspeed_bt_bmc_config_irq(bt_bmc, pdev);
+> +	ops->config_irq(bt_bmc, pdev);
+>   
+>   	if (bt_bmc->irq >= 0) {
+>   		dev_info(dev, "Using IRQ %d\n", bt_bmc->irq);
+> @@ -494,7 +510,7 @@ static int bt_bmc_probe(struct platform_device *pdev)
+>   		add_timer(&bt_bmc->poll_timer);
+>   	}
+>   
+> -	aspeed_enable_bt(bt_bmc);
+> +	ops->enable_bt(bt_bmc);
+>   
+>   	clr_b_busy(bt_bmc);
+>   
+> @@ -512,8 +528,8 @@ static int bt_bmc_remove(struct platform_device *pdev)
+>   }
+>   
+>   static const struct of_device_id bt_bmc_match[] = {
+> -	{ .compatible = "aspeed,ast2400-ibt-bmc" },
+> -	{ .compatible = "aspeed,ast2500-ibt-bmc" },
+> +	{ .compatible = "aspeed,ast2400-ibt-bmc", .data = &aspeed_bt_bmc_ops },
+> +	{ .compatible = "aspeed,ast2500-ibt-bmc", .data = &aspeed_bt_bmc_ops },
+>   	{ },
+>   };
+>   
+> 
+
