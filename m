@@ -2,77 +2,81 @@ Return-Path: <SRS0=wNeI=O2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C735C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 21:26:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 404DCC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 21:27:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 159A46105A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 21:26:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 159A46105A
+	by mail.kernel.org (Postfix) with ESMTPS id CEB446105A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 21:27:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CEB446105A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HPnZz56Phz3cCY
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Oct 2021 08:26:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HPnbs2pZvz3cNP
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Oct 2021 08:27:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=iyOXjM9w;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=UBSXKYjm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::431;
- helo=mail-wr1-x431.google.com; envelope-from=sohaib.amhmd@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::435;
+ helo=mail-pf1-x435.google.com; envelope-from=shorne@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=iyOXjM9w; dkim-atps=neutral
-Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com
- [IPv6:2a00:1450:4864:20::431])
+ header.s=20210112 header.b=UBSXKYjm; dkim-atps=neutral
+Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com
+ [IPv6:2607:f8b0:4864:20::435])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HPf6q70fBz2yYl
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Oct 2021 02:50:26 +1100 (AEDT)
-Received: by mail-wr1-x431.google.com with SMTP id u18so10255835wrg.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Oct 2021 08:50:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HPnY82n5yz3bYD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Oct 2021 08:25:15 +1100 (AEDT)
+Received: by mail-pf1-x435.google.com with SMTP id 187so3474792pfc.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Oct 2021 14:25:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=cCqWG1MwEY4yYdxCME2ROilZdOUtSzSai+WEWHRm8RA=;
- b=iyOXjM9wDFuHQIxXuNqOlfREgSV+GdfhpvqkcFFQNasGiu3rb2rsiI6pZ40Pww/7XK
- wgB9Nwpw6buIM/WrCAKMYBFWcxsGK8UyuFl/PMvnDjdCa39XntP6WmGODP82KXGJK9AI
- ljp6sffETP1wamXxobYs6U+227xf2fbEFCj5Ez4kkbBboUpgiZ0aEb6qoORmJyYJ5/p3
- vpD1YidCEEG0cS55gvZ3caIfCaOhiv3lpNzJBADnzYh+UT+xarud8xxmAnU3XbGtRTAm
- 8Ar1Aro75dVvvuGkxqZxq+taMIb2USsI5kaHRhAiijCkTxsCDXkf8wblKgKyjKFqxfug
- SEjA==
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=e64UMCL2WVnOr2UI7AUcgF8cpI0jeUTyJjvzOQZ8YrE=;
+ b=UBSXKYjm15FEKybh0KfefqRjd/fVs22AWYzwe2iCJvmOHscvoAutQW2HwE99YHZeWu
+ vEtNDuMS9d78IGfnBrQ47YiMpXMPPhe6dbQyF9hg/uSAQDApFpiVmZ7RCXYk//sWXr1Q
+ 0LSfp/P7/3d3pFfamzEH93p+y9SKpm/qjQxtZn4fAQUwleau5VdUB+9jn7Ku+OYnfnmC
+ SnnK3Phc97T0RV6YdV7B/6OMV0qq1QjiJmwn6G9SBEM6VpE4qBOh3ESLF6KJAuPLSvNB
+ EipYZeSbBljiqKzHr1N+foOdNe3WDWrdfrXbmYefd7v8ToBI7aLskwiFwDPpPQdD6I/S
+ LWFA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=cCqWG1MwEY4yYdxCME2ROilZdOUtSzSai+WEWHRm8RA=;
- b=6UKpNm2pXRascJDK7CfVcW09KxJ2uEHYyXd3OQUshX3pAZaXR8+5uU/31K5D4leDFZ
- mvW0lLGIfFFDB1CQvzJ3hW9gVio9E3zNyXTqa/XzHg5II+Mo+CogrrVPS3bvFyGEpF4I
- YFGj7Qr8d3xV9azjRov8kqxmPJM0/CwUXAqXj1MJBHzY218giZZNOisWYOEtEQpIRANe
- 7CDsSxbu8lNFp1jkN1ta/rY6+70WKB91C97S1lybuRj0z7LN9+VzeBqJNJvQYnkt5B+F
- 0xeV//4K/QIPETN98QV3IzkW8N7ETaZh7TtW7RVe+tmATT3jNh0KvzXR8H2ie7WwZA8U
- 2Hog==
-X-Gm-Message-State: AOAM53160Ug3RZ0VolxuzAaNiV8CZmg/XJDCBvibJeydUPYKM+us/mk7
- CJehedbWMZj08Fuy9NiTJ2A=
-X-Google-Smtp-Source: ABdhPJzaKAqSTjDB3cmj0NV4WVtEgdbmLFCvNqTtMjsXHjNRIICaxYehx8hx0gelq+H9vx1C4gMt7g==
-X-Received: by 2002:a5d:4601:: with SMTP id t1mr29024727wrq.298.1633535420022; 
- Wed, 06 Oct 2021 08:50:20 -0700 (PDT)
-Received: from localhost.localdomain ([197.49.35.129])
- by smtp.gmail.com with ESMTPSA id q16sm4355868wrw.23.2021.10.06.08.50.19
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=e64UMCL2WVnOr2UI7AUcgF8cpI0jeUTyJjvzOQZ8YrE=;
+ b=wCAvLbxwqvKMAA1PzTIbMdCi7qKrOqLq9On3lkgH28l/0bShFddUUYIimR080O0950
+ +TyB3KQcRAMovouVM5bl4FdCU/uHsAFT+i/Wv2O+Z9r10GbnrRBMkQmkhuj52NOPPjED
+ vm2vwW4sz7igByS/u0DiwA7YNUZ+UplZRPBIW0YIq0c324W+21VL/VciaMoFC0AdGmoK
+ cRP1rumoymsZGwiaw81EdI4yA28dF36xUb1Rz2yjf7pjC19Nw69TQH2NluBcshr4TCnf
+ VpHh9bRJI6m54715DL/tAuqXZznIt4dpKsP7IJmWwvnnaS819/hNUYVuFi4+AIqGMP5Y
+ HeYA==
+X-Gm-Message-State: AOAM530rOdJU2c8ngiL52huQtTVSOHOhzIwsuwNSzcwb8k47s/dPBEHE
+ bG8kOSTERz1XvqmMgOKJr4c=
+X-Google-Smtp-Source: ABdhPJyKapemGEMJ+oiRHHIk+xiUwqOqgxkK1126yB2yYflqm+sLMNs5knM5JE9Oh1WDASGMBmxR4Q==
+X-Received: by 2002:aa7:92d0:0:b0:44c:ab24:cce7 with SMTP id
+ k16-20020aa792d0000000b0044cab24cce7mr370069pfa.6.1633555512314; 
+ Wed, 06 Oct 2021 14:25:12 -0700 (PDT)
+Received: from localhost ([2409:10:24a0:4700:e8ad:216a:2a9d:6d0c])
+ by smtp.gmail.com with ESMTPSA id i9sm18264104pfd.32.2021.10.06.14.25.11
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 06 Oct 2021 08:50:19 -0700 (PDT)
-From: Sohaib Mohamed <sohaib.amhmd@gmail.com>
-To: sohaib.amhmd@gmail.com
-Subject: [PATCH] Documentation: Fix typo in testing/sysfs-class-cxl
-Date: Wed,  6 Oct 2021 17:50:17 +0200
-Message-Id: <20211006155017.135592-1-sohaib.amhmd@gmail.com>
-X-Mailer: git-send-email 2.25.1
+ Wed, 06 Oct 2021 14:25:11 -0700 (PDT)
+Date: Thu, 7 Oct 2021 06:25:09 +0900
+From: Stafford Horne <shorne@gmail.com>
+To: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 06/12] openrisc: Use of_get_cpu_hwid()
+Message-ID: <YV4UNQg3QROuTfQ/@antec>
+References: <20211006164332.1981454-1-robh@kernel.org>
+ <20211006164332.1981454-7-robh@kernel.org> <YV4KkAC2p9D4yCnH@antec>
+ <CAL_JsqLv+Ym=hxxz2vm0H3pbx1FRkBpHs3V=8DKjG43n+gS+RA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Thu, 07 Oct 2021 08:24:18 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAL_JsqLv+Ym=hxxz2vm0H3pbx1FRkBpHs3V=8DKjG43n+gS+RA@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,34 +88,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Donnellan <ajd@linux.ibm.com>, linux-kernel@vger.kernel.org
+Cc: Rich Felker <dalias@libc.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-riscv <linux-riscv@lists.infradead.org>, Will Deacon <will@kernel.org>,
+ Jonas Bonn <jonas@southpole.se>, Florian Fainelli <f.fainelli@gmail.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ SH-Linux <linux-sh@vger.kernel.org>, X86 ML <x86@kernel.org>,
+ Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>,
+ "maintainer:BROADCOM BCM7XXX ARM ARCHITECTURE"
+ <bcm-kernel-feedback-list@broadcom.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Palmer Dabbelt <palmer@dabbelt.com>,
+ devicetree@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>,
+ Ray Jui <rjui@broadcom.com>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Openrisc <openrisc@lists.librecores.org>, Borislav Petkov <bp@alien8.de>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Scott Branden <sbranden@broadcom.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Frank Rowand <frowand.list@gmail.com>, James Morse <james.morse@arm.com>,
+ Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove repeated words: "the the lowest" and "this this kernel"
+On Wed, Oct 06, 2021 at 04:08:38PM -0500, Rob Herring wrote:
+> On Wed, Oct 6, 2021 at 3:44 PM Stafford Horne <shorne@gmail.com> wrote:
+> >
+> > On Wed, Oct 06, 2021 at 11:43:26AM -0500, Rob Herring wrote:
+> > > Replace open coded parsing of CPU nodes' 'reg' property with
+> > > of_get_cpu_hwid().
+> > >
+> > > Cc: Jonas Bonn <jonas@southpole.se>
+> > > Cc: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+> > > Cc: Stafford Horne <shorne@gmail.com>
+> > > Cc: openrisc@lists.librecores.org
+> > > Signed-off-by: Rob Herring <robh@kernel.org>
+> > > ---
+> > >  arch/openrisc/kernel/smp.c | 6 +-----
+> > >  1 file changed, 1 insertion(+), 5 deletions(-)
+> > >
+> > > diff --git a/arch/openrisc/kernel/smp.c b/arch/openrisc/kernel/smp.c
+> > > index 415e209732a3..7d5a4f303a5a 100644
+> > > --- a/arch/openrisc/kernel/smp.c
+> > > +++ b/arch/openrisc/kernel/smp.c
+> > > @@ -65,11 +65,7 @@ void __init smp_init_cpus(void)
+> > >       u32 cpu_id;
+> > >
+> > >       for_each_of_cpu_node(cpu) {
+> > > -             if (of_property_read_u32(cpu, "reg", &cpu_id)) {
+> > > -                     pr_warn("%s missing reg property", cpu->full_name);
+> > > -                     continue;
+> > > -             }
+> > > -
+> > > +             cpu_id = of_get_cpu_hwid(cpu);
+> 
+> Oops, that should be: of_get_cpu_hwid(cpu, 0);
 
-Signed-off-by: Sohaib Mohamed <sohaib.amhmd@gmail.com>
----
- Documentation/ABI/testing/sysfs-class-cxl | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+OK. I checked all other patches in the series, it seems OpenRISC was the only
+one missing that.  Sorry I missed it initially.
 
-diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
-index 3c77677e0ca7..594fda254130 100644
---- a/Documentation/ABI/testing/sysfs-class-cxl
-+++ b/Documentation/ABI/testing/sysfs-class-cxl
-@@ -103,8 +103,8 @@ What:           /sys/class/cxl/<afu>/api_version_compatible
- Date:           September 2014
- Contact:        linuxppc-dev@lists.ozlabs.org
- Description:    read only
--                Decimal value of the the lowest version of the userspace API
--                this this kernel supports.
-+                Decimal value of the lowest version of the userspace API
-+                this kernel supports.
- Users:		https://github.com/ibm-capi/libcxl
+> I thought I double checked all those...
+> 
+> > You have defined of_get_cpu_hwid to return u64, will this create compiler
+> > warnings when since we are storing a u64 into a u32?
+> 
+> I'm counting on the caller to know the max size for their platform.
 
+OK.
 
---
-2.25.1
+> >
+> > It seems only if we make with W=3.
+> >
+> > I thought we usually warned on this.  Oh well, for the openrisc bits.
+> 
+> That's only on ptr truncation I think.
 
+Right, that makes sense.
+
+-Stafford
