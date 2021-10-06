@@ -2,50 +2,49 @@ Return-Path: <SRS0=wNeI=O2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8742BC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 04:51:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A365C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 04:51:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 03F83611CA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 04:51:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 03F83611CA
+	by mail.kernel.org (Postfix) with ESMTPS id 8D10561029
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 04:51:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8D10561029
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HPMTx3l7mz30RP
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 15:51:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HPMVt1w4vz3bg4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 15:51:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HPMTS5MhDz2yKJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Oct 2021 15:50:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HPMVP5Wp7z2yKJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Oct 2021 15:51:25 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HPMTM6mQxz9sVL;
- Wed,  6 Oct 2021 06:50:31 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HPMVL45x3z9sVL;
+ Wed,  6 Oct 2021 06:51:22 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 12nTGo35SOK0; Wed,  6 Oct 2021 06:50:31 +0200 (CEST)
+ with ESMTP id N5MaXjpcEhOH; Wed,  6 Oct 2021 06:51:22 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HPMTM5YzNz9sVK;
- Wed,  6 Oct 2021 06:50:31 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HPMVL35Ysz9sVK;
+ Wed,  6 Oct 2021 06:51:22 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A1D388B765;
- Wed,  6 Oct 2021 06:50:31 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 51AF78B765;
+ Wed,  6 Oct 2021 06:51:22 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 7TC3HBM5bn8x; Wed,  6 Oct 2021 06:50:31 +0200 (CEST)
+ with ESMTP id qJX007NXBtpC; Wed,  6 Oct 2021 06:51:22 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.204.229])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B3FA48B763;
- Wed,  6 Oct 2021 06:50:30 +0200 (CEST)
-Subject: Re: [PATCH v2 01/10] powerpc/lib: Add helper to check if offset is
- within conditional branch range
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6EDD18B763;
+ Wed,  6 Oct 2021 06:51:21 +0200 (CEST)
+Subject: Re: [PATCH v2 02/10] powerpc/bpf: Validate branch ranges
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
  Jordan Niethe <jniethe5@gmail.com>, Daniel Borkmann <daniel@iogearbox.net>,
@@ -53,14 +52,14 @@ To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
  Johan Almbladh <johan.almbladh@anyfinetworks.com>,
  Song Liu <songliubraving@fb.com>
 References: <cover.1633464148.git.naveen.n.rao@linux.vnet.ibm.com>
- <442b69a34ced32ca346a0d9a855f3f6cfdbbbd41.1633464148.git.naveen.n.rao@linux.vnet.ibm.com>
+ <71d33a6b7603ec1013c9734dd8bdd4ff5e929142.1633464148.git.naveen.n.rao@linux.vnet.ibm.com>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <6d3a46f1-41fa-232d-079d-3b98bf7c3d17@csgroup.eu>
-Date: Wed, 6 Oct 2021 06:50:29 +0200
+Message-ID: <a391e669-ac55-8217-d12f-4b082f8cd89e@csgroup.eu>
+Date: Wed, 6 Oct 2021 06:51:20 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.11.0
 MIME-Version: 1.0
-In-Reply-To: <442b69a34ced32ca346a0d9a855f3f6cfdbbbd41.1633464148.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <71d33a6b7603ec1013c9734dd8bdd4ff5e929142.1633464148.git.naveen.n.rao@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr-FR
 Content-Transfer-Encoding: 8bit
@@ -83,85 +82,148 @@ Sender: "Linuxppc-dev"
 
 
 Le 05/10/2021 à 22:25, Naveen N. Rao a écrit :
-> Add a helper to check if a given offset is within the branch range for a
-> powerpc conditional branch instruction, and update some sites to use the
-> new helper.
+> Add checks to ensure that we never emit branch instructions with
+> truncated branch offsets.
 > 
 > Acked-by: Song Liu <songliubraving@fb.com>
+> Acked-by: Johan Almbladh <johan.almbladh@anyfinetworks.com>
+> Tested-by: Johan Almbladh <johan.almbladh@anyfinetworks.com>
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
 > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
 Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
 > ---
-> Changelog:
-> - Change 0x7FFF to 0x7fff, per Christophe
+>   arch/powerpc/net/bpf_jit.h        | 26 ++++++++++++++++++++------
+>   arch/powerpc/net/bpf_jit_comp.c   |  6 +++++-
+>   arch/powerpc/net/bpf_jit_comp32.c |  8 ++++++--
+>   arch/powerpc/net/bpf_jit_comp64.c |  8 ++++++--
+>   4 files changed, 37 insertions(+), 11 deletions(-)
 > 
-> 
->   arch/powerpc/include/asm/code-patching.h | 1 +
->   arch/powerpc/lib/code-patching.c         | 7 ++++++-
->   arch/powerpc/net/bpf_jit.h               | 7 +------
->   3 files changed, 8 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-> index a95f63788c6b14..4ba834599c4d4c 100644
-> --- a/arch/powerpc/include/asm/code-patching.h
-> +++ b/arch/powerpc/include/asm/code-patching.h
-> @@ -23,6 +23,7 @@
->   #define BRANCH_ABSOLUTE	0x2
->   
->   bool is_offset_in_branch_range(long offset);
-> +bool is_offset_in_cond_branch_range(long offset);
->   int create_branch(struct ppc_inst *instr, const u32 *addr,
->   		  unsigned long target, int flags);
->   int create_cond_branch(struct ppc_inst *instr, const u32 *addr,
-> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-> index f9a3019e37b43c..c5ed9882383521 100644
-> --- a/arch/powerpc/lib/code-patching.c
-> +++ b/arch/powerpc/lib/code-patching.c
-> @@ -228,6 +228,11 @@ bool is_offset_in_branch_range(long offset)
->   	return (offset >= -0x2000000 && offset <= 0x1fffffc && !(offset & 0x3));
->   }
->   
-> +bool is_offset_in_cond_branch_range(long offset)
-> +{
-> +	return offset >= -0x8000 && offset <= 0x7fff && !(offset & 0x3);
-> +}
-> +
->   /*
->    * Helper to check if a given instruction is a conditional branch
->    * Derived from the conditional checks in analyse_instr()
-> @@ -280,7 +285,7 @@ int create_cond_branch(struct ppc_inst *instr, const u32 *addr,
->   		offset = offset - (unsigned long)addr;
->   
->   	/* Check we can represent the target in the instruction format */
-> -	if (offset < -0x8000 || offset > 0x7FFF || offset & 0x3)
-> +	if (!is_offset_in_cond_branch_range(offset))
->   		return 1;
->   
->   	/* Mask out the flags and target, so they don't step on each other. */
 > diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-> index 99fad093f43ec1..935ea95b66359e 100644
+> index 935ea95b66359e..7e9b978b768ed9 100644
 > --- a/arch/powerpc/net/bpf_jit.h
 > +++ b/arch/powerpc/net/bpf_jit.h
-> @@ -78,11 +78,6 @@
->   #define PPC_FUNC_ADDR(d,i) do { PPC_LI32(d, i); } while(0)
->   #endif
+> @@ -24,16 +24,30 @@
+>   #define EMIT(instr)		PLANT_INSTR(image, ctx->idx, instr)
 >   
-> -static inline bool is_nearbranch(int offset)
-> -{
-> -	return (offset < 32768) && (offset >= -32768);
-> -}
-> -
->   /*
->    * The fly in the ointment of code size changing from pass to pass is
->    * avoided by padding the short branch case with a NOP.	 If code size differs
-> @@ -91,7 +86,7 @@ static inline bool is_nearbranch(int offset)
->    * state.
->    */
->   #define PPC_BCC(cond, dest)	do {					      \
-> -		if (is_nearbranch((dest) - (ctx->idx * 4))) {		      \
-> +		if (is_offset_in_cond_branch_range((long)(dest) - (ctx->idx * 4))) {	\
->   			PPC_BCC_SHORT(cond, dest);			      \
->   			EMIT(PPC_RAW_NOP());				      \
->   		} else {						      \
+>   /* Long jump; (unconditional 'branch') */
+> -#define PPC_JMP(dest)		EMIT(PPC_INST_BRANCH |			      \
+> -				     (((dest) - (ctx->idx * 4)) & 0x03fffffc))
+> +#define PPC_JMP(dest)							      \
+> +	do {								      \
+> +		long offset = (long)(dest) - (ctx->idx * 4);		      \
+> +		if (!is_offset_in_branch_range(offset)) {		      \
+> +			pr_err_ratelimited("Branch offset 0x%lx (@%u) out of range\n", offset, ctx->idx);			\
+> +			return -ERANGE;					      \
+> +		}							      \
+> +		EMIT(PPC_INST_BRANCH | (offset & 0x03fffffc));		      \
+> +	} while (0)
+> +
+>   /* blr; (unconditional 'branch' with link) to absolute address */
+>   #define PPC_BL_ABS(dest)	EMIT(PPC_INST_BL |			      \
+>   				     (((dest) - (unsigned long)(image + ctx->idx)) & 0x03fffffc))
+>   /* "cond" here covers BO:BI fields. */
+> -#define PPC_BCC_SHORT(cond, dest)	EMIT(PPC_INST_BRANCH_COND |	      \
+> -					     (((cond) & 0x3ff) << 16) |	      \
+> -					     (((dest) - (ctx->idx * 4)) &     \
+> -					      0xfffc))
+> +#define PPC_BCC_SHORT(cond, dest)					      \
+> +	do {								      \
+> +		long offset = (long)(dest) - (ctx->idx * 4);		      \
+> +		if (!is_offset_in_cond_branch_range(offset)) {		      \
+> +			pr_err_ratelimited("Conditional branch offset 0x%lx (@%u) out of range\n", offset, ctx->idx);		\
+> +			return -ERANGE;					      \
+> +		}							      \
+> +		EMIT(PPC_INST_BRANCH_COND | (((cond) & 0x3ff) << 16) | (offset & 0xfffc));					\
+> +	} while (0)
+> +
+>   /* Sign-extended 32-bit immediate load */
+>   #define PPC_LI32(d, i)		do {					      \
+>   		if ((int)(uintptr_t)(i) >= -32768 &&			      \
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+> index 53aefee3fe70be..fcbf7a917c566e 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
+> @@ -210,7 +210,11 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+>   		/* Now build the prologue, body code & epilogue for real. */
+>   		cgctx.idx = 0;
+>   		bpf_jit_build_prologue(code_base, &cgctx);
+> -		bpf_jit_build_body(fp, code_base, &cgctx, addrs, extra_pass);
+> +		if (bpf_jit_build_body(fp, code_base, &cgctx, addrs, extra_pass)) {
+> +			bpf_jit_binary_free(bpf_hdr);
+> +			fp = org_fp;
+> +			goto out_addrs;
+> +		}
+>   		bpf_jit_build_epilogue(code_base, &cgctx);
+>   
+>   		if (bpf_jit_enable > 1)
+> diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
+> index beb12cbc8c2994..a74d52204f8da2 100644
+> --- a/arch/powerpc/net/bpf_jit_comp32.c
+> +++ b/arch/powerpc/net/bpf_jit_comp32.c
+> @@ -200,7 +200,7 @@ void bpf_jit_emit_func_call_rel(u32 *image, struct codegen_context *ctx, u64 fun
+>   	}
+>   }
+>   
+> -static void bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32 out)
+> +static int bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32 out)
+>   {
+>   	/*
+>   	 * By now, the eBPF program has already setup parameters in r3-r6
+> @@ -261,7 +261,9 @@ static void bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32
+>   	bpf_jit_emit_common_epilogue(image, ctx);
+>   
+>   	EMIT(PPC_RAW_BCTR());
+> +
+>   	/* out: */
+> +	return 0;
+>   }
+>   
+>   /* Assemble the body code between the prologue & epilogue */
+> @@ -1090,7 +1092,9 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
+>   		 */
+>   		case BPF_JMP | BPF_TAIL_CALL:
+>   			ctx->seen |= SEEN_TAILCALL;
+> -			bpf_jit_emit_tail_call(image, ctx, addrs[i + 1]);
+> +			ret = bpf_jit_emit_tail_call(image, ctx, addrs[i + 1]);
+> +			if (ret < 0)
+> +				return ret;
+>   			break;
+>   
+>   		default:
+> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+> index b87a63dba9c8fb..f06c62089b1457 100644
+> --- a/arch/powerpc/net/bpf_jit_comp64.c
+> +++ b/arch/powerpc/net/bpf_jit_comp64.c
+> @@ -206,7 +206,7 @@ void bpf_jit_emit_func_call_rel(u32 *image, struct codegen_context *ctx, u64 fun
+>   	EMIT(PPC_RAW_BCTRL());
+>   }
+>   
+> -static void bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32 out)
+> +static int bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32 out)
+>   {
+>   	/*
+>   	 * By now, the eBPF program has already setup parameters in r3, r4 and r5
+> @@ -267,7 +267,9 @@ static void bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32
+>   	bpf_jit_emit_common_epilogue(image, ctx);
+>   
+>   	EMIT(PPC_RAW_BCTR());
+> +
+>   	/* out: */
+> +	return 0;
+>   }
+>   
+>   /* Assemble the body code between the prologue & epilogue */
+> @@ -993,7 +995,9 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
+>   		 */
+>   		case BPF_JMP | BPF_TAIL_CALL:
+>   			ctx->seen |= SEEN_TAILCALL;
+> -			bpf_jit_emit_tail_call(image, ctx, addrs[i + 1]);
+> +			ret = bpf_jit_emit_tail_call(image, ctx, addrs[i + 1]);
+> +			if (ret < 0)
+> +				return ret;
+>   			break;
+>   
+>   		default:
 > 
