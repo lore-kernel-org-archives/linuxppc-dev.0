@@ -2,19 +2,19 @@ Return-Path: <SRS0=wNeI=O2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB448C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 12:53:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B7B9C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 12:53:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 57B0C60F92
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 12:53:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 57B0C60F92
+	by mail.kernel.org (Postfix) with ESMTPS id B223B61039
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 12:53:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B223B61039
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HPZBZ08XFz3f0N
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 23:53:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HPZC23MQDz3f3Z
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Oct 2021 23:53:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,43 +22,43 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HPZ5T6wPLz3bXj
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Oct 2021 23:49:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HPZ5Z05czz3c8k
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Oct 2021 23:49:05 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HPZ4Z2LSkz9sWQ;
- Wed,  6 Oct 2021 14:48:14 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HPZ4b27gyz9sWC;
+ Wed,  6 Oct 2021 14:48:15 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id setPSWLfFZc9; Wed,  6 Oct 2021 14:48:14 +0200 (CEST)
+ with ESMTP id nG5bdxW-BhIA; Wed,  6 Oct 2021 14:48:15 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HPZ4M4vcjz9sWC;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HPZ4M57Xzz9sWW;
  Wed,  6 Oct 2021 14:48:03 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 901908B77D;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 95DEF8B780;
  Wed,  6 Oct 2021 14:48:03 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id E5TWhw1HXxTe; Wed,  6 Oct 2021 14:48:03 +0200 (CEST)
+ with ESMTP id r5dEfi-PVudJ; Wed,  6 Oct 2021 14:48:03 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.204.229])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A42FA8B78C;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id AE1D58B790;
  Wed,  6 Oct 2021 14:48:02 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 196Clpps579416
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 196Clppc579416
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Wed, 6 Oct 2021 14:47:52 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 196ChscP579288;
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 196ChsOF579285;
  Wed, 6 Oct 2021 14:43:54 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v1 08/15] powerpc/config: Add CONFIG_BOOKE_OR_40x
-Date: Wed,  6 Oct 2021 14:43:41 +0200
-Message-Id: <0aaa53ec80e036aa6505ce967c6a50ef476b5d23.1633523837.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 05/15] powerpc/kuap: Remove __kuap_assert_locked()
+Date: Wed,  6 Oct 2021 14:43:38 +0200
+Message-Id: <b64a6fe872489b665f2ea3dbdfefcdd6b7b12c8f.1633523837.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1633523837.git.christophe.leroy@csgroup.eu>
 References: <cover.1633523837.git.christophe.leroy@csgroup.eu>
@@ -80,226 +80,84 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We have many functionnalities common to 40x and BOOKE, it leads to
-many places with #if defined(CONFIG_BOOKE) || defined(CONFIG_40x).
+__kuap_assert_locked() is redundant with
+__kuap_get_and_assert_locked().
 
-We are going to add a few more with KUAP for booke/40x, so create
-a new symbol which is defined when either BOOKE or 40x is defined.
+Move the verification of CONFIG_PPC_KUAP_DEBUG in kuap_assert_locked()
+and make it call __kuap_get_and_assert_locked() directly.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/hw_irq.h      | 8 ++++----
- arch/powerpc/include/asm/irq.h         | 2 +-
- arch/powerpc/include/asm/ptrace.h      | 2 +-
- arch/powerpc/include/asm/reg.h         | 4 ++--
- arch/powerpc/kernel/asm-offsets.c      | 2 +-
- arch/powerpc/kernel/entry_32.S         | 2 +-
- arch/powerpc/kernel/irq.c              | 2 +-
- arch/powerpc/kernel/kgdb.c             | 4 ++--
- arch/powerpc/kernel/setup.h            | 2 +-
- arch/powerpc/kernel/setup_32.c         | 2 +-
- arch/powerpc/kernel/time.c             | 2 +-
- arch/powerpc/platforms/Kconfig.cputype | 5 +++++
- 12 files changed, 21 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/book3s/32/kup.h     | 5 -----
+ arch/powerpc/include/asm/book3s/64/kup.h     | 6 ------
+ arch/powerpc/include/asm/kup.h               | 3 ++-
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h | 6 ------
+ 4 files changed, 2 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 21cc571ea9c2..276e9dd7348b 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -61,7 +61,7 @@
+diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+index d2685fa09fed..4404849dfea2 100644
+--- a/arch/powerpc/include/asm/book3s/32/kup.h
++++ b/arch/powerpc/include/asm/book3s/32/kup.h
+@@ -112,11 +112,6 @@ static inline unsigned long __kuap_get_and_assert_locked(void)
+ 	return kuap;
+ }
  
- static inline void __hard_irq_enable(void)
+-static inline void __kuap_assert_locked(void)
+-{
+-	__kuap_get_and_assert_locked();
+-}
+-
+ static __always_inline void __allow_user_access(void __user *to, const void __user *from,
+ 						u32 size, unsigned long dir)
  {
--	if (IS_ENABLED(CONFIG_BOOKE) || IS_ENABLED(CONFIG_40x))
-+	if (IS_ENABLED(CONFIG_BOOKE_OR_40x))
- 		wrtee(MSR_EE);
- 	else if (IS_ENABLED(CONFIG_PPC_8xx))
- 		wrtspr(SPRN_EIE);
-@@ -73,7 +73,7 @@ static inline void __hard_irq_enable(void)
+diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
+index 9f2099790658..503828709d55 100644
+--- a/arch/powerpc/include/asm/book3s/64/kup.h
++++ b/arch/powerpc/include/asm/book3s/64/kup.h
+@@ -298,12 +298,6 @@ static inline unsigned long __kuap_get_and_assert_locked(void)
+ 	return amr;
+ }
  
- static inline void __hard_irq_disable(void)
- {
--	if (IS_ENABLED(CONFIG_BOOKE) || IS_ENABLED(CONFIG_40x))
-+	if (IS_ENABLED(CONFIG_BOOKE_OR_40x))
- 		wrtee(0);
- 	else if (IS_ENABLED(CONFIG_PPC_8xx))
- 		wrtspr(SPRN_EID);
-@@ -85,7 +85,7 @@ static inline void __hard_irq_disable(void)
- 
- static inline void __hard_EE_RI_disable(void)
- {
--	if (IS_ENABLED(CONFIG_BOOKE) || IS_ENABLED(CONFIG_40x))
-+	if (IS_ENABLED(CONFIG_BOOKE_OR_40x))
- 		wrtee(0);
- 	else if (IS_ENABLED(CONFIG_PPC_8xx))
- 		wrtspr(SPRN_NRI);
-@@ -97,7 +97,7 @@ static inline void __hard_EE_RI_disable(void)
- 
- static inline void __hard_RI_enable(void)
- {
--	if (IS_ENABLED(CONFIG_BOOKE) || IS_ENABLED(CONFIG_40x))
-+	if (IS_ENABLED(CONFIG_BOOKE_OR_40x))
+-static inline void __kuap_assert_locked(void)
+-{
+-	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG))
+-		WARN_ON_ONCE(mfspr(SPRN_AMR) != AMR_KUAP_BLOCKED);
+-}
+-
+ /*
+  * We support individually allowing read or write, but we don't support nesting
+  * because that would require an expensive read/modify write of the AMR.
+diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
+index 3a7e2ca9f6ee..43a2c6cb05e3 100644
+--- a/arch/powerpc/include/asm/kup.h
++++ b/arch/powerpc/include/asm/kup.h
+@@ -86,7 +86,8 @@ static __always_inline void kuap_assert_locked(void)
+ 	if (kuap_is_disabled())
  		return;
  
- 	if (IS_ENABLED(CONFIG_PPC_8xx))
-diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-index 2b3278534bc1..13f0409dd617 100644
---- a/arch/powerpc/include/asm/irq.h
-+++ b/arch/powerpc/include/asm/irq.h
-@@ -36,7 +36,7 @@ extern int distribute_irqs;
- 
- struct pt_regs;
- 
--#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
-+#ifdef CONFIG_BOOKE_OR_40x
- /*
-  * Per-cpu stacks for handling critical, debug and machine check
-  * level interrupts.
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index 6e560f035614..42f89e2d8f04 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -291,7 +291,7 @@ static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
- 
- static inline bool cpu_has_msr_ri(void)
- {
--	return !IS_ENABLED(CONFIG_BOOKE) && !IS_ENABLED(CONFIG_40x);
-+	return !IS_ENABLED(CONFIG_BOOKE_OR_40x);
+-	__kuap_assert_locked();
++	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG))
++		__kuap_get_and_assert_locked();
  }
- 
- static inline bool regs_is_unrecoverable(struct pt_regs *regs)
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index e9d27265253b..50478738c8f1 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -18,9 +18,9 @@
- #include <asm/feature-fixups.h>
- 
- /* Pickup Book E specific registers. */
--#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
-+#ifdef CONFIG_BOOKE_OR_40x
- #include <asm/reg_booke.h>
--#endif /* CONFIG_BOOKE || CONFIG_40x */
-+#endif
- 
- #ifdef CONFIG_FSL_EMB_PERFMON
- #include <asm/reg_fsl_emb.h>
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index e563d3222d69..cf4a94891bd0 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -56,7 +56,7 @@
- #endif
  
  #ifdef CONFIG_PPC32
--#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
-+#ifdef CONFIG_BOOKE_OR_40x
- #include "head_booke.h"
- #endif
- #endif
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 9d31ba2af901..df01da3ca3fa 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -108,7 +108,7 @@ transfer_to_syscall:
- 	stw	r11, 0(r1)
- 	mflr	r12
- 	stw	r12, _LINK(r1)
--#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
-+#ifdef CONFIG_BOOKE_OR_40x
- 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?) */
- #endif
- 	lis	r12,STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 551b653228c4..2eb94427d271 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -805,7 +805,7 @@ void __init init_IRQ(void)
- 		ppc_md.init_IRQ();
+diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+index 74f15c386476..37fe4b32b658 100644
+--- a/arch/powerpc/include/asm/nohash/32/kup-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+@@ -47,12 +47,6 @@ static inline unsigned long __kuap_get_and_assert_locked(void)
+ 	return kuap;
  }
  
--#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
-+#ifdef CONFIG_BOOKE_OR_40x
- void   *critirq_ctx[NR_CPUS] __read_mostly;
- void    *dbgirq_ctx[NR_CPUS] __read_mostly;
- void *mcheckirq_ctx[NR_CPUS] __read_mostly;
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index bdee7262c080..9f8d0fa7b718 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -48,7 +48,7 @@ static struct hard_trap_info
- 	{ 0x0800, 0x08 /* SIGFPE */  },		/* fp unavailable */
- 	{ 0x0900, 0x0e /* SIGALRM */ },		/* decrementer */
- 	{ 0x0c00, 0x14 /* SIGCHLD */ },		/* system call */
--#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_BOOKE_OR_40x
- 	{ 0x2002, 0x05 /* SIGTRAP */ },		/* debug */
- #if defined(CONFIG_FSL_BOOKE)
- 	{ 0x2010, 0x08 /* SIGFPE */  },		/* spe unavailable */
-@@ -67,7 +67,7 @@ static struct hard_trap_info
- 	{ 0x2010, 0x08 /* SIGFPE */  },		/* fp unavailable */
- 	{ 0x2020, 0x08 /* SIGFPE */  },		/* ap unavailable */
- #endif
--#else /* ! (defined(CONFIG_40x) || defined(CONFIG_BOOKE)) */
-+#else /* !CONFIG_BOOKE_OR_40x */
- 	{ 0x0d00, 0x05 /* SIGTRAP */ },		/* single-step */
- #if defined(CONFIG_PPC_8xx)
- 	{ 0x1000, 0x04 /* SIGILL */  },		/* software emulation */
-diff --git a/arch/powerpc/kernel/setup.h b/arch/powerpc/kernel/setup.h
-index 84058bbc8fe9..93f22da12abe 100644
---- a/arch/powerpc/kernel/setup.h
-+++ b/arch/powerpc/kernel/setup.h
-@@ -29,7 +29,7 @@ void setup_tlb_core_data(void);
- static inline void setup_tlb_core_data(void) { }
- #endif
- 
--#if defined(CONFIG_PPC_BOOK3E) || defined(CONFIG_BOOKE) || defined(CONFIG_40x)
-+#ifdef CONFIG_BOOKE_OR_40x
- void exc_lvl_early_init(void);
- #else
- static inline void exc_lvl_early_init(void) { }
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 7ec5c47fce0e..15e7386584f9 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -175,7 +175,7 @@ void __init emergency_stack_init(void)
- }
- #endif
- 
--#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
-+#ifdef CONFIG_BOOKE_OR_40x
- void __init exc_lvl_early_init(void)
+-static inline void __kuap_assert_locked(void)
+-{
+-	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG))
+-		__kuap_get_and_assert_locked();
+-}
+-
+ static inline void __allow_user_access(void __user *to, const void __user *from,
+ 				       unsigned long size, unsigned long dir)
  {
- 	unsigned int i, hw_cpu;
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 934d8ae66cc6..f7bb2866a1c4 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -738,7 +738,7 @@ static int __init get_freq(char *name, int cells, unsigned long *val)
- 
- static void start_cpu_decrementer(void)
- {
--#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
-+#ifdef CONFIG_BOOKE_OR_40x
- 	unsigned int tcr;
- 
- 	/* Clear any pending timer interrupts */
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index a208997ade88..dce1cf31047b 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -278,6 +278,11 @@ config BOOKE
- 	depends on E500 || 44x || PPC_BOOK3E
- 	default y
- 
-+config BOOKE_OR_40x
-+	bool
-+	depends on BOOKE || 40x
-+	default y
-+
- config FSL_BOOKE
- 	bool
- 	depends on E500 && PPC32
 -- 
 2.31.1
 
