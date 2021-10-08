@@ -2,45 +2,38 @@ Return-Path: <SRS0=IY60=O4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CBD3C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 13:26:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAA6FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 13:26:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0F7B160EE4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 13:26:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0F7B160EE4
+	by mail.kernel.org (Postfix) with ESMTPS id 2B8C460F9C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 13:26:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2B8C460F9C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HQpqH4g7jz3cVM
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 00:26:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HQpql591mz3c7p
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 00:26:27 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HQpnX53KFz2yKB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 00:24:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HQpnY1Mf8z2yKB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 00:24:33 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4HQpnW597zz4xqN;
- Sat,  9 Oct 2021 00:24:31 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4HQpnY0WQMz4xqP;
+ Sat,  9 Oct 2021 00:24:33 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Song Liu <songliubraving@fb.com>, Nicholas Piggin <npiggin@gmail.com>,
- Jordan Niethe <jniethe5@gmail.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Johan Almbladh <johan.almbladh@anyfinetworks.com>,
- Daniel Borkmann <daniel@iogearbox.net>
-In-Reply-To: <cover.1633464148.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1633464148.git.naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 00/10] powerpc/bpf: Various fixes
-Message-Id: <163369937665.3568929.6807087799195929903.b4-ty@ellerman.id.au>
-Date: Sat, 09 Oct 2021 00:22:56 +1100
+To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+In-Reply-To: <20211004145642.1331214-1-npiggin@gmail.com>
+References: <20211004145642.1331214-1-npiggin@gmail.com>
+Subject: Re: [PATCH 0/5] powerpc: various interrupt handling fixes
+Message-Id: <163369938156.3568929.5142383792032173677.b4-ty@ellerman.id.au>
+Date: Sat, 09 Oct 2021 00:23:01 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -55,42 +48,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Ganesh Goudar <ganeshgr@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 6 Oct 2021 01:55:19 +0530, Naveen N. Rao wrote:
-> This is v2 of the series posted at:
-> http://lkml.kernel.org/r/cover.1633104510.git.naveen.n.rao@linux.vnet.ibm.com
+On Tue, 5 Oct 2021 00:56:37 +1000, Nicholas Piggin wrote:
+> This fixes a number of bugs found mostly looking at a MCE handler issue,
+> which should be fixed in patch 5 of the series, previous attempt here
+> which Ganesh found to be wrong.
 > 
-> Only patches from v1 that need to go into powerpc/fixes are included.
-> Other patches will be posted as a separate series for inclusion into
-> powerpc/next.
+> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20210922020247.209409-1-npiggin@gmail.com/
+> 
+> I didn't increment to patch v2 because it's a different approach (so I
+> gave it a different title).
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[01/10] powerpc/lib: Add helper to check if offset is within conditional branch range
-        https://git.kernel.org/powerpc/c/4549c3ea3160fa8b3f37dfe2f957657bb265eda9
-[02/10] powerpc/bpf: Validate branch ranges
-        https://git.kernel.org/powerpc/c/3832ba4e283d7052b783dab8311df7e3590fed93
-[03/10] powerpc/bpf: Fix BPF_MOD when imm == 1
-        https://git.kernel.org/powerpc/c/8bbc9d822421d9ac8ff9ed26a3713c9afc69d6c8
-[04/10] powerpc/bpf: Fix BPF_SUB when imm == 0x80000000
-        https://git.kernel.org/powerpc/c/5855c4c1f415ca3ba1046e77c0b3d3dfc96c9025
-[05/10] powerpc/security: Add a helper to query stf_barrier type
-        https://git.kernel.org/powerpc/c/030905920f32e91a52794937f67434ac0b3ea41a
-[06/10] powerpc/bpf: Emit stf barrier instruction sequences for BPF_NOSPEC
-        https://git.kernel.org/powerpc/c/b7540d62509453263604a155bf2d5f0ed450cba2
-[07/10] powerpc/bpf ppc32: Fix ALU32 BPF_ARSH operation
-        https://git.kernel.org/powerpc/c/c9b8da77f22d28348d1f89a6c4d3fec102e9b1c4
-[08/10] powerpc/bpf ppc32: Fix JMP32_JSET_K
-        https://git.kernel.org/powerpc/c/e8278d44443207bb6609c7b064073f353e6f4978
-[09/10] powerpc/bpf ppc32: Do not emit zero extend instruction for 64-bit BPF_END
-        https://git.kernel.org/powerpc/c/48164fccdff6d5cc11308126c050bd25a329df25
-[10/10] powerpc/bpf ppc32: Fix BPF_SUB when imm == 0x80000000
-        https://git.kernel.org/powerpc/c/548b762763b885b81850db676258df47c55dd5f9
+[1/5] powerpc/64s: fix program check interrupt emergency stack path
+      https://git.kernel.org/powerpc/c/3e607dc4df180b72a38e75030cb0f94d12808712
+[2/5] powerpc/traps: do not enable irqs in _exception
+      https://git.kernel.org/powerpc/c/d0afd44c05f8f4e4c91487c02d43c87a31552462
+[3/5] powerpc/64: warn if local irqs are enabled in NMI or hardirq context
+      https://git.kernel.org/powerpc/c/ff058a8ada5df0d84e5537cfaf89d06d71501580
+[4/5] powerpc/64/interrupt: Reconcile soft-mask state in NMI and fix false BUG
+      https://git.kernel.org/powerpc/c/768c47010392ece9766a56479b4e0cf04a536916
+[5/5] powerpc/64s: Fix unrecoverable MCE calling async handler from NMI
+      https://git.kernel.org/powerpc/c/f08fb25bc66986b0952724530a640d9970fa52c1
 
 cheers
