@@ -2,22 +2,22 @@ Return-Path: <SRS0=IY60=O4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1CD0C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 16:37:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0F31C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 16:38:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00B1860F12
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 16:37:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 00B1860F12
+	by mail.kernel.org (Postfix) with ESMTPS id 2987660F4C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 16:38:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2987660F4C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=svenpeter.dev
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HQv4M3NGCz3c9C
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 03:37:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HQv564x84z3c7N
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 03:38:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev header.a=rsa-sha256 header.s=fm2 header.b=TqkAafPN;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=Vu6xa+sb;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev header.a=rsa-sha256 header.s=fm2 header.b=RmuEne/F;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=H/rd2lmy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=svenpeter.dev (client-ip=66.111.4.224;
@@ -25,69 +25,72 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=svenpeter.dev header.i=@svenpeter.dev
- header.a=rsa-sha256 header.s=fm2 header.b=TqkAafPN; 
+ header.a=rsa-sha256 header.s=fm2 header.b=RmuEne/F; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm1 header.b=Vu6xa+sb; 
+ header.a=rsa-sha256 header.s=fm1 header.b=H/rd2lmy; 
  dkim-atps=neutral
 Received: from new2-smtp.messagingengine.com (new2-smtp.messagingengine.com
  [66.111.4.224])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HQv2q24Dbz2yN4
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 03:36:18 +1100 (AEDT)
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
- by mailnew.nyi.internal (Postfix) with ESMTP id AB54B580FD5;
- Fri,  8 Oct 2021 12:36:13 -0400 (EDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HQv2t1MW8z2yN4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 03:36:22 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailnew.nyi.internal (Postfix) with ESMTP id 22692581009;
+ Fri,  8 Oct 2021 12:36:20 -0400 (EDT)
 Received: from mailfrontend1 ([10.202.2.162])
- by compute5.internal (MEProxy); Fri, 08 Oct 2021 12:36:13 -0400
+ by compute6.internal (MEProxy); Fri, 08 Oct 2021 12:36:20 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=svenpeter.dev;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding; s=fm2; bh=cHX2rY9rskeE1+fRnngpouQp+f
- owWM3d9LCqW9L1Z+0=; b=TqkAafPNpdb94tkYSGI5CqyYCj7IfvR/jOKRt7WVvv
- 1YidtBYXtoK9qwTjJfxhR1tIS2LS/UkEQvs0D/+Im47XmW4ojwJOPQLp2UYmEn9O
- HjeVfl0lsa/kznsJKi/uTZGZh+97pwXZVEoIIeiGZyMFzEMuEQKkPVXhl0U96GQD
- B0wcKHB4kbCYitFbQO4dwYSZEi2dMPTIZz4ZQpY2aZhlZJjWxoVxOibZ/gMPHg29
- AxrWvbvVsCh90YlY3U07DiE0D91Ql1174hgFU2VbJYuoQjjlrUBrV+iF8XvTJdas
- h43MIAP7NOHmQyn74UUPAnc+2VkJRfwVOAYbaUa+QZ0w==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm2; bh=3gVs60z+GZXZn
+ xMyWBUAI98Vy1vUJV8dXTwiEbS9uIY=; b=RmuEne/F7tjZzGUT07pkBKHFK+fpy
+ 1rYBUjpzvmXxhNlBOZFnET+UqwezORS9olGwXcJb3C8LNtbF5oxih77H0gmEbMyD
+ 1luNlUbYVlxHmELdINlNjrFr18jFaIpYl3l3yL18sM1tbKpOzZ5UhkCjgbjcFxEr
+ WxqwtEs3Arp3uIcC1cvn/+uMS+QtiNLLdrTru1DxREAcp+KGlL6ESwqSeFnDBc7j
+ ZFdT/25Bso7VKm3SZKoZOUWTl2Dy0o3IBi2EG2KQzZvb35Dy+dRigcZZvoVLVgS8
+ 7mCFOS0Bd79lmCfLhi4d6HdpmjQcU6+5pP7xzKh/zxe4ibbfJ61D55UGQ==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
- :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
- :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=cHX2rY9rskeE1+fRn
- ngpouQp+fowWM3d9LCqW9L1Z+0=; b=Vu6xa+sbSYGmBVWHV6njmWP5ItJrJuLsa
- lkZCT6DVC/STDr/vRMwYcl/uVkoREkZAWt2bJ6E98drt/GHnJDLdeRhWS6N7W1zR
- n2pu6hBl5J3P0DQxLBVA6S2DWGCqva0vKa1kqp0fWIRZGa5922O0aYdE+6WVRUt1
- a2eP5dvma2I6mnlxKmbhZPkhIoyawxCG3bM6lzBbZYBYcMSX0W1Ld4dgPp71INJt
- I0NH3xQytIf+jFpxnTVjxpXUkI9vp+tnJadw8jZn/w1KT1PmQlyXUHYnGLSSqAXH
- oFUxypulkbpx6V2Jvrns9K6GPIF0OAuWnx9C1IJzzzmarMtn/2gzA==
-X-ME-Sender: <xms:fHNgYRGhSbb2_A03eRnhnmJ4hYC3aqcXn4fDPCYJ49XNYEdrGyweJg>
- <xme:fHNgYWX2sEUGK8ofeM9D9quwu8eZxOYZh5VasJpShBwI7WRbzBCJvQSNG0tmBxmKb
- tVIUYw648rhAnjBjiA>
-X-ME-Received: <xmr:fHNgYTL_M1zCLtPdkjqVs1l5M5bpiy7sOyb5legnwXp5I4_nwWFoPfkp2v0UqVTy7P5Im-SBgRBH824Au12DG3avEv6aAwkw9BdL1_ZsDZuXYUqvxzbGaQs>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvtddrvddttddgleelucetufdoteggodetrfdotf
- fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
- uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- cujfgurhephffvufffkffoggfgsedtkeertdertddtnecuhfhrohhmpefuvhgvnhcurfgv
- thgvrhcuoehsvhgvnhesshhvvghnphgvthgvrhdruggvvheqnecuggftrfgrthhtvghrnh
- epfeehudeftddvhfehvdduhedtjeejheeuudfftdfgvdekvdelleeuveelgfeflefgnecu
- ffhomhgrihhnpehkvghrnhgvlhdrohhrghenucevlhhushhtvghrufhiiigvpedtnecurf
- grrhgrmhepmhgrihhlfhhrohhmpehsvhgvnhesshhvvghnphgvthgvrhdruggvvh
-X-ME-Proxy: <xmx:fHNgYXEAZtwSPee01aEdBUgDIppK-UvoTXCATjnTVw_GDfpBsg2aPg>
- <xmx:fHNgYXV6Qx6reGY3CCQohojgUPf-Y-f0Nohe20_WS7Zg9heHVm3ZCA>
- <xmx:fHNgYSPegl3F_vB5tfZBjtGzueleqniMgprxVCIsRtcXvBWRuC1mAg>
- <xmx:fXNgYQUrEUkBPZ4ZgygCfMavyjnSHXh3Pwdjenz_Vn-YHf6kDKd8ZQ>
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm1; bh=3gVs60z+GZXZnxMyWBUAI98Vy1vUJV8dXTwiEbS9uIY=; b=H/rd2lmy
+ /MZXkXI0uPT9k8Jzu0qZ0lW3aFVBcGdrtY+sN7jZOzETg03URd6Ndldgv6v9YjkO
+ yiYv1xLDLTxHCX44bjEQn6kw8mfPo35fLzbpyU9Ks6h1+PBQbjn6jmo63LSJFmoQ
+ VW/XFvhsoo56RDuyHODkf9VoTeP72X/jf2o9/3YayamhNUW2Fst1m2+4rBGL6KAV
+ eSVspKcgHrHPQeRhORSAitRgp1R1xw62t0o5zCi3m+9AALbyWWI4ehCLk7usBrqe
+ byYv+eiWBiLecAL8f+d1Okf0D303+XE8eRtGwSYNMbTuV8WhdALjlGQPF06b2DAt
+ peQ58/MvDGoUYg==
+X-ME-Sender: <xms:g3NgYcl4qb4fb2DnGc66uGQN5p4fB8uIqzIUxoGRex5SQ9YA5Hc36Q>
+ <xme:g3NgYb0f7198RKlXdp359PmQFtDGJ7_266vvIfhgzZgrwNW8pak5Ow6aIqj7C6jSb
+ yIvAAzQs3LNZlExtqs>
+X-ME-Received: <xmr:g3NgYaqp8M7xogGY7x_jPoQ3bh_Ohnlpj7BBE3_hjI0IM0XzenYggYiM4yXJNkkAdNuSzFhAPBb7scDOxmz_21ci7iqnksNfg8sAXJOullUmOVOjlmmP5zY>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvtddrvddttddguddttdcutefuodetggdotefrod
+ ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
+ necuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+ enucfjughrpefhvffufffkofgjfhgggfestdekredtredttdenucfhrhhomhepufhvvghn
+ ucfrvghtvghruceoshhvvghnsehsvhgvnhhpvghtvghrrdguvghvqeenucggtffrrghtth
+ gvrhhnpeetvdekteeluefffffhkeetteffgefggfevheeileeufedvtdeuffevveelhfef
+ jeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehsvh
+ gvnhesshhvvghnphgvthgvrhdruggvvh
+X-ME-Proxy: <xmx:g3NgYYllgm6C5UvPZECH3k0k_3ra92trSJaiMZyaAPxiBHzOHaXrdA>
+ <xmx:g3NgYa0VTtmBnMDnWxRQDJzYU5YoFDuPdBivsmhwo13-G1Fz0ayNQQ>
+ <xmx:g3NgYftEGzDjQlr6Yy1qyO1ypQhnG8xSuI5oRsfsW6XG51niwWMviA>
+ <xmx:hHNgYV3tkezvN0V7k-8FV6c7RwL5xHOIAzJDP0BDVZh8nZTTleJmcw>
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
- 8 Oct 2021 12:36:09 -0400 (EDT)
+ 8 Oct 2021 12:36:17 -0400 (EDT)
 From: Sven Peter <sven@svenpeter.dev>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
  Christian Zigotzky <chzigotzky@xenosoft.de>, Wolfram Sang <wsa@kernel.org>
-Subject: [PATCH v2 00/11] Add Apple M1 support to PASemi i2c driver
-Date: Fri,  8 Oct 2021 18:35:21 +0200
-Message-Id: <20211008163532.75569-1-sven@svenpeter.dev>
+Subject: [PATCH v2 02/11] i2c: pasemi: Use io{read,write}32
+Date: Fri,  8 Oct 2021 18:35:23 +0200
+Message-Id: <20211008163532.75569-3-sven@svenpeter.dev>
 X-Mailer: git-send-email 2.30.1 (Apple Git-130)
+In-Reply-To: <20211008163532.75569-1-sven@svenpeter.dev>
+References: <20211008163532.75569-1-sven@svenpeter.dev>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -112,83 +115,83 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+In preparation for splitting this driver up into a platform_driver
+and a pci_driver, replace outl/inl usage with pci_iomap and
+ioread32/iowrite32.
 
-v1: https://lore.kernel.org/linux-i2c/20210926095847.38261-1-sven@svenpeter.dev/
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Sven Peter <sven@svenpeter.dev>
+---
+v1 -> v2: replaced ioport_map with pci_iomap 
 
-Changes for v2:
- - Added reviewed-by/acks
- - Switched from ioport_map to pci_iomap as suggested by Arnd Bergmann
- - Renamed i2c-pasemi-apple.c to i2c-pasemi-platform.c as suggested by
-   Wolfram Sang
- - Replaced the ioport number in the adapter name with dev_name to be
-   able to identify separate busses in e.g. i2cdetect.
+ drivers/i2c/busses/i2c-pasemi.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-I still don't have access to any old PASemi hardware but the changes from
-v1 are pretty small and I expect them to still work. Would still be nice
-if someone with access to such hardware could give this a quick test.
-
-
-And for those who didn't see v1 the (almost) unchanged original cover letter:
-
-This series adds support for the I2C controller found on Apple Silicon Macs
-which has quite a bit of history:
-
-Apple bought P.A. Semi in 2008 and it looks like a part of its legacy continues
-to live on in the M1. This controller has actually been used since at least the
-iPhone 4S and hasn't changed much since then.
-Essentially, there are only a few differences that matter:
-
-	- The controller no longer is a PCI device
-	- Starting at some iPhone an additional bit in one register
-          must be set in order to start transmissions.
-	- The reference clock and hence the clock dividers are different
-
-In order to add support for a platform device I first replaced PCI-specific
-bits and split out the PCI driver to its own file. Then I added support
-to make the clock divider configurable and converted the driver to use
-managed device resources to make it a bit simpler.
-
-The Apple and PASemi driver will never be compiled in the same kernel
-since the Apple one will run on arm64 while the original PASemi driver
-will only be useful on powerpc.
-I've thus followed the octeon (mips)/thunderx(arm64) approach to do the
-split: I created a -core.c file which contains the shared logic and just
-compile that one for both the PASemi and the new Apple driver.
-
-
-Best,
-
-Sven
-
-Sven Peter (11):
-  dt-bindings: i2c: Add Apple I2C controller bindings
-  i2c: pasemi: Use io{read,write}32
-  i2c: pasemi: Use dev_name instead of port number
-  i2c: pasemi: Remove usage of pci_dev
-  i2c: pasemi: Split off common probing code
-  i2c: pasemi: Split pci driver to its own file
-  i2c: pasemi: Move common reset code to own function
-  i2c: pasemi: Allow to configure bus frequency
-  i2c: pasemi: Refactor _probe to use devm_*
-  i2c: pasemi: Add Apple platform driver
-  i2c: pasemi: Set enable bit for Apple variant
-
- .../devicetree/bindings/i2c/apple,i2c.yaml    |  61 +++++++++
- MAINTAINERS                                   |   2 +
- drivers/i2c/busses/Kconfig                    |  11 ++
- drivers/i2c/busses/Makefile                   |   3 +
- .../{i2c-pasemi.c => i2c-pasemi-core.c}       | 114 +++++-----------
- drivers/i2c/busses/i2c-pasemi-core.h          |  21 +++
- drivers/i2c/busses/i2c-pasemi-pci.c           |  85 ++++++++++++
- drivers/i2c/busses/i2c-pasemi-platform.c      | 122 ++++++++++++++++++
- 8 files changed, 334 insertions(+), 85 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/i2c/apple,i2c.yaml
- rename drivers/i2c/busses/{i2c-pasemi.c => i2c-pasemi-core.c} (77%)
- create mode 100644 drivers/i2c/busses/i2c-pasemi-core.h
- create mode 100644 drivers/i2c/busses/i2c-pasemi-pci.c
- create mode 100644 drivers/i2c/busses/i2c-pasemi-platform.c
-
+diff --git a/drivers/i2c/busses/i2c-pasemi.c b/drivers/i2c/busses/i2c-pasemi.c
+index 20f2772c0e79..39fcc584264a 100644
+--- a/drivers/i2c/busses/i2c-pasemi.c
++++ b/drivers/i2c/busses/i2c-pasemi.c
+@@ -20,6 +20,7 @@ static struct pci_driver pasemi_smb_driver;
+ struct pasemi_smbus {
+ 	struct pci_dev		*dev;
+ 	struct i2c_adapter	 adapter;
++	void __iomem		*ioaddr;
+ 	unsigned long		 base;
+ 	int			 size;
+ };
+@@ -53,13 +54,13 @@ static inline void reg_write(struct pasemi_smbus *smbus, int reg, int val)
+ {
+ 	dev_dbg(&smbus->dev->dev, "smbus write reg %lx val %08x\n",
+ 		smbus->base + reg, val);
+-	outl(val, smbus->base + reg);
++	iowrite32(val, smbus->ioaddr + reg);
+ }
+ 
+ static inline int reg_read(struct pasemi_smbus *smbus, int reg)
+ {
+ 	int ret;
+-	ret = inl(smbus->base + reg);
++	ret = ioread32(smbus->ioaddr + reg);
+ 	dev_dbg(&smbus->dev->dev, "smbus read reg %lx val %08x\n",
+ 		smbus->base + reg, ret);
+ 	return ret;
+@@ -351,6 +352,12 @@ static int pasemi_smb_probe(struct pci_dev *dev,
+ 		goto out_kfree;
+ 	}
+ 
++	smbus->ioaddr = pci_iomap(dev, 0, 0);
++	if (!smbus->ioaddr) {
++		error = -EBUSY;
++		goto out_release_region;
++	}
++
+ 	smbus->adapter.owner = THIS_MODULE;
+ 	snprintf(smbus->adapter.name, sizeof(smbus->adapter.name),
+ 		 "PA Semi SMBus adapter at 0x%lx", smbus->base);
+@@ -366,12 +373,14 @@ static int pasemi_smb_probe(struct pci_dev *dev,
+ 
+ 	error = i2c_add_adapter(&smbus->adapter);
+ 	if (error)
+-		goto out_release_region;
++		goto out_ioport_unmap;
+ 
+ 	pci_set_drvdata(dev, smbus);
+ 
+ 	return 0;
+ 
++ out_ioport_unmap:
++	pci_iounmap(dev, smbus->ioaddr);
+  out_release_region:
+ 	release_region(smbus->base, smbus->size);
+  out_kfree:
+@@ -384,6 +393,7 @@ static void pasemi_smb_remove(struct pci_dev *dev)
+ 	struct pasemi_smbus *smbus = pci_get_drvdata(dev);
+ 
+ 	i2c_del_adapter(&smbus->adapter);
++	pci_iounmap(dev, smbus->ioaddr);
+ 	release_region(smbus->base, smbus->size);
+ 	kfree(smbus);
+ }
 -- 
 2.25.1
 
