@@ -2,19 +2,19 @@ Return-Path: <SRS0=IY60=O4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28C43C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 15:43:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62CD4C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 15:44:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79C3B6101A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 15:43:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 79C3B6101A
+	by mail.kernel.org (Postfix) with ESMTPS id B193060F6F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 15:44:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B193060F6F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HQst91KLRz3dZ7
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 02:43:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HQstd0PYrz3cGG
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 02:44:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,43 +22,43 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HQsqP6Ldrz3c5N
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 02:41:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HQsqV0pX3z3c5Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 02:41:25 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HQsq22QWZz9sSj;
- Fri,  8 Oct 2021 17:41:02 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HQsq316Fwz9sSk;
+ Fri,  8 Oct 2021 17:41:03 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id N0zKjX-lsIpv; Fri,  8 Oct 2021 17:41:02 +0200 (CEST)
+ with ESMTP id WlGDrbB7CtM2; Fri,  8 Oct 2021 17:41:03 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HQspx6GWLz9sSk;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HQspx6S5Qz9sSm;
  Fri,  8 Oct 2021 17:40:57 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BA25E8B763;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BB3368B786;
  Fri,  8 Oct 2021 17:40:57 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id bWhorp1jYWlc; Fri,  8 Oct 2021 17:40:57 +0200 (CEST)
+ with ESMTP id 3mWv1WIfLPql; Fri,  8 Oct 2021 17:40:57 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.75])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E874E8B799;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E69078B798;
  Fri,  8 Oct 2021 17:40:56 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 198FeosT1129704
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 198Feo4t1129692
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Fri, 8 Oct 2021 17:40:50 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 198Feox61129703;
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 198Feo2X1129691;
  Fri, 8 Oct 2021 17:40:50 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 16/16] powerpc: Remove CONFIG_PPC_HAVE_KUAP
-Date: Fri,  8 Oct 2021 17:40:44 +0200
-Message-Id: <191371e5b94077cad24809d22a07b310271fbaf1.1633707305.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 13/16] powerpc/kuap: Wire-up KUAP on 40x
+Date: Fri,  8 Oct 2021 17:40:41 +0200
+Message-Id: <0c4b7e8738d023e4e9c8d3218f104b1e73c930f8.1633707305.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1633707305.git.christophe.leroy@csgroup.eu>
 References: <cover.1633707305.git.christophe.leroy@csgroup.eu>
@@ -80,96 +80,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All platforms now have KUAP so remove CONFIG_PPC_HAVE_KUAP
+This adds KUAP support to 40x. This is done by checking
+the content of SPRN_PID at the time user pgtable is loaded.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/mm/nohash/kup.c           |  1 -
- arch/powerpc/platforms/Kconfig.cputype | 11 -----------
- 2 files changed, 12 deletions(-)
+ arch/powerpc/kernel/head_40x.S         | 8 ++++++++
+ arch/powerpc/platforms/Kconfig.cputype | 1 +
+ 2 files changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/mm/nohash/kup.c b/arch/powerpc/mm/nohash/kup.c
-index bbacbd780806..eaea52231dd6 100644
---- a/arch/powerpc/mm/nohash/kup.c
-+++ b/arch/powerpc/mm/nohash/kup.c
-@@ -10,7 +10,6 @@
- #include <linux/smp.h>
- 
- #include <asm/kup.h>
--#include <asm/mmu.h>
- #include <asm/smp.h>
- 
- #ifdef CONFIG_PPC_KUAP
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index 7d72ee5ab387..87d322dbed94 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -297,6 +297,10 @@ _ASM_NOKPROBE_SYMBOL(\name\()_virt)
+ 3:
+ 	mfspr	r11,SPRN_SPRG_THREAD
+ 	lwz	r11,PGDIR(r11)
++#ifdef CONFIG_PPC_KUAP
++	rlwinm.	r9, r9, 0, 0xff
++	beq	5f			/* Kuap fault */
++#endif
+ 4:
+ 	tophys(r11, r11)
+ 	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
+@@ -377,6 +381,10 @@ _ASM_NOKPROBE_SYMBOL(\name\()_virt)
+ 3:
+ 	mfspr	r11,SPRN_SPRG_THREAD
+ 	lwz	r11,PGDIR(r11)
++#ifdef CONFIG_PPC_KUAP
++	rlwinm.	r9, r9, 0, 0xff
++	beq	5f			/* Kuap fault */
++#endif
+ 4:
+ 	tophys(r11, r11)
+ 	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
 diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index d0e52ad45d73..d0ae0d6a1384 100644
+index 30091551ab24..d703fd8e2feb 100644
 --- a/arch/powerpc/platforms/Kconfig.cputype
 +++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -31,20 +31,17 @@ config PPC_BOOK3S_32
- 	imply PPC_FPU
- 	select PPC_HAVE_PMU_SUPPORT
- 	select PPC_HAVE_KUEP
--	select PPC_HAVE_KUAP
- 	select HAVE_ARCH_VMAP_STACK
- 
- config PPC_85xx
- 	bool "Freescale 85xx"
- 	select E500
--	select PPC_HAVE_KUAP
- 
- config PPC_8xx
- 	bool "Freescale 8xx"
- 	select ARCH_SUPPORTS_HUGETLBFS
- 	select FSL_SOC
- 	select PPC_HAVE_KUEP
--	select PPC_HAVE_KUAP
- 	select HAVE_ARCH_VMAP_STACK
- 	select HUGETLBFS
- 
-@@ -54,7 +51,6 @@ config 40x
+@@ -53,6 +53,7 @@ config 40x
  	select PPC_UDBG_16550
  	select 4xx_SOC
  	select HAVE_PCI
--	select PPC_HAVE_KUAP
++	select PPC_HAVE_KUAP
  
  config 44x
  	bool "AMCC 44x, 46x or 47x"
-@@ -64,7 +60,6 @@ config 44x
- 	select HAVE_PCI
- 	select PHYS_64BIT
- 	select PPC_HAVE_KUEP
--	select PPC_HAVE_KUAP
- 
- endchoice
- 
-@@ -110,7 +105,6 @@ config PPC_BOOK3S_64
- 	select IRQ_WORK
- 	select PPC_MM_SLICES
- 	select PPC_HAVE_KUEP
--	select PPC_HAVE_KUAP
- 
- config PPC_BOOK3E_64
- 	bool "Embedded processors"
-@@ -118,7 +112,6 @@ config PPC_BOOK3E_64
- 	select PPC_SMP_MUXED_IPI
- 	select PPC_DOORBELL
- 	select ZONE_DMA
--	select PPC_HAVE_KUAP
- 
- endchoice
- 
-@@ -408,12 +401,8 @@ config PPC_KUEP
- 
- 	  If you're unsure, say Y.
- 
--config PPC_HAVE_KUAP
--	bool
--
- config PPC_KUAP
- 	bool "Kernel Userspace Access Protection"
--	depends on PPC_HAVE_KUAP
- 	default y
- 	help
- 	  Enable support for Kernel Userspace Access Protection (KUAP)
 -- 
 2.31.1
 
