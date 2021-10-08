@@ -2,40 +2,67 @@ Return-Path: <SRS0=IY60=O4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAA6FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 13:26:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E138BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 15:41:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B8C460F9C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 13:26:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2B8C460F9C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id DFCD86101A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 15:41:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DFCD86101A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HQpql591mz3c7p
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 00:26:27 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HQsqb1h2bz3c6n
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 02:41:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HQpnY1Mf8z2yKB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 00:24:33 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4HQpnY0WQMz4xqP;
- Sat,  9 Oct 2021 00:24:33 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20211004145642.1331214-1-npiggin@gmail.com>
-References: <20211004145642.1331214-1-npiggin@gmail.com>
-Subject: Re: [PATCH 0/5] powerpc: various interrupt handling fixes
-Message-Id: <163369938156.3568929.5142383792032173677.b4-ty@ellerman.id.au>
-Date: Sat, 09 Oct 2021 00:23:01 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HQsq26gyGz2ywW
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 02:41:00 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4HQspx367Cz9sSg;
+ Fri,  8 Oct 2021 17:40:57 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id JcDkKmrRGPJt; Fri,  8 Oct 2021 17:40:57 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HQspx1tSgz9sS8;
+ Fri,  8 Oct 2021 17:40:57 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 21F5C8B7A9;
+ Fri,  8 Oct 2021 17:40:57 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id YP7m4JoIrcUK; Fri,  8 Oct 2021 17:40:57 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.75])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BDCF18B786;
+ Fri,  8 Oct 2021 17:40:56 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 198FeoFp1129688
+ (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+ Fri, 8 Oct 2021 17:40:50 +0200
+Received: (from chleroy@localhost)
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 198FeorU1129687;
+ Fri, 8 Oct 2021 17:40:50 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
+ christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v2 12/16] powerpc/kuap: Wire-up KUAP on 44x
+Date: Fri,  8 Oct 2021 17:40:40 +0200
+Message-Id: <96c8f8d85233af9d883087237f4537405c72287f.1633707305.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <cover.1633707305.git.christophe.leroy@csgroup.eu>
+References: <cover.1633707305.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -48,34 +75,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ganesh Goudar <ganeshgr@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 5 Oct 2021 00:56:37 +1000, Nicholas Piggin wrote:
-> This fixes a number of bugs found mostly looking at a MCE handler issue,
-> which should be fixed in patch 5 of the series, previous attempt here
-> which Ganesh found to be wrong.
-> 
-> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20210922020247.209409-1-npiggin@gmail.com/
-> 
-> I didn't increment to patch v2 because it's a different approach (so I
-> gave it a different title).
-> 
-> [...]
+This adds KUAP support to 44x. This is done by checking
+the content of SPRN_PID at the time it is read and written
+into SPRN_MMUCR.
 
-Applied to powerpc/fixes.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/kernel/head_44x.S         | 16 ++++++++++++++++
+ arch/powerpc/platforms/Kconfig.cputype |  1 +
+ 2 files changed, 17 insertions(+)
 
-[1/5] powerpc/64s: fix program check interrupt emergency stack path
-      https://git.kernel.org/powerpc/c/3e607dc4df180b72a38e75030cb0f94d12808712
-[2/5] powerpc/traps: do not enable irqs in _exception
-      https://git.kernel.org/powerpc/c/d0afd44c05f8f4e4c91487c02d43c87a31552462
-[3/5] powerpc/64: warn if local irqs are enabled in NMI or hardirq context
-      https://git.kernel.org/powerpc/c/ff058a8ada5df0d84e5537cfaf89d06d71501580
-[4/5] powerpc/64/interrupt: Reconcile soft-mask state in NMI and fix false BUG
-      https://git.kernel.org/powerpc/c/768c47010392ece9766a56479b4e0cf04a536916
-[5/5] powerpc/64s: Fix unrecoverable MCE calling async handler from NMI
-      https://git.kernel.org/powerpc/c/f08fb25bc66986b0952724530a640d9970fa52c1
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 02d2928d1e01..cf92a3434acd 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -334,6 +334,10 @@ interrupt_base:
+ 	mfspr	r12,SPRN_MMUCR
+ 	mfspr   r13,SPRN_PID		/* Get PID */
+ 	rlwimi	r12,r13,0,24,31		/* Set TID */
++#ifdef CONFIG_PPC_KUAP
++	cmpwi	r13,0
++	beq	2f			/* KUAP Fault */
++#endif
+ 
+ 4:
+ 	mtspr	SPRN_MMUCR,r12
+@@ -444,6 +448,10 @@ interrupt_base:
+ 	mfspr	r12,SPRN_MMUCR
+ 	mfspr   r13,SPRN_PID		/* Get PID */
+ 	rlwimi	r12,r13,0,24,31		/* Set TID */
++#ifdef CONFIG_PPC_KUAP
++	cmpwi	r13,0
++	beq	2f			/* KUAP Fault */
++#endif
+ 
+ 4:
+ 	mtspr	SPRN_MMUCR,r12
+@@ -575,6 +583,10 @@ finish_tlb_load_44x:
+ 3:	mfspr	r11,SPRN_SPRG3
+ 	lwz	r11,PGDIR(r11)
+ 	mfspr   r12,SPRN_PID		/* Get PID */
++#ifdef CONFIG_PPC_KUAP
++	cmpwi	r12,0
++	beq	2f			/* KUAP Fault */
++#endif
+ 4:	mtspr	SPRN_MMUCR,r12		/* Set MMUCR */
+ 
+ 	/* Mask of required permission bits. Note that while we
+@@ -672,6 +684,10 @@ finish_tlb_load_44x:
+ 3:	mfspr	r11,SPRN_SPRG_THREAD
+ 	lwz	r11,PGDIR(r11)
+ 	mfspr   r12,SPRN_PID		/* Get PID */
++#ifdef CONFIG_PPC_KUAP
++	cmpwi	r12,0
++	beq	2f			/* KUAP Fault */
++#endif
+ 4:	mtspr	SPRN_MMUCR,r12		/* Set MMUCR */
+ 
+ 	/* Make up the required permissions */
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index a66ab0a991f9..30091551ab24 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -62,6 +62,7 @@ config 44x
+ 	select HAVE_PCI
+ 	select PHYS_64BIT
+ 	select PPC_HAVE_KUEP
++	select PPC_HAVE_KUAP
+ 
+ endchoice
+ 
+-- 
+2.31.1
 
-cheers
