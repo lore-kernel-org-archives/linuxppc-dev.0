@@ -2,98 +2,43 @@ Return-Path: <SRS0=vnEJ=O5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AA00C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 05:39:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 882C7C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 05:39:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3AD7760F5B
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 05:39:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3AD7760F5B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=andrometa.mk
+	by mail.kernel.org (Postfix) with ESMTPS id ACE5D60F5B
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 05:39:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ACE5D60F5B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HRDQ65xcRz3cmZ
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 16:39:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HRDQb2rQfz3dZx
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 16:39:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=andrometa.mk header.i=@andrometa.mk header.a=rsa-sha256 header.s=default header.b=cJbZGWen;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: No valid SPF
- record for included domain: spf.theservercompany.com:
- include:spf.theservercompany.com) smtp.mailfrom=andrometa.mk
- (client-ip=104.36.56.139; helo=out4.theservercompany.com;
- envelope-from=xmonahan@andrometa.mk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=andrometa.mk header.i=@andrometa.mk header.a=rsa-sha256
- header.s=default header.b=cJbZGWen; dkim-atps=neutral
-X-Greylist: delayed 1774 seconds by postgrey-1.36 at boromir;
- Fri, 08 Oct 2021 23:54:53 AEDT
-Received: from out4.theservercompany.com (out4.theservercompany.com
- [104.36.56.139])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HQp7K2xPQz2yWH
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Oct 2021 23:54:53 +1100 (AEDT)
-Received: from saturn.theservercompany.com ([162.249.125.18])
- by mailx2.theservercompany.com with esmtps (TLSv1.2:AES128-GCM-SHA256:128)
- (Exim 4.92) (envelope-from <xmonahan@andrometa.mk>)
- id 1mYovy-0004BY-Ax
- for linuxppc-dev@lists.ozlabs.org; Fri, 08 Oct 2021 07:25:11 -0500
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=andrometa.mk; s=default; h=MIME-Version:Message-ID:Subject:From:To:Date:
- Content-Type:Sender:Reply-To:Cc:Content-Transfer-Encoding:Content-ID:
- Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
- :Resent-Message-ID:In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:
- List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=wAA5QESNxuM1/nMUlvfFvdIqMYvENtM1HDJdUuOHPmA=; b=cJbZGWentb6fx90a0Uwuaxflhc
- teFFv1EALg7POpngsGgLbUN6pVKn74ed8Rw8MOubeneU1jnlgCZXHgr37vX0g4iVGEWPKOMmDIPxC
- mWgVc6VAeK2IiD93Xy2rjAzn9ClR1eBdDbraZyRUr1OpfRs+NWq9penG4/lZUfDI13kHx2YK63F8m
- MX9ukZtdjfgexpn1TBNJ2ofqrrwvN+Y8DVKFy+270SfOQtQt9UYJ2dwTNX6uPjXBEh/1XQDPun9GD
- 7vV9jZnsKPtB/GeAYdTAM/sVXsww9lKbqTouLpOEBdYsw/9chFGKbGH+rqIkrBNYAZzPYxSdcIwRu
- riLL+oRg==;
-Received: from [144.126.213.73] (port=34924 helo=saturn.theservercompany.com)
- by saturn.theservercompany.com with esmtpsa (TLS1.2) tls
- TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA (Exim 4.94.2)
- (envelope-from <xmonahan@andrometa.mk>) id 1mYovy-0001Sg-Ic
- for linuxppc-dev@lists.ozlabs.org; Fri, 08 Oct 2021 07:25:04 -0500
-Content-Type: multipart/alternative;
- boundary=xXPYTALNy1wFdcLBsn55wgKNLDEhIXdlLBkBOtI
-Date: Fri, 08 Oct 2021 11:25:03 +0000
-To: linuxppc-dev@lists.ozlabs.org
-From: "Will Springer" <xmonahan@andrometa.mk>
-Subject: Re: ppc64le and 32-bit LE userland compatibility
-Message-ID: <99BFE237ED26785519C0389CA72A37174201D7B1@unknown>
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=valentin.schneider@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4HQsPv1T20z2ynt
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 02:22:41 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EDF7F6D;
+ Fri,  8 Oct 2021 08:22:37 -0700 (PDT)
+Received: from e113632-lin (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9B44F3F66F;
+ Fri,  8 Oct 2021 08:22:29 -0700 (PDT)
+From: Valentin Schneider <valentin.schneider@arm.com>
+To: Barry Song <21cnbao@gmail.com>
+Subject: Re: [PATCH 2/2] sched: Centralize SCHED_{SMT, MC, CLUSTER} definitions
+In-Reply-To: <CAGsJ_4wqtcOdsFDzR98PFbjxRyTqzf7P3p3erup84SXESYonYw@mail.gmail.com>
+References: <20211008115347.425234-1-valentin.schneider@arm.com>
+ <20211008115347.425234-3-valentin.schneider@arm.com>
+ <CAGsJ_4wqtcOdsFDzR98PFbjxRyTqzf7P3p3erup84SXESYonYw@mail.gmail.com>
+Date: Fri, 08 Oct 2021 16:22:27 +0100
+Message-ID: <87bl3zlex8.mognet@arm.com>
 MIME-Version: 1.0
-X-Get-Message-Sender-Via: saturn.theservercompany.com: authenticated_id:
- xmonahan@andrometa.mk
-X-Authenticated-Sender: saturn.theservercompany.com: xmonahan@andrometa.mk
-X-Originating-IP: 162.249.125.18
-X-SpamExperts-Domain: theservercompany.com
-X-SpamExperts-Username: 162.249.125.18
-Authentication-Results: theservercompany.com; auth=pass
- smtp.auth=162.249.125.18@theservercompany.com
-X-SpamExperts-Outgoing-Class: ham
-X-SpamExperts-Outgoing-Evidence: Combined (0.08)
-X-Recommended-Action: accept
-X-Filter-ID: Pt3MvcO5N4iKaDQ5O6lkdGlMVN6RH8bjRMzItlySaT/wvMojK6f+FuLsUejyh3bLPUtbdvnXkggZ
- 3YnVId/Y5jcf0yeVQAvfjHznO7+bT5ytzBoWRaGlC4JWMCdll4ADZ1DbwdWmNHWWfGTy2MkEyCo/
- xMM0hxORRmMMI7DUTwhoqRfUsnAvJz8SHEoh6eUO5g+sHZmT3CLVmxntdIVybeNui47fZDxqmCO3
- Vact0CYElLsNjqMwxbvrZAimyEX8pwswSCBpUwD6pL+vabw4hdSfc33buDBcWlo4F/XVil2DwIE7
- VKe+bqpcdCns72R1FO0xHKG+IEW4nyaCpvSwCcoEHjy/ULxsNTqBqwdcD2vM7XUFEqpPwHi4uufu
- LPy68sEzNshBxIbwvSM7MvzRDUzENyoN4S9qF8+QOROUf3UuBpCeYXwfqlroHwxMrWWKAAn0bQYy
- 8xI4CGTS1oSPzHMst0m21q3ppf3Z7ggT3jfdgRj6yrQAuxbFOPSpYqPfmLF0wqTcEF+RrgN98ekF
- aqCX4xmU2SDHtIqq4Y0ryKGk2+wezfbw8tQUtCaWo09kEXZSolxyD+8MjHJqtijbF2Dmnroh/8hH
- WR/Etfk4HCQTo4dLz8XEDoyijq2CEGKcGplHcpVCCoX989hgB8R+yEB4gfcYNjnD0le1Yry2QyCU
- WBHM9fh6Zr3MHJtBQQ7a4cmyhw9hJLUR1Eo1wQfKtuLoypIrEdyZzHFBAqLyAyZLjnUmkiAPcoKG
- bW9QQlgxMzg958IFbKKlNc0N5cagQhEVniihuDwEGDcmr6e3OPRrb9Mqian2rcVbYw5NjcdbrWWa
- oMdmZ8HSMJcDijWegN4G9Gf7eJAbyrSqSHDDl8F8jj2aJZTPs3QkwvU+20bYHHASJNUmoOHSoqgq
- xfHmWTqhEnDc7QxmmuolLRsnGR4WWhCWW+AkYxL1vkQOt8ujisLs/HylkvsBf4jlzH1QNrQf9U4Y
- CYnyCF7vzEkGGf6pzqjhTn5YY9rXDmQAqx2X+vcSNOmINmmiI/k61adwTlnbLyb3uZHXxcegfSUB
- IJDP8v5/ws5Mc3w6QS2u8dlL/XtUN++G0DLgrCZmJV78VAISrgforfpawCLJdMIDKa76I6RtJFJt
- Bs6tjE3ZCKx3
-X-Report-Abuse-To: spam@mailx1.theservercompany.com
+Content-Type: text/plain
 X-Mailman-Approved-At: Sat, 09 Oct 2021 16:36:15 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -106,65 +51,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Juri Lelli <juri.lelli@redhat.com>, Mark Rutland <mark.rutland@arm.com>,
+ Kefeng Wang <wangkefeng.wang@huawei.com>, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Linus Walleij <linus.walleij@linaro.org>, David Hildenbrand <david@redhat.com>,
+ x86 <x86@kernel.org>, linux-mips@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Hugh Dickins <hughd@google.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Will Deacon <will@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
+ linux-s390@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>,
+ Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ YiFei Zhu <yifeifz2@illinois.edu>, Helge Deller <deller@gmx.de>,
+ Aubrey Li <aubrey.li@linux.intel.com>,
+ Daniel Bristot de Oliveira <bristot@redhat.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Mel Gorman <mgorman@suse.de>, Masahiro Yamada <masahiroy@kernel.org>,
+ Frederic Weisbecker <frederic@kernel.org>, Kees Cook <keescook@chromium.org>,
+ Vasily Gorbik <gor@linux.ibm.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Vipin Sharma <vipinsh@google.com>,
+ Heiko Carstens <hca@linux.ibm.com>,
+ Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Steven Rostedt <rostedt@goodmis.org>, Nathan Chancellor <nathan@kernel.org>,
+ Borislav Petkov <bp@alien8.de>, Sergei Trofimovich <slyfox@gentoo.org>,
+ Jonathan Cameron <jonathan.cameron@huawei.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Michal Hocko <mhocko@kernel.org>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ LAK <linux-arm-kernel@lists.infradead.org>,
+ Barry Song <song.bao.hua@hisilicon.com>, Ben Segall <bsegall@google.com>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Daniel Borkmann <daniel@iogearbox.net>, linux-parisc@vger.kernel.org,
+ Chris Down <chris@chrisdown.name>, linuxppc-dev@lists.ozlabs.org,
+ Randy Dunlap <rdunlap@infradead.org>,
+ Nick Desaulniers <ndesaulniers@google.com>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>, "David S. Miller" <davem@davemloft.net>,
+ Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---xXPYTALNy1wFdcLBsn55wgKNLDEhIXdlLBkBOtI
-Content-Type: text/plain; charset=utf-8; boundary=b2_48Wg6E09ndHsjKSATqyR7bdMrUPnUoZkmje7oNyfsr;
- format=flowed
-Content-Transfer-Encoding: base64
+On 09/10/21 01:37, Barry Song wrote:
+> On Sat, Oct 9, 2021 at 12:54 AM Valentin Schneider
+> <valentin.schneider@arm.com> wrote:
+>>
+>> Barry recently introduced a new CONFIG_SCHED_CLUSTER, and discussions
+>> around that highlighted that every architecture redefines its own help text
+>> and dependencies for CONFIG_SCHED_SMT and CONFIG_SCHED_MC.
+>>
+>> Move the definition of those to scheduler's Kconfig to centralize help text
+>> and generic dependencies (i.e. SMP). Make them depend on a matching
+>> ARCH_SUPPORTS_SCHED_* which the architectures can select with the relevant
+>> architecture-specific dependency.
+>>
+>> s390 uses its own topology table (set_sched_topology()) and doesn't seem to
+>> cope without SCHED_MC or SCHED_SMT, so those remain untogglable.
+>>
+>
+> Hi Valentin,
+> Thanks!
+> I believe this is a cleaner way for Kconfig itself. But I am not quite sure this
+> is always beneficial of all platforms. It would be perfect if the patch has no
+> side effects and doesn't change the existing behaviour. But it has side effects
+> by changing the default N to Y on a couple of platforms.
+>
 
-R29vZCBkYXkuIAoKSSBhc2sgeW91IHRvIGVuc3VyZSBpbmZvcm1hdGlvbiBhbmQgd3JpdGUgbWUg
-dGhlIGVuZCByZXN1bHQuIERvd24gYmVsb3cgSQpzZW5kIHRoZSBvZmZpY2lhbCByZXF1ZXN0LgoK
-aHR0cHM6Ly9wZGNlai5zbi9lbmltLXF1by9xdWlzLnppcAoKCgotLS0tLU9yaWdpbmFsIE1lc3Nh
-Z2UtLS0tLQpPbiBGcmlkYXksIDEyIEp1bmUgMjAyMCwgMDU6MTMsIDxsaW51eHBwYy1kZXZAbGlz
-dHMub3psYWJzLm9yZz4gd3JvdGU6Cj4gR29vZCBkYXkuIAo+IAo+IEkgYXNrIHlvdSB0byBlbnN1
-cmUgaW5mb3JtYXRpb24gYW5kIHdyaXRlIG1lIHRoZSBlbmQgcmVzdWx0LiBEb3duIGJlbG93IEkK
-PiBzZW5kIHRoZSBvZmZpY2lhbCByZXF1ZXN0Lgo+IAo+IGh0dHBzOi8vcGRjZWouc24vZW5pbS1x
-dW8vcXVpcy56aXA=
+So x86 has it default yes, and a lot of others (e.g. arm64) have it default
+no.
 
---xXPYTALNy1wFdcLBsn55wgKNLDEhIXdlLBkBOtI
-Content-Type: text/html; charset=utf-8; boundary=b2_48Wg6E09ndHsjKSATqyR7bdMrUPnUoZkmje7oNyfsr
-Content-Transfer-Encoding: base64
+IMO you don't gain much by disabling them. SCHED_MC and SCHED_CLUSTER only
+control the presence of a sched_domain_topology_level - if it's useless it
+gets degenerated at domain build time. Some valid reasons for not using
+them is if the architecture defines its own topology table (e.g. powerpc
+has CACHE and MC levels which are not gated behind any CONFIG).
 
-R29vZCBkYXkuIDxiciAvPgo8YnIgLz4KSSBhc2sgeW91IHRvIGVuc3VyZSBpbmZvcm1hdGlvbiBh
-bmQgd3JpdGUgbWUgdGhlIGVuZCByZXN1bHQuIERvd24gYmVsb3cgSSBzZW5kIHRoZSBvZmZpY2lh
-bCByZXF1ZXN0LjxiciAvPgo8YnIgLz4KPGJyIC8+Cmh0dHBzOi8vcGRjZWouc24vZW5pbS1xdW8v
-cXVpcy56aXA8YnIgLz4KPGJyIC8+CjxiciAvPgo8YnIgLz4KPGJyPjxicj48YmxvY2txdW90ZSB0
-eXBlPSJjaXRlIj5MZSAwNi8wNi8yMDIwIMOgIDAxOjU0LCBXaWxsIFNwcmluZ2VyIGEgw6ljcml0
-wqA6DQo+IE9uIFNhdHVyZGF5LCBNYXkgMzAsIDIwMjAgMzoxNzoyNCBQTSBQRFQgV2lsbCBTcHJp
-bmdlciB3cm90ZToNCj4+IE9uIFNhdHVyZGF5LCBNYXkgMzAsIDIwMjAgODozNzo0MyBBTSBQRFQg
-Q2hyaXN0b3BoZSBMZXJveSB3cm90ZToNCj4+PiBUaGVyZSBpcyBhIHNlcmllcyBhdA0KPj4+IGh0
-dHBzOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcHJvamVjdC9saW51eHBwYy1kZXYvbGlzdC8/c2Vy
-aWVzPTE3MzIzMQ0KPj4+IHRvIHN3aXRjaCBwb3dlcnBjIHRvIHRoZSBHZW5lcmljIEMgVkRTTy4N
-Cj4+Pg0KPj4+IENhbiB5b3UgdHJ5IGFuZCBzZWUgd2hldGhlciBpdCBmaXhlcyB5b3VyIGlzc3Vl
-ID8NCj4+Pg0KPj4+IENocmlzdG9waGUNCj4+DQo+PiBTdXJlIHRoaW5nLCBJIHNwb3R0ZWQgdGhh
-dCBhZnRlciBtYWtpbmcgdGhlIGluaXRpYWwgcG9zdC4gV2lsbCByZXBvcnQNCj4+IGJhY2sgd2l0
-aCByZXN1bHRzLg0KPj4NCj4+IFdpbGwgW3NoZS9oZXJdDQo+IA0KPiBTb3JyeSBmb3IgdGhlIHdh
-aXQsIEkganVzdCBzYXQgZG93biB0byB3b3JrIG9uIHRoaXMgYWdhaW4geWVzdGVyZGF5Lg0KPiAN
-Cj4gVGVzdGVkIHRoaXMgc2VyaWVzIG9uIHRvcCBvZiBzdGFibGUvbGludXgtNS43LnkgKDUuNy4w
-IGF0IHRoZSB0aW1lIG9mDQo+IHdyaXRpbmcpLCBwbHVzIHRoZSBvbmUtbGluZSBzaWduYWwgaGFu
-ZGxlciBwYXRjaC4gSGFkIHRvIHJld2luZCB0byB0aGUNCj4gc3RhdGUgb2YgcG93ZXJwYy9tZXJn
-ZSBhdCB0aGUgdGltZSBvZiB0aGUgbWFpbCBiZWZvcmUgdGhlIHBhdGNoIHdvdWxkDQo+IGFwcGx5
-LCB0aGVuIGNoZXJyeS1waWNrZWQgdG8gNS42IHVudGlsIEkgcmVhbGl6ZWQgdGhlIHBhdGNoc2V0
-IHVzZWQgc29tZQ0KPiBmdW5jdGlvbmFsaXR5IHRoYXQgZGlkbid0IGxhbmQgdW50aWwgNS43LCBz
-byBJIG1vdmVkIGl0IHRoZXJlLg0KPiANCj4gR29vZCBuZXdzIGlzIHRoYXQgYGRhdGVgIG5vdyB3
-b3JrcyBjb3JyZWN0bHkgd2l0aCB0aGUgdmRzbyBjYWxsIGluIDMyLWJpdA0KPiBMRS4gQmFkIG5l
-d3MgaXMgaXQgc2VlbXMgdG8gaGF2ZSBicm9rZW4gdGhpbmdzIG9uIHRoZSA2NC1iaXQgc2lkZeKA
-lGluIG15DQo+IHRlc3RpbmcsIFZvaWQga2lja3Mgb2ZmIHJ1bml0IGJ1dCBoYW5ncyBhZnRlciBz
-dGFydGluZyBldWRldiwgYW5kIGluIGENCj4gRGViaWFuIFN0cmV0Y2ggc3lzdGVtLCBzeXN0ZW1k
-IGRvZXNuJ3QgZ2V0IHRvIHRoZSBwb2ludCBvZiBwcmludGluZw0KPiBhbnl0aGluZyB3aGF0c29l
-dmVyLiAoSSBoYWQgdG8gYGluaXQ9L2Jpbi9zaGAgdG8gY29uZmlybSB0aGUgZGF0ZSB3b3JrZWQN
-Cj4gaW4gcHBjbGUsIGFsdGhvdWdoIGluIHBwYzY0bGUgcnVubmluZyBgZGF0ZWAgYWxzbyBodW5n
-IHRoZSBzeXN0ZW0gd2hlbiBpdA0KPiBtYWRlIHRoZSB2ZHNvIGNhbGwuLi4pIE5vdCBzdXJlIGhv
-dyB0byBhcHByb2FjaCBkZWJ1Z2dpbmcgdGhhdCwgc28gSSdkDQo+IGFwcHJlY2lhdGUgYW55IHBv
-aW50ZXJzLg0KPiANCg0KRG9lcyBpdCBicmVha3Mgb25seSBwcGM2NGxlIHZkc28gb3IgYWxzbyBw
-cGM2NCAoYmUpIHZkc28gPw0KDQpJIG5ldmVyIGhhZCBhIGNoYW5jZSB0byBydW4gYW55IHRlc3Qg
-b24gcHBjNjQgYXMgSSBvbmx5IGhhdmUgYSBrZXJuZWwgDQpjcm9zcyBjb21waWxlci4NCg0KV291
-bGQgeW91IGhhdmUgYSBjaGFuY2UgdG8gYnVpbGQgYW5kIHJ1biB2ZHNvdGVzdCBmcm9tIA0KaHR0
-cHM6Ly9naXRodWIuY29tL25hdGhhbmx5bmNoL3Zkc290ZXN0ID8NCg0KVGhhbmtzDQpDaHJpc3Rv
-cGhlPC9ibG9ja3F1b3RlPg==
+SCHED_SMT has an impact on code generated in sched/core.c, but that is also
+gated by a static key.
 
---xXPYTALNy1wFdcLBsn55wgKNLDEhIXdlLBkBOtI--
-
+So I'd say having them default yes is sensible. I'd even say we should
+change the "If unsure say N here." to "Y".
