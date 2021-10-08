@@ -2,66 +2,111 @@ Return-Path: <SRS0=IY60=O4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91B75C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 15:48:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 049E5C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 16:16:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C52F60F6F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 15:48:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0C52F60F6F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 5142260F5A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 16:16:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5142260F5A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HQszb57VMz3fRc
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 02:48:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HQtcL51Jqz3bhf
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 03:16:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=E+bmCS4A;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
+ [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HQsrG2hzdz3cGr
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 02:42:06 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HQsqF0xZYz9sSw;
- Fri,  8 Oct 2021 17:41:13 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id eGuufPcYlGU2; Fri,  8 Oct 2021 17:41:13 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HQspy5z3Jz9sST;
- Fri,  8 Oct 2021 17:40:58 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B6F108B763;
- Fri,  8 Oct 2021 17:40:58 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id hbVUUyJtnRLP; Fri,  8 Oct 2021 17:40:58 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.75])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0B18D8B79F;
- Fri,  8 Oct 2021 17:40:56 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 198Femrh1129639
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Fri, 8 Oct 2021 17:40:48 +0200
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 198FekTG1129638;
- Fri, 8 Oct 2021 17:40:46 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 00/16] powerpc: Add KUAP support for BOOKE and 40x
-Date: Fri,  8 Oct 2021 17:40:28 +0200
-Message-Id: <cover.1633707305.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HQtbW1Hztz2xt6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 03:16:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=E+bmCS4A; dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+ by gandalf.ozlabs.org (Postfix) with ESMTP id 4HQtbW0lzsz4xbZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 03:16:07 +1100 (AEDT)
+Received: by gandalf.ozlabs.org (Postfix)
+ id 4HQtbW0j3Pz4xbV; Sat,  9 Oct 2021 03:16:07 +1100 (AEDT)
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: gandalf.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=E+bmCS4A; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by gandalf.ozlabs.org (Postfix) with ESMTPS id 4HQtbV2pR2z4xbG;
+ Sat,  9 Oct 2021 03:16:05 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 198G6LWC004266; 
+ Fri, 8 Oct 2021 12:16:03 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=wHGCaMhzns6E4VpxqMZNr4VPru4hJijspVi1FBW2b7k=;
+ b=E+bmCS4A/CySBgDtynWh9zQJ3aUltNyAEV24rNsp1gDY32+5G9kNjaurogMYM42Oqldx
+ TJTJvFKUj5BRrCF70JdsGLlTf/t6xRM5fKJeWlJHfvfwdRubvf8BnyvuGTQ7kG5KmAqG
+ dFScAdqxJaeHxVc26hbiLhB/DMR1S9lZvPtF9uYyrRO4yTNtINXnB+xiTQ/FoHQLcA39
+ OzfTwSKm4JXGTZvE8UJiRfnhqjC6ZFsxrZ4/Kty99Wyg0JgQZHs9fjuI5EMR6VeEhGNc
+ HrESdHGqCHcPjOl5rcgmktYVu5VthsRKNIi7LH3lXemOeAKJjjv2ujXby8QRiDDx578W gA== 
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3bjhum3ra7-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 08 Oct 2021 12:16:03 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 198GCWji018814;
+ Fri, 8 Oct 2021 16:16:00 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma04fra.de.ibm.com with ESMTP id 3bef2b01vh-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 08 Oct 2021 16:16:00 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 198GFueG18678148
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 8 Oct 2021 16:15:56 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2F50AA4062;
+ Fri,  8 Oct 2021 16:15:56 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1AA33A405C;
+ Fri,  8 Oct 2021 16:15:54 +0000 (GMT)
+Received: from sjain014.ibmuc.com (unknown [9.43.25.237])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri,  8 Oct 2021 16:15:53 +0000 (GMT)
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] Update crashkernel offset to allow kernel to boot on
+ large config LPARs
+Date: Fri,  8 Oct 2021 21:45:49 +0530
+Message-Id: <20211008161552.211262-1-sourabhjain@linux.ibm.com>
 X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: iotpZJQFMPk9RQJDUmAEw2R28iADHRqK
+X-Proofpoint-GUID: iotpZJQFMPk9RQJDUmAEw2R28iADHRqK
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.391,FMLib:17.0.607.475
+ definitions=2021-10-08_04,2021-10-07_02,2020-04-07_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0
+ malwarescore=0 bulkscore=0 priorityscore=1501 mlxlogscore=999
+ suspectscore=0 lowpriorityscore=0 spamscore=0 phishscore=0 clxscore=1015
+ mlxscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2109230001 definitions=main-2110080092
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,100 +118,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, mahesh@linux.vnet.ibm.com,
+ aneesh.kumar@linux.ibm.com, hbathini@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On booke/40x we don't have segments like book3s/32.
-On booke/40x we don't have access protection groups like 8xx.
+As the crashkernel reserve memory at 128MB offset in the first memory
+block, it leaves less than 128MB memory to accommodate other essential
+system resources that need memory reservation in the same block. This
+creates kernel boot failure on large config LPARs having core count
+greater than 192.
 
-Use the PID register to provide user access protection.
-Kernel address space can be accessed with any PID.
-User address space has to be accessed with the PID of the user.
-User PID is always not null.
+Setting the crashkernel to mid of RMA size which can be 512MB or more
+instead of capping it to 128MB by default leaves enough space to allocate
+memory to another system resource in the first memory block.
 
-Everytime the kernel is entered, set PID register to 0 and
-restore PID register when returning to user.
+Now keeping the crashkernel at mid of RMA size works fine for the primary
+kernel but creates boot failure for the kdump kernel when the crashekernel
+reservation start offset crosses 256MB. The reason is, in the early boot
+MMU feature of 1T segments support is not detected which restricts the paca
+allocation for boot CPU below 256MB. When the crashkernel itself is
+starting at 256MB offset, attempt to allocate paca below 256MB leads to the
+kdump kernel boot failure.
 
-Everytime kernel needs to access user data, PID is restored
-for the access.
+Moving the detection of segment sizes before identifying the boot CPU
+removes the restriction of 256MB limit for boot CPU paca allocation
+which allows the kdump kernel to successfully boot and capture vmcore.
 
-In TLB miss handlers, check the PID and bail out to data storage
-exception when PID is 0 and accessed address is in user space.
+While allocating paca for boot CPU we found that there is a small window
+during kernel boot where early_radix_enabled returns True even though
+the radix is disabled using command-line. This leads to an invalid bolated
+size calculation on which paca limit of boot CPU is dependent. Patch 0001
+closes that window that by fixing the radix bit in mmu_feature.
 
-Note that also forbids execution of user text by kernel except
-when user access is unlocked. But this shouldn't be a problem
-as the kernel is not supposed to ever run user text.
+changes in v2:
+	0001: Rename the function name to update_cpu_features() as per
+	      the review comment.
+	0002: Fixed compilation error reported by kernel test robot.
+	0003: Added comment and updated commit message
 
-This series has:
-- Two first patches have already been submitted and are not directly related to KUAP but would conflict otherwise
-- Following patches aim at refactoring the KUAP interface to reduce redundant platform specific code.
-- Then comes patches 9 and 10 that add generic support frame for booke type processors
-- Followed by the assembly modification for each of the 4 booke family types 
-- Last patch removes CONFIG_PPC_HAVE_KUAP now that all powerpc platforms have KUAP.
+Mahesh Salgaonkar (2):
+  fixup mmu_features immediately after getting cpu pa features.
+  Remove 256MB limit restriction for boot cpu paca allocation
 
-Changes in v2:
-- Rebased on top of today's merge (trivial conflict with d93f9e23744b ("powerpc/32s: Fix kuap_kernel_restore()"))
-- Fix missing check in bad_kuap_fault() which led to KUAP fault on platforms where KUAP was disabled (CI g5_defconfig)
-- New patch to fix PPC_KUAP_DEBUG dependency
+Sourabh Jain (1):
+  powerpc: Set crashkernel offset to mid of RMA region
 
-Christophe Leroy (16):
-  powerpc/32s: Do kuep_lock() and kuep_unlock() in assembly
-  powerpc/32s: Save content of sr0 to avoid 'mfsr'
-  powerpc/kuap: Add a generic intermediate layer
-  powerpc/kuap: Check KUAP activation in generic functions
-  powerpc/kuap: Remove __kuap_assert_locked()
-  powerpc/kuap: Add kuap_lock()
-  powerpc/nohash: Move setup_kuap out of 8xx.c
-  powerpc/config: Add CONFIG_BOOKE_OR_40x
-  powerpc/kuap: Prepare for supporting KUAP on BOOK3E/64
-  powerpc/kuap: Make PPC_KUAP_DEBUG depend on PPC_KUAP only
-  powerpc: Add KUAP support for BOOKE and 40x
-  powerpc/kuap: Wire-up KUAP on 44x
-  powerpc/kuap: Wire-up KUAP on 40x
-  powerpc/kuap: Wire-up KUAP on 85xx in 32 bits mode.
-  powerpc/kuap: Wire-up KUAP on book3e/64
-  powerpc: Remove CONFIG_PPC_HAVE_KUAP
-
- arch/powerpc/include/asm/book3s/32/kup.h      | 103 ++++-----------
- arch/powerpc/include/asm/book3s/32/mmu-hash.h |  78 +++++++++++-
- arch/powerpc/include/asm/book3s/64/kup.h      |  56 ++++-----
- arch/powerpc/include/asm/hw_irq.h             |   8 +-
- arch/powerpc/include/asm/interrupt.h          |  13 +-
- arch/powerpc/include/asm/irq.h                |   2 +-
- arch/powerpc/include/asm/kup.h                | 117 +++++++++++++++---
- arch/powerpc/include/asm/nohash/32/kup-8xx.h  |  50 ++------
- arch/powerpc/include/asm/nohash/kup-booke.h   | 110 ++++++++++++++++
- arch/powerpc/include/asm/processor.h          |   4 +
- arch/powerpc/include/asm/ptrace.h             |   2 +-
- arch/powerpc/include/asm/reg.h                |   4 +-
- arch/powerpc/kernel/asm-offsets.c             |   2 +-
- arch/powerpc/kernel/entry_32.S                |  34 ++++-
- arch/powerpc/kernel/head_32.h                 |   6 +
- arch/powerpc/kernel/head_40x.S                |   8 ++
- arch/powerpc/kernel/head_44x.S                |  16 +++
- arch/powerpc/kernel/head_fsl_booke.S          |  12 ++
- arch/powerpc/kernel/interrupt.c               |   3 +-
- arch/powerpc/kernel/irq.c                     |   2 +-
- arch/powerpc/kernel/kgdb.c                    |   4 +-
- arch/powerpc/kernel/process.c                 |   9 +-
- arch/powerpc/kernel/setup.h                   |   2 +-
- arch/powerpc/kernel/setup_32.c                |   2 +-
- arch/powerpc/kernel/time.c                    |   2 +-
- arch/powerpc/mm/book3s32/kuap.c               |   5 +-
- arch/powerpc/mm/book3s32/kuep.c               |  21 +++-
- arch/powerpc/mm/book3s32/mmu_context.c        |  15 ++-
- arch/powerpc/mm/mmu_context.c                 |   9 ++
- arch/powerpc/mm/nohash/8xx.c                  |  21 ----
- arch/powerpc/mm/nohash/Makefile               |   2 +-
- arch/powerpc/mm/nohash/kup.c                  |  31 +++++
- arch/powerpc/mm/nohash/mmu_context.c          |   6 +-
- arch/powerpc/mm/nohash/tlb_low_64e.S          |  40 +++++-
- arch/powerpc/platforms/Kconfig.cputype        |  14 +--
- 35 files changed, 575 insertions(+), 238 deletions(-)
- create mode 100644 arch/powerpc/include/asm/nohash/kup-booke.h
- create mode 100644 arch/powerpc/mm/nohash/kup.c
+ arch/powerpc/include/asm/book3s/64/mmu.h |  2 ++
+ arch/powerpc/include/asm/mmu.h           |  1 +
+ arch/powerpc/kernel/prom.c               |  8 ++++++++
+ arch/powerpc/kernel/rtas.c               |  4 ++++
+ arch/powerpc/kexec/core.c                | 15 +++++++++++----
+ arch/powerpc/mm/book3s64/hash_utils.c    |  5 ++++-
+ arch/powerpc/mm/init_64.c                |  5 ++++-
+ 7 files changed, 34 insertions(+), 6 deletions(-)
 
 -- 
 2.31.1
