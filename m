@@ -2,77 +2,80 @@ Return-Path: <SRS0=IY60=O4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82D83C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 21:17:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 846EFC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 21:19:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D017C60F35
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 21:17:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D017C60F35
+	by mail.kernel.org (Postfix) with ESMTPS id AA6E860F92
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Oct 2021 21:19:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AA6E860F92
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HR1Gr1xkYz3c7L
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 08:17:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HR1Kd15Wbz3c6l
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 08:19:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=XwEeTQEj;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=BhVVj3vK;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::531;
- helo=mail-pg1-x531.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::102a;
+ helo=mail-pj1-x102a.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=XwEeTQEj; dkim-atps=neutral
-Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com
- [IPv6:2607:f8b0:4864:20::531])
+ header.s=google header.b=BhVVj3vK; dkim-atps=neutral
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com
+ [IPv6:2607:f8b0:4864:20::102a])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HR1G245wlz2yM7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 08:16:24 +1100 (AEDT)
-Received: by mail-pg1-x531.google.com with SMTP id m21so4246041pgu.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Oct 2021 14:16:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HR1Jq61rnz2yP9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 08:18:51 +1100 (AEDT)
+Received: by mail-pj1-x102a.google.com with SMTP id
+ oa6-20020a17090b1bc600b0019ffc4b9c51so10189810pjb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Oct 2021 14:18:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=FFhUuMyEWSiHssipR32HBHlOkuAhbMJqyLCYePgaltI=;
- b=XwEeTQEj9C25q3Be6AxZgpwU/xpv7M3dk2CGBP2/4hLXFHJRnOOm/VEYTLRRkjg2VP
- HrMKjukQ1pTEDTLo0POdJQhKKHuGGUPlxVye2ghkzk8TVph1VY/AcZeop9mAcspFeuiP
- WXj6pxbkQkM3z+2L1xT3bzl9wCfFhl6qpsJAg=
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=rHy4HvfxK920/DAzRQ2LEGB6EW308Wa/3xEBO3I3ZhE=;
+ b=BhVVj3vKt/JTppbgAK2mAsECRb50DXsS6r6M65L9zK/mN6kuIBXR6Buqs3rERRipGg
+ 1fFkRryHhsSY6tHK3Na1GTCd6pXVcac06u0Oi8e9R8Y/sXRYy7YNOsnPYVgk2OqMOeIz
+ 29j82p/ttntW9wToU6jvggtbtH4TaDHv5o6HA=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=FFhUuMyEWSiHssipR32HBHlOkuAhbMJqyLCYePgaltI=;
- b=KrwdKDI955etjFMaaUkyWAcrSXJbKJuHNQj+n6qD75Q8Rli+vF9UQiMRv7cOXuw4NO
- lZwBCnr6FnfaPdwFCsV9RJ8+XIDrhZs8yPVdmGfoO38cB6sAcxpWY1s+OFaGQsuELwM8
- Y+0ukg8d30YS2qJ8tHW1AuHRhpsB1nOjPo8R7TbufEtrtkJppDb5eB3rgMsSCC3lP0i3
- wmNYlKNx9wU3toD7GRaxF4OKR6JQpV1isT8Jx1Q+NZSBs3pRuU+PwH0UQVonAEYKZk2s
- 4OzQyoduqfcNaTRR5YebcUkPBeIebJ8O0g5g9g3482oU1yPO7pkH3I4AaJ7CcGsFtey1
- iD2w==
-X-Gm-Message-State: AOAM532PqFLNpK8wHactbW3rL5XQWxPgzzPCVz/9KfRdsAFw3SoKlJIK
- dTMC/wApbA1jWWRwxp/o14U0DA==
-X-Google-Smtp-Source: ABdhPJy8fSvRAxviOIXMJWotcF0SS+LrTBEyTOzBnHu49xQwq1LFTd3RfNNEPl87TJRFTU/0RrUVMQ==
-X-Received: by 2002:a63:724b:: with SMTP id c11mr6572687pgn.9.1633727780506;
- Fri, 08 Oct 2021 14:16:20 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=rHy4HvfxK920/DAzRQ2LEGB6EW308Wa/3xEBO3I3ZhE=;
+ b=d56C68CYC22Bu5NayGS/W7tFZCMJ7ZKsivbJobCtkH2pqqRcOoQA6ReTucSTypwb/+
+ OSQUtZaivUptCnb8E0uvKsfxJMGZf2ARetkqvGGb9Z8M0HkfI0Ms2PyW4fGLZawq2jWk
+ rxOYaTpszlxVDJhUvX+Mb7JPBR4e3rj71L2MsoTgO/pNTlu0diU43GxtUzKBkIfmomLf
+ 1hbyDdhA883YUq/qXy3DDI0mYQDoffpbn42rHKPI+4e6tqK4f8YtExjGq1Z3HPPzKls5
+ m0nYBM15L5TFuSqKv3pcoxAye/WfyzTcA+rOr+2/zOXyMvIsREjdC2qc0VwU1inkqb9j
+ lTCw==
+X-Gm-Message-State: AOAM533Rsha+HrvpKQbk2oVsL1vlocgpuaZDx8hUru3fD/MFfZR4YysR
+ JX5zGg4sknxtbIEzHH+kR1+Ang==
+X-Google-Smtp-Source: ABdhPJyv4C5+P+SgYIf226CgVLrqAnPgnVXY5QUVMiim6AYeLnzTfC3cD84QYWdFL1q3lMAKjijtkw==
+X-Received: by 2002:a17:902:ea05:b0:13f:4b5:cda2 with SMTP id
+ s5-20020a170902ea0500b0013f04b5cda2mr11620979plg.86.1633727928442; 
+ Fri, 08 Oct 2021 14:18:48 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id t28sm223137pfq.158.2021.10.08.14.16.19
+ by smtp.gmail.com with ESMTPSA id n1sm228706pfo.116.2021.10.08.14.18.47
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 08 Oct 2021 14:16:20 -0700 (PDT)
-Date: Fri, 8 Oct 2021 14:16:19 -0700
+ Fri, 08 Oct 2021 14:18:47 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
-To: Nick Desaulniers <ndesaulniers@google.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
 Subject: Re: [PATCH] lkdtm: Fix content of section containing
  lkdtm_rodata_do_nothing()
-Message-ID: <202110081415.E36B67FA@keescook>
+Date: Fri,  8 Oct 2021 14:17:49 -0700
+Message-Id: <163372786562.2954264.14524923434528443035.b4-ty@chromium.org>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <8900731fbc05fb8b0de18af7133a8fc07c3c53a1.1633712176.git.christophe.leroy@csgroup.eu>
 References: <8900731fbc05fb8b0de18af7133a8fc07c3c53a1.1633712176.git.christophe.leroy@csgroup.eu>
- <CAKwvOdnWbKdBuSGtmu2DURy5dtVGUYWJ_mwxSL6N5OfbmjU3EA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAKwvOdnWbKdBuSGtmu2DURy5dtVGUYWJ_mwxSL6N5OfbmjU3EA@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,46 +87,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+Cc: Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
  stable@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 08, 2021 at 11:09:47AM -0700, Nick Desaulniers wrote:
-> On Fri, Oct 8, 2021 at 9:59 AM Christophe Leroy
-> <christophe.leroy@csgroup.eu> wrote:
-> >
-> > On a kernel without CONFIG_STRICT_KERNEL_RWX, running EXEC_RODATA
-> > test leads to "Illegal instruction" failure.
-> >
-> > Looking at the content of rodata_objcopy.o, we see that the
-> > function content zeroes only:
-> >
-> >         Disassembly of section .rodata:
-> >
-> >         0000000000000000 <.lkdtm_rodata_do_nothing>:
-> >            0:   00 00 00 00     .long 0x0
-> >
-> > Add the contents flag in order to keep the content of the section
-> > while renaming it.
-> >
-> >         Disassembly of section .rodata:
-> >
-> >         0000000000000000 <.lkdtm_rodata_do_nothing>:
-> >            0:   4e 80 00 20     blr
-> >
-> > Fixes: e9e08a07385e ("lkdtm: support llvm-objcopy")
+On Fri, 8 Oct 2021 18:58:40 +0200, Christophe Leroy wrote:
+> On a kernel without CONFIG_STRICT_KERNEL_RWX, running EXEC_RODATA
+> test leads to "Illegal instruction" failure.
 > 
-> Thanks for the patch; sorry I broke this.
-> Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+> Looking at the content of rodata_objcopy.o, we see that the
+> function content zeroes only:
+> 
+> 	Disassembly of section .rodata:
+> 
+> [...]
 
-Hah! Whoops; sorry I don't have an inverted version of this test! I
-should have caught this when it broke. :|
+Applied to for-next/lkdtm, thanks!
+
+[1/1] lkdtm: Fix content of section containing lkdtm_rodata_do_nothing()
+      https://git.kernel.org/kees/c/19c3069c5f5f
+
+Also, can you take a moment and get "patatt" set up[1] for signing your
+patches? I would appreciate that since b4 yells at me when patches aren't
+signed. :)
 
 -Kees
 
+[1] https://github.com/mricon/patatt
+
 -- 
 Kees Cook
+
