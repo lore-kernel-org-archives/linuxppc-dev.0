@@ -2,33 +2,34 @@ Return-Path: <SRS0=vnEJ=O5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 832BDC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 22:16:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46B13C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 22:17:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AEA4560F23
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 22:16:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AEA4560F23
+	by mail.kernel.org (Postfix) with ESMTPS id 6301560E8B
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 22:17:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6301560E8B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HRfYF1rzQz3cBs
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Oct 2021 09:16:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HRfYh0mBDz3cGZ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Oct 2021 09:17:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=fail (SPF fail - not authorized)
- smtp.mailfrom=canonical.com (client-ip=217.70.178.231;
- helo=relay11.mail.gandi.net; envelope-from=alexandre.ghiti@canonical.com;
+ smtp.mailfrom=canonical.com (client-ip=217.70.178.240;
+ helo=mslow1.mail.gandi.net; envelope-from=alexandre.ghiti@canonical.com;
  receiver=<UNKNOWN>)
-X-Greylist: delayed 61 seconds by postgrey-1.36 at boromir;
- Sun, 10 Oct 2021 04:16:32 AEDT
-Received: from relay11.mail.gandi.net (relay11.mail.gandi.net [217.70.178.231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HRWtm1T5Rz2xsW
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Oct 2021 04:16:31 +1100 (AEDT)
+Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [217.70.178.240])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HRX235ZTVz2yHT
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Oct 2021 04:22:51 +1100 (AEDT)
+Received: from relay3-d.mail.gandi.net (unknown [217.70.183.195])
+ by mslow1.mail.gandi.net (Postfix) with ESMTP id 6F2BBC75CB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 17:13:43 +0000 (UTC)
 Received: (Authenticated sender: alex@ghiti.fr)
- by relay11.mail.gandi.net (Postfix) with ESMTPSA id 60F97100004;
- Sat,  9 Oct 2021 17:16:27 +0000 (UTC)
+ by relay3-d.mail.gandi.net (Postfix) with ESMTPSA id 9AA7F60006;
+ Sat,  9 Oct 2021 17:13:09 +0000 (UTC)
 From: Alexandre Ghiti <alexandre.ghiti@canonical.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -37,12 +38,10 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
  Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-riscv@lists.infradead.org
-Subject: [PATCH v7 3/3] riscv: Check relocations at compile time
-Date: Sat,  9 Oct 2021 19:12:59 +0200
-Message-Id: <20211009171259.2515351-4-alexandre.ghiti@canonical.com>
+Subject: [PATCH v7 0/3] Introduce 64b relocatable kernel 
+Date: Sat,  9 Oct 2021 19:12:56 +0200
+Message-Id: <20211009171259.2515351-1-alexandre.ghiti@canonical.com>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20211009171259.2515351-1-alexandre.ghiti@canonical.com>
-References: <20211009171259.2515351-1-alexandre.ghiti@canonical.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Sun, 10 Oct 2021 09:16:02 +1100
@@ -57,103 +56,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anup Patel <anup@brainfault.org>, Alexandre Ghiti <alex@ghiti.fr>
+Cc: Alexandre Ghiti <alexandre.ghiti@canonical.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Alexandre Ghiti <alex@ghiti.fr>
+After multiple attempts, this patchset is now based on the fact that the
+64b kernel mapping was moved outside the linear mapping.
 
-Relocating kernel at runtime is done very early in the boot process, so
-it is not convenient to check for relocations there and react in case a
-relocation was not expected.
+The first patch allows to build relocatable kernels but is not selected         
+by default. That patch should ease KASLR implementation a lot.                                                            
+The second and third patches take advantage of an already existing powerpc       
+script that checks relocations at compile-time, and uses it for riscv.           
 
-There exists a script in scripts/ that extracts the relocations from
-vmlinux that is then used at postlink to check the relocations.
+This patchset was tested on:
 
-Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
-Reviewed-by: Anup Patel <anup@brainfault.org>
----
- arch/riscv/Makefile.postlink     | 36 ++++++++++++++++++++++++++++++++
- arch/riscv/tools/relocs_check.sh | 26 +++++++++++++++++++++++
- 2 files changed, 62 insertions(+)
+* qemu riscv64 defconfig: OK
+* Unmatched ubuntu config: OK
+
+Changes in v7:
+  * Rebase on top of v5.15
+  * Fix LDFLAGS_vmlinux which was overriden when CONFIG_DYNAMIC_FTRACE was
+    set
+  * Make relocate_kernel static
+  * Add Ack from Michael
+
+Changes in v6:
+  * Remove the kernel move to vmalloc zone
+  * Rebased on top of for-next
+  * Remove relocatable property from 32b kernel as the kernel is mapped in
+    the linear mapping and would then need to be copied physically too
+  * CONFIG_RELOCATABLE depends on !XIP_KERNEL
+  * Remove Reviewed-by from first patch as it changed a bit
+
+Changes in v5:
+  * Add "static __init" to create_kernel_page_table function as reported by
+    Kbuild test robot
+  * Add reviewed-by from Zong
+  * Rebase onto v5.7
+
+Changes in v4:                                                                   
+  * Fix BPF region that overlapped with kernel's as suggested by Zong            
+  * Fix end of module region that could be larger than 2GB as suggested by Zong  
+  * Fix the size of the vm area reserved for the kernel as we could lose         
+    PMD_SIZE if the size was already aligned on PMD_SIZE                         
+  * Split compile time relocations check patch into 2 patches as suggested by Anup
+  * Applied Reviewed-by from Zong and Anup                                       
+
+Changes in v3:                                                                   
+  * Move kernel mapping to vmalloc                                               
+
+Changes in v2:                                                                   
+  * Make RELOCATABLE depend on MMU as suggested by Anup                          
+  * Rename kernel_load_addr into kernel_virt_addr as suggested by Anup           
+  * Use __pa_symbol instead of __pa, as suggested by Zong                        
+  * Rebased on top of v5.6-rc3                                                   
+  * Tested with sv48 patchset                                                    
+  * Add Reviewed/Tested-by from Zong and Anup
+
+Alexandre Ghiti (3):
+  riscv: Introduce CONFIG_RELOCATABLE
+  powerpc: Move script to check relocations at compile time in scripts/
+  riscv: Check relocations at compile time
+
+ arch/powerpc/tools/relocs_check.sh | 18 ++--------
+ arch/riscv/Kconfig                 | 12 +++++++
+ arch/riscv/Makefile                |  7 ++--
+ arch/riscv/Makefile.postlink       | 36 ++++++++++++++++++++
+ arch/riscv/kernel/vmlinux.lds.S    |  6 ++++
+ arch/riscv/mm/Makefile             |  4 +++
+ arch/riscv/mm/init.c               | 54 +++++++++++++++++++++++++++++-
+ arch/riscv/tools/relocs_check.sh   | 26 ++++++++++++++
+ scripts/relocs_check.sh            | 20 +++++++++++
+ 9 files changed, 164 insertions(+), 19 deletions(-)
  create mode 100644 arch/riscv/Makefile.postlink
  create mode 100755 arch/riscv/tools/relocs_check.sh
+ create mode 100755 scripts/relocs_check.sh
 
-diff --git a/arch/riscv/Makefile.postlink b/arch/riscv/Makefile.postlink
-new file mode 100644
-index 000000000000..bf2b2bca1845
---- /dev/null
-+++ b/arch/riscv/Makefile.postlink
-@@ -0,0 +1,36 @@
-+# SPDX-License-Identifier: GPL-2.0
-+# ===========================================================================
-+# Post-link riscv pass
-+# ===========================================================================
-+#
-+# Check that vmlinux relocations look sane
-+
-+PHONY := __archpost
-+__archpost:
-+
-+-include include/config/auto.conf
-+include scripts/Kbuild.include
-+
-+quiet_cmd_relocs_check = CHKREL  $@
-+cmd_relocs_check = 							\
-+	$(CONFIG_SHELL) $(srctree)/arch/riscv/tools/relocs_check.sh "$(OBJDUMP)" "$(NM)" "$@"
-+
-+# `@true` prevents complaint when there is nothing to be done
-+
-+vmlinux: FORCE
-+	@true
-+ifdef CONFIG_RELOCATABLE
-+	$(call if_changed,relocs_check)
-+endif
-+
-+%.ko: FORCE
-+	@true
-+
-+clean:
-+	@true
-+
-+PHONY += FORCE clean
-+
-+FORCE:
-+
-+.PHONY: $(PHONY)
-diff --git a/arch/riscv/tools/relocs_check.sh b/arch/riscv/tools/relocs_check.sh
-new file mode 100755
-index 000000000000..baeb2e7b2290
---- /dev/null
-+++ b/arch/riscv/tools/relocs_check.sh
-@@ -0,0 +1,26 @@
-+#!/bin/sh
-+# SPDX-License-Identifier: GPL-2.0-or-later
-+# Based on powerpc relocs_check.sh
-+
-+# This script checks the relocations of a vmlinux for "suspicious"
-+# relocations.
-+
-+if [ $# -lt 3 ]; then
-+        echo "$0 [path to objdump] [path to nm] [path to vmlinux]" 1>&2
-+        exit 1
-+fi
-+
-+bad_relocs=$(
-+${srctree}/scripts/relocs_check.sh "$@" |
-+	# These relocations are okay
-+	#	R_RISCV_RELATIVE
-+	grep -F -w -v 'R_RISCV_RELATIVE'
-+)
-+
-+if [ -z "$bad_relocs" ]; then
-+	exit 0
-+fi
-+
-+num_bad=$(echo "$bad_relocs" | wc -l)
-+echo "WARNING: $num_bad bad relocations"
-+echo "$bad_relocs"
 -- 
 2.30.2
 
