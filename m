@@ -2,47 +2,46 @@ Return-Path: <SRS0=vnEJ=O5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7400C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 11:49:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8137BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 11:50:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 121A060F38
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 11:49:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 121A060F38
+	by mail.kernel.org (Postfix) with ESMTPS id 0741560F38
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 11:50:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0741560F38
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HRNdQ4Ndlz3cFN
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 22:49:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HRNf0565Rz3cQq
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 22:50:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.45;
- helo=out30-45.freemail.mail.aliyun.com;
+ smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.42;
+ helo=out30-42.freemail.mail.aliyun.com;
  envelope-from=xianting.tian@linux.alibaba.com; receiver=<UNKNOWN>)
-Received: from out30-45.freemail.mail.aliyun.com
- (out30-45.freemail.mail.aliyun.com [115.124.30.45])
+Received: from out30-42.freemail.mail.aliyun.com
+ (out30-42.freemail.mail.aliyun.com [115.124.30.42])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HRNcY519Hz2xKP
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 22:48:43 +1100 (AEDT)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R161e4; CH=green; DM=||false|;
- DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04423;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HRNck3Wfqz3c5S
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 22:48:53 +1100 (AEDT)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R101e4; CH=green; DM=||false|;
+ DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04426;
  MF=xianting.tian@linux.alibaba.com; NM=1; PH=DS; RN=10; SR=0;
- TI=SMTPD_---0Ur6bLbd_1633780114; 
+ TI=SMTPD_---0Ur6QRPs_1633780116; 
 Received: from localhost(mailfrom:xianting.tian@linux.alibaba.com
- fp:SMTPD_---0Ur6bLbd_1633780114) by smtp.aliyun-inc.com(127.0.0.1);
- Sat, 09 Oct 2021 19:48:34 +0800
+ fp:SMTPD_---0Ur6QRPs_1633780116) by smtp.aliyun-inc.com(127.0.0.1);
+ Sat, 09 Oct 2021 19:48:36 +0800
 From: Xianting Tian <xianting.tian@linux.alibaba.com>
 To: gregkh@linuxfoundation.org, jirislaby@kernel.org, amit@kernel.org,
  arnd@arndb.de, osandov@fb.com
-Subject: [PATCH v10 0/3] make hvc pass dma capable memory to its backend
-Date: Sat,  9 Oct 2021 19:48:26 +0800
-Message-Id: <20211009114829.1071021-1-xianting.tian@linux.alibaba.com>
+Subject: [PATCH v10 3/3] virtio-console: remove unnecessary kmemdup()
+Date: Sat,  9 Oct 2021 19:48:29 +0800
+Message-Id: <20211009114829.1071021-4-xianting.tian@linux.alibaba.com>
 X-Mailer: git-send-email 2.17.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20211009114829.1071021-1-xianting.tian@linux.alibaba.com>
+References: <20211009114829.1071021-1-xianting.tian@linux.alibaba.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,87 +60,47 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Dear all,
+This revert commit c4baad5029 ("virtio-console: avoid DMA from stack")
 
-This patch series make hvc framework pass DMA capable memory to
-put_chars() of hvc backend(eg, virtio-console), and revert commit
-c4baad5029 ("virtio-console: avoid DMA from stack”)
+hvc framework will never pass stack memory to the put_chars() function,
+So the calling of kmemdup() is unnecessary, we can remove it.
 
-V1
-virtio-console: avoid DMA from vmalloc area
-https://lkml.org/lkml/2021/7/27/494
+Signed-off-by: Xianting Tian <xianting.tian@linux.alibaba.com>
+Reviewed-by: Shile Zhang <shile.zhang@linux.alibaba.com>
+---
+ drivers/char/virtio_console.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
 
-For v1 patch, Arnd Bergmann suggests to fix the issue in the first
-place:
-Make hvc pass DMA capable memory to put_chars()
-The fix suggestion is included in v2.
+diff --git a/drivers/char/virtio_console.c b/drivers/char/virtio_console.c
+index 7eaf303a7..4ed3ffb1d 100644
+--- a/drivers/char/virtio_console.c
++++ b/drivers/char/virtio_console.c
+@@ -1117,8 +1117,6 @@ static int put_chars(u32 vtermno, const char *buf, int count)
+ {
+ 	struct port *port;
+ 	struct scatterlist sg[1];
+-	void *data;
+-	int ret;
+ 
+ 	if (unlikely(early_put_chars))
+ 		return early_put_chars(vtermno, buf, count);
+@@ -1127,14 +1125,8 @@ static int put_chars(u32 vtermno, const char *buf, int count)
+ 	if (!port)
+ 		return -EPIPE;
+ 
+-	data = kmemdup(buf, count, GFP_ATOMIC);
+-	if (!data)
+-		return -ENOMEM;
+-
+-	sg_init_one(sg, data, count);
+-	ret = __send_to_port(port, sg, 1, count, data, false);
+-	kfree(data);
+-	return ret;
++	sg_init_one(sg, buf, count);
++	return __send_to_port(port, sg, 1, count, (void *)buf, false);
+ }
+ 
+ /*
+-- 
+2.17.1
 
-V2
-[PATCH 1/2] tty: hvc: pass DMA capable memory to put_chars()
-https://lkml.org/lkml/2021/8/1/8
-[PATCH 2/2] virtio-console: remove unnecessary kmemdup()
-https://lkml.org/lkml/2021/8/1/9
-
-For v2 patch, Arnd Bergmann suggests to make new buf part of the
-hvc_struct structure, and fix the compile issue.
-The fix suggestion is included in v3.
-
-V3
-[PATCH v3 1/2] tty: hvc: pass DMA capable memory to put_chars()
-https://lkml.org/lkml/2021/8/3/1347
-[PATCH v3 2/2] virtio-console: remove unnecessary kmemdup()
-https://lkml.org/lkml/2021/8/3/1348
-
-For v3 patch, Jiri Slaby suggests to make 'char c[N_OUTBUF]' part of
-hvc_struct, and make 'hp->outbuf' aligned and use struct_size() to
-calculate the size of hvc_struct. The fix suggestion is included in
-v4.
-
-V4
-[PATCH v4 0/2] make hvc pass dma capable memory to its backend
-https://lkml.org/lkml/2021/8/5/1350
-[PATCH v4 1/2] tty: hvc: pass DMA capable memory to put_chars()
-https://lkml.org/lkml/2021/8/5/1351
-[PATCH v4 2/2] virtio-console: remove unnecessary kmemdup()
-https://lkml.org/lkml/2021/8/5/1352
-
-For v4 patch, Arnd Bergmann suggests to introduce another
-array(cons_outbuf[]) for the buffer pointers next to the cons_ops[]
-and vtermnos[] arrays. This fix included in this v5 patch.
-
-V5
-Arnd Bergmann suggests to use "L1_CACHE_BYTES" as dma alignment,
-use 'sizeof(long)' as dma alignment is wrong. fix it in v6.
-
-V6
-It contains coding error, fix it in v7 and it worked normally
-according to test result.
-
-V7
-Greg KH suggests to add test and code review developer,
-Jiri Slaby suggests to use lockless buffer and fix dma alignment
-in separate patch.
-fix above things in v8. 
-
-V8
-This contains coding error when switch to use new buffer. fix it in v9.
-
-V9
-It didn't make things much clearer, it needs add more comments for new added buf.
-Add use lock to protect new added buffer. fix in v10.
-
-********TEST STEPS*********
-1, config guest console=hvc0
-2, start guest
-3, login guest
-    Welcome to Buildroot
-    buildroot login: root
-    # 
-    # cat /proc/cmdline 
-    console=hvc0,115200 
-    #
-
-drivers/tty/hvc/hvc_console.c | 38 +++++++++++++++++++++--------------
-drivers/tty/hvc/hvc_console.h | 24 ++++++++++++++++++++--
-drivers/char/virtio_console.c | 12 ++----------
-3 file changed
