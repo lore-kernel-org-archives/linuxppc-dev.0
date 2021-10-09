@@ -2,71 +2,49 @@ Return-Path: <SRS0=vnEJ=O5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7237C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 03:13:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F015C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 04:05:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 056FE60FC2
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 03:13:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 056FE60FC2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8B57360FD7
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 04:05:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8B57360FD7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HR99Q685gz3c7v
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 14:12:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HRBKr6G7Wz3c8v
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 15:05:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.160.177;
- helo=mail-qt1-f177.google.com; envelope-from=pku.leo@gmail.com;
- receiver=<UNKNOWN>)
-Received: from mail-qt1-f177.google.com (mail-qt1-f177.google.com
- [209.85.160.177])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HR98t1pxWz2ypR
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 14:12:29 +1100 (AEDT)
-Received: by mail-qt1-f177.google.com with SMTP id r17so6095569qtx.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Oct 2021 20:12:29 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=RZSR3JWmSBMwGLbANGREyXBTPWcaZYMU43ykvJz+HmI=;
- b=qKo3FpZuW5lUa90O5vQBvJAkrUjGtZjZffLl2ftjIu/7jd3XQwClSKgpMM38d0m4x3
- hd5VA4vyc6OLQ6t9VXU+nycycbaifwkHSBvZM2A2OFS2F5LSta/9ujyZrgJjHvey9mYh
- U8VkTW+sl5J2IXMvj23xQRRM3KKikIc036r6WpLZEDzBWbk8JKXf17ty/MA2mnM2l4gS
- Hrdsf267u0KbHr7444I0e8QcZQUMqScSPVcOpkNyOcQa3cdyjFRD1XS4e7LSQX53eTGG
- 1/uL+z+3dPdz4oSzA5T1YXZSlf4ieznv1/Nq5Xj7I1z0GT948xBMaExrTVC1DXvqo9CT
- 8iYQ==
-X-Gm-Message-State: AOAM532KIO1Tn6l9claLAOXgjVM6GPjFG5F9fxYtStIRxZxRxUTRkTQm
- vrIZaRgZBxh+YRYiWbqtzwDrV0IiFDo=
-X-Google-Smtp-Source: ABdhPJwcNUFcrrBNpVRQ6BAFMaiCwWIe3wXU/rdpMen5sy4P5UBBntgmuFSw9gA/gnfdIEAI8YGj8Q==
-X-Received: by 2002:ac8:3d42:: with SMTP id u2mr2060903qtf.346.1633749145872; 
- Fri, 08 Oct 2021 20:12:25 -0700 (PDT)
-Received: from mail-qk1-f178.google.com (mail-qk1-f178.google.com.
- [209.85.222.178])
- by smtp.gmail.com with ESMTPSA id bj31sm1087058qkb.43.2021.10.08.20.12.25
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Fri, 08 Oct 2021 20:12:25 -0700 (PDT)
-Received: by mail-qk1-f178.google.com with SMTP id ay35so2652039qkb.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Oct 2021 20:12:25 -0700 (PDT)
-X-Received: by 2002:a37:b842:: with SMTP id i63mr5942720qkf.262.1633749145064; 
- Fri, 08 Oct 2021 20:12:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HRBKL3tb4z2yp4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 15:04:47 +1100 (AEDT)
+X-IronPort-AV: E=McAfee;i="6200,9189,10131"; a="287513357"
+X-IronPort-AV: E=Sophos;i="5.85,360,1624345200"; d="scan'208";a="287513357"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+ by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Oct 2021 21:03:42 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.85,360,1624345200"; d="scan'208";a="546458843"
+Received: from lkp-server02.sh.intel.com (HELO 1950922c5479) ([10.239.97.151])
+ by fmsmga004.fm.intel.com with ESMTP; 08 Oct 2021 21:03:38 -0700
+Received: from kbuild by 1950922c5479 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1mZ3aE-000179-20; Sat, 09 Oct 2021 04:03:38 +0000
+Date: Sat, 09 Oct 2021 12:03:00 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ f9473a65719e59c45f1638cc04db7c80de8fcc1a
+Message-ID: <61611474.4O+0Q7OHNA+kSf7k%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-References: <20211001000924.15421-1-leoyang.li@nxp.com>
- <20211001000924.15421-3-leoyang.li@nxp.com>
- <YVsrYp3kZNmB1CIu@robh.at.kernel.org>
-In-Reply-To: <YVsrYp3kZNmB1CIu@robh.at.kernel.org>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Fri, 8 Oct 2021 22:12:13 -0500
-X-Gmail-Original-Message-ID: <CADRPPNSqJJ3RObHLVmpcg71Gz6jXi+Qa3kv-Z2oyBHzv4qcx_g@mail.gmail.com>
-Message-ID: <CADRPPNSqJJ3RObHLVmpcg71Gz6jXi+Qa3kv-Z2oyBHzv4qcx_g@mail.gmail.com>
-Subject: Re: [PATCH 2/5] memory: fsl_ifc: populate child devices without
- relying on simple-bus
-To: Rob Herring <robh@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,54 +56,189 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, Shawn Guo <shawnguo@kernel.org>,
- lkml <linux-kernel@vger.kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 4, 2021 at 12:14 PM Rob Herring <robh@kernel.org> wrote:
->
-> On Thu, Sep 30, 2021 at 07:09:21PM -0500, Li Yang wrote:
-> > After we update the binding to not use simple-bus compatible for the
-> > controller, we need the driver to populate the child devices explicitly.
-> >
-> > Signed-off-by: Li Yang <leoyang.li@nxp.com>
-> > ---
-> >  drivers/memory/fsl_ifc.c | 9 +++++++++
-> >  1 file changed, 9 insertions(+)
-> >
-> > diff --git a/drivers/memory/fsl_ifc.c b/drivers/memory/fsl_ifc.c
-> > index d062c2f8250f..251d713cd50b 100644
-> > --- a/drivers/memory/fsl_ifc.c
-> > +++ b/drivers/memory/fsl_ifc.c
-> > @@ -88,6 +88,7 @@ static int fsl_ifc_ctrl_remove(struct platform_device *dev)
-> >  {
-> >       struct fsl_ifc_ctrl *ctrl = dev_get_drvdata(&dev->dev);
-> >
-> > +     of_platform_depopulate(&dev->dev);
-> >       free_irq(ctrl->nand_irq, ctrl);
-> >       free_irq(ctrl->irq, ctrl);
-> >
-> > @@ -285,6 +286,14 @@ static int fsl_ifc_ctrl_probe(struct platform_device *dev)
-> >               }
-> >       }
-> >
-> > +     /* legacy dts may still use "simple-bus" compatible */
-> > +     if (!of_device_is_compatible(dev->dev.of_node, "simple-bus")) {
-> > +             ret = of_platform_populate(dev->dev.of_node, NULL, NULL,
-> > +                                             &dev->dev);
->
-> There's no need to make this conditional. of_platform_populate() is safe
-> to call multiple times. If that doesn't work, it's a bug.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+branch HEAD: f9473a65719e59c45f1638cc04db7c80de8fcc1a  powerpc/pseries/cpuhp: remove obsolete comment from pseries_cpu_die
 
-I think that it is probably an optimization to avoid re-populate the
-bus for legacy device trees.  But it might be cleaner to just
-re-populate anyway?
+elapsed time: 830m
 
-Regards,
-Leo
+configs tested: 161
+configs skipped: 4
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20211008
+s390                          debug_defconfig
+parisc                generic-32bit_defconfig
+m68k                       bvme6000_defconfig
+arm                            hisi_defconfig
+sh                            hp6xx_defconfig
+arc                         haps_hs_defconfig
+mips                    maltaup_xpa_defconfig
+mips                          rb532_defconfig
+riscv             nommu_k210_sdcard_defconfig
+xtensa                          iss_defconfig
+powerpc                 mpc85xx_cds_defconfig
+powerpc                     akebono_defconfig
+mips                  cavium_octeon_defconfig
+sh                          rsk7269_defconfig
+sh                               alldefconfig
+arm                        oxnas_v6_defconfig
+arm                         orion5x_defconfig
+m68k                         amcore_defconfig
+arm                      pxa255-idp_defconfig
+mips                            gpr_defconfig
+mips                         rt305x_defconfig
+arm                            zeus_defconfig
+arm                         socfpga_defconfig
+arm                           corgi_defconfig
+sh                          rsk7264_defconfig
+xtensa                    xip_kc705_defconfig
+nds32                             allnoconfig
+powerpc                 mpc8560_ads_defconfig
+mips                       lemote2f_defconfig
+m68k                        stmark2_defconfig
+sh                          sdk7786_defconfig
+powerpc                       holly_defconfig
+arm                     am200epdkit_defconfig
+sh                            migor_defconfig
+powerpc                      pasemi_defconfig
+mips                       rbtx49xx_defconfig
+powerpc                   currituck_defconfig
+ia64                             alldefconfig
+arm                         bcm2835_defconfig
+powerpc                 mpc832x_mds_defconfig
+arm                            xcep_defconfig
+mips                           rs90_defconfig
+mips                        bcm63xx_defconfig
+mips                malta_qemu_32r6_defconfig
+powerpc                          g5_defconfig
+arm                        keystone_defconfig
+riscv                               defconfig
+mips                         tb0219_defconfig
+arc                            hsdk_defconfig
+sh                        apsh4ad0a_defconfig
+mips                  decstation_64_defconfig
+sh                        sh7785lcr_defconfig
+m68k                         apollo_defconfig
+openrisc                            defconfig
+powerpc                      arches_defconfig
+sh                   secureedge5410_defconfig
+m68k                            mac_defconfig
+xtensa                       common_defconfig
+powerpc                   lite5200b_defconfig
+powerpc                      cm5200_defconfig
+arm                       multi_v4t_defconfig
+arm                        multi_v7_defconfig
+powerpc                 mpc836x_rdk_defconfig
+xtensa                generic_kc705_defconfig
+mips                         db1xxx_defconfig
+arm                          ep93xx_defconfig
+powerpc                   microwatt_defconfig
+arm                           u8500_defconfig
+h8300                    h8300h-sim_defconfig
+arm                           viper_defconfig
+mips                 decstation_r4k_defconfig
+powerpc                 mpc837x_rdb_defconfig
+arm                         s3c6400_defconfig
+arm                        realview_defconfig
+powerpc                     tqm8560_defconfig
+x86_64               randconfig-c001-20211008
+arm                  randconfig-c002-20211008
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+parisc                           allyesconfig
+s390                                defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                             allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                          allyesconfig
+x86_64               randconfig-a015-20211008
+x86_64               randconfig-a012-20211008
+x86_64               randconfig-a016-20211008
+x86_64               randconfig-a013-20211008
+x86_64               randconfig-a011-20211008
+x86_64               randconfig-a014-20211008
+i386                 randconfig-a013-20211008
+i386                 randconfig-a016-20211008
+i386                 randconfig-a014-20211008
+i386                 randconfig-a011-20211008
+i386                 randconfig-a012-20211008
+i386                 randconfig-a015-20211008
+arc                  randconfig-r043-20211008
+s390                 randconfig-r044-20211008
+riscv                randconfig-r042-20211008
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-c007-20211008
+i386                 randconfig-c001-20211008
+arm                  randconfig-c002-20211008
+s390                 randconfig-c005-20211008
+powerpc              randconfig-c003-20211008
+riscv                randconfig-c006-20211008
+mips                 randconfig-c004-20211008
+x86_64               randconfig-a003-20211008
+x86_64               randconfig-a005-20211008
+x86_64               randconfig-a001-20211008
+x86_64               randconfig-a002-20211008
+x86_64               randconfig-a004-20211008
+x86_64               randconfig-a006-20211008
+i386                 randconfig-a001-20211008
+i386                 randconfig-a003-20211008
+i386                 randconfig-a005-20211008
+i386                 randconfig-a004-20211008
+i386                 randconfig-a002-20211008
+i386                 randconfig-a006-20211008
+hexagon              randconfig-r045-20211008
+hexagon              randconfig-r041-20211008
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
