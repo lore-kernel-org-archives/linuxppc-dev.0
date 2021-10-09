@@ -2,44 +2,68 @@ Return-Path: <SRS0=vnEJ=O5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 882C7C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 05:39:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D93EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 06:11:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ACE5D60F5B
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 05:39:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ACE5D60F5B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5632A60EFE
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 06:11:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5632A60EFE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HRDQb2rQfz3dZx
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 16:39:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HRF7q4jbrz2ywj
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 17:11:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=valentin.schneider@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4HQsPv1T20z2ynt
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 02:22:41 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EDF7F6D;
- Fri,  8 Oct 2021 08:22:37 -0700 (PDT)
-Received: from e113632-lin (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9B44F3F66F;
- Fri,  8 Oct 2021 08:22:29 -0700 (PDT)
-From: Valentin Schneider <valentin.schneider@arm.com>
-To: Barry Song <21cnbao@gmail.com>
-Subject: Re: [PATCH 2/2] sched: Centralize SCHED_{SMT, MC, CLUSTER} definitions
-In-Reply-To: <CAGsJ_4wqtcOdsFDzR98PFbjxRyTqzf7P3p3erup84SXESYonYw@mail.gmail.com>
-References: <20211008115347.425234-1-valentin.schneider@arm.com>
- <20211008115347.425234-3-valentin.schneider@arm.com>
- <CAGsJ_4wqtcOdsFDzR98PFbjxRyTqzf7P3p3erup84SXESYonYw@mail.gmail.com>
-Date: Fri, 08 Oct 2021 16:22:27 +0100
-Message-ID: <87bl3zlex8.mognet@arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-X-Mailman-Approved-At: Sat, 09 Oct 2021 16:36:15 +1100
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=Q0RJ3AaL;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.164;
+ helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=Q0RJ3AaL; 
+ dkim-atps=neutral
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de
+ [81.169.146.164])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HRF7305hqz2yYJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Oct 2021 17:11:08 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1633759847;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+ From:Subject:Sender;
+ bh=JVWe11piAfJAdJymevoTxJyW/bmqebDGO4Tn3HRu4b4=;
+ b=Q0RJ3AaLtlsUYxULnfHfBH9qDpEuvo7yTdNE0iYvtrjgog/pvh4+8+3tEqCOHBcBaa
+ hESf15Um2Ws0E3aXKjhDvFaVu5v4k3VLf/njeI0Qhd9b1/HOlYoJ1s1mTwY3hkXG822A
+ 7hVFryIvLIAbrOvYRp0EK/HhQkm0xI3Zi/FOJ7JEKoymWd1WIDYMn0SfENkAeStOFMcI
+ zPiwK8z2VMP3FUh5TX0BLeMcCC2Wle8dudSP7XJTD/AOw7YYzTFfO9jnpdeE4c2Gy1ww
+ TL4FHG/tH7lcWdJKdruYBQ01xnUU3FGOqwhrCFsqElmZ1TXbMNM+fnjAtD7yRn3c33Lt
+ NEgg==
+Authentication-Results: strato.com;
+    dkim=none
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6Kxrf+5Dj7x4QgaM9fNtIXuaJFHrSAKNftmKoHNgA/QJNkOVJjQPPQ=="
+X-RZG-CLASS-ID: mo00
+Received: from smtpclient.apple by smtp.strato.de (RZmta 47.33.8 AUTH)
+ with ESMTPSA id I00cdex996Ak4d2
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Sat, 9 Oct 2021 08:10:46 +0200 (CEST)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Mime-Version: 1.0 (1.0)
+Subject: Re: Add Apple M1 support to PASemi i2c driver
+Date: Sat, 9 Oct 2021 08:10:45 +0200
+Message-Id: <F5C910BA-665C-4744-BAAE-9B3ED80974A0@xenosoft.de>
+References: <CAOesGMgnx6P=J--bygw=vcL1b4mQbdACBX+Mwc7BtmEmMtP7KA@mail.gmail.com>
+In-Reply-To: <CAOesGMgnx6P=J--bygw=vcL1b4mQbdACBX+Mwc7BtmEmMtP7KA@mail.gmail.com>
+To: Olof Johansson <olof@lixom.net>
+X-Mailer: iPhone Mail (19A348)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,88 +75,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Mark Rutland <mark.rutland@arm.com>,
- Kefeng Wang <wangkefeng.wang@huawei.com>, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>,
- linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Linus Walleij <linus.walleij@linaro.org>, David Hildenbrand <david@redhat.com>,
- x86 <x86@kernel.org>, linux-mips@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Hugh Dickins <hughd@google.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Will Deacon <will@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
- linux-s390@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>,
- Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- YiFei Zhu <yifeifz2@illinois.edu>, Helge Deller <deller@gmx.de>,
- Aubrey Li <aubrey.li@linux.intel.com>,
- Daniel Bristot de Oliveira <bristot@redhat.com>,
- Russell King <linux@armlinux.org.uk>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Mel Gorman <mgorman@suse.de>, Masahiro Yamada <masahiroy@kernel.org>,
- Frederic Weisbecker <frederic@kernel.org>, Kees Cook <keescook@chromium.org>,
- Vasily Gorbik <gor@linux.ibm.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>,
- Vlastimil Babka <vbabka@suse.cz>, Vipin Sharma <vipinsh@google.com>,
- Heiko Carstens <hca@linux.ibm.com>,
- Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- Steven Rostedt <rostedt@goodmis.org>, Nathan Chancellor <nathan@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Sergei Trofimovich <slyfox@gentoo.org>,
- Jonathan Cameron <jonathan.cameron@huawei.com>,
- Thomas Gleixner <tglx@linutronix.de>, Michal Hocko <mhocko@kernel.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- LAK <linux-arm-kernel@lists.infradead.org>,
- Barry Song <song.bao.hua@hisilicon.com>, Ben Segall <bsegall@google.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Daniel Borkmann <daniel@iogearbox.net>, linux-parisc@vger.kernel.org,
- Chris Down <chris@chrisdown.name>, linuxppc-dev@lists.ozlabs.org,
- Randy Dunlap <rdunlap@infradead.org>,
- Nick Desaulniers <ndesaulniers@google.com>,
- LKML <linux-kernel@vger.kernel.org>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Andrew Morton <akpm@linux-foundation.org>,
- Tim Chen <tim.c.chen@linux.intel.com>, "David S. Miller" <davem@davemloft.net>,
- Mike Rapoport <rppt@kernel.org>
+Cc: Linux ARM Mailing List <linux-arm-kernel@lists.infradead.org>,
+ Darren Stevens <darren@stevens-zone.net>, Arnd Bergmann <arnd@arndb.de>,
+ Sven Peter <sven@svenpeter.dev>, Hector Martin <marcan@marcan.st>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Wolfram Sang <wsa@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ linux-i2c@vger.kernel.org, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ mohamed.mediouni@caramail.com, Matthew Leaman <matthew@a-eon.biz>,
+ Stan Skowronek <stan@corellium.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "R.T.Dickinson" <rtd@a-eon.com>,
+ Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+ Mark Kettenis <mark.kettenis@xs4all.nl>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 09/10/21 01:37, Barry Song wrote:
-> On Sat, Oct 9, 2021 at 12:54 AM Valentin Schneider
-> <valentin.schneider@arm.com> wrote:
->>
->> Barry recently introduced a new CONFIG_SCHED_CLUSTER, and discussions
->> around that highlighted that every architecture redefines its own help text
->> and dependencies for CONFIG_SCHED_SMT and CONFIG_SCHED_MC.
->>
->> Move the definition of those to scheduler's Kconfig to centralize help text
->> and generic dependencies (i.e. SMP). Make them depend on a matching
->> ARCH_SUPPORTS_SCHED_* which the architectures can select with the relevant
->> architecture-specific dependency.
->>
->> s390 uses its own topology table (set_sched_topology()) and doesn't seem to
->> cope without SCHED_MC or SCHED_SMT, so those remain untogglable.
->>
->
-> Hi Valentin,
-> Thanks!
-> I believe this is a cleaner way for Kconfig itself. But I am not quite sure this
-> is always beneficial of all platforms. It would be perfect if the patch has no
-> side effects and doesn't change the existing behaviour. But it has side effects
-> by changing the default N to Y on a couple of platforms.
->
+Olof,
 
-So x86 has it default yes, and a lot of others (e.g. arm64) have it default
-no.
+Thank you for the hint.
 
-IMO you don't gain much by disabling them. SCHED_MC and SCHED_CLUSTER only
-control the presence of a sched_domain_topology_level - if it's useless it
-gets degenerated at domain build time. Some valid reasons for not using
-them is if the architecture defines its own topology table (e.g. powerpc
-has CACHE and MC levels which are not gated behind any CONFIG).
+I think I have found them.
 
-SCHED_SMT has an impact on code generated in sched/core.c, but that is also
-gated by a static key.
+Link: https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=3D26610=
+4
 
-So I'd say having them default yes is sensible. I'd even say we should
-change the "If unsure say N here." to "Y".
+Mbox: https://patchwork.ozlabs.org/series/266104/mbox/
+
+$ wget -O mbox https://patchwork.ozlabs.org/series/266104/mbox/
+$ git am mbox
+
+Thanks,
+Christian
+
+On 8. Oct 2021, at 22:47, Olof Johansson <olof@lixom.net> wrote:
+
+=EF=BB=BFChristian,
+
+Self-service available on lore:
+https://lore.kernel.org/all/20211008163532.75569-1-sven@svenpeter.dev/
+
+There are links on there to download a whole thread as an mbox if needed.
+
+
+-Olof
+
+On Fri, Oct 8, 2021 at 1:20 PM Christian Zigotzky
+<chzigotzky@xenosoft.de> wrote:
+
+Hi Michael,
+
+Do you have a mbox link for the v2 changes?
+
+I would like to test them on my AmigaOne X1000.
+
+Thanks,
+Christian
+
+On 27. Sep 2021, at 09:58, Michael Ellerman <mpe@ellerman.id.au> wrote:
+
+=EF=BB=BFChristian, the whole series is downloadable as a single mbox here:
+
+https://patchwork.ozlabs.org/series/264134/mbox/
+
+Save that to a file and apply with `git am`.
+
+eg:
+
+$ wget -O mbox https://patchwork.ozlabs.org/series/264134/mbox/
+$ git am mbox
+
+It applies cleanly on v5.15-rc3.
+
+cheers=
+
