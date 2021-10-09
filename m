@@ -2,34 +2,33 @@ Return-Path: <SRS0=vnEJ=O5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0374C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 22:16:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 832BDC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 22:16:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C06E360F39
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 22:16:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C06E360F39
+	by mail.kernel.org (Postfix) with ESMTPS id AEA4560F23
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Oct 2021 22:16:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AEA4560F23
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HRfXn6Gdrz305P
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Oct 2021 09:16:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HRfYF1rzQz3cBs
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Oct 2021 09:16:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=fail (SPF fail - not authorized)
- smtp.mailfrom=canonical.com (client-ip=217.70.183.197;
- helo=relay5-d.mail.gandi.net; envelope-from=alexandre.ghiti@canonical.com;
+ smtp.mailfrom=canonical.com (client-ip=217.70.178.231;
+ helo=relay11.mail.gandi.net; envelope-from=alexandre.ghiti@canonical.com;
  receiver=<UNKNOWN>)
-X-Greylist: delayed 64 seconds by postgrey-1.36 at boromir;
- Sun, 10 Oct 2021 04:14:26 AEDT
-Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net
- [217.70.183.197])
+X-Greylist: delayed 61 seconds by postgrey-1.36 at boromir;
+ Sun, 10 Oct 2021 04:16:32 AEDT
+Received: from relay11.mail.gandi.net (relay11.mail.gandi.net [217.70.178.231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HRWrL4gXvz2yMH
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Oct 2021 04:14:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HRWtm1T5Rz2xsW
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Oct 2021 04:16:31 +1100 (AEDT)
 Received: (Authenticated sender: alex@ghiti.fr)
- by relay5-d.mail.gandi.net (Postfix) with ESMTPSA id 1B6F01C0004;
- Sat,  9 Oct 2021 17:14:16 +0000 (UTC)
+ by relay11.mail.gandi.net (Postfix) with ESMTPSA id 60F97100004;
+ Sat,  9 Oct 2021 17:16:27 +0000 (UTC)
 From: Alexandre Ghiti <alexandre.ghiti@canonical.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -38,9 +37,9 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
  Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-riscv@lists.infradead.org
-Subject: [PATCH v7 1/3] riscv: Introduce CONFIG_RELOCATABLE
-Date: Sat,  9 Oct 2021 19:12:57 +0200
-Message-Id: <20211009171259.2515351-2-alexandre.ghiti@canonical.com>
+Subject: [PATCH v7 3/3] riscv: Check relocations at compile time
+Date: Sat,  9 Oct 2021 19:12:59 +0200
+Message-Id: <20211009171259.2515351-4-alexandre.ghiti@canonical.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20211009171259.2515351-1-alexandre.ghiti@canonical.com>
 References: <20211009171259.2515351-1-alexandre.ghiti@canonical.com>
@@ -58,192 +57,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Ghiti <alex@ghiti.fr>
+Cc: Anup Patel <anup@brainfault.org>, Alexandre Ghiti <alex@ghiti.fr>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Alexandre Ghiti <alex@ghiti.fr>
 
-This config allows to compile 64b kernel as PIE and to relocate it at
-any virtual address at runtime: this paves the way to KASLR.
-Runtime relocation is possible since relocation metadata are embedded into
-the kernel.
+Relocating kernel at runtime is done very early in the boot process, so
+it is not convenient to check for relocations there and react in case a
+relocation was not expected.
 
-Note that relocating at runtime introduces an overhead even if the
-kernel is loaded at the same address it was linked at and that the compiler
-options are those used in arm64 which uses the same RELA relocation
-format.
+There exists a script in scripts/ that extracts the relocations from
+vmlinux that is then used at postlink to check the relocations.
 
 Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
+Reviewed-by: Anup Patel <anup@brainfault.org>
 ---
- arch/riscv/Kconfig              | 12 ++++++++
- arch/riscv/Makefile             |  7 +++--
- arch/riscv/kernel/vmlinux.lds.S |  6 ++++
- arch/riscv/mm/Makefile          |  4 +++
- arch/riscv/mm/init.c            | 54 ++++++++++++++++++++++++++++++++-
- 5 files changed, 80 insertions(+), 3 deletions(-)
+ arch/riscv/Makefile.postlink     | 36 ++++++++++++++++++++++++++++++++
+ arch/riscv/tools/relocs_check.sh | 26 +++++++++++++++++++++++
+ 2 files changed, 62 insertions(+)
+ create mode 100644 arch/riscv/Makefile.postlink
+ create mode 100755 arch/riscv/tools/relocs_check.sh
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index ea16fa2dd768..043ba92559fa 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -213,6 +213,18 @@ config PGTABLE_LEVELS
- config LOCKDEP_SUPPORT
- 	def_bool y
- 
-+config RELOCATABLE
-+	bool
-+	depends on MMU && 64BIT && !XIP_KERNEL
-+	help
-+          This builds a kernel as a Position Independent Executable (PIE),
-+          which retains all relocation metadata required to relocate the
-+          kernel binary at runtime to a different virtual address than the
-+          address it was linked at.
-+          Since RISCV uses the RELA relocation format, this requires a
-+          relocation pass at runtime even if the kernel is loaded at the
-+          same address it was linked at.
+diff --git a/arch/riscv/Makefile.postlink b/arch/riscv/Makefile.postlink
+new file mode 100644
+index 000000000000..bf2b2bca1845
+--- /dev/null
++++ b/arch/riscv/Makefile.postlink
+@@ -0,0 +1,36 @@
++# SPDX-License-Identifier: GPL-2.0
++# ===========================================================================
++# Post-link riscv pass
++# ===========================================================================
++#
++# Check that vmlinux relocations look sane
 +
- source "arch/riscv/Kconfig.socs"
- source "arch/riscv/Kconfig.erratas"
- 
-diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
-index 0eb4568fbd29..2f509915f246 100644
---- a/arch/riscv/Makefile
-+++ b/arch/riscv/Makefile
-@@ -9,9 +9,12 @@
- #
- 
- OBJCOPYFLAGS    := -O binary
--LDFLAGS_vmlinux :=
-+ifeq ($(CONFIG_RELOCATABLE),y)
-+	LDFLAGS_vmlinux += -shared -Bsymbolic -z notext -z norelro
-+	KBUILD_CFLAGS += -fPIE
-+endif
- ifeq ($(CONFIG_DYNAMIC_FTRACE),y)
--	LDFLAGS_vmlinux := --no-relax
-+	LDFLAGS_vmlinux += --no-relax
- 	KBUILD_CPPFLAGS += -DCC_USING_PATCHABLE_FUNCTION_ENTRY
- 	CC_FLAGS_FTRACE := -fpatchable-function-entry=8
- endif
-diff --git a/arch/riscv/kernel/vmlinux.lds.S b/arch/riscv/kernel/vmlinux.lds.S
-index 5104f3a871e3..862a8c09723c 100644
---- a/arch/riscv/kernel/vmlinux.lds.S
-+++ b/arch/riscv/kernel/vmlinux.lds.S
-@@ -133,6 +133,12 @@ SECTIONS
- 
- 	BSS_SECTION(PAGE_SIZE, PAGE_SIZE, 0)
- 
-+	.rela.dyn : ALIGN(8) {
-+		__rela_dyn_start = .;
-+		*(.rela .rela*)
-+		__rela_dyn_end = .;
-+	}
++PHONY := __archpost
++__archpost:
 +
- #ifdef CONFIG_EFI
- 	. = ALIGN(PECOFF_SECTION_ALIGNMENT);
- 	__pecoff_data_virt_size = ABSOLUTE(. - __pecoff_text_end);
-diff --git a/arch/riscv/mm/Makefile b/arch/riscv/mm/Makefile
-index 7ebaef10ea1b..2d33ec574bbb 100644
---- a/arch/riscv/mm/Makefile
-+++ b/arch/riscv/mm/Makefile
-@@ -1,6 +1,10 @@
- # SPDX-License-Identifier: GPL-2.0-only
- 
- CFLAGS_init.o := -mcmodel=medany
++-include include/config/auto.conf
++include scripts/Kbuild.include
++
++quiet_cmd_relocs_check = CHKREL  $@
++cmd_relocs_check = 							\
++	$(CONFIG_SHELL) $(srctree)/arch/riscv/tools/relocs_check.sh "$(OBJDUMP)" "$(NM)" "$@"
++
++# `@true` prevents complaint when there is nothing to be done
++
++vmlinux: FORCE
++	@true
 +ifdef CONFIG_RELOCATABLE
-+CFLAGS_init.o += -fno-pie
++	$(call if_changed,relocs_check)
 +endif
 +
- ifdef CONFIG_FTRACE
- CFLAGS_REMOVE_init.o = $(CC_FLAGS_FTRACE)
- CFLAGS_REMOVE_cacheflush.o = $(CC_FLAGS_FTRACE)
-diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-index c0cddf0fc22d..42041c12d496 100644
---- a/arch/riscv/mm/init.c
-+++ b/arch/riscv/mm/init.c
-@@ -20,6 +20,9 @@
- #include <linux/dma-map-ops.h>
- #include <linux/crash_dump.h>
- #include <linux/hugetlb.h>
-+#ifdef CONFIG_RELOCATABLE
-+#include <linux/elf.h>
-+#endif
- 
- #include <asm/fixmap.h>
- #include <asm/tlbflush.h>
-@@ -103,7 +106,7 @@ static void __init print_vm_layout(void)
- 	print_mlm("lowmem", (unsigned long)PAGE_OFFSET,
- 		  (unsigned long)high_memory);
- #ifdef CONFIG_64BIT
--	print_mlm("kernel", (unsigned long)KERNEL_LINK_ADDR,
-+	print_mlm("kernel", (unsigned long)kernel_map.virt_addr,
- 		  (unsigned long)ADDRESS_SPACE_END);
- #endif
- }
-@@ -518,6 +521,44 @@ static __init pgprot_t pgprot_from_va(uintptr_t va)
- #error "setup_vm() is called from head.S before relocate so it should not use absolute addressing."
- #endif
- 
-+#ifdef CONFIG_RELOCATABLE
-+extern unsigned long __rela_dyn_start, __rela_dyn_end;
++%.ko: FORCE
++	@true
 +
-+static void __init relocate_kernel(void)
-+{
-+	Elf64_Rela *rela = (Elf64_Rela *)&__rela_dyn_start;
-+	/*
-+	 * This holds the offset between the linked virtual address and the
-+	 * relocated virtual address.
-+	 */
-+	uintptr_t reloc_offset = kernel_map.virt_addr - KERNEL_LINK_ADDR;
-+	/*
-+	 * This holds the offset between kernel linked virtual address and
-+	 * physical address.
-+	 */
-+	uintptr_t va_kernel_link_pa_offset = KERNEL_LINK_ADDR - kernel_map.phys_addr;
++clean:
++	@true
 +
-+	for ( ; rela < (Elf64_Rela *)&__rela_dyn_end; rela++) {
-+		Elf64_Addr addr = (rela->r_offset - va_kernel_link_pa_offset);
-+		Elf64_Addr relocated_addr = rela->r_addend;
++PHONY += FORCE clean
 +
-+		if (rela->r_info != R_RISCV_RELATIVE)
-+			continue;
++FORCE:
 +
-+		/*
-+		 * Make sure to not relocate vdso symbols like rt_sigreturn
-+		 * which are linked from the address 0 in vmlinux since
-+		 * vdso symbol addresses are actually used as an offset from
-+		 * mm->context.vdso in VDSO_OFFSET macro.
-+		 */
-+		if (relocated_addr >= KERNEL_LINK_ADDR)
-+			relocated_addr += reloc_offset;
++.PHONY: $(PHONY)
+diff --git a/arch/riscv/tools/relocs_check.sh b/arch/riscv/tools/relocs_check.sh
+new file mode 100755
+index 000000000000..baeb2e7b2290
+--- /dev/null
++++ b/arch/riscv/tools/relocs_check.sh
+@@ -0,0 +1,26 @@
++#!/bin/sh
++# SPDX-License-Identifier: GPL-2.0-or-later
++# Based on powerpc relocs_check.sh
 +
-+		*(Elf64_Addr *)addr = relocated_addr;
-+	}
-+}
-+#endif /* CONFIG_RELOCATABLE */
++# This script checks the relocations of a vmlinux for "suspicious"
++# relocations.
 +
- #ifdef CONFIG_XIP_KERNEL
- static void __init create_kernel_page_table(pgd_t *pgdir,
- 					    __always_unused bool early)
-@@ -625,6 +666,17 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
- 	BUG_ON((kernel_map.virt_addr + kernel_map.size) > ADDRESS_SPACE_END - SZ_4K);
- #endif
- 
-+#ifdef CONFIG_RELOCATABLE
-+	/*
-+	 * Early page table uses only one PGDIR, which makes it possible
-+	 * to map PGDIR_SIZE aligned on PGDIR_SIZE: if the relocation offset
-+	 * makes the kernel cross over a PGDIR_SIZE boundary, raise a bug
-+	 * since a part of the kernel would not get mapped.
-+	 */
-+	BUG_ON(PGDIR_SIZE - (kernel_map.virt_addr & (PGDIR_SIZE - 1)) < kernel_map.size);
-+	relocate_kernel();
-+#endif
++if [ $# -lt 3 ]; then
++        echo "$0 [path to objdump] [path to nm] [path to vmlinux]" 1>&2
++        exit 1
++fi
 +
- 	pt_ops.alloc_pte = alloc_pte_early;
- 	pt_ops.get_pte_virt = get_pte_virt_early;
- #ifndef __PAGETABLE_PMD_FOLDED
++bad_relocs=$(
++${srctree}/scripts/relocs_check.sh "$@" |
++	# These relocations are okay
++	#	R_RISCV_RELATIVE
++	grep -F -w -v 'R_RISCV_RELATIVE'
++)
++
++if [ -z "$bad_relocs" ]; then
++	exit 0
++fi
++
++num_bad=$(echo "$bad_relocs" | wc -l)
++echo "WARNING: $num_bad bad relocations"
++echo "$bad_relocs"
 -- 
 2.30.2
 
