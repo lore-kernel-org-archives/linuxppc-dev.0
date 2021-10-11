@@ -2,19 +2,19 @@ Return-Path: <SRS0=o3RY=O7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78FC4C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:27:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58E3AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:28:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B027060F4B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:27:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B027060F4B
+	by mail.kernel.org (Postfix) with ESMTPS id CEEE660F3A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:28:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CEEE660F3A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HSjNB2z00z2yZx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 02:27:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HSjNg29YYz3cFY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 02:28:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,35 +22,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HSjML4YN2z2ym7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 02:26:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HSjMR3Bh8z2ywQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 02:26:59 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HSjM41DLlz9sV4;
- Mon, 11 Oct 2021 17:26:40 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HSjM52vF5z9sTs;
+ Mon, 11 Oct 2021 17:26:41 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id fpQr6HfP7u29; Mon, 11 Oct 2021 17:26:40 +0200 (CEST)
+ with ESMTP id Rw-otcj9tGfm; Mon, 11 Oct 2021 17:26:41 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HSjM271n6z9sTs;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HSjM3024Hz9sTt;
  Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CC8AA8B773;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D1EB48B783;
  Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id jI_UH71UA1dc; Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
+ with ESMTP id BfLFtPywlEMF; Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4A8238B77A;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 34BAC8B770;
  Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19BFQWd31585043
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19BFQVZX1585011
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 11 Oct 2021 17:26:32 +0200
+ Mon, 11 Oct 2021 17:26:31 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19BFQWRh1585042;
- Mon, 11 Oct 2021 17:26:32 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19BFQVCV1585010;
+ Mon, 11 Oct 2021 17:26:31 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -61,17 +61,18 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v1 10/10] lkdtm: Fix execute_[user]_location()
-Date: Mon, 11 Oct 2021 17:25:37 +0200
-Message-Id: <c551f3f4b803d1a4a184b0fa94475d405ba436d8.1633964380.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 02/10] powerpc: Rename 'funcaddr' to 'addr' in 'struct
+ ppc64_opd_entry'
+Date: Mon, 11 Oct 2021 17:25:29 +0200
+Message-Id: <892715d6f05fdf6ca80cf88a51a9e55298b68c4a.1633964380.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1633964380.git.christophe.leroy@csgroup.eu>
 References: <cover.1633964380.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1633965929; l=3205; s=20211009;
- h=from:subject:message-id; bh=l9VMW9X0cJdJ5G39QvOQSX7TaMvTqTcPjFZvPR3zBnY=;
- b=jicnpEgsrfjH5zYpDhYjzje61oqpOOuq/IuppB5jOn2Ba0Gd0x1VsCW6/z7XdMGhv8A23JZri38f
- B8zYR3a+B6WB1RVyyaaI9RtV86aWs3LS+2H/2P5Ya4RB7CP/W3A1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1633965928; l=2423; s=20211009;
+ h=from:subject:message-id; bh=UcrC1vlpvPaezZaHIBKM3b9ewrkDpdFEtlYNrqTDTLg=;
+ b=sR8iFNRcbZxDd66eGD/dN9O9K/+ik1kft5E23FMg8ognNP7/BV69ot654bNfqGeHCkWn0qCr9GYP
+ zdHu+BXfDLuKNAaBHpTjs1VvfxHv9gz6B37Ipyx0bDm/9oyGzhQJ
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -93,103 +94,76 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-execute_location() and execute_user_location() intent
-to copy do_nothing() text and execute it at a new location.
-However, at the time being it doesn't copy do_nothing() function
-but do_nothing() function descriptor which still points to the
-original text. So at the end it still executes do_nothing() at
-its original location allthough using a copied function descriptor.
+There are three architectures with function descriptors, try to
+have common names for the address they contain in order to
+refactor some functions into generic functions later.
 
-So, fix that by really copying do_nothing() text and build a new
-function descriptor by copying do_nothing() function descriptor and
-updating the target address with the new location.
+powerpc has 'funcaddr'
+ia64 has 'ip'
+parisc has 'addr'
 
-Also fix the displayed addresses by dereferencing do_nothing()
-function descriptor.
+Vote for 'addr' and update 'struct ppc64_opd_entry' accordingly.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/misc/lkdtm/perms.c | 45 +++++++++++++++++++++++++++++++-------
- 1 file changed, 37 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/elf.h      | 2 +-
+ arch/powerpc/include/asm/sections.h | 2 +-
+ arch/powerpc/kernel/module_64.c     | 6 +++---
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index da16564e1ecd..1d03cd44c21d 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -44,19 +44,42 @@ static noinline void do_overwritten(void)
- 	return;
- }
- 
-+static void *setup_function_descriptor(funct_descr_t *fdesc, void *dst)
-+{
-+	int err;
-+
-+	if (!__is_defined(HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR))
-+		return dst;
-+
-+	err = copy_from_kernel_nofault(fdesc, do_nothing, sizeof(*fdesc));
-+	if (err < 0)
-+		return ERR_PTR(err);
-+
-+	fdesc->addr = (unsigned long)dst;
-+	barrier();
-+
-+	return fdesc;
-+}
-+
- static noinline void execute_location(void *dst, bool write)
+diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+index 64b523848cd7..90c3259a81ab 100644
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -179,7 +179,7 @@ void relocate(unsigned long final_address);
+ /* There's actually a third entry here, but it's unused */
+ struct ppc64_opd_entry
  {
--	void (*func)(void) = dst;
-+	void (*func)(void);
-+	funct_descr_t fdesc;
-+	void *do_nothing_text = dereference_symbol_descriptor(do_nothing);
+-	unsigned long funcaddr;
++	unsigned long addr;
+ 	unsigned long r2;
+ };
  
--	pr_info("attempting ok execution at %px\n", do_nothing);
-+	pr_info("attempting ok execution at %px\n", do_nothing_text);
- 	do_nothing();
+diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+index 6e4af4492a14..32e7035863ac 100644
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -77,7 +77,7 @@ static inline void *dereference_function_descriptor(void *ptr)
+ 	struct ppc64_opd_entry *desc = ptr;
+ 	void *p;
  
- 	if (write == CODE_WRITE) {
--		memcpy(dst, do_nothing, EXEC_SIZE);
-+		memcpy(dst, do_nothing_text, EXEC_SIZE);
- 		flush_icache_range((unsigned long)dst,
- 				   (unsigned long)dst + EXEC_SIZE);
- 	}
--	pr_info("attempting bad execution at %px\n", func);
-+	func = setup_function_descriptor(&fdesc, dst);
-+	if (IS_ERR(func))
-+		return;
-+
-+	pr_info("attempting bad execution at %px\n", dst);
- 	func();
- 	pr_err("FAIL: func returned\n");
+-	if (!get_kernel_nofault(p, (void *)&desc->funcaddr))
++	if (!get_kernel_nofault(p, (void *)&desc->addr))
+ 		ptr = p;
+ 	return ptr;
  }
-@@ -66,16 +89,22 @@ static void execute_user_location(void *dst)
- 	int copied;
- 
- 	/* Intentionally crossing kernel/user memory boundary. */
--	void (*func)(void) = dst;
-+	void (*func)(void);
-+	funct_descr_t fdesc;
-+	void *do_nothing_text = dereference_symbol_descriptor(do_nothing);
- 
--	pr_info("attempting ok execution at %px\n", do_nothing);
-+	pr_info("attempting ok execution at %px\n", do_nothing_text);
- 	do_nothing();
- 
--	copied = access_process_vm(current, (unsigned long)dst, do_nothing,
-+	copied = access_process_vm(current, (unsigned long)dst, do_nothing_text,
- 				   EXEC_SIZE, FOLL_WRITE);
- 	if (copied < EXEC_SIZE)
- 		return;
--	pr_info("attempting bad execution at %px\n", func);
-+	func = setup_function_descriptor(&fdesc, dst);
-+	if (IS_ERR(func))
-+		return;
-+
-+	pr_info("attempting bad execution at %px\n", dst);
- 	func();
- 	pr_err("FAIL: func returned\n");
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 6baa676e7cb6..82908c9be627 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -72,11 +72,11 @@ static func_desc_t func_desc(unsigned long addr)
  }
+ static unsigned long func_addr(unsigned long addr)
+ {
+-	return func_desc(addr).funcaddr;
++	return func_desc(addr).addr;
+ }
+ static unsigned long stub_func_addr(func_desc_t func)
+ {
+-	return func.funcaddr;
++	return func.addr;
+ }
+ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+ {
+@@ -187,7 +187,7 @@ static int relacmp(const void *_x, const void *_y)
+ static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
+ 				    const Elf64_Shdr *sechdrs)
+ {
+-	/* One extra reloc so it's always 0-funcaddr terminated */
++	/* One extra reloc so it's always 0-addr terminated */
+ 	unsigned long relocs = 1;
+ 	unsigned i;
+ 
 -- 
 2.31.1
 
