@@ -2,79 +2,78 @@ Return-Path: <SRS0=o3RY=O7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB70FC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:31:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A412EC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 17:37:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5880960FD7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:31:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5880960FD7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 0C39D60555
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 17:37:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0C39D60555
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HSjSm0PF5z3dv3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 02:31:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HSmFX2Yvyz304m
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 04:37:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=UQY5fuae;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034;
+ helo=mail-pj1-x1034.google.com; envelope-from=naveennaidu479@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=UQY5fuae; dkim-atps=neutral
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com
+ [IPv6:2607:f8b0:4864:20::1034])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HSjN91PKNz3c87
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 02:27:37 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HSjMF1RRrz9sV7;
- Mon, 11 Oct 2021 17:26:49 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id umJ9Xn2erhzq; Mon, 11 Oct 2021 17:26:49 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HSjM31Fq6z9sV3;
- Mon, 11 Oct 2021 17:26:39 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0125A8B763;
- Mon, 11 Oct 2021 17:26:39 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id WBvjFUbYAN9h; Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4D4B68B77B;
- Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19BFQVY71585019
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 11 Oct 2021 17:26:31 +0200
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19BFQVMB1585018;
- Mon, 11 Oct 2021 17:26:31 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Morton <akpm@linux-foundation.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
- Kees Cook <keescook@chromium.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v1 04/10] asm-generic: Use
- HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR to define associated stubs
-Date: Mon, 11 Oct 2021 17:25:31 +0200
-Message-Id: <8db2a3ca2b26a8325c671baa3e0492914597f079.1633964380.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <cover.1633964380.git.christophe.leroy@csgroup.eu>
-References: <cover.1633964380.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HSmDp5tMdz2xWx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 04:36:25 +1100 (AEDT)
+Received: by mail-pj1-x1034.google.com with SMTP id
+ pi19-20020a17090b1e5300b0019fdd3557d3so501145pjb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Oct 2021 10:36:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=oJzzZJUwpzeKQJlZIVOTzoqmYp8CWlcv3F3YYYU8MOg=;
+ b=UQY5fuaeniwoPT/xwHQ3Ao7FeWJFVAhorTY5szyrGdLOGVxLcMbAyI4cuBXif1/HZV
+ /PdEKOkP4XWO0c1FKucvGnQLn0BCRsberthTXZxRsm1u3v89wk2oZ3zOnqs9s4ya43NQ
+ XWiezH28+9l/P3xR5zTpFmo1T95D98vsV/3nNl6990Qagg8v+WrADDXJx/HGiSOFn4hX
+ 5XoI5q9TiV72vLFs2lDVIeFnusAPqBeanD8oUQ+lBrDxUns/MCcRe2AdoX2SLgHAI4o/
+ QqyEPf7f9Stid6ShIEinzes0Ri61q601MnMDe/BaR+6QaqRYYe4anDzLKd7yAt8ZQLMR
+ cfzw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=oJzzZJUwpzeKQJlZIVOTzoqmYp8CWlcv3F3YYYU8MOg=;
+ b=btrmRYtPkdDhFA4GOioEhArixXbdAX3kHj0UYT9Y9ko/cDjB624NWVi58p+scFihwo
+ 5BjGqsUhLpUBWaPCEBrdEyjbShdEfhrPehqDTuMpyGelRsiDvvtZ+VzRfbzd6XMe3H46
+ zL1fsJb+3n9HO493x8ri3m0mVti9o1oNrxR1No6tHHO4gos8tHxM7SNapvXLJxG0NXtp
+ 9EJhwCQy4hhm31HTnf6JhrfLPvAPjr73YMFH6mQcG3SqtnOATCXoImDBwkjLXKy6ioAQ
+ 9VF6pQNZrR1DAFBY9XtNHulF4vKwXoD9wFhFnQN7QaUX/vsCg/0mT7QQMTuDXb0BqZ3+
+ NkxQ==
+X-Gm-Message-State: AOAM5323XCdksOP7GLsWFQr8axOBUTeReHYPEGVF4drNzfIw2hy5Bd8R
+ JSHukcFdvDfrKjlS1OhmBEs=
+X-Google-Smtp-Source: ABdhPJxbCg5k83AJkkf7TpRQJrReqilB+qCC+1rDSbSN1M5Qa0bgpA3LMBJFY9nGSbN5K03Q8ex3zQ==
+X-Received: by 2002:a17:90b:1804:: with SMTP id
+ lw4mr354756pjb.174.1633973781406; 
+ Mon, 11 Oct 2021 10:36:21 -0700 (PDT)
+Received: from localhost.localdomain ([2406:7400:63:9f95:848b:7cc8:d852:ad42])
+ by smtp.gmail.com with ESMTPSA id
+ z8sm8859954pgc.53.2021.10.11.10.36.16
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 11 Oct 2021 10:36:20 -0700 (PDT)
+From: Naveen Naidu <naveennaidu479@gmail.com>
+To: bhelgaas@google.com
+Subject: [PATCH 00/22] PCI: Unify PCI error response checking
+Date: Mon, 11 Oct 2021 23:05:47 +0530
+Message-Id: <cover.1633972263.git.naveennaidu479@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1633965928; l=3340; s=20211009;
- h=from:subject:message-id; bh=SPVLyJjLfChbgP4tYSRx0kEiNfUiuVbKX2eYIS2gkUc=;
- b=v+IbhdjvUUahsBXN0rUeT+nQakizAVo7ckShYCKS7dYpYbN+Xm1gXVpDw0I4PIDjW8+ua8fm/6aE
- 1W19h1MxC/3917+ocYEmuomSVJNbefsW+vOFnX+5OLjzJWYxyw6F
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -87,108 +86,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-samsung-soc@vger.kernel.org, linux-rockchip@lists.infradead.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+ Naveen Naidu <naveennaidu479@gmail.com>, bcm-kernel-feedback-list@broadcom.com,
+ linux-mediatek@lists.infradead.org,
+ linux-kernel-mentees@lists.linuxfoundation.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR instead of 'dereference_function_descriptor'
-to know whether arch has function descriptors.
+An MMIO read from a PCI device that doesn't exist or doesn't respond
+causes a PCI error.  There's no real data to return to satisfy the 
+CPU read, so most hardware fabricates ~0 data.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/ia64/include/asm/sections.h    | 4 ++--
- arch/parisc/include/asm/sections.h  | 6 ++++--
- arch/powerpc/include/asm/sections.h | 6 ++++--
- include/asm-generic/sections.h      | 3 ++-
- 4 files changed, 12 insertions(+), 7 deletions(-)
+This patch series adds PCI_ERROR_RESPONSE definition and other helper
+defintion SET_PCI_ERROR_RESPONSE and RESPONSE_IS_PCI_ERROR and uses it
+where appropriate to make these checks consistent and easier to find.
 
-diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
-index 35f24e52149a..80f5868afb06 100644
---- a/arch/ia64/include/asm/sections.h
-+++ b/arch/ia64/include/asm/sections.h
-@@ -7,6 +7,8 @@
-  *	David Mosberger-Tang <davidm@hpl.hp.com>
-  */
- 
-+#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
-+
- #include <linux/elf.h>
- #include <linux/uaccess.h>
- #include <asm-generic/sections.h>
-@@ -27,8 +29,6 @@ extern char __start_gate_brl_fsys_bubble_down_patchlist[], __end_gate_brl_fsys_b
- extern char __start_unwind[], __end_unwind[];
- extern char __start_ivt_text[], __end_ivt_text[];
- 
--#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
--
- #undef dereference_function_descriptor
- static inline void *dereference_function_descriptor(void *ptr)
- {
-diff --git a/arch/parisc/include/asm/sections.h b/arch/parisc/include/asm/sections.h
-index bb52aea0cb21..2e781ee19b66 100644
---- a/arch/parisc/include/asm/sections.h
-+++ b/arch/parisc/include/asm/sections.h
-@@ -2,6 +2,10 @@
- #ifndef _PARISC_SECTIONS_H
- #define _PARISC_SECTIONS_H
- 
-+#ifdef CONFIG_64BIT
-+#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
-+#endif
-+
- /* nothing to see, move along */
- #include <asm-generic/sections.h>
- 
-@@ -9,8 +13,6 @@ extern char __alt_instructions[], __alt_instructions_end[];
- 
- #ifdef CONFIG_64BIT
- 
--#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
--
- #undef dereference_function_descriptor
- void *dereference_function_descriptor(void *);
- 
-diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
-index 32e7035863ac..b7f1ba04e756 100644
---- a/arch/powerpc/include/asm/sections.h
-+++ b/arch/powerpc/include/asm/sections.h
-@@ -8,6 +8,10 @@
- 
- #define arch_is_kernel_initmem_freed arch_is_kernel_initmem_freed
- 
-+#ifdef PPC64_ELF_ABI_v1
-+#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
-+#endif
-+
- #include <asm-generic/sections.h>
- 
- extern bool init_mem_is_free;
-@@ -69,8 +73,6 @@ static inline int overlaps_kernel_text(unsigned long start, unsigned long end)
- 
- #ifdef PPC64_ELF_ABI_v1
- 
--#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
--
- #undef dereference_function_descriptor
- static inline void *dereference_function_descriptor(void *ptr)
- {
-diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
-index d16302d3eb59..1db5cfd69817 100644
---- a/include/asm-generic/sections.h
-+++ b/include/asm-generic/sections.h
-@@ -59,7 +59,8 @@ extern char __noinstr_text_start[], __noinstr_text_end[];
- extern __visible const void __nosave_begin, __nosave_end;
- 
- /* Function descriptor handling (if any).  Override in asm/sections.h */
--#ifndef dereference_function_descriptor
-+#ifdef HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR
-+#else
- #define dereference_function_descriptor(p) ((void *)(p))
- #define dereference_kernel_function_descriptor(p) ((void *)(p))
- #endif
+This helps unify PCI error response checking and make error check
+consistent and easier to find.
+
+Patch 1:
+  - Adds the PCI_ERROR_RESPONSE and other related defintions
+  - All other patches are dependent on this patch. This patch needs to
+    be applied first, before the others
+
+Patch 2 - 13
+  - Uses SET_PCI_ERROR_RESPONSE() when device is not found
+
+Patch 14 - 19
+  - Uses RESPONSE_IS_PCI_ERROR() to check the reads from hardware
+
+Patch 20 - 22
+  - Edits the comments to include PCI_ERROR_RESPONSE alsong with
+    0xFFFFFFFF, so that it becomes easier to grep for faulty hardware
+    reads.
+
+Thanks,
+Naveen
+
+Naveen Naidu (22):
+  [PATCH 1/22] PCI: Add PCI_ERROR_RESPONSE and it's related defintions
+  [PATCH 2/22] PCI: Unify PCI error response checking
+  [PATCH 3/22] PCI: thunder: Use SET_PCI_ERROR_RESPONSE() when device not found
+  [PATCH 4/22] PCI: iproc: Use SET_PCI_ERROR_RESPONSE() when device not found
+  [PATCH 5/22] PCI: mediatek: Use SET_PCI_ERROR_RESPONSE() when device not found
+  [PATCH 6/22] PCI: exynos: Use SET_PCI_ERROR_RESPONSE() when device not found
+  [PATCH 7/22] PCI: histb: Use SET_PCI_ERROR_RESPONSE() when device not found
+  [PATCH 8/22] PCI: kirin: Use SET_PCI_ERROR_RESPONSE() when device not found
+  [PATCH 9/22] PCI: aardvark: Use SET_PCI_ERROR_RESPONSE() when device not found
+  [PATCH 10/22] PCI: mvebu: Use SET_PCI_ERROR_RESPONSE() when device not found
+  [PATCH 11/22] PCI: altera: Use SET_PCI_ERROR_RESPONSE() when device not found
+  [PATCH 12/22] PCI: rcar: Use SET_PCI_ERROR_RESPONSE() when device not found
+  [PATCH 13/22] PCI: rockchip: Use SET_PCI_ERROR_RESPONSE() when device not found
+  [PATCH 14/22] PCI/ERR: Use RESPONSE_IS_PCI_ERROR() to check read from hardware
+  [PATCH 15/22] PCI: vmd: Use RESPONSE_IS_PCI_ERROR() to check read from hardware
+  [PATCH 16/22] PCI: pciehp: Use RESPONSE_IS_PCI_ERROR() to check read from hardware
+  [PATCH 17/22] PCI/DPC: Use RESPONSE_IS_PCI_ERROR() to check read from hardware
+  [PATCH 18/22] PCI/PME: Use RESPONSE_IS_PCI_ERROR() to check read from hardware
+  [PATCH 19/22] PCI: cpqphp: Use RESPONSE_IS_PCI_ERROR() to check read from hardware
+  [PATCH 20/22] PCI: keystone: Use PCI_ERROR_RESPONSE to specify hardware error
+  [PATCH 21/22] PCI: hv: Use PCI_ERROR_RESPONSE to specify hardware read error
+  [PATCH 22/22] PCI: xgene: Use PCI_ERROR_RESPONSE to specify hardware error
+
+ drivers/pci/access.c                        | 22 ++++++++++-----------
+ drivers/pci/controller/dwc/pci-exynos.c     |  2 +-
+ drivers/pci/controller/dwc/pci-keystone.c   |  4 ++--
+ drivers/pci/controller/dwc/pcie-histb.c     |  2 +-
+ drivers/pci/controller/dwc/pcie-kirin.c     |  2 +-
+ drivers/pci/controller/pci-aardvark.c       |  8 ++++----
+ drivers/pci/controller/pci-hyperv.c         |  2 +-
+ drivers/pci/controller/pci-mvebu.c          |  4 ++--
+ drivers/pci/controller/pci-thunder-ecam.c   | 20 +++++++++----------
+ drivers/pci/controller/pci-thunder-pem.c    |  2 +-
+ drivers/pci/controller/pci-xgene.c          |  8 ++++----
+ drivers/pci/controller/pcie-altera.c        |  2 +-
+ drivers/pci/controller/pcie-iproc.c         |  2 +-
+ drivers/pci/controller/pcie-mediatek.c      |  4 ++--
+ drivers/pci/controller/pcie-rcar-host.c     |  2 +-
+ drivers/pci/controller/pcie-rockchip-host.c |  2 +-
+ drivers/pci/controller/vmd.c                |  2 +-
+ drivers/pci/hotplug/cpqphp_ctrl.c           |  4 ++--
+ drivers/pci/hotplug/pciehp_hpc.c            | 10 +++++-----
+ drivers/pci/pci.c                           | 10 +++++-----
+ drivers/pci/pcie/dpc.c                      |  4 ++--
+ drivers/pci/pcie/pme.c                      |  4 ++--
+ drivers/pci/probe.c                         | 10 +++++-----
+ include/linux/pci.h                         |  9 +++++++++
+ 24 files changed, 75 insertions(+), 66 deletions(-)
+
 -- 
-2.31.1
+2.25.1
 
