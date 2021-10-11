@@ -2,19 +2,19 @@ Return-Path: <SRS0=o3RY=O7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01E38C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:28:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 281CEC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:29:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3943260C49
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:28:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3943260C49
+	by mail.kernel.org (Postfix) with ESMTPS id 86F6360C49
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:29:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 86F6360C49
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HSjPH5JRtz3cNJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 02:28:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HSjPn1k5fz30R6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 02:29:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,35 +22,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HSjMX1Skvz302D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 02:27:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HSjMd1GJFz2yNp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 02:27:09 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HSjM60kFTz9sTt;
- Mon, 11 Oct 2021 17:26:42 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HSjM75wHKz9sV5;
+ Mon, 11 Oct 2021 17:26:43 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id lpc87tCjePsn; Mon, 11 Oct 2021 17:26:42 +0200 (CEST)
+ with ESMTP id EdOpf22EnJVN; Mon, 11 Oct 2021 17:26:43 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HSjM306xpz9sTv;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HSjM308Zlz9sTw;
  Mon, 11 Oct 2021 17:26:39 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D0F4B8B781;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D03C68B780;
  Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id FCFafly78UJw; Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
+ with ESMTP id vCLQSO4on9vD; Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3C3928B775;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 32F5C8B76E;
  Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19BFQVK61585015
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19BFQWrM1585027
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 11 Oct 2021 17:26:31 +0200
+ Mon, 11 Oct 2021 17:26:32 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19BFQVMT1585014;
- Mon, 11 Oct 2021 17:26:31 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19BFQWoi1585026;
+ Mon, 11 Oct 2021 17:26:32 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -61,17 +61,18 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v1 03/10] ia64: Rename 'ip' to 'addr' in 'struct fdesc'
-Date: Mon, 11 Oct 2021 17:25:30 +0200
-Message-Id: <a2443adcd006cb8004fe0602e2f8c43c30a7c504.1633964380.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 06/10] asm-generic: Refactor
+ dereference_[kernel]_function_descriptor()
+Date: Mon, 11 Oct 2021 17:25:33 +0200
+Message-Id: <c215b244a19a07327ec81bf99f3c5f89c68af7b4.1633964380.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1633964380.git.christophe.leroy@csgroup.eu>
 References: <cover.1633964380.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1633965928; l=2059; s=20211009;
- h=from:subject:message-id; bh=PGO0Yoa+ISrjfPBIV3GEiwZmxw/DXeNvwbCh6qfsug4=;
- b=cgrpQ62h24nXp2tUTQrQ6YSTpEYxdZNJoo7BGekONGRAPmLuzaQN1I7icT2eRh0h812tcM0JUaQ7
- I5onQa/1C0/A4ktzYQy/kEA/V4tZngnaX8zM71D8s46KjWgtbfWf
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1633965928; l=4822; s=20211009;
+ h=from:subject:message-id; bh=5EkQJtFr4QOcxWCtP/cBPR4MyhRhSYFoWYDbXV9TsBU=;
+ b=AA6jt9XXJDAAQS98iFCCWQBrYd5L1DlIAdqIpbW2TUiOYLIhFS6u2ArGaf8BXgkb0I07REtQBR++
+ lEYh9+8dAIHGL7/N4rjeQaZzrRAYz3XbIQRqj5YH/gqPUvq4UwB3
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -93,72 +94,162 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are three architectures with function descriptors, try to
-have common names for the address they contain in order to
-refactor some functions into generic functions later.
+dereference_function_descriptor() and
+dereference_kernel_function_descriptor() are identical on the
+three architectures implementing them.
 
-powerpc has 'funcaddr'
-ia64 has 'ip'
-parisc has 'addr'
-
-Vote for 'addr' and update 'struct fdesc' accordingly.
+Make it common.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/ia64/include/asm/elf.h      | 2 +-
- arch/ia64/include/asm/sections.h | 2 +-
- arch/ia64/kernel/module.c        | 6 +++---
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ arch/ia64/include/asm/sections.h    | 19 -------------------
+ arch/parisc/include/asm/sections.h  |  9 ---------
+ arch/parisc/kernel/process.c        | 21 ---------------------
+ arch/powerpc/include/asm/sections.h | 23 -----------------------
+ include/asm-generic/sections.h      | 18 ++++++++++++++++++
+ 5 files changed, 18 insertions(+), 72 deletions(-)
 
-diff --git a/arch/ia64/include/asm/elf.h b/arch/ia64/include/asm/elf.h
-index 6629301a2620..2ef5f9966ad1 100644
---- a/arch/ia64/include/asm/elf.h
-+++ b/arch/ia64/include/asm/elf.h
-@@ -226,7 +226,7 @@ struct got_entry {
-  * Layout of the Function Descriptor
-  */
- struct fdesc {
--	uint64_t ip;
-+	uint64_t addr;
- 	uint64_t gp;
- };
- 
 diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
-index 3a033d2008b3..35f24e52149a 100644
+index 929b5c535620..d9addaea8339 100644
 --- a/arch/ia64/include/asm/sections.h
 +++ b/arch/ia64/include/asm/sections.h
-@@ -35,7 +35,7 @@ static inline void *dereference_function_descriptor(void *ptr)
- 	struct fdesc *desc = ptr;
- 	void *p;
+@@ -30,23 +30,4 @@ extern char __start_gate_brl_fsys_bubble_down_patchlist[], __end_gate_brl_fsys_b
+ extern char __start_unwind[], __end_unwind[];
+ extern char __start_ivt_text[], __end_ivt_text[];
  
--	if (!get_kernel_nofault(p, (void *)&desc->ip))
+-#undef dereference_function_descriptor
+-static inline void *dereference_function_descriptor(void *ptr)
+-{
+-	struct fdesc *desc = ptr;
+-	void *p;
+-
+-	if (!get_kernel_nofault(p, (void *)&desc->addr))
+-		ptr = p;
+-	return ptr;
+-}
+-
+-#undef dereference_kernel_function_descriptor
+-static inline void *dereference_kernel_function_descriptor(void *ptr)
+-{
+-	if (ptr < (void *)__start_opd || ptr >= (void *)__end_opd)
+-		return ptr;
+-	return dereference_function_descriptor(ptr);
+-}
+-
+ #endif /* _ASM_IA64_SECTIONS_H */
+diff --git a/arch/parisc/include/asm/sections.h b/arch/parisc/include/asm/sections.h
+index 329e80f7af0a..b041fb32a300 100644
+--- a/arch/parisc/include/asm/sections.h
++++ b/arch/parisc/include/asm/sections.h
+@@ -12,13 +12,4 @@ typedef Elf64_Fdesc funct_descr_t;
+ 
+ extern char __alt_instructions[], __alt_instructions_end[];
+ 
+-#ifdef CONFIG_64BIT
+-
+-#undef dereference_function_descriptor
+-void *dereference_function_descriptor(void *);
+-
+-#undef dereference_kernel_function_descriptor
+-void *dereference_kernel_function_descriptor(void *);
+-#endif
+-
+ #endif
+diff --git a/arch/parisc/kernel/process.c b/arch/parisc/kernel/process.c
+index 38ec4ae81239..7382576b52a8 100644
+--- a/arch/parisc/kernel/process.c
++++ b/arch/parisc/kernel/process.c
+@@ -266,27 +266,6 @@ get_wchan(struct task_struct *p)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_64BIT
+-void *dereference_function_descriptor(void *ptr)
+-{
+-	Elf64_Fdesc *desc = ptr;
+-	void *p;
+-
+-	if (!get_kernel_nofault(p, (void *)&desc->addr))
+-		ptr = p;
+-	return ptr;
+-}
+-
+-void *dereference_kernel_function_descriptor(void *ptr)
+-{
+-	if (ptr < (void *)__start_opd ||
+-			ptr >= (void *)__end_opd)
+-		return ptr;
+-
+-	return dereference_function_descriptor(ptr);
+-}
+-#endif
+-
+ static inline unsigned long brk_rnd(void)
+ {
+ 	return (get_random_int() & BRK_RND_MASK) << PAGE_SHIFT;
+diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+index d0d5287fa568..8f8e95f234e2 100644
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -72,29 +72,6 @@ static inline int overlaps_kernel_text(unsigned long start, unsigned long end)
+ 		(unsigned long)_stext < end;
+ }
+ 
+-#ifdef PPC64_ELF_ABI_v1
+-
+-#undef dereference_function_descriptor
+-static inline void *dereference_function_descriptor(void *ptr)
+-{
+-	struct ppc64_opd_entry *desc = ptr;
+-	void *p;
+-
+-	if (!get_kernel_nofault(p, (void *)&desc->addr))
+-		ptr = p;
+-	return ptr;
+-}
+-
+-#undef dereference_kernel_function_descriptor
+-static inline void *dereference_kernel_function_descriptor(void *ptr)
+-{
+-	if (ptr < (void *)__start_opd || ptr >= (void *)__end_opd)
+-		return ptr;
+-
+-	return dereference_function_descriptor(ptr);
+-}
+-#endif /* PPC64_ELF_ABI_v1 */
+-
+ #endif
+ 
+ #endif /* __KERNEL__ */
+diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+index 436412d94054..5baaf9d7c671 100644
+--- a/include/asm-generic/sections.h
++++ b/include/asm-generic/sections.h
+@@ -60,6 +60,24 @@ extern __visible const void __nosave_begin, __nosave_end;
+ 
+ /* Function descriptor handling (if any).  Override in asm/sections.h */
+ #ifdef HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR
++static inline void *dereference_function_descriptor(void *ptr)
++{
++	funct_descr_t *desc = ptr;
++	void *p;
++
 +	if (!get_kernel_nofault(p, (void *)&desc->addr))
- 		ptr = p;
- 	return ptr;
- }
-diff --git a/arch/ia64/kernel/module.c b/arch/ia64/kernel/module.c
-index 2cba53c1da82..4f6400cbf79e 100644
---- a/arch/ia64/kernel/module.c
-+++ b/arch/ia64/kernel/module.c
-@@ -602,15 +602,15 @@ get_fdesc (struct module *mod, uint64_t value, int *okp)
- 		return value;
- 
- 	/* Look for existing function descriptor. */
--	while (fdesc->ip) {
--		if (fdesc->ip == value)
-+	while (fdesc->addr) {
-+		if (fdesc->addr == value)
- 			return (uint64_t)fdesc;
- 		if ((uint64_t) ++fdesc >= mod->arch.opd->sh_addr + mod->arch.opd->sh_size)
- 			BUG();
- 	}
- 
- 	/* Create new one */
--	fdesc->ip = value;
-+	fdesc->addr = value;
- 	fdesc->gp = mod->arch.gp;
- 	return (uint64_t) fdesc;
- }
++		ptr = p;
++	return ptr;
++}
++
++static inline void *dereference_kernel_function_descriptor(void *ptr)
++{
++	if (ptr < (void *)__start_opd || ptr >= (void *)__end_opd)
++		return ptr;
++
++	return dereference_function_descriptor(ptr);
++}
++
+ #else
+ #define dereference_function_descriptor(p) ((void *)(p))
+ #define dereference_kernel_function_descriptor(p) ((void *)(p))
 -- 
 2.31.1
 
