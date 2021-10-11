@@ -2,66 +2,70 @@ Return-Path: <SRS0=o3RY=O7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10E3FC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 09:47:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22569C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 10:05:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C42A60EDF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 09:46:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0C42A60EDF
+	by mail.kernel.org (Postfix) with ESMTPS id 881BB60F22
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 10:05:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 881BB60F22
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HSYq53BLRz3000
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 20:46:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HSZDm020Lz301B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 21:05:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hR14YdOB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VzxgnSPV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
+ envelope-from=wsa@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=hR14YdOB; 
+ header.s=k20201202 header.b=VzxgnSPV; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HSYpL0S4jz2xXB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Oct 2021 20:46:17 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 7E39260F43
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Oct 2021 09:46:15 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HSZCy6WsSz2xXt
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Oct 2021 21:05:02 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 82B4660F21;
+ Mon, 11 Oct 2021 10:04:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1633945575;
- bh=qRyh8ehsFmtn9ig4J8UbiRrew6heVcGUFCDbxxmKZf8=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=hR14YdOBybFf5arZDs0f5DTqL6oR83P1/SqbLyNrJwFHJBLTWaQazeIMc9uvTN1P8
- hAJqlZo6mlDfyVaItk+Gi7YQ6+xNmx+znUVD17u7+ezaHXrH34IV6jliAyYty27gK6
- 2mJ0yYTHSWgVF+AO4LndCnRGcw4aDl9YdAaPanPAX3GDErqHtLO7iqAtTk0e2u7D6d
- 7XHOe1RxkdihQ8rXcjEn1LyF918Jy6+gc6Tia4YX9/YFhMiQYAATwHxBriDyPRaPet
- xFver0G8OWX4Feq7uBsjBvSONLORuv0Fvdhgu6mrQdkDyNHT/6mP5a5/9dczhqsYKi
- kUx/6+qsAs0Cg==
-Received: by mail-wr1-f54.google.com with SMTP id g25so7672169wrb.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Oct 2021 02:46:15 -0700 (PDT)
-X-Gm-Message-State: AOAM530A8sPI9ydGyvnPg+z9Mi6y76dcWro6qJQP7BVkig7keOCgaQ6T
- XJDbm6r8/qdQiRdF/NeKIOeOl28k3wc2y9Q77oU=
-X-Google-Smtp-Source: ABdhPJyHs3mE6IoiFv5FE4vcliRHFQyxAEDWB/Wlg8v0WqzlUPkK8zWA+LhRJS54ay+HCTZiOLGsUmbAhjIFcqWae2k=
-X-Received: by 2002:adf:b1c4:: with SMTP id r4mr23576993wra.428.1633945563612; 
- Mon, 11 Oct 2021 02:46:03 -0700 (PDT)
+ s=k20201202; t=1633946700;
+ bh=MhtMFlXjkISdgITPxUEBlvVPLOfKHnzQ8IBsF632QRU=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=VzxgnSPV3d1xsqgadBy3rD2iAbUfUWKokuDtJaKMCudZS3akAute3IcteSot1V/F/
+ RtkHzLgzyAPzfbaEvrQkfcxHaa4kBpcVnqyqfHEix/pc/oB1eirIKygY98WZcHCI3r
+ fL11Zp4aLcjKrd6M6oHilOniZHUKEoVhFoC2W2wq4wVXGINRUvvm2ANd/r3NzwkzRX
+ yCSS4cCsUiVeqsaBYsU9tni2cj3L6Mhelkv8N7YhJ173rJZPVVnpFT01GyoLAlYZ8k
+ ++qDsUWAIwdH3MuH1ZKYUvZW8PKbH3Ug2GlBryDrqqR0C0b+moB5suS/PnMKUzjSQU
+ RIWC16sSOyoog==
+Date: Mon, 11 Oct 2021 12:04:56 +0200
+From: Wolfram Sang <wsa@kernel.org>
+To: Sven Peter <sven@svenpeter.dev>
+Subject: Re: [PATCH v2 00/11] Add Apple M1 support to PASemi i2c driver
+Message-ID: <YWQMSG0U1Ae4pTCD@kunai>
+Mail-Followup-To: Wolfram Sang <wsa@kernel.org>,
+ Sven Peter <sven@svenpeter.dev>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ Christian Zigotzky <chzigotzky@xenosoft.de>,
+ Arnd Bergmann <arnd@arndb.de>, Hector Martin <marcan@marcan.st>,
+ Mohamed Mediouni <mohamed.mediouni@caramail.com>,
+ Stan Skowronek <stan@corellium.com>,
+ Mark Kettenis <mark.kettenis@xs4all.nl>,
+ Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20211008163532.75569-1-sven@svenpeter.dev>
 MIME-Version: 1.0
-References: <20210928075216.4193128-1-arnd@kernel.org>
- <9dedf9bb-5377-9f2c-cbb1-2a57b40493da@molgen.mpg.de>
- <CAMuHMdXspk27xd95YAsXa73ES8rfKxii3RUEtsBtxQTk9qLztA@mail.gmail.com>
-In-Reply-To: <CAMuHMdXspk27xd95YAsXa73ES8rfKxii3RUEtsBtxQTk9qLztA@mail.gmail.com>
-From: Arnd Bergmann <arnd@kernel.org>
-Date: Mon, 11 Oct 2021 11:45:47 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a3s5tu8MfdtXpoCeA8rrAUD3sscCMqLaoUVdUY9G-9AvQ@mail.gmail.com>
-Message-ID: <CAK8P3a3s5tu8MfdtXpoCeA8rrAUD3sscCMqLaoUVdUY9G-9AvQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] firmware: include drivers/firmware/Kconfig
- unconditionally
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="+fGTgqFSVJmj/Oq2"
+Content-Disposition: inline
+In-Reply-To: <20211008163532.75569-1-sven@svenpeter.dev>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,85 +77,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Linus Walleij <linus.walleij@linaro.org>,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- linux-riscv <linux-riscv@lists.infradead.org>, Will Deacon <will@kernel.org>,
- Helge Deller <deller@gmx.de>, the arch/x86 maintainers <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- Paul Menzel <pmenzel@molgen.mpg.de>, Albert Ou <aou@eecs.berkeley.edu>,
- Charles Keepax <ckeepax@opensource.cirrus.com>, Arnd Bergmann <arnd@arndb.de>,
- Simon Trimmer <simont@opensource.cirrus.com>, Mark Brown <broonie@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Paul Walmsley <paul.walmsley@sifive.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Parisc List <linux-parisc@vger.kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Hector Martin <marcan@marcan.st>,
+ linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.infradead.org,
+ Christian Zigotzky <chzigotzky@xenosoft.de>, Olof Johansson <olof@lixom.net>,
+ Mohamed Mediouni <mohamed.mediouni@caramail.com>,
+ Mark Kettenis <mark.kettenis@xs4all.nl>, linuxppc-dev@lists.ozlabs.org,
+ Alyssa Rosenzweig <alyssa@rosenzweig.io>, Stan Skowronek <stan@corellium.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 11, 2021 at 10:42 AM Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> On Sat, Oct 9, 2021 at 11:24 AM Paul Menzel <pmenzel@molgen.mpg.de> wrote:
-> > Am 28.09.21 um 09:50 schrieb Arnd Bergmann:
-> > > From: Arnd Bergmann <arnd@arndb.de>
-> > +#
-> > +# ARM System Control and Management Interface Protocol
-> > +#
-> > +# end of ARM System Control and Management Interface Protocol
-> > +
-> > +# CONFIG_FIRMWARE_MEMMAP is not set
-> > +# CONFIG_GOOGLE_FIRMWARE is not set
-> > +
-> > +#
-> > +# Tegra firmware driver
-> > +#
-> > +# end of Tegra firmware driver
-> > +# end of Firmware Drivers
-> > +
-> >   # CONFIG_GNSS is not set
-> >   CONFIG_MTD=m
-> >   # CONFIG_MTD_TESTS is not set
-> > ```
-> >
-> > No idea if the entries could be hidden for platforms not supporting them.
-> >
-> >          ARM System Control and Management Interface Protocol  ----
-> >      [ ] Add firmware-provided memory map to sysfs
-> >      [ ] Google Firmware Drivers  ----
-> >          Tegra firmware driver  ----
->
-> GOOGLE_FIRMWARE should probably depend on something.
-> I highly doubt Google is running servers on e.g. h8300 and nds32.
 
-GOOGLE_FIRMWARE is only the 'menuconfig' option that contains
-the other options, but on architectures that have neither CONFIG_OF
-nor CONFIG_ACPI, this is empty.  Most architectures of course
-do support or require CONFIG_OF, so it's unclear whether we should
-show the options for coreboot. Since it's a software-only driver, I
-would tend to keep showing it, given that coreboot can be ported
-to every architecture. The DT binding [1] seems to be neither
-Google nor Arm specific.
+--+fGTgqFSVJmj/Oq2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-CONFIG_FIRMWARE_MEMMAP in turn can be used for
-anything that has memory hotplug, and in theory additional
-drivers that register with this interface.
+On Fri, Oct 08, 2021 at 06:35:21PM +0200, Sven Peter wrote:
+> Hi,
+>=20
+> v1: https://lore.kernel.org/linux-i2c/20210926095847.38261-1-sven@svenpet=
+er.dev/
+>=20
+> Changes for v2:
+>  - Added reviewed-by/acks
+>  - Switched from ioport_map to pci_iomap as suggested by Arnd Bergmann
+>  - Renamed i2c-pasemi-apple.c to i2c-pasemi-platform.c as suggested by
+>    Wolfram Sang
+>  - Replaced the ioport number in the adapter name with dev_name to be
+>    able to identify separate busses in e.g. i2cdetect.
+>=20
+> I still don't have access to any old PASemi hardware but the changes from
+> v1 are pretty small and I expect them to still work. Would still be nice
+> if someone with access to such hardware could give this a quick test.
+>=20
+>=20
+> And for those who didn't see v1 the (almost) unchanged original cover let=
+ter:
+>=20
+> This series adds support for the I2C controller found on Apple Silicon Ma=
+cs
+> which has quite a bit of history:
+>=20
+> Apple bought P.A. Semi in 2008 and it looks like a part of its legacy con=
+tinues
+> to live on in the M1. This controller has actually been used since at lea=
+st the
+> iPhone 4S and hasn't changed much since then.
+> Essentially, there are only a few differences that matter:
+>=20
+> 	- The controller no longer is a PCI device
+> 	- Starting at some iPhone an additional bit in one register
+>           must be set in order to start transmissions.
+> 	- The reference clock and hence the clock dividers are different
+>=20
+> In order to add support for a platform device I first replaced PCI-specif=
+ic
+> bits and split out the PCI driver to its own file. Then I added support
+> to make the clock divider configurable and converted the driver to use
+> managed device resources to make it a bit simpler.
+>=20
+> The Apple and PASemi driver will never be compiled in the same kernel
+> since the Apple one will run on arm64 while the original PASemi driver
+> will only be useful on powerpc.
+> I've thus followed the octeon (mips)/thunderx(arm64) approach to do the
+> split: I created a -core.c file which contains the shared logic and just
+> compile that one for both the PASemi and the new Apple driver.
+>=20
+>=20
+> Best,
+>=20
+> Sven
+>=20
+> Sven Peter (11):
+>   dt-bindings: i2c: Add Apple I2C controller bindings
+>   i2c: pasemi: Use io{read,write}32
+>   i2c: pasemi: Use dev_name instead of port number
+>   i2c: pasemi: Remove usage of pci_dev
+>   i2c: pasemi: Split off common probing code
+>   i2c: pasemi: Split pci driver to its own file
+>   i2c: pasemi: Move common reset code to own function
+>   i2c: pasemi: Allow to configure bus frequency
+>   i2c: pasemi: Refactor _probe to use devm_*
+>   i2c: pasemi: Add Apple platform driver
+>   i2c: pasemi: Set enable bit for Apple variant
+>=20
+>  .../devicetree/bindings/i2c/apple,i2c.yaml    |  61 +++++++++
+>  MAINTAINERS                                   |   2 +
+>  drivers/i2c/busses/Kconfig                    |  11 ++
+>  drivers/i2c/busses/Makefile                   |   3 +
 
-I'd lean towards "leave as is" for both, to avoid having to
-change the dependencies again whenever something else
-can use these.
+Applied to for-next with MAINTAINER bits dropped and added tags from
+Olof and Christian, thanks!
 
-        Arnd
 
-[1] Documentation/devicetree/bindings/firmware/coreboot.txt
+--+fGTgqFSVJmj/Oq2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAmFkDEgACgkQFA3kzBSg
+KbYBZQ//R2NlpZBhdguawShOq4BTwGe34GDgvlznaOlspRRxCXY3iMfSb4jxgUOO
+KiPnV7UTVnN4dxTljhNU0W+yFs77FMip/EBJKXGiwytIP1N5OP8K3sjSY3uNsnfh
+LvWmV12hypUbyzxqc2bW9KmTCtm8W4+GsOZ0WNWiSmhzmx9qxq+n5E3Am28s/30y
+dsH0FEQINGgjTuirrmocN2RmUpaN7B3tsiQ16xlzqf+5eNMnML0UD6g+9v2idxzx
+XTcfiBy9v5aSPaJoSuqyCvUMi7svhKpM/uZtzp9R9qKHwFj3wejOQdhizzMj+QxL
+VpMFmkOKIEDQLd0USIqLt29tNjSlTymxROvZKbhAHf42yiiMaIl1TC+0jOn+I2u4
+52x40XiqNGjiAuHDnh9f/wMQ9d48gHDOWV1rLzz8F+FQxfGWjAW6CfOSLwDBy0cZ
+MtD3iedjZQPEnF4cGtfRqeqqOMCc0jvqq80+0fu0pbp7ZoByZSgIkI93U7vwjTJP
+OB1uuZTgttfELfSmUlyGX5vk86yfKFQo51kDTU1QU9Hl4kIXjGYFsH6QhN+PNbPO
+GkxGdkbjhGubqdIIRqOO/YMWt3S5Kwl4Eo1XY0vaERY9F2quGcuy++9RSOU7iRxw
+8An28pOesmGiDqTHnjmInNjoXpXW4Ix6ePzN2+n9eceZ0HAeIPM=
+=FU0D
+-----END PGP SIGNATURE-----
+
+--+fGTgqFSVJmj/Oq2--
