@@ -2,41 +2,39 @@ Return-Path: <SRS0=o3RY=O7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41BD6C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 12:09:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD0BDC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 12:10:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BAEA560E53
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 12:09:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BAEA560E53
+	by mail.kernel.org (Postfix) with ESMTPS id 4AB9560698
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 12:10:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4AB9560698
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HSczq30TPz3cYq
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 23:09:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HSd0G0JD3z3c71
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 23:10:06 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
  [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HScxj6MP9z2yTr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Oct 2021 23:07:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HScxk4V0Kz2yfc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Oct 2021 23:07:54 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4HScxh5lgHz4xbX;
- Mon, 11 Oct 2021 23:07:52 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4HScxk2GBBz4xqQ;
+ Mon, 11 Oct 2021 23:07:54 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <884a54f1e5cb774c1d9b4db780209bee5d4f6718.1631712563.git.christophe.leroy@csgroup.eu>
-References: <884a54f1e5cb774c1d9b4db780209bee5d4f6718.1631712563.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] video: fbdev: use memset_io() instead of memset()
-Message-Id: <163395400552.4094789.12015421663855128336.b4-ty@ellerman.id.au>
-Date: Mon, 11 Oct 2021 23:06:45 +1100
+To: linuxppc-dev@lists.ozlabs.org, Daniel Axtens <dja@axtens.net>
+In-Reply-To: <20210903063246.70691-1-dja@axtens.net>
+References: <20210903063246.70691-1-dja@axtens.net>
+Subject: Re: [PATCH] powerpc: Remove unused prototype for of_show_percpuinfo
+Message-Id: <163395399750.4094789.11017735746201336050.b4-ty@ellerman.id.au>
+Date: Mon, 11 Oct 2021 23:06:37 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,52 +49,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, Finn Thain <fthain@linux-m68k.org>,
- Stan Johnson <userm57@yahoo.com>, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 15 Sep 2021 15:34:35 +0200, Christophe Leroy wrote:
-> While investigating a lockup at startup on Powerbook 3400C, it was
-> identified that the fbdev driver generates alignment exception at
-> startup:
+On Fri, 3 Sep 2021 16:32:46 +1000, Daniel Axtens wrote:
+> commit 6d7f58b04d82 ("[PATCH] powerpc: Some minor cleanups to setup_32.c")
+> removed of_show_percpuinfo but didn't remove the prototype.
 > 
-> 	--- interrupt: 600 at memset+0x60/0xc0
-> 	NIP:  c0021414 LR: c03fc49c CTR: 00007fff
-> 	REGS: ca021c10 TRAP: 0600   Tainted: G        W          (5.14.2-pmac-00727-g12a41fa69492)
-> 	MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 44008442  XER: 20000100
-> 	DAR: cab80020 DSISR: 00017c07
-> 	GPR00: 00000007 ca021cd0 c14412e0 cab80000 00000000 00100000 cab8001c 00000004
-> 	GPR08: 00100000 00007fff 00000000 00000000 84008442 00000000 c0006fb4 00000000
-> 	GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00100000
-> 	GPR24: 00000000 81800000 00000320 c15fa400 c14d1878 00000000 c14d1800 c094e19c
-> 	NIP [c0021414] memset+0x60/0xc0
-> 	LR [c03fc49c] chipsfb_pci_init+0x160/0x580
-> 	--- interrupt: 600
-> 	[ca021cd0] [c03fc46c] chipsfb_pci_init+0x130/0x580 (unreliable)
-> 	[ca021d20] [c03a3a70] pci_device_probe+0xf8/0x1b8
-> 	[ca021d50] [c043d584] really_probe.part.0+0xac/0x388
-> 	[ca021d70] [c043d914] __driver_probe_device+0xb4/0x170
-> 	[ca021d90] [c043da18] driver_probe_device+0x48/0x144
-> 	[ca021dc0] [c043e318] __driver_attach+0x11c/0x1c4
-> 	[ca021de0] [c043ad30] bus_for_each_dev+0x88/0xf0
-> 	[ca021e10] [c043c724] bus_add_driver+0x190/0x22c
-> 	[ca021e40] [c043ee94] driver_register+0x9c/0x170
-> 	[ca021e60] [c0006c28] do_one_initcall+0x54/0x1ec
-> 	[ca021ed0] [c08246e4] kernel_init_freeable+0x1c0/0x270
-> 	[ca021f10] [c0006fdc] kernel_init+0x28/0x11c
-> 	[ca021f30] [c0017148] ret_from_kernel_thread+0x14/0x1c
-> 	Instruction dump:
-> 	7d4601a4 39490777 7d4701a4 39490888 7d4801a4 39490999 7d4901a4 39290aaa
-> 	7d2a01a4 4c00012c 4bfffe88 0fe00000 <4bfffe80> 9421fff0 38210010 48001970
+> Remove it.
+> 
+> 
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] video: fbdev: use memset_io() instead of memset()
-      https://git.kernel.org/powerpc/c/f2719b26ae27282c145202ffd656d5ff1fe737cc
+[1/1] powerpc: Remove unused prototype for of_show_percpuinfo
+      https://git.kernel.org/powerpc/c/93fa8e9d88118bd2bdf2c61f9b63e7d4d9b648fe
 
 cheers
