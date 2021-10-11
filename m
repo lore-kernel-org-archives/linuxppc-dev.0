@@ -2,19 +2,19 @@ Return-Path: <SRS0=o3RY=O7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4CBEC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:29:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 185E7C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:29:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D0A6760C49
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:29:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D0A6760C49
+	by mail.kernel.org (Postfix) with ESMTPS id ABA4760F4B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 15:29:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ABA4760F4B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HSjQG2TYCz3cbn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 02:29:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HSjQk1Z1fz3cm5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 02:29:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,35 +22,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HSjMj322gz2ypH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 02:27:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HSjMp5GKMz2yQL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 02:27:18 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HSjM83Hfkz9sTw;
- Mon, 11 Oct 2021 17:26:44 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HSjM93d1Fz9sTx;
+ Mon, 11 Oct 2021 17:26:45 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id uMPUKFcnNJjQ; Mon, 11 Oct 2021 17:26:44 +0200 (CEST)
+ with ESMTP id OBrFabSRDoDz; Mon, 11 Oct 2021 17:26:45 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HSjM30m43z9sTx;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HSjM30nH1z9sTy;
  Mon, 11 Oct 2021 17:26:39 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DB23D8B76E;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DB9278B770;
  Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 01YkwSLBWh9m; Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
+ with ESMTP id bFxN6KuiUkIq; Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 41DBC8B776;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4347A8B778;
  Mon, 11 Oct 2021 17:26:38 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19BFQWvA1585031
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19BFQUHh1585003
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 11 Oct 2021 17:26:32 +0200
+ Mon, 11 Oct 2021 17:26:30 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19BFQWQL1585030;
- Mon, 11 Oct 2021 17:26:32 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19BFQSSf1585000;
+ Mon, 11 Oct 2021 17:26:28 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -61,17 +61,15 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v1 07/10] lkdtm: Force do_nothing() out of line
-Date: Mon, 11 Oct 2021 17:25:34 +0200
-Message-Id: <b353a85e50ac336c385b46459a5fc43f4a6171ac.1633964380.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 00/10] Fix LKDTM for PPC64/IA64/PARISC
+Date: Mon, 11 Oct 2021 17:25:27 +0200
+Message-Id: <cover.1633964380.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
-In-Reply-To: <cover.1633964380.git.christophe.leroy@csgroup.eu>
-References: <cover.1633964380.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1633965929; l=1224; s=20211009;
- h=from:subject:message-id; bh=YABQf4MQINYt/A+tymthNj9l3luYQ09oplriUkTdDMg=;
- b=DNM+Azt5sQUZwgxx7puNJZNULh5fbD6IuU01fcXUUBcSph5Yk9dErNVSQZxXS145XDXqvc23M//K
- 7rkcgwtnCuoZUerQEJnrf0F8Xx6pOCh2MN386e/gOVIuw/zLF+Fc
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1633965928; l=1657; s=20211009;
+ h=from:subject:message-id; bh=MyFDI59OB41sshcY3FFNfcB1XZ95MMaqIC4x67qjzAw=;
+ b=fIPiVnVnK4XA3MURNNuFAFMUTrsms/nTkjiJtAFhRT/WhoLrPGf+hhxLE8wJ4jP/uibuvVcQFHfG
+ hom3CpU3BH7rSi6TGaCUsgEbvS6ttQ2X5/5MDETSsvzVKkGDd5xO
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -93,40 +91,43 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-LKDTM tests display that the run do_nothing() at a given
-address, but in reality do_nothing() is inlined into the
-caller.
+PPC64/IA64/PARISC have function descriptors. LKDTM doesn't work
+on those three architectures because LKDTM messes up function
+descriptors with functions.
 
-Force it out of line so that it really runs text at the
-displayed address.
+This series does some cleanup in the three architectures and
+refactors function descriptors so that it can then easily use it
+in a generic way in LKDTM.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- drivers/misc/lkdtm/perms.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Patch 6 is not absolutely necessary but it is a good trivial cleanup.
 
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index 2dede2ef658f..60b3b2fe929d 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -21,7 +21,7 @@
- /* This is non-const, so it will end up in the .data section. */
- static u8 data_area[EXEC_SIZE];
- 
--/* This is cost, so it will end up in the .rodata section. */
-+/* This is const, so it will end up in the .rodata section. */
- static const unsigned long rodata = 0xAA55AA55;
- 
- /* This is marked __ro_after_init, so it should ultimately be .rodata. */
-@@ -31,7 +31,7 @@ static unsigned long ro_after_init __ro_after_init = 0x55AA5500;
-  * This just returns to the caller. It is designed to be copied into
-  * non-executable memory regions.
-  */
--static void do_nothing(void)
-+static noinline void do_nothing(void)
- {
- 	return;
- }
+Christophe Leroy (10):
+  powerpc: Move 'struct ppc64_opd_entry' back into asm/elf.h
+  powerpc: Rename 'funcaddr' to 'addr' in 'struct ppc64_opd_entry'
+  ia64: Rename 'ip' to 'addr' in 'struct fdesc'
+  asm-generic: Use HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR to define
+    associated stubs
+  asm-generic: Define 'funct_descr_t' to commonly describe function
+    descriptors
+  asm-generic: Refactor dereference_[kernel]_function_descriptor()
+  lkdtm: Force do_nothing() out of line
+  lkdtm: Really write into kernel text in WRITE_KERN
+  lkdtm: Fix lkdtm_EXEC_RODATA()
+  lkdtm: Fix execute_[user]_location()
+
+ arch/ia64/include/asm/elf.h         |  2 +-
+ arch/ia64/include/asm/sections.h    | 24 ++---------
+ arch/ia64/kernel/module.c           |  6 +--
+ arch/parisc/include/asm/sections.h  | 16 +++----
+ arch/parisc/kernel/process.c        | 21 ---------
+ arch/powerpc/include/asm/elf.h      |  7 +++
+ arch/powerpc/include/asm/sections.h | 30 +++----------
+ arch/powerpc/include/uapi/asm/elf.h |  8 ----
+ arch/powerpc/kernel/module_64.c     |  6 +--
+ drivers/misc/lkdtm/perms.c          | 66 +++++++++++++++++++++++------
+ include/asm-generic/sections.h      | 24 ++++++++++-
+ 11 files changed, 102 insertions(+), 108 deletions(-)
+
 -- 
 2.31.1
 
