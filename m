@@ -2,60 +2,57 @@ Return-Path: <SRS0=o3RY=O7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96058C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 07:11:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F104AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 07:42:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B21F760F24
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 07:11:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B21F760F24
+	by mail.kernel.org (Postfix) with ESMTPS id 09F8860184
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 07:42:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 09F8860184
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HSVMH6wGdz3bjR
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 18:11:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HSW3c51Kgz309j
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 18:42:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=79.137.123.220;
- helo=smtpout2.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 504 seconds by postgrey-1.36 at boromir;
- Mon, 11 Oct 2021 18:10:42 AEDT
-Received: from smtpout2.mo529.mail-out.ovh.net
- (smtpout2.mo529.mail-out.ovh.net [79.137.123.220])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=kaod.org (client-ip=178.33.105.233;
+ helo=2.mo552.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Received: from 2.mo552.mail-out.ovh.net (2.mo552.mail-out.ovh.net
+ [178.33.105.233])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HSVLp4Pwcz2yPv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Oct 2021 18:10:42 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.156.216])
- by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 0EC30C3BBB9B;
- Mon, 11 Oct 2021 09:02:09 +0200 (CEST)
-Received: from kaod.org (37.59.142.95) by DAG4EX1.mxp5.local (172.16.2.31)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HSW372yPnz2xYV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Oct 2021 18:42:09 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.1.125])
+ by mo552.mail-out.ovh.net (Postfix) with ESMTPS id BFC8E20215;
+ Mon, 11 Oct 2021 07:04:01 +0000 (UTC)
+Received: from kaod.org (37.59.142.101) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Mon, 11 Oct
- 2021 09:02:09 +0200
+ 2021 09:04:00 +0200
 Authentication-Results: garm.ovh; auth=pass
- (GARM-95G0010762b5aa-8db3-4685-afb6-69febc946e19,
+ (GARM-101G0044b272651-5507-470c-94ee-4433db65a020,
  044DEDDE8B0E05FD49EE52B84AFD98BA54CEE260) smtp.auth=clg@kaod.org
 X-OVh-ClientIp: 82.64.250.170
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/xive: Discard disabled interrupts in
- get_irqchip_state()
-Date: Mon, 11 Oct 2021 09:02:03 +0200
-Message-ID: <20211011070203.99726-1-clg@kaod.org>
+Subject: [PATCH] powerpc/boot: Use CONFIG_PPC_POWERNV to compile OPAL support
+Date: Mon, 11 Oct 2021 09:03:56 +0200
+Message-ID: <20211011070356.99952-1-clg@kaod.org>
 X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.95]
-X-ClientProxiedBy: DAG3EX1.mxp5.local (172.16.2.21) To DAG4EX1.mxp5.local
+X-Originating-IP: [37.59.142.101]
+X-ClientProxiedBy: DAG7EX2.mxp5.local (172.16.2.62) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: 1fcd0286-05cf-4e09-8d7f-6cb5e00e2edd
-X-Ovh-Tracer-Id: 16244765333835647968
+X-Ovh-Tracer-GUID: 9a0f23a9-1979-4ae2-b462-adbd58b7beaa
+X-Ovh-Tracer-Id: 16276290529440402397
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrvddthedgudduvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhephffvufffkffogggtgfhisehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepfedvuedtvdeikeekuefhkedujeejgffggffhtefglefgveevfeeghfdvgedtleevnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrdelheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrvddthedgudduvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhephffvufffkffogggtgfhisehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepfedvuedtvdeikeekuefhkedujeejgffggffhtefglefgveevfeeghfdvgedtleevnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopegtlhhgsehkrghougdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,46 +64,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- stable@vger.kernel.org
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When an interrupt is passed through, the KVM XIVE device calls the
-set_vcpu_affinity() handler which raises the P bit to mask the
-interrupt and to catch any in-flight interrupts while routing the
-interrupt to the guest.
+CONFIG_PPC64_BOOT_WRAPPER is selected by CPU_LITTLE_ENDIAN which is
+used to compile support for other platforms such as Microwatt. There
+is no need for OPAL calls on these.
 
-On the guest side, drivers (like some Intels) can request at probe
-time some MSIs and call synchronize_irq() to check that there are no
-in flight interrupts. This will call the XIVE get_irqchip_state()
-handler which will always return true as the interrupt P bit has been
-set on the host side and lock the CPU in an infinite loop.
-
-Fix that by discarding disabled interrupts in get_irqchip_state().
-
-Fixes: da15c03b047d ("powerpc/xive: Implement get_irqchip_state method for XIVE to fix shutdown race")
-Cc: stable@vger.kernel.org#v5.4+
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/sysdev/xive/common.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/boot/serial.c | 2 +-
+ arch/powerpc/boot/Makefile | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index c732ce5a3e1a..c5d75c02ad8b 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -945,7 +945,8 @@ static int xive_get_irqchip_state(struct irq_data *data,
- 		 * interrupt to be inactive in that case.
- 		 */
- 		*state = (pq != XIVE_ESB_INVALID) && !xd->stale_p &&
--			(xd->saved_p || !!(pq & XIVE_ESB_VAL_P));
-+			(xd->saved_p || (!!(pq & XIVE_ESB_VAL_P) &&
-+			 !irqd_irq_disabled(data)));
- 		return 0;
- 	default:
- 		return -EINVAL;
+diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
+index 9a19e5905485..54d2522be485 100644
+--- a/arch/powerpc/boot/serial.c
++++ b/arch/powerpc/boot/serial.c
+@@ -132,7 +132,7 @@ int serial_console_init(void)
+ 	else if (dt_is_compatible(devp, "fsl,mpc5200-psc-uart"))
+ 		rc = mpc5200_psc_console_init(devp, &serial_cd);
+ #endif
+-#ifdef CONFIG_PPC64_BOOT_WRAPPER
++#ifdef CONFIG_PPC_POWERNV
+ 	else if (dt_is_compatible(devp, "ibm,opal-console-raw"))
+ 		rc = opal_console_init(devp, &serial_cd);
+ #endif
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 089ee3ea55c8..9993c6256ad2 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -123,7 +123,7 @@ src-wlib-y := string.S crt0.S stdio.c decompress.c main.c \
+ 		oflib.c ofconsole.c cuboot.c
+ 
+ src-wlib-$(CONFIG_PPC_MPC52xx) += mpc52xx-psc.c
+-src-wlib-$(CONFIG_PPC64_BOOT_WRAPPER) += opal-calls.S opal.c
++src-wlib-$(CONFIG_PPC_POWERNV) += opal-calls.S opal.c
+ ifndef CONFIG_PPC64_BOOT_WRAPPER
+ src-wlib-y += crtsavres.S
+ endif
 -- 
 2.31.1
 
