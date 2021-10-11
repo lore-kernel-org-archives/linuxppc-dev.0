@@ -2,42 +2,62 @@ Return-Path: <SRS0=o3RY=O7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2646CC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 12:12:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82016C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 12:35:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9651960EBB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 12:12:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9651960EBB
+	by mail.kernel.org (Postfix) with ESMTPS id E5A8B60F3A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 12:35:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E5A8B60F3A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HSd3V2LBsz3cM6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 23:12:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HSdY74kTJz2yhd
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Oct 2021 23:35:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nOX9tCVv;
+	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HScxs12R5z304m
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Oct 2021 23:08:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HSdXQ48QPz2xtP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Oct 2021 23:34:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=nOX9tCVv; 
+ dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4HScxs05F1z4xqg;
- Mon, 11 Oct 2021 23:08:00 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Niklas Schnelle <schnelle@linux.ibm.com>,
- Bjorn Helgaas <bhelgaas@google.com>
-In-Reply-To: <20210910141940.2598035-1-schnelle@linux.ibm.com>
-References: <20210910141940.2598035-1-schnelle@linux.ibm.com>
-Subject: Re: [PATCH 0/1] Arch use of pci_dev_is_added()
-Message-Id: <163395400023.4094789.2020698522524936572.b4-ty@ellerman.id.au>
-Date: Mon, 11 Oct 2021 23:06:40 +1100
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4HSdXP6lyHz4xbV;
+ Mon, 11 Oct 2021 23:34:29 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1633955670;
+ bh=Pld4FcBdbZ8l2lR1F6AV89j7hjbvSY580vLcCkY0cI8=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=nOX9tCVvIiFBvD43OScgAqd1FuwY1/NjKUp5CIJUlhprD/P8lw1NyNpeLNCpAPQ7T
+ zYvYhtxoWuVDMLJRlq2gr05BbBSbKvT+5V1G60mpdLTwEZo1WM5ghO1DVYh22sLMNX
+ V1duah6VqbvN3Ouf2OrfTZzya+thj69XHESG8uYp+irchxWBK7ih3mHezYIHcMy/3j
+ g3iO+UP9tweq4bscpFlHnUcOhcWLclWnF6jy1boB5WcS9Y7gJB89f1I+ITLSnMdSe7
+ qGZRYhMBuRe1tqRbGY+S43xx/cFnVZZHGkoVHBy5DmalDUHVzYkUHPvKahAY2qGEmO
+ yulNJ2dv4QeGA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Lynch <nathanl@linux.ibm.com>, Daniel Henrique Barboza
+ <danielhb413@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 4/4] powerpc/pseries/cpuhp: remove obsolete comment
+ from pseries_cpu_die
+In-Reply-To: <87k0izfux7.fsf@linux.ibm.com>
+References: <20210927201933.76786-1-nathanl@linux.ibm.com>
+ <20210927201933.76786-5-nathanl@linux.ibm.com>
+ <4479e869-1c98-4473-262c-3aeb37b8fca2@gmail.com>
+ <87h7e40wac.fsf@mpe.ellerman.id.au> <87k0izfux7.fsf@linux.ibm.com>
+Date: Mon, 11 Oct 2021 23:34:28 +1100
+Message-ID: <87mtnfn3jf.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,26 +69,127 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: tyreld@linux.ibm.com, ldufour@linux.ibm.com, aneesh.kumar@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 10 Sep 2021 16:19:39 +0200, Niklas Schnelle wrote:
-> In my proposal to make pci_dev_is_added() more regularly usable by arch code
-> you mentioned[0] that you believe the uses in arch/powerpc are not necessary
-> anymore. From code reading I agree and so does Oliver O'Halloran[1].
-> 
-> So as promised here is a patch removing them. I only compile tested this as
-> I don't have access to a powerpc system.
-> 
-> [...]
+Nathan Lynch <nathanl@linux.ibm.com> writes:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> Daniel Henrique Barboza <danielhb413@gmail.com> writes:
+>>> This is enough to say that we can't easily see the history behind this comment.
+>>> I also believe that we're better of without it since it doesn't make sense
+>>> with the current codebase.
+>>
+>> It was added by the original CPU hotplug commit for ppc64::
+>>
+>> https://github.com/mpe/linux-fullhistory/commit/0e9fd9441cd2113b67b14e739267c9e69761489b
+>>
+>>
+>> The code was fairly similar:
+>>
+>> void __cpu_die(unsigned int cpu)
+>> {
+>> 	int tries;
+>> 	int cpu_status;
+>> 	unsigned int pcpu = get_hard_smp_processor_id(cpu);
+>>
+>> 	for (tries = 0; tries < 5; tries++) {
+>> 		cpu_status = query_cpu_stopped(pcpu);
+>>
+>> 		if (cpu_status == 0)
+>> 			break;
+>> 		set_current_state(TASK_UNINTERRUPTIBLE);
+>> 		schedule_timeout(HZ);
+>> 	}
+>> 	if (cpu_status != 0) {
+>> 		printk("Querying DEAD? cpu %i (%i) shows %i\n",
+>> 		       cpu, pcpu, cpu_status);
+>> 	}
+>>
+>> 	/* Isolation and deallocation are definatly done by
+>> 	 * drslot_chrp_cpu.  If they were not they would be
+>> 	 * done here.  Change isolate state to Isolate and
+>> 	 * change allocation-state to Unusable.
+>> 	 */
+>> 	paca[cpu].xProcStart = 0;
+>>
+>> 	/* So we can recognize if it fails to come up next time. */
+>> 	cpu_callin_map[cpu] = 0;
+>> }
+>>
+>>
+>> drslot_chrp_cpu() still exists in drmgr:
+>>
+>>   https://github.com/ibm-power-utilities/powerpc-utils/blob/e798c4a09fbf0fa0f421e624cfa366a6c405c9fe/src/drmgr/drslot_chrp_cpu.c#L406
+>>
+>>
+>> I agree the comment is no longer meaningful and can be removed.
+>
+> Thanks for providing this background.
+>
+>> It might be good to then add a comment explaining why we need to set
+>> cpu_start = 0.
+>
+> Sure, I can take that as a follow-up. Or perhaps it should be moved to
+> the online path.
 
-Applied to powerpc/next.
+Yeah possibly.
 
-[1/1] powerpc: Drop superfluous pci_dev_is_added() calls
-      https://git.kernel.org/powerpc/c/452f145eca73945222923525a7eba59cf37909cc
+>> It's not immediately clear why we need to. When we bring a CPU back
+>> online in smp_pSeries_kick_cpu() we ask RTAS to start it and then
+>> immediately set cpu_start = 1, ie. there isn't a separate step that sets
+>> cpu_start = 1 for hotplugged CPUs.
+>
+> Hmm I'm not following the distinction you seem to be drawing between
+> bringing a CPU back online and a hotplugged CPU. kick_cpu is used in all
+> cases AFAIK.
+
+Yeah that wasn't very clear, reading it back I have half confused myself.
+
+At boot we need the paca->cpu_start flag because some CPUs can be
+spinning in generic_secondary_common_init, in head_64.S.
+
+ie. they're not in RTAS, they're spinning in kernel code, and the only
+thing that stops them coming "online" in the Linux sense is
+paca->cpu_start.
+
+You can see that in pseries/smp.c:
+
+static inline int smp_startup_cpu(unsigned int lcpu)
+{
+	...
+	if (cpumask_test_cpu(lcpu, of_spin_mask))
+		/* Already started by OF and sitting in spin loop */
+		return 1;
+
+
+We also hit that case when kexec'ing, where all the secondaries come in
+that way.
+
+
+On the other hand when we offline a CPU, we set paca->cpu_start = 0, in
+pseries_cpu_die(), and then we return the CPU to RTAS.
+
+The only way it *should* come back online is via smp_pSeries_kick_cpu(),
+which calls smp_startup_cpu() to bring the CPU out of RTAS, and then
+smp_pSeries_kick_cpu() immediately sets cpu_start = 1.
+
+So the sequence is:
+
+	CPU goes offline from Linux POV
+	paca->cpu_start = 0;
+        CPU offline in RTAS
+        ...
+        CPU brought out of RTAS
+	paca->cpu_start = 1;
+	CPU comes back online from Linux POV
+
+
+But I guess I kind of answered my own question above, where I said
+*should*. Clearing paca->cpu_start when we offline the CPU gives us a
+little bit of backup if the CPU comes out of RTAS unexpectedly. ie. it
+would then spin on paca->cpu_start, rather than spontaneously coming
+back into Linux when we weren't expecting it.
 
 cheers
