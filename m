@@ -2,66 +2,89 @@ Return-Path: <SRS0=dmdX=PA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52367C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 06:04:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B594C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 06:05:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9C8C061076
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 06:04:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9C8C061076
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
+	by mail.kernel.org (Postfix) with ESMTPS id B6B8961076
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 06:05:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B6B8961076
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmx.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HT4qr2PhXz3cV5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 17:04:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.57;
- helo=out30-57.freemail.mail.aliyun.com;
- envelope-from=yun.wang@linux.alibaba.com; receiver=<UNKNOWN>)
-Received: from out30-57.freemail.mail.aliyun.com
- (out30-57.freemail.mail.aliyun.com [115.124.30.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HT4rx2v8yz3c98
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 17:05:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=gmx.net header.i=@gmx.net header.a=rsa-sha256 header.s=badeba3b8450 header.b=ff8FjRke;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de
+ (client-ip=212.227.15.18; helo=mout.gmx.net; envelope-from=deller@gmx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=gmx.net header.i=@gmx.net header.a=rsa-sha256
+ header.s=badeba3b8450 header.b=ff8FjRke; 
+ dkim-atps=neutral
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HT4Nw33jCz2xr1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 16:44:31 +1100 (AEDT)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R861e4; CH=green; DM=||false|;
- DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04400; MF=yun.wang@linux.alibaba.com;
- NM=1; PH=DS; RN=31; SR=0; TI=SMTPD_---0UrXmxxi_1634017156; 
-Received: from testdeMacBook-Pro.local(mailfrom:yun.wang@linux.alibaba.com
- fp:SMTPD_---0UrXmxxi_1634017156) by smtp.aliyun-inc.com(127.0.0.1);
- Tue, 12 Oct 2021 13:39:18 +0800
-From: =?UTF-8?B?546L6LSH?= <yun.wang@linux.alibaba.com>
-To: Guo Ren <guoren@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- Ingo Molnar <mingo@redhat.com>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Paul Walmsley <paul.walmsley@sifive.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
- Joe Lawrence <joe.lawrence@redhat.com>,
- Colin Ian King <colin.king@canonical.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- "Peter Zijlstra (Intel)" <peterz@infradead.org>,
- Nicholas Piggin <npiggin@gmail.com>, Jisheng Zhang <jszhang@kernel.org>,
- linux-csky@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, live-patching@vger.kernel.org
-Subject: [PATCH 0/2] ftrace: make sure preemption disabled on recursion testing
-Message-ID: <8c7de46d-9869-aa5e-2bb9-5dbc2eda395e@linux.alibaba.com>
-Date: Tue, 12 Oct 2021 13:39:16 +0800
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:78.0)
- Gecko/20100101 Thunderbird/78.14.0
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HT4r81bx5z2xXb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 17:04:39 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+ s=badeba3b8450; t=1634018618;
+ bh=t9NgUWQCN+x3V7Hp4Nfn0+U2T6Ph1w/p+Efg9vnjBf8=;
+ h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+ b=ff8FjRkeCGbDpe/67S+poZ4/cjMzIGK70KzKAoKGGO3UvGG+Ix7k9hOGT/JA5zFVb
+ b0wSwWqJ8dMxsjQlVFW3HytK5O2ttt/GMmp/w5AxEKZod1TvXVGZhceo9V7kW7X6iz
+ hClSRgqyy8hhts09vENLoYs8936bTXAsRMicxeAY=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.128.177]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mplc7-1n5vBn0vWP-00q9gl; Tue, 12
+ Oct 2021 08:03:38 +0200
+Message-ID: <91b38fce-8a5c-ccc7-fba5-b75b9769d4fc@gmx.de>
+Date: Tue, 12 Oct 2021 08:02:53 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.1.0
+Subject: Re: [PATCH v1 04/10] asm-generic: Use
+ HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR to define associated stubs
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Tue, 12 Oct 2021 17:02:48 +1100
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Arnd Bergmann <arnd@arndb.de>, Kees Cook <keescook@chromium.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <cover.1633964380.git.christophe.leroy@csgroup.eu>
+ <8db2a3ca2b26a8325c671baa3e0492914597f079.1633964380.git.christophe.leroy@csgroup.eu>
+From: Helge Deller <deller@gmx.de>
+In-Reply-To: <8db2a3ca2b26a8325c671baa3e0492914597f079.1633964380.git.christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:3FVNBuFx64HT0tuoJYG2SIgMIMfL8fXzN53XykVw2JLzU6FqL0B
+ 47lugWj6rkUtNsiz8tcSM75G3rrpuahDYFok+XAuxw63YZr0F3Nhdr2cn7g/FuAFNgPo2yC
+ CK5N7YfnT66ssXgewYk+lLdJFDOEy4prM32Gprx7BezR9iX89W0jxYI1RVQZpS0fcrDSbsr
+ e0AtWhnfZqeJ2pYoyvi6A==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:umUw8efNMTI=:/9tlCPWVCKekVvKKamGFwj
+ BsaJeIoRtjZCIzQfUGtUOy4GhMdkFU78x6mufwb1nMvsoc7NzTz8Q9gP0yAMU7CGYWq2JxYKN
+ KlVEg2hQJjl70wBfi5acPN0BuvbZBUj5hO2+w04TTvnUfmsDJ5rZ5s5s+XxUK1l+rd5r5ZLYP
+ 3QtzM2rz3+1qdNSOhvX7E3erRQkCijzBY/8rbNtm+QTfHiI7iq1TKJkIGxXjKPdSKHajjC9yd
+ RLdQGEIUVJpGCZfNDQQ1qDpn1bX83xhpFzZG22mXow6Du//OvXPejMza7rcsqLAJOlXNFw7YI
+ 2+98mFao5Cm2br+C+xQvtJKTFkhilgseoNe5cdpFQNWfqhlF6Buf3vMrQcroYBTtGEY0qZY5z
+ caVBMhqD0jjhDWo5rBeHIUTjkf7Xts6TqygocHWFmFatrtHqLmz3CcViihdysH99uzMB5wQJ3
+ zWcRj83iI2U6tIvgo4b5Dq5EtI6tWmFbib8nowxMiSbMpREz+yajuBBAIZyicGjZ55D/Oh7/m
+ swqmY0o0ObRMbrIwTxqy9uHn9RL86+ng4I0V7Qx53qGKp+QfKAzOBhlhuL4iywFYrJhloX1zr
+ MfXWy3vpu0zrMos+Nn5xMiFvbvbxEnjQe7EoUMnaRNMmsvQ0w7y0H4eB3C9Z8b8NLs2s15q8O
+ v7gh8pNHpJYWHy4nFkvBVZxKDjAO/uD0oYyhAl5bVuoIcmxRA9UY4d0o2+kyC6vZ1TZTYrJDk
+ ta2bQLCEG+2xpDnOHJAMXSfdgWdpXeVu0wU+Xkx/NG1xweXLZ8/wcnOYH9JvTJjvWI8CzUcme
+ 6So+BaIoAa/L3qjJZvf5eBIaPEg6RELwFbj+f/k+jXImqEP4Lv5TkXZN5TJPsYmeqz3KbIKRv
+ aBxuKiJNOBszOzO9VQWnHjxLXwClcL+tjwXNS3XwX8UEU8VrsmzWpMMZOW3nTJ2nwzDjzWQWx
+ BGOQ0y8GPQD+KVYUN628i7hwI6ntwrNiecBM4JjoWqV/ZT9rsaIS4dasc+sUpXJasDDp26unL
+ sDC01ifkzZiOzrrT/B31TP0moswG49S/dABdQ4qrLmnrxnobAtogIGonFxz2l341BK4NOCN+S
+ /UisBwh5D8+KG4=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,35 +96,123 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The testing show that perf_ftrace_function_call() are using
-smp_processor_id() with preemption enabled, all the checking
-on CPU could be wrong after preemption, PATCH 1/2 will fix
-that.
+On 10/11/21 17:25, Christophe Leroy wrote:
+> Use HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR instead of 'dereference_functio=
+n_descriptor'
+> to know whether arch has function descriptors.
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  arch/ia64/include/asm/sections.h    | 4 ++--
+>  arch/parisc/include/asm/sections.h  | 6 ++++--
+>  arch/powerpc/include/asm/sections.h | 6 ++++--
+>  include/asm-generic/sections.h      | 3 ++-
+>  4 files changed, 12 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/se=
+ctions.h
+> index 35f24e52149a..80f5868afb06 100644
+> --- a/arch/ia64/include/asm/sections.h
+> +++ b/arch/ia64/include/asm/sections.h
+> @@ -7,6 +7,8 @@
+>   *	David Mosberger-Tang <davidm@hpl.hp.com>
+>   */
+>
+> +#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+> +
+>  #include <linux/elf.h>
+>  #include <linux/uaccess.h>
+>  #include <asm-generic/sections.h>
+> @@ -27,8 +29,6 @@ extern char __start_gate_brl_fsys_bubble_down_patchlis=
+t[], __end_gate_brl_fsys_b
+>  extern char __start_unwind[], __end_unwind[];
+>  extern char __start_ivt_text[], __end_ivt_text[];
+>
+> -#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+> -
+>  #undef dereference_function_descriptor
+>  static inline void *dereference_function_descriptor(void *ptr)
+>  {
+> diff --git a/arch/parisc/include/asm/sections.h b/arch/parisc/include/as=
+m/sections.h
+> index bb52aea0cb21..2e781ee19b66 100644
+> --- a/arch/parisc/include/asm/sections.h
+> +++ b/arch/parisc/include/asm/sections.h
+> @@ -2,6 +2,10 @@
+>  #ifndef _PARISC_SECTIONS_H
+>  #define _PARISC_SECTIONS_H
+>
+> +#ifdef CONFIG_64BIT
+> +#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+> +#endif
+> +
+>  /* nothing to see, move along */
+>  #include <asm-generic/sections.h>
+>
+> @@ -9,8 +13,6 @@ extern char __alt_instructions[], __alt_instructions_en=
+d[];
+>
+>  #ifdef CONFIG_64BIT
+>
+> -#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+> -
+>  #undef dereference_function_descriptor
+>  void *dereference_function_descriptor(void *);
+>
+> diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/=
+asm/sections.h
+> index 32e7035863ac..b7f1ba04e756 100644
+> --- a/arch/powerpc/include/asm/sections.h
+> +++ b/arch/powerpc/include/asm/sections.h
+> @@ -8,6 +8,10 @@
+>
+>  #define arch_is_kernel_initmem_freed arch_is_kernel_initmem_freed
+>
+> +#ifdef PPC64_ELF_ABI_v1
+> +#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+> +#endif
+> +
+>  #include <asm-generic/sections.h>
+>
+>  extern bool init_mem_is_free;
+> @@ -69,8 +73,6 @@ static inline int overlaps_kernel_text(unsigned long s=
+tart, unsigned long end)
+>
+>  #ifdef PPC64_ELF_ABI_v1
+>
+> -#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+> -
+>  #undef dereference_function_descriptor
+>  static inline void *dereference_function_descriptor(void *ptr)
+>  {
+> diff --git a/include/asm-generic/sections.h b/include/asm-generic/sectio=
+ns.h
+> index d16302d3eb59..1db5cfd69817 100644
+> --- a/include/asm-generic/sections.h
+> +++ b/include/asm-generic/sections.h
+> @@ -59,7 +59,8 @@ extern char __noinstr_text_start[], __noinstr_text_end=
+[];
+>  extern __visible const void __nosave_begin, __nosave_end;
+>
+>  /* Function descriptor handling (if any).  Override in asm/sections.h *=
+/
+> -#ifndef dereference_function_descriptor
+> +#ifdef HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR
+> +#else
 
-Besides, as Peter point out, the testing of recursion within
-the section between ftrace_test_recursion_trylock()/_unlock()
-pair also need the preemption disabled as the documentation
-explained, PATCH 2/2 will make sure on that.
+why not
+#ifndef HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR
+instead of #if/#else ?
 
-Michael Wang (2):
-  ftrace: disable preemption on the testing of recursion
-  ftrace: prevent preemption in perf_ftrace_function_call()
-
- arch/csky/kernel/probes/ftrace.c     |  2 --
- arch/parisc/kernel/ftrace.c          |  2 --
- arch/powerpc/kernel/kprobes-ftrace.c |  2 --
- arch/riscv/kernel/probes/ftrace.c    |  2 --
- arch/x86/kernel/kprobes/ftrace.c     |  2 --
- include/linux/trace_recursion.h      | 10 +++++++++-
- kernel/livepatch/patch.c             |  6 ------
- kernel/trace/trace_event_perf.c      | 17 +++++++++++++----
- kernel/trace/trace_functions.c       |  5 -----
- 9 files changed, 22 insertions(+), 26 deletions(-)
-
--- 
-1.8.3.1
+>  #define dereference_function_descriptor(p) ((void *)(p))
+>  #define dereference_kernel_function_descriptor(p) ((void *)(p))
+>  #endif
+>
 
