@@ -2,106 +2,68 @@ Return-Path: <SRS0=dmdX=PA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF112C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 12:51:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CAF6C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 14:40:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7DC1460F11
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 12:51:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7DC1460F11
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8908A6101D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 14:40:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8908A6101D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HTFsw0v62z2yxL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 23:51:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HTJHh6GHMz303F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 01:40:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LCPBFmie;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=LCPBFmie; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HTFs40Qt9z2xsr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 23:51:03 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 19CBWTjV003807; 
- Tue, 12 Oct 2021 08:50:43 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=z8QTCRjDtWf1CvJ9QlZd9BpM9xbtgJRdNA7YVywr8UA=;
- b=LCPBFmieWUOAJ6VBshnw6qDVRqS6AF/NlVfFVVNnJMvqzAGo8FGLx+nI7jcti5LTTJZt
- Y6/jbIhwIkVJVWeMJaa8qPc2d5GxcqTRLJRHb7/xxJg8ej7eeHrOo+t073Qw96nk4Qcc
- aT2fCoDFCayNVAtwdL7v0PnU/rHyd+O5hOLjmJm36yZG5dukjxWTfDdUqr/QDUDwGnSc
- NDUk0rr8ngfAMTdOMuDKhczblKb9ENvqmI7RVv3ajJqZHPOumapts5AkQ+neZwebwt/5
- U8Z+qPwb8/0vyZjX0TQ18AVczlmbjTX97KyQph5qHLv3mJiuXs54Et0XNaawzeWvorVX KQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bn6mwds7n-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 12 Oct 2021 08:50:43 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 19CCbwNE021744;
- Tue, 12 Oct 2021 08:50:42 -0400
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bn6mwds6u-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 12 Oct 2021 08:50:42 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 19CCDSVt023862;
- Tue, 12 Oct 2021 12:31:55 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma02fra.de.ibm.com with ESMTP id 3bk2q9pqem-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 12 Oct 2021 12:31:54 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 19CCVePc58786234
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 12 Oct 2021 12:31:40 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 10204A405E;
- Tue, 12 Oct 2021 12:31:40 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0D3DCA4069;
- Tue, 12 Oct 2021 12:31:25 +0000 (GMT)
-Received: from hbathini-workstation.ibm.com.com (unknown [9.43.27.69])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 12 Oct 2021 12:31:24 +0000 (GMT)
-From: Hari Bathini <hbathini@linux.ibm.com>
-To: naveen.n.rao@linux.ibm.com, christophe.leroy@csgroup.eu,
- mpe@ellerman.id.au, ast@kernel.org, daniel@iogearbox.net
-Subject: [RESEND PATCH v4 1/8] bpf powerpc: Remove unused SEEN_STACK
-Date: Tue, 12 Oct 2021 18:00:49 +0530
-Message-Id: <20211012123056.485795-2-hbathini@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20211012123056.485795-1-hbathini@linux.ibm.com>
-References: <20211012123056.485795-1-hbathini@linux.ibm.com>
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.126.134; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HTJH94Rytz2yHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 01:40:19 +1100 (AEDT)
+Received: from mail-wr1-f47.google.com ([209.85.221.47]) by
+ mrelayeu.kundenserver.de (mreue010 [213.165.67.97]) with ESMTPSA (Nemesis) id
+ 1M4ahC-1mZkS01ZEU-001gcU for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct
+ 2021 16:40:14 +0200
+Received: by mail-wr1-f47.google.com with SMTP id r18so67748783wrg.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 07:40:13 -0700 (PDT)
+X-Gm-Message-State: AOAM5329ZrJDwkQdaZENlf0kCUZz6uCofPG3oaMhbMQRTBU5hQj74Ngj
+ iikW1BqHLhHlcbYWpQQgYSSGr401NDkrPsZ/el8=
+X-Google-Smtp-Source: ABdhPJwsX00JvLV147YNI/vITnilDiDSyCMYaOBQxpBe5IV6UNyEVoOL9Nc4pFKmxwenTCCaRUt2Gu+9DapKCFiP6aE=
+X-Received: by 2002:a1c:2358:: with SMTP id j85mr5978288wmj.1.1634049612821;
+ Tue, 12 Oct 2021 07:40:12 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: T_NaaMFUFCfZoHe0m2zO2Nm_7aCJAzmy
-X-Proofpoint-ORIG-GUID: G2kuLDpQSFiLJBeP0CSO5UeyqyGpu8i8
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
- definitions=2021-10-12_03,2021-10-12_01,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0
- suspectscore=0 lowpriorityscore=0 bulkscore=0 phishscore=0 mlxlogscore=999
- mlxscore=0 adultscore=0 priorityscore=1501 spamscore=0 clxscore=1015
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2109230001 definitions=main-2110120073
+References: <20211008164728.30e3d3a3@canb.auug.org.au>
+ <20211011082704.3cff4568@canb.auug.org.au>
+ <CAL_JsqJE_GHnehBz-71BOGXfjm6q2p0u6FQA5KwO8zK_i1LpMQ@mail.gmail.com>
+In-Reply-To: <CAL_JsqJE_GHnehBz-71BOGXfjm6q2p0u6FQA5KwO8zK_i1LpMQ@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 12 Oct 2021 16:39:56 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a1EcNuxT-w-8w-HDr2+idsP=vFZ3Cn27fX7o56GOuu_Cg@mail.gmail.com>
+Message-ID: <CAK8P3a1EcNuxT-w-8w-HDr2+idsP=vFZ3Cn27fX7o56GOuu_Cg@mail.gmail.com>
+Subject: Re: linux-next: build warnings in Linus' tree
+To: Rob Herring <robh+dt@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:hv55MgxvPlgvFyi3O5rZZmf/t2QikeY9DQ8ptJ70SIB2RyxtOB2
+ uF86Qf8q0qcGuvPaME515yxzhqjLJ5CNYReVOEtPfJqTSI042rplBkWzBSok9RsV0oXt/Qg
+ huGzPEzqjVUvXmqakENL3yoLIdZezsv25vksTS5pz7hfxJw90Odl+a84iUgG7YcZFwTVEEa
+ ulNCGnF4UyOuK4fCjcvkg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:uOJrQmVua+U=:S9ROvkUz3bumQZKmbadXLC
+ 82ZgkgzPVZRrm4AtgzPGXJOgn4A4w2OI8sIYgFPEKPi8W5HU1AlF1SYA+qaK8kw4LGw5CLJRd
+ UZajG44KGX7yqAvTgXF3ORTvDd3mVSFGJ52IndwzHlar9RTiRUyFhsHHAxAdmIE7MYgkJf1fx
+ 9zEWlckmjqgsNuoejIiFCh78iAXKzhpT+FZ1cRZ6e90Iai5oEmDPH0Cd6VDbnREpZRxyX1zLI
+ GMNAVSOnRJhtdg0u5zMpSfbARbs/yV55ag9pgdu6qgJPbzGR2SGUDc223OnAsF224WXgG2AZ4
+ YCYCfVgJVvGWFm/ohMYFfRUjebSg5Cy9Dn5WhMQcVJTaWQCiU7RTrp7tzVNy/O96DHuCBF/CJ
+ dzVMi/Ttm3YBiUPFFCgfPkn0NIHzqS5AONqj65JxmFjv4YUKWnRPRSqsbOMhYVoMydsH3sf4d
+ +jrWLJOCMNzm92tBxCxX8OMZ/WcK8D+HARyPsUyzIngYfjq3p8NNAmeABfGCIiOrSHk7udwhg
+ BFsDBhNsuVKhdRn9ohd8IG0X5akKEnjStraSz14SHibh2MJ8StQGc63VKtDo6CNFTrXpRP4ie
+ ksNkj7pkwkJB1Aw3BO8D9UTqdHCuKikJtGYgoFO5mn8Sgj5+W4TVUYe8M+e0HN6Xh+auWLAfs
+ YK4YhuvGByJ/EIloT6M3kPE+GUJlZbObqvks24Oz1TwIDOUqxItaXB8cQtAQSN3oE6zMkTWFv
+ xNe61ZyPDSi8V3VJDYtpAwtdF3oWZdOODdiO3A==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,43 +75,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, songliubraving@fb.com,
- netdev@vger.kernel.org, john.fastabend@gmail.com, andrii@kernel.org,
- kpsingh@kernel.org, paulus@samba.org, yhs@fb.com, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kafai@fb.com
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Arnd Bergmann <arnd@arndb.de>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Anatolij Gustschin <agust@denx.de>, PowerPC <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+On Mon, Oct 11, 2021 at 10:42 PM Rob Herring <robh+dt@kernel.org> wrote:
+> On Sun, Oct 10, 2021 at 4:27 PM Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> FYI, u-boot removed mpc5xxx support in 2017, so maybe there's
+> similarly not a need to keep them in the kernel? It does appear NXP
+> will still sell you the parts though the last BSP was 2009.
 
-SEEN_STACK is unused on PowerPC. Remove it. Also, have
-SEEN_TAILCALL use 0x40000000.
+Specifically, MPC5200B has a 15 year lifetime, which ends in
+11 months from now. The original bplan/Genesi Efika 5K2 was
+quite popular at the time it came out, and there are probably
+still some of those hanging around, but they came with Open
+Firmware rather than relying on the dts files that ship with the
+kernel.
 
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
+Grant Likely was the original maintainer for MPC52xx until 2011,
+Anatolij Gustschin is still listed as maintainer since then but hasn't
+been active in it for a while either. Anatolij can probably best judge
+which of these boards are still in going to be used with future kernels,
+but I suspect once you start removing bits from 52xx, the newer
+but less common 512x platform can go away as well.
 
-* No changes in v4.
-
-
- arch/powerpc/net/bpf_jit.h | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-index 7e9b978b768e..89bd744c2bff 100644
---- a/arch/powerpc/net/bpf_jit.h
-+++ b/arch/powerpc/net/bpf_jit.h
-@@ -125,8 +125,7 @@
- #define COND_LE		(CR0_GT | COND_CMP_FALSE)
- 
- #define SEEN_FUNC	0x20000000 /* might call external helpers */
--#define SEEN_STACK	0x40000000 /* uses BPF stack */
--#define SEEN_TAILCALL	0x80000000 /* uses tail calls */
-+#define SEEN_TAILCALL	0x40000000 /* uses tail calls */
- 
- #define SEEN_VREG_MASK	0x1ff80000 /* Volatile registers r3-r12 */
- #define SEEN_NVREG_MASK	0x0003ffff /* Non volatile registers r14-r31 */
--- 
-2.31.1
-
+         Arnd
