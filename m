@@ -2,45 +2,46 @@ Return-Path: <SRS0=dmdX=PA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E38ACC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 12:18:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C09E2C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 12:29:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E53A60E78
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 12:18:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5E53A60E78
+	by mail.kernel.org (Postfix) with ESMTPS id 2D99E610D1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 12:29:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2D99E610D1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HTF6w5MZHz30Pj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 23:18:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HTFNb3K3Qz2yPn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 23:29:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=yp9m=pa=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HTF6R22NRz2yHJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 23:17:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HTFN705rdz2xrq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 23:29:26 +1100 (AEDT)
 Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com
  [66.24.58.225])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DD5ED60E97;
- Tue, 12 Oct 2021 12:17:29 +0000 (UTC)
-Date: Tue, 12 Oct 2021 08:17:28 -0400
+ by mail.kernel.org (Postfix) with ESMTPSA id 8122460E74;
+ Tue, 12 Oct 2021 12:29:21 +0000 (UTC)
+Date: Tue, 12 Oct 2021 08:29:20 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
-To: =?UTF-8?B?546L6LSH?= <yun.wang@linux.alibaba.com>
+To: Miroslav Benes <mbenes@suse.cz>
 Subject: Re: [PATCH 1/2] ftrace: disable preemption on the testing of recursion
-Message-ID: <20211012081728.5d357d6c@gandalf.local.home>
-In-Reply-To: <a8756482-024c-c858-b3d1-1ffa9a5eb3f7@linux.alibaba.com>
+Message-ID: <20211012082920.1f8d6557@gandalf.local.home>
+In-Reply-To: <alpine.LSU.2.21.2110121421260.3394@pobox.suse.cz>
 References: <8c7de46d-9869-aa5e-2bb9-5dbc2eda395e@linux.alibaba.com>
  <a8756482-024c-c858-b3d1-1ffa9a5eb3f7@linux.alibaba.com>
+ <alpine.LSU.2.21.2110121421260.3394@pobox.suse.cz>
 X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,12 +53,13 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
- Paul Walmsley <paul.walmsley@sifive.com>, "James E.J.
- Bottomley" <James.Bottomley@HansenPartnership.com>, Guo Ren <guoren@kernel.org>,
- Jisheng Zhang <jszhang@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- live-patching@vger.kernel.org, linux-riscv@lists.infradead.org,
- Miroslav Benes <mbenes@suse.cz>, Paul Mackerras <paulus@samba.org>,
+Cc: =?UTF-8?B?546L6LSH?= <yun.wang@linux.alibaba.com>,
+ "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
+ Paul Walmsley <paul.walmsley@sifive.com>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Guo Ren <guoren@kernel.org>, Jisheng Zhang <jszhang@kernel.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, live-patching@vger.kernel.org,
+ linux-riscv@lists.infradead.org, Paul Mackerras <paulus@samba.org>,
  Joe Lawrence <joe.lawrence@redhat.com>, Helge Deller <deller@gmx.de>,
  x86@kernel.org, linux-csky@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
  Petr Mladek <pmladek@suse.com>, Albert Ou <aou@eecs.berkeley.edu>,
@@ -71,27 +73,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 12 Oct 2021 13:40:08 +0800
-=E7=8E=8B=E8=B4=87 <yun.wang@linux.alibaba.com> wrote:
+On Tue, 12 Oct 2021 14:24:43 +0200 (CEST)
+Miroslav Benes <mbenes@suse.cz> wrote:
 
-> @@ -52,11 +52,6 @@ static void notrace klp_ftrace_handler(unsigned long i=
-p,
->  	bit =3D ftrace_test_recursion_trylock(ip, parent_ip);
->  	if (WARN_ON_ONCE(bit < 0))
->  		return;
-> -	/*
-> -	 * A variant of synchronize_rcu() is used to allow patching functions
-> -	 * where RCU is not watching, see klp_synchronize_transition().
-> -	 */
+> > +++ b/kernel/livepatch/patch.c
+> > @@ -52,11 +52,6 @@ static void notrace klp_ftrace_handler(unsigned long ip,
+> >  	bit = ftrace_test_recursion_trylock(ip, parent_ip);
+> >  	if (WARN_ON_ONCE(bit < 0))
+> >  		return;
+> > -	/*
+> > -	 * A variant of synchronize_rcu() is used to allow patching functions
+> > -	 * where RCU is not watching, see klp_synchronize_transition().
+> > -	 */
+> > -	preempt_disable_notrace();
+> > 
+> >  	func = list_first_or_null_rcu(&ops->func_stack, struct klp_func,
+> >  				      stack_node);
+> > @@ -120,7 +115,6 @@ static void notrace klp_ftrace_handler(unsigned long ip,
+> >  	klp_arch_set_pc(fregs, (unsigned long)func->new_func);
+> > 
+> >  unlock:
+> > -	preempt_enable_notrace();
+> >  	ftrace_test_recursion_unlock(bit);
+> >  }  
+> 
+> I don't like this change much. We have preempt_disable there not because 
+> of ftrace_test_recursion, but because of RCU. ftrace_test_recursion was 
+> added later. Yes, it would work with the change, but it would also hide 
+> things which should not be hidden in my opinion.
 
-I have to take a deeper look at this patch set, but do not remove this
-comment, as it explains the protection here, that is not obvious with the
-changes you made.
+Agreed, but I believe the change is fine, but requires a nice comment to
+explain what you said above.
+
+Thus, before the "ftrace_test_recursion_trylock()" we need:
+
+	/*
+	 * The ftrace_test_recursion_trylock() will disable preemption,
+	 * which is required for the variant of synchronize_rcu() that is
+	 * used to allow patching functions where RCU is not watching.
+	 * See klp_synchronize_transition() for more details.
+	 */
 
 -- Steve
-
-
-> -	preempt_disable_notrace();
->=20
->  	func =3D list_first_or_null_rcu(&ops->func_stack, struct klp_func,
->  				      stack_node);
