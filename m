@@ -2,62 +2,70 @@ Return-Path: <SRS0=dmdX=PA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4166BC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 06:02:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E653BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 06:03:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9C3B160EE2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 06:02:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9C3B160EE2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 0758560EE2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 06:03:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0758560EE2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HT4ns6ncMz30RN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 17:02:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HT4pR4rrLz3c7J
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Oct 2021 17:03:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.130;
+ helo=out30-130.freemail.mail.aliyun.com;
+ envelope-from=yun.wang@linux.alibaba.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 60 seconds by postgrey-1.36 at boromir;
+ Tue, 12 Oct 2021 16:40:27 AEDT
+Received: from out30-130.freemail.mail.aliyun.com
+ (out30-130.freemail.mail.aliyun.com [115.124.30.130])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HT4nP3jWXz2yPM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 17:02:14 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HT4nH3nTgz9sTc;
- Tue, 12 Oct 2021 08:02:11 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id xx_QPrtQlJSE; Tue, 12 Oct 2021 08:02:11 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HT4nH2q5Wz9sSN;
- Tue, 12 Oct 2021 08:02:11 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0AD238B76E;
- Tue, 12 Oct 2021 08:02:11 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id IgLcf_gTW2O7; Tue, 12 Oct 2021 08:02:10 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (po18920.idsi0.si.c-s.fr
- [192.168.202.149])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8EEB98B763;
- Tue, 12 Oct 2021 08:02:10 +0200 (CEST)
-Subject: Re: [PATCH] powerpc/s64: Clarify that radix lacks DEBUG_PAGEALLOC
-To: Joel Stanley <joel@jms.id.au>, Jordan Niethe <jniethe5@gmail.com>
-References: <20211012011350.395767-1-joel@jms.id.au>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <3d078c92-7a87-bd88-51d2-3fcf0abf3c84@csgroup.eu>
-Date: Tue, 12 Oct 2021 08:02:10 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HT4JC2zv4z2xvc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 16:40:27 +1100 (AEDT)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R161e4; CH=green; DM=||false|;
+ DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04426; MF=yun.wang@linux.alibaba.com;
+ NM=1; PH=DS; RN=31; SR=0; TI=SMTPD_---0UrXxytR_1634017208; 
+Received: from testdeMacBook-Pro.local(mailfrom:yun.wang@linux.alibaba.com
+ fp:SMTPD_---0UrXxytR_1634017208) by smtp.aliyun-inc.com(127.0.0.1);
+ Tue, 12 Oct 2021 13:40:09 +0800
+Subject: [PATCH 1/2] ftrace: disable preemption on the testing of recursion
+From: =?UTF-8?B?546L6LSH?= <yun.wang@linux.alibaba.com>
+To: Guo Ren <guoren@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Ingo Molnar <mingo@redhat.com>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>,
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
+ Joe Lawrence <joe.lawrence@redhat.com>,
+ Colin Ian King <colin.king@canonical.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ "Peter Zijlstra (Intel)" <peterz@infradead.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Jisheng Zhang <jszhang@kernel.org>,
+ linux-csky@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, live-patching@vger.kernel.org
+References: <8c7de46d-9869-aa5e-2bb9-5dbc2eda395e@linux.alibaba.com>
+Message-ID: <a8756482-024c-c858-b3d1-1ffa9a5eb3f7@linux.alibaba.com>
+Date: Tue, 12 Oct 2021 13:40:08 +0800
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:78.0)
+ Gecko/20100101 Thunderbird/78.14.0
 MIME-Version: 1.0
-In-Reply-To: <20211012011350.395767-1-joel@jms.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr-FR
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <8c7de46d-9869-aa5e-2bb9-5dbc2eda395e@linux.alibaba.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Tue, 12 Oct 2021 17:02:48 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,106 +77,223 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+As the documentation explained, ftrace_test_recursion_trylock()
+and ftrace_test_recursion_unlock() were supposed to disable and
+enable preemption properly, however currently this work is done
+outside of the function, which could be missing by mistake.
+
+This path will make sure the preemption will be disabled when
+trylock() succeed, and the unlock() will enable preemption when
+the the testing of recursion are finished.
+
+Reported-by: Abaci <abaci@linux.alibaba.com>
+Suggested-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Michael Wang <yun.wang@linux.alibaba.com>
+---
+ arch/csky/kernel/probes/ftrace.c     |  2 --
+ arch/parisc/kernel/ftrace.c          |  2 --
+ arch/powerpc/kernel/kprobes-ftrace.c |  2 --
+ arch/riscv/kernel/probes/ftrace.c    |  2 --
+ arch/x86/kernel/kprobes/ftrace.c     |  2 --
+ include/linux/trace_recursion.h      | 10 +++++++++-
+ kernel/livepatch/patch.c             |  6 ------
+ kernel/trace/trace_functions.c       |  5 -----
+ 8 files changed, 9 insertions(+), 22 deletions(-)
+
+diff --git a/arch/csky/kernel/probes/ftrace.c b/arch/csky/kernel/probes/ftrace.c
+index ef2bb9b..dff7921 100644
+--- a/arch/csky/kernel/probes/ftrace.c
++++ b/arch/csky/kernel/probes/ftrace.c
+@@ -24,7 +24,6 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 		return;
+
+ 	regs = ftrace_get_regs(fregs);
+-	preempt_disable_notrace();
+ 	p = get_kprobe((kprobe_opcode_t *)ip);
+ 	if (!p) {
+ 		p = get_kprobe((kprobe_opcode_t *)(ip - MCOUNT_INSN_SIZE));
+@@ -64,7 +63,6 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 		__this_cpu_write(current_kprobe, NULL);
+ 	}
+ out:
+-	preempt_enable_notrace();
+ 	ftrace_test_recursion_unlock(bit);
+ }
+ NOKPROBE_SYMBOL(kprobe_ftrace_handler);
+diff --git a/arch/parisc/kernel/ftrace.c b/arch/parisc/kernel/ftrace.c
+index 0a1e75a..3543496 100644
+--- a/arch/parisc/kernel/ftrace.c
++++ b/arch/parisc/kernel/ftrace.c
+@@ -216,7 +216,6 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 		return;
+
+ 	regs = ftrace_get_regs(fregs);
+-	preempt_disable_notrace();
+ 	p = get_kprobe((kprobe_opcode_t *)ip);
+ 	if (unlikely(!p) || kprobe_disabled(p))
+ 		goto out;
+@@ -245,7 +244,6 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 	}
+ 	__this_cpu_write(current_kprobe, NULL);
+ out:
+-	preempt_enable_notrace();
+ 	ftrace_test_recursion_unlock(bit);
+ }
+ NOKPROBE_SYMBOL(kprobe_ftrace_handler);
+diff --git a/arch/powerpc/kernel/kprobes-ftrace.c b/arch/powerpc/kernel/kprobes-ftrace.c
+index 7154d58..072ebe7 100644
+--- a/arch/powerpc/kernel/kprobes-ftrace.c
++++ b/arch/powerpc/kernel/kprobes-ftrace.c
+@@ -26,7 +26,6 @@ void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
+ 		return;
+
+ 	regs = ftrace_get_regs(fregs);
+-	preempt_disable_notrace();
+ 	p = get_kprobe((kprobe_opcode_t *)nip);
+ 	if (unlikely(!p) || kprobe_disabled(p))
+ 		goto out;
+@@ -61,7 +60,6 @@ void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
+ 		__this_cpu_write(current_kprobe, NULL);
+ 	}
+ out:
+-	preempt_enable_notrace();
+ 	ftrace_test_recursion_unlock(bit);
+ }
+ NOKPROBE_SYMBOL(kprobe_ftrace_handler);
+diff --git a/arch/riscv/kernel/probes/ftrace.c b/arch/riscv/kernel/probes/ftrace.c
+index aab85a8..7142ec4 100644
+--- a/arch/riscv/kernel/probes/ftrace.c
++++ b/arch/riscv/kernel/probes/ftrace.c
+@@ -15,7 +15,6 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 	if (bit < 0)
+ 		return;
+
+-	preempt_disable_notrace();
+ 	p = get_kprobe((kprobe_opcode_t *)ip);
+ 	if (unlikely(!p) || kprobe_disabled(p))
+ 		goto out;
+@@ -52,7 +51,6 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 		__this_cpu_write(current_kprobe, NULL);
+ 	}
+ out:
+-	preempt_enable_notrace();
+ 	ftrace_test_recursion_unlock(bit);
+ }
+ NOKPROBE_SYMBOL(kprobe_ftrace_handler);
+diff --git a/arch/x86/kernel/kprobes/ftrace.c b/arch/x86/kernel/kprobes/ftrace.c
+index 596de2f..dd2ec14 100644
+--- a/arch/x86/kernel/kprobes/ftrace.c
++++ b/arch/x86/kernel/kprobes/ftrace.c
+@@ -25,7 +25,6 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 	if (bit < 0)
+ 		return;
+
+-	preempt_disable_notrace();
+ 	p = get_kprobe((kprobe_opcode_t *)ip);
+ 	if (unlikely(!p) || kprobe_disabled(p))
+ 		goto out;
+@@ -59,7 +58,6 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 		__this_cpu_write(current_kprobe, NULL);
+ 	}
+ out:
+-	preempt_enable_notrace();
+ 	ftrace_test_recursion_unlock(bit);
+ }
+ NOKPROBE_SYMBOL(kprobe_ftrace_handler);
+diff --git a/include/linux/trace_recursion.h b/include/linux/trace_recursion.h
+index a9f9c57..805f9c4 100644
+--- a/include/linux/trace_recursion.h
++++ b/include/linux/trace_recursion.h
+@@ -214,7 +214,14 @@ static __always_inline void trace_clear_recursion(int bit)
+ static __always_inline int ftrace_test_recursion_trylock(unsigned long ip,
+ 							 unsigned long parent_ip)
+ {
+-	return trace_test_and_set_recursion(ip, parent_ip, TRACE_FTRACE_START, TRACE_FTRACE_MAX);
++	int bit;
++
++	preempt_disable_notrace();
++	bit = trace_test_and_set_recursion(ip, parent_ip, TRACE_FTRACE_START, TRACE_FTRACE_MAX);
++	if (bit < 0)
++		preempt_enable_notrace();
++
++	return bit;
+ }
+
+ /**
+@@ -226,6 +233,7 @@ static __always_inline int ftrace_test_recursion_trylock(unsigned long ip,
+ static __always_inline void ftrace_test_recursion_unlock(int bit)
+ {
+ 	trace_clear_recursion(bit);
++	preempt_enable_notrace();
+ }
+
+ #endif /* CONFIG_TRACING */
+diff --git a/kernel/livepatch/patch.c b/kernel/livepatch/patch.c
+index e8029ae..6e66ccd 100644
+--- a/kernel/livepatch/patch.c
++++ b/kernel/livepatch/patch.c
+@@ -52,11 +52,6 @@ static void notrace klp_ftrace_handler(unsigned long ip,
+ 	bit = ftrace_test_recursion_trylock(ip, parent_ip);
+ 	if (WARN_ON_ONCE(bit < 0))
+ 		return;
+-	/*
+-	 * A variant of synchronize_rcu() is used to allow patching functions
+-	 * where RCU is not watching, see klp_synchronize_transition().
+-	 */
+-	preempt_disable_notrace();
+
+ 	func = list_first_or_null_rcu(&ops->func_stack, struct klp_func,
+ 				      stack_node);
+@@ -120,7 +115,6 @@ static void notrace klp_ftrace_handler(unsigned long ip,
+ 	klp_arch_set_pc(fregs, (unsigned long)func->new_func);
+
+ unlock:
+-	preempt_enable_notrace();
+ 	ftrace_test_recursion_unlock(bit);
+ }
+
+diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
+index 1f0e63f..9f1bfbe 100644
+--- a/kernel/trace/trace_functions.c
++++ b/kernel/trace/trace_functions.c
+@@ -186,7 +186,6 @@ static void function_trace_start(struct trace_array *tr)
+ 		return;
+
+ 	trace_ctx = tracing_gen_ctx();
+-	preempt_disable_notrace();
+
+ 	cpu = smp_processor_id();
+ 	data = per_cpu_ptr(tr->array_buffer.data, cpu);
+@@ -194,7 +193,6 @@ static void function_trace_start(struct trace_array *tr)
+ 		trace_function(tr, ip, parent_ip, trace_ctx);
+
+ 	ftrace_test_recursion_unlock(bit);
+-	preempt_enable_notrace();
+ }
+
+ #ifdef CONFIG_UNWINDER_ORC
+@@ -298,8 +296,6 @@ static inline void process_repeats(struct trace_array *tr,
+ 	if (bit < 0)
+ 		return;
+
+-	preempt_disable_notrace();
+-
+ 	cpu = smp_processor_id();
+ 	data = per_cpu_ptr(tr->array_buffer.data, cpu);
+ 	if (atomic_read(&data->disabled))
+@@ -324,7 +320,6 @@ static inline void process_repeats(struct trace_array *tr,
+
+ out:
+ 	ftrace_test_recursion_unlock(bit);
+-	preempt_enable_notrace();
+ }
+
+ static void
+-- 
+1.8.3.1
 
 
-Le 12/10/2021 à 03:13, Joel Stanley a écrit :
-> The page_alloc.c code will call into __kernel_map_pages when
-> DEBUG_PAGEALLOC is configured and enabled.
-> 
-> As the implementation assumes hash, this should crash spectacularly if
-> not for a bit of luck in __kernel_map_pages. In this function
-> linear_map_hash_count is always zero, the for loop exits without doing
-> any damage.
-> 
-> There are no other platforms that determine if they support
-> debug_pagealloc at runtime. Instead of adding code to mm/page_alloc.c to
-> do that, this change turns the map/unmap into a noop when in radix
-> mode and prints a warning once.
-> 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
-> I noticed this when I was looking at adding kfence support a while back.
-> I've put that work aside and jpn has since gotten further than me, but I
-> think this is a fix worth considering.
-> 
->   arch/powerpc/include/asm/book3s/64/hash.h |  2 ++
->   arch/powerpc/mm/book3s64/hash_utils.c     |  2 +-
->   arch/powerpc/mm/book3s64/pgtable.c        | 12 ++++++++++++
->   3 files changed, 15 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-> index d959b0195ad9..674fe0e890dc 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hash.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hash.h
-> @@ -255,6 +255,8 @@ int hash__create_section_mapping(unsigned long start, unsigned long end,
->   				 int nid, pgprot_t prot);
->   int hash__remove_section_mapping(unsigned long start, unsigned long end);
->   
-> +void hash__kernel_map_pages(struct page *page, int numpages, int enable);
-> +
->   #endif /* !__ASSEMBLY__ */
->   #endif /* __KERNEL__ */
->   #endif /* _ASM_POWERPC_BOOK3S_64_HASH_H */
-> diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-> index c145776d3ae5..cfd45245d009 100644
-> --- a/arch/powerpc/mm/book3s64/hash_utils.c
-> +++ b/arch/powerpc/mm/book3s64/hash_utils.c
-> @@ -1988,7 +1988,7 @@ static void kernel_unmap_linear_page(unsigned long vaddr, unsigned long lmi)
->   				     mmu_kernel_ssize, 0);
->   }
->   
-> -void __kernel_map_pages(struct page *page, int numpages, int enable)
-> +void hash__kernel_map_pages(struct page *page, int numpages, int enable)
->   {
->   	unsigned long flags, vaddr, lmi;
->   	int i;
-> diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-> index 9e16c7b1a6c5..0aefc272cd03 100644
-> --- a/arch/powerpc/mm/book3s64/pgtable.c
-> +++ b/arch/powerpc/mm/book3s64/pgtable.c
-> @@ -526,3 +526,15 @@ static int __init pgtable_debugfs_setup(void)
->   	return 0;
->   }
->   arch_initcall(pgtable_debugfs_setup);
-> +
-> +#ifdef CONFIG_DEBUG_PAGEALLOC
-> +void __kernel_map_pages(struct page *page, int numpages, int enable)
-> +{
-> +	if (radix_enabled()) {
-> +		pr_warn_once("DEBUG_PAGEALLOC not supported in radix mode\n");
-> +		return;
-> +	}
-> +
-> +	hash__kernel_map_pages(page, numpages, enable);
-> +}
-
-I think it would be better to do similar to most other functions (like 
-map_kernel_page() for instance):
-
-In arch/powerpc/include/asm/book3s/64/pgtable.h do:
-
-static inline void __kernel_map_pages(struct page *page, int numpages, 
-int enable)
-{
-	if (radix_enabled())
-		radix__kernel_map_pages(...);
-	else
-		hash__kernel_map_pages(...);
-}
-
-Then in arch/powerpc/include/asm/book3s/64/radix.h do (or in 
-/arch/powerpc/mm/book3s64/radix_pgtable.c in you prefer ?):
-
-static inline void radix__kernel_map_pages(struct page *page, int 
-numpages, int enable)
-{
-	pr_warn_once("DEBUG_PAGEALLOC not supported in radix mode\n");
-}
-
-> +#endif
-> 
