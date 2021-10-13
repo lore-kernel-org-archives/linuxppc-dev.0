@@ -2,58 +2,60 @@ Return-Path: <SRS0=X2ql=PB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40F3CC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 09:32:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 415D2C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 09:33:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 46B33600CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 09:32:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 46B33600CD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 76758606A5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 09:33:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 76758606A5
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HTnPn4907z3cFw
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 20:32:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HTnQH1XmXz3cVd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 20:33:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.222.51; helo=mail-ua1-f51.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-ua1-f51.google.com (mail-ua1-f51.google.com
- [209.85.222.51])
+ smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
+ helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de;
+ receiver=<UNKNOWN>)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HTk0k4VjNz2ypB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 17:59:18 +1100 (AEDT)
-Received: by mail-ua1-f51.google.com with SMTP id 64so2466070uab.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 23:59:18 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=vLmWoWym/1fKiJu7c9gpS1cDGT+57poTvw7kTscrC00=;
- b=ROGi7CHlpNQPdG7jNmoEXJLxQ+6gOsqAeLhDEVczvsNiO8fG0gB8K9hp++Mc0SQaSl
- GAOp5T5lHXHIXsS2OR+vJgYrfCyWqhibOsiJ7iG9mcSUF81OJpuA4qrwYPrx+1jLfnge
- axgv2LL4qbacswA5Ea2KmBgvLtEmVI4NXwhGTQXaSqa7pSSAMiGxgKC0rHAp43+L7kpt
- 9dDhi3hQFL1ghwuTRWJ6olfyogsLbp0DLecsvl0Ng2F65Chvm5Jp6/SJ2cUYwmrxZkPo
- bnFQxJyq5Clp62Xo+hKVD1IOuq8QphxlAlJlZ3P/Ph1PLTJeR6TPrEK1TgDHyHdRpDHE
- ebPg==
-X-Gm-Message-State: AOAM530N7gvfsEtSGLB0YsoldV/jjC0eKl+U+moTPsje5GlZ/LhHdlo5
- iqM7ck5x2Xt2/a3LeVagNcGv2jrbJ8ufbRLWKZU=
-X-Google-Smtp-Source: ABdhPJzwsQvQy07KzSSKF36slqOOCBmzhi7G4XFKh+MxO1aqVfgv6UylAsUlKqrZrwFEymqmWaysD4XtAMh8gSFAJlY=
-X-Received: by 2002:a67:d583:: with SMTP id m3mr36353545vsj.41.1634108355035; 
- Tue, 12 Oct 2021 23:59:15 -0700 (PDT)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HTmW52hsyz3c9J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 19:52:15 +1100 (AEDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+ by metis.ext.pengutronix.de with esmtps
+ (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1maZzE-0007An-3c; Wed, 13 Oct 2021 10:51:44 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+ by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1maZz1-0005Il-VI; Wed, 13 Oct 2021 10:51:31 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.92)
+ (envelope-from <ukl@pengutronix.de>)
+ id 1maZz1-0006zY-R9; Wed, 13 Oct 2021 10:51:31 +0200
+Date: Wed, 13 Oct 2021 10:51:31 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v6 00/11] PCI: Drop duplicated tracking of a pci_dev's
+ bound driver
+Message-ID: <20211013085131.5htnch5p6zv46mzn@pengutronix.de>
+References: <20211004125935.2300113-1-u.kleine-koenig@pengutronix.de>
+ <20211012233212.GA1806189@bhelgaas>
 MIME-Version: 1.0
-References: <20211013063622.548590-1-masahiroy@kernel.org>
- <20211013063622.548590-2-masahiroy@kernel.org>
-In-Reply-To: <20211013063622.548590-2-masahiroy@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 13 Oct 2021 08:59:03 +0200
-Message-ID: <CAMuHMdUQVpvvq=ZqjL97gV6AxS5eGm4mRS=gL4PPwWiBS-v5AA@mail.gmail.com>
-Subject: Re: [PATCH 2/2] kbuild: use more subdir- for visiting subdirectories
- while cleaning
-To: Masahiro Yamada <masahiroy@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="jgo3ssjhgqy54b4n"
+Content-Disposition: inline
+In-Reply-To: <20211012233212.GA1806189@bhelgaas>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
+ SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Approved-At: Wed, 13 Oct 2021 20:30:31 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -66,82 +68,132 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Randy Dunlap <rdunlap@infradead.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Rich Felker <dalias@libc.org>,
- Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
- linux-riscv <linux-riscv@lists.infradead.org>,
- Vincent Chen <deanbo422@gmail.com>, Will Deacon <will@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
- Jonas Bonn <jonas@southpole.se>, Rob Herring <robh@kernel.org>,
- Vasily Gorbik <gor@linux.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
- Marc Zyngier <maz@kernel.org>, Helge Deller <deller@gmx.de>,
- Linux-sh list <linux-sh@vger.kernel.org>, Russell King <linux@armlinux.org.uk>,
- Ley Foon Tan <ley.foon.tan@intel.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- alpha <linux-alpha@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Parisc List <linux-parisc@vger.kernel.org>,
- Sami Tolvanen <samitolvanen@google.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Matt Turner <mattst88@gmail.com>,
- arcml <linux-snps-arc@lists.infradead.org>,
- "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
- "open list:TENSILICA XTENSA PORT \(xtensa\)" <linux-xtensa@linux-xtensa.org>,
- Albert Ou <aou@eecs.berkeley.edu>, Robert Richter <rric@kernel.org>,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- linux-kbuild <linux-kbuild@vger.kernel.org>,
- Heiko Carstens <hca@linux.ibm.com>,
- =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Nathan Chancellor <nathan@kernel.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greentime Hu <green.hu@gmail.com>,
- Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Richard Henderson <rth@twiddle.net>, William Cohen <wcohen@redhat.com>,
- Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
- Michal Marek <michal.lkml@markovi.net>, Julien Thierry <jthierry@redhat.com>,
- Nick Hu <nickhu@andestech.com>, linux-s390 <linux-s390@vger.kernel.org>,
- Jonathan Corbet <corbet@lwn.net>, Nick Desaulniers <ndesaulniers@google.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Openrisc <openrisc@lists.librecores.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Borislav Petkov <bp@alien8.de>, Vineet Gupta <vgupta@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>, x86@kernel.org
+Cc: Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+ Mark Rutland <mark.rutland@arm.com>, x86@kernel.org,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ linux-pci@vger.kernel.org, Alexander Duyck <alexanderduyck@fb.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Sathya Prakash <sathya.prakash@broadcom.com>, oss-drivers@corigine.com,
+ netdev@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Jiri Olsa <jolsa@redhat.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Paul Mackerras <paulus@samba.org>, Marco Chiappero <marco.chiappero@intel.com>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org,
+ Ido Schimmel <idosch@nvidia.com>,
+ =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, qat-linux@intel.com,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Jakub Kicinski <kuba@kernel.org>, Yisen Zhuang <yisen.zhuang@huawei.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Fiona Trahe <fiona.trahe@intel.com>,
+ Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Jack Xu <jack.xu@intel.com>,
+ Borislav Petkov <bp@alien8.de>, Michael Buesch <m@bues.ch>,
+ Jiri Pirko <jiri@nvidia.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Juergen Gross <jgross@suse.com>, Salil Mehta <salil.mehta@huawei.com>,
+ Sreekanth Reddy <sreekanth.reddy@broadcom.com>, xen-devel@lists.xenproject.org,
+ Vadym Kochan <vkochan@marvell.com>, MPT-FusionLinux.pdl@broadcom.com,
+ linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
+ linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+ Mathias Nyman <mathias.nyman@intel.com>, Zhou Wang <wangzhou1@hisilicon.com>,
+ linux-crypto@vger.kernel.org, kernel@pengutronix.de,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Simon Horman <simon.horman@corigine.com>,
+ Wojciech Ziemba <wojciech.ziemba@intel.com>,
+ Tomaszx Kowalik <tomaszx.kowalik@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ Taras Chornyi <tchornyi@marvell.com>, linux-perf-users@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 13, 2021 at 8:43 AM Masahiro Yamada <masahiroy@kernel.org> wrote:
-> Documentation/kbuild/makefiles.rst suggests to use "archclean" for
-> cleaning arch/$(SRCARCH)/boot/.
->
-> Since commit d92cc4d51643 ("kbuild: require all architectures to have
-> arch/$(SRCARCH)/Kbuild"), we can use the "subdir- += boot" trick for
-> all architectures. This can take advantage of the parallel option (-j)
-> for "make clean".
->
-> I also cleaned up the comments. The "archdep" target does not exist.
->
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 
->  arch/m68k/Makefile                 |  4 +---
+--jgo3ssjhgqy54b4n
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+On Tue, Oct 12, 2021 at 06:32:12PM -0500, Bjorn Helgaas wrote:
+> On Mon, Oct 04, 2021 at 02:59:24PM +0200, Uwe Kleine-K=F6nig wrote:
+> > Hello,
+> >=20
+> > this is v6 of the quest to drop the "driver" member from struct pci_dev
+> > which tracks the same data (apart from a constant offset) as dev.driver.
+>=20
+> I like this a lot and applied it to pci/driver for v5.16, thanks!
+>=20
+> I split some of the bigger patches apart so they only touched one
+> driver or subsystem at a time.  I also updated to_pci_driver() so it
+> returns NULL when given NULL, which makes some of the validations
+> quite a bit simpler, especially in the PM code in pci-driver.c.
 
-Gr{oetje,eeting}s,
+OK.
 
-                        Geert
+> Full interdiff from this v6 series:
+>=20
+> diff --git a/arch/x86/kernel/probe_roms.c b/arch/x86/kernel/probe_roms.c
+> index deaaef6efe34..36e84d904260 100644
+> --- a/arch/x86/kernel/probe_roms.c
+> +++ b/arch/x86/kernel/probe_roms.c
+> @@ -80,17 +80,15 @@ static struct resource video_rom_resource =3D {
+>   */
+>  static bool match_id(struct pci_dev *pdev, unsigned short vendor, unsign=
+ed short device)
+>  {
+> +	struct pci_driver *drv =3D to_pci_driver(pdev->dev.driver);
+>  	const struct pci_device_id *id;
+> =20
+>  	if (pdev->vendor =3D=3D vendor && pdev->device =3D=3D device)
+>  		return true;
+> =20
+> -	if (pdev->dev.driver) {
+> -		struct pci_driver *drv =3D to_pci_driver(pdev->dev.driver);
+> -		for (id =3D drv->id_table; id && id->vendor; id++)
+> -			if (id->vendor =3D=3D vendor && id->device =3D=3D device)
+> -				break;
+> -	}
+> +	for (id =3D drv ? drv->id_table : NULL; id && id->vendor; id++)
+> +		if (id->vendor =3D=3D vendor && id->device =3D=3D device)
+> +			break;
+> =20
+>  	return id && id->vendor;
+>  }
+> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+> index d997c9c3ebb5..7eb3706cf42d 100644
+> --- a/drivers/misc/cxl/guest.c
+> +++ b/drivers/misc/cxl/guest.c
+> @@ -20,38 +20,38 @@ static void pci_error_handlers(struct cxl_afu *afu,
+>  				pci_channel_state_t state)
+>  {
+>  	struct pci_dev *afu_dev;
+> +	struct pci_driver *afu_drv;
+> +	struct pci_error_handlers *err_handler;
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+These two could be moved into the for loop (where afu_drv was with my
+patch already). This is also possible in a few other drivers.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--jgo3ssjhgqy54b4n
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmFmng8ACgkQwfwUeK3K
+7AmPuQgAk6Dld3vvwdriW0ibspNDJTGfUcre3doNKax+JiXCiHbUthkO3jZ7kx1f
+rTKn9F/GlIOEH1uZZZPonJEaOLwVQmJz3OF8+BKCx7g1+0AqtNe2WefCf4Jl6ajR
+fuBtbNjjaCmBXFqToERlpAsB8kRfNy8Y5V7a/XqiX7ZDLiXle3V2AbuQVi5Ikmhp
+S72E0TV74YTVv77LeVSAA8275wN0GVI3gVT9F7w9ja0BjrapAALEVsk/s9pAl3Zq
+j9D63evuObSQ8ILnNmMOldPueBNZBIGCrXPD/EWKYWXjfstcmZUQtQqvyF6lK9ww
+AubKoQZ72JnZiuJZzVyJCsmBBRo2Vw==
+=Gp6y
+-----END PGP SIGNATURE-----
+
+--jgo3ssjhgqy54b4n--
