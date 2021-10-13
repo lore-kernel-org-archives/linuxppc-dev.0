@@ -2,78 +2,77 @@ Return-Path: <SRS0=X2ql=PB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D0DAC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 07:01:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FC81C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 07:02:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 990A2610E5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 07:01:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 990A2610E5
+	by mail.kernel.org (Postfix) with ESMTPS id BA10160ED4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 07:02:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BA10160ED4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HTk3W0VzGz306D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 18:01:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HTk4L1x4qz3c8w
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 18:02:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=ZW1dzqTr;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=MiMmWBnV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::102c;
- helo=mail-pj1-x102c.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::533;
+ helo=mail-pg1-x533.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=ZW1dzqTr; dkim-atps=neutral
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com
- [IPv6:2607:f8b0:4864:20::102c])
+ header.s=google header.b=MiMmWBnV; dkim-atps=neutral
+Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com
+ [IPv6:2607:f8b0:4864:20::533])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HTk2j74Jbz3cCY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 18:01:01 +1100 (AEDT)
-Received: by mail-pj1-x102c.google.com with SMTP id np13so1440205pjb.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 00:01:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HTk3h2rQhz2yNL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 18:01:52 +1100 (AEDT)
+Received: by mail-pg1-x533.google.com with SMTP id f5so1392629pgc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 00:01:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=date:from:to:cc:subject:message-id:references:mime-version
  :content-disposition:in-reply-to;
- bh=InasTA07olrN5RKyUCQ2QLJqu4RTKKj+4k1NAdmmjBE=;
- b=ZW1dzqTr/trhkOlzXVsWQL586M19ht5k71pAxPY8mwIv8HZ5vMO/WakCDu3Hq5RvP2
- S4kwqQ46jwWgJmegTf1B7gmFx7ZY3FN7syR3QnvQaQXNPAkDoJZz1tg9c19yZdRE/ygR
- QKkc9RMEzFZzxIH9XcekZAMGkMKRcOFulbggU=
+ bh=W1TvfEn9hETtgRdpCl58SYxcbENIjjH6xIOozoqUidk=;
+ b=MiMmWBnV7fK/LRulBj97pgznDjd0sTVyvYOHU+wqZXHDzKYsb5IY0/pybu5wCZVeUO
+ 89tP8M8FQFXw1CVUA6arONHwFzF7aXl/UqXncJs22D99krNezbXxMuuF6TpDeG+DvXC3
+ wMyDgBXJxJzBcQsvICTBtJ/TWHtit/X5eqtpY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:in-reply-to;
- bh=InasTA07olrN5RKyUCQ2QLJqu4RTKKj+4k1NAdmmjBE=;
- b=FYYgQ1ZPzsTYIopeDANIDV60vD4tPxBzjeyjt0XAhKxC3yx+jwNP1OqaHacAKgfkyD
- MgGxauyXpW8qcx3chTTL4F9vZG6vwhv1PTId7U0KKmYEWFest88kllMl6J76+ve5EKwy
- EwFAHM7KDZYyYTHkVD4AE7lFDwJZnvDaKJaM/KieB8+qTHREgX/knyRfOOCtesPmnsI8
- l53RPN4NYdIrV8B1sCpA8/IbeYzPrU130MV943C9TZU3jKfoFBtaW8TOpUMrtW1S1wOD
- lls8ZqpIiLKHDoH1GD0XglFmOuPYZTPRD3FU05NVJZU4rqFqSCWAg4gH5PuoIAXVnDRW
- hOvw==
-X-Gm-Message-State: AOAM531qVhtPzNnR8+OTZt9kyYjycDqzCgwPz3skPLGBQC7ZJL3+ooA9
- nGhugM31zg3fbhp11WyNxYlsww==
-X-Google-Smtp-Source: ABdhPJy2g6jssV8McfoxTEnq7XQUmrF0dkkPaUlbhWhS4b/L/PDtLrRFbojWVXZaR7ZIvk9TuZJ6mw==
-X-Received: by 2002:a17:90a:5d11:: with SMTP id
- s17mr11474193pji.230.1634108459798; 
- Wed, 13 Oct 2021 00:00:59 -0700 (PDT)
+ bh=W1TvfEn9hETtgRdpCl58SYxcbENIjjH6xIOozoqUidk=;
+ b=ROC3NL0ennwCfcshPHct/u1IQ/5NdZbqaTW2ZkiigoTj5nypWevWKYlWZjrJcOzmCA
+ 4qmFOLmO6VzPtNl3ocIqZ6lZnn5jeJscacRNnBQg+q+DpLsHRp/TvYB0zTat2Kxx4CO7
+ ZhkeYL5fUrUytiw67fpl3sPWU/Mvmf89HouOnoQ8lSxDIc+tRy0xU+Yl5ODI2sq4dbyP
+ 2gKYbnVVAHU5a4IcdbwSsKAmarIF+Xmm4GWbQIEm+ZhE7YDwrI58XDeNmtt7WRyhEXQu
+ wjwHcNwGVMeuyxiQHQD2/+l2XLilVESIybwA9rWhCgE7+kkH7oJ1zklqJY9qUlgZlA8+
+ UojQ==
+X-Gm-Message-State: AOAM53367232SWjCsktoUypRlkMx6XOBDhpAvMBMUGSFKQL5G8YaEi04
+ OslWS5QyDjIHHb9AR/xlNMvZYg==
+X-Google-Smtp-Source: ABdhPJwyFLjw/2mnoLszmWzrHimaUwUUOJtR4rLgtHIulRE2XeazTIf6D+X27fVIGJT33rf3Ee5ReA==
+X-Received: by 2002:a63:9a12:: with SMTP id o18mr17842269pge.419.1634108509519; 
+ Wed, 13 Oct 2021 00:01:49 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id m22sm13288608pfo.176.2021.10.13.00.00.59
+ by smtp.gmail.com with ESMTPSA id a67sm12924857pfa.128.2021.10.13.00.01.49
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 13 Oct 2021 00:00:59 -0700 (PDT)
-Date: Wed, 13 Oct 2021 00:00:58 -0700
+ Wed, 13 Oct 2021 00:01:49 -0700 (PDT)
+Date: Wed, 13 Oct 2021 00:01:48 -0700
 From: Kees Cook <keescook@chromium.org>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v1 04/10] asm-generic: Use
- HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR to define associated stubs
-Message-ID: <202110122359.E59B90A@keescook>
+Subject: Re: [PATCH v1 05/10] asm-generic: Define 'funct_descr_t' to commonly
+ describe function descriptors
+Message-ID: <202110130001.11A50456@keescook>
 References: <cover.1633964380.git.christophe.leroy@csgroup.eu>
- <8db2a3ca2b26a8325c671baa3e0492914597f079.1633964380.git.christophe.leroy@csgroup.eu>
+ <02224551451ab9c37055499fc621c41246c81125.1633964380.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8db2a3ca2b26a8325c671baa3e0492914597f079.1633964380.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <02224551451ab9c37055499fc621c41246c81125.1633964380.git.christophe.leroy@csgroup.eu>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,16 +95,82 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 11, 2021 at 05:25:31PM +0200, Christophe Leroy wrote:
-> Use HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR instead of 'dereference_function_descriptor'
-> to know whether arch has function descriptors.
+On Mon, Oct 11, 2021 at 05:25:32PM +0200, Christophe Leroy wrote:
+> We have three architectures using function descriptors, each with its
+> own name.
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Add a common typedef that can be used in generic code.
+> 
+> Also add a stub typedef for architecture without function descriptors,
 
-I'd mention the intentionally-empty #if/#else in the commit log, as I,
-like Helge, mentally tripped over it in the review. :)
+nit: funct_descr_t reads weird to me. why not func_desc_t ? Either way:
 
 Reviewed-by: Kees Cook <keescook@chromium.org>
+
+
+> to avoid a forest of #ifdefs.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  arch/ia64/include/asm/sections.h    | 1 +
+>  arch/parisc/include/asm/sections.h  | 1 +
+>  arch/powerpc/include/asm/sections.h | 1 +
+>  include/asm-generic/sections.h      | 3 +++
+>  4 files changed, 6 insertions(+)
+> 
+> diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
+> index 80f5868afb06..929b5c535620 100644
+> --- a/arch/ia64/include/asm/sections.h
+> +++ b/arch/ia64/include/asm/sections.h
+> @@ -8,6 +8,7 @@
+>   */
+>  
+>  #define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+> +typedef struct fdesc funct_descr_t;
+>  
+>  #include <linux/elf.h>
+>  #include <linux/uaccess.h>
+> diff --git a/arch/parisc/include/asm/sections.h b/arch/parisc/include/asm/sections.h
+> index 2e781ee19b66..329e80f7af0a 100644
+> --- a/arch/parisc/include/asm/sections.h
+> +++ b/arch/parisc/include/asm/sections.h
+> @@ -4,6 +4,7 @@
+>  
+>  #ifdef CONFIG_64BIT
+>  #define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+> +typedef Elf64_Fdesc funct_descr_t;
+>  #endif
+>  
+>  /* nothing to see, move along */
+> diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+> index b7f1ba04e756..d0d5287fa568 100644
+> --- a/arch/powerpc/include/asm/sections.h
+> +++ b/arch/powerpc/include/asm/sections.h
+> @@ -10,6 +10,7 @@
+>  
+>  #ifdef PPC64_ELF_ABI_v1
+>  #define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+> +typedef struct ppc64_opd_entry funct_descr_t;
+>  #endif
+>  
+>  #include <asm-generic/sections.h>
+> diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+> index 1db5cfd69817..436412d94054 100644
+> --- a/include/asm-generic/sections.h
+> +++ b/include/asm-generic/sections.h
+> @@ -63,6 +63,9 @@ extern __visible const void __nosave_begin, __nosave_end;
+>  #else
+>  #define dereference_function_descriptor(p) ((void *)(p))
+>  #define dereference_kernel_function_descriptor(p) ((void *)(p))
+> +typedef struct {
+> +	unsigned long addr;
+> +} funct_descr_t;
+>  #endif
+>  
+>  /* random extra sections (if any).  Override
+> -- 
+> 2.31.1
+> 
 
 -- 
 Kees Cook
