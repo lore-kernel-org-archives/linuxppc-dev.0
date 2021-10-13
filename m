@@ -2,78 +2,104 @@ Return-Path: <SRS0=X2ql=PB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 102EAC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 09:33:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BEB9C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 10:17:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C94A600CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 09:33:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6C94A600CD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id E517860F21
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 10:17:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E517860F21
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HTnR10kS3z3cC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 20:33:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HTpP127Kwz3bXc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 21:17:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=evc4kDT+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OtS+X/2w;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::535;
- helo=mail-ed1-x535.google.com; envelope-from=andy.shevchenko@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=evc4kDT+; dkim-atps=neutral
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com
- [IPv6:2a00:1450:4864:20::535])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=OtS+X/2w; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HTnHf3vSfz2ymP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 20:27:24 +1100 (AEDT)
-Received: by mail-ed1-x535.google.com with SMTP id z20so7341548edc.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 02:27:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=+/MfPZS60YJ0eap0AJdMs6gge+XO+BZUvon0pBTzNGA=;
- b=evc4kDT+QZNhO898nkNWsOvYd5uoHISP2WxjXfUrXPc/LAvzY9eu3qYsrzHLMiVRP3
- 7ek8KrGpW83pP3+71f6NoTqJUNew57wgLSdZESolUuO3w3SjswV4oNuZrRCsx5d2Sz6Z
- U6Dil/exw/Z01VwoZLKDTI9+cXYT6HoMhvbPnOyg97B0PkHUENz49VLf5qJ3twBM3fy6
- bHXGjIYLA3Q6jVCBIp04R0UFvkX24frr6ijNGP3vuZmaos7c/PDqm98vd8l9QZ2VLZ00
- 0EBJxe8ZaQK4AqNo/Rk1lDSww7yrEMjrcnUEwQvCtD2OBAhLhOYcZrSIMXdkiq7GrIG/
- lN/g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=+/MfPZS60YJ0eap0AJdMs6gge+XO+BZUvon0pBTzNGA=;
- b=CAovqLFK/ssD81qSwUimhm4cOKNOkBZdIzsM/XaeBtCSswn88C4kepfJB9mVG5dfSb
- MDXGfudtFhhjoiquHVEF1JYzuivLk2mq0WB4QSy8/mr0/G5nUwmWs5BLCBWbylCwCzE4
- /ZCZTR2mSOAKI49rkOmwad8Qik7FiWFTM+aur6cMeSfHAOe1pJDj+Nudk/oR4EcDaWt3
- QtYe8c2D6BAXQ50nkB5EpeF+g/10L5Q10hPF+oBsVxbuKeaFeHdK1IbsBqoOzwQdIeq9
- ISMBMDYoUaPY5EIVtwVEomBPbXCNoUlJf85cTroRIYNu0mGyWqOd2CD4xefN1IC+/MY/
- HHSw==
-X-Gm-Message-State: AOAM532kDt/b+bLVuw2THUZxcy2w+Hi+d+M76SLGrlixOTya3tfUS77s
- FmMZq5oVytoLbfpe6pj8sjI6xZcZcvshqa1MfgY=
-X-Google-Smtp-Source: ABdhPJzL0SqFZyZBLTfBNcE8CpMsywyY4boERpEcXyUfc9yUq7Z2mLOKk/hnon0PQ/WXXVk02NgEbEHqrWvW2H64g2s=
-X-Received: by 2002:a17:907:7601:: with SMTP id
- jx1mr40092015ejc.69.1634117238956; 
- Wed, 13 Oct 2021 02:27:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HTpN622r5z2yNQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 21:16:21 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 19DAArcs021580; 
+ Wed, 13 Oct 2021 06:15:45 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=z2tQ+mWwWACtmx/l9uuunVaTh/+pU7Z8rwc0mPpXfKU=;
+ b=OtS+X/2w7KD7cCMmTUquol+ikNsrAfDjyR2yVeBO9fje77dX6ok6GVwJRuSc8+QTpENh
+ cYy/jL+lPG9QzI8ZNcBlLM67uCJHXiD4a2EsWn3N/kH4WrLA1bggWmd85Y1mdf5tRo00
+ AJegUrgo/3f0lsnAJ/rIHVrfB9JD4hXWuZ7j4bKTW/8g4Jkwtd49NwUuJPVgeXr6M/rE
+ +rQYbVtSEHS/NwRZKD2AE8NKBHBCFg8NsBc5OFTxKzDoEvMko7wUibeF8gJjsCzZTKQS
+ Qf6Jo+oVHcyTLgy//m5pBDiQ/foes3V9qdymnojG8xvRfYsR5Cw8V82Sq2RCzIS6A7Gp rA== 
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3bnr79ev4j-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 13 Oct 2021 06:15:45 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 19DA7xxw012393;
+ Wed, 13 Oct 2021 10:15:42 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma06ams.nl.ibm.com with ESMTP id 3bk2bjhp30-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 13 Oct 2021 10:15:42 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 19DAFU2460031438
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 13 Oct 2021 10:15:30 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0F1EA42061;
+ Wed, 13 Oct 2021 10:15:30 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 452364204F;
+ Wed, 13 Oct 2021 10:15:19 +0000 (GMT)
+Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com (unknown
+ [9.43.58.186]) by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 13 Oct 2021 10:15:18 +0000 (GMT)
+Subject: Re: [PATCH v5 0/4] Add perf interface to expose nvdimm
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, nvdimm@lists.linux.dev, 
+ linux-kernel@vger.kernel.org, peterz@infradead.org,
+ dan.j.williams@intel.com, ira.weiny@intel.com, vishal.l.verma@intel.com
+References: <20210928124200.146331-1-kjain@linux.ibm.com>
+From: kajoljain <kjain@linux.ibm.com>
+Message-ID: <b54072ad-4d71-ff6d-7c63-0c1395e1d8f8@linux.ibm.com>
+Date: Wed, 13 Oct 2021 15:45:15 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.14.0
+In-Reply-To: <20210928124200.146331-1-kjain@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: lZK93NSGcp_ji9b4QDMhQ68IFa4Zh-Jb
+X-Proofpoint-ORIG-GUID: lZK93NSGcp_ji9b4QDMhQ68IFa4Zh-Jb
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-References: <20211004125935.2300113-1-u.kleine-koenig@pengutronix.de>
- <20211012233212.GA1806189@bhelgaas>
-In-Reply-To: <20211012233212.GA1806189@bhelgaas>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 13 Oct 2021 12:26:42 +0300
-Message-ID: <CAHp75Vd0uYEdfB0XaQuUV34V91qJdHR5ARku1hX_TCJLJHEjxQ@mail.gmail.com>
-Subject: Re: [PATCH v6 00/11] PCI: Drop duplicated tracking of a pci_dev's
- bound driver
-To: Bjorn Helgaas <helgaas@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Wed, 13 Oct 2021 20:30:31 +1100
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
+ definitions=2021-10-13_03,2021-10-13_01,2020-04-07_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015
+ lowpriorityscore=0 mlxlogscore=999 malwarescore=0 adultscore=0
+ suspectscore=0 bulkscore=0 spamscore=0 phishscore=0 mlxscore=0
+ priorityscore=1501 impostorscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2109230001 definitions=main-2110130068
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,228 +111,139 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
- Mark Rutland <mark.rutland@arm.com>,
- Sathya Prakash <sathya.prakash@broadcom.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Alexander Duyck <alexanderduyck@fb.com>,
- "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
- qat-linux@intel.com, oss-drivers@corigine.com,
- Oliver O'Halloran <oohall@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Jiri Olsa <jolsa@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- Marco Chiappero <marco.chiappero@intel.com>,
- Stefano Stabellini <sstabellini@kernel.org>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- linux-scsi <linux-scsi@vger.kernel.org>,
- =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- linux-pci <linux-pci@vger.kernel.org>,
- "open list:TI WILINK WIRELES..." <linux-wireless@vger.kernel.org>,
- Jakub Kicinski <kuba@kernel.org>, Yisen Zhuang <yisen.zhuang@huawei.com>,
- Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
- Fiona Trahe <fiona.trahe@intel.com>, Andrew Donnellan <ajd@linux.ibm.com>,
- Arnd Bergmann <arnd@arndb.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Ido Schimmel <idosch@nvidia.com>,
- =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- Simon Horman <simon.horman@corigine.com>,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Jack Xu <jack.xu@intel.com>, Borislav Petkov <bp@alien8.de>,
- Michael Buesch <m@bues.ch>, Jiri Pirko <jiri@nvidia.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Namhyung Kim <namhyung@kernel.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Juergen Gross <jgross@suse.com>, Salil Mehta <salil.mehta@huawei.com>,
- Sreekanth Reddy <sreekanth.reddy@broadcom.com>, xen-devel@lists.xenproject.org,
- Vadym Kochan <vkochan@marvell.com>, MPT-FusionLinux.pdl@broadcom.com,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- USB <linux-usb@vger.kernel.org>, Wojciech Ziemba <wojciech.ziemba@intel.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Mathias Nyman <mathias.nyman@intel.com>, Zhou Wang <wangzhou1@hisilicon.com>,
- linux-crypto <linux-crypto@vger.kernel.org>,
- Sascha Hauer <kernel@pengutronix.de>, netdev <netdev@vger.kernel.org>,
- Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Tomaszx Kowalik <tomaszx.kowalik@intel.com>,
- Taras Chornyi <tchornyi@marvell.com>, "David S. Miller" <davem@davemloft.net>,
- linux-perf-users@vger.kernel.org
+Cc: santosh@fossix.org, maddy@linux.ibm.com, rnsastry@linux.ibm.com,
+ aneesh.kumar@linux.ibm.com, atrajeev@linux.vnet.ibm.com, vaibhav@linux.ibm.com,
+ tglx@linutronix.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 13, 2021 at 2:33 AM Bjorn Helgaas <helgaas@kernel.org> wrote:
-> On Mon, Oct 04, 2021 at 02:59:24PM +0200, Uwe Kleine-K=C3=B6nig wrote:
+Hi Dan,
+   Any comments on this patch-set?
 
-> I split some of the bigger patches apart so they only touched one
-> driver or subsystem at a time.  I also updated to_pci_driver() so it
-> returns NULL when given NULL, which makes some of the validations
-> quite a bit simpler, especially in the PM code in pci-driver.c.
+Thanks,
+Kajol Jain
 
-It's a bit unusual. Other to_*_dev() are not NULL-aware IIRC.
-
-Below are some comments as well.
-
-...
-
->  static bool match_id(struct pci_dev *pdev, unsigned short vendor, unsign=
-ed short device)
->  {
-> +       struct pci_driver *drv =3D to_pci_driver(pdev->dev.driver);
->         const struct pci_device_id *id;
->
->         if (pdev->vendor =3D=3D vendor && pdev->device =3D=3D device)
->                 return true;
-
-> +       for (id =3D drv ? drv->id_table : NULL; id && id->vendor; id++)
-> +               if (id->vendor =3D=3D vendor && id->device =3D=3D device)
-
-> +                       break;
-
-return true;
-
->         return id && id->vendor;
-
-return false;
-
->  }
-
-...
-
-> +                       afu_result =3D err_handler->error_detected(afu_de=
-v,
-> +                                                                state);
-
-One line?
-
-...
-
->         device_lock(&vf_dev->dev);
-> -       if (vf_dev->dev.driver) {
-> +       if (to_pci_driver(vf_dev->dev.driver)) {
-
-Hmm...
-
-...
-
-> +               if (!pci_dev->state_saved && pci_dev->current_state !=3D =
-PCI_D0
-
-> +                   && pci_dev->current_state !=3D PCI_UNKNOWN) {
-
-Can we keep && on the previous line?
-
-> +                       pci_WARN_ONCE(pci_dev, pci_dev->current_state !=
-=3D prev,
-> +                                     "PCI PM: Device state not saved by =
-%pS\n",
-> +                                     drv->suspend);
->                 }
-
-...
-
-> +       return drv && drv->resume ?
-> +                       drv->resume(pci_dev) : pci_pm_reenable_device(pci=
-_dev);
-
-One line?
-
-...
-
-> +       struct pci_driver *drv =3D to_pci_driver(dev->dev.driver);
->         const struct pci_error_handlers *err_handler =3D
-> -                       dev->dev.driver ? to_pci_driver(dev->dev.driver)-=
->err_handler : NULL;
-> +                       drv ? drv->err_handler : NULL;
-
-Isn't dev->driver =3D=3D to_pci_driver(dev->dev.driver)?
-
-...
-
-> +       struct pci_driver *drv =3D to_pci_driver(dev->dev.driver);
->         const struct pci_error_handlers *err_handler =3D
-> -                       dev->dev.driver ? to_pci_driver(dev->dev.driver)-=
->err_handler : NULL;
-> +                       drv ? drv->err_handler : NULL;
-
-Ditto.
-
-...
-
->         device_lock(&dev->dev);
-> +       pdrv =3D to_pci_driver(dev->dev.driver);
->         if (!pci_dev_set_io_state(dev, state) ||
-> -               !dev->dev.driver ||
-> -               !(pdrv =3D to_pci_driver(dev->dev.driver))->err_handler |=
-|
-
-> +               !pdrv ||
-> +               !pdrv->err_handler ||
-
-One line now?
-
->                 !pdrv->err_handler->error_detected) {
-
-Or this and the previous line?
-
-...
-
-> +       pdrv =3D to_pci_driver(dev->dev.driver);
-> +       if (!pdrv ||
-> +               !pdrv->err_handler ||
->                 !pdrv->err_handler->mmio_enabled)
->                 goto out;
-
-Ditto.
-
-...
-
-> +       pdrv =3D to_pci_driver(dev->dev.driver);
-> +       if (!pdrv ||
-> +               !pdrv->err_handler ||
->                 !pdrv->err_handler->slot_reset)
->                 goto out;
-
-Ditto.
-
-...
-
->         if (!pci_dev_set_io_state(dev, pci_channel_io_normal) ||
-> -               !dev->dev.driver ||
-> -               !(pdrv =3D to_pci_driver(dev->dev.driver))->err_handler |=
-|
-> +               !pdrv ||
-> +               !pdrv->err_handler ||
->                 !pdrv->err_handler->resume)
->                 goto out;
-
-Ditto.
-
-> -       result =3D PCI_ERS_RESULT_NONE;
->
->         pcidev =3D pci_get_domain_bus_and_slot(domain, bus, devfn);
->         if (!pcidev || !pcidev->dev.driver) {
->                 dev_err(&pdev->xdev->dev, "device or AER driver is NULL\n=
-");
->                 pci_dev_put(pcidev);
-> -               return result;
-> +               return PCI_ERS_RESULT_NONE;
->         }
->         pdrv =3D to_pci_driver(pcidev->dev.driver);
-
-What about splitting the conditional to two with clear error message
-in each and use pci_err() in the second one?
-
-...
-
->                 default:
->                         dev_err(&pdev->xdev->dev,
-> -                               "bad request in aer recovery "
-> -                               "operation!\n");
-> +                               "bad request in AER recovery operation!\n=
-");
-
-Stray change? Or is it in a separate patch in your tree?
-
---=20
-With Best Regards,
-Andy Shevchenko
+On 9/28/21 6:11 PM, Kajol Jain wrote:
+> Patchset adds performance stats reporting support for nvdimm.
+> Added interface includes support for pmu register/unregister
+> functions. A structure is added called nvdimm_pmu to be used for
+> adding arch/platform specific data such as cpumask, nvdimm device
+> pointer and pmu event functions like event_init/add/read/del.
+> User could use the standard perf tool to access perf events
+> exposed via pmu.
+> 
+> Interface also defines supported event list, config fields for the
+> event attributes and their corresponding bit values which are exported
+> via sysfs. Patch 3 exposes IBM pseries platform nmem* device
+> performance stats using this interface.
+> 
+> Result from power9 pseries lpar with 2 nvdimm device:
+> 
+> Ex: List all event by perf list
+> 
+> command:# perf list nmem
+> 
+>   nmem0/cache_rh_cnt/                                [Kernel PMU event]
+>   nmem0/cache_wh_cnt/                                [Kernel PMU event]
+>   nmem0/cri_res_util/                                [Kernel PMU event]
+>   nmem0/ctl_res_cnt/                                 [Kernel PMU event]
+>   nmem0/ctl_res_tm/                                  [Kernel PMU event]
+>   nmem0/fast_w_cnt/                                  [Kernel PMU event]
+>   nmem0/host_l_cnt/                                  [Kernel PMU event]
+>   nmem0/host_l_dur/                                  [Kernel PMU event]
+>   nmem0/host_s_cnt/                                  [Kernel PMU event]
+>   nmem0/host_s_dur/                                  [Kernel PMU event]
+>   nmem0/med_r_cnt/                                   [Kernel PMU event]
+>   nmem0/med_r_dur/                                   [Kernel PMU event]
+>   nmem0/med_w_cnt/                                   [Kernel PMU event]
+>   nmem0/med_w_dur/                                   [Kernel PMU event]
+>   nmem0/mem_life/                                    [Kernel PMU event]
+>   nmem0/poweron_secs/                                [Kernel PMU event]
+>   ...
+>   nmem1/mem_life/                                    [Kernel PMU event]
+>   nmem1/poweron_secs/                                [Kernel PMU event]
+> 
+> Patch1:
+>         Introduces the nvdimm_pmu structure
+> Patch2:
+>         Adds common interface to add arch/platform specific data
+>         includes nvdimm device pointer, pmu data along with
+>         pmu event functions. It also defines supported event list
+>         and adds attribute groups for format, events and cpumask.
+>         It also adds code for cpu hotplug support.
+> Patch3:
+>         Add code in arch/powerpc/platform/pseries/papr_scm.c to expose
+>         nmem* pmu. It fills in the nvdimm_pmu structure with pmu name,
+>         capabilities, cpumask and event functions and then registers
+>         the pmu by adding callbacks to register_nvdimm_pmu.
+> Patch4:
+>         Sysfs documentation patch
+> 
+> Changelog
+> ---
+> v4 -> v5:
+> - Remove multiple variables defined in nvdimm_pmu structure include
+>   name and pmu functions(event_int/add/del/read) as they are just
+>   used to copy them again in pmu variable. Now we are directly doing
+>   this step in arch specific code as suggested by Dan Williams.
+> 
+> - Remove attribute group field from nvdimm pmu structure and
+>   defined these attribute groups in common interface which
+>   includes format, event list along with cpumask as suggested by
+>   Dan Williams.
+>   Since we added static defination for attrbute groups needed in
+>   common interface, removes corresponding code from papr.
+> 
+> - Add nvdimm pmu event list with event codes in the common interface.
+> 
+> - Remove Acked-by/Reviewed-by/Tested-by tags as code is refactored
+>   to handle review comments from Dan.
+> 
+> - Make nvdimm_pmu_free_hotplug_memory function static as reported
+>   by kernel test robot, also add corresponding Reported-by tag.
+> 
+> - Link to the patchset v4: https://lkml.org/lkml/2021/9/3/45
+> 
+> v3 -> v4
+> - Rebase code on top of current papr_scm code without any logical
+>   changes.
+> 
+> - Added Acked-by tag from Peter Zijlstra and Reviewed by tag
+>   from Madhavan Srinivasan.
+> 
+> - Link to the patchset v3: https://lkml.org/lkml/2021/6/17/605
+> 
+> v2 -> v3
+> - Added Tested-by tag.
+> 
+> - Fix nvdimm mailing list in the ABI Documentation.
+> 
+> - Link to the patchset v2: https://lkml.org/lkml/2021/6/14/25
+> 
+> v1 -> v2
+> - Fix hotplug code by adding pmu migration call
+>   incase current designated cpu got offline. As
+>   pointed by Peter Zijlstra.
+> 
+> - Removed the retun -1 part from cpu hotplug offline
+>   function.
+> 
+> - Link to the patchset v1: https://lkml.org/lkml/2021/6/8/500
+> 
+> Kajol Jain (4):
+>   drivers/nvdimm: Add nvdimm pmu structure
+>   drivers/nvdimm: Add perf interface to expose nvdimm performance stats
+>   powerpc/papr_scm: Add perf interface support
+>   docs: ABI: sysfs-bus-nvdimm: Document sysfs event format entries for
+>     nvdimm pmu
+> 
+>  Documentation/ABI/testing/sysfs-bus-nvdimm |  35 +++
+>  arch/powerpc/include/asm/device.h          |   5 +
+>  arch/powerpc/platforms/pseries/papr_scm.c  | 225 ++++++++++++++
+>  drivers/nvdimm/Makefile                    |   1 +
+>  drivers/nvdimm/nd_perf.c                   | 328 +++++++++++++++++++++
+>  include/linux/nd.h                         |  41 +++
+>  6 files changed, 635 insertions(+)
+>  create mode 100644 drivers/nvdimm/nd_perf.c
+> 
