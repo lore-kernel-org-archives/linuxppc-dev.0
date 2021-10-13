@@ -2,21 +2,21 @@ Return-Path: <SRS0=X2ql=PB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6727C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:13:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15547C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:13:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1788A61130
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:13:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1788A61130
+	by mail.kernel.org (Postfix) with ESMTPS id 65D5861130
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:13:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 65D5861130
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=denx.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HV6HF3vrBz2yPP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 09:13:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HV6Hx6QGFz3c91
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 09:13:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256 header.s=phobos-20191101 header.b=hjLfWaUh;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256 header.s=phobos-20191101 header.b=Ker72RLk;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=denx.de
@@ -24,42 +24,38 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=agust@denx.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256
- header.s=phobos-20191101 header.b=hjLfWaUh; 
+ header.s=phobos-20191101 header.b=Ker72RLk; 
  dkim-atps=neutral
-X-Greylist: delayed 407 seconds by postgrey-1.36 at boromir;
- Thu, 14 Oct 2021 09:12:32 AEDT
 Received: from phobos.denx.de (phobos.denx.de
  [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HV6GS3PLbz2yP0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 09:12:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HV6GT1dwVz2yPG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 09:12:33 +1100 (AEDT)
 Received: from crub.agik.hopto.org (pd95f1d7c.dip0.t-ipconnect.de
  [217.95.29.124])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
  (Authenticated sender: agust@denx.de)
- by phobos.denx.de (Postfix) with ESMTPSA id 43B3283612;
- Thu, 14 Oct 2021 00:05:34 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPSA id A991D835F5;
+ Thu, 14 Oct 2021 00:05:32 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
- s=phobos-20191101; t=1634162734;
- bh=urliHNW43HlnOTWcyGDh78CSVRs4kDbRslzJnUMNtfo=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=hjLfWaUhvPOdfEymbTsEbKVqyRnWBVMak2dhRLoYKfRcv/uaNnbeODLt9PA6Y6/Ve
- BGpPADoFpY78Nir2OBmFPpnqnOmMYwjsQXiHEZBT/W9fV1D+IbLjnDKB6b+/9EGV8V
- aC23keOnEQmpblR/eSPw+PLXGeFsGUtadakbj73S4Pw6w/oULN53akSFDrS1h9FbkW
- E61xzTTNykq/3kzPKn7EGQLdX7eqbbsb0EERcQiaUoJ0DahytBug+qI0mPGheedTQP
- sX2dRInwBee/hYeZqW0b4afbOhNJ/8t7cu7zCZswUtXuKOIuxx563QU2wZuWTi/tiy
- 3k4Cx20k6XFMw==
+ s=phobos-20191101; t=1634162733;
+ bh=6nMPFPuHyhN5ls8iUQT3OcQ653qjKPBIRYt3/m7YKaA=;
+ h=From:To:Cc:Subject:Date:From;
+ b=Ker72RLk8hNyrRSai7W0AWAcX/HaNGc+z8B79ZUl7/IumYS1OEitXv4mJuVnSDy0X
+ C1afdiVchnRha75SBPOspZdh/O68e8ace0uj3KWl2aNAffQGtSlzSpGtXENXmPp3Ym
+ bZy1inQMOEw4Sh1yhfYhZJr6OGV8A5jR02sJAsgUHBPj3X9DSPPId5Tdi+m1d6Q/Wr
+ O8ChaXQFpA5/QzJXFrsGt9LrirvBbJoMCpdzIsyhz+m/Xh9HmAUfDPLq3MLHIpPxZ4
+ /hvDcnzRUY7sQF5s7dZCge/YHDhmbtjAmCEnV65wfrWwsGfehUrEIdi8gvawigtEmH
+ Sn7+SBHFKU/sA==
 From: Anatolij Gustschin <agust@denx.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/4] powerpc/5200: dts: fix pci ranges warnings
-Date: Thu, 14 Oct 2021 00:05:30 +0200
-Message-Id: <20211013220532.24759-3-agust@denx.de>
+Subject: [PATCH 0/4] Update mpc5200 dts files to fix warnings
+Date: Thu, 14 Oct 2021 00:05:28 +0200
+Message-Id: <20211013220532.24759-1-agust@denx.de>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20211013220532.24759-1-agust@denx.de>
-References: <20211013220532.24759-1-agust@denx.de>
 X-Virus-Scanned: clamav-milter 0.103.2 at phobos.denx.de
 X-Virus-Status: Clean
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -80,190 +76,40 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix ranges property warnings:
-pci@f0000d00:ranges: 'oneOf' conditional failed, one must be fixed:
+This series fixes localbus, memory and pci node build warnings.
+It was tested with current linux-next on digsy_mtc and tqm5200
+boards.
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
- arch/powerpc/boot/dts/a4m072.dts    | 6 +++---
- arch/powerpc/boot/dts/charon.dts    | 6 +++---
- arch/powerpc/boot/dts/digsy_mtc.dts | 6 +++---
- arch/powerpc/boot/dts/lite5200.dts  | 6 +++---
- arch/powerpc/boot/dts/lite5200b.dts | 6 +++---
- arch/powerpc/boot/dts/media5200.dts | 6 +++---
- arch/powerpc/boot/dts/mucmc52.dts   | 6 +++---
- arch/powerpc/boot/dts/pcm030.dts    | 6 +++---
- arch/powerpc/boot/dts/pcm032.dts    | 6 +++---
- arch/powerpc/boot/dts/tqm5200.dts   | 6 +++---
- 10 files changed, 30 insertions(+), 30 deletions(-)
+Anatolij Gustschin (4):
+  powerpc/5200: dts: add missing pci ranges
+  powerpc/5200: dts: fix pci ranges warnings
+  powerpc/5200: dts: fix memory node unit name
+  powerpc/5200: dts: fix localbus node warnings
 
-diff --git a/arch/powerpc/boot/dts/a4m072.dts b/arch/powerpc/boot/dts/a4m072.dts
-index a9cef5726422..d4270a2ec6c7 100644
---- a/arch/powerpc/boot/dts/a4m072.dts
-+++ b/arch/powerpc/boot/dts/a4m072.dts
-@@ -140,8 +140,8 @@
- 		clock-frequency = <0>; /* From boot loader */
- 		interrupts = <2 8 0 2 9 0 2 10 0>;
- 		bus-range = <0 0>;
--		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
--			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
--			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000>,
-+			 <0x02000000 0 0x90000000 0x90000000 0 0x10000000>,
-+			 <0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
-index 408b486b13df..6f9fe88a5f36 100644
---- a/arch/powerpc/boot/dts/charon.dts
-+++ b/arch/powerpc/boot/dts/charon.dts
-@@ -225,8 +225,8 @@
- 		clock-frequency = <0>; // From boot loader
- 		interrupts = <2 8 0 2 9 0 2 10 0>;
- 		bus-range = <0 0>;
--		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
--			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
--			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000>,
-+			 <0x02000000 0 0x90000000 0x90000000 0 0x10000000>,
-+			 <0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/digsy_mtc.dts b/arch/powerpc/boot/dts/digsy_mtc.dts
-index 0e5e9d3acf79..010156649bfe 100644
---- a/arch/powerpc/boot/dts/digsy_mtc.dts
-+++ b/arch/powerpc/boot/dts/digsy_mtc.dts
-@@ -98,9 +98,9 @@
- 		clock-frequency = <0>; // From boot loader
- 		interrupts = <2 8 0 2 9 0 2 10 0>;
- 		bus-range = <0 0>;
--		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
--			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
--			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000>,
-+			 <0x02000000 0 0x90000000 0x90000000 0 0x10000000>,
-+			 <0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
- 	};
- 
- 	localbus {
-diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
-index cb2782dd6132..84a12e7915e9 100644
---- a/arch/powerpc/boot/dts/lite5200.dts
-+++ b/arch/powerpc/boot/dts/lite5200.dts
-@@ -283,9 +283,9 @@
- 		clock-frequency = <0>; // From boot loader
- 		interrupts = <2 8 0 2 9 0 2 10 0>;
- 		bus-range = <0 0>;
--		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
--			  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
--			  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000>,
-+			 <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000>,
-+			 <0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
- 	};
- 
- 	localbus {
-diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
-index 2b86c81f9048..c361c59a9681 100644
---- a/arch/powerpc/boot/dts/lite5200b.dts
-+++ b/arch/powerpc/boot/dts/lite5200b.dts
-@@ -116,9 +116,9 @@
- 		clock-frequency = <0>; // From boot loader
- 		interrupts = <2 8 0 2 9 0 2 10 0>;
- 		bus-range = <0 0>;
--		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
--			  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
--			  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000>,
-+			 <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000>,
-+			 <0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
- 	};
- 
- 	localbus {
-diff --git a/arch/powerpc/boot/dts/media5200.dts b/arch/powerpc/boot/dts/media5200.dts
-index 61cae9dcddef..f7d7538eb69d 100644
---- a/arch/powerpc/boot/dts/media5200.dts
-+++ b/arch/powerpc/boot/dts/media5200.dts
-@@ -96,9 +96,9 @@
- 
- 				 0xe000 0 0 1 &media5200_fpga 0 5 // CoralIP
- 				>;
--		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
--			  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
--			  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000>,
-+			 <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000>,
-+			 <0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
- 		interrupt-parent = <&mpc5200_pic>;
- 	};
- 
-diff --git a/arch/powerpc/boot/dts/mucmc52.dts b/arch/powerpc/boot/dts/mucmc52.dts
-index c6c66306308d..e88a7bd4034d 100644
---- a/arch/powerpc/boot/dts/mucmc52.dts
-+++ b/arch/powerpc/boot/dts/mucmc52.dts
-@@ -106,9 +106,9 @@
- 				0x8000 0 0 3 &mpc5200_pic 0 2 3
- 				0x8000 0 0 4 &mpc5200_pic 0 1 3
- 				>;
--		ranges = <0x42000000 0 0x60000000 0x60000000 0 0x10000000
--			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
--			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
-+		ranges = <0x42000000 0 0x60000000 0x60000000 0 0x10000000>,
-+			 <0x02000000 0 0x90000000 0x90000000 0 0x10000000>,
-+			 <0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
- 	};
- 
- 	localbus {
-diff --git a/arch/powerpc/boot/dts/pcm030.dts b/arch/powerpc/boot/dts/pcm030.dts
-index b1bc731f7afd..5cee474dcc4c 100644
---- a/arch/powerpc/boot/dts/pcm030.dts
-+++ b/arch/powerpc/boot/dts/pcm030.dts
-@@ -90,9 +90,9 @@
- 				 0xc800 0 0 2 &mpc5200_pic 1 2 3
- 				 0xc800 0 0 3 &mpc5200_pic 1 3 3
- 				 0xc800 0 0 4 &mpc5200_pic 0 0 3>;
--		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
--			  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
--			  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000>,
-+			 <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000>,
-+			 <0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
- 	};
- 
- 	localbus {
-diff --git a/arch/powerpc/boot/dts/pcm032.dts b/arch/powerpc/boot/dts/pcm032.dts
-index 780e13d99e7b..b6fdf861c7d6 100644
---- a/arch/powerpc/boot/dts/pcm032.dts
-+++ b/arch/powerpc/boot/dts/pcm032.dts
-@@ -87,9 +87,9 @@
- 				 0xc800 0 0 2 &mpc5200_pic 1 2 3
- 				 0xc800 0 0 3 &mpc5200_pic 1 3 3
- 				 0xc800 0 0 4 &mpc5200_pic 0 0 3>;
--		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
--			  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
--			  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000>,
-+			 <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000>,
-+			 <0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
- 	};
- 
- 	localbus {
-diff --git a/arch/powerpc/boot/dts/tqm5200.dts b/arch/powerpc/boot/dts/tqm5200.dts
-index 9ed0bc78967e..40b139d92a19 100644
---- a/arch/powerpc/boot/dts/tqm5200.dts
-+++ b/arch/powerpc/boot/dts/tqm5200.dts
-@@ -200,8 +200,8 @@
- 		clock-frequency = <0>; // From boot loader
- 		interrupts = <2 8 0 2 9 0 2 10 0>;
- 		bus-range = <0 0>;
--		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
--			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
--			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000>,
-+			 <0x02000000 0 0x90000000 0x90000000 0 0x10000000>,
-+			 <0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
- 	};
- };
+ arch/powerpc/boot/dts/a3m071.dts    | 12 ++++-----
+ arch/powerpc/boot/dts/a4m072.dts    | 26 ++++++++++----------
+ arch/powerpc/boot/dts/charon.dts    | 22 ++++++++---------
+ arch/powerpc/boot/dts/cm5200.dts    |  7 ++++--
+ arch/powerpc/boot/dts/digsy_mtc.dts | 24 +++++++++---------
+ arch/powerpc/boot/dts/lite5200.dts  | 12 ++++-----
+ arch/powerpc/boot/dts/lite5200b.dts | 14 ++++++-----
+ arch/powerpc/boot/dts/media5200.dts | 28 +++++++++++----------
+ arch/powerpc/boot/dts/motionpro.dts | 32 +++++++++++++-----------
+ arch/powerpc/boot/dts/mpc5200b.dtsi |  8 +++---
+ arch/powerpc/boot/dts/mucmc52.dts   | 38 +++++++++++++++--------------
+ arch/powerpc/boot/dts/o2d.dts       | 12 +++++----
+ arch/powerpc/boot/dts/o2d.dtsi      | 14 ++++++-----
+ arch/powerpc/boot/dts/o2d300.dts    | 10 +++++---
+ arch/powerpc/boot/dts/o2dnt2.dts    | 12 +++++----
+ arch/powerpc/boot/dts/o2i.dts       |  4 +--
+ arch/powerpc/boot/dts/o2mnt.dts     |  4 +--
+ arch/powerpc/boot/dts/o3dnt.dts     | 12 +++++----
+ arch/powerpc/boot/dts/pcm030.dts    |  8 +++---
+ arch/powerpc/boot/dts/pcm032.dts    | 34 ++++++++++++++------------
+ arch/powerpc/boot/dts/tqm5200.dts   | 12 ++++-----
+ arch/powerpc/boot/dts/uc101.dts     | 14 ++++++-----
+ 22 files changed, 195 insertions(+), 164 deletions(-)
+
 -- 
 2.17.1
 
