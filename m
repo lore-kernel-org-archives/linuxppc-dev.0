@@ -2,109 +2,79 @@ Return-Path: <SRS0=X2ql=PB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B25DFC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 09:30:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42F96C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 09:31:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9119861040
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 09:30:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9119861040
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 72B2A61040
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 09:31:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 72B2A61040
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HTnMc6Btcz3bfv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 20:30:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HTnNV5VSqz3bfx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 20:31:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=P4YhDaHJ;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=P4YhDaHJ;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=ZVG9fsei;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=170.10.133.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=lvivier@redhat.com;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::632;
+ helo=mail-pl1-x632.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=P4YhDaHJ; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=P4YhDaHJ; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=ZVG9fsei; dkim-atps=neutral
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com
+ [IPv6:2607:f8b0:4864:20::632])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HTnLr6y64z2yQm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 20:30:11 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1634117406;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=ZjFKZdAkzPM6kA0DElv7KLx9JGj1opCMkKpXv5IVjds=;
- b=P4YhDaHJEuKvp10tgKg3+Kxf8olg4BF6lOGkPG/UOMmsu/Nh+v/iYL/+L6jZ53jzuRqvrQ
- +vSWvHoSbnGaLMNiQD/YIC+AWMXbLgmCYA7HHQp4H6XRdTf9eywRbkF8dm5YAM+qo4WJLj
- XDFn54+buUZ5Pl4MgLTmzasKIuIkslg=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1634117406;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=ZjFKZdAkzPM6kA0DElv7KLx9JGj1opCMkKpXv5IVjds=;
- b=P4YhDaHJEuKvp10tgKg3+Kxf8olg4BF6lOGkPG/UOMmsu/Nh+v/iYL/+L6jZ53jzuRqvrQ
- +vSWvHoSbnGaLMNiQD/YIC+AWMXbLgmCYA7HHQp4H6XRdTf9eywRbkF8dm5YAM+qo4WJLj
- XDFn54+buUZ5Pl4MgLTmzasKIuIkslg=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-340-YOt3-vc3Pw66f8R8i79afg-1; Wed, 13 Oct 2021 05:30:04 -0400
-X-MC-Unique: YOt3-vc3Pw66f8R8i79afg-1
-Received: by mail-wr1-f72.google.com with SMTP id
- 75-20020adf82d1000000b00160cbb0f800so1454396wrc.22
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 02:30:03 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HTjjG44scz2xtv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 17:45:52 +1100 (AEDT)
+Received: by mail-pl1-x632.google.com with SMTP id g9so1117544plo.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Oct 2021 23:45:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=w0j2Ihdi/0685L8FT6WteZp6O1hKULY2lNZfHOgIHSc=;
+ b=ZVG9fseiMJi5y7uNc0U//uB9qmTc4gJH0ueiRXhntI+xclAF1mY0ZabBN0HENHjmuQ
+ Wd2tZE7h7XcVk1DbOBPcKKRzFh73LE1iY97UMVdM/LDFC8CDxtoZ3SUXBlDw8iyhvu6V
+ muglMpS8KRkUeK+EwwJZIYurw/HXNEkgWVJds=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
- :content-language:to:cc:references:from:in-reply-to
- :content-transfer-encoding;
- bh=ZjFKZdAkzPM6kA0DElv7KLx9JGj1opCMkKpXv5IVjds=;
- b=Yb9ASjXnYE1U3cqH6VzK8m1f3Ip5QSwOPQyDVrWbXGMIelIjgMvzh/rIcoh9hH9Sas
- +n/ax3ivgwWxlmnMpE+psTlFIcjCPciVqmTzb3LplFfm76UFrlOcDLojF26q6sC4nI4c
- HjZUkRl1vEM5adLbzB/Oi+deD1Nz7MRF+jaktEsKNC0ZoWAu1Gac//DrnHsTfBfYRYDx
- sGabYjkOKDE0ZySgJym2SIjxziiRXOjCf0lYJ7rO5HKoM7mQpDCbJDqo6r45zBv2u21k
- hm4I9M224d3/xsK3ub4cSMLexjPBav6xf5MTE5kPE0nZmGj8yOFgiMZCfU4Rvyef83Zn
- pNeA==
-X-Gm-Message-State: AOAM530yZ1LCTdOpKcnkOazZ6e/2IaX2MX0gXrLiIp1QQ2wXhfOwhF+d
- 9L4+HQ+SGoGDuEWmsmMujJ5d4tgjk/3qL+mOPg6umTE9eLq89+G7uKVmH7GCRRG/u7gPSXmplHY
- E/jFkTQjELOC5Tvvu4xkT+pFcpg==
-X-Received: by 2002:a1c:c906:: with SMTP id f6mr11752836wmb.136.1634117402776; 
- Wed, 13 Oct 2021 02:30:02 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJw9gTLzJcIp/yrU6EoIVb6qauYFuyxecxt8Qxs8z4PtL5mkOqc+Jp//TvYKtW53QKGayzslJQ==
-X-Received: by 2002:a1c:c906:: with SMTP id f6mr11752794wmb.136.1634117402420; 
- Wed, 13 Oct 2021 02:30:02 -0700 (PDT)
-Received: from [192.168.100.42] ([82.142.24.54])
- by smtp.gmail.com with ESMTPSA id e16sm11103886wrw.17.2021.10.13.02.30.01
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 13 Oct 2021 02:30:02 -0700 (PDT)
-Message-ID: <d7f59d0e-eac2-7978-4067-9258c8b1aefe@redhat.com>
-Date: Wed, 13 Oct 2021 11:30:00 +0200
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=w0j2Ihdi/0685L8FT6WteZp6O1hKULY2lNZfHOgIHSc=;
+ b=nKXSbFvpcHPUsTAJIStNUBmAHKRUxj0a8mvTUyvx9EgrloxdTVNLAo7ERmpsRQFEDm
+ gT9C7k6azYG1FxTTJTkQogyQgGKcb5/8R9xdIFmqfLEVvlYhLSfAlA6Ei2wUB0nz4fID
+ 81zZRXIW0NUVJNVFHXfpSOlkuLhnTwdc3dwlzBW10o2e5feNg6PhobVgbM7/FUrYNgpy
+ QgopOPkyJsD4jwXgTj34XUdB9TqyWRm5VOczg5oIKM7WNgVrOAwfjvTVr7V4/ZJJgWA5
+ 67uOO6T+LQ77bfdp+6dqODlTkctsgVH9vKWkMuVseb2EeLq1DDmVNOzzUOHclgfxXqob
+ zjIg==
+X-Gm-Message-State: AOAM5324rS/0PvFPEpdiGhCCGtaROQmKRlaXXHb07Pc/3ut8L7wXFAXV
+ i2aqxl4KwsFMMrZhD7Rc133LCw==
+X-Google-Smtp-Source: ABdhPJzjo8AWROfTHh1Xk5YI6pRx05t7IBlItdI3oMMrcEgEqW1hgXJ6mKwWSXyPV/CEcnXRlFzD6Q==
+X-Received: by 2002:a17:90b:1c8f:: with SMTP id
+ oo15mr11233854pjb.169.1634107548649; 
+ Tue, 12 Oct 2021 23:45:48 -0700 (PDT)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+ by smtp.gmail.com with ESMTPSA id i124sm13247931pfc.153.2021.10.12.23.45.48
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 12 Oct 2021 23:45:48 -0700 (PDT)
+Date: Tue, 12 Oct 2021 23:45:47 -0700
+From: Kees Cook <keescook@chromium.org>
+To: Masahiro Yamada <masahiroy@kernel.org>
+Subject: Re: [PATCH 2/2] kbuild: use more subdir- for visiting subdirectories
+ while cleaning
+Message-ID: <202110122345.4B8FE35AED@keescook>
+References: <20211013063622.548590-1-masahiroy@kernel.org>
+ <20211013063622.548590-2-masahiroy@kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.1.0
-Subject: Re: [PATCH v2] KVM: PPC: Defer vtime accounting 'til after IRQ
- handling
-To: Michael Ellerman <mpe@ellerman.id.au>, kvm-ppc@vger.kernel.org
-References: <20211007142856.41205-1-lvivier@redhat.com>
- <875yu17rxk.fsf@mpe.ellerman.id.au>
-From: Laurent Vivier <lvivier@redhat.com>
-In-Reply-To: <875yu17rxk.fsf@mpe.ellerman.id.au>
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=lvivier@redhat.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211013063622.548590-2-masahiroy@kernel.org>
+X-Mailman-Approved-At: Wed, 13 Oct 2021 20:30:31 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,94 +86,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Randy Dunlap <rdunlap@infradead.org>,
+ linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org,
+ Viresh Kumar <viresh.kumar@linaro.org>, linux-mips@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Rich Felker <dalias@libc.org>,
+ Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org, Vincent Chen <deanbo422@gmail.com>,
+ Will Deacon <will@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Paul Mackerras <paulus@samba.org>, Jonas Bonn <jonas@southpole.se>,
+ Rob Herring <robh@kernel.org>, Vasily Gorbik <gor@linux.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+ Marc Zyngier <maz@kernel.org>, Helge Deller <deller@gmx.de>,
+ linux-sh@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
+ Ley Foon Tan <ley.foon.tan@intel.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, linux-alpha@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-parisc@vger.kernel.org, Sami Tolvanen <samitolvanen@google.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Matt Turner <mattst88@gmail.com>,
+ linux-snps-arc@lists.infradead.org, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>,
+ Robert Richter <rric@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ linux-kbuild@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
+ Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Nathan Chancellor <nathan@kernel.org>, linux-m68k@lists.linux-m68k.org,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greentime Hu <green.hu@gmail.com>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
+ William Cohen <wcohen@redhat.com>, Chris Zankel <chris@zankel.net>,
+ Michal Simek <monstr@monstr.eu>, Michal Marek <michal.lkml@markovi.net>,
+ Julien Thierry <jthierry@redhat.com>, Nick Hu <nickhu@andestech.com>,
+ linux-s390@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+ Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
+ openrisc@lists.librecores.org, Palmer Dabbelt <palmer@dabbelt.com>,
+ Borislav Petkov <bp@alien8.de>, Vineet Gupta <vgupta@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ x86@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 13/10/2021 01:18, Michael Ellerman wrote:
-> Laurent Vivier <lvivier@redhat.com> writes:
->> Commit 112665286d08 moved guest_exit() in the interrupt protected
->> area to avoid wrong context warning (or worse), but the tick counter
->> cannot be updated and the guest time is accounted to the system time.
->>
->> To fix the problem port to POWER the x86 fix
->> 160457140187 ("Defer vtime accounting 'til after IRQ handling"):
->>
->> "Defer the call to account guest time until after servicing any IRQ(s)
->>   that happened in the guest or immediately after VM-Exit.  Tick-based
->>   accounting of vCPU time relies on PF_VCPU being set when the tick IRQ
->>   handler runs, and IRQs are blocked throughout the main sequence of
->>   vcpu_enter_guest(), including the call into vendor code to actually
->>   enter and exit the guest."
->>
->> Fixes: 112665286d08 ("KVM: PPC: Book3S HV: Context tracking exit guest context before enabling irqs")
->> Cc: npiggin@gmail.com
->> Cc: <stable@vger.kernel.org> # 5.12
->> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
->> ---
->>
->> Notes:
->>      v2: remove reference to commit 61bd0f66ff92
->>          cc stable 5.12
->>          add the same comment in the code as for x86
->>
->>   arch/powerpc/kvm/book3s_hv.c | 24 ++++++++++++++++++++----
->>   1 file changed, 20 insertions(+), 4 deletions(-)
->>
->> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
->> index 2acb1c96cfaf..a694d1a8f6ce 100644
->> --- a/arch/powerpc/kvm/book3s_hv.c
->> +++ b/arch/powerpc/kvm/book3s_hv.c
-> ...
->> @@ -4506,13 +4514,21 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
->>   
->>   	srcu_read_unlock(&kvm->srcu, srcu_idx);
->>   
->> +	context_tracking_guest_exit();
->> +
->>   	set_irq_happened(trap);
->>   
->>   	kvmppc_set_host_core(pcpu);
->>   
->> -	guest_exit_irqoff();
->> -
->>   	local_irq_enable();
->> +	/*
->> +	 * Wait until after servicing IRQs to account guest time so that any
->> +	 * ticks that occurred while running the guest are properly accounted
->> +	 * to the guest.  Waiting until IRQs are enabled degrades the accuracy
->> +	 * of accounting via context tracking, but the loss of accuracy is
->> +	 * acceptable for all known use cases.
->> +	 */
->> +	vtime_account_guest_exit();
+On Wed, Oct 13, 2021 at 03:36:22PM +0900, Masahiro Yamada wrote:
+> Documentation/kbuild/makefiles.rst suggests to use "archclean" for
+> cleaning arch/$(SRCARCH)/boot/.
 > 
-> This pops a warning for me, running guest(s) on Power8:
->   
->    [  270.745303][T16661] ------------[ cut here ]------------
->    [  270.745374][T16661] WARNING: CPU: 72 PID: 16661 at arch/powerpc/kernel/time.c:311 vtime_account_kernel+0xe0/0xf0
+> Since commit d92cc4d51643 ("kbuild: require all architectures to have
+> arch/$(SRCARCH)/Kbuild"), we can use the "subdir- += boot" trick for
+> all architectures. This can take advantage of the parallel option (-j)
+> for "make clean".
+> 
+> I also cleaned up the comments. The "archdep" target does not exist.
+> 
+> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 
-Thank you, I missed that...
+I like the clean-up!
 
-My patch is wrong, I have to add vtime_account_guest_exit() before the local_irq_enable().
+Reviewed-by: Kees Cook <keescook@chromium.org>
 
-arch/powerpc/kernel/time.c
-
-  305 static unsigned long vtime_delta(struct cpu_accounting_data *acct,
-  306                                  unsigned long *stime_scaled,
-  307                                  unsigned long *steal_time)
-  308 {
-  309         unsigned long now, stime;
-  310
-  311         WARN_ON_ONCE(!irqs_disabled());
-...
-
-But I don't understand how ticks can be accounted now if irqs are still disabled.
-
-Not sure it is as simple as expected...
-
-Thanks,
-Laurent
-
+-- 
+Kees Cook
