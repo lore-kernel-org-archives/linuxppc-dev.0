@@ -2,66 +2,108 @@ Return-Path: <SRS0=X2ql=PB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D948C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 08:53:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B25DFC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 09:30:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B47BC610CE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 08:52:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B47BC610CE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9119861040
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 09:30:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9119861040
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HTmWt2R7Vz3cHG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 19:52:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HTnMc6Btcz3bfv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 20:30:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=P4YhDaHJ;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=P4YhDaHJ;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.131;
- helo=out30-131.freemail.mail.aliyun.com;
- envelope-from=yun.wang@linux.alibaba.com; receiver=<UNKNOWN>)
-Received: from out30-131.freemail.mail.aliyun.com
- (out30-131.freemail.mail.aliyun.com [115.124.30.131])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=redhat.com (client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=lvivier@redhat.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=P4YhDaHJ; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=P4YhDaHJ; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HTmWN4FTHz2yTr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 19:52:32 +1100 (AEDT)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R961e4; CH=green; DM=||false|;
- DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04407; MF=yun.wang@linux.alibaba.com;
- NM=1; PH=DS; RN=31; SR=0; TI=SMTPD_---0UrfYRTJ_1634115133; 
-Received: from testdeMacBook-Pro.local(mailfrom:yun.wang@linux.alibaba.com
- fp:SMTPD_---0UrfYRTJ_1634115133) by smtp.aliyun-inc.com(127.0.0.1);
- Wed, 13 Oct 2021 16:52:15 +0800
-Subject: [PATCH v3 2/2] ftrace: do CPU checking after preemption disabled
-From: =?UTF-8?B?546L6LSH?= <yun.wang@linux.alibaba.com>
-To: Guo Ren <guoren@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- Ingo Molnar <mingo@redhat.com>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Paul Walmsley <paul.walmsley@sifive.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
- Joe Lawrence <joe.lawrence@redhat.com>,
- Colin Ian King <colin.king@canonical.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- "Peter Zijlstra (Intel)" <peterz@infradead.org>,
- Nicholas Piggin <npiggin@gmail.com>, Jisheng Zhang <jszhang@kernel.org>,
- linux-csky@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, live-patching@vger.kernel.org
-References: <609b565a-ed6e-a1da-f025-166691b5d994@linux.alibaba.com>
-Message-ID: <a450a935-17d0-63df-87fd-c27a409ea5de@linux.alibaba.com>
-Date: Wed, 13 Oct 2021 16:52:13 +0800
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:78.0)
- Gecko/20100101 Thunderbird/78.14.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HTnLr6y64z2yQm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 20:30:11 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1634117406;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=ZjFKZdAkzPM6kA0DElv7KLx9JGj1opCMkKpXv5IVjds=;
+ b=P4YhDaHJEuKvp10tgKg3+Kxf8olg4BF6lOGkPG/UOMmsu/Nh+v/iYL/+L6jZ53jzuRqvrQ
+ +vSWvHoSbnGaLMNiQD/YIC+AWMXbLgmCYA7HHQp4H6XRdTf9eywRbkF8dm5YAM+qo4WJLj
+ XDFn54+buUZ5Pl4MgLTmzasKIuIkslg=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1634117406;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=ZjFKZdAkzPM6kA0DElv7KLx9JGj1opCMkKpXv5IVjds=;
+ b=P4YhDaHJEuKvp10tgKg3+Kxf8olg4BF6lOGkPG/UOMmsu/Nh+v/iYL/+L6jZ53jzuRqvrQ
+ +vSWvHoSbnGaLMNiQD/YIC+AWMXbLgmCYA7HHQp4H6XRdTf9eywRbkF8dm5YAM+qo4WJLj
+ XDFn54+buUZ5Pl4MgLTmzasKIuIkslg=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-340-YOt3-vc3Pw66f8R8i79afg-1; Wed, 13 Oct 2021 05:30:04 -0400
+X-MC-Unique: YOt3-vc3Pw66f8R8i79afg-1
+Received: by mail-wr1-f72.google.com with SMTP id
+ 75-20020adf82d1000000b00160cbb0f800so1454396wrc.22
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 02:30:03 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+ :content-language:to:cc:references:from:in-reply-to
+ :content-transfer-encoding;
+ bh=ZjFKZdAkzPM6kA0DElv7KLx9JGj1opCMkKpXv5IVjds=;
+ b=Yb9ASjXnYE1U3cqH6VzK8m1f3Ip5QSwOPQyDVrWbXGMIelIjgMvzh/rIcoh9hH9Sas
+ +n/ax3ivgwWxlmnMpE+psTlFIcjCPciVqmTzb3LplFfm76UFrlOcDLojF26q6sC4nI4c
+ HjZUkRl1vEM5adLbzB/Oi+deD1Nz7MRF+jaktEsKNC0ZoWAu1Gac//DrnHsTfBfYRYDx
+ sGabYjkOKDE0ZySgJym2SIjxziiRXOjCf0lYJ7rO5HKoM7mQpDCbJDqo6r45zBv2u21k
+ hm4I9M224d3/xsK3ub4cSMLexjPBav6xf5MTE5kPE0nZmGj8yOFgiMZCfU4Rvyef83Zn
+ pNeA==
+X-Gm-Message-State: AOAM530yZ1LCTdOpKcnkOazZ6e/2IaX2MX0gXrLiIp1QQ2wXhfOwhF+d
+ 9L4+HQ+SGoGDuEWmsmMujJ5d4tgjk/3qL+mOPg6umTE9eLq89+G7uKVmH7GCRRG/u7gPSXmplHY
+ E/jFkTQjELOC5Tvvu4xkT+pFcpg==
+X-Received: by 2002:a1c:c906:: with SMTP id f6mr11752836wmb.136.1634117402776; 
+ Wed, 13 Oct 2021 02:30:02 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJw9gTLzJcIp/yrU6EoIVb6qauYFuyxecxt8Qxs8z4PtL5mkOqc+Jp//TvYKtW53QKGayzslJQ==
+X-Received: by 2002:a1c:c906:: with SMTP id f6mr11752794wmb.136.1634117402420; 
+ Wed, 13 Oct 2021 02:30:02 -0700 (PDT)
+Received: from [192.168.100.42] ([82.142.24.54])
+ by smtp.gmail.com with ESMTPSA id e16sm11103886wrw.17.2021.10.13.02.30.01
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Wed, 13 Oct 2021 02:30:02 -0700 (PDT)
+Message-ID: <d7f59d0e-eac2-7978-4067-9258c8b1aefe@redhat.com>
+Date: Wed, 13 Oct 2021 11:30:00 +0200
 MIME-Version: 1.0
-In-Reply-To: <609b565a-ed6e-a1da-f025-166691b5d994@linux.alibaba.com>
-Content-Type: text/plain; charset=utf-8
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.1.0
+Subject: Re: [PATCH v2] KVM: PPC: Defer vtime accounting 'til after IRQ
+ handling
+To: Michael Ellerman <mpe@ellerman.id.au>, kvm-ppc@vger.kernel.org
+References: <20211007142856.41205-1-lvivier@redhat.com>
+ <875yu17rxk.fsf@mpe.ellerman.id.au>
+From: Laurent Vivier <lvivier@redhat.com>
+In-Reply-To: <875yu17rxk.fsf@mpe.ellerman.id.au>
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=lvivier@redhat.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
 Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -74,61 +116,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With CONFIG_DEBUG_PREEMPT we observed reports like:
+On 13/10/2021 01:18, Michael Ellerman wrote:
+> Laurent Vivier <lvivier@redhat.com> writes:
+>> Commit 112665286d08 moved guest_exit() in the interrupt protected
+>> area to avoid wrong context warning (or worse), but the tick counter
+>> cannot be updated and the guest time is accounted to the system time.
+>>
+>> To fix the problem port to POWER the x86 fix
+>> 160457140187 ("Defer vtime accounting 'til after IRQ handling"):
+>>
+>> "Defer the call to account guest time until after servicing any IRQ(s)
+>>   that happened in the guest or immediately after VM-Exit.  Tick-based
+>>   accounting of vCPU time relies on PF_VCPU being set when the tick IRQ
+>>   handler runs, and IRQs are blocked throughout the main sequence of
+>>   vcpu_enter_guest(), including the call into vendor code to actually
+>>   enter and exit the guest."
+>>
+>> Fixes: 112665286d08 ("KVM: PPC: Book3S HV: Context tracking exit guest context before enabling irqs")
+>> Cc: npiggin@gmail.com
+>> Cc: <stable@vger.kernel.org> # 5.12
+>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+>> ---
+>>
+>> Notes:
+>>      v2: remove reference to commit 61bd0f66ff92
+>>          cc stable 5.12
+>>          add the same comment in the code as for x86
+>>
+>>   arch/powerpc/kvm/book3s_hv.c | 24 ++++++++++++++++++++----
+>>   1 file changed, 20 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+>> index 2acb1c96cfaf..a694d1a8f6ce 100644
+>> --- a/arch/powerpc/kvm/book3s_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_hv.c
+> ...
+>> @@ -4506,13 +4514,21 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+>>   
+>>   	srcu_read_unlock(&kvm->srcu, srcu_idx);
+>>   
+>> +	context_tracking_guest_exit();
+>> +
+>>   	set_irq_happened(trap);
+>>   
+>>   	kvmppc_set_host_core(pcpu);
+>>   
+>> -	guest_exit_irqoff();
+>> -
+>>   	local_irq_enable();
+>> +	/*
+>> +	 * Wait until after servicing IRQs to account guest time so that any
+>> +	 * ticks that occurred while running the guest are properly accounted
+>> +	 * to the guest.  Waiting until IRQs are enabled degrades the accuracy
+>> +	 * of accounting via context tracking, but the loss of accuracy is
+>> +	 * acceptable for all known use cases.
+>> +	 */
+>> +	vtime_account_guest_exit();
+> 
+> This pops a warning for me, running guest(s) on Power8:
+>   
+>    [  270.745303][T16661] ------------[ cut here ]------------
+>    [  270.745374][T16661] WARNING: CPU: 72 PID: 16661 at arch/powerpc/kernel/time.c:311 vtime_account_kernel+0xe0/0xf0
 
-  BUG: using smp_processor_id() in preemptible
-  caller is perf_ftrace_function_call+0x6f/0x2e0
-  CPU: 1 PID: 680 Comm: a.out Not tainted
-  Call Trace:
-   <TASK>
-   dump_stack_lvl+0x8d/0xcf
-   check_preemption_disabled+0x104/0x110
-   ? optimize_nops.isra.7+0x230/0x230
-   ? text_poke_bp_batch+0x9f/0x310
-   perf_ftrace_function_call+0x6f/0x2e0
-   ...
-   __text_poke+0x5/0x620
-   text_poke_bp_batch+0x9f/0x310
+Thank you, I missed that...
 
-This telling us the CPU could be changed after task is preempted, and
-the checking on CPU before preemption will be invalid.
+My patch is wrong, I have to add vtime_account_guest_exit() before the local_irq_enable().
 
-Since now ftrace_test_recursion_trylock() will help to disable the
-preemption, this patch just do the checking after trylock() to address
-the issue.
+arch/powerpc/kernel/time.c
 
-CC: Steven Rostedt <rostedt@goodmis.org>
-Reported-by: Abaci <abaci@linux.alibaba.com>
-Signed-off-by: Michael Wang <yun.wang@linux.alibaba.com>
----
- kernel/trace/trace_event_perf.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+  305 static unsigned long vtime_delta(struct cpu_accounting_data *acct,
+  306                                  unsigned long *stime_scaled,
+  307                                  unsigned long *steal_time)
+  308 {
+  309         unsigned long now, stime;
+  310
+  311         WARN_ON_ONCE(!irqs_disabled());
+...
 
-diff --git a/kernel/trace/trace_event_perf.c b/kernel/trace/trace_event_perf.c
-index 6aed10e..fba8cb7 100644
---- a/kernel/trace/trace_event_perf.c
-+++ b/kernel/trace/trace_event_perf.c
-@@ -441,13 +441,13 @@ void perf_trace_buf_update(void *record, u16 type)
- 	if (!rcu_is_watching())
- 		return;
+But I don't understand how ticks can be accounted now if irqs are still disabled.
 
--	if ((unsigned long)ops->private != smp_processor_id())
--		return;
--
- 	bit = ftrace_test_recursion_trylock(ip, parent_ip);
- 	if (bit < 0)
- 		return;
+Not sure it is as simple as expected...
 
-+	if ((unsigned long)ops->private != smp_processor_id())
-+		goto out;
-+
- 	event = container_of(ops, struct perf_event, ftrace_ops);
-
- 	/*
--- 
-1.8.3.1
+Thanks,
+Laurent
 
