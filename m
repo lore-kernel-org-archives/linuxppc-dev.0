@@ -2,75 +2,82 @@ Return-Path: <SRS0=X2ql=PB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03ED9C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 07:56:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03F68C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 08:08:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F36E60241
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 07:56:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3F36E60241
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	by mail.kernel.org (Postfix) with ESMTPS id 1EBDA60EE9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 08:08:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1EBDA60EE9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HTlGH51Mcz30R1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 18:56:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HTlXT4V1wz3bYL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 19:08:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=Ej27NFvh;
-	dkim=fail reason="signature verification failed" header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=+w9Az0Z3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=TZU2b0lO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
- (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
- envelope-from=mbenes@suse.cz; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256
- header.s=susede2_rsa header.b=Ej27NFvh; 
- dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=+w9Az0Z3; 
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.52;
+ helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=TZU2b0lO; 
  dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de
+ [85.215.255.52])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HTlFS5Ly3z2yPk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 18:55:23 +1100 (AEDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
- by smtp-out1.suse.de (Postfix) with ESMTP id 99BD022296;
- Wed, 13 Oct 2021 07:55:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
- t=1634111719; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=i7IGip/6gbVvmHRaMhrhBlPAbqtmi4yf9VEPWWlaFeE=;
- b=Ej27NFvhi/+3F1LnXiuEvJ3SmzHirAxauJBsGjgulCIyOssPQw6F6KwTNa9IaM5Au65bVy
- pwr2XAZtxLt0rxZlJr0A7utwkQQTqhil/0XYYwHKx8ILmEECDzgVsKv24qdJ71W4uV3deH
- oxQvor4tfFIz/5mrWPBwtKjE3PhLc20=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
- s=susede2_ed25519; t=1634111719;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=i7IGip/6gbVvmHRaMhrhBlPAbqtmi4yf9VEPWWlaFeE=;
- b=+w9Az0Z3KJ2VxO6gzBE7ap3QeAyDlZfweavR7c1nDpq45ogh1GvakBs8gocNDgbltKk/J+
- vJikc3lgCt4lGSCQ==
-Received: from pobox.suse.cz (pobox.suse.cz [10.100.2.14])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by relay2.suse.de (Postfix) with ESMTPS id 5FC20A3B88;
- Wed, 13 Oct 2021 07:55:18 +0000 (UTC)
-Date: Wed, 13 Oct 2021 09:55:18 +0200 (CEST)
-From: Miroslav Benes <mbenes@suse.cz>
-To: =?ISO-2022-JP?Q?=1B$B2&lV=1B=28J?= <yun.wang@linux.alibaba.com>
-Subject: Re: [RESEND PATCH v2 1/2] ftrace: disable preemption between
- ftrace_test_recursion_trylock/unlock()
-In-Reply-To: <75ee86ac-02f2-d687-ab1e-9c8c33032495@linux.alibaba.com>
-Message-ID: <alpine.LSU.2.21.2110130948120.5647@pobox.suse.cz>
-References: <b1d7fe43-ce84-0ed7-32f7-ea1d12d0b716@linux.alibaba.com>
- <75ee86ac-02f2-d687-ab1e-9c8c33032495@linux.alibaba.com>
-User-Agent: Alpine 2.21 (LSU 202 2017-01-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HTlWl4hRcz2yPk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 19:07:45 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1634112408;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:References:To:From:Subject:Cc:Date:From:
+ Subject:Sender;
+ bh=SIdqttAv8VY7+GPnyA9vyn4IVdFg1Dkp5cQAN7dWsbA=;
+ b=TZU2b0lOnmLfKHi2inaQ528J4Rm8TEj1TfhwkuQBKmTf1uB7NhnT8yTKEsZA2ErZvB
+ yPCprch6lE9F1gB27JLaStHAbV340zYe/MRN9wYqvCGgZw+W3qy2R6axfc51pp35dUh1
+ WM5njfwXe8B8LKfgXSfWJHEPNAsFtJ4YCoz3+mqe3tdbqPJkcgQpu7urHH3kyjJtSuWL
+ J2RjhXdaP9hCqx58oZOyvVERKr3AMANNAqmg0k0B9rJZC6Y45Ot7koo6oFgyrF3obhUk
+ +WbO6sr7BoHUznPxjUYK1Nd7yQG554TzF0YWA4PIL9L0/igCESNAbZcZb08pPsx/Pcvy
+ akFQ==
+Authentication-Results: strato.com;
+    dkim=none
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPgFJ9KSk6V3+Pov4y9Nnu4lP5KR8g=="
+X-RZG-CLASS-ID: mo00
+Received: from Christians-iMac.fritz.box by smtp.strato.de (RZmta 47.34.1 AUTH)
+ with ESMTPSA id z02498x9D86kgmG
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Wed, 13 Oct 2021 10:06:46 +0200 (CEST)
+Subject: Re: [PATCH v2 00/11] Add Apple M1 support to PASemi i2c driver
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: Wolfram Sang <wsa@kernel.org>, Sven Peter <sven@svenpeter.dev>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ Arnd Bergmann <arnd@arndb.de>, Hector Martin <marcan@marcan.st>,
+ Mohamed Mediouni <mohamed.mediouni@caramail.com>,
+ Stan Skowronek <stan@corellium.com>, Mark Kettenis
+ <mark.kettenis@xs4all.nl>, Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
+ "R.T.Dickinson" <rtd@a-eon.com>, Matthew Leaman <matthew@a-eon.biz>,
+ Darren Stevens <darren@stevens-zone.net>
+References: <20211008163532.75569-1-sven@svenpeter.dev>
+ <YWFqr4uQGlNgnT1z@ninjato> <8a8afc73-3756-a305-ce5f-70b4bce6999f@xenosoft.de>
+Message-ID: <df424385-92af-3fad-f50b-c64897e991e8@xenosoft.de>
+Date: Wed, 13 Oct 2021 10:06:45 +0200
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
+ Gecko/20100101 Thunderbird/78.14.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <8a8afc73-3756-a305-ce5f-70b4bce6999f@xenosoft.de>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,93 +89,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
- Paul Walmsley <paul.walmsley@sifive.com>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Guo Ren <guoren@kernel.org>, Jisheng Zhang <jszhang@kernel.org>,
- "H. Peter Anvin" <hpa@zytor.com>, live-patching@vger.kernel.org,
- linux-riscv@lists.infradead.org, Paul Mackerras <paulus@samba.org>,
- Joe Lawrence <joe.lawrence@redhat.com>, Helge Deller <deller@gmx.de>,
- x86@kernel.org, linux-csky@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Petr Mladek <pmladek@suse.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Jiri Kosina <jikos@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Colin Ian King <colin.king@canonical.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> diff --git a/include/linux/trace_recursion.h b/include/linux/trace_recursion.h
-> index a9f9c57..101e1fb 100644
-> --- a/include/linux/trace_recursion.h
-> +++ b/include/linux/trace_recursion.h
-> @@ -208,13 +208,29 @@ static __always_inline void trace_clear_recursion(int bit)
->   * Use this for ftrace callbacks. This will detect if the function
->   * tracing recursed in the same context (normal vs interrupt),
->   *
-> + * The ftrace_test_recursion_trylock() will disable preemption,
-> + * which is required for the variant of synchronize_rcu() that is
-> + * used to allow patching functions where RCU is not watching.
-> + * See klp_synchronize_transition() for more details.
-> + *
+On 09 October 2021 at 03:57 pm, Christian Zigotzky wrote:
+ > On 09 October 2021 at 12:10 pm, Wolfram Sang wrote:
+ >>> I still don't have access to any old PASemi hardware but the 
+changes from
+ >>> v1 are pretty small and I expect them to still work. Would still be 
+nice
+ >>> if someone with access to such hardware could give this a quick test.
+ >> Looks good to me. I will wait a few more days so that people can report
+ >> their tests. But it will be in the next merge window.
+ >>
+ > Series v2:
+ >
+ > Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de> [1]
+ >
+ > - Christian
+ >
+ > [1] 
+https://forum.hyperion-entertainment.com/viewtopic.php?p=54213#p54213
 
-I think that you misunderstood. Steven proposed to put the comment before 
-ftrace_test_recursion_trylock() call site in klp_ftrace_handler().
+Series v2:
 
->   * Returns: -1 if a recursion happened.
->   *           >= 0 if no recursion
->   */
->  static __always_inline int ftrace_test_recursion_trylock(unsigned long ip,
->  							 unsigned long parent_ip)
->  {
-> -	return trace_test_and_set_recursion(ip, parent_ip, TRACE_FTRACE_START, TRACE_FTRACE_MAX);
-> +	int bit;
-> +
-> +	bit = trace_test_and_set_recursion(ip, parent_ip, TRACE_FTRACE_START, TRACE_FTRACE_MAX);
-> +	/*
-> +	 * The zero bit indicate we are nested
-> +	 * in another trylock(), which means the
-> +	 * preemption already disabled.
-> +	 */
-> +	if (bit > 0)
-> +		preempt_disable_notrace();
-> +
-> +	return bit;
->  }
+Tested-by: Damien Stewart (Hypex) [1]
 
-[...]
+- Christian
 
-> diff --git a/kernel/livepatch/patch.c b/kernel/livepatch/patch.c
-> index e8029ae..6e66ccd 100644
-> --- a/kernel/livepatch/patch.c
-> +++ b/kernel/livepatch/patch.c
-> @@ -52,11 +52,6 @@ static void notrace klp_ftrace_handler(unsigned long ip,
+[1] https://forum.hyperion-entertainment.com/viewtopic.php?p=54217#p54217
 
-Here
-
->  	bit = ftrace_test_recursion_trylock(ip, parent_ip);
->  	if (WARN_ON_ONCE(bit < 0))
->  		return;
-> -	/*
-> -	 * A variant of synchronize_rcu() is used to allow patching functions
-> -	 * where RCU is not watching, see klp_synchronize_transition().
-> -	 */
-> -	preempt_disable_notrace();
-> 
->  	func = list_first_or_null_rcu(&ops->func_stack, struct klp_func,
->  				      stack_node);
-> @@ -120,7 +115,6 @@ static void notrace klp_ftrace_handler(unsigned long ip,
->  	klp_arch_set_pc(fregs, (unsigned long)func->new_func);
-> 
->  unlock:
-> -	preempt_enable_notrace();
->  	ftrace_test_recursion_unlock(bit);
->  }
-
-Side note... the comment will eventually conflict with peterz's 
-https://lore.kernel.org/all/20210929152429.125997206@infradead.org/.
-
-Miroslav
