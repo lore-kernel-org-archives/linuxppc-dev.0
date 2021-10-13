@@ -2,77 +2,66 @@ Return-Path: <SRS0=X2ql=PB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68069C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 21:35:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6727C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:13:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F3C1A6117A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 21:35:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org F3C1A6117A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 1788A61130
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:13:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1788A61130
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=denx.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HV5Rn4ZMVz3bbv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 08:35:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HV6HF3vrBz2yPP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 09:13:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=FAjODSog;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256 header.s=phobos-20191101 header.b=hjLfWaUh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429;
- helo=mail-pf1-x429.google.com; envelope-from=joel.stan@gmail.com;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=agust@denx.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=FAjODSog; dkim-atps=neutral
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
- [IPv6:2607:f8b0:4864:20::429])
+ unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256
+ header.s=phobos-20191101 header.b=hjLfWaUh; 
+ dkim-atps=neutral
+X-Greylist: delayed 407 seconds by postgrey-1.36 at boromir;
+ Thu, 14 Oct 2021 09:12:32 AEDT
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HV5Qz11zLz2xtM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 08:34:50 +1100 (AEDT)
-Received: by mail-pf1-x429.google.com with SMTP id g14so3668018pfm.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 14:34:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=sender:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=8vn50ZaNwnUJ0AZTX6o9w8gy9mHkBPDVSDoWz+Q/Xqg=;
- b=FAjODSogE8VMVFhJnenSBKTChRMTdCrj0kuT1+UBLBbhg4kzQHMIqRv9d8kMB9rmdI
- NHZHgqOkcs2hZEKzuWH/BK/KMiiwvG507KL2dkYQi1djfkGsHEIW+9hKFp3ky6kpsY85
- FW1EQ1tNX/+5Sa6krMlwgKXG9Gv1CvMOQa1ogc3oM8yxdvmfufbjAjCJdAaA0gGWszLq
- Vu0Ue+hjuuPAL/hweGdn3SLXx72k/iwURoRG9p9RWyCs06xSHabHgO2pM1ydcVDI+1RZ
- LidJQtwTTf6d3jLnzlgzjdD21oZ/jWcQaRl/DjYnRYnl66KM3hZ9jQ+ZVq/CCc8krubU
- nPKQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
- :mime-version:content-transfer-encoding;
- bh=8vn50ZaNwnUJ0AZTX6o9w8gy9mHkBPDVSDoWz+Q/Xqg=;
- b=eEXmfsafb4SAY7BT4Ru0dfa/OZKr4n2OFrCBKFOU7TGvf6mmuh4lSxuRFy5SGB3Z2j
- 47lxjUfVx2TtBQb2rRtiROkSb/2VEo3m8HdBjv8p6Q9/huPogHRN7xwfPViChSKwKnr7
- a0KPyMBUccZYLFXdnrhnsHNnAJVtkIxzcxQn2DE1cpbhXc8T7QkLfj97Rw8qFZV5Q+PN
- X83grKowkL6VMVS2jPuBM5qoFLYa2udrs4EmEtBAFVYg6ybsslvamdZb/0FpwyR/uz7G
- jWdrOYxXkhPboSIBH8GHaX/eMCktRNNj/X/7nQ4JO20cxnqT6U0ZS/vRsjZpxO44Hnr0
- 4Jww==
-X-Gm-Message-State: AOAM532rN3tIjAV7+hdJt2JWqFT9OH0fptO4Ar4Xr1qurmtpjlxFE/n5
- ToqIk99WnivvEXCFfSepTI9BvExt0k8=
-X-Google-Smtp-Source: ABdhPJxueQe1i4sebX2e8QtzFykBiRVS5YTk+nrNBJ5PSyLc4mptcL6JPZ7xtB4eQubXvPE4Fehsdg==
-X-Received: by 2002:a63:d94b:: with SMTP id e11mr1238950pgj.295.1634160886754; 
- Wed, 13 Oct 2021 14:34:46 -0700 (PDT)
-Received: from localhost.localdomain ([45.124.203.19])
- by smtp.gmail.com with ESMTPSA id o6sm399801pfp.79.2021.10.13.14.34.43
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 13 Oct 2021 14:34:45 -0700 (PDT)
-From: Joel Stanley <joel@jms.id.au>
-To: Jordan Niethe <jniethe5@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2] powerpc/s64: Clarify that radix lacks DEBUG_PAGEALLOC
-Date: Thu, 14 Oct 2021 08:04:38 +1030
-Message-Id: <20211013213438.675095-1-joel@jms.id.au>
-X-Mailer: git-send-email 2.33.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HV6GS3PLbz2yP0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 09:12:32 +1100 (AEDT)
+Received: from crub.agik.hopto.org (pd95f1d7c.dip0.t-ipconnect.de
+ [217.95.29.124])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ (No client certificate requested)
+ (Authenticated sender: agust@denx.de)
+ by phobos.denx.de (Postfix) with ESMTPSA id 43B3283612;
+ Thu, 14 Oct 2021 00:05:34 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
+ s=phobos-20191101; t=1634162734;
+ bh=urliHNW43HlnOTWcyGDh78CSVRs4kDbRslzJnUMNtfo=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=hjLfWaUhvPOdfEymbTsEbKVqyRnWBVMak2dhRLoYKfRcv/uaNnbeODLt9PA6Y6/Ve
+ BGpPADoFpY78Nir2OBmFPpnqnOmMYwjsQXiHEZBT/W9fV1D+IbLjnDKB6b+/9EGV8V
+ aC23keOnEQmpblR/eSPw+PLXGeFsGUtadakbj73S4Pw6w/oULN53akSFDrS1h9FbkW
+ E61xzTTNykq/3kzPKn7EGQLdX7eqbbsb0EERcQiaUoJ0DahytBug+qI0mPGheedTQP
+ sX2dRInwBee/hYeZqW0b4afbOhNJ/8t7cu7zCZswUtXuKOIuxx563QU2wZuWTi/tiy
+ 3k4Cx20k6XFMw==
+From: Anatolij Gustschin <agust@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/4] powerpc/5200: dts: fix pci ranges warnings
+Date: Thu, 14 Oct 2021 00:05:30 +0200
+Message-Id: <20211013220532.24759-3-agust@denx.de>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20211013220532.24759-1-agust@denx.de>
+References: <20211013220532.24759-1-agust@denx.de>
+X-Virus-Scanned: clamav-milter 0.103.2 at phobos.denx.de
+X-Virus-Status: Clean
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,114 +73,197 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The page_alloc.c code will call into __kernel_map_pages when
-DEBUG_PAGEALLOC is configured and enabled.
+Fix ranges property warnings:
+pci@f0000d00:ranges: 'oneOf' conditional failed, one must be fixed:
 
-As the implementation assumes hash, this should crash spectacularly if
-not for a bit of luck in __kernel_map_pages. In this function
-linear_map_hash_count is always zero, the for loop exits without doing
-any damage.
-
-There are no other platforms that determine if they support
-debug_pagealloc at runtime. Instead of adding code to mm/page_alloc.c to
-do that, this change turns the map/unmap into a noop when in radix
-mode and prints a warning once.
-
-Signed-off-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
 ---
-v2: Put __kernel_map_pages in pgtable.h
+ arch/powerpc/boot/dts/a4m072.dts    | 6 +++---
+ arch/powerpc/boot/dts/charon.dts    | 6 +++---
+ arch/powerpc/boot/dts/digsy_mtc.dts | 6 +++---
+ arch/powerpc/boot/dts/lite5200.dts  | 6 +++---
+ arch/powerpc/boot/dts/lite5200b.dts | 6 +++---
+ arch/powerpc/boot/dts/media5200.dts | 6 +++---
+ arch/powerpc/boot/dts/mucmc52.dts   | 6 +++---
+ arch/powerpc/boot/dts/pcm030.dts    | 6 +++---
+ arch/powerpc/boot/dts/pcm032.dts    | 6 +++---
+ arch/powerpc/boot/dts/tqm5200.dts   | 6 +++---
+ 10 files changed, 30 insertions(+), 30 deletions(-)
 
- arch/powerpc/include/asm/book3s/64/hash.h    |  2 ++
- arch/powerpc/include/asm/book3s/64/pgtable.h | 11 +++++++++++
- arch/powerpc/include/asm/book3s/64/radix.h   |  3 +++
- arch/powerpc/mm/book3s64/hash_utils.c        |  2 +-
- arch/powerpc/mm/book3s64/radix_pgtable.c     |  7 +++++++
- 5 files changed, 24 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index d959b0195ad9..674fe0e890dc 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -255,6 +255,8 @@ int hash__create_section_mapping(unsigned long start, unsigned long end,
- 				 int nid, pgprot_t prot);
- int hash__remove_section_mapping(unsigned long start, unsigned long end);
+diff --git a/arch/powerpc/boot/dts/a4m072.dts b/arch/powerpc/boot/dts/a4m072.dts
+index a9cef5726422..d4270a2ec6c7 100644
+--- a/arch/powerpc/boot/dts/a4m072.dts
++++ b/arch/powerpc/boot/dts/a4m072.dts
+@@ -140,8 +140,8 @@
+ 		clock-frequency = <0>; /* From boot loader */
+ 		interrupts = <2 8 0 2 9 0 2 10 0>;
+ 		bus-range = <0 0>;
+-		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
+-			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
+-			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
++		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000>,
++			 <0x02000000 0 0x90000000 0x90000000 0 0x10000000>,
++			 <0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
+index 408b486b13df..6f9fe88a5f36 100644
+--- a/arch/powerpc/boot/dts/charon.dts
++++ b/arch/powerpc/boot/dts/charon.dts
+@@ -225,8 +225,8 @@
+ 		clock-frequency = <0>; // From boot loader
+ 		interrupts = <2 8 0 2 9 0 2 10 0>;
+ 		bus-range = <0 0>;
+-		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
+-			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
+-			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
++		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000>,
++			 <0x02000000 0 0x90000000 0x90000000 0 0x10000000>,
++			 <0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/digsy_mtc.dts b/arch/powerpc/boot/dts/digsy_mtc.dts
+index 0e5e9d3acf79..010156649bfe 100644
+--- a/arch/powerpc/boot/dts/digsy_mtc.dts
++++ b/arch/powerpc/boot/dts/digsy_mtc.dts
+@@ -98,9 +98,9 @@
+ 		clock-frequency = <0>; // From boot loader
+ 		interrupts = <2 8 0 2 9 0 2 10 0>;
+ 		bus-range = <0 0>;
+-		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
+-			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
+-			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
++		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000>,
++			 <0x02000000 0 0x90000000 0x90000000 0 0x10000000>,
++			 <0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
+ 	};
  
-+void hash__kernel_map_pages(struct page *page, int numpages, int enable);
-+
- #endif /* !__ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_BOOK3S_64_HASH_H */
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 5d34a8646f08..265661ded238 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1101,6 +1101,17 @@ static inline void vmemmap_remove_mapping(unsigned long start,
- }
- #endif
+ 	localbus {
+diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
+index cb2782dd6132..84a12e7915e9 100644
+--- a/arch/powerpc/boot/dts/lite5200.dts
++++ b/arch/powerpc/boot/dts/lite5200.dts
+@@ -283,9 +283,9 @@
+ 		clock-frequency = <0>; // From boot loader
+ 		interrupts = <2 8 0 2 9 0 2 10 0>;
+ 		bus-range = <0 0>;
+-		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
+-			  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
+-			  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
++		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000>,
++			 <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000>,
++			 <0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
+ 	};
  
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+static inline void __kernel_map_pages(struct page *page, int numpages, int enable)
-+{
-+	if (radix_enabled()) {
-+		radix__kernel_map_pages(page, numpages, enable);
-+		return;
-+	}
-+	hash__kernel_map_pages(page, numpages, enable);
-+}
-+#endif
-+
- static inline pte_t pmd_pte(pmd_t pmd)
- {
- 	return __pte_raw(pmd_raw(pmd));
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index 59cab558e2f0..d090d9612348 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -316,5 +316,8 @@ int radix__create_section_mapping(unsigned long start, unsigned long end,
- 				  int nid, pgprot_t prot);
- int radix__remove_section_mapping(unsigned long start, unsigned long end);
- #endif /* CONFIG_MEMORY_HOTPLUG */
-+
-+void radix__kernel_map_pages(struct page *page, int numpages, int enable);
-+
- #endif /* __ASSEMBLY__ */
- #endif
-diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-index c145776d3ae5..cfd45245d009 100644
---- a/arch/powerpc/mm/book3s64/hash_utils.c
-+++ b/arch/powerpc/mm/book3s64/hash_utils.c
-@@ -1988,7 +1988,7 @@ static void kernel_unmap_linear_page(unsigned long vaddr, unsigned long lmi)
- 				     mmu_kernel_ssize, 0);
- }
+ 	localbus {
+diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
+index 2b86c81f9048..c361c59a9681 100644
+--- a/arch/powerpc/boot/dts/lite5200b.dts
++++ b/arch/powerpc/boot/dts/lite5200b.dts
+@@ -116,9 +116,9 @@
+ 		clock-frequency = <0>; // From boot loader
+ 		interrupts = <2 8 0 2 9 0 2 10 0>;
+ 		bus-range = <0 0>;
+-		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
+-			  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
+-			  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
++		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000>,
++			 <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000>,
++			 <0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
+ 	};
  
--void __kernel_map_pages(struct page *page, int numpages, int enable)
-+void hash__kernel_map_pages(struct page *page, int numpages, int enable)
- {
- 	unsigned long flags, vaddr, lmi;
- 	int i;
-diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index ae20add7954a..83b33418ad28 100644
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -920,6 +920,13 @@ void __meminit radix__vmemmap_remove_mapping(unsigned long start, unsigned long
- #endif
- #endif
+ 	localbus {
+diff --git a/arch/powerpc/boot/dts/media5200.dts b/arch/powerpc/boot/dts/media5200.dts
+index 61cae9dcddef..f7d7538eb69d 100644
+--- a/arch/powerpc/boot/dts/media5200.dts
++++ b/arch/powerpc/boot/dts/media5200.dts
+@@ -96,9 +96,9 @@
  
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+void radix__kernel_map_pages(struct page *page, int numpages, int enable)
-+{
-+        pr_warn_once("DEBUG_PAGEALLOC not supported in radix mode\n");
-+}
-+#endif
-+
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ 				 0xe000 0 0 1 &media5200_fpga 0 5 // CoralIP
+ 				>;
+-		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
+-			  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
+-			  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
++		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000>,
++			 <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000>,
++			 <0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
+ 		interrupt-parent = <&mpc5200_pic>;
+ 	};
  
- unsigned long radix__pmd_hugepage_update(struct mm_struct *mm, unsigned long addr,
+diff --git a/arch/powerpc/boot/dts/mucmc52.dts b/arch/powerpc/boot/dts/mucmc52.dts
+index c6c66306308d..e88a7bd4034d 100644
+--- a/arch/powerpc/boot/dts/mucmc52.dts
++++ b/arch/powerpc/boot/dts/mucmc52.dts
+@@ -106,9 +106,9 @@
+ 				0x8000 0 0 3 &mpc5200_pic 0 2 3
+ 				0x8000 0 0 4 &mpc5200_pic 0 1 3
+ 				>;
+-		ranges = <0x42000000 0 0x60000000 0x60000000 0 0x10000000
+-			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
+-			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
++		ranges = <0x42000000 0 0x60000000 0x60000000 0 0x10000000>,
++			 <0x02000000 0 0x90000000 0x90000000 0 0x10000000>,
++			 <0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
+ 	};
+ 
+ 	localbus {
+diff --git a/arch/powerpc/boot/dts/pcm030.dts b/arch/powerpc/boot/dts/pcm030.dts
+index b1bc731f7afd..5cee474dcc4c 100644
+--- a/arch/powerpc/boot/dts/pcm030.dts
++++ b/arch/powerpc/boot/dts/pcm030.dts
+@@ -90,9 +90,9 @@
+ 				 0xc800 0 0 2 &mpc5200_pic 1 2 3
+ 				 0xc800 0 0 3 &mpc5200_pic 1 3 3
+ 				 0xc800 0 0 4 &mpc5200_pic 0 0 3>;
+-		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
+-			  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
+-			  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
++		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000>,
++			 <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000>,
++			 <0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
+ 	};
+ 
+ 	localbus {
+diff --git a/arch/powerpc/boot/dts/pcm032.dts b/arch/powerpc/boot/dts/pcm032.dts
+index 780e13d99e7b..b6fdf861c7d6 100644
+--- a/arch/powerpc/boot/dts/pcm032.dts
++++ b/arch/powerpc/boot/dts/pcm032.dts
+@@ -87,9 +87,9 @@
+ 				 0xc800 0 0 2 &mpc5200_pic 1 2 3
+ 				 0xc800 0 0 3 &mpc5200_pic 1 3 3
+ 				 0xc800 0 0 4 &mpc5200_pic 0 0 3>;
+-		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
+-			  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
+-			  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
++		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000>,
++			 <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000>,
++			 <0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
+ 	};
+ 
+ 	localbus {
+diff --git a/arch/powerpc/boot/dts/tqm5200.dts b/arch/powerpc/boot/dts/tqm5200.dts
+index 9ed0bc78967e..40b139d92a19 100644
+--- a/arch/powerpc/boot/dts/tqm5200.dts
++++ b/arch/powerpc/boot/dts/tqm5200.dts
+@@ -200,8 +200,8 @@
+ 		clock-frequency = <0>; // From boot loader
+ 		interrupts = <2 8 0 2 9 0 2 10 0>;
+ 		bus-range = <0 0>;
+-		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
+-			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
+-			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
++		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000>,
++			 <0x02000000 0 0x90000000 0x90000000 0 0x10000000>,
++			 <0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
+ 	};
+ };
 -- 
-2.33.0
+2.17.1
 
