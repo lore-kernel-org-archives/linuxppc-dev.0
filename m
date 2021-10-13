@@ -2,68 +2,59 @@ Return-Path: <SRS0=X2ql=PB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F7ABC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 03:39:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB8CDC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 06:38:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C066D60E96
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 03:38:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C066D60E96
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
+	by mail.kernel.org (Postfix) with ESMTPS id F02B460235
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 06:38:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org F02B460235
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HTdYZ3TNkz3c9v
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 14:38:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.alibaba.com (client-ip=47.88.44.36;
- helo=out4436.biz.mail.alibaba.com; envelope-from=yun.wang@linux.alibaba.com;
- receiver=<UNKNOWN>)
-Received: from out4436.biz.mail.alibaba.com (out4436.biz.mail.alibaba.com
- [47.88.44.36])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HTjY90ylGz3083
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 17:38:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=tjArxxti;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
+ [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HTdY42HFGz2xY8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 14:38:31 +1100 (AEDT)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R291e4; CH=green; DM=||false|;
- DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04357; MF=yun.wang@linux.alibaba.com;
- NM=1; PH=DS; RN=31; SR=0; TI=SMTPD_---0Ure8ZJc_1634096291; 
-Received: from testdeMacBook-Pro.local(mailfrom:yun.wang@linux.alibaba.com
- fp:SMTPD_---0Ure8ZJc_1634096291) by smtp.aliyun-inc.com(127.0.0.1);
- Wed, 13 Oct 2021 11:38:12 +0800
-Subject: [RESEND PATCH v2 2/2] ftrace: do CPU checking after preemption
- disabled
-From: =?UTF-8?B?546L6LSH?= <yun.wang@linux.alibaba.com>
-To: Guo Ren <guoren@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- Ingo Molnar <mingo@redhat.com>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Paul Walmsley <paul.walmsley@sifive.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
- Joe Lawrence <joe.lawrence@redhat.com>,
- Colin Ian King <colin.king@canonical.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- "Peter Zijlstra (Intel)" <peterz@infradead.org>,
- Nicholas Piggin <npiggin@gmail.com>, Jisheng Zhang <jszhang@kernel.org>,
- linux-csky@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, live-patching@vger.kernel.org
-References: <b1d7fe43-ce84-0ed7-32f7-ea1d12d0b716@linux.alibaba.com>
-Message-ID: <83177827-53c3-408d-00a8-d5b4c43fbd05@linux.alibaba.com>
-Date: Wed, 13 Oct 2021 11:38:11 +0800
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:78.0)
- Gecko/20100101 Thunderbird/78.14.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HTjXN0lC2z2xX2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 17:38:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.a=rsa-sha256 header.s=201702 header.b=tjArxxti; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4HTjXK2t0qz4xbG;
+ Wed, 13 Oct 2021 17:38:09 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
+ s=201702; t=1634107091;
+ bh=vG5wu8rK/bYN0SCJfvAhVNcO15ZTCrwihNZzPlGYioU=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=tjArxxtiWKW8QOQvHragrEHJbtBkAH6yvJiBrlCtpKo/Jvxv34mapJ9Bk9B7iT5Xu
+ gHv9bYuIQ0YQpAYePJAC42B3GQEACJrC0vFeeJ9jUlGYXru4RHoODwhA6tNYJ1QsE4
+ qIqSxq6Gbx0cjLzqskoflQpITzbv8NeKPLpb1UPueCrm6TM9mVdmJDeKwnMTWLcJ6t
+ 8cOA5cuh+NmKK3Jl2D7VAA5VEi0rwAIwx5rTMDnqb8ujb/NjkN2dFC8/TCgJkM6vHJ
+ hDkGDeVBrlYYIEsfAPr1kjfKBJ5KwiGiKyDFlhCIJzNlY5ebt8QmgzkosjPGKGz30m
+ M7qszNN/ZDtXw==
+Date: Wed, 13 Oct 2021 17:38:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rob Herring <robh@kernel.org>
+Subject: Re: [RFC PATCH] powerpc: dts: Remove MPC5xxx platforms
+Message-ID: <20211013173808.7ab92035@canb.auug.org.au>
+In-Reply-To: <20211012153456.2844193-1-robh@kernel.org>
+References: <20211012153456.2844193-1-robh@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <b1d7fe43-ce84-0ed7-32f7-ea1d12d0b716@linux.alibaba.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="Sig_/hNT9L3ZDbI5k34wFOdCx2dr";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,61 +66,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With CONFIG_DEBUG_PREEMPT we observed reports like:
+--Sig_/hNT9L3ZDbI5k34wFOdCx2dr
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-  BUG: using smp_processor_id() in preemptible
-  caller is perf_ftrace_function_call+0x6f/0x2e0
-  CPU: 1 PID: 680 Comm: a.out Not tainted
-  Call Trace:
-   <TASK>
-   dump_stack_lvl+0x8d/0xcf
-   check_preemption_disabled+0x104/0x110
-   ? optimize_nops.isra.7+0x230/0x230
-   ? text_poke_bp_batch+0x9f/0x310
-   perf_ftrace_function_call+0x6f/0x2e0
-   ...
-   __text_poke+0x5/0x620
-   text_poke_bp_batch+0x9f/0x310
+Hi Rob,
 
-This telling us the CPU could be changed after task is preempted, and
-the checking on CPU before preemption will be invalid.
+On Tue, 12 Oct 2021 10:34:56 -0500 Rob Herring <robh@kernel.org> wrote:
+>
+> The mpc5xxx platforms have had dts warnings for some time which no one
+> seems to care to fix, so let's just remove the dts files.
+>=20
+> According to Arnd:
+> "Specifically, MPC5200B has a 15 year lifetime, which ends in
+> 11 months from now. The original bplan/Genesi Efika 5K2 was
+> quite popular at the time it came out, and there are probably
+> still some of those hanging around, but they came with Open
+> Firmware rather than relying on the dts files that ship with the
+> kernel.
+>=20
+> Grant Likely was the original maintainer for MPC52xx until 2011,
+> Anatolij Gustschin is still listed as maintainer since then but hasn't
+> been active in it for a while either. Anatolij can probably best judge
+> which of these boards are still in going to be used with future kernels,
+> but I suspect once you start removing bits from 52xx, the newer
+> but less common 512x platform can go away as well."
+>=20
+> Cc: Anatolij Gustschin <agust@denx.de>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+> Sending this out as a feeler to see if anyone cares. If anyone does,=20
+> please fix the warnings.
 
-Since now ftrace_test_recursion_trylock() will help to disable the
-preemption, this patch just do the checking after trylock() to address
-the issue.
+Thanks.  However .. :-)
 
-CC: Steven Rostedt <rostedt@goodmis.org>
-Reported-by: Abaci <abaci@linux.alibaba.com>
-Signed-off-by: Michael Wang <yun.wang@linux.alibaba.com>
----
- kernel/trace/trace_event_perf.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+FATAL ERROR: Couldn't open "mpc5200b.dtsi": No such file or directory
+make[2]: *** [/home/sfr/next/next/scripts/Makefile.lib:358: arch/powerpc/bo=
+ot/dts/digsy_mtc.dtb] Error 1
 
-diff --git a/kernel/trace/trace_event_perf.c b/kernel/trace/trace_event_perf.c
-index 6aed10e..fba8cb7 100644
---- a/kernel/trace/trace_event_perf.c
-+++ b/kernel/trace/trace_event_perf.c
-@@ -441,13 +441,13 @@ void perf_trace_buf_update(void *record, u16 type)
- 	if (!rcu_is_watching())
- 		return;
+$ grep -wrl mpc5200b.dtsi
+arch/powerpc/boot/dts/digsy_mtc.dts
 
--	if ((unsigned long)ops->private != smp_processor_id())
--		return;
--
- 	bit = ftrace_test_recursion_trylock(ip, parent_ip);
- 	if (bit < 0)
- 		return;
+missed one :-)
+--=20
+Cheers,
+Stephen Rothwell
 
-+	if ((unsigned long)ops->private != smp_processor_id())
-+		goto out;
-+
- 	event = container_of(ops, struct perf_event, ftrace_ops);
+--Sig_/hNT9L3ZDbI5k34wFOdCx2dr
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
- 	/*
--- 
-1.8.3.1
+-----BEGIN PGP SIGNATURE-----
 
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmFmftAACgkQAVBC80lX
+0GySTgf/SwHWqYw3xEIGHbUBCpLmTzIJWw0cXaAN8VFo6Lpsb/H7xKz/Cu3fUYyX
+Z7veE1EKdxvZfcnE4rwSHEL8TvtLp3U3yAls5foblypO301bXEISgNaYxAHKSKeV
+S7D0KIY0U8fcSaM0HrBhwxTECEBGJtSwf2K/I81GlIKO8h+dt6ajec974Ku8mMMc
+LWukJfatx9F0Ex7prCIlJA1S/gnw8RO7x0GTaF8mM4ULay59UQbn2W+5W0MEs58g
+zyQFj8yL5OqaV6ZlzPhGIKQc1DLTPlQLvI7iuF2CxDKomoHvTPSiGqRtd/p3qnrt
+KR+wol1v6zuUZu7DClfczJuiGJ3vnw==
+=oWcO
+-----END PGP SIGNATURE-----
+
+--Sig_/hNT9L3ZDbI5k34wFOdCx2dr--
