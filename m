@@ -2,61 +2,66 @@ Return-Path: <SRS0=X2ql=PB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51534C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:15:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A030CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:16:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE15261151
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:15:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CE15261151
+	by mail.kernel.org (Postfix) with ESMTPS id C519661151
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:16:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C519661151
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=denx.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HV6L61zdRz305J
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 09:15:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HV6Lq3YQZz3cXs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 09:16:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256 header.s=phobos-20191101 header.b=Y9XhhAlC;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256 header.s=phobos-20191101 header.b=B+fZN8q1;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=denx.de
- (client-ip=85.214.62.61; helo=phobos.denx.de; envelope-from=agust@denx.de;
- receiver=<UNKNOWN>)
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=agust@denx.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256
- header.s=phobos-20191101 header.b=Y9XhhAlC; 
+ header.s=phobos-20191101 header.b=B+fZN8q1; 
  dkim-atps=neutral
-Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HV6GY040nz2yPG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 09:12:36 +1100 (AEDT)
-Received: from crub.agik.hopto.org (pd95f1d7c.dip0.t-ipconnect.de
- [217.95.29.124])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HV6GY6ndCz2yPG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 09:12:37 +1100 (AEDT)
+Received: from crub (pd95f1d7c.dip0.t-ipconnect.de [217.95.29.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
  (Authenticated sender: agust@denx.de)
- by phobos.denx.de (Postfix) with ESMTPSA id DDEC28360A;
- Thu, 14 Oct 2021 00:05:33 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPSA id 8D8E181761;
+ Thu, 14 Oct 2021 00:12:33 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
- s=phobos-20191101; t=1634162734;
- bh=lCCP2kpnABG9trPHuTzlDpEXA/5iYV/q/jG2UOBG/kY=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Y9XhhAlC2zq3AKBzSg/3aJbk3AgCRVgfGPkpFMS77YeRWVZbHp63A9Gu2/8KXdliX
- +CjzisKvVEAm+xBxc7jq/Sfm0l7C8Ezttu04HGdpPcHNRIBKkBxPu6k6U8UgizMCqs
- yVG1Lqn/YGKpIOsuZFG93XfCH6B3pNQGxELTuGnCOzpHB0LKJOpa3evT1XfigE12WH
- KMw/B4YMYhC21olNWtrxblxHlTEI/3RVM8NXXzTB9rk/SyTDOH/Kpau9pgEPjpCVvN
- R2ViTyjm87LLT4d+PZRPoRHU61c8wCULvjPlXASO7OamqH+t8tTsCfB/BEQHcO0TF+
- 8s9ibS65PhEng==
+ s=phobos-20191101; t=1634163153;
+ bh=vDzTdSOJ5R5ENuBq/d0LcDdztJjFAHgx46FobxeyMS8=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=B+fZN8q1o1HRGh4yn42cK/RRHKOEg5c3cOTsMK/dzaae2o56wpiUrJy/V/tlG49+5
+ Q+B9DR9LUi8Cc+5wZI8FrvEUieXsh4PiCllh9wpxB/rdmS2UJ0G/gUdjPYSuNq5fMS
+ tnvnpFcPL5Sv29Hh4plzOlngnZOhoL7fP67h7CnQ2jIm+Om9aYM46gAoPtbnUN4XXd
+ Mp74ybMfij+E4DhTmPpXTkQe9KHrHkcOw2nVp7fIF1Ypsm9ZwRderNQhPl5w1WE6on
+ vZBB0+XUQAIiL7C5p+GutuNQwHX2cJMrjRoTgP7Z1eSuJidGeSovnE3oNNhbm8D1Tn
+ J3jKVijtJNxdw==
+Date: Thu, 14 Oct 2021 00:12:32 +0200
 From: Anatolij Gustschin <agust@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/4] powerpc/5200: dts: add missing pci ranges
-Date: Thu, 14 Oct 2021 00:05:29 +0200
-Message-Id: <20211013220532.24759-2-agust@denx.de>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20211013220532.24759-1-agust@denx.de>
-References: <20211013220532.24759-1-agust@denx.de>
+To: Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh+dt@kernel.org>
+Subject: Re: linux-next: build warnings in Linus' tree
+Message-ID: <20211014001232.3becbe99@crub>
+In-Reply-To: <CAK8P3a1EcNuxT-w-8w-HDr2+idsP=vFZ3Cn27fX7o56GOuu_Cg@mail.gmail.com>
+References: <20211008164728.30e3d3a3@canb.auug.org.au>
+ <20211011082704.3cff4568@canb.auug.org.au>
+ <CAL_JsqJE_GHnehBz-71BOGXfjm6q2p0u6FQA5KwO8zK_i1LpMQ@mail.gmail.com>
+ <CAK8P3a1EcNuxT-w-8w-HDr2+idsP=vFZ3Cn27fX7o56GOuu_Cg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-Virus-Scanned: clamav-milter 0.103.2 at phobos.denx.de
 X-Virus-Status: Clean
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,36 +75,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- Paul Mackerras <paulus@samba.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add ranges property to fix build warnings:
-Warning (pci_bridge): /pci@f0000d00: missing ranges for PCI bridge (or not a bridge)
+Hi Arnd, Rob,
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
- arch/powerpc/boot/dts/mpc5200b.dtsi | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+On Tue, 12 Oct 2021 16:39:56 +0200
+Arnd Bergmann arnd@arndb.de wrote:
+...
+>Grant Likely was the original maintainer for MPC52xx until 2011,
+>Anatolij Gustschin is still listed as maintainer since then but hasn't
+>been active in it for a while either. Anatolij can probably best judge
+>which of these boards are still in going to be used with future kernels,
+>but I suspect once you start removing bits from 52xx, the newer
+>but less common 512x platform can go away as well.
 
-diff --git a/arch/powerpc/boot/dts/mpc5200b.dtsi b/arch/powerpc/boot/dts/mpc5200b.dtsi
-index 648fe31795f4..8c645d2bc455 100644
---- a/arch/powerpc/boot/dts/mpc5200b.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5200b.dtsi
-@@ -276,7 +276,9 @@
- 		clock-frequency = <0>; // From boot loader
- 		interrupts = <2 8 0 2 9 0 2 10 0>;
- 		bus-range = <0 0>;
--		// ranges = need to add
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000>,
-+			 <0x02000000 0 0x90000000 0x90000000 0 0x10000000>,
-+			 <0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
- 	};
- 
- 	localbus: localbus {
--- 
-2.17.1
+many of these boards are still used, i.e. o2d*, digsy_mtc, tqm5200.
+I've sent first series to fix some warnings. Other dts fixes
+require driver changes, so it will take some time to fix them.
 
+Anatolij
