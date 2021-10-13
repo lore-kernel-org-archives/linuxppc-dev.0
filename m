@@ -2,60 +2,63 @@ Return-Path: <SRS0=X2ql=PB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15547C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:13:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7493FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:14:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 65D5861130
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:13:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 65D5861130
+	by mail.kernel.org (Postfix) with ESMTPS id B0AFB61163
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Oct 2021 22:14:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B0AFB61163
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=denx.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HV6Hx6QGFz3c91
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 09:13:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HV6Jg03T1z3cFY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 09:14:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256 header.s=phobos-20191101 header.b=Ker72RLk;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256 header.s=phobos-20191101 header.b=iY+rL/fP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=denx.de
- (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
- envelope-from=agust@denx.de; receiver=<UNKNOWN>)
+ (client-ip=85.214.62.61; helo=phobos.denx.de; envelope-from=agust@denx.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256
- header.s=phobos-20191101 header.b=Ker72RLk; 
+ header.s=phobos-20191101 header.b=iY+rL/fP; 
  dkim-atps=neutral
-Received: from phobos.denx.de (phobos.denx.de
- [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+X-Greylist: delayed 406 seconds by postgrey-1.36 at boromir;
+ Thu, 14 Oct 2021 09:12:32 AEDT
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HV6GT1dwVz2yPG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 09:12:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HV6GS6j9hz2yP7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 09:12:32 +1100 (AEDT)
 Received: from crub.agik.hopto.org (pd95f1d7c.dip0.t-ipconnect.de
  [217.95.29.124])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
  (Authenticated sender: agust@denx.de)
- by phobos.denx.de (Postfix) with ESMTPSA id A991D835F5;
- Thu, 14 Oct 2021 00:05:32 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPSA id 9DDC983615;
+ Thu, 14 Oct 2021 00:05:34 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
- s=phobos-20191101; t=1634162733;
- bh=6nMPFPuHyhN5ls8iUQT3OcQ653qjKPBIRYt3/m7YKaA=;
- h=From:To:Cc:Subject:Date:From;
- b=Ker72RLk8hNyrRSai7W0AWAcX/HaNGc+z8B79ZUl7/IumYS1OEitXv4mJuVnSDy0X
- C1afdiVchnRha75SBPOspZdh/O68e8ace0uj3KWl2aNAffQGtSlzSpGtXENXmPp3Ym
- bZy1inQMOEw4Sh1yhfYhZJr6OGV8A5jR02sJAsgUHBPj3X9DSPPId5Tdi+m1d6Q/Wr
- O8ChaXQFpA5/QzJXFrsGt9LrirvBbJoMCpdzIsyhz+m/Xh9HmAUfDPLq3MLHIpPxZ4
- /hvDcnzRUY7sQF5s7dZCge/YHDhmbtjAmCEnV65wfrWwsGfehUrEIdi8gvawigtEmH
- Sn7+SBHFKU/sA==
+ s=phobos-20191101; t=1634162734;
+ bh=uZm5D2+CRm7bH5HFGW3gUhOTGOqsiOrv5b4dSLnjlUQ=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=iY+rL/fPzv9+GTvNOazn778jJn80o/iahhzIwkZEDscxCQlerLX/6SQPFTx9zoLwW
+ w6WefyhXzCcheTXW056K1nCiriaH2/o6dYBoiM67toTcFmX9MICj1unhT1km0w09OO
+ +uFH0ETkAvnEIdZjq+Iih7KP1Z8KzqThb4c5sFI7cVSt7W8DpQuPLe+Gh+ZQAlQbdz
+ eI3myiBXFtNN7P8y05EHTBCmkOiVe40/AmuQk+2/QrmCbDim1U/jPCdIsnTPluKyaI
+ t03oMiY/O0evABmIm0A9GvYadHxwHuR+qWjIaXSp1TA68lPPiZW2ZjgFbWIPy9YGw+
+ OjkcyX+jdMdKQ==
 From: Anatolij Gustschin <agust@denx.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/4] Update mpc5200 dts files to fix warnings
-Date: Thu, 14 Oct 2021 00:05:28 +0200
-Message-Id: <20211013220532.24759-1-agust@denx.de>
+Subject: [PATCH 3/4] powerpc/5200: dts: fix memory node unit name
+Date: Thu, 14 Oct 2021 00:05:31 +0200
+Message-Id: <20211013220532.24759-4-agust@denx.de>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20211013220532.24759-1-agust@denx.de>
+References: <20211013220532.24759-1-agust@denx.de>
 X-Virus-Scanned: clamav-milter 0.103.2 at phobos.denx.de
 X-Virus-Status: Clean
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -76,40 +79,181 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series fixes localbus, memory and pci node build warnings.
-It was tested with current linux-next on digsy_mtc and tqm5200
-boards.
+Fixes build warnings:
+Warning (unit_address_vs_reg): /memory: node has a reg or ranges property, but no unit name
 
-Anatolij Gustschin (4):
-  powerpc/5200: dts: add missing pci ranges
-  powerpc/5200: dts: fix pci ranges warnings
-  powerpc/5200: dts: fix memory node unit name
-  powerpc/5200: dts: fix localbus node warnings
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+ arch/powerpc/boot/dts/charon.dts    | 2 +-
+ arch/powerpc/boot/dts/digsy_mtc.dts | 2 +-
+ arch/powerpc/boot/dts/lite5200.dts  | 2 +-
+ arch/powerpc/boot/dts/lite5200b.dts | 2 +-
+ arch/powerpc/boot/dts/media5200.dts | 2 +-
+ arch/powerpc/boot/dts/mpc5200b.dtsi | 2 +-
+ arch/powerpc/boot/dts/o2d.dts       | 2 +-
+ arch/powerpc/boot/dts/o2d.dtsi      | 2 +-
+ arch/powerpc/boot/dts/o2dnt2.dts    | 2 +-
+ arch/powerpc/boot/dts/o3dnt.dts     | 2 +-
+ arch/powerpc/boot/dts/pcm032.dts    | 2 +-
+ arch/powerpc/boot/dts/tqm5200.dts   | 2 +-
+ 12 files changed, 12 insertions(+), 12 deletions(-)
 
- arch/powerpc/boot/dts/a3m071.dts    | 12 ++++-----
- arch/powerpc/boot/dts/a4m072.dts    | 26 ++++++++++----------
- arch/powerpc/boot/dts/charon.dts    | 22 ++++++++---------
- arch/powerpc/boot/dts/cm5200.dts    |  7 ++++--
- arch/powerpc/boot/dts/digsy_mtc.dts | 24 +++++++++---------
- arch/powerpc/boot/dts/lite5200.dts  | 12 ++++-----
- arch/powerpc/boot/dts/lite5200b.dts | 14 ++++++-----
- arch/powerpc/boot/dts/media5200.dts | 28 +++++++++++----------
- arch/powerpc/boot/dts/motionpro.dts | 32 +++++++++++++-----------
- arch/powerpc/boot/dts/mpc5200b.dtsi |  8 +++---
- arch/powerpc/boot/dts/mucmc52.dts   | 38 +++++++++++++++--------------
- arch/powerpc/boot/dts/o2d.dts       | 12 +++++----
- arch/powerpc/boot/dts/o2d.dtsi      | 14 ++++++-----
- arch/powerpc/boot/dts/o2d300.dts    | 10 +++++---
- arch/powerpc/boot/dts/o2dnt2.dts    | 12 +++++----
- arch/powerpc/boot/dts/o2i.dts       |  4 +--
- arch/powerpc/boot/dts/o2mnt.dts     |  4 +--
- arch/powerpc/boot/dts/o3dnt.dts     | 12 +++++----
- arch/powerpc/boot/dts/pcm030.dts    |  8 +++---
- arch/powerpc/boot/dts/pcm032.dts    | 34 ++++++++++++++------------
- arch/powerpc/boot/dts/tqm5200.dts   | 12 ++++-----
- arch/powerpc/boot/dts/uc101.dts     | 14 ++++++-----
- 22 files changed, 195 insertions(+), 164 deletions(-)
-
+diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
+index 6f9fe88a5f36..ea6e76ae2545 100644
+--- a/arch/powerpc/boot/dts/charon.dts
++++ b/arch/powerpc/boot/dts/charon.dts
+@@ -35,7 +35,7 @@
+ 		};
+ 	};
+ 
+-	memory {
++	memory@0 {
+ 		device_type = "memory";
+ 		reg = <0x00000000 0x08000000>;	// 128MB
+ 	};
+diff --git a/arch/powerpc/boot/dts/digsy_mtc.dts b/arch/powerpc/boot/dts/digsy_mtc.dts
+index 010156649bfe..57024a4c1e7d 100644
+--- a/arch/powerpc/boot/dts/digsy_mtc.dts
++++ b/arch/powerpc/boot/dts/digsy_mtc.dts
+@@ -16,7 +16,7 @@
+ 	model = "intercontrol,digsy-mtc";
+ 	compatible = "intercontrol,digsy-mtc";
+ 
+-	memory {
++	memory@0 {
+ 		reg = <0x00000000 0x02000000>;	// 32MB
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
+index 84a12e7915e9..b9d8487813b4 100644
+--- a/arch/powerpc/boot/dts/lite5200.dts
++++ b/arch/powerpc/boot/dts/lite5200.dts
+@@ -32,7 +32,7 @@
+ 		};
+ 	};
+ 
+-	memory {
++	memory@0 {
+ 		device_type = "memory";
+ 		reg = <0x00000000 0x04000000>;	// 64MB
+ 	};
+diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
+index c361c59a9681..7e2d91c7cb66 100644
+--- a/arch/powerpc/boot/dts/lite5200b.dts
++++ b/arch/powerpc/boot/dts/lite5200b.dts
+@@ -31,7 +31,7 @@
+ 		led4 { gpios = <&gpio_simple 2 1>; };
+ 	};
+ 
+-	memory {
++	memory@0 {
+ 		reg = <0x00000000 0x10000000>;	// 256MB
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/media5200.dts b/arch/powerpc/boot/dts/media5200.dts
+index f7d7538eb69d..96524ede16cd 100644
+--- a/arch/powerpc/boot/dts/media5200.dts
++++ b/arch/powerpc/boot/dts/media5200.dts
+@@ -32,7 +32,7 @@
+ 		};
+ 	};
+ 
+-	memory {
++	memory@0 {
+ 		reg = <0x00000000 0x08000000>;	// 128MB RAM
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/mpc5200b.dtsi b/arch/powerpc/boot/dts/mpc5200b.dtsi
+index 8c645d2bc455..ffa82c7e1055 100644
+--- a/arch/powerpc/boot/dts/mpc5200b.dtsi
++++ b/arch/powerpc/boot/dts/mpc5200b.dtsi
+@@ -33,7 +33,7 @@
+ 		};
+ 	};
+ 
+-	memory: memory {
++	memory: memory@0 {
+ 		device_type = "memory";
+ 		reg = <0x00000000 0x04000000>;	// 64MB
+ 	};
+diff --git a/arch/powerpc/boot/dts/o2d.dts b/arch/powerpc/boot/dts/o2d.dts
+index 24a46f65e529..e0a8d3034417 100644
+--- a/arch/powerpc/boot/dts/o2d.dts
++++ b/arch/powerpc/boot/dts/o2d.dts
+@@ -12,7 +12,7 @@
+ 	model = "ifm,o2d";
+ 	compatible = "ifm,o2d";
+ 
+-	memory {
++	memory@0 {
+ 		reg = <0x00000000 0x08000000>;  // 128MB
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/o2d.dtsi b/arch/powerpc/boot/dts/o2d.dtsi
+index 6661955a2be4..b55a9e5bd828 100644
+--- a/arch/powerpc/boot/dts/o2d.dtsi
++++ b/arch/powerpc/boot/dts/o2d.dtsi
+@@ -19,7 +19,7 @@
+ 	model = "ifm,o2d";
+ 	compatible = "ifm,o2d";
+ 
+-	memory {
++	memory@0 {
+ 		reg = <0x00000000 0x04000000>;	// 64MB
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/o2dnt2.dts b/arch/powerpc/boot/dts/o2dnt2.dts
+index eeba7f5507d5..c2eedbd1f5fc 100644
+--- a/arch/powerpc/boot/dts/o2dnt2.dts
++++ b/arch/powerpc/boot/dts/o2dnt2.dts
+@@ -12,7 +12,7 @@
+ 	model = "ifm,o2dnt2";
+ 	compatible = "ifm,o2d";
+ 
+-	memory {
++	memory@0 {
+ 		reg = <0x00000000 0x08000000>;  // 128MB
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/o3dnt.dts b/arch/powerpc/boot/dts/o3dnt.dts
+index fd00396b0593..e4c1bdd41271 100644
+--- a/arch/powerpc/boot/dts/o3dnt.dts
++++ b/arch/powerpc/boot/dts/o3dnt.dts
+@@ -12,7 +12,7 @@
+ 	model = "ifm,o3dnt";
+ 	compatible = "ifm,o2d";
+ 
+-	memory {
++	memory@0 {
+ 		reg = <0x00000000 0x04000000>;  // 64MB
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/pcm032.dts b/arch/powerpc/boot/dts/pcm032.dts
+index b6fdf861c7d6..d00f13b62510 100644
+--- a/arch/powerpc/boot/dts/pcm032.dts
++++ b/arch/powerpc/boot/dts/pcm032.dts
+@@ -20,7 +20,7 @@
+ 	model = "phytec,pcm032";
+ 	compatible = "phytec,pcm032";
+ 
+-	memory {
++	memory@0 {
+ 		reg = <0x00000000 0x08000000>;	// 128MB
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/tqm5200.dts b/arch/powerpc/boot/dts/tqm5200.dts
+index 40b139d92a19..372177b19e60 100644
+--- a/arch/powerpc/boot/dts/tqm5200.dts
++++ b/arch/powerpc/boot/dts/tqm5200.dts
+@@ -32,7 +32,7 @@
+ 		};
+ 	};
+ 
+-	memory {
++	memory@0 {
+ 		device_type = "memory";
+ 		reg = <0x00000000 0x04000000>;	// 64MB
+ 	};
 -- 
 2.17.1
 
