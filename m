@@ -2,54 +2,54 @@ Return-Path: <SRS0=Ntje=PC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AB38C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:24:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3EDDC43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:24:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 96115600CC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:24:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 96115600CC
+	by mail.kernel.org (Postfix) with ESMTPS id EC775600CC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:24:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EC775600CC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HVKB81561z2ynB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 17:24:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HVKBb4k4rz3cC9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 17:24:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HVK9d4xTmz2yKT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 17:24:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HVK9k0224z2ym5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 17:24:09 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HVK9T6nbXz9sSL;
- Thu, 14 Oct 2021 08:23:57 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HVK9V2XGPz9sST;
+ Thu, 14 Oct 2021 08:23:58 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id CvtZxXja-epj; Thu, 14 Oct 2021 08:23:57 +0200 (CEST)
+ with ESMTP id ywvM8ua99sUG; Thu, 14 Oct 2021 08:23:58 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HVK9T5vlfz9sSK;
- Thu, 14 Oct 2021 08:23:57 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HVK9V1df3z9sSK;
+ Thu, 14 Oct 2021 08:23:58 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B25FB8B788;
- Thu, 14 Oct 2021 08:23:57 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2155E8B788;
+ Thu, 14 Oct 2021 08:23:58 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 9CecoLzJnjFF; Thu, 14 Oct 2021 08:23:57 +0200 (CEST)
+ with ESMTP id LEgVpphJSeUz; Thu, 14 Oct 2021 08:23:58 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.231])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 670478B763;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D44DA8B763;
  Thu, 14 Oct 2021 08:23:57 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19E5oQQr2266030
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19E5oQBY2266038
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Thu, 14 Oct 2021 07:50:26 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19E5oQCx2266029;
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19E5oQ4u2266037;
  Thu, 14 Oct 2021 07:50:26 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
@@ -61,17 +61,17 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v2 09/13] lkdtm: Force do_nothing() out of line
-Date: Thu, 14 Oct 2021 07:49:58 +0200
-Message-Id: <44c2261293843b71cd0a7f485f889dd51deb5fe7.1634190022.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 11/13] lkdtm: Fix lkdtm_EXEC_RODATA()
+Date: Thu, 14 Oct 2021 07:50:00 +0200
+Message-Id: <44946ed0340013a52f8acdee7d6d0781f145cd6b.1634190022.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1634190022.git.christophe.leroy@csgroup.eu>
 References: <cover.1634190022.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634190596; l=1269; s=20211009;
- h=from:subject:message-id; bh=nSN/ioO339qfxQaSJCJwz7QKogrcJ3f1Q+xuI0OSdUc=;
- b=SZl099RfUAV+FVdlnVISlQznXLCQsoqksayWb2M+8ULE2HhrQME0NQADNu3fs/gMPsgAnsTZ9Esk
- Np5U4MTuD2D1rOZ7sGCel7PdwzwFG+ENEKVrBlWY5U/OCStZGBJg
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634190596; l=1315; s=20211009;
+ h=from:subject:message-id; bh=rb6s8T8RzgppuRF6clvJIPiZDvSiUgRo2Ftj9cKfCbI=;
+ b=IomnMzuLREpm22pqHiUGM7GaxjWQw6U4JqCv8E/AD7rCX5OHbqBvUX0igIGbFZcJnsdwgmpcgCOZ
+ V9VbVBWuCT2ksy6IfSzsaHiA2GEOl5ZkQT1MMB8AK72+hu6d6ibU
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -93,41 +93,43 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-LKDTM tests display that the run do_nothing() at a given
-address, but in reality do_nothing() is inlined into the
-caller.
+Behind its location, lkdtm_EXEC_RODATA() executes
+lkdtm_rodata_do_nothing() which is a real function,
+not a copy of do_nothing().
 
-Force it out of line so that it really runs text at the
-displayed address.
+So executes it directly instead of using execute_location().
 
-Acked-by: Kees Cook <keescook@chromium.org>
+This is necessary because following patch will fix execute_location()
+to use a copy of the function descriptor of do_nothing() and
+function descriptor of lkdtm_rodata_do_nothing() might be different.
+
+And fix displayed addresses by dereferencing the function descriptors.
+
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/misc/lkdtm/perms.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/misc/lkdtm/perms.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index 2dede2ef658f..60b3b2fe929d 100644
+index 035fcca441f0..5266dc28df6e 100644
 --- a/drivers/misc/lkdtm/perms.c
 +++ b/drivers/misc/lkdtm/perms.c
-@@ -21,7 +21,7 @@
- /* This is non-const, so it will end up in the .data section. */
- static u8 data_area[EXEC_SIZE];
+@@ -153,7 +153,14 @@ void lkdtm_EXEC_VMALLOC(void)
  
--/* This is cost, so it will end up in the .rodata section. */
-+/* This is const, so it will end up in the .rodata section. */
- static const unsigned long rodata = 0xAA55AA55;
- 
- /* This is marked __ro_after_init, so it should ultimately be .rodata. */
-@@ -31,7 +31,7 @@ static unsigned long ro_after_init __ro_after_init = 0x55AA5500;
-  * This just returns to the caller. It is designed to be copied into
-  * non-executable memory regions.
-  */
--static void do_nothing(void)
-+static noinline void do_nothing(void)
+ void lkdtm_EXEC_RODATA(void)
  {
- 	return;
+-	execute_location(lkdtm_rodata_do_nothing, CODE_AS_IS);
++	pr_info("attempting ok execution at %px\n",
++		dereference_function_descriptor(do_nothing));
++	do_nothing();
++
++	pr_info("attempting bad execution at %px\n",
++		dereference_function_descriptor(lkdtm_rodata_do_nothing));
++	lkdtm_rodata_do_nothing();
++	pr_err("FAIL: func returned\n");
  }
+ 
+ void lkdtm_EXEC_USERSPACE(void)
 -- 
 2.31.1
 
