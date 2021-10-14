@@ -2,19 +2,19 @@ Return-Path: <SRS0=Ntje=PC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9989BC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:25:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A331CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:26:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1BF1561156
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:25:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1BF1561156
+	by mail.kernel.org (Postfix) with ESMTPS id 356FF61152
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:26:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 356FF61152
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HVKCW5wQbz3cQN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 17:25:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HVKCz69TBz3c59
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 17:26:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,35 +22,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HVK9v5Dqjz3bWb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 17:24:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HVKB1235sz3bjN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 17:24:24 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HVK9X1GY9z9sSd;
- Thu, 14 Oct 2021 08:24:00 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HVK9Y0wtgz9sSh;
+ Thu, 14 Oct 2021 08:24:01 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id QjC74sV80z94; Thu, 14 Oct 2021 08:24:00 +0200 (CEST)
+ with ESMTP id xEpU4t-_hzV8; Thu, 14 Oct 2021 08:24:01 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HVK9W11DPz9sSX;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HVK9W4L3pz9sSK;
  Thu, 14 Oct 2021 08:23:59 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0C6FB8B788;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7EBAE8B788;
  Thu, 14 Oct 2021 08:23:59 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ugMc1xH9Fww5; Thu, 14 Oct 2021 08:23:58 +0200 (CEST)
+ with ESMTP id GT0Cp90ehmlN; Thu, 14 Oct 2021 08:23:59 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.231])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B53B48B763;
- Thu, 14 Oct 2021 08:23:58 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 21F058B763;
+ Thu, 14 Oct 2021 08:23:59 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19E5oPCJ2265998
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19E5oQYu2266010
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Thu, 14 Oct 2021 07:50:25 +0200
+ Thu, 14 Oct 2021 07:50:26 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19E5oP5E2265997;
- Thu, 14 Oct 2021 07:50:25 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19E5oQDw2266009;
+ Thu, 14 Oct 2021 07:50:26 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -61,18 +61,17 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v2 01/13] powerpc: Move 'struct ppc64_opd_entry' back into
- asm/elf.h
-Date: Thu, 14 Oct 2021 07:49:50 +0200
-Message-Id: <42d2a571677e60082c0a5b3e52e855aa58c0b1fc.1634190022.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 04/13] powerpc: Prepare func_desc_t for refactorisation
+Date: Thu, 14 Oct 2021 07:49:53 +0200
+Message-Id: <9c5dfd474978b95044bea23f2c6ecfcd0e70be36.1634190022.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1634190022.git.christophe.leroy@csgroup.eu>
 References: <cover.1634190022.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634190596; l=1879; s=20211009;
- h=from:subject:message-id; bh=2f4ibwhAezmqIACsGc1fDVfrk+2UKNH5S1fknYBY7Tw=;
- b=LoEdUcLtxLfXXffuYAaf27d1G5gpJ8L6VCpwG27CcfyNOWgMyG2ghHVz/bSVM5bx8j+Z2EO2NByo
- PnuivXqWBwJVG2wqbP5zJfEKx05xvKkG+E6ydde9Lv5Jw97aF7+R
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634190596; l=1982; s=20211009;
+ h=from:subject:message-id; bh=xaEIMhoO1iu6jIQRZVCIT+Eww/WREG5Dwrfz1rPUWtk=;
+ b=8Ir9TJ6MIw2RLbZG6Si6TAr4RCB3gm8vbl5kr7oxBMxtdSEzi7oItu0KpctWd6X54AbJ6LLJaoYt
+ POQStJJBDmkGbNm6iXhxAbB1ygkEztilH7NmMOr64weRaH303Vr0
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -94,58 +93,78 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-'struct ppc64_opd_entry' doesn't belong to uapi/asm/elf.h
+In preparation of making func_desc_t generic, change it to
+a struct containing 'addr' element.
 
-It was initially in module_64.c and commit 2d291e902791 ("Fix compile
-failure with non modular builds") moved it into asm/elf.h
+In addition this allows using single helpers common to ELFv1 and ELFv2.
 
-But it was by mistake added outside of __KERNEL__ section,
-therefore commit c3617f72036c ("UAPI: (Scripted) Disintegrate
-arch/powerpc/include/asm") moved it to uapi/asm/elf.h
-
-Move it back into asm/elf.h, this brings it back in line with
-IA64 and PARISC architectures.
-
-Fixes: 2d291e902791 ("Fix compile failure with non modular builds")
-Reviewed-by: Kees Cook <keescook@chromium.org>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/elf.h      | 6 ++++++
- arch/powerpc/include/uapi/asm/elf.h | 8 --------
- 2 files changed, 6 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/module_64.c | 34 +++++++++++++++------------------
+ 1 file changed, 15 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
-index b8425e3cfd81..a4406714c060 100644
---- a/arch/powerpc/include/asm/elf.h
-+++ b/arch/powerpc/include/asm/elf.h
-@@ -176,4 +176,10 @@ do {									\
- /* Relocate the kernel image to @final_address */
- void relocate(unsigned long final_address);
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 82908c9be627..dc99a3f6cee2 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -33,19 +33,13 @@
+ #ifdef PPC64_ELF_ABI_v2
  
-+/* There's actually a third entry here, but it's unused */
-+struct ppc64_opd_entry {
-+	unsigned long funcaddr;
-+	unsigned long r2;
-+};
-+
- #endif /* _ASM_POWERPC_ELF_H */
-diff --git a/arch/powerpc/include/uapi/asm/elf.h b/arch/powerpc/include/uapi/asm/elf.h
-index 860c59291bfc..308857123a08 100644
---- a/arch/powerpc/include/uapi/asm/elf.h
-+++ b/arch/powerpc/include/uapi/asm/elf.h
-@@ -289,12 +289,4 @@ typedef elf_fpreg_t elf_vsrreghalf_t32[ELF_NVSRHALFREG];
- /* Keep this the last entry.  */
- #define R_PPC64_NUM		253
+ /* An address is simply the address of the function. */
+-typedef unsigned long func_desc_t;
++typedef struct {
++	unsigned long addr;
++} func_desc_t;
  
--/* There's actually a third entry here, but it's unused */
--struct ppc64_opd_entry
+ static func_desc_t func_desc(unsigned long addr)
+ {
+-	return addr;
+-}
+-static unsigned long func_addr(unsigned long addr)
 -{
--	unsigned long funcaddr;
--	unsigned long r2;
--};
--
--
- #endif /* _UAPI_ASM_POWERPC_ELF_H */
+-	return addr;
+-}
+-static unsigned long stub_func_addr(func_desc_t func)
+-{
+-	return func;
++	return (func_desc_t){addr};
+ }
+ 
+ /* PowerPC64 specific values for the Elf64_Sym st_other field.  */
+@@ -68,15 +62,7 @@ typedef struct ppc64_opd_entry func_desc_t;
+ 
+ static func_desc_t func_desc(unsigned long addr)
+ {
+-	return *(struct ppc64_opd_entry *)addr;
+-}
+-static unsigned long func_addr(unsigned long addr)
+-{
+-	return func_desc(addr).addr;
+-}
+-static unsigned long stub_func_addr(func_desc_t func)
+-{
+-	return func.addr;
++	return *(func_desc_t *)addr;
+ }
+ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+ {
+@@ -93,6 +79,16 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
+ }
+ #endif
+ 
++static unsigned long func_addr(unsigned long addr)
++{
++	return func_desc(addr).addr;
++}
++
++static unsigned long stub_func_addr(func_desc_t func)
++{
++	return func.addr;
++}
++
+ #define STUB_MAGIC 0x73747562 /* stub */
+ 
+ /* Like PPC32, we need little trampolines to do > 24-bit jumps (into
 -- 
 2.31.1
 
