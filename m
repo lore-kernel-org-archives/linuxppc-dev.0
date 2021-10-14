@@ -2,56 +2,78 @@ Return-Path: <SRS0=Ntje=PC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83DD4C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 02:45:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AB38C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:24:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B182261130
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 02:45:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B182261130
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 96115600CC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:24:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 96115600CC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HVDK96cgPz3bjC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 13:45:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=UPWUMDS1;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HVKB81561z2ynB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 17:24:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HVDJT06HHz2xtT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 13:44:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=UPWUMDS1; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4HVDJS4kJrz4xb9;
- Thu, 14 Oct 2021 13:44:40 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1634179480;
- bh=PJyjoGNcjS93x8RYvVywazb6un3RK0YsMmizeepswDY=;
- h=From:To:Cc:Subject:Date:From;
- b=UPWUMDS1GCxIexe+jVNpYFsLBDqcNppe0vTFclInfZRuWbooJM4JYQrNULQVLd7iD
- 8FX2FN1GD6AMU0jWrOA1cdTknPuLYHh3zjZtqPff/pYfJfA3mvcaCRdVP9fTRxUnOs
- AuNsO5/2Tu9YsX7WMJjo52nR1oLP//r31ThGW9PY4OPdrpHHF9Cg4hKcaDIzc1K2Qx
- LzU4khzgyRaKl+pltybdcZcD2STsCcwvRxejePjvuDWEDqt4SnYkbZwZp6cSZ3X+sA
- Ni82gfXxAZunlncc7fjW8RNam5sqaTthzlD7gsQtrfHmikM3vUDacyLKRvAkdTfHED
- M2QOgPBWPaxkg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/dcr: Use cmplwi instead of 3-argument cmpli
-Date: Thu, 14 Oct 2021 13:44:24 +1100
-Message-Id: <20211014024424.528848-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HVK9d4xTmz2yKT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 17:24:03 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4HVK9T6nbXz9sSL;
+ Thu, 14 Oct 2021 08:23:57 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id CvtZxXja-epj; Thu, 14 Oct 2021 08:23:57 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HVK9T5vlfz9sSK;
+ Thu, 14 Oct 2021 08:23:57 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B25FB8B788;
+ Thu, 14 Oct 2021 08:23:57 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 9CecoLzJnjFF; Thu, 14 Oct 2021 08:23:57 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.231])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 670478B763;
+ Thu, 14 Oct 2021 08:23:57 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19E5oQQr2266030
+ (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+ Thu, 14 Oct 2021 07:50:26 +0200
+Received: (from chleroy@localhost)
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19E5oQCx2266029;
+ Thu, 14 Oct 2021 07:50:26 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
+ christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
+ Kees Cook <keescook@chromium.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH v2 09/13] lkdtm: Force do_nothing() out of line
+Date: Thu, 14 Oct 2021 07:49:58 +0200
+Message-Id: <44c2261293843b71cd0a7f485f889dd51deb5fe7.1634190022.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <cover.1634190022.git.christophe.leroy@csgroup.eu>
+References: <cover.1634190022.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634190596; l=1269; s=20211009;
+ h=from:subject:message-id; bh=nSN/ioO339qfxQaSJCJwz7QKogrcJ3f1Q+xuI0OSdUc=;
+ b=SZl099RfUAV+FVdlnVISlQznXLCQsoqksayWb2M+8ULE2HhrQME0NQADNu3fs/gMPsgAnsTZ9Esk
+ Np5U4MTuD2D1rOZ7sGCel7PdwzwFG+ENEKVrBlWY5U/OCStZGBJg
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
+ pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -64,55 +86,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ndesaulniers@google.com
+Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In dcr-low.S we use cmpli with three arguments, instead of four
-arguments as defined in the ISA:
+LKDTM tests display that the run do_nothing() at a given
+address, but in reality do_nothing() is inlined into the
+caller.
 
-	cmpli	cr0,r3,1024
+Force it out of line so that it really runs text at the
+displayed address.
 
-This appears to be a PPC440-ism, looking at the "PPC440x5 CPU Core
-User’s Manual" it shows cmpli having no L field, but implied to be 0 due
-to the core being 32-bit. It mentions that the ISA defines four
-arguments and recommends using cmplwi.
-
-dcr-low.S is only built 32-bit, because it is only built when
-DCR_NATIVE=y, which is only selected by 40x and 44x. Looking at the
-generated code (with gcc/gas) we see cmplwi as expected.
-
-Although gas is happy with the 3-argument version when building for
-32-bit, the LLVM assembler is not and errors out with:
-
-  arch/powerpc/sysdev/dcr-low.S:27:10: error: invalid operand for instruction
-   cmpli 0,%r3,1024; ...
-           ^
-
-Switching to the four argument version avoids any confusion when reading
-the ISA, fixes the issue with the LLVM assembler, and also means the
-code could be built 64-bit in future (though that's very unlikely).
-
-Reported-by: Nick Desaulniers <ndesaulniers@google.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Acked-by: Kees Cook <keescook@chromium.org>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/sysdev/dcr-low.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/misc/lkdtm/perms.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/dcr-low.S b/arch/powerpc/sysdev/dcr-low.S
-index efeeb1b885a1..329b9c4ae542 100644
---- a/arch/powerpc/sysdev/dcr-low.S
-+++ b/arch/powerpc/sysdev/dcr-low.S
-@@ -11,7 +11,7 @@
- #include <asm/export.h>
+diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
+index 2dede2ef658f..60b3b2fe929d 100644
+--- a/drivers/misc/lkdtm/perms.c
++++ b/drivers/misc/lkdtm/perms.c
+@@ -21,7 +21,7 @@
+ /* This is non-const, so it will end up in the .data section. */
+ static u8 data_area[EXEC_SIZE];
  
- #define DCR_ACCESS_PROLOG(table) \
--	cmpli	cr0,r3,1024;	 \
-+	cmplwi	cr0,r3,1024;	 \
- 	rlwinm  r3,r3,4,18,27;   \
- 	lis     r5,table@h;      \
- 	ori     r5,r5,table@l;   \
+-/* This is cost, so it will end up in the .rodata section. */
++/* This is const, so it will end up in the .rodata section. */
+ static const unsigned long rodata = 0xAA55AA55;
+ 
+ /* This is marked __ro_after_init, so it should ultimately be .rodata. */
+@@ -31,7 +31,7 @@ static unsigned long ro_after_init __ro_after_init = 0x55AA5500;
+  * This just returns to the caller. It is designed to be copied into
+  * non-executable memory regions.
+  */
+-static void do_nothing(void)
++static noinline void do_nothing(void)
+ {
+ 	return;
+ }
 -- 
-2.25.1
+2.31.1
 
