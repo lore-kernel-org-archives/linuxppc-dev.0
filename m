@@ -2,19 +2,19 @@ Return-Path: <SRS0=Ntje=PC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E1FAC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:29:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BFC9C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:30:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7601561152
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:29:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7601561152
+	by mail.kernel.org (Postfix) with ESMTPS id CF05461156
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:30:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CF05461156
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HVKJ56rMCz3f8g
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 17:29:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HVKJZ3jjDz3fF7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 17:30:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,34 +22,34 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HVKBp27XVz3bVs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 17:25:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HVKBt6DT2z3bjM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 17:25:10 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HVK9j1xqvz9sSm;
- Thu, 14 Oct 2021 08:24:09 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HVK9k0jTLz9sSq;
+ Thu, 14 Oct 2021 08:24:10 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 8T1eWP1k3Xfe; Thu, 14 Oct 2021 08:24:09 +0200 (CEST)
+ with ESMTP id yoXsf0XoIfDi; Thu, 14 Oct 2021 08:24:10 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HVK9b0s7fz9sSq;
- Thu, 14 Oct 2021 08:24:03 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HVK9h6DJ2z9sSj;
+ Thu, 14 Oct 2021 08:24:08 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 06D928B788;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BF9868B788;
  Thu, 14 Oct 2021 08:24:03 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id YOZt75YhCGsT; Thu, 14 Oct 2021 08:24:02 +0200 (CEST)
+ with ESMTP id LKfjLBkU0UfT; Thu, 14 Oct 2021 08:24:03 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.231])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AB4D08B763;
- Thu, 14 Oct 2021 08:24:02 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 332298B763;
+ Thu, 14 Oct 2021 08:24:03 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19E5oQwG2266018
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19E5oQlL2266026
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Thu, 14 Oct 2021 07:50:26 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19E5oQiY2266017;
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19E5oQWa2266025;
  Thu, 14 Oct 2021 07:50:26 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
@@ -61,18 +61,18 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v2 06/13] asm-generic: Use HAVE_FUNCTION_DESCRIPTORS to define
- associated stubs
-Date: Thu, 14 Oct 2021 07:49:55 +0200
-Message-Id: <4fda65cda906e56aa87806b658e0828c64792403.1634190022.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 08/13] asm-generic: Refactor
+ dereference_[kernel]_function_descriptor()
+Date: Thu, 14 Oct 2021 07:49:57 +0200
+Message-Id: <865b5c872814e3291fe7afabcc110f53b3457b56.1634190022.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1634190022.git.christophe.leroy@csgroup.eu>
 References: <cover.1634190022.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634190596; l=4062; s=20211009;
- h=from:subject:message-id; bh=LhyQYe7RP81WUTHALJOpWC1Lt2DQ8Rp4VwGeHh17mYA=;
- b=rBwxpaJ21oQnWHzzdBFrVeqf4utTMUIrqI7e/bqp87+DvGeM/OiOV2OYS0aUUzBdSMyqK0c4z3JQ
- RrUc45vZB4oU5M1UpburIiInVAGl95jnxzRyIGDamoTjzm4Fc3kH
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634190596; l=6020; s=20211009;
+ h=from:subject:message-id; bh=Beenc/HKIv8Qw9J69pivFSeJsEY8dJoKXYnYkVMAlIk=;
+ b=MJGX7q0F8r7PLyqPmuYd/jpiCe/3eR+fAPwH+jHYgKe/8h7Ws88Gb/vKU3vrrKIjQxMkbkzGl+nV
+ yTj4ot2iDDEr7alseyeEg6ORHat9ahgkL3tzwrvLTEmemSiHcqJ3
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -94,123 +94,196 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR by
-HAVE_FUNCTION_DESCRIPTORS and use it instead of
-'dereference_function_descriptor' macro to know
-whether an arch has function descriptors.
+dereference_function_descriptor() and
+dereference_kernel_function_descriptor() are identical on the
+three architectures implementing them.
 
-To limit churn in one of the following patches, use
-an #ifdef/#else construct with empty first part
-instead of an #ifndef in asm-generic/sections.h
+Make them common and put them out-of-line in kernel/extable.c
+which is one of the users and has similar type of functions.
 
 Reviewed-by: Kees Cook <keescook@chromium.org>
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/ia64/include/asm/sections.h    | 5 +++--
- arch/parisc/include/asm/sections.h  | 6 ++++--
- arch/powerpc/include/asm/sections.h | 6 ++++--
- include/asm-generic/sections.h      | 3 ++-
- include/linux/kallsyms.h            | 2 +-
- 5 files changed, 14 insertions(+), 8 deletions(-)
+ arch/ia64/include/asm/sections.h    | 19 -------------------
+ arch/parisc/include/asm/sections.h  |  9 ---------
+ arch/parisc/kernel/process.c        | 21 ---------------------
+ arch/powerpc/include/asm/sections.h | 23 -----------------------
+ include/asm-generic/sections.h      |  2 ++
+ kernel/extable.c                    | 23 ++++++++++++++++++++++-
+ 6 files changed, 24 insertions(+), 73 deletions(-)
 
 diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
-index 35f24e52149a..6e55e545bf02 100644
+index 1aaed8882294..96c9bb500c34 100644
 --- a/arch/ia64/include/asm/sections.h
 +++ b/arch/ia64/include/asm/sections.h
-@@ -9,6 +9,9 @@
- 
- #include <linux/elf.h>
- #include <linux/uaccess.h>
-+
-+#define HAVE_FUNCTION_DESCRIPTORS 1
-+
- #include <asm-generic/sections.h>
- 
- extern char __phys_per_cpu_start[];
-@@ -27,8 +30,6 @@ extern char __start_gate_brl_fsys_bubble_down_patchlist[], __end_gate_brl_fsys_b
+@@ -31,23 +31,4 @@ extern char __start_gate_brl_fsys_bubble_down_patchlist[], __end_gate_brl_fsys_b
  extern char __start_unwind[], __end_unwind[];
  extern char __start_ivt_text[], __end_ivt_text[];
  
--#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+-#undef dereference_function_descriptor
+-static inline void *dereference_function_descriptor(void *ptr)
+-{
+-	struct fdesc *desc = ptr;
+-	void *p;
 -
- #undef dereference_function_descriptor
- static inline void *dereference_function_descriptor(void *ptr)
- {
+-	if (!get_kernel_nofault(p, (void *)&desc->addr))
+-		ptr = p;
+-	return ptr;
+-}
+-
+-#undef dereference_kernel_function_descriptor
+-static inline void *dereference_kernel_function_descriptor(void *ptr)
+-{
+-	if (ptr < (void *)__start_opd || ptr >= (void *)__end_opd)
+-		return ptr;
+-	return dereference_function_descriptor(ptr);
+-}
+-
+ #endif /* _ASM_IA64_SECTIONS_H */
 diff --git a/arch/parisc/include/asm/sections.h b/arch/parisc/include/asm/sections.h
-index bb52aea0cb21..85149a89ff3e 100644
+index 37b34b357cb5..6b1fe22baaf5 100644
 --- a/arch/parisc/include/asm/sections.h
 +++ b/arch/parisc/include/asm/sections.h
-@@ -2,6 +2,10 @@
- #ifndef _PARISC_SECTIONS_H
- #define _PARISC_SECTIONS_H
+@@ -13,13 +13,4 @@ typedef Elf64_Fdesc func_desc_t;
  
-+#ifdef CONFIG_64BIT
-+#define HAVE_FUNCTION_DESCRIPTORS 1
-+#endif
-+
- /* nothing to see, move along */
- #include <asm-generic/sections.h>
+ extern char __alt_instructions[], __alt_instructions_end[];
  
-@@ -9,8 +13,6 @@ extern char __alt_instructions[], __alt_instructions_end[];
- 
- #ifdef CONFIG_64BIT
- 
--#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+-#ifdef CONFIG_64BIT
 -
- #undef dereference_function_descriptor
- void *dereference_function_descriptor(void *);
+-#undef dereference_function_descriptor
+-void *dereference_function_descriptor(void *);
+-
+-#undef dereference_kernel_function_descriptor
+-void *dereference_kernel_function_descriptor(void *);
+-#endif
+-
+ #endif
+diff --git a/arch/parisc/kernel/process.c b/arch/parisc/kernel/process.c
+index 38ec4ae81239..7382576b52a8 100644
+--- a/arch/parisc/kernel/process.c
++++ b/arch/parisc/kernel/process.c
+@@ -266,27 +266,6 @@ get_wchan(struct task_struct *p)
+ 	return 0;
+ }
  
+-#ifdef CONFIG_64BIT
+-void *dereference_function_descriptor(void *ptr)
+-{
+-	Elf64_Fdesc *desc = ptr;
+-	void *p;
+-
+-	if (!get_kernel_nofault(p, (void *)&desc->addr))
+-		ptr = p;
+-	return ptr;
+-}
+-
+-void *dereference_kernel_function_descriptor(void *ptr)
+-{
+-	if (ptr < (void *)__start_opd ||
+-			ptr >= (void *)__end_opd)
+-		return ptr;
+-
+-	return dereference_function_descriptor(ptr);
+-}
+-#endif
+-
+ static inline unsigned long brk_rnd(void)
+ {
+ 	return (get_random_int() & BRK_RND_MASK) << PAGE_SHIFT;
 diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
-index 32e7035863ac..bba97b8c38cf 100644
+index 1322d7b2f1a3..fbfe1957edbe 100644
 --- a/arch/powerpc/include/asm/sections.h
 +++ b/arch/powerpc/include/asm/sections.h
-@@ -8,6 +8,10 @@
+@@ -72,29 +72,6 @@ static inline int overlaps_kernel_text(unsigned long start, unsigned long end)
+ 		(unsigned long)_stext < end;
+ }
  
- #define arch_is_kernel_initmem_freed arch_is_kernel_initmem_freed
- 
-+#ifdef PPC64_ELF_ABI_v1
-+#define HAVE_FUNCTION_DESCRIPTORS 1
-+#endif
-+
- #include <asm-generic/sections.h>
- 
- extern bool init_mem_is_free;
-@@ -69,8 +73,6 @@ static inline int overlaps_kernel_text(unsigned long start, unsigned long end)
- 
- #ifdef PPC64_ELF_ABI_v1
- 
--#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+-#ifdef PPC64_ELF_ABI_v1
 -
- #undef dereference_function_descriptor
- static inline void *dereference_function_descriptor(void *ptr)
- {
+-#undef dereference_function_descriptor
+-static inline void *dereference_function_descriptor(void *ptr)
+-{
+-	struct ppc64_opd_entry *desc = ptr;
+-	void *p;
+-
+-	if (!get_kernel_nofault(p, (void *)&desc->addr))
+-		ptr = p;
+-	return ptr;
+-}
+-
+-#undef dereference_kernel_function_descriptor
+-static inline void *dereference_kernel_function_descriptor(void *ptr)
+-{
+-	if (ptr < (void *)__start_opd || ptr >= (void *)__end_opd)
+-		return ptr;
+-
+-	return dereference_function_descriptor(ptr);
+-}
+-#endif /* PPC64_ELF_ABI_v1 */
+-
+ #endif
+ 
+ #endif /* __KERNEL__ */
 diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
-index d16302d3eb59..b677e926e6b3 100644
+index cbec7d5f1678..76163883c6ff 100644
 --- a/include/asm-generic/sections.h
 +++ b/include/asm-generic/sections.h
-@@ -59,7 +59,8 @@ extern char __noinstr_text_start[], __noinstr_text_end[];
- extern __visible const void __nosave_begin, __nosave_end;
+@@ -60,6 +60,8 @@ extern __visible const void __nosave_begin, __nosave_end;
  
  /* Function descriptor handling (if any).  Override in asm/sections.h */
--#ifndef dereference_function_descriptor
-+#ifdef HAVE_FUNCTION_DESCRIPTORS
-+#else
+ #ifdef HAVE_FUNCTION_DESCRIPTORS
++void *dereference_function_descriptor(void *ptr);
++void *dereference_kernel_function_descriptor(void *ptr);
+ #else
  #define dereference_function_descriptor(p) ((void *)(p))
  #define dereference_kernel_function_descriptor(p) ((void *)(p))
- #endif
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index a1d6fc82d7f0..9f277baeb559 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -57,7 +57,7 @@ static inline int is_ksym_addr(unsigned long addr)
+diff --git a/kernel/extable.c b/kernel/extable.c
+index b0ea5eb0c3b4..013ccffade11 100644
+--- a/kernel/extable.c
++++ b/kernel/extable.c
+@@ -3,6 +3,7 @@
+    Copyright (C) 2001 Rusty Russell, 2002 Rusty Russell IBM.
  
- static inline void *dereference_symbol_descriptor(void *ptr)
- {
--#ifdef HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR
+ */
++#include <linux/elf.h>
+ #include <linux/ftrace.h>
+ #include <linux/memory.h>
+ #include <linux/extable.h>
+@@ -159,12 +160,32 @@ int kernel_text_address(unsigned long addr)
+ }
+ 
+ /*
+- * On some architectures (PPC64, IA64) function pointers
++ * On some architectures (PPC64, IA64, PARISC) function pointers
+  * are actually only tokens to some data that then holds the
+  * real function address. As a result, to find if a function
+  * pointer is part of the kernel text, we need to do some
+  * special dereferencing first.
+  */
 +#ifdef HAVE_FUNCTION_DESCRIPTORS
- 	struct module *mod;
- 
- 	ptr = dereference_kernel_function_descriptor(ptr);
++void *dereference_function_descriptor(void *ptr)
++{
++	func_desc_t *desc = ptr;
++	void *p;
++
++	if (!get_kernel_nofault(p, (void *)&desc->addr))
++		ptr = p;
++	return ptr;
++}
++
++void *dereference_kernel_function_descriptor(void *ptr)
++{
++	if (ptr < (void *)__start_opd || ptr >= (void *)__end_opd)
++		return ptr;
++
++	return dereference_function_descriptor(ptr);
++}
++#endif
++
+ int func_ptr_is_kernel_text(void *ptr)
+ {
+ 	unsigned long addr;
 -- 
 2.31.1
 
