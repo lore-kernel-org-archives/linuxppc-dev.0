@@ -2,80 +2,71 @@ Return-Path: <SRS0=Ntje=PC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BFC9C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:30:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4837CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:53:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF05461156
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:30:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CF05461156
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id C6A2160D07
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:53:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C6A2160D07
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HVKJZ3jjDz3fF7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 17:30:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HVKqT0rgFz3c6k
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 17:53:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.126.131; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HVKBt6DT2z3bjM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 17:25:10 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HVK9k0jTLz9sSq;
- Thu, 14 Oct 2021 08:24:10 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id yoXsf0XoIfDi; Thu, 14 Oct 2021 08:24:10 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HVK9h6DJ2z9sSj;
- Thu, 14 Oct 2021 08:24:08 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BF9868B788;
- Thu, 14 Oct 2021 08:24:03 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id LKfjLBkU0UfT; Thu, 14 Oct 2021 08:24:03 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.231])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 332298B763;
- Thu, 14 Oct 2021 08:24:03 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19E5oQlL2266026
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Thu, 14 Oct 2021 07:50:26 +0200
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19E5oQWa2266025;
- Thu, 14 Oct 2021 07:50:26 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Morton <akpm@linux-foundation.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
- Kees Cook <keescook@chromium.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v2 08/13] asm-generic: Refactor
- dereference_[kernel]_function_descriptor()
-Date: Thu, 14 Oct 2021 07:49:57 +0200
-Message-Id: <865b5c872814e3291fe7afabcc110f53b3457b56.1634190022.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <cover.1634190022.git.christophe.leroy@csgroup.eu>
-References: <cover.1634190022.git.christophe.leroy@csgroup.eu>
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HVKpz5L3Gz2xMw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 17:52:58 +1100 (AEDT)
+Received: from mail-wr1-f53.google.com ([209.85.221.53]) by
+ mrelayeu.kundenserver.de (mreue012 [213.165.67.97]) with ESMTPSA (Nemesis) id
+ 1MVaQW-1m9NqM1Q8K-00RbBv for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct
+ 2021 08:52:54 +0200
+Received: by mail-wr1-f53.google.com with SMTP id t2so16096290wrb.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Oct 2021 23:52:53 -0700 (PDT)
+X-Gm-Message-State: AOAM533WaVAhQAgmq+H64JOGSICJd3Om4PwDYlnEAgeni74iQEUpd/un
+ b3zQOLytIgOyrc07mA8Xe239Wd4TFVGcLwhjld4=
+X-Google-Smtp-Source: ABdhPJzeBTr+3DEnjaiwNy7gvQWkqUGAIbkSnDvR5fWNapib2lyvZarNpPFQYOoReWXwS6roLyGXQKeyYYuevT3SsXg=
+X-Received: by 2002:a05:600c:208:: with SMTP id
+ 8mr17137447wmi.173.1634194372923; 
+ Wed, 13 Oct 2021 23:52:52 -0700 (PDT)
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634190596; l=6020; s=20211009;
- h=from:subject:message-id; bh=Beenc/HKIv8Qw9J69pivFSeJsEY8dJoKXYnYkVMAlIk=;
- b=MJGX7q0F8r7PLyqPmuYd/jpiCe/3eR+fAPwH+jHYgKe/8h7Ws88Gb/vKU3vrrKIjQxMkbkzGl+nV
- yTj4ot2iDDEr7alseyeEg6ORHat9ahgkL3tzwrvLTEmemSiHcqJ3
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+References: <cover.1634190022.git.christophe.leroy@csgroup.eu>
+ <dbc9a149826eaa18f524635e64c207c85560c2aa.1634190022.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <dbc9a149826eaa18f524635e64c207c85560c2aa.1634190022.git.christophe.leroy@csgroup.eu>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 14 Oct 2021 08:52:37 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a3yAcU0JAri0f9q6HVrZwX_4i6Y9X4P8MebN_Krt-SLQA@mail.gmail.com>
+Message-ID: <CAK8P3a3yAcU0JAri0f9q6HVrZwX_4i6Y9X4P8MebN_Krt-SLQA@mail.gmail.com>
+Subject: Re: [PATCH v2 07/13] asm-generic: Define 'func_desc_t' to commonly
+ describe function descriptors
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:39Xd9kqeeUH+o0TtX8JwD4TCnfN/XiKQHBMvoyq93MBJ8acwNPh
+ JmkMN7nxCtYIm3fCvzD3X/NA6x/O+7FSo9Z1h0arnXsM7I853fBjk06PdJSr+uTofYugtD3
+ B1YZN/UliRy/YOH2dD9i3wYcAgzTJHjK7/NuI+iMbjDKp/gFvIdAnOxtabkvRxZOEghbwzm
+ Io/aYULUuRLRWY1WWY1Tw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:nD2W7hZ1u38=:8grZbweI03/FxxpuF+BeO6
+ YudhiT8CQHz4KY83oLVj73lioNJy1t87Lf7ol2VxadHAjKdD97rYUg2qOu8GJ2DFNg2alwzC0
+ iEM6tac5IlfjnEhYd+R4pT9ylfCYGa+CYP08QAbKe1rFzX99uSRd9rN51dg6egVsjz5hTjiZ6
+ E0dn4kCH0G12cN9KwdDhYttH8xKpcMlTeeGWqqezz5+GX4MAY2fl2icrdFZpeghrB3SfcNxrJ
+ FJ5tvDYdzKyszA3Pn+jeqSIDTASrNzj5BVfkf7hV6oeDC4nsoFFFMQCjIO21NTevroL5ycyIC
+ N1q8qr3MyFZefF4EsH+6NTvWRGZ/qib4h+vnxbiupj3/SjWyMsD0FZgEKjqvIhDsJ17C+Iafy
+ 4cukhOD3DEgyXIfAlxpt4tgtETymXzKJrQF8S8w5rmFDq786ohlSj45wig8mP6kBZQo9JoHJw
+ UIycZeKHY09i1dvIfcfmNRVN5numCbueu/8PVjRto6exSO9es+fuon+4jWFym0g3W/+ZTJJpO
+ QmqYWZsHWR+pBmGKHn+7BQZkd0RR93qQh/y92F/HbLceW1OXvbgw6D+BBL9em7mBKfHNKqGhE
+ VhoojyeVPS7EBYwQsz6cLltTbqSJZulBxgGSEROkWXhkJ+G92Jkn+FOGyXUBKq8F88k8WSsdV
+ 2Pd2bs5B43ZTlesAJkuQUg9SicgKNnvoTFZgNw2csAtccAvPRVN9ghsLOV5FcJpyvnlCyvDQu
+ pdtkbrzp5MAg1VdVyMKMkwOvcu8hz6Zp4wfCsJ856oEsPIptPSW3rzIIwMxo4363Nk2GiMnjx
+ 66FwJnoEfPA2gUKKmI8XuF1Nn23hIFFRJ7owj1Jtr5NxzwNobaziDwC+B+AEZ+G6lGeSy076r
+ 6mcUIsc1AW+lsQal9hFA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,203 +78,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch <linux-arch@vger.kernel.org>, linux-ia64@vger.kernel.org,
+ Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Linux-MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-dereference_function_descriptor() and
-dereference_kernel_function_descriptor() are identical on the
-three architectures implementing them.
+On Thu, Oct 14, 2021 at 7:49 AM Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
+>
+> We have three architectures using function descriptors, each with its
+> own name.
+>
+> Add a common typedef that can be used in generic code.
+>
+> Also add a stub typedef for architecture without function descriptors,
+> to avoid a forest of #ifdefs.
+>
+> It replaces the similar func_desc_t previously defined in
+> arch/powerpc/kernel/module_64.c
+>
+> Reviewed-by: Kees Cook <keescook@chromium.org>
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-Make them common and put them out-of-line in kernel/extable.c
-which is one of the users and has similar type of functions.
-
-Reviewed-by: Kees Cook <keescook@chromium.org>
-Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/ia64/include/asm/sections.h    | 19 -------------------
- arch/parisc/include/asm/sections.h  |  9 ---------
- arch/parisc/kernel/process.c        | 21 ---------------------
- arch/powerpc/include/asm/sections.h | 23 -----------------------
- include/asm-generic/sections.h      |  2 ++
- kernel/extable.c                    | 23 ++++++++++++++++++++++-
- 6 files changed, 24 insertions(+), 73 deletions(-)
-
-diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
-index 1aaed8882294..96c9bb500c34 100644
---- a/arch/ia64/include/asm/sections.h
-+++ b/arch/ia64/include/asm/sections.h
-@@ -31,23 +31,4 @@ extern char __start_gate_brl_fsys_bubble_down_patchlist[], __end_gate_brl_fsys_b
- extern char __start_unwind[], __end_unwind[];
- extern char __start_ivt_text[], __end_ivt_text[];
- 
--#undef dereference_function_descriptor
--static inline void *dereference_function_descriptor(void *ptr)
--{
--	struct fdesc *desc = ptr;
--	void *p;
--
--	if (!get_kernel_nofault(p, (void *)&desc->addr))
--		ptr = p;
--	return ptr;
--}
--
--#undef dereference_kernel_function_descriptor
--static inline void *dereference_kernel_function_descriptor(void *ptr)
--{
--	if (ptr < (void *)__start_opd || ptr >= (void *)__end_opd)
--		return ptr;
--	return dereference_function_descriptor(ptr);
--}
--
- #endif /* _ASM_IA64_SECTIONS_H */
-diff --git a/arch/parisc/include/asm/sections.h b/arch/parisc/include/asm/sections.h
-index 37b34b357cb5..6b1fe22baaf5 100644
---- a/arch/parisc/include/asm/sections.h
-+++ b/arch/parisc/include/asm/sections.h
-@@ -13,13 +13,4 @@ typedef Elf64_Fdesc func_desc_t;
- 
- extern char __alt_instructions[], __alt_instructions_end[];
- 
--#ifdef CONFIG_64BIT
--
--#undef dereference_function_descriptor
--void *dereference_function_descriptor(void *);
--
--#undef dereference_kernel_function_descriptor
--void *dereference_kernel_function_descriptor(void *);
--#endif
--
- #endif
-diff --git a/arch/parisc/kernel/process.c b/arch/parisc/kernel/process.c
-index 38ec4ae81239..7382576b52a8 100644
---- a/arch/parisc/kernel/process.c
-+++ b/arch/parisc/kernel/process.c
-@@ -266,27 +266,6 @@ get_wchan(struct task_struct *p)
- 	return 0;
- }
- 
--#ifdef CONFIG_64BIT
--void *dereference_function_descriptor(void *ptr)
--{
--	Elf64_Fdesc *desc = ptr;
--	void *p;
--
--	if (!get_kernel_nofault(p, (void *)&desc->addr))
--		ptr = p;
--	return ptr;
--}
--
--void *dereference_kernel_function_descriptor(void *ptr)
--{
--	if (ptr < (void *)__start_opd ||
--			ptr >= (void *)__end_opd)
--		return ptr;
--
--	return dereference_function_descriptor(ptr);
--}
--#endif
--
- static inline unsigned long brk_rnd(void)
- {
- 	return (get_random_int() & BRK_RND_MASK) << PAGE_SHIFT;
-diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
-index 1322d7b2f1a3..fbfe1957edbe 100644
---- a/arch/powerpc/include/asm/sections.h
-+++ b/arch/powerpc/include/asm/sections.h
-@@ -72,29 +72,6 @@ static inline int overlaps_kernel_text(unsigned long start, unsigned long end)
- 		(unsigned long)_stext < end;
- }
- 
--#ifdef PPC64_ELF_ABI_v1
--
--#undef dereference_function_descriptor
--static inline void *dereference_function_descriptor(void *ptr)
--{
--	struct ppc64_opd_entry *desc = ptr;
--	void *p;
--
--	if (!get_kernel_nofault(p, (void *)&desc->addr))
--		ptr = p;
--	return ptr;
--}
--
--#undef dereference_kernel_function_descriptor
--static inline void *dereference_kernel_function_descriptor(void *ptr)
--{
--	if (ptr < (void *)__start_opd || ptr >= (void *)__end_opd)
--		return ptr;
--
--	return dereference_function_descriptor(ptr);
--}
--#endif /* PPC64_ELF_ABI_v1 */
--
- #endif
- 
- #endif /* __KERNEL__ */
-diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
-index cbec7d5f1678..76163883c6ff 100644
---- a/include/asm-generic/sections.h
-+++ b/include/asm-generic/sections.h
-@@ -60,6 +60,8 @@ extern __visible const void __nosave_begin, __nosave_end;
- 
- /* Function descriptor handling (if any).  Override in asm/sections.h */
- #ifdef HAVE_FUNCTION_DESCRIPTORS
-+void *dereference_function_descriptor(void *ptr);
-+void *dereference_kernel_function_descriptor(void *ptr);
- #else
- #define dereference_function_descriptor(p) ((void *)(p))
- #define dereference_kernel_function_descriptor(p) ((void *)(p))
-diff --git a/kernel/extable.c b/kernel/extable.c
-index b0ea5eb0c3b4..013ccffade11 100644
---- a/kernel/extable.c
-+++ b/kernel/extable.c
-@@ -3,6 +3,7 @@
-    Copyright (C) 2001 Rusty Russell, 2002 Rusty Russell IBM.
- 
- */
-+#include <linux/elf.h>
- #include <linux/ftrace.h>
- #include <linux/memory.h>
- #include <linux/extable.h>
-@@ -159,12 +160,32 @@ int kernel_text_address(unsigned long addr)
- }
- 
- /*
-- * On some architectures (PPC64, IA64) function pointers
-+ * On some architectures (PPC64, IA64, PARISC) function pointers
-  * are actually only tokens to some data that then holds the
-  * real function address. As a result, to find if a function
-  * pointer is part of the kernel text, we need to do some
-  * special dereferencing first.
-  */
-+#ifdef HAVE_FUNCTION_DESCRIPTORS
-+void *dereference_function_descriptor(void *ptr)
-+{
-+	func_desc_t *desc = ptr;
-+	void *p;
-+
-+	if (!get_kernel_nofault(p, (void *)&desc->addr))
-+		ptr = p;
-+	return ptr;
-+}
-+
-+void *dereference_kernel_function_descriptor(void *ptr)
-+{
-+	if (ptr < (void *)__start_opd || ptr >= (void *)__end_opd)
-+		return ptr;
-+
-+	return dereference_function_descriptor(ptr);
-+}
-+#endif
-+
- int func_ptr_is_kernel_text(void *ptr)
- {
- 	unsigned long addr;
--- 
-2.31.1
-
+Acked-by: Arnd Bergmann <arnd@arndb.de>
