@@ -2,19 +2,19 @@ Return-Path: <SRS0=Ntje=PC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A502C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:28:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1181FC43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:28:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 41B9061029
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:28:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 41B9061029
+	by mail.kernel.org (Postfix) with ESMTPS id 90F5861029
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 06:28:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 90F5861029
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HVKGW5tnQz3cM6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 17:28:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HVKH76nVzz3cQZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Oct 2021 17:28:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,35 +22,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HVKBW3hWCz3c9b
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 17:24:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HVKBc5FmQz3cDG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Oct 2021 17:24:56 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HVK9f1pndz9sSK;
- Thu, 14 Oct 2021 08:24:06 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HVK9g0tVkz9sSL;
+ Thu, 14 Oct 2021 08:24:07 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id PdzNilfnSkhR; Thu, 14 Oct 2021 08:24:06 +0200 (CEST)
+ with ESMTP id zGFPxVrhXCQX; Thu, 14 Oct 2021 08:24:07 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HVK9Y5q60z9sSj;
- Thu, 14 Oct 2021 08:24:01 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HVK9Z1cVsz9sSb;
+ Thu, 14 Oct 2021 08:24:02 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B20DD8B788;
- Thu, 14 Oct 2021 08:24:01 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 216968B788;
+ Thu, 14 Oct 2021 08:24:02 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id oX3viRR6oIHS; Thu, 14 Oct 2021 08:24:01 +0200 (CEST)
+ with ESMTP id cZvDhBhYalVd; Thu, 14 Oct 2021 08:24:02 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.231])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6252D8B763;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C59318B763;
  Thu, 14 Oct 2021 08:24:01 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19E5oRii2266047
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19E5oQ6W2266022
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Thu, 14 Oct 2021 07:50:27 +0200
+ Thu, 14 Oct 2021 07:50:26 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19E5oRTA2266046;
- Thu, 14 Oct 2021 07:50:27 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19E5oQvM2266021;
+ Thu, 14 Oct 2021 07:50:26 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -61,17 +61,18 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v2 13/13] lkdtm: Add a test for function descriptors protection
-Date: Thu, 14 Oct 2021 07:50:02 +0200
-Message-Id: <08a3dfbc55e1c7a0a1917b22f0ca6cabd9895ab2.1634190022.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 07/13] asm-generic: Define 'func_desc_t' to commonly
+ describe function descriptors
+Date: Thu, 14 Oct 2021 07:49:56 +0200
+Message-Id: <dbc9a149826eaa18f524635e64c207c85560c2aa.1634190022.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1634190022.git.christophe.leroy@csgroup.eu>
 References: <cover.1634190022.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634190597; l=2775; s=20211009;
- h=from:subject:message-id; bh=A+CBrzcmLRyGu0jFcqtTB3JqGSbbWuERKxSH4G7MIj0=;
- b=UxVBzQzOZLLymUPGBF6LMYkr527qFH46iUPDgZ9Zvvm9H01OxHdkpxCOKAJvxzvYp258cbceiCHw
- 6Z5O3KoJD+f5DRPRjkJ+TQSmqXJhh4JlfRRv2cZCndbJCejvHWNP
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634190596; l=3232; s=20211009;
+ h=from:subject:message-id; bh=PspXIPOvak1jV5q03rr+fBd9+AoSM0fwfRZ7nHrjt9c=;
+ b=AO+xrUi7Cl2VbWg0TANbnktYYtOjUAIOnukEhNVT8GFJRJUhbq9nE0gayYXHEQIm3ZiqWm97eWVs
+ P+WasHdDB1+Hq1lIMFt3ZhAohl6HpdwdOKdLMgyn8tJJggN5urr+
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -93,92 +94,105 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add WRITE_OPD to check that you can't modify function
-descriptors.
+We have three architectures using function descriptors, each with its
+own name.
 
-Gives the following result when function descriptors are
-not protected:
+Add a common typedef that can be used in generic code.
 
-	lkdtm: Performing direct entry WRITE_OPD
-	lkdtm: attempting bad 16 bytes write at c00000000269b358
-	lkdtm: FAIL: survived bad write
-	lkdtm: do_nothing was hijacked!
+Also add a stub typedef for architecture without function descriptors,
+to avoid a forest of #ifdefs.
 
-Looks like a standard compiler barrier(); is not enough to force
-GCC to use the modified function descriptor. Add to add a fake empty
-inline assembly to force GCC to reload the function descriptor.
+It replaces the similar func_desc_t previously defined in
+arch/powerpc/kernel/module_64.c
 
+Reviewed-by: Kees Cook <keescook@chromium.org>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/misc/lkdtm/core.c  |  1 +
- drivers/misc/lkdtm/lkdtm.h |  1 +
- drivers/misc/lkdtm/perms.c | 22 ++++++++++++++++++++++
- 3 files changed, 24 insertions(+)
+ arch/ia64/include/asm/sections.h    | 1 +
+ arch/parisc/include/asm/sections.h  | 2 ++
+ arch/powerpc/include/asm/sections.h | 1 +
+ arch/powerpc/kernel/module_64.c     | 8 --------
+ include/asm-generic/sections.h      | 3 +++
+ 5 files changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
-index fe6fd34b8caf..de092aa03b5d 100644
---- a/drivers/misc/lkdtm/core.c
-+++ b/drivers/misc/lkdtm/core.c
-@@ -148,6 +148,7 @@ static const struct crashtype crashtypes[] = {
- 	CRASHTYPE(WRITE_RO),
- 	CRASHTYPE(WRITE_RO_AFTER_INIT),
- 	CRASHTYPE(WRITE_KERN),
-+	CRASHTYPE(WRITE_OPD),
- 	CRASHTYPE(REFCOUNT_INC_OVERFLOW),
- 	CRASHTYPE(REFCOUNT_ADD_OVERFLOW),
- 	CRASHTYPE(REFCOUNT_INC_NOT_ZERO_OVERFLOW),
-diff --git a/drivers/misc/lkdtm/lkdtm.h b/drivers/misc/lkdtm/lkdtm.h
-index c212a253edde..188bd0fd6575 100644
---- a/drivers/misc/lkdtm/lkdtm.h
-+++ b/drivers/misc/lkdtm/lkdtm.h
-@@ -105,6 +105,7 @@ void __init lkdtm_perms_init(void);
- void lkdtm_WRITE_RO(void);
- void lkdtm_WRITE_RO_AFTER_INIT(void);
- void lkdtm_WRITE_KERN(void);
-+void lkdtm_WRITE_OPD(void);
- void lkdtm_EXEC_DATA(void);
- void lkdtm_EXEC_STACK(void);
- void lkdtm_EXEC_KMALLOC(void);
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index 96b3ebfcb8ed..3870bc82d40d 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -44,6 +44,11 @@ static noinline void do_overwritten(void)
- 	return;
- }
+diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
+index 6e55e545bf02..1aaed8882294 100644
+--- a/arch/ia64/include/asm/sections.h
++++ b/arch/ia64/include/asm/sections.h
+@@ -11,6 +11,7 @@
+ #include <linux/uaccess.h>
  
-+static noinline void do_almost_nothing(void)
-+{
-+	pr_info("do_nothing was hijacked!\n");
-+}
-+
- static void *setup_function_descriptor(func_desc_t *fdesc, void *dst)
- {
- 	memcpy(fdesc, do_nothing, sizeof(*fdesc));
-@@ -143,6 +148,23 @@ void lkdtm_WRITE_KERN(void)
- 	do_overwritten();
- }
+ #define HAVE_FUNCTION_DESCRIPTORS 1
++typedef struct fdesc func_desc_t;
  
-+void lkdtm_WRITE_OPD(void)
-+{
-+	size_t size = sizeof(func_desc_t);
-+	void (*func)(void) = do_nothing;
-+
-+	if (!have_function_descriptors()) {
-+		pr_info("Platform doesn't have function descriptors.\n");
-+		return;
-+	}
-+	pr_info("attempting bad %zu bytes write at %px\n", size, do_nothing);
-+	memcpy(do_nothing, do_almost_nothing, size);
-+	pr_err("FAIL: survived bad write\n");
-+
-+	asm("" : "=m"(func));
-+	func();
-+}
-+
- void lkdtm_EXEC_DATA(void)
+ #include <asm-generic/sections.h>
+ 
+diff --git a/arch/parisc/include/asm/sections.h b/arch/parisc/include/asm/sections.h
+index 85149a89ff3e..37b34b357cb5 100644
+--- a/arch/parisc/include/asm/sections.h
++++ b/arch/parisc/include/asm/sections.h
+@@ -3,7 +3,9 @@
+ #define _PARISC_SECTIONS_H
+ 
+ #ifdef CONFIG_64BIT
++#include <asm/elf.h>
+ #define HAVE_FUNCTION_DESCRIPTORS 1
++typedef Elf64_Fdesc func_desc_t;
+ #endif
+ 
+ /* nothing to see, move along */
+diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+index bba97b8c38cf..1322d7b2f1a3 100644
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -10,6 +10,7 @@
+ 
+ #ifdef PPC64_ELF_ABI_v1
+ #define HAVE_FUNCTION_DESCRIPTORS 1
++typedef struct ppc64_opd_entry func_desc_t;
+ #endif
+ 
+ #include <asm-generic/sections.h>
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index dc99a3f6cee2..affda7698242 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -32,11 +32,6 @@
+ 
+ #ifdef PPC64_ELF_ABI_v2
+ 
+-/* An address is simply the address of the function. */
+-typedef struct {
+-	unsigned long addr;
+-} func_desc_t;
+-
+ static func_desc_t func_desc(unsigned long addr)
  {
- 	execute_location(data_area, CODE_WRITE);
+ 	return (func_desc_t){addr};
+@@ -57,9 +52,6 @@ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+ }
+ #else
+ 
+-/* An address is address of the OPD entry, which contains address of fn. */
+-typedef struct ppc64_opd_entry func_desc_t;
+-
+ static func_desc_t func_desc(unsigned long addr)
+ {
+ 	return *(func_desc_t *)addr;
+diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+index b677e926e6b3..cbec7d5f1678 100644
+--- a/include/asm-generic/sections.h
++++ b/include/asm-generic/sections.h
+@@ -63,6 +63,9 @@ extern __visible const void __nosave_begin, __nosave_end;
+ #else
+ #define dereference_function_descriptor(p) ((void *)(p))
+ #define dereference_kernel_function_descriptor(p) ((void *)(p))
++typedef struct {
++	unsigned long addr;
++} func_desc_t;
+ #endif
+ 
+ /* random extra sections (if any).  Override
 -- 
 2.31.1
 
