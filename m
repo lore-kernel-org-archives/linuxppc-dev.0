@@ -2,79 +2,56 @@ Return-Path: <SRS0=ZqAX=PD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ECDFCC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 21:36:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07E77C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 22:17:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5218D60EE2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 21:36:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5218D60EE2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	by mail.kernel.org (Postfix) with ESMTPS id 504C161056
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 22:17:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 504C161056
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HWKN603cJz3cCL
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Oct 2021 08:36:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HWLHc5HrVz3cGl
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Oct 2021 09:17:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=i/plbNWQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CSVk3Muw;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::102d;
- helo=mail-pj1-x102d.google.com; envelope-from=keescook@chromium.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=i/plbNWQ; dkim-atps=neutral
-Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com
- [IPv6:2607:f8b0:4864:20::102d])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=kuba@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=CSVk3Muw; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HWKMJ6vtrz2xXc
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Oct 2021 08:35:56 +1100 (AEDT)
-Received: by mail-pj1-x102d.google.com with SMTP id
- e5-20020a17090a804500b001a116ad95caso2699718pjw.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Oct 2021 14:35:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=fXK9I7sL2UAvUUHr680VS0N7hcJaT8a/qC/oAjWAekg=;
- b=i/plbNWQsfMbAtipP0bedfIRhU9GtT0vQBPBSqxQOXPLHpycgRU2/2eFgrucmm2h2H
- jyUzWsmXl3g4lj7XR6uQJW5kj6zHZDhfr5oLknCnvhs4hYYOrFP7YzLzzikPK/mnLAUp
- qzqAv/u7xWCe7UATWzGpSateqcXcucSLev7S0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=fXK9I7sL2UAvUUHr680VS0N7hcJaT8a/qC/oAjWAekg=;
- b=ADphitqyV2eFj1/IGcpq0sM2/EQZkMHZaB1tJsOLUMHEeFISktjcsPw8tg70jOX+t4
- BAGAdQPHWQqwODL4+F9djjPt3fwYKvTRWaPs6vnrlDaiSR6nKhR7oFEa6CvqVyTcK2L5
- wLv7e0poWiDIKntZOgVt7VTCcE6Uh29gDF4AXEzmnnULTzFptbgFPgX9iUpOz5J24P/Z
- m2k6Ulp2JzOaVpReWO6lrH3tzIXgrx11C8bzD3cZPUlwMbTXA1EOzEY75xM0f14n9m9A
- ahzBxpOy9GO9F6RqE1ZEIEP4coz6+zjjLYmahvtD3hgfS4YyZT4Ko3Iza5WBrMjQq/dE
- OvHQ==
-X-Gm-Message-State: AOAM530pdIqzd6skULIp8fCmYWadYIiWkdcb6E1zgheJXw45BZqxMgLZ
- KI7VFn1OpIDbxSC/8sF+J5epzg==
-X-Google-Smtp-Source: ABdhPJzGiIkXXBmy5DDoWMNsGgWcXqtw/xBNMBOjRI4bsAE2X+6lsLV+71+RhBCvt+ERtsGfcdpHpA==
-X-Received: by 2002:a17:90b:1a86:: with SMTP id
- ng6mr16246857pjb.120.1634333745601; 
- Fri, 15 Oct 2021 14:35:45 -0700 (PDT)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id q10sm5538176pgn.31.2021.10.15.14.35.45
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 15 Oct 2021 14:35:45 -0700 (PDT)
-Date: Fri, 15 Oct 2021 14:35:44 -0700
-From: Kees Cook <keescook@chromium.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2 13/13] lkdtm: Add a test for function descriptors
- protection
-Message-ID: <202110151433.6270D717@keescook>
-References: <cover.1634190022.git.christophe.leroy@csgroup.eu>
- <08a3dfbc55e1c7a0a1917b22f0ca6cabd9895ab2.1634190022.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HWLGq1mfwz3bnG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Oct 2021 09:17:07 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id A0F7561205;
+ Fri, 15 Oct 2021 22:17:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1634336223;
+ bh=GdVkfoHzadHtHSaJzJVs8Ku7u9K9MTzPxyYmK33OkCQ=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=CSVk3MuwNOZx1uFwvrKF33hCBUVSDowoRET9X+K/vILty3JRu2K+J5YnjVLBd6q8s
+ bUECqWAHagKR0Xhme7ry27c4HgdLFD1Bz0Yf5if8v1tXjIPb0BMtWKX9YH87Jk1l7d
+ j8xauKHue4azPh0a6JXU/E8calRn435tSLQ/oi3LRsBpM0/W8853svtpwrA4aouBsd
+ /d9/BNV4aiKWrKWg8m+l2qhjMr9SJy9om/wYRNU0pugS4QrdMIIuCKrvgt2Oj2CT72
+ dY1pO+uouPR6w87YNs58lTqZVIsJrVCuZwceLzAY/mwTU6uebC9DlvoGOoSq6+MFb5
+ 1ELIH+GLRIiHQ==
+From: Jakub Kicinski <kuba@kernel.org>
+To: davem@davemloft.net
+Subject: [PATCH net-next 11/12] ethernet: ibmveth: use ether_addr_to_u64()
+Date: Fri, 15 Oct 2021 15:16:51 -0700
+Message-Id: <20211015221652.827253-12-kuba@kernel.org>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20211015221652.827253-1-kuba@kernel.org>
+References: <20211015221652.827253-1-kuba@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <08a3dfbc55e1c7a0a1917b22f0ca6cabd9895ab2.1634190022.git.christophe.leroy@csgroup.eu>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,117 +63,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>,
- linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: cforno12@linux.ibm.com, netdev@vger.kernel.org, paulus@samba.org,
+ Jakub Kicinski <kuba@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Oct 14, 2021 at 07:50:02AM +0200, Christophe Leroy wrote:
-> Add WRITE_OPD to check that you can't modify function
-> descriptors.
-> 
-> Gives the following result when function descriptors are
-> not protected:
-> 
-> 	lkdtm: Performing direct entry WRITE_OPD
-> 	lkdtm: attempting bad 16 bytes write at c00000000269b358
-> 	lkdtm: FAIL: survived bad write
-> 	lkdtm: do_nothing was hijacked!
-> 
-> Looks like a standard compiler barrier(); is not enough to force
-> GCC to use the modified function descriptor. Add to add a fake empty
-> inline assembly to force GCC to reload the function descriptor.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
->  drivers/misc/lkdtm/core.c  |  1 +
->  drivers/misc/lkdtm/lkdtm.h |  1 +
->  drivers/misc/lkdtm/perms.c | 22 ++++++++++++++++++++++
->  3 files changed, 24 insertions(+)
-> 
-> diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
-> index fe6fd34b8caf..de092aa03b5d 100644
-> --- a/drivers/misc/lkdtm/core.c
-> +++ b/drivers/misc/lkdtm/core.c
-> @@ -148,6 +148,7 @@ static const struct crashtype crashtypes[] = {
->  	CRASHTYPE(WRITE_RO),
->  	CRASHTYPE(WRITE_RO_AFTER_INIT),
->  	CRASHTYPE(WRITE_KERN),
-> +	CRASHTYPE(WRITE_OPD),
->  	CRASHTYPE(REFCOUNT_INC_OVERFLOW),
->  	CRASHTYPE(REFCOUNT_ADD_OVERFLOW),
->  	CRASHTYPE(REFCOUNT_INC_NOT_ZERO_OVERFLOW),
-> diff --git a/drivers/misc/lkdtm/lkdtm.h b/drivers/misc/lkdtm/lkdtm.h
-> index c212a253edde..188bd0fd6575 100644
-> --- a/drivers/misc/lkdtm/lkdtm.h
-> +++ b/drivers/misc/lkdtm/lkdtm.h
-> @@ -105,6 +105,7 @@ void __init lkdtm_perms_init(void);
->  void lkdtm_WRITE_RO(void);
->  void lkdtm_WRITE_RO_AFTER_INIT(void);
->  void lkdtm_WRITE_KERN(void);
-> +void lkdtm_WRITE_OPD(void);
->  void lkdtm_EXEC_DATA(void);
->  void lkdtm_EXEC_STACK(void);
->  void lkdtm_EXEC_KMALLOC(void);
-> diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-> index 96b3ebfcb8ed..3870bc82d40d 100644
-> --- a/drivers/misc/lkdtm/perms.c
-> +++ b/drivers/misc/lkdtm/perms.c
-> @@ -44,6 +44,11 @@ static noinline void do_overwritten(void)
->  	return;
->  }
->  
-> +static noinline void do_almost_nothing(void)
-> +{
-> +	pr_info("do_nothing was hijacked!\n");
-> +}
-> +
->  static void *setup_function_descriptor(func_desc_t *fdesc, void *dst)
->  {
->  	memcpy(fdesc, do_nothing, sizeof(*fdesc));
-> @@ -143,6 +148,23 @@ void lkdtm_WRITE_KERN(void)
->  	do_overwritten();
->  }
->  
-> +void lkdtm_WRITE_OPD(void)
-> +{
-> +	size_t size = sizeof(func_desc_t);
-> +	void (*func)(void) = do_nothing;
-> +
-> +	if (!have_function_descriptors()) {
-> +		pr_info("Platform doesn't have function descriptors.\n");
+We'll want to make netdev->dev_addr const, remove the local
+helper which is missing a const qualifier on the argument
+and use ether_addr_to_u64().
 
-This should be more explicit ('xfail'):
+Similar story to mlx4.
 
-	pr_info("XFAIL: platform doesn't use function descriptors.\n");
+Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+---
+CC: cforno12@linux.ibm.com
+CC: mpe@ellerman.id.au
+CC: benh@kernel.crashing.org
+CC: paulus@samba.org
+CC: linuxppc-dev@lists.ozlabs.org
+---
+ drivers/net/ethernet/ibm/ibmveth.c | 17 +++--------------
+ 1 file changed, 3 insertions(+), 14 deletions(-)
 
-> +		return;
-> +	}
-> +	pr_info("attempting bad %zu bytes write at %px\n", size, do_nothing);
-> +	memcpy(do_nothing, do_almost_nothing, size);
-> +	pr_err("FAIL: survived bad write\n");
-> +
-> +	asm("" : "=m"(func));
-
-Since this is a descriptor, I assume no icache flush is needed. Are
-function descriptors strictly dcache? (Is anything besides just a
-barrier needed?)
-
-> +	func();
-> +}
-> +
->  void lkdtm_EXEC_DATA(void)
->  {
->  	execute_location(data_area, CODE_WRITE);
-> -- 
-> 2.31.1
-> 
-
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index 836617fb3f40..45ba40cf4d07 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -483,17 +483,6 @@ static int ibmveth_register_logical_lan(struct ibmveth_adapter *adapter,
+ 	return rc;
+ }
+ 
+-static u64 ibmveth_encode_mac_addr(u8 *mac)
+-{
+-	int i;
+-	u64 encoded = 0;
+-
+-	for (i = 0; i < ETH_ALEN; i++)
+-		encoded = (encoded << 8) | mac[i];
+-
+-	return encoded;
+-}
+-
+ static int ibmveth_open(struct net_device *netdev)
+ {
+ 	struct ibmveth_adapter *adapter = netdev_priv(netdev);
+@@ -553,7 +542,7 @@ static int ibmveth_open(struct net_device *netdev)
+ 	adapter->rx_queue.num_slots = rxq_entries;
+ 	adapter->rx_queue.toggle = 1;
+ 
+-	mac_address = ibmveth_encode_mac_addr(netdev->dev_addr);
++	mac_address = ether_addr_to_u64(netdev->dev_addr);
+ 
+ 	rxq_desc.fields.flags_len = IBMVETH_BUF_VALID |
+ 					adapter->rx_queue.queue_len;
+@@ -1476,7 +1465,7 @@ static void ibmveth_set_multicast_list(struct net_device *netdev)
+ 		netdev_for_each_mc_addr(ha, netdev) {
+ 			/* add the multicast address to the filter table */
+ 			u64 mcast_addr;
+-			mcast_addr = ibmveth_encode_mac_addr(ha->addr);
++			mcast_addr = ether_addr_to_u64(ha->addr);
+ 			lpar_rc = h_multicast_ctrl(adapter->vdev->unit_address,
+ 						   IbmVethMcastAddFilter,
+ 						   mcast_addr);
+@@ -1606,7 +1595,7 @@ static int ibmveth_set_mac_addr(struct net_device *dev, void *p)
+ 	if (!is_valid_ether_addr(addr->sa_data))
+ 		return -EADDRNOTAVAIL;
+ 
+-	mac_address = ibmveth_encode_mac_addr(addr->sa_data);
++	mac_address = ether_addr_to_u64(addr->sa_data);
+ 	rc = h_change_logical_lan_mac(adapter->vdev->unit_address, mac_address);
+ 	if (rc) {
+ 		netdev_err(adapter->netdev, "h_change_logical_lan_mac failed with rc=%d\n", rc);
 -- 
-Kees Cook
+2.31.1
+
