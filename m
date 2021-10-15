@@ -2,19 +2,19 @@ Return-Path: <SRS0=ZqAX=PD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93E2AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 10:07:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0784CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 10:09:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 82821600CD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 10:07:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 82821600CD
+	by mail.kernel.org (Postfix) with ESMTPS id 49CE860F56
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 10:09:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 49CE860F56
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HW22Z4Syhz3djL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 21:05:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HW2320mJ9z3dry
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 21:05:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,50 +22,51 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HW20T2fwnz3cBf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Oct 2021 21:03:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HW20Z2zhLz3bw7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Oct 2021 21:03:42 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HW1zt4NkYz9sSH;
- Fri, 15 Oct 2021 12:03:06 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HW1zv2mJdz9sSJ;
+ Fri, 15 Oct 2021 12:03:07 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 0hVFpIMcN2NA; Fri, 15 Oct 2021 12:03:06 +0200 (CEST)
+ with ESMTP id UCMJ0JA1vz-o; Fri, 15 Oct 2021 12:03:07 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HW1zp65PJz9sSJ;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HW1zp6F4Jz9sSL;
  Fri, 15 Oct 2021 12:03:02 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B22768B796;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BF6E68B78B;
  Fri, 15 Oct 2021 12:03:02 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Q9j_s-qa3qGG; Fri, 15 Oct 2021 12:03:02 +0200 (CEST)
+ with ESMTP id b5s0szab9dBw; Fri, 15 Oct 2021 12:03:02 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.255])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4579F8B78C;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 56E588B794;
  Fri, 15 Oct 2021 12:03:02 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19FA2qp52627023
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19FA2rCJ2627047
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Fri, 15 Oct 2021 12:02:52 +0200
+ Fri, 15 Oct 2021 12:02:53 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19FA2o9K2627022;
- Fri, 15 Oct 2021 12:02:50 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19FA2re82627046;
+ Fri, 15 Oct 2021 12:02:53 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v1 1/8] powerpc/booke: Disable STRICT_KERNEL_RWX,
- DEBUG_PAGEALLOC and KFENCE
-Date: Fri, 15 Oct 2021 12:02:42 +0200
-Message-Id: <d1ad9fdd9b27da3fdfa16510bb542ed51fa6e134.1634292136.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 7/8] powerpc/fsl_booke: Update of TLBCAMs after init
+Date: Fri, 15 Oct 2021 12:02:48 +0200
+Message-Id: <66bef0b9c273e1121706883f3cf5ad0a053d863f.1634292136.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <d1ad9fdd9b27da3fdfa16510bb542ed51fa6e134.1634292136.git.christophe.leroy@csgroup.eu>
+References: <d1ad9fdd9b27da3fdfa16510bb542ed51fa6e134.1634292136.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634292164; l=2117; s=20211009;
- h=from:subject:message-id; bh=orZAV9z44vdowJdM+qSZlmB7rjoxxliGvHrTgsstLPU=;
- b=JE2TmcSRg6POx2Ew2futt1VQsdtUWvLjTahpvKTVLZAfVEDwXR0cwjE0ddYvBGIRvfFxunPWMa6d
- jaYsgzeoCOkpjdIP3OpPyDtT0NLp+nUc6alT2cLFOT+OZTqoUSR1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634292165; l=2943; s=20211009;
+ h=from:subject:message-id; bh=gzG7H3KYBKJ5yQFhvkG5u6bqpV0yLD6k/o96DqH9ELk=;
+ b=paIJ63x6J2fXzZLUXlHWCycDOs4xxuq6ZMfM+duUwHDpLnGjPeuz3QPq3lL8QP9GioeWomOuCWzx
+ Mr1kEnwWARjhWb4g9S0MLV56KIgHZjWpWWqHxd6TNTuwV1H0uFoW
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -85,51 +86,92 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-fsl_booke and 44x are not able to map kernel linear memory with
-pages, so they can't support DEBUG_PAGEALLOC and KFENCE, and
-STRICT_KERNEL_RWX is also a problem for now.
+After init, set readonly memory as ROX and set readwrite
+memory as RWX, if STRICT_KERNEL_RWX is enabled.
 
-Enable those only on book3s (both 32 and 64 except KFENCE), 8xx and 40x.
-
-Fixes: 88df6e90fa97 ("[POWERPC] DEBUG_PAGEALLOC for 32-bit")
-Fixes: 95902e6c8864 ("powerpc/mm: Implement STRICT_KERNEL_RWX on PPC32")
-Fixes: 90cbac0e995d ("powerpc: Enable KFENCE for PPC32")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/Kconfig | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/mm/mmu_decl.h          |  2 +-
+ arch/powerpc/mm/nohash/fsl_book3e.c | 32 +++++++++++++++++++++++++----
+ 2 files changed, 29 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index ba5b66189358..6b9f523882c5 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -138,7 +138,7 @@ config PPC
- 	select ARCH_HAS_PTE_SPECIAL
- 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE && PPC_BOOK3S_64
- 	select ARCH_HAS_SET_MEMORY
--	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !HIBERNATION)
-+	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC_BOOK3S || PPC_8xx || 40x) && !HIBERNATION
- 	select ARCH_HAS_STRICT_MODULE_RWX	if ARCH_HAS_STRICT_KERNEL_RWX && !PPC_BOOK3S_32
- 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAS_UACCESS_FLUSHCACHE
-@@ -150,7 +150,7 @@ config PPC
- 	select ARCH_OPTIONAL_KERNEL_RWX		if ARCH_HAS_STRICT_KERNEL_RWX
- 	select ARCH_STACKWALK
- 	select ARCH_SUPPORTS_ATOMIC_RMW
--	select ARCH_SUPPORTS_DEBUG_PAGEALLOC	if PPC32 || PPC_BOOK3S_64
-+	select ARCH_SUPPORTS_DEBUG_PAGEALLOC	if PPC_BOOK3S || PPC_8xx || 40x
- 	select ARCH_USE_BUILTIN_BSWAP
- 	select ARCH_USE_CMPXCHG_LOCKREF		if PPC64
- 	select ARCH_USE_MEMTEST
-@@ -190,7 +190,7 @@ config PPC
- 	select HAVE_ARCH_JUMP_LABEL_RELATIVE
- 	select HAVE_ARCH_KASAN			if PPC32 && PPC_PAGE_SHIFT <= 14
- 	select HAVE_ARCH_KASAN_VMALLOC		if PPC32 && PPC_PAGE_SHIFT <= 14
--	select HAVE_ARCH_KFENCE			if PPC32
-+	select HAVE_ARCH_KFENCE			if PPC_BOOK3S_32 || PPC_8xx || 40x
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_MMAP_RND_BITS
- 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index e13a3c0caa02..0dd4c18f8363 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -168,7 +168,7 @@ static inline phys_addr_t v_block_mapped(unsigned long va) { return 0; }
+ static inline unsigned long p_block_mapped(phys_addr_t pa) { return 0; }
+ #endif
+ 
+-#if defined(CONFIG_PPC_BOOK3S_32) || defined(CONFIG_PPC_8xx)
++#if defined(CONFIG_PPC_BOOK3S_32) || defined(CONFIG_PPC_8xx) || defined(CONFIG_PPC_FSL_BOOK3E)
+ void mmu_mark_initmem_nx(void);
+ void mmu_mark_rodata_ro(void);
+ #else
+diff --git a/arch/powerpc/mm/nohash/fsl_book3e.c b/arch/powerpc/mm/nohash/fsl_book3e.c
+index c1bc11f46344..978e0bcdfa2c 100644
+--- a/arch/powerpc/mm/nohash/fsl_book3e.c
++++ b/arch/powerpc/mm/nohash/fsl_book3e.c
+@@ -181,7 +181,7 @@ static unsigned long map_mem_in_cams_addr(phys_addr_t phys, unsigned long virt,
+ 	/* Calculate CAM values */
+ 	for (i = 0; boundary && i < max_cam_idx; i++) {
+ 		unsigned long cam_sz;
+-		pgprot_t prot = PAGE_KERNEL_X;
++		pgprot_t prot = init ? PAGE_KERNEL_X : PAGE_KERNEL_ROX;
+ 
+ 		cam_sz = calc_cam_sz(boundary, virt, phys);
+ 		if (!dryrun)
+@@ -194,7 +194,7 @@ static unsigned long map_mem_in_cams_addr(phys_addr_t phys, unsigned long virt,
+ 	}
+ 	for (ram -= amount_mapped; ram && i < max_cam_idx; i++) {
+ 		unsigned long cam_sz;
+-		pgprot_t prot = PAGE_KERNEL_X;
++		pgprot_t prot = init ? PAGE_KERNEL_X : PAGE_KERNEL;
+ 
+ 		cam_sz = calc_cam_sz(ram, virt, phys);
+ 		if (!dryrun)
+@@ -209,8 +209,13 @@ static unsigned long map_mem_in_cams_addr(phys_addr_t phys, unsigned long virt,
+ 	if (dryrun)
+ 		return amount_mapped;
+ 
+-	loadcam_multi(0, i, max_cam_idx);
+-	tlbcam_index = i;
++	if (init) {
++		loadcam_multi(0, i, max_cam_idx);
++		tlbcam_index = i;
++	} else {
++		loadcam_multi(0, i, 0);
++		WARN_ON(i > tlbcam_index);
++	}
+ 
+ #ifdef CONFIG_PPC64
+ 	get_paca()->tcd.esel_next = i;
+@@ -279,6 +284,25 @@ void __init adjust_total_lowmem(void)
+ 	memblock_set_current_limit(memstart_addr + __max_low_memory);
+ }
+ 
++#ifdef CONFIG_STRICT_KERNEL_RWX
++void mmu_mark_rodata_ro(void)
++{
++	/* Everything is done in mmu_mark_initmem_nx() */
++}
++#endif
++
++void mmu_mark_initmem_nx(void)
++{
++	unsigned long remapped;
++
++	if (!strict_kernel_rwx_enabled())
++		return;
++
++	remapped = map_mem_in_cams(__max_low_memory, CONFIG_LOWMEM_CAM_NUM, false, false);
++
++	WARN_ON(__max_low_memory != remapped);
++}
++
+ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 				phys_addr_t first_memblock_size)
+ {
 -- 
 2.31.1
 
