@@ -2,42 +2,80 @@ Return-Path: <SRS0=ZqAX=PD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50CE8C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 15:37:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DEC81C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 15:47:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9FEB661037
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 15:37:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9FEB661037
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 17C596105A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 15:47:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 17C596105A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HW9Pq5H6hz3cG2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Oct 2021 02:37:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HW9cq3pMjz3cBV
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Oct 2021 02:47:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=valentin.schneider@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4HW9PL1q4Lz2yfn
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Oct 2021 02:37:07 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6C10111D4;
- Fri, 15 Oct 2021 08:37:04 -0700 (PDT)
-Received: from e113632-lin (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4D3F23F66F;
- Fri, 15 Oct 2021 08:37:03 -0700 (PDT)
-From: Valentin Schneider <valentin.schneider@arm.com>
-To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/smp: do not decrement idle task preempt count in
- CPU offline
-In-Reply-To: <20211015145548.2269836-1-nathanl@linux.ibm.com>
-References: <20211015145548.2269836-1-nathanl@linux.ibm.com>
-Date: Fri, 15 Oct 2021 16:36:57 +0100
-Message-ID: <87h7dijo4m.mognet@arm.com>
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=qgKc/ham;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1030;
+ helo=mail-pj1-x1030.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=qgKc/ham; dkim-atps=neutral
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com
+ [IPv6:2607:f8b0:4864:20::1030])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HW9cC5c1tz3bmn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Oct 2021 02:46:35 +1100 (AEDT)
+Received: by mail-pj1-x1030.google.com with SMTP id oa4so7480017pjb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Oct 2021 08:46:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=CUx1zrTY0Ka69PwK0HuQcXj89HkMpPrH2ks6HQYuL00=;
+ b=qgKc/hamRxnk9EAExHx9lM2P2mpfBGk69um1hXpwOp5qfSElmepiEksTdyqFQW2Fv7
+ IewRiBhPmMHZHP8Vp0Io9DtkdxMvOf5SHNwkbkxdHDnkGyU61xpyoqpaqYdB/Pus5UeX
+ hVQN/ax8TeQL9NRpnKbwRqf1jv4XQXzxuot+zS7cYjru2qneikfKGstE7fa6dAfHMbA5
+ 8CMPZW0su6C/k5TSLwZdW4doLgt4jTbEg9b4yBbWPYzBDYnek2F23A+kaFW5dNgtPwT0
+ bJgPP5Fld+J/2QO6lZOC7fKwiRTESdn9Jy0B4F0f8ljvr9CXG3g2RpNrNRkNey3XYj4W
+ A/2A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=CUx1zrTY0Ka69PwK0HuQcXj89HkMpPrH2ks6HQYuL00=;
+ b=mYRNd706e2JlKGE0uFukyXT/RPy9K7DAbkl6F1D07fEWkl/X5vWle3fXDBfbK0BV74
+ PCmnE6cBQiz43s4O4KGQL/oX+/neLGSWHmfgxzSKHj4YKTK8OzGNzLF3WP3maSUww0bS
+ bfh5Wcz+IAjeeuIKMpj054+by1USc+tzCycuhkxi+koFBk952oHf55raiO3GsEZtaJhx
+ 4WOkXXuP8FZmxXJyI1djXbsyLbyNCcSqGLLXf/K+BxfXNytw9lgMoBrk1HA476rSF7cp
+ 382hwc8bsULRs7u1zVJHZTmUS/urh2tkDzvbz4BI/keYi/DeSJIAfEBy2DFIHomC7COT
+ rghw==
+X-Gm-Message-State: AOAM533kH7e6O+KAMQw109E0/cF/4Py6O80XIfu0om/ZKSFCFsDiQqlF
+ 2hZk0upLD7Ya1eKVW/09caefzpA/LUQ=
+X-Google-Smtp-Source: ABdhPJwMz1YCjyr/7C5cPQyyLhDS+xP3qgrCkF9LfJea2/DZI3kzTCXZ9g7r+UjbKMrgorXUgQD3wA==
+X-Received: by 2002:a17:90a:de0b:: with SMTP id
+ m11mr28533730pjv.39.1634312793485; 
+ Fri, 15 Oct 2021 08:46:33 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com (14-203-144-177.static.tpgi.com.au.
+ [14.203.144.177])
+ by smtp.gmail.com with ESMTPSA id y1sm5392092pfo.104.2021.10.15.08.46.31
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 15 Oct 2021 08:46:33 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v1 01/11] powerpc: Remove unused FW_FEATURE_NATIVE references
+Date: Sat, 16 Oct 2021 01:46:14 +1000
+Message-Id: <20211015154624.922960-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20211015154624.922960-1-npiggin@gmail.com>
+References: <20211015154624.922960-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,77 +87,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: srikar@linux.vnet.ibm.com, peterz@infradead.org,
- linux-kernel@vger.kernel.org, clg@kaod.org, mingo@kernel.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 15/10/21 09:55, Nathan Lynch wrote:
-> With PREEMPT_COUNT=y, when a CPU is offlined and then onlined again, we
-> get:
->
-> BUG: scheduling while atomic: swapper/1/0/0x00000000
-> no locks held by swapper/1/0.
-> CPU: 1 PID: 0 Comm: swapper/1 Not tainted 5.15.0-rc2+ #100
-> Call Trace:
->  dump_stack_lvl+0xac/0x108
->  __schedule_bug+0xac/0xe0
->  __schedule+0xcf8/0x10d0
->  schedule_idle+0x3c/0x70
->  do_idle+0x2d8/0x4a0
->  cpu_startup_entry+0x38/0x40
->  start_secondary+0x2ec/0x3a0
->  start_secondary_prolog+0x10/0x14
->
-> This is because powerpc's arch_cpu_idle_dead() decrements the idle task's
-> preempt count, for reasons explained in commit a7c2bb8279d2 ("powerpc:
-> Re-enable preemption before cpu_die()"), specifically "start_secondary()
-> expects a preempt_count() of 0."
->
-> However, since commit 2c669ef6979c ("powerpc/preempt: Don't touch the idle
-> task's preempt_count during hotplug") and commit f1a0a376ca0c ("sched/core:
-> Initialize the idle task with preemption disabled"), that justification no
-> longer holds.
->
-> The idle task isn't supposed to re-enable preemption, so remove the
-> vestigial preempt_enable() from the CPU offline path.
->
+FW_FEATURE_NATIVE_ALWAYS and FW_FEATURE_NATIVE_POSSIBLE are always
+zero and never do anything. Remove them.
 
-Humph, I got confused because 2c669ef6979c explicitly mentions hotplug,
-but that's the hotplug machinery which is already involved for bringing up
-the secondaries at boot time.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/firmware.h | 8 --------
+ 1 file changed, 8 deletions(-)
 
-IIUC your issue here is the preempt_count being messed up when
-hot-unplugging a CPU, which leads to fireworks during hotplug (IOW I didn't
-test my last patch against hotplug - my bad!)
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index 97a3bd9ffeb9..9b702d2b80fb 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -80,8 +80,6 @@ enum {
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+ 	FW_FEATURE_PS3_POSSIBLE = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
+ 	FW_FEATURE_PS3_ALWAYS = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
+-	FW_FEATURE_NATIVE_POSSIBLE = 0,
+-	FW_FEATURE_NATIVE_ALWAYS = 0,
+ 	FW_FEATURE_POSSIBLE =
+ #ifdef CONFIG_PPC_PSERIES
+ 		FW_FEATURE_PSERIES_POSSIBLE |
+@@ -91,9 +89,6 @@ enum {
+ #endif
+ #ifdef CONFIG_PPC_PS3
+ 		FW_FEATURE_PS3_POSSIBLE |
+-#endif
+-#ifdef CONFIG_PPC_NATIVE
+-		FW_FEATURE_NATIVE_ALWAYS |
+ #endif
+ 		0,
+ 	FW_FEATURE_ALWAYS =
+@@ -105,9 +100,6 @@ enum {
+ #endif
+ #ifdef CONFIG_PPC_PS3
+ 		FW_FEATURE_PS3_ALWAYS &
+-#endif
+-#ifdef CONFIG_PPC_NATIVE
+-		FW_FEATURE_NATIVE_ALWAYS &
+ #endif
+ 		FW_FEATURE_POSSIBLE,
+ 
+-- 
+2.23.0
 
-Reviewed-by: Valentin Schneider <valentin.schneider@arm.com>
-
-> Tested with pseries and powernv in qemu, and pseries on PowerVM.
->
-> Fixes: 2c669ef6979c ("powerpc/preempt: Don't touch the idle task's preempt_count during hotplug")
-> Fixes: f1a0a376ca0c ("sched/core: Initialize the idle task with preemption disabled")
-
-I think only the first Fixes: is needed.
-
-> Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
-> ---
->  arch/powerpc/kernel/smp.c | 2 --
->  1 file changed, 2 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 9cc7d3dbf439..605bab448f84 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -1730,8 +1730,6 @@ void __cpu_die(unsigned int cpu)
->
->  void arch_cpu_idle_dead(void)
->  {
-> -	sched_preempt_enable_no_resched();
-> -
->       /*
->        * Disable on the down path. This will be re-enabled by
->        * start_secondary() via start_secondary_resume() below
-> --
-> 2.31.1
