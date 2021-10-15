@@ -2,53 +2,57 @@ Return-Path: <SRS0=ZqAX=PD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8000C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 04:46:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42A63C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 05:00:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 05FDE60FDA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 04:46:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 05FDE60FDA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
+	by mail.kernel.org (Postfix) with ESMTPS id D1C2C61040
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 05:00:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D1C2C61040
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HVty53lYjz3c9C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 15:46:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HVvGB3jlcz3c7Q
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 16:00:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y122mcwL;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.56;
- helo=out30-56.freemail.mail.aliyun.com;
- envelope-from=yun.wang@linux.alibaba.com; receiver=<UNKNOWN>)
-Received: from out30-56.freemail.mail.aliyun.com
- (out30-56.freemail.mail.aliyun.com [115.124.30.56])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=gustavoars@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=Y122mcwL; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HVtxb6kjtz2ywT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Oct 2021 15:45:37 +1100 (AEDT)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R171e4; CH=green; DM=||false|;
- DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04400; MF=yun.wang@linux.alibaba.com;
- NM=1; PH=DS; RN=31; SR=0; TI=SMTPD_---0Us3oYXy_1634273127; 
-Received: from testdeMacBook-Pro.local(mailfrom:yun.wang@linux.alibaba.com
- fp:SMTPD_---0Us3oYXy_1634273127) by smtp.aliyun-inc.com(127.0.0.1);
- Fri, 15 Oct 2021 12:45:29 +0800
-Subject: Re: [PATCH v3 1/2] ftrace: disable preemption between
- ftrace_test_recursion_trylock/unlock()
-From: =?UTF-8?B?546L6LSH?= <yun.wang@linux.alibaba.com>
-To: Petr Mladek <pmladek@suse.com>
-References: <609b565a-ed6e-a1da-f025-166691b5d994@linux.alibaba.com>
- <7e4738b5-21d4-c4d0-3136-a096bbb5cd2c@linux.alibaba.com>
- <YWhJP41cNwDphYsv@alley>
- <5e907ed3-806b-b0e5-518d-d2f3b265377f@linux.alibaba.com>
-Message-ID: <a5bae9a5-9ab7-2660-caa6-facecb1dba32@linux.alibaba.com>
-Date: Fri, 15 Oct 2021 12:45:27 +0800
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:78.0)
- Gecko/20100101 Thunderbird/78.14.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HVvFR0FlNz2yxj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Oct 2021 15:59:22 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 61FCB611BD;
+ Fri, 15 Oct 2021 04:59:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1634273960;
+ bh=/uoHz+FQ9emMCfOnNYpHnuX4+14/9z8ccvDRKSLVoP0=;
+ h=Date:From:To:Cc:Subject:From;
+ b=Y122mcwLoD/b2wScp+5PQopFaEb6gR0jljnYfdJ8WTuF1/akfspve+cPzp1y3YShC
+ v4gV6akOfvRasvStU+V2JIX/cgiXQE7b10eR4iLwC4EgrMeTULlG95nltbW6U4atQm
+ aov3vHuN9LLbxQFeXiW4Qu1k1zRGGlD07PpvxB2KzrLLn5jy70kPO4Zrs9bOexCQKi
+ ZYg06OMNThgTC4UcTqkCEvveHGrk92/2kAdEhVkh74kd4hjIIFPZUypny/G2aZ4rl7
+ fQ/8rhrKbzgLPrKINnYy1i4aEUPeRzIYq79/k8QmFvJ6etlS00hdAJWF1LLLKJa2PY
+ lFBD8l1U7shqQ==
+Date: Fri, 15 Oct 2021 00:03:45 -0500
+From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Haren Myneni <haren@linux.ibm.com>
+Subject: [PATCH][next] powerpc/vas: Fix potential NULL pointer dereference
+Message-ID: <20211015050345.GA1161918@embeddedor>
 MIME-Version: 1.0
-In-Reply-To: <5e907ed3-806b-b0e5-518d-d2f3b265377f@linux.alibaba.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,69 +64,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
- Paul Walmsley <paul.walmsley@sifive.com>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Guo Ren <guoren@kernel.org>, Jisheng Zhang <jszhang@kernel.org>,
- "H. Peter Anvin" <hpa@zytor.com>, live-patching@vger.kernel.org,
- linux-riscv@lists.infradead.org, Miroslav Benes <mbenes@suse.cz>,
- Paul Mackerras <paulus@samba.org>, Joe Lawrence <joe.lawrence@redhat.com>,
- Helge Deller <deller@gmx.de>, x86@kernel.org, linux-csky@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Jiri Kosina <jikos@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Colin Ian King <colin.king@canonical.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavoars@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+(!ptr && !ptr->foo) strikes again. :)
 
+The expression (!ptr && !ptr->foo) is bogus and in case ptr is NULL,
+it leads to a NULL pointer dereference: ptr->foo.
 
-On 2021/10/15 上午11:13, 王贇 wrote:
-[snip]
->>  # define do_ftrace_record_recursion(ip, pip)	do { } while (0)
->>  #endif
->>  
->> +/*
->> + * trace_test_and_set_recursion() is called on several layers
->> + * of the ftrace code when handling the same ftrace entry.
->> + * These calls might be nested/recursive.
->> + *
->> + * It uses TRACE_LIST_*BITs to distinguish between this
->> + * internal recursion and recursion caused by calling
->> + * the traced function by the ftrace code.
->> + *
->> + * Returns: > 0 when no recursion
->> + *          0 when called recursively internally (safe)
-> 
-> The 0 can also happened when ftrace handler recursively called trylock()
-> under the same context, or not?
-> 
+Fix this by converting && to ||
 
-Never mind... you're right about this.
+This issue was detected with the help of Coccinelle, and audited and
+fixed manually.
 
-Regards,
-Michael Wang
+Fixes: 1a0d0d5ed5e3 ("powerpc/vas: Add platform specific user window operations")
+Cc: stable@vger.kernel.org
+Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+---
+ arch/powerpc/platforms/book3s/vas-api.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> Regards,
-> Michael Wang
-> 
->> + *	    -1 when the traced function was called recursively from
->> + *             the ftrace handler (unsafe)
->> + */
->>  static __always_inline int trace_test_and_set_recursion(unsigned long ip, unsigned long pip,
->>  							int start, int max)
->>  {
->>  	unsigned int val = READ_ONCE(current->trace_recursion);
->>  	int bit;
->>  
->> -	/* A previous recursion check was made */
->> +	/* Called recursively internally by different ftrace code layers? */
->>  	if ((val & TRACE_CONTEXT_MASK) > max)
->>  		return 0;
-> 
->>  
->>
+diff --git a/arch/powerpc/platforms/book3s/vas-api.c b/arch/powerpc/platforms/book3s/vas-api.c
+index 30172e52e16b..4d82c92ddd52 100644
+--- a/arch/powerpc/platforms/book3s/vas-api.c
++++ b/arch/powerpc/platforms/book3s/vas-api.c
+@@ -303,7 +303,7 @@ static int coproc_ioc_tx_win_open(struct file *fp, unsigned long arg)
+ 		return -EINVAL;
+ 	}
+ 
+-	if (!cp_inst->coproc->vops && !cp_inst->coproc->vops->open_win) {
++	if (!cp_inst->coproc->vops || !cp_inst->coproc->vops->open_win) {
+ 		pr_err("VAS API is not registered\n");
+ 		return -EACCES;
+ 	}
+@@ -373,7 +373,7 @@ static int coproc_mmap(struct file *fp, struct vm_area_struct *vma)
+ 		return -EINVAL;
+ 	}
+ 
+-	if (!cp_inst->coproc->vops && !cp_inst->coproc->vops->paste_addr) {
++	if (!cp_inst->coproc->vops || !cp_inst->coproc->vops->paste_addr) {
+ 		pr_err("%s(): VAS API is not registered\n", __func__);
+ 		return -EACCES;
+ 	}
+-- 
+2.27.0
+
