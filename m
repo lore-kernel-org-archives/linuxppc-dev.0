@@ -2,44 +2,45 @@ Return-Path: <SRS0=ZqAX=PD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A397C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 18:21:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E800C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 18:26:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 827A560FF2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 18:21:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 827A560FF2
+	by mail.kernel.org (Postfix) with ESMTPS id A824D60FE3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 18:26:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A824D60FE3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HWF2V1q51z3cH1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Oct 2021 05:21:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HWF8N0MkRz3cBP
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Oct 2021 05:26:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=a1n/=pd=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HWF210K3Sz3bmr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Oct 2021 05:20:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HWF7v6DDkz3bP7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Oct 2021 05:25:47 +1100 (AEDT)
 Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com
  [66.24.58.225])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E5A1960FF2;
- Fri, 15 Oct 2021 18:20:35 +0000 (UTC)
-Date: Fri, 15 Oct 2021 14:20:33 -0400
+ by mail.kernel.org (Postfix) with ESMTPSA id CB69B60FF2;
+ Fri, 15 Oct 2021 18:25:42 +0000 (UTC)
+Date: Fri, 15 Oct 2021 14:25:41 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH] tracing: Have all levels of checks prevent recursion
-Message-ID: <20211015142033.72605b47@gandalf.local.home>
-In-Reply-To: <20211015180429.GK174703@worktop.programming.kicks-ass.net>
+Message-ID: <20211015142541.4badd8a9@gandalf.local.home>
+In-Reply-To: <20211015142033.72605b47@gandalf.local.home>
 References: <20211015110035.14813389@gandalf.local.home>
  <20211015161702.GF174703@worktop.programming.kicks-ass.net>
  <20211015133504.6c0a9fcc@gandalf.local.home>
  <20211015135806.72d1af23@gandalf.local.home>
  <20211015180429.GK174703@worktop.programming.kicks-ass.net>
+ <20211015142033.72605b47@gandalf.local.home>
 X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -74,24 +75,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 15 Oct 2021 20:04:29 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+On Fri, 15 Oct 2021 14:20:33 -0400
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> On Fri, Oct 15, 2021 at 01:58:06PM -0400, Steven Rostedt wrote:
-> > Something like this:  
+> > I think having one copy of that in a header is better than having 3
+> > copies. But yes, something along them lines.  
 > 
-> I think having one copy of that in a header is better than having 3
-> copies. But yes, something along them lines.
+> I was just about to ask you about this patch ;-)
 
-I was just about to ask you about this patch ;-)
+Except it doesn't build :-p (need to move the inlined function down a bit)
 
 diff --git a/include/linux/preempt.h b/include/linux/preempt.h
-index 4d244e295e85..a6ae329aa654 100644
+index 4d244e295e85..b32e3dabe28b 100644
 --- a/include/linux/preempt.h
 +++ b/include/linux/preempt.h
-@@ -74,6 +74,27 @@
-  */
- #define FORK_PREEMPT_COUNT	(2*PREEMPT_DISABLE_OFFSET + PREEMPT_ENABLED)
+@@ -77,6 +77,27 @@
+ /* preempt_count() and related functions, depends on PREEMPT_NEED_RESCHED */
+ #include <asm/preempt.h>
  
 +/**
 + * interrupt_context_level - return interrupt context level
@@ -114,9 +114,9 @@ index 4d244e295e85..a6ae329aa654 100644
 +	return level;
 +}
 +
- /* preempt_count() and related functions, depends on PREEMPT_NEED_RESCHED */
- #include <asm/preempt.h>
- 
+ #define nmi_count()	(preempt_count() & NMI_MASK)
+ #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
+ #ifdef CONFIG_PREEMPT_RT
 diff --git a/include/linux/trace_recursion.h b/include/linux/trace_recursion.h
 index 41f5bfd9e93f..018a04381556 100644
 --- a/include/linux/trace_recursion.h
