@@ -2,21 +2,21 @@ Return-Path: <SRS0=ZqAX=PD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F9BAC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 23:53:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F243C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 23:54:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 691C061163
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 23:53:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 691C061163
+	by mail.kernel.org (Postfix) with ESMTPS id 87AE161163
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 23:54:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 87AE161163
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HWNQ8678Tz3bP7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Oct 2021 10:53:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HWNQr0xScz3cJ3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Oct 2021 10:54:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=yj5zwz6F;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=k0iIsRd4;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -24,27 +24,27 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=yj5zwz6F; 
+ header.s=bombadil.20210309 header.b=k0iIsRd4; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HWNPR3gD4z2ywR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HWNPR4mP1z2ywj
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Oct 2021 10:52:59 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
  Reply-To:Content-Type:Content-ID:Content-Description;
- bh=HyZ2KI/h/gpVdjlPSyGH7uhBE8wL3JrrLi6b2qQqvAU=; b=yj5zwz6Fs1lJD22XifEcv2Orrv
- prK+DP1Qo/XEWtRbfWO8+3LeJ2D/W40Mrnlx/po3H3Bj1sdJ7LjC46VZzVbijZLDUfyDQ0lcraB4A
- O1+ZnXCViST9WOLXPEp6QEw5iFwg7Nl2NTJjTFNWAiBSCkRT/eFF+ufsLZ35VSvWT+Me6Bl5b+zW4
- qnUeG+hWSyDlJEc6UGDHcC2VRpwbRbnamAoY23a1KoJTax19zGzqc5vZVqn6CEFYHaBNHVowexejt
- 7tFP6vpdjs9kA32INEEkgOr2mGidDR806UqktII1c799hggCz3zG9h/QDk29AdLY2mx1RJDCSEpjY
- mzPuYCUA==;
+ bh=vmoV/2yvLiwBFQQklXCjpC+/vAkb2GZd/kil2P+K9LY=; b=k0iIsRd4etFUTdob28o4ORiDN4
+ +B5FyF731o7hr+GINXvlvMEAMpsLwW5pC/OKgrZhFwyicCWbpFYSPPBTrBIjvSuVnrLjhUSLYS++y
+ oRkzDGAOTsEh93X+qg4nyS4uWEdS1lTDNed0oMklQ8zbFZvEmtlBlaap7C7u4S3ktr+flejwhLn6v
+ kgxKkRW5rGqDNa6Cku4cssrBYgKN0s5RFNPfDoSHCSG9iQEucDFOEf6fvVjlMBFP7jCkT/hLFNSOo
+ cpEoBq/XBYeFkTadkfricUfOXARU2LfOTVXw3vn1MHJ8F/i5S8b+Km/fw6MNqjRctXbmhviSiCcL6
+ I9TcNhtA==;
 Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mbWzt-009C3J-DB; Fri, 15 Oct 2021 23:52:21 +0000
+ (Red Hat Linux)) id 1mbWzt-009C31-2Y; Fri, 15 Oct 2021 23:52:21 +0000
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: axboe@kernel.dk, geoff@infradead.org, mpe@ellerman.id.au,
  benh@kernel.crashing.org, paulus@samba.org, jim@jtan.com,
@@ -52,9 +52,9 @@ To: axboe@kernel.dk, geoff@infradead.org, mpe@ellerman.id.au,
  richard@nod.at, miquel.raynal@bootlin.com, vigneshr@ti.com,
  dan.j.williams@intel.com, vishal.l.verma@intel.com, dave.jiang@intel.com,
  ira.weiny@intel.com, kbusch@kernel.org, hch@lst.de, sagi@grimberg.me
-Subject: [PATCH 12/13] block/sunvdc: add error handling support for add_disk()
-Date: Fri, 15 Oct 2021 16:52:18 -0700
-Message-Id: <20211015235219.2191207-13-mcgrof@kernel.org>
+Subject: [PATCH 04/13] nvdimm/btt: use goto error labels on btt_blk_init()
+Date: Fri, 15 Oct 2021 16:52:10 -0700
+Message-Id: <20211015235219.2191207-5-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20211015235219.2191207-1-mcgrof@kernel.org>
 References: <20211015235219.2191207-1-mcgrof@kernel.org>
@@ -79,52 +79,60 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We never checked for errors on add_disk() as this function
-returned void. Now that this is fixed, use the shiny new
-error handling.
-
-We re-use the same free tag call, so we also add a label for
-that as well.
+This will make it easier to share common error paths.
 
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- drivers/block/sunvdc.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ drivers/nvdimm/btt.c | 19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/block/sunvdc.c b/drivers/block/sunvdc.c
-index 4d4bb810c2ae..6f45a53f7cbf 100644
---- a/drivers/block/sunvdc.c
-+++ b/drivers/block/sunvdc.c
-@@ -826,8 +826,8 @@ static int probe_disk(struct vdc_port *port)
- 	if (IS_ERR(g)) {
- 		printk(KERN_ERR PFX "%s: Could not allocate gendisk.\n",
- 		       port->vio.name);
--		blk_mq_free_tag_set(&port->tag_set);
--		return PTR_ERR(g);
-+		err = PTR_ERR(g);
-+		goto out_free_tag;
+diff --git a/drivers/nvdimm/btt.c b/drivers/nvdimm/btt.c
+index 29cc7325e890..23ee8c005db5 100644
+--- a/drivers/nvdimm/btt.c
++++ b/drivers/nvdimm/btt.c
+@@ -1520,10 +1520,11 @@ static int btt_blk_init(struct btt *btt)
+ {
+ 	struct nd_btt *nd_btt = btt->nd_btt;
+ 	struct nd_namespace_common *ndns = nd_btt->ndns;
++	int rc = -ENOMEM;
+ 
+ 	btt->btt_disk = blk_alloc_disk(NUMA_NO_NODE);
+ 	if (!btt->btt_disk)
+-		return -ENOMEM;
++		goto out;
+ 
+ 	nvdimm_namespace_disk_name(ndns, btt->btt_disk->disk_name);
+ 	btt->btt_disk->first_minor = 0;
+@@ -1535,19 +1536,23 @@ static int btt_blk_init(struct btt *btt)
+ 	blk_queue_flag_set(QUEUE_FLAG_NONROT, btt->btt_disk->queue);
+ 
+ 	if (btt_meta_size(btt)) {
+-		int rc = nd_integrity_init(btt->btt_disk, btt_meta_size(btt));
+-
+-		if (rc) {
+-			blk_cleanup_disk(btt->btt_disk);
+-			return rc;
+-		}
++		rc = nd_integrity_init(btt->btt_disk, btt_meta_size(btt));
++		if (rc)
++			goto out_cleanup_disk;
  	}
- 
- 	port->disk = g;
-@@ -879,9 +879,17 @@ static int probe_disk(struct vdc_port *port)
- 	       port->vdisk_size, (port->vdisk_size >> (20 - 9)),
- 	       port->vio.ver.major, port->vio.ver.minor);
- 
--	device_add_disk(&port->vio.vdev->dev, g, NULL);
-+	err = device_add_disk(&port->vio.vdev->dev, g, NULL);
-+	if (err)
-+		goto out_cleanup_disk;
++
+ 	set_capacity(btt->btt_disk, btt->nlba * btt->sector_size >> 9);
+ 	device_add_disk(&btt->nd_btt->dev, btt->btt_disk, NULL);
++
+ 	btt->nd_btt->size = btt->nlba * (u64)btt->sector_size;
+ 	nvdimm_check_and_set_ro(btt->btt_disk);
  
  	return 0;
 +
 +out_cleanup_disk:
-+	blk_cleanup_disk(g);
-+out_free_tag:
-+	blk_mq_free_tag_set(&port->tag_set);
-+	return err;
++	blk_cleanup_disk(btt->btt_disk);
++out:
++	return rc;
  }
  
- static struct ldc_channel_config vdc_ldc_cfg = {
+ static void btt_blk_cleanup(struct btt *btt)
 -- 
 2.30.2
 
