@@ -2,21 +2,21 @@ Return-Path: <SRS0=ZqAX=PD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73120C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 23:54:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1938CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 23:55:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0954261101
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 23:54:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0954261101
+	by mail.kernel.org (Postfix) with ESMTPS id 8FAE061101
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 23:55:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8FAE061101
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HWNRX0yNlz3cK8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Oct 2021 10:54:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HWNSB1qrpz3cMw
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Oct 2021 10:55:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Jjlk8pvA;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=VKj0PyAg;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -24,27 +24,27 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=Jjlk8pvA; 
+ header.s=bombadil.20210309 header.b=VKj0PyAg; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HWNPS6YPPz2yy3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Oct 2021 10:53:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HWNPR4S1Gz2ywg
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Oct 2021 10:52:57 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
  Reply-To:Content-Type:Content-ID:Content-Description;
- bh=+2LEMN1XpiXKACzO2eJ6NkEHApTLeNqeZiilGza0YlE=; b=Jjlk8pvArEGMnx4jkmd2938ccV
- ob+hr+a1J3MtEl2X0rDuA8TL+WP3gCuxl30kYrFyV8X0i9xaOxYLaXHc/Alp1hJWbVPwuxWdcqyVs
- gIdLRUBfIKutjBUP3eTW8MVIGPp8BofTZ9vvIv2RzLIXWmU924dlWbeaQVGq4Xqv0PUwBccp0qJHP
- jbs8GF+gSRDcGeDm6xm+yCHucQhkZsUxuN+j9J9c0PbGSi2o4OyuhdYJscVdmK3d0938vB9eSP/g4
- xUx3XqpUyB5m9VQVzTZaaUigf6jY54ZsR0OkgjwU4P6pmIqWY4+BYbpuWPnPZJFVmJcGIV/qLlH1i
- 7U18sTtg==;
+ bh=vLYLL0oFZhxGylgSJPWXsGjPK2psQoUWyxkb9au47Xw=; b=VKj0PyAggUPHY58Y64VhZFHAZk
+ FhpZFFJ2m6Cm3SHaekc0CDiJyLp+OD6ip4tp6f0fm0KLP8DzK5r4zUN+TBF+Zr9exRvHYoP1U4ZSo
+ xvSMZDGCzyHG9yaWXd/DzzmwcgGlruPb5+CD0ctA68F79eEVs002wvsQCyuEyhihClXsJYS97NwsL
+ 0m5eBo0Qkmdn5r8hNV7zk/1puPeJ1cjcM3zzlg31bplOURK1wIXcWSlBuo2kj1ISDbTfOi3ggEGBn
+ h4r+mufchQFxCHDsxXaWIpgxoqkHJHOwvHKOU/0fa0aDDgmXK1any8EXm3niZiuki8Z2zds4ZpISB
+ ehigutRw==;
 Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mbWzs-009C2v-VN; Fri, 15 Oct 2021 23:52:20 +0000
+ (Red Hat Linux)) id 1mbWzt-009C37-6Y; Fri, 15 Oct 2021 23:52:21 +0000
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: axboe@kernel.dk, geoff@infradead.org, mpe@ellerman.id.au,
  benh@kernel.crashing.org, paulus@samba.org, jim@jtan.com,
@@ -52,9 +52,9 @@ To: axboe@kernel.dk, geoff@infradead.org, mpe@ellerman.id.au,
  richard@nod.at, miquel.raynal@bootlin.com, vigneshr@ti.com,
  dan.j.williams@intel.com, vishal.l.verma@intel.com, dave.jiang@intel.com,
  ira.weiny@intel.com, kbusch@kernel.org, hch@lst.de, sagi@grimberg.me
-Subject: [PATCH 01/13] block/brd: add error handling support for add_disk()
-Date: Fri, 15 Oct 2021 16:52:07 -0700
-Message-Id: <20211015235219.2191207-2-mcgrof@kernel.org>
+Subject: [PATCH 07/13] nvdimm/blk: add error handling support for add_disk()
+Date: Fri, 15 Oct 2021 16:52:13 -0700
+Message-Id: <20211015235219.2191207-8-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20211015235219.2191207-1-mcgrof@kernel.org>
 References: <20211015235219.2191207-1-mcgrof@kernel.org>
@@ -83,46 +83,36 @@ We never checked for errors on add_disk() as this function
 returned void. Now that this is fixed, use the shiny new
 error handling.
 
+Since nvdimm/blk uses devm we just need to move the devm
+registration towards the end. And in hindsight, that seems
+to also provide a fix given del_gendisk() should not be
+called unless the disk was already added via add_disk().
+The probably of that issue happening is low though, like
+OOM while calling devm_add_action(), so the fix is minor.
+
+We manually unwind in case of add_disk() failure prior
+to the devm registration.
+
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- drivers/block/brd.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/nvdimm/blk.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/block/brd.c b/drivers/block/brd.c
-index 530b31240203..6065f493876f 100644
---- a/drivers/block/brd.c
-+++ b/drivers/block/brd.c
-@@ -372,6 +372,7 @@ static int brd_alloc(int i)
- 	struct brd_device *brd;
- 	struct gendisk *disk;
- 	char buf[DISK_NAME_LEN];
-+	int err = -ENOMEM;
+diff --git a/drivers/nvdimm/blk.c b/drivers/nvdimm/blk.c
+index 591fa1f86f1e..9f1eb41404ac 100644
+--- a/drivers/nvdimm/blk.c
++++ b/drivers/nvdimm/blk.c
+@@ -265,7 +265,9 @@ static int nsblk_attach_disk(struct nd_namespace_blk *nsblk)
+ 	}
  
- 	mutex_lock(&brd_devices_mutex);
- 	list_for_each_entry(brd, &brd_devices, brd_list) {
-@@ -422,16 +423,20 @@ static int brd_alloc(int i)
- 	/* Tell the block layer that this is not a rotational device */
- 	blk_queue_flag_set(QUEUE_FLAG_NONROT, disk->queue);
- 	blk_queue_flag_clear(QUEUE_FLAG_ADD_RANDOM, disk->queue);
--	add_disk(disk);
-+	err = add_disk(disk);
-+	if (err)
-+		goto out_cleanup_disk;
+ 	set_capacity(disk, available_disk_size >> SECTOR_SHIFT);
+-	device_add_disk(dev, disk, NULL);
++	rc = device_add_disk(dev, disk, NULL);
++	if (rc)
++		goto out_before_devm_err;
  
- 	return 0;
- 
-+out_cleanup_disk:
-+	blk_cleanup_disk(disk);
- out_free_dev:
- 	mutex_lock(&brd_devices_mutex);
- 	list_del(&brd->brd_list);
- 	mutex_unlock(&brd_devices_mutex);
- 	kfree(brd);
--	return -ENOMEM;
-+	return err;
- }
- 
- static void brd_probe(dev_t dev)
+ 	/* nd_blk_release_disk() is called if this fails */
+ 	if (devm_add_action_or_reset(dev, nd_blk_release_disk, disk))
 -- 
 2.30.2
 
