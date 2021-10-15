@@ -2,50 +2,49 @@ Return-Path: <SRS0=ZqAX=PD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54D41C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 05:00:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CBA9C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 05:20:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7672E61040
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 05:00:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7672E61040
+	by mail.kernel.org (Postfix) with ESMTPS id C692861164
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 05:20:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C692861164
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HVvGg0mDMz3cDm
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 16:00:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HVvjF6lTsz3c8d
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Oct 2021 16:20:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HVvFk1FQpz2yxv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Oct 2021 15:59:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HVvhn0DF7z2ypg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Oct 2021 16:19:35 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HVvFc6pczz9sSF;
- Fri, 15 Oct 2021 06:59:32 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HVvhh0J8Lz9sSF;
+ Fri, 15 Oct 2021 07:19:32 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qdOizQdCd5vD; Fri, 15 Oct 2021 06:59:32 +0200 (CEST)
+ with ESMTP id jtk3Nwe2afkT; Fri, 15 Oct 2021 07:19:31 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HVvFc5VNgz9sSD;
- Fri, 15 Oct 2021 06:59:32 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HVvhg5r1Zz9sSD;
+ Fri, 15 Oct 2021 07:19:31 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9ACDF8B788;
- Fri, 15 Oct 2021 06:59:32 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A27F58B788;
+ Fri, 15 Oct 2021 07:19:31 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id qhm_fwfmQYir; Fri, 15 Oct 2021 06:59:32 +0200 (CEST)
+ with ESMTP id tLs2964MJCL0; Fri, 15 Oct 2021 07:19:31 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.253])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6D8058B763;
- Fri, 15 Oct 2021 06:59:31 +0200 (CEST)
-Subject: Re: [PATCH v2 02/13] powerpc: Rename 'funcaddr' to 'addr' in 'struct
- ppc64_opd_entry'
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 721608B763;
+ Fri, 15 Oct 2021 07:19:30 +0200 (CEST)
+Subject: Re: [PATCH v2 03/13] powerpc: Remove func_descr_t
 To: Daniel Axtens <dja@axtens.net>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -55,15 +54,15 @@ To: Daniel Axtens <dja@axtens.net>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 References: <cover.1634190022.git.christophe.leroy@csgroup.eu>
- <49f59a8bf2c4d95cfaa03bd3dd3c1569822ad6ba.1634190022.git.christophe.leroy@csgroup.eu>
- <877def46xc.fsf@dja-thinkpad.axtens.net>
+ <16eef6afbf7322d0c07760ebf827b8f9f50f7c6e.1634190022.git.christophe.leroy@csgroup.eu>
+ <874k9j45fm.fsf@dja-thinkpad.axtens.net>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <6f1c3624-eef4-fc6c-9f2f-d649d8c93cdf@csgroup.eu>
-Date: Fri, 15 Oct 2021 06:59:31 +0200
+Message-ID: <b02d5211-2f00-b303-766b-d612c1bd4402@csgroup.eu>
+Date: Fri, 15 Oct 2021 07:19:30 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.11.0
 MIME-Version: 1.0
-In-Reply-To: <877def46xc.fsf@dja-thinkpad.axtens.net>
+In-Reply-To: <874k9j45fm.fsf@dja-thinkpad.axtens.net>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr-FR
 Content-Transfer-Encoding: 8bit
@@ -87,112 +86,158 @@ Sender: "Linuxppc-dev"
 
 
 
-Le 14/10/2021 à 23:45, Daniel Axtens a écrit :
+Le 15/10/2021 à 00:17, Daniel Axtens a écrit :
 > Christophe Leroy <christophe.leroy@csgroup.eu> writes:
 > 
->> There are three architectures with function descriptors, try to
->> have common names for the address they contain in order to
->> refactor some functions into generic functions later.
+>> 'func_descr_t' is redundant with 'struct ppc64_opd_entry'
+> 
+> So, if I understand the overall direction of the series, you're
+> consolidating powerpc around one single type for function descriptors,
+> and then you're creating a generic typedef so that generic code can
+> always do ((func_desc_t)x)->addr to get the address of a function out of
+> a function descriptor regardless of arch. (And regardless of whether the
+> arch uses function descriptors or not.)
+
+An architecture not using function descriptors won't do much with 
+((func_desc_t *)x)->addr. This is just done to allow building stuff 
+regardless.
+
+I prefer something like
+
+	if (have_function_descriptors())
+		addr = (func_desc_t *)ptr)->addr;
+	else
+		addr = ptr;
+
+over
+
+	#ifdef HAVE_FUNCTION_DESCRIPTORS
+		addr = (func_desc_t *)ptr)->addr;
+	#else
+		addr = ptr;
+	#endif
+
+> 
+> So:
+> 
+>   - why pick ppc64_opd_entry over func_descr_t?
+
+Good question. At the begining it was because it was in UAPI headers, 
+and also because it was the one used in our 
+dereference_function_descriptor().
+
+But at the end maybe that's not the more logical choice. I need to look 
+a bit more.
+
+> 
+>   - Why not make our struct just called func_desc_t - why have a
+>     ppc64_opd_entry type or a func_descr_t typedef?
+
+Well ... you usually don't flag a struct name with _t, _t will most of 
+the time refer to a typedef.
+
+If I want to avoid typedef (I know they are deprecated in kernel coding 
+stype), it means the name of the struct must be changed in every 
+architecture and it becomes tricky and it adds more churn in them, which 
+is what I want to avoid.
+
+At the end we risk to end-up with a messy set of #ifdefs.
+
+Maybe this can be done as a second step, but I would like to minimise 
+impact in this series and focus on fixing lkdtm.
+
+
+> 
+>   - Should this patch wait until after you've made the generic
+>     func_desc_t change and move directly to that new interface? (rather
+>     than move from func_descr_t -> ppc64_opd_entry -> ...) Or is there a
+>     particular reason arch specific code should use an arch-specific
+>     struct or named type?
+
+As mentioned in kernel coding style, typedefs reduce readability, see 
+https://www.kernel.org/doc/html/latest/process/coding-style.html#typedefs
+
+But yes, we could make a step in the direction of a common 'struct 
+func_desc'. Let's see if I can do that.
+
+Thanks for your comments.
+
+Christophe
+
+> 
+>> Remove it.
 >>
->> powerpc has 'funcaddr'
->> ia64 has 'ip'
->> parisc has 'addr'
+>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>> ---
+>>   arch/powerpc/include/asm/code-patching.h | 2 +-
+>>   arch/powerpc/include/asm/types.h         | 6 ------
+>>   arch/powerpc/kernel/signal_64.c          | 8 ++++----
+>>   3 files changed, 5 insertions(+), 11 deletions(-)
 >>
->> Vote for 'addr' and update 'struct ppc64_opd_entry' accordingly.
+>> diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+>> index 4ba834599c4d..f3445188d319 100644
+>> --- a/arch/powerpc/include/asm/code-patching.h
+>> +++ b/arch/powerpc/include/asm/code-patching.h
+>> @@ -110,7 +110,7 @@ static inline unsigned long ppc_function_entry(void *func)
+>>   	 * function's descriptor. The first entry in the descriptor is the
+>>   	 * address of the function text.
+>>   	 */
+>> -	return ((func_descr_t *)func)->entry;
+>> +	return ((struct ppc64_opd_entry *)func)->addr;
+>>   #else
+>>   	return (unsigned long)func;
+>>   #endif
+>> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
+>> index f1630c553efe..97da77bc48c9 100644
+>> --- a/arch/powerpc/include/asm/types.h
+>> +++ b/arch/powerpc/include/asm/types.h
+>> @@ -23,12 +23,6 @@
+>>   
+>>   typedef __vector128 vector128;
+>>   
+>> -typedef struct {
+>> -	unsigned long entry;
+>> -	unsigned long toc;
+>> -	unsigned long env;
+>> -} func_descr_t;
 > 
-> I would have picked 'funcaddr', but at least 'addr' is better than 'ip'!
-> And I agree that consistency, and then making things generic is worthwhile.
-
-It's a function descriptor, there is only one address field, I don't 
-think there is any ambiguïty here, and I prefer modifying the least 
-impacted architectures.
-
-Changing addr to funcaddr in PARISC would result in the following 
-changes, on an architecture I know nothing about. It's more changes than 
-we have on powerpc.
-
-  arch/parisc/include/asm/elf.h |  4 ++--
-  arch/parisc/kernel/kexec.c    |  2 +-
-  arch/parisc/kernel/module.c   | 12 ++++++------
-  arch/parisc/kernel/process.c  |  2 +-
-  arch/parisc/kernel/signal.c   |  4 ++--
-  5 files changed, 12 insertions(+), 12 deletions(-)
-
-
-
+> I was a little concerned about going from a 3-element struct to a
+> 2-element struct (as ppc64_opd_entry doesn't have an element for env) -
+> but we don't seem to take the sizeof this anywhere, nor do we use env
+> anywhere, nor do we do funky macro stuff with it in the signal handling
+> code that might implictly use the 3rd element, so I guess this will
+> work. Still, func_descr_t seems to describe the underlying ABI better
+> than ppc64_opd_entry...
 > 
-> I grepped the latest powerpc/next for uses of 'funcaddr'. There were 5,
-> your patch changes all 5.
+>>   #endif /* __ASSEMBLY__ */
+>>   
+>>   #endif /* _ASM_POWERPC_TYPES_H */
+>> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+>> index 1831bba0582e..63ddbe7b108c 100644
+>> --- a/arch/powerpc/kernel/signal_64.c
+>> +++ b/arch/powerpc/kernel/signal_64.c
+>> @@ -933,11 +933,11 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+>>   		 * descriptor is the entry address of signal and the second
+>>   		 * entry is the TOC value we need to use.
+>>   		 */
+>> -		func_descr_t __user *funct_desc_ptr =
+>> -			(func_descr_t __user *) ksig->ka.sa.sa_handler;
+>> +		struct ppc64_opd_entry __user *funct_desc_ptr =
+>> +			(struct ppc64_opd_entry __user *)ksig->ka.sa.sa_handler;
+>>   
+>> -		err |= get_user(regs->ctr, &funct_desc_ptr->entry);
+>> -		err |= get_user(regs->gpr[2], &funct_desc_ptr->toc);
+>> +		err |= get_user(regs->ctr, &funct_desc_ptr->addr);
+>> +		err |= get_user(regs->gpr[2], &funct_desc_ptr->r2);
 > 
-> The series passes build tests and this patch has no checkpatch or other
-> style concerns.
-> 
-> On that basis:
-> Reviewed-by: Daniel Axtens <dja@axtens.net>
+> Likewise, r2 seems like a worse name than toc. I guess we could clean
+> that up another time though.
 > 
 > Kind regards,
 > Daniel
 > 
->> Reviewed-by: Kees Cook <keescook@chromium.org>
->> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->> ---
->>   arch/powerpc/include/asm/elf.h      | 2 +-
->>   arch/powerpc/include/asm/sections.h | 2 +-
->>   arch/powerpc/kernel/module_64.c     | 6 +++---
->>   3 files changed, 5 insertions(+), 5 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
->> index a4406714c060..bb0f278f9ed4 100644
->> --- a/arch/powerpc/include/asm/elf.h
->> +++ b/arch/powerpc/include/asm/elf.h
->> @@ -178,7 +178,7 @@ void relocate(unsigned long final_address);
+>>   	}
 >>   
->>   /* There's actually a third entry here, but it's unused */
->>   struct ppc64_opd_entry {
->> -	unsigned long funcaddr;
->> +	unsigned long addr;
->>   	unsigned long r2;
->>   };
->>   
->> diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
->> index 6e4af4492a14..32e7035863ac 100644
->> --- a/arch/powerpc/include/asm/sections.h
->> +++ b/arch/powerpc/include/asm/sections.h
->> @@ -77,7 +77,7 @@ static inline void *dereference_function_descriptor(void *ptr)
->>   	struct ppc64_opd_entry *desc = ptr;
->>   	void *p;
->>   
->> -	if (!get_kernel_nofault(p, (void *)&desc->funcaddr))
->> +	if (!get_kernel_nofault(p, (void *)&desc->addr))
->>   		ptr = p;
->>   	return ptr;
->>   }
->> diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
->> index 6baa676e7cb6..82908c9be627 100644
->> --- a/arch/powerpc/kernel/module_64.c
->> +++ b/arch/powerpc/kernel/module_64.c
->> @@ -72,11 +72,11 @@ static func_desc_t func_desc(unsigned long addr)
->>   }
->>   static unsigned long func_addr(unsigned long addr)
->>   {
->> -	return func_desc(addr).funcaddr;
->> +	return func_desc(addr).addr;
->>   }
->>   static unsigned long stub_func_addr(func_desc_t func)
->>   {
->> -	return func.funcaddr;
->> +	return func.addr;
->>   }
->>   static unsigned int local_entry_offset(const Elf64_Sym *sym)
->>   {
->> @@ -187,7 +187,7 @@ static int relacmp(const void *_x, const void *_y)
->>   static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
->>   				    const Elf64_Shdr *sechdrs)
->>   {
->> -	/* One extra reloc so it's always 0-funcaddr terminated */
->> +	/* One extra reloc so it's always 0-addr terminated */
->>   	unsigned long relocs = 1;
->>   	unsigned i;
->>   
+>>   	/* enter the signal handler in native-endian mode */
 >> -- 
 >> 2.31.1
