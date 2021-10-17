@@ -2,42 +2,56 @@ Return-Path: <SRS0=XWqB=PF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AD33C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:34:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D73DAC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:37:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE9F560EC0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:34:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CE9F560EC0
+	by mail.kernel.org (Postfix) with ESMTPS id 444B26125F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:37:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 444B26125F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKFx45VPz3cFc
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:34:45 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
- [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKJV6Szkz3cNZ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:36:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VmPuR+yy;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKCq2sctz2yZv
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:32:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKHn2xQlz2xXG
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:36:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=VmPuR+yy; 
+ dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4HXKCp5LM9z4xqV;
- Sun, 17 Oct 2021 23:32:54 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Kai Song <songkai01@inspur.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20211009041630.4135-1-songkai01@inspur.com>
-References: <20211009041630.4135-1-songkai01@inspur.com>
-Subject: Re: [PATCH] powerpc/eeh: Fix docstrings in eeh.c
-Message-Id: <163447392810.1159469.11303329795231824264.b4-ty@ellerman.id.au>
-Date: Sun, 17 Oct 2021 23:32:08 +1100
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4HXKHn24Wnz4xbc;
+ Sun, 17 Oct 2021 23:36:21 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1634474181;
+ bh=Dw1rY37uJhO7CntwmBCrGxDeK8CeNQ/IuMdrDqnsJyY=;
+ h=From:To:Cc:Subject:Date:From;
+ b=VmPuR+yyn5IfRb2PK9EhLP9nTZuxF91PaXmIq6K5ktEmca9dNc+Bx42ERRGlVfOmI
+ osMxxS5H2xinjOYOmLRBaNBlJ/4TkYlm+ySNGRVD1u9M6DmC+/9vlnQmpyW6qGeOGE
+ 9aw5jp1tfY72kd9kt4mdW+OegqKLzczBSoF3tviFJDs7fNrTao4YXca/48zfzJJ8E5
+ nud/2qhRhf9/Qiw6ggHn3UKt2ZLLTMBc9WURlSqIFOpiYoUHW2Yksn243DqbN5NZvu
+ S60AWeITzUK0MhOKisifjUhZnZedJQXTnA5pst6kDIrqCfSkPNRQ1T7TVC5lmXO9fP
+ BdFBhiG27JX/g==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-5.15-4 tag
+Date: Sun, 17 Oct 2021 23:36:20 +1100
+Message-ID: <87sfwzde0r.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,28 +63,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: paulus@samba.org, oohall@gmail.com, linux-kernel@vger.kernel.org,
- dja@axtens.net
+Cc: linuxppc-dev@lists.ozlabs.org, clg@kaod.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 9 Oct 2021 12:16:30 +0800, Kai Song wrote:
-> We fix the following warnings when building kernel with W=1:
-> arch/powerpc/kernel/eeh.c:598: warning: Function parameter or member 'function' not described in 'eeh_pci_enable'
-> arch/powerpc/kernel/eeh.c:774: warning: Function parameter or member 'edev' not described in 'eeh_set_dev_freset'
-> arch/powerpc/kernel/eeh.c:774: warning: expecting prototype for eeh_set_pe_freset(). Prototype was for eeh_set_dev_freset() instead
-> arch/powerpc/kernel/eeh.c:814: warning: Function parameter or member 'include_passed' not described in 'eeh_pe_reset_full'
-> arch/powerpc/kernel/eeh.c:944: warning: Function parameter or member 'ops' not described in 'eeh_init'
-> arch/powerpc/kernel/eeh.c:1451: warning: Function parameter or member 'include_passed' not described in 'eeh_pe_reset'
-> arch/powerpc/kernel/eeh.c:1526: warning: Function parameter or member 'func' not described in 'eeh_pe_inject_err'
-> arch/powerpc/kernel/eeh.c:1526: warning: Excess function parameter 'function' described in 'eeh_pe_inject_err'
-> 
-> [...]
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-Applied to powerpc/next.
+Hi Linus,
 
-[1/1] powerpc/eeh: Fix docstrings in eeh.c
-      https://git.kernel.org/powerpc/c/b616230e2325e5560330c40172a4d4e4c5da2c59
+Please pull some more powerpc fixes for 5.15:
 
-cheers
+The following changes since commit eb8257a12192f43ffd41bd90932c39dade958042:
+
+  pseries/eeh: Fix the kdump kernel crash during eeh_pseries_init (2021-10-=
+07 23:37:22 +1100)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/po=
+werpc-5.15-4
+
+for you to fetch changes up to cdeb5d7d890e14f3b70e8087e745c4a6a7d9f337:
+
+  KVM: PPC: Book3S HV: Make idle_kvm_start_guest() return 0 if it went to g=
+uest (2021-10-16 00:40:03 +1100)
+
+- ------------------------------------------------------------------
+powerpc fixes for 5.15 #4
+
+Fix a bug where guests on P9 with interrupts passed through could get stuck=
+ in
+synchronize_irq().
+
+Fix a bug in KVM on P8 where secondary threads entering a guest would write=
+ outside their
+allocated stack.
+
+Fix a bug in KVM on P8 where secondary threads could confuse the host offli=
+ne code and
+cause the guest or host to crash.
+
+Thanks to: C=C3=A9dric Le Goater
+
+- ------------------------------------------------------------------
+C=C3=A9dric Le Goater (1):
+      powerpc/xive: Discard disabled interrupts in get_irqchip_state()
+
+Michael Ellerman (2):
+      KVM: PPC: Book3S HV: Fix stack handling in idle_kvm_start_guest()
+      KVM: PPC: Book3S HV: Make idle_kvm_start_guest() return 0 if it went =
+to guest
+
+
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 28 ++++++++++++--------
+ arch/powerpc/sysdev/xive/common.c       |  3 ++-
+ 2 files changed, 19 insertions(+), 12 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAmFsGG0ACgkQUevqPMjh
+pYCAJRAAi8wEtHdIziXc22xYVaI8znMeogpoYnqKmEjRoGhyv79JNzh1/kOsNWyQ
+E8hGut8YrKl+0xswbF41E5qdQCLfHiJYhqe8Ltl38ltoSx5YO/FqTtDMuVvc9bO1
+SuyNOQWwrfPo6PolAHKtWv+yn7lMV6tP2NBp0lXe6DQkrCC7FEQ/s+12qQFmmnmb
+hZ4KQuu27kcWqADTyhqipH+pLS+0nSdWFrBXyxQVtPlAxy0trvwU3m+9rNvcWcob
+D07uH8n0TS1nORYs0s8YStxz5Kme0ICUIj64hvox7T1CqcTldl5iMrpzjvHRUa+s
+sbuAgjAnyaksCiKyDJjIo8NtpXFYYLq4SeAn0/6dCxb3gtyQsRBDG9oe7F/q5jvO
+j0flo6Bmcl4es3dTEz5mX7G/EChniTYyeq4xfVFZpA/56LkXeCdcTkBeyTeopBSe
+QLtR40DUFYBZZVBUotBp9K13Grqg8xrvLYFZhUihA5rnC7HRZjwt70Rh3FmZUKcd
+i7blHpIssf8obH5ERhEUOF4ITHwmFkLDBgqTh/jlPYlMBz4FYn/2IxWnMfZQpv3u
+igC6DHCwJ9FmTI0iGyN2xbxGqW/WrAZrRCTFB3lZSw38O4e31viIXbfi9u+Iib2e
+j0oUBZmoroH6POha/udMK/FUdxTlkS8OTiUDM7K2J81L7Cz9F6k=3D
+=3Da0+j
+-----END PGP SIGNATURE-----
