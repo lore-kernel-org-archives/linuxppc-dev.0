@@ -2,19 +2,19 @@ Return-Path: <SRS0=XWqB=PF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D960FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:42:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78A6EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:43:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 66D0760231
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:42:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 66D0760231
+	by mail.kernel.org (Postfix) with ESMTPS id D21CC60F36
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:43:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D21CC60F36
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKR513SQz3cY1
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:42:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKRj2nQdz3cc4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:43:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,35 +22,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKMm0nfcz3cTX
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:39:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKMr4fShz3cYC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:39:52 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HXKM722jdz9sSg;
- Sun, 17 Oct 2021 14:39:15 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HXKM81tvjz9sSk;
+ Sun, 17 Oct 2021 14:39:16 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id iafKGYbDE3MR; Sun, 17 Oct 2021 14:39:15 +0200 (CEST)
+ with ESMTP id 9ep1nBrdLyEL; Sun, 17 Oct 2021 14:39:16 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HXKM00rflz9sSn;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HXKM01C2Rz9sSp;
  Sun, 17 Oct 2021 14:39:08 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EFA648B76C;
- Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 060B18B776;
+ Sun, 17 Oct 2021 14:39:08 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id djCpVe6IlRcj; Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
+ with ESMTP id uOZoUsjCvn3j; Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.38])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DB17C8B779;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D5DC58B778;
  Sun, 17 Oct 2021 14:39:06 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19HCcuUq2946777
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19HCctLC2946745
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sun, 17 Oct 2021 14:38:56 +0200
+ Sun, 17 Oct 2021 14:38:55 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19HCcu6C2946776;
- Sun, 17 Oct 2021 14:38:56 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19HCcthS2946744;
+ Sun, 17 Oct 2021 14:38:55 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -61,17 +61,17 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v3 12/12] lkdtm: Add a test for function descriptors protection
-Date: Sun, 17 Oct 2021 14:38:25 +0200
-Message-Id: <67f9545c9ad15048bfe0104278ef9595d051dbc8.1634457599.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 04/12] powerpc: Prepare func_desc_t for refactorisation
+Date: Sun, 17 Oct 2021 14:38:17 +0200
+Message-Id: <86c393ce0a6f603f94e6d2ceca08d535f654bb23.1634457599.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1634457599.git.christophe.leroy@csgroup.eu>
 References: <cover.1634457599.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634474304; l=2771; s=20211009;
- h=from:subject:message-id; bh=cWdjG38iugbNn7Oiz2TreaAGM7Xs+ytxo1CCxP92MAo=;
- b=CNzYSDXWVeyn10qO31zmLFLqeJNSq+stusBu8TKL94x+HMvBknQNoODkUykR1D9bR1UxlR9ps9p6
- qmtDMf+oD3vgpYPIVeTR/2E4Foa237QF4B9e3ry9ADug1+xSLvoH
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634474303; l=1910; s=20211009;
+ h=from:subject:message-id; bh=nHgQgFrfZgHAs28pN2VtYBt7B1ZdOmikgTPEmDQGwUs=;
+ b=eocMCBbEV1TFGbprF03T3Lb2TPcMEi9cOyFVpZztt93wi8rjs6VDNXRzngC9WbhWR2LwBs4FgeuF
+ zvKc5KypBu54ML31yMoXIImf7TbaNzFjgtwJD1EzLqwK46LGcK+0
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -93,92 +93,76 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add WRITE_OPD to check that you can't modify function
-descriptors.
+In preparation of making func_desc_t generic, change the ELFv2
+version to a struct containing 'addr' element.
 
-Gives the following result when function descriptors are
-not protected:
-
-	lkdtm: Performing direct entry WRITE_OPD
-	lkdtm: attempting bad 16 bytes write at c00000000269b358
-	lkdtm: FAIL: survived bad write
-	lkdtm: do_nothing was hijacked!
-
-Looks like a standard compiler barrier() is not enough to force
-GCC to use the modified function descriptor. Had to add a fake empty
-inline assembly to force GCC to reload the function descriptor.
+This allows using single helpers common to ELFv1 and ELFv2.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/misc/lkdtm/core.c  |  1 +
- drivers/misc/lkdtm/lkdtm.h |  1 +
- drivers/misc/lkdtm/perms.c | 22 ++++++++++++++++++++++
- 3 files changed, 24 insertions(+)
+ arch/powerpc/kernel/module_64.c | 32 ++++++++++++++------------------
+ 1 file changed, 14 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
-index fe6fd34b8caf..de092aa03b5d 100644
---- a/drivers/misc/lkdtm/core.c
-+++ b/drivers/misc/lkdtm/core.c
-@@ -148,6 +148,7 @@ static const struct crashtype crashtypes[] = {
- 	CRASHTYPE(WRITE_RO),
- 	CRASHTYPE(WRITE_RO_AFTER_INIT),
- 	CRASHTYPE(WRITE_KERN),
-+	CRASHTYPE(WRITE_OPD),
- 	CRASHTYPE(REFCOUNT_INC_OVERFLOW),
- 	CRASHTYPE(REFCOUNT_ADD_OVERFLOW),
- 	CRASHTYPE(REFCOUNT_INC_NOT_ZERO_OVERFLOW),
-diff --git a/drivers/misc/lkdtm/lkdtm.h b/drivers/misc/lkdtm/lkdtm.h
-index c212a253edde..188bd0fd6575 100644
---- a/drivers/misc/lkdtm/lkdtm.h
-+++ b/drivers/misc/lkdtm/lkdtm.h
-@@ -105,6 +105,7 @@ void __init lkdtm_perms_init(void);
- void lkdtm_WRITE_RO(void);
- void lkdtm_WRITE_RO_AFTER_INIT(void);
- void lkdtm_WRITE_KERN(void);
-+void lkdtm_WRITE_OPD(void);
- void lkdtm_EXEC_DATA(void);
- void lkdtm_EXEC_STACK(void);
- void lkdtm_EXEC_KMALLOC(void);
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index 1cf24c4a79e9..2c6aba3ff32b 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -44,6 +44,11 @@ static noinline void do_overwritten(void)
- 	return;
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index a89da0ee25e2..b687ef88c4c4 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -33,19 +33,13 @@
+ #ifdef PPC64_ELF_ABI_v2
+ 
+ /* An address is simply the address of the function. */
+-typedef unsigned long func_desc_t;
++typedef struct {
++	unsigned long addr;
++} func_desc_t;
+ 
+ static func_desc_t func_desc(unsigned long addr)
+ {
+-	return addr;
+-}
+-static unsigned long func_addr(unsigned long addr)
+-{
+-	return addr;
+-}
+-static unsigned long stub_func_addr(func_desc_t func)
+-{
+-	return func;
++	return (func_desc_t){addr};
  }
  
-+static noinline void do_almost_nothing(void)
-+{
-+	pr_info("do_nothing was hijacked!\n");
-+}
-+
- static void *setup_function_descriptor(func_desc_t *fdesc, void *dst)
+ /* PowerPC64 specific values for the Elf64_Sym st_other field.  */
+@@ -70,14 +64,6 @@ static func_desc_t func_desc(unsigned long addr)
  {
- 	if (!have_function_descriptors())
-@@ -144,6 +149,23 @@ void lkdtm_WRITE_KERN(void)
- 	do_overwritten();
+ 	return *(struct func_desc *)addr;
  }
+-static unsigned long func_addr(unsigned long addr)
+-{
+-	return func_desc(addr).addr;
+-}
+-static unsigned long stub_func_addr(func_desc_t func)
+-{
+-	return func.addr;
+-}
+ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+ {
+ 	return 0;
+@@ -93,6 +79,16 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
+ }
+ #endif
  
-+void lkdtm_WRITE_OPD(void)
++static unsigned long func_addr(unsigned long addr)
 +{
-+	size_t size = sizeof(func_desc_t);
-+	void (*func)(void) = do_nothing;
-+
-+	if (!have_function_descriptors()) {
-+		pr_info("XFAIL: Platform doesn't use function descriptors.\n");
-+		return;
-+	}
-+	pr_info("attempting bad %zu bytes write at %px\n", size, do_nothing);
-+	memcpy(do_nothing, do_almost_nothing, size);
-+	pr_err("FAIL: survived bad write\n");
-+
-+	asm("" : "=m"(func));
-+	func();
++	return func_desc(addr).addr;
 +}
 +
- void lkdtm_EXEC_DATA(void)
- {
- 	execute_location(data_area, CODE_WRITE);
++static unsigned long stub_func_addr(func_desc_t func)
++{
++	return func.addr;
++}
++
+ #define STUB_MAGIC 0x73747562 /* stub */
+ 
+ /* Like PPC32, we need little trampolines to do > 24-bit jumps (into
 -- 
 2.31.1
 
