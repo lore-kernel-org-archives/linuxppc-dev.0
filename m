@@ -2,55 +2,55 @@ Return-Path: <SRS0=XWqB=PF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04066C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:39:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD11FC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:40:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 332CE61212
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:39:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 332CE61212
+	by mail.kernel.org (Postfix) with ESMTPS id 3273761054
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:40:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3273761054
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKMZ5m99z3c9K
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:39:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKN25jHTz3cbb
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:40:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKM55Yybz2xfJ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:39:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKMC4s7rz3c9m
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:39:19 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HXKLz65LSz9sSg;
- Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HXKM01TkJz9sSs;
+ Sun, 17 Oct 2021 14:39:08 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id EbA8YqN-jvBR; Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
+ with ESMTP id bpg5qEYLlL8e; Sun, 17 Oct 2021 14:39:08 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HXKLz4pX9z9sSf;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HXKLz4ZRSz9sS8;
  Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 854AB8B78D;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8188B8B78C;
  Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id XtFHPBQpFY2i; Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
+ with ESMTP id sH-JDEFLyFzO; Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.38])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BB1F28B76D;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B77DF8B76C;
  Sun, 17 Oct 2021 14:39:06 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19HCcs4b2946733
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19HCcuWR2946769
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sun, 17 Oct 2021 14:38:54 +0200
+ Sun, 17 Oct 2021 14:38:56 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19HCcs482946732;
- Sun, 17 Oct 2021 14:38:54 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19HCcucn2946768;
+ Sun, 17 Oct 2021 14:38:56 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -61,17 +61,17 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v3 01/12] powerpc: Move and rename func_descr_t
-Date: Sun, 17 Oct 2021 14:38:14 +0200
-Message-Id: <637a9a11263afa216fdfa7fb470a54479c67c61c.1634457599.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 10/12] lkdtm: Really write into kernel text in WRITE_KERN
+Date: Sun, 17 Oct 2021 14:38:23 +0200
+Message-Id: <3ccab3dde1c8acf3125e82fb990896d7ef6e97b2.1634457599.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1634457599.git.christophe.leroy@csgroup.eu>
 References: <cover.1634457599.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634474303; l=3146; s=20211009;
- h=from:subject:message-id; bh=a0Q+xdYXiSP4LrN4lMHmEjGmSjjPkxSMDjn8QXoOJlY=;
- b=wDTXU2e5FpGf5cgXKi5/CTwBZYSUXCyzAoLRFbKeMSFt+ghhlhZS8IMOQ84oq6ZocB23vrP3RDXd
- ca6qmRVxAzyBcO+cDAYl+wyGoCC/0FuyAaUiASVJ0J3hWs/WZ0XU
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634474303; l=1853; s=20211009;
+ h=from:subject:message-id; bh=z/aB80p6e37+wi5UDvnOtBLSSHNpIOGfxrnndLg8VIY=;
+ b=Px+gsW011PRuWOnjqESl3pfyPGj/ZhyqXgdIS/jDGEt/WN3PB85BYmlvCTyk7p0qsAkwzG8fRyQw
+ l9SbETxzBXeFHFqQem6xvCZKenPq5Mac0bg3cL0iZTc6QIexrMIu
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -93,93 +93,57 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are three architectures with function descriptors, try to
-have common names for the address they contain in order to
-refactor some functions into generic functions later.
+WRITE_KERN is supposed to overwrite some kernel text, namely
+do_overwritten() function.
 
-powerpc has 'entry'
-ia64 has 'ip'
-parisc has 'addr'
+But at the time being it overwrites do_overwritten() function
+descriptor, not function text.
 
-Vote for 'addr' and update 'func_descr_t' accordingly.
+Fix it by dereferencing the function descriptor to obtain
+function text pointer.
 
-Move it in asm/elf.h to have it at the same place on all
-three architectures, remove the typedef which hides its real
-type, and change it to a smoother name 'struct func_desc'.
+And make do_overwritten() noinline so that it is really
+do_overwritten() which is called by lkdtm_WRITE_KERN().
 
+Acked-by: Kees Cook <keescook@chromium.org>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/code-patching.h | 2 +-
- arch/powerpc/include/asm/elf.h           | 6 ++++++
- arch/powerpc/include/asm/types.h         | 6 ------
- arch/powerpc/kernel/signal_64.c          | 8 ++++----
- 4 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/misc/lkdtm/perms.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-index 4ba834599c4d..c6e805976e6f 100644
---- a/arch/powerpc/include/asm/code-patching.h
-+++ b/arch/powerpc/include/asm/code-patching.h
-@@ -110,7 +110,7 @@ static inline unsigned long ppc_function_entry(void *func)
- 	 * function's descriptor. The first entry in the descriptor is the
- 	 * address of the function text.
- 	 */
--	return ((func_descr_t *)func)->entry;
-+	return ((struct func_desc *)func)->addr;
- #else
- 	return (unsigned long)func;
- #endif
-diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
-index b8425e3cfd81..971589a21bc0 100644
---- a/arch/powerpc/include/asm/elf.h
-+++ b/arch/powerpc/include/asm/elf.h
-@@ -176,4 +176,10 @@ do {									\
- /* Relocate the kernel image to @final_address */
- void relocate(unsigned long final_address);
+diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
+index 60b3b2fe929d..035fcca441f0 100644
+--- a/drivers/misc/lkdtm/perms.c
++++ b/drivers/misc/lkdtm/perms.c
+@@ -10,6 +10,7 @@
+ #include <linux/mman.h>
+ #include <linux/uaccess.h>
+ #include <asm/cacheflush.h>
++#include <asm/sections.h>
  
-+struct func_desc {
-+	unsigned long addr;
-+	unsigned long toc;
-+	unsigned long env;
-+};
-+
- #endif /* _ASM_POWERPC_ELF_H */
-diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
-index f1630c553efe..97da77bc48c9 100644
---- a/arch/powerpc/include/asm/types.h
-+++ b/arch/powerpc/include/asm/types.h
-@@ -23,12 +23,6 @@
+ /* Whether or not to fill the target memory area with do_nothing(). */
+ #define CODE_WRITE	true
+@@ -37,7 +38,7 @@ static noinline void do_nothing(void)
+ }
  
- typedef __vector128 vector128;
+ /* Must immediately follow do_nothing for size calculuations to work out. */
+-static void do_overwritten(void)
++static noinline void do_overwritten(void)
+ {
+ 	pr_info("do_overwritten wasn't overwritten!\n");
+ 	return;
+@@ -113,8 +114,9 @@ void lkdtm_WRITE_KERN(void)
+ 	size_t size;
+ 	volatile unsigned char *ptr;
  
--typedef struct {
--	unsigned long entry;
--	unsigned long toc;
--	unsigned long env;
--} func_descr_t;
--
- #endif /* __ASSEMBLY__ */
+-	size = (unsigned long)do_overwritten - (unsigned long)do_nothing;
+-	ptr = (unsigned char *)do_overwritten;
++	size = (unsigned long)dereference_function_descriptor(do_overwritten) -
++	       (unsigned long)dereference_function_descriptor(do_nothing);
++	ptr = dereference_function_descriptor(do_overwritten);
  
- #endif /* _ASM_POWERPC_TYPES_H */
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 1831bba0582e..36537d7d5191 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -933,11 +933,11 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 		 * descriptor is the entry address of signal and the second
- 		 * entry is the TOC value we need to use.
- 		 */
--		func_descr_t __user *funct_desc_ptr =
--			(func_descr_t __user *) ksig->ka.sa.sa_handler;
-+		struct func_desc __user *ptr =
-+			(struct func_desc __user *)ksig->ka.sa.sa_handler;
- 
--		err |= get_user(regs->ctr, &funct_desc_ptr->entry);
--		err |= get_user(regs->gpr[2], &funct_desc_ptr->toc);
-+		err |= get_user(regs->ctr, &ptr->addr);
-+		err |= get_user(regs->gpr[2], &ptr->toc);
- 	}
- 
- 	/* enter the signal handler in native-endian mode */
+ 	pr_info("attempting bad %zu byte write at %px\n", size, ptr);
+ 	memcpy((void *)ptr, (unsigned char *)do_nothing, size);
 -- 
 2.31.1
 
