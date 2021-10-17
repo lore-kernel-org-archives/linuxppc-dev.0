@@ -2,40 +2,39 @@ Return-Path: <SRS0=XWqB=PF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3E58C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:34:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AD33C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:34:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 77BCD60EC0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:34:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 77BCD60EC0
+	by mail.kernel.org (Postfix) with ESMTPS id CE9F560EC0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:34:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CE9F560EC0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKFW1F04z3cGv
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:34:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKFx45VPz3cFc
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:34:45 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
  [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKCp2Z0Tz2yYd
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:32:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKCq2sctz2yZv
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:32:55 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4HXKCp1xWXz4xqT;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4HXKCp5LM9z4xqV;
  Sun, 17 Oct 2021 23:32:54 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Cédric Le Goater <clg@kaod.org>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20211011070356.99952-1-clg@kaod.org>
-References: <20211011070356.99952-1-clg@kaod.org>
-Subject: Re: [PATCH] powerpc/boot: Use CONFIG_PPC_POWERNV to compile OPAL
- support
-Message-Id: <163447392630.1159469.11407811949736491239.b4-ty@ellerman.id.au>
-Date: Sun, 17 Oct 2021 23:32:06 +1100
+To: Kai Song <songkai01@inspur.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20211009041630.4135-1-songkai01@inspur.com>
+References: <20211009041630.4135-1-songkai01@inspur.com>
+Subject: Re: [PATCH] powerpc/eeh: Fix docstrings in eeh.c
+Message-Id: <163447392810.1159469.11303329795231824264.b4-ty@ellerman.id.au>
+Date: Sun, 17 Oct 2021 23:32:08 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -50,20 +49,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: paulus@samba.org, oohall@gmail.com, linux-kernel@vger.kernel.org,
+ dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 11 Oct 2021 09:03:56 +0200, Cédric Le Goater wrote:
-> CONFIG_PPC64_BOOT_WRAPPER is selected by CPU_LITTLE_ENDIAN which is
-> used to compile support for other platforms such as Microwatt. There
-> is no need for OPAL calls on these.
+On Sat, 9 Oct 2021 12:16:30 +0800, Kai Song wrote:
+> We fix the following warnings when building kernel with W=1:
+> arch/powerpc/kernel/eeh.c:598: warning: Function parameter or member 'function' not described in 'eeh_pci_enable'
+> arch/powerpc/kernel/eeh.c:774: warning: Function parameter or member 'edev' not described in 'eeh_set_dev_freset'
+> arch/powerpc/kernel/eeh.c:774: warning: expecting prototype for eeh_set_pe_freset(). Prototype was for eeh_set_dev_freset() instead
+> arch/powerpc/kernel/eeh.c:814: warning: Function parameter or member 'include_passed' not described in 'eeh_pe_reset_full'
+> arch/powerpc/kernel/eeh.c:944: warning: Function parameter or member 'ops' not described in 'eeh_init'
+> arch/powerpc/kernel/eeh.c:1451: warning: Function parameter or member 'include_passed' not described in 'eeh_pe_reset'
+> arch/powerpc/kernel/eeh.c:1526: warning: Function parameter or member 'func' not described in 'eeh_pe_inject_err'
+> arch/powerpc/kernel/eeh.c:1526: warning: Excess function parameter 'function' described in 'eeh_pe_inject_err'
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/boot: Use CONFIG_PPC_POWERNV to compile OPAL support
-      https://git.kernel.org/powerpc/c/6ffeb56ee2109b30a9e393f7e0c22c9b5030ac38
+[1/1] powerpc/eeh: Fix docstrings in eeh.c
+      https://git.kernel.org/powerpc/c/b616230e2325e5560330c40172a4d4e4c5da2c59
 
 cheers
