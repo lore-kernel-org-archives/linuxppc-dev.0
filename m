@@ -2,19 +2,19 @@ Return-Path: <SRS0=XWqB=PF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66502C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:44:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9A15C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:45:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E27FF60F36
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:44:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E27FF60F36
+	by mail.kernel.org (Postfix) with ESMTPS id 7B64960EE3
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:45:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7B64960EE3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKT83RkTz3fDf
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:44:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKTn1PXJz3fJX
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:45:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,35 +22,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKN63479z3cbx
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:40:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKNB6dStz3ckD
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:40:10 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HXKMC0nJXz9sSm;
- Sun, 17 Oct 2021 14:39:19 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HXKMD1Tc9z9sSq;
+ Sun, 17 Oct 2021 14:39:20 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Sf0ECzruHg7y; Sun, 17 Oct 2021 14:39:19 +0200 (CEST)
+ with ESMTP id nlwBg3321UPU; Sun, 17 Oct 2021 14:39:20 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HXKM01NV6z9sSr;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HXKM03Bw2z9sS8;
  Sun, 17 Oct 2021 14:39:08 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 10F6E8B76E;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 560D78B763;
  Sun, 17 Oct 2021 14:39:08 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id YNpNmtQ588GM; Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
+ with ESMTP id coCs4OD-_eZ8; Sun, 17 Oct 2021 14:39:08 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.38])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CBAA68B774;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DF1228B78B;
  Sun, 17 Oct 2021 14:39:06 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19HCctnm2946757
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19HCcuNA2946773
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sun, 17 Oct 2021 14:38:55 +0200
+ Sun, 17 Oct 2021 14:38:56 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19HCctkH2946756;
- Sun, 17 Oct 2021 14:38:55 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19HCcuEt2946772;
+ Sun, 17 Oct 2021 14:38:56 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -61,18 +61,17 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v3 07/12] asm-generic: Define 'func_desc_t' to commonly
- describe function descriptors
-Date: Sun, 17 Oct 2021 14:38:20 +0200
-Message-Id: <a33107c5b82580862510cc20af0d61e33a2b841d.1634457599.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 11/12] lkdtm: Fix execute_[user]_location()
+Date: Sun, 17 Oct 2021 14:38:24 +0200
+Message-Id: <d4688c2af08dda706d3b6786ae5ec5a74e6171f1.1634457599.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1634457599.git.christophe.leroy@csgroup.eu>
 References: <cover.1634457599.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634474303; l=3452; s=20211009;
- h=from:subject:message-id; bh=+4DI7Ni9c1k0VnPM7UG6skvdZ/0xjFYEpJzZhp0UDUE=;
- b=MyHrhDT+d5rQjETbgErHhzv18Xl+XmuUzg2/N4bhknoFaimcnr8KPlsirgGziqhmqo/n3S01t/ix
- X3mZBtBXAANiUUCnbPLtaSUSeQG9FCBv49qkHMjJ5E/QwB7fKDdv
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634474303; l=3309; s=20211009;
+ h=from:subject:message-id; bh=sfbflkA2bmAlwjw54HOBXpCt422Ocrx9KRquDGa0AKo=;
+ b=Jd107R/KDsGnmwf94jDv7xR779WrLBRdkmpLX1ePk3u4m4wQ8a2tNxepz/wLysCe0wlQ/G3ZZzRV
+ XevFB2saCO3lkMRJj3XLILNll/5AYwMJVssgYsiqtOM74eFojPRy
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -94,113 +93,102 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We have three architectures using function descriptors, each with its
-own type and name.
+execute_location() and execute_user_location() intent
+to copy do_nothing() text and execute it at a new location.
+However, at the time being it doesn't copy do_nothing() function
+but do_nothing() function descriptor which still points to the
+original text. So at the end it still executes do_nothing() at
+its original location allthough using a copied function descriptor.
 
-Add a common typedef that can be used in generic code.
+So, fix that by really copying do_nothing() text and build a new
+function descriptor by copying do_nothing() function descriptor and
+updating the target address with the new location.
 
-Also add a stub typedef for architecture without function descriptors,
-to avoid a forest of #ifdefs.
+Also fix the displayed addresses by dereferencing do_nothing()
+function descriptor.
 
-It replaces the similar 'func_desc_t' previously defined in
-arch/powerpc/kernel/module_64.c
-
-Reviewed-by: Kees Cook <keescook@chromium.org>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/ia64/include/asm/sections.h    | 3 +++
- arch/parisc/include/asm/sections.h  | 5 +++++
- arch/powerpc/include/asm/sections.h | 4 ++++
- arch/powerpc/kernel/module_64.c     | 8 --------
- include/asm-generic/sections.h      | 3 +++
- 5 files changed, 15 insertions(+), 8 deletions(-)
+ drivers/misc/lkdtm/perms.c | 37 ++++++++++++++++++++++++++++---------
+ 1 file changed, 28 insertions(+), 9 deletions(-)
 
-diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
-index 2460d365a057..3abe0562b01a 100644
---- a/arch/ia64/include/asm/sections.h
-+++ b/arch/ia64/include/asm/sections.h
-@@ -9,6 +9,9 @@
- 
- #include <linux/elf.h>
- #include <linux/uaccess.h>
-+
-+typedef struct fdesc func_desc_t;
-+
- #include <asm-generic/sections.h>
- 
- extern char __phys_per_cpu_start[];
-diff --git a/arch/parisc/include/asm/sections.h b/arch/parisc/include/asm/sections.h
-index c8092e4d94de..ace1d4047a0b 100644
---- a/arch/parisc/include/asm/sections.h
-+++ b/arch/parisc/include/asm/sections.h
-@@ -2,6 +2,11 @@
- #ifndef _PARISC_SECTIONS_H
- #define _PARISC_SECTIONS_H
- 
-+#ifdef CONFIG_HAVE_FUNCTION_DESCRIPTORS
-+#include <asm/elf.h>
-+typedef Elf64_Fdesc func_desc_t;
-+#endif
-+
- /* nothing to see, move along */
- #include <asm-generic/sections.h>
- 
-diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
-index fb11544d7e6a..1e6b6e732fb3 100644
---- a/arch/powerpc/include/asm/sections.h
-+++ b/arch/powerpc/include/asm/sections.h
-@@ -8,6 +8,10 @@
- 
- #define arch_is_kernel_initmem_freed arch_is_kernel_initmem_freed
- 
-+#ifdef CONFIG_HAVE_FUNCTION_DESCRIPTORS
-+typedef struct func_desc func_desc_t;
-+#endif
-+
- #include <asm-generic/sections.h>
- 
- extern bool init_mem_is_free;
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index b687ef88c4c4..3d06b996d504 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -32,11 +32,6 @@
- 
- #ifdef PPC64_ELF_ABI_v2
- 
--/* An address is simply the address of the function. */
--typedef struct {
--	unsigned long addr;
--} func_desc_t;
--
- static func_desc_t func_desc(unsigned long addr)
- {
- 	return (func_desc_t){addr};
-@@ -57,9 +52,6 @@ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
+index 035fcca441f0..1cf24c4a79e9 100644
+--- a/drivers/misc/lkdtm/perms.c
++++ b/drivers/misc/lkdtm/perms.c
+@@ -44,19 +44,34 @@ static noinline void do_overwritten(void)
+ 	return;
  }
- #else
  
--/* An address is address of the OPD entry, which contains address of fn. */
--typedef struct func_desc func_desc_t;
--
- static func_desc_t func_desc(unsigned long addr)
++static void *setup_function_descriptor(func_desc_t *fdesc, void *dst)
++{
++	if (!have_function_descriptors())
++		return dst;
++
++	memcpy(fdesc, do_nothing, sizeof(*fdesc));
++	fdesc->addr = (unsigned long)dst;
++	barrier();
++
++	return fdesc;
++}
++
+ static noinline void execute_location(void *dst, bool write)
  {
- 	return *(struct func_desc *)addr;
-diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
-index a918388d9bf6..33b51efe3a24 100644
---- a/include/asm-generic/sections.h
-+++ b/include/asm-generic/sections.h
-@@ -63,6 +63,9 @@ extern __visible const void __nosave_begin, __nosave_end;
- #else
- #define dereference_function_descriptor(p) ((void *)(p))
- #define dereference_kernel_function_descriptor(p) ((void *)(p))
-+typedef struct {
-+	unsigned long addr;
-+} func_desc_t;
- #endif
+-	void (*func)(void) = dst;
++	void (*func)(void);
++	func_desc_t fdesc;
++	void *do_nothing_text = dereference_function_descriptor(do_nothing);
  
- static inline bool have_function_descriptors(void)
+-	pr_info("attempting ok execution at %px\n", do_nothing);
++	pr_info("attempting ok execution at %px\n", do_nothing_text);
+ 	do_nothing();
+ 
+ 	if (write == CODE_WRITE) {
+-		memcpy(dst, do_nothing, EXEC_SIZE);
++		memcpy(dst, do_nothing_text, EXEC_SIZE);
+ 		flush_icache_range((unsigned long)dst,
+ 				   (unsigned long)dst + EXEC_SIZE);
+ 	}
+-	pr_info("attempting bad execution at %px\n", func);
++	pr_info("attempting bad execution at %px\n", dst);
++	func = setup_function_descriptor(&fdesc, dst);
+ 	func();
+ 	pr_err("FAIL: func returned\n");
+ }
+@@ -66,16 +81,19 @@ static void execute_user_location(void *dst)
+ 	int copied;
+ 
+ 	/* Intentionally crossing kernel/user memory boundary. */
+-	void (*func)(void) = dst;
++	void (*func)(void);
++	func_desc_t fdesc;
++	void *do_nothing_text = dereference_function_descriptor(do_nothing);
+ 
+-	pr_info("attempting ok execution at %px\n", do_nothing);
++	pr_info("attempting ok execution at %px\n", do_nothing_text);
+ 	do_nothing();
+ 
+-	copied = access_process_vm(current, (unsigned long)dst, do_nothing,
++	copied = access_process_vm(current, (unsigned long)dst, do_nothing_text,
+ 				   EXEC_SIZE, FOLL_WRITE);
+ 	if (copied < EXEC_SIZE)
+ 		return;
+-	pr_info("attempting bad execution at %px\n", func);
++	pr_info("attempting bad execution at %px\n", dst);
++	func = setup_function_descriptor(&fdesc, dst);
+ 	func();
+ 	pr_err("FAIL: func returned\n");
+ }
+@@ -153,7 +171,8 @@ void lkdtm_EXEC_VMALLOC(void)
+ 
+ void lkdtm_EXEC_RODATA(void)
+ {
+-	execute_location(lkdtm_rodata_do_nothing, CODE_AS_IS);
++	execute_location(dereference_function_descriptor(lkdtm_rodata_do_nothing),
++			 CODE_AS_IS);
+ }
+ 
+ void lkdtm_EXEC_USERSPACE(void)
 -- 
 2.31.1
 
