@@ -2,79 +2,69 @@ Return-Path: <SRS0=XWqB=PF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9A15C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:45:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62619C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 15:27:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7B64960EE3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:45:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7B64960EE3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id BF94E60FE3
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 15:27:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BF94E60FE3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKTn1PXJz3fJX
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:45:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXP5m6bsYz3cBq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 02:27:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=C4UNljiR;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org;
+ envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=desiato.20200630 header.b=C4UNljiR; 
+ dkim-atps=neutral
+Received: from desiato.infradead.org (desiato.infradead.org
+ [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKNB6dStz3ckD
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:40:10 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HXKMD1Tc9z9sSq;
- Sun, 17 Oct 2021 14:39:20 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id nlwBg3321UPU; Sun, 17 Oct 2021 14:39:20 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HXKM03Bw2z9sS8;
- Sun, 17 Oct 2021 14:39:08 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 560D78B763;
- Sun, 17 Oct 2021 14:39:08 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id coCs4OD-_eZ8; Sun, 17 Oct 2021 14:39:08 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.38])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DF1228B78B;
- Sun, 17 Oct 2021 14:39:06 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19HCcuNA2946773
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sun, 17 Oct 2021 14:38:56 +0200
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19HCcuEt2946772;
- Sun, 17 Oct 2021 14:38:56 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Morton <akpm@linux-foundation.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
- Kees Cook <keescook@chromium.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v3 11/12] lkdtm: Fix execute_[user]_location()
-Date: Sun, 17 Oct 2021 14:38:24 +0200
-Message-Id: <d4688c2af08dda706d3b6786ae5ec5a74e6171f1.1634457599.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <cover.1634457599.git.christophe.leroy@csgroup.eu>
-References: <cover.1634457599.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXP4x2DQZz2yhd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2021 02:27:08 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
+ :In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:
+ Sender:Reply-To:Content-ID:Content-Description;
+ bh=70ZKfllBjZHQa1J4GUObwLCze3CU8wCeQiJAaBSPZwY=; b=C4UNljiRQnxqpGr/gZae9CnIWT
+ j7Uyl2yYks8L0q03i4Yj6wzbXHZfLRSnndsp7bwE+G+8kSeY6JWp3qOqYzPXZm7xgouB3Y3hUQhtB
+ Pk4Hz6DQ4fJj9JpSQmWL3lPFrfCQD6hkq6x6Rwnt4SbkGg8suXrp9MdS/9GwqmQ6jlHlFEgk2ZXtF
+ TIxTzVAunQ+vPdosDdlLDCl2JNMPGbY3ukZHFD5HB/10NLbW6nDO6fT48v5VJRLhpzgc3wB6XGEom
+ dyYnzfPdzBD/IPULfN37GdDBH1ku04zKJuWqNo9uyCNES4imNkH0NlqGgJMRJ5knyNRf5ELnaJOvh
+ Cfc6kr6w==;
+Received: from [2602:306:c5a2:a380:b27b:25ff:fe2c:51a8]
+ by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+ id 1mc83d-00ANfc-5J; Sun, 17 Oct 2021 15:26:41 +0000
+Subject: Re: [PATCH 00/13] block: add_disk() error handling stragglers
+To: Luis Chamberlain <mcgrof@kernel.org>, axboe@kernel.dk,
+ mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ jim@jtan.com, minchan@kernel.org, ngupta@vflare.org,
+ senozhatsky@chromium.org, richard@nod.at, miquel.raynal@bootlin.com,
+ vigneshr@ti.com, dan.j.williams@intel.com, vishal.l.verma@intel.com,
+ dave.jiang@intel.com, ira.weiny@intel.com, kbusch@kernel.org, hch@lst.de,
+ sagi@grimberg.me
+References: <20211015235219.2191207-1-mcgrof@kernel.org>
+From: Geoff Levand <geoff@infradead.org>
+Message-ID: <a31970d6-8631-9d9d-a36f-8f4fcebfb1e6@infradead.org>
+Date: Sun, 17 Oct 2021 08:26:33 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634474303; l=3309; s=20211009;
- h=from:subject:message-id; bh=sfbflkA2bmAlwjw54HOBXpCt422Ocrx9KRquDGa0AKo=;
- b=Jd107R/KDsGnmwf94jDv7xR779WrLBRdkmpLX1ePk3u4m4wQ8a2tNxepz/wLysCe0wlQ/G3ZZzRV
- XevFB2saCO3lkMRJj3XLILNll/5AYwMJVssgYsiqtOM74eFojPRy
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20211015235219.2191207-1-mcgrof@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,109 +76,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: nvdimm@lists.linux.dev, linux-kernel@vger.kernel.org,
+ linux-nvme@lists.infradead.org, linux-block@vger.kernel.org,
+ linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-execute_location() and execute_user_location() intent
-to copy do_nothing() text and execute it at a new location.
-However, at the time being it doesn't copy do_nothing() function
-but do_nothing() function descriptor which still points to the
-original text. So at the end it still executes do_nothing() at
-its original location allthough using a copied function descriptor.
+Hi Luis,
 
-So, fix that by really copying do_nothing() text and build a new
-function descriptor by copying do_nothing() function descriptor and
-updating the target address with the new location.
+On 10/15/21 4:52 PM, Luis Chamberlain wrote:
+> This patch set consists of al the straggler drivers for which we have
+> have no patch reviews done for yet. I'd like to ask for folks to please
+> consider chiming in, specially if you're the maintainer for the driver.
+> Additionally if you can specify if you'll take the patch in yourself or
+> if you want Jens to take it, that'd be great too.
 
-Also fix the displayed addresses by dereferencing do_nothing()
-function descriptor.
+Do you have a git repo with the patch set applied that I can use to test with?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- drivers/misc/lkdtm/perms.c | 37 ++++++++++++++++++++++++++++---------
- 1 file changed, 28 insertions(+), 9 deletions(-)
+Thanks.
 
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index 035fcca441f0..1cf24c4a79e9 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -44,19 +44,34 @@ static noinline void do_overwritten(void)
- 	return;
- }
- 
-+static void *setup_function_descriptor(func_desc_t *fdesc, void *dst)
-+{
-+	if (!have_function_descriptors())
-+		return dst;
-+
-+	memcpy(fdesc, do_nothing, sizeof(*fdesc));
-+	fdesc->addr = (unsigned long)dst;
-+	barrier();
-+
-+	return fdesc;
-+}
-+
- static noinline void execute_location(void *dst, bool write)
- {
--	void (*func)(void) = dst;
-+	void (*func)(void);
-+	func_desc_t fdesc;
-+	void *do_nothing_text = dereference_function_descriptor(do_nothing);
- 
--	pr_info("attempting ok execution at %px\n", do_nothing);
-+	pr_info("attempting ok execution at %px\n", do_nothing_text);
- 	do_nothing();
- 
- 	if (write == CODE_WRITE) {
--		memcpy(dst, do_nothing, EXEC_SIZE);
-+		memcpy(dst, do_nothing_text, EXEC_SIZE);
- 		flush_icache_range((unsigned long)dst,
- 				   (unsigned long)dst + EXEC_SIZE);
- 	}
--	pr_info("attempting bad execution at %px\n", func);
-+	pr_info("attempting bad execution at %px\n", dst);
-+	func = setup_function_descriptor(&fdesc, dst);
- 	func();
- 	pr_err("FAIL: func returned\n");
- }
-@@ -66,16 +81,19 @@ static void execute_user_location(void *dst)
- 	int copied;
- 
- 	/* Intentionally crossing kernel/user memory boundary. */
--	void (*func)(void) = dst;
-+	void (*func)(void);
-+	func_desc_t fdesc;
-+	void *do_nothing_text = dereference_function_descriptor(do_nothing);
- 
--	pr_info("attempting ok execution at %px\n", do_nothing);
-+	pr_info("attempting ok execution at %px\n", do_nothing_text);
- 	do_nothing();
- 
--	copied = access_process_vm(current, (unsigned long)dst, do_nothing,
-+	copied = access_process_vm(current, (unsigned long)dst, do_nothing_text,
- 				   EXEC_SIZE, FOLL_WRITE);
- 	if (copied < EXEC_SIZE)
- 		return;
--	pr_info("attempting bad execution at %px\n", func);
-+	pr_info("attempting bad execution at %px\n", dst);
-+	func = setup_function_descriptor(&fdesc, dst);
- 	func();
- 	pr_err("FAIL: func returned\n");
- }
-@@ -153,7 +171,8 @@ void lkdtm_EXEC_VMALLOC(void)
- 
- void lkdtm_EXEC_RODATA(void)
- {
--	execute_location(lkdtm_rodata_do_nothing, CODE_AS_IS);
-+	execute_location(dereference_function_descriptor(lkdtm_rodata_do_nothing),
-+			 CODE_AS_IS);
- }
- 
- void lkdtm_EXEC_USERSPACE(void)
--- 
-2.31.1
-
+-Geoff
