@@ -2,40 +2,40 @@ Return-Path: <SRS0=XWqB=PF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66C69C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:28:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 964AAC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:29:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E730461260
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:28:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E730461260
+	by mail.kernel.org (Postfix) with ESMTPS id BC2C161260
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:29:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BC2C161260
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXK7B1GQhz3cDq
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:28:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXK7d2R3Kz2ymF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:29:17 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
  [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXK6g4Ztkz2yYd
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXK6g4rfnz2yZf
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:28:27 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4HXK6b2fk7z4xqM;
- Sun, 17 Oct 2021 23:28:23 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4HXK6c3Tp6z4xqS;
+ Sun, 17 Oct 2021 23:28:24 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Cédric Le Goater <clg@kaod.org>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20211011070203.99726-1-clg@kaod.org>
-References: <20211011070203.99726-1-clg@kaod.org>
-Subject: Re: [PATCH] powerpc/xive: Discard disabled interrupts in
- get_irqchip_state()
-Message-Id: <163447368300.1156783.15492137091707859947.b4-ty@ellerman.id.au>
-Date: Sun, 17 Oct 2021 23:28:03 +1100
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20211015133929.832061-1-mpe@ellerman.id.au>
+References: <20211015133929.832061-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/2] KVM: PPC: Book3S HV: Fix stack handling in
+ idle_kvm_start_guest()
+Message-Id: <163447368720.1156783.501192294196883402.b4-ty@ellerman.id.au>
+Date: Sun, 17 Oct 2021 23:28:07 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -50,28 +50,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: stable@vger.kernel.org
+Cc: npiggin@gmail.com, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 11 Oct 2021 09:02:03 +0200, Cédric Le Goater wrote:
-> When an interrupt is passed through, the KVM XIVE device calls the
-> set_vcpu_affinity() handler which raises the P bit to mask the
-> interrupt and to catch any in-flight interrupts while routing the
-> interrupt to the guest.
+On Sat, 16 Oct 2021 00:39:28 +1100, Michael Ellerman wrote:
+> In commit 10d91611f426 ("powerpc/64s: Reimplement book3s idle code in
+> C") kvm_start_guest() became idle_kvm_start_guest(). The old code
+> allocated a stack frame on the emergency stack, but didn't use the
+> frame to store anything, and also didn't store anything in its caller's
+> frame.
 > 
-> On the guest side, drivers (like some Intels) can request at probe
-> time some MSIs and call synchronize_irq() to check that there are no
-> in flight interrupts. This will call the XIVE get_irqchip_state()
-> handler which will always return true as the interrupt P bit has been
-> set on the host side and lock the CPU in an infinite loop.
+> idle_kvm_start_guest() on the other hand is written more like a normal C
+> function, it creates a frame on entry, and also stores CR/LR into its
+> callers frame (per the ABI). The problem is that there is no caller
+> frame on the emergency stack.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/xive: Discard disabled interrupts in get_irqchip_state()
-      https://git.kernel.org/powerpc/c/6f779e1d359b8d5801f677c1d49dcfa10bf95674
+[1/2] KVM: PPC: Book3S HV: Fix stack handling in idle_kvm_start_guest()
+      https://git.kernel.org/powerpc/c/9b4416c5095c20e110c82ae602c254099b83b72f
+[2/2] KVM: PPC: Book3S HV: Make idle_kvm_start_guest() return 0 if it went to guest
+      https://git.kernel.org/powerpc/c/cdeb5d7d890e14f3b70e8087e745c4a6a7d9f337
 
 cheers
