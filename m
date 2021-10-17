@@ -2,19 +2,19 @@ Return-Path: <SRS0=XWqB=PF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0A69C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:40:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11BD0C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:40:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5D22A60F36
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:40:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5D22A60F36
+	by mail.kernel.org (Postfix) with ESMTPS id 7400060F36
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 12:40:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7400060F36
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKNW0MKHz3cmV
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:40:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXKP00sgYz3ddM
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Oct 2021 23:40:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,35 +22,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKMJ6HLyz3cFd
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:39:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXKMQ18FPz3cJL
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:39:29 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HXKM11gWJz9sSt;
- Sun, 17 Oct 2021 14:39:09 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HXKM20tl1z9sSf;
+ Sun, 17 Oct 2021 14:39:10 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id SMYjPKjGtC6s; Sun, 17 Oct 2021 14:39:09 +0200 (CEST)
+ with ESMTP id 0m8HvtckcNmc; Sun, 17 Oct 2021 14:39:10 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HXKLz6ZWqz9sSf;
- Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HXKM00MBBz9sSh;
+ Sun, 17 Oct 2021 14:39:08 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C9E668B76C;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D759C8B76D;
  Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 4TN_i876SSxm; Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
+ with ESMTP id Fp-u5xrsWwc0; Sun, 17 Oct 2021 14:39:07 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.38])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C62568B773;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CC92D8B775;
  Sun, 17 Oct 2021 14:39:06 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19HCcugL2946765
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19HCcsDE2946741
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sun, 17 Oct 2021 14:38:56 +0200
+ Sun, 17 Oct 2021 14:38:54 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19HCcunV2946764;
- Sun, 17 Oct 2021 14:38:56 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19HCcs7Y2946740;
+ Sun, 17 Oct 2021 14:38:54 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -61,17 +61,17 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v3 09/12] lkdtm: Force do_nothing() out of line
-Date: Sun, 17 Oct 2021 14:38:22 +0200
-Message-Id: <a7072b9e628b01cf30dd16d508f138c7c229b992.1634457599.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 03/12] powerpc: Remove 'struct ppc64_opd_entry'
+Date: Sun, 17 Oct 2021 14:38:16 +0200
+Message-Id: <762a0b82c9ab2237e997bbca9e3e00b4ee252130.1634457599.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1634457599.git.christophe.leroy@csgroup.eu>
 References: <cover.1634457599.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634474303; l=1269; s=20211009;
- h=from:subject:message-id; bh=nSN/ioO339qfxQaSJCJwz7QKogrcJ3f1Q+xuI0OSdUc=;
- b=sCrxbtxbBdfHhd/haIYDYBas/MSiSTksFFeVvm9lJzxKhfTqzoZ/VjxacZGgBbQrQZvazP2UCOfF
- S4UNCePRCervGfGfrQA52l5dOI3WJAh2pGnG4EIl6xfjZ3HDXx15
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634474303; l=1246; s=20211009;
+ h=from:subject:message-id; bh=cdAL80ErIMmXRf+JJL9Gjp/nbRDpVkJwSA6Jlk61p0c=;
+ b=FwGFZOrbhzBN25AWz3/Cbforw9tI8VDFVU8fesA2eFA8+s3xwnoPd/dk4wtZ9HrQeRbBYaYv3V6V
+ zU8l5qrAD7VkV6DQ5LZl5V6Q9KG0zM+znTULRvBkj9vH5iwRggU0
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -88,46 +88,46 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
  linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-LKDTM tests display that the run do_nothing() at a given
-address, but in reality do_nothing() is inlined into the
-caller.
+'struct ppc64_opd_entry' doesn't belong to uapi/asm/elf.h
 
-Force it out of line so that it really runs text at the
-displayed address.
+It was initially in module_64.c and commit 2d291e902791 ("Fix compile
+failure with non modular builds") moved it into asm/elf.h
 
-Acked-by: Kees Cook <keescook@chromium.org>
+But it was by mistake added outside of __KERNEL__ section,
+therefore commit c3617f72036c ("UAPI: (Scripted) Disintegrate
+arch/powerpc/include/asm") moved it to uapi/asm/elf.h
+
+Now that it is not used anymore by the kernel, remove it.
+
+Reviewed-by: Kees Cook <keescook@chromium.org>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/misc/lkdtm/perms.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/include/uapi/asm/elf.h | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index 2dede2ef658f..60b3b2fe929d 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -21,7 +21,7 @@
- /* This is non-const, so it will end up in the .data section. */
- static u8 data_area[EXEC_SIZE];
+diff --git a/arch/powerpc/include/uapi/asm/elf.h b/arch/powerpc/include/uapi/asm/elf.h
+index 860c59291bfc..308857123a08 100644
+--- a/arch/powerpc/include/uapi/asm/elf.h
++++ b/arch/powerpc/include/uapi/asm/elf.h
+@@ -289,12 +289,4 @@ typedef elf_fpreg_t elf_vsrreghalf_t32[ELF_NVSRHALFREG];
+ /* Keep this the last entry.  */
+ #define R_PPC64_NUM		253
  
--/* This is cost, so it will end up in the .rodata section. */
-+/* This is const, so it will end up in the .rodata section. */
- static const unsigned long rodata = 0xAA55AA55;
- 
- /* This is marked __ro_after_init, so it should ultimately be .rodata. */
-@@ -31,7 +31,7 @@ static unsigned long ro_after_init __ro_after_init = 0x55AA5500;
-  * This just returns to the caller. It is designed to be copied into
-  * non-executable memory regions.
-  */
--static void do_nothing(void)
-+static noinline void do_nothing(void)
- {
- 	return;
- }
+-/* There's actually a third entry here, but it's unused */
+-struct ppc64_opd_entry
+-{
+-	unsigned long funcaddr;
+-	unsigned long r2;
+-};
+-
+-
+ #endif /* _UAPI_ASM_POWERPC_ELF_H */
 -- 
 2.31.1
 
