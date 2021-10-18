@@ -2,43 +2,43 @@ Return-Path: <SRS0=BvUY=PG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93D42C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 13:30:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 994BFC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 13:32:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1A3C7613AB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 13:30:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1A3C7613AB
+	by mail.kernel.org (Postfix) with ESMTPS id 32C0C610A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 13:32:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 32C0C610A1
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXyS03Jw9z2yxT
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 00:30:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXyTd3c7nz304v
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 00:32:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
  (client-ip=217.140.110.172; helo=foss.arm.com;
  envelope-from=sudeep.holla@arm.com; receiver=<UNKNOWN>)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4HXyRW5bPTz2xXd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Oct 2021 00:30:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4HXyT76Kkpz2xXd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Oct 2021 00:31:38 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 967F8113E;
- Mon, 18 Oct 2021 06:30:13 -0700 (PDT)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DF88911B3;
+ Mon, 18 Oct 2021 06:31:37 -0700 (PDT)
 Received: from bogus (unknown [10.57.25.56])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1A02F3F73D;
- Mon, 18 Oct 2021 06:30:06 -0700 (PDT)
-Date: Mon, 18 Oct 2021 14:30:04 +0100
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0BFB93F73D;
+ Mon, 18 Oct 2021 06:31:30 -0700 (PDT)
+Date: Mon, 18 Oct 2021 14:31:27 +0100
 From: Sudeep Holla <sudeep.holla@arm.com>
 To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 11/12] cacheinfo: Allow for >32-bit cache 'id'
-Message-ID: <20211018133004.7pcbfdsvrjgjitpj@bogus>
+Subject: Re: [PATCH 12/12] cacheinfo: Set cache 'id' based on DT data
+Message-ID: <20211018133127.4oenrvzxwzn73s3k@bogus>
 References: <20211006164332.1981454-1-robh@kernel.org>
- <20211006164332.1981454-12-robh@kernel.org>
+ <20211006164332.1981454-13-robh@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20211006164332.1981454-12-robh@kernel.org>
+In-Reply-To: <20211006164332.1981454-13-robh@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,13 +74,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 06, 2021 at 11:43:31AM -0500, Rob Herring wrote:
-> In preparation to set the cache 'id' based on the CPU h/w ids, allow for
-> 64-bit bit 'id' value. The only case that needs this is arm64, so
-> unsigned long is sufficient.
+On Wed, Oct 06, 2021 at 11:43:32AM -0500, Rob Herring wrote:
+> Use the minimum CPU h/w id of the CPUs associated with the cache for the
+> cache 'id'. This will provide a stable id value for a given system. As
+> we need to check all possible CPUs, we can't use the shared_cpu_map
+> which is just online CPUs. As there's not a cache to CPUs mapping in DT,
+> we have to walk all CPU nodes and then walk cache levels.
 > 
 
-Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+Acked-by: Sudeep Holla <sudeep.holla@arm.com>
 
 -- 
 Regards,
