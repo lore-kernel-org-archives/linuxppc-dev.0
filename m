@@ -2,59 +2,62 @@ Return-Path: <SRS0=BvUY=PG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCD8FC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 03:47:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D49C4C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 04:09:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B7EB060E09
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 03:47:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B7EB060E09
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 46EF161054
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 04:09:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 46EF161054
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXjVZ1NCXz3c7M
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 14:47:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXk075bh5z2ywY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 15:09:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JMHchNrz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cI7idon2;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
- [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXjTr2VV1z2yQL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2021 14:46:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=JMHchNrz; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=cI7idon2; 
  dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4HXjTn3q3Hz4xbb;
- Mon, 18 Oct 2021 14:46:21 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1634528783;
- bh=GOtut4lMGzs2qzyZ65KTwOJYjfGYz9zHALN0yg+X+/Q=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=JMHchNrzOTUkxCl+BdvdSLLICSmbzkyyoAk3TULnCBr5nWi7Qav68ikqmpNA8rSlN
- q/+QyOJdg0KqaVGZiB7ia0Jf7FecSBTxKmLqGHFsTA90U12o8ls6IHTtYbjlS43kLa
- RvSnCRdg6zdwnSNjT6pO0CaT9srSHvuPj+qQal12hLND5/9J0E1NkU2ijFCILwsRdg
- tTx0vOKUNO3woGskvM4XkJthoy7NNdvY63goNxz+vYZp3FAmQuf6dNYE1b5C+wP0XV
- EPuKlQA4j0iKD/y1z+/fSAGSCpPFTy8L7v8XiVzj7tRrdprQoF7XgiWs61y8xjt+gS
- 0kdLnDUYVGkSg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Peter Zijlstra <peterz@infradead.org>, Kajol Jain <kjain@linux.ibm.com>
-Subject: Re: [PATCH v3 0/4] Add mem_hops field in perf_mem_data_src structure
-In-Reply-To: <20211007064933.GK174703@worktop.programming.kicks-ass.net>
-References: <20211006140654.298352-1-kjain@linux.ibm.com>
- <20211007064933.GK174703@worktop.programming.kicks-ass.net>
-Date: Mon, 18 Oct 2021 14:46:18 +1100
-Message-ID: <87pms3c7w5.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXjzM2Bgpz2yHN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2021 15:08:31 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPS id 7925861054;
+ Mon, 18 Oct 2021 04:08:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1634530107;
+ bh=3bSPGPcKzcEhWt529A5k5kbzfG89oZ+osFs5F5FzCm4=;
+ h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+ b=cI7idon2XWodWMRUesYcSQh4D/0WsSPTtTUYHwW3SGlkitA8g/hu8obV0fq2GzLtE
+ x0nxE9imaJ6F6nRMNjCdQr9/JKPTvhguY6kK14pqUD00ckGLdber8mCRXQBICVQwGE
+ Bt0AJsx9MTtP11ULYYbhDOGG9wwu8XaRciZZ7f4CeWtRMkDlLH6ADcrNu8RcxpiLfV
+ jFfHIXR6ZX98jiWUbqr/p9Dai617NDG8FIHcmawZjxbFCSq6Tu2sK+p52hkPaHAPQs
+ BHWIxcY53BpSmTHfOfnb466iJ01JbkmlX1iSfOpLQr7ckEYAJmnQWo/Z1J16fbhKPs
+ QanG5k+x6wGpA==
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.15-4 tag
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <87sfwzde0r.fsf@mpe.ellerman.id.au>
+References: <87sfwzde0r.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-List-Id: Linux on PowerPC Developers Mail List
+ <linuxppc-dev.lists.ozlabs.org>
+X-PR-Tracked-Message-Id: <87sfwzde0r.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+ tags/powerpc-5.15-4
+X-PR-Tracked-Commit-Id: cdeb5d7d890e14f3b70e8087e745c4a6a7d9f337
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: be9eb2f00fa7245116d49f76614054cce8e07af8
+Message-Id: <163453010734.24310.13422809439190787074.pr-tracker-bot@kernel.org>
+Date: Mon, 18 Oct 2021 04:08:27 +0000
+To: Michael Ellerman <mpe@ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,43 +69,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, atrajeev@linux.vnet.ibm.com, ak@linux.intel.com,
- daniel@iogearbox.net, rnsastry@linux.ibm.com,
- alexander.shishkin@linux.intel.com, linux-kernel@vger.kernel.org,
- acme@kernel.org, ast@kernel.org, linux-perf-users@vger.kernel.org,
- yao.jin@linux.intel.com, mingo@redhat.com, paulus@samba.org,
- maddy@linux.ibm.com, jolsa@kernel.org, namhyung@kernel.org,
- songliubraving@fb.com, linuxppc-dev@lists.ozlabs.org,
- kan.liang@linux.intel.com
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, clg@kaod.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Peter Zijlstra <peterz@infradead.org> writes:
-> On Wed, Oct 06, 2021 at 07:36:50PM +0530, Kajol Jain wrote:
->
->> Kajol Jain (4):
->>   perf: Add comment about current state of PERF_MEM_LVL_* namespace and
->>     remove an extra line
->>   perf: Add mem_hops field in perf_mem_data_src structure
->>   tools/perf: Add mem_hops field in perf_mem_data_src structure
->>   powerpc/perf: Fix data source encodings for L2.1 and L3.1 accesses
->> 
->>  arch/powerpc/perf/isa207-common.c     | 26 +++++++++++++++++++++-----
->>  arch/powerpc/perf/isa207-common.h     |  2 ++
->>  include/uapi/linux/perf_event.h       | 19 ++++++++++++++++---
->>  tools/include/uapi/linux/perf_event.h | 19 ++++++++++++++++---
->>  tools/perf/util/mem-events.c          | 20 ++++++++++++++++++--
->>  5 files changed, 73 insertions(+), 13 deletions(-)
->
-> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
->
-> How do we want this routed? Shall I take it, or does Michael want it in
-> the Power tree?
+The pull request you sent on Sun, 17 Oct 2021 23:36:20 +1100:
 
-It's mostly non-powerpc, so I think you should take it.
+> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.15-4
 
-There's a slim chance we could end up with a conflict in the powerpc
-part, but that's no big deal.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/be9eb2f00fa7245116d49f76614054cce8e07af8
 
-cheers
+Thank you!
+
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
