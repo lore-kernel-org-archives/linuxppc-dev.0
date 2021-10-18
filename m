@@ -2,152 +2,97 @@ Return-Path: <SRS0=BvUY=PG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4544C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 08:00:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2DB0C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 08:04:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E3CB0610E8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 08:00:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E3CB0610E8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=nvidia.com
+	by mail.kernel.org (Postfix) with ESMTPS id D5DE561050
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 08:04:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D5DE561050
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXq6v0GtPz309j
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 19:00:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXqCB24Cbz3bnh
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 19:04:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=VPY0PSWs;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Yb3wDHGR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=40.107.95.62;
- helo=nam02-dm3-obe.outbound.protection.outlook.com;
- envelope-from=chaitanyak@nvidia.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256
- header.s=selector2 header.b=VPY0PSWs; 
- dkim-atps=neutral
-Received: from NAM02-DM3-obe.outbound.protection.outlook.com
- (mail-dm3nam07on2062.outbound.protection.outlook.com [40.107.95.62])
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=Yb3wDHGR; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXltT6p7hz2yg5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2021 16:34:20 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=SkFlXdP7nxzGzd+Jpr2dtvsYaEvX4WEANNCQwukksK37LWnQSz6xoqkrFfEL85mGi8Jvy09xs+guBZe8hw9E2xhwLRBfDhg62pVwXImhMazjXf0q8O75kYDJQEJnJW+Kgn+qt3cnC4cIHCyxVCeOvkNm89T1Gi6dQJIy4yM3qODVN3+9hWRN456w0FeYQ2jtK8ija0Dx9RLJMFA4xJV7cX5m/G5+oUO1Lhe62a/bCLfg0FE1C3vJp6N4SSFlPy4603k+jJyL8rXFl4bqT6yJ6WqNYnwasHg4xpnKySVrjK52wtlLd2WrUF+lhcDa/pnu7DZR5+tu9WV6JUO48n98UA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=n8HfABdoK1WORKK1qh7/5b/I1BJF0sx9gWERXBVzWuU=;
- b=bfd8uKXkLd4n9SG2/3WyiMjWC19JXqudqVh/sSDRYKjGCtE4vY/o40nR6DMPqylFd2uhB/EMdXQkfZfHR70FW7M/k13hb+IS8hxdoOiwPCE/o4Tmb8sCHF5NsWYamWLDxyM3Y6Yg1xUdwUlaS2JWOTKL3ZFbQLo7+XDYc3QpmLwQaF80pkxKur8ru9ObLEVchopXX8ECdlb7Q+1KQyIexyZbaVNDts2dAkvbxOfZSdVGH0cZuQPbZPayt05np241fiew0Dl+zQeBpr+G6grny8VIhdFb5kimtCAVncEcK0P1K62WrN9tlpSFfa5swooeUGfsaIiRtGsnWXH4WZQqkw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=n8HfABdoK1WORKK1qh7/5b/I1BJF0sx9gWERXBVzWuU=;
- b=VPY0PSWsTOkiwPuQ+Gy3mDHnh6AGxtn5tp4cobGCBa2+b7KTk8s4LHnD3O/yKbObuzEjtDEKihuvuekiy4PmfPli7g3vxdZvARMXA0OWicJiYGUNbt7mDU1sVLrxonY11Z8La062K2QSMphCJAtTkrldvnvBQ2TqUgdEJ2yotII161jliCy/sDojfz5Q/XsuLtYSKBnwAkwZ3WlJ1IM+MsNF0fG+uqPtqZ9f41LCVWcVZWMA1WjdKcM9ounxYA7qfMw/6J8/OgQq9Hiq1NvRSfq3+Bt7PmazFZypZBd+DXZ9seCRmYn08TLxugB0OY8iEe077gJjbZD3ghFddGDgsQ==
-Received: from MW2PR12MB4667.namprd12.prod.outlook.com (2603:10b6:302:12::28)
- by MWHPR12MB1392.namprd12.prod.outlook.com (2603:10b6:300:14::10)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4608.16; Mon, 18 Oct
- 2021 05:34:13 +0000
-Received: from MW2PR12MB4667.namprd12.prod.outlook.com
- ([fe80::3db1:105d:2524:524]) by MW2PR12MB4667.namprd12.prod.outlook.com
- ([fe80::3db1:105d:2524:524%7]) with mapi id 15.20.4608.018; Mon, 18 Oct 2021
- 05:34:13 +0000
-From: Chaitanya Kulkarni <chaitanyak@nvidia.com>
-To: Luis Chamberlain <mcgrof@kernel.org>, "axboe@kernel.dk" <axboe@kernel.dk>, 
- "geoff@infradead.org" <geoff@infradead.org>, "mpe@ellerman.id.au"
- <mpe@ellerman.id.au>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "paulus@samba.org" <paulus@samba.org>, "jim@jtan.com" <jim@jtan.com>,
- "minchan@kernel.org" <minchan@kernel.org>, "ngupta@vflare.org"
- <ngupta@vflare.org>, "senozhatsky@chromium.org" <senozhatsky@chromium.org>,
- "richard@nod.at" <richard@nod.at>, "miquel.raynal@bootlin.com"
- <miquel.raynal@bootlin.com>, "vigneshr@ti.com" <vigneshr@ti.com>,
- "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
- "vishal.l.verma@intel.com" <vishal.l.verma@intel.com>, "dave.jiang@intel.com"
- <dave.jiang@intel.com>, "ira.weiny@intel.com" <ira.weiny@intel.com>,
- "kbusch@kernel.org" <kbusch@kernel.org>, "hch@lst.de" <hch@lst.de>,
- "sagi@grimberg.me" <sagi@grimberg.me>
-Subject: Re: [PATCH 02/13] nvme-multipath: add error handling support for
- add_disk()
-Thread-Topic: [PATCH 02/13] nvme-multipath: add error handling support for
- add_disk()
-Thread-Index: AQHXwh/gt9PBjaNbHkuXMsY5hErhlKvYP1AA
-Date: Mon, 18 Oct 2021 05:34:12 +0000
-Message-ID: <f312b3a4-3ab4-9897-877b-458c3eed2dd8@nvidia.com>
-References: <20211015235219.2191207-1-mcgrof@kernel.org>
- <20211015235219.2191207-3-mcgrof@kernel.org>
-In-Reply-To: <20211015235219.2191207-3-mcgrof@kernel.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.1.0
-authentication-results: kernel.org; dkim=none (message not signed)
- header.d=none;kernel.org; dmarc=none action=none header.from=nvidia.com;
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 7ec7078d-13f3-4ede-db03-08d991f8eb08
-x-ms-traffictypediagnostic: MWHPR12MB1392:
-x-microsoft-antispam-prvs: <MWHPR12MB1392BC181B77D6CBECD3BC36A3BC9@MWHPR12MB1392.namprd12.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:4941;
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: hnU4B3xRvwjiOSouMQqysCjomKBb02Wuw18TyARuD9GH/KJVdoOLqregaVb4vU7xXRyLYsNq0Dwf+agfKf2O23hnILk0hNg8rYVexMeYKLN7vD7drdgjsnwxqOAmPWTsAmz/lR2kF8JM5YwMlQBGQk22MvafBByuhCHVonEY57XziIrb1kOZOXWuddAfHrDCWnGChPQGL8+jJ3YuuCWeZ8URDbCcfVx8vzi6JlVeypQHjYBPAwaDuMDvxlGIUBCSbW/hxgS3EalQFT6WoOR6m5wieN6oSAnC3TI5ddiseTnSFCzwSmKwBd+QXZLTcYK4euYrz4Ij0FPfoJfyXSJU1bDS74O7NhN42t19+DCv4i9XpyX7qRr9ERfT27XnGUpOQlWkyAJ6rSn72tS9KZd2sCLAG0nVwzwylRNl142HJUnQX9vUGhmqAfPyH//O/RbjJiuqzR3JBCgUshr+kjOeJbmwrO+d9rkc3mEwqHPK8ecXwrAwmIjTQfxz1r1d1m+qW2RmVLCCd4g3pyKygeohyjOh9eulxYgqRzOUbSqN8Q1mgGiMZeAWoH0C5AElkJP70svFmljlAZO+6PvxC4ZJ1wcPamINPxY7+cfyjcjiusYmxJF/N2aPj9FySLSQ2MoC9OzdirRFjljEO5/BDe+X7hV1yE5Kb0KSg+afGpb8okp14MbuwysoPJQJyzCGqYx+0FGLuY4Ubi1fjaKsTYfC+xsy8f3iDJHIkVhF9t4zdmUsTYFJlKIb3vRfsH/NrZXR7rO3B+ra2yjIk2Go4/kNhgPylWQDNJDqs89kg6Q+qAI=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:MW2PR12MB4667.namprd12.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(4636009)(366004)(76116006)(4744005)(31696002)(8676002)(31686004)(38100700002)(2616005)(66476007)(91956017)(66556008)(36756003)(66946007)(26005)(86362001)(921005)(6486002)(5660300002)(316002)(66446008)(64756008)(71200400001)(6512007)(54906003)(6506007)(38070700005)(8936002)(186003)(53546011)(508600001)(122000001)(110136005)(4326008)(2906002)(7416002)(45980500001)(43740500002);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?eWRkOUtZdmVraGNxOUJRc0ZObXZlUGQzZFVOSDZvZzlDWm1rK2Ixbi9tUUNJ?=
- =?utf-8?B?OEVYdjhnZEVwYjR5U2NHVFMvNzdRaFZGaTdKTm5FY3NrR2Z0VUR3SGFhc1RB?=
- =?utf-8?B?Yk1qNm8rbGtTcWtnT2lhMDRZeTVUcElNTW44UTRSa0IwVFZDaXcxbUU2cEsz?=
- =?utf-8?B?a24rTTNqa3V1bXhJdDFNb2dUUTN0ajVLTDNpeml3U0RXb1NCaWJFVmxuN1Y1?=
- =?utf-8?B?Rk1GKzJxZzBlcjJpODIwVnQ2eEpPZkhaSTBKQk9Uajg2QTFrd3F0Q3g1amRH?=
- =?utf-8?B?bWk4d3k0bnRLR3hPR0lBNmFRU0phVy9FeElWMTZsTHJRSm1lcytERXAxOWZ2?=
- =?utf-8?B?RE12M0ZUcDE4Y2ZpTWp3R21hQ1U5Rkg3SXFiZXNyeVJiSXF5TW40ZCs2NVJt?=
- =?utf-8?B?dlJ5TStuNHdaWm9Cejh1aWc5VCtRV1pKdk5Pbjc2SEZvRGdEWkVDVHZuRS9y?=
- =?utf-8?B?dHVDREV3RzRuNFVIdlRXS0hVU0RCLzdGQm5GWVZrcDhhU1FPRExwRUJMM2lX?=
- =?utf-8?B?TFlkcGttS0YzSzFuWHZzUnBFMGV3T0wyNncyQzBWRTJqSDlrcy9ySjREWll6?=
- =?utf-8?B?ek9rS1AvZ0l5WmtpWjZuWk1JQ1FaNU10R01aNERSWXVERXhKQ09jVWxBVlN4?=
- =?utf-8?B?UWNjZjlXZGd0V2xrRkkxdGVITGJvWG01L0V2SW03d3VURldmczNWbXllYnor?=
- =?utf-8?B?TmVtTGt2UGkxQ2xrelVmQ2hMYnFDM2lOTUg1UkE1bW1zQjhEajVEb3R2dnZw?=
- =?utf-8?B?NnJZZG1FWEpWVmg1MWpJRWxrOTdMdE01UGxnSHZkU0NObkhlTGlnOEdvOVBG?=
- =?utf-8?B?U1owK045Wkg0SjZISWt3cHdQWlpvK3E3aUxGeWprV2pnN0xha3o0WjR4cm5E?=
- =?utf-8?B?NE5sdW9Hdm9FWTVPT3o5c3JKWXBpZzFrbjdWdlFtVEpxMWFGd3dvNFBpNVVJ?=
- =?utf-8?B?SmhCNkZPVElPR0lMbWoxWWhPRzd3Y1NaMC9FR2xwcFZsc3doaVlwYk5yT01n?=
- =?utf-8?B?bFNTc1JBeGNuZXJ6Z0dxWjdXajczOVM4Zlo1LzNQNmNBdXZXQVJKZUMzTGtp?=
- =?utf-8?B?bHVabDZpeTh6NEozclV3cjYrbmNMaG9JTXFzdCtlY2dhckpkTTVZbUFXUWJM?=
- =?utf-8?B?d3kvYjdFN0hGMWFPWEIzTlFRdmZnYjVwSy9Gci8vMWNFRWwxaFRHWldFWVZJ?=
- =?utf-8?B?Wm4yV2RxTEN2L2RKLysweTQvYnpOYStpbHZKNTlkVE9adyt2bzJSR3hweWlB?=
- =?utf-8?B?UUpLcUhJV2xtREpubC8wTGpvRkRvNFNPVEJXWUlwV1lxVUh4aGMzbE1UV3dH?=
- =?utf-8?B?UWR1eUFRanA5UlZHOGNFUmdlcWpSL1kwY21mTXpmbzlQZ0lscWt2cFhvcEpm?=
- =?utf-8?B?aEtaUlVMUlEyYk9OdVlxOFFGcG9MRStoYWozSytlS0lXVFBMZEtENDlYZ3NJ?=
- =?utf-8?B?UVRxeG5zM1lUY0RISVp3Y3RsSUt0MFZPSmpPZ3NBNmVzdjE1R2dhMGJnL1Uw?=
- =?utf-8?B?bE1pdDJ1NUxHWkYvV0ppQ1lWZDFIcjZUZ0xWa2Z1b3pORW1ZQTZ2a210Qm9N?=
- =?utf-8?B?cTl1Nk5OOXdqcy9jdTEyZnFVU0JpNUt6ZjlLcDFBWVFIQkVOSm10NzRkTFVR?=
- =?utf-8?B?RnI1Tlp3WXpkNHJMNHpSd3JNYk9ib3hLMTlWcndkUU5sOFVVYlZBanNqcmE3?=
- =?utf-8?B?Ym4xb3B5aGlhcll3Ky9adllNY3M0cmUzVTRQUVA1UXUvVTdqdkh1b1lseHov?=
- =?utf-8?Q?hdbZFygMUyfHaK4PRM=3D?=
-x-ms-exchange-transport-forked: True
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXqBN1Lf9z2xt0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2021 19:03:23 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 19I768hi005308; 
+ Mon, 18 Oct 2021 04:03:10 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : from : to : cc
+ : date : message-id : content-type : content-transfer-encoding :
+ mime-version; s=pp1; bh=dYaN3tu//UuZqEHD/BlY46Y2GB276sz0hgONTFCSLYE=;
+ b=Yb3wDHGRdEnpSNWtXrMDDT+jIOtAjKnrlX5eXlnlHvQLu5hyv+b5CzQf9HHXFKDqc4Az
+ ZVbl3OelN5Diylkf9r4E5CM3i6ZxQXmC1NKwUtKdySMCRj7D6nLMT25qHHudr+pPNOYX
+ PRtB7v4OM1qEklg1MxicD0QkIaaxK/e3z3mkop0bp4DZ0s3ysI9WZXWBkJTXi3+vZzHV
+ EqZUn9wrmpfG576amhkXdNcDFdnTQn2B+PQa/J1mIq+TV8DOWCvIL1qvArmJId0pMs3Q
+ H/rMxaHKsB0rnNVxjnLqNyoenVKGLFnlvRuja7Ox8t3qv54BvzgB+uTp/QWwyA5MnRfF JQ== 
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3brpe9wh6g-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 18 Oct 2021 04:03:09 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 19I7vk9O007107;
+ Mon, 18 Oct 2021 08:03:07 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma03ams.nl.ibm.com with ESMTP id 3bqpc9bq9b-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 18 Oct 2021 08:03:07 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 19I833nU43909376
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 18 Oct 2021 08:03:04 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D035342049;
+ Mon, 18 Oct 2021 08:03:03 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9EA164205C;
+ Mon, 18 Oct 2021 08:03:02 +0000 (GMT)
+Received: from lep8c.aus.stglabs.ibm.com (unknown [9.40.192.207])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 18 Oct 2021 08:03:02 +0000 (GMT)
+Subject: [REPORT PATCH v2] powerpc/papr_scm: Implement initial support for
+ injecting smart errors
+From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+To: nvdimm@lists.linux.dev
+Date: Mon, 18 Oct 2021 03:03:01 -0500
+Message-ID: <163454413069.430835.6744345523708914645.stgit@lep8c.aus.stglabs.ibm.com>
+User-Agent: StGit/1.1+40.g1b20
 Content-Type: text/plain; charset="utf-8"
-Content-ID: <DC59B2D1E544344EBE8595BF7C37E65D@namprd12.prod.outlook.com>
-Content-Transfer-Encoding: base64
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: dXsWR4srgYsudivIwqBUJEzagper86zj
+X-Proofpoint-ORIG-GUID: dXsWR4srgYsudivIwqBUJEzagper86zj
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: MW2PR12MB4667.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7ec7078d-13f3-4ede-db03-08d991f8eb08
-X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Oct 2021 05:34:12.9159 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: e48IYkwRDv5ix58u7PvCUuSAFRDuEuaTh26Sash1lxDI3Nc/Jr7Rs+h8O4hbWL+q2kLtPNY32fFGrrw4+jV3kg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR12MB1392
-X-Mailman-Approved-At: Mon, 18 Oct 2021 18:59:39 +1100
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
+ definitions=2021-10-18_02,2021-10-14_02,2020-04-07_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0
+ malwarescore=0 adultscore=0 spamscore=0 clxscore=1011 mlxscore=0
+ bulkscore=0 priorityscore=1501 mlxlogscore=999 phishscore=0 suspectscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2109230001 definitions=main-2110180050
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -159,26 +104,274 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "nvdimm@lists.linux.dev" <nvdimm@lists.linux.dev>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
- "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
- "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: sbhat@linux.ibm.com, aneesh.kumar@linux.ibm.com, vaibhav@linux.ibm.com,
+ dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org, ira.weiny@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-T24gMTAvMTUvMjEgMTY6NTIsIEx1aXMgQ2hhbWJlcmxhaW4gd3JvdGU6DQo+IFdlIG5ldmVyIGNo
-ZWNrZWQgZm9yIGVycm9ycyBvbiBhZGRfZGlzaygpIGFzIHRoaXMgZnVuY3Rpb24NCj4gcmV0dXJu
-ZWQgdm9pZC4gTm93IHRoYXQgdGhpcyBpcyBmaXhlZCwgdXNlIHRoZSBzaGlueSBuZXcNCj4gZXJy
-b3IgaGFuZGxpbmcuDQo+IA0KPiBTaW5jZSB3ZSBub3cgY2FuIHRlbGwgZm9yIHN1cmUgd2hlbiBh
-IGRpc2sgd2FzIGFkZGVkLCBtb3ZlDQo+IHNldHRpbmcgdGhlIGJpdCBOVk1FX05TSEVBRF9ESVNL
-X0xJVkUgb25seSB3aGVuIHdlIGRpZA0KPiBhZGQgdGhlIGRpc2sgc3VjY2Vzc2Z1bGx5Lg0KPiAN
-Cj4gTm90aGluZyB0byBkbyBoZXJlIGFzIHRoZSBjbGVhbnVwIGlzIGRvbmUgZWxzZXdoZXJlLiBX
-ZSB0YWtlDQo+IGNhcmUgYW5kIHVzZSB0ZXN0X2FuZF9zZXRfYml0KCkgYmVjYXVzZSBpdCBpcyBw
-cm90ZWN0cyBhZ2FpbnN0DQo+IHR3byBudm1lIHBhdGhzIHNpbXVsdGFuZW91c2x5IGNhbGxpbmcg
-ZGV2aWNlX2FkZF9kaXNrKCkgb24gdGhlDQo+IHNhbWUgbmFtZXNwYWNlIGhlYWQuDQo+IA0KPiBT
-aWduZWQtb2ZmLWJ5OiBMdWlzIENoYW1iZXJsYWluIDxtY2dyb2ZAa2VybmVsLm9yZz4NCg0KDQpM
-b29rcyBnb29kLg0KDQpSZXZpZXdlZC1ieTogQ2hhaXRhbnlhIEt1bGthcm5pIDxrY2hAbnZpZGlh
-LmNvbT4NCg0KDQoNCg==
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+
+Presently PAPR doesn't support injecting smart errors on an
+NVDIMM. This makes testing the NVDIMM health reporting functionality
+difficult as simulating NVDIMM health related events need a hacked up
+qemu version.
+
+To solve this problem this patch proposes simulating certain set of
+NVDIMM health related events in papr_scm. Specifically 'fatal' health
+state and 'dirty' shutdown state. These error can be injected via the
+user-space 'ndctl-inject-smart(1)' command. With the proposed patch and
+corresponding ndctl patches following command flow is expected:
+
+$ sudo ndctl list -DH -d nmem0
+...
+      "health_state":"ok",
+      "shutdown_state":"clean",
+...
+ # inject unsafe shutdown and fatal health error
+$ sudo ndctl inject-smart nmem0 -Uf
+...
+      "health_state":"fatal",
+      "shutdown_state":"dirty",
+...
+ # uninject all errors
+$ sudo ndctl inject-smart nmem0 -N
+...
+      "health_state":"ok",
+      "shutdown_state":"clean",
+...
+
+The patch adds two members 'health_bitmap_mask' and
+'health_bitmap_override' inside struct papr_scm_priv which are then
+bit blt'ed to the health bitmaps fetched from the hypervisor. In case
+we are not able to fetch health information from the hypervisor we
+service the health bitmap from these two members. These members are
+accessible from sysfs at nmemX/papr/health_bitmap_override
+
+A new PDSM named 'SMART_INJECT' is proposed that accepts newly
+introduced 'struct nd_papr_pdsm_smart_inject' as payload thats
+exchanged between libndctl and papr_scm to indicate the requested
+smart-error states.
+
+When the processing the PDSM 'SMART_INJECT', papr_pdsm_smart_inject()
+constructs a pair or 'mask' and 'override' bitmaps from the payload
+and bit-blt it to the 'health_bitmap_{mask, override}' members. This
+ensures the after being fetched from the hypervisor, the health_bitmap
+reflects requested smart-error states.
+
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+---
+Changelog:
+
+Since v1:
+Link: https://patchwork.kernel.org/project/linux-nvdimm/list/?series=513881
+* Updated the patch description.
+* Removed dependency of a header movement patch.
+* Removed '__packed' attribute for 'struct nd_papr_pdsm_smart_inject' [Aneesh]
+
+ arch/powerpc/include/uapi/asm/papr_pdsm.h |   18 ++++++
+ arch/powerpc/platforms/pseries/papr_scm.c |   94 ++++++++++++++++++++++++++++-
+ 2 files changed, 109 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/uapi/asm/papr_pdsm.h b/arch/powerpc/include/uapi/asm/papr_pdsm.h
+index 82488b1e7276e..17439925045cf 100644
+--- a/arch/powerpc/include/uapi/asm/papr_pdsm.h
++++ b/arch/powerpc/include/uapi/asm/papr_pdsm.h
+@@ -116,6 +116,22 @@ struct nd_papr_pdsm_health {
+ 	};
+ };
+ 
++/* Flags for injecting specific smart errors */
++#define PDSM_SMART_INJECT_HEALTH_FATAL		(1 << 0)
++#define PDSM_SMART_INJECT_BAD_SHUTDOWN		(1 << 1)
++
++struct nd_papr_pdsm_smart_inject {
++	union {
++		struct {
++			/* One or more of PDSM_SMART_INJECT_ */
++			__u32 flags;
++			__u8 fatal_enable;
++			__u8 unsafe_shutdown_enable;
++		};
++		__u8 buf[ND_PDSM_PAYLOAD_MAX_SIZE];
++	};
++};
++
+ /*
+  * Methods to be embedded in ND_CMD_CALL request. These are sent to the kernel
+  * via 'nd_cmd_pkg.nd_command' member of the ioctl struct
+@@ -123,12 +139,14 @@ struct nd_papr_pdsm_health {
+ enum papr_pdsm {
+ 	PAPR_PDSM_MIN = 0x0,
+ 	PAPR_PDSM_HEALTH,
++	PAPR_PDSM_SMART_INJECT,
+ 	PAPR_PDSM_MAX,
+ };
+ 
+ /* Maximal union that can hold all possible payload types */
+ union nd_pdsm_payload {
+ 	struct nd_papr_pdsm_health health;
++	struct nd_papr_pdsm_smart_inject smart_inject;
+ 	__u8 buf[ND_PDSM_PAYLOAD_MAX_SIZE];
+ } __packed;
+ 
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index f48e87ac89c9b..de4cf329cfb3b 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -68,6 +68,10 @@
+ #define PAPR_SCM_PERF_STATS_EYECATCHER __stringify(SCMSTATS)
+ #define PAPR_SCM_PERF_STATS_VERSION 0x1
+ 
++/* Use bitblt method to override specific bits in the '_bitmap_' */
++#define BITBLT_BITMAP(_bitmap_, _mask_, _override_)		\
++	(((_bitmap_) & ~(_mask_)) | ((_mask_) & (_override_)))
++
+ /* Struct holding a single performance metric */
+ struct papr_scm_perf_stat {
+ 	u8 stat_id[8];
+@@ -120,6 +124,12 @@ struct papr_scm_priv {
+ 
+ 	/* length of the stat buffer as expected by phyp */
+ 	size_t stat_buffer_len;
++
++	/* The bits which needs to be overridden */
++	u64 health_bitmap_mask;
++
++	/* The overridden values for the bits having the masks set */
++	u64 health_bitmap_override;
+ };
+ 
+ static int papr_scm_pmem_flush(struct nd_region *nd_region,
+@@ -347,19 +357,28 @@ static ssize_t drc_pmem_query_stats(struct papr_scm_priv *p,
+ static int __drc_pmem_query_health(struct papr_scm_priv *p)
+ {
+ 	unsigned long ret[PLPAR_HCALL_BUFSIZE];
++	u64 bitmap = 0;
+ 	long rc;
+ 
+ 	/* issue the hcall */
+ 	rc = plpar_hcall(H_SCM_HEALTH, ret, p->drc_index);
+-	if (rc != H_SUCCESS) {
++	if (rc == H_SUCCESS)
++		bitmap = ret[0] & ret[1];
++	else if (rc == H_FUNCTION)
++		dev_info_once(&p->pdev->dev,
++			      "Hcall H_SCM_HEALTH not implemented, assuming empty health bitmap");
++	else {
++
+ 		dev_err(&p->pdev->dev,
+ 			"Failed to query health information, Err:%ld\n", rc);
+ 		return -ENXIO;
+ 	}
+ 
+ 	p->lasthealth_jiffies = jiffies;
+-	p->health_bitmap = ret[0] & ret[1];
+-
++	/* Allow overriding specific health bits via bit blt. */
++	bitmap = BITBLT_BITMAP(bitmap, p->health_bitmap_mask,
++			       p->health_bitmap_override);
++	WRITE_ONCE(p->health_bitmap, bitmap);
+ 	dev_dbg(&p->pdev->dev,
+ 		"Queried dimm health info. Bitmap:0x%016lx Mask:0x%016lx\n",
+ 		ret[0], ret[1]);
+@@ -669,6 +688,54 @@ static int papr_pdsm_health(struct papr_scm_priv *p,
+ 	return rc;
+ }
+ 
++/* Inject a smart error Add the dirty-shutdown-counter value to the pdsm */
++static int papr_pdsm_smart_inject(struct papr_scm_priv *p,
++				  union nd_pdsm_payload *payload)
++{
++	int rc;
++	u32 supported_flags = 0;
++	u64 mask = 0, override = 0;
++
++	/* Check for individual smart error flags and update mask and override */
++	if (payload->smart_inject.flags & PDSM_SMART_INJECT_HEALTH_FATAL) {
++		supported_flags |= PDSM_SMART_INJECT_HEALTH_FATAL;
++		mask |= PAPR_PMEM_HEALTH_FATAL;
++		override |= payload->smart_inject.fatal_enable ?
++			PAPR_PMEM_HEALTH_FATAL : 0;
++	}
++
++	if (payload->smart_inject.flags & PDSM_SMART_INJECT_BAD_SHUTDOWN) {
++		supported_flags |= PDSM_SMART_INJECT_BAD_SHUTDOWN;
++		mask |= PAPR_PMEM_SHUTDOWN_DIRTY;
++		override |= payload->smart_inject.unsafe_shutdown_enable ?
++			PAPR_PMEM_SHUTDOWN_DIRTY : 0;
++	}
++
++	dev_dbg(&p->pdev->dev, "[Smart-inject] Mask=%#llx override=%#llx\n",
++		mask, override);
++
++	/* Prevent concurrent access to dimm health bitmap related members */
++	rc = mutex_lock_interruptible(&p->health_mutex);
++	if (rc)
++		return rc;
++
++	/* Bitblt mask/override to corrosponding health_bitmap couterparts */
++	p->health_bitmap_mask = BITBLT_BITMAP(p->health_bitmap_mask,
++					      mask, override);
++	p->health_bitmap_override = BITBLT_BITMAP(p->health_bitmap_override,
++						  mask, override);
++
++	/* Invalidate cached health bitmap */
++	p->lasthealth_jiffies = 0;
++
++	mutex_unlock(&p->health_mutex);
++
++	/* Return the supported flags back to userspace */
++	payload->smart_inject.flags = supported_flags;
++
++	return sizeof(struct nd_papr_pdsm_health);
++}
++
+ /*
+  * 'struct pdsm_cmd_desc'
+  * Identifies supported PDSMs' expected length of in/out payloads
+@@ -702,6 +769,12 @@ static const struct pdsm_cmd_desc __pdsm_cmd_descriptors[] = {
+ 		.size_out = sizeof(struct nd_papr_pdsm_health),
+ 		.service = papr_pdsm_health,
+ 	},
++
++	[PAPR_PDSM_SMART_INJECT] = {
++		.size_in = sizeof(struct nd_papr_pdsm_smart_inject),
++		.size_out = sizeof(struct nd_papr_pdsm_smart_inject),
++		.service = papr_pdsm_smart_inject,
++	},
+ 	/* Empty */
+ 	[PAPR_PDSM_MAX] = {
+ 		.size_in = 0,
+@@ -838,6 +911,20 @@ static int papr_scm_ndctl(struct nvdimm_bus_descriptor *nd_desc,
+ 	return 0;
+ }
+ 
++static ssize_t health_bitmap_override_show(struct device *dev,
++					   struct device_attribute *attr,
++					   char *buf)
++{
++	struct nvdimm *dimm = to_nvdimm(dev);
++	struct papr_scm_priv *p = nvdimm_provider_data(dimm);
++
++	return sprintf(buf, "mask=%#llx override=%#llx\n",
++		       READ_ONCE(p->health_bitmap_mask),
++		       READ_ONCE(p->health_bitmap_override));
++}
++
++static DEVICE_ATTR_ADMIN_RO(health_bitmap_override);
++
+ static ssize_t perf_stats_show(struct device *dev,
+ 			       struct device_attribute *attr, char *buf)
+ {
+@@ -952,6 +1039,7 @@ static struct attribute *papr_nd_attributes[] = {
+ 	&dev_attr_flags.attr,
+ 	&dev_attr_perf_stats.attr,
+ 	&dev_attr_dirty_shutdown.attr,
++	&dev_attr_health_bitmap_override.attr,
+ 	NULL,
+ };
+ 
+
+
