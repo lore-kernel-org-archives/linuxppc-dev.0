@@ -2,86 +2,71 @@ Return-Path: <SRS0=BvUY=PG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 080AEC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 06:30:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D6B9C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 07:07:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5C46A610C7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 06:30:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5C46A610C7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id D82796124F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 07:07:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D82796124F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXn7S6DQyz30Pd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 17:30:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=EaHY4+nx;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXnyL0pFDz3cD5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 18:07:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::530;
- helo=mail-pg1-x530.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=EaHY4+nx; dkim-atps=neutral
-Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com
- [IPv6:2607:f8b0:4864:20::530])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXn6l53Dtz2xX5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2021 17:30:07 +1100 (AEDT)
-Received: by mail-pg1-x530.google.com with SMTP id c4so8006117pgv.11
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Oct 2021 23:30:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=SrZhhuie2LYb+DH8DnKTrW/zbTOuYNfpSWs+Jg+B7ZI=;
- b=EaHY4+nxzBbXnw4re2cGF5gs8wOdjWhvwRQb3eDdLNljCkNp8D3Cdglit6b/DEdvI2
- ey56INCUK8p9wnePBtmhufxokbGfkq/bNQtz2eGE9C1+N1+IZcLiivrjaHi+fbFyw9Sm
- CIG7/CN1JQ+NPRu8XrkCHXO75w/J8IzbZLZsXNgIgGrssc22eKmoEH650zN1aNt6fb/E
- RQyug5mhR8JxjCa8hxG/oKYeTCXUcl0CnsOg/Ox97LP7sL0xsADVjLigIWesCf7KolDZ
- X9a2zF1I9AHYK6mcfZmGIOyZknnbra8wW42jtGvX7ZmhL6HnsRn8jCA4kg5Bq6CKLMz9
- Bq+w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=SrZhhuie2LYb+DH8DnKTrW/zbTOuYNfpSWs+Jg+B7ZI=;
- b=Z7Bsloalz97vkGTMdsygiZB0C8yLg/1NVgtYPFSbd5ymPIWnSPBxONeLQcD687JM5p
- shEugBKzDH3nx0EYShulrAov4wLu6QgyFnsu1NaxR8t/vpHtSOSHOa+iX92D7sNJhOSh
- u9RzvAtLWb5Iac1lnGdbnWpKyOvw0RTyffTvSGdMyat4DmPV30V7XzG7LCS4AwA7ip22
- BbRiTI8I63M4JZHmZhfW7Fj0Njt+rbR8J+P4Pikq73O3YQymwXPh/0vlJxipmnByFyop
- j5xmD2spWlG2ONnmT66b94FTh7AxyNlw4zwXjpWX27DkwKsjmQSxu6rbKM4w/wlynfF+
- teLQ==
-X-Gm-Message-State: AOAM5307y4SS/1oc3OslYW+gpOy83wp/KoX/bG0VGA8zSLrUHAFSEpCf
- 16D5289PVBmmS/Q9dVqObS39MwPjP4XncA==
-X-Google-Smtp-Source: ABdhPJzH86hY+t32jbrJWE1dxVltQNRhTT8NQFAijIbO8sR0zCmyZjDW9Fs93D5vJD/a+7+qImFigg==
-X-Received: by 2002:aa7:86d9:0:b0:44d:a354:b803 with SMTP id
- h25-20020aa786d9000000b0044da354b803mr15773350pfo.21.1634538604529; 
- Sun, 17 Oct 2021 23:30:04 -0700 (PDT)
-Received: from localhost ([1.128.244.1])
- by smtp.gmail.com with ESMTPSA id a12sm18027761pjq.16.2021.10.17.23.30.03
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 17 Oct 2021 23:30:04 -0700 (PDT)
-Date: Mon, 18 Oct 2021 16:29:57 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXnxr0bFGz2yNp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2021 18:07:25 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4HXnxj6V6bz9sSY;
+ Mon, 18 Oct 2021 09:07:21 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ufy2FvxmcmR8; Mon, 18 Oct 2021 09:07:21 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HXnxj5chVz9sSD;
+ Mon, 18 Oct 2021 09:07:21 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A85088B76C;
+ Mon, 18 Oct 2021 09:07:21 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 67lhJDwjeAym; Mon, 18 Oct 2021 09:07:21 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.103])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4BB678B763;
+ Mon, 18 Oct 2021 09:07:21 +0200 (CEST)
 Subject: Re: [PATCH v3 07/12] asm-generic: Define 'func_desc_t' to commonly
  describe function descriptors
-To: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, 
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christophe Leroy
- <christophe.leroy@csgroup.eu>, Helge Deller <deller@gmx.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E.J. Bottomley"
- <James.Bottomley@HansenPartnership.com>, Kees Cook <keescook@chromium.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Helge Deller <deller@gmx.de>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Kees Cook <keescook@chromium.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>
 References: <cover.1634457599.git.christophe.leroy@csgroup.eu>
  <a33107c5b82580862510cc20af0d61e33a2b841d.1634457599.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <a33107c5b82580862510cc20af0d61e33a2b841d.1634457599.git.christophe.leroy@csgroup.eu>
+ <1634538449.eah9b31bbz.astroid@bobo.none>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <802b3ff9-8ada-b45b-2b69-b6a23f0c3664@csgroup.eu>
+Date: Mon, 18 Oct 2021 09:07:21 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 MIME-Version: 1.0
-Message-Id: <1634538449.eah9b31bbz.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <1634538449.eah9b31bbz.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr-FR
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,45 +85,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Christophe Leroy's message of October 17, 2021 10:38 pm:
-> We have three architectures using function descriptors, each with its
-> own type and name.
->=20
-> Add a common typedef that can be used in generic code.
->=20
-> Also add a stub typedef for architecture without function descriptors,
-> to avoid a forest of #ifdefs.
->=20
-> It replaces the similar 'func_desc_t' previously defined in
-> arch/powerpc/kernel/module_64.c
->=20
-> Reviewed-by: Kees Cook <keescook@chromium.org>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
 
-[...]
 
-> diff --git a/include/asm-generic/sections.h b/include/asm-generic/section=
-s.h
-> index a918388d9bf6..33b51efe3a24 100644
-> --- a/include/asm-generic/sections.h
-> +++ b/include/asm-generic/sections.h
-> @@ -63,6 +63,9 @@ extern __visible const void __nosave_begin, __nosave_en=
-d;
->  #else
->  #define dereference_function_descriptor(p) ((void *)(p))
->  #define dereference_kernel_function_descriptor(p) ((void *)(p))
-> +typedef struct {
-> +	unsigned long addr;
-> +} func_desc_t;
->  #endif
-> =20
+Le 18/10/2021 à 08:29, Nicholas Piggin a écrit :
+> Excerpts from Christophe Leroy's message of October 17, 2021 10:38 pm:
+>> We have three architectures using function descriptors, each with its
+>> own type and name.
+>>
+>> Add a common typedef that can be used in generic code.
+>>
+>> Also add a stub typedef for architecture without function descriptors,
+>> to avoid a forest of #ifdefs.
+>>
+>> It replaces the similar 'func_desc_t' previously defined in
+>> arch/powerpc/kernel/module_64.c
+>>
+>> Reviewed-by: Kees Cook <keescook@chromium.org>
+>> Acked-by: Arnd Bergmann <arnd@arndb.de>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>> ---
+> 
+> [...]
+> 
+>> diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+>> index a918388d9bf6..33b51efe3a24 100644
+>> --- a/include/asm-generic/sections.h
+>> +++ b/include/asm-generic/sections.h
+>> @@ -63,6 +63,9 @@ extern __visible const void __nosave_begin, __nosave_end;
+>>   #else
+>>   #define dereference_function_descriptor(p) ((void *)(p))
+>>   #define dereference_kernel_function_descriptor(p) ((void *)(p))
+>> +typedef struct {
+>> +	unsigned long addr;
+>> +} func_desc_t;
+>>   #endif
+>>   
+> 
+> I think that deserves a comment. If it's just to allow ifdef to be
+> avoided, I guess that's okay with a comment. Would be nice if you could
+> cause it to generate a link time error if it was ever used like
+> undefined functions, but I guess you can't. It's not a necessity though.
+> 
 
-I think that deserves a comment. If it's just to allow ifdef to be=20
-avoided, I guess that's okay with a comment. Would be nice if you could=20
-cause it to generate a link time error if it was ever used like
-undefined functions, but I guess you can't. It's not a necessity though.
+I tried to explain it in the commit message, but I can add a comment 
+here in addition for sure.
 
-Thanks,
-Nick
+By the way, it IS used in powerpc's module_64.c:
+
+static func_desc_t func_desc(unsigned long addr)
+{
+	return (func_desc_t){addr};
+}
+
+static unsigned long func_addr(unsigned long addr)
+{
+	return func_desc(addr).addr;
+}
