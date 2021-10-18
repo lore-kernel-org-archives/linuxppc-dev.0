@@ -2,107 +2,70 @@ Return-Path: <SRS0=BvUY=PG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A9A2C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 07:08:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5239C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 07:09:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 93C13610A3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 07:08:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 93C13610A3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5DA4D6108E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 07:09:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5DA4D6108E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXnz823Z6z2yyS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 18:08:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MnNlhCJy;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXp04084dz3015
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 18:09:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=MnNlhCJy; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXnxs062Yz2yNp
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2021 18:07:28 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 19I4pE9d014606; 
- Mon, 18 Oct 2021 03:07:18 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=vbrSzoBt7X4TL99HrXT0Mtl3aZl0ABB0RSF7M+qQSl8=;
- b=MnNlhCJy33wIAyc/XjCsTkALtUOBz9rQ7S3l38ftwFqXIVNVMZwGQpsqr7tmlDmHBNIJ
- iWy/MhQS83u2wHCaEquxE7nfxGX2BeHPf1/VmjTsD96QWIr82LnuAOlW7v6qlKFIHYsQ
- kGww69Mnmvgn7CXQcSVlaXC9p9UZ3DmtGG6nu1cZ+eJvL9Ogg98DQBtKPdL9MLQEc5JO
- IzM6SfAcKojvakJLA1tdWSE4Xeb0r9W+IF6lhMqFXDSu91In0OdDWZuZtnCKOjuE5rUM
- CmU96UVxo4n4uVslABT0YN3C2yF9XNE9T2Rkz3iH4h5Uat58bpXqx61LwQwdtJ3CsZLm aQ== 
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bs28xj72f-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 18 Oct 2021 03:07:17 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 19I71joI023363;
- Mon, 18 Oct 2021 07:07:15 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma03ams.nl.ibm.com with ESMTP id 3bqpc9b6pd-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 18 Oct 2021 07:07:15 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 19I77C2w51380588
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 18 Oct 2021 07:07:12 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4063BAE04D;
- Mon, 18 Oct 2021 07:07:12 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AE62EAE045;
- Mon, 18 Oct 2021 07:07:07 +0000 (GMT)
-Received: from [9.43.101.92] (unknown [9.43.101.92])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 18 Oct 2021 07:07:07 +0000 (GMT)
-Message-ID: <cb0dba37-f3e4-acd7-444f-01a6dc737919@linux.ibm.com>
-Date: Mon, 18 Oct 2021 12:37:06 +0530
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.1.0
-Subject: Re: [PATCH] powerpc/kexec_file: Add of_node_put() before goto
-Content-Language: en-US
-To: Wan Jiabing <wanjiabing@vivo.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXnzZ4YSHz2xtZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2021 18:08:58 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4HXnzW21G5z9sSY;
+ Mon, 18 Oct 2021 09:08:55 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 7w9sEQhgZ9a0; Mon, 18 Oct 2021 09:08:55 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HXnzW18Trz9sSD;
+ Mon, 18 Oct 2021 09:08:55 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 09C118B76C;
+ Mon, 18 Oct 2021 09:08:55 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id lqbCB8AX-POP; Mon, 18 Oct 2021 09:08:54 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.103])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C49F38B763;
+ Mon, 18 Oct 2021 09:08:54 +0200 (CEST)
+Subject: Re: [PATCH v3 04/12] powerpc: Prepare func_desc_t for refactorisation
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Rob Herring <robh@kernel.org>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
- Sourabh Jain <sourabhjain@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20211018015418.10182-1-wanjiabing@vivo.com>
-From: Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <20211018015418.10182-1-wanjiabing@vivo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: bJ4ZEjuBgK1SpSvn5A6XlfYvhsN2CbRR
-X-Proofpoint-GUID: bJ4ZEjuBgK1SpSvn5A6XlfYvhsN2CbRR
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
- definitions=2021-10-18_02,2021-10-14_02,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 bulkscore=0
- mlxlogscore=999 impostorscore=0 lowpriorityscore=0 spamscore=0
- clxscore=1011 mlxscore=0 phishscore=0 priorityscore=1501 adultscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2109230001 definitions=main-2110180043
+ Helge Deller <deller@gmx.de>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Kees Cook <keescook@chromium.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>
+References: <cover.1634457599.git.christophe.leroy@csgroup.eu>
+ <86c393ce0a6f603f94e6d2ceca08d535f654bb23.1634457599.git.christophe.leroy@csgroup.eu>
+ <1634536863.oq0s171f8c.astroid@bobo.none>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <1f66d234-3624-7ba2-7b03-5d0e1bea087f@csgroup.eu>
+Date: Mon, 18 Oct 2021 09:08:54 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
+MIME-Version: 1.0
+In-Reply-To: <1634536863.oq0s171f8c.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr-FR
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,41 +77,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kael_w@yeah.net
+Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-On 18/10/21 7:24 am, Wan Jiabing wrote:
-> Fix following coccicheck warning:
-> ./arch/powerpc/kexec/file_load_64.c:698:1-22: WARNING: Function
-> for_each_node_by_type should have of_node_put() before goto
+Le 18/10/2021 à 08:27, Nicholas Piggin a écrit :
+> Excerpts from Christophe Leroy's message of October 17, 2021 10:38 pm:
+>> In preparation of making func_desc_t generic, change the ELFv2
+>> version to a struct containing 'addr' element.
+>>
+>> This allows using single helpers common to ELFv1 and ELFv2.
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 > 
-> Early exits from for_each_node_by_type should decrement the
-> node reference counter.
+>> ---
+>>   arch/powerpc/kernel/module_64.c | 32 ++++++++++++++------------------
+>>   1 file changed, 14 insertions(+), 18 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+>> index a89da0ee25e2..b687ef88c4c4 100644
+>> --- a/arch/powerpc/kernel/module_64.c
+>> +++ b/arch/powerpc/kernel/module_64.c
+>> @@ -33,19 +33,13 @@
+>>   #ifdef PPC64_ELF_ABI_v2
+>>   
+>>   /* An address is simply the address of the function. */
+>> -typedef unsigned long func_desc_t;
+>> +typedef struct {
+>> +	unsigned long addr;
+>> +} func_desc_t;
 > 
-> Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
+> I'm not quite following why this change is done. I guess it is so you
+> can move this func_desc_t type into core code, but why do that? Is it
+> just to avoid using the preprocessor?
 
-Thanks for fixing this!
+I explained it in patch 7 but yes it probably also deserves some more 
+explanation here as well.
 
-Acked-by: Hari Bathini <hbathini@linux.ibm.com>
+That's right, it's to avoid having to spread #ifdefs everywhere.
 
-> ---
->   arch/powerpc/kexec/file_load_64.c | 1 +
->   1 file changed, 1 insertion(+)
 > 
-> diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
-> index 5056e175ca2c..b4981b651d9a 100644
-> --- a/arch/powerpc/kexec/file_load_64.c
-> +++ b/arch/powerpc/kexec/file_load_64.c
-> @@ -700,6 +700,7 @@ static int update_usable_mem_fdt(void *fdt, struct crash_mem *usable_mem)
->   		if (ret) {
->   			pr_err("Failed to set linux,usable-memory property for %s node",
->   			       dn->full_name);
-> +			of_node_put(dn);
->   			goto out;
->   		}
->   	}
+> On its own this patch looks okay.
+> 
+> Acked-by: Nicholas Piggin <npiggin@gmail.com>
 > 
