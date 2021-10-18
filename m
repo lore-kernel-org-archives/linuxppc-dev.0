@@ -2,45 +2,44 @@ Return-Path: <SRS0=BvUY=PG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C052C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 01:18:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E966C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 01:19:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E4221610A6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 01:18:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E4221610A6
+	by mail.kernel.org (Postfix) with ESMTPS id F0CD2610A6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 01:19:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org F0CD2610A6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HXfCM5nBjz3cCX
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 12:18:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HXfCq4q8sz3cPD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Oct 2021 12:19:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HXfBr27SDz2xt7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HXfBr31DQz2xtV
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Oct 2021 12:18:08 +1100 (AEDT)
-X-IronPort-AV: E=McAfee;i="6200,9189,10140"; a="208255308"
-X-IronPort-AV: E=Sophos;i="5.85,380,1624345200"; d="scan'208";a="208255308"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+X-IronPort-AV: E=McAfee;i="6200,9189,10140"; a="314347583"
+X-IronPort-AV: E=Sophos;i="5.85,380,1624345200"; d="scan'208";a="314347583"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  17 Oct 2021 18:17:04 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.85,380,1624345200"; d="scan'208";a="443216153"
+X-IronPort-AV: E=Sophos;i="5.85,380,1624345200"; d="scan'208";a="593609402"
 Received: from lkp-server02.sh.intel.com (HELO 08b2c502c3de) ([10.239.97.151])
- by orsmga006.jf.intel.com with ESMTP; 17 Oct 2021 18:17:03 -0700
+ by orsmga004.jf.intel.com with ESMTP; 17 Oct 2021 18:17:03 -0700
 Received: from kbuild by 08b2c502c3de with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1mcHGw-000ApA-IL; Mon, 18 Oct 2021 01:17:02 +0000
-Date: Mon, 18 Oct 2021 09:16:48 +0800
+ id 1mcHGw-000ApI-Kg; Mon, 18 Oct 2021 01:17:02 +0000
+Date: Mon, 18 Oct 2021 09:16:54 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 6c44be1b8e2d8c0161ac39d5d39ea4dff39da71c
-Message-ID: <616ccb00.FWzE58xyhyRUhA6j%lkp@intel.com>
+Subject: [powerpc:fixes] BUILD SUCCESS cdeb5d7d890e14f3b70e8087e745c4a6a7d9f337
+Message-ID: <616ccb06.CfJooxlToUPkX9XQ%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -61,13 +60,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: 6c44be1b8e2d8c0161ac39d5d39ea4dff39da71c  powerpc/smp: do not decrement idle task preempt count in CPU offline
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
+branch HEAD: cdeb5d7d890e14f3b70e8087e745c4a6a7d9f337  KVM: PPC: Book3S HV: Make idle_kvm_start_guest() return 0 if it went to guest
 
-elapsed time: 2077m
+elapsed time: 2078m
 
 configs tested: 233
-configs skipped: 111
+configs skipped: 122
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
