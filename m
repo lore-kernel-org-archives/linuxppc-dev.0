@@ -2,19 +2,19 @@ Return-Path: <SRS0=B87Y=PH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64CA4C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 07:32:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C5F9C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 07:33:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB0EA60EBB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 07:32:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EB0EA60EBB
+	by mail.kernel.org (Postfix) with ESMTPS id B1EA8611EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 07:33:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B1EA8611EF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HYQSj4xJbz3cRH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 18:32:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HYQTK2sxkz3dZf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 18:33:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,51 +22,51 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HYQPx0y0mz3c5w
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Oct 2021 18:30:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HYQQ20TCjz3cYX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Oct 2021 18:30:33 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HYQPK6fdWz9sSs;
- Tue, 19 Oct 2021 09:29:57 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HYQPL1FTFz9sSB;
+ Tue, 19 Oct 2021 09:29:58 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id NNGsfHxtrcVu; Tue, 19 Oct 2021 09:29:57 +0200 (CEST)
+ with ESMTP id Ixf6G4J_GYak; Tue, 19 Oct 2021 09:29:58 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HYQP71WBlz9sSB;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HYQP71ZMCz9sSt;
  Tue, 19 Oct 2021 09:29:47 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1DC498B774;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 20E048B775;
  Tue, 19 Oct 2021 09:29:47 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id W4Q0S6JCujtc; Tue, 19 Oct 2021 09:29:47 +0200 (CEST)
+ with ESMTP id 0mXJMfZqUbZc; Tue, 19 Oct 2021 09:29:47 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.71])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 358F78B780;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2B16D8B77D;
  Tue, 19 Oct 2021 09:29:46 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19J7Tc0o3188406
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19J7Td3r3188442
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 19 Oct 2021 09:29:38 +0200
+ Tue, 19 Oct 2021 09:29:39 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19J7TcMM3188405;
- Tue, 19 Oct 2021 09:29:38 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19J7Tduw3188441;
+ Tue, 19 Oct 2021 09:29:39 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 02/22] powerpc/8xx: Activate KUEP at all time
-Date: Tue, 19 Oct 2021 09:29:13 +0200
-Message-Id: <2129e86944323ffe9ed07fffbeafdfd2e363690a.1634627931.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 11/22] powerpc/kuap: Remove __kuap_assert_locked()
+Date: Tue, 19 Oct 2021 09:29:22 +0200
+Message-Id: <1a60198a25d2ba38a37f1b92bc7d096435df4224.1634627931.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1634627931.git.christophe.leroy@csgroup.eu>
 References: <cover.1634627931.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634628570; l=2690; s=20211009;
- h=from:subject:message-id; bh=5Hcdv8SHIZckvsLT7lpELb/CUd26NlE7taSteKwUXZA=;
- b=NgJ8+OxHimFcWO7poaSvDync6cdDnVZrgCezl2Kz2YCPL9LQ/wxXZw9xrL367SftBVdsb1ibyqNv
- nga1NqMLA6TDQFW4C3AN9Suf6NNLtludWcJXxKX9i8P9KEBgkL64
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634628570; l=2879; s=20211009;
+ h=from:subject:message-id; bh=dyNOh9aXsJ6KgQLE08xS9upLqy76hFt73l8Nyf9oT64=;
+ b=Ha9EJAz8acTy2cXgFi4vZ4JTeSgOHlEPTvep+2RaWEAMxNp7/iUPNCjcpIGI+hXU3v9sQJNEy9kv
+ WO3CIPXlBoLU4KH5xgZaGKc2iuHAFtZI7mVmVX1vgqB3VUw+DL0s
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -86,68 +86,84 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On the 8xx, there is absolutely no runtime impact with KUEP. Protection
-against execution of user code in kernel mode is set up at boot time
-by configuring the groups with contain all user pages as having swapped
-protection rights, in extenso EX for user and NA for supervisor.
+__kuap_assert_locked() is redundant with
+__kuap_get_and_assert_locked().
 
-Configure KUEP at startup and force selection of CONFIG_PPC_KUEP.
+Move the verification of CONFIG_PPC_KUAP_DEBUG in kuap_assert_locked()
+and make it call __kuap_get_and_assert_locked() directly.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/nohash/32/mmu-8xx.h | 6 ++----
- arch/powerpc/mm/nohash/8xx.c                 | 5 -----
- arch/powerpc/platforms/Kconfig.cputype       | 1 +
- 3 files changed, 3 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/book3s/32/kup.h     | 5 -----
+ arch/powerpc/include/asm/book3s/64/kup.h     | 6 ------
+ arch/powerpc/include/asm/kup.h               | 3 ++-
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h | 6 ------
+ 4 files changed, 2 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-index 997cec973406..0e93a4728c9e 100644
---- a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-@@ -39,12 +39,10 @@
-  * 0 => Kernel => 11 (all accesses performed according as user iaw page definition)
-  * 1 => Kernel+Accessed => 01 (all accesses performed according to page definition)
-  * 2 => User => 11 (all accesses performed according as user iaw page definition)
-- * 3 => User+Accessed => 00 (all accesses performed as supervisor iaw page definition) for INIT
-- *                    => 10 (all accesses performed according to swaped page definition) for KUEP
-+ * 3 => User+Accessed => 10 (all accesses performed according to swaped page definition) for KUEP
-  * 4-15 => Not Used
-  */
--#define MI_APG_INIT	0xdc000000
--#define MI_APG_KUEP	0xde000000
-+#define MI_APG_INIT	0xde000000
- 
- /* The effective page number register.  When read, contains the information
-  * about the last instruction TLB miss.  When MI_RPN is written, bits in
-diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
-index baa1f8a40af8..e878e8124ee6 100644
---- a/arch/powerpc/mm/nohash/8xx.c
-+++ b/arch/powerpc/mm/nohash/8xx.c
-@@ -215,12 +215,7 @@ void __init setup_initial_memory_limit(phys_addr_t first_memblock_base,
- #ifdef CONFIG_PPC_KUEP
- void setup_kuep(bool disabled)
- {
--	if (disabled)
--		return;
--
- 	pr_info("Activating Kernel Userspace Execution Prevention\n");
--
--	mtspr(SPRN_MI_AP, MI_APG_KUEP);
+diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+index 35ca48f7c293..bc245e9f0bcc 100644
+--- a/arch/powerpc/include/asm/book3s/32/kup.h
++++ b/arch/powerpc/include/asm/book3s/32/kup.h
+@@ -117,11 +117,6 @@ static inline unsigned long __kuap_get_and_assert_locked(void)
+ 	return kuap;
  }
- #endif
  
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index a208997ade88..66650ec1c7e6 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -43,6 +43,7 @@ config PPC_8xx
- 	select ARCH_SUPPORTS_HUGETLBFS
- 	select FSL_SOC
- 	select PPC_HAVE_KUEP
-+	select PPC_KUEP
- 	select PPC_HAVE_KUAP
- 	select HAVE_ARCH_VMAP_STACK
- 	select HUGETLBFS
+-static inline void __kuap_assert_locked(void)
+-{
+-	__kuap_get_and_assert_locked();
+-}
+-
+ static __always_inline void __allow_user_access(void __user *to, const void __user *from,
+ 						u32 size, unsigned long dir)
+ {
+diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
+index 9f2099790658..503828709d55 100644
+--- a/arch/powerpc/include/asm/book3s/64/kup.h
++++ b/arch/powerpc/include/asm/book3s/64/kup.h
+@@ -298,12 +298,6 @@ static inline unsigned long __kuap_get_and_assert_locked(void)
+ 	return amr;
+ }
+ 
+-static inline void __kuap_assert_locked(void)
+-{
+-	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG))
+-		WARN_ON_ONCE(mfspr(SPRN_AMR) != AMR_KUAP_BLOCKED);
+-}
+-
+ /*
+  * We support individually allowing read or write, but we don't support nesting
+  * because that would require an expensive read/modify write of the AMR.
+diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
+index 33e93a6c5d19..5d3c1e8060f9 100644
+--- a/arch/powerpc/include/asm/kup.h
++++ b/arch/powerpc/include/asm/kup.h
+@@ -86,7 +86,8 @@ static __always_inline void kuap_assert_locked(void)
+ 	if (kuap_is_disabled())
+ 		return;
+ 
+-	__kuap_assert_locked();
++	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG))
++		__kuap_get_and_assert_locked();
+ }
+ 
+ #ifdef CONFIG_PPC32
+diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+index 74f15c386476..37fe4b32b658 100644
+--- a/arch/powerpc/include/asm/nohash/32/kup-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+@@ -47,12 +47,6 @@ static inline unsigned long __kuap_get_and_assert_locked(void)
+ 	return kuap;
+ }
+ 
+-static inline void __kuap_assert_locked(void)
+-{
+-	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG))
+-		__kuap_get_and_assert_locked();
+-}
+-
+ static inline void __allow_user_access(void __user *to, const void __user *from,
+ 				       unsigned long size, unsigned long dir)
+ {
 -- 
 2.31.1
 
