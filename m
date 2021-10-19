@@ -2,72 +2,71 @@ Return-Path: <SRS0=B87Y=PH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17269C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 07:30:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C28CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 07:30:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 29B4A6137F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 07:30:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 29B4A6137F
+	by mail.kernel.org (Postfix) with ESMTPS id 5EF426137F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 07:30:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5EF426137F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HYQPt1bFYz3cX9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 18:30:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HYQQJ6YYCz3ckV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 18:30:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HYQPM6M4Xz2ybK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Oct 2021 18:29:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HYQPS4ggSz2yg1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Oct 2021 18:30:04 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HYQPB5fcpz9sTF;
- Tue, 19 Oct 2021 09:29:50 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HYQPD3C0Hz9sTG;
+ Tue, 19 Oct 2021 09:29:52 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id WquU9dAx2nlo; Tue, 19 Oct 2021 09:29:50 +0200 (CEST)
+ with ESMTP id eD8eDPgN60Zf; Tue, 19 Oct 2021 09:29:52 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HYQP63Kc3z9sSg;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HYQP66fckz9sSP;
  Tue, 19 Oct 2021 09:29:46 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5C9A28B783;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CEA1F8B763;
  Tue, 19 Oct 2021 09:29:46 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id BdpzqitU36mz; Tue, 19 Oct 2021 09:29:46 +0200 (CEST)
+ with ESMTP id q5L3S-iUZYyj; Tue, 19 Oct 2021 09:29:46 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.71])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0CC018B763;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0E7DD8B774;
  Tue, 19 Oct 2021 09:29:45 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19J7TdLa3188430
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19J7TdKn3188446
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Tue, 19 Oct 2021 09:29:39 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19J7TdX83188429;
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19J7TdFU3188445;
  Tue, 19 Oct 2021 09:29:39 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 08/22] powerpc/kuep: Remove 'nosmep' boot time parameter
- except for book3s/64
-Date: Tue, 19 Oct 2021 09:29:19 +0200
-Message-Id: <4c36df18b41c988c4512f45d96220486adbe4c99.1634627931.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 12/22] powerpc/kuap: Add kuap_lock()
+Date: Tue, 19 Oct 2021 09:29:23 +0200
+Message-Id: <4437e2deb9f6f549f7089d45e9c6f96a7e77905a.1634627931.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1634627931.git.christophe.leroy@csgroup.eu>
 References: <cover.1634627931.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634628570; l=4988; s=20211009;
- h=from:subject:message-id; bh=+P62v5BiDAD1R+baOefF09ATbKIzIrfwmFnTJsM1zDE=;
- b=bWSBxwYTfKV7LhvvHrjDwoAqYK0QFjZkN6WtOm6JxUc6EQK4IKNtjLniA0npJr7A8ls1YqTWRZrf
- vnGvu81bCZqhyv0N2t0PL81NGPYuKcVu55pT6PwD91SP4hhwd++T
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634628571; l=4983; s=20211009;
+ h=from:subject:message-id; bh=OG06PsA20KVkD3ydwaNJ+DNWXgByRWfXgPBTd695G8I=;
+ b=Ve6/JbxRpT+GV1ucOYAUFYxjj3WyuJEtjaflB32+W4MRPaR0M9smPvC2DaVvMDuE9GaM0HxjqVoV
+ 77mHgci+AFFWFRI6t3K1y1qElY6IoIgVMfStLSj3NVXGEEs23Llm
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -87,160 +86,156 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Deactivating KUEP at boot time is unrelevant for PPC32 and BOOK3E/64.
+Add kuap_lock() and call it when entering interrupts from user.
 
-Remove it.
+It is called kuap_lock() as it is similar to kuap_save_and_lock()
+without the save.
 
-It allows to refactor setup_kuep() via a __weak function
-that only PPC64s will overide for now.
+However book3s/32 already have a kuap_lock(). Rename it
+kuap_lock_addr().
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- Documentation/admin-guide/kernel-parameters.txt |  2 +-
- arch/powerpc/include/asm/kup.h                  |  5 -----
- arch/powerpc/mm/book3s32/Makefile               |  1 -
- arch/powerpc/mm/book3s32/kuep.c                 | 13 -------------
- arch/powerpc/mm/init-common.c                   | 15 +++++++++++++++
- arch/powerpc/mm/nohash/44x.c                    | 10 ----------
- arch/powerpc/mm/nohash/8xx.c                    |  7 -------
- 7 files changed, 16 insertions(+), 37 deletions(-)
- delete mode 100644 arch/powerpc/mm/book3s32/kuep.c
+ arch/powerpc/include/asm/book3s/32/kup.h     | 14 +++++++++-----
+ arch/powerpc/include/asm/interrupt.h         |  5 ++++-
+ arch/powerpc/include/asm/kup.h               |  9 +++++++++
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h |  4 ++++
+ arch/powerpc/kernel/interrupt.c              |  2 ++
+ 5 files changed, 28 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 43dc35fe5bc0..fce1c13ce642 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -3354,7 +3354,7 @@
- 			Disable SMAP (Supervisor Mode Access Prevention)
- 			even if it is supported by processor.
+diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+index bc245e9f0bcc..678f9c9d89b6 100644
+--- a/arch/powerpc/include/asm/book3s/32/kup.h
++++ b/arch/powerpc/include/asm/book3s/32/kup.h
+@@ -57,7 +57,7 @@ static inline void kuap_unlock_all(void)
+ void kuap_lock_all_ool(void);
+ void kuap_unlock_all_ool(void);
  
--	nosmep		[X86,PPC]
-+	nosmep		[X86,PPC64s]
- 			Disable SMEP (Supervisor Mode Execution Prevention)
- 			even if it is supported by processor.
- 
-diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-index 94734a8eb54d..fa8513b7acca 100644
---- a/arch/powerpc/include/asm/kup.h
-+++ b/arch/powerpc/include/asm/kup.h
-@@ -33,12 +33,7 @@ extern bool disable_kuap;
- #include <linux/pgtable.h>
- 
- void setup_kup(void);
--
--#ifdef CONFIG_PPC_KUEP
- void setup_kuep(bool disabled);
--#else
--static inline void setup_kuep(bool disabled) { }
--#endif /* CONFIG_PPC_KUEP */
- 
- #ifdef CONFIG_PPC_KUAP
- void setup_kuap(bool disabled);
-diff --git a/arch/powerpc/mm/book3s32/Makefile b/arch/powerpc/mm/book3s32/Makefile
-index 15f4773643d2..50dd8f6bdf46 100644
---- a/arch/powerpc/mm/book3s32/Makefile
-+++ b/arch/powerpc/mm/book3s32/Makefile
-@@ -9,5 +9,4 @@ endif
- obj-y += mmu.o mmu_context.o
- obj-$(CONFIG_PPC_BOOK3S_603) += nohash_low.o
- obj-$(CONFIG_PPC_BOOK3S_604) += hash_low.o tlb.o
--obj-$(CONFIG_PPC_KUEP) += kuep.o
- obj-$(CONFIG_PPC_KUAP) += kuap.o
-diff --git a/arch/powerpc/mm/book3s32/kuep.c b/arch/powerpc/mm/book3s32/kuep.c
-deleted file mode 100644
-index 78fc48eee510..000000000000
---- a/arch/powerpc/mm/book3s32/kuep.c
-+++ /dev/null
-@@ -1,13 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--
--#include <asm/code-patching.h>
--#include <asm/kup.h>
--#include <asm/smp.h>
--
--void setup_kuep(bool disabled)
--{
--	if (smp_processor_id() != boot_cpuid)
--		return;
--
--	pr_info("Activating Kernel Userspace Execution Prevention\n");
--}
-diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
-index b4f3437aee38..b22e0649e2d3 100644
---- a/arch/powerpc/mm/init-common.c
-+++ b/arch/powerpc/mm/init-common.c
-@@ -20,6 +20,7 @@
- #include <linux/pgtable.h>
- #include <asm/pgalloc.h>
- #include <asm/kup.h>
-+#include <asm/smp.h>
- 
- phys_addr_t memstart_addr __ro_after_init = (phys_addr_t)~0ull;
- EXPORT_SYMBOL_GPL(memstart_addr);
-@@ -33,6 +34,9 @@ bool disable_kuap = !IS_ENABLED(CONFIG_PPC_KUAP);
- 
- static int __init parse_nosmep(char *p)
+-static inline void kuap_lock(unsigned long addr, bool ool)
++static inline void kuap_lock_addr(unsigned long addr, bool ool)
  {
-+	if (!IS_ENABLED(CONFIG_PPC_BOOKS_64))
-+		return 0;
-+
- 	disable_kuep = true;
- 	pr_warn("Disabling Kernel Userspace Execution Prevention\n");
- 	return 0;
-@@ -47,6 +51,17 @@ static int __init parse_nosmap(char *p)
+ 	if (likely(addr != KUAP_ALL))
+ 		kuap_lock_one(addr);
+@@ -77,6 +77,10 @@ static inline void kuap_unlock(unsigned long addr, bool ool)
+ 		kuap_unlock_all_ool();
  }
- early_param("nosmap", parse_nosmap);
  
-+void __weak setup_kuep(bool disabled)
++static inline void __kuap_lock(void)
 +{
-+	if (!IS_ENABLED(CONFIG_PPC_KUEP) || disabled)
-+		return;
-+
-+	if (smp_processor_id() != boot_cpuid)
-+		return;
-+
-+	pr_info("Activating Kernel Userspace Execution Prevention\n");
 +}
 +
- void setup_kup(void)
+ static inline void __kuap_save_and_lock(struct pt_regs *regs)
  {
- 	setup_kuap(disable_kuap);
-diff --git a/arch/powerpc/mm/nohash/44x.c b/arch/powerpc/mm/nohash/44x.c
-index ceb290df1fb5..796c824acc8c 100644
---- a/arch/powerpc/mm/nohash/44x.c
-+++ b/arch/powerpc/mm/nohash/44x.c
-@@ -240,13 +240,3 @@ void __init mmu_init_secondary(int cpu)
- 	}
- }
- #endif /* CONFIG_SMP */
--
--#ifdef CONFIG_PPC_KUEP
--void setup_kuep(bool disabled)
--{
--	if (smp_processor_id() != boot_cpuid)
--		return;
--
--	pr_info("Activating Kernel Userspace Execution Prevention\n");
--}
--#endif
-diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
-index e878e8124ee6..36010d1c0bc4 100644
---- a/arch/powerpc/mm/nohash/8xx.c
-+++ b/arch/powerpc/mm/nohash/8xx.c
-@@ -212,13 +212,6 @@ void __init setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	memblock_set_current_limit(min_t(u64, first_memblock_size, SZ_32M));
+ 	unsigned long kuap = current->thread.kuap;
+@@ -86,7 +90,7 @@ static inline void __kuap_save_and_lock(struct pt_regs *regs)
+ 		return;
+ 
+ 	current->thread.kuap = KUAP_NONE;
+-	kuap_lock(kuap, false);
++	kuap_lock_addr(kuap, false);
  }
  
--#ifdef CONFIG_PPC_KUEP
--void setup_kuep(bool disabled)
--{
--	pr_info("Activating Kernel Userspace Execution Prevention\n");
--}
--#endif
--
- #ifdef CONFIG_PPC_KUAP
- struct static_key_false disable_kuap_key;
- EXPORT_SYMBOL(disable_kuap_key);
+ static inline void kuap_user_restore(struct pt_regs *regs)
+@@ -97,7 +101,7 @@ static inline void __kuap_kernel_restore(struct pt_regs *regs, unsigned long kua
+ {
+ 	if (unlikely(kuap != KUAP_NONE)) {
+ 		current->thread.kuap = KUAP_NONE;
+-		kuap_lock(kuap, false);
++		kuap_lock_addr(kuap, false);
+ 	}
+ 
+ 	if (likely(regs->kuap == KUAP_NONE))
+@@ -139,7 +143,7 @@ static __always_inline void __prevent_user_access(unsigned long dir)
+ 		return;
+ 
+ 	current->thread.kuap = KUAP_NONE;
+-	kuap_lock(kuap, true);
++	kuap_lock_addr(kuap, true);
+ }
+ 
+ static inline unsigned long __prevent_user_access_return(void)
+@@ -148,7 +152,7 @@ static inline unsigned long __prevent_user_access_return(void)
+ 
+ 	if (flags != KUAP_NONE) {
+ 		current->thread.kuap = KUAP_NONE;
+-		kuap_lock(flags, true);
++		kuap_lock_addr(flags, true);
+ 	}
+ 
+ 	return flags;
+diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+index 3bbca1fbbe1e..ae719e200c80 100644
+--- a/arch/powerpc/include/asm/interrupt.h
++++ b/arch/powerpc/include/asm/interrupt.h
+@@ -140,9 +140,12 @@ static inline void interrupt_enter_prepare(struct pt_regs *regs, struct interrup
+ 		trace_hardirqs_off();
+ 
+ 	if (user_mode(regs))
+-		account_cpu_user_entry();
++		kuap_lock();
+ 	else
+ 		kuap_save_and_lock(regs);
++
++	if (user_mode(regs))
++		account_cpu_user_entry();
+ #endif
+ 
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
+index 5d3c1e8060f9..34574a7455ce 100644
+--- a/arch/powerpc/include/asm/kup.h
++++ b/arch/powerpc/include/asm/kup.h
+@@ -49,6 +49,7 @@ __bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
+ }
+ 
+ static inline void __kuap_assert_locked(void) { }
++static inline void __kuap_lock(void) { }
+ static inline void __kuap_save_and_lock(struct pt_regs *regs) { }
+ static inline void kuap_user_restore(struct pt_regs *regs) { }
+ static inline void __kuap_kernel_restore(struct pt_regs *regs, unsigned long amr) { }
+@@ -91,6 +92,14 @@ static __always_inline void kuap_assert_locked(void)
+ }
+ 
+ #ifdef CONFIG_PPC32
++static __always_inline void kuap_lock(void)
++{
++	if (kuap_is_disabled())
++		return;
++
++	__kuap_lock();
++}
++
+ static __always_inline void kuap_save_and_lock(struct pt_regs *regs)
+ {
+ 	if (kuap_is_disabled())
+diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+index 37fe4b32b658..c44d97751723 100644
+--- a/arch/powerpc/include/asm/nohash/32/kup-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+@@ -20,6 +20,10 @@ static __always_inline bool kuap_is_disabled(void)
+ 	return static_branch_unlikely(&disable_kuap_key);
+ }
+ 
++static inline void __kuap_lock(void)
++{
++}
++
+ static inline void __kuap_save_and_lock(struct pt_regs *regs)
+ {
+ 	regs->kuap = mfspr(SPRN_MD_AP);
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index 0d12aa66e1f9..dc56a514df0a 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -81,6 +81,8 @@ notrace long system_call_exception(long r3, long r4, long r5,
+ {
+ 	syscall_fn f;
+ 
++	kuap_lock();
++
+ 	regs->orig_gpr3 = r3;
+ 
+ 	if (IS_ENABLED(CONFIG_PPC_IRQ_SOFT_MASK_DEBUG))
 -- 
 2.31.1
 
