@@ -2,19 +2,19 @@ Return-Path: <SRS0=B87Y=PH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DF4EC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 07:38:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE6A0C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 07:38:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A861560FD9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 07:38:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A861560FD9
+	by mail.kernel.org (Postfix) with ESMTPS id 448E36137B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 07:38:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 448E36137B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HYQZn2bbYz3ck9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 18:38:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HYQbF6rPwz3fp6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Oct 2021 18:38:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,51 +22,51 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HYQR12B82z3dgj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Oct 2021 18:31:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HYQR51bMqz3cXt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Oct 2021 18:31:29 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HYQPZ0ptzz9sTF;
- Tue, 19 Oct 2021 09:30:10 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HYQPb1Llcz9sT7;
+ Tue, 19 Oct 2021 09:30:11 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id amw3mc1fD-Rp; Tue, 19 Oct 2021 09:30:10 +0200 (CEST)
+ with ESMTP id C2Aax1AhBfue; Tue, 19 Oct 2021 09:30:11 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HYQP80P8dz9sT7;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HYQP80PNWz9sT8;
  Tue, 19 Oct 2021 09:29:48 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 01B8A8B779;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 025EC8B77A;
  Tue, 19 Oct 2021 09:29:48 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id cVtbzBxYFAnQ; Tue, 19 Oct 2021 09:29:47 +0200 (CEST)
+ with ESMTP id 11T11eacPypZ; Tue, 19 Oct 2021 09:29:47 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.71])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 461958B774;
- Tue, 19 Oct 2021 09:29:47 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 191E68B778;
+ Tue, 19 Oct 2021 09:29:46 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19J7TfN93188482
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19J7TdBe3188434
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 19 Oct 2021 09:29:41 +0200
+ Tue, 19 Oct 2021 09:29:39 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19J7Tfpd3188481;
- Tue, 19 Oct 2021 09:29:41 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19J7Td9l3188433;
+ Tue, 19 Oct 2021 09:29:39 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 21/22] powerpc/kuap: Wire-up KUAP on book3e/64
-Date: Tue, 19 Oct 2021 09:29:32 +0200
-Message-Id: <e2c2c9375afd4bbc06aa904d0103a5f5102a2b1a.1634627931.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 09/22] powerpc/kuap: Add a generic intermediate layer
+Date: Tue, 19 Oct 2021 09:29:20 +0200
+Message-Id: <eaef143a8dae7288cd34565ffa7b49c16aee1ec3.1634627931.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1634627931.git.christophe.leroy@csgroup.eu>
 References: <cover.1634627931.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634628571; l=3439; s=20211009;
- h=from:subject:message-id; bh=iKUnttrFhPteXmV51nnstE3BdK77uTB9XSLAA0JSXNo=;
- b=p52vCUwOGOvMhFCyX975uvxhcJResH0hKj6rpA/hK6gO7WNaQJcnzyabL8jgQf0HdO/m90gKP6GH
- kHXnDg8ICzTfkxQFvklEV7yUc7dJdQ5BWYkYa8H6mdCulQxd4QXC
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634628570; l=11871; s=20211009;
+ h=from:subject:message-id; bh=di/wY4HUly26KSZ4e5zU26e4tcdSRlmZRwbXwM6I+TY=;
+ b=8wpo7lnTKN6tbPVr9BiYsgcNpoT0qGjMzjjxj8hGwnv9K6OsMOJMDSSs4lt68yRnOAo7kylV0WbM
+ hk0syW15C0KtfX3y2t1bEwwIVkJmsyZc6qugYQBO29anzWxog41F
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -86,119 +86,343 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds KUAP support to book3e/64.
-This is done by reading the content of SPRN_MAS1 and checking
-the TID at the time user pgtable is loaded.
+Make the following functions generic to all platforms.
+- bad_kuap_fault()
+- kuap_assert_locked()
+- kuap_save_and_lock() (PPC32 only)
+- kuap_kernel_restore()
+- kuap_get_and_assert_locked()
+
+And for all platforms except book3s/64
+- allow_user_access()
+- prevent_user_access()
+- prevent_user_access_return()
+- restore_user_access()
+
+Prepend __ in front of the name of platform specific ones.
+
+For now the generic just calls the platform specific, but
+next patch will move redundant parts of specific functions
+into the generic one.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/mm/nohash/tlb_low_64e.S   | 40 ++++++++++++++++++++++----
- arch/powerpc/platforms/Kconfig.cputype |  1 +
- 2 files changed, 35 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/book3s/32/kup.h     | 22 +++---
+ arch/powerpc/include/asm/book3s/64/kup.h     | 10 ++-
+ arch/powerpc/include/asm/kup.h               | 71 +++++++++++++++++---
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h | 20 +++---
+ 4 files changed, 86 insertions(+), 37 deletions(-)
 
-diff --git a/arch/powerpc/mm/nohash/tlb_low_64e.S b/arch/powerpc/mm/nohash/tlb_low_64e.S
-index bf24451f3e71..b43524ca2b95 100644
---- a/arch/powerpc/mm/nohash/tlb_low_64e.S
-+++ b/arch/powerpc/mm/nohash/tlb_low_64e.S
-@@ -128,6 +128,13 @@ END_BTB_FLUSH_SECTION
+diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+index e3db5ed4b255..9e9b2692070c 100644
+--- a/arch/powerpc/include/asm/book3s/32/kup.h
++++ b/arch/powerpc/include/asm/book3s/32/kup.h
+@@ -77,7 +77,7 @@ static inline void kuap_unlock(unsigned long addr, bool ool)
+ 		kuap_unlock_all_ool();
+ }
  
- 	bne	tlb_miss_kernel_bolted
+-static inline void kuap_save_and_lock(struct pt_regs *regs)
++static inline void __kuap_save_and_lock(struct pt_regs *regs)
+ {
+ 	unsigned long kuap = current->thread.kuap;
  
-+tlb_miss_user_bolted:
-+#ifdef CONFIG_PPC_KUAP
-+	mfspr	r10,SPRN_MAS1
-+	rlwinm.	r10,r10,0,0x3fff0000
-+	beq-	tlb_miss_fault_bolted /* KUAP fault */
+@@ -96,7 +96,7 @@ static inline void kuap_user_restore(struct pt_regs *regs)
+ {
+ }
+ 
+-static inline void kuap_kernel_restore(struct pt_regs *regs, unsigned long kuap)
++static inline void __kuap_kernel_restore(struct pt_regs *regs, unsigned long kuap)
+ {
+ 	if (kuap_is_disabled())
+ 		return;
+@@ -114,7 +114,7 @@ static inline void kuap_kernel_restore(struct pt_regs *regs, unsigned long kuap)
+ 	kuap_unlock(regs->kuap, false);
+ }
+ 
+-static inline unsigned long kuap_get_and_assert_locked(void)
++static inline unsigned long __kuap_get_and_assert_locked(void)
+ {
+ 	unsigned long kuap = current->thread.kuap;
+ 
+@@ -126,13 +126,13 @@ static inline unsigned long kuap_get_and_assert_locked(void)
+ 	return kuap;
+ }
+ 
+-static inline void kuap_assert_locked(void)
++static inline void __kuap_assert_locked(void)
+ {
+-	kuap_get_and_assert_locked();
++	__kuap_get_and_assert_locked();
+ }
+ 
+-static __always_inline void allow_user_access(void __user *to, const void __user *from,
+-					      u32 size, unsigned long dir)
++static __always_inline void __allow_user_access(void __user *to, const void __user *from,
++						u32 size, unsigned long dir)
+ {
+ 	if (kuap_is_disabled())
+ 		return;
+@@ -146,7 +146,7 @@ static __always_inline void allow_user_access(void __user *to, const void __user
+ 	kuap_unlock_one((__force u32)to);
+ }
+ 
+-static __always_inline void prevent_user_access(unsigned long dir)
++static __always_inline void __prevent_user_access(unsigned long dir)
+ {
+ 	u32 kuap = current->thread.kuap;
+ 
+@@ -162,7 +162,7 @@ static __always_inline void prevent_user_access(unsigned long dir)
+ 	kuap_lock(kuap, true);
+ }
+ 
+-static inline unsigned long prevent_user_access_return(void)
++static inline unsigned long __prevent_user_access_return(void)
+ {
+ 	unsigned long flags = current->thread.kuap;
+ 
+@@ -177,7 +177,7 @@ static inline unsigned long prevent_user_access_return(void)
+ 	return flags;
+ }
+ 
+-static inline void restore_user_access(unsigned long flags)
++static inline void __restore_user_access(unsigned long flags)
+ {
+ 	if (kuap_is_disabled())
+ 		return;
+@@ -189,7 +189,7 @@ static inline void restore_user_access(unsigned long flags)
+ }
+ 
+ static inline bool
+-bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
++__bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
+ {
+ 	unsigned long kuap = regs->kuap;
+ 
+diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
+index 170339969b7c..03d61c5205a4 100644
+--- a/arch/powerpc/include/asm/book3s/64/kup.h
++++ b/arch/powerpc/include/asm/book3s/64/kup.h
+@@ -268,8 +268,7 @@ static inline void kuap_user_restore(struct pt_regs *regs)
+ 	 */
+ }
+ 
+-static inline void kuap_kernel_restore(struct pt_regs *regs,
+-					   unsigned long amr)
++static inline void __kuap_kernel_restore(struct pt_regs *regs, unsigned long amr)
+ {
+ 	if (mmu_has_feature(MMU_FTR_BOOK3S_KUAP)) {
+ 		if (unlikely(regs->amr != amr)) {
+@@ -287,7 +286,7 @@ static inline void kuap_kernel_restore(struct pt_regs *regs,
+ 	 */
+ }
+ 
+-static inline unsigned long kuap_get_and_assert_locked(void)
++static inline unsigned long __kuap_get_and_assert_locked(void)
+ {
+ 	if (mmu_has_feature(MMU_FTR_BOOK3S_KUAP)) {
+ 		unsigned long amr = mfspr(SPRN_AMR);
+@@ -298,7 +297,7 @@ static inline unsigned long kuap_get_and_assert_locked(void)
+ 	return 0;
+ }
+ 
+-static inline void kuap_assert_locked(void)
++static inline void __kuap_assert_locked(void)
+ {
+ 	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG) && mmu_has_feature(MMU_FTR_BOOK3S_KUAP))
+ 		WARN_ON_ONCE(mfspr(SPRN_AMR) != AMR_KUAP_BLOCKED);
+@@ -339,8 +338,7 @@ static inline void set_kuap(unsigned long value)
+ 	isync();
+ }
+ 
+-static inline bool bad_kuap_fault(struct pt_regs *regs, unsigned long address,
+-				  bool is_write)
++static inline bool __bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
+ {
+ 	if (!mmu_has_feature(MMU_FTR_BOOK3S_KUAP))
+ 		return false;
+diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
+index fa8513b7acca..f2a6fdb45d33 100644
+--- a/arch/powerpc/include/asm/kup.h
++++ b/arch/powerpc/include/asm/kup.h
+@@ -41,17 +41,17 @@ void setup_kuap(bool disabled);
+ static inline void setup_kuap(bool disabled) { }
+ 
+ static inline bool
+-bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
++__bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
+ {
+ 	return false;
+ }
+ 
+-static inline void kuap_assert_locked(void) { }
+-static inline void kuap_save_and_lock(struct pt_regs *regs) { }
++static inline void __kuap_assert_locked(void) { }
++static inline void __kuap_save_and_lock(struct pt_regs *regs) { }
+ static inline void kuap_user_restore(struct pt_regs *regs) { }
+-static inline void kuap_kernel_restore(struct pt_regs *regs, unsigned long amr) { }
++static inline void __kuap_kernel_restore(struct pt_regs *regs, unsigned long amr) { }
+ 
+-static inline unsigned long kuap_get_and_assert_locked(void)
++static inline unsigned long __kuap_get_and_assert_locked(void)
+ {
+ 	return 0;
+ }
+@@ -62,14 +62,65 @@ static inline unsigned long kuap_get_and_assert_locked(void)
+  * platforms.
+  */
+ #ifndef CONFIG_PPC_BOOK3S_64
+-static inline void allow_user_access(void __user *to, const void __user *from,
+-				     unsigned long size, unsigned long dir) { }
+-static inline void prevent_user_access(unsigned long dir) { }
+-static inline unsigned long prevent_user_access_return(void) { return 0UL; }
+-static inline void restore_user_access(unsigned long flags) { }
++static inline void __allow_user_access(void __user *to, const void __user *from,
++				       unsigned long size, unsigned long dir) { }
++static inline void __prevent_user_access(unsigned long dir) { }
++static inline unsigned long __prevent_user_access_return(void) { return 0UL; }
++static inline void __restore_user_access(unsigned long flags) { }
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ #endif /* CONFIG_PPC_KUAP */
+ 
++static __always_inline bool
++bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
++{
++	return __bad_kuap_fault(regs, address, is_write);
++}
++
++static __always_inline void kuap_assert_locked(void)
++{
++	__kuap_assert_locked();
++}
++
++#ifdef CONFIG_PPC32
++static __always_inline void kuap_save_and_lock(struct pt_regs *regs)
++{
++	__kuap_save_and_lock(regs);
++}
 +#endif
 +
- tlb_miss_common_bolted:
- /*
-  * This is the guts of the TLB miss handler for bolted-linear.
-@@ -246,7 +253,7 @@ itlb_miss_fault_bolted:
++static __always_inline void kuap_kernel_restore(struct pt_regs *regs, unsigned long amr)
++{
++	__kuap_kernel_restore(regs, amr);
++}
++
++static __always_inline unsigned long kuap_get_and_assert_locked(void)
++{
++	return __kuap_get_and_assert_locked();
++}
++
++#ifndef CONFIG_PPC_BOOK3S_64
++static __always_inline void allow_user_access(void __user *to, const void __user *from,
++				     unsigned long size, unsigned long dir)
++{
++	__allow_user_access(to, from, size, dir);
++}
++
++static __always_inline void prevent_user_access(unsigned long dir)
++{
++	__prevent_user_access(dir);
++}
++
++static __always_inline unsigned long prevent_user_access_return(void)
++{
++	return __prevent_user_access_return();
++}
++
++static __always_inline void restore_user_access(unsigned long flags)
++{
++	__restore_user_access(flags);
++}
++#endif /* CONFIG_PPC_BOOK3S_64 */
++
+ static __always_inline void allow_read_from_user(const void __user *from, unsigned long size)
+ {
+ 	barrier_nospec();
+diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+index 882a0bc7887a..a5db84164afd 100644
+--- a/arch/powerpc/include/asm/nohash/32/kup-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+@@ -20,7 +20,7 @@ static __always_inline bool kuap_is_disabled(void)
+ 	return static_branch_unlikely(&disable_kuap_key);
+ }
  
- 	cmpldi	cr0,r15,0			/* Check for user region */
- 	oris	r11,r11,_PAGE_ACCESSED@h
--	beq	tlb_miss_common_bolted
-+	beq	tlb_miss_user_bolted
- 	b	itlb_miss_kernel_bolted
+-static inline void kuap_save_and_lock(struct pt_regs *regs)
++static inline void __kuap_save_and_lock(struct pt_regs *regs)
+ {
+ 	if (kuap_is_disabled())
+ 		return;
+@@ -33,7 +33,7 @@ static inline void kuap_user_restore(struct pt_regs *regs)
+ {
+ }
  
- #ifdef CONFIG_PPC_FSL_BOOK3E
-@@ -676,6 +683,11 @@ finish_normal_tlb_miss:
- 	/* Check if required permissions are met */
- 	andc.	r15,r11,r14
- 	bne-	normal_tlb_miss_access_fault
-+#ifdef CONFIG_PPC_KUAP
-+	mfspr	r11,SPRN_MAS1
-+	rlwinm.	r10,r11,0,0x3fff0000
-+	beq-	normal_tlb_miss_access_fault /* KUAP fault */
-+#endif
+-static inline void kuap_kernel_restore(struct pt_regs *regs, unsigned long kuap)
++static inline void __kuap_kernel_restore(struct pt_regs *regs, unsigned long kuap)
+ {
+ 	if (kuap_is_disabled())
+ 		return;
+@@ -41,7 +41,7 @@ static inline void kuap_kernel_restore(struct pt_regs *regs, unsigned long kuap)
+ 	mtspr(SPRN_MD_AP, regs->kuap);
+ }
  
- 	/* Now we build the MAS:
- 	 *
-@@ -689,15 +701,17 @@ finish_normal_tlb_miss:
- 	 *
- 	 * TODO: mix up code below for better scheduling
- 	 */
--	clrrdi	r11,r16,12		/* Clear low crap in EA */
--	rlwimi	r11,r14,32-19,27,31	/* Insert WIMGE */
--	mtspr	SPRN_MAS2,r11
-+	clrrdi	r10,r16,12		/* Clear low crap in EA */
-+	rlwimi	r10,r14,32-19,27,31	/* Insert WIMGE */
-+	mtspr	SPRN_MAS2,r10
+-static inline unsigned long kuap_get_and_assert_locked(void)
++static inline unsigned long __kuap_get_and_assert_locked(void)
+ {
+ 	unsigned long kuap;
  
- 	/* Check page size, if not standard, update MAS1 */
--	rldicl	r11,r14,64-8,64-8
--	cmpldi	cr0,r11,BOOK3E_PAGESZ_4K
-+	rldicl	r10,r14,64-8,64-8
-+	cmpldi	cr0,r10,BOOK3E_PAGESZ_4K
- 	beq-	1f
-+#ifndef CONFIG_PPC_KUAP
- 	mfspr	r11,SPRN_MAS1
-+#endif
- 	rlwimi	r11,r14,31,21,24
- 	rlwinm	r11,r11,0,21,19
- 	mtspr	SPRN_MAS1,r11
-@@ -786,7 +800,16 @@ virt_page_table_tlb_miss:
- 	mfspr	r10,SPRN_MAS1
- 	rlwinm	r10,r10,0,16,1			/* Clear TID */
- 	mtspr	SPRN_MAS1,r10
-+#ifdef CONFIG_PPC_KUAP
-+	b	2f
-+1:
-+	mfspr	r10,SPRN_MAS1
-+	rlwinm.	r10,r10,0,0x3fff0000
-+	beq-	virt_page_table_tlb_miss_fault /* KUAP fault */
-+2:
-+#else
- 1:
-+#endif
- BEGIN_MMU_FTR_SECTION
- 	/* Search if we already have a TLB entry for that virtual address, and
- 	 * if we do, bail out.
-@@ -1027,6 +1050,11 @@ virt_page_table_tlb_miss_whacko_fault:
-  * avoid too much complication, it will save/restore things for us
-  */
- htw_tlb_miss:
-+#ifdef CONFIG_PPC_KUAP
-+	mfspr	r10,SPRN_MAS1
-+	rlwinm.	r10,r10,0,0x3fff0000
-+	beq-	htw_tlb_miss_fault /* KUAP fault */
-+#endif
- 	/* Search if we already have a TLB entry for that virtual address, and
- 	 * if we do, bail out.
- 	 *
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 611d6efc047b..f3614bfd47ad 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -122,6 +122,7 @@ config PPC_BOOK3E_64
- 	select PPC_SMP_MUXED_IPI
- 	select PPC_DOORBELL
- 	select ZONE_DMA
-+	select PPC_HAVE_KUAP
+@@ -56,14 +56,14 @@ static inline unsigned long kuap_get_and_assert_locked(void)
+ 	return kuap;
+ }
  
- endchoice
+-static inline void kuap_assert_locked(void)
++static inline void __kuap_assert_locked(void)
+ {
+ 	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG) && !kuap_is_disabled())
+ 		kuap_get_and_assert_locked();
+ }
  
+-static inline void allow_user_access(void __user *to, const void __user *from,
+-				     unsigned long size, unsigned long dir)
++static inline void __allow_user_access(void __user *to, const void __user *from,
++				       unsigned long size, unsigned long dir)
+ {
+ 	if (kuap_is_disabled())
+ 		return;
+@@ -71,7 +71,7 @@ static inline void allow_user_access(void __user *to, const void __user *from,
+ 	mtspr(SPRN_MD_AP, MD_APG_INIT);
+ }
+ 
+-static inline void prevent_user_access(unsigned long dir)
++static inline void __prevent_user_access(unsigned long dir)
+ {
+ 	if (kuap_is_disabled())
+ 		return;
+@@ -79,7 +79,7 @@ static inline void prevent_user_access(unsigned long dir)
+ 	mtspr(SPRN_MD_AP, MD_APG_KUAP);
+ }
+ 
+-static inline unsigned long prevent_user_access_return(void)
++static inline unsigned long __prevent_user_access_return(void)
+ {
+ 	unsigned long flags;
+ 
+@@ -93,7 +93,7 @@ static inline unsigned long prevent_user_access_return(void)
+ 	return flags;
+ }
+ 
+-static inline void restore_user_access(unsigned long flags)
++static inline void __restore_user_access(unsigned long flags)
+ {
+ 	if (kuap_is_disabled())
+ 		return;
+@@ -102,7 +102,7 @@ static inline void restore_user_access(unsigned long flags)
+ }
+ 
+ static inline bool
+-bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
++__bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
+ {
+ 	if (kuap_is_disabled())
+ 		return false;
 -- 
 2.31.1
 
