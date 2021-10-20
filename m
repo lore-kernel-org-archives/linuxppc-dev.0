@@ -2,61 +2,56 @@ Return-Path: <SRS0=LDiU=PI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AFEDC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 17:45:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7AAEC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 17:51:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 763D4611C7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 17:45:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 763D4611C7
+	by mail.kernel.org (Postfix) with ESMTPS id 5BE28611C7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 17:51:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5BE28611C7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HZJ166Gcmz3c5q
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 04:45:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HZJ7q538Nz3c9Q
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 04:51:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=xmission.com (client-ip=166.70.13.233;
- helo=out03.mta.xmission.com; envelope-from=ebiederm@xmission.com;
+ smtp.mailfrom=xmission.com (client-ip=166.70.13.231;
+ helo=out01.mta.xmission.com; envelope-from=ebiederm@xmission.com;
  receiver=<UNKNOWN>)
-X-Greylist: delayed 738 seconds by postgrey-1.36 at boromir;
- Thu, 21 Oct 2021 04:45:01 AEDT
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HZJ0Y5ynpz2xRp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2021 04:45:01 +1100 (AEDT)
-Received: from in02.mta.xmission.com ([166.70.13.52]:52780)
- by out03.mta.xmission.com with esmtps (TLS1.3) tls
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HZJ7H50r6z2xtP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2021 04:50:51 +1100 (AEDT)
+Received: from in01.mta.xmission.com ([166.70.13.51]:55338)
+ by out01.mta.xmission.com with esmtps (TLS1.3) tls
  TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
  (envelope-from <ebiederm@xmission.com>)
- id 1mdFe6-002tLR-A8; Wed, 20 Oct 2021 11:44:58 -0600
-Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]:47894
- helo=localhost.localdomain)
- by in02.mta.xmission.com with esmtpsa (TLS1.3) tls
+ id 1mdFS2-00EuET-9k; Wed, 20 Oct 2021 11:32:30 -0600
+Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]:47416
+ helo=email.xmission.com)
+ by in01.mta.xmission.com with esmtpsa (TLS1.3) tls
  TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
  (envelope-from <ebiederm@xmission.com>)
- id 1mdFe3-001NdN-Te; Wed, 20 Oct 2021 11:44:57 -0600
-From: "Eric W. Biederman" <ebiederm@xmission.com>
-To: linux-kernel@vger.kernel.org
-Date: Wed, 20 Oct 2021 12:43:53 -0500
-Message-Id: <20211020174406.17889-7-ebiederm@xmission.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <87y26nmwkb.fsf@disp2133>
-References: <87y26nmwkb.fsf@disp2133>
+ id 1mdFS0-009qGU-Te; Wed, 20 Oct 2021 11:32:29 -0600
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: <linux-kernel@vger.kernel.org>
+Date: Wed, 20 Oct 2021 12:32:20 -0500
+Message-ID: <87y26nmwkb.fsf@disp2133>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-XM-SPF: eid=1mdFe3-001NdN-Te; ; ;
- mid=<20211020174406.17889-7-ebiederm@xmission.com>; ; ;
- hst=in02.mta.xmission.com; ; ; ip=68.227.160.95; ; ; frm=ebiederm@xmission.com;
+Content-Type: text/plain
+X-XM-SPF: eid=1mdFS0-009qGU-Te; ; ; mid=<87y26nmwkb.fsf@disp2133>; ; ;
+ hst=in01.mta.xmission.com; ; ; ip=68.227.160.95; ; ; frm=ebiederm@xmission.com;
  ; ; spf=neutral
-X-XM-AID: U2FsdGVkX19Emo7IPRF0mj2xClpddKvdhPaEtu2o4MA=
+X-XM-AID: U2FsdGVkX1+QTFOF+6WLUwS/6b+bA87HzOEzbRhNKPA=
 X-SA-Exim-Connect-IP: 68.227.160.95
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [PATCH 07/20] signal/powerpc: On swapcontext failure force SIGSEGV
+Subject: [PATCH 00/20] exit cleanups 
 X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,77 +63,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Kees Cook <keescook@chromium.org>,
- linuxppc-dev@lists.ozlabs.org, Oleg Nesterov <oleg@redhat.com>,
- Paul Mackerras <paulus@samba.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
+Cc: Rich Felker <dalias@libc.org>, linux-xtensa@linux-xtensa.org,
+ linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, H Peter Anvin <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, Vincent Chen <deanbo422@gmail.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-sh@vger.kernel.org, Christian Borntraeger <borntraeger@de.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Jonas Bonn <jonas@southpole.se>,
+ Kees Cook <keescook@chromium.org>, Vasily Gorbik <gor@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
+ Al Viro <viro@ZenIV.linux.org.uk>, Andy Lutomirski <luto@kernel.org>,
+ Stafford Horne <shorne@gmail.com>, Chris Zankel <chris@zankel.net>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Nick Hu <nickhu@andestech.com>, linuxppc-dev@lists.ozlabs.org,
+ Oleg Nesterov <oleg@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Maciej Rozycki <macro@orcam.me.uk>,
  Linus Torvalds <torvalds@linux-foundation.org>,
- Al Viro <viro@ZenIV.linux.org.uk>
+ David Miller <davem@davemloft.net>, Greentime Hu <green.hu@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If the register state may be partial and corrupted instead of calling
-do_exit, call force_sigsegv(SIGSEGV).  Which properly kills the
-process with SIGSEGV and does not let any more userspace code execute,
-instead of just killing one thread of the process and potentially
-confusing everything.
 
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-History-tree: git://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git
-Fixes: 756f1ae8a44e ("PPC32: Rework signal code and add a swapcontext system call.")
-Fixes: 04879b04bf50 ("[PATCH] ppc64: VMX (Altivec) support & signal32 rework, from Ben Herrenschmidt")
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
----
- arch/powerpc/kernel/signal_32.c | 6 ++++--
- arch/powerpc/kernel/signal_64.c | 9 ++++++---
- 2 files changed, 10 insertions(+), 5 deletions(-)
+While looking at some issues related to the exit path in the kernel I
+found several instances where the code is not using the existing
+abstractions properly.
 
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 0608581967f0..666f3da41232 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -1062,8 +1062,10 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- 	 * or if another thread unmaps the region containing the context.
- 	 * We kill the task with a SIGSEGV in this situation.
- 	 */
--	if (do_setcontext(new_ctx, regs, 0))
--		do_exit(SIGSEGV);
-+	if (do_setcontext(new_ctx, regs, 0)) {
-+		force_sigsegv(SIGSEGV);
-+		return -EFAULT;
-+	}
- 
- 	set_thread_flag(TIF_RESTOREALL);
- 	return 0;
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 1831bba0582e..d8de622c9e4a 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -703,15 +703,18 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- 	 * We kill the task with a SIGSEGV in this situation.
- 	 */
- 
--	if (__get_user_sigset(&set, &new_ctx->uc_sigmask))
--		do_exit(SIGSEGV);
-+	if (__get_user_sigset(&set, &new_ctx->uc_sigmask)) {
-+		force_sigsegv(SIGSEGV);
-+		return -EFAULT;
-+	}
- 	set_current_blocked(&set);
- 
- 	if (!user_read_access_begin(new_ctx, ctx_size))
- 		return -EFAULT;
- 	if (__unsafe_restore_sigcontext(current, NULL, 0, &new_ctx->uc_mcontext)) {
- 		user_read_access_end();
--		do_exit(SIGSEGV);
-+		force_sigsegv(SIGSEGV);
-+		return -EFAULT;
- 	}
- 	user_read_access_end();
- 
--- 
-2.20.1
+This set of changes introduces force_fatal_sig a way of sending
+a signal and not allowing it to be caught, and corrects the
+misuse of the existing abstractions that I found.
 
+A lot of the misuse of the existing abstractions are silly things such
+as doing something after calling a no return function, rolling BUG by
+hand, doing more work than necessary to terminate a kernel thread, or
+calling do_exit(SIGKILL) instead of calling force_sig(SIGKILL).
+
+It is my plan after sending all of these changes out for review to place
+them in a topic branch for sending Linus.  Especially for the changes
+that depend upon the new helper force_fatal_sig this is important.
+
+Eric W. Biederman (20):
+      exit/doublefault: Remove apparently bogus comment about rewind_stack_do_exit
+      exit: Remove calls of do_exit after noreturn versions of die
+      reboot: Remove the unreachable panic after do_exit in reboot(2)
+      signal/sparc32: Remove unreachable do_exit in do_sparc_fault
+      signal/mips: Update (_save|_restore)_fp_context to fail with -EFAULT
+      signal/sh: Use force_sig(SIGKILL) instead of do_group_exit(SIGKILL)
+      signal/powerpc: On swapcontext failure force SIGSEGV
+      signal/sparc: In setup_tsb_params convert open coded BUG into BUG
+      signal/vm86_32: Replace open coded BUG_ON with an actual BUG_ON
+      signal/vm86_32: Properly send SIGSEGV when the vm86 state cannot be saved.
+      signal/s390: Use force_sigsegv in default_trap_handler
+      exit/kthread: Have kernel threads return instead of calling do_exit
+      signal: Implement force_fatal_sig
+      exit/syscall_user_dispatch: Send ordinary signals on failure
+      signal/sparc32: Exit with a fatal signal when try_to_clear_window_buffer fails
+      signal/sparc32: In setup_rt_frame and setup_fram use force_fatal_sig
+      signal/x86: In emulate_vsyscall force a signal instead of calling do_exit
+      exit/rtl8723bs: Replace the macro thread_exit with a simple return 0
+      exit/rtl8712: Replace the macro thread_exit with a simple return 0
+      exit/r8188eu: Replace the macro thread_exit with a simple return 0
+
+ arch/mips/kernel/r2300_fpu.S                       |  4 ++--
+ arch/mips/kernel/syscall.c                         |  9 --------
+ arch/nds32/kernel/traps.c                          |  2 +-
+ arch/nds32/mm/fault.c                              |  6 +----
+ arch/openrisc/kernel/traps.c                       |  2 +-
+ arch/openrisc/mm/fault.c                           |  4 +---
+ arch/powerpc/kernel/signal_32.c                    |  6 +++--
+ arch/powerpc/kernel/signal_64.c                    |  9 +++++---
+ arch/s390/include/asm/kdebug.h                     |  2 +-
+ arch/s390/kernel/dumpstack.c                       |  2 +-
+ arch/s390/kernel/traps.c                           |  2 +-
+ arch/s390/mm/fault.c                               |  2 --
+ arch/sh/kernel/cpu/fpu.c                           | 10 +++++----
+ arch/sh/kernel/traps.c                             |  2 +-
+ arch/sh/mm/fault.c                                 |  2 --
+ arch/sparc/kernel/signal_32.c                      |  4 ++--
+ arch/sparc/kernel/windows.c                        |  6 +++--
+ arch/sparc/mm/fault_32.c                           |  1 -
+ arch/sparc/mm/tsb.c                                |  2 +-
+ arch/x86/entry/vsyscall/vsyscall_64.c              |  3 ++-
+ arch/x86/kernel/doublefault_32.c                   |  3 ---
+ arch/x86/kernel/signal.c                           |  6 ++++-
+ arch/x86/kernel/vm86_32.c                          |  8 +++----
+ arch/xtensa/kernel/traps.c                         |  2 +-
+ arch/xtensa/mm/fault.c                             |  3 +--
+ drivers/firmware/stratix10-svc.c                   |  4 ++--
+ drivers/soc/ti/wkup_m3_ipc.c                       |  2 +-
+ drivers/staging/r8188eu/core/rtw_cmd.c             |  2 +-
+ drivers/staging/r8188eu/core/rtw_mp.c              |  2 +-
+ drivers/staging/r8188eu/include/osdep_service.h    |  2 --
+ drivers/staging/rtl8712/osdep_service.h            |  1 -
+ drivers/staging/rtl8712/rtl8712_cmd.c              |  2 +-
+ drivers/staging/rtl8723bs/core/rtw_cmd.c           |  2 +-
+ drivers/staging/rtl8723bs/core/rtw_xmit.c          |  2 +-
+ drivers/staging/rtl8723bs/hal/rtl8723bs_xmit.c     |  2 +-
+ .../rtl8723bs/include/osdep_service_linux.h        |  2 --
+ fs/ocfs2/journal.c                                 |  5 +----
+ include/linux/sched/signal.h                       |  1 +
+ kernel/entry/syscall_user_dispatch.c               | 12 ++++++----
+ kernel/kthread.c                                   |  2 +-
+ kernel/reboot.c                                    |  1 -
+ kernel/signal.c                                    | 26 ++++++++++++++--------
+ net/batman-adv/tp_meter.c                          |  2 +-
+ 43 files changed, 83 insertions(+), 91 deletions(-)
+
+Eric
