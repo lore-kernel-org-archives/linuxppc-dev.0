@@ -2,21 +2,21 @@ Return-Path: <SRS0=LDiU=PI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50C14C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 16:58:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4AD3C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 17:35:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B995761374
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 16:58:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B995761374
+	by mail.kernel.org (Postfix) with ESMTPS id 1012B60F57
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 17:35:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1012B60F57
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HZGyj1mYpz3c5b
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 03:58:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HZHnF1y4nz3c6m
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 04:35:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lbzwgOun;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kAInaLaM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
@@ -24,78 +24,75 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=lbzwgOun; dkim-atps=neutral
+ header.s=pp1 header.b=kAInaLaM; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HZGxr4C0vz2xX5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2021 03:57:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HZHmQ5lTPz2xt1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2021 04:34:30 +1100 (AEDT)
 Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 19KGpe2d026736; 
- Wed, 20 Oct 2021 12:57:30 -0400
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 19KGpd3a026681; 
+ Wed, 20 Oct 2021 13:34:25 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=subject : to : cc :
  references : from : message-id : date : mime-version : in-reply-to :
  content-type : content-transfer-encoding; s=pp1;
- bh=trLzzqXQ74LpX5eCSDS2/sCA15hX4PPZwwXliX5rAYA=;
- b=lbzwgOunDHUq0I+y9yGzdHiSvzaLW6DFdIQw+Y9BE91X9nlg0WJWVELWMknKc10yecvW
- gjl1YA+RMA0zByaRogqh132LmJo7Fdl8hz5ErLF+snediK7tiPPM7F3LWBiqP+L1jny7
- 2Rq1yC8dQEvdAcF2rvgAi+7WMY+3n8KiGEGNYq39Tiap2IJ743OYtQJjTHueOKxpfti7
- ZdGhghCGzLeND7cqmdiCte2MSlYV6QVf/BFTDzdtNh2JJGuIlXc4Ik+F+ODk2g/fhq2k
- T01mG+wpoP5tMned8mq3SwJ1TbW8GRnCtBk0JGlaw0qee7B+QHUl86cyFTaSsQcTO9AO +g== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3btpg70vn8-1
+ bh=ysXRIWmjWphjDITdTxf/YEnu3zprC2ODZVHoDw9T4pc=;
+ b=kAInaLaM8mdVQX/nM8tWZrNo9qVMacgrc3PQCeFUtHkMIdAgrmqsG0i5La6DkHW05D97
+ 8lUlvRMhSZ9xY6p/AAAQXX3To9jZ/mwXpVAe+87bRoodtNSgF85XSiaxFdxjBlX/r7Lq
+ B77qTg1VrDhBsvjc417e+NYvmzkbeLowDeLXmIn64iZ2pFmWfIz1E2WIfecuQv4uyPzp
+ 3JeHDXvLy9gePXRkQh5gTs3HgnAWddDYnN8qz4r73xMxSpWwtWGzSHtw4wRveJaEelqR
+ +9lk9PGqv0/HSXnac2ItUYFfL1E9iubE/yJ4Xf6RKpr4zfQ56kr+AXhqxaJoBigd9Fyp sg== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3btpg71q1b-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 20 Oct 2021 12:57:30 -0400
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 19KGs652031779;
- Wed, 20 Oct 2021 12:57:29 -0400
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3btpg70vmn-1
+ Wed, 20 Oct 2021 13:34:25 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 19KHHWun028239;
+ Wed, 20 Oct 2021 17:34:24 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma03dal.us.ibm.com with ESMTP id 3bqpcc65ct-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 20 Oct 2021 12:57:29 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 19KGvSDq000882;
- Wed, 20 Oct 2021 16:57:28 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma04wdc.us.ibm.com with ESMTP id 3bqpcbspgp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 20 Oct 2021 16:57:28 +0000
+ Wed, 20 Oct 2021 17:34:24 +0000
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 19KGvQMq42336660
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 19KHYMsX34472378
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 20 Oct 2021 16:57:26 GMT
+ Wed, 20 Oct 2021 17:34:22 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A81F7C6073;
- Wed, 20 Oct 2021 16:57:26 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 9C468C605A;
+ Wed, 20 Oct 2021 17:34:22 +0000 (GMT)
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CC1A8C6062;
- Wed, 20 Oct 2021 16:57:24 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 9BE03C605B;
+ Wed, 20 Oct 2021 17:34:21 +0000 (GMT)
 Received: from oc6857751186.ibm.com (unknown [9.65.235.71])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 20 Oct 2021 16:57:24 +0000 (GMT)
-Subject: Re: [PATCH] PCI/hotplug: Remove unneeded of_node_put() in pnv_php
-To: Nathan Lynch <nathanl@linux.ibm.com>, Wan Jiabing <wanjiabing@vivo.com>
-References: <20211020094604.2106-1-wanjiabing@vivo.com>
- <87tuhcx6v6.fsf@linux.ibm.com>
+ Wed, 20 Oct 2021 17:34:21 +0000 (GMT)
+Subject: Re: [PATCH] powerpc/pseries/mobility: ignore ibm, platform-facilities
+ updates
+To: Nathan Lynch <nathanl@linux.ibm.com>
+References: <20211018163424.2491472-1-nathanl@linux.ibm.com>
+ <6de8b295-112f-651e-a18e-3ab3e499ad69@linux.ibm.com>
+ <87zgr4y9x4.fsf@linux.ibm.com>
+ <669cb321-7e7f-e45b-a7a1-7002d8371080@linux.ibm.com>
+ <87r1cfy9m8.fsf@linux.ibm.com>
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
-Message-ID: <0622b8ea-7587-2e6b-5558-fae1847b14b9@linux.ibm.com>
-Date: Wed, 20 Oct 2021 09:57:23 -0700
+Message-ID: <718b4eb3-f001-d5c3-c238-69f49f750ec5@linux.ibm.com>
+Date: Wed, 20 Oct 2021 10:34:20 -0700
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.13.0
 MIME-Version: 1.0
-In-Reply-To: <87tuhcx6v6.fsf@linux.ibm.com>
+In-Reply-To: <87r1cfy9m8.fsf@linux.ibm.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: UQqsjwRes6ukURU9LcuVM2CbxBr-x2Cg
-X-Proofpoint-ORIG-GUID: mfaW1Nz8f-BHa00nn_2yLtUZbY8oSQtP
+X-Proofpoint-GUID: INZNRBEI4ZJQvmLwD-sIGWV_g4BAD7fC
+X-Proofpoint-ORIG-GUID: INZNRBEI4ZJQvmLwD-sIGWV_g4BAD7fC
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
  definitions=2021-10-20_05,2021-10-20_02,2020-04-07_01
@@ -104,7 +101,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  clxscore=1015 bulkscore=0 phishscore=0 priorityscore=1501 spamscore=0
  suspectscore=0 mlxlogscore=999 adultscore=0 malwarescore=0
  lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2109230001 definitions=main-2110200092
+ engine=8.12.0-2109230001 definitions=main-2110200098
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,47 +113,150 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Bjorn Helgaas <bhelgaas@google.com>,
- kael_w@yeah.net, linuxppc-dev@lists.ozlabs.org
+Cc: cheloha@linux.ibm.com, ldufour@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/20/21 4:39 AM, Nathan Lynch wrote:
-> Wan Jiabing <wanjiabing@vivo.com> writes:
->> Fix following coccicheck warning:
->> ./drivers/pci/hotplug/pnv_php.c:161:2-13: ERROR: probable double put.
+On 10/20/21 8:54 AM, Nathan Lynch wrote:
+> Tyrel Datwyler <tyreld@linux.ibm.com> writes:
+>> On 10/19/21 2:36 PM, Nathan Lynch wrote:
+>>> Tyrel Datwyler <tyreld@linux.ibm.com> writes:
+>>>> On 10/18/21 9:34 AM, Nathan Lynch wrote:
+>>>>> On VMs with NX encryption, compression, and/or RNG offload, these
+>>>>> capabilities are described by nodes in the ibm,platform-facilities device
+>>>>> tree hierarchy:
+>>>>>
+>>>>>   $ tree -d /sys/firmware/devicetree/base/ibm,platform-facilities/
+>>>>>   /sys/firmware/devicetree/base/ibm,platform-facilities/
+>>>>>   ├── ibm,compression-v1
+>>>>>   ├── ibm,random-v1
+>>>>>   └── ibm,sym-encryption-v1
+>>>>>
+>>>>>   3 directories
+>>>>>
+>>>>> The acceleration functions that these nodes describe are not disrupted by
+>>>>> live migration, not even temporarily.
+>>>>>
+>>>>> But the post-migration ibm,update-nodes sequence firmware always sends
+>>>>> "delete" messages for this hierarchy, followed by an "add" directive to
+>>>>> reconstruct it via ibm,configure-connector (log with debugging statements
+>>>>> enabled in mobility.c):
+>>>>>
+>>>>>   mobility: removing node /ibm,platform-facilities/ibm,random-v1:4294967285
+>>>>>   mobility: removing node /ibm,platform-facilities/ibm,compression-v1:4294967284
+>>>>>   mobility: removing node /ibm,platform-facilities/ibm,sym-encryption-v1:4294967283
+>>>>>   mobility: removing node /ibm,platform-facilities:4294967286
+>>>>>   ...
+>>>>>   mobility: added node /ibm,platform-facilities:4294967286
+>>>>
+>>>> It always bothered me that the update from firmware here was an delete/add at
+>>>> the entire '/ibm,platform-facilities' node level instead of update properties
+>>>> calls. When I asked about it years ago the claim was it was just easier to pass
+>>>> an entire sub-tree as a single node add.
+>>>
+>>> Yes, I believe this is for ease of implementation on their part.
 >>
->> Device node iterators put the previous value of the index variable, so
->> an explicit put causes a double put.
+>> I'd still argue that a full node removal or addition is a platform
+>> reconfiguration on par with a hotplug operation.
 > 
-> I suppose Coccinelle doesn't take into account that this code is
-> detaching and freeing the nodes.
+> Well... I think we might be better served by a slightly more flexible
+> view of things :-) These are just a series of messages from firmware
+> that should be considered as a whole, and they don't dictate exactly
+> what the OS must do to its own data structures. Nothing mandates that
+> the OS immediately and literally apply the changes as they are
+> individually reported by the update-nodes sequence.
+
+Agree to disagree. Not saying we can do much about it here, but I think being
+flexible leads to scope creep down the road that may eventually complicate
+things worse. A node removal doesn't guarantee an immediate node addition. So we
+are just papering over the issue with a plan to paper over it some more in a
+more complicated fashion.
+
+> 
+> Anyway, whether the firmware behavior is reasonable is sort of beside
+> the point since we're stuck with it.
+
+I'm aware. Moaning for the sake of moaning about it.
+
 > 
 > 
->> diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
->> index f4c2e6e01be0..f3da4f95d73f 100644
->> --- a/drivers/pci/hotplug/pnv_php.c
->> +++ b/drivers/pci/hotplug/pnv_php.c
->> @@ -158,7 +158,6 @@ static void pnv_php_detach_device_nodes(struct device_node *parent)
->>  	for_each_child_of_node(parent, dn) {
->>  		pnv_php_detach_device_nodes(dn);
->>  
->> -		of_node_put(dn);
->>  		of_detach_node(dn);
->>  	}
+>>>>> This is because add_dt_node() -> dlpar_attach_node() attaches only the
+>>>>> parent node returned from configure-connector, ignoring any children. This
+>>>>> should be corrected for the general case, but fixing that won't help with
+>>>>> the stale OF node references, which is the more urgent problem.
+>>>>
+>>>> I don't follow. If the code path you mention is truly broken in the way you say
+>>>> then DLPAR operations involving nodes with child nodes should also be
+>>>> broken.
+>>>
+>>> Hmm I don't know of any kernel-based DLPAR workflow that attaches
+>>> sub-trees i.e. parent + children. Processor addition attaches CPU nodes
+>>> and possibly cache nodes, but they have sibling relationships. If you're
+>>> thinking of I/O adapters, the DT updates are (still!) driven from user
+>>> space. As undesirable as that is, that use case actually works correctly
+>>> AFAIK.
+>>>
+>>> What happens for the platfac LPM scenario is that
+>>> dlpar_configure_connector() returns the node pointer for the root
+>>> ibm,platform-facilities node, with children attached. That node pointer
+>>> is passed from add_dt_node() -> dlpar_attach_node() -> of_attach_node()
+>>> -> __of_attach_node(), where its child and sibling fields are
+>>> overwritten in the process of attaching it to the tree.
+>>
+>> Well it worked back in 2013 when I got all the in kernel device tree update
+>> stuff working. Looks like I missed this one which now explains one area where
+>> platform-facilities update originally went to shit.
+>>
+>> commit 6162dbe49a451f96431a23b4821f05e3bd925bc1
+>> Author: Grant Likely <grant.likely@linaro.org>
+>> Date:   Wed Jul 16 08:48:46 2014 -0600
+>>
+>>     of: Make sure attached nodes don't carry along extra children
+>>
+>>     The child pointer does not get cleared when attaching new nodes which
+>>     could cause the tree to be inconsistent. Clear the child pointer in
+>>     __of_attach_node() to be absolutely sure that the structure remains in a
+>>     consistent layout.
+>>
+>>     Signed-off-by: Grant Likely <grant.likely@linaro.org>
+>>
+>> diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
+>> index c875787fa394..b96d83100987 100644
+>> --- a/drivers/of/dynamic.c
+>> +++ b/drivers/of/dynamic.c
+>> @@ -98,6 +98,7 @@ int of_property_notify(int action, struct device_node *np,
+>>
+>>  void __of_attach_node(struct device_node *np)
+>>  {
+>> +       np->child = NULL;
+>>         np->sibling = np->parent->child;
+>>         np->allnext = np->parent->allnext;
+>>         np->parent->allnext = np;
+>>
+>> Not sure what the reasoning was here since this prevents attaching a node that
+>> is a sub tree. Either need to revert that, rewrite dlpar_attach_node to iterate
+>> over the sub-tree, or probably best rewrite dlpar_configure_connector to use a
+>> of_changeset instead.
 > 
-> The code might be improved by comments explaining how the bare
-> of_node_put() corresponds to a "get" somewhere else in the driver, and
-> how it doesn't render the ongoing traversal unsafe. It looks suspicious
-> on first review, but I believe it's intentional and probably correct as
-> written.
+> Good find. I'd guess that adding a subtree used to sort of work, except
+> that children of np were not added to the allnext list, which would
+> effectively hide them from some lookups.
+
+Pretty sure allnodes/allnext list is a relic of the past. It guaranteed depth
+first traversal after boot, but dynamic nodes broke that guarantee. It was
+removed because you can make the same traversal via the parent<->child lists.
+
+> 
+> Regardless, yes, the pseries code needs to change to attach and detach
+> nodes individually. I don't think the OF core supports more complex
+> changes.
 > 
 
-This is a common usage pattern which if we put a comment about the pattern here
-we need to do it every where. I suppose a better solution is to wrap this put in
-a more descriptive function name like of_node_long_put() or something of the
-sort the makes it obvious we are dropping a long held global scope reference.
+Indeed. I clearly capitalized on the behavior at the time while missing the
+intended usage.
 
 -Tyrel
+
+
+
