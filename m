@@ -2,102 +2,38 @@ Return-Path: <SRS0=LDiU=PI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4DD9C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 11:40:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B4CEC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 13:23:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3EF5860FD8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 11:40:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3EF5860FD8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 305CE610CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 13:23:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 305CE610CB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HZ7w35Qhyz3c8d
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 22:40:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q5EIhJrD;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HZBCB2xNbz3cN9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 00:23:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Q5EIhJrD; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HZ7vF3gjZz2xX1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Oct 2021 22:39:53 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 19KB2IV5009931; 
- Wed, 20 Oct 2021 07:39:44 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=78CZtA7DJdQ43AWjO1ZaxKgwY7Q4hbCToV2KM4D1BBc=;
- b=Q5EIhJrDx095fiaymSsE8mix8Bseu5owxC21Qw4q1wIAXodJi1XYW8TiYJgBcBDkMpqi
- 13PcJT8IOu6G3/L6W5roW18bbUsSUc1Z6QMFFwbVb2pkU87XrI/ZWapcAWmz7w1BgURk
- leVwy8IMOcKCCAar3W2/UCqdD7smwAAJ28pYZAcifPPsXidKCJeCA6lsrEFnXrNg9xUy
- gPqAc3hLE/kgkcfiIKLtvaxkPqjlDZmDrlTOruA54mfk2Cs0Nlqrn1b3/bbUeOAbMs3A
- /aL5Pvip+QbU80655+Ni28sY584BkgT9YxTDftVULpEyPJTBx/cgzlLjmURHMBO7r8Pw YA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3btffvktab-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 20 Oct 2021 07:39:44 -0400
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 19KBPhWI031782;
- Wed, 20 Oct 2021 07:39:43 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3btffvkta3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 20 Oct 2021 07:39:43 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 19KBY0XB002979;
- Wed, 20 Oct 2021 11:39:42 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma01wdc.us.ibm.com with ESMTP id 3bqpcbk3gh-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 20 Oct 2021 11:39:42 +0000
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 19KBdgn742008842
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 20 Oct 2021 11:39:42 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 02686B2070;
- Wed, 20 Oct 2021 11:39:42 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B1900B206B;
- Wed, 20 Oct 2021 11:39:41 +0000 (GMT)
-Received: from localhost (unknown [9.211.47.38])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 20 Oct 2021 11:39:41 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: Wan Jiabing <wanjiabing@vivo.com>
-Subject: Re: [PATCH] PCI/hotplug: Remove unneeded of_node_put() in pnv_php
-In-Reply-To: <20211020094604.2106-1-wanjiabing@vivo.com>
-References: <20211020094604.2106-1-wanjiabing@vivo.com>
-Date: Wed, 20 Oct 2021 06:39:41 -0500
-Message-ID: <87tuhcx6v6.fsf@linux.ibm.com>
+ smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4HZBBk47Gdz2yLZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2021 00:23:25 +1100 (AEDT)
+Received: from fstn1-p1.ozlabs.ibm.com. (localhost [IPv6:::1])
+ by ozlabs.ru (Postfix) with ESMTP id 3B590AE80212;
+ Wed, 20 Oct 2021 09:23:22 -0400 (EDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel 1/4] powerpc/pseries/iommu: Fix indentations
+Date: Thu, 21 Oct 2021 00:23:12 +1100
+Message-Id: <20211020132315.2287178-2-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20211020132315.2287178-1-aik@ozlabs.ru>
+References: <20211020132315.2287178-1-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 3m8auIF7k-yix6-D2F7RV_h5zyUfgNLu
-X-Proofpoint-ORIG-GUID: jEAV2QbqvK3Pv4qQVHoe99gfkW1sGJfZ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
- definitions=2021-10-20_04,2021-10-20_01,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0
- suspectscore=0 lowpriorityscore=0 malwarescore=0 clxscore=1011 spamscore=0
- mlxscore=0 phishscore=0 mlxlogscore=999 adultscore=0 priorityscore=1501
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2109230001 definitions=main-2110200066
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,39 +45,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, Wan Jiabing <wanjiabing@vivo.com>,
- ajd@linux.ibm.com, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Bjorn Helgaas <bhelgaas@google.com>,
- kael_w@yeah.net, linuxppc-dev@lists.ozlabs.org
+Cc: Frederic Barrat <fbarrat@linux.ibm.com>, Brian King <brking@linux.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Leonardo Bras <leobras.c@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Wan Jiabing <wanjiabing@vivo.com> writes:
-> Fix following coccicheck warning:
-> ./drivers/pci/hotplug/pnv_php.c:161:2-13: ERROR: probable double put.
->
-> Device node iterators put the previous value of the index variable, so
-> an explicit put causes a double put.
+This fixes broken indentations. The first hunk might suggest that
+the introducing patch was applied incorrectly but it is correct.
 
-I suppose Coccinelle doesn't take into account that this code is
-detaching and freeing the nodes.
+Fixes: 381ceda88c4c ("powerpc/pseries/iommu: Make use of DDW for indirect mapping")
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/platforms/pseries/iommu.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 269f61d519c2..09d59088864a 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -1404,8 +1404,8 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 			dev_info(&dev->dev, "failed to map DMA window for %pOF: %d\n",
+ 				 dn, ret);
+ 
+-		/* Make sure to clean DDW if any TCE was set*/
+-		clean_dma_window(pdn, win64->value);
++			/* Make sure to clean DDW if any TCE was set*/
++			clean_dma_window(pdn, win64->value);
+ 			goto out_del_list;
+ 		}
+ 	} else {
+@@ -1490,7 +1490,7 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	if (pmem_present && ddw_enabled && direct_mapping && len == max_ram_len)
+ 		dev->dev.bus_dma_limit = dev->dev.archdata.dma_offset + (1ULL << len);
+ 
+-    return ddw_enabled && direct_mapping;
++	return ddw_enabled && direct_mapping;
+ }
+ 
+ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+-- 
+2.30.2
 
-> diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-> index f4c2e6e01be0..f3da4f95d73f 100644
-> --- a/drivers/pci/hotplug/pnv_php.c
-> +++ b/drivers/pci/hotplug/pnv_php.c
-> @@ -158,7 +158,6 @@ static void pnv_php_detach_device_nodes(struct device_node *parent)
->  	for_each_child_of_node(parent, dn) {
->  		pnv_php_detach_device_nodes(dn);
->  
-> -		of_node_put(dn);
->  		of_detach_node(dn);
->  	}
-
-The code might be improved by comments explaining how the bare
-of_node_put() corresponds to a "get" somewhere else in the driver, and
-how it doesn't render the ongoing traversal unsafe. It looks suspicious
-on first review, but I believe it's intentional and probably correct as
-written.
