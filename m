@@ -2,70 +2,83 @@ Return-Path: <SRS0=LDiU=PI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD264C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 01:43:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34436C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 05:08:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 07A4B610E5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 01:43:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 07A4B610E5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id B4DEE60FED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 05:08:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B4DEE60FED
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HYtfj2P8yz3cTH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 12:43:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HYzCB62vYz2ynr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 16:08:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=WAEM778o;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.160.180;
- helo=mail-qt1-f180.google.com; envelope-from=pku.leo@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::536;
+ helo=mail-pg1-x536.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
-Received: from mail-qt1-f180.google.com (mail-qt1-f180.google.com
- [209.85.160.180])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=WAEM778o; dkim-atps=neutral
+Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com
+ [IPv6:2607:f8b0:4864:20::536])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HYtfD0MGkz2yWL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Oct 2021 12:42:42 +1100 (AEDT)
-Received: by mail-qt1-f180.google.com with SMTP id w2so1777787qtn.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Oct 2021 18:42:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HYzBN0kLCz2yPc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Oct 2021 16:07:21 +1100 (AEDT)
+Received: by mail-pg1-x536.google.com with SMTP id f5so21415984pgc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Oct 2021 22:07:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=date:from:subject:to:references:in-reply-to:mime-version:message-id
+ :content-transfer-encoding;
+ bh=4qRBUl8ilMlL7AbhZCVhfXHYvfLZs40f6ZLuXJgV5AI=;
+ b=WAEM778o+/VP+r2gZ2bkH1Jt+KVxf92NQkaEw2iYlfvl77qgYQst421IMaiHbTxulC
+ 6FOAH2zkxIK6kSL+bBJID9iILSq1Dd4EgtW1R2vgIRjdFavE0CsEvEEFedm5juJa68k7
+ GdDcMFp15pLkVpOXtpr+XhECTxrpaUl3gMDMu+AhJYf6PyWMpRR52zEzYu/4sgdhMbQ8
+ 7tUtBN8i5SwfAxJFVYwDIBgvWNkbKqUdw40L/7pfBUIiauClatiaP1oI6nZoyVBmnnBr
+ uZQLlbOp26uTGiNuJnoVQFCaq0Rt7okM3IULuoGRH01BnCcT/ytaH5VpRvgjuDngG/UF
+ lzsA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=phuizum7Jvmwq/i5uKXc0tZWrbM+XXyJMZ25fUOpTLs=;
- b=0D22pzHvHBDBwDaGLJ4q4JHnV9zlNRjTkRu4Kc5jlM0UNQ+tC4Xk+poOZmundcaANj
- y4j+3Z7y3GDwEvyC2+s6y1L99R1kZq6+ApeoWh3EzTbFl5aUheC+aemmAVc2O8EygCXJ
- vM0FocvRMBugCx2upEwME0lqQjRByAOrhgsgq0GcmNtFRvY3dXIiEGinTAY+LhFEGEdC
- 9WxHBYb/M8cBix0UNZJPAbCvJlPQqYowox8f5Ne3jHlNsobrwu/7d3UQ3CvXI30fHcVb
- AAn131fKf68X6OMk5v7Q8SR6O4OVz/ceou6TEiGrWaEk/1y0eTeflrtIr2S3078Wnf6C
- ZZRw==
-X-Gm-Message-State: AOAM531QjXfWGj7UCaGUNHBIQgOPN84M78L234PDMkHlQB3P0v6AGyN3
- Q/IFFZuVIVk+XcgKqF8B3uq/92TahRw=
-X-Google-Smtp-Source: ABdhPJxajQ+Nzpy+/3pTV7V8l11UlD9HzCI8ibv4Wr+a4q9zKOY9a2TVodYzELJj54Wq24+6rq/cbw==
-X-Received: by 2002:ac8:578c:: with SMTP id v12mr3888257qta.400.1634694158979; 
- Tue, 19 Oct 2021 18:42:38 -0700 (PDT)
-Received: from mail-qt1-f170.google.com (mail-qt1-f170.google.com.
- [209.85.160.170])
- by smtp.gmail.com with ESMTPSA id y22sm366687qkj.93.2021.10.19.18.42.38
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 19 Oct 2021 18:42:38 -0700 (PDT)
-Received: by mail-qt1-f170.google.com with SMTP id r17so1697760qtx.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Oct 2021 18:42:38 -0700 (PDT)
-X-Received: by 2002:a05:622a:1050:: with SMTP id
- f16mr3965552qte.127.1634694158181; 
- Tue, 19 Oct 2021 18:42:38 -0700 (PDT)
+ h=x-gm-message-state:date:from:subject:to:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=4qRBUl8ilMlL7AbhZCVhfXHYvfLZs40f6ZLuXJgV5AI=;
+ b=DVZkdjFKL2kgV6Uqs8svdHTP5eA6F7+/h25ExIevXFv+nd0muBjM3wvOePDK2cU1Of
+ UvPYQrd+nAoyv8wwtoUs0skxRZ78OJF0DX7KLFBKUEWei+81bZFn5tzs0ujQXLKoL6e2
+ Zs7Wa0ZKWqA7pfVA/+xCtKqUAEUDz+HU5mz3mz6UmLGEDiktitGqH/Q+KJ7xaUb0a+dj
+ G8u5Rq8EaQokBJfjNVLQ5Xjg16BPUUa0LZKMOfTWYPFavQu/zv/BEtqD0aGZLaH/I7T5
+ 75Va+iqOB+KkFLA3ItwPjhUlOtqmwQAOXD9DdFgmIx42EX3r1HgMfTMTuvkC0yLBLVP9
+ Q9Ew==
+X-Gm-Message-State: AOAM533Qyo9fjfcca3JnK+E9JEvxrLMygr2h08UD4A3u4PIImVL5G7vq
+ /o17SvLACskcPkl30gXJP/sXGYk0v0g=
+X-Google-Smtp-Source: ABdhPJzgYvv5sWIZw2yJE7yfdK9XMhuQIeN/E3L//oHL80gvJAWrnhL0dqq/DVL6PMnw1fzjqaR3qQ==
+X-Received: by 2002:a63:b007:: with SMTP id h7mr31507596pgf.443.1634706435088; 
+ Tue, 19 Oct 2021 22:07:15 -0700 (PDT)
+Received: from localhost (14-203-144-177.static.tpgi.com.au. [14.203.144.177])
+ by smtp.gmail.com with ESMTPSA id
+ r31sm4353852pjg.28.2021.10.19.22.07.13
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 19 Oct 2021 22:07:14 -0700 (PDT)
+Date: Wed, 20 Oct 2021 15:07:09 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v1 04/11] powerpc/64s: Move and rename do_bad_slb_fault as
+ it is not hash specific
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20211015154624.922960-1-npiggin@gmail.com>
+ <20211015154624.922960-5-npiggin@gmail.com>
+ <80ea8862-0843-02ae-791c-5c921c19803f@csgroup.eu>
+In-Reply-To: <80ea8862-0843-02ae-791c-5c921c19803f@csgroup.eu>
 MIME-Version: 1.0
-References: <20211019030555.29461-1-Meng.Li@windriver.com>
-In-Reply-To: <20211019030555.29461-1-Meng.Li@windriver.com>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Tue, 19 Oct 2021 20:42:27 -0500
-X-Gmail-Original-Message-ID: <CADRPPNSuZ9Jidm7tg+BTu_iwbxHE8i+1J3wkPLF0CZuGNd3RDg@mail.gmail.com>
-Message-ID: <CADRPPNSuZ9Jidm7tg+BTu_iwbxHE8i+1J3wkPLF0CZuGNd3RDg@mail.gmail.com>
-Subject: Re: [PATCH] driver: soc: dpio: use the whole functions to protect
- critical zone
-To: Meng.Li@windriver.com
-Content-Type: text/plain; charset="UTF-8"
+Message-Id: <1634700588.gkw9nsnrzr.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,102 +90,138 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Youri Querry <youri.querry_1@nxp.com>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, lkml <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 18, 2021 at 10:07 PM <Meng.Li@windriver.com> wrote:
->
-> From: Meng Li <Meng.Li@windriver.com>
->
-> In orininal code, use 2 function spin_lock() and local_irq_save() to
-> protect the critical zone. But when enable the kernel debug config,
-> there are below inconsistent lock state detected.
-> ================================
-> WARNING: inconsistent lock state
-> 5.10.63-yocto-standard #1 Not tainted
-> --------------------------------
-> inconsistent {SOFTIRQ-ON-W} -> {IN-SOFTIRQ-W} usage.
-> lock_torture_wr/226 [HC0[0]:SC1[5]:HE1:SE0] takes:
-> ffff002005b2dd80 (&p->access_spinlock){+.?.}-{3:3}, at: qbman_swp_enqueue_multiple_mem_back+0x44/0x270
-> {SOFTIRQ-ON-W} state was registered at:
->   lock_acquire.part.0+0xf8/0x250
->   lock_acquire+0x68/0x84
->   _raw_spin_lock+0x68/0x90
->   qbman_swp_enqueue_multiple_mem_back+0x44/0x270
->   ......
->   cryptomgr_test+0x38/0x60
->   kthread+0x158/0x164
->   ret_from_fork+0x10/0x38
-> irq event stamp: 4498
-> hardirqs last  enabled at (4498): [<ffff800010fcf980>] _raw_spin_unlock_irqrestore+0x90/0xb0
-> hardirqs last disabled at (4497): [<ffff800010fcffc4>] _raw_spin_lock_irqsave+0xd4/0xe0
-> softirqs last  enabled at (4458): [<ffff8000100108c4>] __do_softirq+0x674/0x724
-> softirqs last disabled at (4465): [<ffff80001005b2a4>] __irq_exit_rcu+0x190/0x19c
->
-> other info that might help us debug this:
->  Possible unsafe locking scenario:
->        CPU0
->        ----
->   lock(&p->access_spinlock);
->   <Interrupt>
->     lock(&p->access_spinlock);
->  *** DEADLOCK ***
->
-> So, in order to avoid deadlock, use the whole functinos
+Excerpts from Christophe Leroy's message of October 19, 2021 3:09 am:
+>=20
+>=20
+> Le 15/10/2021 =C3=A0 17:46, Nicholas Piggin a =C3=A9crit=C2=A0:
+>> slb.c is hash-specific SLB management, but do_bad_slb_fault deals with
+>> segment interrupts that occur with radix MMU as well.
+>> ---
+>>   arch/powerpc/include/asm/interrupt.h |  2 +-
+>>   arch/powerpc/kernel/exceptions-64s.S |  4 ++--
+>>   arch/powerpc/mm/book3s64/slb.c       | 16 ----------------
+>>   arch/powerpc/mm/fault.c              | 17 +++++++++++++++++
+>>   4 files changed, 20 insertions(+), 19 deletions(-)
+>>=20
+>> diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include=
+/asm/interrupt.h
+>> index a1d238255f07..3487aab12229 100644
+>> --- a/arch/powerpc/include/asm/interrupt.h
+>> +++ b/arch/powerpc/include/asm/interrupt.h
+>> @@ -564,7 +564,7 @@ DECLARE_INTERRUPT_HANDLER(kernel_bad_stack);
+>>  =20
+>>   /* slb.c */
+>>   DECLARE_INTERRUPT_HANDLER_RAW(do_slb_fault);
+>> -DECLARE_INTERRUPT_HANDLER(do_bad_slb_fault);
+>> +DECLARE_INTERRUPT_HANDLER(do_bad_segment_interrupt);
+>>  =20
+>>   /* hash_utils.c */
+>>   DECLARE_INTERRUPT_HANDLER_RAW(do_hash_fault);
+>> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/=
+exceptions-64s.S
+>> index eaf1f72131a1..046c99e31d01 100644
+>> --- a/arch/powerpc/kernel/exceptions-64s.S
+>> +++ b/arch/powerpc/kernel/exceptions-64s.S
+>> @@ -1430,7 +1430,7 @@ MMU_FTR_SECTION_ELSE
+>>   ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
+>>   	std	r3,RESULT(r1)
+>>   	addi	r3,r1,STACK_FRAME_OVERHEAD
+>> -	bl	do_bad_slb_fault
+>> +	bl	do_bad_segment_interrupt
+>>   	b	interrupt_return_srr
+>>  =20
+>>  =20
+>> @@ -1510,7 +1510,7 @@ MMU_FTR_SECTION_ELSE
+>>   ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
+>>   	std	r3,RESULT(r1)
+>>   	addi	r3,r1,STACK_FRAME_OVERHEAD
+>> -	bl	do_bad_slb_fault
+>> +	bl	do_bad_segment_interrupt
+>>   	b	interrupt_return_srr
+>>  =20
+>>  =20
+>> diff --git a/arch/powerpc/mm/book3s64/slb.c b/arch/powerpc/mm/book3s64/s=
+lb.c
+>> index f0037bcc47a0..31f4cef3adac 100644
+>> --- a/arch/powerpc/mm/book3s64/slb.c
+>> +++ b/arch/powerpc/mm/book3s64/slb.c
+>> @@ -868,19 +868,3 @@ DEFINE_INTERRUPT_HANDLER_RAW(do_slb_fault)
+>>   		return err;
+>>   	}
+>>   }
+>> -
+>> -DEFINE_INTERRUPT_HANDLER(do_bad_slb_fault)
+>> -{
+>> -	int err =3D regs->result;
+>> -
+>> -	if (err =3D=3D -EFAULT) {
+>> -		if (user_mode(regs))
+>> -			_exception(SIGSEGV, regs, SEGV_BNDERR, regs->dar);
+>> -		else
+>> -			bad_page_fault(regs, SIGSEGV);
+>> -	} else if (err =3D=3D -EINVAL) {
+>> -		unrecoverable_exception(regs);
+>> -	} else {
+>> -		BUG();
+>> -	}
+>> -}
+>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+>> index a8d0ce85d39a..53ddcae0ac9e 100644
+>> --- a/arch/powerpc/mm/fault.c
+>> +++ b/arch/powerpc/mm/fault.c
+>> @@ -35,6 +35,7 @@
+>>   #include <linux/kfence.h>
+>>   #include <linux/pkeys.h>
+>>  =20
+>> +#include <asm/asm-prototypes.h>
+>>   #include <asm/firmware.h>
+>>   #include <asm/interrupt.h>
+>>   #include <asm/page.h>
+>> @@ -620,4 +621,20 @@ DEFINE_INTERRUPT_HANDLER(do_bad_page_fault_segv)
+>>   {
+>>   	bad_page_fault(regs, SIGSEGV);
+>>   }
+>> +
+>> +DEFINE_INTERRUPT_HANDLER(do_bad_segment_interrupt)
+>> +{
+>> +	int err =3D regs->result;
+>> +
+>> +	if (err =3D=3D -EFAULT) {
+>> +		if (user_mode(regs))
+>> +			_exception(SIGSEGV, regs, SEGV_BNDERR, regs->dar);
+>> +		else
+>> +			bad_page_fault(regs, SIGSEGV);
+>> +	} else if (err =3D=3D -EINVAL) {
+>> +		unrecoverable_exception(regs);
+>> +	} else {
+>> +		BUG();
+>> +	}
+>> +}
+>>   #endif
+>>=20
+>=20
+> You could do something more flat:
+>=20
+> 	if (err =3D=3D -EINVAL)
+> 		unrecoverable_exception(regs);
+>=20
+> 	BUG_ON(err !=3D -EFAULT);
+>=20
+> 	if (user_mode(regs))
+> 		_exception(SIGSEGV, regs, SEGV_BNDERR, regs->dar);
+> 	else
+> 		bad_page_fault(regs, SIGSEGV);
+>=20
+> I know you are just moving existing code but moving code is always an=20
+> opportunity to clean it without additional churn.
+>=20
 
-s/functinos/functions/
+Hmm, moving code I prefer not to make any changes. I don't know if it's=20
+that big an improvement to make the change here.
 
-> spin_lock_irqsave/spin_unlock_irqrestore() to protect critical zone.
->
-> Fixes: 3b2abda7d28c ("soc: fsl: dpio: Replace QMAN array mode with ring mode enqueue")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Meng Li <Meng.Li@windriver.com>
-
-Applied for fix.  Thanks.
-
-> ---
->  drivers/soc/fsl/dpio/qbman-portal.c | 9 +++------
->  1 file changed, 3 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/soc/fsl/dpio/qbman-portal.c b/drivers/soc/fsl/dpio/qbman-portal.c
-> index 845e91416b58..a56dbe4de34f 100644
-> --- a/drivers/soc/fsl/dpio/qbman-portal.c
-> +++ b/drivers/soc/fsl/dpio/qbman-portal.c
-> @@ -785,8 +785,7 @@ int qbman_swp_enqueue_multiple_mem_back(struct qbman_swp *s,
->         int i, num_enqueued = 0;
->         unsigned long irq_flags;
->
-> -       spin_lock(&s->access_spinlock);
-> -       local_irq_save(irq_flags);
-> +       spin_lock_irqsave(&s->access_spinlock, irq_flags);
->
->         half_mask = (s->eqcr.pi_ci_mask>>1);
->         full_mask = s->eqcr.pi_ci_mask;
-> @@ -797,8 +796,7 @@ int qbman_swp_enqueue_multiple_mem_back(struct qbman_swp *s,
->                 s->eqcr.available = qm_cyc_diff(s->eqcr.pi_ring_size,
->                                         eqcr_ci, s->eqcr.ci);
->                 if (!s->eqcr.available) {
-> -                       local_irq_restore(irq_flags);
-> -                       spin_unlock(&s->access_spinlock);
-> +                       spin_unlock_irqrestore(&s->access_spinlock, irq_flags);
->                         return 0;
->                 }
->         }
-> @@ -837,8 +835,7 @@ int qbman_swp_enqueue_multiple_mem_back(struct qbman_swp *s,
->         dma_wmb();
->         qbman_write_register(s, QBMAN_CINH_SWP_EQCR_PI,
->                                 (QB_RT_BIT)|(s->eqcr.pi)|s->eqcr.pi_vb);
-> -       local_irq_restore(irq_flags);
-> -       spin_unlock(&s->access_spinlock);
-> +       spin_unlock_irqrestore(&s->access_spinlock, irq_flags);
->
->         return num_enqueued;
->  }
-> --
-> 2.17.1
->
+Thanks,
+Nick
