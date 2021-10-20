@@ -2,35 +2,36 @@ Return-Path: <SRS0=LDiU=PI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24F59C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 13:24:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF055C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 13:24:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 26BDE610A2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 13:24:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 26BDE610A2
+	by mail.kernel.org (Postfix) with ESMTPS id 81CF7610A2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Oct 2021 13:24:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 81CF7610A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HZBCb64Nfz3cV4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 00:24:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HZBD16Pfhz3clB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 00:24:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4HZBBk4PK9z2yPY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2021 00:23:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4HZBCL1P5Yz3cRk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2021 00:23:58 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com. (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 6AB28AE80021;
- Wed, 20 Oct 2021 09:23:18 -0400 (EDT)
+ by ozlabs.ru (Postfix) with ESMTP id EE3F9AE8024B;
+ Wed, 20 Oct 2021 09:23:24 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel 0/4] Fixes for powerpc/pseries/iommu: Make use of DDW
- for indirect mapping
-Date: Thu, 21 Oct 2021 00:23:11 +1100
-Message-Id: <20211020132315.2287178-1-aik@ozlabs.ru>
+Subject: [PATCH kernel 2/4] powerpc/pseries/iommu: Use correct vfree for it_map
+Date: Thu, 21 Oct 2021 00:23:13 +1100
+Message-Id: <20211020132315.2287178-3-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20211020132315.2287178-1-aik@ozlabs.ru>
+References: <20211020132315.2287178-1-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -50,23 +51,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Found some issues on SRIOV enabled PHYP.
-It probably should be one patch, or not?
+The it_map array is vzalloc'ed so use vfree() for it when creating
+a huge DMA window failed for whatever reason.
 
-Please comment. Thanks.
+While at this, write zero to it_map.
 
+Fixes: 381ceda88c4c ("powerpc/pseries/iommu: Make use of DDW for indirect mapping")
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/platforms/pseries/iommu.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-
-Alexey Kardashevskiy (4):
-  powerpc/pseries/iommu: Fix indentations
-  powerpc/pseries/iommu: Use correct vfree for it_map
-  powerpc/pseries/iommu: Check if the default window in use before
-    removing it
-  powerpc/pseries/iommu: Create huge DMA window if no MMIO32 is present
-
- arch/powerpc/platforms/pseries/iommu.c | 33 +++++++++++++-------------
- 1 file changed, 17 insertions(+), 16 deletions(-)
-
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 09d59088864a..45564547cd80 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -1440,7 +1440,8 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 		/* Keep default DMA window stuct if removed */
+ 		if (default_win_removed) {
+ 			tbl->it_size = 0;
+-			kfree(tbl->it_map);
++			vfree(tbl->it_map);
++			tbl->it_map = NULL;
+ 		}
+ 
+ 		set_iommu_table_base(&dev->dev, newtbl);
 -- 
 2.30.2
 
