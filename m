@@ -2,75 +2,76 @@ Return-Path: <SRS0=ebkI=PJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7775EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 22:34:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45BC2C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 22:35:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E56D26128E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 22:34:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E56D26128E
+	by mail.kernel.org (Postfix) with ESMTPS id BE9266128E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 22:35:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BE9266128E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hb2NV4T2hz3djx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Oct 2021 09:34:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hb2PL3cg8z3dnx
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Oct 2021 09:35:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=cIJBVy+e;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=XglZ0OEl;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::433;
- helo=mail-pf1-x433.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62b;
+ helo=mail-pl1-x62b.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=cIJBVy+e; dkim-atps=neutral
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com
- [IPv6:2607:f8b0:4864:20::433])
+ header.s=20210112 header.b=XglZ0OEl; dkim-atps=neutral
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com
+ [IPv6:2607:f8b0:4864:20::62b])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hb2Hh2YY8z3c9T
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Oct 2021 09:30:40 +1100 (AEDT)
-Received: by mail-pf1-x433.google.com with SMTP id v8so1902457pfu.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2021 15:30:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hb2Hl2ZRmz3c8G
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Oct 2021 09:30:43 +1100 (AEDT)
+Received: by mail-pl1-x62b.google.com with SMTP id f21so1418990plb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2021 15:30:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=r+n/orxsGE5Dy6sCMbDmnBv6aqkBCkukdq9o2NqgSIg=;
- b=cIJBVy+eaxVPV7kkePPWvChxtwGhuEUGMQiPz0Y4oymY2fp/HV1NWs9HUfuQTORozz
- qRXAOwQtks3mgfSkbhWMV0GzWIjEyK3WEvd4AHP4gGOmuysB0idMxljlHmLwSvfN0/sa
- TgNOe8y4MlD+dHwXe/cwJN1JJJ9OoZzjVLsT/NlfI038iECUoi4PTX0E9FdrSrBj8tH7
- KMxt3JWhvFFtMv1q/jT+JtcXYlBVXbXBNkvGCrll6ZKZohCCK/06WbSYcVj079QHCwnD
- kxn7XxXtx8MXlNKF8UmxHvZBA6y7jNFRPecSWJDRPZGVCi6kKlXSyHi/8kB/oFcG3Xx+
- dJMA==
+ bh=fkMGzwJAN8TMb4HSI/6ROPkBV/DnMWNyC7fvuDsq7sE=;
+ b=XglZ0OElcy/c/7NJn27nI3AVx3iwyD7hEHxuONDnpIKW8vfOBjaXmH+MCiACDk7gEt
+ IuNgh/yFfZlujQmaSTv/ry8W/QJjRhTGpjzxGZ04p6KaKdE0uhETCBQON94QnekM01ZO
+ BUo2qT+DOo8wjaZZ7ph6Ua/TCgYDDBZ/befIlpIulPGZxHbNLGZvFEzHccLMVanN2fIN
+ JqDnLOfsgA5hCz71b/HwwYbL+tgM6C6Zn+LNVx1sog3ci9vDcHvQEQPaNHR741dqhToE
+ b/N0BdaE/nnTWgRsIXM2IsQKsArHd6WUwZZJ0YThxsAfX6VcPX+jGics8HdyrqJiv3iR
+ xmxA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=r+n/orxsGE5Dy6sCMbDmnBv6aqkBCkukdq9o2NqgSIg=;
- b=xmBZjr8PH7gYT+9+cqojjeyIHCF5wdCZrVcc61UuRJnQC4jNsz8PHZPJFSgj8+r0jO
- OpX923vokqY094XhmYCO3BsXEMaijkgh7xrSZiGk8s1sUFzsUKiNaEpKU33aprTMPrfE
- aSCMnq7CCgUh4r9v+rbjIz8DnPtqL9t4sQasjFqgKRQkpuTMV40o6E+BPjmn7cRoTpL2
- ujDH+kesuhHDRTSphp+a5PsfvoeoaT4AC/f5nx8TBMOOnpYtDTvHaZK8iKOQhMGBNdpg
- UaxDSDAHzCwNu5IXw+7qYh/jqGEmrOim+sLarCgO1ngpGoPW4GxEVcdgQz8g0W+2mO9V
- PTlA==
-X-Gm-Message-State: AOAM533LsmCJGL0SDQxHHV3AkNJOBT/tEYHGunUdxL2498dMGt471w12
- oB3JDn6ltdDXVj22XPtMT3xQXDQx5Ao=
-X-Google-Smtp-Source: ABdhPJyai0PvEwgvi5XVBEIGZPNDbIpQJgFjUtZJTWWPtt4WQPtxSwlZzdDjV7LSf9J3tZy10p74tQ==
-X-Received: by 2002:a63:7308:: with SMTP id o8mr5834960pgc.77.1634855438213;
- Thu, 21 Oct 2021 15:30:38 -0700 (PDT)
+ bh=fkMGzwJAN8TMb4HSI/6ROPkBV/DnMWNyC7fvuDsq7sE=;
+ b=rAC2JHpmY/xcRfYRXUwTNZ4AKQ0lUd85IWCyGjHiS61JRZKwTCHjDtrvMfxnLmZbNl
+ U8ST6T3Iyn6SyRLZ5Kix7HasmaxcEq2ix7h6dumgl1/4s41y7M4k2jmhd34IcrfZITY/
+ gA/ydw1vC3SWvNxMhat3TaysC5RUEjQM4ztcckjk+hs0XyGrGIvPLUEinbpygJRuIciv
+ EjWOl0ApK1F96Tq8OFUAAk76W1zft/B5qPu1yWgOc6KzgncNQQiZMHGtnajzc3awu8rU
+ 8AIsuvL6USgYrqZXCNXiHVNXMnwyaZQ/w2LzXPcf8S/3iSLYonMxCf1IEUx7yFD+9B44
+ LMyg==
+X-Gm-Message-State: AOAM532oMDVGI+8x4KL6xv+iKZx0r0vOy3xaRNvQVx3wWE95NtKSQOOt
+ TJfFWrmWr78Ug6NYcVcXr7+arFh80mY=
+X-Google-Smtp-Source: ABdhPJxHNS8XYuvKGZrzdIyr6TqAyd1foHl44RTPZQpyUBLBoTv4xUjMw//5I+8rYRHFtrwzwXPQ7g==
+X-Received: by 2002:a17:90a:784a:: with SMTP id
+ y10mr2071443pjl.211.1634855440885; 
+ Thu, 21 Oct 2021 15:30:40 -0700 (PDT)
 Received: from bobo.ibm.com (14-203-144-177.static.tpgi.com.au.
  [14.203.144.177])
- by smtp.gmail.com with ESMTPSA id e6sm7205716pfm.212.2021.10.21.15.30.36
+ by smtp.gmail.com with ESMTPSA id e6sm7205716pfm.212.2021.10.21.15.30.38
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 21 Oct 2021 15:30:38 -0700 (PDT)
+ Thu, 21 Oct 2021 15:30:40 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 06/18] powerpc/pseries: lparcfg don't include slb_size line
- in radix mode
-Date: Fri, 22 Oct 2021 08:30:01 +1000
-Message-Id: <20211021223013.2641952-7-npiggin@gmail.com>
+Subject: [PATCH v3 07/18] powerpc/64s: move THP trace point creation out of
+ hash specific file
+Date: Fri, 22 Oct 2021 08:30:02 +1000
+Message-Id: <20211021223013.2641952-8-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20211021223013.2641952-1-npiggin@gmail.com>
 References: <20211021223013.2641952-1-npiggin@gmail.com>
@@ -92,29 +93,70 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This avoids a change in behaviour in the later patch making hash
-support configurable. This is possibly a user interface change, so
-the alternative would be a hard-coded slb_size=0 here.
+In preparation for making hash MMU support configurable, move THP
+trace point function definitions out of an otherwise hash specific
+file.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/platforms/pseries/lparcfg.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/book3s64/Makefile       | 2 +-
+ arch/powerpc/mm/book3s64/hash_pgtable.c | 1 -
+ arch/powerpc/mm/book3s64/pgtable.c      | 1 +
+ arch/powerpc/mm/book3s64/trace.c        | 8 ++++++++
+ 4 files changed, 10 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/mm/book3s64/trace.c
 
-diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
-index f71eac74ea92..3354c00914fa 100644
---- a/arch/powerpc/platforms/pseries/lparcfg.c
-+++ b/arch/powerpc/platforms/pseries/lparcfg.c
-@@ -532,7 +532,8 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
- 		   lppaca_shared_proc(get_lppaca()));
+diff --git a/arch/powerpc/mm/book3s64/Makefile b/arch/powerpc/mm/book3s64/Makefile
+index 319f4b7f3357..1579e18e098d 100644
+--- a/arch/powerpc/mm/book3s64/Makefile
++++ b/arch/powerpc/mm/book3s64/Makefile
+@@ -5,7 +5,7 @@ ccflags-y	:= $(NO_MINIMAL_TOC)
+ CFLAGS_REMOVE_slb.o = $(CC_FLAGS_FTRACE)
  
- #ifdef CONFIG_PPC_BOOK3S_64
--	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
-+	if (!radix_enabled())
-+		seq_printf(m, "slb_size=%d\n", mmu_slb_size);
- #endif
- 	parse_em_data(m);
- 	maxmem_data(m);
+ obj-y				+= hash_pgtable.o hash_utils.o slb.o \
+-				   mmu_context.o pgtable.o hash_tlb.o
++				   mmu_context.o pgtable.o hash_tlb.o trace.o
+ obj-$(CONFIG_PPC_HASH_MMU_NATIVE)	+= hash_native.o
+ obj-$(CONFIG_PPC_RADIX_MMU)	+= radix_pgtable.o radix_tlb.o
+ obj-$(CONFIG_PPC_4K_PAGES)	+= hash_4k.o
+diff --git a/arch/powerpc/mm/book3s64/hash_pgtable.c b/arch/powerpc/mm/book3s64/hash_pgtable.c
+index ad5eff097d31..7ce8914992e3 100644
+--- a/arch/powerpc/mm/book3s64/hash_pgtable.c
++++ b/arch/powerpc/mm/book3s64/hash_pgtable.c
+@@ -16,7 +16,6 @@
+ 
+ #include <mm/mmu_decl.h>
+ 
+-#define CREATE_TRACE_POINTS
+ #include <trace/events/thp.h>
+ 
+ #if H_PGTABLE_RANGE > (USER_VSID_RANGE * (TASK_SIZE_USER64 / TASK_CONTEXT_SIZE))
+diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
+index 9e16c7b1a6c5..049843c8c875 100644
+--- a/arch/powerpc/mm/book3s64/pgtable.c
++++ b/arch/powerpc/mm/book3s64/pgtable.c
+@@ -28,6 +28,7 @@ unsigned long __pmd_frag_size_shift;
+ EXPORT_SYMBOL(__pmd_frag_size_shift);
+ 
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
++
+ /*
+  * This is called when relaxing access to a hugepage. It's also called in the page
+  * fault path when we don't hit any of the major fault cases, ie, a minor
+diff --git a/arch/powerpc/mm/book3s64/trace.c b/arch/powerpc/mm/book3s64/trace.c
+new file mode 100644
+index 000000000000..b86e7b906257
+--- /dev/null
++++ b/arch/powerpc/mm/book3s64/trace.c
+@@ -0,0 +1,8 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * This file is for defining trace points and trace related helpers.
++ */
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++#define CREATE_TRACE_POINTS
++#include <trace/events/thp.h>
++#endif
 -- 
 2.23.0
 
