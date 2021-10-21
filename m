@@ -2,63 +2,79 @@ Return-Path: <SRS0=ebkI=PJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2358EC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 20:21:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74A2CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 22:31:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7067D61374
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 20:21:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7067D61374
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 89B046128E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Oct 2021 22:31:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 89B046128E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HZzQP02Bpz3cVs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Oct 2021 07:21:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hb2J70PQJz3c9c
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Oct 2021 09:31:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XWhJ08GG;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=VlA0U8/m;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::432;
+ helo=mail-pf1-x432.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=XWhJ08GG; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=VlA0U8/m; dkim-atps=neutral
+Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com
+ [IPv6:2607:f8b0:4864:20::432])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HZsq00tl8z2yp8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Oct 2021 03:08:44 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 1AEFD611CB;
- Thu, 21 Oct 2021 16:08:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1634832521;
- bh=3wcwNbtDNknQedZoy24cZfK1CiOqshIYIk3e2c4B9Rw=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=XWhJ08GGIqTZw+TvT/nMCDAy7quf2FJv33jj0Ily06vxkI8rUxTQELDkeHb0u+NFl
- MD0Lx9+x7lhMM3GIAZfA1T2u0eNmQAG1bqpXTvz67evSI6p28cRymuvwfzx0MmCdPZ
- Eu9kyx0IRx+BQHrjfg6pUkXIBKHVfUT3rJ6PyHjkKsGXSiMQ2s0MWrlq5f/6WPUXfA
- 12KC4ZTUvETH0cKn32kcKsPv7RGUIftWATLF8XYn+cHxWi3nvl7PC2jb98L+8EJMFN
- xtCzC0AmpDoL2r37xWXDC3EUt/EyyEmL8iLEASXb2kkCdjx5XS/xqqOzJAGW3sGtIs
- FzUF2rqmMe78Q==
-Received: by pali.im (Postfix)
- id D8DB085E; Thu, 21 Oct 2021 18:08:38 +0200 (CEST)
-Date: Thu, 21 Oct 2021 18:08:38 +0200
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
-To: Naveen Naidu <naveennaidu479@gmail.com>
-Subject: Re: [PATCH v3 01/25] PCI: Add PCI_ERROR_RESPONSE and it's related
- definitions
-Message-ID: <20211021160838.r7t7fmmeseaecfac@pali>
-References: <cover.1634825082.git.naveennaidu479@gmail.com>
- <f7960a4dee0e417eedd7d2e031d04ac9016c6686.1634825082.git.naveennaidu479@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hb2HT74Glz2yp8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Oct 2021 09:30:27 +1100 (AEDT)
+Received: by mail-pf1-x432.google.com with SMTP id t184so1982631pfd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Oct 2021 15:30:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=CUx1zrTY0Ka69PwK0HuQcXj89HkMpPrH2ks6HQYuL00=;
+ b=VlA0U8/mJiWgU+q4pCwKz8a9xBkfiHOsSUmibV8cgVclSpzMOUi9ZMHRpZeYMANXco
+ JWtX98yK9x3EodLtGR7BDiiMnCpcc/+yO1EwoUdrrdzfOkM25d2jtA+ips4yjXzZMSCt
+ pT0BtCXem4K+xQ1Kxkt6cYgRi3vigFghP0DprF1f2uIPA4sp6mHUskSUQFL/4DERJ1K/
+ r/gTfvxH4JGVbp+dNrzPeETZ1DsWZ44Q/EcaJHkRHv/WXKJi3USy5z6WNvMToG/iAher
+ 0mAy0zlfZNmvXrvCkacG4fa5XnOy8mnGhV+t9VhP3BF//0U8SpuMsjKoAt5RY5yk99Yh
+ ERGw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=CUx1zrTY0Ka69PwK0HuQcXj89HkMpPrH2ks6HQYuL00=;
+ b=SqKdHFeagZxLH/vaDmMngaTGk4pw1pbP0VaFhaoWDTA5XeXjQq5CK3Tgn+nz0mh6fh
+ Bo05kjOYDTa+/3WGZlAuHvcfbFqCcdxJ4TH5OKSCN4/x7Yq6GEcRVovNi8Zw/+FW/95z
+ 3MEMzWSe+yFDNWN9XcZ21dVfR4CIdoJJi3NBot1n933QP4DQWbpdoKuDUd4oPJl/sRqW
+ AEAe1ZqdxyM5Wbs387YJAEMynZdv72zvXmCmL8BoyjyPnoKRaTwKI0KibndcSAj5e/4r
+ 9tJwu6x2+CqJ+XB4IoogxRFj8V6LrbxLaB/tEw1x4VB6up05liq/Tq6muhuCKth+al4X
+ Zs4w==
+X-Gm-Message-State: AOAM531TZ4dMb5a+KmghcCvnPx5OgIHvFt6GtQ6pnrm5rFzYvgKJUdBV
+ 89sCCKM/4I6/qAP69sfgt8uW2gcyG1A=
+X-Google-Smtp-Source: ABdhPJzJCgjVuUsogihqPkhiG63C/AisK3KXsPUeppjdA0xh2Z9mE0sSiMO8ot+iqz+WNh4eIICsuQ==
+X-Received: by 2002:a63:7e48:: with SMTP id o8mr6539622pgn.157.1634855425980; 
+ Thu, 21 Oct 2021 15:30:25 -0700 (PDT)
+Received: from bobo.ibm.com (14-203-144-177.static.tpgi.com.au.
+ [14.203.144.177])
+ by smtp.gmail.com with ESMTPSA id e6sm7205716pfm.212.2021.10.21.15.30.23
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 21 Oct 2021 15:30:25 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 01/18] powerpc: Remove unused FW_FEATURE_NATIVE references
+Date: Fri, 22 Oct 2021 08:29:56 +1000
+Message-Id: <20211021223013.2641952-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20211021223013.2641952-1-npiggin@gmail.com>
+References: <20211021223013.2641952-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <f7960a4dee0e417eedd7d2e031d04ac9016c6686.1634825082.git.naveennaidu479@gmail.com>
-User-Agent: NeoMutt/20180716
-X-Mailman-Approved-At: Fri, 22 Oct 2021 07:20:04 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,82 +86,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
- linux-hyperv@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
- linux-pci@vger.kernel.org, Shawn Lin <shawn.lin@rock-chips.com>,
- Binghui Wang <wangbinghui@hisilicon.com>,
- Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- Amey Narkhede <ameynarkhede03@gmail.com>, Oliver O'Halloran <oohall@gmail.com>,
- Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Toan Le <toan@os.amperecomputing.com>, "K. Y. Srinivasan" <kys@microsoft.com>,
- Nirmal Patel <nirmal.patel@linux.intel.com>,
- Marek Vasut <marek.vasut+renesas@gmail.com>, Rob Herring <robh@kernel.org>,
- Wei Liu <wei.liu@kernel.org>, linux-samsung-soc@vger.kernel.org,
- Stephen Hemminger <sthemmin@microsoft.com>,
- Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
- Joyce Ooi <joyce.ooi@intel.com>, Dexuan Cui <decui@microsoft.com>,
- Jianjun Wang <jianjun.wang@mediatek.com>, linux-rockchip@lists.infradead.org,
- "maintainer:BROADCOM IPROC ARM ARCHITECTURE"
- <bcm-kernel-feedback-list@broadcom.com>,
- Jonathan Derrick <jonathan.derrick@linux.dev>,
- Xiaowei Song <songxiaowei@hisilicon.com>,
- linux-kernel-mentees@lists.linuxfoundation.org,
- Robert Richter <rric@kernel.org>, Sean V Kelley <sean.v.kelley@intel.com>,
- Ray Jui <rjui@broadcom.com>, Haiyang Zhang <haiyangz@microsoft.com>,
- Ryder Lee <ryder.lee@mediatek.com>, linux-mediatek@lists.infradead.org,
- skhan@linuxfoundation.org, bhelgaas@google.com,
- linux-arm-kernel@lists.infradead.org, Qiuxu Zhuo <qiuxu.zhuo@intel.com>,
- Scott Branden <sbranden@broadcom.com>, Jingoo Han <jingoohan1@gmail.com>,
- Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
- linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
- Lukas Wunner <lukas@wunner.de>, Marc Zyngier <maz@kernel.org>,
- Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thursday 21 October 2021 20:37:26 Naveen Naidu wrote:
-> An MMIO read from a PCI device that doesn't exist or doesn't respond
-> causes a PCI error.  There's no real data to return to satisfy the
-> CPU read, so most hardware fabricates ~0 data.
-> 
-> Add a PCI_ERROR_RESPONSE definition for that and use it where
-> appropriate to make these checks consistent and easier to find.
-> 
-> Also add helper definitions SET_PCI_ERROR_RESPONSE and
-> RESPONSE_IS_PCI_ERROR to make the code more readable.
-> 
-> Suggested-by: Bjorn Helgaas <bhelgaas@google.com>
-> Signed-off-by: Naveen Naidu <naveennaidu479@gmail.com>
+FW_FEATURE_NATIVE_ALWAYS and FW_FEATURE_NATIVE_POSSIBLE are always
+zero and never do anything. Remove them.
 
-Reviewed-by: Pali Rohár <pali@kernel.org>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/firmware.h | 8 --------
+ 1 file changed, 8 deletions(-)
 
-> ---
->  include/linux/pci.h | 9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index cd8aa6fce204..689c8277c584 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -154,6 +154,15 @@ enum pci_interrupt_pin {
->  /* The number of legacy PCI INTx interrupts */
->  #define PCI_NUM_INTX	4
->  
-> +/*
-> + * Reading from a device that doesn't respond typically returns ~0.  A
-> + * successful read from a device may also return ~0, so you need additional
-> + * information to reliably identify errors.
-> + */
-> +#define PCI_ERROR_RESPONSE     (~0ULL)
-> +#define SET_PCI_ERROR_RESPONSE(val)    (*(val) = ((typeof(*(val))) PCI_ERROR_RESPONSE))
-> +#define RESPONSE_IS_PCI_ERROR(val) ((val) == ((typeof(val)) PCI_ERROR_RESPONSE))
-> +
->  /*
->   * pci_power_t values must match the bits in the Capabilities PME_Support
->   * and Control/Status PowerState fields in the Power Management capability.
-> -- 
-> 2.25.1
-> 
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index 97a3bd9ffeb9..9b702d2b80fb 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -80,8 +80,6 @@ enum {
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+ 	FW_FEATURE_PS3_POSSIBLE = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
+ 	FW_FEATURE_PS3_ALWAYS = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
+-	FW_FEATURE_NATIVE_POSSIBLE = 0,
+-	FW_FEATURE_NATIVE_ALWAYS = 0,
+ 	FW_FEATURE_POSSIBLE =
+ #ifdef CONFIG_PPC_PSERIES
+ 		FW_FEATURE_PSERIES_POSSIBLE |
+@@ -91,9 +89,6 @@ enum {
+ #endif
+ #ifdef CONFIG_PPC_PS3
+ 		FW_FEATURE_PS3_POSSIBLE |
+-#endif
+-#ifdef CONFIG_PPC_NATIVE
+-		FW_FEATURE_NATIVE_ALWAYS |
+ #endif
+ 		0,
+ 	FW_FEATURE_ALWAYS =
+@@ -105,9 +100,6 @@ enum {
+ #endif
+ #ifdef CONFIG_PPC_PS3
+ 		FW_FEATURE_PS3_ALWAYS &
+-#endif
+-#ifdef CONFIG_PPC_NATIVE
+-		FW_FEATURE_NATIVE_ALWAYS &
+ #endif
+ 		FW_FEATURE_POSSIBLE,
+ 
+-- 
+2.23.0
+
