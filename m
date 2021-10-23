@@ -2,19 +2,19 @@ Return-Path: <SRS0=6Lu7=PL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42BF4C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Oct 2021 11:49:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8D49C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Oct 2021 11:49:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9188560FDA
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Oct 2021 11:48:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9188560FDA
+	by mail.kernel.org (Postfix) with ESMTPS id 2F37560FD9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Oct 2021 11:49:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2F37560FD9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HbzyL23fJz3dcg
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Oct 2021 22:48:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hbzyw6HzHz3dk4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Oct 2021 22:49:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,44 +22,45 @@ Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hbzwp2SrLz2ywf
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Oct 2021 22:47:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hbzwt4mk7z306D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Oct 2021 22:47:42 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
- by localhost (Postfix) with ESMTP id 4HbzwT1sY9z9s3J;
- Sat, 23 Oct 2021 13:47:21 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HbzwV21Sqz9s2p;
+ Sat, 23 Oct 2021 13:47:22 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ebcbtIIX8j1N; Sat, 23 Oct 2021 13:47:21 +0200 (CEST)
+ with ESMTP id w8fx2wUrTG9R; Sat, 23 Oct 2021 13:47:22 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.87])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (Client did not present a certificate)
- by pegase1.c-s.fr (Postfix) with ESMTPS id 4HbzwS0YvNz9s2p;
+ by pegase1.c-s.fr (Postfix) with ESMTPS id 4HbzwS1JL0z9s2t;
  Sat, 23 Oct 2021 13:47:20 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19NBlK0J441171
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19NBlKVA441175
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Sat, 23 Oct 2021 13:47:20 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19NBlKrs441170;
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19NBlKm8441174;
  Sat, 23 Oct 2021 13:47:20 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 04/10] powerpc/fsl_booke: Rename fsl_booke.c to fsl_book3e.c
-Date: Sat, 23 Oct 2021 13:47:09 +0200
-Message-Id: <dcddf2a3470738072fa51388a13522dbafe9e543.1634983809.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 05/10] powerpc/fsl_booke: Take exec flag into account when
+ setting TLBCAMs
+Date: Sat, 23 Oct 2021 13:47:10 +0200
+Message-Id: <2c353fbcf1bbc58d86a83702b7e1dc40cd4c1a54.1634983809.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <33e7fe0f6134c58e044eb63d3925cd34aa120104.1634983809.git.christophe.leroy@csgroup.eu>
 References: <33e7fe0f6134c58e044eb63d3925cd34aa120104.1634983809.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1634989633; l=1737; s=20211009;
- h=from:subject:message-id; bh=9FKtB4GWA22UDQ2x5GMODY3gN9eqmdzTri+KQAD4Le0=;
- b=NLblCz1VYXDvCrnAm0JMWZl7nDMWyWG5Hh9mwDoWvIfpFG0PU6aqD9w93wSGIjfWXr54BvkcFowd
- cF9H5WufAB0aKwU2tS6wtv3SePa/OY7EqEOrrZ6HK7SV5sX2sETx
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1634989633; l=1787; s=20211009;
+ h=from:subject:message-id; bh=YcaMwN9UxVgjTjrSjvUWKUNwwVAmqI4JndBhByZLFcE=;
+ b=QzGucBzCDseKrig+gASnjPB3MC8dnTvPGA/erWZIv7cL3K9Nr565Q8AJs6r8YJJnO4hsDG0ZHT95
+ aEsKUQnTBnDgij2VUZyqk/YA8ndWKP2r+QlH3ynvh+O3+xDu5oJc
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -79,48 +80,46 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We have a myriad of CONFIG symbols around different variants
-of BOOKEs, which would be worth tidying up one day.
+Don't force MAS3_SX and MAS3_UX at all time. Take into account the
+exec flag.
 
-But at least, make file names and CONFIG option match:
-
-We have CONFIG_FSL_BOOKE and CONFIG_PPC_FSL_BOOK3E.
-
-fsl_booke.c is selected by and only by CONFIG_PPC_FSL_BOOK3E.
-So rename it fsl_book3e to reduce confusion.
+While at it, fix a couple of closeby style problems (indent with space
+and unnecessary parenthesis), it keeps more readability.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v2: No change
+v2: Use the new _PAGE_EXEC to check executability of flags instead of _PAGE_BAP_SX (Error reported by robot with tqm8541_defconfig)
 ---
- arch/powerpc/mm/nohash/Makefile                      | 4 ++--
- arch/powerpc/mm/nohash/{fsl_booke.c => fsl_book3e.c} | 0
- 2 files changed, 2 insertions(+), 2 deletions(-)
- rename arch/powerpc/mm/nohash/{fsl_booke.c => fsl_book3e.c} (100%)
+ arch/powerpc/mm/nohash/fsl_book3e.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/mm/nohash/Makefile b/arch/powerpc/mm/nohash/Makefile
-index 0424f6ce5bd8..b1f630d423d8 100644
---- a/arch/powerpc/mm/nohash/Makefile
-+++ b/arch/powerpc/mm/nohash/Makefile
-@@ -7,7 +7,7 @@ obj-$(CONFIG_PPC_BOOK3E_64)  	+= tlb_low_64e.o book3e_pgtable.o
- obj-$(CONFIG_40x)		+= 40x.o
- obj-$(CONFIG_44x)		+= 44x.o
- obj-$(CONFIG_PPC_8xx)		+= 8xx.o
--obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_booke.o
-+obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_book3e.o
- obj-$(CONFIG_RANDOMIZE_BASE)	+= kaslr_booke.o
- ifdef CONFIG_HUGETLB_PAGE
- obj-$(CONFIG_PPC_FSL_BOOK3E)	+= book3e_hugetlbpage.o
-@@ -16,4 +16,4 @@ endif
- # Disable kcov instrumentation on sensitive code
- # This is necessary for booting with kcov enabled on book3e machines
- KCOV_INSTRUMENT_tlb.o := n
--KCOV_INSTRUMENT_fsl_booke.o := n
-+KCOV_INSTRUMENT_fsl_book3e.o := n
-diff --git a/arch/powerpc/mm/nohash/fsl_booke.c b/arch/powerpc/mm/nohash/fsl_book3e.c
-similarity index 100%
-rename from arch/powerpc/mm/nohash/fsl_booke.c
-rename to arch/powerpc/mm/nohash/fsl_book3e.c
+diff --git a/arch/powerpc/mm/nohash/fsl_book3e.c b/arch/powerpc/mm/nohash/fsl_book3e.c
+index 03dacbe940e5..2668bb06e4fa 100644
+--- a/arch/powerpc/mm/nohash/fsl_book3e.c
++++ b/arch/powerpc/mm/nohash/fsl_book3e.c
+@@ -122,15 +122,18 @@ static void settlbcam(int index, unsigned long virt, phys_addr_t phys,
+ 	TLBCAM[index].MAS2 |= (flags & _PAGE_GUARDED) ? MAS2_G : 0;
+ 	TLBCAM[index].MAS2 |= (flags & _PAGE_ENDIAN) ? MAS2_E : 0;
+ 
+-	TLBCAM[index].MAS3 = (phys & MAS3_RPN) | MAS3_SX | MAS3_SR;
+-	TLBCAM[index].MAS3 |= ((flags & _PAGE_RW) ? MAS3_SW : 0);
++	TLBCAM[index].MAS3 = (phys & MAS3_RPN) | MAS3_SR;
++	TLBCAM[index].MAS3 |= (flags & _PAGE_RW) ? MAS3_SW : 0;
+ 	if (mmu_has_feature(MMU_FTR_BIG_PHYS))
+ 		TLBCAM[index].MAS7 = (u64)phys >> 32;
+ 
+ 	/* Below is unlikely -- only for large user pages or similar */
+ 	if (pte_user(__pte(flags))) {
+-	   TLBCAM[index].MAS3 |= MAS3_UX | MAS3_UR;
+-	   TLBCAM[index].MAS3 |= ((flags & _PAGE_RW) ? MAS3_UW : 0);
++		TLBCAM[index].MAS3 |= MAS3_UR;
++		TLBCAM[index].MAS3 |= (flags & _PAGE_EXEC) ? MAS3_UX : 0;
++		TLBCAM[index].MAS3 |= (flags & _PAGE_RW) ? MAS3_UW : 0;
++	} else {
++		TLBCAM[index].MAS3 |= (flags & _PAGE_EXEC) ? MAS3_SX : 0;
+ 	}
+ 
+ 	tlbcam_addrs[index].start = virt;
 -- 
 2.31.1
 
