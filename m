@@ -2,64 +2,65 @@ Return-Path: <SRS0=xMQ5=PN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3717CC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:50:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B8DBC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:50:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8CEF560F22
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:50:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8CEF560F22
+	by mail.kernel.org (Postfix) with ESMTPS id C895161073
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:50:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C895161073
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HdTC272X0z3bhl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 08:50:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HdTCT25b9z3cTZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 08:50:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HdTBY0NPTz2xYS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2021 08:49:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HdTBd4DFnz2xYS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2021 08:49:45 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
- by localhost (Postfix) with ESMTP id 4HdTBP3LTVz9s2N;
- Mon, 25 Oct 2021 23:49:33 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HdTBQ1P18z9s2Q;
+ Mon, 25 Oct 2021 23:49:34 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Us0Emub2cGZe; Mon, 25 Oct 2021 23:49:33 +0200 (CEST)
+ with ESMTP id ERZg5QPJs17B; Mon, 25 Oct 2021 23:49:34 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.117])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (Client did not present a certificate)
- by pegase1.c-s.fr (Postfix) with ESMTPS id 4HdTBP0msLz9s2M;
+ by pegase1.c-s.fr (Postfix) with ESMTPS id 4HdTBP446tz9s2M;
  Mon, 25 Oct 2021 23:49:33 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19PLnAIp007255
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19PLnAIr007255
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 25 Oct 2021 23:49:10 +0200
+ Mon, 25 Oct 2021 23:49:12 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19PLiV8N007028;
- Mon, 25 Oct 2021 23:44:31 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19PLiYEt007030;
+ Mon, 25 Oct 2021 23:44:34 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 04/10] powerpc/fsl_booke: Rename fsl_booke.c to fsl_book3e.c
-Date: Mon, 25 Oct 2021 23:44:16 +0200
-Message-Id: <0827aadc9536d1300190e5aa193aa469405ef6b4.1635198209.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 06/10] powerpc/fsl_booke: Enable reloading of TLBCAM
+ without switching to AS1
+Date: Mon, 25 Oct 2021 23:44:18 +0200
+Message-Id: <f39cf3f4c8aaae7e3bfabdbb568bca2f92ad763b.1635198209.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <f34898e2edb21db1bcb1c9a96ac7433a141d50c2.1635198209.git.christophe.leroy@csgroup.eu>
 References: <f34898e2edb21db1bcb1c9a96ac7433a141d50c2.1635198209.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1635198260; l=1752; s=20211009;
- h=from:subject:message-id; bh=I/3YbXn1++mN0Nx34NByyUJsZSdlVPzXOK5gwalhscM=;
- b=ogQiCQwS2RbKYEdX44YSIK2NRNgLDfCinKAzohinmvqBgDn3PAR1bnnRR6iFQFxJ+lPb9Dip4mbd
- lsI+8R0iA/+9aYWpsh+dovWDK7AM9EtLiEAhXCq+9mrHWw8PSyC7
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1635198260; l=1802; s=20211009;
+ h=from:subject:message-id; bh=uamvXOC8yjHDz3KhY1xpnVSjjrkZsEuJGoVWxGyoTu4=;
+ b=nQbQAhxVgq9euHMpoCWhP4YXrv6S0gunzsgh6klrZYKm6npTe4fFe4Xi4om1blbDX95i8PP+fufz
+ z2OL4TFiC1dfjtrTl3QAFqK76ZhMc8tq33RZZzVx+7KWM6ZY/7j5
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -79,49 +80,66 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We have a myriad of CONFIG symbols around different variants
-of BOOKEs, which would be worth tidying up one day.
+Avoid switching to AS1 when reloading TLBCAM after init for
+STRICT_KERNEL_RWX.
 
-But at least, make file names and CONFIG option match:
+When we setup AS1 we expect the entire accessible memory to be mapped
+through one entry, this is not the case anymore at the end of init.
 
-We have CONFIG_FSL_BOOKE and CONFIG_PPC_FSL_BOOK3E.
+We are not changing the size of TLBCAMs, only flags, so no need to
+switch to AS1.
 
-fsl_booke.c is selected by and only by CONFIG_PPC_FSL_BOOK3E.
-So rename it fsl_book3e to reduce confusion.
+So change loadcam_multi() to not switch to AS1 when the given
+temporary tlb entry in 0.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
 v3: No change
 v2: No change
 ---
- arch/powerpc/mm/nohash/Makefile                      | 4 ++--
- arch/powerpc/mm/nohash/{fsl_booke.c => fsl_book3e.c} | 0
- 2 files changed, 2 insertions(+), 2 deletions(-)
- rename arch/powerpc/mm/nohash/{fsl_booke.c => fsl_book3e.c} (100%)
+ arch/powerpc/mm/nohash/tlb_low.S | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/nohash/Makefile b/arch/powerpc/mm/nohash/Makefile
-index 0424f6ce5bd8..b1f630d423d8 100644
---- a/arch/powerpc/mm/nohash/Makefile
-+++ b/arch/powerpc/mm/nohash/Makefile
-@@ -7,7 +7,7 @@ obj-$(CONFIG_PPC_BOOK3E_64)  	+= tlb_low_64e.o book3e_pgtable.o
- obj-$(CONFIG_40x)		+= 40x.o
- obj-$(CONFIG_44x)		+= 44x.o
- obj-$(CONFIG_PPC_8xx)		+= 8xx.o
--obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_booke.o
-+obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_book3e.o
- obj-$(CONFIG_RANDOMIZE_BASE)	+= kaslr_booke.o
- ifdef CONFIG_HUGETLB_PAGE
- obj-$(CONFIG_PPC_FSL_BOOK3E)	+= book3e_hugetlbpage.o
-@@ -16,4 +16,4 @@ endif
- # Disable kcov instrumentation on sensitive code
- # This is necessary for booting with kcov enabled on book3e machines
- KCOV_INSTRUMENT_tlb.o := n
--KCOV_INSTRUMENT_fsl_booke.o := n
-+KCOV_INSTRUMENT_fsl_book3e.o := n
-diff --git a/arch/powerpc/mm/nohash/fsl_booke.c b/arch/powerpc/mm/nohash/fsl_book3e.c
-similarity index 100%
-rename from arch/powerpc/mm/nohash/fsl_booke.c
-rename to arch/powerpc/mm/nohash/fsl_book3e.c
+diff --git a/arch/powerpc/mm/nohash/tlb_low.S b/arch/powerpc/mm/nohash/tlb_low.S
+index 5add4a51e51f..dd39074de9af 100644
+--- a/arch/powerpc/mm/nohash/tlb_low.S
++++ b/arch/powerpc/mm/nohash/tlb_low.S
+@@ -369,7 +369,7 @@ _GLOBAL(_tlbivax_bcast)
+  * extern void loadcam_entry(unsigned int index)
+  *
+  * Load TLBCAM[index] entry in to the L2 CAM MMU
+- * Must preserve r7, r8, r9, r10 and r11
++ * Must preserve r7, r8, r9, r10, r11, r12
+  */
+ _GLOBAL(loadcam_entry)
+ 	mflr	r5
+@@ -401,7 +401,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
+  *
+  * r3 = first entry to write
+  * r4 = number of entries to write
+- * r5 = temporary tlb entry
++ * r5 = temporary tlb entry (0 means no switch to AS1)
+  */
+ _GLOBAL(loadcam_multi)
+ 	mflr	r8
+@@ -409,6 +409,8 @@ _GLOBAL(loadcam_multi)
+ 	mfmsr	r11
+ 	andi.	r11,r11,MSR_IS
+ 	bne	10f
++	mr.	r12, r5
++	beq	10f
+ 
+ 	/*
+ 	 * Set up temporary TLB entry that is the same as what we're
+@@ -446,6 +448,8 @@ _GLOBAL(loadcam_multi)
+ 	/* Don't return to AS=0 if we were in AS=1 at function start */
+ 	andi.	r11,r11,MSR_IS
+ 	bne	3f
++	cmpwi	r12, 0
++	beq	3f
+ 
+ 	/* Return to AS=0 and clear the temporary entry */
+ 	mfmsr	r6
 -- 
 2.31.1
 
