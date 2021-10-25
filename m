@@ -2,19 +2,19 @@ Return-Path: <SRS0=xMQ5=PN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD3A8C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:52:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 936C6C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:53:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2462760E8F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:52:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2462760E8F
+	by mail.kernel.org (Postfix) with ESMTPS id B15E860F22
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:53:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B15E860F22
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HdTFv5tY6z3dq9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 08:52:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HdTGM2fB8z3dv9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 08:52:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,44 +22,43 @@ Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HdTC0553mz3064
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2021 08:50:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HdTC42BsFz3bXP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2021 08:50:08 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
- by localhost (Postfix) with ESMTP id 4HdTBb1vpjz9s2d;
- Mon, 25 Oct 2021 23:49:43 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HdTBc2tz5z9s2k;
+ Mon, 25 Oct 2021 23:49:44 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 40D27kRvuqsY; Mon, 25 Oct 2021 23:49:43 +0200 (CEST)
+ with ESMTP id SLHHaOzNG6vA; Mon, 25 Oct 2021 23:49:44 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.117])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (Client did not present a certificate)
- by pegase1.c-s.fr (Postfix) with ESMTPS id 4HdTBZ4Xqgz9s2N;
+ by pegase1.c-s.fr (Postfix) with ESMTPS id 4HdTBb08stz9s2c;
  Mon, 25 Oct 2021 23:49:42 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19PLnAJ3007255
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19PLnAJ5007255
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Mon, 25 Oct 2021 23:49:12 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19PLiZcF007034;
- Mon, 25 Oct 2021 23:44:35 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19PLiNv3007025;
+ Mon, 25 Oct 2021 23:44:23 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 10/10] powerpc/fsl_booke: Enable STRICT_KERNEL_RWX
-Date: Mon, 25 Oct 2021 23:44:22 +0200
-Message-Id: <636c4c53f6765529a85e9c7d5c0bab321d411f51.1635198209.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 01/10] powerpc/nohash: Fix __ptep_set_access_flags() and
+ ptep_set_wrprotect()
+Date: Mon, 25 Oct 2021 23:44:13 +0200
+Message-Id: <f34898e2edb21db1bcb1c9a96ac7433a141d50c2.1635198209.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
-In-Reply-To: <f34898e2edb21db1bcb1c9a96ac7433a141d50c2.1635198209.git.christophe.leroy@csgroup.eu>
-References: <f34898e2edb21db1bcb1c9a96ac7433a141d50c2.1635198209.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1635198260; l=3275; s=20211009;
- h=from:subject:message-id; bh=Hd8pSGoOsdPbnq2bI6BjZRdlpx5PDVC3dx2eC/M8354=;
- b=DEPhatZjRBfX3a3eLzVg/VPgCnAYSX8nxxoXzm0MkB82lr3f2YWi1WNE09+EJr++y17DSuCSlVC7
- F1BQpRAuA4MPiIHTHabbKTXaagF6unwC+RwAoDUe9unYQlZb5NpU
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1635198260; l=4330; s=20211009;
+ h=from:subject:message-id; bh=izdUZ+1e8V63DpgnHdzBDrWgT7WnuGKd1kgBkr6OTNY=;
+ b=MEt/vzMV/tJ7xzhqdZC1sHph7EM/qPBHyLPOmMNFdirJijmXt7aCUdIjtCuYmZ70foBP5hrDoqj9
+ 4ibYAxDsDgLCl9OdLRdI55J1BTuzKfQSl3v4kcU8/CC8KcZT8zVF
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -79,84 +78,114 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Enable STRICT_KERNEL_RWX on fsl_booke.
+Commit 26973fa5ac0e ("powerpc/mm: use pte helpers in generic code")
+changed those two functions to use pte helpers to determine which
+bits to clear and which bits to set.
 
-For that, we need additional TLBCAMs dedicated to linear mapping,
-based on the alignment of _sinittext.
+This change was based on the assumption that bits to be set/cleared
+are always the same and can be determined by applying the pte
+manipulation helpers on __pte(0).
 
-By default, up to 768 Mbytes of memory are mapped.
-It uses 3 TLBCAMs of size 256 Mbytes.
+But on platforms like book3e, the bits depend on whether the page
+is a user page or not.
 
-With a data alignment of 16, we need up to 9 TLBCAMs:
-  16/16/16/16/64/64/64/256/256
+For the time being it more or less works because of _PAGE_EXEC being
+used for user pages only and exec right being set at all time on
+kernel page. But following patch will clean that and output of
+pte_mkexec() will depend on the page being a user or kernel page.
 
-With a data alignment of 4, we need up to 12 TLBCAMs:
-  4/4/4/4/16/16/16/64/64/64/256/256
+Instead of trying to make an even more complicated helper where bits
+would become dependent on the final pte value, come back to a more
+static situation like before commit 26973fa5ac0e ("powerpc/mm: use
+pte helpers in generic code"), by introducing an 8xx specific
+version of __ptep_set_access_flags() and ptep_set_wrprotect().
 
-With a data alignment of 1, we need up to 15 TLBCAMs:
-  1/1/1/1/4/4/4/16/16/16/64/64/64/256/256
-
-By default, set a 16 Mbytes alignment as a compromise between memory
-usage and number of TLBCAMs. This can be adjusted manually when needed.
-
-For the time being, it doens't work when the base is randomised.
-
+Fixes: 26973fa5ac0e ("powerpc/mm: use pte helpers in generic code")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
 v3: No change
-v2: No change
+v2: New
 ---
- arch/powerpc/Kconfig | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pgtable.h | 17 +++++++--------
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h | 22 ++++++++++++++++++++
+ 2 files changed, 30 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 6b9f523882c5..939a47642a9c 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -139,6 +139,7 @@ config PPC
- 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE && PPC_BOOK3S_64
- 	select ARCH_HAS_SET_MEMORY
- 	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC_BOOK3S || PPC_8xx || 40x) && !HIBERNATION
-+	select ARCH_HAS_STRICT_KERNEL_RWX	if FSL_BOOKE && !HIBERNATION && !RANDOMIZE_BASE
- 	select ARCH_HAS_STRICT_MODULE_RWX	if ARCH_HAS_STRICT_KERNEL_RWX && !PPC_BOOK3S_32
- 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAS_UACCESS_FLUSHCACHE
-@@ -778,7 +779,8 @@ config DATA_SHIFT_BOOL
- 	bool "Set custom data alignment"
- 	depends on ADVANCED_OPTIONS
- 	depends on STRICT_KERNEL_RWX || DEBUG_PAGEALLOC || KFENCE
--	depends on PPC_BOOK3S_32 || (PPC_8xx && !PIN_TLB_DATA && !STRICT_KERNEL_RWX)
-+	depends on PPC_BOOK3S_32 || (PPC_8xx && !PIN_TLB_DATA && !STRICT_KERNEL_RWX) || \
-+		   FSL_BOOKE
- 	help
- 	  This option allows you to set the kernel data alignment. When
- 	  RAM is mapped by blocks, the alignment needs to fit the size and
-@@ -791,11 +793,13 @@ config DATA_SHIFT
- 	default 24 if STRICT_KERNEL_RWX && PPC64
- 	range 17 28 if (STRICT_KERNEL_RWX || DEBUG_PAGEALLOC || KFENCE) && PPC_BOOK3S_32
- 	range 19 23 if (STRICT_KERNEL_RWX || DEBUG_PAGEALLOC || KFENCE) && PPC_8xx
-+	range 20 24 if (STRICT_KERNEL_RWX || DEBUG_PAGEALLOC || KFENCE) && PPC_FSL_BOOKE
- 	default 22 if STRICT_KERNEL_RWX && PPC_BOOK3S_32
- 	default 18 if (DEBUG_PAGEALLOC || KFENCE) && PPC_BOOK3S_32
- 	default 23 if STRICT_KERNEL_RWX && PPC_8xx
- 	default 23 if (DEBUG_PAGEALLOC || KFENCE) && PPC_8xx && PIN_TLB_DATA
- 	default 19 if (DEBUG_PAGEALLOC || KFENCE) && PPC_8xx
-+	default 24 if STRICT_KERNEL_RWX && FSL_BOOKE
- 	default PPC_PAGE_SHIFT
- 	help
- 	  On Book3S 32 (603+), DBATs are used to map kernel text and rodata RO.
-@@ -1123,7 +1127,10 @@ config LOWMEM_CAM_NUM_BOOL
- config LOWMEM_CAM_NUM
- 	depends on FSL_BOOKE
- 	int "Number of CAMs to use to map low memory" if LOWMEM_CAM_NUM_BOOL
--	default 3
-+	default 3 if !STRICT_KERNEL_RWX
-+	default 9 if DATA_SHIFT >= 24
-+	default 12 if DATA_SHIFT >= 22
-+	default 15
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index f06ae00f2a65..ac0a5ff48c3a 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -306,30 +306,29 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
+ }
  
- config DYNAMIC_MEMSTART
- 	bool "Enable page aligned dynamic load address for kernel"
+ #define __HAVE_ARCH_PTEP_SET_WRPROTECT
++#ifndef ptep_set_wrprotect
+ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ 				      pte_t *ptep)
+ {
+-	unsigned long clr = ~pte_val(pte_wrprotect(__pte(~0)));
+-	unsigned long set = pte_val(pte_wrprotect(__pte(0)));
+-
+-	pte_update(mm, addr, ptep, clr, set, 0);
++	pte_update(mm, addr, ptep, _PAGE_RW, 0, 0);
+ }
++#endif
+ 
++#ifndef __ptep_set_access_flags
+ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+ 					   pte_t *ptep, pte_t entry,
+ 					   unsigned long address,
+ 					   int psize)
+ {
+-	pte_t pte_set = pte_mkyoung(pte_mkdirty(pte_mkwrite(pte_mkexec(__pte(0)))));
+-	pte_t pte_clr = pte_mkyoung(pte_mkdirty(pte_mkwrite(pte_mkexec(__pte(~0)))));
+-	unsigned long set = pte_val(entry) & pte_val(pte_set);
+-	unsigned long clr = ~pte_val(entry) & ~pte_val(pte_clr);
++	unsigned long set = pte_val(entry) &
++			    (_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+ 	int huge = psize > mmu_virtual_psize ? 1 : 0;
+ 
+-	pte_update(vma->vm_mm, address, ptep, clr, set, huge);
++	pte_update(vma->vm_mm, address, ptep, 0, set, huge);
+ 
+ 	flush_tlb_page(vma, address);
+ }
++#endif
+ 
+ static inline int pte_young(pte_t pte)
+ {
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+index fcc48d590d88..1a89ebdc3acc 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+@@ -136,6 +136,28 @@ static inline pte_t pte_mkhuge(pte_t pte)
+ 
+ #define pte_mkhuge pte_mkhuge
+ 
++static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, pte_t *p,
++				     unsigned long clr, unsigned long set, int huge);
++
++static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
++{
++	pte_update(mm, addr, ptep, 0, _PAGE_RO, 0);
++}
++#define ptep_set_wrprotect ptep_set_wrprotect
++
++static inline void __ptep_set_access_flags(struct vm_area_struct *vma, pte_t *ptep,
++					   pte_t entry, unsigned long address, int psize)
++{
++	unsigned long set = pte_val(entry) & (_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_EXEC);
++	unsigned long clr = ~pte_val(entry) & _PAGE_RO;
++	int huge = psize > mmu_virtual_psize ? 1 : 0;
++
++	pte_update(vma->vm_mm, address, ptep, clr, set, huge);
++
++	flush_tlb_page(vma, address);
++}
++#define __ptep_set_access_flags __ptep_set_access_flags
++
+ static inline unsigned long pgd_leaf_size(pgd_t pgd)
+ {
+ 	if (pgd_val(pgd) & _PMD_PAGE_8M)
 -- 
 2.31.1
 
