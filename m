@@ -2,19 +2,19 @@ Return-Path: <SRS0=xMQ5=PN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A96CDC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:50:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21819C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:51:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 257C260F22
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:50:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 257C260F22
+	by mail.kernel.org (Postfix) with ESMTPS id ADE5260F22
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:51:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ADE5260F22
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HdTCx5DSRz3cc4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 08:50:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HdTDP0xKbz3dYZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 08:51:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,45 +22,45 @@ Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HdTBh627Qz2yPW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2021 08:49:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HdTBm6PZtz2ynb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2021 08:49:52 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
- by localhost (Postfix) with ESMTP id 4HdTBR5RkYz9s2M;
- Mon, 25 Oct 2021 23:49:35 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HdTBT5VJvz9s2X;
+ Mon, 25 Oct 2021 23:49:37 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 5c_UDG0aoMBW; Mon, 25 Oct 2021 23:49:35 +0200 (CEST)
+ with ESMTP id 6yTr61mJL7ux; Mon, 25 Oct 2021 23:49:37 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.117])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (Client did not present a certificate)
- by pegase1.c-s.fr (Postfix) with ESMTPS id 4HdTBQ1kBcz9s2S;
- Mon, 25 Oct 2021 23:49:34 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTPS id 4HdTBT3BbZz9s2S;
+ Mon, 25 Oct 2021 23:49:36 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19PLnAIt007255
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19PLnAIv007255
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Mon, 25 Oct 2021 23:49:12 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19PLiVbH007029;
- Mon, 25 Oct 2021 23:44:31 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19PLiYBD007032;
+ Mon, 25 Oct 2021 23:44:34 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 05/10] powerpc/fsl_booke: Take exec flag into account when
- setting TLBCAMs
-Date: Mon, 25 Oct 2021 23:44:17 +0200
-Message-Id: <6c25f98b9122a6f5fc73c40648583902c2f468c2.1635198209.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 08/10] powerpc/fsl_booke: Allocate separate TLBCAMs for
+ readonly memory
+Date: Mon, 25 Oct 2021 23:44:20 +0200
+Message-Id: <88d25497d80a7187725c7e08b86b7f51366cd9e4.1635198209.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <f34898e2edb21db1bcb1c9a96ac7433a141d50c2.1635198209.git.christophe.leroy@csgroup.eu>
 References: <f34898e2edb21db1bcb1c9a96ac7433a141d50c2.1635198209.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1635198260; l=1802; s=20211009;
- h=from:subject:message-id; bh=c9N6/3Ac89bPR0sj0Zjg+hjC9crzxBxfzx2IAykaOyA=;
- b=XIz9b1V9oHSCs6ErKIgoA7dMmyBrRQQo63tp3b5gGjaHPSMfFOORQQNJd0EvXikvX6WrujbzKqUe
- 99MO2rx8B9XX9Ff7spq3x1Wlqo7NtGdvBrgS4PQOuqvpbwyY1swK
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1635198260; l=1825; s=20211009;
+ h=from:subject:message-id; bh=Or6PqbOLc9GUOH2m6t0vW9BFnrj3cbeyCezL4Oe4UDg=;
+ b=A4fIdEmH9G4+lcnH+xAHpCopFeiJucb66dqdq/7QDSBalFvufl1ufNtEDOCa4nMLdDHLbWooE5l3
+ NbP5Ph7MBi+P38KTmSTw8y9Bb+UOsMSEC+Ld2kk7qoM6GrlHIysM
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -80,47 +80,64 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Don't force MAS3_SX and MAS3_UX at all time. Take into account the
-exec flag.
+Reorganise TLBCAM allocation so that when STRICT_KERNEL_RWX is
+enabled, TLBCAMs are allocated such that readonly memory uses
+different TLBCAMs.
 
-While at it, fix a couple of closeby style problems (indent with space
-and unnecessary parenthesis), it keeps more readability.
+This results in an allocation looking like:
+
+Memory CAM mapping: 4/4/4/1/1/1/1/16/16/16/64/64/64/256/256 Mb, residual: 256Mb
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
 v3: No change
-v2: Use the new _PAGE_EXEC to check executability of flags instead of _PAGE_BAP_SX (Error reported by robot with tqm8541_defconfig)
+v2: No change
 ---
- arch/powerpc/mm/nohash/fsl_book3e.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ arch/powerpc/mm/nohash/fsl_book3e.c | 25 ++++++++++++++++++++++---
+ 1 file changed, 22 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/mm/nohash/fsl_book3e.c b/arch/powerpc/mm/nohash/fsl_book3e.c
-index 03dacbe940e5..2668bb06e4fa 100644
+index 8ae1ba7985df..88132cab3442 100644
 --- a/arch/powerpc/mm/nohash/fsl_book3e.c
 +++ b/arch/powerpc/mm/nohash/fsl_book3e.c
-@@ -122,15 +122,18 @@ static void settlbcam(int index, unsigned long virt, phys_addr_t phys,
- 	TLBCAM[index].MAS2 |= (flags & _PAGE_GUARDED) ? MAS2_G : 0;
- 	TLBCAM[index].MAS2 |= (flags & _PAGE_ENDIAN) ? MAS2_E : 0;
+@@ -172,15 +172,34 @@ static unsigned long map_mem_in_cams_addr(phys_addr_t phys, unsigned long virt,
+ {
+ 	int i;
+ 	unsigned long amount_mapped = 0;
++	unsigned long boundary;
++
++	if (strict_kernel_rwx_enabled())
++		boundary = (unsigned long)(_sinittext - _stext);
++	else
++		boundary = ram;
  
--	TLBCAM[index].MAS3 = (phys & MAS3_RPN) | MAS3_SX | MAS3_SR;
--	TLBCAM[index].MAS3 |= ((flags & _PAGE_RW) ? MAS3_SW : 0);
-+	TLBCAM[index].MAS3 = (phys & MAS3_RPN) | MAS3_SR;
-+	TLBCAM[index].MAS3 |= (flags & _PAGE_RW) ? MAS3_SW : 0;
- 	if (mmu_has_feature(MMU_FTR_BIG_PHYS))
- 		TLBCAM[index].MAS7 = (u64)phys >> 32;
+ 	/* Calculate CAM values */
+-	for (i = 0; ram && i < max_cam_idx; i++) {
++	for (i = 0; boundary && i < max_cam_idx; i++) {
++		unsigned long cam_sz;
++		pgprot_t prot = PAGE_KERNEL_X;
++
++		cam_sz = calc_cam_sz(boundary, virt, phys);
++		if (!dryrun)
++			settlbcam(i, virt, phys, cam_sz, pgprot_val(prot), 0);
++
++		boundary -= cam_sz;
++		amount_mapped += cam_sz;
++		virt += cam_sz;
++		phys += cam_sz;
++	}
++	for (ram -= amount_mapped; ram && i < max_cam_idx; i++) {
+ 		unsigned long cam_sz;
++		pgprot_t prot = PAGE_KERNEL_X;
  
- 	/* Below is unlikely -- only for large user pages or similar */
- 	if (pte_user(__pte(flags))) {
--	   TLBCAM[index].MAS3 |= MAS3_UX | MAS3_UR;
--	   TLBCAM[index].MAS3 |= ((flags & _PAGE_RW) ? MAS3_UW : 0);
-+		TLBCAM[index].MAS3 |= MAS3_UR;
-+		TLBCAM[index].MAS3 |= (flags & _PAGE_EXEC) ? MAS3_UX : 0;
-+		TLBCAM[index].MAS3 |= (flags & _PAGE_RW) ? MAS3_UW : 0;
-+	} else {
-+		TLBCAM[index].MAS3 |= (flags & _PAGE_EXEC) ? MAS3_SX : 0;
- 	}
+ 		cam_sz = calc_cam_sz(ram, virt, phys);
+ 		if (!dryrun)
+-			settlbcam(i, virt, phys, cam_sz,
+-				  pgprot_val(PAGE_KERNEL_X), 0);
++			settlbcam(i, virt, phys, cam_sz, pgprot_val(prot), 0);
  
- 	tlbcam_addrs[index].start = virt;
+ 		ram -= cam_sz;
+ 		amount_mapped += cam_sz;
 -- 
 2.31.1
 
