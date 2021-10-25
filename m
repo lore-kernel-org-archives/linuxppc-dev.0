@@ -2,19 +2,19 @@ Return-Path: <SRS0=xMQ5=PN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1082DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:53:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3C9DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:53:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 94DC960F92
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:53:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 94DC960F92
+	by mail.kernel.org (Postfix) with ESMTPS id 009D860E8F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Oct 2021 21:53:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 009D860E8F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HdTGq154Dz3dyY
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 08:53:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HdTHG4y03z3f2H
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 08:53:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -22,45 +22,45 @@ Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HdTC84VDVz3c7r
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2021 08:50:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HdTCF0R8Lz3cNK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Oct 2021 08:50:16 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
- by localhost (Postfix) with ESMTP id 4HdTBd2Gnlz9s2c;
- Mon, 25 Oct 2021 23:49:45 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4HdTBf2xv1z9s2N;
+ Mon, 25 Oct 2021 23:49:46 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id MUmBa6QgAeK8; Mon, 25 Oct 2021 23:49:45 +0200 (CEST)
+ with ESMTP id 6LZY9ZqoPQxH; Mon, 25 Oct 2021 23:49:46 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.117])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (Client did not present a certificate)
- by pegase1.c-s.fr (Postfix) with ESMTPS id 4HdTBb2b3Rz9s2N;
+ by pegase1.c-s.fr (Postfix) with ESMTPS id 4HdTBb51tkz9s2h;
  Mon, 25 Oct 2021 23:49:43 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19PLnAJ7007255
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19PLnAJ9007255
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Mon, 25 Oct 2021 23:49:12 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19PLiYOK007031;
- Mon, 25 Oct 2021 23:44:34 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19PLiVaF007026;
+ Mon, 25 Oct 2021 23:44:31 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 07/10] powerpc/fsl_booke: Tell map_mem_in_cams() if init is
- done
-Date: Mon, 25 Oct 2021 23:44:19 +0200
-Message-Id: <7b32c4bb03e38f7d2de8c5815de8d3c0b44e57fb.1635198209.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 02/10] powerpc/book3e: Fix set_memory_x() and
+ set_memory_nx()
+Date: Mon, 25 Oct 2021 23:44:14 +0200
+Message-Id: <2379d6769c4ca7328ed6ea7bb6776efa1e10bd34.1635198209.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <f34898e2edb21db1bcb1c9a96ac7433a141d50c2.1635198209.git.christophe.leroy@csgroup.eu>
 References: <f34898e2edb21db1bcb1c9a96ac7433a141d50c2.1635198209.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1635198260; l=4513; s=20211009;
- h=from:subject:message-id; bh=RB+xZk91qJ39yUPiwHf/g5tkgltSDACJFbW19cGTWt4=;
- b=PRPmdleuTDV2TNYn990RwzO31sJCp3vlF3SDJZvGvx3hW/tHF5J2BYE+ZPwBV1ycrEAA553ZtN8e
- +bvv+MgkAknvESQusZRgUoi+Te5Am1NT9TJj842cvF9Mz6+8m/Tt
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1635198260; l=6098; s=20211009;
+ h=from:subject:message-id; bh=+JF61Ce6JHyRyIeD9UAFSFok133pa1B8BEDmy6vM+As=;
+ b=cfFmvXKaXBeVIXVZbgEdVDCfBhpg2+4QGbmZZKn3cyv5Gu3qu2kh9YI6zrke46FeC157St0bZa11
+ G3QcMAiNCcDom+UMkXmi6ONMqB3yY/POunRz0U96Gz9wNxn6YG0Q
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -80,121 +80,165 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to be able to call map_mem_in_cams() once more
-after init for STRICT_KERNEL_RWX, add an argument.
+set_memory_x() calls pte_mkexec() which sets _PAGE_EXEC.
+set_memory_nx() calls pte_exprotec() which clears _PAGE_EXEC.
 
-For now, map_mem_in_cams() is always called only during init.
+Book3e has 2 bits, UX and SX, which defines the exec rights
+resp. for user (PR=1) and for kernel (PR=0).
 
+_PAGE_EXEC is defined as UX only.
+
+An executable kernel page is set with either _PAGE_KERNEL_RWX
+or _PAGE_KERNEL_ROX, which both have SX set and UX cleared.
+
+So set_memory_nx() call for an executable kernel page does
+nothing because UX is already cleared.
+
+And set_memory_x() on a non-executable kernel page makes it
+executable for the user and keeps it non-executable for kernel.
+
+Also, pte_exec() always returns 'false' on kernel pages, because
+it checks _PAGE_EXEC which doesn't include SX, so for instance
+the W+X check doesn't work.
+
+To fix this:
+- change tlb_low_64e.S to use _PAGE_BAP_UX instead of _PAGE_USER
+- sets both UX and SX in _PAGE_EXEC so that pte_user() returns
+true whenever one of the two bits is set and pte_exprotect()
+clears both bits.
+- Define a book3e specific version of pte_mkexec() which sets
+either SX or UX based on UR.
+
+Fixes: 1f9ad21c3b38 ("powerpc/mm: Implement set_memory() routines")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v3: No change
-v2: No change
+v3: Removed pte_mkexec() from nohash/64/pgtable.h
+v2: New
 ---
- arch/powerpc/mm/mmu_decl.h           |  2 +-
- arch/powerpc/mm/nohash/fsl_book3e.c  | 12 ++++++------
- arch/powerpc/mm/nohash/kaslr_booke.c |  2 +-
- arch/powerpc/mm/nohash/tlb.c         |  4 ++--
- 4 files changed, 10 insertions(+), 10 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pgtable.h |  2 ++
+ arch/powerpc/include/asm/nohash/64/pgtable.h |  5 -----
+ arch/powerpc/include/asm/nohash/pte-book3e.h | 18 ++++++++++++++----
+ arch/powerpc/mm/nohash/tlb_low_64e.S         |  8 ++++----
+ 4 files changed, 20 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index dd1cabc2ea0f..e13a3c0caa02 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -126,7 +126,7 @@ unsigned long mmu_mapin_ram(unsigned long base, unsigned long top);
- 
- #ifdef CONFIG_PPC_FSL_BOOK3E
- extern unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx,
--				     bool dryrun);
-+				     bool dryrun, bool init);
- extern unsigned long calc_cam_sz(unsigned long ram, unsigned long virt,
- 				 phys_addr_t phys);
- #ifdef CONFIG_PPC32
-diff --git a/arch/powerpc/mm/nohash/fsl_book3e.c b/arch/powerpc/mm/nohash/fsl_book3e.c
-index 2668bb06e4fa..8ae1ba7985df 100644
---- a/arch/powerpc/mm/nohash/fsl_book3e.c
-+++ b/arch/powerpc/mm/nohash/fsl_book3e.c
-@@ -168,7 +168,7 @@ unsigned long calc_cam_sz(unsigned long ram, unsigned long virt,
- 
- static unsigned long map_mem_in_cams_addr(phys_addr_t phys, unsigned long virt,
- 					unsigned long ram, int max_cam_idx,
--					bool dryrun)
-+					bool dryrun, bool init)
- {
- 	int i;
- 	unsigned long amount_mapped = 0;
-@@ -203,12 +203,12 @@ static unsigned long map_mem_in_cams_addr(phys_addr_t phys, unsigned long virt,
- 	return amount_mapped;
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index ac0a5ff48c3a..d6ba821a56ce 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -193,10 +193,12 @@ static inline pte_t pte_wrprotect(pte_t pte)
  }
- 
--unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx, bool dryrun)
-+unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx, bool dryrun, bool init)
- {
- 	unsigned long virt = PAGE_OFFSET;
- 	phys_addr_t phys = memstart_addr;
- 
--	return map_mem_in_cams_addr(phys, virt, ram, max_cam_idx, dryrun);
-+	return map_mem_in_cams_addr(phys, virt, ram, max_cam_idx, dryrun, init);
- }
- 
- #ifdef CONFIG_PPC32
-@@ -249,7 +249,7 @@ void __init adjust_total_lowmem(void)
- 	ram = min((phys_addr_t)__max_low_memory, (phys_addr_t)total_lowmem);
- 
- 	i = switch_to_as1();
--	__max_low_memory = map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM, false);
-+	__max_low_memory = map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM, false, true);
- 	restore_to_as0(i, 0, 0, 1);
- 
- 	pr_info("Memory CAM mapping: ");
-@@ -320,11 +320,11 @@ notrace void __init relocate_init(u64 dt_ptr, phys_addr_t start)
- 		/* map a 64M area for the second relocation */
- 		if (memstart_addr > start)
- 			map_mem_in_cams(0x4000000, CONFIG_LOWMEM_CAM_NUM,
--					false);
-+					false, true);
- 		else
- 			map_mem_in_cams_addr(start, PAGE_OFFSET + offset,
- 					0x4000000, CONFIG_LOWMEM_CAM_NUM,
--					false);
-+					false, true);
- 		restore_to_as0(n, offset, __va(dt_ptr), 1);
- 		/* We should never reach here */
- 		panic("Relocation error");
-diff --git a/arch/powerpc/mm/nohash/kaslr_booke.c b/arch/powerpc/mm/nohash/kaslr_booke.c
-index 4c74e8a5482b..8fc49b1b4a91 100644
---- a/arch/powerpc/mm/nohash/kaslr_booke.c
-+++ b/arch/powerpc/mm/nohash/kaslr_booke.c
-@@ -314,7 +314,7 @@ static unsigned long __init kaslr_choose_location(void *dt_ptr, phys_addr_t size
- 		pr_warn("KASLR: No safe seed for randomizing the kernel base.\n");
- 
- 	ram = min_t(phys_addr_t, __max_low_memory, size);
--	ram = map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM, true);
-+	ram = map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM, true, false);
- 	linear_sz = min_t(unsigned long, ram, SZ_512M);
- 
- 	/* If the linear size is smaller than 64M, do not randmize */
-diff --git a/arch/powerpc/mm/nohash/tlb.c b/arch/powerpc/mm/nohash/tlb.c
-index 5872f69141d5..fc195b9f524b 100644
---- a/arch/powerpc/mm/nohash/tlb.c
-+++ b/arch/powerpc/mm/nohash/tlb.c
-@@ -643,7 +643,7 @@ static void early_init_this_mmu(void)
- 
- 		if (map)
- 			linear_map_top = map_mem_in_cams(linear_map_top,
--							 num_cams, false);
-+							 num_cams, true, true);
- 	}
  #endif
  
-@@ -764,7 +764,7 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 		num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
++#ifndef pte_mkexec
+ static inline pte_t pte_mkexec(pte_t pte)
+ {
+ 	return __pte(pte_val(pte) | _PAGE_EXEC);
+ }
++#endif
  
- 		linear_sz = map_mem_in_cams(first_memblock_size, num_cams,
--					    true);
-+					    false, true);
+ #define pmd_none(pmd)		(!pmd_val(pmd))
+ #define	pmd_bad(pmd)		(pmd_val(pmd) & _PMD_BAD)
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index d081704b13fb..9d2905a47410 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -118,11 +118,6 @@ static inline pte_t pte_wrprotect(pte_t pte)
+ 	return __pte(pte_val(pte) & ~_PAGE_RW);
+ }
  
- 		ppc64_rma_size = min_t(u64, linear_sz, 0x40000000);
- 	} else
+-static inline pte_t pte_mkexec(pte_t pte)
+-{
+-	return __pte(pte_val(pte) | _PAGE_EXEC);
+-}
+-
+ #define PMD_BAD_BITS		(PTE_TABLE_SIZE-1)
+ #define PUD_BAD_BITS		(PMD_TABLE_SIZE-1)
+ 
+diff --git a/arch/powerpc/include/asm/nohash/pte-book3e.h b/arch/powerpc/include/asm/nohash/pte-book3e.h
+index 813918f40765..f798640422c2 100644
+--- a/arch/powerpc/include/asm/nohash/pte-book3e.h
++++ b/arch/powerpc/include/asm/nohash/pte-book3e.h
+@@ -48,7 +48,7 @@
+ #define _PAGE_WRITETHRU	0x800000 /* W: cache write-through */
+ 
+ /* "Higher level" linux bit combinations */
+-#define _PAGE_EXEC		_PAGE_BAP_UX /* .. and was cache cleaned */
++#define _PAGE_EXEC		(_PAGE_BAP_SX | _PAGE_BAP_UX) /* .. and was cache cleaned */
+ #define _PAGE_RW		(_PAGE_BAP_SW | _PAGE_BAP_UW) /* User write permission */
+ #define _PAGE_KERNEL_RW		(_PAGE_BAP_SW | _PAGE_BAP_SR | _PAGE_DIRTY)
+ #define _PAGE_KERNEL_RO		(_PAGE_BAP_SR)
+@@ -93,11 +93,11 @@
+ /* Permission masks used to generate the __P and __S table */
+ #define PAGE_NONE	__pgprot(_PAGE_BASE)
+ #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
+-#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | _PAGE_EXEC)
++#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | _PAGE_BAP_UX)
+ #define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER)
+-#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
++#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_BAP_UX)
+ #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER)
+-#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
++#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_BAP_UX)
+ 
+ #ifndef __ASSEMBLY__
+ static inline pte_t pte_mkprivileged(pte_t pte)
+@@ -113,6 +113,16 @@ static inline pte_t pte_mkuser(pte_t pte)
+ }
+ 
+ #define pte_mkuser pte_mkuser
++
++static inline pte_t pte_mkexec(pte_t pte)
++{
++	if (pte_val(pte) & _PAGE_BAP_UR)
++		return __pte((pte_val(pte) & ~_PAGE_BAP_SX) | _PAGE_BAP_UX);
++	else
++		return __pte((pte_val(pte) & ~_PAGE_BAP_UX) | _PAGE_BAP_SX);
++}
++#define pte_mkexec pte_mkexec
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/mm/nohash/tlb_low_64e.S b/arch/powerpc/mm/nohash/tlb_low_64e.S
+index bf24451f3e71..9235e720e357 100644
+--- a/arch/powerpc/mm/nohash/tlb_low_64e.S
++++ b/arch/powerpc/mm/nohash/tlb_low_64e.S
+@@ -222,7 +222,7 @@ tlb_miss_kernel_bolted:
+ 
+ tlb_miss_fault_bolted:
+ 	/* We need to check if it was an instruction miss */
+-	andi.	r10,r11,_PAGE_EXEC|_PAGE_BAP_SX
++	andi.	r10,r11,_PAGE_BAP_UX|_PAGE_BAP_SX
+ 	bne	itlb_miss_fault_bolted
+ dtlb_miss_fault_bolted:
+ 	tlb_epilog_bolted
+@@ -239,7 +239,7 @@ itlb_miss_fault_bolted:
+ 	srdi	r15,r16,60		/* get region */
+ 	bne-	itlb_miss_fault_bolted
+ 
+-	li	r11,_PAGE_PRESENT|_PAGE_EXEC	/* Base perm */
++	li	r11,_PAGE_PRESENT|_PAGE_BAP_UX	/* Base perm */
+ 
+ 	/* We do the user/kernel test for the PID here along with the RW test
+ 	 */
+@@ -614,7 +614,7 @@ itlb_miss_fault_e6500:
+ 
+ 	/* We do the user/kernel test for the PID here along with the RW test
+ 	 */
+-	li	r11,_PAGE_PRESENT|_PAGE_EXEC	/* Base perm */
++	li	r11,_PAGE_PRESENT|_PAGE_BAP_UX	/* Base perm */
+ 	oris	r11,r11,_PAGE_ACCESSED@h
+ 
+ 	cmpldi	cr0,r15,0			/* Check for user region */
+@@ -734,7 +734,7 @@ normal_tlb_miss_done:
+ 
+ normal_tlb_miss_access_fault:
+ 	/* We need to check if it was an instruction miss */
+-	andi.	r10,r11,_PAGE_EXEC
++	andi.	r10,r11,_PAGE_BAP_UX
+ 	bne	1f
+ 	ld	r14,EX_TLB_DEAR(r12)
+ 	ld	r15,EX_TLB_ESR(r12)
 -- 
 2.31.1
 
