@@ -2,102 +2,57 @@ Return-Path: <SRS0=3mqf=PO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C800C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 16:30:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95EBDC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 18:37:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 98FC460527
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 16:30:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 98FC460527
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0225260F9B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 18:37:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0225260F9B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hdy3F2KG8z3cT7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 03:30:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hf0tj24WQz3bYD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 05:37:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OXG6jHbR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=g30x3pZv;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=gustavoars@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=OXG6jHbR; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=g30x3pZv; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hdy0q4Tk7z2xYP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 03:27:55 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 19QFrdfb010243; 
- Tue, 26 Oct 2021 16:27:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=/5FpGiAUYndvE6BpEAdYlwvaGZ2+B01ieQ5uMBIPutM=;
- b=OXG6jHbRUYEADlwtY0vWVp9j8OOv+ePlW5S6KhTZM5BqwivdnaSXvJN8pYX9LX1LuMM4
- RFx2CngNjZvP6s/R8se3y0mIF5dtmA83VPr9ip9jaQiTR3VesbhYygE1+e6w/59a0X/9
- 3hO1u6U5UjVARmy/9lYt36C99Md/OS7O0SFP+2Gr/bs9ZtUmmo4fhFMk7HkrEt4f3pPq
- S6MsXkJmQqQyi2HgKd48w2Ud6eFi3e76zARnyUagyb+YXMAWDYCHy4wbU1vilxfZXrnZ
- 40uc+whiE26RZPRJTVSjY/J5qWBj+dDcwzsBe7XE4Mw7igbWCOd52+UZVy30OGB/ZDCK nQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bx4k8pm71-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 26 Oct 2021 16:27:46 +0000
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 19QDrblI004620;
- Tue, 26 Oct 2021 16:27:46 GMT
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3bx4k8pm6a-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 26 Oct 2021 16:27:46 +0000
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 19QGHMMt032582;
- Tue, 26 Oct 2021 16:27:44 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma04fra.de.ibm.com with ESMTP id 3bx4f7exav-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 26 Oct 2021 16:27:44 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 19QGRg4m49938694
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 26 Oct 2021 16:27:42 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 13497A405C;
- Tue, 26 Oct 2021 16:27:42 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B5FA6A4054;
- Tue, 26 Oct 2021 16:27:41 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.145.63.253])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 26 Oct 2021 16:27:41 +0000 (GMT)
-From: Laurent Dufour <ldufour@linux.ibm.com>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 0/2] powerpc prevents deadlock in the watchdog path
-Date: Tue, 26 Oct 2021 18:27:38 +0200
-Message-Id: <20211026162740.16283-1-ldufour@linux.ibm.com>
-X-Mailer: git-send-email 2.33.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hf0sz5nLXz2xCd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 05:37:11 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id D25DF60E05;
+ Tue, 26 Oct 2021 18:37:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1635273428;
+ bh=1xQXVhbF8/BGLuvjiPQZc83KtW2+s7akCS60PQNrPZg=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=g30x3pZvp/LbCs0Ax/nHYsd74I1JEAOKbTMArMvXnNkfibGEYWkLJSFx4Zytob6Bl
+ F1iMT7y2fiD6zrj/XCf6jOAgGtDVvBg5gxOJcaZMoMO6MCAm4MmSWUh7cNAbG0hsWp
+ ki9rEZgjxnq43vVD/BUU2qEJX3Evz4S9ttVDkFK5xVQsAiZq/r0lA/ptW4GANCPQmO
+ raVqRcux30VB2ahlzI9+PnTXjazdX0SySkBbWjXHYc1MDw4zw2Xo5ABQvPpKr6Afoi
+ koSXsza+Ospt210rf7g2WHLxvkljZOkaszX1Tkkr38o4AWaSI2FRkH0Wty5/q27pIJ
+ iGjvwPiqXqKPQ==
+Date: Tue, 26 Oct 2021 13:42:01 -0500
+From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>
+Subject: Re: [PATCH][next] powerpc/vas: Fix potential NULL pointer dereference
+Message-ID: <20211026184201.GB1457721@embeddedor>
+References: <20211015050345.GA1161918@embeddedor>
+ <97c42e43-15b9-5db6-d460-dbb16f31954d@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 1cPmwLfwbbILT3CgcY1obs11vQXiW9gL
-X-Proofpoint-ORIG-GUID: kzcNe-goX77fc1CjS8liausGg3IoiSCi
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.182.1,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
- definitions=2021-10-26_05,2021-10-26_01,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0
- lowpriorityscore=0 phishscore=0 impostorscore=0 malwarescore=0 spamscore=0
- mlxscore=0 adultscore=0 mlxlogscore=999 suspectscore=0 priorityscore=1501
- clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2110150000 definitions=main-2110260088
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <97c42e43-15b9-5db6-d460-dbb16f31954d@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,35 +64,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- npiggin@gmail.com
+Cc: Haren Myneni <haren@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-While doing LPM on large system (for instance a Brazos system with 1024
-CPUs and 12TB of memory) with an heavy load (I ran 'stress-ng --futex 500
--vm 5'), watchdog hard lockup are seen when the hypervisor is taking
-too much time handling the page tables to track page's changes.
+On Mon, Oct 18, 2021 at 02:09:31PM -0700, Tyrel Datwyler wrote:
+> On 10/14/21 10:03 PM, Gustavo A. R. Silva wrote:
+> > (!ptr && !ptr->foo) strikes again. :)
+> > 
+> > The expression (!ptr && !ptr->foo) is bogus and in case ptr is NULL,
+> > it leads to a NULL pointer dereference: ptr->foo.
+> > 
+> > Fix this by converting && to ||
+> > 
+> > This issue was detected with the help of Coccinelle, and audited and
+> > fixed manually.
+> > 
+> > Fixes: 1a0d0d5ed5e3 ("powerpc/vas: Add platform specific user window operations")
+> > Cc: stable@vger.kernel.org
+> > Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+> Looking at the usage pattern it is obvious that if we determine !ptr attempting
+> to also confirm !ptr->ops is going to blow up.
+> 
+> LGTM.
+> 
+> Reviewed-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 
-When this happens, the system may hung with a deadlock between the watchdog
-lock and the console owner lock.
+I think I'll take this in my tree.
 
-The first patch of this series prevents that deadlock by not calling printk
-while holding the watchdog lock, and also not sending IPI (and waiting for
-CPU's answer during 1s) while holding the watchdog lock.
-
-The second patch ensures that the watchdog's data are accessed under the
-protection of the watchdog lock.
-
-Laurent Dufour (2):
-  powerpc/watchdog: prevent printk and send IPI while holding the wd
-    lock
-  powerpc/watchdog: ensure watchdog data accesses are protected
-
- arch/powerpc/kernel/watchdog.c | 45 +++++++++++++++++++---------------
- 1 file changed, 25 insertions(+), 20 deletions(-)
-
--- 
-2.33.1
-
+Thanks, Tyrel.
+--
+Gustavo
