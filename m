@@ -2,60 +2,59 @@ Return-Path: <SRS0=3mqf=PO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BDC2C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 22:31:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56665C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 22:36:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79128610A0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 22:31:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 79128610A0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 8034461078
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Oct 2021 22:36:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8034461078
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hf64S5hKVz3bYL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 09:31:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hf69W581Zz2ywG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 09:35:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=esTDXAO9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U7GGPV0a;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hf63h5qLjz2xYP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 09:30:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=gustavoars@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=esTDXAO9; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=U7GGPV0a; 
  dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Hf63f3HMqz4xbG;
- Wed, 27 Oct 2021 09:30:54 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1635287454;
- bh=XefSZASUt0Shq3/7ecZYzgnUVFy7rObUidTFXFQDrPU=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=esTDXAO9VPl+gb2NPopWhgwRcoAKMImKj95UXpm2end2j9VxyW8qWOQExKFdCD2r3
- 4a+mjM6PhzR1Dx7NnsaUdKC8A9h4hQH8QbVPjd0w64niF0gJtD2paXrzLs8gGsawPB
- 5r24B/zV9OZLLbD5DXlXDGV2qQNPcx+t4qsHIlI0w/eZSBKNSktsUqTd548ZBrjqqb
- T5icJ4Tw5eSz+Vn8mjFyVNqqP2DygNPnzsYuRsql1asJwyp5nXjpt5mhkHuoVqt/R5
- 1RGTLcyFsedb3kM/5vatFc5wmHDc+TE+SvCghW+DRTZvNfXBYMfBhO26O2selqltlS
- Z9O13Qfolda3g==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Gustavo A. R. Silva" <gustavoars@kernel.org>, Tyrel Datwyler
- <tyreld@linux.ibm.com>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hf68s4C3fz2x98
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 09:35:25 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id B1B1861078;
+ Tue, 26 Oct 2021 22:35:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1635287722;
+ bh=F7c4FLOG/JXpD5fMAX/T0ZjE8OJGkErTGZeG75EeKr0=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=U7GGPV0a/Y0GUtoRJFPI+7hug+nZfuTykCoG6S301E2bNQWk77gwDGwnS0od4vXjG
+ 6eMUZO782AO5h4UEW9A0dbIW15ABmnbs91m9QqrjGHXyRITRll2SfCbz2MpjdX8irx
+ KKj1kK03Fta62LWrP9FAztnV/3OoSDWNniishGobnNo9N8hjntmc2TTHj+oZyAh2oY
+ 5cyQ5OYdTGHK9y06i04G9bDCWxXXw9Ck/MwbFpFf9bQ6Yaag3bFkDWpVt5oRUJzucc
+ nTzvn/rMoYcS7NCRt3QE/D8uK0pI2PA8PrSUWB3/iUuPJraxRc2riY7cukPSW6WHtZ
+ VhClmkjPry6Bg==
+Date: Tue, 26 Oct 2021 17:40:16 -0500
+From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
 Subject: Re: [PATCH][next] powerpc/vas: Fix potential NULL pointer dereference
-In-Reply-To: <20211026184201.GB1457721@embeddedor>
+Message-ID: <20211026224016.GA1488461@embeddedor>
 References: <20211015050345.GA1161918@embeddedor>
  <97c42e43-15b9-5db6-d460-dbb16f31954d@linux.ibm.com>
  <20211026184201.GB1457721@embeddedor>
-Date: Wed, 27 Oct 2021 09:30:53 +1100
-Message-ID: <87h7d3beqq.fsf@mpe.ellerman.id.au>
+ <87h7d3beqq.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87h7d3beqq.fsf@mpe.ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,42 +66,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Haren Myneni <haren@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, Haren Myneni <haren@linux.ibm.com>,
+ linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, linux-hardening@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Gustavo A. R. Silva" <gustavoars@kernel.org> writes:
-> On Mon, Oct 18, 2021 at 02:09:31PM -0700, Tyrel Datwyler wrote:
->> On 10/14/21 10:03 PM, Gustavo A. R. Silva wrote:
->> > (!ptr && !ptr->foo) strikes again. :)
->> > 
->> > The expression (!ptr && !ptr->foo) is bogus and in case ptr is NULL,
->> > it leads to a NULL pointer dereference: ptr->foo.
->> > 
->> > Fix this by converting && to ||
->> > 
->> > This issue was detected with the help of Coccinelle, and audited and
->> > fixed manually.
->> > 
->> > Fixes: 1a0d0d5ed5e3 ("powerpc/vas: Add platform specific user window operations")
->> > Cc: stable@vger.kernel.org
->> > Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
->> Looking at the usage pattern it is obvious that if we determine !ptr attempting
->> to also confirm !ptr->ops is going to blow up.
->> 
->> LGTM.
->> 
->> Reviewed-by: Tyrel Datwyler <tyreld@linux.ibm.com>
->
-> I think I'll take this in my tree.
+On Wed, Oct 27, 2021 at 09:30:53AM +1100, Michael Ellerman wrote:
+[..]
+> > I think I'll take this in my tree.
+> 
+> I've already put it in powerpc/next:
+> 
+>   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=next&id=61cb9ac66b30374c7fd8a8b2a3c4f8f432c72e36
 
-I've already put it in powerpc/next:
+Oh, great. :)
 
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=next&id=61cb9ac66b30374c7fd8a8b2a3c4f8f432c72e36
+> If you need to pick it up as well for some reason that's fine.
 
-If you need to pick it up as well for some reason that's fine.
+I just didn't  want it to get lost somehow. I'll drop it from tree now.
 
-cheers
+Thanks
+--
+Gustavo
+
+
