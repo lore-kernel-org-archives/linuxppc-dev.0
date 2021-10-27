@@ -2,56 +2,58 @@ Return-Path: <SRS0=vpml=PP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F740C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 10:04:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A784AC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 10:23:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6EA9B60FBF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 10:04:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6EA9B60FBF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=physik.fu-berlin.de
+	by mail.kernel.org (Postfix) with ESMTPS id AC9D8604DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 10:23:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AC9D8604DA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HfPRh4PzCz3c4c
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 21:04:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66;
- helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de;
- receiver=<UNKNOWN>)
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de
- [130.133.4.66])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HfPsy31xdz2ynb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 21:23:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=linux-m68k.org
+ (client-ip=2a02:1800:120:4::f00:d; helo=newton.telenet-ops.be;
+ envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
+X-Greylist: delayed 455 seconds by postgrey-1.36 at boromir;
+ Wed, 27 Oct 2021 21:23:06 AEDT
+Received: from newton.telenet-ops.be (newton.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HfPR90QZFz2xDm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 21:03:47 +1100 (AEDT)
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
- by outpost.zedat.fu-berlin.de (Exim 4.94) with esmtps (TLS1.2)
- tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
- (envelope-from <glaubitz@zedat.fu-berlin.de>)
- id 1mffmX-0009fl-CI; Wed, 27 Oct 2021 12:03:41 +0200
-Received: from suse-laptop.physik.fu-berlin.de ([160.45.32.140])
- by inpost2.zedat.fu-berlin.de (Exim 4.94) with esmtpsa (TLS1.2)
- tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
- (envelope-from <glaubitz@physik.fu-berlin.de>)
- id 1mffmX-002OwE-6k; Wed, 27 Oct 2021 12:03:41 +0200
-Message-ID: <04864fe5-fdd0-74b2-2bad-0303e4c2b15a@physik.fu-berlin.de>
-Date: Wed, 27 Oct 2021 12:03:40 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HfPsQ6kRTz2xX5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 21:23:06 +1100 (AEDT)
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:14])
+ by newton.telenet-ops.be (Postfix) with ESMTPS id 4HfPhM6TLmzMr5fj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 12:15:15 +0200 (CEST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed20:441:6c1a:bc30:46e])
+ by xavier.telenet-ops.be with bizsmtp
+ id AyFF260052hfXWm01yFFKF; Wed, 27 Oct 2021 12:15:15 +0200
+Received: from rox.of.borg ([192.168.97.57])
+ by ramsan.of.borg with esmtps (TLS1.3) tls
+ TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
+ (envelope-from <geert@linux-m68k.org>)
+ id 1mffiU-008HRd-Op; Wed, 27 Oct 2021 11:59:30 +0200
+Received: from geert by rox.of.borg with local (Exim 4.93)
+ (envelope-from <geert@linux-m68k.org>)
+ id 1mfdkV-00DitM-UB; Wed, 27 Oct 2021 09:53:27 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jirislaby@kernel.org>
+Subject: [PATCH] serial: cpm_uart: Protect udbg definitions by
+ CONFIG_SERIAL_CPM_CONSOLE
+Date: Wed, 27 Oct 2021 09:53:26 +0200
+Message-Id: <20211027075326.3270785-1-geert@linux-m68k.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.2.0
-Subject: Re: Linux kernel: powerpc: KVM guest can trigger host crash on Power8
-Content-Language: en-US
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <87pmrtbbdt.fsf@mpe.ellerman.id.au>
- <05b88724-90b6-a38a-bb3b-7392f85c1934@physik.fu-berlin.de>
- <878ryfavaz.fsf@mpe.ellerman.id.au>
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-In-Reply-To: <878ryfavaz.fsf@mpe.ellerman.id.au>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-Originating-IP: 160.45.32.140
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,52 +65,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: oss-security@lists.openwall.com,
- "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-serial@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael!
+If CONFIG_CONSOLE_POLL=y, and CONFIG_SERIAL_CPM=m (hence
+CONFIG_SERIAL_CPM_CONSOLE=n):
 
-On 10/27/21 07:30, Michael Ellerman wrote:
-> I did test the repro case you gave me before (in the bugzilla), which
-> was building glibc, that passes for me with a patched host.
+    drivers/tty/serial/cpm_uart/cpm_uart_core.c:1109:12: warning: ‘udbg_cpm_getc’ defined but not used [-Wunused-function]
+     1109 | static int udbg_cpm_getc(void)
+	  |            ^~~~~~~~~~~~~
+    drivers/tty/serial/cpm_uart/cpm_uart_core.c:1095:13: warning: ‘udbg_cpm_putc’ defined but not used [-Wunused-function]
+     1095 | static void udbg_cpm_putc(char c)
+	  |             ^~~~~~~~~~~~~
 
-Did you manage to crash the unpatched host? If the unpatched host crashes
-for you but the patched doesn't, I will make sure I didn't accidentally
-miss anything.
+Fix this by making the udbg definitions depend on
+CONFIG_SERIAL_CPM_CONSOLE, in addition to CONFIG_CONSOLE_POLL.
 
-Also, I'll try a kernel from git with Debian's config.
+Fixes: a60526097f42eb98 ("tty: serial: cpm_uart: Add udbg support for enabling xmon")
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+One more casualty of CONFIG_WERROR=y.
+http://kisskb.ellerman.id.au/kisskb/buildresult/14652935/
+---
+ drivers/tty/serial/cpm_uart/cpm_uart_core.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-> I guess we have yet another bug.
-> 
-> I tried the following in a debian BE VM and it completed fine:
-> 
->  $ dget -u http://ftp.debian.org/debian/pool/main/g/git/git_2.33.1-1.dsc
->  $ sbuild -d sid --arch=powerpc --no-arch-all git_2.33.1-1.dsc
-> 
-> Same for ppc64.
-> 
-> And I also tried both at once, repeatedly in a loop.
-
-Did you try building gcc-11 for powerpc and ppc64 both at once?
-
-> I guess it's something more complicated.
-> 
-> What exact host/guest kernel versions and configs are you running?
-
-Both the host and guest are running Debian's stock 5.14.12 kernel. The host has
-a kernel with your patches applied, the guest doesn't.
-
-Let me do some more testing.
-
-Adrian
-
+diff --git a/drivers/tty/serial/cpm_uart/cpm_uart_core.c b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+index c719aa2b18328321..d6d3db9c3b1f83ab 100644
+--- a/drivers/tty/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+@@ -1090,6 +1090,7 @@ static void cpm_put_poll_char(struct uart_port *port,
+ 	cpm_uart_early_write(pinfo, ch, 1, false);
+ }
+ 
++#ifdef CONFIG_SERIAL_CPM_CONSOLE
+ static struct uart_port *udbg_port;
+ 
+ static void udbg_cpm_putc(char c)
+@@ -1114,6 +1115,7 @@ static int udbg_cpm_getc(void)
+ 		cpu_relax();
+ 	return c;
+ }
++#endif /* CONFIG_SERIAL_CPM_CONSOLE */
+ 
+ #endif /* CONFIG_CONSOLE_POLL */
+ 
 -- 
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer - glaubitz@debian.org
-`. `'   Freie Universitaet Berlin - glaubitz@physik.fu-berlin.de
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+2.25.1
 
