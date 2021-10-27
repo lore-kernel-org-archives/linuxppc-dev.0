@@ -2,69 +2,69 @@ Return-Path: <SRS0=vpml=PP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85B79C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:59:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0542DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:59:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C296360E8B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:59:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C296360E8B
+	by mail.kernel.org (Postfix) with ESMTPS id 603B360F92
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:59:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 603B360F92
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hfkdd3Vj8z3dg4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 09:59:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HfkfM0MJyz3f8Q
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 09:59:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Yo8WLAj0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=VGbgvR+u;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::134;
- helo=mail-lf1-x134.google.com; envelope-from=digetx@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::12d;
+ helo=mail-lf1-x12d.google.com; envelope-from=digetx@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=Yo8WLAj0; dkim-atps=neutral
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com
- [IPv6:2a00:1450:4864:20::134])
+ header.s=20210112 header.b=VGbgvR+u; dkim-atps=neutral
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com
+ [IPv6:2a00:1450:4864:20::12d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HfhPN2Tf7z2yMc;
- Thu, 28 Oct 2021 08:18:16 +1100 (AEDT)
-Received: by mail-lf1-x134.google.com with SMTP id f3so804368lfu.12;
- Wed, 27 Oct 2021 14:18:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HfhPQ5WH9z2xsy;
+ Thu, 28 Oct 2021 08:18:18 +1100 (AEDT)
+Received: by mail-lf1-x12d.google.com with SMTP id j2so9013870lfg.3;
+ Wed, 27 Oct 2021 14:18:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=mkT4WvxT7RtftPa0rTvgt/WDicZUVRxbWN0FWKN7Smg=;
- b=Yo8WLAj00ehYxZyZdDVWixoWYFZCxGC5pnXCEDD+Lpmu7VCTkoyMEfgBUZ5rd74829
- 10cwYzMjgPMmfgRZlSo7KTAiAM4JViXknvJSGF9v6lX6GD7KJFaPvImanRJ6VVtdquR5
- UWHkY3wgAzq9P8o4pg5QZxxWrvHm8PSEPWuEh07SLsPZUVJPf1GZYbO3PdmhFgXJ+BA3
- yKffg+/c59X1/gl1a+krdkF8Zrm1ykankDPCOetkz+NKynMz9QOH9WwpSKXop30n94Hj
- u5jmdqBNWkVvyuWeZCuboMhJEA6otxFAt6GyTyoGvAX05kLjRNIXysRA8hScLTqoqleX
- /lfA==
+ bh=Vv5v7NJqa2pgRBcibgPiURAuuSzsOgTRkcWT+pa422M=;
+ b=VGbgvR+u/npCM8vNPn38NuZ+MIrzGhV81ZfjU+MvKS7AiNy8hSxCjA7ujiUYCw1avb
+ GAS28yQKe3RY82NkG0EyIE3kAScJ6kyKTE9XbDbIDpQ4/fNIy31zksAcsMcf8bk9+oZI
+ 1wHpYlYvsjYNqCu/GmNzEr8yZmApiaFT6QsgmW5CvvcXj9w3x5S6f7cRGSestmqNVLhh
+ o9VGqc+8lw97d2ugsZVtaD4DU57/XiuAmduAg/0PPfMVALR+BIUtVf/vGT/0dSW22xNm
+ 0l5U0Yw6vCM5eFCBC2LE4tjs/ctA+ukPU11+6ITwiBuENW3D9cS5YJDtN5S1cIiSXp7j
+ wB1A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=mkT4WvxT7RtftPa0rTvgt/WDicZUVRxbWN0FWKN7Smg=;
- b=4DAgQnx+eNfFvLAuqIXqpDx9Agj+nTGgWb8+aCrOMWFUpEuNctmGyczOe1H8l2cuIW
- 2r89CBUiLmQhZV+WV1BUr/u7clJM6riMvh0rEQFYiTApY40p3t9SnpGdpwtynkA/64xv
- Tle6sXWRQ/DibmazYgWN5OBPe4CB+HDW8nmUEwSmRsq+BB85EY4wbodHXjMp/5QcfHYD
- XfTLnltJaRpqHuzcQaTJfJna6dykZbknOPgvPeLV9IFtwQ9+i05YOjwyW4/HQOcftZDv
- QxMIsbQ59vx11+HcVZ1niE7Yg7YIvfO56vdiLC+GruRQsIqRFXykIfDTXd+Z4bQt6whd
- 69iQ==
-X-Gm-Message-State: AOAM532V5ltGCxMGboDU7bRUAeYiF+CnpHsFpzcqM78LfJXL9kGnSITS
- NcuIThKHucJLFNDzV1K2GAI=
-X-Google-Smtp-Source: ABdhPJwGPYNJdHipR88AgCsSNedxVrXKRLPSbCNZ0Vw/PQMqS4/ZZmjcey45JQAWlpQD9BTSBOkxoA==
-X-Received: by 2002:ac2:5fea:: with SMTP id s10mr112420lfg.652.1635369493279; 
- Wed, 27 Oct 2021 14:18:13 -0700 (PDT)
+ bh=Vv5v7NJqa2pgRBcibgPiURAuuSzsOgTRkcWT+pa422M=;
+ b=latCfxloJWttwywRQdaC5wGg0vJkXT/5d5LY4Lu7PkFWd9icvwwM/MI5/EqKhrBH1w
+ rFaRqgsS3Du2CXTBxqmEwFRrhbjAR6dCxETOHKyYcxlyg+aAi/ZAEDLTWdcbZIjjeL/J
+ NnmTBLsopcwD3/sgFBT1QAYtNsOlJun/zOL+pUALvsz2VJc4hcMy8eJDUh+gHiNR61Ki
+ flUpgsQVzIXdRYlqycqxu7/Xevz1qpt/B2HdBaIHvy92ziuP161FZYhrLqg30CUXfuN+
+ BxFatywaAfPVGykpZyUIW8R9tVFZs3F5jok5mBwH1XAEOoma0//JGeZK0d8DHyJ5TAPb
+ q9Xw==
+X-Gm-Message-State: AOAM530Cm8ag63wJlB+1zDiScdZKOuhGyGis7drP9DjS6xLZ3dKaXSVF
+ CNY3NXZeO9CR2zrov5Q82mA=
+X-Google-Smtp-Source: ABdhPJycpSIBttPaIIeVkgKRen/cPXePW42pRZoMffRx62Sit7qS0BR3pB37ZmB7g4nrP0IYjPFMsA==
+X-Received: by 2002:ac2:5c43:: with SMTP id s3mr133719lfp.248.1635369495190;
+ Wed, 27 Oct 2021 14:18:15 -0700 (PDT)
 Received: from localhost.localdomain (46-138-41-28.dynamic.spd-mgts.ru.
  [46.138.41.28])
- by smtp.gmail.com with ESMTPSA id d7sm104336ljl.18.2021.10.27.14.18.11
+ by smtp.gmail.com with ESMTPSA id d7sm104336ljl.18.2021.10.27.14.18.13
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 27 Oct 2021 14:18:13 -0700 (PDT)
+ Wed, 27 Oct 2021 14:18:14 -0700 (PDT)
 From: Dmitry Osipenko <digetx@gmail.com>
 To: Thierry Reding <thierry.reding@gmail.com>,
  Jonathan Hunter <jonathanh@nvidia.com>, Lee Jones <lee.jones@linaro.org>,
@@ -74,9 +74,9 @@ To: Thierry Reding <thierry.reding@gmail.com>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v2 11/45] arm64: Use do_kernel_power_off()
-Date: Thu, 28 Oct 2021 00:16:41 +0300
-Message-Id: <20211027211715.12671-12-digetx@gmail.com>
+Subject: [PATCH v2 12/45] csky: Use do_kernel_power_off()
+Date: Thu, 28 Oct 2021 00:16:42 +0300
+Message-Id: <20211027211715.12671-13-digetx@gmail.com>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <20211027211715.12671-1-digetx@gmail.com>
 References: <20211027211715.12671-1-digetx@gmail.com>
@@ -140,23 +140,32 @@ be converted to the new power-off API.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/arm64/kernel/process.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/csky/kernel/power.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
-index aacf2f5559a8..f8db031afa7d 100644
---- a/arch/arm64/kernel/process.c
-+++ b/arch/arm64/kernel/process.c
-@@ -110,8 +110,7 @@ void machine_power_off(void)
+diff --git a/arch/csky/kernel/power.c b/arch/csky/kernel/power.c
+index 923ee4e381b8..86ee202906f8 100644
+--- a/arch/csky/kernel/power.c
++++ b/arch/csky/kernel/power.c
+@@ -9,16 +9,14 @@ EXPORT_SYMBOL(pm_power_off);
+ void machine_power_off(void)
  {
  	local_irq_disable();
- 	smp_send_stop();
 -	if (pm_power_off)
 -		pm_power_off();
 +	do_kernel_power_off();
+ 	asm volatile ("bkpt");
  }
  
- /*
+ void machine_halt(void)
+ {
+ 	local_irq_disable();
+-	if (pm_power_off)
+-		pm_power_off();
++	do_kernel_power_off();
+ 	asm volatile ("bkpt");
+ }
+ 
 -- 
 2.33.1
 
