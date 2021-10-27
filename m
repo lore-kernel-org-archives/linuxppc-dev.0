@@ -2,77 +2,69 @@ Return-Path: <SRS0=vpml=PP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBFF2C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 14:22:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDF63C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 14:38:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 136AE60D42
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 14:22:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 136AE60D42
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4683960F56
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 14:38:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4683960F56
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HfW9v3MVnz3c4n
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 01:22:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=aZB0T1FF;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HfWXH1HRNz3c7X
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 01:38:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431;
- helo=mail-pf1-x431.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=aZB0T1FF; dkim-atps=neutral
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com
- [IPv6:2607:f8b0:4864:20::431])
+ smtp.mailfrom=gmail.com (client-ip=209.85.219.42; helo=mail-qv1-f42.google.com;
+ envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-qv1-f42.google.com (mail-qv1-f42.google.com
+ [209.85.219.42])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HfW9454Y6z2yHW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2021 01:21:59 +1100 (AEDT)
-Received: by mail-pf1-x431.google.com with SMTP id y7so2871073pfg.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 07:21:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=LcgMg779T/gdBXlrNU3YHrX7Gk6gacaR5KBJWJtm+pg=;
- b=aZB0T1FFZxSGyIpj59SsCIORPIGrEoeVOClNLIUCiUOsG5zahPLh7gqzsZH/29YSPU
- C7+5bsEj80wNpWA5naRezLjvxAifOnrOsScbYdvczPPmY0CIj7bTgPvZt17L8o8lqq/p
- fVT87s96rdixTjLDQ2F5MfYqhemxGZyJUnxj/OFZ1dmAqnGR51QhkCSG/x1Ncvzs8sp9
- MJTisyKwWzCzSjBmf1VpUTNKHeR/6d0DyiQ9hfOGH+j9iAk+Yh6hUzuRnOusxD+PmdXm
- Vta71sU1BItic0lHoRmoc97RnlWO0esPgWRA9CIskTN5a+J4cOvJWsIsKDfprIJIG3Dh
- Os7w==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HfWWm2l50z2xrx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2021 01:38:10 +1100 (AEDT)
+Received: by mail-qv1-f42.google.com with SMTP id h11so1845060qvk.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 07:38:10 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=LcgMg779T/gdBXlrNU3YHrX7Gk6gacaR5KBJWJtm+pg=;
- b=cTKhfDlUli97kcxDA8lCdQsm0N6enB1rxL7HyApH+p4ppqFGJtxSr47iYZEf+ZWnJv
- ujONeenFBQUfHA+BuaJT8Kfmq0FwhKUxDeq6J82bMdItbjibYvz48+Q/cpumiVcR7cwr
- nmRP32hNLekDuTe5x0+GAxoi5umokZKn9l7CDSlW96xqGmmDNaMzFEltF+zy1OCt32kH
- m7r2h85i4TAroOrNBN06FOX68uLmYMUY18NCcYU8x5ygdrGf1HijbxEigooPYaRjIewT
- 4D4MRNRnIYoQ/zf9LKRMT6soMI2/pgG9l9SnRtudvvdskdg2lcP8lY8vuhVMix/+ZyJE
- VqNA==
-X-Gm-Message-State: AOAM532U+/pN9fzgKZverbVCYp01f1LswPjj+RCEdUaH1lH2gOffWOlF
- VoqbVv0ug0lDH6FkAfcrnWPHJ76bli8=
-X-Google-Smtp-Source: ABdhPJy+gtXfVi2Tyiqe+BeTvidQTvDcUYUelFUBl7Qe7/pxsIKAYTZ/yS6QFsJsrvKFw03g9IHYjA==
-X-Received: by 2002:a63:9308:: with SMTP id b8mr24176255pge.104.1635344516390; 
- Wed, 27 Oct 2021 07:21:56 -0700 (PDT)
-Received: from bobo.ibm.com ([118.208.159.180])
- by smtp.gmail.com with ESMTPSA id d14sm159979pfu.124.2021.10.27.07.21.53
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 27 Oct 2021 07:21:56 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3] KVM: PPC: Tick accounting should defer vtime accounting
- 'til after IRQ handling
-Date: Thu, 28 Oct 2021 00:21:50 +1000
-Message-Id: <20211027142150.3711582-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.23.0
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=IIc3VM+0QP6tW1izmsIwRCOe4zK0xch73rEnQe2rldc=;
+ b=v1xlrvEr8m+cjJ06HjnvzZ8CPpMNiO+3yI8JiHaSRl6ui1RzGpRES1967Q+ny2xkbL
+ VShvJZWjym3AEQTUTP3TBka28V1zXN6r0SPrGhv3jRzdEFiYIYDiIvxOCRdMujtK/Rtr
+ MsLwBKWElQXvVy3JiSmEv7GwWpqBJDQWiEyA53sx1yWKoAMoSezlTf/lVJbC0dMXjBPh
+ 9ITvG8M7NQ8KR3ClMr/NKvgSfXDJbJfd+IlnrufwN3i6AK+8JAmIx+faub6pWO2DEKVE
+ hZEr/T3lBX5EfO9A4lQEyglrsWEHVFnZ9aqIhNOT0Y+MslCGfq4vS4BxzjJoiri9QdwT
+ UZrw==
+X-Gm-Message-State: AOAM5333BDt9GjGiZMjUtqGb4OkIGE7hn3vlNqHMkWxA3ZaD4ThOo+SU
+ 1cIv0IadagFb3Q3o0+IU6IeQiMFFf1k=
+X-Google-Smtp-Source: ABdhPJwNqwnw568QNHR/NrxyQsmNWn4QtdCP3W8/a77JMZACsdudATDGzR+d9oyecnx29eNU+sEyVw==
+X-Received: by 2002:a05:6214:20e8:: with SMTP id
+ 8mr29996274qvk.17.1635345486662; 
+ Wed, 27 Oct 2021 07:38:06 -0700 (PDT)
+Received: from mail-qv1-f43.google.com (mail-qv1-f43.google.com.
+ [209.85.219.43])
+ by smtp.gmail.com with ESMTPSA id 17sm64804qtw.16.2021.10.27.07.38.05
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Wed, 27 Oct 2021 07:38:06 -0700 (PDT)
+Received: by mail-qv1-f43.google.com with SMTP id a4so1863081qva.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 07:38:05 -0700 (PDT)
+X-Received: by 2002:a0c:fe8c:: with SMTP id d12mr25332323qvs.19.1635345485575; 
+ Wed, 27 Oct 2021 07:38:05 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20211027080849.3276289-1-geert@linux-m68k.org>
+In-Reply-To: <20211027080849.3276289-1-geert@linux-m68k.org>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Wed, 27 Oct 2021 09:37:54 -0500
+X-Gmail-Original-Message-ID: <CADRPPNQwcTTS-0MkonizSA_XbLBbTS8di4F3NWOMADACp4gD_w@mail.gmail.com>
+Message-ID: <CADRPPNQwcTTS-0MkonizSA_XbLBbTS8di4F3NWOMADACp4gD_w@mail.gmail.com>
+Subject: Re: [PATCH] usb: gadget: Mark USB_FSL_QE broken on 64-bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,127 +76,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Laurent Vivier <lvivier@redhat.com>, Nicholas Piggin <npiggin@gmail.com>,
- stable@vger.kernel.org
+Cc: Felipe Balbi <balbi@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ lkml <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Laurent Vivier <lvivier@redhat.com>
+On Wed, Oct 27, 2021 at 5:25 AM Geert Uytterhoeven <geert@linux-m68k.org> w=
+rote:
+>
+> On 64-bit:
+>
+>     drivers/usb/gadget/udc/fsl_qe_udc.c: In function =E2=80=98qe_ep0_rx=
+=E2=80=99:
+>     drivers/usb/gadget/udc/fsl_qe_udc.c:842:13: error: cast from pointer =
+to integer of different size [-Werror=3Dpointer-to-int-cast]
+>       842 |     vaddr =3D (u32)phys_to_virt(in_be32(&bd->buf));
+>           |             ^
+>     In file included from drivers/usb/gadget/udc/fsl_qe_udc.c:41:
+>     drivers/usb/gadget/udc/fsl_qe_udc.c:843:28: error: cast to pointer fr=
+om integer of different size [-Werror=3Dint-to-pointer-cast]
+>       843 |     frame_set_data(pframe, (u8 *)vaddr);
+>           |                            ^
+>
+> The driver assumes physical and virtual addresses are 32-bit, hence it
+> cannot work on 64-bit platforms.
 
-Commit 112665286d08 ("KVM: PPC: Book3S HV: Context tracking exit guest
-context before enabling irqs") moved guest_exit() into the interrupt
-protected area to avoid wrong context warning (or worse). The problem is
-that tick-based time accounting has not yet been updated at this point
-(because it depends on the timer interrupt firing), so the guest time
-gets incorrectly accounted to system time.
+The device is truly only used in legacy 32-bit PowerPC chips and never
+tested with 64-bit.  Thanks.
 
-To fix the problem, follow the x86 fix in commit 160457140187 ("Defer
-vtime accounting 'til after IRQ handling"), and allow host IRQs to run
-before accounting the guest exit time.
+>
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-In the case vtime accounting is enabled, this is not required because TB
-is used directly for accounting.
+Acked-by: Li Yang <leoyang.li@nxp.com>
 
-Before this patch, with CONFIG_TICK_CPU_ACCOUNTING=y in the host and a
-guest running a kernel compile, the 'guest' fields of /proc/stat are
-stuck at zero. With the patch they can be observed increasing roughly as
-expected.
-
-Fixes: e233d54d4d97 ("KVM: booke: use __kvm_guest_exit")
-Fixes: 112665286d08 ("KVM: PPC: Book3S HV: Context tracking exit guest context before enabling irqs")
-Cc: <stable@vger.kernel.org> # 5.12
-Signed-off-by: Laurent Vivier <lvivier@redhat.com>
-[np: only required for tick accounting, add Book3E fix, tweak changelog]
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
-Since v2:
-- I took over the patch with Laurent's blessing.
-- Changed to avoid processing IRQs if we do have vtime accounting
-  enabled.
-- Changed so in either case the accounting is called with irqs disabled.
-- Added similar Book3E fix.
-- Rebased on upstream, tested, observed bug and confirmed fix.
-
- arch/powerpc/kvm/book3s_hv.c | 30 ++++++++++++++++++++++++++++--
- arch/powerpc/kvm/booke.c     | 16 +++++++++++++++-
- 2 files changed, 43 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 2acb1c96cfaf..7b74fc0a986b 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3726,7 +3726,20 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
- 
- 	kvmppc_set_host_core(pcpu);
- 
--	guest_exit_irqoff();
-+	context_tracking_guest_exit();
-+	if (!vtime_accounting_enabled_this_cpu()) {
-+		local_irq_enable();
-+		/*
-+		 * Service IRQs here before vtime_account_guest_exit() so any
-+		 * ticks that occurred while running the guest are accounted to
-+		 * the guest. If vtime accounting is enabled, accounting uses
-+		 * TB rather than ticks, so it can be done without enabling
-+		 * interrupts here, which has the problem that it accounts
-+		 * interrupt processing overhead to the host.
-+		 */
-+		local_irq_disable();
-+	}
-+	vtime_account_guest_exit();
- 
- 	local_irq_enable();
- 
-@@ -4510,7 +4523,20 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
- 
- 	kvmppc_set_host_core(pcpu);
- 
--	guest_exit_irqoff();
-+	context_tracking_guest_exit();
-+	if (!vtime_accounting_enabled_this_cpu()) {
-+		local_irq_enable();
-+		/*
-+		 * Service IRQs here before vtime_account_guest_exit() so any
-+		 * ticks that occurred while running the guest are accounted to
-+		 * the guest. If vtime accounting is enabled, accounting uses
-+		 * TB rather than ticks, so it can be done without enabling
-+		 * interrupts here, which has the problem that it accounts
-+		 * interrupt processing overhead to the host.
-+		 */
-+		local_irq_disable();
-+	}
-+	vtime_account_guest_exit();
- 
- 	local_irq_enable();
- 
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 977801c83aff..8c15c90dd3a9 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -1042,7 +1042,21 @@ int kvmppc_handle_exit(struct kvm_vcpu *vcpu, unsigned int exit_nr)
- 	}
- 
- 	trace_kvm_exit(exit_nr, vcpu);
--	guest_exit_irqoff();
-+
-+	context_tracking_guest_exit();
-+	if (!vtime_accounting_enabled_this_cpu()) {
-+		local_irq_enable();
-+		/*
-+		 * Service IRQs here before vtime_account_guest_exit() so any
-+		 * ticks that occurred while running the guest are accounted to
-+		 * the guest. If vtime accounting is enabled, accounting uses
-+		 * TB rather than ticks, so it can be done without enabling
-+		 * interrupts here, which has the problem that it accounts
-+		 * interrupt processing overhead to the host.
-+		 */
-+		local_irq_disable();
-+	}
-+	vtime_account_guest_exit();
- 
- 	local_irq_enable();
- 
--- 
-2.23.0
-
+> ---
+> One more casualty of CONFIG_WERROR=3Dy.
+> http://kisskb.ellerman.id.au/kisskb/buildresult/14652936/
+> ---
+>  drivers/usb/gadget/udc/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/usb/gadget/udc/Kconfig b/drivers/usb/gadget/udc/Kcon=
+fig
+> index 8c614bb86c665c77..69394dc1cdfb6436 100644
+> --- a/drivers/usb/gadget/udc/Kconfig
+> +++ b/drivers/usb/gadget/udc/Kconfig
+> @@ -330,6 +330,7 @@ config USB_AMD5536UDC
+>  config USB_FSL_QE
+>         tristate "Freescale QE/CPM USB Device Controller"
+>         depends on FSL_SOC && (QUICC_ENGINE || CPM)
+> +       depends on !64BIT || BROKEN
+>         help
+>            Some of Freescale PowerPC processors have a Full Speed
+>            QE/CPM2 USB controller, which support device mode with 4
+> --
+> 2.25.1
+>
