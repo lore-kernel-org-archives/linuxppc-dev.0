@@ -2,65 +2,64 @@ Return-Path: <SRS0=vpml=PP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19405C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 04:45:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 921ACC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 04:56:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 96117600D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 04:45:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 96117600D3
+	by mail.kernel.org (Postfix) with ESMTPS id 03465610A0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 04:56:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 03465610A0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HfGMd6gpQz3c66
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 15:45:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HfGc11x0bz2xXy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 15:56:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HfGLp2xZyz2y7X
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 15:44:33 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
- by localhost (Postfix) with ESMTP id 4HfGLj5VxGz9s3X;
- Wed, 27 Oct 2021 06:44:29 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HfGbZ0gVKz2x9V
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 15:55:35 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4HfGbT2SPfz9sSp;
+ Wed, 27 Oct 2021 06:55:33 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id wiw_goB2UUSf; Wed, 27 Oct 2021 06:44:29 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.162])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (Client did not present a certificate)
- by pegase1.c-s.fr (Postfix) with ESMTPS id 4HfGLj3Ywqz9s3W;
- Wed, 27 Oct 2021 06:44:29 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19R4gXMn065764
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Wed, 27 Oct 2021 06:42:34 +0200
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19R4gXoM065762;
- Wed, 27 Oct 2021 06:42:33 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
- Joe Lawrence <joe.lawrence@redhat.com>
-Subject: [PATCH] livepatch: Fix build failure on 32 bits processors
-Date: Wed, 27 Oct 2021 06:42:23 +0200
-Message-Id: <cefeeaf1447088db00c5a62e2ff03f7d15bb4c05.1635308810.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.31.1
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id jmrJJAbWIoSS; Wed, 27 Oct 2021 06:55:33 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HfGbT1Kr0z9sSX;
+ Wed, 27 Oct 2021 06:55:33 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1A3928B76D;
+ Wed, 27 Oct 2021 06:55:33 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id N2jP4ihRTbJH; Wed, 27 Oct 2021 06:55:33 +0200 (CEST)
+Received: from [192.168.203.162] (unknown [192.168.203.162])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 74EB08B763;
+ Wed, 27 Oct 2021 06:55:32 +0200 (CEST)
+Message-ID: <063e72e1-fc05-7783-9f42-f681dd08a4b2@csgroup.eu>
+Date: Wed, 27 Oct 2021 06:55:32 +0200
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1635309740; l=2882; s=20211009;
- h=from:subject:message-id; bh=FaIgF0/d4y029q2RzpfnjkNI4436DlWb16kZwMjiL08=;
- b=6l1KK276TBHtSgQczXiIk7JpCCWljc2G6JKzy9CXgXkWcj9dmZmlfwk693zLq+bzyrOCTxnj4Kch
- j03C4jchBh0IXNpz3Q7AiqM/2ISGGaGG6qUhJIpCd9kAfxfXH6y/
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.2.0
+Subject: Re: [PATCH 2/3] powerpc/book3e: Fix set_memory_x() and set_memory_nx()
+Content-Language: fr-FR
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+References: <922bdab3a220781bae2360ff3dd5adb7fe4d34f1.1635226743.git.christophe.leroy@csgroup.eu>
+ <c41100f9c144dc5b62e5a751b810190c6b5d42fd.1635226743.git.christophe.leroy@csgroup.eu>
+ <1635309296.3vv9pb80wz.astroid@bobo.none>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <1635309296.3vv9pb80wz.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -73,61 +72,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: live-patching@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Trying to build livepatch on powerpc/32 results in:
 
-	kernel/livepatch/core.c: In function 'klp_resolve_symbols':
-	kernel/livepatch/core.c:221:23: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
-	  221 |                 sym = (Elf64_Sym *)sechdrs[symndx].sh_addr + ELF_R_SYM(relas[i].r_info);
-	      |                       ^
-	kernel/livepatch/core.c:221:21: error: assignment to 'Elf32_Sym *' {aka 'struct elf32_sym *'} from incompatible pointer type 'Elf64_Sym *' {aka 'struct elf64_sym *'} [-Werror=incompatible-pointer-types]
-	  221 |                 sym = (Elf64_Sym *)sechdrs[symndx].sh_addr + ELF_R_SYM(relas[i].r_info);
-	      |                     ^
-	kernel/livepatch/core.c: In function 'klp_apply_section_relocs':
-	kernel/livepatch/core.c:312:35: error: passing argument 1 of 'klp_resolve_symbols' from incompatible pointer type [-Werror=incompatible-pointer-types]
-	  312 |         ret = klp_resolve_symbols(sechdrs, strtab, symndx, sec, sec_objname);
-	      |                                   ^~~~~~~
-	      |                                   |
-	      |                                   Elf32_Shdr * {aka struct elf32_shdr *}
-	kernel/livepatch/core.c:193:44: note: expected 'Elf64_Shdr *' {aka 'struct elf64_shdr *'} but argument is of type 'Elf32_Shdr *' {aka 'struct elf32_shdr *'}
-	  193 | static int klp_resolve_symbols(Elf64_Shdr *sechdrs, const char *strtab,
-	      |                                ~~~~~~~~~~~~^~~~~~~
 
-Fix it by using the right types instead of forcing 64 bits types.
+Le 27/10/2021 à 06:44, Nicholas Piggin a écrit :
+> Excerpts from Christophe Leroy's message of October 26, 2021 3:39 pm:
+>> set_memory_x() calls pte_mkexec() which sets _PAGE_EXEC.
+>> set_memory_nx() calls pte_exprotec() which clears _PAGE_EXEC.
+>>
+>> Book3e has 2 bits, UX and SX, which defines the exec rights
+>> resp. for user (PR=1) and for kernel (PR=0).
+>>
+>> _PAGE_EXEC is defined as UX only.
+>>
+>> An executable kernel page is set with either _PAGE_KERNEL_RWX
+>> or _PAGE_KERNEL_ROX, which both have SX set and UX cleared.
+>>
+>> So set_memory_nx() call for an executable kernel page does
+>> nothing because UX is already cleared.
+>>
+>> And set_memory_x() on a non-executable kernel page makes it
+>> executable for the user and keeps it non-executable for kernel.
+>>
+>> Also, pte_exec() always returns 'false' on kernel pages, because
+>> it checks _PAGE_EXEC which doesn't include SX, so for instance
+>> the W+X check doesn't work.
+>>
+>> To fix this:
+>> - change tlb_low_64e.S to use _PAGE_BAP_UX instead of _PAGE_USER
+>> - sets both UX and SX in _PAGE_EXEC so that pte_user() returns
+>> true whenever one of the two bits is set
+> 
+> I don't understand this change. Which pte_user() returns true after
+> this change? Or do you mean pte_exec()?
 
-Fixes: 7c8e2bdd5f0d ("livepatch: Apply vmlinux-specific KLP relocations early")
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- kernel/livepatch/core.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Oops, yes, I mean pte_exec()
 
-diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
-index 335d988bd811..c0789383807b 100644
---- a/kernel/livepatch/core.c
-+++ b/kernel/livepatch/core.c
-@@ -190,7 +190,7 @@ static int klp_find_object_symbol(const char *objname, const char *name,
- 	return -EINVAL;
- }
- 
--static int klp_resolve_symbols(Elf64_Shdr *sechdrs, const char *strtab,
-+static int klp_resolve_symbols(Elf_Shdr *sechdrs, const char *strtab,
- 			       unsigned int symndx, Elf_Shdr *relasec,
- 			       const char *sec_objname)
- {
-@@ -218,7 +218,7 @@ static int klp_resolve_symbols(Elf64_Shdr *sechdrs, const char *strtab,
- 	relas = (Elf_Rela *) relasec->sh_addr;
- 	/* For each rela in this klp relocation section */
- 	for (i = 0; i < relasec->sh_size / sizeof(Elf_Rela); i++) {
--		sym = (Elf64_Sym *)sechdrs[symndx].sh_addr + ELF_R_SYM(relas[i].r_info);
-+		sym = (Elf_Sym *)sechdrs[symndx].sh_addr + ELF_R_SYM(relas[i].r_info);
- 		if (sym->st_shndx != SHN_LIVEPATCH) {
- 			pr_err("symbol %s is not marked as a livepatch symbol\n",
- 			       strtab + sym->st_name);
--- 
-2.31.1
+Unless I have to re-spin, can Michael eventually fix that typo while 
+applying ?
 
+> 
+> Does this filter through in some cases at least for kernel executable
+> PTEs will get both bits set? Seems cleaner to distinguish user and
+> kernel exec for that but maybe it's a lot of churn?
+
+Didn't understand what you mean.
+
+I did it like that to be able to continue using _PAGE_EXEC for checking 
+executability regardless of whether this is user or kernel, and then 
+continue using the generic nohash pte_exec() helper.
+
+Other solution would be to get rid of _PAGE_EXEC completely for book3e 
+and implement both pte_exec() and pte_mkexec() with _PAGE_BAP_UX and 
+_PAGE_BAP_SX, but I'm not sure it is worth the churn as you say. It 
+would also mean different helpers for book3s/32 when it is using 32 bits 
+PTE (CONFIG_PTE_64BIT=n)
+
+Christophe
+
+> 
+> Thanks,
+> Nick
+> 
+>> and pte_exprotect()
+>> clears both bits.
+>> - Define a book3e specific version of pte_mkexec() which sets
+>> either SX or UX based on UR.
+>>
+>> Fixes: 1f9ad21c3b38 ("powerpc/mm: Implement set_memory() routines")
+>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>> ---
+>> v3: Removed pte_mkexec() from nohash/64/pgtable.h
+>> v2: New
+>> ---
