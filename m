@@ -2,60 +2,58 @@ Return-Path: <SRS0=vpml=PP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D39DCC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 11:07:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D96DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 11:10:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 95AB56023D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 11:07:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 95AB56023D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 2A91660C4A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 11:10:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2A91660C4A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=physik.fu-berlin.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HfQrF11Zgz3bXv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:07:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=dXoS38tT;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HfQvr24P6z2ypK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:10:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66;
+ helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de;
+ receiver=<UNKNOWN>)
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de
+ [130.133.4.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HfQqZ00Ldz2xCy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 22:06:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=dXoS38tT; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4HfQqW1c9wz4xbq;
- Wed, 27 Oct 2021 22:06:30 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1635332792;
- bh=gagwazaeXlV8j4sIKDqMdB5kheMU/VIZW2bhlG6Gp/s=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=dXoS38tTkKpP/N4OIwoklDXdvPPr7v134nTAySzQJwhwIz/4DM/j/P2DonPFZwMdi
- gK72PQGyHnqENBbLgHjceeACUIHMgXwUczp6Wg1Hfz4B1ohejF/xcfgDESzojv+965
- ZJib5TqnOooTcShDpHPGYFzU4BiXat+n68/zM8n0K1dsYKH9/ay92tyTIEOpbmxzYM
- v7390YUcrC4i39pRTUl97pV62LiHj9jvMNLQw2FVUR/5R7zd0uk/Qe81r6t3W4hcht
- +0h/ds1OQ2nGIloBfs7vVFP5hokmknbDQ2mnO6tZ+VAp01QgeEXAjk1/WX9nKh4lz5
- 5iCJN+X7UQx7g==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HfQvM4j7Lz2xCy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 22:09:50 +1100 (AEDT)
+Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
+ by outpost.zedat.fu-berlin.de (Exim 4.94) with esmtps (TLS1.2)
+ tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+ (envelope-from <glaubitz@zedat.fu-berlin.de>)
+ id 1mfgoW-000n9o-7D; Wed, 27 Oct 2021 13:09:48 +0200
+Received: from suse-laptop.physik.fu-berlin.de ([160.45.32.140])
+ by inpost2.zedat.fu-berlin.de (Exim 4.94) with esmtpsa (TLS1.2)
+ tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+ (envelope-from <glaubitz@physik.fu-berlin.de>)
+ id 1mfgoV-002WZH-UY; Wed, 27 Oct 2021 13:09:48 +0200
+Message-ID: <c21c7a0e-95f1-e6d2-a04c-fb99d801e8da@physik.fu-berlin.de>
+Date: Wed, 27 Oct 2021 13:09:47 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.2.0
 Subject: Re: Linux kernel: powerpc: KVM guest can trigger host crash on Power8
-In-Reply-To: <04864fe5-fdd0-74b2-2bad-0303e4c2b15a@physik.fu-berlin.de>
+Content-Language: en-US
+To: Michael Ellerman <mpe@ellerman.id.au>
 References: <87pmrtbbdt.fsf@mpe.ellerman.id.au>
  <05b88724-90b6-a38a-bb3b-7392f85c1934@physik.fu-berlin.de>
  <878ryfavaz.fsf@mpe.ellerman.id.au>
  <04864fe5-fdd0-74b2-2bad-0303e4c2b15a@physik.fu-berlin.de>
-Date: Wed, 27 Oct 2021 22:06:28 +1100
-Message-ID: <874k92bubv.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ <874k92bubv.fsf@mpe.ellerman.id.au>
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+In-Reply-To: <874k92bubv.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Original-Sender: glaubitz@physik.fu-berlin.de
+X-Originating-IP: 160.45.32.140
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,56 +72,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de> writes:
-> Hi Michael!
->
-> On 10/27/21 07:30, Michael Ellerman wrote:
->> I did test the repro case you gave me before (in the bugzilla), which
->> was building glibc, that passes for me with a patched host.
->
-> Did you manage to crash the unpatched host?
+Hi Michael!
 
-Yes, the parallel builds of glibc you described crashed the unpatched
-host 100% reliably for me.
+On 10/27/21 13:06, Michael Ellerman wrote:
+> John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de> writes:
+>> Hi Michael!
+>>
+>> On 10/27/21 07:30, Michael Ellerman wrote:
+>>> I did test the repro case you gave me before (in the bugzilla), which
+>>> was building glibc, that passes for me with a patched host.
+>>
+>> Did you manage to crash the unpatched host?
+> 
+> Yes, the parallel builds of glibc you described crashed the unpatched
+> host 100% reliably for me.
 
-I also have a standalone reproducer I'll send you.
+OK, that is very good news!
 
-> If the unpatched host crashes for you but the patched doesn't, I will
-> make sure I didn't accidentally miss anything.
+> I also have a standalone reproducer I'll send you.
 
-OK thanks.
+Thanks, that would be helpful!
 
-> Also, I'll try a kernel from git with Debian's config.
->
->> I guess we have yet another bug.
->> 
->> I tried the following in a debian BE VM and it completed fine:
->> 
->>  $ dget -u http://ftp.debian.org/debian/pool/main/g/git/git_2.33.1-1.dsc
->>  $ sbuild -d sid --arch=powerpc --no-arch-all git_2.33.1-1.dsc
->> 
->> Same for ppc64.
->> 
->> And I also tried both at once, repeatedly in a loop.
->
-> Did you try building gcc-11 for powerpc and ppc64 both at once?
+>> Also, I'll try a kernel from git with Debian's config.
+>>
+>>> I guess we have yet another bug.
+>>>
+>>> I tried the following in a debian BE VM and it completed fine:
+>>>
+>>>  $ dget -u http://ftp.debian.org/debian/pool/main/g/git/git_2.33.1-1.dsc
+>>>  $ sbuild -d sid --arch=powerpc --no-arch-all git_2.33.1-1.dsc
+>>>
+>>> Same for ppc64.
+>>>
+>>> And I also tried both at once, repeatedly in a loop.
+>>
+>> Did you try building gcc-11 for powerpc and ppc64 both at once?
+> 
+> No, I will try that now.
 
-No, I will try that now.
+OK, great!
 
->> I guess it's something more complicated.
->> 
->> What exact host/guest kernel versions and configs are you running?
->
-> Both the host and guest are running Debian's stock 5.14.12 kernel. The host has
-> a kernel with your patches applied, the guest doesn't.
+Adrian
 
-OK that sounds fine.
+-- 
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer - glaubitz@debian.org
+`. `'   Freie Universitaet Berlin - glaubitz@physik.fu-berlin.de
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
 
-I tested upstream stable v5.14.13 + my patches, but there's nothing
-betwen 5.14.12 and 5.14.13 that should matter AFAICS.
-
-> Let me do some more testing.
-
-Thanks.
-
-cheers
