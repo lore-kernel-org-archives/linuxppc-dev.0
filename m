@@ -2,69 +2,70 @@ Return-Path: <SRS0=vpml=PP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C2CDC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:55:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDF2BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:55:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C318F60F92
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:55:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C318F60F92
+	by mail.kernel.org (Postfix) with ESMTPS id 3D0FF60F22
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:55:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3D0FF60F22
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HfkYH3MM3z3dlh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 09:55:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HfkZ06Y5vz2xCt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 09:55:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=BbS8+/zx;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=M6DsUnX+;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::134;
- helo=mail-lf1-x134.google.com; envelope-from=digetx@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::136;
+ helo=mail-lf1-x136.google.com; envelope-from=digetx@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=BbS8+/zx; dkim-atps=neutral
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com
- [IPv6:2a00:1450:4864:20::134])
+ header.s=20210112 header.b=M6DsUnX+; dkim-atps=neutral
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com
+ [IPv6:2a00:1450:4864:20::136])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HfhP90mNMz2xXs;
- Thu, 28 Oct 2021 08:18:05 +1100 (AEDT)
-Received: by mail-lf1-x134.google.com with SMTP id bi35so8956098lfb.9;
- Wed, 27 Oct 2021 14:18:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HfhPC3Jt5z2xDH;
+ Thu, 28 Oct 2021 08:18:07 +1100 (AEDT)
+Received: by mail-lf1-x136.google.com with SMTP id c28so8885301lfv.13;
+ Wed, 27 Oct 2021 14:18:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=O+IvQoJf2OjzCPAk90L+IlIvsTQGqRsS8A3mVG9thss=;
- b=BbS8+/zxVJ00rr3ixtYTd3bTdxqjkUjnBr55DaOxzJArvyNX4521PAqPigYX/BjB1N
- aGylVDFiYrs5wRaWuZx6L52it/PPywema7yDnahBHenwiuFnc4S3m//ivsOGtXuUlPNB
- ubXOhenNVEu1KXB2mXMptIWVwaeJRf3hxW3c8R68HPPg3pjoH3MM7xhUxuphpty83aFx
- DGHamMHIXY7/zgP3wsKkRhZ7yEHgmahY/byikn8BiZjEw2DWUQkjcB5nYo+Xgh+eH8p4
- oVpJycq4ZWi1GYj36y1/HBYlXfcjUxN5WpbpwFTT0cF/PRko7dGul5P66XpFeKCAINSY
- 8XVA==
+ bh=iOJthmuPEC7IB5L8OM1uajmE3s/Ei+DiZXNIsEtdoSk=;
+ b=M6DsUnX+Dqnnl5/0WkKsChXFOe/dRyATOHCL/N/d/DYRaMuFNhNXN2y8l/5KKDdvO8
+ HePUBv3ijZ6wA1hQMS8r/8Dy8p8fDstfsgPNvYzogEnoiN08aVSWSCzuevGifeB4Cbsl
+ JU+F7xYiyB1f3JwKGti4sTNyf7tgTKcPyJdN2KeBPBno+Y11B21cmAzeN1UTCPeELLZl
+ qo9vl+NLInil/J95xFZK38OdgQBYthlLceqQb/6Zg0gcqPneeFesfA544/Mc5a4V8TTa
+ vBfOArxwV6NLDS9FtxVb4oHCbiHa9QgKi34nHbfFFiWQfKG+GQY4kpTfJykuXmLPssEZ
+ NnyA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=O+IvQoJf2OjzCPAk90L+IlIvsTQGqRsS8A3mVG9thss=;
- b=hbxORGkR5dsSPISY5QH8p9HcFT+sqqHsvxTsvxODXzyFSrehJRvQFuKdsU1DBm3Zng
- gyeHxzaanEv9vHFTe8H3Q7hoXUeM58UD9sDQDMOi7kGaMR2hcFRpmV3Wi+MifDP57O49
- BYJewx5kUO2OIIF5UGIshtW6hSylE7mpcIeDnkCplqiCaJI12h1jHHzLbTkArbc45rW9
- LeB2YgoGCQxBDMLJQj+J6Kj765rxeBFO0y7fh4VQ8Z6nDKxZZWwQMQmx6WAb1hydWdNY
- C1sgk3HqD6dntw8SYHelg8l9I3gVo7a7EW8Cz5HVg/aUEbrLCNPvlvQQRZjzez9vt2/I
- CiLg==
-X-Gm-Message-State: AOAM5329+MO030bQgwyKQPMx5vj1D3z+8QnVXEdoZKj6+RtE6eHOtvW0
- HQzRi1ElDR5MjDD/OQupxSA=
-X-Google-Smtp-Source: ABdhPJxyJaCNELbykyJ8mI+u0lU4wtjMFWua0Lm4EEmjlSiKb32hiTjDEQ+OHhGC/feOlGuy6qCfSA==
-X-Received: by 2002:ac2:4285:: with SMTP id m5mr140041lfh.86.1635369481970;
- Wed, 27 Oct 2021 14:18:01 -0700 (PDT)
+ bh=iOJthmuPEC7IB5L8OM1uajmE3s/Ei+DiZXNIsEtdoSk=;
+ b=kok1bYhmwqq7QqnpxCN0o2S2HP2xtuvqknQ5d+dt1GvIlWi/upgZbkYnI4+qP4Dzrr
+ O6Q5o4wV0a+ZtaTMi+FtZn9WAK0CAymWKVZFRLlNrGeWkQW89AWk4gxTpIjkHmlbEysk
+ sPRUgEphdkH6qccIHzbVG5HDcdBkN+NZWXLZYUwUCyYMMTIvJdvC74ifN758c54nvF06
+ qtpi5Acrk33WBDU6TH0+fbt6LWmVZVnNnfWZUp7bE7fXRK2XMvzoiRwqycDNWuxcLqxc
+ TKOqsjoW8cf5ZtV+fzfGclGsTnCZyRMKwTTEQaG3wH6LL1Tb8tuvBma+WXaLzPVLvHB0
+ 5Z7A==
+X-Gm-Message-State: AOAM530Id2ceZjN3lcrxCwBBdxKfYB0nIbRSs4BbhjiUxORG6AxiVnkh
+ YE/h0mrjF54qSsQEMc634IY=
+X-Google-Smtp-Source: ABdhPJySbOm+27yOjORJjCzB1RrKvb62o79gukvdjDZzwYphfPzvlvqWgT3cY5UK3KGllNbg7CmL+w==
+X-Received: by 2002:a05:6512:344a:: with SMTP id
+ j10mr74981lfr.653.1635369483872; 
+ Wed, 27 Oct 2021 14:18:03 -0700 (PDT)
 Received: from localhost.localdomain (46-138-41-28.dynamic.spd-mgts.ru.
  [46.138.41.28])
- by smtp.gmail.com with ESMTPSA id d7sm104336ljl.18.2021.10.27.14.18.00
+ by smtp.gmail.com with ESMTPSA id d7sm104336ljl.18.2021.10.27.14.18.02
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 27 Oct 2021 14:18:01 -0700 (PDT)
+ Wed, 27 Oct 2021 14:18:03 -0700 (PDT)
 From: Dmitry Osipenko <digetx@gmail.com>
 To: Thierry Reding <thierry.reding@gmail.com>,
  Jonathan Hunter <jonathanh@nvidia.com>, Lee Jones <lee.jones@linaro.org>,
@@ -74,10 +75,9 @@ To: Thierry Reding <thierry.reding@gmail.com>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v2 05/45] reboot: Warn if restart handler has duplicated
- priority
-Date: Thu, 28 Oct 2021 00:16:35 +0300
-Message-Id: <20211027211715.12671-6-digetx@gmail.com>
+Subject: [PATCH v2 06/45] reboot: Warn if unregister_restart_handler() fails
+Date: Thu, 28 Oct 2021 00:16:36 +0300
+Message-Id: <20211027211715.12671-7-digetx@gmail.com>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <20211027211715.12671-1-digetx@gmail.com>
 References: <20211027211715.12671-1-digetx@gmail.com>
@@ -134,40 +134,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add sanity check which ensures that there are no two restart handlers
-registered with the same priority. Normally it's a direct sign of a
-problem if two handlers use the same priority.
+Emit warning if unregister_restart_handler() fails since it never should
+fail. This will ease further API development by catching mistakes early.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- kernel/reboot.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ kernel/reboot.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/kernel/reboot.c b/kernel/reboot.c
-index efb40d095d1e..d39e599c3c99 100644
+index d39e599c3c99..291d44082f42 100644
 --- a/kernel/reboot.c
 +++ b/kernel/reboot.c
-@@ -182,7 +182,20 @@ static ATOMIC_NOTIFIER_HEAD(restart_handler_list);
+@@ -210,7 +210,7 @@ EXPORT_SYMBOL(register_restart_handler);
   */
- int register_restart_handler(struct notifier_block *nb)
+ int unregister_restart_handler(struct notifier_block *nb)
  {
--	return atomic_notifier_chain_register(&restart_handler_list, nb);
-+	int ret;
-+
-+	ret = atomic_notifier_chain_register(&restart_handler_list, nb);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * Handler must have unique priority. Otherwise invocation order is
-+	 * determined by the registration order, which is presumed to be
-+	 * unreliable.
-+	 */
-+	WARN_ON(!atomic_notifier_has_unique_priority(&restart_handler_list, nb));
-+
-+	return 0;
+-	return atomic_notifier_chain_unregister(&restart_handler_list, nb);
++	return WARN_ON(atomic_notifier_chain_unregister(&restart_handler_list, nb));
  }
- EXPORT_SYMBOL(register_restart_handler);
+ EXPORT_SYMBOL(unregister_restart_handler);
  
 -- 
 2.33.1
