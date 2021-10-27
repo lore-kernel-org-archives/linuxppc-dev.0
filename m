@@ -2,58 +2,60 @@ Return-Path: <SRS0=vpml=PP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D96DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 11:10:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DB0FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 11:22:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A91660C4A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 11:10:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2A91660C4A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=physik.fu-berlin.de
+	by mail.kernel.org (Postfix) with ESMTPS id E1B4960527
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 11:22:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E1B4960527
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HfQvr24P6z2ypK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:10:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66;
- helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de;
- receiver=<UNKNOWN>)
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de
- [130.133.4.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HfR9g2C9tz3bYW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:22:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pJM+SS2i;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HfQvM4j7Lz2xCy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 22:09:50 +1100 (AEDT)
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
- by outpost.zedat.fu-berlin.de (Exim 4.94) with esmtps (TLS1.2)
- tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
- (envelope-from <glaubitz@zedat.fu-berlin.de>)
- id 1mfgoW-000n9o-7D; Wed, 27 Oct 2021 13:09:48 +0200
-Received: from suse-laptop.physik.fu-berlin.de ([160.45.32.140])
- by inpost2.zedat.fu-berlin.de (Exim 4.94) with esmtpsa (TLS1.2)
- tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
- (envelope-from <glaubitz@physik.fu-berlin.de>)
- id 1mfgoV-002WZH-UY; Wed, 27 Oct 2021 13:09:48 +0200
-Message-ID: <c21c7a0e-95f1-e6d2-a04c-fb99d801e8da@physik.fu-berlin.de>
-Date: Wed, 27 Oct 2021 13:09:47 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HfR916W5yz2xsm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Oct 2021 22:21:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=pJM+SS2i; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4HfR911HlKz4xbr;
+ Wed, 27 Oct 2021 22:21:41 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1635333701;
+ bh=mxhJiJHxAE3DqN+NxMq3fawT9A/Z2lD9DWzQe94QgD8=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=pJM+SS2ik7o+BzLNcB0GdrKDSrYG6qQUlvRlcWVfQprhCc23GZGzjXApzNnuK27vY
+ H6+CwoBbUI5rq/StD16Wp9gLljy66Cy2t1jK3Hn44FR9N2KdvtBIFLoT1hFu4x3NzI
+ 0DcVej+SunyHb6jgahrvrhYStINA0rxGAy5hLsMiFKQkxf2zp2OMHMWL86MkeQWF+g
+ +iwf8tAa7zpys+KMBOWAR00iKDWgB537E6fqe68rp350GFh9bjAgIhaPgwgA7915cj
+ eW8VYeG1ESHe+3XrHVMfY+XNXIOtyGk06ZCOTjBHlJbYmldAPWbWTCx2FFJFX4AvFR
+ 7+zM4Ead586dg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Subject: Re: [PATCH][next] powerpc/vas: Fix potential NULL pointer dereference
+In-Reply-To: <20211026224016.GA1488461@embeddedor>
+References: <20211015050345.GA1161918@embeddedor>
+ <97c42e43-15b9-5db6-d460-dbb16f31954d@linux.ibm.com>
+ <20211026184201.GB1457721@embeddedor> <87h7d3beqq.fsf@mpe.ellerman.id.au>
+ <20211026224016.GA1488461@embeddedor>
+Date: Wed, 27 Oct 2021 22:21:39 +1100
+Message-ID: <87v91iaf24.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.2.0
-Subject: Re: Linux kernel: powerpc: KVM guest can trigger host crash on Power8
-Content-Language: en-US
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <87pmrtbbdt.fsf@mpe.ellerman.id.au>
- <05b88724-90b6-a38a-bb3b-7392f85c1934@physik.fu-berlin.de>
- <878ryfavaz.fsf@mpe.ellerman.id.au>
- <04864fe5-fdd0-74b2-2bad-0303e4c2b15a@physik.fu-berlin.de>
- <874k92bubv.fsf@mpe.ellerman.id.au>
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-In-Reply-To: <874k92bubv.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-Originating-IP: 160.45.32.140
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,58 +67,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: oss-security@lists.openwall.com,
- "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, Haren Myneni <haren@linux.ibm.com>,
+ linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, linux-hardening@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael!
+"Gustavo A. R. Silva" <gustavoars@kernel.org> writes:
+> On Wed, Oct 27, 2021 at 09:30:53AM +1100, Michael Ellerman wrote:
+> [..]
+>> > I think I'll take this in my tree.
+>> 
+>> I've already put it in powerpc/next:
+>> 
+>>   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=next&id=61cb9ac66b30374c7fd8a8b2a3c4f8f432c72e36
+>
+> Oh, great. :)
+>
+>> If you need to pick it up as well for some reason that's fine.
+>
+> I just didn't  want it to get lost somehow. I'll drop it from tree now.
 
-On 10/27/21 13:06, Michael Ellerman wrote:
-> John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de> writes:
->> Hi Michael!
->>
->> On 10/27/21 07:30, Michael Ellerman wrote:
->>> I did test the repro case you gave me before (in the bugzilla), which
->>> was building glibc, that passes for me with a patched host.
->>
->> Did you manage to crash the unpatched host?
-> 
-> Yes, the parallel builds of glibc you described crashed the unpatched
-> host 100% reliably for me.
+No worries, sorry I've been so slow lately.
 
-OK, that is very good news!
-
-> I also have a standalone reproducer I'll send you.
-
-Thanks, that would be helpful!
-
->> Also, I'll try a kernel from git with Debian's config.
->>
->>> I guess we have yet another bug.
->>>
->>> I tried the following in a debian BE VM and it completed fine:
->>>
->>>  $ dget -u http://ftp.debian.org/debian/pool/main/g/git/git_2.33.1-1.dsc
->>>  $ sbuild -d sid --arch=powerpc --no-arch-all git_2.33.1-1.dsc
->>>
->>> Same for ppc64.
->>>
->>> And I also tried both at once, repeatedly in a loop.
->>
->> Did you try building gcc-11 for powerpc and ppc64 both at once?
-> 
-> No, I will try that now.
-
-OK, great!
-
-Adrian
-
--- 
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer - glaubitz@debian.org
-`. `'   Freie Universitaet Berlin - glaubitz@physik.fu-berlin.de
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
-
+cheers
