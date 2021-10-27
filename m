@@ -2,70 +2,70 @@ Return-Path: <SRS0=vpml=PP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 512F8C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:57:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 416F7C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:58:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D34A960E8B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:57:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D34A960E8B
+	by mail.kernel.org (Postfix) with ESMTPS id 9572960F92
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Oct 2021 22:58:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9572960F92
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HfkcC48C0z3dyt
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 09:57:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hfkcx1sFjz3f2P
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 09:58:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=evvP7MsJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=OqqZ454W;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::130;
- helo=mail-lf1-x130.google.com; envelope-from=digetx@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::229;
+ helo=mail-lj1-x229.google.com; envelope-from=digetx@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=evvP7MsJ; dkim-atps=neutral
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com
- [IPv6:2a00:1450:4864:20::130])
+ header.s=20210112 header.b=OqqZ454W; dkim-atps=neutral
+Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com
+ [IPv6:2a00:1450:4864:20::229])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HfhPK1KFXz2yfk;
- Thu, 28 Oct 2021 08:18:13 +1100 (AEDT)
-Received: by mail-lf1-x130.google.com with SMTP id bi35so8956645lfb.9;
- Wed, 27 Oct 2021 14:18:12 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HfhPL74M5z306d;
+ Thu, 28 Oct 2021 08:18:14 +1100 (AEDT)
+Received: by mail-lj1-x229.google.com with SMTP id i26so5088177ljg.7;
+ Wed, 27 Oct 2021 14:18:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=BPtMBppPEnkW8FAu+XIJVa0vPCxV8oSZETkwJ9fGFM4=;
- b=evvP7MsJwkqVHf9WWHeVtMPJGHU+mvo2PJqLCvURQO+gDiXejWyY7GbQhAh5S2Yuq3
- zE+MXp6bpyTV9PKDTbTfo9WWXpFtGfj5n4Qz8ioZr0QyDkpV7sVDFNZi5aSeGd0r1ssm
- FaiC2SGtT+UwMk3wtZhRptmS5Jh1EvMlK22P6yAvTfzVBpKlWKTd0CWvNC0iHDJeCUVq
- 3jvnGl27YfW1MAZwLzhuSz3oPcJmkrZj59ainuK5d21Jqe/MApWPiIhI2vk+XeD9jyY+
- vEN96KR+en3glKlYAHFchamcvD6xrJYfM61Zs7aonaQIhrzZ8Vd1+JewhOn6GxzMgcou
- E++w==
+ bh=SC0z1BXiHBYdSnCagR43oAXvnFYzAsSZgTyQ9BiR6xA=;
+ b=OqqZ454WmFhFtJRhrw1iVetFaZ5cTmy1bK8cAKF7x4FJ4EjwPLEB4smQoL+kFj8hga
+ BjmXNHow4qrZGAK5gLKqSouT5oIb6yppthDueiLerRGv55Pbl/JgRUYLNcFzmXzu9NWO
+ EfhhNkXWXYZNWJhLg94zD8UyrvrtUOP73QnC8NTzMu/ENt6HanrdBXR7OCg2dyRE+fYN
+ 1aO4sBj2Cdgy8VygaDgIGG5bFgsrX38xxJAfHh6M83eOLzNNbly5jBUwBwT1c3/ScSfl
+ 6ZeIfaA93j63rbj1hC4fiWUjcO1LV9zENBfV1gxkADNuk/sNHvjjMOa2SIgObFEQihCd
+ GDlw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=BPtMBppPEnkW8FAu+XIJVa0vPCxV8oSZETkwJ9fGFM4=;
- b=xI5xQfAOYN9CyuLDZyO9WbXwmff1otS/9rqmsubPlrYDVXPoOZgwg00rqVGkVzfLbM
- ApxrQmOrbaJPob+mEtVptIXYDOiy2tNrv1ObyS2yKoHqp5/p9mRPLHbtugR+VPowkMYI
- Q2H/CyQRY94z58fYb9HPHQJ4hgyZX/JjqjX87BokWbFBlStoIGEPD9dtbgqRewwZyWBA
- 2okI1pFLWIeoixVKEecRKrWqFS4qYgLYOA4b/syrYPFtXIQN2n9/KKiTn5YaBRsOVget
- 897u4fZyLu4tpkFD+MViXnSh37hW3UESukUyKSZEpYxWuRyLoR2D43Q4OKmQvOXMfBLm
- qlGw==
-X-Gm-Message-State: AOAM5310+x8aDMWuUiplOVZcZ5xi+wCAPTb4I0ae34oySBCPtSm/MV7y
- zYm9PScFN7x1ux/1mbz5Sto=
-X-Google-Smtp-Source: ABdhPJwclkCD48sSOOyIVpWJhTUvxO0ayPfEAseJaJV46PV2ffR0qGAwcKjO8WTuzPJQEhkUDZtmqQ==
-X-Received: by 2002:a05:6512:aca:: with SMTP id
- n10mr147591lfu.66.1635369489587; 
- Wed, 27 Oct 2021 14:18:09 -0700 (PDT)
+ bh=SC0z1BXiHBYdSnCagR43oAXvnFYzAsSZgTyQ9BiR6xA=;
+ b=Gjd/KP75KS4e/DYIJqmjvR4QSJl3Ubrvj4SNEie4JnuhfKGQsmHqjoXZk2Pi1ggdi7
+ LTZR6EelL1qC7ZUmXdX+mz0mMWhTpeP+D5Shr58bZL1Vo7oYBjpjhlFyBOC8N5CvIoce
+ wmETkty1nMh31Y0dELH0cujyqHRvJK4TjjgfBOI3gwtih9wwHd8dcVliWPFo1OSrI4c0
+ n9sy9pgpxkGCW42AvDEiWCDBeTo5Y/pOJuqFh9LSZi4qpdo05dcKL3xrPDEErvwwggDI
+ IVkaWv6tLnKp6FsOBnjXOddLCyCYtnGxoQvrCGsZpSDBsVCo5NfNJNaGczgP/n09fe/g
+ /JrQ==
+X-Gm-Message-State: AOAM532vl7ukSbKBLl9oXXe9muKc+ugRZ8i3C0R5rotj6XXpFrImDvo6
+ AygYIg8U/hdXa4PuOW3UO9M=
+X-Google-Smtp-Source: ABdhPJyn+zaTZhCmg6enYSN9xCI0Iv7Hmc/0KiXYEr7/tCUpX3ufLRXDN1zs5d0zePAVBcBxKNrxsQ==
+X-Received: by 2002:a05:651c:291:: with SMTP id
+ b17mr380232ljo.90.1635369491425; 
+ Wed, 27 Oct 2021 14:18:11 -0700 (PDT)
 Received: from localhost.localdomain (46-138-41-28.dynamic.spd-mgts.ru.
  [46.138.41.28])
- by smtp.gmail.com with ESMTPSA id d7sm104336ljl.18.2021.10.27.14.18.07
+ by smtp.gmail.com with ESMTPSA id d7sm104336ljl.18.2021.10.27.14.18.09
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 27 Oct 2021 14:18:09 -0700 (PDT)
+ Wed, 27 Oct 2021 14:18:11 -0700 (PDT)
 From: Dmitry Osipenko <digetx@gmail.com>
 To: Thierry Reding <thierry.reding@gmail.com>,
  Jonathan Hunter <jonathanh@nvidia.com>, Lee Jones <lee.jones@linaro.org>,
@@ -75,9 +75,9 @@ To: Thierry Reding <thierry.reding@gmail.com>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v2 09/45] xen/x86: Use do_kernel_power_off()
-Date: Thu, 28 Oct 2021 00:16:39 +0300
-Message-Id: <20211027211715.12671-10-digetx@gmail.com>
+Subject: [PATCH v2 10/45] ARM: Use do_kernel_power_off()
+Date: Thu, 28 Oct 2021 00:16:40 +0300
+Message-Id: <20211027211715.12671-11-digetx@gmail.com>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <20211027211715.12671-1-digetx@gmail.com>
 References: <20211027211715.12671-1-digetx@gmail.com>
@@ -141,31 +141,24 @@ be converted to the new power-off API.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/x86/xen/enlighten_pv.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/kernel/reboot.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/arch/x86/xen/enlighten_pv.c b/arch/x86/xen/enlighten_pv.c
-index 4f63117f09bb..4a0b9b7baf02 100644
---- a/arch/x86/xen/enlighten_pv.c
-+++ b/arch/x86/xen/enlighten_pv.c
-@@ -32,6 +32,7 @@
- #include <linux/gfp.h>
- #include <linux/edd.h>
- #include <linux/objtool.h>
-+#include <linux/reboot.h>
- 
- #include <xen/xen.h>
- #include <xen/events.h>
-@@ -1087,8 +1088,7 @@ static void xen_machine_halt(void)
- 
- static void xen_machine_power_off(void)
+diff --git a/arch/arm/kernel/reboot.c b/arch/arm/kernel/reboot.c
+index 3044fcb8d073..2cb943422554 100644
+--- a/arch/arm/kernel/reboot.c
++++ b/arch/arm/kernel/reboot.c
+@@ -116,9 +116,7 @@ void machine_power_off(void)
  {
+ 	local_irq_disable();
+ 	smp_send_stop();
+-
 -	if (pm_power_off)
 -		pm_power_off();
 +	do_kernel_power_off();
- 	xen_reboot(SHUTDOWN_poweroff);
  }
  
+ /*
 -- 
 2.33.1
 
