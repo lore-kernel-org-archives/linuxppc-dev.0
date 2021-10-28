@@ -2,89 +2,73 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19B05C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 12:43:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F21AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 12:44:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F47F6023F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 12:43:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6F47F6023F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3E6996023F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 12:44:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3E6996023F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=armlinux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hg4wt5zFkz3c7P
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 23:43:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hg4xj6n8wz2xtR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 23:44:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=EC2UF6U3;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=W1PY6v3a;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429;
- helo=mail-pf1-x429.google.com; envelope-from=npiggin@gmail.com;
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk
+ (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk;
+ envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=EC2UF6U3; dkim-atps=neutral
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
- [IPv6:2607:f8b0:4864:20::429])
+ secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256
+ header.s=pandora-2019 header.b=W1PY6v3a; 
+ dkim-atps=neutral
+X-Greylist: delayed 450 seconds by postgrey-1.36 at boromir;
+ Thu, 28 Oct 2021 23:14:23 AEDT
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
+ [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hg4w51Rqwz2xYD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2021 23:42:45 +1100 (AEDT)
-Received: by mail-pf1-x429.google.com with SMTP id p40so1010520pfh.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2021 05:42:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=6PQW6JWfPIbBP7t63aTZtmVRFnuuhsz/GQNcoYw32N8=;
- b=EC2UF6U3fkt4UEJqrqOJ1nUJ9djgfmmtGIq0i9owv1f3QBn32OxbgQvb+7w1JqBpUC
- MlkWt3RmjuByiUyJ8dlsN+DhiIASfBz3xNBc4hAyeHZRNSlH5MJGHYwZCLCqWYfD4nn0
- Or2Cp26q2oYYm0ZqCDTSlqiCIP/M1APTvqwMErR6Sb1OOSJB02h18JlS+2qYsOzRlw91
- obvu2fPkdtfz13dcKgdnAer0tZIPE3R+1+9KDZskvnN4v3tfmCIoje6Yp6EluBHodrH+
- 1OGhXRpe5VxZvfxBDFhnchZurlBDStazC21VTowm/6muZcMIxLR74bJ0TiFuaxdb6dk9
- clmQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=6PQW6JWfPIbBP7t63aTZtmVRFnuuhsz/GQNcoYw32N8=;
- b=ZF3TQFgbxfPol8BOBVbYP2CvQY0mizKHUjcidt2IEBS1i+iCYv6WZIlTiEu90mS/3m
- 5As3JeS/CDb8floT+u/A2kT8c2BZ+v+Oo7cy7iSBrpLzRW2rBTiMigs8LWBHdGDsrwAe
- eEEaMc9g05xwn4/t7oaMqzlG02RLgxUBXdBOSNf7HJYU4ux59aY9nT/dpxZu+w9xo2DW
- f/y4IGKzci7dttzUNRdmxStrMzbzZAEYuTRf4G6s664Etp9dCl6W0k/HNk4AxvT+V7KA
- dp2gUam6fsHHmq5abLsGoAxM8eQhNjKl3kTT3RO9x+T3EyXPynzR91mXnHSlJcqe/fjb
- 8AKg==
-X-Gm-Message-State: AOAM532+pKFAb/D8ClZ0hGLAavIY47/9vWDxTgBQ+E6FvKYRkSdhK/wO
- Pds9M+bUSUtJfB/QkakyfA8=
-X-Google-Smtp-Source: ABdhPJwUcbNbEfODglMisuwSzHSt0l9qk8xpDd1tOj2SPz1hxqRsuLOQ4/AEWbRBdv+ctyc9WM+gnQ==
-X-Received: by 2002:a05:6a00:1995:b0:47c:1f59:a27a with SMTP id
- d21-20020a056a00199500b0047c1f59a27amr4011588pfl.36.1635424961684; 
- Thu, 28 Oct 2021 05:42:41 -0700 (PDT)
-Received: from localhost ([118.208.159.180])
- by smtp.gmail.com with ESMTPSA id t14sm2716101pga.62.2021.10.28.05.42.40
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 28 Oct 2021 05:42:41 -0700 (PDT)
-Date: Thu, 28 Oct 2021 22:42:36 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: instruction storage exception handling
-To: Jacques de Laval <jacques.delaval@protonmail.com>
-References: <uqZVxyE3l9oalZp_hyXFJvdH-ADNTvpOuQeoNGyqrUcoNgh9afea1-FzfZKMgiaF5WxY4kdMQlJYzmjvdQ2E2joF86-mEcaxdifht9z8NA0=@protonmail.com>
- <1635306738.0z8wt7619v.astroid@bobo.none>
- <1f5c24de-6bba-d6c0-5b8e-3522f25158f6@csgroup.eu>
- <1635312278.p87nvl11rv.astroid@bobo.none>
- <4ee635f5-7a67-bac5-2ad2-616c1aaa95b6@csgroup.eu>
- <1635318932.od1ierwsis.astroid@bobo.none>
- <f5824237-4fd4-ca87-afe7-620a23d84824@csgroup.eu>
- <V0kJsLgxvO-1SWRhS-9Nbx1E6oXO6IAJDAYBUA_kieAbf5J8MOnrRzdAiCSl2KoRjztnI3LitFLsJstAOVnWZ-4PBzWmrpTiqIYnU7TRXyo=@protonmail.com>
- <1635389034.knz9p2g41k.astroid@bobo.none>
- <VFoVC_F_r-pD62fs3PMz16KfdtzX-4Sa6QajxxabOAnilDnV_olPSFbVVmYsWUeH4BUxcI7YaJ4RnKKhdqhqOLEopCeFZrqEcjJLyJlyX_I=@protonmail.com>
- <1635413197.83rhc4s3fc.astroid@bobo.none>
-In-Reply-To: <1635413197.83rhc4s3fc.astroid@bobo.none>
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hg4HM2XCFz2xX5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2021 23:14:22 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
+ MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=GpuSFsY8v1fsacTBMl7cW/OISWXGLDeNRbuCtC30aBk=; b=W1PY6v3a0gl28+75siyBir0JE7
+ Fp7YVXk4eumpI7oh5l3VshDq6gvXTJzeDqwLIA7HtdW9RkL6pMp4IcYWBdC8YBeLJ884GA1gyp1tO
+ Y7fSb5TmfSsPkAYf5+Uv0jB+TwExUCboy8NE3ZdeLiqweYYbYNBNKy/YN8LtjXB1cJCNfECPWpzHJ
+ IjYFN8VRej9HsaWGHqoXgj+EX24TVLvhRR55/YJ4ERKX12tGykSGVvtNxtRka41e0YKfTDTz73ApZ
+ VsLBAxiQuI6I69R2lbhaxUKuFHbz65ETTSdY10Txs8zIAFlVFf6QU2JAAeKgvzmhciKkq1xCECSXs
+ jbUZCbwg==;
+Received: from shell.armlinux.org.uk
+ ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:55352)
+ by pandora.armlinux.org.uk with esmtpsa (TLS1.3) tls
+ TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.94.2)
+ (envelope-from <linux@armlinux.org.uk>)
+ id 1mg49X-0007U2-7Y; Thu, 28 Oct 2021 13:05:03 +0100
+Received: from linux by shell.armlinux.org.uk with local (Exim 4.94.2)
+ (envelope-from <linux@shell.armlinux.org.uk>)
+ id 1mg49J-0000E4-10; Thu, 28 Oct 2021 13:04:49 +0100
+Date: Thu, 28 Oct 2021 13:04:49 +0100
+From: "Russell King (Oracle)" <linux@armlinux.org.uk>
+To: Dmitry Osipenko <digetx@gmail.com>
+Subject: Re: [PATCH v2 10/45] ARM: Use do_kernel_power_off()
+Message-ID: <YXqR4T31FOguMnm9@shell.armlinux.org.uk>
+References: <20211027211715.12671-1-digetx@gmail.com>
+ <20211027211715.12671-11-digetx@gmail.com>
 MIME-Version: 1.0
-Message-Id: <1635423479.x693enqtx2.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211027211715.12671-11-digetx@gmail.com>
+X-Mailman-Approved-At: Thu, 28 Oct 2021 23:43:32 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,167 +80,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Scott Wood <oss@buserror.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, Tomer Maimon <tmaimon77@gmail.com>,
+ Santosh Shilimkar <ssantosh@kernel.org>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ Tali Perry <tali.perry1@gmail.com>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Guo Ren <guoren@kernel.org>,
+ Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-riscv@lists.infradead.org, Vincent Chen <deanbo422@gmail.com>,
+ Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Benjamin Fair <benjaminfair@google.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+ linux-sh@vger.kernel.org, Lee Jones <lee.jones@linaro.org>,
+ Helge Deller <deller@gmx.de>, Daniel Lezcano <daniel.lezcano@linaro.org>,
+ linux-csky@vger.kernel.org, Jonathan Hunter <jonathanh@nvidia.com>,
+ Tony Lindgren <tony@atomide.com>, Chen-Yu Tsai <wens@csie.org>,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ xen-devel@lists.xenproject.org, linux-mips@vger.kernel.org,
+ Guenter Roeck <linux@roeck-us.net>, Len Brown <lenb@kernel.org>,
+ Albert Ou <aou@eecs.berkeley.edu>, linux-omap@vger.kernel.org,
+ Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>,
+ Vladimir Zapolskiy <vz@mleia.com>, linux-acpi@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, Mark Brown <broonie@kernel.org>,
+ Borislav Petkov <bp@alien8.de>, Greentime Hu <green.hu@gmail.com>,
+ Paul Walmsley <paul.walmsley@sifive.com>, linux-tegra@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Nancy Yuen <yuenn@google.com>, linux-arm-kernel@lists.infradead.org,
+ Juergen Gross <jgross@suse.com>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
+ Nick Hu <nickhu@andestech.com>, Avi Fishman <avifishman70@gmail.com>,
+ Patrick Venture <venture@google.com>, linux-pm@vger.kernel.org,
+ Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org,
+ Palmer Dabbelt <palmer@dabbelt.com>, Philipp Zabel <p.zabel@pengutronix.de>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, openbmc@lists.ozlabs.org,
+ Joshua Thompson <funaho@jurai.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Nicholas Piggin's message of October 28, 2021 7:35 pm:
-> Excerpts from Jacques de Laval's message of October 28, 2021 7:08 pm:
->> On Thursday, October 28th, 2021 at 5:01 AM, Nicholas Piggin <npiggin@gma=
-il.com> wrote:
->>> Excerpts from Jacques de Laval's message of October 27, 2021 10:03 pm:
->>>
->>> > On Wednesday, October 27th, 2021 at 9:52 AM, Christophe Leroy christo=
-phe.leroy@csgroup.eu wrote:
->>> >
->>> > > Le 27/10/2021 =C3=A0 09:47, Nicholas Piggin a =C3=A9crit :
->>> > >
->>> > > > You're right. In that case it shouldn't change anything unless th=
-ere
->>> > > >
->>> > > > was a BO fault. I'm not sure what the problem is then. Guessing b=
-ased
->>> > > >
->>> > > > on the NIP and instructions, it looks like it's probably got the =
-correct
->>> > > >
->>> > > > user address that it's storing into vmf on the stack, so it has g=
-ot past
->>> > > >
->>> > > > the access checks so my theory would be wrong anyway.
->>> > > >
->>> > > > Must be something simple but I can't see it yet.
->>> > >
->>> > > Anyway, I think it is still worth doing the check with setting 0 in
->>> > >
->>> > > _ESR(r11), maybe the Reference Manual is wrong.
->>> > >
->>> > > So Jacques, please do the test anyway if you can.
->>> > >
->>> > > Thanks
->>> > >
->>> > > Christophe
->>> >
->>> > I tested with the last patch from Nicholas, and with that I can not
->>> >
->>> > reproduce the issue, so it seems like that solves it for my case and =
-setup
->>> >
->>> > at least.
->>> >
->>> > Big thanks Christophe and Nicholas for looking in to this!
->>>
->>> Thanks for reporting and testing. We can certainly send this patch
->>>
->>> upstream to fix the regression, but I'm still not exactly sure what is
->>>
->>> going on. If it is an errata or part of specification we missed that
->>>
->>> could explain it but it would be good to understand and comment it.
->>>
->>> If you have time to test again with only the following patch applied,
->>>
->>> it might give a better clue. This patch should keep running but it
->>>
->>> would print some dmesg output.
->>>
->>> Thanks,
->>>
->>> Nick
->>>
->>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
->>>
->>> index a8d0ce85d39a..cf56f23ff90a 100644
->>>
->>> --- a/arch/powerpc/mm/fault.c
->>>
->>> +++ b/arch/powerpc/mm/fault.c
->>>
->>> @@ -548,6 +548,12 @@ static __always_inline void __do_page_fault(struct=
- pt_regs *regs)
->>>
->>> DEFINE_INTERRUPT_HANDLER(do_page_fault)
->>>
->>> {
->>>
->>> -   if (TRAP(regs) =3D=3D INTERRUPT_INST_STORAGE) {
->>>
->>> -         if (regs->dsisr !=3D 0) {
->>>
->>>
->>> -         	printk("ISI pc:%lx msr:%lx dsisr:%lx ESR:%lx\\n", regs->nip,=
- regs->msr, regs->dsisr, mfspr(SPRN_ESR));
->>>
->>>
->>> -         	regs->dsisr =3D 0; // fix?
->>>
->>>
->>> -         }
->>>
->>>
->>> -   }
->>>
->>>     __do_page_fault(regs);
->>>
->>>     }
->>>
->>=20
->> As expected it keeps running. The output, and number of prints is natura=
-lly
->> a bit different from time to time, but dsisr/ESR is always 0x800000.
->>=20
->> Here's a representative output from one run:
->>=20
->> 	ISI pc:b789e6c0 msr:2d002 dsisr:800000 ESR:800000
->> 	ISI pc:b7884220 msr:2d002 dsisr:800000 ESR:800000
->> 	ISI pc:b78c18a4 msr:2d002 dsisr:800000 ESR:800000
->> 	ISI pc:55a238 msr:2f902 dsisr:800000 ESR:800000
->> 	ISI pc:412380 msr:2f902 dsisr:800000 ESR:800000
->> 	ISI pc:3aabe0 msr:2f902 dsisr:800000 ESR:800000
->> 	ISI pc:47a0e0 msr:2f902 dsisr:800000 ESR:800000
->> 	ISI pc:443290 msr:2f902 dsisr:800000 ESR:800000
->> 	ISI pc:43b350 msr:2d002 dsisr:800000 ESR:800000
->=20
-> Great, thanks for testing that is interesting.
->=20
-> Looking a bit more,
->=20
-> https://www.nxp.com/files-static/32bit/doc/ref_manual/EREF_RM.pdf
->=20
-> This is the manual for e500 family including e5500.
->=20
-> Table 8-4. Interrupt Summary by IVOR shows ISI interrupt as affecting=20
-> ESR register with [PT], this means the PT bit may be set. There is no
-> BO bit specified here.
->=20
-> The architecture (and this manual) says that if an interrupt type=20
-> affects one of the ESR bits then all others are cleared. However if
-> we look at the 4.8.7 Exception Syndrome Register (ESR) definition,
-> the PT bit is specified with <E.PT>. This means it is implemented if
-> the processor supports the E.PT extension.
->=20
-> According to this table, the e5500 does not support E.PT.
-> https://www.linux-kvm.org/page/E500_virtual_CPU_specification
->=20
-> So it seems possible that a processor which does not support E.PT and=20
-> therefore ISI will never set any bits in ESR, will not zero the ESR
-> when it takes an ISI intrrupt, without violating the specification.
->=20
-> It looks like that is what is happening here, ESR is being left from
-> a previous store DSI.
+On Thu, Oct 28, 2021 at 12:16:40AM +0300, Dmitry Osipenko wrote:
+> Kernel now supports chained power-off handlers. Use do_kernel_power_off()
+> that invokes chained power-off handlers. It also invokes legacy
+> pm_power_off() for now, which will be removed once all drivers will
+> be converted to the new power-off API.
+> 
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 
-Actually it could be another explanation, it takes a instruction=20
-TLB error interrupt first which always sets no ESR bits, and then
-it jumps to the ISI handler without clearing ESR.
+Reviewed-by: Russell King (Oracle) <rmk+kernel@armlinux.org.uk>
 
-I have not actually worked out why it is causing an infinite loop,
-it doesn't seem to be the main fault handler, maybe it is some
-low level TLB or PTE code, I can't get a kernel to boot under
-quemu due to some bug, but a 64-bit kernel does not cause the problem if=20
-you manually add ESR_DST into dsisr on instruction faults. Don't really
-need to know that exactly though, it's clearly a bug.
+Thanks!
 
-Thanks,
-Nick
+-- 
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
