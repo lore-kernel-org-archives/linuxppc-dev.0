@@ -2,19 +2,19 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCB00C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 14:06:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7A3CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 14:15:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A904610CA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 14:06:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2A904610CA
+	by mail.kernel.org (Postfix) with ESMTPS id 39BC4610F8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 14:15:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 39BC4610F8
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=physik.fu-berlin.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hg6mH47N7z3cGb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Oct 2021 01:06:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hg6zQ69L3z3cCg
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Oct 2021 01:15:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66;
  helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de;
@@ -23,20 +23,20 @@ Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de
  [130.133.4.66])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hg6lr1kKSz2yK6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Oct 2021 01:05:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hg6yz0Yl7z2yS3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Oct 2021 01:15:22 +1100 (AEDT)
 Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
  by outpost.zedat.fu-berlin.de (Exim 4.94) with esmtps (TLS1.2)
  tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
  (envelope-from <glaubitz@zedat.fu-berlin.de>)
- id 1mg62H-002loB-KT; Thu, 28 Oct 2021 16:05:41 +0200
+ id 1mg6Bc-002sZc-BG; Thu, 28 Oct 2021 16:15:20 +0200
 Received: from p57bd9736.dip0.t-ipconnect.de ([87.189.151.54]
  helo=[192.168.178.81]) by inpost2.zedat.fu-berlin.de (Exim 4.94)
  with esmtpsa (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
  (envelope-from <glaubitz@physik.fu-berlin.de>)
- id 1mg62H-0010bR-E2; Thu, 28 Oct 2021 16:05:41 +0200
-Message-ID: <9ed788c0-b99b-f327-0814-a2d92db6bd8b@physik.fu-berlin.de>
-Date: Thu, 28 Oct 2021 16:05:41 +0200
+ id 1mg6Bc-0011zh-1l; Thu, 28 Oct 2021 16:15:20 +0200
+Message-ID: <8123f71a-3db3-0a5d-c1b0-59dce2df154c@physik.fu-berlin.de>
+Date: Thu, 28 Oct 2021 16:15:19 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.2.0
@@ -52,7 +52,8 @@ References: <87pmrtbbdt.fsf@mpe.ellerman.id.au>
  <c21c7a0e-95f1-e6d2-a04c-fb99d801e8da@physik.fu-berlin.de>
  <878rydac0d.fsf@mpe.ellerman.id.au>
  <87b1404f-7805-da29-4899-6ab9459e5364@physik.fu-berlin.de>
-In-Reply-To: <87b1404f-7805-da29-4899-6ab9459e5364@physik.fu-berlin.de>
+ <9ed788c0-b99b-f327-0814-a2d92db6bd8b@physik.fu-berlin.de>
+In-Reply-To: <9ed788c0-b99b-f327-0814-a2d92db6bd8b@physik.fu-berlin.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Original-Sender: glaubitz@physik.fu-berlin.de
@@ -74,40 +75,21 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael!
+Hi!
 
-On 10/28/21 13:20, John Paul Adrian Glaubitz wrote:
-> It seems I also can no longer reproduce the issue, even when building the most problematic
-> packages and I think we should consider it fixed for now. I will keep monitoring the server,
-> of course, and will let you know in case the problem shows again.
+On 10/28/21 16:05, John Paul Adrian Glaubitz wrote:
+> The following packages were being built at the same time:
+> 
+> - guest 1: virtuoso-opensource and openturns
+> - guest 2: llvm-toolchain-13
+> 
+> I really did a lot of testing today with no issues and just after I sent my report
+> to oss-security that the machine seems to be stable again, the issue showed up :(.
 
-The host machine is stuck again but I'm not 100% sure what triggered the problem:
+Do you know whether IPMI features any sort of monitoring for capturing the output
+of the serial console non-interactively? This way I would be able to capture the
+crash besides what I have seen above.
 
-[194817.984249] watchdog: BUG: soft lockup - CPU#80 stuck for 246s! [CPU 2/KVM:1836]
-[194818.012248] watchdog: BUG: soft lockup - CPU#152 stuck for 246s! [CPU 3/KVM:1837]
-[194825.960164] watchdog: BUG: soft lockup - CPU#24 stuck for 246s! [khugepaged:318]
-[194841.983991] watchdog: BUG: soft lockup - CPU#80 stuck for 268s! [CPU 2/KVM:1836]
-[194842.011991] watchdog: BUG: soft lockup - CPU#152 stuck for 268s! [CPU 3/KVM:1837]
-[194849.959906] watchdog: BUG: soft lockup - CPU#24 stuck for 269s! [khugepaged:318]
-[194865.983733] watchdog: BUG: soft lockup - CPU#80 stuck for 291s! [CPU 2/KVM:1836]
-[194866.011733] watchdog: BUG: soft lockup - CPU#152 stuck for 291s! [CPU 3/KVM:1837]
-[194873.959648] watchdog: BUG: soft lockup - CPU#24 stuck for 291s! [khugepaged:318]
-[194889.983475] watchdog: BUG: soft lockup - CPU#80 stuck for 313s! [CPU 2/KVM:1836]
-[194890.011475] watchdog: BUG: soft lockup - CPU#152 stuck for 313s! [CPU 3/KVM:1837]
-[194897.959390] watchdog: BUG: soft lockup - CPU#24 stuck for 313s! [khugepaged:318]
-[194913.983218] watchdog: BUG: soft lockup - CPU#80 stuck for 335s! [CPU 2/KVM:1836]
-[194914.011217] watchdog: BUG: soft lockup - CPU#152 stuck for 335s! [CPU 3/KVM:1837]
-[194921.959133] watchdog: BUG: soft lockup - CPU#24 stuck for 336s! [khugepaged:318]
-
-The following packages were being built at the same time:
-
-- guest 1: virtuoso-opensource and openturns
-- guest 2: llvm-toolchain-13
-
-I really did a lot of testing today with no issues and just after I sent my report
-to oss-security that the machine seems to be stable again, the issue showed up :(.
-
-Sorry,
 Adrian
 
 -- 
