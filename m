@@ -2,61 +2,78 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEC11C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 12:02:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4346EC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 12:24:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0879861040
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 12:02:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0879861040
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4CF4B610CA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 12:24:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4CF4B610CA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hg41K3hrFz2ybK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 23:02:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PF+p5k3f;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hg4WL0JHJz3c9d
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 23:24:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=PF+p5k3f; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hg3y824Plz2xDg;
- Thu, 28 Oct 2021 22:59:28 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 17810610FC;
- Thu, 28 Oct 2021 11:59:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1635422364;
- bh=6SRnBqGEu6kfrjY8F8AIxFOXpP3mk9uNLODc5pl6vYo=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=PF+p5k3fPcX4g7U/HaBJuzIJ4k5E0pNaC5AYSReMWdptL5C6nDTIJaIE7qlYNYlG6
- n1n/PwUdpeEdECCRPixbjSlqTeevDW0OntTvozcAaeZnGpyg9v14UXE0Uy+uDhiwA4
- opUKp2Rh8z49oq5/De4kzH0wt2Tq2fvNA7/+mgp+6zfuqvEwWijrNqLYLBlBZuMPRL
- 88N447RwKebi4Ez1WZLL28f9yHI1UOy8Ip53Ye3TTKmeO3nK2Kc7hLybqU9+9eT+Gw
- dD6HWh7fPMZRMI/QpI/9KZ3rirsCMx4Hs00YhSbDpBEZNMfr2ZfvOMHA6ZLmKCwWDw
- xkF14RX5nWTCw==
-Date: Thu, 28 Oct 2021 12:59:08 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v2 24/45] regulator: pfuze100: Use
- devm_register_power_handler()
-Message-ID: <YXqQjG+5Eshm9fl5@sirena.org.uk>
-References: <20211027211715.12671-1-digetx@gmail.com>
- <20211027211715.12671-25-digetx@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hg4Vt4qMqz2xDv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2021 23:24:20 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4Hg4Vl5zmVz9sTD;
+ Thu, 28 Oct 2021 14:24:15 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 57v-vB-U9CTl; Thu, 28 Oct 2021 14:24:15 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4Hg4Vl4yfvz9sSg;
+ Thu, 28 Oct 2021 14:24:15 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 95AD18B78F;
+ Thu, 28 Oct 2021 14:24:15 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id gKs8YQKQwwMa; Thu, 28 Oct 2021 14:24:15 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.214])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2404F8B763;
+ Thu, 28 Oct 2021 14:24:15 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19SCO7nm194396
+ (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+ Thu, 28 Oct 2021 14:24:07 +0200
+Received: (from chleroy@localhost)
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19SCO7AY194395;
+ Thu, 28 Oct 2021 14:24:07 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
+ christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
+ Joe Lawrence <joe.lawrence@redhat.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+ "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: [PATCH v1 3/5] powerpc/ftrace: Add module_trampoline_target() for
+ PPC32
+Date: Thu, 28 Oct 2021 14:24:03 +0200
+Message-Id: <42345f464fb465f0fc76f3090e250be8fc1729f0.1635423081.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <cover.1635423081.git.christophe.leroy@csgroup.eu>
+References: <cover.1635423081.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="Wle3PKA2/qG6+6Vj"
-Content-Disposition: inline
-In-Reply-To: <20211027211715.12671-25-digetx@gmail.com>
-X-Cookie: try again
-X-Mailman-Approved-At: Thu, 28 Oct 2021 23:01:44 +1100
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1635423844; l=3431; s=20211009;
+ h=from:subject:message-id; bh=7oBsAXZEtuqZHdeGOsvjy9OJ4r1UHVRoSUNaMjipvfk=;
+ b=JFNq2n600zBLunbpvb1BPcov+t5rxZT0toiSE8KiNqzb+W85TdBVNklQ+Mk9T49QSmtDps09nhTh
+ +BB0TIL9AZsuLm1Y4wciS44y4T3hYgEcHpDJsKhZyGUyvKgqH9qM
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
+ pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,78 +85,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, Tomer Maimon <tmaimon77@gmail.com>,
- Santosh Shilimkar <ssantosh@kernel.org>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Linus Walleij <linus.walleij@linaro.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- Tali Perry <tali.perry1@gmail.com>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Thierry Reding <thierry.reding@gmail.com>, Guo Ren <guoren@kernel.org>,
- Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-riscv@lists.infradead.org, Vincent Chen <deanbo422@gmail.com>,
- Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>,
- Stefano Stabellini <sstabellini@kernel.org>,
- Benjamin Fair <benjaminfair@google.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
- linux-sh@vger.kernel.org, Lee Jones <lee.jones@linaro.org>,
- Helge Deller <deller@gmx.de>, Daniel Lezcano <daniel.lezcano@linaro.org>,
- Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
- Jonathan Hunter <jonathanh@nvidia.com>, Tony Lindgren <tony@atomide.com>,
- Chen-Yu Tsai <wens@csie.org>, Ingo Molnar <mingo@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, xen-devel@lists.xenproject.org,
- linux-mips@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>,
- Len Brown <lenb@kernel.org>, Albert Ou <aou@eecs.berkeley.edu>,
- linux-omap@vger.kernel.org,
- Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>,
- Vladimir Zapolskiy <vz@mleia.com>, linux-acpi@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>,
- Greentime Hu <green.hu@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>,
- linux-tegra@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Nancy Yuen <yuenn@google.com>, linux-arm-kernel@lists.infradead.org,
- Juergen Gross <jgross@suse.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
- Nick Hu <nickhu@andestech.com>, Avi Fishman <avifishman70@gmail.com>,
- Patrick Venture <venture@google.com>, linux-pm@vger.kernel.org,
- Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org,
- Palmer Dabbelt <palmer@dabbelt.com>, Philipp Zabel <p.zabel@pengutronix.de>,
- Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, openbmc@lists.ozlabs.org,
- Joshua Thompson <funaho@jurai.org>
+Cc: live-patching@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+module_trampoline_target() is used by __ftrace_modify_call().
 
---Wle3PKA2/qG6+6Vj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Implement it for PPC32 so that CONFIG_DYNAMIC_FTRACE_WITH_REGS
+can be activated on PPC32 as well.
 
-On Thu, Oct 28, 2021 at 12:16:54AM +0300, Dmitry Osipenko wrote:
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/kernel/module_32.c    | 25 ++++++++++++++++++++
+ arch/powerpc/kernel/trace/ftrace.c | 37 ++++--------------------------
+ 2 files changed, 29 insertions(+), 33 deletions(-)
 
-> Use devm_register_power_handler() that replaces global pm_power_off_prepare
-> variable and allows to register multiple power-off handlers.
+diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
+index f417afc08d33..5dedd76346b2 100644
+--- a/arch/powerpc/kernel/module_32.c
++++ b/arch/powerpc/kernel/module_32.c
+@@ -273,6 +273,31 @@ int apply_relocate_add(Elf32_Shdr *sechdrs,
+ }
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
++int module_trampoline_target(struct module *mod, unsigned long addr,
++			     unsigned long *target)
++{
++	unsigned int jmp[4];
++
++	/* Find where the trampoline jumps to */
++	if (copy_from_kernel_nofault(jmp, (void *)addr, sizeof(jmp)))
++		return -EFAULT;
++
++	/* verify that this is what we expect it to be */
++	if ((jmp[0] & 0xffff0000) != PPC_RAW_LIS(_R12, 0) ||
++	    (jmp[1] & 0xffff0000) != PPC_RAW_ADDI(_R12, _R12, 0) ||
++	    jmp[2] != PPC_RAW_MTCTR(_R12) ||
++	    jmp[3] != PPC_RAW_BCTR())
++		return -EINVAL;
++
++	addr = (jmp[1] & 0xffff) | ((jmp[0] & 0xffff) << 16);
++	if (addr & 0x8000)
++		addr -= 0x10000;
++
++	*target = addr;
++
++	return 0;
++}
++
+ int module_finalize_ftrace(struct module *module, const Elf_Shdr *sechdrs)
+ {
+ 	module->arch.tramp = do_plt_call(module->core_layout.base,
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+index d89c5df4f206..c1d54c18e912 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -222,9 +222,8 @@ __ftrace_make_nop(struct module *mod,
+ 		  struct dyn_ftrace *rec, unsigned long addr)
+ {
+ 	struct ppc_inst op;
+-	unsigned int jmp[4];
+ 	unsigned long ip = rec->ip;
+-	unsigned long tramp;
++	unsigned long tramp, ptr;
+ 
+ 	if (copy_from_kernel_nofault(&op, (void *)ip, MCOUNT_INSN_SIZE))
+ 		return -EFAULT;
+@@ -238,41 +237,13 @@ __ftrace_make_nop(struct module *mod,
+ 	/* lets find where the pointer goes */
+ 	tramp = find_bl_target(ip, op);
+ 
+-	/*
+-	 * On PPC32 the trampoline looks like:
+-	 *  0x3d, 0x80, 0x00, 0x00  lis r12,sym@ha
+-	 *  0x39, 0x8c, 0x00, 0x00  addi r12,r12,sym@l
+-	 *  0x7d, 0x89, 0x03, 0xa6  mtctr r12
+-	 *  0x4e, 0x80, 0x04, 0x20  bctr
+-	 */
+-
+-	pr_devel("ip:%lx jumps to %lx", ip, tramp);
+-
+ 	/* Find where the trampoline jumps to */
+-	if (copy_from_kernel_nofault(jmp, (void *)tramp, sizeof(jmp))) {
+-		pr_err("Failed to read %lx\n", tramp);
++	if (module_trampoline_target(mod, tramp, &ptr)) {
++		pr_err("Failed to get trampoline target\n");
+ 		return -EFAULT;
+ 	}
+ 
+-	pr_devel(" %08x %08x ", jmp[0], jmp[1]);
+-
+-	/* verify that this is what we expect it to be */
+-	if (((jmp[0] & 0xffff0000) != 0x3d800000) ||
+-	    ((jmp[1] & 0xffff0000) != 0x398c0000) ||
+-	    (jmp[2] != 0x7d8903a6) ||
+-	    (jmp[3] != 0x4e800420)) {
+-		pr_err("Not a trampoline\n");
+-		return -EINVAL;
+-	}
+-
+-	tramp = (jmp[1] & 0xffff) |
+-		((jmp[0] & 0xffff) << 16);
+-	if (tramp & 0x8000)
+-		tramp -= 0x10000;
+-
+-	pr_devel(" %lx ", tramp);
+-
+-	if (tramp != addr) {
++	if (ptr != addr) {
+ 		pr_err("Trampoline location %08lx does not match addr\n",
+ 		       tramp);
+ 		return -EINVAL;
+-- 
+2.31.1
 
-Acked-by: Mark Brown <broonie@kernel.org>
-
---Wle3PKA2/qG6+6Vj
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmF6kIwACgkQJNaLcl1U
-h9AyhAf+Nziuu181EjKis21sdValh/0I2qd5n6cZmpuLUeA7g6K6TyFH79y+tEkd
-Itu0nx35rsztyjl7+A8ECF9S9uJGD1N0o3cruhqU01R5Kloz9mrUDRii5R3Uh+fm
-wjXlm+iYDXdXIzRmM07WyWi8rUTpLrhHx7ogAb291MVxgxc1LqxOBAwk6hcvnDCB
-aLDZSKk0LT7/yHSU+s5sBmll+K1S09x+XUfo/7VEuf9WqctxN8t6DgnigNeg1sU1
-S3cmBREB1bkkqHuPWJhOyUeW6YyuYI8inCcpXRNtdydg4jwo5l2h16fE8e0db953
-VsD3Y2dmLQu1qKxLNZUqHCelyjTPow==
-=sNsl
------END PGP SIGNATURE-----
-
---Wle3PKA2/qG6+6Vj--
