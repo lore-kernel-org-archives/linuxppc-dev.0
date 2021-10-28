@@ -2,78 +2,108 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89324C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 12:26:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6057FC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 12:40:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36890610CB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 12:26:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 36890610CB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id A0BF460C51
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 12:40:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A0BF460C51
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hg4Yq6FQDz3djL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 23:26:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hg4ss1h8Bz30RK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 23:40:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AX9Vw8LX;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AX9Vw8LX;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=lvivier@redhat.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=AX9Vw8LX; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=AX9Vw8LX; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [216.205.24.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hg4WH6F0nz2yp0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2021 23:24:43 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4Hg4Vr1nryz9sT4;
- Thu, 28 Oct 2021 14:24:20 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id g1IAStAKYEEo; Thu, 28 Oct 2021 14:24:20 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4Hg4Vl6129z9sTG;
- Thu, 28 Oct 2021 14:24:15 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AC44B8B794;
- Thu, 28 Oct 2021 14:24:15 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id s4wV9EDYhJfg; Thu, 28 Oct 2021 14:24:15 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.214])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2FBFD8B78C;
- Thu, 28 Oct 2021 14:24:15 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 19SCO7gP194392
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Thu, 28 Oct 2021 14:24:07 +0200
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 19SCO74x194391;
- Thu, 28 Oct 2021 14:24:07 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
- Joe Lawrence <joe.lawrence@redhat.com>,
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: [PATCH v1 2/5] powerpc/ftrace: No need to read LR from stack in
- _mcount()
-Date: Thu, 28 Oct 2021 14:24:02 +0200
-Message-Id: <24a3ba7db388537c44a038026f926d885372e6d3.1635423081.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <cover.1635423081.git.christophe.leroy@csgroup.eu>
-References: <cover.1635423081.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hg4s31lvLz2xYD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2021 23:40:05 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1635424801;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=BilMP89d5ejwGExRisJLsaqgEV5K1hYN/wwdRA5k/bw=;
+ b=AX9Vw8LX7atLr3QjzuVpfzeVUtjav32uDSMWbvzOTmhkRJ+1tx4kyF5hLW1IV5wQiu2A7z
+ dS70CO5q3kNx/PxqAF5WyQc5pDIfsYHTTXtwk1O5x2D72HxnFYgpQTl1B54WeDYfLn62R3
+ ym0zGWHN1SUebHnqFGAY//+1aw3aZro=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1635424801;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=BilMP89d5ejwGExRisJLsaqgEV5K1hYN/wwdRA5k/bw=;
+ b=AX9Vw8LX7atLr3QjzuVpfzeVUtjav32uDSMWbvzOTmhkRJ+1tx4kyF5hLW1IV5wQiu2A7z
+ dS70CO5q3kNx/PxqAF5WyQc5pDIfsYHTTXtwk1O5x2D72HxnFYgpQTl1B54WeDYfLn62R3
+ ym0zGWHN1SUebHnqFGAY//+1aw3aZro=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-325-yOyhxR2eNCmF6pao28URVQ-1; Thu, 28 Oct 2021 08:39:59 -0400
+X-MC-Unique: yOyhxR2eNCmF6pao28URVQ-1
+Received: by mail-wm1-f69.google.com with SMTP id
+ l187-20020a1c25c4000000b0030da46b76daso2599927wml.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2021 05:39:59 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+ :content-language:to:cc:references:from:in-reply-to
+ :content-transfer-encoding;
+ bh=BilMP89d5ejwGExRisJLsaqgEV5K1hYN/wwdRA5k/bw=;
+ b=ZwCAORZM5/ThSw0d4fzJyll/x4WrqRifVi4Q1gak8duRsxHrPG/mBYL3nfiZhzUtQI
+ SwFjUHfF09QZNAQrJ5mi0PsjEms74E8EHnhLqm6NmXTXsrvKdrLbz6PIF2fIbtjZFogz
+ Sv+vLV00/oIVv2W0a22EGmIRpppfLrHHzEXB3QHMmHqHoATn60ZzG5lILz3y6ajmF+I+
+ F3GRNWzShq7BkiAFP1oJJXpT/Gf0quPB6jHS4faKa6mGoS/Wjarg9lGXYJHpddz/JhZS
+ z23VuygDS7BRBlk1VrGXqZn9nrY49Du6E7tcG7iUfTMiNkOe7DvH2ZAsubFvMjuNej09
+ LSGg==
+X-Gm-Message-State: AOAM533a2OdlKBwDappozQsx7jxbEwW+aLN2XRDrQ7Pv2Yh6xKZJejF0
+ JeYJGNbSMPlLfvZExEgztN+K72Vj9MZ0CE8VN2WIaPPNt94WVneDB2dexrI/QEzvoraC7v+jbdj
+ lcOBpbkvgjVFfiNlSdcUB/wvhAQ==
+X-Received: by 2002:a1c:a5c7:: with SMTP id o190mr4091575wme.186.1635424798268; 
+ Thu, 28 Oct 2021 05:39:58 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJxpBmS3oMhxO4yW4Qb9VQGEeYaL6u24h46UykydIOpW7bcXe3uHXi4ooalXiK9fBVtsvOBkuw==
+X-Received: by 2002:a1c:a5c7:: with SMTP id o190mr4091549wme.186.1635424798001; 
+ Thu, 28 Oct 2021 05:39:58 -0700 (PDT)
+Received: from [192.168.100.42] ([82.142.14.190])
+ by smtp.gmail.com with ESMTPSA id h14sm6603444wmq.34.2021.10.28.05.39.57
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 28 Oct 2021 05:39:57 -0700 (PDT)
+Message-ID: <641e823b-ed22-1e3f-6ce5-eeb09e8f947f@redhat.com>
+Date: Thu, 28 Oct 2021 14:39:56 +0200
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1635423843; l=1773; s=20211009;
- h=from:subject:message-id; bh=BdgcxgTnhLIQz+nFCg438ZdJlGpUJGv35y1aicj1AGk=;
- b=OQDvBxfJM6arTMja8VXsBuAHwTfB589E+cNZpkX8AmZBoTGmSV0VjxkW4braPU2V3ZXFmuIareBJ
- 1cSqV0G/Ck1dzwV0GqIVSeuABBpJBOMCkxWpsANCFpPmjv/F7Hi+
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.2.0
+Subject: Re: [PATCH v3] KVM: PPC: Tick accounting should defer vtime
+ accounting 'til after IRQ handling
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20211027142150.3711582-1-npiggin@gmail.com>
+From: Laurent Vivier <lvivier@redhat.com>
+In-Reply-To: <20211027142150.3711582-1-npiggin@gmail.com>
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=lvivier@redhat.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,68 +115,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: live-patching@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All functions calling _mcount do it exactly the same way, with the
-following sequence of instructions:
+On 27/10/2021 16:21, Nicholas Piggin wrote:
+> From: Laurent Vivier <lvivier@redhat.com>
+> 
+> Commit 112665286d08 ("KVM: PPC: Book3S HV: Context tracking exit guest
+> context before enabling irqs") moved guest_exit() into the interrupt
+> protected area to avoid wrong context warning (or worse). The problem is
+> that tick-based time accounting has not yet been updated at this point
+> (because it depends on the timer interrupt firing), so the guest time
+> gets incorrectly accounted to system time.
+> 
+> To fix the problem, follow the x86 fix in commit 160457140187 ("Defer
+> vtime accounting 'til after IRQ handling"), and allow host IRQs to run
+> before accounting the guest exit time.
+> 
+> In the case vtime accounting is enabled, this is not required because TB
+> is used directly for accounting.
+> 
+> Before this patch, with CONFIG_TICK_CPU_ACCOUNTING=y in the host and a
+> guest running a kernel compile, the 'guest' fields of /proc/stat are
+> stuck at zero. With the patch they can be observed increasing roughly as
+> expected.
+> 
+> Fixes: e233d54d4d97 ("KVM: booke: use __kvm_guest_exit")
+> Fixes: 112665286d08 ("KVM: PPC: Book3S HV: Context tracking exit guest context before enabling irqs")
+> Cc: <stable@vger.kernel.org> # 5.12
+> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+> [np: only required for tick accounting, add Book3E fix, tweak changelog]
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+> Since v2:
+> - I took over the patch with Laurent's blessing.
+> - Changed to avoid processing IRQs if we do have vtime accounting
+>    enabled.
+> - Changed so in either case the accounting is called with irqs disabled.
+> - Added similar Book3E fix.
+> - Rebased on upstream, tested, observed bug and confirmed fix.
+> 
+>   arch/powerpc/kvm/book3s_hv.c | 30 ++++++++++++++++++++++++++++--
+>   arch/powerpc/kvm/booke.c     | 16 +++++++++++++++-
+>   2 files changed, 43 insertions(+), 3 deletions(-)
+> 
 
-	c07de788:       7c 08 02 a6     mflr    r0
-	c07de78c:       90 01 00 04     stw     r0,4(r1)
-	c07de790:       4b 84 13 65     bl      c001faf4 <_mcount>
+Tested-by: Laurent Vivier <lvivier@redhat.com>
 
-Allthough LR is pushed on stack, it is still in r0 while entering
-_mcount().
+Checked with mpstat that time is accounted to %guest while a stress-ng test is running in 
+the guest. Checked there is no warning in the host kernellogs.
 
-Function arguments are in r3-r10, so r11 and r12 are still available
-at that point.
-
-Do like PPC64 and use r12 to move LR into CTR, so that r0 is preserved
-and doesn't need to be restored from the stack.
-
-While at it, bring back the EXPORT_SYMBOL at the end of _mcount.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/kernel/trace/ftrace_32.S | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/kernel/trace/ftrace_32.S b/arch/powerpc/kernel/trace/ftrace_32.S
-index e023ae59c429..c7d57124cc59 100644
---- a/arch/powerpc/kernel/trace/ftrace_32.S
-+++ b/arch/powerpc/kernel/trace/ftrace_32.S
-@@ -14,16 +14,16 @@ _GLOBAL(mcount)
- _GLOBAL(_mcount)
- 	/*
- 	 * It is required that _mcount on PPC32 must preserve the
--	 * link register. But we have r0 to play with. We use r0
-+	 * link register. But we have r12 to play with. We use r12
- 	 * to push the return address back to the caller of mcount
- 	 * into the ctr register, restore the link register and
- 	 * then jump back using the ctr register.
- 	 */
--	mflr	r0
--	mtctr	r0
--	lwz	r0, 4(r1)
-+	mflr	r12
-+	mtctr	r12
- 	mtlr	r0
- 	bctr
-+EXPORT_SYMBOL(_mcount)
- 
- _GLOBAL(ftrace_caller)
- 	MCOUNT_SAVE_FRAME
-@@ -43,7 +43,6 @@ _GLOBAL(ftrace_graph_stub)
- 	/* old link register ends up in ctr reg */
- 	bctr
- 
--EXPORT_SYMBOL(_mcount)
- 
- _GLOBAL(ftrace_stub)
- 	blr
--- 
-2.31.1
+Thanks,
+Laurent
 
