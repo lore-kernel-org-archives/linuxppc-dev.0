@@ -1,75 +1,83 @@
-Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=h3rJ=PR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0466C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 22:14:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC446C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Oct 2021 00:36:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E08E760E8B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Oct 2021 22:14:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E08E760E8B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id ED8306103B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Oct 2021 00:36:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ED8306103B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HgKbD4mz5z3c5Z
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Oct 2021 09:14:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HgNlp157dz3cFf
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Oct 2021 11:36:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256 header.s=google header.b=L/mPDwtH;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=iIYU/DIx;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::42a;
- helo=mail-pf1-x42a.google.com; envelope-from=dja@axtens.net;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e;
+ helo=mail-pj1-x102e.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=L/mPDwtH; dkim-atps=neutral
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com
- [IPv6:2607:f8b0:4864:20::42a])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=iIYU/DIx; dkim-atps=neutral
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com
+ [IPv6:2607:f8b0:4864:20::102e])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HgKZQ73hjz2yfn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Oct 2021 09:13:17 +1100 (AEDT)
-Received: by mail-pf1-x42a.google.com with SMTP id m26so7307499pff.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2021 15:13:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=JY/JyRDyIX2LVwFej2/Bk3hlisTkPZwUj1V2NIryitk=;
- b=L/mPDwtH9beUldT7eJbyxxbplEf+hrQPQxP0W+/2y/pgNGH8zHsr38buofvs78ySIz
- AB0UlqIDx3bM3td/eaqlL3bkNgoO5m7OH4IQCyV+WdPGBDxvF2uEIJ2txttYZCn5XLXW
- 1M0Ygk/afTknKc6GxU6sc8OAW1b7PjJ9KYN4c=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HgNl14WXhz2ywf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Oct 2021 11:35:56 +1100 (AEDT)
+Received: by mail-pj1-x102e.google.com with SMTP id
+ n36-20020a17090a5aa700b0019fa884ab85so9246216pji.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Oct 2021 17:35:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=E4pGtECdhwt8OtT2ngqN26PWhFeuiws8t3kYQYNcqJ0=;
+ b=iIYU/DIxptGc5/pseofBUrAkvt9GDbEh23gs9KsEwm8k0cQ6A+PbHw2Jrjyy7u2c1j
+ z9ObztzNbIHQB9bPMVhO3Sn24rBJEt+np3JaQ1hXlauyOIl13xfVVWMa6s4ZCIL6v9WW
+ dYpRiTrC3ZmhR1CO+XLqX1LJjZs6l9hfLM3l1U1t8DQxrw0r1AUcdyl/Gi4rBSjCRWvA
+ mp6GNCWKpCKGgUzlcL45N7VDf6WYp4PdvMcD4ZRLQ4SZz2b0Zmsy21YHISndPKA0CoBW
+ qdgRgEOG66a5llPd5/ZePuME7BRjHVHLR/NKz9XvJYGwqjDEdS4qrO2PGzrXk4VccDMb
+ wAkA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=JY/JyRDyIX2LVwFej2/Bk3hlisTkPZwUj1V2NIryitk=;
- b=OBJtWvfj2GDa/fjxA2XhvlWjGkqtVaPGJOItPbmvQ1sLKzVtCSV/WXOBQOyD/URrwy
- MS/ozUGs35bQcznYbaHpkWTTmRqJhH1CrlgNkABMEd32PVC/j3tnuBW3ibIgSbG5r+eG
- IQLQllKq+BPQBWnUu1jNk1dlstB82iekvE1s6VVKXSY7+tkbaiwEA/UFERN4BMoZPGFb
- BOwHtQXDXqM0oNWsEsoOFO40SiQt6jZyStlh93tf4yQHtcDl1qQe1pQ+EFJM0/NrMtMB
- hBN9Su1JChY106TXZnkewlL4b1p/qoQVnQEKdn45G4A8p5HsL6pWc8Prg1AtaCc11nKK
- wVbQ==
-X-Gm-Message-State: AOAM531i0JdcivBDhTYpCOgJaMiuqKAkoBHIV5+fccibRFj9dKC0GlbA
- 7xY14RmW7+nZ5Nqxg0UHjMKpZA==
-X-Google-Smtp-Source: ABdhPJw8dqTeDgguS3A5rbtFFAfXJN/hsg8s/ozO6HA5kbAPT5uPQ9W0CXeH41Dtih/HFKe6GKwhfg==
-X-Received: by 2002:a63:1a0e:: with SMTP id a14mr5310626pga.195.1635459193808; 
- Thu, 28 Oct 2021 15:13:13 -0700 (PDT)
-Received: from localhost ([2001:4479:e000:e400:d67a:2cc4:2c16:9b6])
- by smtp.gmail.com with ESMTPSA id z22sm4947606pfe.1.2021.10.28.15.13.12
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=E4pGtECdhwt8OtT2ngqN26PWhFeuiws8t3kYQYNcqJ0=;
+ b=6NnSpgC6EgJb9H7zT3lPcQKCnzvkQ8meRGrbRPXfyNXKG69DarFlQAJqlmGk3cEdXd
+ VdBb9Q/Mht7HfmIqQ9p2NTEe6ilQA1mr3rwVmp5oqsX2WtD7ZtSskkUfC81WPk0yGFLt
+ OBRu7pqOrM3186nqy923ip4aJHVtVZN2zrMlQzaEgGCFyAZevNtjB2NT0NY9XLk7Y/Pw
+ 3GgYla5OLme+K5K22fMLFwwg3N/k215tnx6IkwCFo5wWUTqR2yw4Vk63RUG+DMcjfD9p
+ EdZ2zSqKgtxSizvdImQse+tf3rWz3auOKp3oo43nzjLidarVBaLjCSwbThUdjeoh+Trt
+ KVnQ==
+X-Gm-Message-State: AOAM530s3AcBMg/eqYFSVnB6x3bW/do6299ExAPdeTlT0USPqmikW65S
+ tEa7RTzyFKOs6sz50VhCCdgiUToBXZ4=
+X-Google-Smtp-Source: ABdhPJzhM9pPrymQRAwuzTvuFultc21B0+v8z3K8T9mud89lprYQp4NnRsvDWMV60HSJGm2pWOFvxQ==
+X-Received: by 2002:a17:90b:789:: with SMTP id
+ l9mr16397192pjz.19.1635467753497; 
+ Thu, 28 Oct 2021 17:35:53 -0700 (PDT)
+Received: from localhost ([118.208.159.180])
+ by smtp.gmail.com with ESMTPSA id m10sm8775953pjs.21.2021.10.28.17.35.52
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 28 Oct 2021 15:13:13 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/32e: Ignore ESR in instruction storage
- interrupt handler
-In-Reply-To: <20211028133043.4159501-1-npiggin@gmail.com>
-References: <20211028133043.4159501-1-npiggin@gmail.com>
-Date: Fri, 29 Oct 2021 09:13:10 +1100
-Message-ID: <87ee84g5mx.fsf@dja-thinkpad.axtens.net>
+ Thu, 28 Oct 2021 17:35:52 -0700 (PDT)
+Date: Fri, 29 Oct 2021 10:35:47 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v3] KVM: PPC: Tick accounting should defer vtime
+ accounting 'til after IRQ handling
+To: linuxppc-dev@lists.ozlabs.org, Laurent Vivier <lvivier@redhat.com>
+References: <20211027142150.3711582-1-npiggin@gmail.com>
+ <3d621619-e6b2-9388-06dd-0ea4cc805ed7@redhat.com>
+In-Reply-To: <3d621619-e6b2-9388-06dd-0ea4cc805ed7@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Message-Id: <1635467173.n25qd43d5m.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,131 +89,152 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Jacques de Laval <jacques.delaval@protonmail.com>
+Cc: stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Nick,
+Excerpts from Laurent Vivier's message of October 28, 2021 10:48 pm:
+> On 27/10/2021 16:21, Nicholas Piggin wrote:
+>> From: Laurent Vivier <lvivier@redhat.com>
+>>=20
+>> Commit 112665286d08 ("KVM: PPC: Book3S HV: Context tracking exit guest
+>> context before enabling irqs") moved guest_exit() into the interrupt
+>> protected area to avoid wrong context warning (or worse). The problem is
+>> that tick-based time accounting has not yet been updated at this point
+>> (because it depends on the timer interrupt firing), so the guest time
+>> gets incorrectly accounted to system time.
+>>=20
+>> To fix the problem, follow the x86 fix in commit 160457140187 ("Defer
+>> vtime accounting 'til after IRQ handling"), and allow host IRQs to run
+>> before accounting the guest exit time.
+>>=20
+>> In the case vtime accounting is enabled, this is not required because TB
+>> is used directly for accounting.
+>>=20
+>> Before this patch, with CONFIG_TICK_CPU_ACCOUNTING=3Dy in the host and a
+>> guest running a kernel compile, the 'guest' fields of /proc/stat are
+>> stuck at zero. With the patch they can be observed increasing roughly as
+>> expected.
+>>=20
+>> Fixes: e233d54d4d97 ("KVM: booke: use __kvm_guest_exit")
+>> Fixes: 112665286d08 ("KVM: PPC: Book3S HV: Context tracking exit guest c=
+ontext before enabling irqs")
+>> Cc: <stable@vger.kernel.org> # 5.12
+>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+>> [np: only required for tick accounting, add Book3E fix, tweak changelog]
+>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> ---
+>> Since v2:
+>> - I took over the patch with Laurent's blessing.
+>> - Changed to avoid processing IRQs if we do have vtime accounting
+>>    enabled.
+>> - Changed so in either case the accounting is called with irqs disabled.
+>> - Added similar Book3E fix.
+>> - Rebased on upstream, tested, observed bug and confirmed fix.
+>>=20
+>>   arch/powerpc/kvm/book3s_hv.c | 30 ++++++++++++++++++++++++++++--
+>>   arch/powerpc/kvm/booke.c     | 16 +++++++++++++++-
+>>   2 files changed, 43 insertions(+), 3 deletions(-)
+>>=20
+>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+>> index 2acb1c96cfaf..7b74fc0a986b 100644
+>> --- a/arch/powerpc/kvm/book3s_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_hv.c
+>> @@ -3726,7 +3726,20 @@ static noinline void kvmppc_run_core(struct kvmpp=
+c_vcore *vc)
+>>  =20
+>>   	kvmppc_set_host_core(pcpu);
+>>  =20
+>> -	guest_exit_irqoff();
+>> +	context_tracking_guest_exit();
+>> +	if (!vtime_accounting_enabled_this_cpu()) {
+>> +		local_irq_enable();
+>> +		/*
+>> +		 * Service IRQs here before vtime_account_guest_exit() so any
+>> +		 * ticks that occurred while running the guest are accounted to
+>> +		 * the guest. If vtime accounting is enabled, accounting uses
+>> +		 * TB rather than ticks, so it can be done without enabling
+>> +		 * interrupts here, which has the problem that it accounts
+>> +		 * interrupt processing overhead to the host.
+>> +		 */
+>> +		local_irq_disable();
+>> +	}
+>> +	vtime_account_guest_exit();
+>>  =20
+>>   	local_irq_enable();
+>>  =20
+>> @@ -4510,7 +4523,20 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, =
+u64 time_limit,
+>>  =20
+>>   	kvmppc_set_host_core(pcpu);
+>>  =20
+>> -	guest_exit_irqoff();
+>> +	context_tracking_guest_exit();
+>> +	if (!vtime_accounting_enabled_this_cpu()) {
+>> +		local_irq_enable();
+>> +		/*
+>> +		 * Service IRQs here before vtime_account_guest_exit() so any
+>> +		 * ticks that occurred while running the guest are accounted to
+>> +		 * the guest. If vtime accounting is enabled, accounting uses
+>> +		 * TB rather than ticks, so it can be done without enabling
+>> +		 * interrupts here, which has the problem that it accounts
+>> +		 * interrupt processing overhead to the host.
+>> +		 */
+>> +		local_irq_disable();
+>> +	}
+>> +	vtime_account_guest_exit();
+>>  =20
+>>   	local_irq_enable();
+>>  =20
+>> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+>> index 977801c83aff..8c15c90dd3a9 100644
+>> --- a/arch/powerpc/kvm/booke.c
+>> +++ b/arch/powerpc/kvm/booke.c
+>> @@ -1042,7 +1042,21 @@ int kvmppc_handle_exit(struct kvm_vcpu *vcpu, uns=
+igned int exit_nr)
+>>   	}
+>>  =20
+>>   	trace_kvm_exit(exit_nr, vcpu);
+>> -	guest_exit_irqoff();
+>> +
+>> +	context_tracking_guest_exit();
+>> +	if (!vtime_accounting_enabled_this_cpu()) {
+>> +		local_irq_enable();
+>> +		/*
+>> +		 * Service IRQs here before vtime_account_guest_exit() so any
+>> +		 * ticks that occurred while running the guest are accounted to
+>> +		 * the guest. If vtime accounting is enabled, accounting uses
+>> +		 * TB rather than ticks, so it can be done without enabling
+>> +		 * interrupts here, which has the problem that it accounts
+>> +		 * interrupt processing overhead to the host.
+>> +		 */
+>> +		local_irq_disable();
+>> +	}
+>> +	vtime_account_guest_exit();
+>>  =20
+>>   	local_irq_enable();
+>>  =20
+>>=20
+>=20
+> I'm wondering if we should put the context_tracking_guest_exit() just aft=
+er the=20
+> "srcu_read_unlock(&vc->kvm->srcu, srcu_idx);" as it was before 61bd0f66ff=
+92 ("KVM: PPC:=20
+> Book3S HV: Fix guest time accounting with VIRT_CPU_ACCOUNTING_GEN")?
 
-> A e5500 machine running a 32-bit kernel sometimes hangs at boot,
-> seemingly going into an infinite loop of instruction storage interrupts.
-> The ESR SPR has a value of 0x800000 (store) when this happens, which is
-> likely set by a previous store. An instruction TLB miss interrupt would
-> then leave ESR unchanged, and if no PTE exists it calls directly to the
-> instruction storage interrupt handler without changing ESR.
+For the run_single_vcpu path, I _think_ it shouldn't matter. It's mostly=20
+just fixing up low level powerpc details.
 
-I hadn't heard of the ESR before and your patch just uses the acronym:
-apparently it is the Exception Syndrome Register. In ISA 2.07 it's in
-Section 7.2.13 of Book III-E. (e5500 implements 2.06 but I assume it's
-roughly the same there.)
+But actually I wonder whether we should move the guest context entirely=20
+inside the SRCU lock because it's a high level host locking primitive.
 
-The ISA says that ESR_ST is set for the following types of exception:
- - Alignment
- - Data Storage
- - Data TLB
- - LRAT Error
+For the kvmppc_run_core path, we are actually taking the vc->lock spin=20
+lock as well. Arguably it's waiting for secondary threads in the guest
+but I think changing to host context as soon as possible could make
+sense. If we don't have an actual bug identified it could wait for next
+merge perhaps.
 
-So it makes sense to assume that it was not set by the instruction
-storage exception. (I see you have a discussion as to how that might
-occur in
-https://lore.kernel.org/linuxppc-dev/1635413197.83rhc4s3fc.astroid@bobo.none/#t
-and you concluded that in the comment you add that we arrive here via
-the TLB handler jumping to the ISI.)
-
-> access_error() does not cause a segfault due to a store to a read-only
-> vma because is_exec is true. Most subsequent fault handling does not
-> check for a write fault on a read-only vma, and might do strange things
-> like create a writeable PTE or call page_mkwrite on a read only vma or
-> file. It's not clear what happens here to cause the infinite faulting in
-> this case, a fault handler failure or low level PTE or TLB handling.
-
-I'm just trying to unpick this:
-
- - INSTRUCTION_STORAGE_EXCEPTION ends up branching to do_page_fault ->
-   __do_page_fault -> ___do_page_fault
-
- - ___do_page_fault has is_exec = true because the exception is a
-   instruction storage interrupt
-
- - ___do_page_fault also decides that is_write = true because the
-   ESR_DST bit is set.
-
-This puts us in a bad position because we're taking some information
-from the current exception and some information from a previous
-exception, so it makes sense that things would go wrong from here!
-
-> In any case this can be fixed by having the instruction storage
-> interrupt zero regs->dsisr rather than storing the ESR value to it.
-
-Is it valid to just ignore the contents of ESR for an Instruction
-Storage exception?
-
-The 2.07 ISA at least says that the following ESR bits can be set by an
-Instruction Storage exception:
- - Byte Ordering
- - TLB Inelligible
- - Page Table
-
-It sounds from
-
-> + * In any case, do_page_fault for BOOK3E does not use ESR and always expects
-> + * dsisr to be 0. ESR_DST from a prior store in particular would confuse fault
-> + * handling.
-
-that we don't actually ever check any of those three bits in the
-do_page_fault path. reg_booke.h defines ESR_BO but the definition is
-never used, and there is no ESR_TLBI or ESR_PT constant defined.
-
-So much as it seems a bit dodgy to me, I guess it is right to say that
-we're not changing behaviour by setting dsisr to 0 and just ignoring
-those 3 bits? Should we document that in the comment?
-
-I probably would have masked ESR_DST but I guess extra bit-twiddling in
-an interrupt path when zeroing would do is probably not worth it for
-theoretical correctness?
-
-Kind regards,
-Daniel
-
-> Link: https://lore.kernel.org/linuxppc-dev/1635306738.0z8wt7619v.astroid@bobo.none/
-> Fixes: a01a3f2ddbcd ("powerpc: remove arguments from fault handler functions")
-> Reported-by: Jacques de Laval <jacques.delaval@protonmail.com>
-> Tested-by: Jacques de Laval <jacques.delaval@protonmail.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/kernel/head_booke.h | 15 ++++++++++++---
->  1 file changed, 12 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-> index e5503420b6c6..ef8d1b1c234e 100644
-> --- a/arch/powerpc/kernel/head_booke.h
-> +++ b/arch/powerpc/kernel/head_booke.h
-> @@ -465,12 +465,21 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
->  	bl	do_page_fault;						      \
->  	b	interrupt_return
->  
-> +/*
-> + * Instruction TLB Error interrupt handlers may call InstructionStorage
-> + * directly without clearing ESR, so the ESR at this point may be left over
-> + * from a prior interrupt.
-> + *
-> + * In any case, do_page_fault for BOOK3E does not use ESR and always expects
-> + * dsisr to be 0. ESR_DST from a prior store in particular would confuse fault
-> + * handling.
-> + */
->  #define INSTRUCTION_STORAGE_EXCEPTION					      \
->  	START_EXCEPTION(InstructionStorage)				      \
-> -	NORMAL_EXCEPTION_PROLOG(0x400, INST_STORAGE);		      \
-> -	mfspr	r5,SPRN_ESR;		/* Grab the ESR and save it */	      \
-> +	NORMAL_EXCEPTION_PROLOG(0x400, INST_STORAGE);			      \
-> +	li	r5,0;			/* Store 0 in regs->esr (dsisr) */    \
->  	stw	r5,_ESR(r11);						      \
-> -	stw	r12, _DEAR(r11);	/* Pass SRR0 as arg2 */		      \
-> +	stw	r12, _DEAR(r11);	/* Set regs->dear (dar) to SRR0 */    \
->  	prepare_transfer_to_handler;					      \
->  	bl	do_page_fault;						      \
->  	b	interrupt_return
-> -- 
-> 2.23.0
+Thanks,
+Nick
+>=20
