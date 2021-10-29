@@ -2,64 +2,169 @@ Return-Path: <SRS0=h3rJ=PR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D819C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Oct 2021 21:25:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43842C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Oct 2021 21:26:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 56AF7603E8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Oct 2021 21:25:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 56AF7603E8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ixit.cz
+	by mail.kernel.org (Postfix) with ESMTPS id 799A9603E8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Oct 2021 21:26:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 799A9603E8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=selinc.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HgwSY2lXFz3cHf
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Oct 2021 08:25:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HgwTT0YHNz2ypZ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Oct 2021 08:26:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=ixit.cz header.i=@ixit.cz header.a=rsa-sha256 header.s=dkim header.b=YzQegZ9q;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=selinc.com header.i=@selinc.com header.a=rsa-sha256 header.s=sel1 header.b=cSxTV46o;
+	dkim=pass (1024-bit key; unprotected) header.d=selinc.com header.i=@selinc.com header.a=rsa-sha256 header.s=selector1 header.b=ck2M0ZnX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=ixit.cz
- (client-ip=94.230.151.217; helo=ixit.cz; envelope-from=david@ixit.cz;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=selinc.com (client-ip=148.163.143.141;
+ helo=mx0b-000e8d01.pphosted.com;
+ envelope-from=prvs=9936515456=eugene_bordenkircher@selinc.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=ixit.cz header.i=@ixit.cz header.a=rsa-sha256 header.s=dkim
- header.b=YzQegZ9q; dkim-atps=neutral
-X-Greylist: delayed 8398 seconds by postgrey-1.36 at boromir;
- Sat, 30 Oct 2021 03:31:05 AEDT
-Received: from ixit.cz (ixit.cz [94.230.151.217])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=selinc.com header.i=@selinc.com header.a=rsa-sha256
+ header.s=sel1 header.b=cSxTV46o; 
+ dkim=pass (1024-bit key;
+ unprotected) header.d=selinc.com header.i=@selinc.com header.a=rsa-sha256
+ header.s=selector1 header.b=ck2M0ZnX; 
+ dkim-atps=neutral
+X-Greylist: delayed 604 seconds by postgrey-1.36 at boromir;
+ Sat, 30 Oct 2021 04:24:17 AEDT
+Received: from mx0b-000e8d01.pphosted.com (mx0b-000e8d01.pphosted.com
+ [148.163.143.141])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hgnx51hm2z2xg6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Oct 2021 03:31:03 +1100 (AEDT)
-Received: from localhost.localdomain (ip-89-176-96-70.net.upcbroadband.cz
- [89.176.96.70])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by ixit.cz (Postfix) with ESMTPSA id BBC6A23D91;
- Fri, 29 Oct 2021 14:17:47 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
- t=1635509868;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=s8yyxqFVKattkdAGWNseuY/v4m4uzmy/l55j6/y5LeA=;
- b=YzQegZ9qN5lglFzeFSWB42tjsfLKW3WN/Ho+1q+viXsQuPhI42/ZLa8Q1Av4lgcRot/TMI
- 0qEeQwSr6rddHyGwYkNDuEbfoud/BV6lrUyQbSKftkBz1XBoN+bQGqJRy6Zpa+D9mjFPWn
- yKREl06TTFlIm5Poz8eo/Rwf/l1Cm2E=
-From: David Heidelberg <david@ixit.cz>
-To: Rob Herring <robh+dt@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc/fsl: fix the schema check errors for fsl,
- tmu-calibration
-Date: Fri, 29 Oct 2021 14:17:33 +0200
-Message-Id: <20211029121733.46849-1-david@ixit.cz>
-X-Mailer: git-send-email 2.33.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hgq6T51R9z2yHX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Oct 2021 04:24:16 +1100 (AEDT)
+Received: from pps.filterd (m0136173.ppops.net [127.0.0.1])
+ by mx0b-000e8d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 19TCb05h031144; 
+ Fri, 29 Oct 2021 10:24:13 -0700
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=selinc.com;
+ h=from : to : cc :
+ subject : date : message-id : references : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=sel1;
+ bh=9a1JWR52OWcn5hEXoWNQRblFuMaKYl4MQcqRQv6b6VQ=;
+ b=cSxTV46o9oXouul53ZqU4RETkY8n8QIsvXJ2AeZ4uSdHhzBoCK1cdQCR372EjRpCTr/e
+ t/MQHb3MysjI2ucLTERNR+oHZK41a+WRqDKMRHdsem9dE1j+GDuQ++uyCQW8f1AVBblI
+ ljXIIbbWmZCmWDUIP4Me5pJr7/UbZ22CuL6ycS+uNVHCPC83F3T0YBiXi6TWvv0RZfk9
+ EodHlpe3SB2vwvDnHYiO5K8HsEcMdmOQ8QsdVawCxxN88eUAfAPbBwixqMZqYuCPRV9T
+ Bh1ZC2Mjs2GtSZsPWjQxDh+VwiPGHVGrbmrWQM8bmho2G/ihuu4NUs2tThWXhpaNzAbk Zw== 
+Authentication-Results: ppops.net;
+ spf=fail smtp.mailfrom=Eugene_Bordenkircher@selinc.com
+Received: from nam12-bn8-obe.outbound.protection.outlook.com
+ (mail-bn8nam12lp2171.outbound.protection.outlook.com [104.47.55.171])
+ by mx0b-000e8d01.pphosted.com with ESMTP id 3c0dxur964-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 29 Oct 2021 10:24:12 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=hwS/hKKN1RPCa4Aqs6NNyhSGr0mFZVOnY36oft6JvpbxiBLuBJYzJE0SNdRMURW0ZzeZ0bSFFeYi29MTPWTbEpxD+nsNnwT0zHzrs1K9J+FDjviV78T2SpvZ5AV03EOGbu+hvfTR+odmVY5yUhoEI1lAW5i+hiWvVYjCD5A12gQXe34OdF6+1AvbkMUmCetLh0O0QpowXuWPkNvYUlZUKIXUwjCCaCDgcED81BigzvHdugKxanTdGpUKZ2R6rut3eILx49zWRvr7K/cj7Be+baZuCbjZ9EiSaTF1dkoaRKSi/fT5l1QBAC81Cy1SfQESD+Q9VNOPYP8YumYzhV85oQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=9a1JWR52OWcn5hEXoWNQRblFuMaKYl4MQcqRQv6b6VQ=;
+ b=miWiIiklQjHPQ2sOFMYIVPz4cc/Zz5zPLHWcIle/CP4xMgctLryoZBdCC75q6uw3OLL19L/l6c2uA9KED3opmuWD+4z5dIYzZ1+9TE12/dxox3ul4whI0EdlTV6d/BxMebmRXf25vgveuDAVjFN3D6e/yUe3TRn3GPYqIH3ixoG52+5QT2PuuGYoWIpx6yOX1b938pobbpLCF9drpCR+sebq9VuGJJjYPbQPGtiqqs68CGfhIh5GJEzjYEEZhQkh3/jc0cgqGMsXwIv3DaoCnRmOvrqJL8KIMlTXa6qAG7MnXpJuyDDmr1SF9f6KySihqt9UxUpVLrT6hLwadK25+w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=selinc.com; dmarc=pass action=none header.from=selinc.com;
+ dkim=pass header.d=selinc.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=selinc.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=9a1JWR52OWcn5hEXoWNQRblFuMaKYl4MQcqRQv6b6VQ=;
+ b=ck2M0ZnXAKizD7DcLAzWMQARd6hZgSd52JtsEW2AVuAmViJMJ17fPUzNLIpnHfMG0/9zVivFjmlvK2iEWF6udbY9j3wvO3XIuTHYyaRnugnsKaFXKZe9ahbnoaV83+SiVDVx17wHDxb0dTPdFoASu5amvAUPSkdkrIhpDTGnUHw=
+Received: from MWHPR2201MB1520.namprd22.prod.outlook.com
+ (2603:10b6:301:34::25) by MWHPR2201MB1070.namprd22.prod.outlook.com
+ (2603:10b6:301:2c::27) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4628.18; Fri, 29 Oct
+ 2021 17:24:08 +0000
+Received: from MWHPR2201MB1520.namprd22.prod.outlook.com
+ ([fe80::bdb4:45a6:34cf:fb27]) by MWHPR2201MB1520.namprd22.prod.outlook.com
+ ([fe80::bdb4:45a6:34cf:fb27%7]) with mapi id 15.20.4628.018; Fri, 29 Oct 2021
+ 17:24:08 +0000
+From: Eugene Bordenkircher <Eugene_Bordenkircher@selinc.com>
+To: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: bug: usb: gadget: FSL_UDC_CORE Corrupted request list leads to
+ unrecoverable loop.
+Thread-Topic: bug: usb: gadget: FSL_UDC_CORE Corrupted request list leads to
+ unrecoverable loop.
+Thread-Index: AdfM5PT/NvfAW0+iTcC+AdIF01azggABIYPQ
+Date: Fri, 29 Oct 2021 17:24:08 +0000
+Message-ID: <MWHPR2201MB1520D45396628364E91A1FA691879@MWHPR2201MB1520.namprd22.prod.outlook.com>
+References: <MWHPR2201MB152074F47BF142189365627B91879@MWHPR2201MB1520.namprd22.prod.outlook.com>
+In-Reply-To: <MWHPR2201MB152074F47BF142189365627B91879@MWHPR2201MB1520.namprd22.prod.outlook.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: vger.kernel.org; dkim=none (message not signed)
+ header.d=none; vger.kernel.org; dmarc=none action=none header.from=selinc.com; 
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 05d53f6b-10e9-4131-0e57-08d99b00ea84
+x-ms-traffictypediagnostic: MWHPR2201MB1070:
+x-microsoft-antispam-prvs: <MWHPR2201MB107050B5CFDB51A89A6AEFC291879@MWHPR2201MB1070.namprd22.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:7691;
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: 5HqW/+Ccc+mE23dhi5VJoYHVbblTHgRiyFDeG7x9ch9l7+kTgS6iQBk4Iq19sTf2uoKQ/CB1iHsjX1kuJiN4cWjmfPfiU32YhSFdqjn/TMYW9oo3bOcAXP0WjiLgaT0hK7UIdASKvaBVX2Q6nxeqXzuq56B2eteRXviuAcwP9XYGyMnOCnTp/dslxcPDXndReMwde6niWhbTL4ccHmEjhLCEXq8+7VzbJvP1gbRI82wyGsE56y+TRtovDTxwlak2HQNSh1BFWqm66TfjbJKRHzFg39GyRT2t77/nHlr+eXOH3a5EvQiF1usAFX8w+vKEebTdtCibmi/SfvpbDfVSVi541hJZyXdy3nmNWmiZ14/Jl3LexJNUF4yZZoL2QP1lfNfORU4byqO8VGc1wAnweQWO76nsXIWv/5hKNHutVbgNIHaLoc7X4RJdgEi9hYifsrErp7UDg3M0Hku8MvmDp6739I5lJ0W/FgwTvAPeMpsjG1GWaV3HBEt7T3eoW/XoIEIGoHpFw+60xiIQMg6mBxSfYrNPfXjavrqnuzSBrUWCiS2uW7dPnlxB84zguFvUX0r3xB5dpFiLV5zo1rxHdHaYJOaEghHaAcO4uZUh6/ZuFMK0BZCclpmbjfOUFwmMr6iUgYbku+LZkc1rASuP66uqvPPIQs5u48yNGCuzVUsVntgMv96tZ8REhx0XtxhmbRlnkwJj22uxkSnQx324qw==
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MWHPR2201MB1520.namprd22.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(4636009)(366004)(2906002)(8936002)(66476007)(33656002)(2940100002)(55016002)(86362001)(83380400001)(71200400001)(110136005)(4326008)(186003)(5660300002)(508600001)(66556008)(76116006)(26005)(316002)(9686003)(66946007)(52536014)(64756008)(38100700002)(8676002)(66446008)(53546011)(7696005)(54906003)(6506007)(122000001)(38070700005);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?ru4xvOAAS4F60BGYgVV8RgsNMjrw1NdGthfcWuPSVyLxplG1oIq0swRsuZUm?=
+ =?us-ascii?Q?4sZAtfm84P/bn00nMzIqCET82Fn6LHbVr7KyJOIE7jagCsyVISB3T2qKjZ8Q?=
+ =?us-ascii?Q?rKOivBXw40Cb/D2oJD37qOsmtzgk1rBuCaBvuurQLYmC9cLl0nQCA5id9Gt7?=
+ =?us-ascii?Q?4QxPrrRBEwLiBe93/naGaynuyrG8aI0K/qzAT0+/j8rihjYe5jOQOG5QtDw2?=
+ =?us-ascii?Q?Rw3AtMFINNcHbA0/maVTuSJnjtPJh3v6kxAlepsneqK0kAoNnqGmeFf/Xqqq?=
+ =?us-ascii?Q?RQsQ/Kd9VoI1HVWqZViuh+N2b89aj9J5yYNlvOSAIKjh/IXOSETC0VhqDEGP?=
+ =?us-ascii?Q?iAQ5CDK7KCGrIn8SGkrV9RXdZn8nTMWbDJaNW97aM5HhLzrg3M90Bav96K6L?=
+ =?us-ascii?Q?cypPue+3+iPj0S3lyH5dpOBMIderJL6a/g4C3UNNLG2cypdSi9hmrCeKPbJI?=
+ =?us-ascii?Q?SRCXE7XOfupeMgiyzJiwQkwdiLhVnsDyu1kawFVBRb4xbH89zzQK8L1CJrVI?=
+ =?us-ascii?Q?Z8cAZmI3BCA2PFttC7F96/wiFCu/W0ZNcq9Y6zqhEiWJEdPU/Fpy9eBa5mav?=
+ =?us-ascii?Q?9E6qP7LxCdiMue+hd/t7XzvayBXHG3ozXLDMrF+EjxKrd4K6Wlq2L+8QWDbO?=
+ =?us-ascii?Q?uqlfCcqG75U8pAvvcsfWbj+4vM/DUCcwp9HR6aVKV5OZVbkqGbrf7RQSvGKG?=
+ =?us-ascii?Q?YYDlwhiYI2GZ/hUEC6wlN2j/82BkovqUMgR7zKH9Hz/loNHvzUd78KeeI2qh?=
+ =?us-ascii?Q?rPln/nzXQir1LnqQa15dCKILcXzixgnpTzVMq6St4rfnI1qCUW/liRjQC8q4?=
+ =?us-ascii?Q?INQsA0iAMA/ccgqe3itcEXPYwHkuZu1WmDkopUeTxCkGgujSacOsUzRB5+NW?=
+ =?us-ascii?Q?wLkQI89bLpaWbK+x85dEkDW4QOxZ6RvqpHhbUR/t+XptANrPXZjWCjQ6m8IT?=
+ =?us-ascii?Q?ARrxgS5G8m91uZc8ZVmwwf7N4wlVn8W3hEVpwYm39z1N1A9LoSgbhSyI+EMK?=
+ =?us-ascii?Q?+QIUZWI2uMiF9Tg60ypGoF2g8Twul2KkUgC6L0pBai920JFWdQZQ0usHEL2K?=
+ =?us-ascii?Q?IJgNEmyvU7JSNhuw+sdjGLwwvKCah8RMv9opCbGx++rxRQZXawhR70wBK6Zf?=
+ =?us-ascii?Q?3sS8hRJYXYrlivDg8GdrGSpQgei3jSv+Ts00GOCsjMcc8Ek7ZQ2F29q1H7lu?=
+ =?us-ascii?Q?E8mWtCbAQmzDMQaYlA2qk8LHOXbVzTXVjmlzXizf2Y5EiiNTq9llzNRnIkgv?=
+ =?us-ascii?Q?JOw3ALLZFT/Sqh6nJTvyPaEfbG5N2RnmSftiGPMuJ+XU/IZPYr5esvE9T+EP?=
+ =?us-ascii?Q?q6xGWYjDkV1Coz/DkM+B4ssUCVXVWPOMpoq0KagZSaHgKMSD7vO/GGYCdAe+?=
+ =?us-ascii?Q?stZdIf/tD4AMZEn0FsQN7jTWCCUNSvUQdEHxPUrifaqzEiDU0kqnD50Q6b1j?=
+ =?us-ascii?Q?fQ1k44KkSKso5lvT+oY0FRYyULyuJv84K0OTvJK2HcD5j0p7R4E/w8EenSA+?=
+ =?us-ascii?Q?4zyE5pA6yFpEsm6DiVrKGXZGD8qD1R7rRB3e8z+GoV5H4kLihuTOnVyap4i2?=
+ =?us-ascii?Q?aCTmQHbOFAf71rj398HyCHNWEmpc4FtCHDQ2mzH09stqk+O6x9/3kvlPJwL8?=
+ =?us-ascii?Q?Pq/KbOA1Z4SF1zjjTl9hDheO7Ir6YDt5fbKF0eLZ8X/LxA6DKU+KZvEFlkw2?=
+ =?us-ascii?Q?unQ7Pg=3D=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: selinc.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MWHPR2201MB1520.namprd22.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 05d53f6b-10e9-4131-0e57-08d99b00ea84
+X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Oct 2021 17:24:08.3185 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 12381f30-10fe-4e2c-aa3a-5e03ebeb59ec
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 5XXnkPfiNWHl4zMj0Yyii/ae2h6bqLs52hrSYrz7eFZ/DkFlzJr1N/KuCg3mNHflZKJHZpflw+0PxI1qK72WsI+WCxc9l/Zawq6h8ShzNAQ=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR2201MB1070
+X-Proofpoint-ORIG-GUID: Wc1HYvpaZrJ0LgoE1nppN2O6xFWoTW3Y
+X-Proofpoint-GUID: Wc1HYvpaZrJ0LgoE1nppN2O6xFWoTW3Y
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 bulkscore=0
+ suspectscore=0 adultscore=0 spamscore=0 lowpriorityscore=0 phishscore=0
+ mlxlogscore=999 mlxscore=0 priorityscore=1501 clxscore=1011 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2110150000
+ definitions=main-2110290096
 X-Mailman-Approved-At: Sat, 30 Oct 2021 08:24:41 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -72,201 +177,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ~okias/devicetree@lists.sr.ht, David Heidelberg <david@ixit.cz>,
- linux-kernel@vger.kernel.org
+Cc: "balbi@kernel.org" <balbi@kernel.org>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "leoyang.li@nxp.com" <leoyang.li@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-fsl,tmu-calibration is in u32-matrix format. Use matching property syntax.
-No functional changes. Fixes warnings as:
-$ make dtbs_check
-...
-arch/arm64/boot/dts/freescale/imx8mq-librem5-r3.dt.yaml: tmu@30260000: fsl,tmu-calibration:0: Additional items are not allowed (1, 41, 2, 47, 3, 53, 4, 61, 5, 67, 6, 75, 7, 81, 8, 87, 9, 95, 10, 103, 11, 111
-, 65536, 27, 65537, 35, 65538, 43, 65539, 51, 65540, 59, 65541, 67, 65542, 75, 65543, 85, 65544, 93, 65545, 103, 65546, 112, 131072, 23, 131073, 35, 131074, 45, 131075, 55, 131076, 65, 131077, 75, 131078, 87, 13
-1079, 99, 131080, 111, 196608, 21, 196609, 33, 196610, 45, 196611, 57, 196612, 69, 196613, 83, 196614, 95, 196615, 113 were unexpected)
-        From schema: Documentation/devicetree/bindings/thermal/qoriq-thermal.yaml
-...
+Typing Greg's email correct this time.  My apologies.
 
-Signed-off-by: David Heidelberg <david@ixit.cz>
----
- arch/powerpc/boot/dts/fsl/t1023si-post.dtsi | 79 +++++++++++----------
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi | 71 +++++++++---------
- 2 files changed, 76 insertions(+), 74 deletions(-)
+Eugene=20
 
-diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-index d552044c5afc..aa5152ca8120 100644
---- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-@@ -367,45 +367,46 @@ tmu: tmu@f0000 {
- 		reg = <0xf0000 0x1000>;
- 		interrupts = <18 2 0 0>;
- 		fsl,tmu-range = <0xb0000 0xa0026 0x80048 0x30061>;
--		fsl,tmu-calibration = <0x00000000 0x0000000f
--				       0x00000001 0x00000017
--				       0x00000002 0x0000001e
--				       0x00000003 0x00000026
--				       0x00000004 0x0000002e
--				       0x00000005 0x00000035
--				       0x00000006 0x0000003d
--				       0x00000007 0x00000044
--				       0x00000008 0x0000004c
--				       0x00000009 0x00000053
--				       0x0000000a 0x0000005b
--				       0x0000000b 0x00000064
--
--				       0x00010000 0x00000011
--				       0x00010001 0x0000001c
--				       0x00010002 0x00000024
--				       0x00010003 0x0000002b
--				       0x00010004 0x00000034
--				       0x00010005 0x00000039
--				       0x00010006 0x00000042
--				       0x00010007 0x0000004c
--				       0x00010008 0x00000051
--				       0x00010009 0x0000005a
--				       0x0001000a 0x00000063
--
--				       0x00020000 0x00000013
--				       0x00020001 0x00000019
--				       0x00020002 0x00000024
--				       0x00020003 0x0000002c
--				       0x00020004 0x00000035
--				       0x00020005 0x0000003d
--				       0x00020006 0x00000046
--				       0x00020007 0x00000050
--				       0x00020008 0x00000059
--
--				       0x00030000 0x00000002
--				       0x00030001 0x0000000d
--				       0x00030002 0x00000019
--				       0x00030003 0x00000024>;
-+		fsl,tmu-calibration =
-+				<0x00000000 0x0000000f>,
-+				<0x00000001 0x00000017>,
-+				<0x00000002 0x0000001e>,
-+				<0x00000003 0x00000026>,
-+				<0x00000004 0x0000002e>,
-+				<0x00000005 0x00000035>,
-+				<0x00000006 0x0000003d>,
-+				<0x00000007 0x00000044>,
-+				<0x00000008 0x0000004c>,
-+				<0x00000009 0x00000053>,
-+				<0x0000000a 0x0000005b>,
-+				<0x0000000b 0x00000064>,
-+
-+				<0x00010000 0x00000011>,
-+				<0x00010001 0x0000001c>,
-+				<0x00010002 0x00000024>,
-+				<0x00010003 0x0000002b>,
-+				<0x00010004 0x00000034>,
-+				<0x00010005 0x00000039>,
-+				<0x00010006 0x00000042>,
-+				<0x00010007 0x0000004c>,
-+				<0x00010008 0x00000051>,
-+				<0x00010009 0x0000005a>,
-+				<0x0001000a 0x00000063>,
-+
-+				<0x00020000 0x00000013>,
-+				<0x00020001 0x00000019>,
-+				<0x00020002 0x00000024>,
-+				<0x00020003 0x0000002c>,
-+				<0x00020004 0x00000035>,
-+				<0x00020005 0x0000003d>,
-+				<0x00020006 0x00000046>,
-+				<0x00020007 0x00000050>,
-+				<0x00020008 0x00000059>,
-+
-+				<0x00030000 0x00000002>,
-+				<0x00030001 0x0000000d>,
-+				<0x00030002 0x00000019>,
-+				<0x00030003 0x00000024>;
- 		#thermal-sensor-cells = <1>;
- 	};
- 
-diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-index f58eb820eb5e..27e6985d8bde 100644
---- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-@@ -447,41 +447,42 @@ tmu: tmu@f0000 {
- 		reg = <0xf0000 0x1000>;
- 		interrupts = <18 2 0 0>;
- 		fsl,tmu-range = <0xa0000 0x90026 0x8004a 0x1006a>;
--		fsl,tmu-calibration = <0x00000000 0x00000025
--				       0x00000001 0x00000028
--				       0x00000002 0x0000002d
--				       0x00000003 0x00000031
--				       0x00000004 0x00000036
--				       0x00000005 0x0000003a
--				       0x00000006 0x00000040
--				       0x00000007 0x00000044
--				       0x00000008 0x0000004a
--				       0x00000009 0x0000004f
--				       0x0000000a 0x00000054
--
--				       0x00010000 0x0000000d
--				       0x00010001 0x00000013
--				       0x00010002 0x00000019
--				       0x00010003 0x0000001f
--				       0x00010004 0x00000025
--				       0x00010005 0x0000002d
--				       0x00010006 0x00000033
--				       0x00010007 0x00000043
--				       0x00010008 0x0000004b
--				       0x00010009 0x00000053
--
--				       0x00020000 0x00000010
--				       0x00020001 0x00000017
--				       0x00020002 0x0000001f
--				       0x00020003 0x00000029
--				       0x00020004 0x00000031
--				       0x00020005 0x0000003c
--				       0x00020006 0x00000042
--				       0x00020007 0x0000004d
--				       0x00020008 0x00000056
--
--				       0x00030000 0x00000012
--				       0x00030001 0x0000001d>;
-+		fsl,tmu-calibration =
-+				<0x00000000 0x00000025>,
-+				<0x00000001 0x00000028>,
-+				<0x00000002 0x0000002d>,
-+				<0x00000003 0x00000031>,
-+				<0x00000004 0x00000036>,
-+				<0x00000005 0x0000003a>,
-+				<0x00000006 0x00000040>,
-+				<0x00000007 0x00000044>,
-+				<0x00000008 0x0000004a>,
-+				<0x00000009 0x0000004f>,
-+				<0x0000000a 0x00000054>,
-+
-+				<0x00010000 0x0000000d>,
-+				<0x00010001 0x00000013>,
-+				<0x00010002 0x00000019>,
-+				<0x00010003 0x0000001f>,
-+				<0x00010004 0x00000025>,
-+				<0x00010005 0x0000002d>,
-+				<0x00010006 0x00000033>,
-+				<0x00010007 0x00000043>,
-+				<0x00010008 0x0000004b>,
-+				<0x00010009 0x00000053>,
-+
-+				<0x00020000 0x00000010>,
-+				<0x00020001 0x00000017>,
-+				<0x00020002 0x0000001f>,
-+				<0x00020003 0x00000029>,
-+				<0x00020004 0x00000031>,
-+				<0x00020005 0x0000003c>,
-+				<0x00020006 0x00000042>,
-+				<0x00020007 0x0000004d>,
-+				<0x00020008 0x00000056>,
-+
-+				<0x00030000 0x00000012>,
-+				<0x00030001 0x0000001d>;
- 		#thermal-sensor-cells = <1>;
- 	};
- 
--- 
-2.33.0
+-----Original Message-----
+From: Eugene Bordenkircher=20
+Sent: Friday, October 29, 2021 10:14 AM
+To: linux-usb@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+Cc: leoyang.li@nxp.com; balbi@kernel.org; gregkh@linuxfoundataion.org
+Subject: bug: usb: gadget: FSL_UDC_CORE Corrupted request list leads to unr=
+ecoverable loop.
 
+Hello all,
+
+We've discovered a situation where the FSL udc driver (drivers/usb/gadget/u=
+dc/fsl_udc_core.c) will enter a loop iterating over the request queue, but =
+the queue has been corrupted at some point so it loops infinitely.  I belie=
+ve we have narrowed into the offending code, but we are in need of assistan=
+ce trying to find an appropriate fix for the problem.  The identified code =
+appears to be in all versions of the Linux kernel the driver exists in.
+
+The problem appears to be when handling a USB_REQ_GET_STATUS request.  The =
+driver gets this request and then calls the ch9getstatus() function.  In th=
+is function, it starts a request by "borrowing" the per device status_req, =
+filling it in, and then queuing it with a call to list_add_tail() to add th=
+e request to the endpoint queue.  Right before it exits the function howeve=
+r, it's calling ep0_prime_status(), which is filling out that same status_r=
+eq structure and then queuing it with another call to list_add_tail() to ad=
+d the request to the endpoint queue.  This adds two instances of the exact =
+same LIST_HEAD to the endpoint queue, which breaks the list since the prev =
+and next pointers end up pointing to the wrong things.  This ends up causin=
+g a hard loop the next time nuke() gets called, which happens on the next s=
+etup IRQ.
+
+I'm not sure what the appropriate fix to this problem is, mostly due to my =
+lack of expertise in USB and this driver stack.  The code has been this way=
+ in the kernel for a very long time, which suggests that it has been workin=
+g, unless USB_REQ_GET_STATUS requests are never made.  This further suggest=
+s that there is something else going on that I don't understand.  Deleting =
+the call to ep0_prime_status() and the following ep0stall() call appears, o=
+n the surface, to get the device working again, but may have side effects t=
+hat I'm not seeing.
+
+I'm hopeful someone in the community can help provide some information on w=
+hat I may be missing or help come up with a solution to the problem.  A big=
+ thank you to anyone who would like to help out.
+
+Eugene
