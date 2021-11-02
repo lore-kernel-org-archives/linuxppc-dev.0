@@ -2,41 +2,41 @@ Return-Path: <SRS0=jSa2=PV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08CBAC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Nov 2021 11:45:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7BFBC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Nov 2021 11:46:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 76FA660EE3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Nov 2021 11:45:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 76FA660EE3
+	by mail.kernel.org (Postfix) with ESMTPS id 2252E60EE3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Nov 2021 11:46:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2252E60EE3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hk7QC1VN2z3dfR
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Nov 2021 22:45:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hk7Qd5xz7z3fns
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Nov 2021 22:46:17 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
  [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hk7Ft1gRmz2xtc
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Nov 2021 22:38:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hk7Fv30QPz2yP7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Nov 2021 22:38:43 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Hk7Fs6FVvz4xdN;
- Tue,  2 Nov 2021 22:38:41 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Hk7Fv0N5hz4xdS;
+ Tue,  2 Nov 2021 22:38:43 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: jniethe5@gmail.com, christophe.leroy@csgroup.eu,
- Hari Bathini <hbathini@linux.ibm.com>, naveen.n.rao@linux.ibm.com,
- daniel@iogearbox.net, ast@kernel.org, mpe@ellerman.id.au
-In-Reply-To: <20211025055649.114728-1-hbathini@linux.ibm.com>
-References: <20211025055649.114728-1-hbathini@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/bpf: fix write protecting JIT code
-Message-Id: <163584792256.1845480.13895202988410061927.b4-ty@ellerman.id.au>
-Date: Tue, 02 Nov 2021 21:12:02 +1100
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20211028165716.41300-1-hegdevasant@linux.vnet.ibm.com>
+References: <20211028165716.41300-1-hegdevasant@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] powerpc/powernv/prd: Unregister OPAL_MSG_PRD2 notifier
+ during module unload
+Message-Id: <163584792948.1845480.17297151596830428887.b4-ty@ellerman.id.au>
+Date: Tue, 02 Nov 2021 21:12:09 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,31 +51,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: songliubraving@fb.com, netdev@vger.kernel.org, john.fastabend@gmail.com,
- kpsingh@kernel.org, stable@vger.kernel.org, andrii@kernel.org,
- paulus@samba.org, yhs@fb.com, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kafai@fb.com
+Cc: dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 25 Oct 2021 11:26:49 +0530, Hari Bathini wrote:
-> Running program with bpf-to-bpf function calls results in data access
-> exception (0x300) with the below call trace:
+On Thu, 28 Oct 2021 22:27:16 +0530, Vasant Hegde wrote:
+> Commit 587164cd, introduced new opal message type (OPAL_MSG_PRD2) and added
+> opal notifier. But I missed to unregister the notifier during module unload
+> path. This results in below call trace if you try to unload and load
+> opal_prd module.
 > 
->     [c000000000113f28] bpf_int_jit_compile+0x238/0x750 (unreliable)
->     [c00000000037d2f8] bpf_check+0x2008/0x2710
->     [c000000000360050] bpf_prog_load+0xb00/0x13a0
->     [c000000000361d94] __sys_bpf+0x6f4/0x27c0
->     [c000000000363f0c] sys_bpf+0x2c/0x40
->     [c000000000032434] system_call_exception+0x164/0x330
->     [c00000000000c1e8] system_call_vectored_common+0xe8/0x278
+> Also add new notifier_block for OPAL_MSG_PRD2 message.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/bpf: fix write protecting JIT code
-      https://git.kernel.org/powerpc/c/44a8214de96bafb5210e43bfa2c97c19bf75af3d
+[1/1] powerpc/powernv/prd: Unregister OPAL_MSG_PRD2 notifier during module unload
+      https://git.kernel.org/powerpc/c/52862ab33c5d97490f3fa345d6529829e6d6637b
 
 cheers
