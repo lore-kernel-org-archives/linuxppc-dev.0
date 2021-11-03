@@ -2,74 +2,65 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A5C6C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 14:29:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24539C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 18:08:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2450E61050
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 14:29:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2450E61050
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id 0C1A960D43
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 18:08:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0C1A960D43
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hkq0s5g1tz3cQ3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 01:29:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=fg7QS3/P;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=4JuoZKxB;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
- (client-ip=195.135.220.29; helo=smtp-out2.suse.de;
- envelope-from=msuchanek@suse.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
- header.s=susede2_rsa header.b=fg7QS3/P; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=4JuoZKxB; 
- dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hkvrl4dXFz2yZt
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 05:08:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=nefkom.net (client-ip=212.18.0.9; helo=mail-out.m-online.net;
+ envelope-from=whitebox@nefkom.net; receiver=<UNKNOWN>)
+X-Greylist: delayed 411 seconds by postgrey-1.36 at boromir;
+ Thu, 04 Nov 2021 05:07:39 AEDT
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hkpxw3cWBz2xtr
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Nov 2021 01:27:16 +1100 (AEDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
- by smtp-out2.suse.de (Postfix) with ESMTP id BF1031FD38;
- Wed,  3 Nov 2021 14:27:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
- t=1635949632; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=cjYVBDGU+kLhHmA2i7EyQbKMCoFpK8UUMfIbBTUvwnw=;
- b=fg7QS3/P0iYQD5eZtJ6p72R1eRHWQs33XDRwDHVV1iQVoe04MGYyIqRc3GS3+hWIjv0bqe
- YFR/5KEfO9mUTJ+VifQ6fDbP7bBGWQ71TH8FbypXCe6jjumceoc9iMFwFsOzRKetLUzdY7
- ck3s3k1WMZJf24oUgPdhFg9L7A8OcKo=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
- s=susede2_ed25519; t=1635949632;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=cjYVBDGU+kLhHmA2i7EyQbKMCoFpK8UUMfIbBTUvwnw=;
- b=4JuoZKxBijz2nevAtUXxKYeO3paBrlviav5cVnCMPszSH1LAe4oqJZC/yhxqrXxnkCgydH
- D2VqztyQYY3RFICg==
-Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
- by relay2.suse.de (Postfix) with ESMTP id A54D1A3BAE;
- Wed,  3 Nov 2021 14:27:12 +0000 (UTC)
-From: Michal Suchanek <msuchanek@suse.de>
-To: keyrings@vger.kernel.org
-Subject: [PATCH 2/3] module: strip the signature marker in the verification
- function.
-Date: Wed,  3 Nov 2021 15:27:07 +0100
-Message-Id: <8c183211d3980554b046a1cc215f3b0f1ca17072.1635948742.git.msuchanek@suse.de>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <cover.1635948742.git.msuchanek@suse.de>
-References: <cover.1635948742.git.msuchanek@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HkvrC2Sqrz2xBx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Nov 2021 05:07:38 +1100 (AEDT)
+Received: from frontend01.mail.m-online.net (unknown [192.168.8.182])
+ by mail-out.m-online.net (Postfix) with ESMTP id 4Hkvh91D9vz1qwH4;
+ Wed,  3 Nov 2021 19:00:41 +0100 (CET)
+Received: from localhost (dynscan1.mnet-online.de [192.168.6.70])
+ by mail.m-online.net (Postfix) with ESMTP id 4Hkvh90hDVz1qqkJ;
+ Wed,  3 Nov 2021 19:00:41 +0100 (CET)
+X-Virus-Scanned: amavisd-new at mnet-online.de
+Received: from mail.mnet-online.de ([192.168.8.182])
+ by localhost (dynscan1.mail.m-online.net [192.168.6.70]) (amavisd-new,
+ port 10024)
+ with ESMTP id rbHPHfyVOdeV; Wed,  3 Nov 2021 19:00:40 +0100 (CET)
+X-Auth-Info: Rhg4tcukREDcGWTT1dcSoVRACLjvHFiHKvFs4+W11sECoukhHBeyyZumnJsIfZWU
+Received: from igel.home (ppp-46-244-172-4.dynamic.mnet-online.de
+ [46.244.172.4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.mnet-online.de (Postfix) with ESMTPSA;
+ Wed,  3 Nov 2021 19:00:40 +0100 (CET)
+Received: by igel.home (Postfix, from userid 1000)
+ id 7B2052C0F33; Wed,  3 Nov 2021 09:51:51 +0100 (CET)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Finn Thain <fthain@linux-m68k.org>
+Subject: Re: Fwd: Fwd: X stopped working with 5.14 on iBook
+References: <6919111c-02fa-c6b9-bb05-04161e52f340@yahoo.com>
+ <27ad38f3-c1a8-ac5c-8467-f311b5882a00@yahoo.com>
+ <d5d0b396-7408-bdae-cf50-4b5f4e7b3184@csgroup.eu>
+ <48c3ed15-2ecf-cc12-c287-2b61457f5fb__21333.0969143257$1635819996$gmane$org@nippy.intranet>
+X-Yow: I love ROCK 'N ROLL!  I memorized the all WORDS to ``WIPE-OUT'' in
+ 1965!!
+Date: Wed, 03 Nov 2021 09:51:51 +0100
+In-Reply-To: <48c3ed15-2ecf-cc12-c287-2b61457f5fb__21333.0969143257$1635819996$gmane$org@nippy.intranet>
+ (Finn Thain's message of "Tue, 2 Nov 2021 13:20:21 +1100 (AEDT)")
+Message-ID: <87cznh39lk.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,117 +72,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>, linux-s390@vger.kernel.org,
- Vasily Gorbik <gor@linux.ibm.com>,
- Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
- Heiko Carstens <hca@linux.ibm.com>, Jessica Yu <jeyu@kernel.org>,
- linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Luis Chamberlain <mcgrof@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Hari Bathini <hbathini@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Michal Suchanek <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org,
- Frank van der Linden <fllinden@amazon.com>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Cc: "Christopher M. Riedl" <cmr@linux.ibm.com>,
+ Stan Johnson <stanley.johnson.001@protonmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Riccardo Mottola <riccardo.mottola@libero.it>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It is stripped by each caller separately.
+On Nov 02 2021, Finn Thain wrote:
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
- arch/s390/kernel/machine_kexec_file.c |  9 ---------
- kernel/module.c                       |  7 +------
- kernel/module_signing.c               | 12 ++++++++++--
- 3 files changed, 11 insertions(+), 17 deletions(-)
+> After many builds and tests, Stan and I were able to determine that this 
+> regression only affects builds with CONFIG_USER_NS=y. That is,
+>
+> d3ccc9781560  + CONFIG_USER_NS=y  -->  fail
+> d3ccc9781560  + CONFIG_USER_NS=n  -->  okay
+> d3ccc9781560~ + CONFIG_USER_NS=y  -->  okay
+> d3ccc9781560~ + CONFIG_USER_NS=n  -->  okay
 
-diff --git a/arch/s390/kernel/machine_kexec_file.c b/arch/s390/kernel/machine_kexec_file.c
-index 634e641cd8aa..82260bb61060 100644
---- a/arch/s390/kernel/machine_kexec_file.c
-+++ b/arch/s390/kernel/machine_kexec_file.c
-@@ -26,20 +26,11 @@ const struct kexec_file_ops * const kexec_file_loaders[] = {
- int s390_verify_sig(const char *kernel, unsigned long length)
- {
- 	size_t kernel_len = length;
--	const unsigned long marker_len = sizeof(MODULE_SIG_STRING) - 1;
- 
- 	/* Skip signature verification when not secure IPLed. */
- 	if (!ipl_secure_flag)
- 		return 0;
- 
--	if (marker_len > kernel_len)
--		return -EKEYREJECTED;
--
--	if (memcmp(kernel + kernel_len - marker_len, MODULE_SIG_STRING,
--		   marker_len))
--		return -EKEYREJECTED;
--	kernel_len -= marker_len;
--
- 	return verify_appended_signature(kernel, &kernel_len, VERIFY_USE_PLATFORM_KEYRING,
- 					"kexec_file");
- }
-diff --git a/kernel/module.c b/kernel/module.c
-index 137b3661be75..1c421b0442e3 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2882,7 +2882,6 @@ static inline void kmemleak_load_module(const struct module *mod,
- static int module_sig_check(struct load_info *info, int flags)
- {
- 	int err = -ENODATA;
--	const unsigned long markerlen = sizeof(MODULE_SIG_STRING) - 1;
- 	const char *reason;
- 	const void *mod = info->hdr;
- 
-@@ -2890,11 +2889,7 @@ static int module_sig_check(struct load_info *info, int flags)
- 	 * Require flags == 0, as a module with version information
- 	 * removed is no longer the module that was signed
- 	 */
--	if (flags == 0 &&
--	    info->len > markerlen &&
--	    memcmp(mod + info->len - markerlen, MODULE_SIG_STRING, markerlen) == 0) {
--		/* We truncate the module to discard the signature */
--		info->len -= markerlen;
-+	if (flags == 0) {
- 		err = verify_appended_signature(mod, &info->len,
- 						VERIFY_USE_SECONDARY_KEYRING, "module");
- 		if (!err) {
-diff --git a/kernel/module_signing.c b/kernel/module_signing.c
-index f492e410564d..4c28cb55275f 100644
---- a/kernel/module_signing.c
-+++ b/kernel/module_signing.c
-@@ -15,8 +15,7 @@
- #include "module-internal.h"
- 
- /**
-- * verify_appended_signature - Verify the signature on a module with the
-- * signature marker stripped.
-+ * verify_appended_signature - Verify the signature on a module
-  * @data: The data to be verified
-  * @len: Size of @data.
-  * @trusted_keys: Keyring to use for verification
-@@ -25,12 +24,21 @@
- int verify_appended_signature(const void *data, size_t *len,
- 			      struct key *trusted_keys, const char *what)
- {
-+	const unsigned long markerlen = sizeof(MODULE_SIG_STRING) - 1;
- 	struct module_signature ms;
- 	size_t sig_len, modlen = *len;
- 	int ret;
- 
- 	pr_devel("==>%s(,%zu)\n", __func__, modlen);
- 
-+	if (markerlen > modlen)
-+		return -ENODATA;
-+
-+	if (memcmp(data + modlen - markerlen, MODULE_SIG_STRING,
-+		   markerlen))
-+		return -ENODATA;
-+	modlen -= markerlen;
-+
- 	if (modlen <= sizeof(ms))
- 		return -EBADMSG;
- 
+On my iBook G4, X is working alright with 5.15 and CONFIG_USER_NS=y.
+
+Andreas.
+
 -- 
-2.31.1
-
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+"And now for something completely different."
