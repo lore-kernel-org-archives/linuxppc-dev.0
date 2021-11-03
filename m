@@ -2,51 +2,84 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFF63C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 21:40:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F8F1C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 22:27:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45CA2610A8
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 21:40:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 45CA2610A8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
+	by mail.kernel.org (Postfix) with ESMTPS id B36DE610EA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 22:27:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B36DE610EA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hl0ZH6R5kz2ywn
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 08:40:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hl1bc0mhhz2yPP
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 09:27:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=hQwwldvi;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.57;
- helo=out30-57.freemail.mail.aliyun.com;
- envelope-from=cuibixuan@linux.alibaba.com; receiver=<UNKNOWN>)
-Received: from out30-57.freemail.mail.aliyun.com
- (out30-57.freemail.mail.aliyun.com [115.124.30.57])
+ smtp.helo=out2-smtp.messagingengine.com (client-ip=66.111.4.26;
+ helo=out2-smtp.messagingengine.com; envelope-from=fthain@linux-m68k.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm1 header.b=hQwwldvi; 
+ dkim-atps=neutral
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
+ [66.111.4.26])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hkdhy22dWz2xrl
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Nov 2021 18:30:23 +1100 (AEDT)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R521e4; CH=green; DM=||false|;
- DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04423; MF=cuibixuan@linux.alibaba.com;
- NM=1; PH=DS; RN=7; SR=0; TI=SMTPD_---0UusDGT3_1635924614; 
-Received: from 30.225.28.86(mailfrom:cuibixuan@linux.alibaba.com
- fp:SMTPD_---0UusDGT3_1635924614) by smtp.aliyun-inc.com(127.0.0.1);
- Wed, 03 Nov 2021 15:30:14 +0800
-Content-Type: multipart/alternative;
- boundary="------------BYtl3zSEZc0QXGmzUwOcjkhn"
-Message-ID: <e1f3c2bb-d4e2-e3d8-9057-688382a70059@linux.alibaba.com>
-Date: Wed, 3 Nov 2021 15:30:14 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hl1Zr0fz9z2xKK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Nov 2021 09:26:25 +1100 (AEDT)
+Received: from compute2.internal (compute2.nyi.internal [10.202.2.42])
+ by mailout.nyi.internal (Postfix) with ESMTP id 894355C01A1;
+ Wed,  3 Nov 2021 18:26:20 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute2.internal (MEProxy); Wed, 03 Nov 2021 18:26:20 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-type:date:from:in-reply-to
+ :message-id:mime-version:references:subject:to:x-me-proxy
+ :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=RnJRH+
+ x5RcNrgMW0Leu0Oyc3joplHtQNHM3XvnM4cgY=; b=hQwwldviuYhU8+RFnbyi+S
+ y3FGeOMMP6cS6i5pQ17zOzBtVa2hjDmC0XYqOgTz2PXNMfrDBHA+w8/9kJmx9fyW
+ xfFtgLo4SAIKdMLIy1C5cMgWLhg+kY4SUXTTp5MaQ8vC3xnXmY3uePN3vFhVrrYi
+ sxv+aRIyrxClDZnTW/P6pnFiN6/BXDkcs3+dBe3z+wHZWcd/31emOYCuYXs4jEoa
+ ETD1DOaDnxicGLxlJLbCwuHuIZR7fK7PQJbC0aBEaBWcvxt8HY/dkKUQBR8B0/Es
+ mNnRWqK0+AU5W3XZjvajLEbSg6hfiKZ239DJeKuP3RI/yt3pOIAKYwNo4yBObJxw
+ ==
+X-ME-Sender: <xms:jAyDYUHMNhgI-lOgNDRceWgzjAcUwVequqEMfqP_eUpKJPtgaFiZ7Q>
+ <xme:jAyDYdV5uXwQK65sV3v3ZrIw8MwHRjGqOOrBTqjg0P5rc7JSapQ7erTFdbDqUunJI
+ uwdJfErXNlmym0imyI>
+X-ME-Received: <xmr:jAyDYeKVKry2Pqz0KBCMBxE2qpGfKJtUhsHXeOCOwOlgJ1r3_zE2muB8S5zyz-pSfceH1P6I0gka0Rsh4E7G9LnJHWjyUoPj2rw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvuddrtddvgdduheejucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhepfffhvffujgfkfhggtgesthdtredttddtvdenucfhrhhomhephfhinhhnucfv
+ hhgrihhnuceofhhthhgrihhnsehlihhnuhigqdhmieekkhdrohhrgheqnecuggftrfgrth
+ htvghrnhepffduhfegfedvieetudfgleeugeehkeekfeevfffhieevteelvdfhtdevffet
+ uedunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepfh
+ hthhgrihhnsehlihhnuhigqdhmieekkhdrohhrgh
+X-ME-Proxy: <xmx:jAyDYWFJBs7E2dWC681h9iAMbUU_Dy8rvx_Jrmf0axfsIj1ujYGOqA>
+ <xmx:jAyDYaUoSl5XpZLpuHwJdNN4G2b2wxiozquO6tazmW6NMwPp6DrG0g>
+ <xmx:jAyDYZMoGtVeSadcCYtOayYytiUQ9pMdjZ-Guh5WdE3r4dmZqubyxg>
+ <xmx:jAyDYXjFcU6_2cjsxCxJbkBURHpMFJXwBz1bMBjAjY3fDJY1R-VS2A>
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 3 Nov 2021 18:26:17 -0400 (EDT)
+Date: Thu, 4 Nov 2021 09:26:10 +1100 (AEDT)
+From: Finn Thain <fthain@linux-m68k.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: Fwd: Fwd: X stopped working with 5.14 on iBook
+In-Reply-To: <87cznh39lk.fsf@igel.home>
+Message-ID: <3723058-87f1-cba7-c8ad-ac8dc5722abe@linux-m68k.org>
+References: <6919111c-02fa-c6b9-bb05-04161e52f340@yahoo.com>
+ <27ad38f3-c1a8-ac5c-8467-f311b5882a00@yahoo.com>
+ <d5d0b396-7408-bdae-cf50-4b5f4e7b3184@csgroup.eu>
+ <48c3ed15-2ecf-cc12-c287-2b61457f5fb__21333.0969143257$1635819996$gmane$org@nippy.intranet>
+ <87cznh39lk.fsf@igel.home>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
- Gecko/20100101 Thunderbird/91.1.1
-Subject: Re: [PATCH -next] powerpc/44x/fsp2: add missing of_node_put
-To: Michael Ellerman <patch-notifications@ellerman.id.au>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <1635406102-88719-1-git-send-email-cuibixuan@linux.alibaba.com>
- <163584792552.1845480.16701207323198181302.b4-ty@ellerman.id.au>
-From: Bixuan Cui <cuibixuan@linux.alibaba.com>
-In-Reply-To: <163584792552.1845480.16701207323198181302.b4-ty@ellerman.id.au>
-X-Mailman-Approved-At: Thu, 04 Nov 2021 08:40:32 +1100
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,75 +91,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ivan@de.ibm.com, paulus@samba.org
+Cc: "Christopher M. Riedl" <cmr@linux.ibm.com>,
+ Stan Johnson <stanley.johnson.001@protonmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Riccardo Mottola <riccardo.mottola@libero.it>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a multi-part message in MIME format.
---------------BYtl3zSEZc0QXGmzUwOcjkhn
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+On Wed, 3 Nov 2021, Andreas Schwab wrote:
 
+> On Nov 02 2021, Finn Thain wrote:
+> 
+> > After many builds and tests, Stan and I were able to determine that this 
+> > regression only affects builds with CONFIG_USER_NS=y. That is,
+> >
+> > d3ccc9781560  + CONFIG_USER_NS=y  -->  fail
+> > d3ccc9781560  + CONFIG_USER_NS=n  -->  okay
+> > d3ccc9781560~ + CONFIG_USER_NS=y  -->  okay
+> > d3ccc9781560~ + CONFIG_USER_NS=n  -->  okay
+> 
+> On my iBook G4, X is working alright with 5.15 and CONFIG_USER_NS=y.
+> 
 
-在 2021/11/2 下午6:12, Michael Ellerman 写道:
->> Early exits from for_each_compatible_node() should decrement the
->> node reference counter.  Reported by Coccinelle:
->>
->> ./arch/powerpc/platforms/44x/fsp2.c:206:1-25: WARNING: Function
->> "for_each_compatible_node" should have of_node_put() before return
->> around line 218.
->>
->> [...]
-> Applied to powerpc/next.
->
-> [1/1] powerpc/44x/fsp2: add missing of_node_put
->        https://git.kernel.org/powerpc/c/290fe8aa69ef5c51c778c0bb33f8ef0181c769f5
+Stan said his Cube has these packages installed:
 
-Thanks. :-)
+# dpkg --list | grep Xorg
+ii  xserver-xorg-core                      2:1.20.11-1
+      powerpc      Xorg X server - core server
+ii  xserver-xorg-legacy                    2:1.20.11-1
+      powerpc      setuid root Xorg server wrapper
 
+I gather that Riccardo also runs Debian SID.
 
-Bixuan Cui
+Perhaps there is some interaction between d3ccc9781560, CONFIG_USER_NS and 
+the SUID wrapper...
 
---------------BYtl3zSEZc0QXGmzUwOcjkhn
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <p><br>
-    </p>
-    <div class="moz-cite-prefix">在 2021/11/2 下午6:12, Michael Ellerman
-      写道:<br>
-    </div>
-    <blockquote type="cite"
-cite="mid:163584792552.1845480.16701207323198181302.b4-ty@ellerman.id.au">
-      <blockquote type="cite" style="color: #007cff;">
-        <pre class="moz-quote-pre" wrap="">Early exits from for_each_compatible_node() should decrement the
-node reference counter.  Reported by Coccinelle:
-
-./arch/powerpc/platforms/44x/fsp2.c:206:1-25: WARNING: Function
-"for_each_compatible_node" should have of_node_put() before return
-around line 218.
-
-[...]
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">Applied to powerpc/next.
-
-[1/1] powerpc/44x/fsp2: add missing of_node_put
-      <a class="moz-txt-link-freetext" href="https://git.kernel.org/powerpc/c/290fe8aa69ef5c51c778c0bb33f8ef0181c769f5" moz-do-not-send="true">https://git.kernel.org/powerpc/c/290fe8aa69ef5c51c778c0bb33f8ef0181c769f5</a></pre>
-    </blockquote>
-    <p>Thanks. :-)<br>
-    </p>
-    <p><br>
-    </p>
-    <p>Bixuan Cui<br>
-    </p>
-  </body>
-</html>
---------------BYtl3zSEZc0QXGmzUwOcjkhn--
-
+Does your Xorg installation use --enable-suid-wrapper, Andreas?
