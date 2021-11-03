@@ -2,80 +2,107 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6035AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 21:01:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D231EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 21:12:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C7F6D6115B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 21:01:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C7F6D6115B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id CC5EC600EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 21:12:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CC5EC600EF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HkzjC3M4rz3cNW
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 08:01:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HkzxK2LzDz2ypB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 08:12:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=URmpnGWL;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NZpJvgc7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f;
- helo=mail-pl1-x62f.google.com; envelope-from=f.fainelli@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=URmpnGWL; dkim-atps=neutral
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com
- [IPv6:2607:f8b0:4864:20::62f])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=NZpJvgc7; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HkzcV5LZ6z2ywk
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Nov 2021 07:57:46 +1100 (AEDT)
-Received: by mail-pl1-x62f.google.com with SMTP id u11so3632331plf.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Nov 2021 13:57:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=gp+q+Dp9Rg8+gbw0JzqtKDIoOTrQCdiRZcY/99hfXto=;
- b=URmpnGWL791dLOnO2PzfX4IQbFW2IlgqhpCLMVShp4wPT6hwXU/zpYC9/2hz5RXQd8
- uFCaD6M6Cu8K7WHuDbHT7S+BcNVOU2S1wK4t0D3FoJYLYYNhJa/7my7Skw3arb387ZSU
- g49Ha2Oc8PcqGVFRw3Qxw9svIWJDiclovUF3/Ql07dJNjheCkir+jDna0JX3BYPplNAl
- P9MoHa8zCt+Hep1au1Cf3SA4GceWH74J23cdFSUkajkIHV1NCKV+gP22KIIhAC7YKyU+
- kqTog0GqtReKoJb2NaJlvQR5LOZ6lHEfk9jfzrNJFG+JJaNFPDACHRAhAacDkvbudy2j
- Bc+A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=gp+q+Dp9Rg8+gbw0JzqtKDIoOTrQCdiRZcY/99hfXto=;
- b=Lt2vQk3/0U8g/yQSCvoU8PqVN8spG50jp84ZH84DbNqj4JTQVeNvDmO/WHofeWm+TO
- kyNZT2/8lyAohan/UR7Gle+Yt6YqmTP3BKMqZlUy5WJHjP+0p6R8lxTgJdq1Jetmj6Na
- odvjE/6Mgjlw5yU6S3o3XuhOA1zUfsIcueXMosI7N2DEzBDWvMQl4aOosQsPjkJNhcbZ
- nUw0xPkCh9vha2Fj7FQE1IXEv/+AUMzD8P/EgGEmcc/DcgP54hOsODR6itPkBQsrNCAn
- Tm7VeQwXRGXklbniOexuqs14ttk9ftHYVYUIzy/Z75uqiosHIh8PvrEfLuDzerbx2nIi
- izRA==
-X-Gm-Message-State: AOAM530vxWyi9zPyTc2nDOLB+p0LJ5cBtFieperlyl/X5175Ko+gVwnJ
- dBMh7z0+X7n5nYHYd7WB8gE=
-X-Google-Smtp-Source: ABdhPJxaQhs3rUPf+5wXCB1IY4jfT140BDfhG5OoHFaRDoUG46SqIjVMSeFPILH71toODyyhkdhUQg==
-X-Received: by 2002:a17:90a:cf85:: with SMTP id
- i5mr17320338pju.101.1635973064168; 
- Wed, 03 Nov 2021 13:57:44 -0700 (PDT)
-Received: from fainelli-desktop.igp.broadcom.net ([192.19.223.252])
- by smtp.gmail.com with ESMTPSA id n14sm2512073pgd.68.2021.11.03.13.57.39
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 03 Nov 2021 13:57:40 -0700 (PDT)
-From: Florian Fainelli <f.fainelli@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH stable 4.9 2/2] arch: pgtable: define
- MAX_POSSIBLE_PHYSMEM_BITS where needed
-Date: Wed,  3 Nov 2021 13:57:14 -0700
-Message-Id: <20211103205714.374801-3-f.fainelli@gmail.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20211103205714.374801-1-f.fainelli@gmail.com>
-References: <20211103205714.374801-1-f.fainelli@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HkzwS5Fdbz2xDS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Nov 2021 08:11:35 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1A3KLjVA014414; 
+ Wed, 3 Nov 2021 21:11:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=UeOjkghZeTL5LQO027QPCoWwwvT3GuNVIzmHTUROg3M=;
+ b=NZpJvgc7cuBuzUGVLgPMXJGqx3wR2mO3YEbcTl9w3EiOx9FrIYOPR0o8d0UpFBm6GV40
+ gEzSgeuyNnX7DT+UKasArffKUD6ibdrSkbEziLSXog0SroKoVDqYtASjMSXkKTL9NEFM
+ qiZTbZeO3bTvBxb0Jvaa93r1zZu3DXXmapCIWZnWz4D3+kP47b8wx0Bvup6Nvnt3fozT
+ kR2CitJtascmA08FGMH7gotj0xUYQGATVbOmsxLUkmD7Wf1RfrH25pxTb53yG6ikFxb5
+ g9SCk6Eq8jk3OOcVKJHuPb2ycY/q9PFqO8NcxG9/YZj/Zwa3Se+yoA9Qd6RSlfX+BeLz Og== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3c41cwruu6-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 03 Nov 2021 21:11:27 +0000
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1A3L2R8o017118;
+ Wed, 3 Nov 2021 21:11:26 GMT
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3c41cwrutv-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 03 Nov 2021 21:11:26 +0000
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1A3L42dq027056;
+ Wed, 3 Nov 2021 21:11:26 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma03dal.us.ibm.com with ESMTP id 3c0wpc624u-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 03 Nov 2021 21:11:25 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1A3LBOE532244056
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 3 Nov 2021 21:11:24 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E36D178064;
+ Wed,  3 Nov 2021 21:11:23 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B6B2278067;
+ Wed,  3 Nov 2021 21:11:23 +0000 (GMT)
+Received: from localhost (unknown [9.211.106.3])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed,  3 Nov 2021 21:11:23 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [V3] powerpc/perf: Enable PMU counters post partition migration
+ if PMU is active
+In-Reply-To: <1635852231.aebe6lt6u4.astroid@bobo.none>
+References: <20211029030510.58797-1-atrajeev@linux.vnet.ibm.com>
+ <1635487923.hwdpof7s4v.astroid@bobo.none>
+ <87sfwk7z0m.fsf@mpe.ellerman.id.au>
+ <1635852231.aebe6lt6u4.astroid@bobo.none>
+Date: Wed, 03 Nov 2021 16:11:23 -0500
+Message-ID: <8735odx7us.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: KXmz2PP-ogIRu1UvPd_oRiZs1LBxoAoO
+X-Proofpoint-ORIG-GUID: 2VK4g3CQObNEnPkmeH7YNZiZcw1BAsql
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
+ definitions=2021-11-03_06,2021-11-03_01,2020-04-07_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0
+ phishscore=0 priorityscore=1501 suspectscore=0 clxscore=1015
+ lowpriorityscore=0 impostorscore=0 mlxscore=0 spamscore=0 mlxlogscore=999
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2110150000 definitions=main-2111030109
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,218 +114,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list:MIPS" <linux-mips@linux-mips.org>,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Stefan Agner <stefan@agner.ch>,
- "open list:ZSMALLOC COMPRESSED SLAB MEMORY ALLOCATOR" <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, stable@vger.kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Sasha Levin <sashal@kernel.org>,
- Florian Fainelli <f.fainelli@gmail.com>,
- "maintainer:X86 ARCHITECTURE 32-BIT AND 64-BIT" <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
- Ingo Molnar <mingo@redhat.com>,
- "open list:SYNOPSYS ARC ARCHITECTURE" <linux-snps-arc@lists.infradead.org>,
- Nitin Gupta <ngupta@vflare.org>,
- "open list:GENERIC INCLUDE/ASM HEADER FILES" <linux-arch@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>,
- "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Ralf Baechle <ralf@linux-mips.org>, Minchan Kim <minchan@kernel.org>,
- Vineet Gupta <vgupta@synopsys.com>,
- "open list:LINUX FOR POWERPC 32-BIT AND 64-BIT"
- <linuxppc-dev@lists.ozlabs.org>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, rnsastry@linux.ibm.com,
+ kjain@linux.ibm.com, maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
+Nicholas Piggin <npiggin@gmail.com> writes:
+> Excerpts from Michael Ellerman's message of October 29, 2021 11:15 pm:
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>>> Excerpts from Athira Rajeev's message of October 29, 2021 1:05 pm:
+>>>> @@ -631,12 +632,18 @@ static int pseries_migrate_partition(u64 handle)
+>>>>  	if (ret)
+>>>>  		return ret;
+>>>>  
+>>>> +	/* Disable PMU before suspend */
+>>>> +	on_each_cpu(&mobility_pmu_disable, NULL, 0);
+>>>
+>>> Why was this moved out of stop machine and to an IPI?
+>>>
+>>> My concern would be, what are the other CPUs doing at this time? Is it 
+>>> possible they could take interrupts and schedule? Could that mess up the
+>>> perf state here?
+>> 
+>> pseries_migrate_partition() is called directly from migration_store(),
+>> which is the sysfs store function, which can be called concurrently by
+>> different CPUs.
+>> 
+>> It's also potentially called from rtas_syscall_dispatch_ibm_suspend_me(),
+>> from sys_rtas(), again with no locking.
+>> 
+>> So we could have two CPUs calling into here at the same time, which
+>> might not crash, but is unlikely to work well.
+>> 
+>> I think the lack of locking might have been OK in the past because only
+>> one CPU will successfully get the other CPUs to call do_join() in
+>> pseries_suspend(). But I could be wrong.
+>> 
+>> Anyway, now that we're mutating the PMU state before suspending we need
+>> to be more careful. So I think we need a lock around the whole
+>> sequence.
 
-[ Upstream commit cef397038167ac15d085914493d6c86385773709 ]
+Regardless of the outcome here, generally agreed that some serialization
+should be imposed in this path. The way the platform works (and some
+extra measures by the drmgr utility) make it so that this code isn't
+entered concurrently in usual operation, but it's possible to make it
+happen if you are root.
 
-Stefan Agner reported a bug when using zsram on 32-bit Arm machines
-with RAM above the 4GB address boundary:
+A file-static mutex should be OK.
 
-  Unable to handle kernel NULL pointer dereference at virtual address 00000000
-  pgd = a27bd01c
-  [00000000] *pgd=236a0003, *pmd=1ffa64003
-  Internal error: Oops: 207 [#1] SMP ARM
-  Modules linked in: mdio_bcm_unimac(+) brcmfmac cfg80211 brcmutil raspberrypi_hwmon hci_uart crc32_arm_ce bcm2711_thermal phy_generic genet
-  CPU: 0 PID: 123 Comm: mkfs.ext4 Not tainted 5.9.6 #1
-  Hardware name: BCM2711
-  PC is at zs_map_object+0x94/0x338
-  LR is at zram_bvec_rw.constprop.0+0x330/0xa64
-  pc : [<c0602b38>]    lr : [<c0bda6a0>]    psr: 60000013
-  sp : e376bbe0  ip : 00000000  fp : c1e2921c
-  r10: 00000002  r9 : c1dda730  r8 : 00000000
-  r7 : e8ff7a00  r6 : 00000000  r5 : 02f9ffa0  r4 : e3710000
-  r3 : 000fdffe  r2 : c1e0ce80  r1 : ebf979a0  r0 : 00000000
-  Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
-  Control: 30c5383d  Table: 235c2a80  DAC: fffffffd
-  Process mkfs.ext4 (pid: 123, stack limit = 0x495a22e6)
-  Stack: (0xe376bbe0 to 0xe376c000)
+> My concern is still that we wouldn't necessarily have the other CPUs 
+> under control at that point even if we serialize the migrate path.
+> They could take interrupts, possibly call into perf subsystem after
+> the mobility_pmu_disable (e.g., via syscall or context switch) which 
+> might mess things up.
+>
+> I think the stop machine is a reasonable place for the code in this 
+> case. It's a low level disabling of hardware facility and saving off 
+> registers.
 
-As it turns out, zsram needs to know the maximum memory size, which
-is defined in MAX_PHYSMEM_BITS when CONFIG_SPARSEMEM is set, or in
-MAX_POSSIBLE_PHYSMEM_BITS on the x86 architecture.
+That makes sense, but I can't help feeling concerned still. For this to
+be safe, power_pmu_enable() and power_pmu_disable() must never sleep or
+re-enable interrupts or send IPIs. I don't see anything obviously unsafe
+right now, but is that already part of their contract? Is there much
+risk they could change in the future to violate those constraints?
 
-The same problem will be hit on all 32-bit architectures that have a
-physical address space larger than 4GB and happen to not enable sparsemem
-and include asm/sparsemem.h from asm/pgtable.h.
+That aside, the proposed change seems like we would be hacking around a
+more generic perf/pmu limitation in a powerpc-specific way. I see the
+same behavior on x86 across suspend/resume.
 
-After the initial discussion, I suggested just always defining
-MAX_POSSIBLE_PHYSMEM_BITS whenever CONFIG_PHYS_ADDR_T_64BIT is
-set, or provoking a build error otherwise. This addresses all
-configurations that can currently have this runtime bug, but
-leaves all other configurations unchanged.
+# perf stat -a -e cache-misses -I 1000 & sleep 2 ; systemctl suspend ; sleep 20 ; kill $(jobs -p)
+[1] 189806
+#           time             counts unit events
+     1.000501710          9,983,649      cache-misses
+     2.002620321         14,131,072      cache-misses
+     3.004579071         23,010,971      cache-misses
+     9.971854783 140,737,491,680,853      cache-misses
+    10.982669250                  0      cache-misses
+    11.984660498                  0      cache-misses
+    12.986648392                  0      cache-misses
+    13.988561766                  0      cache-misses
+    14.992670615                  0      cache-misses
+    15.994938111                  0      cache-misses
+    16.996703952                  0      cache-misses
+    17.999092812                  0      cache-misses
+    19.000602677                  0      cache-misses
+    20.003272216                  0      cache-misses
+    21.004770295                  0      cache-misses
+# uname -r
+5.13.19-100.fc33.x86_64
 
-I looked up the possible number of bits in source code and
-datasheets, here is what I found:
-
- - on ARC, CONFIG_ARC_HAS_PAE40 controls whether 32 or 40 bits are used
- - on ARM, CONFIG_LPAE enables 40 bit addressing, without it we never
-   support more than 32 bits, even though supersections in theory allow
-   up to 40 bits as well.
- - on MIPS, some MIPS32r1 or later chips support 36 bits, and MIPS32r5
-   XPA supports up to 60 bits in theory, but 40 bits are more than
-   anyone will ever ship
- - On PowerPC, there are three different implementations of 36 bit
-   addressing, but 32-bit is used without CONFIG_PTE_64BIT
- - On RISC-V, the normal page table format can support 34 bit
-   addressing. There is no highmem support on RISC-V, so anything
-   above 2GB is unused, but it might be useful to eventually support
-   CONFIG_ZRAM for high pages.
-
-Fixes: 61989a80fb3a ("staging: zsmalloc: zsmalloc memory allocation library")
-Fixes: 02390b87a945 ("mm/zsmalloc: Prepare to variable MAX_PHYSMEM_BITS")
-Acked-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Reviewed-by: Stefan Agner <stefan@agner.ch>
-Tested-by: Stefan Agner <stefan@agner.ch>
-Acked-by: Mike Rapoport <rppt@linux.ibm.com>
-Link: https://lore.kernel.org/linux-mm/bdfa44bf1c570b05d6c70898e2bbb0acf234ecdf.1604762181.git.stefan@agner.ch/
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
-[florian: patch arch/powerpc/include/asm/pte-common.h for 4.9.y
-removed arch/riscv/include/asm/pgtable.h which does not exist]
-Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
----
- arch/arc/include/asm/pgtable.h        |  2 ++
- arch/arm/include/asm/pgtable-2level.h |  2 ++
- arch/arm/include/asm/pgtable-3level.h |  2 ++
- arch/mips/include/asm/pgtable-32.h    |  3 +++
- arch/powerpc/include/asm/pte-common.h |  2 ++
- include/asm-generic/pgtable.h         | 13 +++++++++++++
- 6 files changed, 24 insertions(+)
-
-diff --git a/arch/arc/include/asm/pgtable.h b/arch/arc/include/asm/pgtable.h
-index c10f5cb203e6..81198a6773c6 100644
---- a/arch/arc/include/asm/pgtable.h
-+++ b/arch/arc/include/asm/pgtable.h
-@@ -137,8 +137,10 @@
- 
- #ifdef CONFIG_ARC_HAS_PAE40
- #define PTE_BITS_NON_RWX_IN_PD1	(0xff00000000 | PAGE_MASK | _PAGE_CACHEABLE)
-+#define MAX_POSSIBLE_PHYSMEM_BITS 40
- #else
- #define PTE_BITS_NON_RWX_IN_PD1	(PAGE_MASK | _PAGE_CACHEABLE)
-+#define MAX_POSSIBLE_PHYSMEM_BITS 32
- #endif
- 
- /**************************************************************************
-diff --git a/arch/arm/include/asm/pgtable-2level.h b/arch/arm/include/asm/pgtable-2level.h
-index 92fd2c8a9af0..6154902bed83 100644
---- a/arch/arm/include/asm/pgtable-2level.h
-+++ b/arch/arm/include/asm/pgtable-2level.h
-@@ -78,6 +78,8 @@
- #define PTE_HWTABLE_OFF		(PTE_HWTABLE_PTRS * sizeof(pte_t))
- #define PTE_HWTABLE_SIZE	(PTRS_PER_PTE * sizeof(u32))
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS	32
-+
- /*
-  * PMD_SHIFT determines the size of the area a second-level page table can map
-  * PGDIR_SHIFT determines what a third-level page table entry can map
-diff --git a/arch/arm/include/asm/pgtable-3level.h b/arch/arm/include/asm/pgtable-3level.h
-index 2a029bceaf2f..35807e611b6e 100644
---- a/arch/arm/include/asm/pgtable-3level.h
-+++ b/arch/arm/include/asm/pgtable-3level.h
-@@ -37,6 +37,8 @@
- #define PTE_HWTABLE_OFF		(0)
- #define PTE_HWTABLE_SIZE	(PTRS_PER_PTE * sizeof(u64))
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS 40
-+
- /*
-  * PGDIR_SHIFT determines the size a top-level page table entry can map.
-  */
-diff --git a/arch/mips/include/asm/pgtable-32.h b/arch/mips/include/asm/pgtable-32.h
-index c0be540e83cb..2c6df5a92e1e 100644
---- a/arch/mips/include/asm/pgtable-32.h
-+++ b/arch/mips/include/asm/pgtable-32.h
-@@ -110,6 +110,7 @@ static inline void pmd_clear(pmd_t *pmdp)
- 
- #if defined(CONFIG_XPA)
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS 40
- #define pte_pfn(x)		(((unsigned long)((x).pte_high >> _PFN_SHIFT)) | (unsigned long)((x).pte_low << _PAGE_PRESENT_SHIFT))
- static inline pte_t
- pfn_pte(unsigned long pfn, pgprot_t prot)
-@@ -125,6 +126,7 @@ pfn_pte(unsigned long pfn, pgprot_t prot)
- 
- #elif defined(CONFIG_PHYS_ADDR_T_64BIT) && defined(CONFIG_CPU_MIPS32)
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS 36
- #define pte_pfn(x)		((unsigned long)((x).pte_high >> 6))
- 
- static inline pte_t pfn_pte(unsigned long pfn, pgprot_t prot)
-@@ -139,6 +141,7 @@ static inline pte_t pfn_pte(unsigned long pfn, pgprot_t prot)
- 
- #else
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS 32
- #ifdef CONFIG_CPU_VR41XX
- #define pte_pfn(x)		((unsigned long)((x).pte >> (PAGE_SHIFT + 2)))
- #define pfn_pte(pfn, prot)	__pte(((pfn) << (PAGE_SHIFT + 2)) | pgprot_val(prot))
-diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
-index 4ba26dd259fd..0d81cd9dd60e 100644
---- a/arch/powerpc/include/asm/pte-common.h
-+++ b/arch/powerpc/include/asm/pte-common.h
-@@ -101,8 +101,10 @@ static inline bool pte_user(pte_t pte)
-  */
- #if defined(CONFIG_PPC32) && defined(CONFIG_PTE_64BIT)
- #define PTE_RPN_MASK	(~((1ULL<<PTE_RPN_SHIFT)-1))
-+#define MAX_POSSIBLE_PHYSMEM_BITS 36
- #else
- #define PTE_RPN_MASK	(~((1UL<<PTE_RPN_SHIFT)-1))
-+#define MAX_POSSIBLE_PHYSMEM_BITS 32
- #endif
- 
- /* _PAGE_CHG_MASK masks of bits that are to be preserved across
-diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-index 0a4c2d4d9f8d..b43fa9d95a7a 100644
---- a/include/asm-generic/pgtable.h
-+++ b/include/asm-generic/pgtable.h
-@@ -847,6 +847,19 @@ static inline bool arch_has_pfn_modify_check(void)
- #define io_remap_pfn_range remap_pfn_range
- #endif
- 
-+#if !defined(MAX_POSSIBLE_PHYSMEM_BITS) && !defined(CONFIG_64BIT)
-+#ifdef CONFIG_PHYS_ADDR_T_64BIT
-+/*
-+ * ZSMALLOC needs to know the highest PFN on 32-bit architectures
-+ * with physical address space extension, but falls back to
-+ * BITS_PER_LONG otherwise.
-+ */
-+#error Missing MAX_POSSIBLE_PHYSMEM_BITS definition
-+#else
-+#define MAX_POSSIBLE_PHYSMEM_BITS 32
-+#endif
-+#endif
-+
- #ifndef has_transparent_hugepage
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- #define has_transparent_hugepage() 1
--- 
-2.25.1
 
