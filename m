@@ -2,65 +2,71 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0290C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 14:27:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28F78C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 14:28:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D6AB16103C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 14:27:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org D6AB16103C
+	by mail.kernel.org (Postfix) with ESMTPS id 7F4EA61073
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 14:28:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7F4EA61073
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hkpyh129dz2ywQ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 01:27:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HkpzQ0x7Tz3bbx
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 01:28:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=BORuspiw;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FTgDDkPG;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=hPdDISF7;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=M/L7iHHf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
- (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
+ (client-ip=195.135.220.29; helo=smtp-out2.suse.de;
  envelope-from=msuchanek@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
- header.s=susede2_rsa header.b=BORuspiw; 
+ header.s=susede2_rsa header.b=hPdDISF7; 
  dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=FTgDDkPG; 
+ header.s=susede2_ed25519 header.b=M/L7iHHf; 
  dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hkpxw1cK3z2xCG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hkpxw2Glhz2xCN
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Nov 2021 01:27:16 +1100 (AEDT)
 Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
- by smtp-out1.suse.de (Postfix) with ESMTP id 6FCE5218D9;
- Wed,  3 Nov 2021 14:27:12 +0000 (UTC)
+ by smtp-out2.suse.de (Postfix) with ESMTP id 005D21FD39;
+ Wed,  3 Nov 2021 14:27:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
- t=1635949632; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version: content-transfer-encoding:content-transfer-encoding;
- bh=Dog1kS0Nm8BT5xToDrdeBUJVtPUNFmm5wWj5SRd7+2I=;
- b=BORuspiw5Z2g1pJmzhS/Mn/w26i3SRVFn4yIidQgmvBEwaNrAoDYRkIsdA1J7ZtN8oUtx8
- /m/9RbtrEeXQNjK/UZyI0IkzAkQWSeNrBkGMWK3WLWwzXhx80V04K9Q+i1p/2b8Bc5IJu7
- aTVOKIZI7QIiWwdudr4Z694kUKcYpiU=
+ t=1635949633; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=WjVRAY/znLnXw9klPTASWRvUFX89s7VJBB58DLKxfUQ=;
+ b=hPdDISF7zAFlR3D1VghEwmjLHCyJzAEZGI0T8s7i9kBvzyNFjrw+frUJBJfEZeC8Ip0b2k
+ 9CYntkKVcibvtIt4bOiDd2rt7wfUJMSf6sMOczsmStyf+tPif9oe5fW8uRhLvXi6kodmy2
+ B8ic5OKRxc3H7Yhx3sv/wI4gfMCqG1w=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
- s=susede2_ed25519; t=1635949632;
+ s=susede2_ed25519; t=1635949633;
  h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version: content-transfer-encoding:content-transfer-encoding;
- bh=Dog1kS0Nm8BT5xToDrdeBUJVtPUNFmm5wWj5SRd7+2I=;
- b=FTgDDkPGlsImvWmFW+/Zw3OfT/3JwHgMG85BIekvkJkkoZVThpg3GQtPj8HmbLxg9F/bCi
- t/ooTeugcRuWZkDw==
+ mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=WjVRAY/znLnXw9klPTASWRvUFX89s7VJBB58DLKxfUQ=;
+ b=M/L7iHHfkmz+2rw50TnNglTComYCUk4dpfnWf3iG+LhOoQW3W2vt25Q5xGT8rHAr1z6NTC
+ faUcUhialZOVm3AQ==
 Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
- by relay2.suse.de (Postfix) with ESMTP id 3C1A9A3B84;
- Wed,  3 Nov 2021 14:27:11 +0000 (UTC)
+ by relay2.suse.de (Postfix) with ESMTP id D155AA3B92;
+ Wed,  3 Nov 2021 14:27:12 +0000 (UTC)
 From: Michal Suchanek <msuchanek@suse.de>
 To: keyrings@vger.kernel.org
-Subject: [PATCH 0/3] KEXEC_SIG with appended signature
-Date: Wed,  3 Nov 2021 15:27:05 +0100
-Message-Id: <cover.1635948742.git.msuchanek@suse.de>
+Subject: [PATCH 3/3] powerpc/kexec_file: Add KEXEC_SIG support.
+Date: Wed,  3 Nov 2021 15:27:08 +0100
+Message-Id: <ba7ffddf9e15288baeae6c2099e573509321738c.1635948742.git.msuchanek@suse.de>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <cover.1635948742.git.msuchanek@suse.de>
+References: <cover.1635948742.git.msuchanek@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -90,32 +96,69 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-S390 uses appended signature for kernel but implements the check
-separately from module loader.
+Use the module verifier for the kernel image verification.
 
-Support for secure boot on powerpc with appended signature is planned -
-grub patches submitted upstream but not yet merged.
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+ arch/powerpc/Kconfig        | 11 +++++++++++
+ arch/powerpc/kexec/elf_64.c | 14 ++++++++++++++
+ 2 files changed, 25 insertions(+)
 
-This is an attempt at unified appended signature verification.
-
-Thanks
-
-Michal
-
-Michal Suchanek (3):
-  s390/kexec_file: Don't opencode appended signature verification.
-  module: strip the signature marker in the verification function.
-  powerpc/kexec_file: Add KEXEC_SIG support.
-
- arch/powerpc/Kconfig                  | 11 +++++++
- arch/powerpc/kexec/elf_64.c           | 14 +++++++++
- arch/s390/kernel/machine_kexec_file.c | 42 +++------------------------
- include/linux/verification.h          |  3 ++
- kernel/module-internal.h              |  2 --
- kernel/module.c                       | 11 +++----
- kernel/module_signing.c               | 32 ++++++++++++++------
- 7 files changed, 59 insertions(+), 56 deletions(-)
-
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 743c9783c64f..27bffafa9e79 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -558,6 +558,17 @@ config KEXEC_FILE
+ config ARCH_HAS_KEXEC_PURGATORY
+ 	def_bool KEXEC_FILE
+ 
++config KEXEC_SIG
++	bool "Verify kernel signature during kexec_file_load() syscall"
++	depends on KEXEC_FILE && MODULE_SIG_FORMAT
++	help
++	  This option makes kernel signature verification mandatory for
++	  the kexec_file_load() syscall.
++
++	  In addition to that option, you need to enable signature
++	  verification for the corresponding kernel image type being
++	  loaded in order for this to work.
++
+ config PPC64_BUILD_ELF_V2_ABI
+ 	bool
+ 
+diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
+index eeb258002d1e..e8dff6b23ac5 100644
+--- a/arch/powerpc/kexec/elf_64.c
++++ b/arch/powerpc/kexec/elf_64.c
+@@ -23,6 +23,7 @@
+ #include <linux/of_fdt.h>
+ #include <linux/slab.h>
+ #include <linux/types.h>
++#include <linux/verification.h>
+ 
+ static void *elf64_load(struct kimage *image, char *kernel_buf,
+ 			unsigned long kernel_len, char *initrd,
+@@ -151,7 +152,20 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
+ 	return ret ? ERR_PTR(ret) : NULL;
+ }
+ 
++#ifdef CONFIG_KEXEC_SIG
++int elf64_verify_sig(const char *kernel, unsigned long length)
++{
++	size_t kernel_len = length;
++
++	return verify_appended_signature(kernel, &kernel_len, VERIFY_USE_PLATFORM_KEYRING,
++					 "kexec_file");
++}
++#endif /* CONFIG_KEXEC_SIG */
++
+ const struct kexec_file_ops kexec_elf64_ops = {
+ 	.probe = kexec_elf_probe,
+ 	.load = elf64_load,
++#ifdef CONFIG_KEXEC_SIG
++	.verify_sig = elf64_verify_sig,
++#endif
+ };
 -- 
 2.31.1
 
