@@ -2,84 +2,64 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F8F1C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 22:27:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD75CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 22:56:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B36DE610EA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 22:27:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B36DE610EA
+	by mail.kernel.org (Postfix) with ESMTPS id 8FA3361108
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Nov 2021 22:56:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8FA3361108
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hl1bc0mhhz2yPP
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 09:27:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=hQwwldvi;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hl2FJ75LNz2xtr
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 09:56:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=out2-smtp.messagingengine.com (client-ip=66.111.4.26;
- helo=out2-smtp.messagingengine.com; envelope-from=fthain@linux-m68k.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm1 header.b=hQwwldvi; 
- dkim-atps=neutral
-Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
- [66.111.4.26])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=nefkom.net (client-ip=212.18.0.10; helo=mail-out.m-online.net;
+ envelope-from=whitebox@nefkom.net; receiver=<UNKNOWN>)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hl1Zr0fz9z2xKK
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Nov 2021 09:26:25 +1100 (AEDT)
-Received: from compute2.internal (compute2.nyi.internal [10.202.2.42])
- by mailout.nyi.internal (Postfix) with ESMTP id 894355C01A1;
- Wed,  3 Nov 2021 18:26:20 -0400 (EDT)
-Received: from mailfrontend1 ([10.202.2.162])
- by compute2.internal (MEProxy); Wed, 03 Nov 2021 18:26:20 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-type:date:from:in-reply-to
- :message-id:mime-version:references:subject:to:x-me-proxy
- :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=RnJRH+
- x5RcNrgMW0Leu0Oyc3joplHtQNHM3XvnM4cgY=; b=hQwwldviuYhU8+RFnbyi+S
- y3FGeOMMP6cS6i5pQ17zOzBtVa2hjDmC0XYqOgTz2PXNMfrDBHA+w8/9kJmx9fyW
- xfFtgLo4SAIKdMLIy1C5cMgWLhg+kY4SUXTTp5MaQ8vC3xnXmY3uePN3vFhVrrYi
- sxv+aRIyrxClDZnTW/P6pnFiN6/BXDkcs3+dBe3z+wHZWcd/31emOYCuYXs4jEoa
- ETD1DOaDnxicGLxlJLbCwuHuIZR7fK7PQJbC0aBEaBWcvxt8HY/dkKUQBR8B0/Es
- mNnRWqK0+AU5W3XZjvajLEbSg6hfiKZ239DJeKuP3RI/yt3pOIAKYwNo4yBObJxw
- ==
-X-ME-Sender: <xms:jAyDYUHMNhgI-lOgNDRceWgzjAcUwVequqEMfqP_eUpKJPtgaFiZ7Q>
- <xme:jAyDYdV5uXwQK65sV3v3ZrIw8MwHRjGqOOrBTqjg0P5rc7JSapQ7erTFdbDqUunJI
- uwdJfErXNlmym0imyI>
-X-ME-Received: <xmr:jAyDYeKVKry2Pqz0KBCMBxE2qpGfKJtUhsHXeOCOwOlgJ1r3_zE2muB8S5zyz-pSfceH1P6I0gka0Rsh4E7G9LnJHWjyUoPj2rw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvuddrtddvgdduheejucetufdoteggodetrfdotf
- fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
- uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- cujfgurhepfffhvffujgfkfhggtgesthdtredttddtvdenucfhrhhomhephfhinhhnucfv
- hhgrihhnuceofhhthhgrihhnsehlihhnuhigqdhmieekkhdrohhrgheqnecuggftrfgrth
- htvghrnhepffduhfegfedvieetudfgleeugeehkeekfeevfffhieevteelvdfhtdevffet
- uedunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepfh
- hthhgrihhnsehlihhnuhigqdhmieekkhdrohhrgh
-X-ME-Proxy: <xmx:jAyDYWFJBs7E2dWC681h9iAMbUU_Dy8rvx_Jrmf0axfsIj1ujYGOqA>
- <xmx:jAyDYaUoSl5XpZLpuHwJdNN4G2b2wxiozquO6tazmW6NMwPp6DrG0g>
- <xmx:jAyDYZMoGtVeSadcCYtOayYytiUQ9pMdjZ-Guh5WdE3r4dmZqubyxg>
- <xmx:jAyDYXjFcU6_2cjsxCxJbkBURHpMFJXwBz1bMBjAjY3fDJY1R-VS2A>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
- 3 Nov 2021 18:26:17 -0400 (EDT)
-Date: Thu, 4 Nov 2021 09:26:10 +1100 (AEDT)
-From: Finn Thain <fthain@linux-m68k.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hl2Dq5h0Jz2xXW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Nov 2021 09:55:55 +1100 (AEDT)
+Received: from frontend01.mail.m-online.net (unknown [192.168.8.182])
+ by mail-out.m-online.net (Postfix) with ESMTP id 4Hl2DZ1Cttz1rk5k;
+ Wed,  3 Nov 2021 23:55:42 +0100 (CET)
+Received: from localhost (dynscan1.mnet-online.de [192.168.6.70])
+ by mail.m-online.net (Postfix) with ESMTP id 4Hl2DZ0c1Rz1qqkB;
+ Wed,  3 Nov 2021 23:55:42 +0100 (CET)
+X-Virus-Scanned: amavisd-new at mnet-online.de
+Received: from mail.mnet-online.de ([192.168.8.182])
+ by localhost (dynscan1.mail.m-online.net [192.168.6.70]) (amavisd-new,
+ port 10024)
+ with ESMTP id ObE2FVGvG9S8; Wed,  3 Nov 2021 23:55:41 +0100 (CET)
+X-Auth-Info: 1/kPN/gfGPOdnEJhiUgZ+8yoDc4cRsfvq/jzWT0YGeqCi81xVvIrGpH0PIaHKkVA
+Received: from igel.home (ppp-46-244-172-4.dynamic.mnet-online.de
+ [46.244.172.4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.mnet-online.de (Postfix) with ESMTPSA;
+ Wed,  3 Nov 2021 23:55:41 +0100 (CET)
+Received: by igel.home (Postfix, from userid 1000)
+ id 626242C0CFF; Wed,  3 Nov 2021 23:55:40 +0100 (CET)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Finn Thain <fthain@linux-m68k.org>
 Subject: Re: Fwd: Fwd: X stopped working with 5.14 on iBook
-In-Reply-To: <87cznh39lk.fsf@igel.home>
-Message-ID: <3723058-87f1-cba7-c8ad-ac8dc5722abe@linux-m68k.org>
 References: <6919111c-02fa-c6b9-bb05-04161e52f340@yahoo.com>
  <27ad38f3-c1a8-ac5c-8467-f311b5882a00@yahoo.com>
  <d5d0b396-7408-bdae-cf50-4b5f4e7b3184@csgroup.eu>
  <48c3ed15-2ecf-cc12-c287-2b61457f5fb__21333.0969143257$1635819996$gmane$org@nippy.intranet>
  <87cznh39lk.fsf@igel.home>
+ <3723058-87f1-cba7-c8ad-ac8dc5722abe@linux-m68k.org>
+X-Yow: Yow!  Did something bad happen or am I in a drive-in movie??
+Date: Wed, 03 Nov 2021 23:55:40 +0100
+In-Reply-To: <3723058-87f1-cba7-c8ad-ac8dc5722abe@linux-m68k.org> (Finn
+ Thain's message of "Thu, 4 Nov 2021 09:26:10 +1100 (AEDT)")
+Message-ID: <875yt826j7.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,32 +78,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 3 Nov 2021, Andreas Schwab wrote:
+On Nov 04 2021, Finn Thain wrote:
 
-> On Nov 02 2021, Finn Thain wrote:
-> 
-> > After many builds and tests, Stan and I were able to determine that this 
-> > regression only affects builds with CONFIG_USER_NS=y. That is,
-> >
-> > d3ccc9781560  + CONFIG_USER_NS=y  -->  fail
-> > d3ccc9781560  + CONFIG_USER_NS=n  -->  okay
-> > d3ccc9781560~ + CONFIG_USER_NS=y  -->  okay
-> > d3ccc9781560~ + CONFIG_USER_NS=n  -->  okay
-> 
-> On my iBook G4, X is working alright with 5.15 and CONFIG_USER_NS=y.
-> 
+> Does your Xorg installation use --enable-suid-wrapper, Andreas?
 
-Stan said his Cube has these packages installed:
+Doesn't look like.
 
-# dpkg --list | grep Xorg
-ii  xserver-xorg-core                      2:1.20.11-1
-      powerpc      Xorg X server - core server
-ii  xserver-xorg-legacy                    2:1.20.11-1
-      powerpc      setuid root Xorg server wrapper
+Andreas.
 
-I gather that Riccardo also runs Debian SID.
-
-Perhaps there is some interaction between d3ccc9781560, CONFIG_USER_NS and 
-the SUID wrapper...
-
-Does your Xorg installation use --enable-suid-wrapper, Andreas?
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+"And now for something completely different."
