@@ -2,76 +2,78 @@ Return-Path: <SRS0=xHiI=PX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89C86C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 16:11:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91AECC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 16:12:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE64560D43
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 16:11:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EE64560D43
+	by mail.kernel.org (Postfix) with ESMTPS id DE8D360D43
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 16:12:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DE8D360D43
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HlTD94FQxz2ymy
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 03:11:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HlTDv41FQz3c6V
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 03:12:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=h83oQ76h;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=RPrFIJap;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::636;
- helo=mail-pl1-x636.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431;
+ helo=mail-pf1-x431.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=h83oQ76h; dkim-atps=neutral
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com
- [IPv6:2607:f8b0:4864:20::636])
+ header.s=20210112 header.b=RPrFIJap; dkim-atps=neutral
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com
+ [IPv6:2607:f8b0:4864:20::431])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HlTCJ59NYz2xtK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 03:11:07 +1100 (AEDT)
-Received: by mail-pl1-x636.google.com with SMTP id s24so8089760plp.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Nov 2021 09:11:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HlTCL1SYKz2xtK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 03:11:09 +1100 (AEDT)
+Received: by mail-pf1-x431.google.com with SMTP id s5so6338972pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Nov 2021 09:11:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=A7bJVqgjUotrWu0YnnFfUthOJyDUdzOLjcjKpzkzQqM=;
- b=h83oQ76hndYjmGIKxYdW7xwVYiPpTIV6XnpoRSn0PFk7hCo7v3SfGnkGgaex77LycR
- ZCSMeg8qvrSEphhq30QD8z0x9xaTWze8HNNR6h+wypEgu0GL4bN95+5SuxdtqGMgZW+Q
- mksLRPM7XcGpZUlfla7gK4eLCJKDYhxkDmxPLC2Q7cR9HZLeTbLQWYaJotd9GTx5S7xY
- QXFy1EpCMVYvR2IzCXUnl2d3k9HVHrz6Mu9IXad4kLxrIQ/H8MbBo6iycB+U3QkdO92r
- XrzHKQPQpwK7TPCB/w5RLkzEKQZp0f/jQIEA8ZApGtYPiQMdyWMfdk35ZWnTyc5ShJn+
- LZuQ==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=OjBfRNWQVZWaErtHNHB50ZUExIhYxf1ScPKnI+Jufg4=;
+ b=RPrFIJapFp6Pvd9iFPEKCGBHC0g+baxD82ReihgOm6rOHFEXFVsPlinCYyewVX6h74
+ /i2CiMH0c5+H1BGcO0jIv54KN9+/yBK9lcI8lD/1IQBF5PRKOfxlqN/1cVWeFzqWMQY/
+ YEqtbfQurYR05YMeo2qm/FvkiGR1hnu3g1uKUZxh02OYkovZesJyDMeTB0Ukdqox+GXp
+ fHLZOv5EIZkfuEdipmd+mkArTuXjzJmfvfhDutVUOZ4SdNyAOObToLaS4/VBB3i5FOLw
+ +oiv9K43seSegzTVRegPDs//GXDbwtLQB8ifbKYH9WC++VJ879as/B4wOgvHrisA7JbM
+ eBqw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=A7bJVqgjUotrWu0YnnFfUthOJyDUdzOLjcjKpzkzQqM=;
- b=PzwsZ34SntYq9EVM1O1Fq17aM2TdbzE9uQpCzNaoSzaBd/JciqJ1oaEHRS9Xb1qoNg
- sshtxp3pDlnpHPudMCtXC2aafsTEockHnOFd3OoYhqaV1V6fp9GPWswQznMq4AT6ucJN
- 1yd/6l5TpCHxN80coEflyqCMoOBJjQpICfbmAbawEQGvUri9NYldk7sYnrv/XZCeEpWl
- XcmqgwS938/HsO0hNVFhnvT+/jXyYO4BHvtXzorwMRIzfrWU+G+lgkKMoSMJIPi1JGo7
- ht/ICdyl228Kz/4yfCie3FQy/qav6dDbV/33+9sA8KHhDTHC+XjnzEe3NQy5IGtFU4iz
- sBQQ==
-X-Gm-Message-State: AOAM533kHgA4jW65Tc69VvLwDC1Qj7VLCKD84dRX+wQL81oOBZVgO7ZP
- 61EfOzKk4wNbInw2l5iB7WBOZwfW10U=
-X-Google-Smtp-Source: ABdhPJw2SVQoE21B9SY5H+783S4ydGRTcwlF/KS72mzLyI7Klc8Supw+WKdXfPB9ri7QuP6wICUHxw==
-X-Received: by 2002:a17:902:b70f:b0:141:c3e9:a7e3 with SMTP id
- d15-20020a170902b70f00b00141c3e9a7e3mr33936187pls.25.1636042263148; 
- Thu, 04 Nov 2021 09:11:03 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=OjBfRNWQVZWaErtHNHB50ZUExIhYxf1ScPKnI+Jufg4=;
+ b=QNdfmtO/ec3EM83wOUMclBEIBavbx9yefCRqqbSWjDBlHoHxCqPrruQkbqsvk90wFs
+ CSjRZvxCKKFwQT8QN4TMqkl7hI/WAKjqVWURa/OxeEuVT1IxAVPPp91V251LYdYofkA9
+ FBje5QVhzlKAfLhLguRV0xJcmAksBa3Tav0qyEEdPyXrfBU9+v+CN4E8JNSVprx7B5EJ
+ Vx3jfdEIZGUSi2KoqXydCds/GB/cnJt2oqBP/auwQdrk5M17GfrCcbTsviUx8KZ8hXk+
+ lnIA15uYNl2E1yuWTmLcqZEeSB7IgmsQ0dF4FtSpzrRD8etl8fQ71dbOqlI76ODw6sj3
+ iZXw==
+X-Gm-Message-State: AOAM531WsufRoK4bywQIPtDMqHZcG597aWiGny/CxQ2Yft4zL0sxbIp1
+ /PaGyBPo/CGTpbyO8QehInr6IhvKcJU=
+X-Google-Smtp-Source: ABdhPJw09mFa7u8uaVT3eMHusG9ANRAOpSCr/kl/jWnY95/8HK+okfB9kWNp0HUQlZlYoJ8fcktYGg==
+X-Received: by 2002:a63:4b58:: with SMTP id k24mr32412566pgl.326.1636042267580; 
+ Thu, 04 Nov 2021 09:11:07 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com (60-241-46-56.tpgi.com.au. [60.241.46.56])
  by smtp.gmail.com with ESMTPSA id
- h3sm5897890pfi.207.2021.11.04.09.11.01
+ h3sm5897890pfi.207.2021.11.04.09.11.05
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 04 Nov 2021 09:11:02 -0700 (PDT)
+ Thu, 04 Nov 2021 09:11:07 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 0/5] powerpc: watchdog fixes
-Date: Fri,  5 Nov 2021 02:10:52 +1000
-Message-Id: <20211104161057.1255659-1-npiggin@gmail.com>
+Subject: [PATCH v2 2/5] powerpc/watchdog: Tighten non-atomic read-modify-write
+ access
+Date: Fri,  5 Nov 2021 02:10:54 +1000
+Message-Id: <20211104161057.1255659-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20211104161057.1255659-1-npiggin@gmail.com>
+References: <20211104161057.1255659-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -90,35 +92,106 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These are some watchdog fixes and improvements.
+Most updates to wd_smp_cpus_pending are under lock except the watchdog
+interrupt bit clear.
 
-This has taken a while to post out because upstream printk code seems
-to have a problem with indefinitely delaying NMI context printk while
-the CPU remains stuck, so that confounded testing a bit. That might
-require another watchdog change after I discuss the issue with upstream
-printk maintainers.
+This can race with non-atomic RMW updates to the mask under lock, which
+can happen in two instances:
 
-Since v1:
-- Fixes noticed by Laurent in v1.
-- Correct the description of the ABBA deadlock I wrote incorrectly in
-  v1.
-- Made several other improvements (patches 2,4,5).
+Firstly, if another CPU detects this one is stuck, removes it from the
+mask, mask becomes empty and is re-filled with non-atomic stores. This
+is okay because it would re-fill the mask with this CPU's bit clear
+anyway (because this CPU is now stuck), so it doesn't matter that the
+bit clear update got "lost". Add a comment for this.
 
-Thanks,
-Nick
+Secondly, if another CPU detects a different CPU is stuck and removes it
+from the pending mask with a non-atomic store to bytes which also
+include the bit of this CPU. This case can result in the bit clear being
+lost and the end result being the bit is set. This should be so rare it
+hardly matters, but to make things simpler to reason about just avoid
+the non-atomic access for that case.
 
-Nicholas Piggin (5):
-  powerpc/watchdog: Fix missed watchdog reset due to memory ordering
-    race
-  powerpc/watchdog: Tighten non-atomic read-modify-write access
-  powerpc/watchdog: Avoid holding wd_smp_lock over printk and
-    smp_send_nmi_ipi
-  powerpc/watchdog: Read TB close to where it is used
-  powerpc/watchdog: Remove backtrace print from unstuck message
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/watchdog.c | 36 ++++++++++++++++++++++++----------
+ 1 file changed, 26 insertions(+), 10 deletions(-)
 
- arch/powerpc/kernel/watchdog.c | 183 +++++++++++++++++++++++++--------
- 1 file changed, 142 insertions(+), 41 deletions(-)
-
+diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
+index be80071336a4..1d2623230297 100644
+--- a/arch/powerpc/kernel/watchdog.c
++++ b/arch/powerpc/kernel/watchdog.c
+@@ -131,10 +131,10 @@ static void wd_lockup_ipi(struct pt_regs *regs)
+ 	/* Do not panic from here because that can recurse into NMI IPI layer */
+ }
+ 
+-static void set_cpumask_stuck(const struct cpumask *cpumask, u64 tb)
++static bool set_cpu_stuck(int cpu, u64 tb)
+ {
+-	cpumask_or(&wd_smp_cpus_stuck, &wd_smp_cpus_stuck, cpumask);
+-	cpumask_andnot(&wd_smp_cpus_pending, &wd_smp_cpus_pending, cpumask);
++	cpumask_set_cpu(cpu, &wd_smp_cpus_stuck);
++	cpumask_clear_cpu(cpu, &wd_smp_cpus_pending);
+ 	/*
+ 	 * See wd_smp_clear_cpu_pending()
+ 	 */
+@@ -144,11 +144,9 @@ static void set_cpumask_stuck(const struct cpumask *cpumask, u64 tb)
+ 		cpumask_andnot(&wd_smp_cpus_pending,
+ 				&wd_cpus_enabled,
+ 				&wd_smp_cpus_stuck);
++		return true;
+ 	}
+-}
+-static void set_cpu_stuck(int cpu, u64 tb)
+-{
+-	set_cpumask_stuck(cpumask_of(cpu), tb);
++	return false;
+ }
+ 
+ static void watchdog_smp_panic(int cpu, u64 tb)
+@@ -177,15 +175,17 @@ static void watchdog_smp_panic(int cpu, u64 tb)
+ 		 * get a backtrace on all of them anyway.
+ 		 */
+ 		for_each_cpu(c, &wd_smp_cpus_pending) {
++			bool empty;
+ 			if (c == cpu)
+ 				continue;
++			/* Take the stuck CPUs out of the watch group */
++			empty = set_cpu_stuck(c, tb);
+ 			smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
++			if (empty)
++				break;
+ 		}
+ 	}
+ 
+-	/* Take the stuck CPUs out of the watch group */
+-	set_cpumask_stuck(&wd_smp_cpus_pending, tb);
+-
+ 	wd_smp_unlock(&flags);
+ 
+ 	if (sysctl_hardlockup_all_cpu_backtrace)
+@@ -232,6 +232,22 @@ static void wd_smp_clear_cpu_pending(int cpu, u64 tb)
+ 		return;
+ 	}
+ 
++	/*
++	 * All other updates to wd_smp_cpus_pending are performed under
++	 * wd_smp_lock. All of them are atomic except the case where the
++	 * mask becomes empty and is reset. This will not happen here because
++	 * cpu was tested to be in the bitmap (above), and a CPU only clears
++	 * its own bit. _Except_ in the case where another CPU has detected a
++	 * hard lockup on our CPU and takes us out of the pending mask. So in
++	 * normal operation there will be no race here, no problem.
++	 *
++	 * In the lockup case, this atomic clear-bit vs a store that refills
++	 * other bits in the accessed word wll not be a problem. The bit clear
++	 * is atomic so it will not cause the store to get lost, and the store
++	 * will never set this bit so it will not overwrite the bit clear. The
++	 * only way for a stuck CPU to return to the pending bitmap is to
++	 * become unstuck itself.
++	 */
+ 	cpumask_clear_cpu(cpu, &wd_smp_cpus_pending);
+ 
+ 	/*
 -- 
 2.23.0
 
