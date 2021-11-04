@@ -2,75 +2,76 @@ Return-Path: <SRS0=xHiI=PX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CAFDC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 16:13:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D00CAC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 16:13:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B98B06120E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 16:13:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B98B06120E
+	by mail.kernel.org (Postfix) with ESMTPS id 4923561213
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Nov 2021 16:13:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4923561213
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HlTFf19Jfz2yMV
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 03:13:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HlTGM5t5Tz3c6G
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 03:13:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=pkTHjZgA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=ia/x/79Z;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e;
- helo=mail-pf1-x42e.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::630;
+ helo=mail-pl1-x630.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=pkTHjZgA; dkim-atps=neutral
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com
- [IPv6:2607:f8b0:4864:20::42e])
+ header.s=20210112 header.b=ia/x/79Z; dkim-atps=neutral
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com
+ [IPv6:2607:f8b0:4864:20::630])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HlTCN2ndHz2xtK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 03:11:12 +1100 (AEDT)
-Received: by mail-pf1-x42e.google.com with SMTP id x131so1129896pfc.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Nov 2021 09:11:12 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HlTCS6ymhz2xtK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 03:11:16 +1100 (AEDT)
+Received: by mail-pl1-x630.google.com with SMTP id t21so8008533plr.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Nov 2021 09:11:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=Orzko8RilH3tiEmBkrNbKx2mzF2uYn6KX5w6qdbhy30=;
- b=pkTHjZgAvkb78WZooyL5z0txo9ZiqHOKmOY74I+mbXHz25Vqlw8PJvB63TnQHkVc0Y
- Al83XTpLvEszZ2pJdCftfTb2y13whDEW6LExsei0WUvn/FgnMOCvjiKTog3/8/9PCGE9
- rUt9pyQ6GH+7/IuW7CTHFXHPckK8mjdqkEt7xXCv/uUxd4DoI3XlNyo9merEjNYZc1Mf
- JrB48uJ2iOpVyCIUour9fktaiveAtsV4AmrV295NqNiW9t9YtXxHxMjmsr+q4KNQy0I3
- I5CfWOnaJ5Lpz3hiK2cIWH6ujdaU5KeWL49Mt+sdifKaqQH/6BcS3az7XeYdB/mgHjeP
- 6dIQ==
+ bh=irRoHoDcVIoPo5Pnpm+nVKEhbytq293MLsLEgsiQD38=;
+ b=ia/x/79Z0nSvK/UarrFbLnfUFNMMonPZe8Nil673V5Wojr6pRMd2l6xFCegwoa3pL0
+ ulLzJ9N9xrMTjiebvb9y/XVqlUl/1oYGRyEfLJx0Y9ibjDh+swB59023AyZeKyzEe4f1
+ puqRdBrLBOQS+osiDQM7onR0fOXcJys3CULn3t5ULkRyVZda5sUULFJF6loJlbFoPIXZ
+ 9Y2n67FnExkk05Z7DVUcgv0eb/lgjyK3+WAQxEqaF5wNXpRX8/xqcEw52RUbHr2Fs3tY
+ 1MQ1Ge0f18railZgsxr3/ANaB/wdtkudwufqdL6CG1Ohp+RnGaDtnp9E5a7aEi3823xz
+ egfg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=Orzko8RilH3tiEmBkrNbKx2mzF2uYn6KX5w6qdbhy30=;
- b=mRSWQgBL7TxIDEfQc2Q4hNtMyFFR3GCB+7ZcLmPgfnlBq18tfPmunZXsDIlVyxUuQq
- wbHgNcwn+NBOwxmwy73i2OXnLVkrmuoKZclXAGKv3ZztvOfD9nmHib2yb3FpxcbEmBcr
- XxO9Yqx9NCiu1Dd7x/KoJ9RtBTmKsW+JoH+vBp9S1upox4hlpCrwC6G+2cW+DE9cJ8Zm
- OkhOG7tqdFqJs2Vt4TMhX29rBxR7B7HL3ZtzfwXM4KGYtrtO2+rjkqavVQj4frHWKV7B
- 5RMZZjodk0SJ1JynfhOL0pNvc62JbWJ8AEDYxUhJqVcciEIVcC75dev6oRCAmNGn2Swc
- EDDg==
-X-Gm-Message-State: AOAM531T5F+mUsRQFo4CIkOUAHpZo/X4Fc/bBO3rjAv/lzazTLTKDWnb
- o0v4Tf895vy24qVnZVdPD7/IEo+o9ag=
-X-Google-Smtp-Source: ABdhPJwrT1PA5qRn+28ccsZGF6s/2/7IWECDOXpZPSO2zk+SZtxw8O9PeOdwtywJh5jXDoCEsc0eXg==
-X-Received: by 2002:a63:af49:: with SMTP id s9mr39591692pgo.311.1636042269850; 
- Thu, 04 Nov 2021 09:11:09 -0700 (PDT)
+ bh=irRoHoDcVIoPo5Pnpm+nVKEhbytq293MLsLEgsiQD38=;
+ b=5x1D/Q7r4g9AFFTFrBoZzTAOR2vn5gLNPUb69+OSBsXqfD+aXkzYstfXNp+y6WC6tO
+ 3Qss+vzTOHwBq/OvazQkdf3XtELaCiiW5wtiyT+gbE9vW4vgZuEFyuFfOpBCaGe9NJtV
+ hGV5JL91THNyA9RZgsDN+SjR3NNtW/dPeQK7dEjF8s9UdJHj7F4/Lieg03sNegBRkp08
+ XAsN0s39yRj2a4Loj5yFl5GeDxMAzhuUYUIMSw4nE3RgKXCwVRKKpa67VROzvV/SB+CG
+ jm/uPp9p+sL80Gx5W0vOIxUy7aON7mpQV6X9IPa3yQrd8VC0nqor3TUI6VtBzbVX43Dr
+ SK0A==
+X-Gm-Message-State: AOAM530/wj9szjzh/EljsazK7MhiY/wbqw/dP93L8V3z6zIi/E1iDNWS
+ TIfNN1/QLuDt9otUnJQu+7YEWjamlSQ=
+X-Google-Smtp-Source: ABdhPJyxTWdb5kRUHjxuYFzOEyROq9SMJ50lw8UGwLiOV4O9d0EGZy7ZIyEKK9pO+OUMS1Hls5F/eA==
+X-Received: by 2002:a17:90b:1648:: with SMTP id
+ il8mr8147132pjb.246.1636042265379; 
+ Thu, 04 Nov 2021 09:11:05 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com (60-241-46-56.tpgi.com.au. [60.241.46.56])
  by smtp.gmail.com with ESMTPSA id
- h3sm5897890pfi.207.2021.11.04.09.11.07
+ h3sm5897890pfi.207.2021.11.04.09.11.03
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 04 Nov 2021 09:11:09 -0700 (PDT)
+ Thu, 04 Nov 2021 09:11:05 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 3/5] powerpc/watchdog: Avoid holding wd_smp_lock over
- printk and smp_send_nmi_ipi
-Date: Fri,  5 Nov 2021 02:10:55 +1000
-Message-Id: <20211104161057.1255659-4-npiggin@gmail.com>
+Subject: [PATCH v2 1/5] powerpc/watchdog: Fix missed watchdog reset due to
+ memory ordering race
+Date: Fri,  5 Nov 2021 02:10:53 +1000
+Message-Id: <20211104161057.1255659-2-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20211104161057.1255659-1-npiggin@gmail.com>
 References: <20211104161057.1255659-1-npiggin@gmail.com>
@@ -92,211 +93,95 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is a deadlock with the console_owner lock and the wd_smp_lock:
+It is possible for all CPUs to miss the pending cpumask becoming clear,
+and then nobody resetting it, which will cause the lockup detector to
+stop working. It will eventually expire, but watchdog_smp_panic will
+avoid doing anything if the pending mask is clear and it will never be
+reset.
 
-CPU x takes the console_owner lock
-CPU y takes a watchdog timer interrupt and takes __wd_smp_lock
-CPU x takes a soft-NMI interrupt, detects deadlock, spins on __wd_smp_lock
-CPU y detects deadlock, tries to print something and spins on console_owner
--> deadlock
+Order the cpumask clear vs the subsequent test to close this race.
 
-Change the watchdog locking scheme so wd_smp_lock protects the watchdog
-internal data, but "reporting" (printing, issuing NMI IPIs, taking any
-action outside of watchdog) uses a non-waiting exclusion. If a CPU detects
-a problem but can not take the reporting lock, it just returns because
-something else is already reporting. It will try again at some point.
+Add an extra check for an empty pending mask when the watchdog fires and
+finds its bit still clear, to try to catch any other possible races or
+bugs here and keep the watchdog working. The extra test in
+arch_touch_nmi_watchdog is required to prevent the new warning from
+firing off.
 
-Typically hard lockup watchdog report usefulness is not impacted due to
-failure to spewing a large enough amount of data in as short a time as
-possible, but by messages getting garbled.
-
-Laurent debugged this and found the deadlock, and this patch is based on
-his general approach to avoid expensive operations while holding the lock.
-With the addition of the reporting exclusion.
-
-Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
-[np: rework to add reporting exclusion update changelog]
+Debugged-by: Laurent Dufour <ldufour@linux.ibm.com>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/watchdog.c | 89 ++++++++++++++++++++++++++--------
- 1 file changed, 70 insertions(+), 19 deletions(-)
+ arch/powerpc/kernel/watchdog.c | 36 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 35 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index 1d2623230297..0265d27340f1 100644
+index f9ea0e5357f9..be80071336a4 100644
 --- a/arch/powerpc/kernel/watchdog.c
 +++ b/arch/powerpc/kernel/watchdog.c
-@@ -85,10 +85,32 @@ static DEFINE_PER_CPU(u64, wd_timer_tb);
- 
- /* SMP checker bits */
- static unsigned long __wd_smp_lock;
-+static unsigned long __wd_reporting;
- static cpumask_t wd_smp_cpus_pending;
- static cpumask_t wd_smp_cpus_stuck;
- static u64 wd_smp_last_reset_tb;
- 
-+/*
-+ * Try to take the exclusive watchdog action / NMI IPI / printing lock.
-+ * wd_smp_lock must be held. If this fails, we should return and wait
-+ * for the watchdog to kick in again (or another CPU to trigger it).
-+ */
-+static bool wd_try_report(void)
-+{
-+	if (__wd_reporting)
-+		return false;
-+	__wd_reporting = 1;
-+	return true;
-+}
-+
-+/* End printing after successful wd_try_report. wd_smp_lock not required. */
-+static void wd_end_reporting(void)
-+{
-+	smp_mb(); /* End printing "critical section" */
-+	WARN_ON_ONCE(__wd_reporting == 0);
-+	WRITE_ONCE(__wd_reporting, 0);
-+}
-+
- static inline void wd_smp_lock(unsigned long *flags)
+@@ -135,6 +135,10 @@ static void set_cpumask_stuck(const struct cpumask *cpumask, u64 tb)
  {
- 	/*
-@@ -151,6 +173,7 @@ static bool set_cpu_stuck(int cpu, u64 tb)
+ 	cpumask_or(&wd_smp_cpus_stuck, &wd_smp_cpus_stuck, cpumask);
+ 	cpumask_andnot(&wd_smp_cpus_pending, &wd_smp_cpus_pending, cpumask);
++	/*
++	 * See wd_smp_clear_cpu_pending()
++	 */
++	smp_mb();
+ 	if (cpumask_empty(&wd_smp_cpus_pending)) {
+ 		wd_smp_last_reset_tb = tb;
+ 		cpumask_andnot(&wd_smp_cpus_pending,
+@@ -215,13 +219,39 @@ static void wd_smp_clear_cpu_pending(int cpu, u64 tb)
  
- static void watchdog_smp_panic(int cpu, u64 tb)
- {
-+	static cpumask_t wd_smp_cpus_ipi; // protected by reporting
- 	unsigned long flags;
- 	int c;
- 
-@@ -160,11 +183,26 @@ static void watchdog_smp_panic(int cpu, u64 tb)
- 		goto out;
- 	if (cpumask_test_cpu(cpu, &wd_smp_cpus_pending))
- 		goto out;
--	if (cpumask_weight(&wd_smp_cpus_pending) == 0)
-+	if (!wd_try_report())
- 		goto out;
-+	for_each_online_cpu(c) {
-+		if (!cpumask_test_cpu(c, &wd_smp_cpus_pending))
-+			continue;
-+		if (c == cpu)
-+			continue; // should not happen
-+
-+		__cpumask_set_cpu(c, &wd_smp_cpus_ipi);
-+		if (set_cpu_stuck(c, tb))
-+			break;
-+	}
-+	if (cpumask_empty(&wd_smp_cpus_ipi)) {
-+		wd_end_reporting();
-+		goto out;
-+	}
-+	wd_smp_unlock(&flags);
- 
- 	pr_emerg("CPU %d detected hard LOCKUP on other CPUs %*pbl\n",
--		 cpu, cpumask_pr_args(&wd_smp_cpus_pending));
-+		 cpu, cpumask_pr_args(&wd_smp_cpus_ipi));
- 	pr_emerg("CPU %d TB:%lld, last SMP heartbeat TB:%lld (%lldms ago)\n",
- 		 cpu, tb, wd_smp_last_reset_tb,
- 		 tb_to_ns(tb - wd_smp_last_reset_tb) / 1000000);
-@@ -174,26 +212,20 @@ static void watchdog_smp_panic(int cpu, u64 tb)
- 		 * Try to trigger the stuck CPUs, unless we are going to
- 		 * get a backtrace on all of them anyway.
- 		 */
--		for_each_cpu(c, &wd_smp_cpus_pending) {
--			bool empty;
--			if (c == cpu)
--				continue;
--			/* Take the stuck CPUs out of the watch group */
--			empty = set_cpu_stuck(c, tb);
-+		for_each_cpu(c, &wd_smp_cpus_ipi) {
- 			smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
--			if (empty)
--				break;
-+			__cpumask_clear_cpu(c, &wd_smp_cpus_ipi);
- 		}
--	}
--
--	wd_smp_unlock(&flags);
--
--	if (sysctl_hardlockup_all_cpu_backtrace)
-+	} else {
- 		trigger_allbutself_cpu_backtrace();
-+		cpumask_clear(&wd_smp_cpus_ipi);
-+	}
- 
- 	if (hardlockup_panic)
- 		nmi_panic(NULL, "Hard LOCKUP");
- 
-+	wd_end_reporting();
-+
- 	return;
- 
- out:
-@@ -207,8 +239,6 @@ static void wd_smp_clear_cpu_pending(int cpu, u64 tb)
- 			struct pt_regs *regs = get_irq_regs();
- 			unsigned long flags;
- 
--			wd_smp_lock(&flags);
--
- 			pr_emerg("CPU %d became unstuck TB:%lld\n",
- 				 cpu, tb);
- 			print_irqtrace_events(current);
-@@ -217,6 +247,7 @@ static void wd_smp_clear_cpu_pending(int cpu, u64 tb)
- 			else
- 				dump_stack();
- 
-+			wd_smp_lock(&flags);
  			cpumask_clear_cpu(cpu, &wd_smp_cpus_stuck);
  			wd_smp_unlock(&flags);
- 		} else {
-@@ -307,13 +338,28 @@ DEFINE_INTERRUPT_HANDLER_NMI(soft_nmi_interrupt)
++		} else {
++			/*
++			 * The last CPU to clear pending should have reset the
++			 * watchdog, yet we find it empty here. This should not
++			 * happen but we can try to recover and avoid a false
++			 * positive if it does.
++			 */
++			if (WARN_ON_ONCE(cpumask_empty(&wd_smp_cpus_pending)))
++				goto none_pending;
+ 		}
+ 		return;
+ 	}
++
+ 	cpumask_clear_cpu(cpu, &wd_smp_cpus_pending);
++
++	/*
++	 * Order the store to clear pending with the load(s) to check all
++	 * words in the pending mask to check they are all empty. This orders
++	 * with the same barrier on another CPU. This prevents two CPUs
++	 * clearing the last 2 pending bits, but neither seeing the other's
++	 * store when checking if the mask is empty, and missing an empty
++	 * mask, which ends with a false positive.
++	 */
++	smp_mb();
+ 	if (cpumask_empty(&wd_smp_cpus_pending)) {
+ 		unsigned long flags;
  
- 	tb = get_tb();
- 	if (tb - per_cpu(wd_timer_tb, cpu) >= wd_panic_timeout_tb) {
++none_pending:
 +		/*
-+		 * Taking wd_smp_lock here means it is a soft-NMI lock, which
-+		 * means we can't take any regular or irqsafe spin locks while
-+		 * holding this lock. This is why timers can't printk while
-+		 * holding the lock.
++		 * Double check under lock because more than one CPU could see
++		 * a clear mask with the lockless check after clearing their
++		 * pending bits.
 +		 */
  		wd_smp_lock(&flags);
- 		if (cpumask_test_cpu(cpu, &wd_smp_cpus_stuck)) {
- 			wd_smp_unlock(&flags);
- 			return 0;
- 		}
-+		if (!wd_try_report()) {
-+			wd_smp_unlock(&flags);
-+			/* Couldn't report, try again in 100ms */
-+			mtspr(SPRN_DEC, 100 * tb_ticks_per_usec * 1000);
-+			return 0;
-+		}
+ 		if (cpumask_empty(&wd_smp_cpus_pending)) {
+ 			wd_smp_last_reset_tb = tb;
+@@ -312,8 +342,12 @@ void arch_touch_nmi_watchdog(void)
+ {
+ 	unsigned long ticks = tb_ticks_per_usec * wd_timer_period_ms * 1000;
+ 	int cpu = smp_processor_id();
+-	u64 tb = get_tb();
++	u64 tb;
+ 
++	if (!cpumask_test_cpu(cpu, &watchdog_cpumask))
++		return;
 +
- 		set_cpu_stuck(cpu, tb);
- 
-+		wd_smp_unlock(&flags);
-+
- 		pr_emerg("CPU %d self-detected hard LOCKUP @ %pS\n",
- 			 cpu, (void *)regs->nip);
- 		pr_emerg("CPU %d TB:%lld, last heartbeat TB:%lld (%lldms ago)\n",
-@@ -323,14 +369,19 @@ DEFINE_INTERRUPT_HANDLER_NMI(soft_nmi_interrupt)
- 		print_irqtrace_events(current);
- 		show_regs(regs);
- 
--		wd_smp_unlock(&flags);
--
- 		if (sysctl_hardlockup_all_cpu_backtrace)
- 			trigger_allbutself_cpu_backtrace();
- 
- 		if (hardlockup_panic)
- 			nmi_panic(regs, "Hard LOCKUP");
-+
-+		wd_end_reporting();
- 	}
-+	/*
-+	 * We are okay to change DEC in soft_nmi_interrupt because the masked
-+	 * handler has marked a DEC as pending, so the timer interrupt will be
-+	 * replayed as soon as local irqs are enabled again.
-+	 */
- 	if (wd_panic_timeout_tb < 0x7fffffff)
- 		mtspr(SPRN_DEC, wd_panic_timeout_tb);
- 
++	tb = get_tb();
+ 	if (tb - per_cpu(wd_timer_tb, cpu) >= ticks) {
+ 		per_cpu(wd_timer_tb, cpu) = tb;
+ 		wd_smp_clear_cpu_pending(cpu, tb);
 -- 
 2.23.0
 
