@@ -2,44 +2,44 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68153C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 19:23:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE574C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 19:24:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E65161053
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 19:23:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8E65161053
+	by mail.kernel.org (Postfix) with ESMTPS id 4A57761052
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 19:24:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4A57761052
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hm9Qx288Jz3cQ3
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Nov 2021 06:23:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hm9RN6dPlz3dk4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Nov 2021 06:24:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=maz@kernel.org; receiver=<UNKNOWN>)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hm9NZ1tGzz2ypn
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Nov 2021 06:21:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hm9Nb6fQcz2ypn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Nov 2021 06:21:35 +1100 (AEDT)
 Received: from disco-boy.misterjones.org (disco-boy.misterjones.org
  [51.254.78.96])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E63B361244;
- Fri,  5 Nov 2021 19:21:29 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id C91E761263;
+ Fri,  5 Nov 2021 19:21:31 +0000 (UTC)
 Received: from sofa.misterjones.org ([185.219.108.64] helo=why.lan)
  by disco-boy.misterjones.org with esmtpsa (TLS1.3) tls
  TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.94.2)
  (envelope-from <maz@kernel.org>)
- id 1mj4mG-003ig2-1u; Fri, 05 Nov 2021 19:21:28 +0000
+ id 1mj4mH-003ig2-Ut; Fri, 05 Nov 2021 19:21:30 +0000
 From: Marc Zyngier <maz@kernel.org>
 To: kvm@vger.kernel.org, linux-mips@vger.kernel.org,
  kvmarm@lists.cs.columbia.edu, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/5] KVM: Move wiping of the kvm->vcpus array to common code
-Date: Fri,  5 Nov 2021 19:20:57 +0000
-Message-Id: <20211105192101.3862492-2-maz@kernel.org>
+Subject: [PATCH 5/5] KVM: Convert the kvm->vcpus array to a xarray
+Date: Fri,  5 Nov 2021 19:21:01 +0000
+Message-Id: <20211105192101.3862492-6-maz@kernel.org>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20211105192101.3862492-1-maz@kernel.org>
 References: <20211105192101.3862492-1-maz@kernel.org>
@@ -84,245 +84,103 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All architectures have similar loops iterating over the vcpus,
-freeing one vcpu at a time, and eventually wiping the reference
-off the vcpus array. They are also inconsistently taking
-the kvm->lock mutex when wiping the references from the array.
+At least on arm64 and x86, the vcpus array is pretty huge (512 entries),
+and is mostly empty in most cases (running 512 vcpu VMs is not that
+common). This mean that we end-up with a 4kB block of unused memory
+in the middle of the kvm structure.
 
-Make this code common, which will simplify further changes.
+Instead of wasting away this memory, let's use an xarray instead,
+which gives us almost the same flexibility as a normal array, but
+with a reduced memory usage with smaller VMs.
 
 Signed-off-by: Marc Zyngier <maz@kernel.org>
 ---
- arch/arm64/kvm/arm.c       | 10 +---------
- arch/mips/kvm/mips.c       | 21 +--------------------
- arch/powerpc/kvm/powerpc.c | 10 +---------
- arch/riscv/kvm/vm.c        | 10 +---------
- arch/s390/kvm/kvm-s390.c   | 18 +-----------------
- arch/x86/kvm/x86.c         |  9 +--------
- include/linux/kvm_host.h   |  2 +-
- virt/kvm/kvm_main.c        | 20 ++++++++++++++++++--
- 8 files changed, 25 insertions(+), 75 deletions(-)
+ include/linux/kvm_host.h |  5 +++--
+ virt/kvm/kvm_main.c      | 15 +++++++++------
+ 2 files changed, 12 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index f5490afe1ebf..75bb7215da03 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -175,19 +175,11 @@ vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
-  */
- void kvm_arch_destroy_vm(struct kvm *kvm)
- {
--	int i;
--
- 	bitmap_free(kvm->arch.pmu_filter);
- 
- 	kvm_vgic_destroy(kvm);
- 
--	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--		if (kvm->vcpus[i]) {
--			kvm_vcpu_destroy(kvm->vcpus[i]);
--			kvm->vcpus[i] = NULL;
--		}
--	}
--	atomic_set(&kvm->online_vcpus, 0);
-+	kvm_destroy_vcpus(kvm);
- }
- 
- int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
-diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index 562aa878b266..ceacca74f808 100644
---- a/arch/mips/kvm/mips.c
-+++ b/arch/mips/kvm/mips.c
-@@ -171,25 +171,6 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
- 	return 0;
- }
- 
--void kvm_mips_free_vcpus(struct kvm *kvm)
--{
--	unsigned int i;
--	struct kvm_vcpu *vcpu;
--
--	kvm_for_each_vcpu(i, vcpu, kvm) {
--		kvm_vcpu_destroy(vcpu);
--	}
--
--	mutex_lock(&kvm->lock);
--
--	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++)
--		kvm->vcpus[i] = NULL;
--
--	atomic_set(&kvm->online_vcpus, 0);
--
--	mutex_unlock(&kvm->lock);
--}
--
- static void kvm_mips_free_gpa_pt(struct kvm *kvm)
- {
- 	/* It should always be safe to remove after flushing the whole range */
-@@ -199,7 +180,7 @@ static void kvm_mips_free_gpa_pt(struct kvm *kvm)
- 
- void kvm_arch_destroy_vm(struct kvm *kvm)
- {
--	kvm_mips_free_vcpus(kvm);
-+	kvm_destroy_vcpus(kvm);
- 	kvm_mips_free_gpa_pt(kvm);
- }
- 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 35e9cccdeef9..492e4a4121cb 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -463,9 +463,6 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
- 
- void kvm_arch_destroy_vm(struct kvm *kvm)
- {
--	unsigned int i;
--	struct kvm_vcpu *vcpu;
--
- #ifdef CONFIG_KVM_XICS
- 	/*
- 	 * We call kick_all_cpus_sync() to ensure that all
-@@ -476,14 +473,9 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
- 		kick_all_cpus_sync();
- #endif
- 
--	kvm_for_each_vcpu(i, vcpu, kvm)
--		kvm_vcpu_destroy(vcpu);
-+	kvm_destroy_vcpus(kvm);
- 
- 	mutex_lock(&kvm->lock);
--	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++)
--		kvm->vcpus[i] = NULL;
--
--	atomic_set(&kvm->online_vcpus, 0);
- 
- 	kvmppc_core_destroy_vm(kvm);
- 
-diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-index 26399df15b63..6af6cde295eb 100644
---- a/arch/riscv/kvm/vm.c
-+++ b/arch/riscv/kvm/vm.c
-@@ -46,15 +46,7 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
- 
- void kvm_arch_destroy_vm(struct kvm *kvm)
- {
--	int i;
--
--	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
--		if (kvm->vcpus[i]) {
--			kvm_vcpu_destroy(kvm->vcpus[i]);
--			kvm->vcpus[i] = NULL;
--		}
--	}
--	atomic_set(&kvm->online_vcpus, 0);
-+	kvm_destroy_vcpus(kvm);
- }
- 
- int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index c6257f625929..7af53b8788fa 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -2819,27 +2819,11 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
- 	free_page((unsigned long)(vcpu->arch.sie_block));
- }
- 
--static void kvm_free_vcpus(struct kvm *kvm)
--{
--	unsigned int i;
--	struct kvm_vcpu *vcpu;
--
--	kvm_for_each_vcpu(i, vcpu, kvm)
--		kvm_vcpu_destroy(vcpu);
--
--	mutex_lock(&kvm->lock);
--	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++)
--		kvm->vcpus[i] = NULL;
--
--	atomic_set(&kvm->online_vcpus, 0);
--	mutex_unlock(&kvm->lock);
--}
--
- void kvm_arch_destroy_vm(struct kvm *kvm)
- {
- 	u16 rc, rrc;
- 
--	kvm_free_vcpus(kvm);
-+	kvm_destroy_vcpus(kvm);
- 	sca_dispose(kvm);
- 	kvm_s390_gisa_destroy(kvm);
- 	/*
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index c1c4e2b05a63..498a43126615 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -11302,15 +11302,8 @@ static void kvm_free_vcpus(struct kvm *kvm)
- 		kvm_clear_async_pf_completion_queue(vcpu);
- 		kvm_unload_vcpu_mmu(vcpu);
- 	}
--	kvm_for_each_vcpu(i, vcpu, kvm)
--		kvm_vcpu_destroy(vcpu);
--
--	mutex_lock(&kvm->lock);
--	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++)
--		kvm->vcpus[i] = NULL;
- 
--	atomic_set(&kvm->online_vcpus, 0);
--	mutex_unlock(&kvm->lock);
-+	kvm_destroy_vcpus(kvm);
- }
- 
- void kvm_arch_sync_events(struct kvm *kvm)
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 60a35d9fe259..36967291b8c6 100644
+index 36967291b8c6..3933d825e28b 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
-@@ -725,7 +725,7 @@ static inline struct kvm_vcpu *kvm_get_vcpu_by_id(struct kvm *kvm, int id)
- 		if (WARN_ON_ONCE(!memslot->npages)) {			\
- 		} else
+@@ -29,6 +29,7 @@
+ #include <linux/refcount.h>
+ #include <linux/nospec.h>
+ #include <linux/notifier.h>
++#include <linux/xarray.h>
+ #include <asm/signal.h>
  
--void kvm_vcpu_destroy(struct kvm_vcpu *vcpu);
-+void kvm_destroy_vcpus(struct kvm *kvm);
+ #include <linux/kvm.h>
+@@ -552,7 +553,7 @@ struct kvm {
+ 	struct mutex slots_arch_lock;
+ 	struct mm_struct *mm; /* userspace tied to this vm */
+ 	struct kvm_memslots __rcu *memslots[KVM_ADDRESS_SPACE_NUM];
+-	struct kvm_vcpu *vcpus[KVM_MAX_VCPUS];
++	struct xarray vcpu_array;
  
- void vcpu_load(struct kvm_vcpu *vcpu);
- void vcpu_put(struct kvm_vcpu *vcpu);
+ 	/* Used to wait for completion of MMU notifiers.  */
+ 	spinlock_t mn_invalidate_lock;
+@@ -693,7 +694,7 @@ static inline struct kvm_vcpu *kvm_get_vcpu(struct kvm *kvm, int i)
+ 
+ 	/* Pairs with smp_wmb() in kvm_vm_ioctl_create_vcpu.  */
+ 	smp_rmb();
+-	return kvm->vcpus[i];
++	return xa_load(&kvm->vcpu_array, i);
+ }
+ 
+ #define kvm_for_each_vcpu(idx, vcpup, kvm) \
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 3f6d450355f0..d83553eeea21 100644
+index d83553eeea21..4c18d7911fa5 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -435,7 +435,7 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
- 	vcpu->last_used_slot = 0;
- }
+@@ -461,7 +461,7 @@ void kvm_destroy_vcpus(struct kvm *kvm)
  
--void kvm_vcpu_destroy(struct kvm_vcpu *vcpu)
-+static void kvm_vcpu_destroy(struct kvm_vcpu *vcpu)
- {
- 	kvm_dirty_ring_free(&vcpu->dirty_ring);
- 	kvm_arch_vcpu_destroy(vcpu);
-@@ -450,7 +450,23 @@ void kvm_vcpu_destroy(struct kvm_vcpu *vcpu)
- 	free_page((unsigned long)vcpu->run);
- 	kmem_cache_free(kvm_vcpu_cache, vcpu);
- }
--EXPORT_SYMBOL_GPL(kvm_vcpu_destroy);
-+
-+void kvm_destroy_vcpus(struct kvm *kvm)
-+{
-+	unsigned int i;
-+	struct kvm_vcpu *vcpu;
-+
-+	kvm_for_each_vcpu(i, vcpu, kvm)
-+		kvm_vcpu_destroy(vcpu);
-+
-+	mutex_lock(&kvm->lock);
-+	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++)
-+		kvm->vcpus[i] = NULL;
-+
-+	atomic_set(&kvm->online_vcpus, 0);
-+	mutex_unlock(&kvm->lock);
-+}
-+EXPORT_SYMBOL_GPL(kvm_destroy_vcpus);
+ 	mutex_lock(&kvm->lock);
+ 	for (i = 0; i < atomic_read(&kvm->online_vcpus); i++)
+-		kvm->vcpus[i] = NULL;
++		xa_erase(&kvm->vcpu_array, i);
  
- #if defined(CONFIG_MMU_NOTIFIER) && defined(KVM_ARCH_WANT_MMU_NOTIFIER)
- static inline struct kvm *mmu_notifier_to_kvm(struct mmu_notifier *mn)
+ 	atomic_set(&kvm->online_vcpus, 0);
+ 	mutex_unlock(&kvm->lock);
+@@ -1066,6 +1066,7 @@ static struct kvm *kvm_create_vm(unsigned long type)
+ 	mutex_init(&kvm->slots_arch_lock);
+ 	spin_lock_init(&kvm->mn_invalidate_lock);
+ 	rcuwait_init(&kvm->mn_memslots_update_rcuwait);
++	xa_init(&kvm->vcpu_array);
+ 
+ 	INIT_LIST_HEAD(&kvm->devices);
+ 
+@@ -3661,7 +3662,10 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
+ 	}
+ 
+ 	vcpu->vcpu_idx = atomic_read(&kvm->online_vcpus);
+-	BUG_ON(kvm->vcpus[vcpu->vcpu_idx]);
++	r = xa_insert(&kvm->vcpu_array, vcpu->vcpu_idx, vcpu, GFP_KERNEL_ACCOUNT);
++	BUG_ON(r == -EBUSY);
++	if (r)
++		goto unlock_vcpu_destroy;
+ 
+ 	/* Fill the stats id string for the vcpu */
+ 	snprintf(vcpu->stats_id, sizeof(vcpu->stats_id), "kvm-%d/vcpu-%d",
+@@ -3671,15 +3675,14 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
+ 	kvm_get_kvm(kvm);
+ 	r = create_vcpu_fd(vcpu);
+ 	if (r < 0) {
++		xa_erase(&kvm->vcpu_array, vcpu->vcpu_idx);
+ 		kvm_put_kvm_no_destroy(kvm);
+ 		goto unlock_vcpu_destroy;
+ 	}
+ 
+-	kvm->vcpus[vcpu->vcpu_idx] = vcpu;
+-
+ 	/*
+-	 * Pairs with smp_rmb() in kvm_get_vcpu.  Write kvm->vcpus
+-	 * before kvm->online_vcpu's incremented value.
++	 * Pairs with smp_rmb() in kvm_get_vcpu.  Store the vcpu
++	 * pointer before kvm->online_vcpu's incremented value.
+ 	 */
+ 	smp_wmb();
+ 	atomic_inc(&kvm->online_vcpus);
 -- 
 2.30.2
 
