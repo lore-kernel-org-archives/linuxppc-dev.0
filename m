@@ -2,48 +2,45 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED369C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:43:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1FAFC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:43:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B2B261054
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:43:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8B2B261054
+	by mail.kernel.org (Postfix) with ESMTPS id 16DFE61054
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:43:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 16DFE61054
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hlxts1mHnz3c99
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 21:43:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HlxvJ4cbqz3cQC
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 21:43:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=178.32.125.2;
- helo=smtpout1.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ smtp.mailfrom=kaod.org (client-ip=79.137.123.220;
+ helo=smtpout2.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
-X-Greylist: delayed 977 seconds by postgrey-1.36 at boromir;
- Fri, 05 Nov 2021 21:43:04 AEDT
-Received: from smtpout1.mo529.mail-out.ovh.net
- (smtpout1.mo529.mail-out.ovh.net [178.32.125.2])
+Received: from smtpout2.mo529.mail-out.ovh.net
+ (smtpout2.mo529.mail-out.ovh.net [79.137.123.220])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HlxtJ4zWFz2xDC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 21:43:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HlxtL0THyz2xDC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 21:43:05 +1100 (AEDT)
 Received: from mxplan5.mail.ovh.net (unknown [10.108.20.180])
- by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 796F0C9A156F;
+ by mo529.mail-out.ovh.net (Postfix) with ESMTPS id AAAF7C9A1572;
  Fri,  5 Nov 2021 11:26:41 +0100 (CET)
 Received: from kaod.org (37.59.142.100) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.15; Fri, 5 Nov
- 2021 11:26:40 +0100
+ 2021 11:26:41 +0100
 Authentication-Results: garm.ovh; auth=pass
- (GARM-100R0031e04f5d0-ada2-4a86-97cd-017a37843ec6,
+ (GARM-100R003ece9bd96-cefe-4018-8c6f-65ff27458f5b,
  ACBEE74C211706A3681C4B00B96A7A61B931BAD7) smtp.auth=clg@kaod.org
 X-OVh-ClientIp: 82.64.250.170
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 05/11] powerpc/xive: Change the debugfs file 'xive' into a
- directory
-Date: Fri, 5 Nov 2021 11:26:30 +0100
-Message-ID: <20211105102636.1016378-6-clg@kaod.org>
+Subject: [PATCH 07/11] powerpc/xive: Add a debugfs file to dump EQs
+Date: Fri, 5 Nov 2021 11:26:32 +0100
+Message-ID: <20211105102636.1016378-8-clg@kaod.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20211105102636.1016378-1-clg@kaod.org>
 References: <20211105102636.1016378-1-clg@kaod.org>
@@ -53,8 +50,8 @@ Content-Transfer-Encoding: 8bit
 X-Originating-IP: [37.59.142.100]
 X-ClientProxiedBy: DAG2EX1.mxp5.local (172.16.2.11) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: 9a21ceb6-4b6c-4bd7-9a4f-6df428873584
-X-Ovh-Tracer-Id: 495395961320082397
+X-Ovh-Tracer-GUID: 83a122aa-690c-43c6-a1f2-5c85f9bcb2ab
+X-Ovh-Tracer-Id: 495677437099674589
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: 0
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvuddrtdeigdduhecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhephffvufffkffojghfgggtgfhisehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepheehfeegjeeitdfffeetjeduveejueefuefgtdefueelueetveeliefhhffgtdelnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutddtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
@@ -74,70 +71,70 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use a 'cpus' file to dump CPU states and 'interrupts' to dump IRQ states.
+The XIVE driver under Linux uses a single interrupt priority and only
+one event queue is configured per CPU. Expose the contents under
+a 'xive/eqs/cpuX' debugfs file.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/sysdev/xive/common.c | 36 +++++++++++++++++++++----------
- 1 file changed, 25 insertions(+), 11 deletions(-)
+ arch/powerpc/sysdev/xive/common.c | 37 +++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
 
 diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index b71cc1020296..0b34ad5748ee 100644
+index c5167f284da5..75c683ffae7e 100644
 --- a/arch/powerpc/sysdev/xive/common.c
 +++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1760,17 +1760,10 @@ static void xive_debug_show_irq(struct seq_file *m, struct irq_data *d)
- 	seq_puts(m, "\n");
+@@ -1775,9 +1775,40 @@ static int xive_ipi_debug_show(struct seq_file *m, void *private)
  }
+ DEFINE_SHOW_ATTRIBUTE(xive_ipi_debug);
  
--static int xive_core_debug_show(struct seq_file *m, void *private)
-+static int xive_irq_debug_show(struct seq_file *m, void *private)
- {
- 	unsigned int i;
- 	struct irq_desc *desc;
--	int cpu;
--
--	if (xive_ops->debug_show)
--		xive_ops->debug_show(m, private);
--
--	for_each_possible_cpu(cpu)
--		xive_debug_show_cpu(m, cpu);
- 
- 	for_each_irq_desc(i, desc) {
- 		struct irq_data *d = irq_domain_get_irq_data(xive_irq_domain, i);
-@@ -1780,12 +1773,33 @@ static int xive_core_debug_show(struct seq_file *m, void *private)
- 	}
- 	return 0;
- }
--DEFINE_SHOW_ATTRIBUTE(xive_core_debug);
-+DEFINE_SHOW_ATTRIBUTE(xive_irq_debug);
-+
-+static int xive_cpu_debug_show(struct seq_file *m, void *private)
++static void xive_eq_debug_show_one(struct seq_file *m, struct xive_q *q, u8 prio)
 +{
-+	int cpu;
++	int i;
 +
-+	if (xive_ops->debug_show)
-+		xive_ops->debug_show(m, private);
++	seq_printf(m, "EQ%d idx=%d T=%d\n", prio, q->idx, q->toggle);
++	if (q->qpage) {
++		for (i = 0; i < q->msk + 1; i++) {
++			if (!(i % 8))
++				seq_printf(m, "%05d ", i);
++			seq_printf(m, "%08x%s", be32_to_cpup(q->qpage + i),
++				   (i + 1) % 8 ? " " : "\n");
++		}
++	}
++	seq_puts(m, "\n");
++}
 +
-+	for_each_possible_cpu(cpu)
-+		xive_debug_show_cpu(m, cpu);
++static int xive_eq_debug_show(struct seq_file *m, void *private)
++{
++	int cpu = (long)m->private;
++	struct xive_cpu *xc = per_cpu(xive_cpu, cpu);
++
++	if (xc)
++		xive_eq_debug_show_one(m, &xc->queue[xive_irq_priority],
++				       xive_irq_priority);
 +	return 0;
 +}
-+DEFINE_SHOW_ATTRIBUTE(xive_cpu_debug);
- 
++DEFINE_SHOW_ATTRIBUTE(xive_eq_debug);
++
  static void xive_core_debugfs_create(void)
  {
--	debugfs_create_file("xive", 0400, arch_debugfs_dir,
--			    NULL, &xive_core_debug_fops);
-+	struct dentry *xive_dir;
-+
-+	xive_dir = debugfs_create_dir("xive", arch_debugfs_dir);
-+	if (IS_ERR(xive_dir))
-+		return;
-+
-+	debugfs_create_file("cpus", 0400, xive_dir,
-+			    NULL, &xive_cpu_debug_fops);
-+	debugfs_create_file("interrupts", 0400, xive_dir,
-+			    NULL, &xive_irq_debug_fops);
+ 	struct dentry *xive_dir;
++	struct dentry *xive_eq_dir;
++	long cpu;
++	char name[16];
+ 
+ 	xive_dir = debugfs_create_dir("xive", arch_debugfs_dir);
+ 	if (IS_ERR(xive_dir))
+@@ -1787,6 +1818,12 @@ static void xive_core_debugfs_create(void)
+ 			    NULL, &xive_ipi_debug_fops);
+ 	debugfs_create_file("interrupts", 0400, xive_dir,
+ 			    NULL, &xive_irq_debug_fops);
++	xive_eq_dir = debugfs_create_dir("eqs", xive_dir);
++	for_each_possible_cpu(cpu) {
++		snprintf(name, sizeof(name), "cpu%ld", cpu);
++		debugfs_create_file(name, 0400, xive_eq_dir, (void *)cpu,
++				    &xive_eq_debug_fops);
++	}
  }
  
  #endif /* CONFIG_DEBUG_FS */
