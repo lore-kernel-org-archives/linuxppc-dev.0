@@ -2,73 +2,61 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09897C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 18:06:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D35F4C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 19:22:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 57A2361053
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 18:06:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 57A2361053
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id 3A0626008E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 19:22:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3A0626008E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hm7jz4f40z3bj9
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Nov 2021 05:06:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=PUxjeHeX;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hm9P74MYkz3cCr
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Nov 2021 06:22:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.52;
- helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
- header.s=strato-dkim-0002 header.b=PUxjeHeX; 
- dkim-atps=neutral
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de
- [85.215.255.52])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=maz@kernel.org; receiver=<UNKNOWN>)
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hm7jC5dvRz2ynx
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Nov 2021 05:05:49 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1636135532;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
- From:Subject:Sender;
- bh=lW6PZrEMoh4YrNGw6p6fcAehMIXj+QcvqFKm6eiG2Ho=;
- b=PUxjeHeXW9B2GdUVGfUdv2fpN9PMdwa6YU6vlu24/Lgbex16rHHDBqofjsEz41hvl7
- VGjou1/HH6mnAZI1nhopFNxsku6dDQydiisPTB+Fi0S6HgZOEnlA2xDwioBgWojGvFqr
- Nu0KY7ZY9K25MZWcZa5KqfJ9LYbuqTwbMqjzSMnNx9TT1SdYLkVy5S0ytjgcVxAz72iV
- mQsdYblOZa9iZgFGBWrparxjc4TjwOrtcsdaMFE4ovW+GH4fjNEdYgYAndbknlV5rF0H
- YJsC/0YkUkIt3DUe5YOmrVFB40fjEZCp4LBiYPqGR7F93bjiLRA5AfPAiJ3beNRy5oKi
- b1Eg==
-Authentication-Results: strato.com;
-    dkim=none
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPhacCDkZL5G9UYE/q69Nx1/DIB5"
-X-RZG-CLASS-ID: mo00
-Received: from [IPV6:2a02:8109:89c0:ebfc:9f9:e5a3:6af5:bb18]
- by smtp.strato.de (RZmta 47.34.1 AUTH)
- with ESMTPSA id w0066dxA5I5VJTy
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
- (Client did not present a certificate);
- Fri, 5 Nov 2021 19:05:31 +0100 (CET)
-Message-ID: <aa9ce992-e48f-31b4-cc3e-3300bd557dc8@xenosoft.de>
-Date: Fri, 5 Nov 2021 19:05:22 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hm9NZ1nRXz2ynM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Nov 2021 06:21:33 +1100 (AEDT)
+Received: from disco-boy.misterjones.org (disco-boy.misterjones.org
+ [51.254.78.96])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 70C516125F;
+ Fri,  5 Nov 2021 19:21:30 +0000 (UTC)
+Received: from sofa.misterjones.org ([185.219.108.64] helo=why.lan)
+ by disco-boy.misterjones.org with esmtpsa (TLS1.3) tls
+ TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.94.2)
+ (envelope-from <maz@kernel.org>)
+ id 1mj4mG-003ig2-Jz; Fri, 05 Nov 2021 19:21:28 +0000
+From: Marc Zyngier <maz@kernel.org>
+To: kvm@vger.kernel.org, linux-mips@vger.kernel.org,
+ kvmarm@lists.cs.columbia.edu, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/5] KVM: mips: Use kvm_get_vcpu() instead of open-coded access
+Date: Fri,  5 Nov 2021 19:20:58 +0000
+Message-Id: <20211105192101.3862492-3-maz@kernel.org>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20211105192101.3862492-1-maz@kernel.org>
+References: <20211105192101.3862492-1-maz@kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
- Gecko/20100101 Thunderbird/91.3.0
-Subject: Re: [PATCH] drm/virtio: Fix NULL dereference error in virtio_gpu_poll
-Content-Language: de-DE
-To: Vivek Kasireddy <vivek.kasireddy@intel.com>,
- dri-devel@lists.freedesktop.org
-References: <15731ad7-83ff-c7ef-e4a1-8b11814572c2@xenosoft.de>
- <20211104214249.1802789-1-vivek.kasireddy@intel.com>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-In-Reply-To: <20211104214249.1802789-1-vivek.kasireddy@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 185.219.108.64
+X-SA-Exim-Rcpt-To: kvm@vger.kernel.org, linux-mips@vger.kernel.org,
+ kvmarm@lists.cs.columbia.edu, linuxppc-dev@lists.ozlabs.org,
+ chenhuacai@kernel.org, aleksandar.qemu.devel@gmail.com, anup.patel@wdc.com,
+ atish.patra@wdc.com, borntraeger@de.ibm.com, frankja@linux.ibm.com,
+ david@redhat.com, imbrenda@linux.ibm.com, pbonzini@redhat.com, jgross@suse.com,
+ npiggin@gmail.com, seanjc@google.com, paulus@samba.org, mpe@ellerman.id.au,
+ james.morse@arm.com, suzuki.poulose@arm.com, alexandru.elisei@arm.com,
+ kernel-team@android.com
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org);
+ SAEximRunCond expanded to false
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,49 +68,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Darren Stevens <darren@stevens-zone.net>,
- mad skateman <madskateman@gmail.com>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- Gurchetan Singh <gurchetansingh@chromium.org>,
- Gerd Hoffmann <kraxel@redhat.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Christian Zigotzky <info@xenosoft.de>
+Cc: Juergen Gross <jgross@suse.com>, Huacai Chen <chenhuacai@kernel.org>,
+ Janosch Frank <frankja@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Sean Christopherson <seanjc@google.com>, Anup Patel <anup.patel@wdc.com>,
+ David Hildenbrand <david@redhat.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Atish Patra <atish.patra@wdc.com>,
+ Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, James Morse <james.morse@arm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, kernel-team@android.com,
+ Claudio Imbrenda <imbrenda@linux.ibm.com>,
+ Alexandru Elisei <alexandru.elisei@arm.com>,
+ Suzuki K Poulose <suzuki.poulose@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 04 November 2021 at 10:42 pm, Vivek Kasireddy wrote:
+As we are about to change the way vcpus are allocated, mandate
+the use of kvm_get_vcpu() instead of open-coding the access.
 
- > When virgl is not enabled, vfpriv pointer would not be allocated.
- > Therefore, check for a valid value before dereferencing.
- >
- > Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
- > Cc: Gurchetan Singh <gurchetansingh@chromium.org>
- > Cc: Gerd Hoffmann <kraxel@redhat.com>
- > Signed-off-by: Vivek Kasireddy <vivek.kasireddy@intel.com>
- > ---
- >  drivers/gpu/drm/virtio/virtgpu_drv.c | 3 ++-
- >  1 file changed, 2 insertions(+), 1 deletion(-)
- >
- > diff --git a/drivers/gpu/drm/virtio/virtgpu_drv.c 
-b/drivers/gpu/drm/virtio/virtgpu_drv.c
- > index 749db18dcfa2..d86e1ad4a972 100644
- > --- a/drivers/gpu/drm/virtio/virtgpu_drv.c
- > +++ b/drivers/gpu/drm/virtio/virtgpu_drv.c
- > @@ -163,10 +163,11 @@ static __poll_t virtio_gpu_poll(struct file *filp,
- >      struct drm_file *drm_file = filp->private_data;
- >      struct virtio_gpu_fpriv *vfpriv = drm_file->driver_priv;
- >      struct drm_device *dev = drm_file->minor->dev;
- > +    struct virtio_gpu_device *vgdev = dev->dev_private;
- >      struct drm_pending_event *e = NULL;
- >      __poll_t mask = 0;
- >
- > -    if (!vfpriv->ring_idx_mask)
- > +    if (!vgdev->has_virgl_3d || !vfpriv || !vfpriv->ring_idx_mask)
- >          return drm_poll(filp, wait);
- >
- >      poll_wait(filp, &drm_file->event_wait, wait);
+Signed-off-by: Marc Zyngier <maz@kernel.org>
+---
+ arch/mips/kvm/loongson_ipi.c | 4 ++--
+ arch/mips/kvm/mips.c         | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de> [1]
+diff --git a/arch/mips/kvm/loongson_ipi.c b/arch/mips/kvm/loongson_ipi.c
+index 3681fc8fba38..5d53f32d837c 100644
+--- a/arch/mips/kvm/loongson_ipi.c
++++ b/arch/mips/kvm/loongson_ipi.c
+@@ -120,7 +120,7 @@ static int loongson_vipi_write(struct loongson_kvm_ipi *ipi,
+ 		s->status |= data;
+ 		irq.cpu = id;
+ 		irq.irq = 6;
+-		kvm_vcpu_ioctl_interrupt(kvm->vcpus[id], &irq);
++		kvm_vcpu_ioctl_interrupt(kvm_get_vcpu(kvm, id), &irq);
+ 		break;
+ 
+ 	case CORE0_CLEAR_OFF:
+@@ -128,7 +128,7 @@ static int loongson_vipi_write(struct loongson_kvm_ipi *ipi,
+ 		if (!s->status) {
+ 			irq.cpu = id;
+ 			irq.irq = -6;
+-			kvm_vcpu_ioctl_interrupt(kvm->vcpus[id], &irq);
++			kvm_vcpu_ioctl_interrupt(kvm_get_vcpu(kvm, id), &irq);
+ 		}
+ 		break;
+ 
+diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+index ceacca74f808..6228bf396d63 100644
+--- a/arch/mips/kvm/mips.c
++++ b/arch/mips/kvm/mips.c
+@@ -479,7 +479,7 @@ int kvm_vcpu_ioctl_interrupt(struct kvm_vcpu *vcpu,
+ 	if (irq->cpu == -1)
+ 		dvcpu = vcpu;
+ 	else
+-		dvcpu = vcpu->kvm->vcpus[irq->cpu];
++		dvcpu = kvm_get_vcpu(vcpu->kvm, irq->cpu);
+ 
+ 	if (intr == 2 || intr == 3 || intr == 4 || intr == 6) {
+ 		kvm_mips_callbacks->queue_io_int(dvcpu, irq);
+-- 
+2.30.2
 
-[1] https://i.ibb.co/N1vL5Kd/Kernel-5-16-alpha3-Power-PC.png
