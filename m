@@ -2,45 +2,46 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C113C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:27:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A5A3C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:28:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C2D7660F70
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:27:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C2D7660F70
+	by mail.kernel.org (Postfix) with ESMTPS id 901CE60F70
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:28:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 901CE60F70
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HlxXV3VmMz3cNZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 21:27:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HlxXy1hRhz3cX7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 21:28:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.48.137; helo=9.mo548.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Received: from 9.mo548.mail-out.ovh.net (9.mo548.mail-out.ovh.net
- [46.105.48.137])
+ smtp.mailfrom=kaod.org (client-ip=87.98.187.244;
+ helo=10.mo552.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ receiver=<UNKNOWN>)
+Received: from 10.mo552.mail-out.ovh.net (10.mo552.mail-out.ovh.net
+ [87.98.187.244])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HlxWW3j2Cz2xtP
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 21:26:44 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.143.123])
- by mo548.mail-out.ovh.net (Postfix) with ESMTPS id 09EA120FB2;
- Fri,  5 Nov 2021 10:26:40 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HlxWX2hNcz2xtP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 21:26:47 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.138.22])
+ by mo552.mail-out.ovh.net (Postfix) with ESMTPS id 1F55222D29;
+ Fri,  5 Nov 2021 10:26:43 +0000 (UTC)
 Received: from kaod.org (37.59.142.100) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.15; Fri, 5 Nov
- 2021 11:26:39 +0100
+ 2021 11:26:42 +0100
 Authentication-Results: garm.ovh; auth=pass
- (GARM-100R00361977d61-dd90-41f4-b429-feee822636e0,
+ (GARM-100R0033933b172-7a8e-47d4-8032-f10cb3cf744f,
  ACBEE74C211706A3681C4B00B96A7A61B931BAD7) smtp.auth=clg@kaod.org
 X-OVh-ClientIp: 82.64.250.170
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 03/11] powerpc/xive: Activate StoreEOI on P10
-Date: Fri, 5 Nov 2021 11:26:28 +0100
-Message-ID: <20211105102636.1016378-4-clg@kaod.org>
+Subject: [PATCH 10/11] powerpc/xive: Add a debugfs toggle for save-restore
+Date: Fri, 5 Nov 2021 11:26:35 +0100
+Message-ID: <20211105102636.1016378-11-clg@kaod.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20211105102636.1016378-1-clg@kaod.org>
 References: <20211105102636.1016378-1-clg@kaod.org>
@@ -50,8 +51,8 @@ Content-Transfer-Encoding: 8bit
 X-Originating-IP: [37.59.142.100]
 X-ClientProxiedBy: DAG2EX1.mxp5.local (172.16.2.11) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: fdb7b6d7-9d04-4997-955b-888db463a937
-X-Ovh-Tracer-Id: 495114487457221597
+X-Ovh-Tracer-GUID: 72165d19-5395-4e7b-b9a4-fdd1f0fb8140
+X-Ovh-Tracer-Id: 495958910991961053
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: 0
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvuddrtdeigdduhecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhephffvufffkffojghfgggtgfhisehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepheehfeegjeeitdfffeetjeduveejueefuefgtdefueelueetveeliefhhffgtdelnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutddtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
@@ -71,48 +72,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-StoreEOI (the capability to EOI with a store) requires load-after-store
-ordering in some cases to be reliable. P10 introduced a new offset for
-load operations to enforce correct ordering and the XIVE driver has
-the required support since kernel 5.8, commit b1f9be9392f0
-("powerpc/xive: Enforce load-after-store ordering when StoreEOI is active")
-
-Since skiboot v7, StoreEOI support is advertised on P10 with a new flag
-on the PowerNV platform. See skiboot commit 4bd7d84afe46 ("xive/p10:
-Introduce a new OPAL_XIVE_IRQ_STORE_EOI2 flag"). When detected,
-activate the feature.
+On POWER10, the automatic "save & restore" of interrupt context is
+always available. Provide a way to deactivate it for tests or
+performance.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/include/asm/opal-api.h | 1 +
- arch/powerpc/sysdev/xive/native.c   | 2 ++
- 2 files changed, 3 insertions(+)
+ arch/powerpc/sysdev/xive/xive-internal.h | 1 +
+ arch/powerpc/sysdev/xive/common.c        | 1 +
+ arch/powerpc/sysdev/xive/native.c        | 2 +-
+ 3 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 0b63ba7d5917..a2bc4b95e703 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -1094,6 +1094,7 @@ enum {
- 	OPAL_XIVE_IRQ_SHIFT_BUG		= 0x00000008, /* P9 DD1.0 workaround */
- 	OPAL_XIVE_IRQ_MASK_VIA_FW	= 0x00000010, /* P9 DD1.0 workaround */
- 	OPAL_XIVE_IRQ_EOI_VIA_FW	= 0x00000020, /* P9 DD1.0 workaround */
-+	OPAL_XIVE_IRQ_STORE_EOI2	= 0x00000040,
- };
+diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysdev/xive/xive-internal.h
+index 504e7edce358..e0941bc64430 100644
+--- a/arch/powerpc/sysdev/xive/xive-internal.h
++++ b/arch/powerpc/sysdev/xive/xive-internal.h
+@@ -72,5 +72,6 @@ static inline u32 xive_alloc_order(u32 queue_shift)
+ }
  
- /* Flags for OPAL_XIVE_GET/SET_QUEUE_INFO */
+ extern bool xive_cmdline_disabled;
++extern bool xive_has_save_restore;
+ 
+ #endif /*  __XIVE_INTERNAL_H */
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index 67fd3a306369..39142df828a0 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1848,6 +1848,7 @@ static void xive_core_debugfs_create(void)
+ 				    &xive_eq_debug_fops);
+ 	}
+ 	debugfs_create_bool("store-eoi", 0600, xive_dir, &xive_store_eoi);
++	debugfs_create_bool("save-restore", 0600, xive_dir, &xive_has_save_restore);
+ }
+ 
+ #endif /* CONFIG_DEBUG_FS */
 diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
-index 1aec282cd650..7ec8911dad57 100644
+index 7ec8911dad57..d6a091dc1bce 100644
 --- a/arch/powerpc/sysdev/xive/native.c
 +++ b/arch/powerpc/sysdev/xive/native.c
-@@ -63,6 +63,8 @@ int xive_native_populate_irq_data(u32 hw_irq, struct xive_irq_data *data)
- 	opal_flags = be64_to_cpu(flags);
- 	if (opal_flags & OPAL_XIVE_IRQ_STORE_EOI)
- 		data->flags |= XIVE_IRQ_FLAG_STORE_EOI;
-+	if (opal_flags & OPAL_XIVE_IRQ_STORE_EOI2)
-+		data->flags |= XIVE_IRQ_FLAG_STORE_EOI;
- 	if (opal_flags & OPAL_XIVE_IRQ_LSI)
- 		data->flags |= XIVE_IRQ_FLAG_LSI;
- 	data->eoi_page = be64_to_cpu(eoi_page);
+@@ -41,7 +41,7 @@ static u32 xive_queue_shift;
+ static u32 xive_pool_vps = XIVE_INVALID_VP;
+ static struct kmem_cache *xive_provision_cache;
+ static bool xive_has_single_esc;
+-static bool xive_has_save_restore;
++bool xive_has_save_restore;
+ 
+ int xive_native_populate_irq_data(u32 hw_irq, struct xive_irq_data *data)
+ {
 -- 
 2.31.1
 
