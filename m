@@ -2,45 +2,47 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01E17C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 19:22:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DDADC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 19:22:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4CFBD61053
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 19:22:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4CFBD61053
+	by mail.kernel.org (Postfix) with ESMTPS id 03C4660ED5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 19:22:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 03C4660ED5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hm9Pb016jz3cVL
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Nov 2021 06:22:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hm9Q240sWz3ccR
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Nov 2021 06:22:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=maz@kernel.org; receiver=<UNKNOWN>)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hm9NZ1rMJz2ynX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hm9NZ204dz2ywB
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Nov 2021 06:21:33 +1100 (AEDT)
 Received: from disco-boy.misterjones.org (disco-boy.misterjones.org
  [51.254.78.96])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C280D61051;
- Fri,  5 Nov 2021 19:21:29 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id DE4286124F;
+ Fri,  5 Nov 2021 19:21:30 +0000 (UTC)
 Received: from sofa.misterjones.org ([185.219.108.64] helo=why.lan)
  by disco-boy.misterjones.org with esmtpsa (TLS1.3) tls
  TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.94.2)
  (envelope-from <maz@kernel.org>)
- id 1mj4mF-003ig2-FT; Fri, 05 Nov 2021 19:21:27 +0000
+ id 1mj4mH-003ig2-3U; Fri, 05 Nov 2021 19:21:29 +0000
 From: Marc Zyngier <maz@kernel.org>
 To: kvm@vger.kernel.org, linux-mips@vger.kernel.org,
  kvmarm@lists.cs.columbia.edu, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/5] KVM: Turn the vcpu array into an xarray
-Date: Fri,  5 Nov 2021 19:20:56 +0000
-Message-Id: <20211105192101.3862492-1-maz@kernel.org>
+Subject: [PATCH 3/5] KVM: s390: Use kvm_get_vcpu() instead of open-coded access
+Date: Fri,  5 Nov 2021 19:20:59 +0000
+Message-Id: <20211105192101.3862492-4-maz@kernel.org>
 X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20211105192101.3862492-1-maz@kernel.org>
+References: <20211105192101.3862492-1-maz@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 185.219.108.64
@@ -82,36 +84,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The kvm structure is pretty large. A large portion of it is the vcpu
-array, which is 4kB on x86_64 and arm64 as they deal with 512 vcpu
-VMs. Of course, hardly anyone runs VMs this big, so this is often a
-net waste of memory and cache locality.
+As we are about to change the way vcpus are allocated, mandate
+the use of kvm_get_vcpu() instead of open-coding the access.
 
-A possible approach is to turn the fixed-size array into an xarray,
-which results in a net code deletion after a bit of cleanup.
+Signed-off-by: Marc Zyngier <maz@kernel.org>
+---
+ arch/s390/kvm/kvm-s390.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-This series is on top of the current linux/master as it touches the
-RISC-V implementation. Only tested on arm64.
-
-Marc Zyngier (5):
-  KVM: Move wiping of the kvm->vcpus array to common code
-  KVM: mips: Use kvm_get_vcpu() instead of open-coded access
-  KVM: s390: Use kvm_get_vcpu() instead of open-coded access
-  KVM: x86: Use kvm_get_vcpu() instead of open-coded access
-  KVM: Convert the kvm->vcpus array to a xarray
-
- arch/arm64/kvm/arm.c           | 10 +---------
- arch/mips/kvm/loongson_ipi.c   |  4 ++--
- arch/mips/kvm/mips.c           | 23 ++---------------------
- arch/powerpc/kvm/powerpc.c     | 10 +---------
- arch/riscv/kvm/vm.c            | 10 +---------
- arch/s390/kvm/kvm-s390.c       | 26 ++++++--------------------
- arch/x86/kvm/vmx/posted_intr.c |  2 +-
- arch/x86/kvm/x86.c             |  9 +--------
- include/linux/kvm_host.h       |  7 ++++---
- virt/kvm/kvm_main.c            | 33 ++++++++++++++++++++++++++-------
- 10 files changed, 45 insertions(+), 89 deletions(-)
-
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index 7af53b8788fa..4a0f62b03964 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -4572,7 +4572,7 @@ int kvm_s390_vcpu_start(struct kvm_vcpu *vcpu)
+ 	}
+ 
+ 	for (i = 0; i < online_vcpus; i++) {
+-		if (!is_vcpu_stopped(vcpu->kvm->vcpus[i]))
++		if (!is_vcpu_stopped(kvm_get_vcpu(vcpu->kvm, i)))
+ 			started_vcpus++;
+ 	}
+ 
+@@ -4634,9 +4634,11 @@ int kvm_s390_vcpu_stop(struct kvm_vcpu *vcpu)
+ 	__disable_ibs_on_vcpu(vcpu);
+ 
+ 	for (i = 0; i < online_vcpus; i++) {
+-		if (!is_vcpu_stopped(vcpu->kvm->vcpus[i])) {
++		struct kvm_vcpu *tmp = kvm_get_vcpu(vcpu->kvm, i);
++
++		if (!is_vcpu_stopped(tmp)) {
+ 			started_vcpus++;
+-			started_vcpu = vcpu->kvm->vcpus[i];
++			started_vcpu = tmp;
+ 		}
+ 	}
+ 
 -- 
 2.30.2
 
