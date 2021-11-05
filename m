@@ -2,46 +2,48 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8468BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:42:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED369C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:43:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A1AA26125F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:42:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A1AA26125F
+	by mail.kernel.org (Postfix) with ESMTPS id 8B2B261054
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:43:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8B2B261054
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hlxst2PkRz3c5S
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 21:42:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hlxts1mHnz3c99
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 21:43:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=87.98.187.244;
- helo=10.mo552.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ smtp.mailfrom=kaod.org (client-ip=178.32.125.2;
+ helo=smtpout1.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
-Received: from 10.mo552.mail-out.ovh.net (10.mo552.mail-out.ovh.net
- [87.98.187.244])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+X-Greylist: delayed 977 seconds by postgrey-1.36 at boromir;
+ Fri, 05 Nov 2021 21:43:04 AEDT
+Received: from smtpout1.mo529.mail-out.ovh.net
+ (smtpout1.mo529.mail-out.ovh.net [178.32.125.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HlxsN6hBLz2xX8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 21:42:14 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.138.22])
- by mo552.mail-out.ovh.net (Postfix) with ESMTPS id 4FE8022C6D;
- Fri,  5 Nov 2021 10:26:43 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HlxtJ4zWFz2xDC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 21:43:04 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.20.180])
+ by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 796F0C9A156F;
+ Fri,  5 Nov 2021 11:26:41 +0100 (CET)
 Received: from kaod.org (37.59.142.100) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.15; Fri, 5 Nov
- 2021 11:26:42 +0100
+ 2021 11:26:40 +0100
 Authentication-Results: garm.ovh; auth=pass
- (GARM-100R00346f708bf-d9a1-4797-b728-acac7d58eb05,
+ (GARM-100R0031e04f5d0-ada2-4a86-97cd-017a37843ec6,
  ACBEE74C211706A3681C4B00B96A7A61B931BAD7) smtp.auth=clg@kaod.org
 X-OVh-ClientIp: 82.64.250.170
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 11/11] powerpc/smp: Add a doorbell=off kernel parameter
-Date: Fri, 5 Nov 2021 11:26:36 +0100
-Message-ID: <20211105102636.1016378-12-clg@kaod.org>
+Subject: [PATCH 05/11] powerpc/xive: Change the debugfs file 'xive' into a
+ directory
+Date: Fri, 5 Nov 2021 11:26:30 +0100
+Message-ID: <20211105102636.1016378-6-clg@kaod.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20211105102636.1016378-1-clg@kaod.org>
 References: <20211105102636.1016378-1-clg@kaod.org>
@@ -51,8 +53,8 @@ Content-Transfer-Encoding: 8bit
 X-Originating-IP: [37.59.142.100]
 X-ClientProxiedBy: DAG2EX1.mxp5.local (172.16.2.11) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: 6f8b580a-678f-45ae-b9f9-6c0c74bdc4a9
-X-Ovh-Tracer-Id: 495958910588980189
+X-Ovh-Tracer-GUID: 9a21ceb6-4b6c-4bd7-9a4f-6df428873584
+X-Ovh-Tracer-Id: 495395961320082397
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: 0
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvuddrtdeigdduhecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhephffvufffkffojghfgggtgfhisehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepheehfeegjeeitdfffeetjeduveejueefuefgtdefueelueetveeliefhhffgtdelnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutddtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
@@ -72,116 +74,73 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On processors with a XIVE interrupt controller (POWER9 and above), the
-kernel can use either doorbells or XIVE to generate CPU IPIs. Sending
-doorbell is generally preferred to using the XIVE IC because it is
-faster. There are cases where we want to avoid doorbells and use XIVE
-only, for debug or performance. Only useful on POWER9 and above.
+Use a 'cpus' file to dump CPU states and 'interrupts' to dump IRQ states.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/include/asm/dbell.h                |  1 +
- arch/powerpc/kernel/dbell.c                     | 17 +++++++++++++++++
- arch/powerpc/platforms/powernv/smp.c            |  7 +++++--
- arch/powerpc/platforms/pseries/smp.c            |  3 +++
- Documentation/admin-guide/kernel-parameters.txt | 10 ++++++++++
- 5 files changed, 36 insertions(+), 2 deletions(-)
+ arch/powerpc/sysdev/xive/common.c | 36 +++++++++++++++++++++----------
+ 1 file changed, 25 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/dbell.h b/arch/powerpc/include/asm/dbell.h
-index 3e9da22a2779..07775aa3e81b 100644
---- a/arch/powerpc/include/asm/dbell.h
-+++ b/arch/powerpc/include/asm/dbell.h
-@@ -90,6 +90,7 @@ static inline void ppc_msgsync(void)
- #endif /* CONFIG_PPC_BOOK3S */
- 
- extern void doorbell_exception(struct pt_regs *regs);
-+extern bool doorbell_disabled;
- 
- static inline void ppc_msgsnd(enum ppc_dbell type, u32 flags, u32 tag)
- {
-diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
-index 5545c9cd17c1..681ee4775629 100644
---- a/arch/powerpc/kernel/dbell.c
-+++ b/arch/powerpc/kernel/dbell.c
-@@ -38,6 +38,23 @@ DEFINE_INTERRUPT_HANDLER_ASYNC(doorbell_exception)
- 
- 	set_irq_regs(old_regs);
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index b71cc1020296..0b34ad5748ee 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1760,17 +1760,10 @@ static void xive_debug_show_irq(struct seq_file *m, struct irq_data *d)
+ 	seq_puts(m, "\n");
  }
+ 
+-static int xive_core_debug_show(struct seq_file *m, void *private)
++static int xive_irq_debug_show(struct seq_file *m, void *private)
+ {
+ 	unsigned int i;
+ 	struct irq_desc *desc;
+-	int cpu;
+-
+-	if (xive_ops->debug_show)
+-		xive_ops->debug_show(m, private);
+-
+-	for_each_possible_cpu(cpu)
+-		xive_debug_show_cpu(m, cpu);
+ 
+ 	for_each_irq_desc(i, desc) {
+ 		struct irq_data *d = irq_domain_get_irq_data(xive_irq_domain, i);
+@@ -1780,12 +1773,33 @@ static int xive_core_debug_show(struct seq_file *m, void *private)
+ 	}
+ 	return 0;
+ }
+-DEFINE_SHOW_ATTRIBUTE(xive_core_debug);
++DEFINE_SHOW_ATTRIBUTE(xive_irq_debug);
 +
-+bool doorbell_disabled;
-+
-+static int __init doorbell_cmdline(char *arg)
++static int xive_cpu_debug_show(struct seq_file *m, void *private)
 +{
-+	if (!arg)
-+		return -EINVAL;
++	int cpu;
 +
-+	if (strncmp(arg, "off", 3) == 0) {
-+		pr_info("Doorbell disabled on kernel command line\n");
-+		doorbell_disabled = true;
-+	}
++	if (xive_ops->debug_show)
++		xive_ops->debug_show(m, private);
 +
++	for_each_possible_cpu(cpu)
++		xive_debug_show_cpu(m, cpu);
 +	return 0;
 +}
-+__setup("doorbell=", doorbell_cmdline);
-+
- #else /* CONFIG_SMP */
- DEFINE_INTERRUPT_HANDLER_ASYNC(doorbell_exception)
++DEFINE_SHOW_ATTRIBUTE(xive_cpu_debug);
+ 
+ static void xive_core_debugfs_create(void)
  {
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index cbb67813cd5d..1311bda9446a 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -338,10 +338,13 @@ static void __init pnv_smp_probe(void)
- 		ic_cause_ipi = smp_ops->cause_ipi;
- 		WARN_ON(!ic_cause_ipi);
- 
--		if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+			if (doorbell_disabled)
-+				return;
- 			smp_ops->cause_ipi = doorbell_global_ipi;
--		else
-+		} else {
- 			smp_ops->cause_ipi = pnv_cause_ipi;
-+		}
- 	}
- }
- 
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index f47429323eee..3bc9e6aaf645 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -229,6 +229,9 @@ static __init void pSeries_smp_probe(void)
- 			return;
- 	}
- 
-+	if (doorbell_disabled)
+-	debugfs_create_file("xive", 0400, arch_debugfs_dir,
+-			    NULL, &xive_core_debug_fops);
++	struct dentry *xive_dir;
++
++	xive_dir = debugfs_create_dir("xive", arch_debugfs_dir);
++	if (IS_ERR(xive_dir))
 +		return;
 +
- 	/*
- 	 * Under PowerVM, FSCR[MSGP] is enabled as guest vCPU siblings are
- 	 * gang scheduled on the same physical core, so doorbells are always
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 10fa093251e8..2e1284febe39 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -1041,6 +1041,16 @@
- 			The filter can be disabled or changed to another
- 			driver later using sysfs.
++	debugfs_create_file("cpus", 0400, xive_dir,
++			    NULL, &xive_cpu_debug_fops);
++	debugfs_create_file("interrupts", 0400, xive_dir,
++			    NULL, &xive_irq_debug_fops);
+ }
  
-+	doorbell=off	[PPC]
-+			On processors with a XIVE interrupt controller
-+			(POWER9 and above), the kernel can use either
-+			doorbells or XIVE to generate CPU IPIs.	Sending
-+			doorbell is generally preferred to using the XIVE
-+			IC because it is faster. There are cases where
-+			we want to avoid doorbells and use XIVE only,
-+			for debug or performance. Only useful on
-+			POWER9 and above.
-+
- 	driver_async_probe=  [KNL]
- 			List of driver names to be probed asynchronously.
- 			Format: <driver_name1>,<driver_name2>...
+ #endif /* CONFIG_DEBUG_FS */
 -- 
 2.31.1
 
