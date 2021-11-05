@@ -2,110 +2,75 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5743C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 09:21:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D71AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 09:55:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C6B3361262
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 09:21:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C6B3361262
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0B9716124F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 09:55:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0B9716124F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hlw3b01RTz2ynx
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 20:20:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hlwqw31dwz3bZj
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 20:55:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=W0UBClcn;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=O5S1I1vN;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PVdlto+E;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=W0UBClcn; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
+ envelope-from=msuchanek@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
+ header.s=susede2_rsa header.b=O5S1I1vN; 
+ dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
+ header.s=susede2_ed25519 header.b=PVdlto+E; 
+ dkim-atps=neutral
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hlw2k5t2lz2xtN
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 20:20:14 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1A55kV5G031355
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Nov 2021 09:20:10 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=zbWkWbW+acB2TGjvPTSSGXTtwaEh/VZLQblU1tm1HOE=;
- b=W0UBClcnLKQSFdQYqt+HZ5aytitlYkNwQbIlzwPgaLGCSqCkmJSvnZjZiyXQLjhzUsjq
- 2iPC3twX1SEPRsfJmV+YCygh1oMQOPXSlhsw7cBmW94ov5mtz4iIjekxBlZb4iGAxnE4
- dqYvjTHy1j1JBRZ1TdPkVGFubqCkUL1h/ZcnPrprTu08kC88PL2sSaHVmtZRvAhs/tlQ
- Mp5Xf4gcsIqUPMsdXcezBYPGStxfEoClrKdNBEuN7RvCPdupsMHN3FqaNdM8ucsi0/5l
- +ETwL5gd9xGL9vd93+z1EsjLoDAuPtdXrp/AQESAlbEv/UQ6djB8EvLVXAH+e6XsfItQ jg== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3c4xruukxn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Nov 2021 09:20:10 +0000
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1A597XMH003809
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Nov 2021 09:20:09 GMT
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3c4xruukwx-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 05 Nov 2021 09:20:09 +0000
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1A59C63D013991;
- Fri, 5 Nov 2021 09:20:08 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma02fra.de.ibm.com with ESMTP id 3c4t4tapv2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 05 Nov 2021 09:20:08 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1A59K5Wt60359072
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 5 Nov 2021 09:20:05 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AFEA94C052;
- Fri,  5 Nov 2021 09:20:05 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 864874C046;
- Fri,  5 Nov 2021 09:20:05 +0000 (GMT)
-Received: from pomme.local (unknown [9.145.172.6])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri,  5 Nov 2021 09:20:05 +0000 (GMT)
-Subject: Re: [PATCH v2 1/5] powerpc/watchdog: Fix missed watchdog reset due to
- memory ordering race
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20211104161057.1255659-1-npiggin@gmail.com>
- <20211104161057.1255659-2-npiggin@gmail.com>
-From: Laurent Dufour <ldufour@linux.ibm.com>
-Message-ID: <e060e154-a807-d087-a80f-a802a858c13e@linux.ibm.com>
-Date: Fri, 5 Nov 2021 10:20:05 +0100
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
- Gecko/20100101 Thunderbird/78.14.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hlwq65j2Zz2yPD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 20:55:14 +1100 (AEDT)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+ by smtp-out1.suse.de (Postfix) with ESMTP id E6596212BD;
+ Fri,  5 Nov 2021 09:55:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+ t=1636106111; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=N2IrrNGggoBJszqOFq3EqLZ/1vvIbTQ/MEl4PSiVjrk=;
+ b=O5S1I1vN2m29YuV+QfXPUec/wJqGbomni09qZHmaaYkHY02ezB84cpfAuwoWOd6pHkcy5C
+ PZtiD4IVM1vbRD2b31RkrQ7/C8Id9S9yVJdAjp6L6eQrTUpY0vEqUT0vtdWo52U7U0QfQs
+ cKQ9YljFxtnH1SkwBeeQlOylD5/PQ2c=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+ s=susede2_ed25519; t=1636106111;
+ h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=N2IrrNGggoBJszqOFq3EqLZ/1vvIbTQ/MEl4PSiVjrk=;
+ b=PVdlto+ESoz/1dIczDDDBZU8SXphcj7LOSqZucxrH/9eB171xbwhOC3Er3e3QQ7uikKEPd
+ 401tswzyswImc2CA==
+Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
+ by relay2.suse.de (Postfix) with ESMTP id A60D72C157;
+ Fri,  5 Nov 2021 09:55:11 +0000 (UTC)
+From: Michal Suchanek <msuchanek@suse.de>
+To: keyrings@vger.kernel.org
+Subject: [PATCH 1/2] module: Use key_being_used_for for log messages in
+ verify_appended_signature
+Date: Fri,  5 Nov 2021 10:55:04 +0100
+Message-Id: <3e5ad3138ea72468027768bbd69f04a1dae44af8.1636105912.git.msuchanek@suse.de>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <cover.1636105912.git.msuchanek@suse.de>
+References: <cover.1635948742.git.msuchanek@suse.de>
+ <cover.1636105912.git.msuchanek@suse.de>
 MIME-Version: 1.0
-In-Reply-To: <20211104161057.1255659-2-npiggin@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 99Ib2cmlMkIoWgioayx9vcdrBYM_ok8R
-X-Proofpoint-ORIG-GUID: 5imPlE7YDnm3aEBId627fXvDLZyhuyin
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
- definitions=2021-11-05_01,2021-11-03_01,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015
- priorityscore=1501 phishscore=0 lowpriorityscore=0 bulkscore=0
- malwarescore=0 mlxlogscore=999 mlxscore=0 impostorscore=0 adultscore=0
- spamscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2110150000 definitions=main-2111050053
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,174 +82,156 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Mimi Zohar <zohar@linux.ibm.com>, David Howells <dhowells@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Rob Herring <robh@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>,
+ Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
+ James Morris <jmorris@namei.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Michal Suchanek <msuchanek@suse.de>, "Serge E. Hallyn" <serge@hallyn.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, linux-s390@vger.kernel.org,
+ Heiko Carstens <hca@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ Frank van der Linden <fllinden@amazon.com>,
+ linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Luis Chamberlain <mcgrof@kernel.org>, linux-crypto@vger.kernel.org,
+ Jessica Yu <jeyu@kernel.org>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le 04/11/2021 à 17:10, Nicholas Piggin a écrit :
-> It is possible for all CPUs to miss the pending cpumask becoming clear,
-> and then nobody resetting it, which will cause the lockup detector to
-> stop working. It will eventually expire, but watchdog_smp_panic will
-> avoid doing anything if the pending mask is clear and it will never be
-> reset.
-> 
-> Order the cpumask clear vs the subsequent test to close this race.
-> 
-> Add an extra check for an empty pending mask when the watchdog fires and
-> finds its bit still clear, to try to catch any other possible races or
-> bugs here and keep the watchdog working. The extra test in
-> arch_touch_nmi_watchdog is required to prevent the new warning from
-> firing off.
-> 
-> Debugged-by: Laurent Dufour <ldufour@linux.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->   arch/powerpc/kernel/watchdog.c | 36 +++++++++++++++++++++++++++++++++-
->   1 file changed, 35 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-> index f9ea0e5357f9..be80071336a4 100644
-> --- a/arch/powerpc/kernel/watchdog.c
-> +++ b/arch/powerpc/kernel/watchdog.c
-> @@ -135,6 +135,10 @@ static void set_cpumask_stuck(const struct cpumask *cpumask, u64 tb)
->   {
->   	cpumask_or(&wd_smp_cpus_stuck, &wd_smp_cpus_stuck, cpumask);
->   	cpumask_andnot(&wd_smp_cpus_pending, &wd_smp_cpus_pending, cpumask);
-> +	/*
-> +	 * See wd_smp_clear_cpu_pending()
-> +	 */
-> +	smp_mb();
->   	if (cpumask_empty(&wd_smp_cpus_pending)) {
->   		wd_smp_last_reset_tb = tb;
->   		cpumask_andnot(&wd_smp_cpus_pending,
-> @@ -215,13 +219,39 @@ static void wd_smp_clear_cpu_pending(int cpu, u64 tb)
->   
->   			cpumask_clear_cpu(cpu, &wd_smp_cpus_stuck);
->   			wd_smp_unlock(&flags);
-> +		} else {
-> +			/*
-> +			 * The last CPU to clear pending should have reset the
-> +			 * watchdog, yet we find it empty here. This should not
-> +			 * happen but we can try to recover and avoid a false
-> +			 * positive if it does.
-> +			 */
-> +			if (WARN_ON_ONCE(cpumask_empty(&wd_smp_cpus_pending)))
-> +				goto none_pending;
+Add value for kexec appended signature and pass in key_being_used_for
+enum rather than a string to verify_appended_signature to produce log
+messages about the signature.
 
-I run a stress on my victim node on top of this patch and hit that warning:
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+ arch/powerpc/kexec/elf_64.c              |  2 +-
+ arch/s390/kernel/machine_kexec_file.c    |  2 +-
+ crypto/asymmetric_keys/asymmetric_type.c |  1 +
+ include/linux/verification.h             |  3 ++-
+ kernel/module.c                          |  3 ++-
+ kernel/module_signing.c                  | 11 ++++++-----
+ 6 files changed, 13 insertions(+), 9 deletions(-)
 
-[  C475] ------------[ cut here ]------------
-[  C475] WARNING: CPU: 475 PID: 0 at 
-/home/laurent/src/linux-ppc/arch/powerpc/kernel/watchdog.c:260 
-wd_smp_clear_cpu_pending+0x320/0x4b0
-[  C475] Modules linked in: rpadlpar_io rpaphp xt_tcpudp iptable_filter 
-ip_tables x_tables xfs pseries_rng rng_core vmx_crypto gf128mul be2net fuse 
-btrfs blake2b_generic libcrc32c xor zstd_compress lzo_compress raid6_pq 
-dm_service_time crc32c_vpmsum lpfc crc_t10dif crct10dif_generic crct10dif_common 
-dm_mirror dm_region_hash dm_log dm_multipath scsi_dh_rdac scsi_dh_alua autofs4
-[  C475] CPU: 475 PID: 0 Comm: swapper/475 Kdump: loaded Not tainted 
-5.15.0-rc2-ppc-bz192129+ #72
-[  C475] NIP:  c00000000003d710 LR: c00000000003d478 CTR: c00000000003e2e0
-[  C475] REGS: c00006b16026f420 TRAP: 0700   Not tainted  (5.15.0-rc2-ppc-bz192129+)
-[  C475] MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 22000222  XER: 20000000
-[  C475] CFAR: c00000000003d480 IRQMASK: 3
-[  C475] GPR00: c00000000003e3bc c00006b16026f6c0 c000000001b28700 0000000000000800
-[  C475] GPR04: 0000000000000000 0000000000000800 0000000000000800 0000000000000000
-[  C475] GPR08: 0000000000000000 0000000000000000 00000000000000f8 00013f06986272e7
-[  C475] GPR12: c00000000003e2e0 c000000007d3df00 0000000000000000 000000001f043b60
-[  C475] GPR16: c00006b1601b7b00 0000000000000000 c00000000003e2e0 0000000000000001
-[  C475] GPR20: 0000347411d4cf28 c00007adbdb0a898 0000000000000001 0000000000000000
-[  C475] GPR24: 0000000000000000 0000000000000003 c000000001b6d7d0 00013f0698627d84
-[  C475] GPR28: c000000001bd05c8 c000000001bd05b8 c000000001bd06c8 00000000000001db
-[  C475] NIP [c00000000003d710] wd_smp_clear_cpu_pending+0x320/0x4b0
-[  C475] LR [c00000000003d478] wd_smp_clear_cpu_pending+0x88/0x4b0
-[  C475] Call Trace:
-[  C475] [c00006b16026f6c0] [0000000000000001] 0x1 (unreliable)
-[  C475] [c00006b16026f770] [c00000000003e3bc] watchdog_timer_fn+0xdc/0x5a0
-[  C475] [c00006b16026f840] [c000000000245a4c] __hrtimer_run_queues+0x49c/0x700
-[  C475] [c00006b16026f8f0] [c000000000246c20] hrtimer_interrupt+0x110/0x310
-[  C475] [c00006b16026f9a0] [c0000000000292f8] timer_interrupt+0x1e8/0x5a0
-[  C475] [c00006b16026fa00] [c000000000009a00] decrementer_common_virt+0x210/0x220
-[  C475] --- interrupt: 900 at plpar_hcall_norets_notrace+0x18/0x2c
-[  C475] NIP:  c0000000000e5dd0 LR: c000000000c18f04 CTR: 0000000000000000
-[  C475] REGS: c00006b16026fa70 TRAP: 0900   Not tainted  (5.15.0-rc2-ppc-bz192129+)
-[  C475] MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 22000824  XER: 20000000
-[  C475] CFAR: 0000000000000c00 IRQMASK: 0
-[  C475] GPR00: 0000000000000000 c00006b16026fd10 c000000001b28700 0000000000000000
-[  C475] GPR04: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-[  C475] GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000001
-[  C475] GPR12: 000000000000ffff c000000007d3df00 0000000000000000 000000001f043b60
-[  C475] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-[  C475] GPR20: 0000000000000000 0000000000000000 0000000000000000 c000000001a46cd0
-[  C475] GPR24: c000000001b68e38 000034738d859946 0000000000000000 0000000000000001
-[  C475] GPR28: 0000000000000000 0000000000000001 c000000001472360 c000000001472368
-[  C475] NIP [c0000000000e5dd0] plpar_hcall_norets_notrace+0x18/0x2c
-[  C475] LR [c000000000c18f04] check_and_cede_processor.part.2+0x24/0x70
-[  C475] --- interrupt: 900
-[  C475] [c00006b16026fd10] [c00007adbdb0a880] 0xc00007adbdb0a880 (unreliable)
-[  C475] [c00006b16026fd70] [c000000000c194f4] dedicated_cede_loop+0x174/0x200
-[  C475] [c00006b16026fdb0] [c000000000c15b2c] cpuidle_enter_state+0x3ac/0x6d0
-[  C475] [c00006b16026fe20] [c000000000c15ef0] cpuidle_enter+0x50/0x70
-[  C475] [c00006b16026fe60] [c0000000001a7f9c] call_cpuidle+0x4c/0x90
-[  C475] [c00006b16026fe80] [c0000000001a84f0] do_idle+0x310/0x3c0
-[  C475] [c00006b16026ff00] [c0000000001a8948] cpu_startup_entry+0x38/0x50
-[  C475] [c00006b16026ff30] [c00000000005fb5c] start_secondary+0x2bc/0x2f0
-[  C475] [c00006b16026ff90] [c00000000000d254] start_secondary_prolog+0x10/0x14
-[  C475] Instruction dump:
-[  C475] 48eb7049 60000000 e8610068 4bfffee4 392d0918 7c20492a 482c54f1 60000000
-[  C475] 4bfffe4c 60000000 60000000 60000000 <0fe00000> fb210078 fb410080 fb610088
-[  C475] irq event stamp: 0
-[  C475] hardirqs last  enabled at (0): [<0000000000000000>] 0x0
-[  C475] hardirqs last disabled at (0): [<c00000000014342c>] 
-copy_process+0x76c/0x1e00
-[  C475] softirqs last  enabled at (0): [<c00000000014342c>] 
-copy_process+0x76c/0x1e00
-[  C475] softirqs last disabled at (0): [<0000000000000000>] 0x0
-[  C475] ---[ end trace 6e8311d1692d057b ]---
-
-I guess there is a possible race here between watchdog_timer_interrupt() and 
-another CPU watchdog_smp_panic().
-
->   		}
->   		return;
->   	}
-> +
->   	cpumask_clear_cpu(cpu, &wd_smp_cpus_pending);
-> +
-> +	/*
-> +	 * Order the store to clear pending with the load(s) to check all
-> +	 * words in the pending mask to check they are all empty. This orders
-> +	 * with the same barrier on another CPU. This prevents two CPUs
-> +	 * clearing the last 2 pending bits, but neither seeing the other's
-> +	 * store when checking if the mask is empty, and missing an empty
-> +	 * mask, which ends with a false positive.
-> +	 */
-> +	smp_mb();
->   	if (cpumask_empty(&wd_smp_cpus_pending)) {
->   		unsigned long flags;
->   
-> +none_pending:
-> +		/*
-> +		 * Double check under lock because more than one CPU could see
-> +		 * a clear mask with the lockless check after clearing their
-> +		 * pending bits.
-> +		 */
->   		wd_smp_lock(&flags);
->   		if (cpumask_empty(&wd_smp_cpus_pending)) {
->   			wd_smp_last_reset_tb = tb;
-> @@ -312,8 +342,12 @@ void arch_touch_nmi_watchdog(void)
->   {
->   	unsigned long ticks = tb_ticks_per_usec * wd_timer_period_ms * 1000;
->   	int cpu = smp_processor_id();
-> -	u64 tb = get_tb();
-> +	u64 tb;
->   
-> +	if (!cpumask_test_cpu(cpu, &watchdog_cpumask))
-> +		return;
-> +
-> +	tb = get_tb();
->   	if (tb - per_cpu(wd_timer_tb, cpu) >= ticks) {
->   		per_cpu(wd_timer_tb, cpu) = tb;
->   		wd_smp_clear_cpu_pending(cpu, tb);
-> 
+diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
+index e8dff6b23ac5..3aa5269f6e0f 100644
+--- a/arch/powerpc/kexec/elf_64.c
++++ b/arch/powerpc/kexec/elf_64.c
+@@ -158,7 +158,7 @@ int elf64_verify_sig(const char *kernel, unsigned long length)
+ 	size_t kernel_len = length;
+ 
+ 	return verify_appended_signature(kernel, &kernel_len, VERIFY_USE_PLATFORM_KEYRING,
+-					 "kexec_file");
++					 VERIFYING_KEXEC_APPENDED_SIGNATURE);
+ }
+ #endif /* CONFIG_KEXEC_SIG */
+ 
+diff --git a/arch/s390/kernel/machine_kexec_file.c b/arch/s390/kernel/machine_kexec_file.c
+index 82260bb61060..37fcbb149368 100644
+--- a/arch/s390/kernel/machine_kexec_file.c
++++ b/arch/s390/kernel/machine_kexec_file.c
+@@ -32,7 +32,7 @@ int s390_verify_sig(const char *kernel, unsigned long length)
+ 		return 0;
+ 
+ 	return verify_appended_signature(kernel, &kernel_len, VERIFY_USE_PLATFORM_KEYRING,
+-					"kexec_file");
++					VERIFYING_KEXEC_APPENDED_SIGNATURE);
+ }
+ #endif /* CONFIG_KEXEC_SIG */
+ 
+diff --git a/crypto/asymmetric_keys/asymmetric_type.c b/crypto/asymmetric_keys/asymmetric_type.c
+index ad8af3d70ac0..6fd20eec3882 100644
+--- a/crypto/asymmetric_keys/asymmetric_type.c
++++ b/crypto/asymmetric_keys/asymmetric_type.c
+@@ -25,6 +25,7 @@ const char *const key_being_used_for[NR__KEY_BEING_USED_FOR] = {
+ 	[VERIFYING_KEXEC_PE_SIGNATURE]		= "kexec PE sig",
+ 	[VERIFYING_KEY_SIGNATURE]		= "key sig",
+ 	[VERIFYING_KEY_SELF_SIGNATURE]		= "key self sig",
++	[VERIFYING_KEXEC_APPENDED_SIGNATURE]	= "kexec appended sig",
+ 	[VERIFYING_UNSPECIFIED_SIGNATURE]	= "unspec sig",
+ };
+ EXPORT_SYMBOL_GPL(key_being_used_for);
+diff --git a/include/linux/verification.h b/include/linux/verification.h
+index c1cf0582012a..23748feb9e03 100644
+--- a/include/linux/verification.h
++++ b/include/linux/verification.h
+@@ -26,6 +26,7 @@ enum key_being_used_for {
+ 	VERIFYING_KEXEC_PE_SIGNATURE,
+ 	VERIFYING_KEY_SIGNATURE,
+ 	VERIFYING_KEY_SELF_SIGNATURE,
++	VERIFYING_KEXEC_APPENDED_SIGNATURE,
+ 	VERIFYING_UNSPECIFIED_SIGNATURE,
+ 	NR__KEY_BEING_USED_FOR
+ };
+@@ -61,7 +62,7 @@ extern int verify_pefile_signature(const void *pebuf, unsigned pelen,
+ #endif
+ 
+ int verify_appended_signature(const void *data, size_t *len, struct key *trusted_keys,
+-			      const char *what);
++			      enum key_being_used_for purpose);
+ 
+ #endif /* CONFIG_SYSTEM_DATA_VERIFICATION */
+ #endif /* _LINUX_VERIFY_PEFILE_H */
+diff --git a/kernel/module.c b/kernel/module.c
+index 1c421b0442e3..5f1cf989e1cf 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2891,7 +2891,8 @@ static int module_sig_check(struct load_info *info, int flags)
+ 	 */
+ 	if (flags == 0) {
+ 		err = verify_appended_signature(mod, &info->len,
+-						VERIFY_USE_SECONDARY_KEYRING, "module");
++						VERIFY_USE_SECONDARY_KEYRING,
++						VERIFYING_MODULE_SIGNATURE);
+ 		if (!err) {
+ 			info->sig_ok = true;
+ 			return 0;
+diff --git a/kernel/module_signing.c b/kernel/module_signing.c
+index 4c28cb55275f..cef72a6f6b5d 100644
+--- a/kernel/module_signing.c
++++ b/kernel/module_signing.c
+@@ -19,17 +19,18 @@
+  * @data: The data to be verified
+  * @len: Size of @data.
+  * @trusted_keys: Keyring to use for verification
+- * @what: Informational string for log messages
++ * @purpose: The use to which the key is being put
+  */
+ int verify_appended_signature(const void *data, size_t *len,
+-			      struct key *trusted_keys, const char *what)
++			      struct key *trusted_keys,
++			      enum key_being_used_for purpose)
+ {
+ 	const unsigned long markerlen = sizeof(MODULE_SIG_STRING) - 1;
+ 	struct module_signature ms;
+ 	size_t sig_len, modlen = *len;
+ 	int ret;
+ 
+-	pr_devel("==>%s(,%zu)\n", __func__, modlen);
++	pr_devel("==>%s %s(,%zu)\n", __func__, key_being_used_for[purpose], modlen);
+ 
+ 	if (markerlen > modlen)
+ 		return -ENODATA;
+@@ -44,7 +45,7 @@ int verify_appended_signature(const void *data, size_t *len,
+ 
+ 	memcpy(&ms, data + (modlen - sizeof(ms)), sizeof(ms));
+ 
+-	ret = mod_check_sig(&ms, modlen, what);
++	ret = mod_check_sig(&ms, modlen, key_being_used_for[purpose]);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -54,6 +55,6 @@ int verify_appended_signature(const void *data, size_t *len,
+ 
+ 	return verify_pkcs7_signature(data, modlen, data + modlen, sig_len,
+ 				      trusted_keys,
+-				      VERIFYING_MODULE_SIGNATURE,
++				      purpose,
+ 				      NULL, NULL);
+ }
+-- 
+2.31.1
 
