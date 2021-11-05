@@ -2,45 +2,47 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4027BC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:34:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 641C6C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:34:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC79060FC2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:34:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BC79060FC2
+	by mail.kernel.org (Postfix) with ESMTPS id CE77B60FC2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 10:34:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CE77B60FC2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HlxhC3Fr8z3dZ3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 21:34:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hlxhg3kXBz3cNB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Nov 2021 21:34:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=79.137.123.220;
- helo=smtpout2.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ smtp.mailfrom=kaod.org (client-ip=46.105.54.81;
+ helo=smtpout3.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
-Received: from smtpout2.mo529.mail-out.ovh.net
- (smtpout2.mo529.mail-out.ovh.net [79.137.123.220])
+X-Greylist: delayed 361 seconds by postgrey-1.36 at boromir;
+ Fri, 05 Nov 2021 21:32:48 AEDT
+Received: from smtpout3.mo529.mail-out.ovh.net
+ (smtpout3.mo529.mail-out.ovh.net [46.105.54.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HlxfR5TKVz2yxv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HlxfS0XJ1z3c7K
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Nov 2021 21:32:47 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.143.206])
- by mo529.mail-out.ovh.net (Postfix) with ESMTPS id EACE6C9A1574;
+Received: from mxplan5.mail.ovh.net (unknown [10.108.20.180])
+ by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 92413C9A1571;
  Fri,  5 Nov 2021 11:26:41 +0100 (CET)
 Received: from kaod.org (37.59.142.100) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.15; Fri, 5 Nov
- 2021 11:26:41 +0100
+ 2021 11:26:40 +0100
 Authentication-Results: garm.ovh; auth=pass
- (GARM-100R003302ac547-e5fe-47d6-b88a-18926a23c883,
+ (GARM-100R0034f3c7ac2-6295-4ef8-b283-d10c608b965a,
  ACBEE74C211706A3681C4B00B96A7A61B931BAD7) smtp.auth=clg@kaod.org
 X-OVh-ClientIp: 82.64.250.170
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 08/11] powerpc/xive: Add a debugfs toggle for StoreEOI
-Date: Fri, 5 Nov 2021 11:26:33 +0100
-Message-ID: <20211105102636.1016378-9-clg@kaod.org>
+Subject: [PATCH 06/11] powerpc/xive: Rename the 'cpus' debugfs file to 'ipis'
+Date: Fri, 5 Nov 2021 11:26:31 +0100
+Message-ID: <20211105102636.1016378-7-clg@kaod.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20211105102636.1016378-1-clg@kaod.org>
 References: <20211105102636.1016378-1-clg@kaod.org>
@@ -50,8 +52,8 @@ Content-Transfer-Encoding: 8bit
 X-Originating-IP: [37.59.142.100]
 X-ClientProxiedBy: DAG2EX1.mxp5.local (172.16.2.11) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: d0c63b67-7196-463e-952c-c702e84ee009
-X-Ovh-Tracer-Id: 495677436890811357
+X-Ovh-Tracer-GUID: f7e6f8c0-5cdf-4e07-a815-43ecea38990c
+X-Ovh-Tracer-Id: 495677435290291165
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: 0
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvuddrtdeigdduhecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhephffvufffkffojghfgggtgfhisehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepheehfeegjeeitdfffeetjeduveejueefuefgtdefueelueetveeliefhhffgtdelnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutddtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
@@ -71,70 +73,86 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It can be used to deactivate temporarily StoreEOI for tests or
-performance on platforms supporting the feature (POWER10)
+and remove the EQ entries output which is not very useful since only
+the next two events of the queue are taken into account. We will
+improve the dump of the EQ in the next patches.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/sysdev/xive/common.c | 17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+ arch/powerpc/sysdev/xive/common.c | 27 +++++++--------------------
+ 1 file changed, 7 insertions(+), 20 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index 75c683ffae7e..11e2aaa13965 100644
+index 0b34ad5748ee..c5167f284da5 100644
 --- a/arch/powerpc/sysdev/xive/common.c
 +++ b/arch/powerpc/sysdev/xive/common.c
-@@ -84,6 +84,16 @@ static DEFINE_PER_CPU(struct xive_cpu *, xive_cpu);
- /* An invalid CPU target */
- #define XIVE_INVALID_TARGET	(-1)
+@@ -1704,11 +1704,11 @@ static int __init xive_off(char *arg)
+ __setup("xive=off", xive_off);
  
-+/*
-+ * Global toggle to switch on/off StoreEOI
-+ */
-+static bool xive_store_eoi = true;
-+
-+static bool xive_is_store_eoi(struct xive_irq_data *xd)
-+{
-+	return xd->flags & XIVE_IRQ_FLAG_STORE_EOI && xive_store_eoi;
-+}
-+
- /*
-  * Read the next entry in a queue, return its content if it's valid
-  * or 0 if there is no new entry.
-@@ -208,7 +218,7 @@ static notrace u8 xive_esb_read(struct xive_irq_data *xd, u32 offset)
+ #ifdef CONFIG_DEBUG_FS
+-static void xive_debug_show_cpu(struct seq_file *m, int cpu)
++static void xive_debug_show_ipi(struct seq_file *m, int cpu)
  {
- 	u64 val;
+ 	struct xive_cpu *xc = per_cpu(xive_cpu, cpu);
  
--	if (offset == XIVE_ESB_SET_PQ_10 && xd->flags & XIVE_IRQ_FLAG_STORE_EOI)
-+	if (offset == XIVE_ESB_SET_PQ_10 && xive_is_store_eoi(xd))
- 		offset |= XIVE_ESB_LD_ST_MO;
+-	seq_printf(m, "CPU %d:", cpu);
++	seq_printf(m, "CPU %d: ", cpu);
+ 	if (xc) {
+ 		seq_printf(m, "pp=%02x CPPR=%02x ", xc->pending_prio, xc->cppr);
  
- 	if ((xd->flags & XIVE_IRQ_FLAG_H_INT_ESB) && xive_ops->esb_rw)
-@@ -233,7 +243,7 @@ static void xive_irq_data_dump(struct xive_irq_data *xd, char *buffer, size_t si
- 	u64 val = xive_esb_read(xd, XIVE_ESB_GET);
- 
- 	snprintf(buffer, size, "flags=%c%c%c PQ=%c%c 0x%016llx 0x%016llx",
--		 xd->flags & XIVE_IRQ_FLAG_STORE_EOI ? 'S' : ' ',
-+		 xive_is_store_eoi(xd) ? 'S' : ' ',
- 		 xd->flags & XIVE_IRQ_FLAG_LSI ? 'L' : ' ',
- 		 xd->flags & XIVE_IRQ_FLAG_H_INT_ESB ? 'H' : ' ',
- 		 val & XIVE_ESB_VAL_P ? 'P' : '-',
-@@ -395,7 +405,7 @@ static void xive_do_source_eoi(struct xive_irq_data *xd)
- 	xd->stale_p = false;
- 
- 	/* If the XIVE supports the new "store EOI facility, use it */
--	if (xd->flags & XIVE_IRQ_FLAG_STORE_EOI) {
-+	if (xive_is_store_eoi(xd)) {
- 		xive_esb_write(xd, XIVE_ESB_STORE_EOI, 0);
- 		return;
+@@ -1720,19 +1720,6 @@ static void xive_debug_show_cpu(struct seq_file *m, int cpu)
+ 			seq_printf(m, "IPI=0x%08x %s", xc->hw_ipi, buffer);
+ 		}
+ #endif
+-		{
+-			struct xive_q *q = &xc->queue[xive_irq_priority];
+-			u32 i0, i1, idx;
+-
+-			if (q->qpage) {
+-				idx = q->idx;
+-				i0 = be32_to_cpup(q->qpage + idx);
+-				idx = (idx + 1) & q->msk;
+-				i1 = be32_to_cpup(q->qpage + idx);
+-				seq_printf(m, "EQ idx=%d T=%d %08x %08x ...",
+-					   q->idx, q->toggle, i0, i1);
+-			}
+-		}
  	}
-@@ -1824,6 +1834,7 @@ static void xive_core_debugfs_create(void)
- 		debugfs_create_file(name, 0400, xive_eq_dir, (void *)cpu,
- 				    &xive_eq_debug_fops);
- 	}
-+	debugfs_create_bool("store-eoi", 0600, xive_dir, &xive_store_eoi);
+ 	seq_puts(m, "\n");
  }
+@@ -1775,7 +1762,7 @@ static int xive_irq_debug_show(struct seq_file *m, void *private)
+ }
+ DEFINE_SHOW_ATTRIBUTE(xive_irq_debug);
  
- #endif /* CONFIG_DEBUG_FS */
+-static int xive_cpu_debug_show(struct seq_file *m, void *private)
++static int xive_ipi_debug_show(struct seq_file *m, void *private)
+ {
+ 	int cpu;
+ 
+@@ -1783,10 +1770,10 @@ static int xive_cpu_debug_show(struct seq_file *m, void *private)
+ 		xive_ops->debug_show(m, private);
+ 
+ 	for_each_possible_cpu(cpu)
+-		xive_debug_show_cpu(m, cpu);
++		xive_debug_show_ipi(m, cpu);
+ 	return 0;
+ }
+-DEFINE_SHOW_ATTRIBUTE(xive_cpu_debug);
++DEFINE_SHOW_ATTRIBUTE(xive_ipi_debug);
+ 
+ static void xive_core_debugfs_create(void)
+ {
+@@ -1796,8 +1783,8 @@ static void xive_core_debugfs_create(void)
+ 	if (IS_ERR(xive_dir))
+ 		return;
+ 
+-	debugfs_create_file("cpus", 0400, xive_dir,
+-			    NULL, &xive_cpu_debug_fops);
++	debugfs_create_file("ipis", 0400, xive_dir,
++			    NULL, &xive_ipi_debug_fops);
+ 	debugfs_create_file("interrupts", 0400, xive_dir,
+ 			    NULL, &xive_irq_debug_fops);
+ }
 -- 
 2.31.1
 
