@@ -2,34 +2,33 @@ Return-Path: <SRS0=aKpC=P3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B31C1C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 04:04:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84D5DC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 04:04:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CBA1F60EE0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 04:04:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org CBA1F60EE0
+	by mail.kernel.org (Postfix) with ESMTPS id B538D60EE0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 04:04:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B538D60EE0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hnctn3mKsz3cQj
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 15:04:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HncvD2kdkz2ymq
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 15:04:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Received: from ozlabs.ru (unknown [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Hncsv6WPqz2yNK
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Nov 2021 15:03:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Hncsx6JMDz2yNK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Nov 2021 15:03:33 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com. (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 7053C80C59;
- Sun,  7 Nov 2021 23:03:28 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id A3A3980C7E;
+ Sun,  7 Nov 2021 23:03:30 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel 1/3] powerpc/pseries/ddw: Revert "Extend upper limit
- for huge DMA window for persistent memory"
-Date: Mon,  8 Nov 2021 15:03:17 +1100
-Message-Id: <20211108040320.3857636-2-aik@ozlabs.ru>
+Subject: [PATCH kernel 2/3] powerpc/pseries/ddw: simplify enable_ddw()
+Date: Mon,  8 Nov 2021 15:03:18 +1100
+Message-Id: <20211108040320.3857636-3-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20211108040320.3857636-1-aik@ozlabs.ru>
 References: <20211108040320.3857636-1-aik@ozlabs.ru>
@@ -53,35 +52,73 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This reverts commit 54fc3c681ded9437e4548e2501dc1136b23cfa9a
-which does not allow 1:1 mapping even for the system RAM which
-is usually possible.
+This drops rather useless ddw_enabled flag as direct_mapping implies
+it anyway.
+
+While at this, fix indents in enable_ddw().
+
+This should not cause any behavioral change.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/pseries/iommu.c | 9 ---------
- 1 file changed, 9 deletions(-)
+
+This replaces "powerpc/pseries/iommu: Fix indentations"
+---
+ arch/powerpc/platforms/pseries/iommu.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 49b401536d29..64385d6f33c2 100644
+index 64385d6f33c2..301fa5b3d528 100644
 --- a/arch/powerpc/platforms/pseries/iommu.c
 +++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -1094,15 +1094,6 @@ static phys_addr_t ddw_memory_hotplug_max(void)
- 	phys_addr_t max_addr = memory_hotplug_max();
- 	struct device_node *memory;
+@@ -1229,7 +1229,6 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	u32 ddw_avail[DDW_APPLICABLE_SIZE];
+ 	struct dma_win *window;
+ 	struct property *win64;
+-	bool ddw_enabled = false;
+ 	struct failed_ddw_pdn *fpdn;
+ 	bool default_win_removed = false, direct_mapping = false;
+ 	bool pmem_present;
+@@ -1244,7 +1243,6 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
  
--	/*
--	 * The "ibm,pmemory" can appear anywhere in the address space.
--	 * Assuming it is still backed by page structs, set the upper limit
--	 * for the huge DMA window as MAX_PHYSMEM_BITS.
--	 */
--	if (of_find_node_by_type(NULL, "ibm,pmemory"))
--		return (sizeof(phys_addr_t) * 8 <= MAX_PHYSMEM_BITS) ?
--			(phys_addr_t) -1 : (1ULL << MAX_PHYSMEM_BITS);
--
- 	for_each_node_by_type(memory, "memory") {
- 		unsigned long start, size;
- 		int n_mem_addr_cells, n_mem_size_cells, len;
+ 	if (find_existing_ddw(pdn, &dev->dev.archdata.dma_offset, &len)) {
+ 		direct_mapping = (len >= max_ram_len);
+-		ddw_enabled = true;
+ 		goto out_unlock;
+ 	}
+ 
+@@ -1397,8 +1395,8 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 			dev_info(&dev->dev, "failed to map DMA window for %pOF: %d\n",
+ 				 dn, ret);
+ 
+-		/* Make sure to clean DDW if any TCE was set*/
+-		clean_dma_window(pdn, win64->value);
++			/* Make sure to clean DDW if any TCE was set*/
++			clean_dma_window(pdn, win64->value);
+ 			goto out_del_list;
+ 		}
+ 	} else {
+@@ -1445,7 +1443,6 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	spin_unlock(&dma_win_list_lock);
+ 
+ 	dev->dev.archdata.dma_offset = win_addr;
+-	ddw_enabled = true;
+ 	goto out_unlock;
+ 
+ out_del_list:
+@@ -1481,10 +1478,10 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	 * as RAM, then we failed to create a window to cover persistent
+ 	 * memory and need to set the DMA limit.
+ 	 */
+-	if (pmem_present && ddw_enabled && direct_mapping && len == max_ram_len)
++	if (pmem_present && direct_mapping && len == max_ram_len)
+ 		dev->dev.bus_dma_limit = dev->dev.archdata.dma_offset + (1ULL << len);
+ 
+-    return ddw_enabled && direct_mapping;
++	return direct_mapping;
+ }
+ 
+ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
 -- 
 2.30.2
 
