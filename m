@@ -2,55 +2,57 @@ Return-Path: <SRS0=aKpC=P3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E82DCC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 05:21:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA760C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 05:29:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E95B61055
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 05:21:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 5E95B61055
+	by mail.kernel.org (Postfix) with ESMTPS id B382061361
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 05:29:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B382061361
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hnfbw3J5cz2yQH
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 16:21:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hnfmt1gskz3bfl
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 16:29:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=D5KrqRQv;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pZtR+sTc;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
+ [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HnfbC0G1nz2xD3
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Nov 2021 16:20:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HnfmB0RbYz2xXm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Nov 2021 16:28:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=D5KrqRQv; 
+ header.a=rsa-sha256 header.s=201909 header.b=pZtR+sTc; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Hnfb93gSqz4xdJ;
- Mon,  8 Nov 2021 16:20:53 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Hnfm96KXcz4xd8;
+ Mon,  8 Nov 2021 16:28:41 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1636348853;
- bh=uEmJ3ph/l3srN9YvznaemZm28WBx9z72frhe7f4XMWg=;
+ s=201909; t=1636349321;
+ bh=+/vYpAetAlXaOOdak4GLMEg9jsGSybQd66zuVmUkr8E=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=D5KrqRQvmd3BE5FT4OD/MmC8lEgbkSjaJlyO83M4HyfXSykBZHKZEaSnmcTsng8B4
- Cw+ife8sXVYhGT+60vCQGqXN3PZReAkaUCsm4JwHe0FORzCuqypVwwey5Zbv1G5Adx
- xo22fBQrXMgmtHCJSWkQU8P1qKOpFpVwAgZv24wsP8QFcrlZHfapgc4d+lhmD9zDVY
- 8ViFNgkQmbG4IcoQb+JP6kIGOZNE24kqB91Z1XNoP3v5L6RxKwiAfMtGFNHSKu65mY
- DorToKmJQoLkkg8m2qteE7u8n/9gNUFdUk8afo1Kj87gdqwEnCNKImrukwI61wIqaf
- K2xv7tAYj1XJA==
+ b=pZtR+sTcWX+oxBQleABox7yd8w6kT50JGJ7maytxiwWgFtAzPUvlWLEJgjAt7eNFC
+ I5+DAdxqWkgMoLAOfkoVIBK5nXPB/RSoijDPEdCwyIx+XPFMYRJLwoTlXIGcOKO4Go
+ TZjwFXWXmYXxh0XKj95dpVSi5ep730A0aIvYbMBjrZVcyh2O611m52hk26q5Uvrb9K
+ zsV6IgJnx0kN6ScKFqL68vQINx6u83IX1Zt2N2w5vnagcN0jx6OqO2pVnSYg7eNlGJ
+ QYqQEBVbCfl0eNVrXIVQlOTTdxhcU034J33huCUp82K1U3yCXwkfzKi3BSTKuROUox
+ Yx3KbOplUoo5Q==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/pseries: Fix numa FORM2 parsing fallback code
-In-Reply-To: <20211105132909.1582449-1-npiggin@gmail.com>
-References: <20211105132909.1582449-1-npiggin@gmail.com>
-Date: Mon, 08 Nov 2021 16:20:49 +1100
-Message-ID: <87sfw76x5a.fsf@mpe.ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64s: introduce CONFIG_MAXSMP to test very large
+ SMP
+In-Reply-To: <20211105041132.1443767-1-npiggin@gmail.com>
+References: <20211105041132.1443767-1-npiggin@gmail.com>
+Date: Mon, 08 Nov 2021 16:28:41 +1100
+Message-ID: <87pmrb6ws6.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -64,94 +66,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Nicholas Piggin <npiggin@gmail.com> writes:
-> In case the FORM2 distance table from firmware is not the expected size,
-> there is fallback code that just populates the lookup table as local vs
-> remote.
+> Similarly to x86, add MAXSMP that should help flush out problems with
+> vary large SMP and other values associated with very big systems.
 >
-> However it then continues on to use the distance table. Fix.
->
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> Fixes: 1c6b5a7e7405 ("powerpc/pseries: Add support for FORM2 associativity")
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
->  arch/powerpc/mm/numa.c | 29 +++++++++++++----------------
->  1 file changed, 13 insertions(+), 16 deletions(-)
+>  arch/powerpc/Kconfig                   | 8 ++++++++
+>  arch/powerpc/platforms/Kconfig.cputype | 5 +++--
+>  2 files changed, 11 insertions(+), 2 deletions(-)
 >
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 6f14c8fb6359..0789cde7f658 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -380,6 +380,7 @@ static void initialize_form2_numa_distance_lookup_table(void)
->  	const __be32 *numa_lookup_index;
->  	int numa_dist_table_length;
->  	int max_numa_index, distance_index;
-> +	bool good = true;
-
-numa_dist_table is a pointer, so couldn't we just set it to NULL if the
-info it's pointing at is invalid?
-
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index b8f6185d3998..d585fcfa456f 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -64,6 +64,13 @@ config NEED_PER_CPU_EMBED_FIRST_CHUNK
+>  config NEED_PER_CPU_PAGE_FIRST_CHUNK
+>  	def_bool y if PPC64
 >  
->  	if (firmware_has_feature(FW_FEATURE_OPAL))
->  		root = of_find_node_by_path("/ibm,opal");
-> @@ -407,30 +408,26 @@ static void initialize_form2_numa_distance_lookup_table(void)
->  
->  	if (numa_dist_table_length != max_numa_index * max_numa_index) {
->  		WARN(1, "Wrong NUMA distance information\n");
-> -		/* consider everybody else just remote. */
-> -		for (i = 0;  i < max_numa_index; i++) {
-> -			for (j = 0; j < max_numa_index; j++) {
-> -				int nodeA = numa_id_index_table[i];
-> -				int nodeB = numa_id_index_table[j];
-> -
-> -				if (nodeA == nodeB)
-> -					numa_distance_table[nodeA][nodeB] = LOCAL_DISTANCE;
-> -				else
-> -					numa_distance_table[nodeA][nodeB] = REMOTE_DISTANCE;
-> -			}
-> -		}
-> +		good = false;
+> +config MAXSMP
+> +	bool "Enable Maximum number of SMP Processors and NUMA Nodes"
+> +	depends on SMP && DEBUG_KERNEL && PPC_BOOK3S_64
+> +	help
+> +	  Enable maximum number of CPUS and NUMA Nodes for this architecture.
+> +	  If unsure, say N.
 
-ie.		numa_dist_table = NULL;
+As evidenced by the kernel robot report, I think we need to exclude this
+from allyesconfig.
 
->  	}
-> -
->  	distance_index = 0;
->  	for (i = 0;  i < max_numa_index; i++) {
->  		for (j = 0; j < max_numa_index; j++) {
->  			int nodeA = numa_id_index_table[i];
->  			int nodeB = numa_id_index_table[j];
-> -
-> -			numa_distance_table[nodeA][nodeB] = numa_dist_table[distance_index++];
-> -			pr_debug("dist[%d][%d]=%d ", nodeA, nodeB, numa_distance_table[nodeA][nodeB]);
-> +			int dist;
-> +
-> +			if (good)
+Because our max is 16K, larger than the 8K on x86, we are going to be
+constantly hitting stack usage errors in driver code. Getting those
+fixed tends to take time, because the driver authors don't see the
+warnings when they build for other arches, and because the fixes go via
+driver trees.
 
-			if (numa_dist_table)
-
-> +				dist = numa_dist_table[distance_index++];
-> +			else if (nodeA == nodeB)
-> +				dist = LOCAL_DISTANCE;
-> +			else
-> +				dist = REMOTE_DISTANCE;
-> +			numa_distance_table[nodeA][nodeB] = dist;
-> +			pr_debug("dist[%d][%d]=%d ", nodeA, nodeB, dist);
->  		}
->  	}
-> +
->  	of_node_put(root);
->  }
-
-
-But maybe before we do that we can rename it, because it is really easy
-to confuse numa_dist_table and numa_distance_table if you don't look
-closely.
+Making MAXSMP depend on !COMPILE_TEST should do the trick.
 
 cheers
