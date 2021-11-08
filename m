@@ -2,61 +2,59 @@ Return-Path: <SRS0=aKpC=P3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2ED64C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 10:24:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94507C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 12:01:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9397160F5A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 10:24:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 9397160F5A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
+	by mail.kernel.org (Postfix) with ESMTPS id 8DD8B61288
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 12:01:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 8DD8B61288
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HnnJv01rmz304V
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 21:23:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HnqTw745xz30JT
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 23:01:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=O9utTH7k;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=f399M/Up;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=alien8.de (client-ip=5.9.137.197; helo=mail.skyhub.de;
- envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
- header.s=dkim header.b=O9utTH7k; dkim-atps=neutral
-Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
+ [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HnnGp4KMWz2yNw
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Nov 2021 21:22:10 +1100 (AEDT)
-Received: from zn.tnic (p200300ec2f33110088892b77bd117736.dip0.t-ipconnect.de
- [IPv6:2003:ec:2f33:1100:8889:2b77:bd11:7736])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 97BC51EC0535;
- Mon,  8 Nov 2021 11:12:41 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
- t=1636366361;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=ZSl40zXDlt+0/rSkoDA+/axSBICuEw4xrW9t+JeAzRg=;
- b=O9utTH7kzvF0ogbSAjrVux8Q2NyGvuXt2DXX+lXMfGwQDD5NsnAlA7vS1HO+tdNI+F2ntn
- CZwfQStJuxv3i5Q66Ie7iUHTOBEhoA6pq6felnVAUxHBDq6LlMPMTRyA2hQo7p+FfRiqlX
- omkNlvF2ej63UhZNrO1CmPB0HckLABU=
-From: Borislav Petkov <bp@alien8.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v0 42/42] notifier: Return an error when callback is already
- registered
-Date: Mon,  8 Nov 2021 11:11:57 +0100
-Message-Id: <20211108101157.15189-43-bp@alien8.de>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20211108101157.15189-1-bp@alien8.de>
-References: <20211108101157.15189-1-bp@alien8.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HnqT94lm4z2xXy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Nov 2021 23:01:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=f399M/Up; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4HnqT93PNtz4xbw;
+ Mon,  8 Nov 2021 23:01:17 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1636372877;
+ bh=ZJtG7/545/BVzk7LIuEsY5H7GCcB3kEe7ULLXCPMHuo=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=f399M/UpVdc1DkQ1dSLOlfvUbiMsbUejIpudiyuuVDOPNjPyb/kp4yDLH6wF5iRaR
+ f+srfb+q32BDMLCsVN5NUUfqOeEMM9Z489RzijxXRDWUY3AkqOy/I9OiQUzpgJTE5c
+ 2nYdBoJClOd18eDBeNiz9sf7MfVtj0wEXreBown2Yo52h+ruNprvWKPdG6u4Ces2/R
+ 7OuvUl5oj6I1GYq5uI11DOwpcFt3sX+liu0e2V+PsxoBAwB/3QlOyZcyA0DYeojD7y
+ tRzq20UZ+Arl0j8swn7prENm66zRMxk6ddT+CbGcxEJWMs26jEWIK8ICVTsVzsa4Wy
+ ZMEXzYq0YPhxA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Dmitry Osipenko <digetx@gmail.com>
+Subject: Re: [PATCH v3 20/25] powerpc: Use do_kernel_power_off()
+In-Reply-To: <20211108004524.29465-21-digetx@gmail.com>
+References: <20211108004524.29465-1-digetx@gmail.com>
+ <20211108004524.29465-21-digetx@gmail.com>
+Date: Mon, 08 Nov 2021 23:01:17 +1100
+Message-ID: <87lf1y7t6a.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,202 +66,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, x86@kernel.org, linux-sh@vger.kernel.org,
- linux-iio@vger.kernel.org, linux-remoteproc@vger.kernel.org,
- linux-fbdev@vger.kernel.org, netdev@vger.kernel.org,
- Ayush Sawal <ayush.sawal@chelsio.com>, sparclinux@vger.kernel.org,
- linux-clk@vger.kernel.org, linux-leds@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
- Rohit Maheshwari <rohitm@chelsio.com>, linux-staging@lists.linux.dev,
- bcm-kernel-feedback-list@broadcom.com,
- openipmi-developer@lists.sourceforge.net, xen-devel@lists.xenproject.org,
- linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
- linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org,
- Vinay Kumar Yadav <vinay.yadav@chelsio.com>, linux-um@lists.infradead.org,
- Steven Rostedt <rostedt@goodmis.org>, rcu@vger.kernel.org,
- linux-tegra@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- intel-gvt-dev@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org,
- linux-edac@vger.kernel.org, linux-parisc@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linux-mips@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
- linux-hyperv@vger.kernel.org, linux-crypto@vger.kernel.org,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Borislav Petkov <bp@suse.de>
+Dmitry Osipenko <digetx@gmail.com> writes:
+> Kernel now supports chained power-off handlers. Use do_kernel_power_off()
+> that invokes chained power-off handlers. It also invokes legacy
+> pm_power_off() for now, which will be removed once all drivers will
+> be converted to the new power-off API.
+>
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  arch/powerpc/kernel/setup-common.c | 4 +---
+>  arch/powerpc/xmon/xmon.c           | 3 +--
+>  2 files changed, 2 insertions(+), 5 deletions(-)
 
-The notifier registration routine doesn't return a proper error value
-when a callback has already been registered, leading people to track
-whether that registration has happened at the call site:
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-  https://lore.kernel.org/amd-gfx/20210512013058.6827-1-mukul.joshi@amd.com/
-
-Which is unnecessary.
-
-Return -EEXIST to signal that case so that callers can act accordingly.
-Enforce callers to check the return value, leading to loud screaming
-during build:
-
-  arch/x86/kernel/cpu/mce/core.c: In function ‘mce_register_decode_chain’:
-  arch/x86/kernel/cpu/mce/core.c:167:2: error: ignoring return value of \
-   ‘blocking_notifier_chain_register’, declared with attribute warn_unused_result [-Werror=unused-result]
-    blocking_notifier_chain_register(&x86_mce_decoder_chain, nb);
-  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Drop the WARN too, while at it.
-
-Suggested-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Borislav Petkov <bp@suse.de>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Ayush Sawal <ayush.sawal@chelsio.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Rohit Maheshwari <rohitm@chelsio.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Vinay Kumar Yadav <vinay.yadav@chelsio.com>
-Cc: alsa-devel@alsa-project.org
-Cc: bcm-kernel-feedback-list@broadcom.com
-Cc: intel-gfx@lists.freedesktop.org
-Cc: intel-gvt-dev@lists.freedesktop.org
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-clk@vger.kernel.org
-Cc: linux-crypto@vger.kernel.org
-Cc: linux-edac@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-hyperv@vger.kernel.org
-Cc: linux-iio@vger.kernel.org
-Cc: linux-leds@vger.kernel.org
-Cc: linux-mips@vger.kernel.org
-Cc: linux-parisc@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-remoteproc@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org
-Cc: linux-s390@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org
-Cc: linux-sh@vger.kernel.org
-Cc: linux-staging@lists.linux.dev
-Cc: linux-tegra@vger.kernel.org
-Cc: linux-um@lists.infradead.org
-Cc: linux-usb@vger.kernel.org
-Cc: linux-xtensa@linux-xtensa.org
-Cc: netdev@vger.kernel.org
-Cc: openipmi-developer@lists.sourceforge.net
-Cc: rcu@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
-Cc: x86@kernel.org
-Cc: xen-devel@lists.xenproject.org
----
- include/linux/notifier.h |  8 ++++----
- kernel/notifier.c        | 36 +++++++++++++++++++-----------------
- 2 files changed, 23 insertions(+), 21 deletions(-)
-
-diff --git a/include/linux/notifier.h b/include/linux/notifier.h
-index 87069b8459af..45cc5a8d0fd8 100644
---- a/include/linux/notifier.h
-+++ b/include/linux/notifier.h
-@@ -141,13 +141,13 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
- 
- #ifdef __KERNEL__
- 
--extern int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
-+extern int __must_check atomic_notifier_chain_register(struct atomic_notifier_head *nh,
- 		struct notifier_block *nb);
--extern int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
-+extern int __must_check blocking_notifier_chain_register(struct blocking_notifier_head *nh,
- 		struct notifier_block *nb);
--extern int raw_notifier_chain_register(struct raw_notifier_head *nh,
-+extern int __must_check raw_notifier_chain_register(struct raw_notifier_head *nh,
- 		struct notifier_block *nb);
--extern int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
-+extern int __must_check srcu_notifier_chain_register(struct srcu_notifier_head *nh,
- 		struct notifier_block *nb);
- 
- extern int atomic_notifier_chain_unregister(struct atomic_notifier_head *nh,
-diff --git a/kernel/notifier.c b/kernel/notifier.c
-index b8251dc0bc0f..451ef3f73ad2 100644
---- a/kernel/notifier.c
-+++ b/kernel/notifier.c
-@@ -20,13 +20,11 @@ BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
-  */
- 
- static int notifier_chain_register(struct notifier_block **nl,
--		struct notifier_block *n)
-+				   struct notifier_block *n)
- {
- 	while ((*nl) != NULL) {
--		if (unlikely((*nl) == n)) {
--			WARN(1, "double register detected");
--			return 0;
--		}
-+		if (unlikely((*nl) == n))
-+			return -EEXIST;
- 		if (n->priority > (*nl)->priority)
- 			break;
- 		nl = &((*nl)->next);
-@@ -134,10 +132,11 @@ static int notifier_call_chain_robust(struct notifier_block **nl,
-  *
-  *	Adds a notifier to an atomic notifier chain.
-  *
-- *	Currently always returns zero.
-+ *	Returns 0 on success, %-EEXIST on error.
-  */
--int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
--		struct notifier_block *n)
-+int __must_check
-+atomic_notifier_chain_register(struct atomic_notifier_head *nh,
-+			       struct notifier_block *n)
- {
- 	unsigned long flags;
- 	int ret;
-@@ -216,10 +215,11 @@ NOKPROBE_SYMBOL(atomic_notifier_call_chain);
-  *	Adds a notifier to a blocking notifier chain.
-  *	Must be called in process context.
-  *
-- *	Currently always returns zero.
-+ *	Returns 0 on success, %-EEXIST on error.
-  */
--int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
--		struct notifier_block *n)
-+int __must_check
-+blocking_notifier_chain_register(struct blocking_notifier_head *nh,
-+				 struct notifier_block *n)
- {
- 	int ret;
- 
-@@ -335,10 +335,11 @@ EXPORT_SYMBOL_GPL(blocking_notifier_call_chain);
-  *	Adds a notifier to a raw notifier chain.
-  *	All locking must be provided by the caller.
-  *
-- *	Currently always returns zero.
-+ *	Returns 0 on success, %-EEXIST on error.
-  */
--int raw_notifier_chain_register(struct raw_notifier_head *nh,
--		struct notifier_block *n)
-+int __must_check
-+raw_notifier_chain_register(struct raw_notifier_head *nh,
-+			    struct notifier_block *n)
- {
- 	return notifier_chain_register(&nh->head, n);
- }
-@@ -406,10 +407,11 @@ EXPORT_SYMBOL_GPL(raw_notifier_call_chain);
-  *	Adds a notifier to an SRCU notifier chain.
-  *	Must be called in process context.
-  *
-- *	Currently always returns zero.
-+ *	Returns 0 on success, %-EEXIST on error.
-  */
--int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
--		struct notifier_block *n)
-+int __must_check
-+srcu_notifier_chain_register(struct srcu_notifier_head *nh,
-+			     struct notifier_block *n)
- {
- 	int ret;
- 
--- 
-2.29.2
-
+cheers
