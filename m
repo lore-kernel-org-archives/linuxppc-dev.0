@@ -2,42 +2,61 @@ Return-Path: <SRS0=aKpC=P3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F291C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 14:24:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28CC7C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 14:25:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E7CB610E9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 14:24:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 7E7CB610E9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rowland.harvard.edu
+	by mail.kernel.org (Postfix) with ESMTPS id B00B2610A3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Nov 2021 14:25:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org B00B2610A3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hntf26wkgz3cBQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Nov 2021 01:24:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HntgM2mHCz3053
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Nov 2021 01:25:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=BzFVBEJo;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=netrider.rowland.org (client-ip=192.131.102.5;
- helo=netrider.rowland.org; envelope-from=stern+618c59fc@netrider.rowland.org;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 394 seconds by postgrey-1.36 at boromir;
- Tue, 09 Nov 2021 01:23:45 AEDT
-Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
- by lists.ozlabs.org (Postfix) with SMTP id 4HntdY2sw8z2xXm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Nov 2021 01:23:45 +1100 (AEDT)
-Received: (qmail 1667203 invoked by uid 1000); 8 Nov 2021 09:17:03 -0500
-Date: Mon, 8 Nov 2021 09:17:03 -0500
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Borislav Petkov <bp@alien8.de>
+ smtp.mailfrom=alien8.de (client-ip=5.9.137.197; helo=mail.skyhub.de;
+ envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
+ header.s=dkim header.b=BzFVBEJo; dkim-atps=neutral
+Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hntfg4FWyz2xXy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Nov 2021 01:24:43 +1100 (AEDT)
+Received: from zn.tnic (p200300ec2f33110093973d8dfcf40fd9.dip0.t-ipconnect.de
+ [IPv6:2003:ec:2f33:1100:9397:3d8d:fcf4:fd9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id D54F61EC04EE;
+ Mon,  8 Nov 2021 15:24:40 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+ t=1636381481;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+ bh=oQBbYlaqexu4t08cRZdDH3XaT2khXLTGUfDdhXY+o6w=;
+ b=BzFVBEJotdv+x1wk5r7BVthkB7IfDjFkcs3Qa23VnQgw6n7GoUvAnfTwnsI1XwsFUQ2pfc
+ wTEtmUg2zpiIKZgiV8GtlPXLXcMCnwwX7vbzvuM7Jd46qSvtVDp/eqlUHv6UrUSSdUIxSB
+ fTiz2Hj9eXxtQyoPpRyOqBuxOD7Awrk=
+Date: Mon, 8 Nov 2021 15:24:39 +0100
+From: Borislav Petkov <bp@alien8.de>
+To: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH v0 00/42] notifiers: Return an error when callback is
  already registered
-Message-ID: <20211108141703.GB1666297@rowland.harvard.edu>
+Message-ID: <YYkzJ3+faVga2Tl3@zn.tnic>
 References: <20211108101157.15189-1-bp@alien8.de>
  <20211108101924.15759-1-bp@alien8.de>
+ <20211108141703.GB1666297@rowland.harvard.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20211108101924.15759-1-bp@alien8.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20211108141703.GB1666297@rowland.harvard.edu>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,51 +91,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 08, 2021 at 11:19:24AM +0100, Borislav Petkov wrote:
-> From: Borislav Petkov <bp@suse.de>
+On Mon, Nov 08, 2021 at 09:17:03AM -0500, Alan Stern wrote:
+> What reason is there for moving the check into the callers?  It seems 
+> like pointless churn.  Why not add the error return code, change the 
+> WARN to pr_warn, and leave the callers as they are?  Wouldn't that end 
+> up having exactly the same effect?
 > 
-> Hi all,
-> 
-> this is a huge patchset for something which is really trivial - it
-> changes the notifier registration routines to return an error value
-> if a notifier callback is already present on the respective list of
-> callbacks. For more details scroll to the last patch.
-> 
-> Everything before it is converting the callers to check the return value
-> of the registration routines and issue a warning, instead of the WARN()
-> notifier_chain_register() does now.
+> For that matter, what sort of remedial action can a caller take if the 
+> return code is -EEXIST?  Is there any point in forcing callers to check 
+> the return code if they can't do anything about it?
 
-What reason is there for moving the check into the callers?  It seems 
-like pointless churn.  Why not add the error return code, change the 
-WARN to pr_warn, and leave the callers as they are?  Wouldn't that end 
-up having exactly the same effect?
+See my reply to Geert from just now:
 
-For that matter, what sort of remedial action can a caller take if the 
-return code is -EEXIST?  Is there any point in forcing callers to check 
-the return code if they can't do anything about it?
+https://lore.kernel.org/r/YYkyUEqcsOwQMb1S@zn.tnic
 
-> Before the last patch has been applied, though, that checking is a
-> NOP which would make the application of those patches trivial - every
-> maintainer can pick a patch at her/his discretion - only the last one
-> enables the build warnings and that one will be queued only after the
-> preceding patches have all been merged so that there are no build
-> warnings.
+I guess I can add another indirection to notifier_chain_register() and
+avoid touching all the call sites.
 
-Why should there be _any_ build warnings?  The real problem occurs when 
-a notifier callback is added twice, not when a caller fails to check the 
-return code.  Double-registration is not the sort of thing that can be 
-detected at build time.
+-- 
+Regards/Gruss,
+    Boris.
 
-Alan Stern
-
-> Due to the sheer volume of the patches, I have addressed the respective
-> patch and the last one, which enables the warning, with addressees for
-> each maintained area so as not to spam people unnecessarily.
-> 
-> If people prefer I carry some through tip, instead, I'll gladly do so -
-> your call.
-> 
-> And, if you think the warning messages need to be more precise, feel
-> free to adjust them before committing.
-> 
-> Thanks!
+https://people.kernel.org/tglx/notes-about-netiquette
