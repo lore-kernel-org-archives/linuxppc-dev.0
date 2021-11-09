@@ -2,93 +2,110 @@ Return-Path: <SRS0=LC5L=P4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A508C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Nov 2021 01:52:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3B53C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Nov 2021 02:08:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BB83C61076
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Nov 2021 01:52:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BB83C61076
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 03FB861178
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Nov 2021 02:08:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 03FB861178
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hp9wG0qq7z3bY9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Nov 2021 12:52:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HpBHC3YT9z2ywT
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Nov 2021 13:08:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ehL1EjUp;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=PN8/sJ1f;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NwNvsoJn;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=longman@redhat.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=ehL1EjUp; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=PN8/sJ1f; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [216.205.24.124])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=NwNvsoJn; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hp9vT3gS6z2yLJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Nov 2021 12:51:49 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1636422704;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=DFGu9AXrTc44yf7Fd1i9aP2uR3v2xVRM2yfLGR/MsfQ=;
- b=ehL1EjUpTl5/XN/O5v17Bx61NBmuBlScFyZOLQ+H9p40wFD/njD3oH4Sbp5YFMLRUUyS59
- YZfWcZq9rNqsnld8hv32WkoCV7ZEFsLGNs1bSUOWSUPCUvBjornyc/ENer41R5w6LNCQ2I
- c+g4uDo2GBnfJoghP5Wi3fx6FRAZDHg=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1636422705;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=DFGu9AXrTc44yf7Fd1i9aP2uR3v2xVRM2yfLGR/MsfQ=;
- b=PN8/sJ1fr6owDTZZKc2CHrf4OXYhIJgf1a/sEiGzvZRzRvT2TslMB/kuyF0cOPDjXHleOF
- 0fU/tcGMJGWyPrtS9mxYYFKB5zX+sJe8xso2KZrdYY7/42/8gP1b6kvKjL8OAOnUfvmmbF
- E5JEH/fcQaKUd+UsqSIPcOoMn+31nGo=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-441-_gcqOoiRNJyzQkkSpP7lGQ-1; Mon, 08 Nov 2021 20:51:41 -0500
-X-MC-Unique: _gcqOoiRNJyzQkkSpP7lGQ-1
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 74361804140;
- Tue,  9 Nov 2021 01:51:39 +0000 (UTC)
-Received: from [10.22.16.6] (unknown [10.22.16.6])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 1DF2960BE5;
- Tue,  9 Nov 2021 01:51:38 +0000 (UTC)
-Message-ID: <a90f0361-329b-1e21-90c1-601d6f7c2f24@redhat.com>
-Date: Mon, 8 Nov 2021 20:51:37 -0500
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.2.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HpBGP6pqZz2xD4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Nov 2021 13:08:13 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1A8MNUwb013719; 
+ Tue, 9 Nov 2021 02:08:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=xfrQmRyHkeOj6Fea4V2SKM536tS86ylqfHe3yf+yiVs=;
+ b=NwNvsoJnB5TOs/VLfXEmEydURUt6qvzbXpQDvTyRm8Io0pypjsAAxLwmdE57fzBb1FWb
+ lqPFoxXm/eikm/7Dz0GpXRkNTK+ur2hUTqSij8fVoFaM2SvpV/SjgbhqenczqalD8P7s
+ WGaloZvuF5rZL4781uP/XyWQwRB+R/yN8f3cbHBlbN0eWXdYAKoqFmu2+k9lykqk8mpL
+ m4i7nsvEdPWVObLYGuu6v+DNB8cGM7k3Fk4SX5uDBGlaQbn6EYkhwlxjJbbxIdNl2AJH
+ zZOFdowMFuZnEldn2g4s/N4bYRJzuejfho7UWkObH4g72dvRp/eNCOVSPknCxrtUwQJb SA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3c7cn6v0yx-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 09 Nov 2021 02:08:01 +0000
+Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1A9281XU025940;
+ Tue, 9 Nov 2021 02:08:01 GMT
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3c7cn6v0yf-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 09 Nov 2021 02:08:01 +0000
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1A91uvgR021709;
+ Tue, 9 Nov 2021 02:07:59 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma03wdc.us.ibm.com with ESMTP id 3c5hbajtym-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 09 Nov 2021 02:07:59 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1A927xpM46072296
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 9 Nov 2021 02:07:59 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E64DCAC067;
+ Tue,  9 Nov 2021 02:07:58 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B0323AC05F;
+ Tue,  9 Nov 2021 02:07:58 +0000 (GMT)
+Received: from localhost (unknown [9.211.44.202])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue,  9 Nov 2021 02:07:58 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Waiman Long <longman@redhat.com>, Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Daniel Henrique Barboza
+ <danielhb413@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Paul
+ Mackerras <paulus@samba.org>
 Subject: Re: [PATCH] powerpc/pseries/cpuhp: Use alloc_cpumask_var() in
  pseries_cpu_hotplug_init()
-Content-Language: en-US
-To: Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Daniel Henrique Barboza <danielhb413@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nathan Lynch <nathanl@linux.ibm.com>,
- Paul Mackerras <paulus@samba.org>
+In-Reply-To: <a90f0361-329b-1e21-90c1-601d6f7c2f24@redhat.com>
 References: <20211108164751.65565-1-longman@redhat.com>
- <87y25ym96i.fsf@mpe.ellerman.id.au> <1636421918.tc1hk6vx8h.astroid@bobo.none>
-From: Waiman Long <longman@redhat.com>
-In-Reply-To: <1636421918.tc1hk6vx8h.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
+ <87y25ym96i.fsf@mpe.ellerman.id.au>
+ <1636421918.tc1hk6vx8h.astroid@bobo.none>
+ <a90f0361-329b-1e21-90c1-601d6f7c2f24@redhat.com>
+Date: Mon, 08 Nov 2021 20:07:58 -0600
+Message-ID: <871r3qjd35.fsf@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 8xMAC84lTy769LAByALRxfY-bdnp-5Be
+X-Proofpoint-GUID: -jvDEFVFVi4zRUqIKBvQLWvh3S2DWwcb
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
+ definitions=2021-11-08_07,2021-11-08_02,2020-04-07_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 spamscore=0
+ mlxscore=0 adultscore=0 mlxlogscore=999 clxscore=1015 malwarescore=0
+ lowpriorityscore=0 priorityscore=1501 bulkscore=0 phishscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2110150000 definitions=main-2111090007
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,73 +117,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Zhang Xiaoxu <zhangxiaoxu5@huawei.com>,
- Laurent Dufour <ldufour@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Laurent Dufour <ldufour@linux.ibm.com>,
+ Zhang Xiaoxu <zhangxiaoxu5@huawei.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-On 11/8/21 20:46, Nicholas Piggin wrote:
-> Excerpts from Michael Ellerman's message of November 9, 2021 11:04 am:
->> Waiman Long <longman@redhat.com> writes:
->>> It was found that the following warning message could be printed out when
->>> booting the kernel on PowerPC systems that support LPAR:
->>>
->>> [    0.129584] WARNING: CPU: 0 PID: 1 at mm/memblock.c:1451 memblock_alloc_internal+0x5c/0x104
->>> [    0.129593] Modules linked in:
->>> [    0.129598] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 5.14.0-11.el9.ppc64le+debug #1
->>> [    0.129605] NIP:  c000000002040134 LR: c00000000204011c CTR: c0000000020241a8
->>> [    0.129610] REGS: c000000005637760 TRAP: 0700   Not tainted  (5.14.0-11.el9.ppc64le+debug)
->>> [    0.129616] MSR:  8000000002029033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 48000222  XER: 00000002
->>> [    0.129635] CFAR: c0000000004d1cf4 IRQMASK: 0
->>> [    0.129635] GPR00: c00000000204011c c000000005637a00 c000000002c94d00 0000000000000001
->>> [    0.129635] GPR04: 0000000000000080 0000000000000000 0000000000000000 ffffffffffffffff
->>> [    0.129635] GPR08: 0000000000000000 0000000000000003 c00000000205ac64 0000000000080000
->>> [    0.129635] GPR12: 0000000000000000 c0000000049d0000 c000000000013078 0000000000000000
->>> [    0.129635] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->>> [    0.129635] GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->>> [    0.129635] GPR24: c000000002003808 c00000000146f7b8 0000000000000000 0000000000000100
->>> [    0.129635] GPR28: c000000002d7cf80 0000000000000000 0000000000000008 0000000000000000
->>> [    0.129710] NIP [c000000002040134] memblock_alloc_internal+0x5c/0x104
->>> [    0.129717] LR [c00000000204011c] memblock_alloc_internal+0x44/0x104
->>> [    0.129723] Call Trace:
->>> [    0.129726] [c000000005637a00] [c000000005637a40] 0xc000000005637a40 (unreliable)
->>> [    0.129735] [c000000005637a60] [c0000000020404d8] memblock_alloc_try_nid+0x94/0xcc
->>> [    0.129743] [c000000005637af0] [c00000000205ac64] alloc_bootmem_cpumask_var+0x4c/0x9c
->>> [    0.129751] [c000000005637b60] [c0000000020242e0] __machine_initcall_pseries_pseries_cpu_hotplug_init+0x138/0x1d8
->>> [    0.129760] [c000000005637bf0] [c000000000012404] do_one_initcall+0xa4/0x4f0
->>> [    0.129768] [c000000005637cd0] [c000000002005358] do_initcalls+0x140/0x18c
->>> [    0.129776] [c000000005637d80] [c0000000020055b8] kernel_init_freeable+0x178/0x1d0
->>> [    0.129783] [c000000005637db0] [c0000000000130a0] kernel_init+0x30/0x190
->>> [    0.129790] [c000000005637e10] [c00000000000cef4] ret_from_kernel_thread+0x5c/0x64
->>>
->>> The warning is printed in memblock_alloc_internal() because the slab
->>> has been initialized when the initcalls are being processed. To
->>> avoid the warning, change alloc_bootmem_cpumask_var() call in
->>> pseries_cpu_hotplug_init() to alloc_cpumask_var() instead. Also
->>> change cpumask_or() to cpumask_copy() or we will have to use
->>> zalloc_cpumask_var().
->>>
->>> Fixes: bd1dd4c5f528 ("powerpc/pseries: Prevent free CPU ids being reused on another node")
->>> Signed-off-by: Waiman Long <longman@redhat.com>
->>> ---
->>>   arch/powerpc/platforms/pseries/hotplug-cpu.c | 8 ++++----
->>>   1 file changed, 4 insertions(+), 4 deletions(-)
->>
->> This looks similar to the patch Nick sent recently:
->>
->>    https://lore.kernel.org/linuxppc-dev/20211105132923.1582514-1-npiggin@gmail.com/
-> Ah, you get CONFIG_CPUMASK_OFFSTACK=y if CONFIG_DEBUG_PER_CPU_MAPS=y.
-> I was wondering how Waiman found it.
+Waiman Long <longman@redhat.com> writes:
+> On 11/8/21 20:46, Nicholas Piggin wrote:
+>> Differences between the two patches are error checking - no big deal but
+>> we should just do it. And GFP_NOWAIT - is this required here?
 >
-> Differences between the two patches are error checking - no big deal but
-> we should just do it. And GFP_NOWAIT - is this required here?
+> As I have replied in another thread, I added it because it was used in 
+> memblock_alloc_internal().
 
-As I have replied in another thread, I added it because it was used in 
-memblock_alloc_internal().
-
-Cheers,
-Longman
-
+From the pseries code's point of view, that's an incidental property of
+the misuse detection branch in memblock_alloc_internal() -- I'd
+speculate to make it robust for calls from atomic context. GFP_NOWAIT is
+not needed here.
