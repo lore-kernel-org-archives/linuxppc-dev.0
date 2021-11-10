@@ -2,102 +2,91 @@ Return-Path: <SRS0=gbiG=P5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E67E4C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 11:10:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A880C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 11:32:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6BB5161205
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 11:10:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 6BB5161205
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id ACCB0610FC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 11:32:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org ACCB0610FC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmx.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hq2G46G6Cz3c5l
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 22:10:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hq2kz12wLz3c7B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 22:32:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VVuR6+q8;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=gmx.net header.i=@gmx.net header.a=rsa-sha256 header.s=badeba3b8450 header.b=hn9ucD8/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=VVuR6+q8; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hq2FH58L0z2xXD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Nov 2021 22:10:11 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1AAAFm6I006138
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Nov 2021 11:10:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=d8Mi6CinP8LOxGiOBeibZsk8lMntLgoefBTIzrUQIyo=;
- b=VVuR6+q8P43Rwe+R60VJa8JTMWf9LjX2LOvId9V+QTpv1Z6urHcdO2RkgOk+mdqkmuL1
- oS03v02P43GiTF6QcdXSdxlAn7YxpLqFvEQaiJbKvfWqcw9HWw3cUCcMM3rf7mI7UFZJ
- Pm3csRgi3CjiKIVJqPWuFdUL+qVWrcnFa7topqFgSjJ7kImWkxPSdlhHD3CLUU210EeZ
- 9vAnOSlJuUBeLWoHzm87SgXg1zkMR1Jnh88A10CP4gSb0/LpUCopPty7BT6aHYYft3Gt
- ubpc4eajbKo+oZ5f2TPTOOFXiPigfqlEErFJHxfiZe5XO13OWGIiPAEgp+GIZCkAe5O8 iA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3c8c648yfr-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Nov 2021 11:10:08 +0000
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1AAB5bHB019951
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Nov 2021 11:10:07 GMT
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3c8c648yfc-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Nov 2021 11:10:07 +0000
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1AAB8rm4018526;
- Wed, 10 Nov 2021 11:10:07 GMT
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26]) by ppma01dal.us.ibm.com with ESMTP id 3c5hbchyg2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Nov 2021 11:10:07 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1AABA5gm22020458
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 10 Nov 2021 11:10:06 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E1DF6AE2C1;
- Wed, 10 Nov 2021 11:02:48 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F2DC0AE2A0;
- Wed, 10 Nov 2021 11:02:47 +0000 (GMT)
-Received: from localhost (unknown [9.211.133.79])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTPS;
- Wed, 10 Nov 2021 11:02:47 +0000 (GMT)
-From: Fabiano Rosas <farosas@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] powerpc/64s: Get LPID bit width from device tree
-In-Reply-To: <20211110080004.2148773-1-npiggin@gmail.com>
-References: <20211110080004.2148773-1-npiggin@gmail.com>
-Date: Wed, 10 Nov 2021 08:02:45 -0300
-Message-ID: <87ilx0p92i.fsf@linux.ibm.com>
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=gmx.net
+ (client-ip=212.227.15.15; helo=mout.gmx.net;
+ envelope-from=j.neuschaefer@gmx.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=gmx.net header.i=@gmx.net header.a=rsa-sha256
+ header.s=badeba3b8450 header.b=hn9ucD8/; 
+ dkim-atps=neutral
+X-Greylist: delayed 396 seconds by postgrey-1.36 at boromir;
+ Wed, 10 Nov 2021 21:52:57 AEDT
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hq1sP5Xbvz2xgb;
+ Wed, 10 Nov 2021 21:52:57 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+ s=badeba3b8450; t=1636541561;
+ bh=h45DiQjGY0Dfm8CE9cn4qF+342ykeQ4Uk5C/gkooaIw=;
+ h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
+ b=hn9ucD8/6yj3DCjGeGMCL7TrhAg159x21SRHYMb8ewY7p2qoME1eIucAYnXb+xH1V
+ lCWLwJwJ4r469oCbjWXDD2XsvFcWOJi/SnSiX3I63e7ug2byO6vDuSLCzkdmicaCeF
+ +84m+aWKqZ87QQ36VMlMDJo9oE4GCfD7U8srZMEE=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from longitude ([5.146.194.160]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MYeQr-1nEmW91Bsx-00Vcng; Wed, 10
+ Nov 2021 11:44:10 +0100
+Date: Wed, 10 Nov 2021 11:43:55 +0100
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: Dmitry Osipenko <digetx@gmail.com>
+Subject: Re: [PATCH v2 27/45] mfd: ntxec: Use devm_register_power_handler()
+Message-ID: <YYuia9KFdi+ETT+I@latitude>
+References: <20211027211715.12671-1-digetx@gmail.com>
+ <20211027211715.12671-28-digetx@gmail.com>
+ <YYbqlmOM95q7Hbjo@latitude>
+ <be0c74c6-05a9-cad5-c285-6626d05f8860@gmail.com>
+ <9a22c22d-94b1-f519-27a2-ae0b8bbf6e99@roeck-us.net>
+ <658cf796-e3b1-f816-1e15-9e9e08b8ade0@gmail.com>
+ <5a17fee3-4214-c2b9-abc1-ab9d6071591b@roeck-us.net>
+ <c0b52994-51f5-806b-b07e-3e70d8217ffc@gmail.com>
+ <YYkIeBSCFka9yrqC@latitude>
+ <04103df3-1ef4-b560-a5cb-fa51737d28ad@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: vj5cb6APSy938UNFX1_TAEF44WaU8iv3
-X-Proofpoint-ORIG-GUID: F-EmS_Ruk1O-WDYaAB2_K8d_LyQHnokV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
- definitions=2021-11-10_03,2021-11-08_02,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 adultscore=0
- clxscore=1015 priorityscore=1501 phishscore=0 impostorscore=0 bulkscore=0
- malwarescore=0 mlxscore=0 spamscore=0 lowpriorityscore=0 mlxlogscore=999
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2110150000
- definitions=main-2111100058
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="2Vc8voT8F+nWl+5t"
+Content-Disposition: inline
+In-Reply-To: <04103df3-1ef4-b560-a5cb-fa51737d28ad@gmail.com>
+X-Provags-ID: V03:K1:Jd3HsvpIvSkd1z9MZ8A+M8pmRMEjtJGTIH5/rKKzl1zv92guAhj
+ 9dWDOhUd2UJZ9MerqFJu2sL0Vqy01eD3StlZDn4FJIminWyxKafYCrFSKtByuDa87GeS9OR
+ qeoUp0E4UiW3sjAndGidVfCkZjgUQcURUuhYsgKl5H5XKG1g/BTOt0/CSBYYpcJ5Udag/gd
+ 3wpmaE1MgAr/8Zxl8PaIg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:7mF2ZkznjSM=:hlrB/z88BNOpxm6kPS7Ycn
+ ofob/nRkHmNbOVrePuAQCpXLj+D951wlIiCq1ths/1M2PHt95dky10JrqzFd0GDPSH7ipEwb9
+ x94B7v7gbYONFiWZ9GgrY51G+VM8OiWf/csLJ2yT7HUlW2fphGLoc+oh3cdHg6lV+G+MlHT76
+ 8NxNOjDTwEbEQTzP7WLVd4nbwED2WEzgEmRtuonDClV+bTkljXXiYcWmyTGn6uy1Hhs4kTCGt
+ oQvMU0YTycpC1/MJe3lFOosJHXDqHhTO4rpNzkLhRMEVhwFxkgFYVFN4If8SqEfHBclNHMrGs
+ Cf1+ti2nRVk38dx39qpn2TFKj09WCX93TjIPQXNTFcHU/79bRa6EI6AhyTsLNhOe1Nu7WbC4g
+ kW8OhvgIlQdXHbKCN1DBVVpKeUhzAIE8sASct4EN+DmM/sXDb1X5/ucBCiKSaTpHhmnmOAMeI
+ hJoDz+AQ3/eMgC3uUtDayH1UoC0E+cakuOW4HSHrvWSokxzlpzYB+1jwapOWsZhgouuLcfEI8
+ YHkwIhIudf2FJv+DTzcrJw1TJlIuGCwZkvBiJ3t0F34n2TiQAvU7tyyUE1j89BEqPGYUXSb1a
+ nPu+a+ec+L442oSOVJ2RqwE3j7IrmLeRjeLJ66lkLG9gMZ/AxQ05aC0k2kBADP+d4VSV+J41y
+ wZS33zkQAUtp2Hc4cLc16aLjcZdsyWRsWX9R+uA3rvrBxdqBtLnXU14a7HgjiOWezfeDyLFoZ
+ CFxIJOdAsqTh5L/F/s5o5UQzW78q+R+Nbh6TIKc0jTEcGGJw42g8wTMiywC6SQEDVTpjJAi49
+ IcgECR8E/EhgWdDNNpWqET1ppscprkWWNr8X94IHFI7PqegZ0pzpIUB/fTLv0Kqve87cnh3Pm
+ 5JVFFOO7N/5DJWx/H9OV/Q82vW/fizWdLjR+pyN4LEqNqSXd3SQcuGDMImuCL6uxrkWpPOlVe
+ 01bkLqzcNdDpVuBmiNCl78c3HmPmOoUi1mOoDblJmsD28ILkfWKoKdV7k4yHszHiJpVhZ39zN
+ OImWnjwnJ2y3lEFZHmYxFLDPAHd+gqUmtpX0O7XR8CKQYuLrZNd1RmswRqoNeA7vMxEo/4CFL
+ HO+l0943BBAcNM=
+X-Mailman-Approved-At: Wed, 10 Nov 2021 22:31:51 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,199 +98,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, Tomer Maimon <tmaimon77@gmail.com>,
+ Santosh Shilimkar <ssantosh@kernel.org>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ Tali Perry <tali.perry1@gmail.com>, Thierry Reding <thierry.reding@gmail.com>,
+ Guo Ren <guoren@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-riscv@lists.infradead.org,
+ Vincent Chen <deanbo422@gmail.com>, Will Deacon <will@kernel.org>,
+ Greg Ungerer <gerg@linux-m68k.org>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Benjamin Fair <benjaminfair@google.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+ linux-sh@vger.kernel.org, Lee Jones <lee.jones@linaro.org>,
+ Helge Deller <deller@gmx.de>, Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
+ Jonathan Hunter <jonathanh@nvidia.com>, Tony Lindgren <tony@atomide.com>,
+ Chen-Yu Tsai <wens@csie.org>, Ingo Molnar <mingo@redhat.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, xen-devel@lists.xenproject.org,
+ linux-mips@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>,
+ Len Brown <lenb@kernel.org>, Albert Ou <aou@eecs.berkeley.edu>,
+ linux-omap@vger.kernel.org,
+ Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ Vladimir Zapolskiy <vz@mleia.com>, linux-acpi@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, Mark Brown <broonie@kernel.org>,
+ Borislav Petkov <bp@alien8.de>, Greentime Hu <green.hu@gmail.com>,
+ Paul Walmsley <paul.walmsley@sifive.com>, linux-tegra@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Nancy Yuen <yuenn@google.com>, linux-arm-kernel@lists.infradead.org,
+ Juergen Gross <jgross@suse.com>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
+ Nick Hu <nickhu@andestech.com>, Avi Fishman <avifishman70@gmail.com>,
+ Patrick Venture <venture@google.com>, linux-pm@vger.kernel.org,
+ Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org,
+ Palmer Dabbelt <palmer@dabbelt.com>, Philipp Zabel <p.zabel@pengutronix.de>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, openbmc@lists.ozlabs.org,
+ Joshua Thompson <funaho@jurai.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
 
-> Allow the LPID bit width and partition table size to be set at runtime
-> from the device tree.
->
-> Move the PID bit width detection into the same place.
->
-> KVM does not support using different sizes yet, this is mainly required
-> to get the PTCR register values correct.
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+--2Vc8voT8F+nWl+5t
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Reviewed-by: Fabiano Rosas <farosas@linux.ibm.com>
+On Mon, Nov 08, 2021 at 02:36:42PM +0300, Dmitry Osipenko wrote:
+> 08.11.2021 14:22, Jonathan Neusch=C3=A4fer =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
+> > On Sun, Nov 07, 2021 at 08:42:33PM +0300, Dmitry Osipenko wrote:
+> > [...]
+> >> EC drivers tend to use higher priority in general. Jonathan, could you
+> >> please confirm that NTXEC driver is a more preferable restart method
+> >> than the watchdog?
+> >=20
+> > Yes. The original firmware uses the NTXEC to restart, and it works well,
+> > so I do think it's preferable.
+>=20
+> Thank you, then I'll update the NTXEC patch like this:
+>=20
+> https://github.com/grate-driver/linux/commit/22da3d91f1734d9a0ed036220ad4=
+ea28465af988
 
-> ---
->  arch/powerpc/include/asm/book3s/64/mmu.h |  9 +++--
->  arch/powerpc/mm/book3s64/pgtable.c       |  5 ---
->  arch/powerpc/mm/book3s64/radix_pgtable.c | 13 +------
->  arch/powerpc/mm/init_64.c                | 47 +++++++++++++++++++++++-
->  4 files changed, 52 insertions(+), 22 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-> index c02f42d1031e..8c500dd6fee4 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-> @@ -62,6 +62,9 @@ extern struct patb_entry *partition_tb;
->  #define PRTS_MASK	0x1f		/* process table size field */
->  #define PRTB_MASK	0x0ffffffffffff000UL
->  
-> +/* Number of supported LPID bits */
-> +extern unsigned int mmu_lpid_bits;
-> +
->  /* Number of supported PID bits */
->  extern unsigned int mmu_pid_bits;
->  
-> @@ -76,10 +79,8 @@ extern unsigned long __ro_after_init radix_mem_block_size;
->  #define PRTB_SIZE_SHIFT	(mmu_pid_bits + 4)
->  #define PRTB_ENTRIES	(1ul << mmu_pid_bits)
->  
-> -/*
-> - * Power9 currently only support 64K partition table size.
-> - */
-> -#define PATB_SIZE_SHIFT	16
-> +#define PATB_SIZE_SHIFT	(mmu_lpid_bits + 4)
-> +#define PATB_ENTRIES	(1ul << mmu_lpid_bits)
->  
->  typedef unsigned long mm_context_id_t;
->  struct spinlock;
-> diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-> index 9e16c7b1a6c5..13d1fbddecb9 100644
-> --- a/arch/powerpc/mm/book3s64/pgtable.c
-> +++ b/arch/powerpc/mm/book3s64/pgtable.c
-> @@ -207,17 +207,12 @@ void __init mmu_partition_table_init(void)
->  	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
->  	unsigned long ptcr;
->  
-> -	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 36), "Partition table size too large.");
->  	/* Initialize the Partition Table with no entries */
->  	partition_tb = memblock_alloc(patb_size, patb_size);
->  	if (!partition_tb)
->  		panic("%s: Failed to allocate %lu bytes align=0x%lx\n",
->  		      __func__, patb_size, patb_size);
->  
-> -	/*
-> -	 * update partition table control register,
-> -	 * 64 K size.
-> -	 */
->  	ptcr = __pa(partition_tb) | (PATB_SIZE_SHIFT - 12);
->  	set_ptcr_when_no_uv(ptcr);
->  	powernv_set_nmmu_ptcr(ptcr);
-> diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-> index ae20add7954a..1c855434f8dc 100644
-> --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-> +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-> @@ -33,7 +33,6 @@
->  
->  #include <trace/events/thp.h>
->  
-> -unsigned int mmu_pid_bits;
->  unsigned int mmu_base_pid;
->  unsigned long radix_mem_block_size __ro_after_init;
->  
-> @@ -357,18 +356,13 @@ static void __init radix_init_pgtable(void)
->  						-1, PAGE_KERNEL));
->  	}
->  
-> -	/* Find out how many PID bits are supported */
->  	if (!cpu_has_feature(CPU_FTR_HVMODE) &&
->  			cpu_has_feature(CPU_FTR_P9_RADIX_PREFETCH_BUG)) {
->  		/*
->  		 * Older versions of KVM on these machines perfer if the
->  		 * guest only uses the low 19 PID bits.
->  		 */
-> -		if (!mmu_pid_bits)
-> -			mmu_pid_bits = 19;
-> -	} else {
-> -		if (!mmu_pid_bits)
-> -			mmu_pid_bits = 20;
-> +		mmu_pid_bits = 19;
->  	}
->  	mmu_base_pid = 1;
->  
-> @@ -449,11 +443,6 @@ static int __init radix_dt_scan_page_sizes(unsigned long node,
->  	if (type == NULL || strcmp(type, "cpu") != 0)
->  		return 0;
->  
-> -	/* Find MMU PID size */
-> -	prop = of_get_flat_dt_prop(node, "ibm,mmu-pid-bits", &size);
-> -	if (prop && size == 4)
-> -		mmu_pid_bits = be32_to_cpup(prop);
-> -
->  	/* Grab page size encodings */
->  	prop = of_get_flat_dt_prop(node, "ibm,processor-radix-AP-encodings", &size);
->  	if (!prop)
-> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-> index 386be136026e..04f45fcb1222 100644
-> --- a/arch/powerpc/mm/init_64.c
-> +++ b/arch/powerpc/mm/init_64.c
-> @@ -370,6 +370,9 @@ void register_page_bootmem_memmap(unsigned long section_nr,
->  #endif /* CONFIG_SPARSEMEM_VMEMMAP */
->  
->  #ifdef CONFIG_PPC_BOOK3S_64
-> +unsigned int mmu_lpid_bits;
-> +unsigned int mmu_pid_bits;
-> +
->  static bool disable_radix = !IS_ENABLED(CONFIG_PPC_RADIX_MMU_DEFAULT);
->  
->  static int __init parse_disable_radix(char *p)
-> @@ -437,19 +440,61 @@ static void __init early_check_vec5(void)
->  	}
->  }
->  
-> +static int __init dt_scan_mmu_pid_width(unsigned long node,
-> +					   const char *uname, int depth,
-> +					   void *data)
-> +{
-> +	int size = 0;
-> +	const __be32 *prop;
-> +	const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
-> +
-> +	/* We are scanning "cpu" nodes only */
-> +	if (type == NULL || strcmp(type, "cpu") != 0)
-> +		return 0;
-> +
-> +	/* Find MMU LPID, PID register size */
-> +	prop = of_get_flat_dt_prop(node, "ibm,mmu-lpid-bits", &size);
-> +	if (prop && size == 4)
-> +		mmu_lpid_bits = be32_to_cpup(prop);
-> +
-> +	prop = of_get_flat_dt_prop(node, "ibm,mmu-pid-bits", &size);
-> +	if (prop && size == 4)
-> +		mmu_pid_bits = be32_to_cpup(prop);
-> +
-> +	if (!mmu_pid_bits && !mmu_lpid_bits)
-> +		return 0;
-> +
-> +	return 1;
-> +}
-> +
->  void __init mmu_early_init_devtree(void)
->  {
-> +	int rc;
-> +	bool hvmode = !!(mfmsr() & MSR_HV);
-> +
->  	/* Disable radix mode based on kernel command line. */
->  	if (disable_radix)
->  		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
->  
-> +	rc = of_scan_flat_dt(dt_scan_mmu_pid_width, NULL);
-> +	if (hvmode && !mmu_lpid_bits) {
-> +		if (early_cpu_has_feature(CPU_FTR_ARCH_207S))
-> +			mmu_lpid_bits = 12; /* POWER8-10 */
-> +		else
-> +			mmu_lpid_bits = 10; /* POWER7 */
-> +	}
-> +	if (!mmu_pid_bits) {
-> +		if (early_cpu_has_feature(CPU_FTR_ARCH_300))
-> +			mmu_pid_bits = 20; /* POWER9-10 */
-> +	}
-> +
->  	/*
->  	 * Check /chosen/ibm,architecture-vec-5 if running as a guest.
->  	 * When running bare-metal, we can use radix if we like
->  	 * even though the ibm,architecture-vec-5 property created by
->  	 * skiboot doesn't have the necessary bits set.
->  	 */
-> -	if (!(mfmsr() & MSR_HV))
-> +	if (!hvmode)
->  		early_check_vec5();
->  
->  	if (early_radix_enabled()) {
+I tested again, but sys_off_handler_reboot called a bogus pointer
+(probably reboot_prepare_cb). I think it was left uninitialized in
+ntxec_probe, which uses devm_kmalloc. I guess we could switch it to
+devm_kzalloc:
+
+diff --git a/drivers/mfd/ntxec.c b/drivers/mfd/ntxec.c
+index 1f55dfce14308..30364beb4b1d0 100644
+--- a/drivers/mfd/ntxec.c
++++ b/drivers/mfd/ntxec.c
+@@ -144,7 +144,7 @@ static int ntxec_probe(struct i2c_client *client)
+ 	const struct mfd_cell *subdevs;
+ 	size_t n_subdevs;
+=20
+-	ec =3D devm_kmalloc(&client->dev, sizeof(*ec), GFP_KERNEL);
++	ec =3D devm_kzalloc(&client->dev, sizeof(*ec), GFP_KERNEL);
+ 	if (!ec)
+ 		return -ENOMEM;
+=20
+
+
+With that done, it works flawlessly.
+
+
+Thanks,
+Jonathan
+
+--2Vc8voT8F+nWl+5t
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEvHAHGBBjQPVy+qvDCDBEmo7zX9sFAmGLoj4ACgkQCDBEmo7z
+X9tbGw/9GW9TBNeJDqVwinH41nEM2TsnygEKpr7D3uPWXiWIIh7wxva0XnLkeDOr
+YZUOSFjLglCoW9n8UjIgpmScFQ9OY5em2dY9iSOPk55FYy/kkD1LKXl8Qbto3Xjr
+XRwv4EDIxlfO2uvjXgc07E2zGjiZdqaFwcIiMz1l8Rns6jC+AbzO0KFcoffXXKCg
+oCDi/e1hnVfze/XGWTTSXbofwfAKHJPVE11uF8lK2Uqv0THOAbvpIQdZiQPaNuVe
+bZuJ1p6wMxzjc6HiB8C6aJ0sy5Po98ZKWTAvvqFXBitgvOx0VCgKfJfqS+06qxiA
+gYnxdQAIJjcwrBJYfpry4rg9nBYvH7Jao/uKYoXSm73mtXdEqG4oIQIZ0eC7jS/d
+dRGjzR5mrhaA3G8mWMssxg6RX1EGpYBimy7XGpgml/bIXrEjGYZi3FaGZSnk9UTd
+oAutr3b9I43OZFYo/gRKjQmEl9C1Ru/ZsmKDin75X8hfCzrFOoAUCLQ7X/tbbPoF
+As6x8TUBJY8Zd9xBW2i/4sm+ZPAuMG5TMzzpRj/DEs2RN5UouXycBqzTFNleFYYf
+LuwPDYZYSqe75uXgu0K0weup8tULnVfBuvOJDR5yMF7tf90iNku7JIcIXjtKglWH
+EA0twe/kQWknjeUcmaR65U1v+cf8ekV6V8TVrEKb4cCEYf3HPBw=
+=z+7h
+-----END PGP SIGNATURE-----
+
+--2Vc8voT8F+nWl+5t--
