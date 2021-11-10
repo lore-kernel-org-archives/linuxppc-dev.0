@@ -2,77 +2,79 @@ Return-Path: <SRS0=gbiG=P5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78CEAC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 00:30:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FAF9C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 00:38:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C5EE861178
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 00:30:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C5EE861178
+	by mail.kernel.org (Postfix) with ESMTPS id A20C16102A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 00:38:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A20C16102A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hpm2j1RFwz3bvH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 11:30:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HpmCz0h0Yz30RN
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 11:38:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=HoUfE9FM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=QLV/LF4O;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::533;
- helo=mail-pg1-x533.google.com; envelope-from=cgel.zte@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c;
+ helo=mail-pl1-x62c.google.com; envelope-from=jniethe5@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=HoUfE9FM; dkim-atps=neutral
-Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com
- [IPv6:2607:f8b0:4864:20::533])
+ header.s=20210112 header.b=QLV/LF4O; dkim-atps=neutral
+Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com
+ [IPv6:2607:f8b0:4864:20::62c])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hpm1w3qWgz2xZm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Nov 2021 11:29:22 +1100 (AEDT)
-Received: by mail-pg1-x533.google.com with SMTP id r28so657973pga.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Nov 2021 16:29:22 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HpmCG2d70z2xrm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Nov 2021 11:37:28 +1100 (AEDT)
+Received: by mail-pl1-x62c.google.com with SMTP id r5so1610913pls.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Nov 2021 16:37:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=AEzErmitUUc1WCRwF90GY08l0xszb/xghqlykO8h5XQ=;
- b=HoUfE9FMPs9FbWg+kuLPHy/L4ScIui5grCU8JXDkrj4jNnMmSBVDJH9ybI+5cI5KyM
- kiyqA9oGfmaiIp0bg7woJAxlerKajDVP0Qk/XBfycWTsDVEnm1Ig5L4uf/WmUu841bRT
- aNkR/veAg2w3ULbimJTbQGJEpcF5Bo9bGvdaS3Hf7dsxkwwBaE7ip0vnfwZv8XFHmCcc
- e57WL3zXoxDqavdn1mSjovQXAXN0QC3Tk6KmEJPh+BtWVmMDtqURDnpB9os97UMcTwr0
- BAlnEEVb28PTC+hW82HQT5m9w4tC7U+/pinOH0TFk24abX3MYyx4ZcJMfaNlYxmeY9Q0
- km0g==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=wHDlWeOgU30NN6ENKp1b8YZhUqZ6c4bprLjEFL13Z18=;
+ b=QLV/LF4OQfkNNEhLqWNZgFkjZvZ0QhFs+a8yH5fBdgzaNbYRoOzofU3U5W0qZhwZ3a
+ McNoi9kXmN9TQgVHLGC+wKnrxJRabZ7iVxz+LxLGjyZ5VePFThyJqw1uoYs7HxwXeiHb
+ 3x3BKPshGwyiSzv4yRRpdHANooghRCTiFllmEG3XphqoMwZ7/TzrNVaA4d4F/a2RdT+m
+ 71QV8AACo+t7QckhGrG7FD3bKrpnc8s6vQVA3FjVVKWa/O2ogFELjexDFZCbocp3omtb
+ iaEo5m2w8vRfQ7RhUsvCmGIHMmE20EBX19m6ySyoLmZpQV+nUDX2QQKeNIW1rT/jFZ0i
+ 7e7g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=AEzErmitUUc1WCRwF90GY08l0xszb/xghqlykO8h5XQ=;
- b=Q6H6Pv1xCdvmqG5JRLGlbXN9qJrQM2Dv0lOfl4cvKttAcjmIYtC+3XZ5JEw0Llxkjw
- IyScWRTUYVgehC7kNKkMC3KPy39YEJYehdQG33SupvS2sSpk6KQh5D8T+DVRYdt3ENxG
- f0pvQbzGpR/B8TkSbCsbmpwdyAuP7jMWL6ltMMaLrgqj1UQZ6OrW5sXc2ZJD/XtZr7uX
- q0ykTbfFZVcMz7xLbzkKYDvzkxpqGcPn8lxVwLZNjkpzvaU44oxEmYZDHaFASxCXpQAQ
- 2ljQhCFeMEUWV3CVZ41hdOxMkQW2Wc8UCCWgjxIc2RUjZL/V7fviHhuDWcOmZh0nstvn
- /iqw==
-X-Gm-Message-State: AOAM533I/RFEF4ju1j+mAjvb+7uqf1tw8yRpn/HkpCs8hW+CwGuZQ+eM
- 0tp/Y2CPAN5dk03pzdE+VJc=
-X-Google-Smtp-Source: ABdhPJye/VUSnlCLCAknWO+RWaynEg+Kow/VhPktmT23o2DuN4Tmpy6jXdqg82E0C967zkissHr4bg==
-X-Received: by 2002:a05:6a00:1a50:b0:49f:fc2a:fa9f with SMTP id
- h16-20020a056a001a5000b0049ffc2afa9fmr8630020pfv.43.1636504159274; 
- Tue, 09 Nov 2021 16:29:19 -0800 (PST)
-Received: from localhost.localdomain ([193.203.214.57])
- by smtp.gmail.com with ESMTPSA id f185sm9515716pfg.39.2021.11.09.16.29.15
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=wHDlWeOgU30NN6ENKp1b8YZhUqZ6c4bprLjEFL13Z18=;
+ b=6KOjailELDB8/T26jY4u7ww/mD2CWY2s+8bPdCpbfAvOhL5Uv7Mn6EVhgfoISM8Hyv
+ JnmAsZLB2eLRl47GNahxN7ODwrg0cfmAz4la0WkuBC6vzm0ZaFV/iIR8LNaYB7fKWLp9
+ VoQqTwDv20rksHAzckMoYrGdZ6B0P3zCmgZGjUD93Hm4CPB9EvIVY6W2Y/Huoe0HfS/E
+ TpEQKQcGsCwwljt/kybXg9/Ma43FqKGK1lej4HNj+5CMlclGRzXm8tk/0RiT53fEFHB6
+ RZuLdShwlQ0G+HaURlFakXi01BbL8gJ1styot7lKngBIYQ1FQAoc+Z4xOdfymLpqlxNW
+ ihyw==
+X-Gm-Message-State: AOAM5308I21oVwVntIiLnGdX3PNgbfsweMK2K6+sRCes8ljiCgAIruQJ
+ 9iI27xKe6otKlOB2RmRdtv+lcIQxSXttHg==
+X-Google-Smtp-Source: ABdhPJyltz02dr6tIZ16ouqfPzpWn7t7yBnEKKHcq2wDt0+darURf0en6SKaqjaVK/KJmoG7J+WrpA==
+X-Received: by 2002:a17:90b:1d0f:: with SMTP id
+ on15mr12106785pjb.144.1636504644936; 
+ Tue, 09 Nov 2021 16:37:24 -0800 (PST)
+Received: from tee480.ozlabs.ibm.com
+ (159-196-117-139.9fc475.syd.nbn.aussiebb.net. [159.196.117.139])
+ by smtp.gmail.com with ESMTPSA id t21sm15854074pgo.12.2021.11.09.16.37.23
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 09 Nov 2021 16:29:18 -0800 (PST)
-From: cgel.zte@gmail.com
-X-Google-Original-From: ye.guojin@zte.com.cn
-To: nicoleotsuka@gmail.com
-Subject: [PATCH] ASoC: imx-hdmi: add put_device() after
- of_find_device_by_node()
-Date: Wed, 10 Nov 2021 00:29:10 +0000
-Message-Id: <20211110002910.134915-1-ye.guojin@zte.com.cn>
+ Tue, 09 Nov 2021 16:37:24 -0800 (PST)
+From: Jordan Niethe <jniethe5@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v7 1/5] powerpc: Allow clearing and restoring registers
+ independent of saved breakpoint state
+Date: Wed, 10 Nov 2021 11:37:13 +1100
+Message-Id: <20211110003717.1150965-2-jniethe5@gmail.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20211110003717.1150965-1-jniethe5@gmail.com>
+References: <20211110003717.1150965-1-jniethe5@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -86,42 +88,110 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Xiubo.Lee@gmail.com, festevam@gmail.com,
- s.hauer@pengutronix.de, tiwai@suse.com, lgirdwood@gmail.com, perex@perex.cz,
- broonie@kernel.org, linux-imx@nxp.com, kernel@pengutronix.de,
- Ye Guojin <ye.guojin@zte.com.cn>, shawnguo@kernel.org, shengjiu.wang@gmail.com,
- Zeal Robot <zealci@zte.com.cn>, linux-arm-kernel@lists.infradead.org
+Cc: Jordan Niethe <jniethe5@gmail.com>, cmr@bluescreens.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Ye Guojin <ye.guojin@zte.com.cn>
+For the coming temporary mm used for instruction patching, the
+breakpoint registers need to be cleared to prevent them from
+accidentally being triggered. As soon as the patching is done, the
+breakpoints will be restored. The breakpoint state is stored in the per
+cpu variable current_brk[]. Add a pause_breakpoints() function which will
+clear the breakpoint registers without touching the state in
+current_bkr[]. Add a pair function unpause_breakpoints() which will move
+the state in current_brk[] back to the registers.
 
-This was found by coccicheck:
-./sound/soc/fsl/imx-hdmi.c,209,1-7,ERROR  missing put_device; call
-of_find_device_by_node on line 119, but without a corresponding object
-release within this function.
-
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Ye Guojin <ye.guojin@zte.com.cn>
+Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
 ---
- sound/soc/fsl/imx-hdmi.c | 2 ++
- 1 file changed, 2 insertions(+)
+v7: New to series
+---
+ arch/powerpc/include/asm/debug.h |  2 ++
+ arch/powerpc/kernel/process.c    | 36 +++++++++++++++++++++++++++++---
+ 2 files changed, 35 insertions(+), 3 deletions(-)
 
-diff --git a/sound/soc/fsl/imx-hdmi.c b/sound/soc/fsl/imx-hdmi.c
-index f10359a28800..929f69b758af 100644
---- a/sound/soc/fsl/imx-hdmi.c
-+++ b/sound/soc/fsl/imx-hdmi.c
-@@ -145,6 +145,8 @@ static int imx_hdmi_probe(struct platform_device *pdev)
- 	data->dai.capture_only = false;
- 	data->dai.init = imx_hdmi_init;
+diff --git a/arch/powerpc/include/asm/debug.h b/arch/powerpc/include/asm/debug.h
+index 86a14736c76c..83f2dc3785e8 100644
+--- a/arch/powerpc/include/asm/debug.h
++++ b/arch/powerpc/include/asm/debug.h
+@@ -46,6 +46,8 @@ static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
+ #endif
  
-+	put_device(&cpu_pdev->dev);
+ void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk);
++void pause_breakpoints(void);
++void unpause_breakpoints(void);
+ bool ppc_breakpoint_available(void);
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+ extern void do_send_trap(struct pt_regs *regs, unsigned long address,
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 406d7ee9e322..22ed72430683 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -688,6 +688,7 @@ DEFINE_INTERRUPT_HANDLER(do_break)
+ 
+ static DEFINE_PER_CPU(struct arch_hw_breakpoint, current_brk[HBP_NUM_MAX]);
+ 
 +
- 	if (of_node_name_eq(cpu_np, "sai")) {
- 		data->cpu_priv.sysclk_id[1] = FSL_SAI_CLK_MAST1;
- 		data->cpu_priv.sysclk_id[0] = FSL_SAI_CLK_MAST1;
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+ /*
+  * Set the debug registers back to their default "safe" values.
+@@ -865,10 +866,8 @@ static inline int set_breakpoint_8xx(struct arch_hw_breakpoint *brk)
+ 	return 0;
+ }
+ 
+-void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk)
++static void ____set_breakpoint(int nr, struct arch_hw_breakpoint *brk)
+ {
+-	memcpy(this_cpu_ptr(&current_brk[nr]), brk, sizeof(*brk));
+-
+ 	if (dawr_enabled())
+ 		// Power8 or later
+ 		set_dawr(nr, brk);
+@@ -882,6 +881,12 @@ void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk)
+ 		WARN_ON_ONCE(1);
+ }
+ 
++void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk)
++{
++	memcpy(this_cpu_ptr(&current_brk[nr]), brk, sizeof(*brk));
++	____set_breakpoint(nr, brk);
++}
++
+ /* Check if we have DAWR or DABR hardware */
+ bool ppc_breakpoint_available(void)
+ {
+@@ -894,6 +899,31 @@ bool ppc_breakpoint_available(void)
+ }
+ EXPORT_SYMBOL_GPL(ppc_breakpoint_available);
+ 
++/* Disable the breakpoint in hardware without touching current_brk[] */
++void pause_breakpoints(void)
++{
++	struct arch_hw_breakpoint brk = {0};
++	int i;
++
++	if (!ppc_breakpoint_available())
++		return;
++
++	for (i = 0; i < nr_wp_slots(); i++)
++		____set_breakpoint(i, &brk);
++}
++
++/* Renable the breakpoint in hardware from current_brk[] */
++void unpause_breakpoints(void)
++{
++	int i;
++
++	if (!ppc_breakpoint_available())
++		return;
++
++	for (i = 0; i < nr_wp_slots(); i++)
++		____set_breakpoint(i, this_cpu_ptr(&current_brk[i]));
++}
++
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 
+ static inline bool tm_enabled(struct task_struct *tsk)
 -- 
 2.25.1
 
