@@ -2,63 +2,77 @@ Return-Path: <SRS0=gbiG=P5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6998C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 17:12:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50D7CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 18:08:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C427F6115A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 17:12:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org C427F6115A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id A8BA66117A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Nov 2021 18:08:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A8BA66117A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HqBHX0H63z3c61
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Nov 2021 04:12:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HqCWn53RRz3bT7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Nov 2021 05:08:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=DsfpiHC7;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.50;
+ helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=DsfpiHC7; 
+ dkim-atps=neutral
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de
+ [85.215.255.50])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HqBH370Q1z2yLv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Nov 2021 04:12:13 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HqBGw58FDz9sSJ;
- Wed, 10 Nov 2021 18:12:08 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BV-OD3C18pQI; Wed, 10 Nov 2021 18:12:08 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HqBGw4CxQz9sSG;
- Wed, 10 Nov 2021 18:12:08 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B5D88B77E;
- Wed, 10 Nov 2021 18:12:08 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id EhBDh9Hq4S2x; Wed, 10 Nov 2021 18:12:08 +0100 (CET)
-Received: from [192.168.233.217] (unknown [192.168.233.217])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0391B8B77A;
- Wed, 10 Nov 2021 18:12:07 +0100 (CET)
-Message-ID: <ed04d4a1-7a60-ee39-f64b-203b299e8875@csgroup.eu>
-Date: Wed, 10 Nov 2021 18:12:10 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HqCVy436xz2xvs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Nov 2021 05:07:36 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1636567647;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:References:Cc:To:From:Subject:Date:Message-ID:Cc:Date:
+ From:Subject:Sender;
+ bh=un7NStfNwXCHmUnry87vKRBPThpeYHr68ghmBQMF70o=;
+ b=DsfpiHC7UekGMzBk5FwbJLJWR0gNb23MefeqmnAPe9Tk8WRjwQSbq7clMnlQX2Vmll
+ WceZZPKNlQffrTfY1s09rfgs7nUKIyBleSj8mKNQ/66vXlTqAv5086+IFT59t+xkrWB2
+ mPkPgcXTYWQD3GZELHCjdmOPAXyymaCyuWOKYAC1g5N/CTYZR5WTqF1wAERykLoShYTs
+ +TPEwHvb8/RxIcHP/IYiwbnQftL6gJHBsyUV9jebugBtJ4xC9BvzHMW4724egxU0vQId
+ R9fSbP+rUEB0wwj9JFAcr0/qWfqA16K0XySOOVG+4DdH5R10R4nTLQ5CqWauPlg8qN/J
+ qBig==
+Authentication-Results: strato.com;
+    dkim=none
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPgAdSVjtJkpysql8WpJpy8CVmbv+Q=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPV6:2a02:8109:89c0:ebfc:ccde:9e75:e3b9:1705]
+ by smtp.strato.de (RZmta 47.34.5 AUTH)
+ with ESMTPSA id N03801xAAI7OAgs
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Wed, 10 Nov 2021 19:07:24 +0100 (CET)
+Message-ID: <78308692-02e6-9544-4035-3171a8e1e6d4@xenosoft.de>
+Date: Wed, 10 Nov 2021 19:07:24 +0100
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.2.0
-Subject: Re: [PATCH] powerpc: Fix sigset_t copy
-Content-Language: fr-FR
-To: Finn Thain <fthain@linux-m68k.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-References: <08bbe7240b384016e0b2912ecf3bf5e2d25ef2c6.1636501628.git.fthain@linux-m68k.org>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <08bbe7240b384016e0b2912ecf3bf5e2d25ef2c6.1636501628.git.fthain@linux-m68k.org>
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
+ Gecko/20100101 Thunderbird/91.3.0
+Subject: Re: [PASEMI] Nemo board doesn't recognize any ATA disks with the
+ pci-v5.16 updates
+Content-Language: de-DE
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: "bhelgaas@google.com >> Bjorn Helgaas" <bhelgaas@google.com>,
+ maz@kernel.org, Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+ lorenzo.pieralisi@arm.com, Rob Herring <robh@kernel.org>
+References: <3eedbe78-1fbd-4763-a7f3-ac5665e76a4a@xenosoft.de>
+ <15731ad7-83ff-c7ef-e4a1-8b11814572c2@xenosoft.de>
+ <17e37b22-5839-0e3a-0dbf-9c676adb0dec@xenosoft.de>
+ <3b210c92-4be6-ce49-7512-bb194475eeab@xenosoft.de>
+In-Reply-To: <3b210c92-4be6-ce49-7512-bb194475eeab@xenosoft.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,79 +84,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Christopher M. Riedl" <cmr@bluescreens.de>
+Cc: axboe@kernel.dk, kw@linux.com, Darren Stevens <darren@stevens-zone.net>,
+ mad skateman <madskateman@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ damien.lemoal@opensource.wdc.com, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ Olof Johansson <olof@lixom.net>, Matthew Leaman <matthew@a-eon.biz>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, robert@swiecki.net,
+ Christian Zigotzky <info@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 09 November 2021 at 03:45 pm, Christian Zigotzky wrote:
+ > Hello,
+ >
+ > The Nemo board [1] doesn't recognize any ATA disks with the pci-v5.16 
+updates [2].
+ >
+ > Error messages:
+ >
+ > ata4.00: gc timeout cmd 0xec
+ > ata4.00: failed to IDENTIFY (I/O error, error_mask=0x4)
+ > ata1.00: gc timeout cmd 0xec
+ > ata1.00: failed to IDENTIFY (I/O error, error_mask=0x4)
+ > ata3.00: gc timeout cmd 0xec
+ > ata3.00: failed to IDENTIFY (I/O error, error_mask=0x4)
+ >
+ > I was able to revert the new pci-v5.16 updates [2]. After a new 
+compiling, the kernel recognize all ATA disks correctly.
+ >
+ > Could you please check the pci-v5.16 updates [2]?
+ >
+ > Please find attached the kernel config.
+ >
+ > Thanks,
+ > Christian
+ >
+ > [1] https://en.wikipedia.org/wiki/AmigaOne_X1000
+ > [2] 
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=0c5c62ddf88c34bc83b66e4ac9beb2bb0e1887d4
+
+Hi All,
+
+Many thanks for your nice responses.
+
+I bisected today [1]. 0412841812265734c306ba5ef8088bcb64d5d3bd (of/irq: 
+Allow matching of an interrupt-map local to an interrupt controller) [2] 
+is the first bad commit.
+
+I was able to revert the first bad commit [1]. After a new compiling, 
+the kernel detects all ATA disks without any problems.
+
+I created a patch for an easy reverting the bad commit [1]. With this 
+patch we can do further our kernel tests.
+
+Could you please check the first bad commit [2]?
+
+Thanks,
+Christian
+
+[1] https://forum.hyperion-entertainment.com/viewtopic.php?p=54398#p54398
+[2] 
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=0412841812265734c306ba5ef8088bcb64d5d3bd
+
+[+ Marc Zyngier, Alyssa Rosenzweig, Lorenzo Pieralisi, and Rob Herring 
+because of the first bad commit]
 
 
-Le 10/11/2021 à 00:47, Finn Thain a écrit :
-> From: Christophe Leroy <christophe.leroy@csgroup.eu>
-> 
-> The conversion from __copy_from_user() to __get_user() introduced a
-> regression in __get_user_sigset() in v5.13. The bug was subsequently
-> copied and pasted in unsafe_get_user_sigset().
-> 
-> The regression was reported by users of the Xorg packages distributed in
-> Debian/powerpc --
-> 
->      "The symptoms are that the fb screen goes blank, with the backlight
->      remaining on and no errors logged in /var/log; wdm (or startx) run
->      with no effect (I tried logging in in the blind, with no effect).
->      And they are hard to kill, requiring 'kill -KILL ...'"
-> 
-> Fix the regression by casting the __get_user() assignment lvalue to u64
-> so that the entire struct gets copied.
-> 
-> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Cc: Christopher M. Riedl <cmr@bluescreens.de>
-> Link: https://lore.kernel.org/linuxppc-dev/FEtBUOuFPMN4zJy4bIOqz6C4xoliCbTxS7VtMKD6UZkbvEbycUceRgGAd7e9-trRdwVN3hWAbQi0qrNx8Zgn8niTQf2KPVdw-W35czDIaeQ=@protonmail.com/
-> Fixes: 887f3ceb51cd ("powerpc/signal32: Convert do_setcontext[_tm]() to user access block")
-> Fixes: d3ccc9781560 ("powerpc/signal: Use __get_user() to copy sigset_t")
-> Reported-and-tested-by: Stan Johnson <userm57@yahoo.com>
-> Signed-off-by: Finn Thain <fthain@linux-m68k.org>
-> ---
-
-Hi Finn,
-
-> Christophe, I hope this change is the one you wanted to see upstream (?).
-> If it is acceptable please add your signed-off-by tag.
-
-I'm on holidays, I was planing to handle this next week.
-
-Only PPC64 uses __get_user_sigset() on mainline so I don't think it is 
-worth modifying it. If we decide to modify it anyway in mainline, it 
-should be another patch that can be backported without additional effort.
-
-For unsafe_get_user_sigset(), as we don't have the KUAP overhead that we 
-had with __get_user(), I'd prefer we simply perform two 32 bits 
-unsafe_get_user(), one for sig[0] and one for sig[1], instead of all 
-those casts to u64.
-
-Thanks anyway for the detailed description of the problem.
-Christophe
-
-> ---
->   arch/powerpc/kernel/signal.h | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
-> index 1f07317964e4..44e736b88e91 100644
-> --- a/arch/powerpc/kernel/signal.h
-> +++ b/arch/powerpc/kernel/signal.h
-> @@ -23,10 +23,10 @@ static inline int __get_user_sigset(sigset_t *dst, const sigset_t __user *src)
->   {
->   	BUILD_BUG_ON(sizeof(sigset_t) != sizeof(u64));
->   
-> -	return __get_user(dst->sig[0], (u64 __user *)&src->sig[0]);
-> +	return __get_user(*(u64 *)&dst->sig[0], (u64 __user *)&src->sig[0]);
->   }
->   #define unsafe_get_user_sigset(dst, src, label) \
-> -	unsafe_get_user((dst)->sig[0], (u64 __user *)&(src)->sig[0], label)
-> +	unsafe_get_user(*(u64 *)&(dst)->sig[0], (u64 __user *)&(src)->sig[0], label)
->   
->   #ifdef CONFIG_VSX
->   extern unsigned long copy_vsx_to_user(void __user *to,
-> 
