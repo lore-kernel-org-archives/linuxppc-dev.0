@@ -2,22 +2,22 @@ Return-Path: <SRS0=UfQ7=QC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E66EAC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 19:46:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1244CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 19:47:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4979561ACE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 19:46:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 4979561ACE
+	by mail.kernel.org (Postfix) with ESMTPS id 3C15861ACE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 19:47:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 3C15861ACE
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=sent.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HtKT14g2Dz306h
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 06:46:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HtKTm6Pfjz3c5b
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 06:47:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm2 header.b=Ed1fz5Ur;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=A4kmEJ1u;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm2 header.b=xB60fto7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=ARzj9GHt;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=sent.com (client-ip=66.111.4.229;
@@ -25,69 +25,71 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256
- header.s=fm2 header.b=Ed1fz5Ur; 
+ header.s=fm2 header.b=xB60fto7; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm1 header.b=A4kmEJ1u; 
+ header.a=rsa-sha256 header.s=fm1 header.b=ARzj9GHt; 
  dkim-atps=neutral
 Received: from new3-smtp.messagingengine.com (new3-smtp.messagingengine.com
  [66.111.4.229])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HtKSB1PGfz2yHX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HtKSB1Kdyz2yHP
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 06:46:01 +1100 (AEDT)
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
- by mailnew.nyi.internal (Postfix) with ESMTP id E184A5805B1;
- Mon, 15 Nov 2021 14:37:48 -0500 (EST)
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+ by mailnew.nyi.internal (Postfix) with ESMTP id 49F79580604;
+ Mon, 15 Nov 2021 14:37:51 -0500 (EST)
 Received: from mailfrontend2 ([10.202.2.163])
- by compute5.internal (MEProxy); Mon, 15 Nov 2021 14:37:48 -0500
+ by compute3.internal (MEProxy); Mon, 15 Nov 2021 14:37:51 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sent.com; h=from
- :to:cc:subject:date:message-id:reply-to:mime-version
- :content-transfer-encoding; s=fm2; bh=orTWr/BdFPg59h4hngLif2VhgL
- B0bl+rFHZpRRyIkS0=; b=Ed1fz5UrkY2HQYKDvFsL0C7TFBad1qpGnzrhTYEF98
- KYuyT3C6YrqBfrBYHy5ug+pBvAyxQ9UGWT2ebj7Q05NFslhNaL7PQda+4qZi8H4j
- UmX2z3ghjiwLir/83wjyS5DiCKwP1f0PVZsqJ5vC97JLFBZGIC9tgqeyvT8nbAoG
- j15IXPObAN8p5piwWNUyljS9qw1IbngUmC5K5eC9j223Q0beaRbwr7U/UnjbjDj9
- T+UoBHPE2Iyd5z++uBPQ2sVHoVFSnMfTfD5G5LUyv0oLN2Qv1oBvNxOJFHP/vJWh
- ZREZtNLZ+aeqDWNSZ325NYGpEDahpCeefqEXz3idyzKw==
+ :to:cc:subject:date:message-id:in-reply-to:references:reply-to
+ :mime-version:content-transfer-encoding; s=fm2; bh=AnymEuCYCocHA
+ Ds+cC0A+imh3dmQP2pOP/ONvg/OKOg=; b=xB60fto7b9p9zKYRdTNdwVmSChO8D
+ SsoFs9Iaft6I6qyt8nf1cWMRPpERDLgYtJOY0e4P4TglBSN2AD5X5hepF72gu8A9
+ 3bvt5vdgmvsE1/Rmxdq98v6ijYxlrVXB08X4oJCo6XWKh+j/x3mT3xJBTVhK9UTt
+ gwPKsITbiYfpYQR72+sVMrihaWedOfxpwppqGJoxAVxys5BWkP3r8uWtHMgsBZEP
+ L8ilWVDaa5mKsOtUesoBnZRwPXg4inqJjIUHFvHiZH7aFIfqcT+9zn68o17HRl4t
+ cso1oqksai7tfAsNxYbjKiE9enRRMgsV4ASU/j9Z362aYKw93iODw8t0w==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
- :message-id:mime-version:reply-to:subject:to:x-me-proxy
- :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=orTWr/
- BdFPg59h4hngLif2VhgLB0bl+rFHZpRRyIkS0=; b=A4kmEJ1ugobNUsOlhtU9Ik
- Vb7h5/Y2ujIFuSMek1uU+5yqMBc4Zk8fQgiFUYIrt1EeSXvzeTWMqOZMgwFbg1jX
- H6CFQswsi6GNSyIfemmH4VETAewa4eEpVybaxyQ5Wkeg+Wi5Es0i9W73AqcEbetT
- YncaPU0a3cxLloc4ujX4Xf/vBA1j51tonN1oD+5b0bdDrIoRi1MhmZ0ELSBuM11G
- w4hcEHpAFl5VRHqnSGTA9Mr5R3bLIl8qnelTsIrcnpHryU7BOKQG6DoOR94mOdkH
- zh++T/Fm0ls+BQmlMwPCffSNO3tQmODoFvG9tE6yVnf1U8X/HepwE8u6EipnVZhw
- ==
-X-ME-Sender: <xms:C7eSYVXFk7JmR9-1n-lfZNecRv0L2HfJvcd9GZIEJeaEcwTxkcY5cw>
- <xme:C7eSYVl_h7QJsI-RfFnobMcPfT7N8UNLbsLNZuKe76VIpV9nfWCWWOg9Q-kCQlxbs
- seUqVGwX7mU3oTSXA>
-X-ME-Received: <xmr:C7eSYRaHhyU-FxOxc_yzKNnpWM8qbnNEeyNn_Bg_on1LJzAk0pJr1s447nOnDYdGZ6B6AweR>
+ :in-reply-to:message-id:mime-version:references:reply-to:subject
+ :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm1; bh=AnymEuCYCocHADs+cC0A+imh3dmQP2pOP/ONvg/OKOg=; b=ARzj9GHt
+ 89g8ElhfXy2AeWhnjWydjJMa7fp8+4jCzsf+jp8rv0KH7rW7KKKl40wkQOQP06K3
+ sop3YEKBNBAa2jUfpJo9pZ5EXaNJDa8zswYcftk3XMqBYiSXrHSa066NfWqNn1Zw
+ 96W9bSlWUscrUpyoAwaJMRaf23fi7ZvWYnEN9xPvIO48sq/n6KAOCEpZN2Rd3MeP
+ 9YghOUKXbxaU+2GuzQ/JKc6O2blT1W9oJ5qdLMt1YGGj6temHwPaGPTJ0jVGypV3
+ djHnqcVbuQ/oN//2e48ZaqMMYe18Fm+pc0vyoOAp66vhtkFhOqx5WInoUtNJLyTX
+ Vb0drxpdVv3WIg==
+X-ME-Sender: <xms:D7eSYepi9_Z8uf-YaHwqRwLRPKfy8_CJW2g9ecIlmuCKhdZavlICEg>
+ <xme:D7eSYcp14c186VrFe3DZgntVxmtYeZCcVNEh5-NBfBfe2e5nELed8sVqHe72rpUXU
+ XvaoGjEFFbgF0eo_Q>
+X-ME-Received: <xmr:D7eSYTP7avKM76qeEnjbyf3F9-6N7NXUyyLCQRFSS4ZKQoxTp6EMnMvUHusYBIy8Gnf1HltY>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvuddrfedtgddutddtucetufdoteggodetrfdotf
  fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
  uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- cujfgurhephffvufffkfforhgggfestdhqredtredttdenucfhrhhomhepkghiucgjrghn
- uceoiihirdihrghnsehsvghnthdrtghomheqnecuggftrfgrthhtvghrnhepteeiiedtje
- fghfefueekjedvueeftddvudelhfetudffiefgfeetheeghfdvgedunecuffhomhgrihhn
- pehkvghrnhgvlhdrohhrghenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmh
- grihhlfhhrohhmpeiiihdrhigrnhesshgvnhhtrdgtohhm
-X-ME-Proxy: <xmx:C7eSYYW0PZ-OaD6zFoQJg2937ANlsMaGnaz86EkAFahT-usXJa0ssw>
- <xmx:C7eSYfkeVTrkSW9plAacUahXN7oJnoopoWkV6nDN80Fcwuvfih28oQ>
- <xmx:C7eSYVeChEzqCpejz1a6-1nlYfnXpTIZR_hoK4SVdTUqtd3rZdDfow>
- <xmx:DLeSYYgAbbOso3y3JuXIID0BiejBpUjgP3A8s-Tdof442Ed_vIBzYA>
+ cujfgurhephffvufffkffojghfrhgggfestdhqredtredttdenucfhrhhomhepkghiucgj
+ rghnuceoiihirdihrghnsehsvghnthdrtghomheqnecuggftrfgrthhtvghrnhepieejue
+ dvueduuefhgefhheeiuedvtedvuefgieegveetueeiueehtdegudehfeelnecuvehluhhs
+ thgvrhfuihiivgepudenucfrrghrrghmpehmrghilhhfrhhomhepiihirdihrghnsehsvg
+ hnthdrtghomh
+X-ME-Proxy: <xmx:D7eSYd4yJGehSQMDMdWB_xRmvIPDOk3IdN66w9wppYPuVduHoVtIyw>
+ <xmx:D7eSYd7gCBUQmT2CMLvfkRawMDbo81AJQ-SFsg-Cja9aKjU1iUGJ9g>
+ <xmx:D7eSYdjOXUCZtIHGbIbHMr9SQgmvy-WOZndHNEJ1sY9TXOEVGqurhQ>
+ <xmx:D7eSYSHHQ-Is8qJNgu2aA7Y43q2g-vUX36d-mkxiqCvX19_ozECB1g>
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 15 Nov 2021 14:37:47 -0500 (EST)
+ 15 Nov 2021 14:37:50 -0500 (EST)
 From: Zi Yan <zi.yan@sent.com>
 To: David Hildenbrand <david@redhat.com>,
 	linux-mm@kvack.org
-Subject: [RFC PATCH 0/3] Use pageblock_order for cma and alloc_contig_range
- alignment.
-Date: Mon, 15 Nov 2021 14:37:21 -0500
-Message-Id: <20211115193725.737539-1-zi.yan@sent.com>
+Subject: [RFC PATCH 3/3] arch: powerpc: adjust fadump alignment to be
+ pageblock aligned.
+Date: Mon, 15 Nov 2021 14:37:24 -0500
+Message-Id: <20211115193725.737539-4-zi.yan@sent.com>
 X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20211115193725.737539-1-zi.yan@sent.com>
+References: <20211115193725.737539-1-zi.yan@sent.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -112,52 +114,30 @@ Sender: "Linuxppc-dev"
 
 From: Zi Yan <ziy@nvidia.com>
 
-Hi David,
+CMA only requires pageblock alignment now. Change CMA alignment in
+fadump too.
 
-You suggested to make alloc_contig_range() deal with pageblock_order instea=
-d of
-MAX_ORDER - 1 and get rid of MAX_ORDER - 1 dependency in virtio_mem[1]. This
-patchset is my attempt to achieve that. Please take a look and let me know =
-if
-I am doing it correctly or not.
+Signed-off-by: Zi Yan <ziy@nvidia.com>
+---
+ arch/powerpc/include/asm/fadump-internal.h | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-From what my understanding, cma required alignment of
-max(MAX_ORDER - 1, pageblock_order), because when MIGRATE_CMA was introduce=
-d,
-__free_one_page() does not prevent merging two different pageblocks, when
-MAX_ORDER - 1 > pageblock_order. But current __free_one_page() implementati=
-on
-does prevent that. It should be OK to just align cma to pageblock_order.
-alloc_contig_range() relies on MIGRATE_CMA to get free pages, so it can use
-pageblock_order as alignment too.
-
-In terms of virtio_mem, if I understand correctly, it relies on
-alloc_contig_range() to obtain contiguous free pages and offlines them to r=
-educe
-guest memory size. As the result of alloc_contig_range() alignment change,
-virtio_mem should be able to just align PFNs to pageblock_order.
-
-Thanks.
-
-
-[1] https://lore.kernel.org/linux-mm/28b57903-fae6-47ac-7e1b-a1dd41421349@r=
-edhat.com/
-
-Zi Yan (3):
-  mm: cma: alloc_contig_range: use pageblock_order as the single
-    alignment.
-  drivers: virtio_mem: use pageblock size as the minimum virtio_mem
-    size.
-  arch: powerpc: adjust fadump alignment to be pageblock aligned.
-
- arch/powerpc/include/asm/fadump-internal.h |  4 +---
- drivers/virtio/virtio_mem.c                |  6 ++----
- include/linux/mmzone.h                     |  5 +----
- kernel/dma/contiguous.c                    |  2 +-
- mm/cma.c                                   |  6 ++----
- mm/page_alloc.c                            | 12 +++++-------
- 6 files changed, 12 insertions(+), 23 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/fadump-internal.h b/arch/powerpc/incl=
+ude/asm/fadump-internal.h
+index 8d61c8f3fec4..9198f20b6b68 100644
+--- a/arch/powerpc/include/asm/fadump-internal.h
++++ b/arch/powerpc/include/asm/fadump-internal.h
+@@ -20,9 +20,7 @@
+ #define memblock_num_regions(memblock_type)	(memblock.memblock_type.cnt)
+=20
+ /* Alignment per CMA requirement. */
+-#define FADUMP_CMA_ALIGNMENT	(PAGE_SIZE <<				\
+-				 max_t(unsigned long, MAX_ORDER - 1,	\
+-				 pageblock_order))
++#define FADUMP_CMA_ALIGNMENT	(PAGE_SIZE << pageblock_order)
+=20
+ /* FAD commands */
+ #define FADUMP_REGISTER			1
 --=20
 2.33.0
 
