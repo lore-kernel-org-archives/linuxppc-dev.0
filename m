@@ -2,96 +2,136 @@ Return-Path: <SRS0=UfQ7=QC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CD29C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 19:49:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C47BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 22:25:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EFBDA61B31
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 19:49:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EFBDA61B31
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=sent.com
+	by mail.kernel.org (Postfix) with ESMTPS id AA98263237
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 22:25:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AA98263237
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HtKX456pBz3cXP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 06:49:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HtP0W6RtHz2ynM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 09:25:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm2 header.b=f5N9q/jo;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=E6iLCXin;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=GnFn9DKi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=sent.com (client-ip=66.111.4.229;
- helo=new3-smtp.messagingengine.com; envelope-from=zi.yan@sent.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256
- header.s=fm2 header.b=f5N9q/jo; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm1 header.b=E6iLCXin; 
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=40.107.13.83; helo=eur01-he1-obe.outbound.protection.outlook.com;
+ envelope-from=leoyang.li@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
+ header.s=selector2 header.b=GnFn9DKi; 
  dkim-atps=neutral
-Received: from new3-smtp.messagingengine.com (new3-smtp.messagingengine.com
- [66.111.4.229])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr130083.outbound.protection.outlook.com [40.107.13.83])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HtKSB1MWWz2yHS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 06:46:01 +1100 (AEDT)
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
- by mailnew.nyi.internal (Postfix) with ESMTP id D79065805D0;
- Mon, 15 Nov 2021 14:37:49 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute3.internal (MEProxy); Mon, 15 Nov 2021 14:37:49 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sent.com; h=from
- :to:cc:subject:date:message-id:in-reply-to:references:reply-to
- :mime-version:content-transfer-encoding; s=fm2; bh=b61LF7J3wAGCl
- 11W+qU1NXarWEj3AKLCfOa7xPZ4iOM=; b=f5N9q/joNEo4MlUz9IPxbktrWNMjy
- Z3/gMQHyPalwLBXAM3498xfhfzUO960lJ3s7ghjhvkrqJrPUbmMslrX8EZQCJUBd
- XTBbQi4S2zCMaWjspD1OTq6NDYPZVSLA1Bouj5+T5bPtFfW2n4479JP6m8XJ9zBN
- FT5nIHMDjyG8d8olwKnrg3HkXJP14JUE2W0JorG13IHJiOCUcSOFps04bKrjqx4z
- Mx0luYODczgR1M5xiy8L4kWWzmCr6j5N0UtIGu7+npebv9dl9JMlHTJNMPoHjYo9
- jo+n4uSHR469CE+CgWHjyR4CGdbSSsSlszA8KnubDOq2A9iRf52iAiyXw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:date:from
- :in-reply-to:message-id:mime-version:references:reply-to:subject
- :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm1; bh=b61LF7J3wAGCl11W+qU1NXarWEj3AKLCfOa7xPZ4iOM=; b=E6iLCXin
- dMz3iwMM2D1exKEh8TVObT/1CzhIk2BGHj2ktxfoL6QuLbS4hetYDvcxFUApdav7
- N+uyHCRH/F71PihSzHgXnvMVbdzNRScXqfB7Vm8N7bVGJRVTWzc+e/q6QKE+lJUA
- URWMbgHr1qCAbd1nuqurtOcL6fnKrM0narmNvJsT4IjjS963OUwY9ORXhaiZ+Ohv
- QGc+J9jj6Jn2lQcCj1fyOCRB3G+nx/V+nLJkRG7UXIseaW7zXwOPwSlZRG5wEBnQ
- zdeXycxKcUFwRT0ybzyxAUYb2nf2jtRxD7hMwd3613GH5i/gdlZemZT8bKx8V0pW
- FjhmgPNnbn82Fg==
-X-ME-Sender: <xms:DbeSYaIhoNNSOF3qr_fdjOz51O-HUF2s6x8DEnSJAaLr_y7LtvAhOA>
- <xme:DbeSYSL6s76Z629d3P6EmhcNUiHJNWLvI2A4gedNjWWrEA0dIF7cqtEWxHS7WjGxP
- vu9Phr9PE72tltzXw>
-X-ME-Received: <xmr:DbeSYatkFPDYLWLUGmI3QzLMY7XXtFdLCd5TyYzEpiyVFqvBNMsNPSfH2ZhCflXkOIRJTnp9>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvuddrfedtgddutddtucetufdoteggodetrfdotf
- fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
- uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- cujfgurhephffvufffkffojghfrhgggfestdhqredtredttdenucfhrhhomhepkghiucgj
- rghnuceoiihirdihrghnsehsvghnthdrtghomheqnecuggftrfgrthhtvghrnhepieejue
- dvueduuefhgefhheeiuedvtedvuefgieegveetueeiueehtdegudehfeelnecuvehluhhs
- thgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepiihirdihrghnsehsvg
- hnthdrtghomh
-X-ME-Proxy: <xmx:DbeSYfbqp-dvrIVD05t-HdGWFHlB9J7Gz78Naly8gvZMwqbOiTRvnQ>
- <xmx:DbeSYRbTo6rDTd72eJRUHtAaxTa2oAlDtrwXJsyXsPQ24E2iGINh7Q>
- <xmx:DbeSYbBAlQQVCZGU7NQJ-O2KfzaF63G5hXCGmkTosJ3MGAI-IZA7CA>
- <xmx:DbeSYTm1BfYsSe6u4UGAPvjpFycU9Vaq6URNjTWnGuMMLEZfJKVBUw>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 15 Nov 2021 14:37:48 -0500 (EST)
-From: Zi Yan <zi.yan@sent.com>
-To: David Hildenbrand <david@redhat.com>,
-	linux-mm@kvack.org
-Subject: [RFC PATCH 1/3] mm: cma: alloc_contig_range: use pageblock_order as
- the single alignment.
-Date: Mon, 15 Nov 2021 14:37:22 -0500
-Message-Id: <20211115193725.737539-2-zi.yan@sent.com>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20211115193725.737539-1-zi.yan@sent.com>
-References: <20211115193725.737539-1-zi.yan@sent.com>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HtNzc2jmcz2xX8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 09:24:58 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=S41ojzLxU+sbdbWkCL2p8oAcERkOxbrfp2DZkweAdZgrdGKEnnj+6S6+U7IIzDo4nJzErBMc54kIieRbVW+DDfnLiFQ4AUJKHQRlOdV5QTF87n67PTi1/6CLFYcrN74VpMgqNGgGkrGKcYRqXMrnj4FQuz8PgAmf5ogYnzKc58Ng1Sj1fiJFYwg5NFxD7+2IOVz4bttE3GMMGSCxh5sjHGVPGKh94BZyAeveoZWeYJ+9kzLILFgsk/7Q4GOTWzmYMlxMDYSFEp9BaUMwNK1Tlr2bfR8KSZmVwqdoiQEg49Wi5daYQ6Fmy7HmFdkTr5b63OvjJGKblpyJBnc9PLrPEw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=/a23Ae0rg2eyAME5aSrgCK4FJUUbm+38YdU90zuCQnw=;
+ b=iF1XvPLNHncAKt8nypuvU9rrMjJ8iNh4u4wlabGQNfKQOPidYvA4eGBe9KaB/0zAfcB0b2UMLU0Jyh9xyRJmt2RAW4md4Z7qmPCZ+aqZV+7HkJ7vrtfaaZFAJZ2dlvJU4VTm01rCxv2tvSlTLln23CzZSxpQJEvGzlThrjb4j3ns8AWSyV6LOiZ0O2s6XhRZ+TxiCq/KV88mjclUL5furoOCrUzLOcpognf/ZSp3gFmbdSv8Mo5j/LOidvXaYJleNxIXp6RmVn70Rvddids99WPtWwGDJW0toE1yZEBNTY0rVJMEgidHNseZMIYI2OjUU501+5NUzowuUrekkngJcg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=/a23Ae0rg2eyAME5aSrgCK4FJUUbm+38YdU90zuCQnw=;
+ b=GnFn9DKiXZOfsp4ap+tXh+107nwVwS6oKoL5J3AfKwIjJXRMcEN2Q4Wo/zQ8Pyrdcf8jhvKLbeWbOKq/etS1z8k3VAXLw3hVNWP85DRnjwUQT7/Bv53cn9Je3xswIobencoAz/9cPeKAwR3sIpg/qy14XxPITFCMZ6oqp2sk6MY=
+Received: from AS8PR04MB8946.eurprd04.prod.outlook.com (2603:10a6:20b:42d::18)
+ by AS8PR04MB8849.eurprd04.prod.outlook.com (2603:10a6:20b:42c::17)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4690.16; Mon, 15 Nov
+ 2021 22:24:36 +0000
+Received: from AS8PR04MB8946.eurprd04.prod.outlook.com
+ ([fe80::60be:d568:a436:894b]) by AS8PR04MB8946.eurprd04.prod.outlook.com
+ ([fe80::60be:d568:a436:894b%5]) with mapi id 15.20.4690.027; Mon, 15 Nov 2021
+ 22:24:36 +0000
+From: Leo Li <leoyang.li@nxp.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH v2 3/3] soc: fsl: Replace kernel.h with the necessary
+ inclusions
+Thread-Topic: [PATCH v2 3/3] soc: fsl: Replace kernel.h with the necessary
+ inclusions
+Thread-Index: AQHX1iIbcPueVtt/aUW4L8kSf69QdKwEfA2AgACzPEA=
+Date: Mon, 15 Nov 2021 22:24:36 +0000
+Message-ID: <AS8PR04MB8946B4800AE34258F7F2BA688F989@AS8PR04MB8946.eurprd04.prod.outlook.com>
+References: <20211110105952.62013-1-andriy.shevchenko@linux.intel.com>
+ <20211110105952.62013-3-andriy.shevchenko@linux.intel.com>
+ <YZJExzxJ4j8g6jEY@smile.fi.intel.com>
+In-Reply-To: <YZJExzxJ4j8g6jEY@smile.fi.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 42868ce8-1ad7-4ce1-322e-08d9a886b50e
+x-ms-traffictypediagnostic: AS8PR04MB8849:
+x-microsoft-antispam-prvs: <AS8PR04MB8849CFE337A672E8EBC531D78F989@AS8PR04MB8849.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:356;
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: p7O6FqZ/hasRBzT4khmzZBaK3E3tOHBpbL77ywqq8Gt+shMSfWl5IN2D9HHEUpJw6eWzH2YrvLhz4zChmlyTMQ+Ev5gFfbs0F0mL8Ta1YKDphMT4UmzxWmpuJYYuAzL6yUTOpMoADX3rvQz3sfqn4vKW4rl6u/KE13l/YXkpCysROwbNR7VoLlGHHCyd4bTdfxSnf/zxSSi7hgpiFounXq9AOTpBygUMx5WDHUVmfcrDnER56TVvRchMPl/LWiuEQK6aB6X1oG2zu5MID+APO3RcsQBlERwhO+iLvUyykxccu5pZ5d62QQf8EFGQ5/q2dsQASn2mmYbdgcXnMiupCgkVkPxwkPkGvj0xphuIIX74WQLeoyuW6XTy4IX8tR8AzO2UtJAZJuOCJIF9M/JYXmh2Xot2Y4CITaWGcyvBp4AbD/5EfOo+xazARfE/r/0u809TWrK7mQI+uA0AH6z5QZhLznjNCeojhFvdMcC4cycc4TP2Osiz02btpnzQyYA1lHqv+SZGLXZueRfMkrOLk8HPX9x6VNerXwYhJCIN/YO26w9yHDn5CYd2gbxoG0f5k1eeQcc0z7WTY1RTBLE7ypqckLgGGqdc6BXWmRT3hVOd+382td/VORwkoHbrkg6nyHNRmTu1o5QjXsjbMK2AUZT5XlwtJeF1IBZC+0DvO/BgKrnegNzTb5EzXJIsHE+6sAw1+uf383AMko2dY5HiqBuQh4Jjqq7tSpZQrRuGKWChIgv9XBbhabOQ661rDODx
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:AS8PR04MB8946.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(4636009)(366004)(71200400001)(508600001)(122000001)(38070700005)(52536014)(6506007)(8676002)(38100700002)(5660300002)(8936002)(86362001)(2906002)(33656002)(76116006)(7696005)(110136005)(316002)(186003)(66556008)(64756008)(66946007)(66476007)(26005)(53546011)(9686003)(66446008)(4326008)(83380400001)(55016002)(341764005);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?2C2NQwv4l9IjQMZX87nMAj06jcxGjoX7wlRBfxejNj+quwZxVYUEqFVF/BUf?=
+ =?us-ascii?Q?jAKRtRAvVX8V5TA4BP0lbfTp8HAxJhRgGiide+dmBjbi1Q/mJfI9PzrIVXUg?=
+ =?us-ascii?Q?i1/ffSha2HTR95U9/0oiOMcVGWhtvf43dMI54A3Z0bxRhv2i6Vi/uI3xS4R4?=
+ =?us-ascii?Q?H5iqQkfxP7Yej1zl4+wUGnrCmnGbt4DT8uRL/HCk55709+WYyGaBPFNYbv8b?=
+ =?us-ascii?Q?ErL60PBDg+vadnewDizD20D1Tse+YWk6I+Mmow58wU67NIUPDlm3jPt2sIsP?=
+ =?us-ascii?Q?R+rxgobpCnVWgyZR9wVBLRwSN9r1G7SUJSd2zH2GRzhgpBNnfpPOnNKKMOta?=
+ =?us-ascii?Q?eUTE40JSFdR6/P+Ift1ikqWD+3XWMNVWrfjmnvOQQNSUE3LWtxz2SDp9K8QX?=
+ =?us-ascii?Q?BARFd87lWPLEtOAH7sUvkWZf7oo0Gc+ZCuyL1CPGW7qQ/wlYJ6dDbDGQ2/1q?=
+ =?us-ascii?Q?MbxkGreMILlFqDvcWI4dp1Ghm6gcGZEGX0kZirvyGmOvR/00YMiol0O9fahd?=
+ =?us-ascii?Q?FD7wOOHEvZzICb4SF9z3kQg7Yxmtv8u6TD5AWXiTfHbvpgCH5+CTgqkJGm22?=
+ =?us-ascii?Q?YoRLhzXvC8+KfLzsA+RuXRaghzMbfaM3WrqVn8wWKtzvkIlhbwrwNhDF5FHB?=
+ =?us-ascii?Q?NTTEMVBH5t4nAmMji4yIhb9sPul+Iw4esqukFOzXsBoQzkc35ngPmN5BT3at?=
+ =?us-ascii?Q?S3hX/pa99aHv+pKHZCSLX5q7BiekC8Jc8j1jP6DiFsEfAmc4rN0XUr0CQ05r?=
+ =?us-ascii?Q?boIfTJTfFkXIqlolDmI32E6XbdPYtD2COuyTauH91X96CsZHUxjg/2v8dCp/?=
+ =?us-ascii?Q?NwFJ4OTxdJGccG6ftSIhh+60u198PGT4SLyYdFfhzAzrtXBCRfu1rFlUgwhi?=
+ =?us-ascii?Q?ajBwhVZ5M+YQqNFGzo5Qlk2vQFiluoAkimM5Js7ptz46uDk47aLHOc8rIHge?=
+ =?us-ascii?Q?B4LbB86C+PFc9Z3fGLAIR9fwi2uFd0tkkK0zUS2Qpk3t7AxRKVS01BSd1CEj?=
+ =?us-ascii?Q?79wwdA5IoRBtT7EheGLkfAhlEya7WnvMVJFthMPlBV0qq3ppUa73F3hLrhN9?=
+ =?us-ascii?Q?+fXdTvvX/TAyu4gI0ERJXlPGjS3UxVxJQxWDAvOwhhtzju72kUnYPMD5aQX4?=
+ =?us-ascii?Q?29VV2Li94nG680rWuxVuto3XJ4viTcGntxBeq0ATJiNzUkZKpeZLwp04PBzI?=
+ =?us-ascii?Q?ygIrKMy2U7T1d4kbdQq64g2DaM30j3cgjJ3zAcjdKR+0ywPRdqb+DpmQ5AAT?=
+ =?us-ascii?Q?IX14JKhsZwgQKZbYPi7iSKC6VBHxfWp3IhzJizPjSq8YeWcFBIDgAdM4L/7P?=
+ =?us-ascii?Q?WaxY6La7eKjCWiiCT+lRI6ROFK8LK79tvh2jtlLSnhiV8ipERORUCRdi354E?=
+ =?us-ascii?Q?6E570Lj/iHjSA+VfURwnScqQe2x3LyGEwVVqBv+rb5rRATzZWfff6QRiQtJc?=
+ =?us-ascii?Q?qy/f1lKhYM/wApkeaYZmqSoFwP9lXtmNBU0FPKEDZQPL2idD9dwFbLG2hSUA?=
+ =?us-ascii?Q?4ne/kQbhEtgmkFdaIQPUk0CdWSHkTf/rRRU/NU9276U5yH2wNR6HNoH5CPy5?=
+ =?us-ascii?Q?gQl2nV9KaB4r+64nbZuhqg2pTsjqNrdIPYrrndil9Z+C9mo+R1GLrLqop1XJ?=
+ =?us-ascii?Q?vw=3D=3D?=
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: AS8PR04MB8946.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 42868ce8-1ad7-4ce1-322e-08d9a886b50e
+X-MS-Exchange-CrossTenant-originalarrivaltime: 15 Nov 2021 22:24:36.4743 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: riONMCzcU0/vJlBCvAsJPacf99LYHi0CKFDULCC/14R1EpMwPTCrvFuzKL/8nvLd3c/t+CSrXfMfZQgV8ea8nQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB8849
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,138 +143,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Zi Yan <ziy@nvidia.com>
-Cc: Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, Zi Yan <ziy@nvidia.com>,
- virtualization@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Qiang Zhao <qiang.zhao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Zi Yan <ziy@nvidia.com>
 
-Pages are grouped in unit of pageblock_order for mobility. cma and
-alloc_contig_range() uses pageblock for isolation and migration, so
-aligning PFNs to pageblock_order is necessary. But the PFNs used in cma
-and alloc_contig_range() were aligned to max(pageblock_order, MAX_ORDER-1).
-This makes no difference than aligning only to pageblock_order, since
-if pageblock_order > MAX_ORDER, the PFN is pageblock aligned,
-otherwise, the PFN is still pageblock aligned. Drop MAX_ORDER alignment
-requirement.
 
-When commit 47118af076f6 ("mm: mmzone: MIGRATE_CMA migration type added")
-introduced MIGRATE_CMA, __free_one_page() did not prevent merging
-freepages on isolate pagelbock and normal pageblock, thus it required
-max(pageblock_order, MAX_ORDER-1) alignment. __free_one_page() has
-changed and does prevent such merges.
+> -----Original Message-----
+> From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Sent: Monday, November 15, 2021 5:30 AM
+> To: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-ar=
+m-
+> kernel@lists.infradead.org
+> Cc: Leo Li <leoyang.li@nxp.com>; Qiang Zhao <qiang.zhao@nxp.com>
+> Subject: Re: [PATCH v2 3/3] soc: fsl: Replace kernel.h with the necessary
+> inclusions
+>=20
+> On Wed, Nov 10, 2021 at 12:59:52PM +0200, Andy Shevchenko wrote:
+> > When kernel.h is used in the headers it adds a lot into dependency
+> > hell, especially when there are circular dependencies are involved.
+> >
+> > Replace kernel.h inclusion with the list of what is really being used.
+> >
+> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > ---
+> > v2: updated Cc list based on previous changes to MAINTAINERS
+>=20
+> Any comments on this, please?
+>=20
+> I really want to decrease amount of kernel.h usage in the common headers.
+> So others won't copy'n'paste bad example.
 
-Signed-off-by: Zi Yan <ziy@nvidia.com>
----
- include/linux/mmzone.h  |  5 +----
- kernel/dma/contiguous.c |  2 +-
- mm/cma.c                |  6 ++----
- mm/page_alloc.c         | 12 +++++-------
- 4 files changed, 9 insertions(+), 16 deletions(-)
+There seems to be no problem with the patch although I didn't get time to r=
+eally compile with it applied.
 
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 58e744b78c2c..6c61aa41a779 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -54,10 +54,7 @@ enum migratetype {
- 	 *
- 	 * The way to use it is to change migratetype of a range of
- 	 * pageblocks to MIGRATE_CMA which can be done by
--	 * __free_pageblock_cma() function.  What is important though
--	 * is that a range of pageblocks must be aligned to
--	 * MAX_ORDER_NR_PAGES should biggest page be bigger than
--	 * a single pageblock.
-+	 * __free_pageblock_cma() function.
- 	 */
- 	MIGRATE_CMA,
- #endif
-diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
-index 3d63d91cba5c..ac35b14b0786 100644
---- a/kernel/dma/contiguous.c
-+++ b/kernel/dma/contiguous.c
-@@ -399,7 +399,7 @@ static const struct reserved_mem_ops rmem_cma_ops =3D {
-=20
- static int __init rmem_cma_setup(struct reserved_mem *rmem)
- {
--	phys_addr_t align =3D PAGE_SIZE << max(MAX_ORDER - 1, pageblock_order);
-+	phys_addr_t align =3D PAGE_SIZE << pageblock_order;
- 	phys_addr_t mask =3D align - 1;
- 	unsigned long node =3D rmem->fdt_node;
- 	bool default_cma =3D of_get_flat_dt_prop(node, "linux,cma-default", NULL);
-diff --git a/mm/cma.c b/mm/cma.c
-index bc9ca8f3c487..d171158bd418 100644
---- a/mm/cma.c
-+++ b/mm/cma.c
-@@ -180,8 +180,7 @@ int __init cma_init_reserved_mem(phys_addr_t base, phys=
-_addr_t size,
- 		return -EINVAL;
-=20
- 	/* ensure minimal alignment required by mm core */
--	alignment =3D PAGE_SIZE <<
--			max_t(unsigned long, MAX_ORDER - 1, pageblock_order);
-+	alignment =3D PAGE_SIZE << pageblock_order;
-=20
- 	/* alignment should be aligned with order_per_bit */
- 	if (!IS_ALIGNED(alignment >> PAGE_SHIFT, 1 << order_per_bit))
-@@ -268,8 +267,7 @@ int __init cma_declare_contiguous_nid(phys_addr_t base,
- 	 * migratetype page by page allocator's buddy algorithm. In the case,
- 	 * you couldn't get a contiguous memory, which is not what we want.
- 	 */
--	alignment =3D max(alignment,  (phys_addr_t)PAGE_SIZE <<
--			  max_t(unsigned long, MAX_ORDER - 1, pageblock_order));
-+	alignment =3D max(alignment,  (phys_addr_t)PAGE_SIZE << pageblock_order);
- 	if (fixed && base & (alignment - 1)) {
- 		ret =3D -EINVAL;
- 		pr_err("Region at %pa must be aligned to %pa bytes\n",
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index c5952749ad40..5700f5502d59 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -8922,14 +8922,12 @@ struct page *has_unmovable_pages(struct zone *zone,=
- struct page *page,
- #ifdef CONFIG_CONTIG_ALLOC
- static unsigned long pfn_max_align_down(unsigned long pfn)
- {
--	return pfn & ~(max_t(unsigned long, MAX_ORDER_NR_PAGES,
--			     pageblock_nr_pages) - 1);
-+	return pfn & ~(pageblock_nr_pages - 1);
- }
-=20
- static unsigned long pfn_max_align_up(unsigned long pfn)
- {
--	return ALIGN(pfn, max_t(unsigned long, MAX_ORDER_NR_PAGES,
--				pageblock_nr_pages));
-+	return ALIGN(pfn, pageblock_nr_pages);
- }
-=20
- #if defined(CONFIG_DYNAMIC_DEBUG) || \
-@@ -9022,8 +9020,8 @@ static int __alloc_contig_migrate_range(struct compac=
-t_control *cc,
-  *			be either of the two.
-  * @gfp_mask:	GFP mask to use during compaction
-  *
-- * The PFN range does not have to be pageblock or MAX_ORDER_NR_PAGES
-- * aligned.  The PFN range must belong to a single zone.
-+ * The PFN range does not have to be pageblock aligned. The PFN range must
-+ * belong to a single zone.
-  *
-  * The first thing this routine does is attempt to MIGRATE_ISOLATE all
-  * pageblocks in the range.  Once isolated, the pageblocks should not
-@@ -9099,7 +9097,7 @@ int alloc_contig_range(unsigned long start, unsigned =
-long end,
- 	ret =3D 0;
-=20
- 	/*
--	 * Pages from [start, end) are within a MAX_ORDER_NR_PAGES
-+	 * Pages from [start, end) are within a pageblock_nr_pages
- 	 * aligned blocks that are marked as MIGRATE_ISOLATE.  What's
- 	 * more, all pages in [start, end) are free in page allocator.
- 	 * What we are going to do is to allocate all pages from
---=20
-2.33.0
+Will pick them up later after build test.
 
+Regards,
+Leo
