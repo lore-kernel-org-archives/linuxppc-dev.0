@@ -2,69 +2,69 @@ Return-Path: <SRS0=UfQ7=QC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99726C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 08:53:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAC37C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 09:06:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 14E8461BF5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 08:53:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 14E8461BF5
+	by mail.kernel.org (Postfix) with ESMTPS id A8078614C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 09:06:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org A8078614C8
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ht2zn0qwvz307x
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 19:53:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ht3GB13DDz30RK
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Nov 2021 20:06:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ht2zJ3zNKz2xDM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Nov 2021 19:53:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ht3Fh055bz2xCc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Nov 2021 20:05:58 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4Ht2zF0qR0z9sSH;
- Mon, 15 Nov 2021 09:53:29 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4Ht3Fb4jLKz9sSH;
+ Mon, 15 Nov 2021 10:05:55 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id whCArfjl7wVR; Mon, 15 Nov 2021 09:53:29 +0100 (CET)
+ with ESMTP id 23Jkjqa8PDsV; Mon, 15 Nov 2021 10:05:55 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4Ht2zD726Yz9sSB;
- Mon, 15 Nov 2021 09:53:28 +0100 (CET)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4Ht3Fb3Ts8z9sSB;
+ Mon, 15 Nov 2021 10:05:55 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D817C8B767;
- Mon, 15 Nov 2021 09:53:28 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 631328B767;
+ Mon, 15 Nov 2021 10:05:55 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id kuNXKDjQbMwa; Mon, 15 Nov 2021 09:53:28 +0100 (CET)
+ with ESMTP id vYt0LtQYyl6m; Mon, 15 Nov 2021 10:05:55 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AB2368B763;
- Mon, 15 Nov 2021 09:53:28 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4092D8B763;
+ Mon, 15 Nov 2021 10:05:55 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 1AF8rJTO135062
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 1AF95jiL136901
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 15 Nov 2021 09:53:19 +0100
+ Mon, 15 Nov 2021 10:05:45 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 1AF8rDA2135046;
- Mon, 15 Nov 2021 09:53:13 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 1AF95jhV136900;
+ Mon, 15 Nov 2021 10:05:45 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/signal32: Fix sigset_t copy
-Date: Mon, 15 Nov 2021 09:52:55 +0100
-Message-Id: <99ef38d61c0eb3f79c68942deb0c35995a93a777.1636966353.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH] powerpc/book3e: Fix TLBCAM preset at boot
+Date: Mon, 15 Nov 2021 10:05:32 +0100
+Message-Id: <d319f2a9367d4d08fd2154e506101bd5f100feeb.1636967119.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1636966371; l=2320; s=20211009;
- h=from:subject:message-id; bh=fZPpiXO4Sl6nxpscgwKm8fGE1QxieiimfErqhQs2Q+0=;
- b=TT/pMU/Kq2uF3azjX28nUSpUIgSMS0xTw5bIAlmU6r8XXTX6cgtMMfJeiBoecUExwC+wtaPTO6QR
- ZcZmSuwmCCg5PGuf9U6ykT6ALCuF0Ceo3fSyyQ8fVhj/5gwRtMVM
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1636967130; l=2048; s=20211009;
+ h=from:subject:message-id; bh=UkVSGT3r0lZYtsOemswUnqSkhTNjQKOQEhjWVTHKcoY=;
+ b=8aZCsj5qx3yqs8pm5bTdJlxec2S/WaewNn8VpChIp91Dq0ejGnqCK3vY/gKfU/cg6oRPYKsFaIEL
+ Tvd5OowBDD4qJaSlagvZn8Sxia6cy7PKKLLHhbe7XP61ljJck8V/
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -79,68 +79,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stan Johnson <userm57@yahoo.com>, Finn Thain <fthain@linux-m68k.org>,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- "Christopher M . Riedl" <cmr@bluescreens.de>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Christian Zigotzky <chzigotzky@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The conversion from __copy_from_user() to __get_user() by
-commit d3ccc9781560 ("powerpc/signal: Use __get_user() to copy
-sigset_t") introduced a regression in __get_user_sigset() for
-powerpc/32. The bug was subsequently moved into
-unsafe_get_user_sigset().
+Commit 52bda69ae8b5 ("powerpc/fsl_booke: Tell map_mem_in_cams() if
+init is done") was supposed to just add an additional parameter to
+map_mem_in_cams() and always set it to 'true' at that time.
 
-The bug is due to the copied 64 bit value being truncated to
-32 bits while being assigned to dst->sig[0]
+But a few call sites were messed up. Fix them.
 
-The regression was reported by users of the Xorg packages distributed in
-Debian/powerpc --
-
-    "The symptoms are that the fb screen goes blank, with the backlight
-    remaining on and no errors logged in /var/log; wdm (or startx) run
-    with no effect (I tried logging in in the blind, with no effect).
-    And they are hard to kill, requiring 'kill -KILL ...'"
-
-Fix the regression by copying each word of the sigset, not only the
-first one.
-
-__get_user_sigset() was tentatively optimised to copy 64 bits at once
-in order to minimise KUAP unlock/lock impact, but the unsafe variant
-doesn't suffer that, so it can just copy words.
-
-Cc: Christopher M. Riedl <cmr@bluescreens.de>
-Fixes: 887f3ceb51cd ("powerpc/signal32: Convert do_setcontext[_tm]() to user access block")
-Cc: stable@vger.kernel.org
-Reported-by: Finn Thain <fthain@linux-m68k.org>
-Reported-and-tested-by: Stan Johnson <userm57@yahoo.com>
+Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+Fixes: 52bda69ae8b5 ("powerpc/fsl_booke: Tell map_mem_in_cams() if init is done")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/signal.h | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/nohash/kaslr_booke.c | 2 +-
+ arch/powerpc/mm/nohash/tlb.c         | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
-index 1f07317964e4..618aeccdf691 100644
---- a/arch/powerpc/kernel/signal.h
-+++ b/arch/powerpc/kernel/signal.h
-@@ -25,8 +25,14 @@ static inline int __get_user_sigset(sigset_t *dst, const sigset_t __user *src)
+diff --git a/arch/powerpc/mm/nohash/kaslr_booke.c b/arch/powerpc/mm/nohash/kaslr_booke.c
+index 8fc49b1b4a91..6ec978967da0 100644
+--- a/arch/powerpc/mm/nohash/kaslr_booke.c
++++ b/arch/powerpc/mm/nohash/kaslr_booke.c
+@@ -314,7 +314,7 @@ static unsigned long __init kaslr_choose_location(void *dt_ptr, phys_addr_t size
+ 		pr_warn("KASLR: No safe seed for randomizing the kernel base.\n");
  
- 	return __get_user(dst->sig[0], (u64 __user *)&src->sig[0]);
- }
--#define unsafe_get_user_sigset(dst, src, label) \
--	unsafe_get_user((dst)->sig[0], (u64 __user *)&(src)->sig[0], label)
-+#define unsafe_get_user_sigset(dst, src, label) do {			\
-+	sigset_t *__dst = dst;						\
-+	const sigset_t __user *__src = src;				\
-+	int i;								\
-+									\
-+	for (i = 0; i < _NSIG_WORDS; i++)				\
-+		unsafe_get_user(__dst->sig[i], &__src->sig[i], label);	\
-+} while (0)
+ 	ram = min_t(phys_addr_t, __max_low_memory, size);
+-	ram = map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM, true, false);
++	ram = map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM, true, true);
+ 	linear_sz = min_t(unsigned long, ram, SZ_512M);
  
- #ifdef CONFIG_VSX
- extern unsigned long copy_vsx_to_user(void __user *to,
+ 	/* If the linear size is smaller than 64M, do not randmize */
+diff --git a/arch/powerpc/mm/nohash/tlb.c b/arch/powerpc/mm/nohash/tlb.c
+index 89353d4f5604..647bf454a0fa 100644
+--- a/arch/powerpc/mm/nohash/tlb.c
++++ b/arch/powerpc/mm/nohash/tlb.c
+@@ -645,7 +645,7 @@ static void early_init_this_mmu(void)
+ 
+ 		if (map)
+ 			linear_map_top = map_mem_in_cams(linear_map_top,
+-							 num_cams, true, true);
++							 num_cams, false, true);
+ 	}
+ #endif
+ 
+@@ -766,7 +766,7 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 		num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
+ 
+ 		linear_sz = map_mem_in_cams(first_memblock_size, num_cams,
+-					    false, true);
++					    true, true);
+ 
+ 		ppc64_rma_size = min_t(u64, linear_sz, 0x40000000);
+ 	} else
 -- 
 2.31.1
 
