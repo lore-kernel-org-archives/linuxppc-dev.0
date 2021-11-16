@@ -2,67 +2,64 @@ Return-Path: <SRS0=qk5f=QD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C45EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 11:56:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98202C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 13:30:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DBDE160ED3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 11:56:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DBDE160ED3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id E124661B42
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 13:30:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org E124661B42
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Htkzy4NPDz3cPQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 22:56:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=SiM2tfcC;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=desiato.srs.infradead.org
- (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org;
- envelope-from=batv+ed896c150e16a1be20ce+6659+infradead.org+dwmw2@desiato.srs.infradead.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=desiato.20200630 header.b=SiM2tfcC; 
- dkim-atps=neutral
-Received: from desiato.infradead.org (desiato.infradead.org
- [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Htn4T0TJnz30RK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 00:30:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Htktf2HfPz2yQw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 22:51:45 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
- MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
- Reply-To:Content-Type:Content-ID:Content-Description;
- bh=iV/c2XVgMhEj0ZhoFj3F05pdjTjXAYKD2dhk6bn92rk=; b=SiM2tfcCkFxE4v7nfuoZ0X4YpK
- I10Aq3n+CiqTfHO8f0fwx1sAWWsN5h2cWAzQ50YbYs5PnBFOIi7xFK0EhEJRsenHzydkQy8w85N73
- v4enznaxtNLv0nclMVvUIIyGZFt4dhosvQXLvpOtK46Ba4LoB+hUwCUj6LvdI4bhG7ZmSZicjLfBf
- f22GSOrzYSkx+NRK9+2u8G+B0KGkMdLr+y0S7PQYiWcaQWDbkKTz8FYsmQHQhTBtfHnzBnfy9x99k
- PCgX/y8JYZYTfxWkAt85bPs4UQo1gjeDBtwnmVXIdJwT5zghL7ZS54JPTu3iNyQ+AyiM47mxle+At
- wXwJxlgg==;
-Received: from i7.infradead.org ([2001:8b0:10b:1:21e:67ff:fecb:7a92])
- by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1mmwzD-00GJ7B-OJ; Tue, 16 Nov 2021 11:50:51 +0000
-Received: from dwoodhou by i7.infradead.org with local (Exim 4.94.2 #2 (Red
- Hat Linux)) id 1mmwzD-000VDi-Be; Tue, 16 Nov 2021 11:50:51 +0000
-From: David Woodhouse <dwmw2@infradead.org>
-To: Paolo Bonzini <pbonzini@redhat.com>,
-	kvm <kvm@vger.kernel.org>
-Subject: [PATCH 4/7] KVM: mips: Use Makefile.kvm for common files
-Date: Tue, 16 Nov 2021 11:50:48 +0000
-Message-Id: <20211116115051.119956-4-dwmw2@infradead.org>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20211116115051.119956-1-dwmw2@infradead.org>
-References: <5047c2591310e503491850ef683f251395247d50.camel@infradead.org>
- <20211116115051.119956-1-dwmw2@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Htn3v2bJGz2xDg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Nov 2021 00:29:59 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4Htn3j6dQLz9sSJ;
+ Tue, 16 Nov 2021 14:29:53 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id US9XL2ibzr6x; Tue, 16 Nov 2021 14:29:53 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4Htn3j50jLz9sSH;
+ Tue, 16 Nov 2021 14:29:53 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 95FD48B77A;
+ Tue, 16 Nov 2021 14:29:53 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id f2Vdc5Ovhuop; Tue, 16 Nov 2021 14:29:53 +0100 (CET)
+Received: from [192.168.234.8] (unknown [192.168.234.8])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BFA358B763;
+ Tue, 16 Nov 2021 14:29:52 +0100 (CET)
+Message-ID: <2f22c57d-9bf0-3cc1-f0f1-61ecdf5dfa52@csgroup.eu>
+Date: Tue, 16 Nov 2021 14:29:51 +0100
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.2.0
+Subject: Re: [PATCH v2 2/5] preempt/dynamic: Introduce preempt mode accessors
+Content-Language: fr-FR
+To: Valentin Schneider <valentin.schneider@arm.com>,
+ linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org
+References: <20211110202448.4054153-1-valentin.schneider@arm.com>
+ <20211110202448.4054153-3-valentin.schneider@arm.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20211110202448.4054153-3-valentin.schneider@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by
- desiato.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,51 +71,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anup Patel <anup.patel@wdc.com>,
- "wanpengli @ tencent . com" <wanpengli@tencent.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Joao Martins <joao.m.martins@oracle.com>, Will Deacon <will@kernel.org>,
- kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org,
- "joro @ 8bytes . org" <joro@8bytes.org>, Huacai Chen <chenhuacai@kernel.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, karahmed@amazon.com,
- Suzuki K Poulose <suzuki.poulose@arm.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Alexandru Elisei <alexandru.elisei@arm.com>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- "jmattson @ google . com" <jmattson@google.com>,
- "seanjc @ google . com" <seanjc@google.com>,
- "mtosatti @ redhat . com" <mtosatti@redhat.com>, linux-mips@vger.kernel.org,
- James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org,
- Marc Zyngier <maz@kernel.org>, "vkuznets @ redhat . com" <vkuznets@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Marco Elver <elver@google.com>, Michal Marek <michal.lkml@markovi.net>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Frederic Weisbecker <frederic@kernel.org>, Mike Galbraith <efault@gmx.de>,
+ Nick Desaulniers <ndesaulniers@google.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Masahiro Yamada <masahiroy@kernel.org>,
+ Dmitry Vyukov <dvyukov@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: David Woodhouse <dwmw@amazon.co.uk>
 
-Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
----
- arch/mips/kvm/Makefile | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/mips/kvm/Makefile b/arch/mips/kvm/Makefile
-index d3710959da55..21ff75bcdbc4 100644
---- a/arch/mips/kvm/Makefile
-+++ b/arch/mips/kvm/Makefile
-@@ -2,9 +2,10 @@
- # Makefile for KVM support for MIPS
- #
- 
-+include $(srctree)/virt/kvm/Makefile.kvm
-+
- ccflags-y += -Ivirt/kvm -Iarch/mips/kvm
- 
--kvm-y := $(addprefix ../../../virt/kvm/, kvm_main.o coalesced_mmio.o eventfd.o binary_stats.o)
- kvm-$(CONFIG_CPU_HAS_MSA) += msa.o
- 
- kvm-y +=    mips.o emulate.o entry.o \
--- 
-2.31.1
+Le 10/11/2021 à 21:24, Valentin Schneider a écrit :
+> CONFIG_PREEMPT{_NONE, _VOLUNTARY} designate either:
+> o The build-time preemption model when !PREEMPT_DYNAMIC
+> o The default boot-time preemption model when PREEMPT_DYNAMIC
+> 
+> IOW, using those on PREEMPT_DYNAMIC kernels is meaningless - the actual
+> model could have been set to something else by the "preempt=foo" cmdline
+> parameter.
+> 
+> Introduce a set of helpers to determine the actual preemption mode used by
+> the live kernel.
+> 
+> Suggested-by: Marco Elver <elver@google.com>
+> Signed-off-by: Valentin Schneider <valentin.schneider@arm.com>
+> ---
+>   include/linux/sched.h | 16 ++++++++++++++++
+>   kernel/sched/core.c   | 11 +++++++++++
+>   2 files changed, 27 insertions(+)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 5f8db54226af..0640d5622496 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -2073,6 +2073,22 @@ static inline void cond_resched_rcu(void)
+>   #endif
+>   }
+>   
+> +#ifdef CONFIG_PREEMPT_DYNAMIC
+> +
+> +extern bool is_preempt_none(void);
+> +extern bool is_preempt_voluntary(void);
+> +extern bool is_preempt_full(void);
 
+Those are trivial tests supposed to be used in fast pathes. They should 
+be static inlines in order to minimise the overhead.
+
+> +
+> +#else
+> +
+> +#define is_preempt_none() IS_ENABLED(CONFIG_PREEMPT_NONE)
+> +#define is_preempt_voluntary() IS_ENABLED(CONFIG_PREEMPT_VOLUNTARY)
+> +#define is_preempt_full() IS_ENABLED(CONFIG_PREEMPT)
+
+Would be better to use static inlines here as well instead of macros.
+
+> +
+> +#endif
+> +
+> +#define is_preempt_rt() IS_ENABLED(CONFIG_PREEMPT_RT)
+> +
+>   /*
+>    * Does a critical section need to be broken due to another
+>    * task waiting?: (technically does not depend on CONFIG_PREEMPTION,
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 97047aa7b6c2..9db7f77e53c3 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -6638,6 +6638,17 @@ static void __init preempt_dynamic_init(void)
+>   	}
+>   }
+>   
+> +#define PREEMPT_MODE_ACCESSOR(mode) \
+> +	bool is_preempt_##mode(void)						 \
+> +	{									 \
+> +		WARN_ON_ONCE(preempt_dynamic_mode == preempt_dynamic_undefined); \
+
+Not sure using WARN_ON is a good idea here, as it may be called very 
+early, see comment on powerpc patch.
+
+> +		return preempt_dynamic_mode == preempt_dynamic_##mode;		 \
+> +	}
+
+I'm not sure that's worth a macro. You only have 3 accessors, 2 lines of 
+code each. Just define all 3 in plain text.
+
+CONFIG_PREEMPT_DYNAMIC is based on using strategies like static_calls in 
+order to minimise the overhead. For those accessors you should use the 
+same kind of approach and use things like jump_labels in order to not 
+redo the test at each time and minimise overhead as much as possible.
+
+> +
+> +PREEMPT_MODE_ACCESSOR(none)
+> +PREEMPT_MODE_ACCESSOR(voluntary)
+> +PREEMPT_MODE_ACCESSOR(full)
+> +
+>   #else /* !CONFIG_PREEMPT_DYNAMIC */
+>   
+>   static inline void preempt_dynamic_init(void) { }
+> 
