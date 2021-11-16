@@ -2,74 +2,63 @@ Return-Path: <SRS0=qk5f=QD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8D2AC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 14:55:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC270C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 14:57:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE93561A6C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 14:55:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EE93561A6C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=suse.com
+	by mail.kernel.org (Postfix) with ESMTPS id 36D7261A6C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 14:57:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 36D7261A6C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HtpyF0hLYz2yP9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 01:55:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=R9CHzFMj;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Htq0p6Jxbz2ynw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 01:57:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=suse.com (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
- envelope-from=jgross@suse.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=susede1 header.b=R9CHzFMj; dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+ smtp.mailfrom=kaod.org (client-ip=87.98.187.244;
+ helo=10.mo552.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ receiver=<UNKNOWN>)
+Received: from 10.mo552.mail-out.ovh.net (10.mo552.mail-out.ovh.net
+ [87.98.187.244])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HtpxW3h0tz2xBV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Nov 2021 01:54:39 +1100 (AEDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
- (No client certificate requested)
- by smtp-out1.suse.de (Postfix) with ESMTPS id 9619D2114E;
- Tue, 16 Nov 2021 14:54:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
- t=1637074476; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=a+v9JQYnrs8peEURXnbQYKeNePpdGGkZ2eqbcqMIENw=;
- b=R9CHzFMjCfoDrZrR23Q7ONwMki3szKy/Y/3Em0W9RqXHXk+W4uJkbCB/9+M7Ti/Y2VTSdv
- dViIzdYoqwwsNeannyWOjKI7Axy+AbRXq90q9uUYxVDavtIP8vxKOCWhc8KxaLcGXpIk65
- LKCpdXLycTCAsV+YzhRK+Uxer4GirQo=
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
- (No client certificate requested)
- by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id EF01213C1B;
- Tue, 16 Nov 2021 14:54:35 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
- by imap2.suse-dmz.suse.de with ESMTPSA id 7nsLOSvGk2GBJAAAMHmgww
- (envelope-from <jgross@suse.com>); Tue, 16 Nov 2021 14:54:35 +0000
-Subject: Re: [PATCH 0/5] KVM: Turn the vcpu array into an xarray
-To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
- kvm@vger.kernel.org, linux-mips@vger.kernel.org,
- kvmarm@lists.cs.columbia.edu, linuxppc-dev@lists.ozlabs.org
-References: <20211105192101.3862492-1-maz@kernel.org>
- <6232cbcb-b2e2-e79f-a520-43d552f35243@suse.com>
- <d0f41b9f-9307-3694-59c8-5a009a2f06a2@redhat.com>
-From: Juergen Gross <jgross@suse.com>
-Message-ID: <959bb356-d938-9923-a495-46afc6615bc3@suse.com>
-Date: Tue, 16 Nov 2021 15:54:35 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.12.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Htq0H1ct6z2xtK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Nov 2021 01:57:02 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.143.2])
+ by mo552.mail-out.ovh.net (Postfix) with ESMTPS id 06FE9210C8;
+ Tue, 16 Nov 2021 14:49:15 +0000 (UTC)
+Received: from kaod.org (37.59.142.95) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.20; Tue, 16 Nov
+ 2021 15:49:14 +0100
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-95G001cbb67def-6dd2-4b5e-b908-92d0c411f594,
+ BFAEB7FE3C4E2C4D96001007C3BA12B7689A693E) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 129.41.46.1
+Message-ID: <bcc9f90d-1ba1-6814-960c-e9205c9b2c85@kaod.org>
+Date: Tue, 16 Nov 2021 15:49:13 +0100
 MIME-Version: 1.0
-In-Reply-To: <d0f41b9f-9307-3694-59c8-5a009a2f06a2@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="yUY7U7fkULwGsgK6oZmRHXu9bthtAqpUi"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.2.0
+Subject: Re: [PATCH] powerpc/xive: Change IRQ domain to a tree domain
+Content-Language: en-US
+To: Greg Kurz <groug@kaod.org>
+References: <20211116134022.420412-1-clg@kaod.org>
+ <20211116152343.782c687c@bahia>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+In-Reply-To: <20211116152343.782c687c@bahia>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.95]
+X-ClientProxiedBy: DAG5EX1.mxp5.local (172.16.2.41) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: 04f44e8b-7443-4b51-9fb3-50cbd988cafb
+X-Ovh-Tracer-Id: 14189435051388472227
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvuddrfedvgdeijecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefkffggfgfuvfhfhfgjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeeigedvffekgeeftedutddttdevudeihfegudffkeeitdekkeetkefhffelveelleenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddrleehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtohepghhrohhugheskhgrohgurdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,228 +70,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Huacai Chen <chenhuacai@kernel.org>, Janosch Frank <frankja@linux.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Sean Christopherson <seanjc@google.com>, Anup Patel <anup.patel@wdc.com>,
- David Hildenbrand <david@redhat.com>, Nicholas Piggin <npiggin@gmail.com>,
- Atish Patra <atish.patra@wdc.com>,
- Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>,
- Paul Mackerras <paulus@samba.org>, James Morse <james.morse@arm.com>,
- kernel-team@android.com, Claudio Imbrenda <imbrenda@linux.ibm.com>,
- Alexandru Elisei <alexandru.elisei@arm.com>,
- Suzuki K Poulose <suzuki.poulose@arm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
+ Marc Zyngier <maz@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---yUY7U7fkULwGsgK6oZmRHXu9bthtAqpUi
-Content-Type: multipart/mixed; boundary="xZHqINRDpzDyjI9JAQ2G7U3R0z87b2fth";
- protected-headers="v1"
-From: Juergen Gross <jgross@suse.com>
-To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
- kvm@vger.kernel.org, linux-mips@vger.kernel.org,
- kvmarm@lists.cs.columbia.edu, linuxppc-dev@lists.ozlabs.org
-Cc: Huacai Chen <chenhuacai@kernel.org>,
- Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>,
- Anup Patel <anup.patel@wdc.com>, Atish Patra <atish.patra@wdc.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Janosch Frank <frankja@linux.ibm.com>, David Hildenbrand <david@redhat.com>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Sean Christopherson
- <seanjc@google.com>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, James Morse <james.morse@arm.com>,
- Suzuki K Poulose <suzuki.poulose@arm.com>,
- Alexandru Elisei <alexandru.elisei@arm.com>, kernel-team@android.com
-Message-ID: <959bb356-d938-9923-a495-46afc6615bc3@suse.com>
-Subject: Re: [PATCH 0/5] KVM: Turn the vcpu array into an xarray
-References: <20211105192101.3862492-1-maz@kernel.org>
- <6232cbcb-b2e2-e79f-a520-43d552f35243@suse.com>
- <d0f41b9f-9307-3694-59c8-5a009a2f06a2@redhat.com>
-In-Reply-To: <d0f41b9f-9307-3694-59c8-5a009a2f06a2@redhat.com>
-
---xZHqINRDpzDyjI9JAQ2G7U3R0z87b2fth
-Content-Type: multipart/mixed;
- boundary="------------6207551A8E57C6ACC07B0BFF"
-Content-Language: en-US
-
-This is a multi-part message in MIME format.
---------------6207551A8E57C6ACC07B0BFF
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-
-On 16.11.21 15:21, Paolo Bonzini wrote:
-> On 11/16/21 15:13, Juergen Gross wrote:
->> On 05.11.21 20:20, Marc Zyngier wrote:
->>> The kvm structure is pretty large. A large portion of it is the vcpu
->>> array, which is 4kB on x86_64 and arm64 as they deal with 512 vcpu
->>> VMs. Of course, hardly anyone runs VMs this big, so this is often a
->>> net waste of memory and cache locality.
->>>
->>> A possible approach is to turn the fixed-size array into an xarray,
->>> which results in a net code deletion after a bit of cleanup.
->>>
->>> This series is on top of the current linux/master as it touches the
->>> RISC-V implementation. Only tested on arm64.
->>>
->>> Marc Zyngier (5):
->>> =C2=A0=C2=A0 KVM: Move wiping of the kvm->vcpus array to common code
->>> =C2=A0=C2=A0 KVM: mips: Use kvm_get_vcpu() instead of open-coded acce=
-ss
->>> =C2=A0=C2=A0 KVM: s390: Use kvm_get_vcpu() instead of open-coded acce=
-ss
->>> =C2=A0=C2=A0 KVM: x86: Use kvm_get_vcpu() instead of open-coded acces=
-s
->>> =C2=A0=C2=A0 KVM: Convert the kvm->vcpus array to a xarray
->>>
->>> =C2=A0 arch/arm64/kvm/arm.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 | 10 +---------
->>> =C2=A0 arch/mips/kvm/loongson_ipi.c=C2=A0=C2=A0 |=C2=A0 4 ++--
->>> =C2=A0 arch/mips/kvm/mips.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 | 23 ++---------------------
->>> =C2=A0 arch/powerpc/kvm/powerpc.c=C2=A0=C2=A0=C2=A0=C2=A0 | 10 +-----=
-----
->>> =C2=A0 arch/riscv/kvm/vm.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0 | 10 +---------
->>> =C2=A0 arch/s390/kvm/kvm-s390.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
- 26 ++++++--------------------
->>> =C2=A0 arch/x86/kvm/vmx/posted_intr.c |=C2=A0 2 +-
->>> =C2=A0 arch/x86/kvm/x86.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 9 +--------
->>> =C2=A0 include/linux/kvm_host.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
-=C2=A0 7 ++++---
->>> =C2=A0 virt/kvm/kvm_main.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0 | 33 ++++++++++++++++++++++++++-------
->>> =C2=A0 10 files changed, 45 insertions(+), 89 deletions(-)
->>>
+On 11/16/21 15:23, Greg Kurz wrote:
+> On Tue, 16 Nov 2021 14:40:22 +0100
+> Cédric Le Goater <clg@kaod.org> wrote:
+> 
+>> Commit 4f86a06e2d6e ("irqdomain: Make normal and nomap irqdomains
+>> exclusive") introduced an IRQ_DOMAIN_FLAG_NO_MAP flag to isolate the
+>> 'nomap' domains still in use under the powerpc arch. With this new
+>> flag, the revmap_tree of the IRQ domain is not used anymore. This
+>> change broke the support of shared LSIs [1] in the XIVE driver because
+>> it was relying on a lookup in the revmap_tree to query previously
+>> mapped interrupts. Linux now creates two distinct IRQ mappings on the
+>> same HW IRQ which can lead to unexpected behavior in the drivers.
 >>
->> For x86 you can add my:
+>> The XIVE IRQ domain is not a direct mapping domain and its HW IRQ
+>> interrupt number space is rather large : 1M/socket on POWER9 and
+>> POWER10, change the XIVE driver to use a 'tree' domain type instead.
 >>
->> Tested-by: Juergen Gross <jgross@suse.com>
->=20
-> Heh, unfortunately x86 is the only one that needs a change in patch 4. =
+>> [1] For instance, a linux KVM guest with virtio-rng and virtio-balloon
+>>      devices.
+>>
+>> Cc: Marc Zyngier <maz@kernel.org>
+>> Cc: stable@vger.kernel.org # v5.14+
+>> Fixes: 4f86a06e2d6e ("irqdomain: Make normal and nomap irqdomains exclusive")
+>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>> ---
+>>
+> 
+> Tested-by: Greg Kurz <groug@kaod.org>
+> 
+> with a KVM guest + virtio-rng + virtio-balloon on a POWER9 host.
 
-> I'll Cc you on my version.
+Did you test on a 5.14 backport or mainline ?
 
-I guess the changes in kvm_main.c are more important for my series. :-)
+I am asking because a large change adding support for MSI domains
+to XIVE was merged in 5.15.
 
-I've replaced patch 4 with your variant and everything is still working.
-Not sure how relevant that is, though.
+Thanks,
+
+C.
 
 
-Juergen
+> 
+>>   Marc,
+>>
+>>   The Fixes tag is there because the patch in question revealed that
+>>   something was broken in XIVE. genirq is not in cause. However, I
+>>   don't know for PS3 and Cell. May be less critical for now.
+>>   
+>>   arch/powerpc/sysdev/xive/common.c | 3 +--
+>>   arch/powerpc/sysdev/xive/Kconfig  | 1 -
+>>   2 files changed, 1 insertion(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+>> index fed6fd16c8f4..9d0f0fe25598 100644
+>> --- a/arch/powerpc/sysdev/xive/common.c
+>> +++ b/arch/powerpc/sysdev/xive/common.c
+>> @@ -1536,8 +1536,7 @@ static const struct irq_domain_ops xive_irq_domain_ops = {
+>>   
+>>   static void __init xive_init_host(struct device_node *np)
+>>   {
+>> -	xive_irq_domain = irq_domain_add_nomap(np, XIVE_MAX_IRQ,
+>> -					       &xive_irq_domain_ops, NULL);
+>> +	xive_irq_domain = irq_domain_add_tree(np, &xive_irq_domain_ops, NULL);
+>>   	if (WARN_ON(xive_irq_domain == NULL))
+>>   		return;
+>>   	irq_set_default_host(xive_irq_domain);
+>> diff --git a/arch/powerpc/sysdev/xive/Kconfig b/arch/powerpc/sysdev/xive/Kconfig
+>> index 97796c6b63f0..785c292d104b 100644
+>> --- a/arch/powerpc/sysdev/xive/Kconfig
+>> +++ b/arch/powerpc/sysdev/xive/Kconfig
+>> @@ -3,7 +3,6 @@ config PPC_XIVE
+>>   	bool
+>>   	select PPC_SMP_MUXED_IPI
+>>   	select HARDIRQS_SW_RESEND
+>> -	select IRQ_DOMAIN_NOMAP
+>>   
+>>   config PPC_XIVE_NATIVE
+>>   	bool
+> 
 
-
---------------6207551A8E57C6ACC07B0BFF
-Content-Type: application/pgp-keys;
- name="OpenPGP_0xB0DE9DD628BF132F.asc"
-Content-Transfer-Encoding: quoted-printable
-Content-Description: OpenPGP public key
-Content-Disposition: attachment;
- filename="OpenPGP_0xB0DE9DD628BF132F.asc"
-
------BEGIN PGP PUBLIC KEY BLOCK-----
-
-xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOBy=
-cWx
-w3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2kaV2KL9650I1SJvedYm8O=
-f8Z
-d621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i1TXkH09XSSI8mEQ/ouNcMvIJNwQpd369y=
-9bf
-IhWUiVXEK7MlRgUG6MvIj6Y3Am/BBLUVbDa4+gmzDC9ezlZkTZG2t14zWPvxXP3FAp2pkW0xq=
-G7/
-377qptDmrk42GlSKN4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEBAAHNHEp1ZXJnZW4gR=
-3Jv
-c3MgPGpnQHBmdXBmLm5ldD7CwHkEEwECACMFAlOMcBYCGwMHCwkIBwMCAQYVCAIJCgsEFgIDA=
-QIe
-AQIXgAAKCRCw3p3WKL8TL0KdB/93FcIZ3GCNwFU0u3EjNbNjmXBKDY4FUGNQH2lvWAUy+dnyT=
-hpw
-dtF/jQ6j9RwE8VP0+NXcYpGJDWlNb9/JmYqLiX2Q3TyevpB0CA3dbBQp0OW0fgCetToGIQrg0=
-MbD
-1C/sEOv8Mr4NAfbauXjZlvTj30H2jO0u+6WGM6nHwbh2l5O8ZiHkH32iaSTfN7Eu5RnNVUJbv=
-oPH
-Z8SlM4KWm8rG+lIkGurqqu5gu8q8ZMKdsdGC4bBxdQKDKHEFExLJK/nRPFmAuGlId1E3fe10v=
-5QL
-+qHI3EIPtyfE7i9Hz6rVwi7lWKgh7pe0ZvatAudZ+JNIlBKptb64FaiIOAWDCx1SzR9KdWVyZ=
-2Vu
-IEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+wsB5BBMBAgAjBQJTjHCvAhsDBwsJCAcDAgEGFQgCC=
-QoL
-BBYCAwECHgECF4AACgkQsN6d1ii/Ey/HmQf/RtI7kv5A2PS4RF7HoZhPVPogNVbC4YA6lW7Dr=
-Wf0
-teC0RR3MzXfy6pJ+7KLgkqMlrAbN/8Dvjoz78X+5vhH/rDLa9BuZQlhFmvcGtCF8eR0T1v0nC=
-/nu
-AFVGy+67q2DH8As3KPu0344TBDpAvr2uYM4tSqxK4DURx5INz4ZZ0WNFHcqsfvlGJALDeE0Lh=
-ITT
-d9jLzdDad1pQSToCnLl6SBJZjDOX9QQcyUigZFtCXFst4dlsvddrxyqT1f17+2cFSdu7+ynLm=
-XBK
-7abQ3rwJY8SbRO2iRulogc5vr/RLMMlscDAiDkaFQWLoqHHOdfO9rURssHNN8WkMnQfvUewRz=
-80h
-SnVlcmdlbiBHcm9zcyA8amdyb3NzQG5vdmVsbC5jb20+wsB5BBMBAgAjBQJTjHDXAhsDBwsJC=
-AcD
-AgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey8PUQf/ehmgCI9jB9hlgexLvgOtf7PJn=
-FOX
-gMLdBQgBlVPO3/D9R8LtF9DBAFPNhlrsfIG/SqICoRCqUcJ96Pn3P7UUinFG/I0ECGF4EvTE1=
-jnD
-kfJZr6jrbjgyoZHiw/4BNwSTL9rWASyLgqlA8u1mf+c2yUwcGhgkRAd1gOwungxcwzwqgljf0=
-N51
-N5JfVRHRtyfwq/ge+YEkDGcTU6Y0sPOuj4Dyfm8fJzdfHNQsWq3PnczLVELStJNdapwPOoE+l=
-otu
-fe3AM2vAEYJ9rTz3Cki4JFUsgLkHFqGZarrPGi1eyQcXeluldO3m91NK/1xMI3/+8jbO0tsn1=
-tqS
-EUGIJi7ox80eSnVlcmdlbiBHcm9zcyA8amdyb3NzQHN1c2UuZGU+wsB5BBMBAgAjBQJTjHDrA=
-hsD
-BwsJCAcDAgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey+LhQf9GL45eU5vOowA2u5N3=
-g3O
-ZUEBmDHVVbqMtzwlmNC4k9Kx39r5s2vcFl4tXqW7g9/ViXYuiDXb0RfUpZiIUW89siKrkzmQ5=
-dM7
-wRqzgJpJwK8Bn2MIxAKArekWpiCKvBOB/Cc+3EXE78XdlxLyOi/NrmSGRIov0karw2RzMNOu5=
-D+j
-LRZQd1Sv27AR+IP3I8U4aqnhLpwhK7MEy9oCILlgZ1QZe49kpcumcZKORmzBTNh30FVKK1Evm=
-V2x
-AKDoaEOgQB4iFQLhJCdP1I5aSgM5IVFdn7v5YgEYuJYx37IoN1EblHI//x/e2AaIHpzK5h88N=
-Eaw
-QsaNRpNSrcfbFmAg987ATQRTjHAWAQgAyzH6AOODMBjgfWE9VeCgsrwH3exNAU32gLq2xvjpW=
-nHI
-s98ndPUDpnoxWQugJ6MpMncr0xSwFmHEgnSEjK/PAjppgmyc57BwKII3sV4on+gDVFJR6Y8ZR=
-wgn
-BC5mVM6JjQ5xDk8WRXljExRfUX9pNhdE5eBOZJrDRoLUmmjDtKzWaDhIg/+1Hzz93X4fCQkNV=
-bVF
-LELU9bMaLPBG/x5q4iYZ2k2ex6d47YE1ZFdMm6YBYMOljGkZKwYde5ldM9mo45mmwe0icXKLk=
-pEd
-IXKTZeKDO+Hdv1aqFuAcccTg9RXDQjmwhC3yEmrmcfl0+rPghO0Iv3OOImwTEe4co3c1mwARA=
-QAB
-wsBfBBgBAgAJBQJTjHAWAhsMAAoJELDendYovxMvQ/gH/1ha96vm4P/L+bQpJwrZ/dneZcmEw=
-Tbe
-8YFsw2V/Buv6Z4Mysln3nQK5ZadD534CF7TDVft7fC4tU4PONxF5D+/tvgkPfDAfF77zy2AH1=
-vJz
-Q1fOU8lYFpZXTXIHb+559UqvIB8AdgR3SAJGHHt4RKA0F7f5ipYBBrC6cyXJyyoprT10EMvU8=
-VGi
-wXvTyJz3fjoYsdFzpWPlJEBRMedCot60g5dmbdrZ5DWClAr0yau47zpWj3enf1tLWaqcsuylW=
-svi
-uGjKGw7KHQd3bxALOknAp4dN3QwBYCKuZ7AddY9yjynVaD5X7nF9nO5BjR/i1DG86lem3iBDX=
-zXs
-ZDn8R38=3D
-=3D2wuH
------END PGP PUBLIC KEY BLOCK-----
-
---------------6207551A8E57C6ACC07B0BFF--
-
---xZHqINRDpzDyjI9JAQ2G7U3R0z87b2fth--
-
---yUY7U7fkULwGsgK6oZmRHXu9bthtAqpUi
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmGTxisFAwAAAAAACgkQsN6d1ii/Ey8G
-zAf+JgCNR94TFkw/W/EQ+E/eewdZ/t21kKTYOYfYkvGLjhbQvPaiFaI9VyJ3RIHTIJzHHYIg2cs6
-CVQfGqfejImkrO8ZuAUYVpxKLDJSZ4f5sHZgSkY9BWgi8g6FBW+6pUUJNB+zvQkQOIkgSI3pEAa7
-hNgUXGRerRALQuRMOs+d5JXU8taJ0xxp/nhdnfVzTeD5jIMmgp4caVtjsqbl4ta/m2UuT1sckxHe
-wSb6u81OirVsuzm3cSJUbF741VK1RcqX2fVy+SHaI6K257GvAb8zOi7PbqI9d4u0gx73/RlMJYUk
-E+3C0euqqlu3pS/thZh3+jAN4WUQnhS66gH80TPDkg==
-=uEM7
------END PGP SIGNATURE-----
-
---yUY7U7fkULwGsgK6oZmRHXu9bthtAqpUi--
