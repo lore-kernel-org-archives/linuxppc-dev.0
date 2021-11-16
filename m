@@ -2,44 +2,65 @@ Return-Path: <SRS0=qk5f=QD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29BFFC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 10:05:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4F07C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 10:27:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 59C33613AD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 10:05:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 59C33613AD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=alpha.franken.de
+	by mail.kernel.org (Postfix) with ESMTPS id AB30761AAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 10:27:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org AB30761AAD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HthWv5J3bz3062
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 21:05:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Htj1X0dsKz30Hj
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 21:27:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=elvis.franken.de (client-ip=193.175.24.41; helo=elvis.franken.de;
- envelope-from=tsbogend@alpha.franken.de; receiver=<UNKNOWN>)
-X-Greylist: delayed 2936 seconds by postgrey-1.36 at boromir;
- Tue, 16 Nov 2021 21:05:06 AEDT
-Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
- by lists.ozlabs.org (Postfix) with ESMTP id 4HthWQ2VtDz2xCt
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 21:05:05 +1100 (AEDT)
-Received: from uucp (helo=alpha)
- by elvis.franken.de with local-bsmtp (Exim 3.36 #1)
- id 1mmuZJ-0006sq-00; Tue, 16 Nov 2021 10:15:57 +0100
-Received: by alpha.franken.de (Postfix, from userid 1000)
- id 5D232C2D9C; Tue, 16 Nov 2021 10:15:42 +0100 (CET)
-Date: Tue, 16 Nov 2021 10:15:42 +0100
-From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Build regressions/improvements in v5.16-rc1
-Message-ID: <20211116091542.GA21775@alpha.franken.de>
-References: <20211115155105.3797527-1-geert@linux-m68k.org>
- <CAMuHMdUCsyUxaEf1Lz7+jMnur4ECwK+JoXQqmOCkRKqXdb1hTQ@mail.gmail.com>
+ smtp.mailfrom=kaod.org (client-ip=46.105.54.81;
+ helo=smtpout3.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ receiver=<UNKNOWN>)
+Received: from smtpout3.mo529.mail-out.ovh.net
+ (smtpout3.mo529.mail-out.ovh.net [46.105.54.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Htj124yrCz2xBZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 21:27:16 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.4.240])
+ by mo529.mail-out.ovh.net (Postfix) with ESMTPS id E001BCBCDEA1;
+ Tue, 16 Nov 2021 11:27:10 +0100 (CET)
+Received: from kaod.org (37.59.142.101) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.20; Tue, 16 Nov
+ 2021 11:27:10 +0100
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-101G00488e9d7c1-0317-46b2-b738-c13bf1602699,
+ BFAEB7FE3C4E2C4D96001007C3BA12B7689A693E) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 82.64.250.170
+Message-ID: <50482eb9-389c-0114-ba21-988f1fce493c@kaod.org>
+Date: Tue, 16 Nov 2021 11:27:09 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdUCsyUxaEf1Lz7+jMnur4ECwK+JoXQqmOCkRKqXdb1hTQ@mail.gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.2.0
+Subject: Re: [PATCH 16/39] irqdomain: Make normal and nomap irqdomains
+ exclusive
+Content-Language: en-US
+To: Marc Zyngier <maz@kernel.org>
+References: <20210520163751.27325-1-maz@kernel.org>
+ <20210520163751.27325-17-maz@kernel.org>
+ <1fe9d629-0f5f-4807-b97c-77b3b3c7de72@kaod.org>
+ <87a6i48pp5.wl-maz@kernel.org>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+In-Reply-To: <87a6i48pp5.wl-maz@kernel.org>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [37.59.142.101]
+X-ClientProxiedBy: DAG5EX1.mxp5.local (172.16.2.41) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: a0750013-07d5-4706-bb9b-93a98d531333
+X-Ovh-Tracer-Id: 9763241045856979750
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvuddrfedvgdduhecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefkffggfgfuvfhfhfgjtgfgihesthejredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpefhhfelgeeukedtteffvdffueeiuefgkeekleehleetfedtgfetffefheeugeelheenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtudenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehgrhhouhhgsehkrghougdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,53 +72,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- linux-pci <linux-pci@vger.kernel.org>,
- DRI Development <dri-devel@lists.freedesktop.org>,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Andrey Ryabinin <ryabinin.a.a@gmail.com>, Stan Skowronek <stan@corellium.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, Helge Deller <deller@gmx.de>,
- kasan-dev <kasan-dev@googlegroups.com>,
- Sergio Paracuellos <sergio.paracuellos@gmail.com>,
- Anton Altaparmakov <anton@tuxera.com>,
- linux-arm-msm <linux-arm-msm@vger.kernel.org>,
- "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
- Nick Terrell <terrelln@fb.com>, Joey Gouly <joey.gouly@arm.com>,
- =?iso-8859-1?Q?Andr=E9?= Almeida <andrealmeid@collabora.com>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- linux-ntfs-dev@lists.sourceforge.net, Hector Martin <marcan@marcan.st>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Rob Clark <robdclark@gmail.com>,
- Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
+ Greg Kurz <groug@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 15, 2021 at 05:12:50PM +0100, Geert Uytterhoeven wrote:
-> >   + error: modpost: "mips_cm_is64" [drivers/pci/controller/pcie-mt7621.ko] undefined!:  => N/A
-> >   + error: modpost: "mips_cm_lock_other" [drivers/pci/controller/pcie-mt7621.ko] undefined!:  => N/A
-> >   + error: modpost: "mips_cm_unlock_other" [drivers/pci/controller/pcie-mt7621.ko] undefined!:  => N/A
-> >   + error: modpost: "mips_cpc_base" [drivers/pci/controller/pcie-mt7621.ko] undefined!:  => N/A
-> >   + error: modpost: "mips_gcr_base" [drivers/pci/controller/pcie-mt7621.ko] undefined!:  => N/A
+Hello Marc,
+
+>> This patch is breaking the POWER9/POWER10 XIVE driver (these are not
+>> old PPC systems :) on machines sharing the same LSI HW IRQ. For instance,
+>> a linux KVM guest with a virtio-rng and a virtio-balloon device. In that
+>> case, Linux creates two distinct IRQ mappings which can lead to some
+>> unexpected behavior.
 > 
-> mips-allmodconfig
-
-there is a patchset fixing this
-
-https://lore.kernel.org/all/20211115070809.15529-1-sergio.paracuellos@gmail.com/
-
-> > 3 warning regressions:
-> >   + <stdin>: warning: #warning syscall futex_waitv not implemented [-Wcpp]:  => 1559:2
+> Either the irq domain translates, or it doesn't. If the driver creates
+> a nomap domain, and yet expects some sort of translation to happen,
+> then the driver is fundamentally broken. And even without that: how do
+> you end-up with a single HW interrupt having two mappings?
 > 
-> powerpc, m68k, mips, s390, parisc (and probably more)
+>> A fix to go forward would be to change the XIVE IRQ domain to use a
+>> 'Tree' domain for reverse mapping and not the 'No Map' domain mapping.
+>> I will keep you updated for XIVE.
+> 
+> I bet there is a bit more to it. From what you are saying above,
+> something rather ungodly is happening in the XIVE code.
 
-I've queued a patch to fix this for mips.
+It's making progress.
 
-Thomas.
+This change in irq_find_mapping() is what 'breaks' XIVE :
 
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
-good idea.                                                [ RFC1925, 2.3 ]
+   +       if (irq_domain_is_nomap(domain)) {
+   +               if (hwirq < domain->revmap_size) {
+   +                      data = irq_domain_get_irq_data(domain, hwirq);
+   +                      if (data && data->hwirq == hwirq)
+   +                               return hwirq;
+   +               }
+   +
+   +               return 0;
+
+
+With the introduction of IRQ_DOMAIN_FLAG_NO_MAP, the revmap_tree lookup
+is skipped and the previously mapped IRQ is not found. XIVE was relying
+on a side effect of irq_domain_set_mapping() which is not true anymore.
+
+I guess the easiest fix for 5.14 and 5.15 (in which was introduced MSI
+domains) is to change the XIVE IRQ domain to a domain tree. Since the HW
+can handle 1MB interrupts, this looks like a better choice for the driver.
+
+Thanks,
+
+C.
