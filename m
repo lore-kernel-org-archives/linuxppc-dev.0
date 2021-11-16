@@ -2,21 +2,21 @@ Return-Path: <SRS0=qk5f=QD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55D78C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 11:53:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDF66C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 11:54:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BF5086142A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 11:53:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org BF5086142A
+	by mail.kernel.org (Postfix) with ESMTPS id 1B4B360ED3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 11:54:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 1B4B360ED3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HtkwS2XjRz3bNB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 22:53:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Htkx855Xyz3bc4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 22:54:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=s3VMTRgs;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=PRoUphX+;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
@@ -25,36 +25,36 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=s3VMTRgs; 
+ header.s=casper.20170209 header.b=PRoUphX+; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HtktS6gSSz2yMx
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HtktS6vmYz2ybM
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 22:51:43 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Sender:Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
  Reply-To:Content-Type:Content-ID:Content-Description;
- bh=O8MDor7s313o19vuUnnSxq6Ja3Km6oPS/hJHp/rZTr0=; b=s3VMTRgs2flk4BjZ93jxnSlIRm
- og/F8rKMuPPZA/sYa+71+ed0m7Ov8nYbEh5lhPkuAUQJIL/5+oBwz/czuP2umgGjYFEhZffQR5eYx
- vz8EQChorD2W0AdRU6XC04lci3T3lHmGmJOG+OyCn5Ci0kUI3mtwfUcxZjMnhQvzw3mPrqKmeeWh/
- hkj6jOuti0JlBQxjJmQigTUVXmmN2wsmXP0UFqbSqXkAkpMhGv+zIjnbSgkt5/X/+UmD4OdsDdUOu
- cAuyoBx0oIvZCaaYAv6dMNdN6YMX1yQeTFKFs6b0Nk31IKyAxD6bVw7pwgMN/wNVpp0qBzOG2Mu9C
- YC7qsWIg==;
+ bh=ThsOSYmYD8dlkFVZCot5XM+hXrGwbgaPOIk3p6njr20=; b=PRoUphX+pIULR3EbrwPwnXgZQE
+ KJugHFdqYqZvzpg14jZ+UpMDllj4vfjtrPD0lLxvo6JoT4Oms1Gjd+23QSBHZTWjHd9lTq6fEa4no
+ XChwpj6zE/6jmAGntIbuUBNorfTtou+6pVcO8oN9Bs3z5CM05cr80+MywMlpTRl5c5+YlEBDorAFI
+ SQ8S165jKSb1SSFMjdcMLe3LHmkr+nflaFHAm5L8E/8kSsmppgHNaE5xEvdZlxfeNrY3hHwmfPOut
+ aQUbvSydHeSw3h9UeJ0Ftuscprr+yKiuvWdd8x3latc3Zsg51BamnkgdwLJXQdNdy8RT7S85pJ2T+
+ yfiUlBOA==;
 Received: from i7.infradead.org ([2001:8b0:10b:1:21e:67ff:fecb:7a92])
  by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1mmwzD-006iYl-AU; Tue, 16 Nov 2021 11:50:52 +0000
+ id 1mmwzC-006iYi-Vu; Tue, 16 Nov 2021 11:50:51 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.94.2 #2 (Red
- Hat Linux)) id 1mmwzD-000VDq-HM; Tue, 16 Nov 2021 11:50:51 +0000
+ Hat Linux)) id 1mmwzD-000VDb-5r; Tue, 16 Nov 2021 11:50:51 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	kvm <kvm@vger.kernel.org>
-Subject: [PATCH 6/7] KVM: powerpc: Use Makefile.kvm for common files
-Date: Tue, 16 Nov 2021 11:50:50 +0000
-Message-Id: <20211116115051.119956-6-dwmw2@infradead.org>
+Subject: [PATCH 2/7] KVM: Add Makefile.kvm for common files, use it for x86
+Date: Tue, 16 Nov 2021 11:50:46 +0000
+Message-Id: <20211116115051.119956-2-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20211116115051.119956-1-dwmw2@infradead.org>
 References: <5047c2591310e503491850ef683f251395247d50.camel@infradead.org>
@@ -98,45 +98,54 @@ Sender: "Linuxppc-dev"
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-It's all fairly baroque but in the end, I don't think there's any reason
-for $(KVM)/irqchip.o to have been handled differently, as they all end
-up in $(kvm-y) in the end anyway, regardless of whether they get there
-via $(common-objs-y) and the CPU-specific object lists.
-
-The generic Makefile.kvm uses HAVE_KVM_IRQCHIP for irqchip.o instead of
-HAVE_KVM_IRQ_ROUTING. That change is fine (and arguably correct) because
-they are both set together for KVM_MPIC, or neither is set.
+Splitting kvm_main.c out into smaller and better-organized files is
+slightly non-trivial when it involves editing a bunch of per-arch
+KVM makefiles. Provide virt/kvm/Makefile.kvm for them to include.
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- arch/powerpc/kvm/Makefile | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ arch/x86/kvm/Makefile |  7 +------
+ virt/kvm/Makefile.kvm | 13 +++++++++++++
+ 2 files changed, 14 insertions(+), 6 deletions(-)
+ create mode 100644 virt/kvm/Makefile.kvm
 
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index 583c14ef596e..245f59118413 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -4,11 +4,8 @@
- #
+diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
+index 75dfd27b6e8a..30f244b64523 100644
+--- a/arch/x86/kvm/Makefile
++++ b/arch/x86/kvm/Makefile
+@@ -7,12 +7,7 @@ ifeq ($(CONFIG_FRAME_POINTER),y)
+ OBJECT_FILES_NON_STANDARD_vmenter.o := y
+ endif
  
- ccflags-y := -Ivirt/kvm -Iarch/powerpc/kvm
 -KVM := ../../../virt/kvm
- 
--common-objs-y = $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
--common-objs-$(CONFIG_KVM_VFIO) += $(KVM)/vfio.o
--common-objs-$(CONFIG_KVM_MMIO) += $(KVM)/coalesced_mmio.o
+-
+-kvm-y			+= $(KVM)/kvm_main.o $(KVM)/coalesced_mmio.o \
+-				$(KVM)/eventfd.o $(KVM)/irqchip.o $(KVM)/vfio.o \
+-				$(KVM)/dirty_ring.o $(KVM)/binary_stats.o
+-kvm-$(CONFIG_KVM_ASYNC_PF)	+= $(KVM)/async_pf.o
 +include $(srctree)/virt/kvm/Makefile.kvm
  
- common-objs-y += powerpc.o emulate_loadstore.o
- obj-$(CONFIG_KVM_EXIT_TIMING) += timing.o
-@@ -125,7 +122,6 @@ kvm-book3s_32-objs := \
- kvm-objs-$(CONFIG_KVM_BOOK3S_32) := $(kvm-book3s_32-objs)
- 
- kvm-objs-$(CONFIG_KVM_MPIC) += mpic.o
--kvm-objs-$(CONFIG_HAVE_KVM_IRQ_ROUTING) += $(KVM)/irqchip.o
- 
- kvm-objs := $(kvm-objs-m) $(kvm-objs-y)
- 
+ kvm-y			+= x86.o emulate.o i8259.o irq.o lapic.o \
+ 			   i8254.o ioapic.o irq_comm.o cpuid.o pmu.o mtrr.o \
+diff --git a/virt/kvm/Makefile.kvm b/virt/kvm/Makefile.kvm
+new file mode 100644
+index 000000000000..ee9c310f3601
+--- /dev/null
++++ b/virt/kvm/Makefile.kvm
+@@ -0,0 +1,13 @@
++# SPDX-License-Identifier: GPL-2.0
++#
++# Makefile for Kernel-based Virtual Machine module
++#
++
++KVM ?= ../../../virt/kvm
++
++kvm-y := $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
++kvm-$(CONFIG_KVM_VFIO) += $(KVM)/vfio.o
++kvm-$(CONFIG_KVM_MMIO) += $(KVM)/coalesced_mmio.o
++kvm-$(CONFIG_KVM_ASYNC_PF) += $(KVM)/async_pf.o
++kvm-$(CONFIG_HAVE_KVM_IRQCHIP) += $(KVM)/irqchip.o
++kvm-$(CONFIG_HAVE_KVM_DIRTY_RING) += $(KVM)/dirty_ring.o
 -- 
 2.31.1
 
