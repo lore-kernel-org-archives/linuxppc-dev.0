@@ -2,51 +2,50 @@ Return-Path: <SRS0=qk5f=QD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A46EC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 16:05:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66680C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 16:05:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DBC5961AA5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 16:05:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DBC5961AA5
+	by mail.kernel.org (Postfix) with ESMTPS id EAAA7613DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 16:05:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org EAAA7613DB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HtrW72yqgz3cX1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 03:05:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HtrWZ4JSMz3bY0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 03:05:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=maz@kernel.org; receiver=<UNKNOWN>)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HtrTp6KTFz2yJF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Nov 2021 03:04:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HtrTq1mclz2yKF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Nov 2021 03:04:15 +1100 (AEDT)
 Received: from disco-boy.misterjones.org (disco-boy.misterjones.org
  [51.254.78.96])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 1DD2D619FA;
+ by mail.kernel.org (Postfix) with ESMTPSA id 900D561929;
  Tue, 16 Nov 2021 16:04:13 +0000 (UTC)
 Received: from sofa.misterjones.org ([185.219.108.64] helo=why.lan)
  by disco-boy.misterjones.org with esmtpsa (TLS1.3) tls
  TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.94.2)
  (envelope-from <maz@kernel.org>)
- id 1mn0wN-005sTB-4l; Tue, 16 Nov 2021 16:04:11 +0000
+ id 1mn0wN-005sTB-P0; Tue, 16 Nov 2021 16:04:11 +0000
 From: Marc Zyngier <maz@kernel.org>
 To: kvm@vger.kernel.org, linux-mips@vger.kernel.org,
  kvmarm@lists.cs.columbia.edu, linuxppc-dev@lists.ozlabs.org,
  Paolo Bonzini <pbonzini@redhat.com>
-Subject: [PATCH v2 2/7] KVM: mips: Use kvm_get_vcpu() instead of open-coded
+Subject: [PATCH v2 3/7] KVM: s390: Use kvm_get_vcpu() instead of open-coded
  access
-Date: Tue, 16 Nov 2021 16:03:58 +0000
-Message-Id: <20211116160403.4074052-3-maz@kernel.org>
+Date: Tue, 16 Nov 2021 16:03:59 +0000
+Message-Id: <20211116160403.4074052-4-maz@kernel.org>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20211116160403.4074052-1-maz@kernel.org>
 References: <20211116160403.4074052-1-maz@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 185.219.108.64
 X-SA-Exim-Rcpt-To: kvm@vger.kernel.org, linux-mips@vger.kernel.org,
@@ -89,48 +88,39 @@ Sender: "Linuxppc-dev"
 As we are about to change the way vcpus are allocated, mandate
 the use of kvm_get_vcpu() instead of open-coding the access.
 
-Reviewed-by: Philippe Mathieu-Daudé <f4bug@amsat.org>
+Reviewed-by: Claudio Imbrenda <imbrenda@linux.ibm.com>
 Signed-off-by: Marc Zyngier <maz@kernel.org>
 ---
- arch/mips/kvm/loongson_ipi.c | 4 ++--
- arch/mips/kvm/mips.c         | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/s390/kvm/kvm-s390.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/mips/kvm/loongson_ipi.c b/arch/mips/kvm/loongson_ipi.c
-index 3681fc8fba38..5d53f32d837c 100644
---- a/arch/mips/kvm/loongson_ipi.c
-+++ b/arch/mips/kvm/loongson_ipi.c
-@@ -120,7 +120,7 @@ static int loongson_vipi_write(struct loongson_kvm_ipi *ipi,
- 		s->status |= data;
- 		irq.cpu = id;
- 		irq.irq = 6;
--		kvm_vcpu_ioctl_interrupt(kvm->vcpus[id], &irq);
-+		kvm_vcpu_ioctl_interrupt(kvm_get_vcpu(kvm, id), &irq);
- 		break;
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index 7af53b8788fa..4a0f62b03964 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -4572,7 +4572,7 @@ int kvm_s390_vcpu_start(struct kvm_vcpu *vcpu)
+ 	}
  
- 	case CORE0_CLEAR_OFF:
-@@ -128,7 +128,7 @@ static int loongson_vipi_write(struct loongson_kvm_ipi *ipi,
- 		if (!s->status) {
- 			irq.cpu = id;
- 			irq.irq = -6;
--			kvm_vcpu_ioctl_interrupt(kvm->vcpus[id], &irq);
-+			kvm_vcpu_ioctl_interrupt(kvm_get_vcpu(kvm, id), &irq);
+ 	for (i = 0; i < online_vcpus; i++) {
+-		if (!is_vcpu_stopped(vcpu->kvm->vcpus[i]))
++		if (!is_vcpu_stopped(kvm_get_vcpu(vcpu->kvm, i)))
+ 			started_vcpus++;
+ 	}
+ 
+@@ -4634,9 +4634,11 @@ int kvm_s390_vcpu_stop(struct kvm_vcpu *vcpu)
+ 	__disable_ibs_on_vcpu(vcpu);
+ 
+ 	for (i = 0; i < online_vcpus; i++) {
+-		if (!is_vcpu_stopped(vcpu->kvm->vcpus[i])) {
++		struct kvm_vcpu *tmp = kvm_get_vcpu(vcpu->kvm, i);
++
++		if (!is_vcpu_stopped(tmp)) {
+ 			started_vcpus++;
+-			started_vcpu = vcpu->kvm->vcpus[i];
++			started_vcpu = tmp;
  		}
- 		break;
+ 	}
  
-diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index ceacca74f808..6228bf396d63 100644
---- a/arch/mips/kvm/mips.c
-+++ b/arch/mips/kvm/mips.c
-@@ -479,7 +479,7 @@ int kvm_vcpu_ioctl_interrupt(struct kvm_vcpu *vcpu,
- 	if (irq->cpu == -1)
- 		dvcpu = vcpu;
- 	else
--		dvcpu = vcpu->kvm->vcpus[irq->cpu];
-+		dvcpu = kvm_get_vcpu(vcpu->kvm, irq->cpu);
- 
- 	if (intr == 2 || intr == 3 || intr == 4 || intr == 6) {
- 		kvm_mips_callbacks->queue_io_int(dvcpu, irq);
 -- 
 2.30.2
 
