@@ -1,95 +1,49 @@
-Return-Path: <SRS0=qk5f=QD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=7Eaw=QE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E3EDC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 21:58:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C549FC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 00:43:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B64560E9B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Nov 2021 21:58:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 0B64560E9B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2858963222
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 00:43:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2858963222
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hv0M14kf9z30GN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 08:58:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KfCX0frC;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hv40T29vrz3bjT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 11:43:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=KfCX0frC; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hv0LD1WQ5z2x9p
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Nov 2021 08:58:11 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1AGLiCSL005390
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 21:58:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : subject :
- date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=jWT5gZOBoM2SVGaC7qKIMakkYpABBHXfIGDJodsEsNY=;
- b=KfCX0frCcynqHItHsac0DEfahkFOrLPmwCMVlcjguoTaakFo1E3cq+prEoajCxXIOURS
- WfgAKJyKk0qd2+82gPdPbr0+18GseY0A3uHiySXM87iM3wwz8Ms3oZM0EohgdKZzk2ay
- wDSr9B9jGtwLNHNM0ext3umqPv7+zrROtV6E8tOZA4cSkPakynlxC1/gJjJpR6H22HoS
- /19TSCHFT9BQdZ2DpVQvkYGmeNEjUkS3XOGuGXMYrOOv40M9QowCoQybW7IjnHXKl0Ae
- fwRObnDOuYzUlyrBLO1IRqO1njUysupe3dZqgzaHVoZnZbds9kuKQfDrJxjvuHIsXBOX 5A== 
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3ccmteg5ve-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 21:58:08 +0000
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1AGLmmW1014860
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 21:58:07 GMT
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23]) by ppma01dal.us.ibm.com with ESMTP id 3ca50bvwu3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 21:58:07 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1AGLw6Av48234910
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 21:58:06 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CD868AC05B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 21:58:06 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8CB41AC060
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 21:58:06 +0000 (GMT)
-Received: from localhost (unknown [9.211.102.167])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 21:58:06 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/rtas: kernel-doc fixes
-Date: Tue, 16 Nov 2021 15:58:06 -0600
-Message-Id: <20211116215806.928235-1-nathanl@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hv3zy2jBHz2xtK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Nov 2021 11:42:33 +1100 (AEDT)
+X-IronPort-AV: E=McAfee;i="6200,9189,10170"; a="214576017"
+X-IronPort-AV: E=Sophos;i="5.87,239,1631602800"; d="scan'208";a="214576017"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+ by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Nov 2021 16:41:30 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.87,239,1631602800"; d="scan'208";a="672189077"
+Received: from lkp-server02.sh.intel.com (HELO c20d8bc80006) ([10.239.97.151])
+ by orsmga005.jf.intel.com with ESMTP; 16 Nov 2021 16:41:29 -0800
+Received: from kbuild by c20d8bc80006 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1mn90y-00011P-A4; Wed, 17 Nov 2021 00:41:28 +0000
+Date: Wed, 17 Nov 2021 08:41:07 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS 64044d20a2d777d2346cde7eb41d17497c4f4449
+Message-ID: <61944fa3.e+mBtVq0Q8XChYQy%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: PQcL_fhEZ1GVXle6aUlhu9HNL-XKEPTy
-X-Proofpoint-ORIG-GUID: PQcL_fhEZ1GVXle6aUlhu9HNL-XKEPTy
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
- definitions=2021-11-16_06,2021-11-16_01,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 mlxscore=0
- bulkscore=0 clxscore=1015 malwarescore=0 adultscore=0 spamscore=0
- phishscore=0 suspectscore=0 lowpriorityscore=0 priorityscore=1501
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2110150000 definitions=main-2111160097
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,59 +55,166 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix the following issues reported by kernel-doc:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 64044d20a2d777d2346cde7eb41d17497c4f4449  Automatic merge of 'fixes' into merge (2021-11-16 22:46)
 
-$ scripts/kernel-doc -v -none arch/powerpc/kernel/rtas.c
-arch/powerpc/kernel/rtas.c:810: info: Scanning doc for function rtas_activate_firmware
-arch/powerpc/kernel/rtas.c:818: warning: contents before sections
-arch/powerpc/kernel/rtas.c:841: info: Scanning doc for function rtas_call_reentrant
-arch/powerpc/kernel/rtas.c:893: warning: This comment starts with '/**', but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
- * Find a specific pseries error log in an RTAS extended event log.
+elapsed time: 721m
 
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+configs tested: 140
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20211116
+mips                         tb0287_defconfig
+sh                   sh7724_generic_defconfig
+m68k                       m5249evb_defconfig
+x86_64                              defconfig
+arm                        cerfcube_defconfig
+powerpc                       eiger_defconfig
+mips                     cu1830-neo_defconfig
+powerpc                      pcm030_defconfig
+arm                           sama5_defconfig
+sparc64                          alldefconfig
+s390                       zfcpdump_defconfig
+arm                        mini2440_defconfig
+microblaze                          defconfig
+mips                  cavium_octeon_defconfig
+powerpc                    adder875_defconfig
+m68k                         amcore_defconfig
+powerpc                      ppc40x_defconfig
+arc                        vdk_hs38_defconfig
+arm                        mvebu_v5_defconfig
+arm                         mv78xx0_defconfig
+sh                           se7619_defconfig
+xtensa                generic_kc705_defconfig
+powerpc64                           defconfig
+arm                         axm55xx_defconfig
+mips                          rm200_defconfig
+arm                           stm32_defconfig
+arm                       spear13xx_defconfig
+ia64                             alldefconfig
+powerpc                         ps3_defconfig
+powerpc                 mpc836x_rdk_defconfig
+arm                          gemini_defconfig
+arm                     eseries_pxa_defconfig
+arm                           u8500_defconfig
+mips                         cobalt_defconfig
+arm                            lart_defconfig
+powerpc                     pseries_defconfig
+sh                            hp6xx_defconfig
+mips                      maltaaprp_defconfig
+powerpc                 xes_mpc85xx_defconfig
+arc                    vdk_hs38_smp_defconfig
+sh                        apsh4ad0a_defconfig
+s390                             alldefconfig
+s390                          debug_defconfig
+sh                 kfr2r09-romimage_defconfig
+sh                          rsk7264_defconfig
+m68k                         apollo_defconfig
+sh                            shmin_defconfig
+h8300                            alldefconfig
+mips                         rt305x_defconfig
+powerpc                 mpc832x_mds_defconfig
+arm                            mps2_defconfig
+xtensa                  cadence_csp_defconfig
+riscv                             allnoconfig
+arm                    vt8500_v6_v7_defconfig
+arc                        nsim_700_defconfig
+arm                   milbeaut_m10v_defconfig
+sh                   sh7770_generic_defconfig
+powerpc                 mpc85xx_cds_defconfig
+arm                  randconfig-c002-20211116
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a015-20211116
+x86_64               randconfig-a013-20211116
+x86_64               randconfig-a012-20211116
+x86_64               randconfig-a011-20211116
+x86_64               randconfig-a016-20211116
+x86_64               randconfig-a014-20211116
+i386                 randconfig-a014-20211116
+i386                 randconfig-a016-20211116
+i386                 randconfig-a012-20211116
+i386                 randconfig-a013-20211116
+i386                 randconfig-a011-20211116
+i386                 randconfig-a015-20211116
+arc                  randconfig-r043-20211116
+riscv                randconfig-r042-20211116
+s390                 randconfig-r044-20211116
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                            allyesconfig
+riscv                               defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                    rhel-8.3-kselftests
+x86_64                          rhel-8.3-func
+x86_64                           allyesconfig
+
+clang tested configs:
+x86_64               randconfig-a005-20211116
+x86_64               randconfig-a003-20211116
+x86_64               randconfig-a001-20211116
+x86_64               randconfig-a002-20211116
+x86_64               randconfig-a006-20211116
+x86_64               randconfig-a004-20211116
+i386                 randconfig-a006-20211116
+i386                 randconfig-a003-20211116
+i386                 randconfig-a005-20211116
+i386                 randconfig-a001-20211116
+i386                 randconfig-a004-20211116
+i386                 randconfig-a002-20211116
+hexagon              randconfig-r045-20211116
+hexagon              randconfig-r041-20211116
+
 ---
- arch/powerpc/kernel/rtas.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index ff80bbad22a5..ca27421f471a 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -809,13 +809,13 @@ void rtas_os_term(char *str)
- /**
-  * rtas_activate_firmware() - Activate a new version of firmware.
-  *
-+ * Context: This function may sleep.
-+ *
-  * Activate a new version of partition firmware. The OS must call this
-  * after resuming from a partition hibernation or migration in order
-  * to maintain the ability to perform live firmware updates. It's not
-  * catastrophic for this method to be absent or to fail; just log the
-  * condition in that case.
-- *
-- * Context: This function may sleep.
-  */
- void rtas_activate_firmware(void)
- {
-@@ -890,11 +890,12 @@ int rtas_call_reentrant(int token, int nargs, int nret, int *outputs, ...)
- #endif /* CONFIG_PPC_PSERIES */
- 
- /**
-- * Find a specific pseries error log in an RTAS extended event log.
-+ * get_pseries_errorlog() - Find a specific pseries error log in an RTAS
-+ *                          extended event log.
-  * @log: RTAS error/event log
-  * @section_id: two character section identifier
-  *
-- * Returns a pointer to the specified errorlog or NULL if not found.
-+ * Return: A pointer to the specified errorlog or NULL if not found.
-  */
- struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
- 					      uint16_t section_id)
--- 
-2.31.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
