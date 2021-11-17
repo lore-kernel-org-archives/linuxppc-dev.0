@@ -2,65 +2,98 @@ Return-Path: <SRS0=7Eaw=QE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84110C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 03:30:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B203C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 06:03:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD447613D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 03:30:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org DD447613D3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 39AB1613A3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 06:03:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 39AB1613A3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hv7jv39Xjz3bX0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 14:30:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HvC6h367dz3bW6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Nov 2021 17:03:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kG8ft3Xw;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.210.176;
- helo=mail-pf1-f176.google.com; envelope-from=mcgrof@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
-Received: from mail-pf1-f176.google.com (mail-pf1-f176.google.com
- [209.85.210.176])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=kG8ft3Xw; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hv7jM1Tndz2yHl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Nov 2021 14:30:13 +1100 (AEDT)
-Received: by mail-pf1-f176.google.com with SMTP id g19so1305928pfb.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Nov 2021 19:30:13 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=895YRPhGbbjFFaWKhBPRuX0mIQNHTjsRgPz9absSumc=;
- b=hayJm6TFn2EIZ4zinQQDTVTa/Mc8lKH6yhis2BANAosD6bRrxsdZLnxZCEAn9y5j9O
- L/LhxPmGXDE8mZVjNiBd5Ry6h7RjeAeeQhPH1yy+H8kr9oPBQRcbYEiiiBw1cW0jCqH0
- 3pH1yXLMr3UHReqJDkR0EgXnN16pi/1Y3z3tt5bOu1s6PKMQPBZTTU248XAeH4oweEDE
- pK/aEC2W88Vzr1gHaKkzVb2pLHD0Pn1BKIcGrYiClWMPw8WBu08ZSjjrG19WgJsC5YUa
- Ge6NTJ0nMdGIKe2+MvR6ZM57H+lQJbtversPV7ZnCyCFj1OZuxAtOVpU+dw9u14z06U5
- EX5w==
-X-Gm-Message-State: AOAM532KsTdq5SXy8lTs7aj5hh2XVtUJbgrC0BeuxmKdH3vAnHEAud9z
- snJAReYmF7tbjOjmAsznf8k=
-X-Google-Smtp-Source: ABdhPJwU/IwET3zdClUb2Z5KLHH7EaHhfI8Rb/CQE2Ip9HWx6ygcuQpN7cUyD79BCdr2B54OGTZmNQ==
-X-Received: by 2002:a63:f94d:: with SMTP id q13mr2926410pgk.13.1637119809592; 
- Tue, 16 Nov 2021 19:30:09 -0800 (PST)
-Received: from garbanzo (136-24-173-63.cab.webpass.net. [136.24.173.63])
- by smtp.gmail.com with ESMTPSA id j7sm3623767pjf.41.2021.11.16.19.30.07
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 16 Nov 2021 19:30:08 -0800 (PST)
-Date: Tue, 16 Nov 2021 19:30:06 -0800
-From: Luis Chamberlain <mcgrof@kernel.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 12/13] sysctl: add helper to register empty subdir
-Message-ID: <20211117033006.qct3ve3tknfy3xy7@garbanzo>
-References: <20200529074108.16928-1-mcgrof@kernel.org>
- <20200529074108.16928-13-mcgrof@kernel.org>
- <878shasxkp.fsf@x220.int.ebiederm.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HvC5n6pW5z2yMy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Nov 2021 17:03:09 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1AH5pU2F007777; 
+ Wed, 17 Nov 2021 06:03:03 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : content-transfer-encoding
+ : mime-version; s=pp1; bh=RXIE9MEFUBfpSHugxSUumc5SCNgTyCj4dbwy29HUcZE=;
+ b=kG8ft3XwxDDMLZWH6nrH5zwgmfgy0hrg311S+BA1YXTad7JeUpWh5lXLsQDNLHPV4GLU
+ VXKX+js5auQokRmWYYEBxjBZE/IFQZp9rMT1JhqMnG97ADbxXG/lhNZHiOtcLUm6v2dt
+ pCR5lhmBaDrg2B7LNqm3NYmc1u+ND7qQCkRGJcN+ePvh6JqlPjgJf7Ekb30CESuGzaCA
+ VnkhSG5f4+z+uvlw+TP78D81/Kkuw1Bey16PXV3zjP8RQRBrih9T8pHk+0kFs2MOz1iX
+ ZrQMPjwkFY4LYxtDjiqHBx+lzLPiijYvXblxqN1KLsVSwOGUIhHvW2L/kri/MgIhjZC0 rA== 
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3ccuy7g6aw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 17 Nov 2021 06:03:03 +0000
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1AH5w1Ak012064;
+ Wed, 17 Nov 2021 06:03:02 GMT
+Received: from b03cxnp07027.gho.boulder.ibm.com
+ (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
+ by ppma04dal.us.ibm.com with ESMTP id 3ca50bn0qp-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 17 Nov 2021 06:03:02 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1AH630lf18153896
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 17 Nov 2021 06:03:00 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D3AC46A05A;
+ Wed, 17 Nov 2021 06:03:00 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A9DDD6A051;
+ Wed, 17 Nov 2021 06:03:00 +0000 (GMT)
+Received: from localhost (unknown [9.211.102.167])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 17 Nov 2021 06:03:00 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 1/2] powerpc/rtas: rtas_busy_delay() improvements
+Date: Wed, 17 Nov 2021 00:02:58 -0600
+Message-Id: <20211117060259.957178-2-nathanl@linux.ibm.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20211117060259.957178-1-nathanl@linux.ibm.com>
+References: <20211117060259.957178-1-nathanl@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 769Esbc_iwskjQXJVTROsNl5f8yKRvQq
+X-Proofpoint-GUID: 769Esbc_iwskjQXJVTROsNl5f8yKRvQq
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <878shasxkp.fsf@x220.int.ebiederm.org>
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
+ definitions=2021-11-17_02,2021-11-16_01,2020-04-07_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 adultscore=0
+ spamscore=0 bulkscore=0 mlxlogscore=999 mlxscore=0 priorityscore=1501
+ lowpriorityscore=0 impostorscore=0 malwarescore=0 clxscore=1015
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2110150000 definitions=main-2111170029
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,55 +105,253 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jack@suse.cz, rafael@kernel.org, airlied@linux.ie, amir73il@gmail.com,
- clemens@ladisch.de, dri-devel@lists.freedesktop.org,
- joseph.qi@linux.alibaba.com, sfr@canb.auug.org.au, mark@fasheh.com,
- rdna@fb.com, yzaikin@google.com, joonas.lahtinen@linux.intel.com,
- keescook@chromium.org, arnd@arndb.de, intel-gfx@lists.freedesktop.org,
- jani.nikula@linux.intel.com, julia.lawall@lip6.fr, viro@zeniv.linux.org.uk,
- rodrigo.vivi@intel.com, nixiaoming@huawei.com, vbabka@suse.cz, axboe@kernel.dk,
- tytso@mit.edu, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- daniel@ffwll.ch, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- ocfs2-devel@oss.oracle.com, jlbec@evilplan.org
+Cc: tyreld@linux.ibm.com, ajd@linux.ibm.com, aik@ozlabs.ru,
+ cheloha@linux.ibm.com, ldufour@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 29, 2020 at 08:03:02AM -0500, Eric W. Biederman wrote:
-> Luis Chamberlain <mcgrof@kernel.org> writes:
-> 
-> > The way to create a subdirectory from the base set of directories
-> > is a bit obscure, so provide a helper which makes this clear, and
-> > also helps remove boiler plate code required to do this work.
-> 
-> I agreee calling:
-> register_sysctl("fs/binfmt_misc", sysctl_mount_point)
-> is a bit obscure but if you are going to make a wrapper
-> please make it the trivial one liner above.
-> 
-> Say something that looks like:
-> 	struct sysctl_header *register_sysctl_mount_point(const char *path)
->         {
->         	return register_sysctl(path, sysctl_mount_point);
->         }
-> 
-> And yes please talk about a mount point and not an empty dir, as these
-> are permanently empty directories to serve as mount points.  There are
-> some subtle but important permission checks this allows in the case of
-> unprivileged mounts.
-> 
-> Further code like this belong in proc_sysctl.c next to all of the code
-> it is related to so that it is easier to see how to refactor the code if
-> necessary.
+Generally RTAS cannot block, and in PAPR it is required to return control
+to the OS within a few tens of microseconds. In order to support operations
+which may take longer to complete, many RTAS primitives can return
+intermediate -2 ("busy") or 990x ("extended delay") values, which indicate
+that the OS should reattempt the same call with the same arguments at some
+point in the future.
 
-Alrighty, it's been a while since this kernel/sysctl.c kitchen sink
-cleanup... so it's time to respin this now that the merge window is
-open.  I already rebased patches, addressed all input and now just
-waiting to fix any compilation errors.  I'm going to split the patches
-up into real small sets so to ensure we just get this through becauase
-getting this in otherwise is going to be hard.
+Current versions of PAPR are less than clear about this, but the intended
+meanings of these values in more detail are:
 
-I'd appreciate folk's review once the patches start going out. I think
-a hard part will be deciding what tree this should got through.
+RTAS_BUSY (-2): RTAS has suspended a potentially long-running operation in
+order to meet its latency obligation and give the OS the opportunity to
+perform other work. RTAS can resume making progress as soon as the OS
+reattempts the call.
 
-  Luis
+RTAS_EXTENDED_DELAY_{MIN...MAX} (9900-9905): RTAS must wait for an external
+event to occur or for internal contention to resolve before it can complete
+the requested operation. The value encodes a non-binding hint as to roughly
+how long the OS should wait before calling again, but the OS is allowed to
+reattempt the call sooner or even immediately.
+
+Linux of course must take its own CPU scheduling obligations into account
+when handling these statuses; e.g. a task which receives an RTAS_BUSY
+status should check whether to reschedule before it attempts the RTAS call
+again to avoid starving other tasks.
+
+rtas_busy_delay() is a helper function that "consumes" a busy or extended
+delay status. Common usage:
+
+    int rc;
+
+    do {
+        rc = rtas_call(rtas_token("some-function"), ...);
+    } while (rtas_busy_delay(rc));
+
+    /* convert rc to Linux error value, etc */
+
+If rc is a busy or extended delay status, the caller can rely on
+rtas_busy_delay() to perform an appropriate sleep or reschedule and return
+nonzero. Other statuses are handled normally by the caller.
+
+The current implementation of rtas_busy_delay() both oversleeps and
+overuses the CPU:
+
+*  It performs msleep() for all 990x and even when no delay is
+   suggested (-2), but this is understood to actually sleep for two jiffies
+   minimum in practice (20ms with HZ=100). 9900 (1ms) and 9901 (10ms)
+   appear to be the most common extended delay statuses, and the
+   oversleeping measurably lengthens DLPAR operations, which perform
+   many RTAS calls.
+
+*  It does not sleep on 990x unless need_resched() is true, causing code
+   like the loop above to needlessly retry, wasting CPU time.
+
+Alter the logic to align better with the intended meanings:
+
+*  When passed RTAS_BUSY, perform cond_resched() and return without
+   sleeping. The caller should reattempt immediately
+
+*  Always sleep when passed an extended delay status, using usleep_range()
+   for precise shorter sleeps. Limit the sleep time to one second even
+   though there are higher architected values.
+
+Change rtas_busy_delay()'s return type to bool to better reflect its usage,
+and add kernel-doc.
+
+rtas_busy_delay_time() is unchanged, even though it "incorrectly" returns 1
+for RTAS_BUSY. There are users of that API with open-coded delay loops in
+sensitive contexts that will have to be taken on an individual basis.
+
+Brief results for addition and removal of 5GB memory on a small P9 PowerVM
+partition follow. Load was generated with stress-ng --cpu N. For add,
+elapsed time is greatly reduced without significant change in the number of
+RTAS calls or time spent on CPU. For remove, elapsed time is modestly
+reduced, with significant reductions in RTAS calls and time spent on CPU.
+
+With no competing workload (- before, + after):
+
+  Performance counter stats for 'bash -c echo "memory add count 20" > /sys/kernel/dlpar' (10 runs):
+
+-             1,935      probe:rtas_call           #    0.003 M/sec                    ( +-  0.22% )
+-            609.99 msec task-clock                #    0.183 CPUs utilized            ( +-  0.19% )
++             1,956      probe:rtas_call           #    0.003 M/sec                    ( +-  0.17% )
++            618.56 msec task-clock                #    0.278 CPUs utilized            ( +-  0.11% )
+
+-            3.3322 +- 0.0670 seconds time elapsed  ( +-  2.01% )
++            2.2222 +- 0.0416 seconds time elapsed  ( +-  1.87% )
+
+  Performance counter stats for 'bash -c echo "memory remove count 20" > /sys/kernel/dlpar' (10 runs):
+
+-             6,224      probe:rtas_call           #    0.008 M/sec                    ( +-  2.57% )
+-            750.36 msec task-clock                #    0.190 CPUs utilized            ( +-  2.01% )
++               843      probe:rtas_call           #    0.003 M/sec                    ( +-  0.12% )
++            250.66 msec task-clock                #    0.068 CPUs utilized            ( +-  0.17% )
+
+-            3.9394 +- 0.0890 seconds time elapsed  ( +-  2.26% )
++             3.678 +- 0.113 seconds time elapsed  ( +-  3.07% )
+
+With all CPUs 100% busy (- before, + after):
+
+  Performance counter stats for 'bash -c echo "memory add count 20" > /sys/kernel/dlpar' (10 runs):
+
+-             2,979      probe:rtas_call           #    0.003 M/sec                    ( +-  0.12% )
+-          1,096.62 msec task-clock                #    0.105 CPUs utilized            ( +-  0.10% )
++             2,981      probe:rtas_call           #    0.003 M/sec                    ( +-  0.22% )
++          1,095.26 msec task-clock                #    0.154 CPUs utilized            ( +-  0.21% )
+
+-            10.476 +- 0.104 seconds time elapsed  ( +-  1.00% )
++            7.1124 +- 0.0865 seconds time elapsed  ( +-  1.22% )
+
+  Performance counter stats for 'bash -c echo "memory remove count 20" > /sys/kernel/dlpar' (10 runs):
+
+-             2,702      probe:rtas_call           #    0.004 M/sec                    ( +-  4.00% )
+-            722.71 msec task-clock                #    0.067 CPUs utilized            ( +-  2.41% )
++             1,246      probe:rtas_call           #    0.003 M/sec                    ( +-  0.25% )
++            487.73 msec task-clock                #    0.049 CPUs utilized            ( +-  0.20% )
+
+-            10.829 +- 0.163 seconds time elapsed  ( +-  1.51% )
++            9.9887 +- 0.0866 seconds time elapsed  ( +-  0.87% )
+
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+---
+
+Notes:
+    This could be considered a sequel to:
+    
+    https://lore.kernel.org/linuxppc-dev/20210504030358.1715034-1-nathanl@linux.ibm.com/
+    
+    which tried to address both the suboptimal delay behavior as well as naming
+    issues. The present change achieves the performance improvement and leaves
+    the matter of naming for another time.
+    
+    I've incorporated Alexey's feedback from that series to avoid division when
+    calculating the arguments to usleep_range().
+
+ arch/powerpc/include/asm/rtas.h |  2 +-
+ arch/powerpc/kernel/rtas.c      | 74 +++++++++++++++++++++++++++++----
+ 2 files changed, 68 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 9dc97d2f9d27..82e5b055fa2a 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -264,7 +264,7 @@ extern void rtas_get_rtc_time(struct rtc_time *rtc_time);
+ extern int rtas_set_rtc_time(struct rtc_time *rtc_time);
+ 
+ extern unsigned int rtas_busy_delay_time(int status);
+-extern unsigned int rtas_busy_delay(int status);
++bool rtas_busy_delay(int status);
+ 
+ extern int early_init_dt_scan_rtas(unsigned long node,
+ 		const char *uname, int depth, void *data);
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index ff80bbad22a5..d686834fe7f5 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -513,17 +513,77 @@ unsigned int rtas_busy_delay_time(int status)
+ }
+ EXPORT_SYMBOL(rtas_busy_delay_time);
+ 
+-/* For an RTAS busy status code, perform the hinted delay. */
+-unsigned int rtas_busy_delay(int status)
++/**
++ * rtas_busy_delay() - helper for RTAS busy and extended delay statuses
++ *
++ * @status: a value returned from rtas_call() or similar APIs which return
++ *          the status of a RTAS function call.
++ *
++ * Context: Process context. May sleep or schedule.
++ *
++ * Return:
++ * * true  - @status is RTAS_BUSY or an extended delay hint. The
++ *           caller may assume that the CPU has been yielded if necessary,
++ *           and that an appropriate delay for @status has elapsed.
++ *           Generally the caller should reattempt the RTAS call which
++ *           yielded @status.
++ *
++ * * false - @status is not @RTAS_BUSY nor an extended delay hint. The
++ *           caller is responsible for handling @status.
++ */
++bool rtas_busy_delay(int status)
+ {
+ 	unsigned int ms;
++	bool ret;
+ 
+-	might_sleep();
+-	ms = rtas_busy_delay_time(status);
+-	if (ms && need_resched())
+-		msleep(ms);
++	switch (status) {
++	case RTAS_EXTENDED_DELAY_MIN...RTAS_EXTENDED_DELAY_MAX:
++		ret = true;
++		ms = rtas_busy_delay_time(status);
++		/*
++		 * The extended delay hint can be as high as 100 seconds.
++		 * Surely any function returning such a status is either
++		 * buggy or isn't going to be significantly slowed by us
++		 * polling at 1HZ. Clamp the sleep time to one second.
++		 */
++		ms = clamp(ms, 1U, 1000U);
++		/*
++		 * The delay hint is an order-of-magnitude suggestion, not
++		 * a minimum. It is fine, possibly even advantageous, for
++		 * us to pause for less time than hinted. For small values,
++		 * use usleep_range() to ensure we don't sleep much longer
++		 * than actually needed.
++		 *
++		 * See Documentation/timers/timers-howto.rst for
++		 * explanation of the threshold used here. In effect we use
++		 * usleep_range() for 9900 and 9901, msleep() for
++		 * 9902-9905.
++		 */
++		if (ms <= 20)
++			usleep_range(ms * 100, ms * 1000);
++		else
++			msleep(ms);
++		break;
++	case RTAS_BUSY:
++		ret = true;
++		/*
++		 * We should call again immediately if there's no other
++		 * work to do.
++		 */
++		cond_resched();
++		break;
++	default:
++		ret = false;
++		/*
++		 * Not a busy or extended delay status; the caller should
++		 * handle @status itself. Ensure we warn on misuses in
++		 * atomic context regardless.
++		 */
++		might_sleep();
++		break;
++	}
+ 
+-	return ms;
++	return ret;
+ }
+ EXPORT_SYMBOL(rtas_busy_delay);
+ 
+-- 
+2.31.1
+
