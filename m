@@ -2,63 +2,64 @@ Return-Path: <SRS0=r5zj=QF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35E17C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Nov 2021 16:42:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B51E9C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Nov 2021 18:12:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B5F0610A5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Nov 2021 16:42:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 2B5F0610A5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 24542613AD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Nov 2021 18:12:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.1 mail.kernel.org 24542613AD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=lists.ozlabs.org
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hw5FC3ZLWz3bmx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Nov 2021 03:42:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hw7FD3Xfvz3cBx
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Nov 2021 05:12:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=87.98.187.244;
- helo=10.mo552.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ smtp.mailfrom=gmail.com (client-ip=209.85.167.172;
+ helo=mail-oi1-f172.google.com; envelope-from=robherring2@gmail.com;
  receiver=<UNKNOWN>)
-Received: from 10.mo552.mail-out.ovh.net (10.mo552.mail-out.ovh.net
- [87.98.187.244])
+Received: from mail-oi1-f172.google.com (mail-oi1-f172.google.com
+ [209.85.167.172])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hw5Dd48kGz2xtf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Nov 2021 03:42:07 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.146.28])
- by mo552.mail-out.ovh.net (Postfix) with ESMTPS id 79D1221456;
- Thu, 18 Nov 2021 15:22:33 +0000 (UTC)
-Received: from kaod.org (37.59.142.103) by DAG4EX1.mxp5.local (172.16.2.31)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.20; Thu, 18 Nov
- 2021 16:22:33 +0100
-Authentication-Results: garm.ovh; auth=pass
- (GARM-103G0053d51c76f-c2b5-46f2-b5bb-867c92dd42f2,
- 4A6ABDF66DC85A3D00A6C17CB73E494911F6EB6E) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 90.55.24.82
-Message-ID: <4169b692-97f0-aef6-363c-98d7356415da@kaod.org>
-Date: Thu, 18 Nov 2021 16:22:32 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hw7Dg4Qsfz2yP3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Nov 2021 05:12:17 +1100 (AEDT)
+Received: by mail-oi1-f172.google.com with SMTP id be32so15984808oib.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Nov 2021 10:12:17 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=ZWdr6e4SiKEwyVeW7jig9nB/OfdKCWQxGTViJArBtNk=;
+ b=X3avFPaUNpA8XDWVNeZGoGUnLODN+ZBNmCrLLzH1N1MUNqy9f6uGKppEhAMAryLWQ6
+ shKv1fT1mbrW24ilzHi9ppiawn4vfOguq52ogZzP9oXcwDmRKsET01NChPYYz1otYrLr
+ dYDBCqfF7gDQXcVSAJfFZC7ipvpzCWpo65RKl3tMJrdIXJSnRK9ZKZXlMPVzoZesokFg
+ 6q4rUEabhcXqeDzHuPFFlH3lDUizHNfkgyD5exksXzM/h80twgHfunRwb3o1LDSnyDSX
+ m1wzV8cezm6ojxvEgIdD5Nz06g0AMqPpUWlvMBmyb+q8K0UmMb5FpfcAkDKOF+zxOr/P
+ yxNA==
+X-Gm-Message-State: AOAM531i64my5pibrHi+aOMrP9Tqgp98s5LHQ+fq4F2BClrO5aj8cyaq
+ iWR9LN3Z32zWJJXa0H/sLQ==
+X-Google-Smtp-Source: ABdhPJyMTHkFTgzUFk6reybeEUonyuO0UVS3U62hmM+wu1p7V7zF8Vjh3UeI1rSTPyE7qMTSz5OFmg==
+X-Received: by 2002:aca:7c3:: with SMTP id 186mr9614934oih.60.1637259134717;
+ Thu, 18 Nov 2021 10:12:14 -0800 (PST)
+Received: from xps15.herring.priv (66-90-148-213.dyn.grandenetworks.net.
+ [66.90.148.213])
+ by smtp.googlemail.com with ESMTPSA id n20sm99339ooe.7.2021.11.18.10.12.13
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 18 Nov 2021 10:12:14 -0800 (PST)
+From: Rob Herring <robh@kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Frank Rowand <frowand.list@gmail.com>, John Crispin <john@phrozen.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Subject: [PATCH 0/3] of/fdt: Rework early FDT scanning functions
+Date: Thu, 18 Nov 2021 12:12:09 -0600
+Message-Id: <20211118181213.1433346-1-robh@kernel.org>
+X-Mailer: git-send-email 2.32.0
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.2.0
-Subject: Re: [PATCH 04/11] powerpc/xive: Introduce xive_core_debugfs_create()
-Content-Language: en-US
-To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>
-References: <20211105102636.1016378-1-clg@kaod.org>
- <20211105102636.1016378-5-clg@kaod.org> <87v90plsza.fsf@mpe.ellerman.id.au>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-In-Reply-To: <87v90plsza.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.103]
-X-ClientProxiedBy: DAG7EX1.mxp5.local (172.16.2.61) To DAG4EX1.mxp5.local
- (172.16.2.31)
-X-Ovh-Tracer-GUID: aeb9a612-f408-4e32-9409-b7cc9d5d4c4b
-X-Ovh-Tracer-Id: 8050465812721994650
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvuddrfeeigdejvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhepkfffgggfuffvfhfhjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepieegvdffkeegfeetuddttddtveduiefhgeduffekiedtkeekteekhfffleevleelnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutdefnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,71 +71,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/18/21 10:21, Michael Ellerman wrote:
-> Cédric Le Goater <clg@kaod.org> writes:
-> 
->> and fix some compile issues when !CONFIG_DEBUG_FS.
->>
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->> ---
->>   arch/powerpc/sysdev/xive/common.c | 17 ++++++++++++++---
->>   1 file changed, 14 insertions(+), 3 deletions(-)
->>
->> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
->> index 3d558cad1f19..b71cc1020296 100644
->> --- a/arch/powerpc/sysdev/xive/common.c
->> +++ b/arch/powerpc/sysdev/xive/common.c
-> ...
->> @@ -1779,10 +1782,18 @@ static int xive_core_debug_show(struct seq_file *m, void *private)
->>   }
->>   DEFINE_SHOW_ATTRIBUTE(xive_core_debug);
->>   
->> +static void xive_core_debugfs_create(void)
->> +{
->> +	debugfs_create_file("xive", 0400, arch_debugfs_dir,
->> +			    NULL, &xive_core_debug_fops);
->> +}
->> +
->> +#endif /* CONFIG_DEBUG_FS */
->> +
->>   int xive_core_debug_init(void)
->>   {
->> -	if (xive_enabled())
->> -		debugfs_create_file("xive", 0400, arch_debugfs_dir,
->> -				    NULL, &xive_core_debug_fops);
->> +	if (xive_enabled() && IS_ENABLED(CONFIG_DEBUG_FS))
->> +		xive_core_debugfs_create();
->> +
->>   	return 0;
->>   }
-> 
-> For skiroot_defconfig this gives me:
-> 
->    arch/powerpc/sysdev/xive/common.c: In function ‘xive_core_init’:
->    arch/powerpc/sysdev/xive/common.c:1676:2: error: implicit declaration of function ‘xive_core_debugfs_create’; did you mean ‘xive_core_debug_init’? [-Werror=implicit-function-declaration]
->     1676 |  xive_core_debugfs_create();
->          |  ^~~~~~~~~~~~~~~~~~~~~~~~
->          |  xive_core_debug_init
->    cc1: all warnings being treated as errors
-> 
-> 
-> We need an empty inline stub of xive_core_debugfs_create() for the
-> CONFIG_DEBUG_FS=n case.
+The early FDT scanning functions use of_scan_flat_dt() which implements 
+its own node walking method. This function predates libfdt and is an 
+unnecessary indirection. This series reworks 
+early_init_dt_scan_chosen(), early_init_dt_scan_root(), and 
+early_init_dt_scan_memory() to be called directly and use libfdt calls.
 
-I thought IS_ENABLED(CONFIG_DEBUG_FS)) was protecting compile from
-that issue. Do you want a v2 for the whole ?
+Ultimately, I want to remove of_scan_flat_dt(). Most of the remaining 
+of_scan_flat_dt() users are in powerpc.
 
-Or, I can send a replacement for patch 4 only.
+Rob
 
-> I'm wondering though why do we have xive_core_debug_init() at all, why
-> don't we just initialise the debugfs files in xive_core_init()?
 
-I think I tried that and there was an ordering issue.
+Rob Herring (3):
+  of/fdt: Rework early_init_dt_scan_chosen() to call directly
+  of/fdt: Rework early_init_dt_scan_root() to call directly
+  of/fdt: Rework early_init_dt_scan_memory() to call directly
 
-Thanks,
+ arch/mips/ralink/of.c                |  16 +---
+ arch/powerpc/kernel/prom.c           |  22 ++---
+ arch/powerpc/mm/nohash/kaslr_booke.c |   4 +-
+ drivers/of/fdt.c                     | 121 ++++++++++++++-------------
+ include/linux/of_fdt.h               |   9 +-
+ 5 files changed, 79 insertions(+), 93 deletions(-)
 
-C.
+-- 
+2.32.0
+
