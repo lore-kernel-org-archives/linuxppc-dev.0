@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22DA2C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Nov 2021 10:36:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64AD4C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Nov 2021 10:36:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hx91P5nP8z3cXc
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Nov 2021 21:36:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hx9256gfvz3f5r
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Nov 2021 21:36:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=rbKCaOFZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=PebOsbaB;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=desiato.srs.infradead.org
@@ -22,32 +22,34 @@ Received: from desiato.infradead.org (desiato.infradead.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hx8sX4Lnkz2yw7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hx8sX55Cnz2ywH
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Nov 2021 21:29:15 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
- Content-Type:MIME-Version:Message-Id:Date:Subject:Cc:To:From:Reply-To:
- Content-ID:Content-Description:In-Reply-To:References;
- bh=TRQbOF8/4m0nHVfskdWnV/CbhyujsfdkdJEMQwMkjO0=; b=rbKCaOFZ5JgbTWc13zVz+5G7pi
- KBsQiaKHv+h4s104PvBQTp/kMM6/OdJCllxmEOyK5rvtMsQSX46f5Kl9Z7EymiscQymAkHvlJOzzz
- 4wfNgKl/OSoEhCEgRijyPyzUCTwgBZLGoQv1EKqX8xdLP88DagjU/O+5OIBKY2OoWzc0Nrc8gEbea
- 58vMK2VKRZrZ484UmWfULmUrPnSj2kHDYl4O6wELuu4GZwiFjdj6JKMWUAxSxOZAZw2hOPDLSn5yU
- /iGuOmWhPC9CieBa65vESz2HpuvVn6zz7wBgOgj/SimKg5bMS6vVbHenWynsGrQpqppawbeIlgWkd
- 10UdTq7g==;
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
+ Reply-To:Content-Type:Content-ID:Content-Description;
+ bh=IhomdJGyEpT4miSx3PHsvuZfOTBIMbEy9yEOpBFWNhc=; b=PebOsbaBKPEA3ueig3yxQlkh3h
+ tDXBjTVG3I3JuVTbe5f6YBBgxdb7NJAyHq2+V329XZil5EUkOBjSz1YtbWYOiIPyCiyzwco1n2TR+
+ IWla9K2IkpauoCljITfb1664XyhfYiNdLEUuYygz2WO2jYWC6WHc+2qPrV1vZj6ibGnEop5wz/mQk
+ 1BmeBwvuV+RQF7SW7RytQ/SgToAPaOy0CjgZ3df9/nnZjcnrEGn1hGYGKokqci8/Q2njaF/1yNQAE
+ B8M9JY32tPj1M/DqZrpGyE55ixXawXj4okPzUHoHPr1Ua5/09CfugOKb7y9mis+TDpmVuLmWMdQ+P
+ W9LIZhNw==;
 Received: from i7.infradead.org ([2001:8b0:10b:1:21e:67ff:fecb:7a92])
  by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1moNbR-00H55u-Hg; Sat, 20 Nov 2021 10:28:13 +0000
+ id 1moNbR-00H55y-I8; Sat, 20 Nov 2021 10:28:13 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.94.2 #2 (Red
- Hat Linux)) id 1moNbQ-0002K2-3l; Sat, 20 Nov 2021 10:28:12 +0000
+ Hat Linux)) id 1moNbQ-0002K8-AN; Sat, 20 Nov 2021 10:28:12 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	kvm <kvm@vger.kernel.org>
-Subject: PATCH v4 00/11] KVM: x86/xen: Add in-kernel Xen event channel delivery
-Date: Sat, 20 Nov 2021 10:27:59 +0000
-Message-Id: <20211120102810.8858-1-dwmw2@infradead.org>
+Subject: [PATCH v4 02/11] KVM: Add Makefile.kvm for common files,
+ use it for x86
+Date: Sat, 20 Nov 2021 10:28:01 +0000
+Message-Id: <20211120102810.8858-3-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20211120102810.8858-1-dwmw2@infradead.org>
+References: <20211120102810.8858-1-dwmw2@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by
  desiato.infradead.org. See http://www.infradead.org/rpr.html
@@ -84,44 +86,57 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Event channels, yeah. That really is where I started.
+From: David Woodhouse <dwmw@amazon.co.uk>
 
-It was all so simple in Joao and Ankur's original version at 
-https://www.spinics.net/lists/kvm/msg182556.html — just a handful
-of simple test_and_set_bit() calls on the mapped page.
+Splitting kvm_main.c out into smaller and better-organized files is
+slightly non-trivial when it involves editing a bunch of per-arch
+KVM makefiles. Provide virt/kvm/Makefile.kvm for them to include.
 
-When I posted v1 I didn't quite understand how steal time and nesting
-were safely using the kvm_map_gfn() function, and I posted the Xen
-part declaring that I had "reduced it to a previously solved problem".
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+Acked-by: Marc Zyngier <maz@kernel.org>
+---
+ arch/x86/kvm/Makefile |  7 +------
+ virt/kvm/Makefile.kvm | 13 +++++++++++++
+ 2 files changed, 14 insertions(+), 6 deletions(-)
+ create mode 100644 virt/kvm/Makefile.kvm
 
-Then I frowned at kvm_map_gfn() for a bit longer, concluded it was
-basically impossible to use it safely on its own because the page it
-maps might belong to another guest by the time it even returns to its
-caller, and posted a v2 in which I did something safer for myself by
-hooking into the MMU notifiers.
-
-I then fixed the steal time reporting, and killed gfn_to_pfn_cache,
-under separate cover.
-
-In v3 of this series I re-introduced a saner gfn_to_pfn_cache with MMU 
-notifier support to give it proper invalidation semantics. This can now 
-be used for the Xen event channel support and should also be usable for 
-fixing the various use-after-free races in the nesting code too — the 
-last patch in this series being an untested proof of concept attempt at 
-fixing one such.
-
-Since adding a C file in virt/kvm/ was somewhat more painful than it
-really should have been, there is a small detour into all the arch
-specific Makefiles to make them include a common one.
-
-v4: Rework the dirty marking given the relevation that it can only be 
-done from the context of an active vCPU. So just defer it to happen in 
-the unmap. Also introduce a lightweight unmap call instead of just the 
-full destroy. Document the Xen shared info page as NOT participating in 
-dirty tracking. Fix a typo in the CONFIG_HAVE_KVM_DIRTY_RING patch which 
-prevented the capability from being advertised.
-
-Intended for merging up to patch 10. Patch 11 is for illustration.
-
-
+diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
+index 75dfd27b6e8a..30f244b64523 100644
+--- a/arch/x86/kvm/Makefile
++++ b/arch/x86/kvm/Makefile
+@@ -7,12 +7,7 @@ ifeq ($(CONFIG_FRAME_POINTER),y)
+ OBJECT_FILES_NON_STANDARD_vmenter.o := y
+ endif
+ 
+-KVM := ../../../virt/kvm
+-
+-kvm-y			+= $(KVM)/kvm_main.o $(KVM)/coalesced_mmio.o \
+-				$(KVM)/eventfd.o $(KVM)/irqchip.o $(KVM)/vfio.o \
+-				$(KVM)/dirty_ring.o $(KVM)/binary_stats.o
+-kvm-$(CONFIG_KVM_ASYNC_PF)	+= $(KVM)/async_pf.o
++include $(srctree)/virt/kvm/Makefile.kvm
+ 
+ kvm-y			+= x86.o emulate.o i8259.o irq.o lapic.o \
+ 			   i8254.o ioapic.o irq_comm.o cpuid.o pmu.o mtrr.o \
+diff --git a/virt/kvm/Makefile.kvm b/virt/kvm/Makefile.kvm
+new file mode 100644
+index 000000000000..ffdcad3cc97a
+--- /dev/null
++++ b/virt/kvm/Makefile.kvm
+@@ -0,0 +1,13 @@
++# SPDX-License-Identifier: GPL-2.0
++#
++# Makefile for Kernel-based Virtual Machine module
++#
++
++KVM ?= ../../../virt/kvm
++
++kvm-y := $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
++kvm-$(CONFIG_KVM_VFIO) += $(KVM)/vfio.o
++kvm-$(CONFIG_KVM_MMIO) += $(KVM)/coalesced_mmio.o
++kvm-$(CONFIG_KVM_ASYNC_PF) += $(KVM)/async_pf.o
++kvm-$(CONFIG_HAVE_KVM_IRQ_ROUTING) += $(KVM)/irqchip.o
++kvm-$(CONFIG_HAVE_KVM_DIRTY_RING) += $(KVM)/dirty_ring.o
+-- 
+2.31.1
 
