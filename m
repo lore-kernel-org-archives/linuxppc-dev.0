@@ -4,52 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BCB9C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Nov 2021 06:07:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97431C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Nov 2021 10:29:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hx33r5N5Qz3dtl
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Nov 2021 17:07:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hx8tF6Tvbz3cG5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Nov 2021 21:29:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=BHgQA+Ze;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=sqxBRluQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=collabora.com (client-ip=46.235.227.227;
- helo=bhuna.collabora.co.uk; envelope-from=ariel.dalessandro@collabora.com;
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org;
+ envelope-from=batv+4a9ef39e76676f9c5090+6663+infradead.org+dwmw2@casper.srs.infradead.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dkim=fail reason="signature verification failed" (2048-bit key;
- unprotected) header.d=collabora.com header.i=@collabora.com
- header.a=rsa-sha256 header.s=mail header.b=BHgQA+Ze; 
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=sqxBRluQ; 
  dkim-atps=neutral
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hwgrm2D5Sz302C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Nov 2021 02:42:00 +1100 (AEDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
- (Authenticated sender: adalessandro) with ESMTPSA id ACE3C1F4755E
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=collabora.com; s=mail;
- t=1637336064; bh=oRI81qODQfEJ663yl3lbyzEbdUf5G6FtXTTtsMOhnZQ=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=BHgQA+ZeKvvoPLbEsSijKakWD/VMNBAwlsrox6vI3l5W9wzdBgdfCoW7MLj4CKrkc
- DNoeAwiwZ+qkwSwXCY3WMFdEtkKvwgWdh1ymyotJgcXcYR73RUu38k0bEDxl+mPwEu
- KRjVHnW303E/9BbBrQ+Rwx4T9L+Ah586iRL1swBEORPOchISBD0OfydF2I6i6B6wNF
- 5qEZNTev8iBLnMRbswL4DC6i3C9kTbdqAxGt5uubKauxlGfkUuIIfzA5/WWf0zOVdp
- DEfK++6HHIFjt02E30ajh85ugmKVEExjgGTk/4gEP9uCt3NpQfFhjrxaPt6OMC3rH5
- vS5xE1/IOlmnA==
-From: Ariel D'Alessandro <ariel.dalessandro@collabora.com>
-To: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [RFC patch 4/5] ASoC: tlv320aic31xx: Handle BCLK set as PLL input
- configuration
-Date: Fri, 19 Nov 2021 12:32:47 -0300
-Message-Id: <20211119153248.419802-5-ariel.dalessandro@collabora.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20211119153248.419802-1-ariel.dalessandro@collabora.com>
-References: <20211119153248.419802-1-ariel.dalessandro@collabora.com>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hx8sW0pdXz2yp5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Nov 2021 21:29:16 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Sender:Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
+ Reply-To:Content-Type:Content-ID:Content-Description;
+ bh=q7VGHKinevDsRFWG1p27WCAPowIobtShfo12HVfpNfo=; b=sqxBRluQyEEXp3lHG84c+NxuRo
+ UTZQ0dMhN+xHhtsnT+ru9Vepp1E5NbXj7qACaD8Tu4fHc4w3zmvs5S+p19bNaJsWRhv8G8Lf1d7K1
+ /tBvm99HD4EXX8fE6dQQn7nDYB7OspoTwaXGKT8GhJfANz6agfaSTOfa13r8XHJG8kiYn08VhgzFn
+ tZP5aj7exsZC9fqA839QZgNIgsBXFQNz04IG+GcTdV/3lWLc79mulog7lKwqaTrZcsTgJxkrvuCp9
+ g0l1rQYhaNn0xh6t80BbHe3T2EXZgDLokB3pis8mOZgNr5jx4BkzjI28EcxraARnCsb9s0nHWGfJN
+ elsUsV9w==;
+Received: from i7.infradead.org ([2001:8b0:10b:1:21e:67ff:fecb:7a92])
+ by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+ id 1moNbR-00AUNL-0Q; Sat, 20 Nov 2021 10:28:13 +0000
+Received: from dwoodhou by i7.infradead.org with local (Exim 4.94.2 #2 (Red
+ Hat Linux)) id 1moNbQ-0002KN-Ml; Sat, 20 Nov 2021 10:28:12 +0000
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paolo Bonzini <pbonzini@redhat.com>,
+	kvm <kvm@vger.kernel.org>
+Subject: [PATCH v4 07/11] KVM: arm64: Use Makefile.kvm for common files
+Date: Sat, 20 Nov 2021 10:28:06 +0000
+Message-Id: <20211120102810.8858-8-dwmw2@infradead.org>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20211120102810.8858-1-dwmw2@infradead.org>
+References: <20211120102810.8858-1-dwmw2@infradead.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Sat, 20 Nov 2021 17:01:52 +1100
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,77 +67,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: bkylerussell@gmail.com, ariel.dalessandro@collabora.com,
- kuninori.morimoto.gx@renesas.com, Xiubo.Lee@gmail.com, shengjiu.wang@gmail.com,
- tiwai@suse.com, lgirdwood@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com,
- broonie@kernel.org, michael@amarulasolutions.com, festevam@gmail.com
+Cc: Anup Patel <anup.patel@wdc.com>,
+ "wanpengli @ tencent . com" <wanpengli@tencent.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Joao Martins <joao.m.martins@oracle.com>, Will Deacon <will@kernel.org>,
+ kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org,
+ "joro @ 8bytes . org" <joro@8bytes.org>, Huacai Chen <chenhuacai@kernel.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, karahmed@amazon.com,
+ Suzuki K Poulose <suzuki.poulose@arm.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Alexandru Elisei <alexandru.elisei@arm.com>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ "jmattson @ google . com" <jmattson@google.com>,
+ "seanjc @ google . com" <seanjc@google.com>,
+ "mtosatti @ redhat . com" <mtosatti@redhat.com>, linux-mips@vger.kernel.org,
+ James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org,
+ Marc Zyngier <maz@kernel.org>, "vkuznets @ redhat . com" <vkuznets@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If BCLK is used as PLL input, the sysclk is determined by the hw
-params. So it must be updated here to match the input frequency, based
-on sample rate, format and channels.
+From: David Woodhouse <dwmw@amazon.co.uk>
 
-Signed-off-by: Ariel D'Alessandro <ariel.dalessandro@collabora.com>
-Signed-off-by: Michael Trimarchi <michael@amarulasolutions.com>
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+Acked-by: Marc Zyngier <maz@kernel.org>
 ---
- sound/soc/codecs/tlv320aic31xx.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ arch/arm64/kvm/Makefile | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/sound/soc/codecs/tlv320aic31xx.c b/sound/soc/codecs/tlv320aic31xx.c
-index e8307f0737f2..4224b4b3cae6 100644
---- a/sound/soc/codecs/tlv320aic31xx.c
-+++ b/sound/soc/codecs/tlv320aic31xx.c
-@@ -15,6 +15,7 @@
- #include <linux/module.h>
- #include <linux/moduleparam.h>
- #include <linux/init.h>
-+#include <linux/clk.h>
- #include <linux/delay.h>
- #include <linux/pm.h>
- #include <linux/i2c.h>
-@@ -169,6 +170,7 @@ struct aic31xx_priv {
- 	struct regulator_bulk_data supplies[AIC31XX_NUM_SUPPLIES];
- 	struct aic31xx_disable_nb disable_nb[AIC31XX_NUM_SUPPLIES];
- 	struct snd_soc_jack *jack;
-+	u32 sysclk_id;
- 	unsigned int sysclk;
- 	u8 p_div;
- 	int rate_div_line;
-@@ -962,6 +964,7 @@ static int aic31xx_hw_params(struct snd_pcm_substream *substream,
- 			     struct snd_soc_dai *dai)
- {
- 	struct snd_soc_component *component = dai->component;
-+	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
- 	u8 data = 0;
+diff --git a/arch/arm64/kvm/Makefile b/arch/arm64/kvm/Makefile
+index 989bb5dad2c8..04a53f71a6b6 100644
+--- a/arch/arm64/kvm/Makefile
++++ b/arch/arm64/kvm/Makefile
+@@ -5,14 +5,12 @@
  
- 	dev_dbg(component->dev, "## %s: width %d rate %d\n",
-@@ -993,6 +996,16 @@ static int aic31xx_hw_params(struct snd_pcm_substream *substream,
- 			    AIC31XX_IFACE1_DATALEN_MASK,
- 			    data);
+ ccflags-y += -I $(srctree)/$(src)
  
-+	/*
-+	 * If BCLK is used as PLL input, the sysclk is determined by the hw
-+	 * params. So it must be updated here to match the input frequency.
-+	 */
-+	if (aic31xx->sysclk_id == AIC31XX_PLL_CLKIN_BCLK) {
-+		aic31xx->sysclk = params_rate(params) * params_width(params) *
-+				  params_channels(params);
-+		aic31xx->p_div = 1;
-+	}
-+
- 	return aic31xx_setup_pll(component, params);
- }
+-KVM=../../../virt/kvm
++include $(srctree)/virt/kvm/Makefile.kvm
  
-@@ -1177,6 +1190,7 @@ static int aic31xx_set_dai_sysclk(struct snd_soc_dai *codec_dai,
- 	snd_soc_component_update_bits(component, AIC31XX_CLKMUX, AIC31XX_PLL_CLKIN_MASK,
- 			    clk_id << AIC31XX_PLL_CLKIN_SHIFT);
+ obj-$(CONFIG_KVM) += kvm.o
+ obj-$(CONFIG_KVM) += hyp/
  
-+	aic31xx->sysclk_id = clk_id;
- 	aic31xx->sysclk = freq;
- 
- 	return 0;
+-kvm-y := $(KVM)/kvm_main.o $(KVM)/coalesced_mmio.o $(KVM)/eventfd.o \
+-	 $(KVM)/vfio.o $(KVM)/irqchip.o $(KVM)/binary_stats.o \
+-	 arm.o mmu.o mmio.o psci.o perf.o hypercalls.o pvtime.o \
++kvm-y += arm.o mmu.o mmio.o psci.o perf.o hypercalls.o pvtime.o \
+ 	 inject_fault.o va_layout.o handle_exit.o \
+ 	 guest.o debug.o reset.o sys_regs.o \
+ 	 vgic-sys-reg-v3.o fpsimd.o pmu.o \
 -- 
-2.30.2
+2.31.1
 
