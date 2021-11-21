@@ -4,73 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C304C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 20:48:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C465AC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 20:58:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HyfVj4cf4z305T
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Nov 2021 07:48:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HyfkK1TM1z2yK6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Nov 2021 07:58:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=JneIEC9c;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=o40YeyKW;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1033;
- helo=mail-pj1-x1033.google.com; envelope-from=keescook@chromium.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=JneIEC9c; dkim-atps=neutral
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com
- [IPv6:2607:f8b0:4864:20::1033])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=o40YeyKW; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HyfTz3xrRz2yV5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Nov 2021 07:47:33 +1100 (AEDT)
-Received: by mail-pj1-x1033.google.com with SMTP id
- gb13-20020a17090b060d00b001a674e2c4a8so929534pjb.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Nov 2021 12:47:32 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:content-transfer-encoding:in-reply-to;
- bh=9FObduEZbWdjUpMXz60aZqufbQdzvSRG3lPMBJb7SJ0=;
- b=JneIEC9cvLJCbdtDu2vtG7jOReTI8ksmr7YGpy14cmKopDG1WNnzN9vyEAQ5ZFY1Ll
- wLrz0I8fq9UmpvvAfe8h8Dm9aKo2h0iPbnV+aXW1yLKcF9165JU7Nw0SLTEFehyBU+vN
- 6QUq5HYvX2wTw8c3Eu9q6Z+6Y1Ty/R6fmPa7Y=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:content-transfer-encoding
- :in-reply-to;
- bh=9FObduEZbWdjUpMXz60aZqufbQdzvSRG3lPMBJb7SJ0=;
- b=cbKXcLgy03wR5UyHJ5OlKLP8lEGna4M7LxoCEK5FRY2x9y7m6zPdyMJm/DmukL+6lR
- dkEPGvBLgB4c/PnmQSPCT1MuzE5wlPASZn2ShEMia1TxU2asCnEhI9XlmllGhIhbLz3B
- m+Yneee+BiMzzmHTYBYF+FDZwMH4H1I94hDcOLX3OaDsdB2R4GHUZtXnBL5ci8umXDS/
- eYzfL7X9+L8C6G+sSYRBR77gWnbjQlYbDQyWs30wigfxu7Xd7ziAURp2pcUs8r+936rT
- Nm0g+gh1sFo6NdDDdioJtAyl8G+/5TtZboxH88eMLWF+kBolGk1tPOVtiDSO9pw9P3/R
- /ihQ==
-X-Gm-Message-State: AOAM531uen6RZLUr6AdlxvuvbFrIU0yr/sMaFZ6XGcqGkoQvlj3aCxTI
- DuJjfqkYQah78YnnzM+/5J6Iow==
-X-Google-Smtp-Source: ABdhPJwcHprzgfWpUQCUPhpzVPFnI4WiDGxFFLzGSTeGQcOoYiccm8mTTcquO4kALyNvrKtHzcsEvw==
-X-Received: by 2002:a17:90b:1c8d:: with SMTP id
- oo13mr36323110pjb.239.1637614049808; 
- Mon, 22 Nov 2021 12:47:29 -0800 (PST)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id v10sm9796801pfu.123.2021.11.22.12.47.29
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 22 Nov 2021 12:47:29 -0800 (PST)
-Date: Mon, 22 Nov 2021 12:47:28 -0800
-From: Kees Cook <keescook@chromium.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/signal32: Use struct_group() to zero spe regs
-Message-ID: <202111221247.B385EA2A8@keescook>
-References: <20211118203604.1288379-1-keescook@chromium.org>
- <1e312cbd-cd52-ddce-f839-db765173c526@csgroup.eu>
- <87ilwkrbhz.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HxgqV48hrz2xtC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Nov 2021 17:44:22 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 60B98604AC;
+ Sun, 21 Nov 2021 06:43:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1637477055;
+ bh=fF0qMHEWbaZWbEit/VvNjQKirKtWS4o0c8b9dFvtOFg=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=o40YeyKWlss6qPqzIaBC1BRaoNsy8h4lRluMS6PA711BRFcqyhJOnzbksEMtKtJO/
+ 8jbTZZa3TfDTwFyR4bB+BvkwZH8B4Lq6zUtBDhL0B4WDBH9OrnY/ZIAuUCLySCed3G
+ BY0pW/832nzdNqDcLtde/+ux9ozmIiM3YLALWMwekxe0nZCbZ8Eac9fyNJkYF8xblI
+ zzUk/gDwJpgD0wAYRzlFYo+zhx5+msTuR9KF/8/1WOgKdEL1RlhcobAeHzb+LuS7g/
+ jBCVo5DEsOze9uLZm95vmKlvgKfjbEPyxEhw1wZAFN+rxMTmDM0V/oXbaGrjJoZ0t1
+ JqBkAezCYdBnA==
+Date: Sun, 21 Nov 2021 08:43:47 +0200
+From: Mike Rapoport <rppt@kernel.org>
+To: Calvin Zhang <calvinzhang.cool@gmail.com>
+Subject: Re: [PATCH 0/2] of: remove reserved regions count restriction
+Message-ID: <YZnqo3oA7srQik4N@kernel.org>
+References: <20211119075844.2902592-1-calvinzhang.cool@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87ilwkrbhz.fsf@mpe.ellerman.id.au>
+In-Reply-To: <20211119075844.2902592-1-calvinzhang.cool@gmail.com>
+X-Mailman-Approved-At: Tue, 23 Nov 2021 07:57:41 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,45 +58,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- kernel test robot <lkp@intel.com>, Peter Zijlstra <peterz@infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-hardening@vger.kernel.org" <linux-hardening@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- Sudeep Holla <sudeep.holla@arm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Kirill A. Shutemov" <kirill.shtuemov@linux.intel.com>,
+ Mark Rutland <mark.rutland@arm.com>, Kefeng Wang <wangkefeng.wang@huawei.com>,
+ Rich Felker <dalias@libc.org>, Jinyang He <hejinyang@loongson.cn>,
+ David Hildenbrand <david@redhat.com>, Lee Jones <lee.jones@linaro.org>,
+ linux-kernel@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>,
+ Anup Patel <anup.patel@wdc.com>, Guo Ren <guoren@linux.alibaba.com>,
+ Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org,
+ Nick Kossifidis <mick@ics.forth.gr>, Vladimir Isaev <isaev@synopsys.com>,
+ Tiezhu Yang <yangtiezhu@loongson.cn>, Vincent Chen <deanbo422@gmail.com>,
+ Will Deacon <will@kernel.org>, Markus Elfring <elfring@users.sourceforge.net>,
+ Vitaly Wool <vitaly.wool@konsulko.com>, Jonas Bonn <jonas@southpole.se>,
+ devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ uclinux-h8-devel@lists.sourceforge.jp,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Palmer Dabbelt <palmerdabbelt@google.com>, linux-sh@vger.kernel.org,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Russell King <linux@armlinux.org.uk>, Ley Foon Tan <ley.foon.tan@intel.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Ganesh Goudar <ganeshgr@linux.ibm.com>, David Brazdil <dbrazdil@google.com>,
+ linux-riscv@lists.infradead.org, Guenter Roeck <linux@roeck-us.net>,
+ Alexander Sverdlin <alexander.sverdlin@nokia.com>,
+ Thierry Reding <treding@nvidia.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Arnd Bergmann <arnd@arndb.de>, Anshuman Khandual <anshuman.khandual@arm.com>,
+ linux-xtensa@linux-xtensa.org, Vineet Gupta <vgupta@kernel.org>,
+ Andreas Oetken <andreas.oetken@siemens.com>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ "Russell King \(Oracle\)" <rmk+kernel@armlinux.org.uk>,
+ Rob Herring <robh+dt@kernel.org>,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ Greentime Hu <green.hu@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Stafford Horne <shorne@gmail.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ linux-arm-kernel@lists.infradead.org, Andrey Konovalov <andreyknvl@gmail.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>, Chris Zankel <chris@zankel.net>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-mips@vger.kernel.org,
+ Alexandre Ghiti <alex@ghiti.fr>, Nick Hu <nickhu@andestech.com>,
+ Atish Patra <atish.patra@wdc.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, Frank Rowand <frowand.list@gmail.com>,
+ Serge Semin <Sergey.Semin@baikalelectronics.ru>,
+ Dinh Nguyen <dinguyen@kernel.org>, Zhang Yunkai <zhang.yunkai@zte.com.cn>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Souptick Joarder <jrdr.linux@gmail.com>,
+ Marc Zyngier <maz@kernel.org>, Mauri Sandberg <sandberg@mailfence.com>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, openrisc@lists.librecores.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 22, 2021 at 04:43:36PM +1100, Michael Ellerman wrote:
-> LEROY Christophe <christophe.leroy@csgroup.eu> writes:
-> > Le 18/11/2021 à 21:36, Kees Cook a écrit :
-> >> In preparation for FORTIFY_SOURCE performing compile-time and run-time
-> >> field bounds checking for memset(), avoid intentionally writing across
-> >> neighboring fields.
-> >> 
-> >> Add a struct_group() for the spe registers so that memset() can correctly reason
-> >> about the size:
-> >> 
-> >>     In function 'fortify_memset_chk',
-> >>         inlined from 'restore_user_regs.part.0' at arch/powerpc/kernel/signal_32.c:539:3:
-> >>     >> include/linux/fortify-string.h:195:4: error: call to '__write_overflow_field' declared with attribute warning: detected write beyond size of field (1st parameter); maybe use struct_group()? [-Werror=attribute-warning]
-> >>       195 |    __write_overflow_field();
-> >>           |    ^~~~~~~~~~~~~~~~~~~~~~~~
-> >> 
-> >> Reported-by: kernel test robot <lkp@intel.com>
-> >> Signed-off-by: Kees Cook <keescook@chromium.org>
-> >
-> > Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+On Fri, Nov 19, 2021 at 03:58:17PM +0800, Calvin Zhang wrote:
+> The count of reserved regions in /reserved-memory was limited because
+> the struct reserved_mem array was defined statically. This series sorts
+> out reserved memory code and allocates that array from early allocator.
 > 
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+> Note: reserved region with fixed location must be reserved before any
+> memory allocation. While struct reserved_mem array should be allocated
+> after allocator is activated. We make early_init_fdt_scan_reserved_mem()
+> do reservation only and add another call to initialize reserved memory.
+> So arch code have to change for it.
 
-Thanks! Should I take this via my tree, or do you want to take it via
-ppc?
+I think much simpler would be to use the same constant for sizing
+memblock.reserved and reserved_mem arrays.
 
--Kees
+If there is too much reserved regions in the device tree, reserving them in
+memblock will fail anyway because memblock also starts with static array
+for memblock.reserved, so doing one pass with memblock_reserve() and
+another to set up reserved_mem wouldn't help anyway.
+
+> I'm only familiar with arm and arm64 architectures. Approvals from arch
+> maintainers are required. Thank you all.
+> 
+> Calvin Zhang (2):
+>   of: Sort reserved_mem related code
+>   of: reserved_mem: Remove reserved regions count restriction
+> 
+>  arch/arc/mm/init.c                 |   3 +
+>  arch/arm/kernel/setup.c            |   2 +
+>  arch/arm64/kernel/setup.c          |   3 +
+>  arch/csky/kernel/setup.c           |   3 +
+>  arch/h8300/kernel/setup.c          |   2 +
+>  arch/mips/kernel/setup.c           |   3 +
+>  arch/nds32/kernel/setup.c          |   3 +
+>  arch/nios2/kernel/setup.c          |   2 +
+>  arch/openrisc/kernel/setup.c       |   3 +
+>  arch/powerpc/kernel/setup-common.c |   3 +
+>  arch/riscv/kernel/setup.c          |   2 +
+>  arch/sh/kernel/setup.c             |   3 +
+>  arch/xtensa/kernel/setup.c         |   2 +
+>  drivers/of/fdt.c                   | 107 +---------------
+>  drivers/of/of_private.h            |  12 +-
+>  drivers/of/of_reserved_mem.c       | 189 ++++++++++++++++++++++++-----
+>  include/linux/of_reserved_mem.h    |   4 +
+>  17 files changed, 207 insertions(+), 139 deletions(-)
+> 
+> -- 
+> 2.30.2
+> 
 
 -- 
-Kees Cook
+Sincerely yours,
+Mike.
