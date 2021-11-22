@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFBB0C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 08:49:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAF6AC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 08:50:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HyLYh05Vcz3cRW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 19:49:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HyLZH1btzz3cX7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 19:50:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,52 +16,52 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HyLXp3nBqz2yPM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Nov 2021 19:48:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HyLXt47gnz301j
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Nov 2021 19:49:02 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HyLXd4lmzz9sSs;
- Mon, 22 Nov 2021 09:48:49 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4HyLXf26fvz9sSP;
+ Mon, 22 Nov 2021 09:48:50 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id WXFm5Xfekd3r; Mon, 22 Nov 2021 09:48:49 +0100 (CET)
+ with ESMTP id BKp-NtUlD4Pi; Mon, 22 Nov 2021 09:48:50 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HyLXc0j84z9sSP;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HyLXc0nS8z9sSm;
  Mon, 22 Nov 2021 09:48:48 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 021EF8B774;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 05E898B787;
  Mon, 22 Nov 2021 09:48:48 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 0ti9vo9Pr-qb; Mon, 22 Nov 2021 09:48:47 +0100 (CET)
+ with ESMTP id 3F2pnbczwszx; Mon, 22 Nov 2021 09:48:47 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A008E8B776;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A7E358B77A;
  Mon, 22 Nov 2021 09:48:47 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1AM8mfci631740
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1AM8meSh631720
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 22 Nov 2021 09:48:41 +0100
+ Mon, 22 Nov 2021 09:48:40 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1AM8mfO4631739;
- Mon, 22 Nov 2021 09:48:41 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1AM8meK6631719;
+ Mon, 22 Nov 2021 09:48:40 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, alex@ghiti.fr
-Subject: [PATCH 8/8] powerpc/mm: Properly randomise mmap with slices
-Date: Mon, 22 Nov 2021 09:48:28 +0100
-Message-Id: <0ee9001d347a2b7017cea9881663201f4f660484.1637570556.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH 3/8] powerpc/mm: Remove asm/slice.h
+Date: Mon, 22 Nov 2021 09:48:23 +0100
+Message-Id: <a4943516369e465480948a867d0539eb19cbdc8c.1637570556.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <cover.1637570556.git.christophe.leroy@csgroup.eu>
 References: <cover.1637570556.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1637570906; l=3498; s=20211009;
- h=from:subject:message-id; bh=41IRZIWUgHm/fnGmsE2aDL/wi1kCBPLGg162RgpS/oE=;
- b=C6UKCaqaJZdoBwWQt+EUZk9/DFSnBuuScECM/p22kxRhsQqEtbKjX660PIVKQUTyvMJdzilh61LN
- 3+5AqNyoCPeO34WRkN3iSoPtbyEGaikxTNyg9+20bgTus7ahc5bu
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1637570906; l=4295; s=20211009;
+ h=from:subject:message-id; bh=pCjWbm/6i4DsGWKoGQCBa7BOgwjRuzeKkXX4A957v14=;
+ b=kgoCPzN+agQfltGFjADSaz/iRb+fubzHaC5xjnbbYCj7R4pYjqXcU+72xfe9KP0Ny6RLdetFm3zt
+ BgdXw9NtC0RmXF5kBBDzsJ6Q0/gWGXg6G/wKXo8ZO9LKEiwjRcIb
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,96 +82,133 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that powerpc switched to default topdown mmap layout,
-mm->mmap_base is properly randomised.  However
-slice_find_area_bottomup() doesn't use mm->mmap_base but
-uses the fixed TASK_UNMAPPED_BASE instead.
-
-slice_find_area_bottomup() being used as a fallback to
-slice_find_area_topdown(), it can't use mm->mmap_base
-directly.
-
-Instead of always using TASK_UNMAPPED_BASE as base address, leave
-it to the caller. When called from slice_find_area_topdown()
-TASK_UNMAPPED_BASE is used. Otherwise mm->mmap_base is used.
+Move necessary stuff in asm/book3s/64/slice.h and
+remove asm/slice.h
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/mm/book3s64/slice.c | 18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash.h     |  3 ++
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |  1 +
+ arch/powerpc/include/asm/book3s/64/slice.h    | 18 +++++++++
+ arch/powerpc/include/asm/page.h               |  1 -
+ arch/powerpc/include/asm/slice.h              | 37 -------------------
+ 5 files changed, 22 insertions(+), 38 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/slice.h
 
-diff --git a/arch/powerpc/mm/book3s64/slice.c b/arch/powerpc/mm/book3s64/slice.c
-index 8327a43d29cb..0fef63763e6d 100644
---- a/arch/powerpc/mm/book3s64/slice.c
-+++ b/arch/powerpc/mm/book3s64/slice.c
-@@ -276,20 +276,18 @@ static bool slice_scan_available(unsigned long addr,
- }
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index 25f8e90985eb..27be22e6f848 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -99,6 +99,9 @@
+  * Defines the address of the vmemap area, in its own region on
+  * hash table CPUs.
+  */
++#ifdef CONFIG_HUGETLB_PAGE
++#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
++#endif
+ #define HAVE_ARCH_UNMAPPED_AREA
+ #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
  
- static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
--					      unsigned long len,
-+					      unsigned long addr, unsigned long len,
- 					      const struct slice_mask *available,
- 					      int psize, unsigned long high_limit)
- {
- 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
--	unsigned long addr, found, next_end;
-+	unsigned long found, next_end;
- 	struct vm_unmapped_area_info info;
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 3004f3323144..b4b2ca111f75 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -18,6 +18,7 @@
+  * complete pgtable.h but only a portion of it.
+  */
+ #include <asm/book3s/64/pgtable.h>
++#include <asm/book3s/64/slice.h>
+ #include <asm/task_size_64.h>
+ #include <asm/cpu_has_feature.h>
  
- 	info.flags = 0;
- 	info.length = len;
- 	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
- 	info.align_offset = 0;
+diff --git a/arch/powerpc/include/asm/book3s/64/slice.h b/arch/powerpc/include/asm/book3s/64/slice.h
+index f0d3194ba41b..5b0f7105bc8b 100644
+--- a/arch/powerpc/include/asm/book3s/64/slice.h
++++ b/arch/powerpc/include/asm/book3s/64/slice.h
+@@ -2,6 +2,8 @@
+ #ifndef _ASM_POWERPC_BOOK3S_64_SLICE_H
+ #define _ASM_POWERPC_BOOK3S_64_SLICE_H
+ 
++#ifndef __ASSEMBLY__
++
+ #define SLICE_LOW_SHIFT		28
+ #define SLICE_LOW_TOP		(0x100000000ul)
+ #define SLICE_NUM_LOW		(SLICE_LOW_TOP >> SLICE_LOW_SHIFT)
+@@ -13,4 +15,20 @@
+ 
+ #define SLB_ADDR_LIMIT_DEFAULT	DEFAULT_MAP_WINDOW_USER64
+ 
++struct mm_struct;
++
++unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
++				      unsigned long flags, unsigned int psize,
++				      int topdown);
++
++unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr);
++
++void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
++			   unsigned long len, unsigned int psize);
++
++void slice_init_new_context_exec(struct mm_struct *mm);
++void slice_setup_new_exec(void);
++
++#endif /* __ASSEMBLY__ */
++
+ #endif /* _ASM_POWERPC_BOOK3S_64_SLICE_H */
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 254687258f42..62e0c6f12869 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -329,6 +329,5 @@ static inline unsigned long kaslr_offset(void)
+ 
+ #include <asm-generic/memory_model.h>
+ #endif /* __ASSEMBLY__ */
+-#include <asm/slice.h>
+ 
+ #endif /* _ASM_POWERPC_PAGE_H */
+diff --git a/arch/powerpc/include/asm/slice.h b/arch/powerpc/include/asm/slice.h
+deleted file mode 100644
+index be4acc52e8ec..000000000000
+--- a/arch/powerpc/include/asm/slice.h
++++ /dev/null
+@@ -1,37 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-#ifndef _ASM_POWERPC_SLICE_H
+-#define _ASM_POWERPC_SLICE_H
 -
--	addr = TASK_UNMAPPED_BASE;
- 	/*
- 	 * Check till the allow max value for this mmap request
- 	 */
-@@ -322,12 +320,12 @@ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
- }
- 
- static unsigned long slice_find_area_topdown(struct mm_struct *mm,
--					     unsigned long len,
-+					     unsigned long addr, unsigned long len,
- 					     const struct slice_mask *available,
- 					     int psize, unsigned long high_limit)
- {
- 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
--	unsigned long addr, found, prev;
-+	unsigned long found, prev;
- 	struct vm_unmapped_area_info info;
- 	unsigned long min_addr = max(PAGE_SIZE, mmap_min_addr);
- 
-@@ -335,8 +333,6 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
- 	info.length = len;
- 	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
- 	info.align_offset = 0;
+-#ifdef CONFIG_PPC_BOOK3S_64
+-#include <asm/book3s/64/slice.h>
+-#endif
 -
--	addr = mm->mmap_base;
- 	/*
- 	 * If we are trying to allocate above DEFAULT_MAP_WINDOW
- 	 * Add the different to the mmap_base.
-@@ -377,7 +373,7 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
- 	 * can happen with large stack limits and large mmap()
- 	 * allocations.
- 	 */
--	return slice_find_area_bottomup(mm, len, available, psize, high_limit);
-+	return slice_find_area_bottomup(mm, TASK_UNMAPPED_BASE, len, available, psize, high_limit);
- }
- 
- 
-@@ -386,9 +382,9 @@ static unsigned long slice_find_area(struct mm_struct *mm, unsigned long len,
- 				     int topdown, unsigned long high_limit)
- {
- 	if (topdown)
--		return slice_find_area_topdown(mm, len, mask, psize, high_limit);
-+		return slice_find_area_topdown(mm, mm->mmap_base, len, mask, psize, high_limit);
- 	else
--		return slice_find_area_bottomup(mm, len, mask, psize, high_limit);
-+		return slice_find_area_bottomup(mm, mm->mmap_base, len, mask, psize, high_limit);
- }
- 
- static inline void slice_copy_mask(struct slice_mask *dst,
+-#ifndef __ASSEMBLY__
+-
+-struct mm_struct;
+-
+-#ifdef CONFIG_PPC_BOOK3S_64
+-
+-#ifdef CONFIG_HUGETLB_PAGE
+-#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+-#endif
+-#define HAVE_ARCH_UNMAPPED_AREA
+-#define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
+-
+-unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
+-				      unsigned long flags, unsigned int psize,
+-				      int topdown);
+-
+-unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr);
+-
+-void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+-			   unsigned long len, unsigned int psize);
+-
+-void slice_init_new_context_exec(struct mm_struct *mm);
+-void slice_setup_new_exec(void);
+-
+-#endif /* CONFIG_PPC_BOOK3S_64 */
+-
+-#endif /* __ASSEMBLY__ */
+-
+-#endif /* _ASM_POWERPC_SLICE_H */
 -- 
 2.33.1
 
