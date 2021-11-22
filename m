@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A07EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 08:51:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7A48C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 08:52:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HyLbk0b7xz3djV
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 19:51:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HyLcK3yKgz3dmF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 19:52:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,52 +16,50 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HyLY56KJrz2xLL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Nov 2021 19:49:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HyLYB0QTzz3bZx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Nov 2021 19:49:17 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HyLXj2Q6dz9sSZ;
- Mon, 22 Nov 2021 09:48:53 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4HyLXk2FlWz9sSp;
+ Mon, 22 Nov 2021 09:48:54 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id WylMaZ_oXXeG; Mon, 22 Nov 2021 09:48:53 +0100 (CET)
+ with ESMTP id qoLcZdD2JWwe; Mon, 22 Nov 2021 09:48:54 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HyLXc1Klqz9sSp;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4HyLXc1KF0z9sSn;
  Mon, 22 Nov 2021 09:48:48 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1704B8B765;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 17A948B776;
  Mon, 22 Nov 2021 09:48:48 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id gtie3yuamvMT; Mon, 22 Nov 2021 09:48:47 +0100 (CET)
+ with ESMTP id yLdfSD87LI3b; Mon, 22 Nov 2021 09:48:47 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A10998B778;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id AFE978B77C;
  Mon, 22 Nov 2021 09:48:47 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1AM8meEq631736
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1AM8mcwQ631708
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 22 Nov 2021 09:48:40 +0100
+ Mon, 22 Nov 2021 09:48:38 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1AM8memW631735;
- Mon, 22 Nov 2021 09:48:40 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1AM8mbml631700;
+ Mon, 22 Nov 2021 09:48:37 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, alex@ghiti.fr
-Subject: [PATCH 7/8] powerpc/mm: Convert to default topdown mmap layout
-Date: Mon, 22 Nov 2021 09:48:27 +0100
-Message-Id: <49d4ee53eb28ac76bc6c4979c735c4b1c7e45548.1637570556.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH 0/8] Convert powerpc to default topdown mmap layout
+Date: Mon, 22 Nov 2021 09:48:20 +0100
+Message-Id: <cover.1637570556.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.33.1
-In-Reply-To: <cover.1637570556.git.christophe.leroy@csgroup.eu>
-References: <cover.1637570556.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1637570906; l=5023; s=20211009;
- h=from:subject:message-id; bh=tK6qNg9t0+26MFuTrnCae4Ffx33oTJnm6+vMdPreY6s=;
- b=jCuVpkkKoFx1318rjb62AgscrBDJqgpAus42sPuqv22A3aFR+82yd63TjdbTmlmKfFppoNNqZfmG
- /JACpinnCvCLAnyKExJCRy888/c2fXGmymELabZOnIx7jtmHYW0I
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1637570905; l=2539; s=20211009;
+ h=from:subject:message-id; bh=BYMlT8t1rQmLJHB6M/rmi2Dhxo6sTBfS7n0H0F9IIs0=;
+ b=sM1kxSuEvtE1c8++Tb4yJCAeefYfWUmMUwSUMkYK3TwR+ime9qoN4wEXWdeyeV2aJMfUeLAsATyu
+ mHwFN+AMDa/KoznYAZXi6+EVieRUlxYmyJmsosWivRsw0FiMciUs
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,172 +80,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Select CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT and
-remove arch/powerpc/mm/mmap.c
+This series converts powerpc to default topdown mmap layout.
 
-This change provides standard randomisation of mmaps.
+powerpc provides its own arch_get_unmapped_area() only when
+slices are needed, which is only for book3s/64. First part of
+the series moves slices into book3s/64 specific directories
+and cleans up other subarchitectures.
 
-See commit 8b8addf891de ("x86/mm/32: Enable full randomization on i386
-and X86_32") for all the benefits of mmap randomisation.
+Then a small modification is done to core mm to allow
+powerpc to still provide its own arch_randomize_brk()
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/Kconfig                 |   1 +
- arch/powerpc/include/asm/processor.h |   2 -
- arch/powerpc/mm/Makefile             |   2 +-
- arch/powerpc/mm/mmap.c               | 105 ---------------------------
- 4 files changed, 2 insertions(+), 108 deletions(-)
+Last part converts to default topdown mmap layout.
+
+Christophe Leroy (8):
+  powerpc/mm: Make slice specific to book3s/64
+  powerpc/mm: Remove CONFIG_PPC_MM_SLICES
+  powerpc/mm: Remove asm/slice.h
+  powerpc/mm: Move vma_mmu_pagesize() and hugetlb_get_unmapped_area() to
+    slice.c
+  powerpc/mm: Call radix__arch_get_unmapped_area() from
+    arch_get_unmapped_area()
+  mm: Allow arch specific arch_randomize_brk() with
+    CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
+  powerpc/mm: Convert to default topdown mmap layout
+  powerpc/mm: Properly randomise mmap with slices
+
+ arch/Kconfig                                  |   1 -
+ arch/powerpc/Kconfig                          |   1 +
+ arch/powerpc/include/asm/book3s/64/hash.h     |   5 +-
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |   1 +
+ arch/powerpc/include/asm/book3s/64/slice.h    |  18 ++
+ arch/powerpc/include/asm/hugetlb.h            |   2 +-
+ arch/powerpc/include/asm/paca.h               |   5 -
+ arch/powerpc/include/asm/page.h               |   1 -
+ arch/powerpc/include/asm/processor.h          |   2 -
+ arch/powerpc/include/asm/slice.h              |  46 ----
+ arch/powerpc/kernel/paca.c                    |   5 -
+ arch/powerpc/mm/Makefile                      |   3 +-
+ arch/powerpc/mm/book3s64/Makefile             |   2 +-
+ arch/powerpc/mm/book3s64/hash_utils.c         |  14 --
+ arch/powerpc/mm/{ => book3s64}/slice.c        | 144 ++++++++++-
+ arch/powerpc/mm/hugetlbpage.c                 |  28 ---
+ arch/powerpc/mm/mmap.c                        | 228 ------------------
+ arch/powerpc/mm/nohash/mmu_context.c          |   2 -
+ arch/powerpc/mm/nohash/tlb.c                  |   4 -
+ arch/powerpc/platforms/Kconfig.cputype        |   4 -
+ fs/binfmt_elf.c                               |   3 +-
+ include/linux/elf-randomize.h                 |   3 +-
+ mm/util.c                                     |   2 +
+ 23 files changed, 165 insertions(+), 359 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/slice.h
+ rename arch/powerpc/mm/{ => book3s64}/slice.c (84%)
  delete mode 100644 arch/powerpc/mm/mmap.c
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index dea74d7717c0..05ddcf99cb34 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -158,6 +158,7 @@ config PPC
- 	select ARCH_USE_MEMTEST
- 	select ARCH_USE_QUEUED_RWLOCKS		if PPC_QUEUED_SPINLOCKS
- 	select ARCH_USE_QUEUED_SPINLOCKS	if PPC_QUEUED_SPINLOCKS
-+	select ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
- 	select ARCH_WANT_IPC_PARSE_VERSION
- 	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
- 	select ARCH_WANT_LD_ORPHAN_WARN
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index e39bd0ff69f3..d906b14dd599 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -378,8 +378,6 @@ static inline void prefetchw(const void *x)
- 
- #define spin_lock_prefetch(x)	prefetchw(x)
- 
--#define HAVE_ARCH_PICK_MMAP_LAYOUT
--
- /* asm stubs */
- extern unsigned long isa300_idle_stop_noloss(unsigned long psscr_val);
- extern unsigned long isa300_idle_stop_mayloss(unsigned long psscr_val);
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index d4c20484dad9..503a6e249940 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -5,7 +5,7 @@
- 
- ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
- 
--obj-y				:= fault.o mem.o pgtable.o mmap.o maccess.o pageattr.o \
-+obj-y				:= fault.o mem.o pgtable.o maccess.o pageattr.o \
- 				   init_$(BITS).o pgtable_$(BITS).o \
- 				   pgtable-frag.o ioremap.o ioremap_$(BITS).o \
- 				   init-common.o mmu_context.o drmem.o \
-diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
-deleted file mode 100644
-index 5972d619d274..000000000000
---- a/arch/powerpc/mm/mmap.c
-+++ /dev/null
-@@ -1,105 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- *  flexible mmap layout support
-- *
-- * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
-- * All Rights Reserved.
-- *
-- * Started by Ingo Molnar <mingo@elte.hu>
-- */
--
--#include <linux/personality.h>
--#include <linux/mm.h>
--#include <linux/random.h>
--#include <linux/sched/signal.h>
--#include <linux/sched/mm.h>
--#include <linux/elf-randomize.h>
--#include <linux/security.h>
--#include <linux/mman.h>
--
--/*
-- * Top of mmap area (just below the process stack).
-- *
-- * Leave at least a ~128 MB hole.
-- */
--#define MIN_GAP (128*1024*1024)
--#define MAX_GAP (TASK_SIZE/6*5)
--
--static inline int mmap_is_legacy(struct rlimit *rlim_stack)
--{
--	if (current->personality & ADDR_COMPAT_LAYOUT)
--		return 1;
--
--	if (rlim_stack->rlim_cur == RLIM_INFINITY)
--		return 1;
--
--	return sysctl_legacy_va_layout;
--}
--
--unsigned long arch_mmap_rnd(void)
--{
--	unsigned long shift, rnd;
--
--	shift = mmap_rnd_bits;
--#ifdef CONFIG_COMPAT
--	if (is_32bit_task())
--		shift = mmap_rnd_compat_bits;
--#endif
--	rnd = get_random_long() % (1ul << shift);
--
--	return rnd << PAGE_SHIFT;
--}
--
--static inline unsigned long stack_maxrandom_size(void)
--{
--	if (!(current->flags & PF_RANDOMIZE))
--		return 0;
--
--	/* 8MB for 32bit, 1GB for 64bit */
--	if (is_32bit_task())
--		return (1<<23);
--	else
--		return (1<<30);
--}
--
--static inline unsigned long mmap_base(unsigned long rnd,
--				      struct rlimit *rlim_stack)
--{
--	unsigned long gap = rlim_stack->rlim_cur;
--	unsigned long pad = stack_maxrandom_size() + stack_guard_gap;
--
--	/* Values close to RLIM_INFINITY can overflow. */
--	if (gap + pad > gap)
--		gap += pad;
--
--	if (gap < MIN_GAP)
--		gap = MIN_GAP;
--	else if (gap > MAX_GAP)
--		gap = MAX_GAP;
--
--	return PAGE_ALIGN(DEFAULT_MAP_WINDOW - gap - rnd);
--}
--
--/*
-- * This function, called very early during the creation of a new
-- * process VM image, sets up which VM layout function to use:
-- */
--void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
--{
--	unsigned long random_factor = 0UL;
--
--	if (current->flags & PF_RANDOMIZE)
--		random_factor = arch_mmap_rnd();
--
--	/*
--	 * Fall back to the standard layout if the personality
--	 * bit is set, or if the expected stack growth is unlimited:
--	 */
--	if (mmap_is_legacy(rlim_stack)) {
--		mm->mmap_base = TASK_UNMAPPED_BASE;
--		mm->get_unmapped_area = arch_get_unmapped_area;
--	} else {
--		mm->mmap_base = mmap_base(random_factor, rlim_stack);
--		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
--	}
--}
 -- 
 2.33.1
 
