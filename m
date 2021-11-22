@@ -4,95 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0ABCC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 18:35:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C304C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 20:48:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HybZ10k7fz3c6Y
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Nov 2021 05:35:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HyfVj4cf4z305T
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Nov 2021 07:48:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Xglrpv6c;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=JneIEC9c;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1033;
+ helo=mail-pj1-x1033.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Xglrpv6c; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=JneIEC9c; dkim-atps=neutral
+Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com
+ [IPv6:2607:f8b0:4864:20::1033])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HybY664SKz2xLL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Nov 2021 05:35:05 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1AMHp3nF008822
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Nov 2021 18:35:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=347/xe1wCvRpOzDI4DQpY7kOC0jEvs+AERCYO56bBx8=;
- b=Xglrpv6ceRAQDNpADzPLgz9/B7wI/WFsoOLl+9EUrBhpyn0Rwxzw70cDoyB/WfBkFoGr
- qPvXximxik7lF35lkiD5nbqER8z4hX/l1bs5tzLVQfQdo5jzu7zskHVxXjUI3Kn4G212
- 1kpSD8e6sBUCqd74rlJTdAUhXicfoMWlCo4gsyMyVdjdHF6uYrtaGCMsvwjJd3FNGt5k
- B8LqI9f+EF9SdGYktUq5N062Xib0mLf9dV6W9iQudcllqsLyiggoCZTcMtIdO24qnDPD
- mhNH8Xvmt0QgedrjdZmqnlY8bZxgx8/lPDxuG3CxftjOQXbKIy4ZvKXORb2u+iRgV9sa ew== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3cgfyh8sp9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Nov 2021 18:35:02 +0000
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1AMIJ7ul040421
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Nov 2021 18:35:01 GMT
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3cgfyh8sp2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 22 Nov 2021 18:35:01 +0000
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1AMISujG009719;
- Mon, 22 Nov 2021 18:35:01 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma04dal.us.ibm.com with ESMTP id 3cernanj2u-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 22 Nov 2021 18:35:01 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1AMIYxp655968140
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 22 Nov 2021 18:34:59 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C03BEAE066;
- Mon, 22 Nov 2021 18:34:59 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C2B22AE068;
- Mon, 22 Nov 2021 18:34:58 +0000 (GMT)
-Received: from localhost (unknown [9.211.110.220])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTPS;
- Mon, 22 Nov 2021 18:34:58 +0000 (GMT)
-From: Fabiano Rosas <farosas@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v1] KVM: PPC: Book3S HV: Prevent POWER7/8 TLB flush
- flushing SLB
-In-Reply-To: <20211119031627.577853-1-npiggin@gmail.com>
-References: <20211119031627.577853-1-npiggin@gmail.com>
-Date: Mon, 22 Nov 2021 15:34:56 -0300
-Message-ID: <87sfvoqbsf.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HyfTz3xrRz2yV5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Nov 2021 07:47:33 +1100 (AEDT)
+Received: by mail-pj1-x1033.google.com with SMTP id
+ gb13-20020a17090b060d00b001a674e2c4a8so929534pjb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Nov 2021 12:47:32 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:content-transfer-encoding:in-reply-to;
+ bh=9FObduEZbWdjUpMXz60aZqufbQdzvSRG3lPMBJb7SJ0=;
+ b=JneIEC9cvLJCbdtDu2vtG7jOReTI8ksmr7YGpy14cmKopDG1WNnzN9vyEAQ5ZFY1Ll
+ wLrz0I8fq9UmpvvAfe8h8Dm9aKo2h0iPbnV+aXW1yLKcF9165JU7Nw0SLTEFehyBU+vN
+ 6QUq5HYvX2wTw8c3Eu9q6Z+6Y1Ty/R6fmPa7Y=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:content-transfer-encoding
+ :in-reply-to;
+ bh=9FObduEZbWdjUpMXz60aZqufbQdzvSRG3lPMBJb7SJ0=;
+ b=cbKXcLgy03wR5UyHJ5OlKLP8lEGna4M7LxoCEK5FRY2x9y7m6zPdyMJm/DmukL+6lR
+ dkEPGvBLgB4c/PnmQSPCT1MuzE5wlPASZn2ShEMia1TxU2asCnEhI9XlmllGhIhbLz3B
+ m+Yneee+BiMzzmHTYBYF+FDZwMH4H1I94hDcOLX3OaDsdB2R4GHUZtXnBL5ci8umXDS/
+ eYzfL7X9+L8C6G+sSYRBR77gWnbjQlYbDQyWs30wigfxu7Xd7ziAURp2pcUs8r+936rT
+ Nm0g+gh1sFo6NdDDdioJtAyl8G+/5TtZboxH88eMLWF+kBolGk1tPOVtiDSO9pw9P3/R
+ /ihQ==
+X-Gm-Message-State: AOAM531uen6RZLUr6AdlxvuvbFrIU0yr/sMaFZ6XGcqGkoQvlj3aCxTI
+ DuJjfqkYQah78YnnzM+/5J6Iow==
+X-Google-Smtp-Source: ABdhPJwcHprzgfWpUQCUPhpzVPFnI4WiDGxFFLzGSTeGQcOoYiccm8mTTcquO4kALyNvrKtHzcsEvw==
+X-Received: by 2002:a17:90b:1c8d:: with SMTP id
+ oo13mr36323110pjb.239.1637614049808; 
+ Mon, 22 Nov 2021 12:47:29 -0800 (PST)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+ by smtp.gmail.com with ESMTPSA id v10sm9796801pfu.123.2021.11.22.12.47.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 22 Nov 2021 12:47:29 -0800 (PST)
+Date: Mon, 22 Nov 2021 12:47:28 -0800
+From: Kees Cook <keescook@chromium.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/signal32: Use struct_group() to zero spe regs
+Message-ID: <202111221247.B385EA2A8@keescook>
+References: <20211118203604.1288379-1-keescook@chromium.org>
+ <1e312cbd-cd52-ddce-f839-db765173c526@csgroup.eu>
+ <87ilwkrbhz.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 1Op9Dl0c0W1UQvg5q0fTgR3RWRIu8OKH
-X-Proofpoint-GUID: v5DM3-Aj2cH5uebnfwkj4lz-59aPMVGe
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
- definitions=2021-11-22_08,2021-11-22_02,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- adultscore=0 mlxlogscore=999 phishscore=0 impostorscore=0 bulkscore=0
- lowpriorityscore=0 clxscore=1015 suspectscore=0 mlxscore=0 spamscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2110150000 definitions=main-2111220095
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <87ilwkrbhz.fsf@mpe.ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,59 +82,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ kernel test robot <lkp@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-hardening@vger.kernel.org" <linux-hardening@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Sudeep Holla <sudeep.holla@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+On Mon, Nov 22, 2021 at 04:43:36PM +1100, Michael Ellerman wrote:
+> LEROY Christophe <christophe.leroy@csgroup.eu> writes:
+> > Le 18/11/2021 à 21:36, Kees Cook a écrit :
+> >> In preparation for FORTIFY_SOURCE performing compile-time and run-time
+> >> field bounds checking for memset(), avoid intentionally writing across
+> >> neighboring fields.
+> >> 
+> >> Add a struct_group() for the spe registers so that memset() can correctly reason
+> >> about the size:
+> >> 
+> >>     In function 'fortify_memset_chk',
+> >>         inlined from 'restore_user_regs.part.0' at arch/powerpc/kernel/signal_32.c:539:3:
+> >>     >> include/linux/fortify-string.h:195:4: error: call to '__write_overflow_field' declared with attribute warning: detected write beyond size of field (1st parameter); maybe use struct_group()? [-Werror=attribute-warning]
+> >>       195 |    __write_overflow_field();
+> >>           |    ^~~~~~~~~~~~~~~~~~~~~~~~
+> >> 
+> >> Reported-by: kernel test robot <lkp@intel.com>
+> >> Signed-off-by: Kees Cook <keescook@chromium.org>
+> >
+> > Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> 
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-> The POWER9 ERAT flush instruction is a SLBIA with IH=7, which is a
-> reserved value on POWER7/8. On POWER8 this invalidates the SLB entries
-> above index 0, similarly to SLBIA IH=0.
->
-> If the SLB entries are invalidated, and then the guest is bypassed, the
-> host SLB does not get re-loaded, so the bolted entries above 0 will be
-> lost. This can result in kernel stack access causing a SLB fault.
->
-> Kernel stack access causing a SLB fault was responsible for the infamous
-> mega bug (search "Fix SLB reload bug"). Although since commit
-> 48e7b7695745 ("powerpc/64s/hash: Convert SLB miss handlers to C") that
-> starts using the kernel stack in the SLB miss handler, it might only
-> result in an infinite loop of SLB faults. In any case it's a bug.
->
-> Fix this by only executing the instruction on >= POWER9 where IH=7 is
-> defined not to invalidate the SLB. POWER7/8 don't require this ERAT
-> flush.
->
-> Fixes: 5008711259201 ("KVM: PPC: Book3S HV: Invalidate ERAT when flushing guest TLB entries")
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Thanks! Should I take this via my tree, or do you want to take it via
+ppc?
 
-Reviewed-by: Fabiano Rosas <farosas@linux.ibm.com>
+-Kees
 
-> ---
->  arch/powerpc/kvm/book3s_hv_builtin.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
-> index fcf4760a3a0e..70b7a8f97153 100644
-> --- a/arch/powerpc/kvm/book3s_hv_builtin.c
-> +++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-> @@ -695,6 +695,7 @@ static void flush_guest_tlb(struct kvm *kvm)
->  				       "r" (0) : "memory");
->  		}
->  		asm volatile("ptesync": : :"memory");
-> +		// POWER9 congruence-class TLBIEL leaves ERAT. Flush it now.
->  		asm volatile(PPC_RADIX_INVALIDATE_ERAT_GUEST : : :"memory");
->  	} else {
->  		for (set = 0; set < kvm->arch.tlb_sets; ++set) {
-> @@ -705,7 +706,9 @@ static void flush_guest_tlb(struct kvm *kvm)
->  			rb += PPC_BIT(51);	/* increment set number */
->  		}
->  		asm volatile("ptesync": : :"memory");
-> -		asm volatile(PPC_ISA_3_0_INVALIDATE_ERAT : : :"memory");
-> +		// POWER9 congruence-class TLBIEL leaves ERAT. Flush it now.
-> +		if (cpu_has_feature(CPU_FTR_ARCH_300))
-> +			asm volatile(PPC_ISA_3_0_INVALIDATE_ERAT : : :"memory");
->  	}
->  }
+-- 
+Kees Cook
