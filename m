@@ -4,67 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 575DBC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 08:52:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B753C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 11:23:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HyLdG6rFNz3cZW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 19:52:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HyLYL6Rf3z3cCG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Nov 2021 19:49:26 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4HyLXm0zGYz9sSL;
- Mon, 22 Nov 2021 09:48:56 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id X-aGPodMYSyc; Mon, 22 Nov 2021 09:48:56 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4HyLXc1m9kz9sSr;
- Mon, 22 Nov 2021 09:48:48 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 256468B774;
- Mon, 22 Nov 2021 09:48:48 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 9HhFgcCOVwLX; Mon, 22 Nov 2021 09:48:48 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A668B8B779;
- Mon, 22 Nov 2021 09:48:47 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1AM8mei2631724
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 22 Nov 2021 09:48:40 +0100
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1AM8meCH631723;
- Mon, 22 Nov 2021 09:48:40 +0100
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, alex@ghiti.fr
-Subject: [PATCH 4/8] powerpc/mm: Move vma_mmu_pagesize() and
- hugetlb_get_unmapped_area() to slice.c
-Date: Mon, 22 Nov 2021 09:48:24 +0100
-Message-Id: <b9fe71514684c92239d2f44cd5a6330992ec1f88.1637570556.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.33.1
-In-Reply-To: <cover.1637570556.git.christophe.leroy@csgroup.eu>
-References: <cover.1637570556.git.christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HyPzQ4zbnz2ypK
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Nov 2021 22:23:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=ghiti.fr
+ (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net;
+ envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
+Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [217.70.178.240])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HyPyx54Rsz2yPm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Nov 2021 22:23:21 +1100 (AEDT)
+Received: from relay5-d.mail.gandi.net (unknown [217.70.183.197])
+ by mslow1.mail.gandi.net (Postfix) with ESMTP id 03088D222E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Nov 2021 11:23:16 +0000 (UTC)
+Received: (Authenticated sender: alex@ghiti.fr)
+ by relay5-d.mail.gandi.net (Postfix) with ESMTPSA id 732BD1C000F;
+ Mon, 22 Nov 2021 11:22:47 +0000 (UTC)
+Message-ID: <325663a5-d9a1-a8b8-7f16-c2985c319864@ghiti.fr>
+Date: Mon, 22 Nov 2021 12:22:46 +0100
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1637570906; l=2819; s=20211009;
- h=from:subject:message-id; bh=bAMv1qE3z5Fq0BLMA+9Ex8Wew7DRe92t24mVDmFzu8M=;
- b=EDoWFoSjFoTQFLeBg5vpnvbMirOOsruAGa1Pntjc3nkBZOH9J3VL9acRGhJr9JkfZ/3aM0BWB9yb
- fuIuk3tbBAjIlu08jxDiiPnywDgrzjoQd89aiNE2Q09EHM0xphSR
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+Subject: Re: [PATCH 6/8] mm: Allow arch specific arch_randomize_brk() with
+ CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
+Content-Language: fr
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <cover.1637570556.git.christophe.leroy@csgroup.eu>
+ <e2209d0f1f3c1b581592bd6c32243402ccfe3dde.1637570556.git.christophe.leroy@csgroup.eu>
+From: Alex Ghiti <alex@ghiti.fr>
+In-Reply-To: <e2209d0f1f3c1b581592bd6c32243402ccfe3dde.1637570556.git.christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -83,89 +58,103 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-vma_mmu_pagesize() is only required for slices,
-otherwise there is a generic weak version.
+Hi Christophe,
 
-hugetlb_get_unmapped_area() is dedicated to slices.
+Le 22/11/2021 à 09:48, Christophe Leroy a écrit :
+> Commit e7142bf5d231 ("arm64, mm: make randomization selected by
+> generic topdown mmap layout") introduced a default version of
+> arch_randomize_brk() provided when
+> CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT is selected.
+> 
+> powerpc could select CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
+> but needs to provide its own arch_randomize_brk().
+> 
+> In order to allow that, don't make
+> CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT select
+> CONFIG_ARCH_HAS_ELF_RANDOMIZE. Instead, ensure that
+> selecting CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT and
+> selecting CONFIG_ARCH_HAS_ELF_RANDOMIZE has the same effect.
 
-Move them to slice.c
+This feels weird to me since if CONFIG_ARCH_HAS_ELF_RANDOMIZE is used 
+somewhere else at some point, it is not natural to add 
+CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT: can't we use a __weak 
+function or a new CONFIG_ARCH_HAS_RANDOMIZE_BRK?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/mm/book3s64/slice.c | 22 ++++++++++++++++++++++
- arch/powerpc/mm/hugetlbpage.c    | 28 ----------------------------
- 2 files changed, 22 insertions(+), 28 deletions(-)
+Thanks,
 
-diff --git a/arch/powerpc/mm/book3s64/slice.c b/arch/powerpc/mm/book3s64/slice.c
-index 82b45b1cb973..62848c5fa2d6 100644
---- a/arch/powerpc/mm/book3s64/slice.c
-+++ b/arch/powerpc/mm/book3s64/slice.c
-@@ -779,4 +779,26 @@ int slice_is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
- 
- 	return !slice_check_range_fits(mm, maskp, addr, len);
- }
-+
-+unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
-+{
-+	/* With radix we don't use slice, so derive it from vma*/
-+	if (radix_enabled())
-+		return vma_kernel_pagesize(vma);
-+
-+	return 1UL << mmu_psize_to_shift(get_slice_psize(vma->vm_mm, vma->vm_start));
-+}
-+
-+unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
-+					unsigned long len, unsigned long pgoff,
-+					unsigned long flags)
-+{
-+	struct hstate *hstate = hstate_file(file);
-+	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
-+
-+	if (radix_enabled())
-+		return radix__hugetlb_get_unmapped_area(file, addr, len, pgoff, flags);
-+
-+	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
-+}
- #endif
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 10c3b2b8e9d8..eb9de09e49a3 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -542,34 +542,6 @@ struct page *follow_huge_pd(struct vm_area_struct *vma,
- 	return page;
- }
- 
--#ifdef CONFIG_PPC_BOOK3S_64
--unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
--					unsigned long len, unsigned long pgoff,
--					unsigned long flags)
--{
--	struct hstate *hstate = hstate_file(file);
--	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
--
--#ifdef CONFIG_PPC_RADIX_MMU
--	if (radix_enabled())
--		return radix__hugetlb_get_unmapped_area(file, addr, len,
--						       pgoff, flags);
--#endif
--	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
--}
--#endif
--
--unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
--{
--	/* With radix we don't use slice, so derive it from vma*/
--	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) && !radix_enabled()) {
--		unsigned int psize = get_slice_psize(vma->vm_mm, vma->vm_start);
--
--		return 1UL << mmu_psize_to_shift(psize);
--	}
--	return vma_kernel_pagesize(vma);
--}
--
- bool __init arch_hugetlb_valid_size(unsigned long size)
- {
- 	int shift = __ffs(size);
--- 
-2.33.1
+Alex
 
+> 
+> Then only provide the default arch_randomize_brk() when the
+> architecture has not selected CONFIG_ARCH_HAS_ELF_RANDOMIZE.
+> 
+> Cc: Alexandre Ghiti <alex@ghiti.fr>
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>   arch/Kconfig                  | 1 -
+>   fs/binfmt_elf.c               | 3 ++-
+>   include/linux/elf-randomize.h | 3 ++-
+>   mm/util.c                     | 2 ++
+>   4 files changed, 6 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/Kconfig b/arch/Kconfig
+> index 26b8ed11639d..ef3ce947b7a1 100644
+> --- a/arch/Kconfig
+> +++ b/arch/Kconfig
+> @@ -1000,7 +1000,6 @@ config HAVE_ARCH_COMPAT_MMAP_BASES
+>   config ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
+>   	bool
+>   	depends on MMU
+> -	select ARCH_HAS_ELF_RANDOMIZE
+>   
+>   config HAVE_STACK_VALIDATION
+>   	bool
+> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> index f8c7f26f1fbb..28968a189a91 100644
+> --- a/fs/binfmt_elf.c
+> +++ b/fs/binfmt_elf.c
+> @@ -1287,7 +1287,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
+>   		 * (since it grows up, and may collide early with the stack
+>   		 * growing down), and into the unused ELF_ET_DYN_BASE region.
+>   		 */
+> -		if (IS_ENABLED(CONFIG_ARCH_HAS_ELF_RANDOMIZE) &&
+> +		if ((IS_ENABLED(CONFIG_ARCH_HAS_ELF_RANDOMIZE) ||
+> +		     IS_ENABLED(CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT)) &&
+>   		    elf_ex->e_type == ET_DYN && !interpreter) {
+>   			mm->brk = mm->start_brk = ELF_ET_DYN_BASE;
+>   		}
+> diff --git a/include/linux/elf-randomize.h b/include/linux/elf-randomize.h
+> index da0dbb7b6be3..1e471ca7caaf 100644
+> --- a/include/linux/elf-randomize.h
+> +++ b/include/linux/elf-randomize.h
+> @@ -4,7 +4,8 @@
+>   
+>   struct mm_struct;
+>   
+> -#ifndef CONFIG_ARCH_HAS_ELF_RANDOMIZE
+> +#if !defined(CONFIG_ARCH_HAS_ELF_RANDOMIZE) && \
+> +	!defined(CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT)
+>   static inline unsigned long arch_mmap_rnd(void) { return 0; }
+>   # if defined(arch_randomize_brk) && defined(CONFIG_COMPAT_BRK)
+>   #  define compat_brk_randomized
+> diff --git a/mm/util.c b/mm/util.c
+> index e58151a61255..edb9e94cceb5 100644
+> --- a/mm/util.c
+> +++ b/mm/util.c
+> @@ -344,6 +344,7 @@ unsigned long randomize_stack_top(unsigned long stack_top)
+>   }
+>   
+>   #ifdef CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
+> +#ifndef CONFIG_ARCH_HAS_ELF_RANDOMIZE
+>   unsigned long arch_randomize_brk(struct mm_struct *mm)
+>   {
+>   	/* Is the current task 32bit ? */
+> @@ -352,6 +353,7 @@ unsigned long arch_randomize_brk(struct mm_struct *mm)
+>   
+>   	return randomize_page(mm->brk, SZ_1G);
+>   }
+> +#endif
+>   
+>   unsigned long arch_mmap_rnd(void)
+>   {
+> 
