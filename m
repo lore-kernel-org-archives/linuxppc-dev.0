@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97808C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Nov 2021 20:27:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14EB7C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Nov 2021 20:28:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HzG0B6y9Qz3cX3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 07:27:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HzG0v5RB8z2ywQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 07:27:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=pu9tDABb;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Qi+WT89v;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -21,20 +21,20 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HzFxP102rz2ybL
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HzFxP1QYZz2ymc
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Nov 2021 07:24:55 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
  Reply-To:Content-Type:Content-ID:Content-Description;
- bh=uxX56sjsin2v3BRdfnr5TEVUTPcaLflkai/DCjMhC9c=; b=pu9tDABbAsc7CV51h7YN7FXpjb
- 3f/hGByhDYBeRVT9KGZDXNhK8bCMVcllkROlHccQ4fZzY5zFCAh5aZVhGP+PTlng+fR+4+bh/4qxh
- JYXlGdhBLa4KQuWhtkBAWUDXMthAhX3hcvFrNTylVe+N8B95Fkl30QOMumlvLrODOunVYXKyXhACG
- 617dOry2em2+pA1lmms9tq7CanLN2gEgantMpCurXNAjbZBVGqkVwSx4d71zKRu54Ux1gFEi6urxs
- j9VEQcTlcUf+MUdQcU5Ky2b5mgjYulsNWi9DpWzueIqpltgzFsFxjELc4liw1pw/j4GYAzkwaInS/
- d4cD4fiQ==;
+ bh=2Kv6Hoi+4rCR0xeNRjHAEL5W0WSj9wKutSwhTDgIue0=; b=Qi+WT89v/gxTJXFJzgrSOMN/j4
+ 4rOnaodA9SoHPCBfgiqmeZiDb9Jip9L6gfN5zh0+xw5x4zfJ4tLm4LZ94MxfX4/cLHomKT0GwITKC
+ 9JKt82tHX3MTqRxl7aN/V4975++ctv4fIwYEPkqZkHvAHJfopfoEHsRYRiFgmyCHxgftAKWfdMF2/
+ SmnjX2hTOKP+Oxfb6PzrLZBzoPt4nF4yxh8DXwEjGSb01g4HHQZ1Hn0j2YOj9Nxm9GIXwnXNhSyHW
+ jKIKQ0iWXm4zNAWEvO+0EJlgTdTI2EhA8Cvgg6jItc3zff4jfmPQAZ8GwgHNOUzyk/a//6tVVHsr4
+ E+oWRjRw==;
 Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mpcL1-003R5P-Dy; Tue, 23 Nov 2021 20:24:23 +0000
+ (Red Hat Linux)) id 1mpcL1-003R5D-7B; Tue, 23 Nov 2021 20:24:23 +0000
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: akpm@linux-foundation.org, keescook@chromium.org,
 	yzaikin@google.com, nixiaoming@huawei.com, ebiederm@xmission.com,
@@ -45,10 +45,10 @@ To: akpm@linux-foundation.org, keescook@chromium.org,
 	benh@kernel.crashing.org, mark@fasheh.com, jlbec@evilplan.org,
 	joseph.qi@linux.alibaba.com, jack@suse.cz, amir73il@gmail.com,
 	phil@philpotter.co.uk, viro@zeniv.linux.org.uk, julia.lawall@inria.fr
-Subject: [PATCH v2 7/8] cdrom: simplify subdirectory registration with
+Subject: [PATCH v2 1/8] hpet: simplify subdirectory registration with
  register_sysctl()
-Date: Tue, 23 Nov 2021 12:24:21 -0800
-Message-Id: <20211123202422.819032-8-mcgrof@kernel.org>
+Date: Tue, 23 Nov 2021 12:24:15 -0800
+Message-Id: <20211123202422.819032-2-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20211123202422.819032-1-mcgrof@kernel.org>
 References: <20211123202422.819032-1-mcgrof@kernel.org>
@@ -77,7 +77,7 @@ There is no need to user boiler plate code to specify a set of base
 directories we're going to stuff sysctls under. Simplify this by using
 register_sysctl() and specifying the directory path directly.
 
-// pycocci sysctl-subdir-register-sysctl-simplify.cocci PATH
+// pycocci sysctl-subdir-register-sysctl-simplify.cocci drivers/char/hpet.c
 
 @c1@
 expression E1;
@@ -171,50 +171,49 @@ header =
 Generated-by: Coccinelle SmPL
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- drivers/cdrom/cdrom.c | 23 +----------------------
- 1 file changed, 1 insertion(+), 22 deletions(-)
+ drivers/char/hpet.c | 22 +---------------------
+ 1 file changed, 1 insertion(+), 21 deletions(-)
 
-diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
-index 9877e413fce3..1b57d4666e43 100644
---- a/drivers/cdrom/cdrom.c
-+++ b/drivers/cdrom/cdrom.c
-@@ -3691,27 +3691,6 @@ static struct ctl_table cdrom_table[] = {
- 	},
- 	{ }
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index 4e5431f01450..563dfae3b8da 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -746,26 +746,6 @@ static struct ctl_table hpet_table[] = {
+ 	{}
  };
--
--static struct ctl_table cdrom_cdrom_table[] = {
+ 
+-static struct ctl_table hpet_root[] = {
 -	{
--		.procname	= "cdrom",
--		.maxlen		= 0,
--		.mode		= 0555,
--		.child		= cdrom_table,
--	},
--	{ }
+-	 .procname = "hpet",
+-	 .maxlen = 0,
+-	 .mode = 0555,
+-	 .child = hpet_table,
+-	 },
+-	{}
 -};
 -
--/* Make sure that /proc/sys/dev is there */
--static struct ctl_table cdrom_root_table[] = {
+-static struct ctl_table dev_root[] = {
 -	{
--		.procname	= "dev",
--		.maxlen		= 0,
--		.mode		= 0555,
--		.child		= cdrom_cdrom_table,
--	},
--	{ }
+-	 .procname = "dev",
+-	 .maxlen = 0,
+-	 .mode = 0555,
+-	 .child = hpet_root,
+-	 },
+-	{}
 -};
- static struct ctl_table_header *cdrom_sysctl_header;
+-
+ static struct ctl_table_header *sysctl_header;
  
- static void cdrom_sysctl_register(void)
-@@ -3721,7 +3700,7 @@ static void cdrom_sysctl_register(void)
- 	if (!atomic_add_unless(&initialized, 1, 1))
- 		return;
+ /*
+@@ -1061,7 +1041,7 @@ static int __init hpet_init(void)
+ 	if (result < 0)
+ 		return -ENODEV;
  
--	cdrom_sysctl_header = register_sysctl_table(cdrom_root_table);
-+	cdrom_sysctl_header = register_sysctl("dev/cdrom", cdrom_table);
+-	sysctl_header = register_sysctl_table(dev_root);
++	sysctl_header = register_sysctl("dev/hpet", hpet_table);
  
- 	/* set the defaults */
- 	cdrom_sysctl_settings.autoclose = autoclose;
+ 	result = acpi_bus_register_driver(&hpet_acpi_driver);
+ 	if (result < 0) {
 -- 
 2.33.0
 
