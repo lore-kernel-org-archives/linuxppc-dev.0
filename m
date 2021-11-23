@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D23DCC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Nov 2021 20:26:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DBB5C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Nov 2021 20:26:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HzFyn1D3bz3c7B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 07:26:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HzFzV1RC0z3cNt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 07:26:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=MWKwDI+3;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=uuhyMxlT;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -21,20 +21,20 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HzFxP0LVtz2yP9
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HzFxP0q99z2ybD
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Nov 2021 07:24:55 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
  Reply-To:Content-Type:Content-ID:Content-Description;
- bh=Gd9eQWajxy0iI68lppb+s86qgv/iD4JNro7LeJWzrnM=; b=MWKwDI+3iFgBOVtnVoAOyB5NFa
- aKoQKCknzmOEv4+vlS0S9j9DlUv/3lDMKtskggo4N0ytRZVWdqxsiGfE/R9j0fTzs/V/4Smyy/+Fs
- SjiXs641h9nvM0IaJHwc+yd6zjul9oQr9TOfPoBO/X7oDnXpy2EFnLNKIjFWL4xK2uRXnovoVDoUN
- tpjGKNVARwRhTB2/900O1rfLDS/i6tckcPD4LS/Uxxf8vBTyiwHFOEXeh+eUN5ianyffwP3QOsxaZ
- KF3KOhguswWFrAGP6E2xFK6QLLmTseeInhlJm0YX0ej0PSKoCh2g7cNhq82meHCXFtFl+qTmM6UUZ
- 8YB/z9ZQ==;
+ bh=qEMCqYh4UIBtk+2Pnh2nxftwvU/rvXJVKDicg8b6I3s=; b=uuhyMxlTPAHzH8+Cod+gE/Zu/p
+ bT1ehnIfXmEBar5x5xwpA5IGS9LiS66z/oQQj2k588F8Sn4/yigOCsKhueeyHHUz0RsZHWsEqjsum
+ d5P8epbMkaSOTetwKN4TbkyYxlti4MI5j3UY3KGYcmL9RavpfJGGrOnejW3mbE7MQdzMDDejlMoZd
+ v2i69DcOwLvTh3vQq0Uoveshm4xDOcSUU0OqeqzA7/cma6vyoHXIgOygXw2gW57VkYaprjYOsRr4A
+ Xpj8MLXLjGHDGkVUyBakfEeKU4jBE18qNLE2hPu0kZQ2W4xscezxM5qe21geozMvsAYZSqpcDRSox
+ U/xkOx9g==;
 Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mpcL1-003R5J-AW; Tue, 23 Nov 2021 20:24:23 +0000
+ (Red Hat Linux)) id 1mpcL1-003R5H-9R; Tue, 23 Nov 2021 20:24:23 +0000
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: akpm@linux-foundation.org, keescook@chromium.org,
 	yzaikin@google.com, nixiaoming@huawei.com, ebiederm@xmission.com,
@@ -45,10 +45,10 @@ To: akpm@linux-foundation.org, keescook@chromium.org,
 	benh@kernel.crashing.org, mark@fasheh.com, jlbec@evilplan.org,
 	joseph.qi@linux.alibaba.com, jack@suse.cz, amir73il@gmail.com,
 	phil@philpotter.co.uk, viro@zeniv.linux.org.uk, julia.lawall@inria.fr
-Subject: [PATCH v2 4/8] ocfs2: simplify subdirectory registration with
- register_sysctl()
-Date: Tue, 23 Nov 2021 12:24:18 -0800
-Message-Id: <20211123202422.819032-5-mcgrof@kernel.org>
+Subject: [PATCH v2 3/8] macintosh/mac_hid.c: simplify subdirectory
+ registration with register_sysctl()
+Date: Tue, 23 Nov 2021 12:24:17 -0800
+Message-Id: <20211123202422.819032-4-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20211123202422.819032-1-mcgrof@kernel.org>
 References: <20211123202422.819032-1-mcgrof@kernel.org>
@@ -171,54 +171,48 @@ header =
 Generated-by: Coccinelle SmPL
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- fs/ocfs2/stackglue.c | 25 +------------------------
- 1 file changed, 1 insertion(+), 24 deletions(-)
+ drivers/macintosh/mac_hid.c | 24 +-----------------------
+ 1 file changed, 1 insertion(+), 23 deletions(-)
 
-diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
-index 16f1bfc407f2..731558a6f27d 100644
---- a/fs/ocfs2/stackglue.c
-+++ b/fs/ocfs2/stackglue.c
-@@ -672,31 +672,8 @@ static struct ctl_table ocfs2_mod_table[] = {
+diff --git a/drivers/macintosh/mac_hid.c b/drivers/macintosh/mac_hid.c
+index 28b8581b44dd..d8c4d5664145 100644
+--- a/drivers/macintosh/mac_hid.c
++++ b/drivers/macintosh/mac_hid.c
+@@ -239,33 +239,11 @@ static struct ctl_table mac_hid_files[] = {
  	{ }
  };
  
--static struct ctl_table ocfs2_kern_table[] = {
+-/* dir in /proc/sys/dev */
+-static struct ctl_table mac_hid_dir[] = {
 -	{
--		.procname	= "ocfs2",
--		.data		= NULL,
+-		.procname	= "mac_hid",
 -		.maxlen		= 0,
 -		.mode		= 0555,
--		.child		= ocfs2_mod_table
+-		.child		= mac_hid_files,
 -	},
 -	{ }
 -};
 -
--static struct ctl_table ocfs2_root_table[] = {
+-/* /proc/sys/dev itself, in case that is not there yet */
+-static struct ctl_table mac_hid_root_dir[] = {
 -	{
--		.procname	= "fs",
--		.data		= NULL,
+-		.procname	= "dev",
 -		.maxlen		= 0,
 -		.mode		= 0555,
--		.child		= ocfs2_kern_table
+-		.child		= mac_hid_dir,
 -	},
 -	{ }
 -};
 -
- static struct ctl_table_header *ocfs2_table_header;
+ static struct ctl_table_header *mac_hid_sysctl_header;
  
--
- /*
-  * Initialization
-  */
-@@ -705,7 +682,7 @@ static int __init ocfs2_stack_glue_init(void)
+ static int __init mac_hid_init(void)
  {
- 	strcpy(cluster_stack_name, OCFS2_STACK_PLUGIN_O2CB);
+-	mac_hid_sysctl_header = register_sysctl_table(mac_hid_root_dir);
++	mac_hid_sysctl_header = register_sysctl("dev/mac_hid", mac_hid_files);
+ 	if (!mac_hid_sysctl_header)
+ 		return -ENOMEM;
  
--	ocfs2_table_header = register_sysctl_table(ocfs2_root_table);
-+	ocfs2_table_header = register_sysctl("fs/ocfs2", ocfs2_mod_table);
- 	if (!ocfs2_table_header) {
- 		printk(KERN_ERR
- 		       "ocfs2 stack glue: unable to register sysctl\n");
 -- 
 2.33.0
 
