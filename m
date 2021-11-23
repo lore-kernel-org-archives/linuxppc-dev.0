@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DBB5C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Nov 2021 20:26:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97808C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Nov 2021 20:27:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HzFzV1RC0z3cNt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 07:26:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HzG0B6y9Qz3cX3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 07:27:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=uuhyMxlT;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=pu9tDABb;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
@@ -21,20 +21,20 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HzFxP0q99z2ybD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HzFxP102rz2ybL
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Nov 2021 07:24:55 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
  Reply-To:Content-Type:Content-ID:Content-Description;
- bh=qEMCqYh4UIBtk+2Pnh2nxftwvU/rvXJVKDicg8b6I3s=; b=uuhyMxlTPAHzH8+Cod+gE/Zu/p
- bT1ehnIfXmEBar5x5xwpA5IGS9LiS66z/oQQj2k588F8Sn4/yigOCsKhueeyHHUz0RsZHWsEqjsum
- d5P8epbMkaSOTetwKN4TbkyYxlti4MI5j3UY3KGYcmL9RavpfJGGrOnejW3mbE7MQdzMDDejlMoZd
- v2i69DcOwLvTh3vQq0Uoveshm4xDOcSUU0OqeqzA7/cma6vyoHXIgOygXw2gW57VkYaprjYOsRr4A
- Xpj8MLXLjGHDGkVUyBakfEeKU4jBE18qNLE2hPu0kZQ2W4xscezxM5qe21geozMvsAYZSqpcDRSox
- U/xkOx9g==;
+ bh=uxX56sjsin2v3BRdfnr5TEVUTPcaLflkai/DCjMhC9c=; b=pu9tDABbAsc7CV51h7YN7FXpjb
+ 3f/hGByhDYBeRVT9KGZDXNhK8bCMVcllkROlHccQ4fZzY5zFCAh5aZVhGP+PTlng+fR+4+bh/4qxh
+ JYXlGdhBLa4KQuWhtkBAWUDXMthAhX3hcvFrNTylVe+N8B95Fkl30QOMumlvLrODOunVYXKyXhACG
+ 617dOry2em2+pA1lmms9tq7CanLN2gEgantMpCurXNAjbZBVGqkVwSx4d71zKRu54Ux1gFEi6urxs
+ j9VEQcTlcUf+MUdQcU5Ky2b5mgjYulsNWi9DpWzueIqpltgzFsFxjELc4liw1pw/j4GYAzkwaInS/
+ d4cD4fiQ==;
 Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mpcL1-003R5H-9R; Tue, 23 Nov 2021 20:24:23 +0000
+ (Red Hat Linux)) id 1mpcL1-003R5P-Dy; Tue, 23 Nov 2021 20:24:23 +0000
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: akpm@linux-foundation.org, keescook@chromium.org,
 	yzaikin@google.com, nixiaoming@huawei.com, ebiederm@xmission.com,
@@ -45,10 +45,10 @@ To: akpm@linux-foundation.org, keescook@chromium.org,
 	benh@kernel.crashing.org, mark@fasheh.com, jlbec@evilplan.org,
 	joseph.qi@linux.alibaba.com, jack@suse.cz, amir73il@gmail.com,
 	phil@philpotter.co.uk, viro@zeniv.linux.org.uk, julia.lawall@inria.fr
-Subject: [PATCH v2 3/8] macintosh/mac_hid.c: simplify subdirectory
- registration with register_sysctl()
-Date: Tue, 23 Nov 2021 12:24:17 -0800
-Message-Id: <20211123202422.819032-4-mcgrof@kernel.org>
+Subject: [PATCH v2 7/8] cdrom: simplify subdirectory registration with
+ register_sysctl()
+Date: Tue, 23 Nov 2021 12:24:21 -0800
+Message-Id: <20211123202422.819032-8-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20211123202422.819032-1-mcgrof@kernel.org>
 References: <20211123202422.819032-1-mcgrof@kernel.org>
@@ -171,48 +171,50 @@ header =
 Generated-by: Coccinelle SmPL
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- drivers/macintosh/mac_hid.c | 24 +-----------------------
- 1 file changed, 1 insertion(+), 23 deletions(-)
+ drivers/cdrom/cdrom.c | 23 +----------------------
+ 1 file changed, 1 insertion(+), 22 deletions(-)
 
-diff --git a/drivers/macintosh/mac_hid.c b/drivers/macintosh/mac_hid.c
-index 28b8581b44dd..d8c4d5664145 100644
---- a/drivers/macintosh/mac_hid.c
-+++ b/drivers/macintosh/mac_hid.c
-@@ -239,33 +239,11 @@ static struct ctl_table mac_hid_files[] = {
+diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
+index 9877e413fce3..1b57d4666e43 100644
+--- a/drivers/cdrom/cdrom.c
++++ b/drivers/cdrom/cdrom.c
+@@ -3691,27 +3691,6 @@ static struct ctl_table cdrom_table[] = {
+ 	},
  	{ }
  };
- 
--/* dir in /proc/sys/dev */
--static struct ctl_table mac_hid_dir[] = {
+-
+-static struct ctl_table cdrom_cdrom_table[] = {
 -	{
--		.procname	= "mac_hid",
+-		.procname	= "cdrom",
 -		.maxlen		= 0,
 -		.mode		= 0555,
--		.child		= mac_hid_files,
+-		.child		= cdrom_table,
 -	},
 -	{ }
 -};
 -
--/* /proc/sys/dev itself, in case that is not there yet */
--static struct ctl_table mac_hid_root_dir[] = {
+-/* Make sure that /proc/sys/dev is there */
+-static struct ctl_table cdrom_root_table[] = {
 -	{
 -		.procname	= "dev",
 -		.maxlen		= 0,
 -		.mode		= 0555,
--		.child		= mac_hid_dir,
+-		.child		= cdrom_cdrom_table,
 -	},
 -	{ }
 -};
--
- static struct ctl_table_header *mac_hid_sysctl_header;
+ static struct ctl_table_header *cdrom_sysctl_header;
  
- static int __init mac_hid_init(void)
- {
--	mac_hid_sysctl_header = register_sysctl_table(mac_hid_root_dir);
-+	mac_hid_sysctl_header = register_sysctl("dev/mac_hid", mac_hid_files);
- 	if (!mac_hid_sysctl_header)
- 		return -ENOMEM;
+ static void cdrom_sysctl_register(void)
+@@ -3721,7 +3700,7 @@ static void cdrom_sysctl_register(void)
+ 	if (!atomic_add_unless(&initialized, 1, 1))
+ 		return;
  
+-	cdrom_sysctl_header = register_sysctl_table(cdrom_root_table);
++	cdrom_sysctl_header = register_sysctl("dev/cdrom", cdrom_table);
+ 
+ 	/* set the defaults */
+ 	cdrom_sysctl_settings.autoclose = autoclose;
 -- 
 2.33.0
 
