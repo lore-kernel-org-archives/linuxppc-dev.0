@@ -4,56 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA0F4C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Nov 2021 20:31:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADD60C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Nov 2021 23:15:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HzG4Q3Wpgz3cNk
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 07:31:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HzKjs1dDHz2ynG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 10:15:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=yINnFu5k;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nVXZ5iZt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HzFxQ2YcTz2yn2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Nov 2021 07:24:58 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20210309; h=Sender:Content-Transfer-Encoding:
- MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
- Reply-To:Content-Type:Content-ID:Content-Description;
- bh=aTZqVF2ar9gFRxcW4axREzxdcbuKKNtu2N0Y/kRNh2k=; b=yINnFu5kN49mKwI2VfcW4RrAJA
- e4pQ8MdM4ctUmswxgqNTa+JS+oEROqJglzh+ybGHkWwjsm3YnBlJBE8lUdBrUZfxn3LSF+VC5BowS
- qOKKdnglDSLqHJ3GljHgqvDLikTWppOcjBfqxR83wcO+iSfsqfpngZzaVya8+S/sfYl9DKcgE4/7+
- 3VMAkmZ2kfu18VmvYnoC5heHJNMIZgyBLKsalCe7/aVlEnRLfMsS4jbnkijqkKbNtpO6sMdJqSTIl
- rgRFt8etjFERFDV+zqaKQMejfrLcuVEIt3cgxrtttlZO8pq5+kZMC2WsXwMuoflAlBRbe+Js201ly
- fXglQltg==;
-Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mpcL1-003R5F-8H; Tue, 23 Nov 2021 20:24:23 +0000
-From: Luis Chamberlain <mcgrof@kernel.org>
-To: akpm@linux-foundation.org, keescook@chromium.org,
-	yzaikin@google.com, nixiaoming@huawei.com, ebiederm@xmission.com,
-	clemens@ladisch.de, arnd@arndb.de, gregkh@linuxfoundation.org,
-	jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com,
-	rodrigo.vivi@intel.com, tvrtko.ursulin@linux.intel.com,
-	airlied@linux.ie, "daniel@ffwll.chairlied"@linux.ie,
-	benh@kernel.crashing.org, mark@fasheh.com, jlbec@evilplan.org,
-	joseph.qi@linux.alibaba.com, jack@suse.cz, amir73il@gmail.com,
-	phil@philpotter.co.uk, viro@zeniv.linux.org.uk, julia.lawall@inria.fr
-Subject: [PATCH v2 2/8] i915: simplify subdirectory registration with
- register_sysctl()
-Date: Tue, 23 Nov 2021 12:24:16 -0800
-Message-Id: <20211123202422.819032-3-mcgrof@kernel.org>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20211123202422.819032-1-mcgrof@kernel.org>
-References: <20211123202422.819032-1-mcgrof@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HzKj65v9Tz2xrP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Nov 2021 10:14:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=nVXZ5iZt; 
+ dkim-atps=neutral
+Received: by gandalf.ozlabs.org (Postfix)
+ id 4HzKj60YwZz4xcv; Wed, 24 Nov 2021 10:14:34 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4HzKj6040Pz4xcK;
+ Wed, 24 Nov 2021 10:14:33 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1637709274;
+ bh=EpGbxhcItglhJBefq3DjKP76FHcnzorqGMxJ7hVYIrk=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=nVXZ5iZt48VqshMY3It0JzO1RkrCEKiWgggz9wcyn2nyLohuao3tH6rKYldY/aCeT
+ fCh6eRXiUpwjc1xqWvVtgeV89Qr4AgyKg9vtHeGd0528fJZ4T7kiaZHGvb8vgYFUak
+ dUy6y88gT3hzXeI8xnmMul9jy3a9Nh7H4W5ebcb21XG+pZO8zH0eRbfT7EX/cJ2pKT
+ RRzO1w5sqIYN1H15SwMpDSLgZAN3w1z/fz+6vy8qQEDxNCyc31fXdNhclvOGOoMNDu
+ ovZ5iaZfRmOwiRgFFNaR+p4rGuCd0Q1NjlSrOobxuTYSuEB+NSgnld3ZQewapRQfkH
+ nfxD5p4bnt3Qw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mahesh Salgaonkar <mahesh@linux.ibm.com>, linuxppc-dev
+ <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc/eeh: Delay slot presence check once driver is
+ notified about the pci error.
+In-Reply-To: <163767273634.1368569.7327743414665595326.stgit@jupiter>
+References: <163767273634.1368569.7327743414665595326.stgit@jupiter>
+Date: Wed, 24 Nov 2021 10:14:30 +1100
+Message-ID: <875ysiqxbd.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,155 +62,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Luis Chamberlain <mcgrof@kernel.org>,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ocfs2-devel@oss.oracle.com
+Cc: Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no need to user boiler plate code to specify a set of base
-directories we're going to stuff sysctls under. Simplify this by using
-register_sysctl() and specifying the directory path directly.
+Mahesh Salgaonkar <mahesh@linux.ibm.com> writes:
+> When certain PHB HW failure causes phyp to recover PHB, it marks the PE
+> state as temporarily unavailable until recovery is complete. This also
+> triggers an EEH handler in Linux which needs to notify drivers, and perform
+> recovery. But before notifying the driver about the pci error it uses
+> get_adapter_state()->get-sesnor-state() operation of the hotplug_slot to
+> determine if the slot contains a device or not. if the slot is empty, the
+> recovery is skipped entirely.
+>
+> However on certain PHB failures, the rtas call get-sesnor-state() returns
+> extended busy error (9902) until PHB is recovered by phyp. Once PHB is
+> recovered, the get-sensor-state() returns success with correct presence
+> status. The rtas call interface rtas_get_sensor() loops over the rtas call
+> on extended delay return code (9902) until the return value is either
+> success (0) or error (-1). This causes the EEH handler to get stuck for ~6
+> seconds before it could notify that the pci error has been detected and
+> stop any active operations. Hence with running I/O traffic, during this 6
+> seconds, the network driver continues its operation and hits a timeout
+> (netdev watchdog). On timeouts, network driver go into ffdc capture mode
+> and reset path assuming the PCI device is in fatal condition. This causes
+> EEH recovery to fail and sometimes it leads to system hang or crash.
+>
+> ------------
+> [52732.244731] DEBUG: ibm_read_slot_reset_state2()
+> [52732.244762] DEBUG: ret = 0, rets[0]=5, rets[1]=1, rets[2]=4000, rets[3]=0x0
+> [52732.244798] DEBUG: in eeh_slot_presence_check
+> [52732.244804] DEBUG: error state check
+> [52732.244807] DEBUG: Is slot hotpluggable
+> [52732.244810] DEBUG: hotpluggable ops ?
+> [52732.244953] DEBUG: Calling ops->get_adapter_status
+> [52732.244958] DEBUG: calling rpaphp_get_sensor_state
+> [52736.564262] ------------[ cut here ]------------
+> [52736.564299] NETDEV WATCHDOG: enP64p1s0f3 (tg3): transmit queue 0 timed out
+> [52736.564324] WARNING: CPU: 1442 PID: 0 at net/sched/sch_generic.c:478 dev_watchdog+0x438/0x440
+> [...]
+> [52736.564505] NIP [c000000000c32368] dev_watchdog+0x438/0x440
+> [52736.564513] LR [c000000000c32364] dev_watchdog+0x434/0x440
+> ------------
+>
+> To fix this issue, delay the slot presence check after notifying the driver
+> about the pci error.
 
-// pycocci sysctl-subdir-register-sysctl-simplify.cocci PATH
+How does this interact with the commit that put the slot presence check
+there in the first place:
 
-@c1@
-expression E1;
-identifier subdir, sysctls;
-@@
+  b104af5a7687 ("powerpc/eeh: Check slot presence state in eeh_handle_normal_event()")
 
-static struct ctl_table subdir[] = {
-	{
-		.procname = E1,
-		.maxlen = 0,
-		.mode = 0555,
-		.child = sysctls,
-	},
-	{ }
-};
 
-@c2@
-identifier c1.subdir;
+It seems like delaying the slot presence check will effectively revert
+that commit?
 
-expression E2;
-identifier base;
-@@
-
-static struct ctl_table base[] = {
-	{
-		.procname = E2,
-		.maxlen = 0,
-		.mode = 0555,
-		.child = subdir,
-	},
-	{ }
-};
-
-@c3@
-identifier c2.base;
-identifier header;
-@@
-
-header = register_sysctl_table(base);
-
-@r1 depends on c1 && c2 && c3@
-expression c1.E1;
-identifier c1.subdir, c1.sysctls;
-@@
-
--static struct ctl_table subdir[] = {
--	{
--		.procname = E1,
--		.maxlen = 0,
--		.mode = 0555,
--		.child = sysctls,
--	},
--	{ }
--};
-
-@r2 depends on c1 && c2 && c3@
-identifier c1.subdir;
-
-expression c2.E2;
-identifier c2.base;
-@@
--static struct ctl_table base[] = {
--	{
--		.procname = E2,
--		.maxlen = 0,
--		.mode = 0555,
--		.child = subdir,
--	},
--	{ }
--};
-
-@initialize:python@
-@@
-
-def make_my_fresh_expression(s1, s2):
-  return '"' + s1.strip('"') + "/" + s2.strip('"') + '"'
-
-@r3 depends on c1 && c2 && c3@
-expression c1.E1;
-identifier c1.sysctls;
-expression c2.E2;
-identifier c2.base;
-identifier c3.header;
-fresh identifier E3 = script:python(E2, E1) { make_my_fresh_expression(E2, E1) };
-@@
-
-header =
--register_sysctl_table(base);
-+register_sysctl(E3, sysctls);
-
-Generated-by: Coccinelle SmPL
-Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
----
- drivers/gpu/drm/i915/i915_perf.c | 22 +---------------------
- 1 file changed, 1 insertion(+), 21 deletions(-)
-
-diff --git a/drivers/gpu/drm/i915/i915_perf.c b/drivers/gpu/drm/i915/i915_perf.c
-index 2f01b8c0284c..5979e3258647 100644
---- a/drivers/gpu/drm/i915/i915_perf.c
-+++ b/drivers/gpu/drm/i915/i915_perf.c
-@@ -4273,26 +4273,6 @@ static struct ctl_table oa_table[] = {
- 	{}
- };
- 
--static struct ctl_table i915_root[] = {
--	{
--	 .procname = "i915",
--	 .maxlen = 0,
--	 .mode = 0555,
--	 .child = oa_table,
--	 },
--	{}
--};
--
--static struct ctl_table dev_root[] = {
--	{
--	 .procname = "dev",
--	 .maxlen = 0,
--	 .mode = 0555,
--	 .child = i915_root,
--	 },
--	{}
--};
--
- static void oa_init_supported_formats(struct i915_perf *perf)
- {
- 	struct drm_i915_private *i915 = perf->i915;
-@@ -4488,7 +4468,7 @@ static int destroy_config(int id, void *p, void *data)
- 
- int i915_perf_sysctl_register(void)
- {
--	sysctl_header = register_sysctl_table(dev_root);
-+	sysctl_header = register_sysctl("dev/i915", oa_table);
- 	return 0;
- }
- 
--- 
-2.33.0
-
+cheers
