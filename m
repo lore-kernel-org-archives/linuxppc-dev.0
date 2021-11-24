@@ -4,54 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38888C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 13:42:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB0E3C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 13:43:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HzhyV2RnHz30Bm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 00:42:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hzhzz753wz30Hv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 00:43:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=hhbQZhJw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=AD0LfFCb;
 	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=collabora.com (client-ip=2a00:1098:0:82:1000:25:2eeb:e3e3;
+ helo=bhuna.collabora.co.uk; envelope-from=andrealmeid@collabora.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=hhbQZhJw; 
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=collabora.com header.i=@collabora.com
+ header.a=rsa-sha256 header.s=mail header.b=AD0LfFCb; 
  dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+X-Greylist: delayed 302 seconds by postgrey-1.36 at boromir;
+ Thu, 25 Nov 2021 00:26:42 AEDT
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk
+ [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Hzhxj3QrJz2yJ5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 00:41:44 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20210309; h=Sender:In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=u5Bp6Rfma9GvNlchoY1NvLTwJANeJ3HEug26+8isXwE=; b=hhbQZhJwK1Tb9e+q0Q28e25DAv
- Od9pIYN2Gyiv0dA95pkKXYVes6wIzr6Dyrdz7zE6LWYwQgtKQRddQQj3KlF/6e+rGlvDwZn81SO0L
- jmyNcKHUwuAAL4hqFxxBoCLbZ78/8YU9GtUBk2390mHdprFJB6Q5NEsOuCM+WqTROXedt17OSU57K
- Znwqwh32TO/nbgJf5ps0iEH4WpPxtncH2AfxYxaIDPl/mI7K7oszTaCg2ZYrE3yeotZ03DTuOQM8q
- SbFyM9HClWrBqJvP/vIs76mbieTIOeBHp8+RY1gteGkIKaIRwSzmIllOlYTn9YYs66Or0n5wDgTmB
- pHDv3JGg==;
-Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1mpsWA-004tSi-D1; Wed, 24 Nov 2021 13:40:58 +0000
-Date: Wed, 24 Nov 2021 05:40:58 -0800
-From: Luis Chamberlain <mcgrof@kernel.org>
-To: Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH v2 6/8] inotify: simplify subdirectory registration with
- register_sysctl()
-Message-ID: <YZ5A6iWLb0h3N3RC@bombadil.infradead.org>
-References: <20211123202422.819032-1-mcgrof@kernel.org>
- <20211123202422.819032-7-mcgrof@kernel.org>
- <20211124094409.GF8583@quack2.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HzhcL0z89z2yPW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 00:26:42 +1100 (AEDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+ (Authenticated sender: tonyk) with ESMTPSA id 1182B1F45A78
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=collabora.com; s=mail;
+ t=1637760086; bh=LoUzXVbB3wCwxf1FW0gK/muFdQnGfNnGszLYYog+/lU=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=AD0LfFCbtCb0lPtiWFikSc0XLR5Z6wW44k1wjposhAtht5drHk8ffJYsQmH2Q5W6A
+ OlROj7cj/qCKWi5Dy1MbzY5H86DsVfJFk7ojLi7Q+lRqMMZTIpXqBvmpSyD8rLL7Wp
+ 9kPDvyGRVZ0BUAwlZP0CdciKecpFD9161Ofc4WS13JQheyb+2y0tmzSTQuDIUs1XZR
+ xhtRWTu111op8oukvWLrydVcD3jHXnt1tVJE86ihwADP8qEbxXmPksbiVuBj1c5F00
+ 8kQpWRI1dzZ24tdIJDn/KLdriVfjMzI/zPYHgirq4+XjZzqYI8aUe6ZhQqcmUlCDAI
+ 7rJSFBekuqRXA==
+From: =?UTF-8?q?Andr=C3=A9=20Almeida?= <andrealmeid@collabora.com>
+To: linux-kernel@vger.kernel.org, arnd@arndb.de, geert@linux-m68k.org,
+ monstr@monstr.eu, mpe@ellerman.id.au, ysato@users.sourceforge.jp,
+ dalias@libc.org, davem@davemloft.net, chris@zankel.net, jcmvbkbc@gmail.com,
+ linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org
+Subject: [PATCH 1/1] futex: Wireup futex_waitv syscall
+Date: Wed, 24 Nov 2021 10:21:12 -0300
+Message-Id: <20211124132112.11641-1-andrealmeid@collabora.com>
+X-Mailer: git-send-email 2.33.1
+In-Reply-To: <CAK8P3a3pQW59NVF=5P+ZiBjNJmnWh+iTZUHvqHBrXkHA6pMd4g@mail.gmail.com>
+References: <CAK8P3a3pQW59NVF=5P+ZiBjNJmnWh+iTZUHvqHBrXkHA6pMd4g@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211124094409.GF8583@quack2.suse.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 25 Nov 2021 00:43:05 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,85 +69,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: airlied@linux.ie, amir73il@gmail.com, clemens@ladisch.de,
- dri-devel@lists.freedesktop.org, phil@philpotter.co.uk,
- joseph.qi@linux.alibaba.com, mark@fasheh.com, yzaikin@google.com,
- joonas.lahtinen@linux.intel.com, keescook@chromium.org, arnd@arndb.de,
- intel-gfx@lists.freedesktop.org, jani.nikula@linux.intel.com,
- viro@zeniv.linux.org.uk, rodrigo.vivi@intel.com, nixiaoming@huawei.com,
- tvrtko.ursulin@linux.intel.com, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, julia.lawall@inria.fr, ebiederm@xmission.com,
- linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, ocfs2-devel@oss.oracle.com, jlbec@evilplan.org
+Cc: sfr@canb.auug.org.au, senozhatsky@chromium.org, peterz@infradead.org,
+ will@kernel.org, boqun.feng@gmail.com, lkft-triage@lists.linaro.org,
+ minchan@kernel.org, naresh.kamboju@linaro.org, linux-next@vger.kernel.org,
+ umgwanakikbuti@gmail.com, rob@landley.net, andrealmeid@collabora.com,
+ longman@redhat.com, akpm@linux-foundation.org, mingo@redhat.com,
+ bigeasy@linutronix.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 24, 2021 at 10:44:09AM +0100, Jan Kara wrote:
-> On Tue 23-11-21 12:24:20, Luis Chamberlain wrote:
-> > From: Xiaoming Ni <nixiaoming@huawei.com>
-> > 
-> > There is no need to user boiler plate code to specify a set of base
-> > directories we're going to stuff sysctls under. Simplify this by using
-> > register_sysctl() and specifying the directory path directly.
-> > 
-> > Move inotify_user sysctl to inotify_user.c while at it to remove clutter
-> > from kernel/sysctl.c.
-> > 
-> > Signed-off-by: Xiaoming Ni <nixiaoming@huawei.com>
-> > [mcgrof: update commit log to reflect new path we decided to take]
-> > Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
-> 
-> This looks fishy. You register inotify_table but not fanotify_table and
-> remove both...
+Wireup futex_waitv syscall for all remaining archs.
 
-Indeed, the following was missing, I'll roll it in:
+Signed-off-by: André Almeida <andrealmeid@collabora.com>
+---
+ arch/alpha/kernel/syscalls/syscall.tbl      | 1 +
+ arch/ia64/kernel/syscalls/syscall.tbl       | 1 +
+ arch/m68k/kernel/syscalls/syscall.tbl       | 1 +
+ arch/microblaze/kernel/syscalls/syscall.tbl | 1 +
+ arch/powerpc/kernel/syscalls/syscall.tbl    | 1 +
+ arch/sh/kernel/syscalls/syscall.tbl         | 1 +
+ arch/sparc/kernel/syscalls/syscall.tbl      | 1 +
+ arch/xtensa/kernel/syscalls/syscall.tbl     | 1 +
+ 8 files changed, 8 insertions(+)
 
-diff --git a/fs/notify/fanotify/fanotify_user.c b/fs/notify/fanotify/fanotify_user.c
-index 559bc1e9926d..a35693eb1f36 100644
---- a/fs/notify/fanotify/fanotify_user.c
-+++ b/fs/notify/fanotify/fanotify_user.c
-@@ -59,7 +59,7 @@ static int fanotify_max_queued_events __read_mostly;
- static long ft_zero = 0;
- static long ft_int_max = INT_MAX;
- 
--struct ctl_table fanotify_table[] = {
-+static struct ctl_table fanotify_table[] = {
- 	{
- 		.procname	= "max_user_groups",
- 		.data	= &init_user_ns.ucount_max[UCOUNT_FANOTIFY_GROUPS],
-@@ -88,6 +88,13 @@ struct ctl_table fanotify_table[] = {
- 	},
- 	{ }
- };
-+
-+static void __init fanotify_sysctls_init(void)
-+{
-+	register_sysctl("fs/fanotify", fanotify_table);
-+}
-+#else
-+#define fanotify_sysctls_init() do { } while (0)
- #endif /* CONFIG_SYSCTL */
- 
- /*
-@@ -1685,6 +1692,7 @@ static int __init fanotify_user_setup(void)
- 	init_user_ns.ucount_max[UCOUNT_FANOTIFY_GROUPS] =
- 					FANOTIFY_DEFAULT_MAX_GROUPS;
- 	init_user_ns.ucount_max[UCOUNT_FANOTIFY_MARKS] = max_marks;
-+	fanotify_sysctls_init();
- 
- 	return 0;
- }
-diff --git a/include/linux/fanotify.h b/include/linux/fanotify.h
-index 616af2ea20f3..556cc63c88ee 100644
---- a/include/linux/fanotify.h
-+++ b/include/linux/fanotify.h
-@@ -5,8 +5,6 @@
- #include <linux/sysctl.h>
- #include <uapi/linux/fanotify.h>
- 
--extern struct ctl_table fanotify_table[]; /* for sysctl */
--
- #define FAN_GROUP_FLAG(group, flag) \
- 	((group)->fanotify_data.flags & (flag))
- 
+diff --git a/arch/alpha/kernel/syscalls/syscall.tbl b/arch/alpha/kernel/syscalls/syscall.tbl
+index e4a041cd5715..ca5a32228cd6 100644
+--- a/arch/alpha/kernel/syscalls/syscall.tbl
++++ b/arch/alpha/kernel/syscalls/syscall.tbl
+@@ -488,3 +488,4 @@
+ 556	common	landlock_restrict_self		sys_landlock_restrict_self
+ # 557 reserved for memfd_secret
+ 558	common	process_mrelease		sys_process_mrelease
++559	common  futex_waitv                     sys_futex_waitv
+diff --git a/arch/ia64/kernel/syscalls/syscall.tbl b/arch/ia64/kernel/syscalls/syscall.tbl
+index 6fea1844fb95..707ae121f6d3 100644
+--- a/arch/ia64/kernel/syscalls/syscall.tbl
++++ b/arch/ia64/kernel/syscalls/syscall.tbl
+@@ -369,3 +369,4 @@
+ 446	common	landlock_restrict_self		sys_landlock_restrict_self
+ # 447 reserved for memfd_secret
+ 448	common	process_mrelease		sys_process_mrelease
++449	common  futex_waitv                     sys_futex_waitv
+diff --git a/arch/m68k/kernel/syscalls/syscall.tbl b/arch/m68k/kernel/syscalls/syscall.tbl
+index 7976dff8f879..45bc32a41b90 100644
+--- a/arch/m68k/kernel/syscalls/syscall.tbl
++++ b/arch/m68k/kernel/syscalls/syscall.tbl
+@@ -448,3 +448,4 @@
+ 446	common	landlock_restrict_self		sys_landlock_restrict_self
+ # 447 reserved for memfd_secret
+ 448	common	process_mrelease		sys_process_mrelease
++449	common  futex_waitv                     sys_futex_waitv
+diff --git a/arch/microblaze/kernel/syscalls/syscall.tbl b/arch/microblaze/kernel/syscalls/syscall.tbl
+index 6b0e11362bd2..2204bde3ce4a 100644
+--- a/arch/microblaze/kernel/syscalls/syscall.tbl
++++ b/arch/microblaze/kernel/syscalls/syscall.tbl
+@@ -454,3 +454,4 @@
+ 446	common	landlock_restrict_self		sys_landlock_restrict_self
+ # 447 reserved for memfd_secret
+ 448	common	process_mrelease		sys_process_mrelease
++449	common  futex_waitv                     sys_futex_waitv
+diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
+index 7bef917cc84e..15109af9d075 100644
+--- a/arch/powerpc/kernel/syscalls/syscall.tbl
++++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+@@ -528,3 +528,4 @@
+ 446	common	landlock_restrict_self		sys_landlock_restrict_self
+ # 447 reserved for memfd_secret
+ 448	common	process_mrelease		sys_process_mrelease
++449	common  futex_waitv                     sys_futex_waitv
+diff --git a/arch/sh/kernel/syscalls/syscall.tbl b/arch/sh/kernel/syscalls/syscall.tbl
+index 208f131659c5..d9539d28bdaa 100644
+--- a/arch/sh/kernel/syscalls/syscall.tbl
++++ b/arch/sh/kernel/syscalls/syscall.tbl
+@@ -451,3 +451,4 @@
+ 446	common	landlock_restrict_self		sys_landlock_restrict_self
+ # 447 reserved for memfd_secret
+ 448	common	process_mrelease		sys_process_mrelease
++449	common  futex_waitv                     sys_futex_waitv
+diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
+index c37764dc764d..46adabcb1720 100644
+--- a/arch/sparc/kernel/syscalls/syscall.tbl
++++ b/arch/sparc/kernel/syscalls/syscall.tbl
+@@ -494,3 +494,4 @@
+ 446	common	landlock_restrict_self		sys_landlock_restrict_self
+ # 447 reserved for memfd_secret
+ 448	common	process_mrelease		sys_process_mrelease
++449	common  futex_waitv                     sys_futex_waitv
+diff --git a/arch/xtensa/kernel/syscalls/syscall.tbl b/arch/xtensa/kernel/syscalls/syscall.tbl
+index 104b327f8ac9..3e3e1a506bed 100644
+--- a/arch/xtensa/kernel/syscalls/syscall.tbl
++++ b/arch/xtensa/kernel/syscalls/syscall.tbl
+@@ -419,3 +419,4 @@
+ 446	common	landlock_restrict_self		sys_landlock_restrict_self
+ # 447 reserved for memfd_secret
+ 448	common	process_mrelease		sys_process_mrelease
++449	common  futex_waitv                     sys_futex_waitv
+-- 
+2.33.1
+
