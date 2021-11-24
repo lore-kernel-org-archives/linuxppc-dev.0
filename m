@@ -4,49 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F759C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 13:12:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDA81C43219
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 13:22:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HzhJ56VtXz3c8x
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 00:12:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4HzhWL2D9Vz307l
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 00:22:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=EjX5GZBF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=bGwnHyiz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1035;
+ helo=mail-pj1-x1035.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=EjX5GZBF; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=bGwnHyiz; dkim-atps=neutral
+Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com
+ [IPv6:2607:f8b0:4864:20::1035])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HzhGs1Zwkz3c6l
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 00:11:33 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 7D98E6335B;
- Wed, 24 Nov 2021 13:11:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
- s=korg; t=1637759490;
- bh=HtLgXUO4bcEZdiWz+WrqF/fvocMQ1RU/S8Yp2K/eZn0=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=EjX5GZBFS8Uly9ZfSB5ZMSRd4YWrvBOAG5WinHD62rFdFEtth8JUiU8vkc5GjQrXt
- 4sUCAXsfPFpu1+NH8BiXLiT+d4nHBL6jBgqZhDKPrfo1RnKGlYAa7M5udfg/fx1A9D
- PARN6qIkdZgf0MEYmtWKY+23F+dyUnOST+EkXDo8=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 5.15 258/279] signal/powerpc: On swapcontext failure force
- SIGSEGV
-Date: Wed, 24 Nov 2021 12:59:05 +0100
-Message-Id: <20211124115727.632627138@linuxfoundation.org>
-X-Mailer: git-send-email 2.34.0
-In-Reply-To: <20211124115718.776172708@linuxfoundation.org>
-References: <20211124115718.776172708@linuxfoundation.org>
-User-Agent: quilt/0.66
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HzhVX30BPz2yNW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 00:21:38 +1100 (AEDT)
+Received: by mail-pj1-x1035.google.com with SMTP id h24so2546877pjq.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Nov 2021 05:21:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=ZZnceqICuZXQxPcm2fjZ+yNkedIH7ExOGImuK8kHxUU=;
+ b=bGwnHyizE2euGF4OJfhTDD2tgzRvAWwF6PN/DkgD6CTp4z8K9eAW13Jav2pgjImfCK
+ OSon47t018CdVGm9mwvb/92iEYY3llvVuiiZW7fYtR9jv7GbrAtRGtB7p9qqlaXU2Lqi
+ ZGdLYeQHe9ZPJwI5yEtPPR5WbEApMhzyIgis689/J6Y/haHI6FN4DbeQoA11s9T24lyj
+ W/TaflPrQrNy0nXT2rAVInzq+weBRQ+8Is7lcmA7fV5km70Xd8uF/yJQnvd983gJ0DiN
+ GTFC4E0k8tzzeXwn8H4YWGoe67sR09wIqkHUQCsSB1hU0+VljxCfrne+wrRW2W19Blp7
+ 2Yyg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=ZZnceqICuZXQxPcm2fjZ+yNkedIH7ExOGImuK8kHxUU=;
+ b=VLfOQDDInXfEKU94lKSCI1tF8gP9DpXo8HWyplyTZLrjk10gosVKA35FBmhVVVI3Ej
+ KUXcUDR0yJyvADBL62GlyipKLudIzhXESfkhE6XF8wjPP7SOnoameosam0zfEQEh/3BL
+ 7CCuEDRkskSs6RTjbxFvwoGHDY8W0La4GHoEjKcCCHurj+durqv03BfTSF6GMDQDfepa
+ ehgN04O65cIvpfzt/mnDcWP+fej6ZlR9xG1KriqZ4GFUz+MEZ/W/wcbrZZYbvrrdwIdp
+ ZKjz2iv7NnQeJOgeujDZ3XTTFhiaVLgSL0I96rd8b36TcnlPCLYxHlMOVlt46soxrgvI
+ 6TUA==
+X-Gm-Message-State: AOAM530S5fTI+x3SKxv+iTvXFOM7EAbgJmsDwO7Qa9LpAHDbNqnJUGlB
+ Ij0VMzIiAoElpeqqpruWWUY=
+X-Google-Smtp-Source: ABdhPJz1FI1FMD+raRAIrvhT0VvCzZtUkPciJvFR7lj0nGhiV/h2EIZmuWty/vs4et/iSU5mts8Dqw==
+X-Received: by 2002:a17:902:c202:b0:142:2441:aa25 with SMTP id
+ 2-20020a170902c20200b001422441aa25mr18417025pll.68.1637760095555; 
+ Wed, 24 Nov 2021 05:21:35 -0800 (PST)
+Received: from localhost ([124.170.11.53])
+ by smtp.gmail.com with ESMTPSA id j6sm17055518pfu.205.2021.11.24.05.21.34
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 24 Nov 2021 05:21:34 -0800 (PST)
+Date: Wed, 24 Nov 2021 23:21:28 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 0/8] Convert powerpc to default topdown mmap layout
+To: alex@ghiti.fr, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>, Michael Ellerman
+ <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+References: <cover.1637570556.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1637570556.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
+Message-Id: <1637759994.e3mppl4ly7.astroid@bobo.none>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,77 +82,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Thomas Backlund <tmb@iki.fi>,
- linuxppc-dev@lists.ozlabs.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+Excerpts from Christophe Leroy's message of November 22, 2021 6:48 pm:
+> This series converts powerpc to default topdown mmap layout.
+>=20
+> powerpc provides its own arch_get_unmapped_area() only when
+> slices are needed, which is only for book3s/64. First part of
+> the series moves slices into book3s/64 specific directories
+> and cleans up other subarchitectures.
+>=20
+> Then a small modification is done to core mm to allow
+> powerpc to still provide its own arch_randomize_brk()
+>=20
+> Last part converts to default topdown mmap layout.
 
-commit 83a1f27ad773b1d8f0460d3a676114c7651918cc upstream.
+A nice series but will clash badly with the CONFIG_HASH_MMU=20
+series of course. One will have to be rebased if they are
+both to be merged.
 
-If the register state may be partial and corrupted instead of calling
-do_exit, call force_sigsegv(SIGSEGV).  Which properly kills the
-process with SIGSEGV and does not let any more userspace code execute,
-instead of just killing one thread of the process and potentially
-confusing everything.
-
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-History-tree: git://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git
-Fixes: 756f1ae8a44e ("PPC32: Rework signal code and add a swapcontext system call.")
-Fixes: 04879b04bf50 ("[PATCH] ppc64: VMX (Altivec) support & signal32 rework, from Ben Herrenschmidt")
-Link: https://lkml.kernel.org/r/20211020174406.17889-7-ebiederm@xmission.com
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Thomas Backlund <tmb@iki.fi>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- arch/powerpc/kernel/signal_32.c |    6 ++++--
- arch/powerpc/kernel/signal_64.c |    9 ++++++---
- 2 files changed, 10 insertions(+), 5 deletions(-)
-
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -1062,8 +1062,10 @@ SYSCALL_DEFINE3(swapcontext, struct ucon
- 	 * or if another thread unmaps the region containing the context.
- 	 * We kill the task with a SIGSEGV in this situation.
- 	 */
--	if (do_setcontext(new_ctx, regs, 0))
--		do_exit(SIGSEGV);
-+	if (do_setcontext(new_ctx, regs, 0)) {
-+		force_sigsegv(SIGSEGV);
-+		return -EFAULT;
-+	}
- 
- 	set_thread_flag(TIF_RESTOREALL);
- 	return 0;
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -703,15 +703,18 @@ SYSCALL_DEFINE3(swapcontext, struct ucon
- 	 * We kill the task with a SIGSEGV in this situation.
- 	 */
- 
--	if (__get_user_sigset(&set, &new_ctx->uc_sigmask))
--		do_exit(SIGSEGV);
-+	if (__get_user_sigset(&set, &new_ctx->uc_sigmask)) {
-+		force_sigsegv(SIGSEGV);
-+		return -EFAULT;
-+	}
- 	set_current_blocked(&set);
- 
- 	if (!user_read_access_begin(new_ctx, ctx_size))
- 		return -EFAULT;
- 	if (__unsafe_restore_sigcontext(current, NULL, 0, &new_ctx->uc_mcontext)) {
- 		user_read_access_end();
--		do_exit(SIGSEGV);
-+		force_sigsegv(SIGSEGV);
-+		return -EFAULT;
- 	}
- 	user_read_access_end();
- 
-
-
+Thanks,
+Nick
