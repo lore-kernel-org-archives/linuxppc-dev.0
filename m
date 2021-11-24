@@ -4,44 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C38FCC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 09:27:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 985B0C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 09:42:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4HzbJ26jC1z307B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 20:27:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hzbdy0LYtz2yb1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 20:42:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SOmVvXqg;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
+ [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HzbHW2Ptdz2yNq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Nov 2021 20:26:45 +1100 (AEDT)
-X-IronPort-AV: E=McAfee;i="6200,9189,10177"; a="222117571"
-X-IronPort-AV: E=Sophos;i="5.87,260,1631602800"; d="scan'208";a="222117571"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Nov 2021 01:25:43 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.87,260,1631602800"; d="scan'208";a="456979347"
-Received: from lkp-server02.sh.intel.com (HELO 9e1e9f9b3bcb) ([10.239.97.151])
- by orsmga003.jf.intel.com with ESMTP; 24 Nov 2021 01:25:40 -0800
-Received: from kbuild by 9e1e9f9b3bcb with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1mpoX6-0004ak-45; Wed, 24 Nov 2021 09:25:40 +0000
-Date: Wed, 24 Nov 2021 17:25:33 +0800
-From: kernel test robot <lkp@intel.com>
-To: Ganesh Goudar <ganeshgr@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au
-Subject: Re: [PATCH v2 1/2] powerpc/mce: Avoid using irq_work_queue() in
- realmode
-Message-ID: <202111241736.ZgcO0Sk3-lkp@intel.com>
-References: <20211124050311.64959-1-ganeshgr@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4HzbdH0L9Hz2yNq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Nov 2021 20:42:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=SOmVvXqg; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4HzbdG6RWvz4xbd;
+ Wed, 24 Nov 2021 20:42:10 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1637746930;
+ bh=BqEKEZt+wcLamQfDZRfEhCqQqCnm+UYasLx06AkzySA=;
+ h=From:To:Subject:Date:In-Reply-To:References:From;
+ b=SOmVvXqgYxpmFnJcxujOC7Oc9nBJzVEPXmRQ+x5X6yd7AzZr3/Syxq6aVz9xHzBhq
+ RLMqmQT50lEWWftcyD6jc+HNGPRgFmG37nSvj/NjWmW5uRCIEEeyemMSJIRDuEWYvw
+ RsH++bthID14oGcPZh7B36zO65i/KyEeyot/DYHPqmxB+I4jWkQWJ1/O/fW+hKkMu+
+ mK35RrI3rxfpR5uMk9jZgZ5dA8IbhdxgM9rPBshTMsts5V91xj6TW5Nk5KLpwfXyEb
+ Xq6AxZkdOosgRgrcq/EkcbkOaICTmoN+JDloxSXUi20brRfpgT54owXN2hbgMuvgDS
+ Y5SKf9zcb/NoQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/6] powerpc/85xx: Make mpc85xx_smp_kexec_cpu_down() static
+Date: Wed, 24 Nov 2021 20:32:50 +1100
+Message-Id: <20211124093254.1054750-2-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20211124093254.1054750-1-mpe@ellerman.id.au>
+References: <20211124093254.1054750-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211124050311.64959-1-ganeshgr@linux.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,85 +61,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ganesh Goudar <ganeshgr@linux.ibm.com>, kbuild-all@lists.01.org,
- mahesh@linux.ibm.com, npiggin@gmail.com, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Ganesh,
+To fix the W=1 warning:
+  arch/powerpc/platforms/85xx/smp.c:369:6: error: no previous prototype for ‘mpc85xx_smp_kexec_cpu_down’
 
-Thank you for the patch! Yet something to improve:
-
-[auto build test ERROR on powerpc/next]
-[also build test ERROR on v5.16-rc2 next-20211124]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
-
-url:    https://github.com/0day-ci/linux/commits/Ganesh-Goudar/powerpc-mce-Avoid-using-irq_work_queue-in-realmode/20211124-130459
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-config: powerpc-allnoconfig (https://download.01.org/0day-ci/archive/20211124/202111241736.ZgcO0Sk3-lkp@intel.com/config)
-compiler: powerpc-linux-gcc (GCC) 11.2.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/bac24ec52edd7013115ad594974f64a30565266d
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Ganesh-Goudar/powerpc-mce-Avoid-using-irq_work_queue-in-realmode/20211124-130459
-        git checkout bac24ec52edd7013115ad594974f64a30565266d
-        # save the config file to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross ARCH=powerpc 
-
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
-
-All errors (new ones prefixed by >>):
-
-   arch/powerpc/kernel/time.c: In function '____timer_interrupt':
->> arch/powerpc/kernel/time.c:598:25: error: implicit declaration of function 'mce_run_late_handlers' [-Werror=implicit-function-declaration]
-     598 |                         mce_run_late_handlers();
-         |                         ^~~~~~~~~~~~~~~~~~~~~
-   cc1: all warnings being treated as errors
-
-
-vim +/mce_run_late_handlers +598 arch/powerpc/kernel/time.c
-
-   590	
-   591		old_regs = set_irq_regs(regs);
-   592	
-   593		trace_timer_interrupt_entry(regs);
-   594	
-   595		if (test_irq_work_pending()) {
-   596			clear_irq_work_pending();
-   597			if (IS_ENABLED(CONFIG_PPC_BOOK3S_64))
- > 598				mce_run_late_handlers();
-   599			irq_work_run();
-   600		}
-   601	
-   602		now = get_tb();
-   603		if (now >= *next_tb) {
-   604			*next_tb = ~(u64)0;
-   605			if (evt->event_handler)
-   606				evt->event_handler(evt);
-   607			__this_cpu_inc(irq_stat.timer_irqs_event);
-   608		} else {
-   609			now = *next_tb - now;
-   610			if (now <= decrementer_max)
-   611				set_dec(now);
-   612			/* We may have raced with new irq work */
-   613			if (test_irq_work_pending())
-   614				set_dec(1);
-   615			__this_cpu_inc(irq_stat.timer_irqs_others);
-   616		}
-   617	
-   618		trace_timer_interrupt_exit(regs);
-   619	
-   620		set_irq_regs(old_regs);
-   621	}
-   622	EXPORT_SYMBOL(timer_interrupt);
-   623	
-
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ arch/powerpc/platforms/85xx/smp.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 83f4a6389a28..0abc1da2c14f 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -366,7 +366,7 @@ struct smp_ops_t smp_85xx_ops = {
+ #ifdef CONFIG_PPC32
+ atomic_t kexec_down_cpus = ATOMIC_INIT(0);
+ 
+-void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
++static void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
+ {
+ 	local_irq_disable();
+ 
+@@ -384,7 +384,7 @@ static void mpc85xx_smp_kexec_down(void *arg)
+ 		ppc_md.kexec_cpu_down(0,1);
+ }
+ #else
+-void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
++static void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
+ {
+ 	int cpu = smp_processor_id();
+ 	int sibling = cpu_last_thread_sibling(cpu);
+-- 
+2.31.1
+
