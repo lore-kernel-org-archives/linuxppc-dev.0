@@ -4,60 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB0E3C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 13:43:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC0CEC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Nov 2021 13:49:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Hzhzz753wz30Hv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 00:43:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=AD0LfFCb;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Hzj6q1mkWz3c6R
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 00:49:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=collabora.com (client-ip=2a00:1098:0:82:1000:25:2eeb:e3e3;
- helo=bhuna.collabora.co.uk; envelope-from=andrealmeid@collabora.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dkim=fail reason="signature verification failed" (2048-bit key;
- unprotected) header.d=collabora.com header.i=@collabora.com
- header.a=rsa-sha256 header.s=mail header.b=AD0LfFCb; 
- dkim-atps=neutral
-X-Greylist: delayed 302 seconds by postgrey-1.36 at boromir;
- Thu, 25 Nov 2021 00:26:42 AEDT
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk
- [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4HzhcL0z89z2yPW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 00:26:42 +1100 (AEDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
- (Authenticated sender: tonyk) with ESMTPSA id 1182B1F45A78
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=collabora.com; s=mail;
- t=1637760086; bh=LoUzXVbB3wCwxf1FW0gK/muFdQnGfNnGszLYYog+/lU=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=AD0LfFCbtCb0lPtiWFikSc0XLR5Z6wW44k1wjposhAtht5drHk8ffJYsQmH2Q5W6A
- OlROj7cj/qCKWi5Dy1MbzY5H86DsVfJFk7ojLi7Q+lRqMMZTIpXqBvmpSyD8rLL7Wp
- 9kPDvyGRVZ0BUAwlZP0CdciKecpFD9161Ofc4WS13JQheyb+2y0tmzSTQuDIUs1XZR
- xhtRWTu111op8oukvWLrydVcD3jHXnt1tVJE86ihwADP8qEbxXmPksbiVuBj1c5F00
- 8kQpWRI1dzZ24tdIJDn/KLdriVfjMzI/zPYHgirq4+XjZzqYI8aUe6ZhQqcmUlCDAI
- 7rJSFBekuqRXA==
-From: =?UTF-8?q?Andr=C3=A9=20Almeida?= <andrealmeid@collabora.com>
-To: linux-kernel@vger.kernel.org, arnd@arndb.de, geert@linux-m68k.org,
- monstr@monstr.eu, mpe@ellerman.id.au, ysato@users.sourceforge.jp,
- dalias@libc.org, davem@davemloft.net, chris@zankel.net, jcmvbkbc@gmail.com,
- linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org
-Subject: [PATCH 1/1] futex: Wireup futex_waitv syscall
-Date: Wed, 24 Nov 2021 10:21:12 -0300
-Message-Id: <20211124132112.11641-1-andrealmeid@collabora.com>
-X-Mailer: git-send-email 2.33.1
-In-Reply-To: <CAK8P3a3pQW59NVF=5P+ZiBjNJmnWh+iTZUHvqHBrXkHA6pMd4g@mail.gmail.com>
-References: <CAK8P3a3pQW59NVF=5P+ZiBjNJmnWh+iTZUHvqHBrXkHA6pMd4g@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Hzj6M14Y6z2yJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 00:49:14 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4Hzj6H3Yd2z9sSc;
+ Wed, 24 Nov 2021 14:49:11 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id LeLWf_gu2Rtj; Wed, 24 Nov 2021 14:49:11 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4Hzj6F3xTPz9sSt;
+ Wed, 24 Nov 2021 14:49:09 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 714138B774;
+ Wed, 24 Nov 2021 14:49:09 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 2zx_RAzlbcMG; Wed, 24 Nov 2021 14:49:09 +0100 (CET)
+Received: from [172.25.230.108] (unknown [172.25.230.108])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1D85B8B763;
+ Wed, 24 Nov 2021 14:49:09 +0100 (CET)
+Message-ID: <da5038fd-611a-a0b3-10b7-35dac6817e6a@csgroup.eu>
+Date: Wed, 24 Nov 2021 14:49:09 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+Subject: Re: [PATCH 1/8] powerpc/mm: Make slice specific to book3s/64
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: kernel test robot <lkp@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ alex@ghiti.fr
+References: <14e2c0b0d4fff49c1cb30166f54ce8e445e17b16.1637570556.git.christophe.leroy@csgroup.eu>
+ <202111222218.RhruLp7S-lkp@intel.com>
+ <adefca8d-5fd4-b9ad-dfb8-0cf334440935@csgroup.eu>
+In-Reply-To: <adefca8d-5fd4-b9ad-dfb8-0cf334440935@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Thu, 25 Nov 2021 00:43:05 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,102 +67,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sfr@canb.auug.org.au, senozhatsky@chromium.org, peterz@infradead.org,
- will@kernel.org, boqun.feng@gmail.com, lkft-triage@lists.linaro.org,
- minchan@kernel.org, naresh.kamboju@linaro.org, linux-next@vger.kernel.org,
- umgwanakikbuti@gmail.com, rob@landley.net, andrealmeid@collabora.com,
- longman@redhat.com, akpm@linux-foundation.org, mingo@redhat.com,
- bigeasy@linutronix.de
+Cc: linux-mm@kvack.org, kbuild-all@lists.01.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Wireup futex_waitv syscall for all remaining archs.
 
-Signed-off-by: André Almeida <andrealmeid@collabora.com>
----
- arch/alpha/kernel/syscalls/syscall.tbl      | 1 +
- arch/ia64/kernel/syscalls/syscall.tbl       | 1 +
- arch/m68k/kernel/syscalls/syscall.tbl       | 1 +
- arch/microblaze/kernel/syscalls/syscall.tbl | 1 +
- arch/powerpc/kernel/syscalls/syscall.tbl    | 1 +
- arch/sh/kernel/syscalls/syscall.tbl         | 1 +
- arch/sparc/kernel/syscalls/syscall.tbl      | 1 +
- arch/xtensa/kernel/syscalls/syscall.tbl     | 1 +
- 8 files changed, 8 insertions(+)
 
-diff --git a/arch/alpha/kernel/syscalls/syscall.tbl b/arch/alpha/kernel/syscalls/syscall.tbl
-index e4a041cd5715..ca5a32228cd6 100644
---- a/arch/alpha/kernel/syscalls/syscall.tbl
-+++ b/arch/alpha/kernel/syscalls/syscall.tbl
-@@ -488,3 +488,4 @@
- 556	common	landlock_restrict_self		sys_landlock_restrict_self
- # 557 reserved for memfd_secret
- 558	common	process_mrelease		sys_process_mrelease
-+559	common  futex_waitv                     sys_futex_waitv
-diff --git a/arch/ia64/kernel/syscalls/syscall.tbl b/arch/ia64/kernel/syscalls/syscall.tbl
-index 6fea1844fb95..707ae121f6d3 100644
---- a/arch/ia64/kernel/syscalls/syscall.tbl
-+++ b/arch/ia64/kernel/syscalls/syscall.tbl
-@@ -369,3 +369,4 @@
- 446	common	landlock_restrict_self		sys_landlock_restrict_self
- # 447 reserved for memfd_secret
- 448	common	process_mrelease		sys_process_mrelease
-+449	common  futex_waitv                     sys_futex_waitv
-diff --git a/arch/m68k/kernel/syscalls/syscall.tbl b/arch/m68k/kernel/syscalls/syscall.tbl
-index 7976dff8f879..45bc32a41b90 100644
---- a/arch/m68k/kernel/syscalls/syscall.tbl
-+++ b/arch/m68k/kernel/syscalls/syscall.tbl
-@@ -448,3 +448,4 @@
- 446	common	landlock_restrict_self		sys_landlock_restrict_self
- # 447 reserved for memfd_secret
- 448	common	process_mrelease		sys_process_mrelease
-+449	common  futex_waitv                     sys_futex_waitv
-diff --git a/arch/microblaze/kernel/syscalls/syscall.tbl b/arch/microblaze/kernel/syscalls/syscall.tbl
-index 6b0e11362bd2..2204bde3ce4a 100644
---- a/arch/microblaze/kernel/syscalls/syscall.tbl
-+++ b/arch/microblaze/kernel/syscalls/syscall.tbl
-@@ -454,3 +454,4 @@
- 446	common	landlock_restrict_self		sys_landlock_restrict_self
- # 447 reserved for memfd_secret
- 448	common	process_mrelease		sys_process_mrelease
-+449	common  futex_waitv                     sys_futex_waitv
-diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
-index 7bef917cc84e..15109af9d075 100644
---- a/arch/powerpc/kernel/syscalls/syscall.tbl
-+++ b/arch/powerpc/kernel/syscalls/syscall.tbl
-@@ -528,3 +528,4 @@
- 446	common	landlock_restrict_self		sys_landlock_restrict_self
- # 447 reserved for memfd_secret
- 448	common	process_mrelease		sys_process_mrelease
-+449	common  futex_waitv                     sys_futex_waitv
-diff --git a/arch/sh/kernel/syscalls/syscall.tbl b/arch/sh/kernel/syscalls/syscall.tbl
-index 208f131659c5..d9539d28bdaa 100644
---- a/arch/sh/kernel/syscalls/syscall.tbl
-+++ b/arch/sh/kernel/syscalls/syscall.tbl
-@@ -451,3 +451,4 @@
- 446	common	landlock_restrict_self		sys_landlock_restrict_self
- # 447 reserved for memfd_secret
- 448	common	process_mrelease		sys_process_mrelease
-+449	common  futex_waitv                     sys_futex_waitv
-diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
-index c37764dc764d..46adabcb1720 100644
---- a/arch/sparc/kernel/syscalls/syscall.tbl
-+++ b/arch/sparc/kernel/syscalls/syscall.tbl
-@@ -494,3 +494,4 @@
- 446	common	landlock_restrict_self		sys_landlock_restrict_self
- # 447 reserved for memfd_secret
- 448	common	process_mrelease		sys_process_mrelease
-+449	common  futex_waitv                     sys_futex_waitv
-diff --git a/arch/xtensa/kernel/syscalls/syscall.tbl b/arch/xtensa/kernel/syscalls/syscall.tbl
-index 104b327f8ac9..3e3e1a506bed 100644
---- a/arch/xtensa/kernel/syscalls/syscall.tbl
-+++ b/arch/xtensa/kernel/syscalls/syscall.tbl
-@@ -419,3 +419,4 @@
- 446	common	landlock_restrict_self		sys_landlock_restrict_self
- # 447 reserved for memfd_secret
- 448	common	process_mrelease		sys_process_mrelease
-+449	common  futex_waitv                     sys_futex_waitv
--- 
-2.33.1
+Le 24/11/2021 à 13:10, Christophe Leroy a écrit :
+> 
+> 
+> Le 22/11/2021 à 15:48, kernel test robot a écrit :
+>> Hi Christophe,
+>>
+>> I love your patch! Perhaps something to improve:
+>>
+>> [auto build test WARNING on powerpc/next]
+>> [also build test WARNING on hnaz-mm/master linus/master v5.16-rc2 
+>> next-20211118]
+>> [If your patch is applied to the wrong git tree, kindly drop us a note.
+>> And when submitting patch, we suggest to use '--base' as documented in
+>> https://git-scm.com/docs/git-format-patch]
+>>
+>> url:    
+>> https://github.com/0day-ci/linux/commits/Christophe-Leroy/Convert-powerpc-to-default-topdown-mmap-layout/20211122-165115 
+>>
+>> base:   
+>> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+>> config: powerpc64-randconfig-s031-20211122 (attached as .config)
+>> compiler: powerpc64-linux-gcc (GCC) 11.2.0
+>> reproduce:
+>>          wget 
+>> https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross 
+>> -O ~/bin/make.cross
+>>          chmod +x ~/bin/make.cross
+>>          # apt-get install sparse
+>>          # sparse version: v0.6.4-dirty
+>>          # 
+>> https://github.com/0day-ci/linux/commit/1d0b7cc86d08f25f595b52d8c39ba9ca1d29a30a 
+>>
+>>          git remote add linux-review https://github.com/0day-ci/linux
+>>          git fetch --no-tags linux-review 
+>> Christophe-Leroy/Convert-powerpc-to-default-topdown-mmap-layout/20211122-165115 
+>>
+>>          git checkout 1d0b7cc86d08f25f595b52d8c39ba9ca1d29a30a
+>>          # save the attached .config to linux build tree
+>>          COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 
+>> make.cross C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__' ARCH=powerpc64
+>>
+>> If you fix the issue, kindly add following tag as appropriate
+>> Reported-by: kernel test robot <lkp@intel.com>
+>>
+>> All warnings (new ones prefixed by >>):
+>>
+>>     arch/powerpc/mm/book3s64/slice.c: In function 
+>> 'slice_get_unmapped_area':
+>>>> arch/powerpc/mm/book3s64/slice.c:639:1: warning: the frame size of 
+>>>> 1040 bytes is larger than 1024 bytes [-Wframe-larger-than=]
+>>       639 | }
+>>           | ^
+> 
+> 
+> The problem was already existing when slice.c was in arch/powerpc/mm/
+> 
+> This patch doesn't introduce the problem.
+> 
+
+In fact the problem is really added by yourself mister 'kernel test robot'.
+
+CONFIG_FRAME_WARN is supposed to be 2048 on 64 bit architectures.
+
+It the robot starts to reduce that value, it is on its own ....
+
+
+config FRAME_WARN
+	int "Warn for stack frames larger than"
+	range 0 8192
+	default 2048 if GCC_PLUGIN_LATENT_ENTROPY
+	default 1536 if (!64BIT && (PARISC || XTENSA))
+	default 1024 if (!64BIT && !PARISC)
+	default 2048 if 64BIT
+	help
+	  Tell gcc to warn at build time for stack frames larger than this.
+	  Setting this too low will cause a lot of warnings.
+	  Setting it to 0 disables the warning.
 
