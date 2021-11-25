@@ -4,33 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B8A6C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 09:35:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC63CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 09:35:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J0CRB6v6fz3bnC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 20:35:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J0CRd19N2z3cVK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 20:35:57 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
  [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J0CQh4XGcz2y8P
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 20:35:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J0CQj4Xqqz2y8P
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 20:35:09 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4J0CQg74YDz4xcs;
- Thu, 25 Nov 2021 20:35:07 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4J0CQj3Wqsz4xcv;
+ Thu, 25 Nov 2021 20:35:09 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <ce30364fb7ccda489272af4a1612b6aa147e1d23.1637227521.git.christophe.leroy@csgroup.eu>
-References: <ce30364fb7ccda489272af4a1612b6aa147e1d23.1637227521.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/32: Fix hardlockup on vmap stack overflow
-Message-Id: <163783287691.1228083.396612201232244532.b4-ty@ellerman.id.au>
-Date: Thu, 25 Nov 2021 20:34:36 +1100
+To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+In-Reply-To: <20211119031627.577853-1-npiggin@gmail.com>
+References: <20211119031627.577853-1-npiggin@gmail.com>
+Subject: Re: [PATCH v1] KVM: PPC: Book3S HV: Prevent POWER7/8 TLB flush
+ flushing SLB
+Message-Id: <163783287534.1228083.4493694109236916164.b4-ty@ellerman.id.au>
+Date: Thu, 25 Nov 2021 20:34:35 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,26 +44,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 18 Nov 2021 10:39:53 +0100, Christophe Leroy wrote:
-> Since the commit c118c7303ad5 ("powerpc/32: Fix vmap stack - Do not
-> activate MMU before reading task struct") a vmap stack overflow
-> results in a hard lockup. This is because emergency_ctx is still
-> addressed with its virtual address allthough data MMU is not active
-> anymore at that time.
+On Fri, 19 Nov 2021 13:16:27 +1000, Nicholas Piggin wrote:
+> The POWER9 ERAT flush instruction is a SLBIA with IH=7, which is a
+> reserved value on POWER7/8. On POWER8 this invalidates the SLB entries
+> above index 0, similarly to SLBIA IH=0.
 > 
-> Fix it by using a physical address instead.
+> If the SLB entries are invalidated, and then the guest is bypassed, the
+> host SLB does not get re-loaded, so the bolted entries above 0 will be
+> lost. This can result in kernel stack access causing a SLB fault.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/32: Fix hardlockup on vmap stack overflow
-      https://git.kernel.org/powerpc/c/5bb60ea611db1e04814426ed4bd1c95d1487678e
+[1/1] KVM: PPC: Book3S HV: Prevent POWER7/8 TLB flush flushing SLB
+      https://git.kernel.org/powerpc/c/cf0b0e3712f7af90006f8317ff27278094c2c128
 
 cheers
