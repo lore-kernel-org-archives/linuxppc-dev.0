@@ -4,61 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 410D8C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 18:05:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACD85C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 18:06:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J0QlY672Qz3cGW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Nov 2021 05:05:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J0QmK29Kbz3dpm
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Nov 2021 05:06:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=wD+eaSjE;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=QnHZcLCI;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rRxGzAhF;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=i2iW+K4j;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
- (client-ip=195.135.220.29; helo=smtp-out2.suse.de;
+ (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
  envelope-from=msuchanek@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
- header.s=susede2_rsa header.b=wD+eaSjE; 
+ header.s=susede2_rsa header.b=rRxGzAhF; 
  dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=QnHZcLCI; 
+ header.s=susede2_ed25519 header.b=i2iW+K4j; 
  dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J0QjN4RP2z2yQK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Nov 2021 05:03:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J0QjP1s8vz2ypV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Nov 2021 05:03:37 +1100 (AEDT)
 Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
- by smtp-out2.suse.de (Postfix) with ESMTP id 8DCCC1FD3D;
- Thu, 25 Nov 2021 18:03:33 +0000 (UTC)
+ by smtp-out1.suse.de (Postfix) with ESMTP id 311FC21B36;
+ Thu, 25 Nov 2021 18:03:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
- t=1637863413; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ t=1637863414; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
  mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=ppmq8eXKBK48QzJtq64n/wfpJftndpEVG5gddVJ3g6c=;
- b=wD+eaSjEG00QXyzDIRqHqnRO+4kJ6iC2LANK/e9fdWmLOiKnTtW2rT+V25o1mQvwPhAsix
- XqJ5HkwY25TfdzprAyuuvdWeZrdoB2xovlGm8w3H+6qWSBFmxBy9uK18/8OVGkA+Q+pLkj
- 37YBacWAHlGP0LkjRieY3HHOOYgNqjw=
+ bh=5nki8oKAYJ8Wy585sdbUvxt9eszYdDH7kQPAAKG0sKs=;
+ b=rRxGzAhFnzlxk8xFlFlrHtykFxHB7IZg2sxGzqji7TZIuTH7r+hfyRFt1lpJsSYqxM0kTY
+ g7AhJ5OkKPnja+GdOxBqUEr2yJQIC/C9EK4WEN4Vk+B+CZDj4TNIu3hzYQD4TRy8VzcOFI
+ PGDMzb2MDelJi2m6LFgsiPf6/SKGHMc=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
- s=susede2_ed25519; t=1637863413;
+ s=susede2_ed25519; t=1637863414;
  h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
  mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=ppmq8eXKBK48QzJtq64n/wfpJftndpEVG5gddVJ3g6c=;
- b=QnHZcLCIiAGFD/VT22aaPOqT2vPKtWkux4fBsS9cU/KIKntpTSQHeES1zAAeX54Qm64s5N
- WBtbd/iX/un1thAA==
+ bh=5nki8oKAYJ8Wy585sdbUvxt9eszYdDH7kQPAAKG0sKs=;
+ b=i2iW+K4j9B6Dc9uaJrADgTRd/0t6IXMDqfWTrzpenfu1PPghZwnc6lYgQCrOb2cUJIAmYt
+ ZPzuOfWLAutE15BQ==
 Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
- by relay2.suse.de (Postfix) with ESMTP id 4317CA3B89;
+ by relay2.suse.de (Postfix) with ESMTP id D8A9CA3B8C;
  Thu, 25 Nov 2021 18:03:33 +0000 (UTC)
 From: Michal Suchanek <msuchanek@suse.de>
 To: keyrings@vger.kernel.org
-Subject: [PATCH v2 3/6] kexec_file: Don't opencode appended signature
- verification.
-Date: Thu, 25 Nov 2021 19:02:41 +0100
-Message-Id: <911210845d863b06de2404acae6fff06241f0458.1637862358.git.msuchanek@suse.de>
+Subject: [PATCH v2 5/6] module: Use key_being_used_for for log messages in
+ verify_appended_signature
+Date: Thu, 25 Nov 2021 19:02:43 +0100
+Message-Id: <e454eb4f2f8dfe611b5da480a87519e5ad95a640.1637862358.git.msuchanek@suse.de>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1637862358.git.msuchanek@suse.de>
 References: <cover.1637862358.git.msuchanek@suse.de>
@@ -99,197 +99,134 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Module verification already implements appeded signature verification.
-
-Reuse it for kexec_file.
+Add value for kexec appended signature and pass in key_being_used_for
+enum rather than a string to verify_appended_signature to produce log
+messages about the signature.
 
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 ---
- arch/powerpc/kexec/elf_64.c           | 21 ++++-----------------
- arch/s390/kernel/machine_kexec_file.c | 21 ++++-----------------
- include/linux/verification.h          |  3 +++
- kernel/module-internal.h              |  2 --
- kernel/module.c                       |  4 +++-
- kernel/module_signing.c               | 24 +++++++++++++++---------
- 6 files changed, 29 insertions(+), 46 deletions(-)
+ arch/powerpc/kexec/elf_64.c              |  2 +-
+ arch/s390/kernel/machine_kexec_file.c    |  2 +-
+ crypto/asymmetric_keys/asymmetric_type.c |  1 +
+ include/linux/verification.h             |  3 ++-
+ kernel/module.c                          |  3 ++-
+ kernel/module_signing.c                  | 11 ++++++-----
+ 6 files changed, 13 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
-index 25dc1071feec..266cb26d3ca0 100644
+index 63634c95265d..3aa5269f6e0f 100644
 --- a/arch/powerpc/kexec/elf_64.c
 +++ b/arch/powerpc/kexec/elf_64.c
-@@ -153,12 +153,10 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
- }
+@@ -158,7 +158,7 @@ int elf64_verify_sig(const char *kernel, unsigned long length)
+ 	size_t kernel_len = length;
  
- #ifdef CONFIG_KEXEC_SIG
--int elf64_verify_sig(const char *kernel, unsigned long kernel_len)
-+int elf64_verify_sig(const char *kernel, unsigned long length)
- {
-+	size_t kernel_len = length;
- 	const unsigned long marker_len = sizeof(MODULE_SIG_STRING) - 1;
--	struct module_signature *ms;
--	unsigned long sig_len;
--	int ret;
- 
- 	if (marker_len > kernel_len)
- 		return -EKEYREJECTED;
-@@ -168,19 +166,8 @@ int elf64_verify_sig(const char *kernel, unsigned long kernel_len)
- 		return -EKEYREJECTED;
- 	kernel_len -= marker_len;
- 
--	ms = (void *)kernel + kernel_len - sizeof(*ms);
--	ret = mod_check_sig(ms, kernel_len, "kexec");
--	if (ret)
--		return ret;
--
--	sig_len = be32_to_cpu(ms->sig_len);
--	kernel_len -= sizeof(*ms) + sig_len;
--
--	return verify_pkcs7_signature(kernel, kernel_len,
--				      kernel + kernel_len, sig_len,
--				      VERIFY_USE_PLATFORM_KEYRING,
--				      VERIFYING_MODULE_SIGNATURE,
--				      NULL, NULL);
-+	return verify_appended_signature(kernel, &kernel_len, VERIFY_USE_PLATFORM_KEYRING,
-+					"kexec_file");
+ 	return verify_appended_signature(kernel, &kernel_len, VERIFY_USE_PLATFORM_KEYRING,
+-					"kexec_file");
++					 VERIFYING_KEXEC_APPENDED_SIGNATURE);
  }
  #endif /* CONFIG_KEXEC_SIG */
  
 diff --git a/arch/s390/kernel/machine_kexec_file.c b/arch/s390/kernel/machine_kexec_file.c
-index 43a9abe48abd..432797249db3 100644
+index c4632c1a1b59..316d082c9d99 100644
 --- a/arch/s390/kernel/machine_kexec_file.c
 +++ b/arch/s390/kernel/machine_kexec_file.c
-@@ -24,12 +24,10 @@ const struct kexec_file_ops * const kexec_file_loaders[] = {
- };
+@@ -33,7 +33,7 @@ int s390_verify_sig(const char *kernel, unsigned long length)
+ 		return 0;
  
- #ifdef CONFIG_KEXEC_SIG
--int s390_verify_sig(const char *kernel, unsigned long kernel_len)
-+int s390_verify_sig(const char *kernel, unsigned long length)
- {
-+	size_t kernel_len = length;
- 	const unsigned long marker_len = sizeof(MODULE_SIG_STRING) - 1;
--	struct module_signature *ms;
--	unsigned long sig_len;
--	int ret;
- 
- 	/* Skip signature verification when not secure IPLed. */
- 	if (!ipl_secure_flag)
-@@ -43,19 +41,8 @@ int s390_verify_sig(const char *kernel, unsigned long kernel_len)
- 		return -EKEYREJECTED;
- 	kernel_len -= marker_len;
- 
--	ms = (void *)kernel + kernel_len - sizeof(*ms);
--	ret = mod_check_sig(ms, kernel_len, "kexec");
--	if (ret)
--		return ret;
--
--	sig_len = be32_to_cpu(ms->sig_len);
--	kernel_len -= sizeof(*ms) + sig_len;
--
--	return verify_pkcs7_signature(kernel, kernel_len,
--				      kernel + kernel_len, sig_len,
--				      VERIFY_USE_PLATFORM_KEYRING,
--				      VERIFYING_MODULE_SIGNATURE,
--				      NULL, NULL);
-+	return verify_appended_signature(kernel, &kernel_len, VERIFY_USE_PLATFORM_KEYRING,
-+					"kexec_file");
+ 	return verify_appended_signature(kernel, &kernel_len, VERIFY_USE_PLATFORM_KEYRING,
+-					"kexec_file");
++					VERIFYING_KEXEC_APPENDED_SIGNATURE);
  }
  #endif /* CONFIG_KEXEC_SIG */
  
+diff --git a/crypto/asymmetric_keys/asymmetric_type.c b/crypto/asymmetric_keys/asymmetric_type.c
+index ad8af3d70ac0..6fd20eec3882 100644
+--- a/crypto/asymmetric_keys/asymmetric_type.c
++++ b/crypto/asymmetric_keys/asymmetric_type.c
+@@ -25,6 +25,7 @@ const char *const key_being_used_for[NR__KEY_BEING_USED_FOR] = {
+ 	[VERIFYING_KEXEC_PE_SIGNATURE]		= "kexec PE sig",
+ 	[VERIFYING_KEY_SIGNATURE]		= "key sig",
+ 	[VERIFYING_KEY_SELF_SIGNATURE]		= "key self sig",
++	[VERIFYING_KEXEC_APPENDED_SIGNATURE]	= "kexec appended sig",
+ 	[VERIFYING_UNSPECIFIED_SIGNATURE]	= "unspec sig",
+ };
+ EXPORT_SYMBOL_GPL(key_being_used_for);
 diff --git a/include/linux/verification.h b/include/linux/verification.h
-index a655923335ae..c1cf0582012a 100644
+index c1cf0582012a..23748feb9e03 100644
 --- a/include/linux/verification.h
 +++ b/include/linux/verification.h
-@@ -60,5 +60,8 @@ extern int verify_pefile_signature(const void *pebuf, unsigned pelen,
- 				   enum key_being_used_for usage);
+@@ -26,6 +26,7 @@ enum key_being_used_for {
+ 	VERIFYING_KEXEC_PE_SIGNATURE,
+ 	VERIFYING_KEY_SIGNATURE,
+ 	VERIFYING_KEY_SELF_SIGNATURE,
++	VERIFYING_KEXEC_APPENDED_SIGNATURE,
+ 	VERIFYING_UNSPECIFIED_SIGNATURE,
+ 	NR__KEY_BEING_USED_FOR
+ };
+@@ -61,7 +62,7 @@ extern int verify_pefile_signature(const void *pebuf, unsigned pelen,
  #endif
  
-+int verify_appended_signature(const void *data, size_t *len, struct key *trusted_keys,
-+			      const char *what);
-+
+ int verify_appended_signature(const void *data, size_t *len, struct key *trusted_keys,
+-			      const char *what);
++			      enum key_being_used_for purpose);
+ 
  #endif /* CONFIG_SYSTEM_DATA_VERIFICATION */
  #endif /* _LINUX_VERIFY_PEFILE_H */
-diff --git a/kernel/module-internal.h b/kernel/module-internal.h
-index 33783abc377b..80461e14bf29 100644
---- a/kernel/module-internal.h
-+++ b/kernel/module-internal.h
-@@ -27,5 +27,3 @@ struct load_info {
- 		unsigned int sym, str, mod, vers, info, pcpu;
- 	} index;
- };
--
--extern int mod_verify_sig(const void *mod, struct load_info *info);
 diff --git a/kernel/module.c b/kernel/module.c
-index 84a9141a5e15..8481933dfa92 100644
+index d91ca0f93a40..0a359dc6b690 100644
 --- a/kernel/module.c
 +++ b/kernel/module.c
-@@ -57,6 +57,7 @@
- #include <linux/bsearch.h>
- #include <linux/dynamic_debug.h>
- #include <linux/audit.h>
-+#include <linux/verification.h>
- #include <uapi/linux/module.h>
- #include "module-internal.h"
- 
-@@ -2894,7 +2895,8 @@ static int module_sig_check(struct load_info *info, int flags)
- 	    memcmp(mod + info->len - markerlen, MODULE_SIG_STRING, markerlen) == 0) {
- 		/* We truncate the module to discard the signature */
- 		info->len -= markerlen;
--		err = mod_verify_sig(mod, info);
-+		err = verify_appended_signature(mod, &info->len,
-+						VERIFY_USE_SECONDARY_KEYRING, "module");
+@@ -2891,7 +2891,8 @@ static int module_sig_check(struct load_info *info, int flags)
+ 	 */
+ 	if (flags == 0) {
+ 		err = verify_appended_signature(mod, &info->len,
+-						VERIFY_USE_SECONDARY_KEYRING, "module");
++						VERIFY_USE_SECONDARY_KEYRING,
++						VERIFYING_MODULE_SIGNATURE);
  		if (!err) {
  			info->sig_ok = true;
  			return 0;
 diff --git a/kernel/module_signing.c b/kernel/module_signing.c
-index 8723ae70ea1f..f492e410564d 100644
+index 4c28cb55275f..cef72a6f6b5d 100644
 --- a/kernel/module_signing.c
 +++ b/kernel/module_signing.c
-@@ -14,13 +14,19 @@
- #include <crypto/public_key.h>
- #include "module-internal.h"
- 
--/*
-- * Verify the signature on a module.
-+/**
-+ * verify_appended_signature - Verify the signature on a module with the
-+ * signature marker stripped.
-+ * @data: The data to be verified
-+ * @len: Size of @data.
-+ * @trusted_keys: Keyring to use for verification
-+ * @what: Informational string for log messages
+@@ -19,17 +19,18 @@
+  * @data: The data to be verified
+  * @len: Size of @data.
+  * @trusted_keys: Keyring to use for verification
+- * @what: Informational string for log messages
++ * @purpose: The use to which the key is being put
   */
--int mod_verify_sig(const void *mod, struct load_info *info)
-+int verify_appended_signature(const void *data, size_t *len,
-+			      struct key *trusted_keys, const char *what)
+ int verify_appended_signature(const void *data, size_t *len,
+-			      struct key *trusted_keys, const char *what)
++			      struct key *trusted_keys,
++			      enum key_being_used_for purpose)
  {
+ 	const unsigned long markerlen = sizeof(MODULE_SIG_STRING) - 1;
  	struct module_signature ms;
--	size_t sig_len, modlen = info->len;
-+	size_t sig_len, modlen = *len;
+ 	size_t sig_len, modlen = *len;
  	int ret;
  
- 	pr_devel("==>%s(,%zu)\n", __func__, modlen);
-@@ -28,18 +34,18 @@ int mod_verify_sig(const void *mod, struct load_info *info)
- 	if (modlen <= sizeof(ms))
- 		return -EBADMSG;
+-	pr_devel("==>%s(,%zu)\n", __func__, modlen);
++	pr_devel("==>%s %s(,%zu)\n", __func__, key_being_used_for[purpose], modlen);
  
--	memcpy(&ms, mod + (modlen - sizeof(ms)), sizeof(ms));
-+	memcpy(&ms, data + (modlen - sizeof(ms)), sizeof(ms));
+ 	if (markerlen > modlen)
+ 		return -ENODATA;
+@@ -44,7 +45,7 @@ int verify_appended_signature(const void *data, size_t *len,
  
--	ret = mod_check_sig(&ms, modlen, "module");
-+	ret = mod_check_sig(&ms, modlen, what);
+ 	memcpy(&ms, data + (modlen - sizeof(ms)), sizeof(ms));
+ 
+-	ret = mod_check_sig(&ms, modlen, what);
++	ret = mod_check_sig(&ms, modlen, key_being_used_for[purpose]);
  	if (ret)
  		return ret;
  
- 	sig_len = be32_to_cpu(ms.sig_len);
- 	modlen -= sig_len + sizeof(ms);
--	info->len = modlen;
-+	*len = modlen;
+@@ -54,6 +55,6 @@ int verify_appended_signature(const void *data, size_t *len,
  
--	return verify_pkcs7_signature(mod, modlen, mod + modlen, sig_len,
--				      VERIFY_USE_SECONDARY_KEYRING,
-+	return verify_pkcs7_signature(data, modlen, data + modlen, sig_len,
-+				      trusted_keys,
- 				      VERIFYING_MODULE_SIGNATURE,
+ 	return verify_pkcs7_signature(data, modlen, data + modlen, sig_len,
+ 				      trusted_keys,
+-				      VERIFYING_MODULE_SIGNATURE,
++				      purpose,
  				      NULL, NULL);
  }
 -- 
