@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B5C3C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 08:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACB60C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 08:28:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J09x40Plzz3c8s
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 19:27:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J09xh27dbz3clT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 19:28:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,53 +16,52 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J09s61rmkz3cPR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 19:24:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J09sB6r3Jz3cRD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 19:24:30 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4J09rX1N82z9sSx;
- Thu, 25 Nov 2021 09:23:56 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4J09rY27k8z9sT3;
+ Thu, 25 Nov 2021 09:23:57 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id jCEtWQ2JP6js; Thu, 25 Nov 2021 09:23:56 +0100 (CET)
+ with ESMTP id 91NP-ksrnybX; Thu, 25 Nov 2021 09:23:57 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4J09rM6SkKz9sT3;
- Thu, 25 Nov 2021 09:23:47 +0100 (CET)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4J09rN0q4Pz9sT4;
+ Thu, 25 Nov 2021 09:23:48 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CDA4C8B779;
- Thu, 25 Nov 2021 09:23:47 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 085748B763;
+ Thu, 25 Nov 2021 09:23:48 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 9ba86ooEzg9T; Thu, 25 Nov 2021 09:23:47 +0100 (CET)
+ with ESMTP id Fir6Bysfmk1l; Thu, 25 Nov 2021 09:23:47 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.227])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 018408B783;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EFD758B781;
  Thu, 25 Nov 2021 09:23:46 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1AP8NbpU086352
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1AP8NcHD086376
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Thu, 25 Nov 2021 09:23:37 +0100
+ Thu, 25 Nov 2021 09:23:39 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1AP8NbBJ086351;
- Thu, 25 Nov 2021 09:23:37 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1AP8Ncto086375;
+ Thu, 25 Nov 2021 09:23:38 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, alex@ghiti.fr
-Subject: [PATCH v2 2/9] powerpc/mm: Move vma_mmu_pagesize() and
- hugetlb_get_unmapped_area() to slice.c
-Date: Thu, 25 Nov 2021 09:23:24 +0100
-Message-Id: <2e93765ee3e348da391cfffd783bdd06cbaae30f.1637828367.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 8/9] powerpc/mm: Properly randomise mmap with slices
+Date: Thu, 25 Nov 2021 09:23:30 +0100
+Message-Id: <35c7120357b263667985684ee1df25548f7bc80e.1637828367.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <cover.1637828367.git.christophe.leroy@csgroup.eu>
 References: <cover.1637828367.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1637828608; l=7532; s=20211009;
- h=from:subject:message-id; bh=rf8c2Va0a+oPrjsrDKbsVVqJCso4PiLiMZDeQ0MksqU=;
- b=PydLoipAoHticGP/iGbrRIzCH24eKMe8SgTi3cLal4lEcTL7IuwbQcp/rGtlRo4bRvZCQ7bKQBb0
- fLvdb138D0dsd5iLp3iXwJEj3oojSmM29mzH9ai9OaBWwVt7s1VI
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1637828609; l=3498; s=20211009;
+ h=from:subject:message-id; bh=ngfeg/2tmEpq6TE0+FDDvF+lIoivpzUM2irZRsGVREQ=;
+ b=0z9cVIhuFRmpimO3m6RaNjDYTOLAvyylhuhx4XgTPhM82PVtQ/O3zDO5kKP8MJ7ZEso5qyJclvWa
+ Z3/0XHmCCezj8nyBb31XTL4hHjE2RFcC1yY03joAQ6OAJ3f0Gn6L
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -83,227 +82,96 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-vma_mmu_pagesize() is only required for slices,
-otherwise there is a generic weak version.
+Now that powerpc switched to default topdown mmap layout,
+mm->mmap_base is properly randomised.  However
+slice_find_area_bottomup() doesn't use mm->mmap_base but
+uses the fixed TASK_UNMAPPED_BASE instead.
 
-hugetlb_get_unmapped_area() is dedicated to slices.
-radix__hugetlb_get_unmapped_area() as well.
+slice_find_area_bottomup() being used as a fallback to
+slice_find_area_topdown(), it can't use mm->mmap_base
+directly.
 
-Move them to slice.c
+Instead of always using TASK_UNMAPPED_BASE as base address, leave
+it to the caller. When called from slice_find_area_topdown()
+TASK_UNMAPPED_BASE is used. Otherwise mm->mmap_base is used.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/book3s/64/hugetlb.h |  4 --
- arch/powerpc/mm/book3s64/radix_hugetlbpage.c | 55 --------------
- arch/powerpc/mm/book3s64/slice.c             | 76 ++++++++++++++++++++
- arch/powerpc/mm/hugetlbpage.c                | 28 --------
- 4 files changed, 76 insertions(+), 87 deletions(-)
+ arch/powerpc/mm/book3s64/slice.c | 18 +++++++-----------
+ 1 file changed, 7 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index 12e150e615b7..b37a28f62cf6 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -8,10 +8,6 @@
-  */
- void radix__flush_hugetlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
- void radix__local_flush_hugetlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
--extern unsigned long
--radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
--				unsigned long len, unsigned long pgoff,
--				unsigned long flags);
- 
- extern void radix__huge_ptep_modify_prot_commit(struct vm_area_struct *vma,
- 						unsigned long addr, pte_t *ptep,
-diff --git a/arch/powerpc/mm/book3s64/radix_hugetlbpage.c b/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
-index 23d3e08911d3..d2fb776febb4 100644
---- a/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
-+++ b/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
-@@ -41,61 +41,6 @@ void radix__flush_hugetlb_tlb_range(struct vm_area_struct *vma, unsigned long st
- 		radix__flush_tlb_range_psize(vma->vm_mm, start, end, psize);
- }
- 
--/*
-- * A vairant of hugetlb_get_unmapped_area doing topdown search
-- * FIXME!! should we do as x86 does or non hugetlb area does ?
-- * ie, use topdown or not based on mmap_is_legacy check ?
-- */
--unsigned long
--radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
--				unsigned long len, unsigned long pgoff,
--				unsigned long flags)
--{
--	struct mm_struct *mm = current->mm;
--	struct vm_area_struct *vma;
--	struct hstate *h = hstate_file(file);
--	int fixed = (flags & MAP_FIXED);
--	unsigned long high_limit;
--	struct vm_unmapped_area_info info;
--
--	high_limit = DEFAULT_MAP_WINDOW;
--	if (addr >= high_limit || (fixed && (addr + len > high_limit)))
--		high_limit = TASK_SIZE;
--
--	if (len & ~huge_page_mask(h))
--		return -EINVAL;
--	if (len > high_limit)
--		return -ENOMEM;
--
--	if (fixed) {
--		if (addr > high_limit - len)
--			return -ENOMEM;
--		if (prepare_hugepage_range(file, addr, len))
--			return -EINVAL;
--		return addr;
--	}
--
--	if (addr) {
--		addr = ALIGN(addr, huge_page_size(h));
--		vma = find_vma(mm, addr);
--		if (high_limit - len >= addr && addr >= mmap_min_addr &&
--		    (!vma || addr + len <= vm_start_gap(vma)))
--			return addr;
--	}
--	/*
--	 * We are always doing an topdown search here. Slice code
--	 * does that too.
--	 */
--	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
--	info.length = len;
--	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
--	info.high_limit = mm->mmap_base + (high_limit - DEFAULT_MAP_WINDOW);
--	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
--	info.align_offset = 0;
--
--	return vm_unmapped_area(&info);
--}
--
- void radix__huge_ptep_modify_prot_commit(struct vm_area_struct *vma,
- 					 unsigned long addr, pte_t *ptep,
- 					 pte_t old_pte, pte_t pte)
 diff --git a/arch/powerpc/mm/book3s64/slice.c b/arch/powerpc/mm/book3s64/slice.c
-index c83be371c6e7..4c3e9601fdf6 100644
+index 99742dde811c..997f40184e97 100644
 --- a/arch/powerpc/mm/book3s64/slice.c
 +++ b/arch/powerpc/mm/book3s64/slice.c
-@@ -777,4 +777,80 @@ int slice_is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
- 
- 	return !slice_check_range_fits(mm, maskp, addr, len);
- }
-+
-+unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
-+{
-+	/* With radix we don't use slice, so derive it from vma*/
-+	if (radix_enabled())
-+		return vma_kernel_pagesize(vma);
-+
-+	return 1UL << mmu_psize_to_shift(get_slice_psize(vma->vm_mm, vma->vm_start));
-+}
-+
-+/*
-+ * A variant of hugetlb_get_unmapped_area() doing topdown search
-+ * FIXME!! should we do as x86 does or non hugetlb area does ?
-+ * ie, use topdown or not based on mmap_is_legacy check ?
-+ */
-+static unsigned long
-+radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
-+				 unsigned long pgoff, unsigned long flags)
-+{
-+	struct mm_struct *mm = current->mm;
-+	struct vm_area_struct *vma;
-+	struct hstate *h = hstate_file(file);
-+	int fixed = (flags & MAP_FIXED);
-+	unsigned long high_limit;
-+	struct vm_unmapped_area_info info;
-+
-+	high_limit = DEFAULT_MAP_WINDOW;
-+	if (addr >= high_limit || (fixed && (addr + len > high_limit)))
-+		high_limit = TASK_SIZE;
-+
-+	if (len & ~huge_page_mask(h))
-+		return -EINVAL;
-+	if (len > high_limit)
-+		return -ENOMEM;
-+
-+	if (fixed) {
-+		if (addr > high_limit - len)
-+			return -ENOMEM;
-+		if (prepare_hugepage_range(file, addr, len))
-+			return -EINVAL;
-+		return addr;
-+	}
-+
-+	if (addr) {
-+		addr = ALIGN(addr, huge_page_size(h));
-+		vma = find_vma(mm, addr);
-+		if (high_limit - len >= addr && addr >= mmap_min_addr &&
-+		    (!vma || addr + len <= vm_start_gap(vma)))
-+			return addr;
-+	}
-+	/*
-+	 * We are always doing an topdown search here. Slice code
-+	 * does that too.
-+	 */
-+	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
-+	info.length = len;
-+	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
-+	info.high_limit = mm->mmap_base + (high_limit - DEFAULT_MAP_WINDOW);
-+	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
-+	info.align_offset = 0;
-+
-+	return vm_unmapped_area(&info);
-+}
-+
-+unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
-+					unsigned long len, unsigned long pgoff,
-+					unsigned long flags)
-+{
-+	struct hstate *hstate = hstate_file(file);
-+	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
-+
-+	if (radix_enabled())
-+		return radix__hugetlb_get_unmapped_area(file, addr, len, pgoff, flags);
-+
-+	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
-+}
- #endif
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 82d8b368ca6d..eb9de09e49a3 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -542,34 +542,6 @@ struct page *follow_huge_pd(struct vm_area_struct *vma,
- 	return page;
+@@ -276,20 +276,18 @@ static bool slice_scan_available(unsigned long addr,
  }
  
--#ifdef CONFIG_PPC_MM_SLICES
--unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
--					unsigned long len, unsigned long pgoff,
--					unsigned long flags)
--{
--	struct hstate *hstate = hstate_file(file);
--	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
--
--#ifdef CONFIG_PPC_RADIX_MMU
--	if (radix_enabled())
--		return radix__hugetlb_get_unmapped_area(file, addr, len,
--						       pgoff, flags);
--#endif
--	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
--}
--#endif
--
--unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
--{
--	/* With radix we don't use slice, so derive it from vma*/
--	if (IS_ENABLED(CONFIG_PPC_MM_SLICES) && !radix_enabled()) {
--		unsigned int psize = get_slice_psize(vma->vm_mm, vma->vm_start);
--
--		return 1UL << mmu_psize_to_shift(psize);
--	}
--	return vma_kernel_pagesize(vma);
--}
--
- bool __init arch_hugetlb_valid_size(unsigned long size)
+ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
+-					      unsigned long len,
++					      unsigned long addr, unsigned long len,
+ 					      const struct slice_mask *available,
+ 					      int psize, unsigned long high_limit)
  {
- 	int shift = __ffs(size);
+ 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
+-	unsigned long addr, found, next_end;
++	unsigned long found, next_end;
+ 	struct vm_unmapped_area_info info;
+ 
+ 	info.flags = 0;
+ 	info.length = len;
+ 	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
+ 	info.align_offset = 0;
+-
+-	addr = TASK_UNMAPPED_BASE;
+ 	/*
+ 	 * Check till the allow max value for this mmap request
+ 	 */
+@@ -322,12 +320,12 @@ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
+ }
+ 
+ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
+-					     unsigned long len,
++					     unsigned long addr, unsigned long len,
+ 					     const struct slice_mask *available,
+ 					     int psize, unsigned long high_limit)
+ {
+ 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
+-	unsigned long addr, found, prev;
++	unsigned long found, prev;
+ 	struct vm_unmapped_area_info info;
+ 	unsigned long min_addr = max(PAGE_SIZE, mmap_min_addr);
+ 
+@@ -335,8 +333,6 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
+ 	info.length = len;
+ 	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
+ 	info.align_offset = 0;
+-
+-	addr = mm->mmap_base;
+ 	/*
+ 	 * If we are trying to allocate above DEFAULT_MAP_WINDOW
+ 	 * Add the different to the mmap_base.
+@@ -377,7 +373,7 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
+ 	 * can happen with large stack limits and large mmap()
+ 	 * allocations.
+ 	 */
+-	return slice_find_area_bottomup(mm, len, available, psize, high_limit);
++	return slice_find_area_bottomup(mm, TASK_UNMAPPED_BASE, len, available, psize, high_limit);
+ }
+ 
+ 
+@@ -386,9 +382,9 @@ static unsigned long slice_find_area(struct mm_struct *mm, unsigned long len,
+ 				     int topdown, unsigned long high_limit)
+ {
+ 	if (topdown)
+-		return slice_find_area_topdown(mm, len, mask, psize, high_limit);
++		return slice_find_area_topdown(mm, mm->mmap_base, len, mask, psize, high_limit);
+ 	else
+-		return slice_find_area_bottomup(mm, len, mask, psize, high_limit);
++		return slice_find_area_bottomup(mm, mm->mmap_base, len, mask, psize, high_limit);
+ }
+ 
+ static inline void slice_copy_mask(struct slice_mask *dst,
 -- 
 2.33.1
 
