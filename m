@@ -4,32 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FF62C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 09:51:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8941FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 09:51:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J0Cn93TtHz3f6q
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 20:51:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J0Cnc0b1Fz3fBp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 20:51:32 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
  [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J0CjY4CM1z3cWW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 20:48:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J0Cjd0M9wz3cYH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 20:48:05 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4J0CjW2FDHz4xcs;
- Thu, 25 Nov 2021 20:47:59 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4J0Cjc0fmHz4xdV;
+ Thu, 25 Nov 2021 20:48:04 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20211117060259.957178-1-nathanl@linux.ibm.com>
-References: <20211117060259.957178-1-nathanl@linux.ibm.com>
-Subject: Re: [PATCH v2 0/2] powerpc/rtas: improved busy and extended delay
- status handling
-Message-Id: <163783299698.1228879.6478247995839677111.b4-ty@ellerman.id.au>
-Date: Thu, 25 Nov 2021 20:36:36 +1100
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20210503130243.891868-1-npiggin@gmail.com>
+References: <20210503130243.891868-1-npiggin@gmail.com>
+Subject: Re: [PATCH 0/4] powerpc/security mitigation updates
+Message-Id: <163783295955.1228879.9901816045823473943.b4-ty@ellerman.id.au>
+Date: Thu, 25 Nov 2021 20:35:59 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -44,28 +43,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aik@ozlabs.ru, tyreld@linux.ibm.com, cheloha@linux.ibm.com,
- ldufour@linux.ibm.com, ajd@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 17 Nov 2021 00:02:57 -0600, Nathan Lynch wrote:
-> This can be considered a successor to:
+On Mon, 3 May 2021 23:02:39 +1000, Nicholas Piggin wrote:
+> This series adds a few missing bits added to recent pseries
+> H_GET_CPU_CHARACTERISTICS and implements them, also removes
+> a restriction from powernv for some of the flushes.
 > 
-> https://lore.kernel.org/linuxppc-dev/20210504030358.1715034-1-nathanl@linux.ibm.com/
-> 
-> which tried to address both the suboptimal delay behavior as well as API
-> issues. This version achieves the performance improvements and leaves major
-> API changes for another time.
+> This is tested mianly in qemu where I just submitted a patch
+> that adds support for these bits (not upstream yet).
 > 
 > [...]
 
-Applied to powerpc/next.
+Patch 4 applied to powerpc/next.
 
-[1/2] powerpc/rtas: rtas_busy_delay() improvements
-      https://git.kernel.org/powerpc/c/38f7b7067dae0c101be573106018e8af22a90fdf
-[2/2] powerpc/rtas: rtas_busy_delay_time() kernel-doc
-      https://git.kernel.org/powerpc/c/dd5cde457a5eb77088d1d9eecface47c0563cd43
+[4/4] powerpc/powernv: Remove POWER9 PVR version check for entry and uaccess flushes
+      https://git.kernel.org/powerpc/c/d02fa40d759ff9a53c93b10d8a4b591688982b26
 
 cheers
