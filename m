@@ -4,78 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16188C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 11:47:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E002C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 12:23:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J0GMP49HCz305d
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 22:47:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J0H8p2zgJz3c8h
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 23:23:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=philpotter-co-uk.20210112.gappssmtp.com header.i=@philpotter-co-uk.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=4mJ9AwSH;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Qz4l5Cm1;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=philpotter.co.uk (client-ip=2607:f8b0:4864:20::72e;
- helo=mail-qk1-x72e.google.com; envelope-from=phil@philpotter.co.uk;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635;
+ helo=mail-pl1-x635.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=philpotter-co-uk.20210112.gappssmtp.com
- header.i=@philpotter-co-uk.20210112.gappssmtp.com header.a=rsa-sha256
- header.s=20210112 header.b=4mJ9AwSH; dkim-atps=neutral
-Received: from mail-qk1-x72e.google.com (mail-qk1-x72e.google.com
- [IPv6:2607:f8b0:4864:20::72e])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=Qz4l5Cm1; dkim-atps=neutral
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com
+ [IPv6:2607:f8b0:4864:20::635])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J0C905klpz2xBL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 20:23:13 +1100 (AEDT)
-Received: by mail-qk1-x72e.google.com with SMTP id 193so10767757qkh.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 01:23:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=philpotter-co-uk.20210112.gappssmtp.com; s=20210112;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=6cQ2VBT6GEq5IzxtMFOrkAmdfUkzXXUJICym+jfQClw=;
- b=4mJ9AwSHB31PIpdJFgjtZiPI3O5U6l1D0qy0KW0UNf5MH6ozT0e6B86+3bb+ubsNsn
- bM94zULnP3/Sn5TW2sU/aVPK6VkQM9qy7472OA32+vcwka6MF4HPtv3JEMMLnnF7wmI8
- ICnVsm3JYbKZ1EmnKJc5Z6apqZ2RUZkPkq+9OUBvr5SxgxoGUUCPzzNRjS9cNIPRmf9W
- FkRzAaXZcf5J4VFjOvxT6jDJIPAkJGMRS0lNjaglMXitLBGhfTqTjyAGLSVTx96zOYvc
- geD85MYGed6A2vdWo2NGX8n2KXD9U2AGeoO0+MzV1KSKw8zpkUNflxlTE2C1KHr75DOI
- PH4g==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J0H825Cr1z2ypV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 23:22:40 +1100 (AEDT)
+Received: by mail-pl1-x635.google.com with SMTP id k4so4416562plx.8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 04:22:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=date:from:subject:to:references:in-reply-to:mime-version:message-id
+ :content-transfer-encoding;
+ bh=yKZ++NzL/iCtFkIPFWF9VThiYCcuH9sDScqXkbnIFJM=;
+ b=Qz4l5Cm1/uX18iX4qP04T6zjdPpBjp74zIj+Dl+rpTXco0Cw72AgPPSmo3K1VCxbfa
+ OFtVwrNQBw0H2a7mQIdSztwWSsozvl7xz+aPhIySxa06Ng7WojK7Gk6FoXsR+rQG8V2a
+ rxAw/zTNOP6bkQPjp8vc8O1guN7/3Io0MZFucmHrFSm6NCpkIAA7qtvg2GPwOSLdo4V5
+ VjOb0UwMyu7wO3rC9rPDaupBa7G+fqxbhjGKuEwrm5isMz32+P9h1Psr94pDE6VVZ5od
+ 2oTNjV2aJtFlGSfDkS+d/qiiKwt//BtMzegZBqDvLr/5fGpEN1qhBda4JaY8Ad2M4mA2
+ mSSw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=6cQ2VBT6GEq5IzxtMFOrkAmdfUkzXXUJICym+jfQClw=;
- b=g4K4LOH8QZp5pF9ncafwDbVrQGneSW/o0ZhQ60SDrepJEMOr8TLdkAFSAMGGPemdlP
- DC7SBCJAmSKkRraIBtBCD7u/qeveBRPFFNtbnxIy/k/AeZrqmmI0vp9Db7/pen3vx3La
- FRtGFNYn3wc3H1FYwwgO/tsa8XK/CZZuzlTm52UhJNwosZ7nj5S7PcwIbHpBuqcU2Dmj
- pzcCXfvCgxNWpzfQTNKWxP5nhEcsSzb2T+apbL5W+fmp88cByZIq1q+DRbD9+3Z9FG2y
- vZXhkUML+aYEjdcicI2QVmassPF2bjpoOW2DFJ//OTYY9e6Xw5B7ri2s6I+mGeqoONHi
- 0mBw==
-X-Gm-Message-State: AOAM531IK5cqYBc9xDMXDqeJMq1C8wCkkTaAWFYvFATBrM3Q6pUw+ce5
- XwaNH1crS4xmP0S1DDEf9eZlrQ==
-X-Google-Smtp-Source: ABdhPJwrHAepVsZs+KL0K+Dovd/v3IZvIaLP3c/YHUpcEAnEaPTq5AjU/2Qs0P+96c5OryJ5OBqRAA==
-X-Received: by 2002:a05:620a:f8b:: with SMTP id
- b11mr13482119qkn.81.1637832189250; 
- Thu, 25 Nov 2021 01:23:09 -0800 (PST)
-Received: from equinox
- (2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.a.1.e.e.d.f.d.0.b.8.0.1.0.0.2.ip6.arpa.
- [2001:8b0:dfde:e1a0::2])
- by smtp.gmail.com with ESMTPSA id 16sm1314112qty.2.2021.11.25.01.23.05
+ h=x-gm-message-state:date:from:subject:to:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=yKZ++NzL/iCtFkIPFWF9VThiYCcuH9sDScqXkbnIFJM=;
+ b=d6vbczlH1NLeuJmFauWvM4CAj4dvkVolqTX5YHJnemBr5uOs6pOWdih8v/J6pNTLNF
+ ufTL0ECjiiWJFddRLWfuFj+v/HpbvMb7Q1GSDl+8o0HSInIqYj+zlD8BVxRCKkHhkKJ5
+ 2n4j1IvN2LKlSMSOFwy0ktPre7EnUbD3rfcGVKunzitaW915H/4tnROzdLdyh47vyh8M
+ GAOcdK1T9N2MpiO7GRtPjAvb8QqspkzcWrw7jDjycvTEZssOO9Cxj7UNK7V74Qp1Lc9h
+ 0a+g3b66M3NFVecPjlfYSUWprivZ6m2hxLl6ptMG6VtsSyqtj2+nLXPZs3Zo7ubrSv5M
+ XWjQ==
+X-Gm-Message-State: AOAM533EyNZTe7N1r/p9G+/BY3fV67kP7MRV895/N1er+0ynaZLSYMi5
+ B0HEt0hGznSL0ncKhQ5OO8I9bTX8KI4=
+X-Google-Smtp-Source: ABdhPJx/DUUDkxYsmZfqO8cn3sRvgJiSA4BnLqat/s7uzAGool90i2516ekCvjsr0jxGMac/o+6ocg==
+X-Received: by 2002:a17:902:e804:b0:142:1c0b:c2a6 with SMTP id
+ u4-20020a170902e80400b001421c0bc2a6mr28016882plg.23.1637842957315; 
+ Thu, 25 Nov 2021 04:22:37 -0800 (PST)
+Received: from localhost (115-64-213-93.static.tpgi.com.au. [115.64.213.93])
+ by smtp.gmail.com with ESMTPSA id y25sm2283278pgk.47.2021.11.25.04.22.36
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 25 Nov 2021 01:23:08 -0800 (PST)
-Date: Thu, 25 Nov 2021 09:23:03 +0000
-From: Phillip Potter <phil@philpotter.co.uk>
-To: Luis Chamberlain <mcgrof@kernel.org>, axboe@kernel.dk
-Subject: Re: [PATCH v2 7/8] cdrom: simplify subdirectory registration with
- register_sysctl()
-Message-ID: <YZ9V9yxGapfPF4+g@equinox>
-References: <20211123202422.819032-1-mcgrof@kernel.org>
- <20211123202422.819032-8-mcgrof@kernel.org>
+ Thu, 25 Nov 2021 04:22:36 -0800 (PST)
+Date: Thu, 25 Nov 2021 22:22:31 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [5.16.0-rc2] Kernel warning while running sigfuz
+ w/PPC_IRQ_SOFT_MASK_DEBUG
+To: linuxppc-dev@lists.ozlabs.org, Sachin Sant <sachinp@linux.vnet.ibm.com>
+References: <F75A81A9-1756-4368-99C7-DD5B3A712530@linux.vnet.ibm.com>
+In-Reply-To: <F75A81A9-1756-4368-99C7-DD5B3A712530@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211123202422.819032-8-mcgrof@kernel.org>
-X-Mailman-Approved-At: Thu, 25 Nov 2021 22:46:50 +1100
+Message-Id: <1637842187.e2kyh90mx9.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,177 +81,201 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jack@suse.cz, airlied@linux.ie, amir73il@gmail.com, clemens@ladisch.de,
- dri-devel@lists.freedesktop.org, phil@philpotter.co.uk,
- joseph.qi@linux.alibaba.com, mark@fasheh.com, yzaikin@google.com,
- joonas.lahtinen@linux.intel.com, keescook@chromium.org, arnd@arndb.de,
- intel-gfx@lists.freedesktop.org, jani.nikula@linux.intel.com,
- linux-block@vger.kernel.org, viro@zeniv.linux.org.uk, rodrigo.vivi@intel.com,
- nixiaoming@huawei.com, tvrtko.ursulin@linux.intel.com,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- julia.lawall@inria.fr, ebiederm@xmission.com, linux-fsdevel@vger.kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- ocfs2-devel@oss.oracle.com, jlbec@evilplan.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 23, 2021 at 12:24:21PM -0800, Luis Chamberlain wrote:
-> There is no need to user boiler plate code to specify a set of base
-> directories we're going to stuff sysctls under. Simplify this by using
-> register_sysctl() and specifying the directory path directly.
-> 
-> // pycocci sysctl-subdir-register-sysctl-simplify.cocci PATH
-> 
-> @c1@
-> expression E1;
-> identifier subdir, sysctls;
-> @@
-> 
-> static struct ctl_table subdir[] = {
-> 	{
-> 		.procname = E1,
-> 		.maxlen = 0,
-> 		.mode = 0555,
-> 		.child = sysctls,
-> 	},
-> 	{ }
-> };
-> 
-> @c2@
-> identifier c1.subdir;
-> 
-> expression E2;
-> identifier base;
-> @@
-> 
-> static struct ctl_table base[] = {
-> 	{
-> 		.procname = E2,
-> 		.maxlen = 0,
-> 		.mode = 0555,
-> 		.child = subdir,
-> 	},
-> 	{ }
-> };
-> 
-> @c3@
-> identifier c2.base;
-> identifier header;
-> @@
-> 
-> header = register_sysctl_table(base);
-> 
-> @r1 depends on c1 && c2 && c3@
-> expression c1.E1;
-> identifier c1.subdir, c1.sysctls;
-> @@
-> 
-> -static struct ctl_table subdir[] = {
-> -	{
-> -		.procname = E1,
-> -		.maxlen = 0,
-> -		.mode = 0555,
-> -		.child = sysctls,
-> -	},
-> -	{ }
-> -};
-> 
-> @r2 depends on c1 && c2 && c3@
-> identifier c1.subdir;
-> 
-> expression c2.E2;
-> identifier c2.base;
-> @@
-> -static struct ctl_table base[] = {
-> -	{
-> -		.procname = E2,
-> -		.maxlen = 0,
-> -		.mode = 0555,
-> -		.child = subdir,
-> -	},
-> -	{ }
-> -};
-> 
-> @initialize:python@
-> @@
-> 
-> def make_my_fresh_expression(s1, s2):
->   return '"' + s1.strip('"') + "/" + s2.strip('"') + '"'
-> 
-> @r3 depends on c1 && c2 && c3@
-> expression c1.E1;
-> identifier c1.sysctls;
-> expression c2.E2;
-> identifier c2.base;
-> identifier c3.header;
-> fresh identifier E3 = script:python(E2, E1) { make_my_fresh_expression(E2, E1) };
-> @@
-> 
-> header =
-> -register_sysctl_table(base);
-> +register_sysctl(E3, sysctls);
-> 
-> Generated-by: Coccinelle SmPL
-> Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
-> ---
->  drivers/cdrom/cdrom.c | 23 +----------------------
->  1 file changed, 1 insertion(+), 22 deletions(-)
-> 
-> diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
-> index 9877e413fce3..1b57d4666e43 100644
-> --- a/drivers/cdrom/cdrom.c
-> +++ b/drivers/cdrom/cdrom.c
-> @@ -3691,27 +3691,6 @@ static struct ctl_table cdrom_table[] = {
->  	},
->  	{ }
->  };
-> -
-> -static struct ctl_table cdrom_cdrom_table[] = {
-> -	{
-> -		.procname	= "cdrom",
-> -		.maxlen		= 0,
-> -		.mode		= 0555,
-> -		.child		= cdrom_table,
-> -	},
-> -	{ }
-> -};
-> -
-> -/* Make sure that /proc/sys/dev is there */
-> -static struct ctl_table cdrom_root_table[] = {
-> -	{
-> -		.procname	= "dev",
-> -		.maxlen		= 0,
-> -		.mode		= 0555,
-> -		.child		= cdrom_cdrom_table,
-> -	},
-> -	{ }
-> -};
->  static struct ctl_table_header *cdrom_sysctl_header;
->  
->  static void cdrom_sysctl_register(void)
-> @@ -3721,7 +3700,7 @@ static void cdrom_sysctl_register(void)
->  	if (!atomic_add_unless(&initialized, 1, 1))
->  		return;
->  
-> -	cdrom_sysctl_header = register_sysctl_table(cdrom_root_table);
-> +	cdrom_sysctl_header = register_sysctl("dev/cdrom", cdrom_table);
->  
->  	/* set the defaults */
->  	cdrom_sysctl_settings.autoclose = autoclose;
-> -- 
-> 2.33.0
-> 
+Excerpts from Sachin Sant's message of November 25, 2021 9:37 pm:
+> While running sigfuz powerpc self test following warning is seen on a Pow=
+er 10 LPAR.=20
+> This warning is seen only with CONFIG_PPC_IRQ_SOFT_MASK_DEBUG=3Dy
+> The kernel eventually panics.
+>=20
+> [ 1032.912973] sigfuz[2061671]: bad frame in rt_sigreturn: 0000000097830b=
+2d nip 00007fff9d9a0470 lr 00007fff9d9a0464
+> [ 1032.913430] ------------[ cut here ]------------
+> [ 1032.913455] WARNING: CPU: 6 PID: 2061674 at arch/powerpc/kernel/interr=
+upt_64.S:34 system_call_common+0x150/0x268
+> [ 1032.913482] Modules linked in: bonding tls nft_fib_inet nft_fib_ipv4 n=
+ft_fib_ipv6 nft_fib nft_reject_inet nf_reject_ipv4 nf_reject_ipv6 nft_rejec=
+t nft_ct nft_chain_nat nf_nat nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 ip=
+_set nf_tables rfkill libcrc32c nfnetlink sunrpc xts vmx_crypto pseries_rng=
+ ip_tables ext4 mbcache jbd2 dm_service_time sd_mod t10_pi sg ibmvfc scsi_t=
+ransport_fc ibmveth dm_multipath dm_mirror dm_region_hash dm_log dm_mod fus=
+e
+> [ 1032.913587] CPU: 6 PID: 2061674 Comm: sigfuz Not tainted 5.16.0-rc2-g9=
+5c6ab13ec7e #1
+> [ 1032.913612] NIP:  c00000000000c730 LR: 0000000045faa436 CTR: 000000000=
+0000000
+> [ 1032.913636] REGS: c00000000c7e7b70 TRAP: 0700   Not tainted  (5.16.0-r=
+c2-g95c6ab13ec7e)
+> [ 1032.913652] MSR:  800000000282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  =
+CR: 28004474  XER: 20040000
+> [ 1032.913679] CFAR: c00000000003a2d4 IRQMASK: 0=20
+> [ 1032.913679] GPR00: c00000000000c6d8 c00000000c7e7e10 000000002fcdac67 =
+0000000000000800=20
+> [ 1032.913679] GPR04: 0000000060d67006 800000000280f032 0000000045faa436 =
+c0000001eb3d4c00=20
+> [ 1032.913679] GPR08: 800000000280f032 0000000000000001 0000000000000001 =
+0000000060d67004=20
+> [ 1032.913679] GPR12: 0000000060d67006 c00000077fdf2300 0000000000000000 =
+00007fff9da00000=20
 
-Dear Luis,
+SRR0 =3D=3D r11, regs->nip =3D=3D r12
 
-Thank you for the patch. Tested and working, looks good to me. As this
-has already been pulled into Andrew Morton's tree, I have added in Jens
-and the linux-block list so there is awareness that the patch will go
-via -mm then linux-next tree.
+I wonder if this is just that SRR0 does not implement the bottom 2 bits=20
+so the check fails when the signal context sets them. Hopefully the=20
+panic is just due to this warning 0x700 program check hitting at a bad
+time.
 
-For what it's worth (although guess it won't be in the commit now):
-Reviewed-by: Phillip Potter <phil@philpotter.co.uk>
+We could always adjust the debug check but maybe something like this=20
+would keep those bits clear which might be cleaner.
 
-Regards,
-Phil
+Thanks,
+Nick
+
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_3=
+2.c
+index 3e053e2fd6b6..92a3a6982813 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -116,7 +116,7 @@ __unsafe_restore_general_regs(struct pt_regs *regs, str=
+uct mcontext __user *sr)
+ 	int i;
+=20
+ 	for (i =3D 0; i <=3D PT_RESULT; i++) {
+-		if ((i =3D=3D PT_MSR) || (i =3D=3D PT_SOFTE))
++		if ((i =3D=3D PT_NIP) || (i =3D=3D PT_MSR) || (i =3D=3D PT_SOFTE))
+ 			continue;
+ 		unsafe_get_user(gregs[i], &sr->mc_gregs[i], failed);
+ 	}
+@@ -156,7 +156,7 @@ static __always_inline
+ int __unsafe_restore_general_regs(struct pt_regs *regs, struct mcontext __=
+user *sr)
+ {
+ 	/* copy up to but not including MSR */
+-	unsafe_copy_from_user(regs, &sr->mc_gregs, PT_MSR * sizeof(elf_greg_t), f=
+ailed);
++	unsafe_copy_from_user(regs, &sr->mc_gregs, PT_NIP * sizeof(elf_greg_t), f=
+ailed);
+=20
+ 	/* copy from orig_r3 (the word after the MSR) up to the end */
+ 	unsafe_copy_from_user(&regs->orig_gpr3, &sr->mc_gregs[PT_ORIG_R3],
+@@ -458,7 +458,7 @@ static long restore_user_regs(struct pt_regs *regs,
+ 			      struct mcontext __user *sr, int sig)
+ {
+ 	unsigned int save_r2 =3D 0;
+-	unsigned long msr;
++	unsigned long nip, msr;
+ #ifdef CONFIG_VSX
+ 	int i;
+ #endif
+@@ -473,6 +473,8 @@ static long restore_user_regs(struct pt_regs *regs,
+ 		save_r2 =3D (unsigned int)regs->gpr[2];
+ 	unsafe_restore_general_regs(regs, sr, failed);
+ 	set_trap_norestart(regs);
++	unsafe_get_user(nip, &sr->mc_gregs[PT_NIP], failed);
++	regs_set_return_ip(regs, nip & ~3);
+ 	unsafe_get_user(msr, &sr->mc_gregs[PT_MSR], failed);
+ 	if (!sig)
+ 		regs->gpr[2] =3D (unsigned long) save_r2;
+@@ -560,7 +562,7 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 				 struct mcontext __user *sr,
+ 				 struct mcontext __user *tm_sr)
+ {
+-	unsigned long msr, msr_hi;
++	unsigned long nip, msr, msr_hi;
+ 	int i;
+=20
+ 	if (tm_suspend_disabled)
+@@ -576,7 +578,8 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 		return 1;
+=20
+ 	unsafe_restore_general_regs(&current->thread.ckpt_regs, sr, failed);
+-	unsafe_get_user(current->thread.tm_tfhar, &sr->mc_gregs[PT_NIP], failed);
++	unsafe_get_user(nip, &sr->mc_gregs[PT_NIP], failed);
++	current->thread.tm_tfhar =3D nip & ~3;
+ 	unsafe_get_user(msr, &sr->mc_gregs[PT_MSR], failed);
+=20
+ 	/* Restore the previous little-endian mode */
+@@ -646,6 +649,9 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 		current->thread.used_vsr =3D true;
+ 	}
+=20
++	unsafe_get_user(nip, &tm_sr->mc_gregs[PT_NIP], failed);
++	regs_set_return_ip(regs, nip & ~3);
++
+ 	/* Get the top half of the MSR from the user context */
+ 	unsafe_get_user(msr_hi, &tm_sr->mc_gregs[PT_MSR], failed);
+ 	msr_hi <<=3D 32;
+@@ -801,7 +807,7 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *=
+oldset,
+ 	regs->gpr[4] =3D (unsigned long)&frame->info;
+ 	regs->gpr[5] =3D (unsigned long)&frame->uc;
+ 	regs->gpr[6] =3D (unsigned long)frame;
+-	regs_set_return_ip(regs, (unsigned long) ksig->ka.sa.sa_handler);
++	regs_set_return_ip(regs, (unsigned long) ksig->ka.sa.sa_handler & ~3);
+ 	/* enter the signal handler in native-endian mode */
+ 	regs_set_return_msr(regs, (regs->msr & ~MSR_LE) | (MSR_KERNEL & MSR_LE));
+=20
+@@ -889,7 +895,7 @@ int handle_signal32(struct ksignal *ksig, sigset_t *old=
+set,
+ 	regs->gpr[1] =3D newsp;
+ 	regs->gpr[3] =3D ksig->sig;
+ 	regs->gpr[4] =3D (unsigned long) sc;
+-	regs_set_return_ip(regs, (unsigned long) ksig->ka.sa.sa_handler);
++	regs_set_return_ip(regs, (unsigned long) ksig->ka.sa.sa_handler & ~3);
+ 	/* enter the signal handler in native-endian mode */
+ 	regs_set_return_msr(regs, (regs->msr & ~MSR_LE) | (MSR_KERNEL & MSR_LE));
+=20
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_6=
+4.c
+index d1e1fc0acbea..0327e5c79c36 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -336,7 +336,7 @@ static long notrace __unsafe_restore_sigcontext(struct =
+task_struct *tsk, sigset_
+ 	elf_vrreg_t __user *v_regs;
+ #endif
+ 	unsigned long save_r13 =3D 0;
+-	unsigned long msr;
++	unsigned long nip, msr;
+ 	struct pt_regs *regs =3D tsk->thread.regs;
+ #ifdef CONFIG_VSX
+ 	int i;
+@@ -350,7 +350,8 @@ static long notrace __unsafe_restore_sigcontext(struct =
+task_struct *tsk, sigset_
+=20
+ 	/* copy the GPRs */
+ 	unsafe_copy_from_user(regs->gpr, sc->gp_regs, sizeof(regs->gpr), efault_o=
+ut);
+-	unsafe_get_user(regs->nip, &sc->gp_regs[PT_NIP], efault_out);
++	unsafe_get_user(nip, &sc->gp_regs[PT_NIP], efault_out);
++	regs_set_return_ip(regs, nip & ~3);
+ 	/* get MSR separately, transfer the LE bit if doing signal return */
+ 	unsafe_get_user(msr, &sc->gp_regs[PT_MSR], efault_out);
+ 	if (sig)
+@@ -434,7 +435,7 @@ static long restore_tm_sigcontexts(struct task_struct *=
+tsk,
+ 	elf_vrreg_t __user *v_regs, *tm_v_regs;
+ #endif
+ 	unsigned long err =3D 0;
+-	unsigned long msr;
++	unsigned long nip, msr;
+ 	struct pt_regs *regs =3D tsk->thread.regs;
+ #ifdef CONFIG_VSX
+ 	int i;
+@@ -458,8 +459,10 @@ static long restore_tm_sigcontexts(struct task_struct =
+*tsk,
+ 	 * For the case of getting a signal and simply returning from it,
+ 	 * we don't need to re-copy them here.
+ 	 */
+-	err |=3D __get_user(regs->nip, &tm_sc->gp_regs[PT_NIP]);
+-	err |=3D __get_user(tsk->thread.tm_tfhar, &sc->gp_regs[PT_NIP]);
++	err |=3D __get_user(nip, &tm_sc->gp_regs[PT_NIP]);
++	regs_set_return_ip(regs, nip & ~3);
++	err |=3D __get_user(nip, &sc->gp_regs[PT_NIP]);
++	tsk->thread.tm_tfhar =3D nip & ~3;
+=20
+ 	/* get MSR separately, transfer the LE bit if doing signal return */
+ 	err |=3D __get_user(msr, &sc->gp_regs[PT_MSR]);
