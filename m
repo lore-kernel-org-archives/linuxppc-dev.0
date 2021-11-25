@@ -4,34 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79497C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 09:47:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DAF1C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 09:48:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J0CjB5Gjnz308J
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 20:47:42 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
- [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J0Cjc02YCz3cVW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 20:48:04 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J0Chn6pLPz2yQG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 20:47:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J0Chs2S0Qz307C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 20:47:25 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4J0Chm5pk4z4xbs;
- Thu, 25 Nov 2021 20:47:20 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4J0Chr6LYkz4xcM;
+ Thu, 25 Nov 2021 20:47:24 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <bc683d499a411730504b132a924de0ccc2ef1f79.1636971137.git.christophe.leroy@csgroup.eu>
-References: <bc683d499a411730504b132a924de0ccc2ef1f79.1636971137.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v3] powerpc/code-patching: Improve verification of
- patchability
-Message-Id: <163783299124.1228879.4298818921531087489.b4-ty@ellerman.id.au>
-Date: Thu, 25 Nov 2021 20:36:31 +1100
+To: Cédric Le Goater <clg@kaod.org>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20211105102636.1016378-1-clg@kaod.org>
+References: <20211105102636.1016378-1-clg@kaod.org>
+Subject: Re: [PATCH 00/11] powerpc/xive: Improve diagnostic and activate
+ StoreEOI on P10 PowerNV
+Message-Id: <163783297365.1228879.4204140326111839575.b4-ty@ellerman.id.au>
+Date: Thu, 25 Nov 2021 20:36:13 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -46,27 +43,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 15 Nov 2021 11:12:22 +0100, Christophe Leroy wrote:
-> Today, patch_instruction() assumes that it is called exclusively on
-> valid addresses, and only checks that it is not called on an init
-> address after init section has been freed.
+On Fri, 5 Nov 2021 11:26:25 +0100, Cédric Le Goater wrote:
+> This series tries to improve diagnostic support in the XIVE driver. It
+> adds pr_debug() primitives that can be activated at run-time and changes
+> the debugfs xive entry to expose more information :
 > 
-> Improve verification by calling kernel_text_address() instead.
-> 
-> kernel_text_address() already includes a verification of
-> initmem release.
+>   /sys/kernel/debug/powerpc/xive/
+>     ├── eqs/
+>     │   ├── cpu0
+>     │   ├── cpu1
+>     │   ├── cpu2
+>     .   .
+>     │   └── cpu99
+>     ├── interrupts
+>     ├── ipis
+>     ├── save-restore
+>     └── store-eoi
 > 
 > [...]
 
-Applied to powerpc/next.
+Patches 1-10 applied to powerpc/next.
 
-[1/1] powerpc/code-patching: Improve verification of patchability
-      https://git.kernel.org/powerpc/c/8b8a8f0ab3f5519e45c526f826a655817486c5bb
+[01/11] powerpc/xive: Replace pr_devel() by pr_debug() to ease debug
+        https://git.kernel.org/powerpc/c/44b9c8ddcbc351d47ead974f0870d09bfc74b3f7
+[02/11] powerpc/xive: Introduce an helper to print out interrupt characteristics
+        https://git.kernel.org/powerpc/c/bd5b00c6cf0c37fce1bcd94390044d7e1dd638e7
+[03/11] powerpc/xive: Activate StoreEOI on P10
+        https://git.kernel.org/powerpc/c/756c52c632f5c2b054bb54b1ea9177329e4b8ce5
+[04/11] powerpc/xive: Introduce xive_core_debugfs_create()
+        https://git.kernel.org/powerpc/c/412877dfae3dc12733bc711ccbd3d02338803865
+[05/11] powerpc/xive: Change the debugfs file 'xive' into a directory
+        https://git.kernel.org/powerpc/c/baed14de78b5ee3ca04eae43c5b16e3eeb6e33a8
+[06/11] powerpc/xive: Rename the 'cpus' debugfs file to 'ipis'
+        https://git.kernel.org/powerpc/c/33e1d4a152ce55272b54a16884461218d12d4f1b
+[07/11] powerpc/xive: Add a debugfs file to dump EQs
+        https://git.kernel.org/powerpc/c/08f3f610214f395561bbda03344e641579f6e917
+[08/11] powerpc/xive: Add a debugfs toggle for StoreEOI
+        https://git.kernel.org/powerpc/c/d7bc1e376cb786e9e8483455584d89cad4b5808f
+[09/11] powerpc/xive: Add a kernel parameter for StoreEOI
+        https://git.kernel.org/powerpc/c/c21ee04f11ae068aa132cce56d09f618d4a66259
+[10/11] powerpc/xive: Add a debugfs toggle for save-restore
+        https://git.kernel.org/powerpc/c/1e7684dc4fc70271c8bf86d397bd4fbfb3581e65
 
 cheers
