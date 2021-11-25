@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFCC3C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 08:27:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3270C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 08:27:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J09w70GS4z3drL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 19:27:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J09wb3q1xz3dtJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Nov 2021 19:27:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,52 +16,52 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J09rx087Dz3cBl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 19:24:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J09s122jXz3cC9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Nov 2021 19:24:21 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4J09rV0cw5z9sSs;
- Thu, 25 Nov 2021 09:23:54 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4J09rW6S39z9sT2;
+ Thu, 25 Nov 2021 09:23:55 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id UhTo96FhZmbx; Thu, 25 Nov 2021 09:23:54 +0100 (CET)
+ with ESMTP id XMRS3j_NWamp; Thu, 25 Nov 2021 09:23:55 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4J09rM692Kz9sT2;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4J09rM65d2z9sSx;
  Thu, 25 Nov 2021 09:23:47 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C369E8B77E;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C10B98B77B;
  Thu, 25 Nov 2021 09:23:47 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id XJ4T76QF9Q8h; Thu, 25 Nov 2021 09:23:47 +0100 (CET)
+ with ESMTP id AVbd-du857Au; Thu, 25 Nov 2021 09:23:47 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.227])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E583F8B77C;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EA9D18B77D;
  Thu, 25 Nov 2021 09:23:46 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1AP8NcC8086372
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1AP8NdTl086380
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Thu, 25 Nov 2021 09:23:38 +0100
+ Thu, 25 Nov 2021 09:23:39 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1AP8NcDf086371;
- Thu, 25 Nov 2021 09:23:38 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1AP8NdJv086379;
+ Thu, 25 Nov 2021 09:23:39 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, alex@ghiti.fr
-Subject: [PATCH v2 7/9] powerpc/mm: Convert to default topdown mmap layout
-Date: Thu, 25 Nov 2021 09:23:29 +0100
-Message-Id: <4b6f05b1bc4b3e07920e87e692961de9ea5dd2e6.1637828367.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 9/9] powerpc: Simplify and move arch_randomize_brk()
+Date: Thu, 25 Nov 2021 09:23:31 +0100
+Message-Id: <4c5a2b18774552c2226573f7069ffeee71ad77cb.1637828367.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <cover.1637828367.git.christophe.leroy@csgroup.eu>
 References: <cover.1637828367.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1637828609; l=5473; s=20211009;
- h=from:subject:message-id; bh=mL8gpT9ntkhU5TH9ZSa2DX4HYBqV4Ob2fppAal1lP3g=;
- b=Idb7QgJRp5yZfMUTdNeaVkEFBh9BF8B9vuSRgTIqGTroElSqUmQFRjjRfmPt49+7FShQAMEzJmLt
- IhKOCwbfCQPvyCLhKuNn02LJaMGRbIM773Nq9wE4h5eBJQn6xffO
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1637828609; l=3773; s=20211009;
+ h=from:subject:message-id; bh=uDMNxxQ2lNaP63d0uIkwxjHDa3IfpqMt7N58uCcNJIM=;
+ b=Tn0UK+dlcWXuMeocBLofKxqdqjcqqlONZwe8JqKJQQdMw2fNGRYyBDArfjOd0qDjjxzE/MdEcNal
+ mGjmrut4D9s2VJQyx/hSgIpb1ekBl7TeIwmTiwgx5PnBeFi685v2
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,182 +82,119 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Select CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT and
-remove arch/powerpc/mm/mmap.c
+arch_randomize_brk() is only needed for hash on book3s/64, for other
+platforms the one provided by the default mmap layout is good enough.
 
-This change provides standard randomisation of mmaps.
+Move it to hash_utils.c and use randomize_page() like the generic one.
 
-See commit 8b8addf891de ("x86/mm/32: Enable full randomization on i386
-and X86_32") for all the benefits of mmap randomisation.
+And properly opt out the radix case instead of making an assumption
+on mmu_highuser_ssize.
+
+Also change to a 32M range like most other architectures instead of 8M.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v2: Also remove selection of ARCH_HAS_ELF_RANDOMIZE as it is already selected by CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
+v2: New
 ---
- arch/powerpc/Kconfig                 |   2 +-
- arch/powerpc/include/asm/processor.h |   2 -
- arch/powerpc/mm/Makefile             |   2 +-
- arch/powerpc/mm/mmap.c               | 105 ---------------------------
- 4 files changed, 2 insertions(+), 109 deletions(-)
- delete mode 100644 arch/powerpc/mm/mmap.c
+ arch/powerpc/kernel/process.c         | 40 ---------------------------
+ arch/powerpc/mm/book3s64/hash_utils.c | 18 ++++++++++++
+ include/linux/sizes.h                 |  2 ++
+ 3 files changed, 20 insertions(+), 40 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index dea74d7717c0..f2d02d462558 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -122,7 +122,6 @@ config PPC
- 	select ARCH_HAS_DEBUG_WX		if STRICT_KERNEL_RWX
- 	select ARCH_HAS_DEVMEM_IS_ALLOWED
- 	select ARCH_HAS_DMA_MAP_DIRECT 		if PPC_PSERIES
--	select ARCH_HAS_ELF_RANDOMIZE
- 	select ARCH_HAS_FORTIFY_SOURCE
- 	select ARCH_HAS_GCOV_PROFILE_ALL
- 	select ARCH_HAS_HUGEPD			if HUGETLB_PAGE
-@@ -158,6 +157,7 @@ config PPC
- 	select ARCH_USE_MEMTEST
- 	select ARCH_USE_QUEUED_RWLOCKS		if PPC_QUEUED_SPINLOCKS
- 	select ARCH_USE_QUEUED_SPINLOCKS	if PPC_QUEUED_SPINLOCKS
-+	select ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
- 	select ARCH_WANT_IPC_PARSE_VERSION
- 	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
- 	select ARCH_WANT_LD_ORPHAN_WARN
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index e39bd0ff69f3..d906b14dd599 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -378,8 +378,6 @@ static inline void prefetchw(const void *x)
- 
- #define spin_lock_prefetch(x)	prefetchw(x)
- 
--#define HAVE_ARCH_PICK_MMAP_LAYOUT
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 406d7ee9e322..f1f2f17543d6 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -2274,43 +2274,3 @@ unsigned long arch_align_stack(unsigned long sp)
+ 		sp -= get_random_int() & ~PAGE_MASK;
+ 	return sp & ~0xf;
+ }
 -
- /* asm stubs */
- extern unsigned long isa300_idle_stop_noloss(unsigned long psscr_val);
- extern unsigned long isa300_idle_stop_mayloss(unsigned long psscr_val);
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index d4c20484dad9..503a6e249940 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -5,7 +5,7 @@
- 
- ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
- 
--obj-y				:= fault.o mem.o pgtable.o mmap.o maccess.o pageattr.o \
-+obj-y				:= fault.o mem.o pgtable.o maccess.o pageattr.o \
- 				   init_$(BITS).o pgtable_$(BITS).o \
- 				   pgtable-frag.o ioremap.o ioremap_$(BITS).o \
- 				   init-common.o mmu_context.o drmem.o \
-diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
-deleted file mode 100644
-index 5972d619d274..000000000000
---- a/arch/powerpc/mm/mmap.c
-+++ /dev/null
-@@ -1,105 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- *  flexible mmap layout support
-- *
-- * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
-- * All Rights Reserved.
-- *
-- * Started by Ingo Molnar <mingo@elte.hu>
-- */
--
--#include <linux/personality.h>
--#include <linux/mm.h>
--#include <linux/random.h>
--#include <linux/sched/signal.h>
--#include <linux/sched/mm.h>
--#include <linux/elf-randomize.h>
--#include <linux/security.h>
--#include <linux/mman.h>
--
--/*
-- * Top of mmap area (just below the process stack).
-- *
-- * Leave at least a ~128 MB hole.
-- */
--#define MIN_GAP (128*1024*1024)
--#define MAX_GAP (TASK_SIZE/6*5)
--
--static inline int mmap_is_legacy(struct rlimit *rlim_stack)
+-static inline unsigned long brk_rnd(void)
 -{
--	if (current->personality & ADDR_COMPAT_LAYOUT)
--		return 1;
+-        unsigned long rnd = 0;
 -
--	if (rlim_stack->rlim_cur == RLIM_INFINITY)
--		return 1;
--
--	return sysctl_legacy_va_layout;
--}
--
--unsigned long arch_mmap_rnd(void)
--{
--	unsigned long shift, rnd;
--
--	shift = mmap_rnd_bits;
--#ifdef CONFIG_COMPAT
+-	/* 8MB for 32bit, 1GB for 64bit */
 -	if (is_32bit_task())
--		shift = mmap_rnd_compat_bits;
--#endif
--	rnd = get_random_long() % (1ul << shift);
+-		rnd = (get_random_long() % (1UL<<(23-PAGE_SHIFT)));
+-	else
+-		rnd = (get_random_long() % (1UL<<(30-PAGE_SHIFT)));
 -
 -	return rnd << PAGE_SHIFT;
 -}
 -
--static inline unsigned long stack_maxrandom_size(void)
+-unsigned long arch_randomize_brk(struct mm_struct *mm)
 -{
--	if (!(current->flags & PF_RANDOMIZE))
--		return 0;
+-	unsigned long base = mm->brk;
+-	unsigned long ret;
 -
--	/* 8MB for 32bit, 1GB for 64bit */
--	if (is_32bit_task())
--		return (1<<23);
--	else
--		return (1<<30);
--}
--
--static inline unsigned long mmap_base(unsigned long rnd,
--				      struct rlimit *rlim_stack)
--{
--	unsigned long gap = rlim_stack->rlim_cur;
--	unsigned long pad = stack_maxrandom_size() + stack_guard_gap;
--
--	/* Values close to RLIM_INFINITY can overflow. */
--	if (gap + pad > gap)
--		gap += pad;
--
--	if (gap < MIN_GAP)
--		gap = MIN_GAP;
--	else if (gap > MAX_GAP)
--		gap = MAX_GAP;
--
--	return PAGE_ALIGN(DEFAULT_MAP_WINDOW - gap - rnd);
--}
--
--/*
-- * This function, called very early during the creation of a new
-- * process VM image, sets up which VM layout function to use:
-- */
--void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
--{
--	unsigned long random_factor = 0UL;
--
--	if (current->flags & PF_RANDOMIZE)
--		random_factor = arch_mmap_rnd();
--
+-#ifdef CONFIG_PPC_BOOK3S_64
 -	/*
--	 * Fall back to the standard layout if the personality
--	 * bit is set, or if the expected stack growth is unlimited:
+-	 * If we are using 1TB segments and we are allowed to randomise
+-	 * the heap, we can put it above 1TB so it is backed by a 1TB
+-	 * segment. Otherwise the heap will be in the bottom 1TB
+-	 * which always uses 256MB segments and this may result in a
+-	 * performance penalty. We don't need to worry about radix. For
+-	 * radix, mmu_highuser_ssize remains unchanged from 256MB.
 -	 */
--	if (mmap_is_legacy(rlim_stack)) {
--		mm->mmap_base = TASK_UNMAPPED_BASE;
--		mm->get_unmapped_area = arch_get_unmapped_area;
--	} else {
--		mm->mmap_base = mmap_base(random_factor, rlim_stack);
--		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
--	}
+-	if (!is_32bit_task() && (mmu_highuser_ssize == MMU_SEGSIZE_1T))
+-		base = max_t(unsigned long, mm->brk, 1UL << SID_SHIFT_1T);
+-#endif
+-
+-	ret = PAGE_ALIGN(base + brk_rnd());
+-
+-	if (ret < mm->brk)
+-		return mm->brk;
+-
+-	return ret;
 -}
+-
+diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+index 1d09d4aeddbf..3521fad6a479 100644
+--- a/arch/powerpc/mm/book3s64/hash_utils.c
++++ b/arch/powerpc/mm/book3s64/hash_utils.c
+@@ -37,6 +37,7 @@
+ #include <linux/cpu.h>
+ #include <linux/pgtable.h>
+ #include <linux/debugfs.h>
++#include <linux/random.h>
+ 
+ #include <asm/interrupt.h>
+ #include <asm/processor.h>
+@@ -2072,3 +2073,20 @@ void __init print_system_hash_info(void)
+ 	if (htab_hash_mask)
+ 		pr_info("htab_hash_mask    = 0x%lx\n", htab_hash_mask);
+ }
++
++unsigned long arch_randomize_brk(struct mm_struct *mm)
++{
++	/*
++	 * If we are using 1TB segments and we are allowed to randomise
++	 * the heap, we can put it above 1TB so it is backed by a 1TB
++	 * segment. Otherwise the heap will be in the bottom 1TB
++	 * which always uses 256MB segments and this may result in a
++	 * performance penalty.
++	 */
++	if (is_32bit_task())
++		return randomize_page(mm->brk, SZ_32M);
++	else if (!radix_enabled() && mmu_highuser_ssize == MMU_SEGSIZE_1T)
++		return randomize_page(max_t(unsigned long, mm->brk, SZ_1T), SZ_1G);
++	else
++		return randomize_page(mm->brk, SZ_1G);
++}
+diff --git a/include/linux/sizes.h b/include/linux/sizes.h
+index 1ac79bcee2bb..84aa448d8bb3 100644
+--- a/include/linux/sizes.h
++++ b/include/linux/sizes.h
+@@ -47,6 +47,8 @@
+ #define SZ_8G				_AC(0x200000000, ULL)
+ #define SZ_16G				_AC(0x400000000, ULL)
+ #define SZ_32G				_AC(0x800000000, ULL)
++
++#define SZ_1T				_AC(0x10000000000, ULL)
+ #define SZ_64T				_AC(0x400000000000, ULL)
+ 
+ #endif /* __LINUX_SIZES_H__ */
 -- 
 2.33.1
 
