@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D62FC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Nov 2021 09:04:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52AB1C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Nov 2021 09:14:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J0phN4nP1z3c6j
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Nov 2021 20:04:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J0pwr5Phcz3bqS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Nov 2021 20:14:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c2H5ar3Y;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DxRD2FEP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=bugzilla.kernel.org (client-ip=198.145.29.99;
@@ -18,32 +18,32 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=c2H5ar3Y; 
+ header.s=k20201202 header.b=DxRD2FEP; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J0pgZ0MpHz2x9T
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Nov 2021 20:03:22 +1100 (AEDT)
-Received: by mail.kernel.org (Postfix) with ESMTPS id CB7C661108
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Nov 2021 09:03:18 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J0pw13jmsz2yMc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Nov 2021 20:14:09 +1100 (AEDT)
+Received: by mail.kernel.org (Postfix) with ESMTPS id 21DC860F58
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Nov 2021 09:14:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1637917398;
- bh=E9FghHIs1nvki5elh8B0+2e2C/BztRcCiDJELMkL5RE=;
+ s=k20201202; t=1637918047;
+ bh=QJeH6/BfwdS/rbW9driNkIVCW2ZHLMQR5iw3rIrZnnI=;
  h=From:To:Subject:Date:In-Reply-To:References:From;
- b=c2H5ar3YVGkRmJy6llnP9z8i8ZED3Hl0xqc55fW2kageGKNK2j7cAKLVSdtaISHww
- KH76fTGHTvV0w+tYOXPkDjGh310cebc6SW0mhJt/8cNBlYV63pIvOXFwN14CgQ/a3A
- ax8vvU7Bx/cULy39qVQApVFBsYTsCm66AMgF3Ua3NiNGUqgMh4OnvWYQtOJDdVFROf
- oHjpW1hTzzvf6iLgcFx3WmQkC3ebLbQ1j/79c++IUGxiofGq3DSMHsPDORD5CHyG3L
- ygzi8bPGad2M7GOJm7H5yJUQE1jSIyNQovdnSM1RO4opYCOszMmFKrxr2/neArX0i5
- mxSsWrfUJ8zrA==
+ b=DxRD2FEPfEdUod7jvWnmJCgyq/q9ZWj0CrvvVBLeVTVMJgT+mmJQWQWQaXBk0dlne
+ giBLY8kDP0W5ImvCEmYmnqIiW86CchpfdDyew+GCv/uTIPG2WIimXqNMPxZOIzchtP
+ G2IC9JEfMG+QfIwmXe2Cx/mkz9out6zQelBDwWTSNHrsCLWuTpHKmm/PmnsuriNQ9I
+ gPuWsnP14jodt0ynB8OS52qul72Z1CmkXYXDWY61r0t/yGjNGHHSmyf8M53xIJpT+g
+ yPV7wpch9ldhRB9qurU/0WaFyCdaOLLavmCdfup1BGoPyOe9Aqa1z6YUPENUJIa7cq
+ fU8bnXWxcIxuA==
 Received: by pdx-korg-bugzilla-2.web.codeaurora.org (Postfix, from userid 48)
- id C063260EE3; Fri, 26 Nov 2021 09:03:18 +0000 (UTC)
+ id 1890960F6E; Fri, 26 Nov 2021 09:14:07 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 205099] KASAN hit at raid6_pq: BUG: Unable to handle kernel
  data access at 0x00f0fd0d
-Date: Fri, 26 Nov 2021 09:03:18 +0000
+Date: Fri, 26 Nov 2021 09:14:06 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -59,7 +59,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-205099-206035-67F4Fr9Hrc@https.bugzilla.kernel.org/>
+Message-ID: <bug-205099-206035-05YnCvmN97@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-205099-206035@https.bugzilla.kernel.org/>
 References: <bug-205099-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -84,14 +84,25 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D205099
 
---- Comment #37 from Christophe Leroy (christophe.leroy@csgroup.eu) ---
-I see no obvious reason for a 32Mb allocation to fail while you have 588612=
-kB
-free memory.
+--- Comment #38 from Christophe Leroy (christophe.leroy@csgroup.eu) ---
+Looks like only x86 are arm implement this vmalloc=3D parameter:
 
-And that happens early at boot, before user processes are started so the vm=
-ap
-area, allthough not very big, should still have 32M space available.
+[chleroy@PO20335 linux-powerpc]$ git grep 'early_param("vmalloc"' arch/
+arch/arm/mm/mmu.c:early_param("vmalloc", early_vmalloc);
+arch/x86/mm/pgtable_32.c:early_param("vmalloc", parse_vmalloc);
+
+However, your vmalloc area has a size of 65M:
+
+Kernel virtual memory layout:
+  * 0xf6000000..0xfec00000  : kasan shadow mem
+  * 0xf5bbf000..0xf5fff000  : fixmap
+  * 0xf5400000..0xf5800000  : highmem PTEs
+  * 0xf5115000..0xf5400000  : early ioremap
+  * 0xf1000000..0xf5110000  : vmalloc & ioremap
+  * 0xb0000000..0xc0000000  : modules
+Memory: 1928984K/2097152K available (22288K kernel code, 2616K rwdata, 4868K
+rodata, 1408K init, 8981K bss, 168168K reserved, 0K cma-reserved, 1310720K
+highmem)
 
 --=20
 You may reply to this email to add a comment.
