@@ -4,14 +4,14 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AA67C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 01:22:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65218C4707A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 01:22:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J1DNy0rssz3cnW
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 12:22:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J1DPg53DZz3drg
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 12:22:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=j5FW789U;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=dNlMdV5d;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=eeGX8154;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=My4pAOvY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
@@ -19,42 +19,42 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=j5FW789U; 
+ header.s=2020 header.b=eeGX8154; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=dNlMdV5d; 
+ header.a=ed25519-sha256 header.s=2020e header.b=My4pAOvY; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J1DK50BTlz2xYL
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J1DK509tNz2xDv
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Nov 2021 12:18:49 +1100 (AEDT)
-Message-ID: <20211126223824.322987915@linutronix.de>
+Message-ID: <20211126223824.441771859@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1637975922;
+ s=2020; t=1637975924;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- references:references; bh=AwO21SR5HwD8yhhWfgGPPa41s/dLuMAByqtyG5X5FJI=;
- b=j5FW789Ucan2sEhmMHex1zEIGRCewybYb0k8vFZpAesryvACIyGEZCuW6OE6nyhgwYWoBs
- 36GH4PXQIVsT3wfXMUdaH4udB5laQh8tV+NIjXJzIPMPqTd6t644l6MErYfjYLAjwAjp+o
- ydn+khroLUbvItgILdwESI8UiLnPxM+QMi0iHL5UhqTaJghKxNN4F0JRsvhGpzMnBv1oBf
- COAwREGWqZiLc9GjyMnAPCNjOCorYHSzdauf6MnqLvmW4HHJgkWBLQO4I1iZcfOoWX9kgu
- gehHU66uY7Fvy97lhtsmfTJEYw48j8MwFpuqfKGK9JGha/E+Q0NJD/5BY0epqA==
+ references:references; bh=EjQK06gGut8wpWxb3xXf7TaaLrkIbQLhpXZXlXqI+1E=;
+ b=eeGX81542dq+sYH7ESmSoDpusjpXmGwZ5uzc6HQtoZnKCuS4K/guuZW1jA24z34Luwy1u2
+ UoyJLLDTEbjG1mWVGhimeiGDQ4GO+YER3XWm6Rq65w2m06j2WyJu3KC7Q4daPErrjOc2m5
+ t7ZnP9RWK/MGdDqy+s4CyQeBzBEYKGEutpivREEkOR8o9Admqct7oIE3li6FXCsI8/xnab
+ nsSIKCZtsl6R4hj2IH3TLhbji/ivuNINmj9LHKOJyb3InVgAW01axfoK7Xc26J2g96I3+0
+ yYelATKYapulhlXULFSMGmMl5Ou0atTEdo4JBDeXppHg9OLpb13O+VkE9z9QsQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1637975922;
+ s=2020e; t=1637975924;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- references:references; bh=AwO21SR5HwD8yhhWfgGPPa41s/dLuMAByqtyG5X5FJI=;
- b=dNlMdV5dyz9a7jSmk6oMvSOh4AQ8w3oaFI11LvuPRDM7Ktke1mADQwNnAcmbrjJhHto0ik
- tApE8jduCqPTMQDA==
+ references:references; bh=EjQK06gGut8wpWxb3xXf7TaaLrkIbQLhpXZXlXqI+1E=;
+ b=My4pAOvYAQSL+ZCd2xtuUvRpdvSLUlBGqh2EuD8EvOsTnwX4Iyk+C+TZrGGmKB0XpXROFh
+ k6c+Lym+Eb4h6RAQ==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 04/22] genirq/msi: Remove unused domain callbacks
+Subject: [patch 06/22] PCI/MSI: Make pci_msi_domain_write_msg() static
 References: <20211126222700.862407977@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Sat, 27 Nov 2021 02:18:40 +0100 (CET)
+Date: Sat, 27 Nov 2021 02:18:44 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,68 +83,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No users and there is no need to grow them.
+There is no point to have this function public as it is set by the PCI core
+anyway when a PCI/MSI irqdomain is created.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- include/linux/msi.h |   11 ++++-------
- kernel/irq/msi.c    |    5 -----
- 2 files changed, 4 insertions(+), 12 deletions(-)
+ drivers/irqchip/irq-gic-v2m.c            |    1 -
+ drivers/irqchip/irq-gic-v3-its-pci-msi.c |    1 -
+ drivers/irqchip/irq-gic-v3-mbi.c         |    1 -
+ drivers/pci/msi.c                        |    2 +-
+ include/linux/msi.h                      |    1 -
+ 5 files changed, 1 insertion(+), 5 deletions(-)
 
+--- a/drivers/irqchip/irq-gic-v2m.c
++++ b/drivers/irqchip/irq-gic-v2m.c
+@@ -88,7 +88,6 @@ static struct irq_chip gicv2m_msi_irq_ch
+ 	.irq_mask		= gicv2m_mask_msi_irq,
+ 	.irq_unmask		= gicv2m_unmask_msi_irq,
+ 	.irq_eoi		= irq_chip_eoi_parent,
+-	.irq_write_msi_msg	= pci_msi_domain_write_msg,
+ };
+ 
+ static struct msi_domain_info gicv2m_msi_domain_info = {
+--- a/drivers/irqchip/irq-gic-v3-its-pci-msi.c
++++ b/drivers/irqchip/irq-gic-v3-its-pci-msi.c
+@@ -28,7 +28,6 @@ static struct irq_chip its_msi_irq_chip
+ 	.irq_unmask		= its_unmask_msi_irq,
+ 	.irq_mask		= its_mask_msi_irq,
+ 	.irq_eoi		= irq_chip_eoi_parent,
+-	.irq_write_msi_msg	= pci_msi_domain_write_msg,
+ };
+ 
+ static int its_pci_msi_vec_count(struct pci_dev *pdev, void *data)
+--- a/drivers/irqchip/irq-gic-v3-mbi.c
++++ b/drivers/irqchip/irq-gic-v3-mbi.c
+@@ -171,7 +171,6 @@ static struct irq_chip mbi_msi_irq_chip
+ 	.irq_unmask		= mbi_unmask_msi_irq,
+ 	.irq_eoi		= irq_chip_eoi_parent,
+ 	.irq_compose_msi_msg	= mbi_compose_msi_msg,
+-	.irq_write_msi_msg	= pci_msi_domain_write_msg,
+ };
+ 
+ static struct msi_domain_info mbi_msi_domain_info = {
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -1267,7 +1267,7 @@ EXPORT_SYMBOL_GPL(msi_desc_to_pci_sysdat
+  * @irq_data:	Pointer to interrupt data of the MSI interrupt
+  * @msg:	Pointer to the message
+  */
+-void pci_msi_domain_write_msg(struct irq_data *irq_data, struct msi_msg *msg)
++static void pci_msi_domain_write_msg(struct irq_data *irq_data, struct msi_msg *msg)
+ {
+ 	struct msi_desc *desc = irq_data_get_msi_desc(irq_data);
+ 
 --- a/include/linux/msi.h
 +++ b/include/linux/msi.h
-@@ -304,7 +304,6 @@ struct msi_domain_info;
-  * @msi_free:		Domain specific function to free a MSI interrupts
-  * @msi_check:		Callback for verification of the domain/info/dev data
-  * @msi_prepare:	Prepare the allocation of the interrupts in the domain
-- * @msi_finish:		Optional callback to finalize the allocation
-  * @set_desc:		Set the msi descriptor for an interrupt
-  * @handle_error:	Optional error handler if the allocation fails
-  * @domain_alloc_irqs:	Optional function to override the default allocation
-@@ -312,12 +311,11 @@ struct msi_domain_info;
-  * @domain_free_irqs:	Optional function to override the default free
-  *			function.
-  *
-- * @get_hwirq, @msi_init and @msi_free are callbacks used by
-- * msi_create_irq_domain() and related interfaces
-+ * @get_hwirq, @msi_init and @msi_free are callbacks used by the underlying
-+ * irqdomain.
-  *
-- * @msi_check, @msi_prepare, @msi_finish, @set_desc and @handle_error
-- * are callbacks used by msi_domain_alloc_irqs() and related
-- * interfaces which are based on msi_desc.
-+ * @msi_check, @msi_prepare, @handle_error and @set_desc are callbacks used by
-+ * msi_domain_alloc/free_irqs().
-  *
-  * @domain_alloc_irqs, @domain_free_irqs can be used to override the
-  * default allocation/free functions (__msi_domain_alloc/free_irqs). This
-@@ -351,7 +349,6 @@ struct msi_domain_ops {
- 	int		(*msi_prepare)(struct irq_domain *domain,
- 				       struct device *dev, int nvec,
- 				       msi_alloc_info_t *arg);
--	void		(*msi_finish)(msi_alloc_info_t *arg, int retval);
- 	void		(*set_desc)(msi_alloc_info_t *arg,
- 				    struct msi_desc *desc);
- 	int		(*handle_error)(struct irq_domain *domain,
---- a/kernel/irq/msi.c
-+++ b/kernel/irq/msi.c
-@@ -562,8 +562,6 @@ int __msi_domain_alloc_irqs(struct irq_d
- 			ret = -ENOSPC;
- 			if (ops->handle_error)
- 				ret = ops->handle_error(domain, desc, ret);
--			if (ops->msi_finish)
--				ops->msi_finish(&arg, ret);
- 			return ret;
- 		}
+@@ -454,7 +454,6 @@ void *platform_msi_get_host_data(struct
+ #endif /* CONFIG_GENERIC_MSI_IRQ_DOMAIN */
  
-@@ -573,9 +571,6 @@ int __msi_domain_alloc_irqs(struct irq_d
- 		}
- 	}
- 
--	if (ops->msi_finish)
--		ops->msi_finish(&arg, 0);
--
- 	can_reserve = msi_check_reservation_mode(domain, info, dev);
- 
- 	/*
+ #ifdef CONFIG_PCI_MSI_IRQ_DOMAIN
+-void pci_msi_domain_write_msg(struct irq_data *irq_data, struct msi_msg *msg);
+ struct irq_domain *pci_msi_create_irq_domain(struct fwnode_handle *fwnode,
+ 					     struct msi_domain_info *info,
+ 					     struct irq_domain *parent);
 
