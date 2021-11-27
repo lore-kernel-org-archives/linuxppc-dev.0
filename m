@@ -4,14 +4,14 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 498D1C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 01:36:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7B21C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 01:36:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J1Dj56FF7z3g17
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 12:36:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J1Djp2dQyz3g2y
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 12:36:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=WiC1VNdW;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=oxItvLAs;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=3QE1kwAZ;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=/+krVhSS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
@@ -19,42 +19,42 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=WiC1VNdW; 
+ header.s=2020 header.b=3QE1kwAZ; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=oxItvLAs; 
+ header.a=ed25519-sha256 header.s=2020e header.b=/+krVhSS; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J1DKv1s6Wz3cRf
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Nov 2021 12:19:31 +1100 (AEDT)
-Message-ID: <20211126223824.263656943@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J1DKw4YTtz3cZs
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Nov 2021 12:19:32 +1100 (AEDT)
+Message-ID: <20211126223824.382273262@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1637975965;
+ s=2020; t=1637975969;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- references:references; bh=7H7+YC/Q3X3DUjW7OFUmpmZxFX8YbEmXXunUPCxWTOo=;
- b=WiC1VNdWToWcSB4jjldD3djnVzhbklJU6pyPP+Tzw1/X7LcdGmzocohuKX2DHmH5PGkzFA
- YvI1fbfvDPertqCu24dWIg/reyIisrLWdA31M3XAfyXmYr26ddlEQo7K729EUzYakBSp/c
- FF0Aav2F1A7cZWyl50w8C8rJlDirHuxNMd4Z5W5yXeRD4KzNF5DgqMS2GoTrLev1pVRTdk
- Nvvrn+1hgDc7B9C7iydC6sdHSNtBmli4SxkiduUEUhEx7R4DhRFkRbPTXpIveun/cEm9EH
- R2eikJWgN2dGC+9O4EEoYvwIpZaf8NdveICOnvBz85t0g3hRKWjruPAVG48nEA==
+ references:references; bh=w7GncdwHZHkuO6107A0BMJdTfScXy8O2W/1Ze2L1KBI=;
+ b=3QE1kwAZSn0AOk+bavNZ+1QGzKQwtdZggp/2QupSoLnSv4hgBf0i5NYSQk1Xh3Te7r2lj2
+ RIKrJ8nRt+yOUSqgv/raaaEzi4g7iUcBuN551YDz6Xaov3UfHqH8KbAZc91CzVW9+qGr+5
+ 0K2kZCbaxqFIj4mFhtFNSEu+KAhUE1WDPPYhMsX8N8ff3xkHmUekaAo3u4T7A66BSLqhYp
+ 4XGys/cw7iBRHVdNQTa9QVZRKfJojBV6cCn4mN7axCrfi968z4S8U7K2yEJOsKQLwWgo1n
+ EZ7cAGoXHBM1b+VijVozl6thH/vIF8O3zDUH6vXm2+A/d3lLLGdu2F4xFTZCEg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1637975965;
+ s=2020e; t=1637975969;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- references:references; bh=7H7+YC/Q3X3DUjW7OFUmpmZxFX8YbEmXXunUPCxWTOo=;
- b=oxItvLAsFI5aE7ud8hMS3kIDpiajTA2JP70voGmnogSyk+5r+WFg4xQWcWSEMPO0APH7Yy
- X6lZJHHWpmBfDHBw==
+ references:references; bh=w7GncdwHZHkuO6107A0BMJdTfScXy8O2W/1Ze2L1KBI=;
+ b=/+krVhSSUWDZcKzVa8Z7DFG7rRo3Xw/7JdSU0e8eVBPs+Rs+2BYhA4S+6BpELmkd/ZqXPd
+ OxLK/KydpitaftBQ==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 03/22] genirq/msi: Guard sysfs code
+Subject: [patch 05/22] genirq/msi: Fixup includes
 References: <20211126222700.862407977@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Sat, 27 Nov 2021 02:19:25 +0100 (CET)
+Date: Sat, 27 Nov 2021 02:19:28 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,54 +82,35 @@ Cc: linux-hyperv@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
-Message-ID: <20211127011925.ry05ohljl8QlrLn-x8COT84HmCS9an30cE55Q4vg2LM@z>
+Message-ID: <20211127011928.6X_FaV9ryh2dVa5O3YGqsotcnP0OHAFuR3bAA6FGzvw@z>
 
-No point in building unused code when CONFIG_SYSFS=n.
+Remove the kobject.h include from msi.h as it's not required and add a
+sysfs.h include to the core code instead.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- include/linux/msi.h |   10 ++++++++++
- kernel/irq/msi.c    |    2 ++
- 2 files changed, 12 insertions(+)
+ include/linux/msi.h |    1 -
+ kernel/irq/msi.c    |    1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
 
 --- a/include/linux/msi.h
 +++ b/include/linux/msi.h
-@@ -239,9 +239,19 @@ void __pci_write_msi_msg(struct msi_desc
- void pci_msi_mask_irq(struct irq_data *data);
- void pci_msi_unmask_irq(struct irq_data *data);
+@@ -2,7 +2,6 @@
+ #ifndef LINUX_MSI_H
+ #define LINUX_MSI_H
  
-+#ifdef CONFIG_SYSFS
- const struct attribute_group **msi_populate_sysfs(struct device *dev);
- void msi_destroy_sysfs(struct device *dev,
- 		       const struct attribute_group **msi_irq_groups);
-+#else
-+static inline const struct attribute_group **msi_populate_sysfs(struct device *dev)
-+{
-+	return NULL;
-+}
-+static inline void msi_destroy_sysfs(struct device *dev, const struct attribute_group **msi_irq_groups)
-+{
-+}
-+#endif
+-#include <linux/kobject.h>
+ #include <linux/list.h>
+ #include <asm/msi.h>
  
- /*
-  * The arch hooks to setup up msi irqs. Default functions are implemented
 --- a/kernel/irq/msi.c
 +++ b/kernel/irq/msi.c
-@@ -72,6 +72,7 @@ void get_cached_msi_msg(unsigned int irq
- }
- EXPORT_SYMBOL_GPL(get_cached_msi_msg);
+@@ -14,6 +14,7 @@
+ #include <linux/irqdomain.h>
+ #include <linux/msi.h>
+ #include <linux/slab.h>
++#include <linux/sysfs.h>
+ #include <linux/pci.h>
  
-+#ifdef CONFIG_SYSFS
- static ssize_t msi_mode_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
- {
-@@ -204,6 +205,7 @@ void msi_destroy_sysfs(struct device *de
- 		kfree(msi_irq_groups);
- 	}
- }
-+#endif
- 
- #ifdef CONFIG_GENERIC_MSI_IRQ_DOMAIN
- static inline void irq_chip_write_msi_msg(struct irq_data *data,
+ #include "internals.h"
 
