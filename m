@@ -4,14 +4,14 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7E8EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 01:24:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BBEDC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 01:25:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J1DRq2BQNz3f1d
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 12:24:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J1DSf4n6dz3ckx
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 12:25:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=cmxuu0+S;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=cZ5icEO1;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=nxj8kvRG;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=QQP1VVw6;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
@@ -19,42 +19,42 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=cmxuu0+S; 
+ header.s=2020 header.b=nxj8kvRG; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=cZ5icEO1; 
+ header.a=ed25519-sha256 header.s=2020e header.b=QQP1VVw6; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J1DK828Mlz30R8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Nov 2021 12:18:52 +1100 (AEDT)
-Message-ID: <20211126223824.558746009@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J1DKC37FBz2xXx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Nov 2021 12:18:55 +1100 (AEDT)
+Message-ID: <20211126223824.737214551@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1637975927;
+ s=2020; t=1637975932;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- references:references; bh=t8fdQf5v0Re3s6aU2w+RDhHEUcAYg2OEvsShj+q+pN4=;
- b=cmxuu0+S0CsZgYZ32HYbpri2Sd336Qg0Z/c81KGZv/d8VT2cx3pO+wemLvUEb8/rZzqWVq
- 0Aee2el4uFtUTEwM4NevFSfRRWXl8VsohVUQkWOKC+PX0UQyocXwd13XzgnMnq75EbEPpc
- 0XDH6VZ4F6aY7FGjwQjBxCJ7S/gKrxXo/ft3a22JYLKHH+h+Axgwy8gMgGdardXG7mD8wm
- 3V4bu8HbHxltFdFVIZbZpYe1L772kd6xKP36Y2xY0IxJPYxSmaQFkKvdAoQKrvZZSPMg4i
- ILG/RGrZ7qSuIfwivCkd64S54zttW12a2Bqgv90Is3DfVoXms2CX5Xi+tguk7Q==
+ references:references; bh=aZOv1txgfOaOUbPFrZO+dbMPb9SLUMuv6lc2RMuyFjg=;
+ b=nxj8kvRG0udwnyf6qeanYo6Y4W8sZG5eqxablsikiqcCTA7VdivSUMTsYQKJzLxw6OH8wK
+ URC4Potp5y1ag0slj7KxMuRCI+jgKS8c+FDtIXu+GjNrGKyWdq8mzVdDAtQeYZAPF8QeJp
+ mEC2VvlU+WC1dQQyvctPXd9CKM/Bper6bdkyneDsU7gSI4Syz1McOMndl4JO4LO314Hzl9
+ xZjk7yCqKwmQqLZS7YQRflq9kqQj/mgdAtXrFAh2sIRdgapxhlCo1uAjoVZ1WQcMdpXITj
+ jEf/N1becZCL3GaG7EAAq2c+wY32vqs051c+pgYRG4wAeO0HTTX8Oi7yRxcUlg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1637975927;
+ s=2020e; t=1637975932;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- references:references; bh=t8fdQf5v0Re3s6aU2w+RDhHEUcAYg2OEvsShj+q+pN4=;
- b=cZ5icEO1gkVwPGoTe3vcr7yZhvwpxdLRW5DA8ZhfyEhQ1AqnzzWnOcXhvMTVspkGXfUHDc
- LU+g5W5AGkvQPBCg==
+ references:references; bh=aZOv1txgfOaOUbPFrZO+dbMPb9SLUMuv6lc2RMuyFjg=;
+ b=QQP1VVw6WuTJXvvOWqLKDexxgcwgpEeBUNVJEa0ULD4SwafNzfa75ksMJErjOcHpZVno3B
+ Gmeyg67Xv64c4RAw==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 08/22] PCI/sysfs: Use pci_irq_vector()
+Subject: [patch 11/22] x86/hyperv: Refactor hv_msi_domain_free_irqs()
 References: <20211126222700.862407977@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Sat, 27 Nov 2021 02:18:47 +0100 (CET)
+Date: Sat, 27 Nov 2021 02:18:51 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,27 +83,109 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-instead of fiddling with msi descriptors.
+No point in looking up things over and over. Just look up the associated
+irq data and work from there.
+
+No functional change.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Wei Liu <wei.liu@kernel.org>
+Cc: x86@kernel.org
+Cc: linux-hyperv@vger.kernel.org
 ---
- drivers/pci/pci-sysfs.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ arch/x86/hyperv/irqdomain.c |   55 +++++++++++++-------------------------------
+ 1 file changed, 17 insertions(+), 38 deletions(-)
 
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -62,11 +62,8 @@ static ssize_t irq_show(struct device *d
- 	 * For MSI, show the first MSI IRQ; for all other cases including
- 	 * MSI-X, show the legacy INTx IRQ.
- 	 */
--	if (pdev->msi_enabled) {
--		struct msi_desc *desc = first_pci_msi_entry(pdev);
--
--		return sysfs_emit(buf, "%u\n", desc->irq);
--	}
-+	if (pdev->msi_enabled)
-+		return sysfs_emit(buf, "%u\n", pci_irq_vector(pdev, 0));
- #endif
+--- a/arch/x86/hyperv/irqdomain.c
++++ b/arch/x86/hyperv/irqdomain.c
+@@ -253,64 +253,43 @@ static int hv_unmap_msi_interrupt(struct
+ 	return hv_unmap_interrupt(hv_build_pci_dev_id(dev).as_uint64, old_entry);
+ }
  
- 	return sysfs_emit(buf, "%u\n", pdev->irq);
+-static void hv_teardown_msi_irq_common(struct pci_dev *dev, struct msi_desc *msidesc, int irq)
++static void hv_teardown_msi_irq(struct pci_dev *dev, struct irq_data *irqd)
+ {
+-	u64 status;
+ 	struct hv_interrupt_entry old_entry;
+-	struct irq_desc *desc;
+-	struct irq_data *data;
+ 	struct msi_msg msg;
++	u64 status;
+ 
+-	desc = irq_to_desc(irq);
+-	if (!desc) {
+-		pr_debug("%s: no irq desc\n", __func__);
+-		return;
+-	}
+-
+-	data = &desc->irq_data;
+-	if (!data) {
+-		pr_debug("%s: no irq data\n", __func__);
+-		return;
+-	}
+-
+-	if (!data->chip_data) {
++	if (!irqd->chip_data) {
+ 		pr_debug("%s: no chip data\n!", __func__);
+ 		return;
+ 	}
+ 
+-	old_entry = *(struct hv_interrupt_entry *)data->chip_data;
++	old_entry = *(struct hv_interrupt_entry *)irqd->chip_data;
+ 	entry_to_msi_msg(&old_entry, &msg);
+ 
+-	kfree(data->chip_data);
+-	data->chip_data = NULL;
++	kfree(irqd->chip_data);
++	irqd->chip_data = NULL;
+ 
+ 	status = hv_unmap_msi_interrupt(dev, &old_entry);
+ 
+-	if (status != HV_STATUS_SUCCESS) {
++	if (status != HV_STATUS_SUCCESS)
+ 		pr_err("%s: hypercall failed, status %lld\n", __func__, status);
+-		return;
+-	}
+ }
+ 
+-static void hv_msi_domain_free_irqs(struct irq_domain *domain, struct device *dev)
++static void hv_msi_free_irq(struct irq_domain *domain,
++			    struct msi_domain_info *info, unsigned int virq)
+ {
+-	int i;
+-	struct msi_desc *entry;
+-	struct pci_dev *pdev;
++	struct irq_data *irqd = irq_get_irq_data(virq);
++	struct msi_desc *desc;
+ 
+-	if (WARN_ON_ONCE(!dev_is_pci(dev)))
++	if (!irqd)
+ 		return;
+ 
+-	pdev = to_pci_dev(dev);
++	desc = irq_data_get_msi_desc(irqd);
++	if (!desc || !desc->irq || WARN_ON_ONCE(!dev_is_pci(desc->dev)))
++		return;
+ 
+-	for_each_pci_msi_entry(entry, pdev) {
+-		if (entry->irq) {
+-			for (i = 0; i < entry->nvec_used; i++) {
+-				hv_teardown_msi_irq_common(pdev, entry, entry->irq + i);
+-				irq_domain_free_irqs(entry->irq + i, 1);
+-			}
+-		}
+-	}
++	hv_teardown_msi_irq(to_pci_dev(desc->dev), irqd);
+ }
+ 
+ /*
+@@ -329,7 +308,7 @@ static struct irq_chip hv_pci_msi_contro
+ };
+ 
+ static struct msi_domain_ops pci_msi_domain_ops = {
+-	.domain_free_irqs	= hv_msi_domain_free_irqs,
++	.msi_free		= hv_msi_free_irq,
+ 	.msi_prepare		= pci_msi_prepare,
+ };
+ 
 
