@@ -4,66 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4655EC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 19:54:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C977C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 23:03:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J1j4N4lh3z3cPk
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Nov 2021 06:54:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J1nGp4fPtz3cYL
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Nov 2021 10:03:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=intel.com (client-ip=192.55.52.115; helo=mga14.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J1j2H4sysz3cbB
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Nov 2021 06:52:39 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4J1j2C1p0qz9sSD;
- Sat, 27 Nov 2021 20:52:35 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Kkc19jxKrOxi; Sat, 27 Nov 2021 20:52:35 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4J1j1Z57xvz9sTb;
- Sat, 27 Nov 2021 20:52:02 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 31FDE8B8D9;
- Sat, 27 Nov 2021 19:10:30 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id fOQkdGixu2XF; Sat, 27 Nov 2021 19:10:30 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.42])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B6DAA8B8DB;
- Sat, 27 Nov 2021 19:10:29 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1ARIAP13636658
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sat, 27 Nov 2021 19:10:25 +0100
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1ARIAP2R636657;
- Sat, 27 Nov 2021 19:10:25 +0100
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 3/4] powerpc/inst: Define ppc_inst_t as u32 on PPC32
-Date: Sat, 27 Nov 2021 19:10:20 +0100
-Message-Id: <6e02f04ee0258d810a7c6faa346d1bfd9a990714.1638036607.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.33.1
-In-Reply-To: <1a8623dce54a72c7af172027caa7c44b1fefa8c4.1638036607.git.christophe.leroy@csgroup.eu>
-References: <1a8623dce54a72c7af172027caa7c44b1fefa8c4.1638036607.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J1nGG4jNcz2xDM
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Nov 2021 10:03:13 +1100 (AEDT)
+X-IronPort-AV: E=McAfee;i="6200,9189,10181"; a="236030846"
+X-IronPort-AV: E=Sophos;i="5.87,269,1631602800"; d="scan'208";a="236030846"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+ by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 Nov 2021 15:02:10 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.87,269,1631602800"; d="scan'208";a="599415274"
+Received: from lkp-server02.sh.intel.com (HELO 9e1e9f9b3bcb) ([10.239.97.151])
+ by fmsmga002.fm.intel.com with ESMTP; 27 Nov 2021 15:02:09 -0800
+Received: from kbuild by 9e1e9f9b3bcb with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1mr6hs-000A7H-Fi; Sat, 27 Nov 2021 23:02:08 +0000
+Date: Sun, 28 Nov 2021 07:01:50 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 965bc079ba0aa7a750c66cd8b34d8bccc81300d3
+Message-ID: <61a2b8de.XEZ5Q/tr4D2bPzpW%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1638036620; l=2480; s=20211009;
- h=from:subject:message-id; bh=CeGP1uCMsgj54dqNTjeQuOLUnlIpjBJ4Krl2Tx40VRE=;
- b=79bii179L+l5dPITh+QKdgUbUSpjyjrsCGZiuf5skugDaDhGt8nUpOgAIuRNbKEMYSBbMrqWySBE
- GWrueC7NDKNw7hKEp2KXc9S4yZ2HH8m6uCH8Dz5/sQC9gnh5NMUz
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,88 +50,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Unlike PPC64 ABI, PPC32 uses the stack to pass a parameter defined
-as a struct, even when the struct has a single simple element.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+branch HEAD: 965bc079ba0aa7a750c66cd8b34d8bccc81300d3  powerpc/ftrace: Activate HAVE_DYNAMIC_FTRACE_WITH_REGS on PPC32
 
-To avoid that, define ppc_inst_t as u32 on PPC32.
+elapsed time: 799m
 
-Keep it as 'struct ppc_inst' when __CHECKER__ is defined so that
-sparse can perform type checking.
+configs tested: 39
+configs skipped: 18
 
-Also revert commit 511eea5e2ccd ("powerpc/kprobes: Fix Oops by passing
-ppc_inst as a pointer to emulate_step() on ppc32") as now the
-instruction to be emulated is passed as a register to emulate_step().
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+gcc tested configs:
+arm                              allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm64                               defconfig
+arm64                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+nds32                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+sparc                            allyesconfig
+mips                             allmodconfig
+mips                             allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                          rhel-8.3-func
+x86_64                    rhel-8.3-kselftests
+
 ---
-v2: Make it work with kprobes
----
- arch/powerpc/include/asm/inst.h | 15 +++++++++++++--
- arch/powerpc/kernel/optprobes.c |  8 ++------
- 2 files changed, 15 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
-index 055de1fa5d46..5c503816ebc0 100644
---- a/arch/powerpc/include/asm/inst.h
-+++ b/arch/powerpc/include/asm/inst.h
-@@ -34,6 +34,7 @@
-  * Instruction data type for POWER
-  */
- 
-+#if defined(CONFIG_PPC64) || defined(__CHECKER__)
- typedef struct {
- 	u32 val;
- #ifdef CONFIG_PPC64
-@@ -46,13 +47,23 @@ static inline u32 ppc_inst_val(ppc_inst_t x)
- 	return x.val;
- }
- 
-+#define ppc_inst(x) ((ppc_inst_t){ .val = (x) })
-+
-+#else
-+typedef u32 ppc_inst_t;
-+
-+static inline u32 ppc_inst_val(ppc_inst_t x)
-+{
-+	return x;
-+}
-+#define ppc_inst(x) (x)
-+#endif
-+
- static inline int ppc_inst_primary_opcode(ppc_inst_t x)
- {
- 	return ppc_inst_val(x) >> 26;
- }
- 
--#define ppc_inst(x) ((ppc_inst_t){ .val = (x) })
--
- #ifdef CONFIG_PPC64
- #define ppc_inst_prefix(x, y) ((ppc_inst_t){ .val = (x), .suffix = (y) })
- 
-diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
-index 378db980ded3..3b1c2236cbee 100644
---- a/arch/powerpc/kernel/optprobes.c
-+++ b/arch/powerpc/kernel/optprobes.c
-@@ -228,12 +228,8 @@ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
- 	/*
- 	 * 3. load instruction to be emulated into relevant register, and
- 	 */
--	if (IS_ENABLED(CONFIG_PPC64)) {
--		temp = ppc_inst_read(p->ainsn.insn);
--		patch_imm_load_insns(ppc_inst_as_ulong(temp), 4, buff + TMPL_INSN_IDX);
--	} else {
--		patch_imm_load_insns((unsigned long)p->ainsn.insn, 4, buff + TMPL_INSN_IDX);
--	}
-+	temp = ppc_inst_read(p->ainsn.insn);
-+	patch_imm_load_insns(ppc_inst_as_ulong(temp), 4, buff + TMPL_INSN_IDX);
- 
- 	/*
- 	 * 4. branch back from trampoline
--- 
-2.33.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
