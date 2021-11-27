@@ -4,44 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BD07C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Nov 2021 23:25:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB39CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 01:19:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J19nq303cz2xvV
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 10:25:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J1DKd1wF2z3cGq
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Nov 2021 12:19:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=MSnZxqs3;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=pxjlR8C9;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
+ helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
+ header.s=2020 header.b=MSnZxqs3; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=pxjlR8C9; 
+ dkim-atps=neutral
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J19nG08WVz3bYL
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Nov 2021 10:24:27 +1100 (AEDT)
-X-IronPort-AV: E=McAfee;i="6200,9189,10180"; a="321958422"
-X-IronPort-AV: E=Sophos;i="5.87,267,1631602800"; d="scan'208";a="321958422"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Nov 2021 15:23:23 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.87,267,1631602800"; d="scan'208";a="476022030"
-Received: from lkp-server02.sh.intel.com (HELO 9e1e9f9b3bcb) ([10.239.97.151])
- by orsmga002.jf.intel.com with ESMTP; 26 Nov 2021 15:23:20 -0800
-Received: from kbuild by 9e1e9f9b3bcb with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1mqkYq-0008l3-2M; Fri, 26 Nov 2021 23:23:20 +0000
-Date: Sat, 27 Nov 2021 07:22:24 +0800
-From: kernel test robot <lkp@intel.com>
-To: Hari Bathini <hbathini@linux.ibm.com>, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
-Subject: Re: [PATCH v2 1/2] powerpc: handle kdump appropriately with
- crash_kexec_post_notifiers option
-Message-ID: <202111270740.T4QBMa4L-lkp@intel.com>
-References: <20211125180956.384886-1-hbathini@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J1DK146zfz2xXx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Nov 2021 12:18:45 +1100 (AEDT)
+Message-ID: <20211126223824.204004845@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020; t=1637975918;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ references:references; bh=yyhtvslqP4HLRieVFfAZFU9HV4/e0iOdDJgsQQb4EZc=;
+ b=MSnZxqs36ngrl9esIIYADuLZ5UnosIcrhDvAVsnJuf2st6ZzR4E0B8BK0WhsczGF2aQGRB
+ 5xqOQF7gKjLg5HtkIGZlL6qPaoikrc//4NAmvgkfntQGveJ1vh93/nybm8ts4T5eKLbe2a
+ FLC989xEGaNa67pn5Vg0kHFoSDs27rxgxD2Rnj0isODzxt0/Sbu19k1Ip1s3c4baRK4jif
+ 2Yl57PGritygSsdkg6F0Zs/thARyj0yJ2lkp6xOmLTci5ES3K6dmvTb8S/jWtOyJovQflo
+ 8tWJ8Gc9G8/Jsut61YVS4TsADPfWGLjLS9cFYLeUo18ZyEvWefuwbblT+T30NQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020e; t=1637975918;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ references:references; bh=yyhtvslqP4HLRieVFfAZFU9HV4/e0iOdDJgsQQb4EZc=;
+ b=pxjlR8C9JsyjjdEic60Abn3AE0T4g0tEBV+QqXtyNfpm9QMaaFULGX1MUnX49YqwF0yZy0
+ u2vfAxS294gl3eBw==
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [patch 02/22] PCI/MSI: Fix pci_irq_vector()/pci_irq_get_attinity()
+References: <20211126222700.862407977@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211125180956.384886-1-hbathini@linux.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 27 Nov 2021 02:18:37 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,88 +66,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sourabhjain@linux.ibm.com, kbuild-all@lists.01.org, mahesh@linux.ibm.com,
- Hari Bathini <hbathini@linux.ibm.com>
+Cc: linux-hyperv@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, Wei Liu <wei.liu@kernel.org>,
+ Ashok Raj <ashok.raj@intel.com>, Marc Zygnier <maz@kernel.org>, x86@kernel.org,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Bjorn Helgaas <helgaas@kernel.org>, Jason Gunthorpe <jgg@nvidia.com>,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ ath11k@lists.infradead.org, Kevin Tian <kevin.tian@intel.com>,
+ Heiko Carstens <hca@linux.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>, Megha Dey <megha.dey@intel.com>,
+ Juergen Gross <jgross@suse.com>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mips@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Hari,
+pci_irq_vector() and pci_irq_get_affinity() use the list position to find the
+MSI-X descriptor at a given index. That's correct for the normal case where
+the entry number is the same as the list position.
 
-Thank you for the patch! Yet something to improve:
+But it's wrong for cases where MSI-X was allocated with an entries array
+describing sparse entry numbers into the hardware message descriptor
+table. That's inconsistent at best.
 
-[auto build test ERROR on powerpc/next]
-[also build test ERROR on v5.16-rc2 next-20211126]
-[cannot apply to mpe/next]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+Make it always check the entry number because that's what the zero base
+index really means. This change won't break existing users which use a
+sparse entries array for allocation because these users retrieve the Linux
+interrupt number from the entries array after allocation and none of them
+uses pci_irq_vector() or pci_irq_get_affinity().
 
-url:    https://github.com/0day-ci/linux/commits/Hari-Bathini/powerpc-handle-kdump-appropriately-with-crash_kexec_post_notifiers-option/20211126-021120
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-config: powerpc-iss476-smp_defconfig (https://download.01.org/0day-ci/archive/20211127/202111270740.T4QBMa4L-lkp@intel.com/config)
-compiler: powerpc-linux-gcc (GCC) 11.2.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/112b5fcac650e78c2130b7f43ef66d965e69623e
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Hari-Bathini/powerpc-handle-kdump-appropriately-with-crash_kexec_post_notifiers-option/20211126-021120
-        git checkout 112b5fcac650e78c2130b7f43ef66d965e69623e
-        # save the config file to linux build tree
-        mkdir build_dir
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=powerpc SHELL=/bin/bash
-
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
-
-All errors (new ones prefixed by >>):
-
-   arch/powerpc/kernel/smp.c: In function 'crash_smp_send_stop':
->> arch/powerpc/kernel/smp.c:645:27: error: passing argument 1 of 'smp_call_function' from incompatible pointer type [-Werror=incompatible-pointer-types]
-     645 |         smp_call_function(crash_stop_this_cpu, NULL, 0);
-         |                           ^~~~~~~~~~~~~~~~~~~
-         |                           |
-         |                           void (*)(struct pt_regs *)
-   In file included from include/linux/lockdep.h:14,
-                    from include/linux/rcupdate.h:29,
-                    from include/linux/rculist.h:11,
-                    from include/linux/pid.h:5,
-                    from include/linux/sched.h:14,
-                    from include/linux/sched/mm.h:7,
-                    from arch/powerpc/kernel/smp.c:18:
-   include/linux/smp.h:149:40: note: expected 'smp_call_func_t' {aka 'void (*)(void *)'} but argument is of type 'void (*)(struct pt_regs *)'
-     149 | void smp_call_function(smp_call_func_t func, void *info, int wait);
-         |                        ~~~~~~~~~~~~~~~~^~~~
-   cc1: all warnings being treated as errors
-
-Kconfig warnings: (for reference only)
-   WARNING: unmet direct dependencies detected for HOTPLUG_CPU
-   Depends on SMP && (PPC_PSERIES || PPC_PMAC || PPC_POWERNV || FSL_SOC_BOOKE
-   Selected by
-   - PM_SLEEP_SMP && SMP && (ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE && PM_SLEEP
-
-
-vim +/smp_call_function +645 arch/powerpc/kernel/smp.c
-
-   632	
-   633	void crash_smp_send_stop(void)
-   634	{
-   635		static bool stopped = false;
-   636	
-   637		if (stopped)
-   638			return;
-   639	
-   640		stopped = true;
-   641	
-   642	#ifdef CONFIG_NMI_IPI
-   643		smp_send_nmi_ipi(NMI_IPI_ALL_OTHERS, crash_stop_this_cpu, 1000000);
-   644	#else
- > 645		smp_call_function(crash_stop_this_cpu, NULL, 0);
-   646	#endif /* CONFIG_NMI_IPI */
-   647	}
-   648	
-
+Fixes: aff171641d18 ("PCI: Provide sensible IRQ vector alloc/free routines")
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ drivers/pci/msi.c |   26 ++++++++++++++++++--------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
+
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -1187,19 +1187,24 @@ EXPORT_SYMBOL(pci_free_irq_vectors);
+ 
+ /**
+  * pci_irq_vector - return Linux IRQ number of a device vector
+- * @dev: PCI device to operate on
+- * @nr: device-relative interrupt vector index (0-based).
++ * @dev:	PCI device to operate on
++ * @nr:		Interrupt vector index (0-based)
++ *
++ * @nr has the following meanings depending on the interrupt mode:
++ *   MSI-X:	The index in the MSI-X vector table
++ *   MSI:	The index of the enabled MSI vectors
++ *   INTx:	Must be 0
++ *
++ * Return: The Linux interrupt number or -EINVAl if @nr is out of range.
+  */
+ int pci_irq_vector(struct pci_dev *dev, unsigned int nr)
+ {
+ 	if (dev->msix_enabled) {
+ 		struct msi_desc *entry;
+-		int i = 0;
+ 
+ 		for_each_pci_msi_entry(entry, dev) {
+-			if (i == nr)
++			if (entry->msi_attrib.entry_nr == nr)
+ 				return entry->irq;
+-			i++;
+ 		}
+ 		WARN_ON_ONCE(1);
+ 		return -EINVAL;
+@@ -1223,17 +1228,22 @@ EXPORT_SYMBOL(pci_irq_vector);
+  * pci_irq_get_affinity - return the affinity of a particular MSI vector
+  * @dev:	PCI device to operate on
+  * @nr:		device-relative interrupt vector index (0-based).
++ *
++ * @nr has the following meanings depending on the interrupt mode:
++ *   MSI-X:	The index in the MSI-X vector table
++ *   MSI:	The index of the enabled MSI vectors
++ *   INTx:	Must be 0
++ *
++ * Return: A cpumask pointer or NULL if @nr is out of range
+  */
+ const struct cpumask *pci_irq_get_affinity(struct pci_dev *dev, int nr)
+ {
+ 	if (dev->msix_enabled) {
+ 		struct msi_desc *entry;
+-		int i = 0;
+ 
+ 		for_each_pci_msi_entry(entry, dev) {
+-			if (i == nr)
++			if (entry->msi_attrib.entry_nr == nr)
+ 				return &entry->affinity->mask;
+-			i++;
+ 		}
+ 		WARN_ON_ONCE(1);
+ 		return NULL;
+
