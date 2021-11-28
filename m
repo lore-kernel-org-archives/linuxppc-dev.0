@@ -4,54 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98424C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Nov 2021 06:30:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4A78C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Nov 2021 07:04:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J1zB211GWz3djX
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Nov 2021 17:30:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J1zxc6140z3cTj
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Nov 2021 18:04:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256 header.s=1 header.b=cAFSOXWh;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=RUU7MzRk;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rere.qmqm.pl (client-ip=91.227.64.183; helo=rere.qmqm.pl;
- envelope-from=mirq-linux@rere.qmqm.pl; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::72c;
+ helo=mail-qk1-x72c.google.com; envelope-from=yury.norov@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256
- header.s=1 header.b=cAFSOXWh; dkim-atps=neutral
-Received: from rere.qmqm.pl (rere.qmqm.pl [91.227.64.183])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=RUU7MzRk; dkim-atps=neutral
+Received: from mail-qk1-x72c.google.com (mail-qk1-x72c.google.com
+ [IPv6:2607:f8b0:4864:20::72c])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J1wh33sNqz3022
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Nov 2021 15:37:38 +1100 (AEDT)
-Received: from remote.user (localhost [127.0.0.1])
- by rere.qmqm.pl (Postfix) with ESMTPSA id 4J1wgk2J0Xz4f;
- Sun, 28 Nov 2021 05:37:22 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
- t=1638074255; bh=uajZDEljkirNO3ao4IaC3YZzDaNVesAsHfSDP3UJUEU=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=cAFSOXWhsPPI16MSTfp3Hy6QyL2UbQErrqZs7JVjTlBz7TZEj0Ht3ETUjDSgxiu8a
- P8pzJNtSA2eZFpOxfxrClSuOwuf7i6vXUDuCijqF0t0kxXsxR+qR6YDDvZHFLcjsUT
- huX/rYxqtF1OgGo0ILu6SRoYwVApiLcRYWdI9d6BBO6Fc+GJMQs6pTeO5YaOkBA2lc
- CA56h83Mp0zr98dW+FyUbN9V4W/HR68JJcUUZVdO3ep9VsF+0ZsofDaqZWOZxeAHOE
- 3IvHUY0kLwMaW91VANeQoPu+PoRK6NnQSNlevC1j1vqNLGFfJ0wq32PwIdz24lxL/e
- saxp3NBViH9TQ==
-X-Virus-Status: Clean
-X-Virus-Scanned: clamav-milter 0.103.3 at mail
-Date: Sun, 28 Nov 2021 05:37:19 +0100
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: Yury Norov <yury.norov@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J1z6s2KwFz30RH
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Nov 2021 17:27:32 +1100 (AEDT)
+Received: by mail-qk1-x72c.google.com with SMTP id i9so19331803qki.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Nov 2021 22:27:32 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:content-transfer-encoding:in-reply-to;
+ bh=UUaWw2/vndQwOuhRc6j6PRwXuBODm2Svdcs9xeM4FlQ=;
+ b=RUU7MzRkdirUtowuDWCiM08P7YQBQBC0acoWzbBj+T+XJI6vVMBSu6aGIKh4+icUwh
+ a8q9bMYJuHCqFTUz0wNigsRNRIbsDwqKoKMNa0qnfF66qijICeNv/dPkbz+/087xhZlV
+ f64hTvJmbUAx1It3pzpI4UUvGtwyNbU+zmtX09eMQ0ByGsuhC27g5T60WwoNMBivtuLQ
+ VUm/Sp71jqGs+1C8GEcrf12fOpYmPWgYxCrrC9gGrggZZRnsjHL5/c7LM3QqhQgnqCqj
+ LxxzrdrvicV7rQvSx7+bgEc8nFcDr55sjaFrS6W7kwXrGHkLvw0E6R41fTx7A36r5Slm
+ hdow==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:content-transfer-encoding
+ :in-reply-to;
+ bh=UUaWw2/vndQwOuhRc6j6PRwXuBODm2Svdcs9xeM4FlQ=;
+ b=rgSJUTU4BIoziCc/NDxhVD3s9hw2FPh6Qc9F5V9Go8JdjpjbTghfzy7qts1uESyfQK
+ cv7kw4vncJ658hAbJe3VRmpXApNUI8CC2K8/80ahZoD0fuXuaY1T7XDSGET2hN7JqR71
+ aInAWu+uLC/aCt+jk+CJcrAVstRzptaiRiAI5rvtcjl8b6mE+a5lQA2ay/1wkk0fC2CH
+ +WmSQirb8JKU7CtkC5CTai5CEQAAqK3cepMyHy63kZ/adIX6nMhMNLiFFOIPlc6PgVW9
+ KRKi0/USmM5mEOEJrg/0riSlXYwquWuwEERmtovoNLWbZiwoJKqcA2uwtvIirx1XUY++
+ hc9A==
+X-Gm-Message-State: AOAM533kFsMq8lYRHE36ap6VGIMR80siZOJVtNipcC83yjfdIlZrnasO
+ l7kDeoHfrrXoSJqJm04s0gg=
+X-Google-Smtp-Source: ABdhPJxAVXtuKFpo3xQALAgWXmZbnwidtxXikhe9UCcw/0T4+58Z974u1PPCzNdv2+qiERrm5clSCw==
+X-Received: by 2002:a05:620a:2153:: with SMTP id
+ m19mr32383206qkm.77.1638080848758; 
+ Sat, 27 Nov 2021 22:27:28 -0800 (PST)
+Received: from localhost ([66.216.211.25])
+ by smtp.gmail.com with ESMTPSA id z4sm6611865qtj.42.2021.11.27.22.27.28
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sat, 27 Nov 2021 22:27:28 -0800 (PST)
+Date: Sat, 27 Nov 2021 22:27:27 -0800
+From: Yury Norov <yury.norov@gmail.com>
+To: =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
 Subject: Re: [PATCH 2/9] lib/bitmap: implement bitmap_{empty,full} with
  bitmap_weight_eq()
-Message-ID: <YaMHfzZ5PBn0714Z@qmqm.qmqm.pl>
+Message-ID: <20211128062727.GA276670@lapt>
 References: <20211128035704.270739-1-yury.norov@gmail.com>
  <20211128035704.270739-3-yury.norov@gmail.com>
+ <YaMHfzZ5PBn0714Z@qmqm.qmqm.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20211128035704.270739-3-yury.norov@gmail.com>
-X-Mailman-Approved-At: Sun, 28 Nov 2021 17:23:17 +1100
+In-Reply-To: <YaMHfzZ5PBn0714Z@qmqm.qmqm.pl>
+X-Mailman-Approved-At: Sun, 28 Nov 2021 18:04:00 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -122,25 +145,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Nov 27, 2021 at 07:56:57PM -0800, Yury Norov wrote:
-> Now as we have bitmap_weight_eq(), switch bitmap_full() and
-> bitmap_empty() to using it.
-[...]
-> -static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
-> -{
-> -	if (small_const_nbits(nbits))
-> -		return ! (*src & BITMAP_LAST_WORD_MASK(nbits));
-> -
-> -	return find_first_bit(src, nbits) == nbits;
-> -}
-[...]
-> +static __always_inline bool bitmap_empty(const unsigned long *src, unsigned int nbits)
-> +{
-> +	return bitmap_weight_eq(src, nbits, 0);
-> +}
-[..]
+On Sun, Nov 28, 2021 at 05:37:19AM +0100, MichaÅ‚ MirosÅ‚aw wrote:
+> On Sat, Nov 27, 2021 at 07:56:57PM -0800, Yury Norov wrote:
+> > Now as we have bitmap_weight_eq(), switch bitmap_full() and
+> > bitmap_empty() to using it.
+> [...]
+> > -static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
+> > -{
+> > -	if (small_const_nbits(nbits))
+> > -		return ! (*src & BITMAP_LAST_WORD_MASK(nbits));
+> > -
+> > -	return find_first_bit(src, nbits) == nbits;
+> > -}
+> [...]
+> > +static __always_inline bool bitmap_empty(const unsigned long *src, unsigned int nbits)
+> > +{
+> > +	return bitmap_weight_eq(src, nbits, 0);
+> > +}
+> [..]
+> 
+> What's the speed difference? Have you benchmarked this?
 
-What's the speed difference? Have you benchmarked this?
+bitmap_weight_eq() should be faster than find_first_bit(), but the
+difference is few cycles, so I didn't bother measuring it.
 
-Best Regards
-Micha³ Miros³aw
+New version looks just better.
