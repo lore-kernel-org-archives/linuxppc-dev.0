@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AAEDCC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Nov 2021 21:08:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E517C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Nov 2021 21:09:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J2Lgc0c1xz3cmJ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 08:08:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J2LhJ11zYz3dtJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 08:09:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=perches.com
- (client-ip=216.40.44.196; helo=smtprelay.hostedemail.com;
- envelope-from=joe@perches.com; receiver=<UNKNOWN>)
-Received: from smtprelay.hostedemail.com (smtprelay0196.hostedemail.com
- [216.40.44.196])
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256 header.s=1 header.b=XxvJmPPW;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=rere.qmqm.pl (client-ip=91.227.64.183; helo=rere.qmqm.pl;
+ envelope-from=mirq-linux@rere.qmqm.pl; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256
+ header.s=1 header.b=XxvJmPPW; dkim-atps=neutral
+Received: from rere.qmqm.pl (rere.qmqm.pl [91.227.64.183])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2GSJ1MdTz2y7X
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 04:58:38 +1100 (AEDT)
-Received: from omf09.hostedemail.com (clb03-v110.bra.tucows.net [216.40.38.60])
- by smtprelay01.hostedemail.com (Postfix) with ESMTP id 991EA101DBDB6;
- Sun, 28 Nov 2021 17:58:34 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: joe@perches.com) by
- omf09.hostedemail.com (Postfix) with ESMTPA id A8CC6E0003E9; 
- Sun, 28 Nov 2021 17:57:35 +0000 (UTC)
-Message-ID: <3e76ba158acaf414c982c95285ad5054fea7cd4f.camel@perches.com>
-Subject: Re: [PATCH 7/9] lib/cpumask: add
- num_{possible,present,active}_cpus_{eq,gt,le}
-From: Joe Perches <joe@perches.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2Gc04h1lz2yZh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 05:05:20 +1100 (AEDT)
+Received: from remote.user (localhost [127.0.0.1])
+ by rere.qmqm.pl (Postfix) with ESMTPSA id 4J2Gbw0CGMzWG;
+ Sun, 28 Nov 2021 19:05:15 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
+ t=1638122717; bh=sEqOa0ZEPEWEUlBRSLFAiVwd6iLDymwK+DV3juGIkQI=;
+ h=Date:From:To:Cc:Subject:From;
+ b=XxvJmPPWazylznPkDFNVygPkohQ37AeYwywQvuepL1w31LahkAW0gP0LAhZyVJpcw
+ QCkB6BljQdra5dN8zW66BSxqJNFsOQZ3SXN/IvfR7aJdEfhChJ01RFDgEXy7ZRidew
+ 5AuU0watcW2VhJ8VLEKa/g48uwHd6hUjzetMQJoBwvwxwQVSA3IWggzLzC2joJiPHp
+ 8JY+UhUQ+oYzz2QsWC6IREdA0RA0M1lN6rt3R0c026YIrrdzB0zCSa9TOmB+kCXZPl
+ HMxpZwG7mci2iV7G+PnmCZt5b87M/uk6yQ9shXg1YFXT3Bi4Ka8VZS9Szm3f/vvMWn
+ w1e6Lkbu+s3yw==
+X-Virus-Status: Clean
+X-Virus-Scanned: clamav-milter 0.103.3 at mail
+Date: Sun, 28 Nov 2021 19:05:14 +0100
+From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
 To: Yury Norov <yury.norov@gmail.com>
-Date: Sun, 28 Nov 2021 09:57:41 -0800
-In-Reply-To: <20211128174320.GA304543@lapt>
-References: <20211128035704.270739-1-yury.norov@gmail.com>
- <20211128035704.270739-8-yury.norov@gmail.com>
- <8f389151c39a8a5b6b31d5238cb680305225d9f2.camel@perches.com>
- <20211128174320.GA304543@lapt>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.40.4-1 
+Subject: Re: [PATCH 0/9] lib/bitmap: optimize bitmap_weight() usage
+Message-ID: <YaPEfZ0t9UFGwpml@qmqm.qmqm.pl>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-Stat-Signature: dxps35jgdkfac6qsmj9i1wzczrakfui8
-X-Rspamd-Server: rspamout02
-X-Rspamd-Queue-Id: A8CC6E0003E9
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-Session-ID: U2FsdGVkX19MP3rv506VCPcDGFODNyKX4EmAMaIjwdw=
-X-HE-Tag: 1638122255-377930
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Mon, 29 Nov 2021 08:05:03 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,7 +98,7 @@ Cc: Juri Lelli <juri.lelli@redhat.com>, Andrew Lunn <andrew@lunn.ch>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
- David Laight <David.Laight@ACULAB.COM>, Sudeep Holla <sudeep.holla@arm.com>,
+ David Laight <David.Laight@aculab.com>, Sudeep Holla <sudeep.holla@arm.com>,
  Geetha sowjanya <gakula@marvell.com>, Ian Rogers <irogers@google.com>,
  kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
  Amitkumar Karwar <amitkarwar@gmail.com>, linux-mm@kvack.org,
@@ -118,27 +118,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 2021-11-28 at 09:43 -0800, Yury Norov wrote:
-> On Sun, Nov 28, 2021 at 09:07:52AM -0800, Joe Perches wrote:
-> > On Sat, 2021-11-27 at 19:57 -0800, Yury Norov wrote:
-> > > Add num_{possible,present,active}_cpus_{eq,gt,le} and replace num_*_cpus()
-> > > with one of new functions where appropriate. This allows num_*_cpus_*()
-> > > to return earlier depending on the condition.
-> > []
-> > > diff --git a/arch/arc/kernel/smp.c b/arch/arc/kernel/smp.c
-> > []
-> > > @@ -103,7 +103,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
-> > >  	 * if platform didn't set the present map already, do it now
-> > >  	 * boot cpu is set to present already by init/main.c
-> > >  	 */
-> > > -	if (num_present_cpus() <= 1)
-> > > +	if (num_present_cpus_le(2))
-> > >  		init_cpu_present(cpu_possible_mask);
-> > 
-> > ?  is this supposed to be 2 or 1
+On Sat, Nov 27, 2021 at 07:56:55PM -0800, Yury Norov wrote:
+> In many cases people use bitmap_weight()-based functions like this:
 > 
-> X <= 1 is the equivalent of X < 2.
+> 	if (num_present_cpus() > 1)
+> 		do_something();
+> 
+> This may take considerable amount of time on many-cpus machines because
+> num_present_cpus() will traverse every word of underlying cpumask
+> unconditionally.
+> 
+> We can significantly improve on it for many real cases if stop traversing
+> the mask as soon as we count present cpus to any number greater than 1:
+> 
+> 	if (num_present_cpus_gt(1))
+> 		do_something();
+> 
+> To implement this idea, the series adds bitmap_weight_{eq,gt,le}
+> functions together with corresponding wrappers in cpumask and nodemask.
 
-True. The call though is _le not _lt
+Having slept on it I have more structured thoughts:
 
+First, I like substituting bitmap_empty/full where possible - I think
+the change stands on its own, so could be split and sent as is.
 
+I don't like the proposed API very much. One problem is that it hides
+the comparison operator and makes call sites less readable:
+
+	bitmap_weight(...) > N
+
+becomes:
+
+	bitmap_weight_gt(..., N)
+
+and:
+	bitmap_weight(...) <= N
+
+becomes:
+
+	bitmap_weight_lt(..., N+1)
+or:
+	!bitmap_weight_gt(..., N)
+
+I'd rather see something resembling memcmp() API that's known enough
+to be easier to grasp. For above examples:
+
+	bitmap_weight_cmp(..., N) > 0
+	bitmap_weight_cmp(..., N) <= 0
+	...
+
+This would also make the implementation easier in not having to
+copy and paste the code three times. Could also use a simple
+optimization reducing code size:
+
+#include <linux/overflow.h>
+
+int bitmap_weight_cmp(long *bits, size_t nbits, size_t cmp)
+{
+	for (size_t i = 0; i < nbits / BITS_PER_LONG; ++i, ++bits)
+		if (check_sub_overflow(cmp, popcount(*bits), &cmp))
+			return 1;
+
+	nbits %= BITS_PER_LONG;
+	if (nbits && check_sub_overflow(cmp,
+			popcount(*bits & GENMASK(nbits)), &cmp))
+		return 1;
+
+	return cmp ? -1 : 0;
+}
+
+Best Regards
+Micha³ Miros³aw
