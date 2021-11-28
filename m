@@ -4,53 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B174EC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Nov 2021 02:14:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06B9BC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Nov 2021 02:14:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J1sVh0smXz3ccb
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Nov 2021 13:14:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J1sWF53Dkz3db4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Nov 2021 13:14:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256 header.s=1 header.b=C6SfBZOF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256 header.s=1 header.b=oXqLZE7x;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=rere.qmqm.pl (client-ip=91.227.64.183; helo=rere.qmqm.pl;
  envelope-from=mirq-linux@rere.qmqm.pl; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256
- header.s=1 header.b=C6SfBZOF; dkim-atps=neutral
+ header.s=1 header.b=oXqLZE7x; dkim-atps=neutral
 Received: from rere.qmqm.pl (rere.qmqm.pl [91.227.64.183])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J1qTt5nlqz2xBK
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Nov 2021 11:43:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J1rCN2gH1z301K
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Nov 2021 12:15:59 +1100 (AEDT)
 Received: from remote.user (localhost [127.0.0.1])
- by rere.qmqm.pl (Postfix) with ESMTPSA id 4J1qTm1DhtzNL;
- Sun, 28 Nov 2021 01:43:24 +0100 (CET)
+ by rere.qmqm.pl (Postfix) with ESMTPSA id 4J1rCD4tJRz9Y;
+ Sun, 28 Nov 2021 02:15:52 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
- t=1638060207; bh=ymi2rjesYlmYsrxY12X8vblXPJWiCK3o6T/SGnAjDZo=;
+ t=1638062155; bh=/7+VGRKxSD8xhQyHeA7wxZc9qtdjiI1iETTVe9pYPLI=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=C6SfBZOFpiANlfwmDvX4OuIMVOJSlYKPAQ7cePS7VCRqQvRDRXyoU4e1HDyFW5286
- aMp77cXaWF2QuMJ//PO7Wx9adwPHxvzWlhsVptz1Bv8pKTYitnPzWsGYgxjQNrOvV7
- Uk484prqIxJAORTEmmGB3fc8u4Kn87uEVHmrPcrNw+TikFuKmaRxmZpfI/D7x9DxOR
- HEK/DHm3KCkqlnpSbmB87Uzzanvh59D/q1WHxqRBbTNokUG7ZgWXQQKaJ+DCHFVboG
- CiQGnas3tcMmGH5URTeE0feIhbti0vtOii+M7lKOB+wnpM9RCc3cCyDZ3xGFva1jKa
- oHCSKPMXxlqVw==
+ b=oXqLZE7x4BBzR6RgITz19akH85JDkj2nuDH72AAzGlf1Y19/zRhLT/EYzkjxSquZY
+ lQDmdeOlt8p2X8CEQglQKE82HPyr+MOsLSpQnGJ3s5n+8hbJIsMdPOKL4fZcMf0jgO
+ CJ7+TE23XroAl9jtGHsf4Kws8DhnEqHir6C7zTLETfSX3VrDeoLBt5clA/cf/ZoC7B
+ 31pS0P4z0OUxVHiLECVTcCPYSnqvN5IbEtxNoArldRfYbOgq5wGXjBIkaa3TdqpC0q
+ PWCaSN/jTI85sRsru7LR0d1SZHbfWHN7MsxouM8JlzJ+q5vzkEduCAsbuKP/U7sT2N
+ iLQXxOKkkTf7g==
 X-Virus-Status: Clean
 X-Virus-Scanned: clamav-milter 0.103.3 at mail
-Date: Sun, 28 Nov 2021 01:43:22 +0100
+Date: Sun, 28 Nov 2021 02:15:51 +0100
 From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
 To: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v4 08/25] kernel: Add combined power-off+restart handler
- call chain API
-Message-ID: <YaLQqks8cB0vWp6Q@qmqm.qmqm.pl>
+Subject: Re: [PATCH v4 18/25] x86: Use do_kernel_power_off()
+Message-ID: <YaLYR24XRijSmBq3@qmqm.qmqm.pl>
 References: <20211126180101.27818-1-digetx@gmail.com>
- <20211126180101.27818-9-digetx@gmail.com>
+ <20211126180101.27818-19-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20211126180101.27818-9-digetx@gmail.com>
+In-Reply-To: <20211126180101.27818-19-digetx@gmail.com>
 X-Mailman-Approved-At: Sun, 28 Nov 2021 13:13:21 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -101,40 +100,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Nov 26, 2021 at 09:00:44PM +0300, Dmitry Osipenko wrote:
-> SoC platforms often have multiple ways of how to perform system's
-> power-off and restart operations. Meanwhile today's kernel is limited to
-> a single option. Add combined power-off+restart handler call chain API,
-> which is inspired by the restart API. The new API provides both power-off
-> and restart functionality.
+On Fri, Nov 26, 2021 at 09:00:54PM +0300, Dmitry Osipenko wrote:
+> Kernel now supports chained power-off handlers. Use do_kernel_power_off()
+> that invokes chained power-off handlers. It also invokes legacy
+> pm_power_off() for now, which will be removed once all drivers will
+> be converted to the new power-off API.
 > 
-> The old pm_power_off method will be kept around till all users are
-> converted to the new API.
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  arch/x86/kernel/reboot.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> Current restart API will be replaced by the new unified API since
-> new API is its superset. The restart functionality of the sys-off handler
-> API is built upon the existing restart-notifier APIs.
-> 
-> In order to ease conversion to the new API, convenient helpers are added
-> for the common use-cases. They will reduce amount of boilerplate code and
-> remove global variables. These helpers preserve old behaviour for cases
-> where only one power-off handler is expected, this is what all existing
-> drivers want, and thus, they could be easily converted to the new API.
-> Users of the new API should explicitly enable power-off chaining by
-> setting corresponding flag of the power_handler structure.
-[...]
+> diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+> index 0a40df66a40d..cd7d9416d81a 100644
+> --- a/arch/x86/kernel/reboot.c
+> +++ b/arch/x86/kernel/reboot.c
+> @@ -747,10 +747,10 @@ static void native_machine_halt(void)
+>  
+>  static void native_machine_power_off(void)
+>  {
+> -	if (pm_power_off) {
+> +	if (kernel_can_power_off()) {
+>  		if (!reboot_force)
+>  			machine_shutdown();
+> -		pm_power_off();
+> +		do_kernel_power_off();
+>  	}
 
-Hi,
+Judging from an old commit from 2006 [1], this can be rewritten as:
 
-A general question: do we really need three distinct chains for this?
-Can't there be only one that chain of callbacks that get a stage
-(RESTART_PREPARE, RESTART, POWER_OFF_PREPARE, POWER_OFF) and can ignore
-them at will? Calling through POWER_OFF_PREPARE would also return
-whether that POWER_OFF is possible (for kernel_can_power_off()).
+if (!reboot_force && kernel_can_power_off())
+	machine_shutdown();
+do_kernel_power_off();
 
-I would also split this patch into preparation cleanups (like wrapping
-pm_power_off call with a function) and adding the notifier-based
-implementation.
+And maybe later reworked so it doesn't need kernel_can_power_off().
+
+[1] http://lkml.iu.edu/hypermail//linux/kernel/0511.3/0681.html
 
 Best Regards
-Micha³ Miros³aw
+Micha³ Miros³aw
