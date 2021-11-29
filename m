@@ -4,48 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3884C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 03:07:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70939C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 03:08:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J2Vcz6bH9z3cVM
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 14:06:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J2Vg25n6Hz3bjR
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 14:08:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=iE0nXswh;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com;
- envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2VcS70C3z2ynK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 14:06:30 +1100 (AEDT)
-Received: from dggpemm500022.china.huawei.com (unknown [172.30.72.56])
- by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4J2VYG4jL9z1DJgC;
- Mon, 29 Nov 2021 11:03:46 +0800 (CST)
-Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggpemm500022.china.huawei.com (7.185.36.162) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.20; Mon, 29 Nov 2021 11:06:24 +0800
-Received: from [10.174.177.243] (10.174.177.243) by
- dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256) id
- 15.1.2308.20; Mon, 29 Nov 2021 11:06:23 +0800
-Message-ID: <073253ba-f5c5-c64c-f8cb-6fb39f35af0e@huawei.com>
-Date: Mon, 29 Nov 2021 11:06:23 +0800
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036;
+ helo=mail-pj1-x1036.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=iE0nXswh; dkim-atps=neutral
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com
+ [IPv6:2607:f8b0:4864:20::1036])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2VfR3XxNz2yp6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 14:08:14 +1100 (AEDT)
+Received: by mail-pj1-x1036.google.com with SMTP id
+ nh10-20020a17090b364a00b001a69adad5ebso12849990pjb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Nov 2021 19:08:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=CUx1zrTY0Ka69PwK0HuQcXj89HkMpPrH2ks6HQYuL00=;
+ b=iE0nXswhUTRS32Qv75C/50+CtW0IIXJtT8vxvVHwmw2j3GRuwBsBaWDJW1DzwMZlKI
+ QvYASpt7Uvd0lUkHA4auoVhvia4ubE6aHPhewgl6C0CM0wHRsBGXGxQstyR5Rr9v47AV
+ 8Owkn94G9VzTvH02RpE60k2cXQKCuzekN1DMw62hmSO95u1yU/CHjnkhMActw6BNFe/O
+ JztafR+b7IPiZRIOyd802ZdLviwqfEy9cz1u11SG6X9n1WZ1RU4JVQo1/b4rUVQeJFGD
+ y7/XQrGelc6cm8JApyUOykRJjmcLgzYuM2iiKri2yPjQfPrb96jQAxFnbEacgtx5dC9f
+ uzRw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=CUx1zrTY0Ka69PwK0HuQcXj89HkMpPrH2ks6HQYuL00=;
+ b=YaedHD5kRFV7/PZupql7G/5hQBXrEwZZnBeixEPsEgIZrJLC+oWSixPJ9k/fp4mHjZ
+ 97YFa4sve1jjsxqmX4DU2TI011hgvNwRzCbsb9qUdvu+8FpxcQDyiANiSTvhwQtxdYOJ
+ Ilts8e+G6UjJb0FwcmUW3q7Hq4c4PILDIWJzY8Etpo+ORQyeB5ma/iQwWFV1Fid8qsbu
+ 0BamRf1+JCXV1zzkRfnyBV04yf9NZ04vbeDk00xI8ocKoMpBFD2zM6dCo+MpihtMsN5E
+ Al3GBDaTdzfW6gEJVYpaQV2YIbb3jZFjKKlJqYj/IwI1D1OVVllqgR2+ZEjAmLR/tZ6n
+ NBgA==
+X-Gm-Message-State: AOAM5324LWL/7skPyoeWUekqkcqUHdXEgPXDOc4BNHwaHMidPdPiFka2
+ 1ELJOl+J2H3FEmFzspYs3o1Oiwmp5NM=
+X-Google-Smtp-Source: ABdhPJzYCW3pd8USqxi1l+dAtrIFOp5zATCrrl58PrnGT+Solwbu/kY5fhDtEuaCxEtDXhxrpt2M1g==
+X-Received: by 2002:a17:90b:2412:: with SMTP id
+ nr18mr35974630pjb.233.1638155292651; 
+ Sun, 28 Nov 2021 19:08:12 -0800 (PST)
+Received: from bobo.ozlabs.ibm.com (115-64-213-93.static.tpgi.com.au.
+ [115.64.213.93])
+ by smtp.gmail.com with ESMTPSA id h8sm15462908pfh.10.2021.11.28.19.08.10
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 28 Nov 2021 19:08:12 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v5 01/17] powerpc: Remove unused FW_FEATURE_NATIVE references
+Date: Mon, 29 Nov 2021 13:07:47 +1000
+Message-Id: <20211129030803.1888161-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20211129030803.1888161-1-npiggin@gmail.com>
+References: <20211129030803.1888161-1-npiggin@gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.2.0
-Subject: Re: [PATCH RFC 0/4] mm: percpu: Cleanup percpu first chunk funciton
-Content-Language: en-US
-To: Dennis Zhou <dennis@kernel.org>
-References: <20211121093557.139034-1-wangkefeng.wang@huawei.com>
- <4fecd1ac-6c0a-f0fa-1ffb-18f3f266809d@huawei.com> <YaRA6o0pHU6/206a@fedora>
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-In-Reply-To: <YaRA6o0pHU6/206a@fedora>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.174.177.243]
-X-ClientProxiedBy: dggeme710-chm.china.huawei.com (10.1.199.106) To
- dggpemm500001.china.huawei.com (7.185.36.107)
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,61 +82,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, dave.hansen@linux.intel.com,
- linux-mips@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com, will@kernel.org,
- linux-riscv@lists.infradead.org, x86@kernel.org, mingo@redhat.com,
- catalin.marinas@arm.com, aou@eecs.berkeley.edu, bp@alien8.de,
- paul.walmsley@sifive.com, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, tsbogend@alpha.franken.de,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, palmer@dabbelt.com,
- tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- davem@davemloft.net
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+FW_FEATURE_NATIVE_ALWAYS and FW_FEATURE_NATIVE_POSSIBLE are always
+zero and never do anything. Remove them.
 
-On 2021/11/29 10:54, Dennis Zhou wrote:
-> On Mon, Nov 29, 2021 at 10:51:18AM +0800, Kefeng Wang wrote:
->> Hi Dennis and all maintainers, any comments about the changes, many thanks.
->>
->> On 2021/11/21 17:35, Kefeng Wang wrote:
->>> When support page mapping percpu first chunk allocator on arm64, we
->>> found there are lots of duplicated codes in percpu embed/page first
->>> chunk allocator. This patchset is aimed to cleanup them and should
->>> no funciton change, only test on arm64.
->>>
->>> Kefeng Wang (4):
->>>     mm: percpu: Generalize percpu related config
->>>     mm: percpu: Add pcpu_fc_cpu_to_node_fn_t typedef
->>>     mm: percpu: Add generic pcpu_fc_alloc/free funciton
->>>     mm: percpu: Add generic pcpu_populate_pte() function
->>>
->>>    arch/arm64/Kconfig             |  20 +----
->>>    arch/ia64/Kconfig              |   9 +--
->>>    arch/mips/Kconfig              |  10 +--
->>>    arch/mips/mm/init.c            |  14 +---
->>>    arch/powerpc/Kconfig           |  17 +---
->>>    arch/powerpc/kernel/setup_64.c |  92 +--------------------
->>>    arch/riscv/Kconfig             |  10 +--
->>>    arch/sparc/Kconfig             |  12 +--
->>>    arch/sparc/kernel/smp_64.c     | 105 +-----------------------
->>>    arch/x86/Kconfig               |  17 +---
->>>    arch/x86/kernel/setup_percpu.c |  66 ++-------------
->>>    drivers/base/arch_numa.c       |  68 +---------------
->>>    include/linux/percpu.h         |  13 +--
->>>    mm/Kconfig                     |  12 +++
->>>    mm/percpu.c                    | 143 +++++++++++++++++++++++++--------
->>>    15 files changed, 165 insertions(+), 443 deletions(-)
->>>
-> Hi Kefang,
->
-> I apologize for the delay. It's a holiday week in the US + I had some
-> personal things come up at the beginning of last week. I'll have it
-> reviewed by tomorrow.
-It's great to hear about your reply,  thanks.
->
-> Thanks,
-> Dennis
-> .
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/firmware.h | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index 97a3bd9ffeb9..9b702d2b80fb 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -80,8 +80,6 @@ enum {
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+ 	FW_FEATURE_PS3_POSSIBLE = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
+ 	FW_FEATURE_PS3_ALWAYS = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
+-	FW_FEATURE_NATIVE_POSSIBLE = 0,
+-	FW_FEATURE_NATIVE_ALWAYS = 0,
+ 	FW_FEATURE_POSSIBLE =
+ #ifdef CONFIG_PPC_PSERIES
+ 		FW_FEATURE_PSERIES_POSSIBLE |
+@@ -91,9 +89,6 @@ enum {
+ #endif
+ #ifdef CONFIG_PPC_PS3
+ 		FW_FEATURE_PS3_POSSIBLE |
+-#endif
+-#ifdef CONFIG_PPC_NATIVE
+-		FW_FEATURE_NATIVE_ALWAYS |
+ #endif
+ 		0,
+ 	FW_FEATURE_ALWAYS =
+@@ -105,9 +100,6 @@ enum {
+ #endif
+ #ifdef CONFIG_PPC_PS3
+ 		FW_FEATURE_PS3_ALWAYS &
+-#endif
+-#ifdef CONFIG_PPC_NATIVE
+-		FW_FEATURE_NATIVE_ALWAYS &
+ #endif
+ 		FW_FEATURE_POSSIBLE,
+ 
+-- 
+2.23.0
+
