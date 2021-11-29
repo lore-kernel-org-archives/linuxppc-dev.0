@@ -4,70 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C1A5C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 00:07:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDCE4C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 00:43:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J32bT5KGDz3cYJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 11:07:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J33P973Wfz3cYy
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 11:43:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=dbimWW9g;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256 header.s=1 header.b=GV8Md+4w;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::433;
- helo=mail-pf1-x433.google.com; envelope-from=davidcomponentone@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=rere.qmqm.pl (client-ip=91.227.64.183; helo=rere.qmqm.pl;
+ envelope-from=mirq-linux@rere.qmqm.pl; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=dbimWW9g; dkim-atps=neutral
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com
- [IPv6:2607:f8b0:4864:20::433])
+ unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256
+ header.s=1 header.b=GV8Md+4w; dkim-atps=neutral
+Received: from rere.qmqm.pl (rere.qmqm.pl [91.227.64.183])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J32Zg4J6Mz2yPN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 11:06:51 +1100 (AEDT)
-Received: by mail-pf1-x433.google.com with SMTP id p13so11003065pfw.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 16:06:50 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=EzaxcIY5royQHN5xoXfZ35t2h3OBMnvlOC7rpJ9geNk=;
- b=dbimWW9gB8wJlLfjWTb78/MzsnhGlNhemdzZFVzUkIlvmNlTFT5fPJXcPj51zxfoyV
- VSb6Ztdx09Cm7QOCeZQ6zKY1YHfXoJW9i5OvPW8tgv4QNV6L05rMI4f8777qKuLwV2ss
- UQ4P8DjB4WfuAq6/zi5ZdS4an2o/4W9cmkVkJC7EDLG2d5RETz8s0drfBcJYpagfyQJy
- 6BpUWV/A5uMgfFXouyrVnWu2wbdAlH/hK8h88tZdWDmjji2pmy6hu9nbdh5JfLULa5qN
- WvbRjlgy2elDKFIa0Ycovy5dY5r+L1xeRra6jAMD1KgkUQx4Ux9LhBXnASdRmUjg3leq
- uDNw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=EzaxcIY5royQHN5xoXfZ35t2h3OBMnvlOC7rpJ9geNk=;
- b=HCJLTxT9TB7cpxYZCQ+YPjIR6XnvakDI6xIMX83QNGKlbNPBId+CRkO8TzpuHHLiwZ
- eg9o/PK6+Bnutq36iU/48JDm7EhOILEjfqF+0icmj4J99RrjzDdeKbxOL5YKYde8ck7l
- VLLQ6TX9Wyc5bsPBBavlNuj9hGNU6J0YMor0rEUBY0y8JRKYKei1tHiEMIXuDfBtYCIX
- jwp/416i9XMzTYRfEQkQMYH5fpIzYFzZUQFO+iypx6r9g6M9zfwcOcN5u+UVa/lwK9gr
- QcwBklX2OqfEaB3s1Cam6XJtWkiZOy7nnGxDtr2VyYXjZJxc4RxDhL8++eRTY+aWT7lq
- hYtw==
-X-Gm-Message-State: AOAM531zGMDw3q0kPddXPJvu1vVaNYZUrf/AMZPZH+6SwO2N7OP9By+a
- JR7LtCiFKiGe48//og63Os8=
-X-Google-Smtp-Source: ABdhPJypnMItEAw3uRBbEUbGdiIRonmaVfX9GMtHOHZavbW1dFGiq/gM25pzztQR7UT7Wq2c5PywWQ==
-X-Received: by 2002:a63:4244:: with SMTP id p65mr37945736pga.440.1638230809236; 
- Mon, 29 Nov 2021 16:06:49 -0800 (PST)
-Received: from debian11-dev-61.localdomain (192.243.120.180.16clouds.com.
- [192.243.120.180])
- by smtp.gmail.com with ESMTPSA id lx15sm415227pjb.44.2021.11.29.16.06.45
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 29 Nov 2021 16:06:49 -0800 (PST)
-From: davidcomponentone@gmail.com
-X-Google-Original-From: yang.guang5@zte.com.cn
-To: tyreld@linux.ibm.com
-Subject: [PATCH] scsi: ibmvfc: replace snprintf with sysfs_emit
-Date: Tue, 30 Nov 2021 08:06:37 +0800
-Message-Id: <eb06c0df4ef4b4786cbafbbe4d74c890dc50fa7b.1638185169.git.yang.guang5@zte.com.cn>
-X-Mailer: git-send-email 2.30.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2rXm2h6tz2ynV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 03:34:31 +1100 (AEDT)
+Received: from remote.user (localhost [127.0.0.1])
+ by rere.qmqm.pl (Postfix) with ESMTPSA id 4J2rXL58g0z9h;
+ Mon, 29 Nov 2021 17:34:10 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
+ t=1638203665; bh=qlu3mL+FOvVS9aPE/gZoS7KdAdQ/avBctxZ8QxqT38I=;
+ h=Date:From:To:CC:Subject:In-Reply-To:References:From;
+ b=GV8Md+4wLJhNSJZqrJvdjyVU0DlzlhbpPkGnTNqVApkG+uUQ6A+MoaqEQT9dgrjXq
+ q+escBY9SwJTtDVYNHqesyY22ZcfBKeLVi2I4yINeaBpICc3EsCTOMz8/JkEhkxKwH
+ 5jlUqEb0yuAf8eVUX8cWy9bi6RovdDbzWpM+g8ZdNeFAwiFdkLHHM+FUiQ+x0Dv37t
+ bEpCos1VGSJffWt42H8cWp9GNUDKdAgiFLCcBLScmau30GyMgUFylkw6qvpMGUFype
+ xiTzGA2klsrhcAXTQoeGJ7H6y00R/3ukWQ3tN7aMIYo31vE1Ni41oAjMZVdXQclWDE
+ FhYcDpXStxEZw==
+X-Virus-Status: Clean
+X-Virus-Scanned: clamav-milter 0.103.3 at mail
+Date: Mon, 29 Nov 2021 16:34:07 +0000
+From: =?UTF-8?Q?Micha=C5=82_Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+To: Yury Norov <yury.norov@gmail.com>
+Subject: Re: [PATCH 0/9] lib/bitmap: optimize bitmap_weight() usage
+User-Agent: K-9 Mail for Android
+In-Reply-To: <20211129063839.GA338729@lapt>
+References: <20211128035704.270739-1-yury.norov@gmail.com>
+ <YaPEfZ0t9UFGwpml@qmqm.qmqm.pl> <20211129063839.GA338729@lapt>
+Message-ID: <3CD9ECD8-901E-497B-9AE1-0DDB02346892@rere.qmqm.pl>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Tue, 30 Nov 2021 11:43:13 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,96 +63,145 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-scsi@vger.kernel.org, martin.petersen@oracle.com, jejb@linux.ibm.com,
- davidcomponentone@gmail.com, linux-kernel@vger.kernel.org,
- Yang Guang <yang.guang5@zte.com.cn>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, Zeal Robot <zealci@zte.com.cn>
+Cc: Juri Lelli <juri.lelli@redhat.com>, Andrew Lunn <andrew@lunn.ch>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Guo Ren <guoren@kernel.org>,
+ Christoph Lameter <cl@linux.com>, Christoph Hellwig <hch@lst.de>,
+ Andi Kleen <ak@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Mel Gorman <mgorman@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Petr Mladek <pmladek@suse.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Jens Axboe <axboe@fb.com>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
+ linux-perf-users@vger.kernel.org,
+ Sergey Senozhatsky <senozhatsky@chromium.org>, linux-crypto@vger.kernel.org,
+ Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Mark Rutland <mark.rutland@arm.com>, Anup Patel <anup.patel@wdc.com>,
+ linux-ia64@vger.kernel.org, David Airlie <airlied@linux.ie>,
+ Roy Pledge <Roy.Pledge@nxp.com>, Dave Hansen <dave.hansen@linux.intel.com>,
+ Solomon Peachy <pizza@shaftnet.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+ Dennis Zhou <dennis@kernel.org>, Matti Vaittinen <mazziesaccount@gmail.com>,
+ linux-alpha@vger.kernel.org, Kalle Valo <kvalo@codeaurora.org>,
+ Stephen Boyd <sboyd@kernel.org>, Tariq Toukan <tariqt@nvidia.com>,
+ Dinh Nguyen <dinguyen@kernel.org>, Jonathan Cameron <jic23@kernel.org>,
+ Ulf Hansson <ulf.hansson@linaro.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Mike Marciniszyn <mike.marciniszyn@cornelisnetworks.com>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Subbaraya Sundeep <sbhatta@marvell.com>, Will Deacon <will@kernel.org>,
+ Sagi Grimberg <sagi@grimberg.me>, linux-csky@vger.kernel.org,
+ bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org,
+ linux-snps-arc@lists.infradead.org, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>, "James E.J. Bottomley" <jejb@linux.ibm.com>,
+ Vineet Gupta <vgupta@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Mark Gross <markgross@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ David Laight <David.Laight@aculab.com>, Sudeep Holla <sudeep.holla@arm.com>,
+ Geetha sowjanya <gakula@marvell.com>, Ian Rogers <irogers@google.com>,
+ kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Amitkumar Karwar <amitkarwar@gmail.com>, linux-mm@kvack.org,
+ linux-riscv@lists.infradead.org, Lee Jones <lee.jones@linaro.org>,
+ Ard Biesheuvel <ardb@kernel.org>, Marc Zyngier <maz@kernel.org>,
+ Jiri Olsa <jolsa@redhat.com>, Russell King <linux@armlinux.org.uk>,
+ Andy Gross <agross@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ Vivien Didelot <vivien.didelot@gmail.com>,
+ Sunil Goutham <sgoutham@marvell.com>, "Paul E. McKenney" <paulmck@kernel.org>,
+ linux-s390@vger.kernel.org, Alexey Klimov <aklimov@redhat.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Hans de Goede <hdegoede@redhat.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Marcin Wojtas <mw@semihalf.com>,
+ Vlastimil Babka <vbabka@suse.cz>, linuxppc-dev@lists.ozlabs.org,
+ linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>,
+ Daniel Vetter <daniel@ffwll.ch>, Jason Wessel <jason.wessel@windriver.com>,
+ Saeed Mahameed <saeedm@nvidia.com>, Andy Shevchenko <andy@infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Yang Guang <yang.guang5@zte.com.cn>
+Dnia 29 listopada 2021 06:38:39 UTC, Yury Norov <yury=2Enorov@gmail=2Ecom> =
+napisa=C5=82/a:
+>On Sun, Nov 28, 2021 at 07:03:41PM +0100, mirq-test@rere=2Eqmqm=2Epl wrot=
+e:
+>> On Sat, Nov 27, 2021 at 07:56:55PM -0800, Yury Norov wrote:
+>> > In many cases people use bitmap_weight()-based functions like this:
+>> >=20
+>> > 	if (num_present_cpus() > 1)
+>> > 		do_something();
+>> >=20
+>> > This may take considerable amount of time on many-cpus machines becau=
+se
+>> > num_present_cpus() will traverse every word of underlying cpumask
+>> > unconditionally=2E
+>> >=20
+>> > We can significantly improve on it for many real cases if stop traver=
+sing
+>> > the mask as soon as we count present cpus to any number greater than =
+1:
+>> >=20
+>> > 	if (num_present_cpus_gt(1))
+>> > 		do_something();
+>> >=20
+>> > To implement this idea, the series adds bitmap_weight_{eq,gt,le}
+>> > functions together with corresponding wrappers in cpumask and nodemas=
+k=2E
+>>=20
+>> Having slept on it I have more structured thoughts:
+>>=20
+>> First, I like substituting bitmap_empty/full where possible - I think
+>> the change stands on its own, so could be split and sent as is=2E
+>
+>Ok, I can do it=2E
+>
+>> I don't like the proposed API very much=2E One problem is that it hides
+>> the comparison operator and makes call sites less readable:
+>>=20
+>> 	bitmap_weight(=2E=2E=2E) > N
+>>=20
+>> becomes:
+>>=20
+>> 	bitmap_weight_gt(=2E=2E=2E, N)
+>>=20
+>> and:
+>> 	bitmap_weight(=2E=2E=2E) <=3D N
+>>=20
+>> becomes:
+>>=20
+>> 	bitmap_weight_lt(=2E=2E=2E, N+1)
+>> or:
+>> 	!bitmap_weight_gt(=2E=2E=2E, N)
+>>=20
+>> I'd rather see something resembling memcmp() API that's known enough
+>> to be easier to grasp=2E For above examples:
+>>=20
+>> 	bitmap_weight_cmp(=2E=2E=2E, N) > 0
+>> 	bitmap_weight_cmp(=2E=2E=2E, N) <=3D 0
+>> 	=2E=2E=2E
+>
+>bitmap_weight_cmp() cannot be efficient=2E Consider this example:
+>
+>bitmap_weight_lt(1000 0000 0000 0000, 1) =3D=3D false
+>                 ^
+>                 stop here
+>
+>bitmap_weight_cmp(1000 0000 0000 0000, 1) =3D=3D 0
+>                                 ^
+>                                 stop here
+>
+>I agree that '_gt' is less verbose than '>', but the advantage of=20
+>'_gt' over '>' is proportional to length of bitmap, and it means
+>that this API should exist=2E
 
-coccinelle report:
-./drivers/scsi/ibmvscsi/ibmvfc.c:3453:8-16:
-WARNING: use scnprintf or sprintf
-./drivers/scsi/ibmvscsi/ibmvfc.c:3416:8-16:
-WARNING: use scnprintf or sprintf
-./drivers/scsi/ibmvscsi/ibmvfc.c:3436:8-16:
-WARNING: use scnprintf or sprintf
-./drivers/scsi/ibmvscsi/ibmvfc.c:3426:8-16:
-WARNING: use scnprintf or sprintf
-./drivers/scsi/ibmvscsi/ibmvfc.c:3445:8-16:
-WARNING: use scnprintf or sprintf
-./drivers/scsi/ibmvscsi/ibmvfc.c:3406:8-16:
-WARNING: use scnprintf or sprintf
+Thank you for the example=2E Indeed, for less-than to be efficient here yo=
+u would need to replace
+ bitmap_weight_cmp(=2E=2E=2E, N) < 0
+with
+ bitmap_weight_cmp(=2E=2E=2E, N-1) <=3D 0
 
-Use sysfs_emit instead of scnprintf or sprintf makes more sense.
+It would still be more readable, I think=2E
 
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Yang Guang <yang.guang5@zte.com.cn>
----
- drivers/scsi/ibmvscsi/ibmvfc.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index d0eab5700dc5..69bf55c037a5 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -3403,7 +3403,7 @@ static ssize_t ibmvfc_show_host_partition_name(struct device *dev,
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
- 
--	return snprintf(buf, PAGE_SIZE, "%s\n",
-+	return sysfs_emit(buf, "%s\n",
- 			vhost->login_buf->resp.partition_name);
- }
- 
-@@ -3413,7 +3413,7 @@ static ssize_t ibmvfc_show_host_device_name(struct device *dev,
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
- 
--	return snprintf(buf, PAGE_SIZE, "%s\n",
-+	return sysfs_emit(buf, "%s\n",
- 			vhost->login_buf->resp.device_name);
- }
- 
-@@ -3423,7 +3423,7 @@ static ssize_t ibmvfc_show_host_loc_code(struct device *dev,
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
- 
--	return snprintf(buf, PAGE_SIZE, "%s\n",
-+	return sysfs_emit(buf, "%s\n",
- 			vhost->login_buf->resp.port_loc_code);
- }
- 
-@@ -3433,7 +3433,7 @@ static ssize_t ibmvfc_show_host_drc_name(struct device *dev,
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
- 
--	return snprintf(buf, PAGE_SIZE, "%s\n",
-+	return sysfs_emit(buf, "%s\n",
- 			vhost->login_buf->resp.drc_name);
- }
- 
-@@ -3442,7 +3442,7 @@ static ssize_t ibmvfc_show_host_npiv_version(struct device *dev,
- {
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
--	return snprintf(buf, PAGE_SIZE, "%d\n", be32_to_cpu(vhost->login_buf->resp.version));
-+	return sysfs_emit(buf, "%d\n", be32_to_cpu(vhost->login_buf->resp.version));
- }
- 
- static ssize_t ibmvfc_show_host_capabilities(struct device *dev,
-@@ -3450,7 +3450,7 @@ static ssize_t ibmvfc_show_host_capabilities(struct device *dev,
- {
- 	struct Scsi_Host *shost = class_to_shost(dev);
- 	struct ibmvfc_host *vhost = shost_priv(shost);
--	return snprintf(buf, PAGE_SIZE, "%llx\n", be64_to_cpu(vhost->login_buf->resp.capabilities));
-+	return sysfs_emit(buf, "%llx\n", be64_to_cpu(vhost->login_buf->resp.capabilities));
- }
- 
- /**
--- 
-2.30.2
-
+Best Regards
+Micha=C5=82 Miros=C5=82aw
