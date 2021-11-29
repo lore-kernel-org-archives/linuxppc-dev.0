@@ -4,82 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDDF3C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 12:30:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD751C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 12:31:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J2l7f5v2gz3cTN
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 23:30:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J2l8N6FBJz3cbB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 23:31:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=U2tIEVQP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=lkwhQKXA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::135;
- helo=mail-lf1-x135.google.com; envelope-from=digetx@gmail.com;
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::42e;
+ helo=mail-wr1-x42e.google.com; envelope-from=lee.jones@linaro.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=U2tIEVQP; dkim-atps=neutral
-Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com
- [IPv6:2a00:1450:4864:20::135])
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=lkwhQKXA; dkim-atps=neutral
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com
+ [IPv6:2a00:1450:4864:20::42e])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2kHY737Rz2ymc
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 22:52:39 +1100 (AEDT)
-Received: by mail-lf1-x135.google.com with SMTP id t26so43816651lfk.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 03:52:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=iWUEeMgXKbO77AD47foBEfa7mbQmssJKLzk8yjSOYSY=;
- b=U2tIEVQPLPCeMdCu1GCSmBGmgd4b3cE0YUaVA7Ptat003bULsFRIKB0ShMWsNVLpnC
- gIiNSuaR89vPD5NvBHVAJptiz6fEnTOzANkyKGw87fayadLAwoS9823DcSjh7ICj4+z3
- 8BMKd+pKMrfT65KNK+2vA4wn0Ab/36kY6JZj8X/gHMh+mTKic7nzZ9Q5pTe+scSSAMrR
- oGXpQFc+Y/9JY1X3lRTxbgKArCnrSUBW7q8iJYRRAFJ8bg8FkN1DAbSGthXoerdFc3rX
- j1XUuuRyr6MK1Wp6xTbZoTqp3eksfHnUZLI3T8PZzPTIBG4u+ANjjJp1zdOJ3alnPslD
- h0Pg==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2kLQ3wwpz3dlR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 22:55:10 +1100 (AEDT)
+Received: by mail-wr1-x42e.google.com with SMTP id d24so36249676wra.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 03:55:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:content-transfer-encoding:in-reply-to;
+ bh=VVOPTlZ25TG0A/D/zPlBV/5uhzVs33QmnMBQ/KVuzok=;
+ b=lkwhQKXAkPk/45MOJA8n7UmDgKAdLF4A1HrNaCp2DAoqL5jLTFjou3x32wDBBU6GIT
+ yI/CJhxLCUTnAb5/Em/j6rhcsE0aVo3sMd3LYPxdE5+hC1/mTgxkJqsMs5FMlUOo6mFj
+ p7BNzyn9xjUhYwkgG5BzPtj9HurcHm+ccwOPwS4lv9ee0Rp8UDrMmrydCXbQHsTaZXjk
+ xJu5xIGGnwbHMKU206LqjROnwejVkM/SZiOAqwNOvL8q0Fxve51MyLPqAjPb4PZY1YMm
+ QSzNrZA4BSS9QFja3wZ8ES46Bccp24Bd6Zbx0NoBWxwAbV7Rw05PPAukg5XBBny7eyFr
+ nlLw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=iWUEeMgXKbO77AD47foBEfa7mbQmssJKLzk8yjSOYSY=;
- b=DPd8pBK3MHFzBjVwzBrUDH9mJ82Jsqmwf0Lu45XHgB3XStXh+q7Dx39X8gORQ617lm
- vhY8jS/42vzlzfUGri94oHHzA2OBGn5szxdjaWTtwz9QRlr8Nzlt7FB+DCkC+QTgIU/d
- fJxKp2zpNCpA7ts1ROAl1xxXi4gOuMlxEBzvk+T6R5QSC4ee/UtZe1TmitcmZI9p5qEf
- zawXm27zoZTy65ZwRYOkC4n6UAoY4bnzHBLI+RX0I+4G3crmRW156MfM6MLYxEN/PqXG
- w5Tr130E0KiB3iFWiIws2TNDuYY9nGitrVW9drKwLSf3DSiKfHgdR9HrN9VfDT1HgtRc
- +Plg==
-X-Gm-Message-State: AOAM531lIVcHKHku0mV12oqxlG5Il4Ta0MpfyWroYYyYsB71ANPARPGS
- nKjnXCahuR8Q9Bn4jyOoFV8=
-X-Google-Smtp-Source: ABdhPJyV4a2kK7Hf+W0BvWJCYp3tm9l5nhuE3mizXVMpliBSqh/r6CyMfNuIh0FZ0TT44eUwwVCrkw==
-X-Received: by 2002:a05:6512:3a91:: with SMTP id
- q17mr46080008lfu.425.1638186755724; 
- Mon, 29 Nov 2021 03:52:35 -0800 (PST)
-Received: from [192.168.2.145] (94-29-46-111.dynamic.spd-mgts.ru.
- [94.29.46.111])
- by smtp.googlemail.com with ESMTPSA id o15sm1323059lfd.164.2021.11.29.03.52.33
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 29 Nov 2021 03:52:35 -0800 (PST)
-Subject: Re: [PATCH v4 08/25] kernel: Add combined power-off+restart handler
- call chain API
-To: =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
-References: <20211126180101.27818-1-digetx@gmail.com>
- <20211126180101.27818-9-digetx@gmail.com> <YaLQqks8cB0vWp6Q@qmqm.qmqm.pl>
- <9213569e-0f40-0df1-4710-8dab564e12d6@gmail.com>
- <YaPx0kY7poGpwCL9@qmqm.qmqm.pl>
- <1fa2d9d5-f5f6-77f5-adf6-827921acce49@gmail.com>
- <YaQgiLw03lPyvuhr@qmqm.qmqm.pl>
-From: Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <33d1dfa7-e90e-d174-7375-836c15e7f818@gmail.com>
-Date: Mon, 29 Nov 2021 14:52:25 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.14.0
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:content-transfer-encoding
+ :in-reply-to;
+ bh=VVOPTlZ25TG0A/D/zPlBV/5uhzVs33QmnMBQ/KVuzok=;
+ b=IjSWC8UOn52qh1DGod/wmM2MWTiCUvYq/bsIkWDuL3z8ByxMwd7nGBd8VcZB5OcfOA
+ xbGFPPDHU9kXxGlFxJC1Ppcfn0Msx4m3auSEhod2X1lZmlsaTTJXvnhsZsl7c+4mtCtr
+ ZrFb29l1x01VYVdBMdRed1pnBtuJ4pX3Fb50oKBpdx9ifAwCVgDv5Gb0jiJMxVzVJwmg
+ YCu8n76o7G+a2sGOBq+wQBt7sPGJiXyIs2rnwb2MJIbqdhm0israprMd0SWK4KERWjNs
+ e2KqmaUzUyjnMeB4XNDb5dAYggxmN+x8+4oA+01BO+EUycb4g60dVE1WvxU+igUMOcZH
+ lh2A==
+X-Gm-Message-State: AOAM533GAs8595b+oLP8hhQTaQMj24AmUKWsAw0dI0L4aJHy9VZyHUqJ
+ HNkrnfEA1Qd0X/bHb4djMylC/g==
+X-Google-Smtp-Source: ABdhPJzBdvU2Vc8uq5wk1K9UX3j47S9iY7roSh9nDqHEi2kZs1JBlBSlXeazNTFhoQ+QITHlIyszPw==
+X-Received: by 2002:adf:e742:: with SMTP id c2mr32868966wrn.498.1638186905995; 
+ Mon, 29 Nov 2021 03:55:05 -0800 (PST)
+Received: from google.com ([2.31.167.18])
+ by smtp.gmail.com with ESMTPSA id y15sm16736665wry.72.2021.11.29.03.55.03
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 29 Nov 2021 03:55:05 -0800 (PST)
+Date: Mon, 29 Nov 2021 11:55:01 +0000
+From: Lee Jones <lee.jones@linaro.org>
+To: Dmitry Osipenko <digetx@gmail.com>
+Subject: Re: [PATCH v2 28/45] mfd: rn5t618: Use devm_register_power_handler()
+Message-ID: <YaS/lStp2b8GhVxw@google.com>
+References: <20211027211715.12671-1-digetx@gmail.com>
+ <20211027211715.12671-29-digetx@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <YaQgiLw03lPyvuhr@qmqm.qmqm.pl>
 Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20211027211715.12671-29-digetx@gmail.com>
 X-Mailman-Approved-At: Mon, 29 Nov 2021 23:30:17 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -93,94 +84,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, Santosh Shilimkar <ssantosh@kernel.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
+ linux-ia64@vger.kernel.org, Tomer Maimon <tmaimon77@gmail.com>,
+ Santosh Shilimkar <ssantosh@kernel.org>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
  Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
  Linus Walleij <linus.walleij@linaro.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ Tali Perry <tali.perry1@gmail.com>,
  "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Thierry Reding <thierry.reding@gmail.com>, Guo Ren <guoren@kernel.org>,
  Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
  linux-riscv@lists.infradead.org, Vincent Chen <deanbo422@gmail.com>,
  Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>,
- Stefano Stabellini <sstabellini@kernel.org>, alankao@andestech.com,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Benjamin Fair <benjaminfair@google.com>,
  Yoshinori Sato <ysato@users.sourceforge.jp>,
  Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
- linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org,
+ linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
  Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
- Jonathan Hunter <jonathanh@nvidia.com>, linux-acpi@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Catalin Marinas <catalin.marinas@arm.com>, xen-devel@lists.xenproject.org,
+ Jonathan Hunter <jonathanh@nvidia.com>, Tony Lindgren <tony@atomide.com>,
+ Chen-Yu Tsai <wens@csie.org>, Ingo Molnar <mingo@redhat.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, xen-devel@lists.xenproject.org,
  linux-mips@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>,
  Len Brown <lenb@kernel.org>, Albert Ou <aou@eecs.berkeley.edu>,
- Lee Jones <lee.jones@linaro.org>, linux-m68k@lists.linux-m68k.org,
- Mark Brown <broonie@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Greentime Hu <green.hu@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>,
- linux-tegra@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ linux-omap@vger.kernel.org,
+ Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>,
+ Vladimir Zapolskiy <vz@mleia.com>, linux-acpi@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, Mark Brown <broonie@kernel.org>,
+ Borislav Petkov <bp@alien8.de>, Greentime Hu <green.hu@gmail.com>,
+ Paul Walmsley <paul.walmsley@sifive.com>, linux-tegra@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, linux-parisc@vger.kernel.org,
- linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
- linux-kernel@vger.kernel.org, "K . C . Kuen-Chern Lin" <kclin@andestech.com>,
+ Nancy Yuen <yuenn@google.com>, linux-arm-kernel@lists.infradead.org,
+ Juergen Gross <jgross@suse.com>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
+ Nick Hu <nickhu@andestech.com>, Avi Fishman <avifishman70@gmail.com>,
+ Patrick Venture <venture@google.com>, linux-pm@vger.kernel.org,
+ Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org,
  Palmer Dabbelt <palmer@dabbelt.com>, Philipp Zabel <p.zabel@pengutronix.de>,
- Guo Ren <guoren@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, Joshua Thompson <funaho@jurai.org>
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, openbmc@lists.ozlabs.org,
+ Joshua Thompson <funaho@jurai.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-29.11.2021 03:36, Michał Mirosław пишет:
-> On Mon, Nov 29, 2021 at 12:53:51AM +0300, Dmitry Osipenko wrote:
->> 29.11.2021 00:17, Michał Mirosław пишет:
->>>> I'm having trouble with parsing this comment. Could you please try to
->>>> rephrase it? I don't see how you could check whether power-off handler
->>>> is available if you'll mix all handlers together.
->>> If notify_call_chain() would be fixed to return NOTIFY_OK if any call
->>> returned NOTIFY_OK, then this would be a clear way to gather the
->>> answer if any of the handlers will attempt the final action (reboot or
->>> power off).
->> Could you please show a code snippet that implements your suggestion?
-> 
-> A rough idea is this:
-> 
->  static int notifier_call_chain(struct notifier_block **nl,
->  			       unsigned long val, void *v,
->  			       int nr_to_call, int *nr_calls)
->  {
-> -	int ret = NOTIFY_DONE;
-> +	int ret, result = NOTIFY_DONE;
->  	struct notifier_block *nb, *next_nb;
->  
->  	nb = rcu_dereference_raw(*nl);
->  
->  	while (nb && nr_to_call) {
-> ...
->  		ret = nb->notifier_call(nb, val, v);
-> +
-> +		/* Assuming NOTIFY_STOP-carrying return is always greater than non-stopping one. */
-> +		if (result < ret)
-> +			result = ret;
-> ... 
->  	}
-> -	return ret;
-> +	return result;
->  }
-> 
-> Then:
-> 
-> bool prepare_reboot()
-> {
-> 	int ret = xx_notifier_call_chain(&shutdown_notifier, PREPARE_REBOOT, ...);
-> 	return ret == NOTIFY_OK;
-> }
-> 
-> And the return value would signify whether the reboot will be attempted
-> when calling the chain for the REBOOT action. (Analogously for powering off.)
+On Thu, 28 Oct 2021, Dmitry Osipenko wrote:
 
-If you started to execute call chain, then you began the power-off /
-restart sequence, this is a point of no return. Sorry, I still don't
-understand what you're trying to achieve.
+> Use devm_register_power_handler() that replaces global pm_power_off
+> variable and allows to register multiple power-off handlers. It also
+> provides restart-handler support, i.e. all in one API.
+> 
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  drivers/mfd/rn5t618.c | 56 ++++++++++++++++---------------------------
+>  1 file changed, 21 insertions(+), 35 deletions(-)
 
-The approach of having separate call chains is simple and intuitive, I
-don't see reasons to change it.
+For my own reference (apply this as-is to your sign-off block):
+
+  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+
+-- 
+Lee Jones [李琼斯]
+Senior Technical Lead - Developer Services
+Linaro.org │ Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog
