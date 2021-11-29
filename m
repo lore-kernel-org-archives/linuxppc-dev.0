@@ -4,54 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEB7DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 07:42:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7165C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 07:51:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J2clL4Cy9z3cRj
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 18:42:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J2cxS1k2Lz3cXj
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 18:51:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.48.137; helo=9.mo548.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Received: from 9.mo548.mail-out.ovh.net (9.mo548.mail-out.ovh.net
- [46.105.48.137])
+ smtp.mailfrom=kaod.org (client-ip=188.165.32.156;
+ helo=3.mo548.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+X-Greylist: delayed 188 seconds by postgrey-1.36 at boromir;
+ Mon, 29 Nov 2021 18:51:14 AEDT
+Received: from 3.mo548.mail-out.ovh.net (3.mo548.mail-out.ovh.net
+ [188.165.32.156])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2ckm3Prvz2xXy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 18:42:24 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.20.7])
- by mo548.mail-out.ovh.net (Postfix) with ESMTPS id D10AB2064C;
- Mon, 29 Nov 2021 07:33:34 +0000 (UTC)
-Received: from kaod.org (37.59.142.103) by DAG4EX1.mxp5.local (172.16.2.31)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2cwy3Flbz2yRf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 18:51:14 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.138.121])
+ by mo548.mail-out.ovh.net (Postfix) with ESMTPS id 1E69A2045C;
+ Mon, 29 Nov 2021 07:51:11 +0000 (UTC)
+Received: from kaod.org (37.59.142.95) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.20; Mon, 29 Nov
- 2021 08:33:33 +0100
+ 2021 08:51:10 +0100
 Authentication-Results: garm.ovh; auth=pass
- (GARM-103G0058ffb0110-7673-40ee-a51a-c9a65a45fa89,
+ (GARM-95G0018853b231-08ce-4c1d-9d13-72c8b66df497,
  3279756C2EB34864E332BB908A933B747C53BE44) smtp.auth=clg@kaod.org
 X-OVh-ClientIp: 82.64.250.170
-Message-ID: <b1a6d267-c7b4-c4b9-ab0e-f5cc32bfe9bf@kaod.org>
-Date: Mon, 29 Nov 2021 08:33:33 +0100
+Message-ID: <1ecfbea2-e5f7-b28b-5345-8b2ee82ae861@kaod.org>
+Date: Mon, 29 Nov 2021 08:51:04 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.3.0
-Subject: Re: [patch 05/22] genirq/msi: Fixup includes
+Subject: Re: [patch 17/22] PCI/MSI: Split out !IRQDOMAIN code
 Content-Language: en-US
 To: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
 References: <20211126222700.862407977@linutronix.de>
- <20211126223824.382273262@linutronix.de>
+ <20211126223825.093887718@linutronix.de>
 From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-In-Reply-To: <20211126223824.382273262@linutronix.de>
+In-Reply-To: <20211126223825.093887718@linutronix.de>
 Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.103]
-X-ClientProxiedBy: DAG1EX2.mxp5.local (172.16.2.2) To DAG4EX1.mxp5.local
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [37.59.142.95]
+X-ClientProxiedBy: DAG4EX1.mxp5.local (172.16.2.31) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: 67cb6c92-6833-4394-901b-34c8b386eb6d
-X-Ovh-Tracer-Id: 9389442276353674140
+X-Ovh-Tracer-GUID: 8993720d-da60-4607-9d73-3bc5ffee8fa3
+X-Ovh-Tracer-Id: 9686961325338364828
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvuddrheekgdegjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefkffggfgfuvfhfhfgjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeeigedvffekgeeftedutddttdevudeihfegudffkeeitdekkeetkefhffelveelleenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtfeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvuddrheekgdehudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefkffggfgfuvfhfhfgjtgfgihesthejredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpefhhfelgeeukedtteffvdffueeiuefgkeekleehleetfedtgfetffefheeugeelheenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddrleehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,62 +82,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/27/21 02:18, Thomas Gleixner wrote:
-> Remove the kobject.h include from msi.h as it's not required and add a
-> sysfs.h include to the core code instead.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
+> +void __weak arch_teardown_msi_irqs(struct pci_dev *dev)
+> +{
+> +	struct msi_desc *desc;
+> +	int i;
+> +
+> +	for_each_pci_msi_entry(desc, dev) {
+> +		if (desc->irq) {
+> +			for (i = 0; i < entry->nvec_used; i++)
 
-This patch breaks compile on powerpc :
-
-   CC      arch/powerpc/kernel/msi.o
-In file included from ../arch/powerpc/kernel/msi.c:7:
-../include/linux/msi.h:410:65: error: ‘struct cpumask’ declared inside parameter list will not be visible outside of this definition or declaration [-Werror]
-   410 | int msi_domain_set_affinity(struct irq_data *data, const struct cpumask *mask,
-       |                                                                 ^~~~~~~
-cc1: all warnings being treated as errors
-
-Below is fix you can merge in patch 5.
+I guess this is 'desc' ?
 
 Thanks,
 
 C.
 
---- a/include/linux/msi.h
-+++ b/include/linux/msi.h
-@@ -2,6 +2,7 @@
-  #ifndef LINUX_MSI_H
-  #define LINUX_MSI_H
-  
-+#include <linux/cpumask.h>
-  #include <linux/list.h>
-  #include <asm/msi.h>
-
-> ---
->   include/linux/msi.h |    1 -
->   kernel/irq/msi.c    |    1 +
->   2 files changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/include/linux/msi.h
-> +++ b/include/linux/msi.h
-> @@ -2,7 +2,6 @@
->   #ifndef LINUX_MSI_H
->   #define LINUX_MSI_H
->   
-> -#include <linux/kobject.h>
->   #include <linux/list.h>
->   #include <asm/msi.h>
->   
-> --- a/kernel/irq/msi.c
-> +++ b/kernel/irq/msi.c
-> @@ -14,6 +14,7 @@
->   #include <linux/irqdomain.h>
->   #include <linux/msi.h>
->   #include <linux/slab.h>
-> +#include <linux/sysfs.h>
->   #include <linux/pci.h>
->   
->   #include "internals.h"
-> 
-
+> +				arch_teardown_msi_irq(desc->irq + i);
+> +		}
+> +	}
+> +}
