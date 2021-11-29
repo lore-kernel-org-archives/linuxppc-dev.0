@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C87CEC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 14:24:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5F50C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 14:24:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J2nfH3T0Jz3fF1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 01:24:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J2nfl4StJz3blF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 01:24:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,50 +16,53 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2nZ303g6z3cJS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 01:20:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2nZ66hrkz3ck3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 01:20:30 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4J2nYM1mbHz9sT4;
- Mon, 29 Nov 2021 15:19:51 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4J2nYL6GYRz9sT0;
+ Mon, 29 Nov 2021 15:19:50 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 15BUlw8q236k; Mon, 29 Nov 2021 15:19:51 +0100 (CET)
+ with ESMTP id P77XMOGSSqbg; Mon, 29 Nov 2021 15:19:50 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4J2nY41Q1Fz9sTD;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4J2nY41DBQz9sTC;
  Mon, 29 Nov 2021 15:19:36 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1E64E8B7AA;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1F1DF8B7AB;
  Mon, 29 Nov 2021 15:19:36 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id p7JTDfw25QcC; Mon, 29 Nov 2021 15:19:36 +0100 (CET)
+ with ESMTP id L1XFbAfdgtwi; Mon, 29 Nov 2021 15:19:36 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A35298B7B2;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9C4E18B7AF;
  Mon, 29 Nov 2021 15:19:35 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1ATEJQOc959544
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1ATEJSW4959552
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 29 Nov 2021 15:19:26 +0100
+ Mon, 29 Nov 2021 15:19:28 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1ATEJQDx959542;
- Mon, 29 Nov 2021 15:19:26 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1ATEJSf3959551;
+ Mon, 29 Nov 2021 15:19:28 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, alex@ghiti.fr
-Subject: [PATCH v3 00/10] Convert powerpc to default topdown mmap layout
-Date: Mon, 29 Nov 2021 15:19:14 +0100
-Message-Id: <cover.1638195388.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 02/10] powerpc/mm: Move vma_mmu_pagesize() and
+ hugetlb_get_unmapped_area() to slice.c
+Date: Mon, 29 Nov 2021 15:19:16 +0100
+Message-Id: <8ff40524cc79d6e6dedc56791c4214ca4c19e0f7.1638195388.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.33.1
+In-Reply-To: <cover.1638195388.git.christophe.leroy@csgroup.eu>
+References: <cover.1638195388.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1638195562; l=3086; s=20211009;
- h=from:subject:message-id; bh=1erw0VtOXrYy2x4dP5mNsIfz576xCuqm2bQLPruXkhk=;
- b=3RTY7VpGfoPz4K7IC1rD8QLFf/pgmfgabPWELEGQrvMHxz2lCkgGpIv6svnER43DJvXOXX6sLho+
- EsNNhJOnBQn919ggCm87sU94wKDLKr8ADD2q/6+R4BjcTodPjOdc
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1638195562; l=7532; s=20211009;
+ h=from:subject:message-id; bh=rf8c2Va0a+oPrjsrDKbsVVqJCso4PiLiMZDeQ0MksqU=;
+ b=nUVbEMdIo6Uxn3WaImXtzm75C9F8nCQ5ciwxNtqDmct8CcNQV9jTXLtspvWdsit65c8PAdZNBrYB
+ GHMKGnI/A7G6MmPIWhhbN7DOCzB+E7t5ZD9hXmo9nCGjN2/2JUIr
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -80,74 +83,227 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Rebased on top of Nic's v5 series "powerpc: Make hash MMU code build configurable"
+vma_mmu_pagesize() is only required for slices,
+otherwise there is a generic weak version.
 
-This series converts powerpc to default topdown mmap layout.
+hugetlb_get_unmapped_area() is dedicated to slices.
+radix__hugetlb_get_unmapped_area() as well.
 
-powerpc provides its own arch_get_unmapped_area() only when
-slices are needed, which is only for book3s/64. First part of
-the series moves slices into book3s/64 specific directories
-and cleans up other subarchitectures.
+Move them to slice.c
 
-Then a small modification is done to core mm to allow
-powerpc to still provide its own arch_randomize_brk()
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/book3s/64/hugetlb.h |  4 --
+ arch/powerpc/mm/book3s64/radix_hugetlbpage.c | 55 --------------
+ arch/powerpc/mm/book3s64/slice.c             | 76 ++++++++++++++++++++
+ arch/powerpc/mm/hugetlbpage.c                | 28 --------
+ 4 files changed, 76 insertions(+), 87 deletions(-)
 
-Last part converts to default topdown mmap layout.
-
-Changes in v3:
-- Fixed missing <linux/elf-randomize.h> in last patch
-- Added a patch to move SZ_1T out of drivers/pci/controller/pci-xgene.c
-
-Changes in v2:
-- Moved patch 4 before patch 2
-- Make generic arch_randomize_brk() __weak
-- Added patch 9
-
-Christophe Leroy (10):
-  powerpc/mm: Make slice specific to book3s/64
-  powerpc/mm: Move vma_mmu_pagesize() and hugetlb_get_unmapped_area() to
-    slice.c
-  powerpc/mm: Remove CONFIG_PPC_MM_SLICES
-  powerpc/mm: Remove asm/slice.h
-  powerpc/mm: Call radix__arch_get_unmapped_area() from
-    arch_get_unmapped_area()
-  mm: Allow arch specific arch_randomize_brk() with
-    CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
-  powerpc/mm: Convert to default topdown mmap layout
-  powerpc/mm: Properly randomise mmap with slices
-  sizes.h: Add SZ_1T macro
-  powerpc: Simplify and move arch_randomize_brk()
-
- arch/powerpc/Kconfig                          |   2 +-
- arch/powerpc/include/asm/book3s/64/hash.h     |   7 +-
- arch/powerpc/include/asm/book3s/64/hugetlb.h  |   4 -
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |   1 +
- arch/powerpc/include/asm/book3s/64/slice.h    |  18 ++
- arch/powerpc/include/asm/hugetlb.h            |   2 +-
- arch/powerpc/include/asm/paca.h               |   7 -
- arch/powerpc/include/asm/page.h               |   1 -
- arch/powerpc/include/asm/processor.h          |   2 -
- arch/powerpc/include/asm/slice.h              |  46 ----
- arch/powerpc/kernel/paca.c                    |   5 -
- arch/powerpc/kernel/process.c                 |  41 ----
- arch/powerpc/mm/Makefile                      |   3 +-
- arch/powerpc/mm/book3s64/Makefile             |   2 +-
- arch/powerpc/mm/book3s64/hash_utils.c         |  33 +--
- arch/powerpc/mm/book3s64/radix_hugetlbpage.c  |  55 -----
- arch/powerpc/mm/{ => book3s64}/slice.c        | 200 ++++++++++++++-
- arch/powerpc/mm/hugetlbpage.c                 |  28 ---
- arch/powerpc/mm/mmap.c                        | 228 ------------------
- arch/powerpc/mm/nohash/mmu_context.c          |   9 -
- arch/powerpc/mm/nohash/tlb.c                  |   4 -
- arch/powerpc/platforms/Kconfig.cputype        |   4 -
- drivers/pci/controller/pci-xgene.c            |   1 -
- include/linux/sizes.h                         |   2 +
- mm/util.c                                     |   2 +-
- 25 files changed, 237 insertions(+), 470 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/slice.h
- rename arch/powerpc/mm/{ => book3s64}/slice.c (80%)
- delete mode 100644 arch/powerpc/mm/mmap.c
-
+diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+index 12e150e615b7..b37a28f62cf6 100644
+--- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
++++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+@@ -8,10 +8,6 @@
+  */
+ void radix__flush_hugetlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
+ void radix__local_flush_hugetlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
+-extern unsigned long
+-radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+-				unsigned long len, unsigned long pgoff,
+-				unsigned long flags);
+ 
+ extern void radix__huge_ptep_modify_prot_commit(struct vm_area_struct *vma,
+ 						unsigned long addr, pte_t *ptep,
+diff --git a/arch/powerpc/mm/book3s64/radix_hugetlbpage.c b/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
+index 23d3e08911d3..d2fb776febb4 100644
+--- a/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
++++ b/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
+@@ -41,61 +41,6 @@ void radix__flush_hugetlb_tlb_range(struct vm_area_struct *vma, unsigned long st
+ 		radix__flush_tlb_range_psize(vma->vm_mm, start, end, psize);
+ }
+ 
+-/*
+- * A vairant of hugetlb_get_unmapped_area doing topdown search
+- * FIXME!! should we do as x86 does or non hugetlb area does ?
+- * ie, use topdown or not based on mmap_is_legacy check ?
+- */
+-unsigned long
+-radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+-				unsigned long len, unsigned long pgoff,
+-				unsigned long flags)
+-{
+-	struct mm_struct *mm = current->mm;
+-	struct vm_area_struct *vma;
+-	struct hstate *h = hstate_file(file);
+-	int fixed = (flags & MAP_FIXED);
+-	unsigned long high_limit;
+-	struct vm_unmapped_area_info info;
+-
+-	high_limit = DEFAULT_MAP_WINDOW;
+-	if (addr >= high_limit || (fixed && (addr + len > high_limit)))
+-		high_limit = TASK_SIZE;
+-
+-	if (len & ~huge_page_mask(h))
+-		return -EINVAL;
+-	if (len > high_limit)
+-		return -ENOMEM;
+-
+-	if (fixed) {
+-		if (addr > high_limit - len)
+-			return -ENOMEM;
+-		if (prepare_hugepage_range(file, addr, len))
+-			return -EINVAL;
+-		return addr;
+-	}
+-
+-	if (addr) {
+-		addr = ALIGN(addr, huge_page_size(h));
+-		vma = find_vma(mm, addr);
+-		if (high_limit - len >= addr && addr >= mmap_min_addr &&
+-		    (!vma || addr + len <= vm_start_gap(vma)))
+-			return addr;
+-	}
+-	/*
+-	 * We are always doing an topdown search here. Slice code
+-	 * does that too.
+-	 */
+-	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+-	info.length = len;
+-	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
+-	info.high_limit = mm->mmap_base + (high_limit - DEFAULT_MAP_WINDOW);
+-	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
+-	info.align_offset = 0;
+-
+-	return vm_unmapped_area(&info);
+-}
+-
+ void radix__huge_ptep_modify_prot_commit(struct vm_area_struct *vma,
+ 					 unsigned long addr, pte_t *ptep,
+ 					 pte_t old_pte, pte_t pte)
+diff --git a/arch/powerpc/mm/book3s64/slice.c b/arch/powerpc/mm/book3s64/slice.c
+index c83be371c6e7..4c3e9601fdf6 100644
+--- a/arch/powerpc/mm/book3s64/slice.c
++++ b/arch/powerpc/mm/book3s64/slice.c
+@@ -777,4 +777,80 @@ int slice_is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+ 
+ 	return !slice_check_range_fits(mm, maskp, addr, len);
+ }
++
++unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
++{
++	/* With radix we don't use slice, so derive it from vma*/
++	if (radix_enabled())
++		return vma_kernel_pagesize(vma);
++
++	return 1UL << mmu_psize_to_shift(get_slice_psize(vma->vm_mm, vma->vm_start));
++}
++
++/*
++ * A variant of hugetlb_get_unmapped_area() doing topdown search
++ * FIXME!! should we do as x86 does or non hugetlb area does ?
++ * ie, use topdown or not based on mmap_is_legacy check ?
++ */
++static unsigned long
++radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
++				 unsigned long pgoff, unsigned long flags)
++{
++	struct mm_struct *mm = current->mm;
++	struct vm_area_struct *vma;
++	struct hstate *h = hstate_file(file);
++	int fixed = (flags & MAP_FIXED);
++	unsigned long high_limit;
++	struct vm_unmapped_area_info info;
++
++	high_limit = DEFAULT_MAP_WINDOW;
++	if (addr >= high_limit || (fixed && (addr + len > high_limit)))
++		high_limit = TASK_SIZE;
++
++	if (len & ~huge_page_mask(h))
++		return -EINVAL;
++	if (len > high_limit)
++		return -ENOMEM;
++
++	if (fixed) {
++		if (addr > high_limit - len)
++			return -ENOMEM;
++		if (prepare_hugepage_range(file, addr, len))
++			return -EINVAL;
++		return addr;
++	}
++
++	if (addr) {
++		addr = ALIGN(addr, huge_page_size(h));
++		vma = find_vma(mm, addr);
++		if (high_limit - len >= addr && addr >= mmap_min_addr &&
++		    (!vma || addr + len <= vm_start_gap(vma)))
++			return addr;
++	}
++	/*
++	 * We are always doing an topdown search here. Slice code
++	 * does that too.
++	 */
++	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
++	info.length = len;
++	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
++	info.high_limit = mm->mmap_base + (high_limit - DEFAULT_MAP_WINDOW);
++	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
++	info.align_offset = 0;
++
++	return vm_unmapped_area(&info);
++}
++
++unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
++					unsigned long len, unsigned long pgoff,
++					unsigned long flags)
++{
++	struct hstate *hstate = hstate_file(file);
++	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
++
++	if (radix_enabled())
++		return radix__hugetlb_get_unmapped_area(file, addr, len, pgoff, flags);
++
++	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
++}
+ #endif
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 82d8b368ca6d..eb9de09e49a3 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -542,34 +542,6 @@ struct page *follow_huge_pd(struct vm_area_struct *vma,
+ 	return page;
+ }
+ 
+-#ifdef CONFIG_PPC_MM_SLICES
+-unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+-					unsigned long len, unsigned long pgoff,
+-					unsigned long flags)
+-{
+-	struct hstate *hstate = hstate_file(file);
+-	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
+-
+-#ifdef CONFIG_PPC_RADIX_MMU
+-	if (radix_enabled())
+-		return radix__hugetlb_get_unmapped_area(file, addr, len,
+-						       pgoff, flags);
+-#endif
+-	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
+-}
+-#endif
+-
+-unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
+-{
+-	/* With radix we don't use slice, so derive it from vma*/
+-	if (IS_ENABLED(CONFIG_PPC_MM_SLICES) && !radix_enabled()) {
+-		unsigned int psize = get_slice_psize(vma->vm_mm, vma->vm_start);
+-
+-		return 1UL << mmu_psize_to_shift(psize);
+-	}
+-	return vma_kernel_pagesize(vma);
+-}
+-
+ bool __init arch_hugetlb_valid_size(unsigned long size)
+ {
+ 	int shift = __ffs(size);
 -- 
 2.33.1
 
