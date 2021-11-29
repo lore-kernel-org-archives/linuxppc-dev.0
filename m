@@ -4,55 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C100C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 01:18:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0907CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 01:19:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J2SD650t5z3cW6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 12:18:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J2SDk4n6wz3clb
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 12:19:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256 header.s=1 header.b=CbL6Dkr0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256 header.s=1 header.b=H73sBxsM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=rere.qmqm.pl (client-ip=91.227.64.183; helo=rere.qmqm.pl;
  envelope-from=mirq-linux@rere.qmqm.pl; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256
- header.s=1 header.b=CbL6Dkr0; dkim-atps=neutral
+ header.s=1 header.b=H73sBxsM; dkim-atps=neutral
 Received: from rere.qmqm.pl (rere.qmqm.pl [91.227.64.183])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2R4L5Y9Mz2yYJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 11:26:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2RHb47bNz2yYS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 11:36:43 +1100 (AEDT)
 Received: from remote.user (localhost [127.0.0.1])
- by rere.qmqm.pl (Postfix) with ESMTPSA id 4J2R463HYCz9Y;
- Mon, 29 Nov 2021 01:26:46 +0100 (CET)
+ by rere.qmqm.pl (Postfix) with ESMTPSA id 4J2RHF5R6Gz9Y;
+ Mon, 29 Nov 2021 01:36:25 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
- t=1638145614; bh=rYhG1/gOEGdeEm/s8Gt8rEBk1iF8QMIsgq7S9tytKm0=;
+ t=1638146198; bh=DI1VWBOrDzR1kSFvGVwF5e/uC6F95umcWDF0D1gW0co=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=CbL6Dkr0hp6+eWfnOkswWvW2NOKJ79Uh6/l2ZCnK5kWTiOO50iqx187Rg4dryYZZY
- bxYRz4m9fgWtZVh11lmgMaMMzocpKUJUWIlke/44DEMmzJJm4vDOSxFAyf1Gq25nhd
- 1THlT17c8aj7yKXukSvNxOS2rqgVH1j/XRMa1p7Hswrcs4jJdmmxtpOwmRnm9PweUg
- dgln8/6i94ET+XVFAx+2l6pzk4WNbL+PWxg255szxizJhOsvQ3eK1ntEQbcIyPN3HU
- KJwCs9dJC+yqQftWDNSkBS/r4FvpiW2ousq8It65okWyLREqQTSJR+N2Sf4mDmjtBp
- iZvEDATRHwtcA==
+ b=H73sBxsM7L9z8xEfnp2Ak7MzBK8+vuHhYSpX9ZmIw96z66YhhL0jbzAc1kAW4E8/k
+ E+n0myrDaFBdTPW3DCJBAB1QxLCznookgF41GB3ur/8AtJ172fB625fAJLQBCfF2Il
+ 1tVB3rwB3wCft3kEONBcl+9mGZ0YFJna/va55m2Id6G5OQJMzxWyiW8mEoVG9uWh4D
+ 9FU7cd4y+9BUv1/bcd+v0FTSSINIJ8msC5Z+cow25KP+uSrFkzTmZSbuYJNYmoN8pj
+ wIHmD3sAFqkn2Up4Tyhb9Q0kZcFFYL4JTYDk03Wdeze2AnxwyR74tes3GEAEUnF7BY
+ Uq7OHC/U12/7A==
 X-Virus-Status: Clean
 X-Virus-Scanned: clamav-milter 0.103.3 at mail
-Date: Mon, 29 Nov 2021 01:26:42 +0100
+Date: Mon, 29 Nov 2021 01:36:24 +0100
 From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
 To: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v4 05/25] reboot: Warn if restart handler has duplicated
- priority
-Message-ID: <YaQeQgbW+CjEdsqG@qmqm.qmqm.pl>
+Subject: Re: [PATCH v4 08/25] kernel: Add combined power-off+restart handler
+ call chain API
+Message-ID: <YaQgiLw03lPyvuhr@qmqm.qmqm.pl>
 References: <20211126180101.27818-1-digetx@gmail.com>
- <20211126180101.27818-6-digetx@gmail.com>
- <YaLNOJTM+lVq+YNS@qmqm.qmqm.pl>
- <033ddf2a-6223-1a82-ec64-30f17c891f67@gmail.com>
+ <20211126180101.27818-9-digetx@gmail.com>
+ <YaLQqks8cB0vWp6Q@qmqm.qmqm.pl>
+ <9213569e-0f40-0df1-4710-8dab564e12d6@gmail.com>
+ <YaPx0kY7poGpwCL9@qmqm.qmqm.pl>
+ <1fa2d9d5-f5f6-77f5-adf6-827921acce49@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <033ddf2a-6223-1a82-ec64-30f17c891f67@gmail.com>
+In-Reply-To: <1fa2d9d5-f5f6-77f5-adf6-827921acce49@gmail.com>
 X-Mailman-Approved-At: Mon, 29 Nov 2021 12:17:37 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -103,66 +105,52 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 29, 2021 at 12:06:19AM +0300, Dmitry Osipenko wrote:
-> 28.11.2021 03:28, Michał Mirosław пишет:
-> > On Fri, Nov 26, 2021 at 09:00:41PM +0300, Dmitry Osipenko wrote:
-> >> Add sanity check which ensures that there are no two restart handlers
-> >> registered with the same priority. Normally it's a direct sign of a
-> >> problem if two handlers use the same priority.
-> > 
-> > The patch doesn't ensure the property that there are no duplicated-priority
-> > entries on the chain.
-> 
-> It's not the exact point of this patch.
-> 
-> > I'd rather see a atomic_notifier_chain_register_unique() that returns
-> > -EBUSY or something istead of adding an entry with duplicate priority.
-> > That way it would need only one list traversal unless you want to
-> > register the duplicate anyway (then you would call the older
-> > atomic_notifier_chain_register() after reporting the error).
-> 
-> The point of this patch is to warn developers about the problem that
-> needs to be fixed. We already have such troubling drivers in mainline.
-> 
-> It's not critical to register different handlers with a duplicated
-> priorities, but such cases really need to be corrected. We shouldn't
-> break users' machines during transition to the new API, meanwhile
-> developers should take action of fixing theirs drivers.
-> 
-> > (Or you could return > 0 when a duplicate is registered in
-> > atomic_notifier_chain_register() if the callers are prepared
-> > for that. I don't really like this way, though.)
-> 
-> I had a similar thought at some point before and decided that I'm not in
-> favor of this approach. It's nicer to have a dedicated function that
-> verifies the uniqueness, IMO.
+On Mon, Nov 29, 2021 at 12:53:51AM +0300, Dmitry Osipenko wrote:
+> 29.11.2021 00:17, Michał Mirosław пишет:
+> >> I'm having trouble with parsing this comment. Could you please try to
+> >> rephrase it? I don't see how you could check whether power-off handler
+> >> is available if you'll mix all handlers together.
+> > If notify_call_chain() would be fixed to return NOTIFY_OK if any call
+> > returned NOTIFY_OK, then this would be a clear way to gather the
+> > answer if any of the handlers will attempt the final action (reboot or
+> > power off).
+> Could you please show a code snippet that implements your suggestion?
 
-I don't like the part that it traverses the list second time to check
-the uniqueness. But actually you could avoid that if
-notifier_chain_register() would always add equal-priority entries in
-reverse order:
+A rough idea is this:
 
- static int notifier_chain_register(struct notifier_block **nl,
- 		struct notifier_block *n)
+ static int notifier_call_chain(struct notifier_block **nl,
+ 			       unsigned long val, void *v,
+ 			       int nr_to_call, int *nr_calls)
  {
- 	while ((*nl) != NULL) {
- 		if (unlikely((*nl) == n)) {
- 			WARN(1, "double register detected");
- 			return 0;
- 		}
--		if (n->priority > (*nl)->priority)
-+		if (n->priority >= (*nl)->priority)
- 			break;
- 		nl = &((*nl)->next);
+-	int ret = NOTIFY_DONE;
++	int ret, result = NOTIFY_DONE;
+ 	struct notifier_block *nb, *next_nb;
+ 
+ 	nb = rcu_dereference_raw(*nl);
+ 
+ 	while (nb && nr_to_call) {
+...
+ 		ret = nb->notifier_call(nb, val, v);
++
++		/* Assuming NOTIFY_STOP-carrying return is always greater than non-stopping one. */
++		if (result < ret)
++			result = ret;
+... 
  	}
- 	n->next = *nl;
- 	rcu_assign_pointer(*nl, n);
- 	return 0;
+-	return ret;
++	return result;
  }
 
-Then the check for uniqueness after adding would be:
+Then:
 
- WARN(nb->next && nb->priority == nb->next->priority);
+bool prepare_reboot()
+{
+	int ret = xx_notifier_call_chain(&shutdown_notifier, PREPARE_REBOOT, ...);
+	return ret == NOTIFY_OK;
+}
+
+And the return value would signify whether the reboot will be attempted
+when calling the chain for the REBOOT action. (Analogously for powering off.)
 
 Best Regards
 Michał Mirosław
