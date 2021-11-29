@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05C33C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 14:20:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A25AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 14:20:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J2nYp2Vrzz3cY3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 01:20:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J2nZG52Bfz3cPg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 01:20:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2nYH485Gz2xKT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 01:19:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2nYM4dHMz2xKT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 01:19:51 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4J2nY91Fhzz9sSc;
- Mon, 29 Nov 2021 15:19:41 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4J2nYC05KBz9sSg;
+ Mon, 29 Nov 2021 15:19:43 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id bL_dvNsQHksr; Mon, 29 Nov 2021 15:19:41 +0100 (CET)
+ with ESMTP id qnXv8bfMgao4; Mon, 29 Nov 2021 15:19:42 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4J2nY374fgz9sSg;
- Mon, 29 Nov 2021 15:19:35 +0100 (CET)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4J2nY408G2z9sSh;
+ Mon, 29 Nov 2021 15:19:36 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E13BF8B7B7;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E8BB88B763;
  Mon, 29 Nov 2021 15:19:35 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Vif0z8hvEbTZ; Mon, 29 Nov 2021 15:19:35 +0100 (CET)
+ with ESMTP id C4ve4NBqXP7A; Mon, 29 Nov 2021 15:19:35 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 902068B763;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 92F278B7AA;
  Mon, 29 Nov 2021 15:19:35 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1ATEJSml959576
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1ATEJRqi959548
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Mon, 29 Nov 2021 15:19:28 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1ATEJSF5959575;
- Mon, 29 Nov 2021 15:19:28 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1ATEJR0t959547;
+ Mon, 29 Nov 2021 15:19:27 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, alex@ghiti.fr
-Subject: [PATCH v3 07/10] powerpc/mm: Convert to default topdown mmap layout
-Date: Mon, 29 Nov 2021 15:19:21 +0100
-Message-Id: <4e2561c7e278a3e571dfdecb32e391cbd2f0ecdd.1638195388.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 01/10] powerpc/mm: Make slice specific to book3s/64
+Date: Mon, 29 Nov 2021 15:19:15 +0100
+Message-Id: <1fa5cf0888b27d6229771a9c4767753f654b4b39.1638195388.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <cover.1638195388.git.christophe.leroy@csgroup.eu>
 References: <cover.1638195388.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1638195562; l=5473; s=20211009;
- h=from:subject:message-id; bh=X2UE0abDATx31ceHIUsnp0zbB1ebB37p+ztZRqaXuh4=;
- b=9vcs2eKNlUh7nIJVrQ6eoY6MejCmeAvalCajp2xl7sSKQhdJ6sIGH1XjAGm6MJeCxZYXzjBdlL6B
- 5ByC9U4nA824eMtoeJuGDPUfC8trUJWpsLNsi2bh23CiV1084IKZ
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1638195562; l=3818; s=20211009;
+ h=from:subject:message-id; bh=C643iyxZKWZyqkmJqRwDOIshEmeVaDYpF3rzIQW8MwI=;
+ b=vhNsssc9Mxwl5yZ3ioVfuRFkGf32WWssnly+KE67NMuy8nejYdad49eKPxCtK9O7tuYxJSV74sOL
+ nOI3P1c0Bqx08aulkKJX1cJXbjIp83TNNtBCGrHtQ5sjcxjDh1LW
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,182 +82,104 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Select CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT and
-remove arch/powerpc/mm/mmap.c
+Since commit 555904d07eef ("powerpc/8xx: MM_SLICE is not needed
+anymore") only book3s/64 selects CONFIG_PPC_MM_SLICES.
 
-This change provides standard randomisation of mmaps.
-
-See commit 8b8addf891de ("x86/mm/32: Enable full randomization on i386
-and X86_32") for all the benefits of mmap randomisation.
+Move slice.c into mm/book3s64/
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v2: Also remove selection of ARCH_HAS_ELF_RANDOMIZE as it is already selected by CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
+v2: Remove now unnecessary #ifdef CONFIG_PPC_BOOK3S_64 in slice.c
 ---
- arch/powerpc/Kconfig                 |   2 +-
- arch/powerpc/include/asm/processor.h |   2 -
- arch/powerpc/mm/Makefile             |   2 +-
- arch/powerpc/mm/mmap.c               | 105 ---------------------------
- 4 files changed, 2 insertions(+), 109 deletions(-)
- delete mode 100644 arch/powerpc/mm/mmap.c
+ arch/powerpc/mm/Makefile               | 1 -
+ arch/powerpc/mm/book3s64/Makefile      | 1 +
+ arch/powerpc/mm/{ => book3s64}/slice.c | 2 --
+ arch/powerpc/mm/nohash/mmu_context.c   | 9 ---------
+ arch/powerpc/mm/nohash/tlb.c           | 4 ----
+ 5 files changed, 1 insertion(+), 16 deletions(-)
+ rename arch/powerpc/mm/{ => book3s64}/slice.c (99%)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index fb48823ccd62..20504a9901f2 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -122,7 +122,6 @@ config PPC
- 	select ARCH_HAS_DEBUG_WX		if STRICT_KERNEL_RWX
- 	select ARCH_HAS_DEVMEM_IS_ALLOWED
- 	select ARCH_HAS_DMA_MAP_DIRECT 		if PPC_PSERIES
--	select ARCH_HAS_ELF_RANDOMIZE
- 	select ARCH_HAS_FORTIFY_SOURCE
- 	select ARCH_HAS_GCOV_PROFILE_ALL
- 	select ARCH_HAS_HUGEPD			if HUGETLB_PAGE
-@@ -158,6 +157,7 @@ config PPC
- 	select ARCH_USE_MEMTEST
- 	select ARCH_USE_QUEUED_RWLOCKS		if PPC_QUEUED_SPINLOCKS
- 	select ARCH_USE_QUEUED_SPINLOCKS	if PPC_QUEUED_SPINLOCKS
-+	select ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
- 	select ARCH_WANT_IPC_PARSE_VERSION
- 	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
- 	select ARCH_WANT_LD_ORPHAN_WARN
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index e39bd0ff69f3..d906b14dd599 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -378,8 +378,6 @@ static inline void prefetchw(const void *x)
- 
- #define spin_lock_prefetch(x)	prefetchw(x)
- 
--#define HAVE_ARCH_PICK_MMAP_LAYOUT
--
- /* asm stubs */
- extern unsigned long isa300_idle_stop_noloss(unsigned long psscr_val);
- extern unsigned long isa300_idle_stop_mayloss(unsigned long psscr_val);
 diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index d4c20484dad9..503a6e249940 100644
+index df8172da2301..d4c20484dad9 100644
 --- a/arch/powerpc/mm/Makefile
 +++ b/arch/powerpc/mm/Makefile
-@@ -5,7 +5,7 @@
+@@ -14,7 +14,6 @@ obj-$(CONFIG_PPC_MMU_NOHASH)	+= nohash/
+ obj-$(CONFIG_PPC_BOOK3S_32)	+= book3s32/
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= book3s64/
+ obj-$(CONFIG_NUMA) += numa.o
+-obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
+ obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
+ obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
+ obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
+diff --git a/arch/powerpc/mm/book3s64/Makefile b/arch/powerpc/mm/book3s64/Makefile
+index 2d50cac499c5..af2f3e75d458 100644
+--- a/arch/powerpc/mm/book3s64/Makefile
++++ b/arch/powerpc/mm/book3s64/Makefile
+@@ -21,6 +21,7 @@ obj-$(CONFIG_PPC_RADIX_MMU)	+= radix_hugetlbpage.o
+ endif
+ obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= iommu_api.o
+ obj-$(CONFIG_PPC_PKEY)	+= pkeys.o
++obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
  
- ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
+ # Instrumenting the SLB fault path can lead to duplicate SLB entries
+ KCOV_INSTRUMENT_slb.o := n
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/book3s64/slice.c
+similarity index 99%
+rename from arch/powerpc/mm/slice.c
+rename to arch/powerpc/mm/book3s64/slice.c
+index 82b45b1cb973..c83be371c6e7 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/book3s64/slice.c
+@@ -712,7 +712,6 @@ void slice_init_new_context_exec(struct mm_struct *mm)
+ 		bitmap_fill(mask->high_slices, SLICE_NUM_HIGH);
+ }
  
--obj-y				:= fault.o mem.o pgtable.o mmap.o maccess.o pageattr.o \
-+obj-y				:= fault.o mem.o pgtable.o maccess.o pageattr.o \
- 				   init_$(BITS).o pgtable_$(BITS).o \
- 				   pgtable-frag.o ioremap.o ioremap_$(BITS).o \
- 				   init-common.o mmu_context.o drmem.o \
-diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
-deleted file mode 100644
-index 5972d619d274..000000000000
---- a/arch/powerpc/mm/mmap.c
-+++ /dev/null
-@@ -1,105 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- *  flexible mmap layout support
-- *
-- * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
-- * All Rights Reserved.
-- *
-- * Started by Ingo Molnar <mingo@elte.hu>
-- */
--
--#include <linux/personality.h>
--#include <linux/mm.h>
--#include <linux/random.h>
--#include <linux/sched/signal.h>
--#include <linux/sched/mm.h>
--#include <linux/elf-randomize.h>
--#include <linux/security.h>
--#include <linux/mman.h>
--
--/*
-- * Top of mmap area (just below the process stack).
-- *
-- * Leave at least a ~128 MB hole.
-- */
--#define MIN_GAP (128*1024*1024)
--#define MAX_GAP (TASK_SIZE/6*5)
--
--static inline int mmap_is_legacy(struct rlimit *rlim_stack)
--{
--	if (current->personality & ADDR_COMPAT_LAYOUT)
--		return 1;
--
--	if (rlim_stack->rlim_cur == RLIM_INFINITY)
--		return 1;
--
--	return sysctl_legacy_va_layout;
--}
--
--unsigned long arch_mmap_rnd(void)
--{
--	unsigned long shift, rnd;
--
--	shift = mmap_rnd_bits;
--#ifdef CONFIG_COMPAT
--	if (is_32bit_task())
--		shift = mmap_rnd_compat_bits;
+-#ifdef CONFIG_PPC_BOOK3S_64
+ void slice_setup_new_exec(void)
+ {
+ 	struct mm_struct *mm = current->mm;
+@@ -724,7 +723,6 @@ void slice_setup_new_exec(void)
+ 
+ 	mm_ctx_set_slb_addr_limit(&mm->context, DEFAULT_MAP_WINDOW);
+ }
 -#endif
--	rnd = get_random_long() % (1ul << shift);
--
--	return rnd << PAGE_SHIFT;
--}
--
--static inline unsigned long stack_maxrandom_size(void)
--{
--	if (!(current->flags & PF_RANDOMIZE))
--		return 0;
--
--	/* 8MB for 32bit, 1GB for 64bit */
--	if (is_32bit_task())
--		return (1<<23);
--	else
--		return (1<<30);
--}
--
--static inline unsigned long mmap_base(unsigned long rnd,
--				      struct rlimit *rlim_stack)
--{
--	unsigned long gap = rlim_stack->rlim_cur;
--	unsigned long pad = stack_maxrandom_size() + stack_guard_gap;
--
--	/* Values close to RLIM_INFINITY can overflow. */
--	if (gap + pad > gap)
--		gap += pad;
--
--	if (gap < MIN_GAP)
--		gap = MIN_GAP;
--	else if (gap > MAX_GAP)
--		gap = MAX_GAP;
--
--	return PAGE_ALIGN(DEFAULT_MAP_WINDOW - gap - rnd);
--}
--
--/*
-- * This function, called very early during the creation of a new
-- * process VM image, sets up which VM layout function to use:
-- */
--void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
--{
--	unsigned long random_factor = 0UL;
--
--	if (current->flags & PF_RANDOMIZE)
--		random_factor = arch_mmap_rnd();
--
+ 
+ void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+ 			   unsigned long len, unsigned int psize)
+diff --git a/arch/powerpc/mm/nohash/mmu_context.c b/arch/powerpc/mm/nohash/mmu_context.c
+index 44b2b5e7cabe..dc3528e815b9 100644
+--- a/arch/powerpc/mm/nohash/mmu_context.c
++++ b/arch/powerpc/mm/nohash/mmu_context.c
+@@ -313,15 +313,6 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
+  */
+ int init_new_context(struct task_struct *t, struct mm_struct *mm)
+ {
 -	/*
--	 * Fall back to the standard layout if the personality
--	 * bit is set, or if the expected stack growth is unlimited:
+-	 * We have MMU_NO_CONTEXT set to be ~0. Hence check
+-	 * explicitly against context.id == 0. This ensures that we properly
+-	 * initialize context slice details for newly allocated mm's (which will
+-	 * have id == 0) and don't alter context slice inherited via fork (which
+-	 * will have id != 0).
 -	 */
--	if (mmap_is_legacy(rlim_stack)) {
--		mm->mmap_base = TASK_UNMAPPED_BASE;
--		mm->get_unmapped_area = arch_get_unmapped_area;
--	} else {
--		mm->mmap_base = mmap_base(random_factor, rlim_stack);
--		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
--	}
--}
+-	if (mm->context.id == 0)
+-		slice_init_new_context_exec(mm);
+ 	mm->context.id = MMU_NO_CONTEXT;
+ 	mm->context.active = 0;
+ 	pte_frag_set(&mm->context, NULL);
+diff --git a/arch/powerpc/mm/nohash/tlb.c b/arch/powerpc/mm/nohash/tlb.c
+index 311281063d48..3359cf7c2a61 100644
+--- a/arch/powerpc/mm/nohash/tlb.c
++++ b/arch/powerpc/mm/nohash/tlb.c
+@@ -773,9 +773,5 @@ void __init early_init_mmu(void)
+ #ifdef CONFIG_PPC_47x
+ 	early_init_mmu_47x();
+ #endif
+-
+-#ifdef CONFIG_PPC_MM_SLICES
+-	mm_ctx_set_slb_addr_limit(&init_mm.context, SLB_ADDR_LIMIT_DEFAULT);
+-#endif
+ }
+ #endif /* CONFIG_PPC64 */
 -- 
 2.33.1
 
