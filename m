@@ -4,68 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5F50C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 14:24:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E6B9C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 14:38:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J2nfl4StJz3blF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 01:24:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J2nzG1f90z3cV0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 01:38:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2nZ66hrkz3ck3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 01:20:30 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4J2nYL6GYRz9sT0;
- Mon, 29 Nov 2021 15:19:50 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id P77XMOGSSqbg; Mon, 29 Nov 2021 15:19:50 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4J2nY41DBQz9sTC;
- Mon, 29 Nov 2021 15:19:36 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1F1DF8B7AB;
- Mon, 29 Nov 2021 15:19:36 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id L1XFbAfdgtwi; Mon, 29 Nov 2021 15:19:36 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9C4E18B7AF;
- Mon, 29 Nov 2021 15:19:35 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1ATEJSW4959552
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 29 Nov 2021 15:19:28 +0100
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1ATEJSf3959551;
- Mon, 29 Nov 2021 15:19:28 +0100
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, alex@ghiti.fr
-Subject: [PATCH v3 02/10] powerpc/mm: Move vma_mmu_pagesize() and
- hugetlb_get_unmapped_area() to slice.c
-Date: Mon, 29 Nov 2021 15:19:16 +0100
-Message-Id: <8ff40524cc79d6e6dedc56791c4214ca4c19e0f7.1638195388.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.33.1
-In-Reply-To: <cover.1638195388.git.christophe.leroy@csgroup.eu>
-References: <cover.1638195388.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2nyk4Fchz2x9J
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 01:38:17 +1100 (AEDT)
+X-IronPort-AV: E=McAfee;i="6200,9189,10182"; a="216674771"
+X-IronPort-AV: E=Sophos;i="5.87,273,1631602800"; d="scan'208";a="216674771"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+ by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Nov 2021 06:37:13 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.87,273,1631602800"; d="scan'208";a="608726541"
+Received: from lkp-server02.sh.intel.com (HELO 9e1e9f9b3bcb) ([10.239.97.151])
+ by orsmga004.jf.intel.com with ESMTP; 29 Nov 2021 06:37:11 -0800
+Received: from kbuild by 9e1e9f9b3bcb with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1mrhmI-000C2S-Lg; Mon, 29 Nov 2021 14:37:10 +0000
+Date: Mon, 29 Nov 2021 22:36:20 +0800
+From: kernel test robot <lkp@intel.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v4 1/5] powerpc/inst: Refactor ___get_user_instr()
+Message-ID: <202111292213.TqMVcy38-lkp@intel.com>
+References: <97a171efd8c582e2bae82c31f2a9519823a20d3f.1638186773.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1638195562; l=7532; s=20211009;
- h=from:subject:message-id; bh=rf8c2Va0a+oPrjsrDKbsVVqJCso4PiLiMZDeQ0MksqU=;
- b=nUVbEMdIo6Uxn3WaImXtzm75C9F8nCQ5ciwxNtqDmct8CcNQV9jTXLtspvWdsit65c8PAdZNBrYB
- GHMKGnI/A7G6MmPIWhhbN7DOCzB+E7t5ZD9hXmo9nCGjN2/2JUIr
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <97a171efd8c582e2bae82c31f2a9519823a20d3f.1638186773.git.christophe.leroy@csgroup.eu>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,233 +53,149 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+Cc: linuxppc-dev@lists.ozlabs.org, kbuild-all@lists.01.org,
  linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-vma_mmu_pagesize() is only required for slices,
-otherwise there is a generic weak version.
+Hi Christophe,
 
-hugetlb_get_unmapped_area() is dedicated to slices.
-radix__hugetlb_get_unmapped_area() as well.
+I love your patch! Perhaps something to improve:
 
-Move them to slice.c
+[auto build test WARNING on powerpc/next]
+[also build test WARNING on v5.16-rc3 next-20211129]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+url:    https://github.com/0day-ci/linux/commits/Christophe-Leroy/powerpc-inst-Refactor-___get_user_instr/20211129-195613
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+config: powerpc-allyesconfig (https://download.01.org/0day-ci/archive/20211129/202111292213.TqMVcy38-lkp@intel.com/config)
+compiler: powerpc-linux-gcc (GCC) 11.2.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/12f08114cece066b2640aef99e2bc74f49eebef5
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review Christophe-Leroy/powerpc-inst-Refactor-___get_user_instr/20211129-195613
+        git checkout 12f08114cece066b2640aef99e2bc74f49eebef5
+        # save the config file to linux build tree
+        mkdir build_dir
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=powerpc SHELL=/bin/bash arch/powerpc/kernel/
+
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All warnings (new ones prefixed by >>):
+
+   In file included from arch/powerpc/include/asm/hw_breakpoint.h:13,
+                    from arch/powerpc/include/asm/processor.h:43,
+                    from arch/powerpc/include/asm/thread_info.h:40,
+                    from include/linux/thread_info.h:60,
+                    from include/asm-generic/preempt.h:5,
+                    from ./arch/powerpc/include/generated/asm/preempt.h:1,
+                    from include/linux/preempt.h:78,
+                    from include/linux/spinlock.h:55,
+                    from include/linux/mmzone.h:8,
+                    from include/linux/gfp.h:6,
+                    from include/linux/mm.h:10,
+                    from arch/powerpc/kernel/align.c:17:
+   arch/powerpc/kernel/align.c: In function 'fix_alignment':
+>> arch/powerpc/include/asm/inst.h:12:32: warning: variable '__suffix' set but not used [-Wunused-but-set-variable]
+      12 |         unsigned int __prefix, __suffix;                                \
+         |                                ^~~~~~~~
+   arch/powerpc/include/asm/inst.h:31:34: note: in expansion of macro '___get_user_instr'
+      31 | #define __get_user_instr(x, ptr) ___get_user_instr(__get_user, x, ptr)
+         |                                  ^~~~~~~~~~~~~~~~~
+   arch/powerpc/kernel/align.c:310:21: note: in expansion of macro '__get_user_instr'
+     310 |                 r = __get_user_instr(instr, (void __user *)regs->nip);
+         |                     ^~~~~~~~~~~~~~~~
+--
+   In file included from arch/powerpc/include/asm/hw_breakpoint.h:13,
+                    from arch/powerpc/include/asm/processor.h:43,
+                    from arch/powerpc/include/asm/thread_info.h:40,
+                    from include/linux/thread_info.h:60,
+                    from arch/powerpc/include/asm/ptrace.h:323,
+                    from arch/powerpc/include/asm/hw_irq.h:12,
+                    from arch/powerpc/include/asm/irqflags.h:12,
+                    from include/linux/irqflags.h:16,
+                    from include/asm-generic/cmpxchg-local.h:6,
+                    from arch/powerpc/include/asm/cmpxchg.h:526,
+                    from arch/powerpc/include/asm/atomic.h:11,
+                    from include/linux/atomic.h:7,
+                    from include/linux/rcupdate.h:25,
+                    from include/linux/rculist.h:11,
+                    from include/linux/pid.h:5,
+                    from include/linux/sched.h:14,
+                    from include/linux/uaccess.h:8,
+                    from arch/powerpc/kernel/hw_breakpoint_constraints.c:3:
+   arch/powerpc/kernel/hw_breakpoint_constraints.c: In function 'wp_get_instr_detail':
+>> arch/powerpc/include/asm/inst.h:12:32: warning: variable '__suffix' set but not used [-Wunused-but-set-variable]
+      12 |         unsigned int __prefix, __suffix;                                \
+         |                                ^~~~~~~~
+   arch/powerpc/include/asm/inst.h:31:34: note: in expansion of macro '___get_user_instr'
+      31 | #define __get_user_instr(x, ptr) ___get_user_instr(__get_user, x, ptr)
+         |                                  ^~~~~~~~~~~~~~~~~
+   arch/powerpc/kernel/hw_breakpoint_constraints.c:135:13: note: in expansion of macro '__get_user_instr'
+     135 |         if (__get_user_instr(*instr, (void __user *)regs->nip))
+         |             ^~~~~~~~~~~~~~~~
+--
+   In file included from arch/powerpc/include/asm/hw_breakpoint.h:13,
+                    from arch/powerpc/include/asm/processor.h:43,
+                    from arch/powerpc/include/asm/thread_info.h:40,
+                    from include/linux/thread_info.h:60,
+                    from arch/powerpc/include/asm/ptrace.h:323,
+                    from arch/powerpc/include/asm/hw_irq.h:12,
+                    from arch/powerpc/include/asm/irqflags.h:12,
+                    from include/linux/irqflags.h:16,
+                    from include/asm-generic/cmpxchg-local.h:6,
+                    from arch/powerpc/include/asm/cmpxchg.h:526,
+                    from arch/powerpc/include/asm/atomic.h:11,
+                    from include/linux/atomic.h:7,
+                    from include/linux/rcupdate.h:25,
+                    from include/linux/rculist.h:11,
+                    from include/linux/pid.h:5,
+                    from include/linux/sched.h:14,
+                    from arch/powerpc/kernel/vecemu.c:8:
+   arch/powerpc/kernel/vecemu.c: In function 'emulate_altivec':
+>> arch/powerpc/include/asm/inst.h:12:32: warning: variable '__suffix' set but not used [-Wunused-but-set-variable]
+      12 |         unsigned int __prefix, __suffix;                                \
+         |                                ^~~~~~~~
+   arch/powerpc/include/asm/inst.h:29:32: note: in expansion of macro '___get_user_instr'
+      29 | #define get_user_instr(x, ptr) ___get_user_instr(get_user, x, ptr)
+         |                                ^~~~~~~~~~~~~~~~~
+   arch/powerpc/kernel/vecemu.c:269:13: note: in expansion of macro 'get_user_instr'
+     269 |         if (get_user_instr(instr, (void __user *)regs->nip))
+         |             ^~~~~~~~~~~~~~
+
+
+vim +/__suffix +12 arch/powerpc/include/asm/inst.h
+
+650b55b707fdfa Jordan Niethe    2020-05-15   6  
+35506a3e2d7c4d Christophe Leroy 2021-03-10   7  #define ___get_user_instr(gu_op, dest, ptr)				\
+35506a3e2d7c4d Christophe Leroy 2021-03-10   8  ({									\
+042e0860e1c1d6 Christophe Leroy 2021-05-20   9  	long __gui_ret;							\
+9134806e149ebb Christophe Leroy 2021-05-20  10  	u32 __user *__gui_ptr = (u32 __user *)ptr;			\
+35506a3e2d7c4d Christophe Leroy 2021-03-10  11  	struct ppc_inst __gui_inst;					\
+35506a3e2d7c4d Christophe Leroy 2021-03-10 @12  	unsigned int __prefix, __suffix;				\
+b3a9e523237013 Christophe Leroy 2021-05-20  13  									\
+b3a9e523237013 Christophe Leroy 2021-05-20  14  	__chk_user_ptr(ptr);						\
+9134806e149ebb Christophe Leroy 2021-05-20  15  	__gui_ret = gu_op(__prefix, __gui_ptr);				\
+35506a3e2d7c4d Christophe Leroy 2021-03-10  16  	if (__gui_ret == 0) {						\
+12f08114cece06 Christophe Leroy 2021-11-29  17  		if (IS_ENABLED(CONFIG_PPC64) && (__prefix >> 26) == OP_PREFIX) { \
+9134806e149ebb Christophe Leroy 2021-05-20  18  			__gui_ret = gu_op(__suffix, __gui_ptr + 1);	\
+042e0860e1c1d6 Christophe Leroy 2021-05-20  19  			__gui_inst = ppc_inst_prefix(__prefix, __suffix); \
+35506a3e2d7c4d Christophe Leroy 2021-03-10  20  		} else {						\
+35506a3e2d7c4d Christophe Leroy 2021-03-10  21  			__gui_inst = ppc_inst(__prefix);		\
+35506a3e2d7c4d Christophe Leroy 2021-03-10  22  		}							\
+35506a3e2d7c4d Christophe Leroy 2021-03-10  23  		if (__gui_ret == 0)					\
+35506a3e2d7c4d Christophe Leroy 2021-03-10  24  			(dest) = __gui_inst;				\
+35506a3e2d7c4d Christophe Leroy 2021-03-10  25  	}								\
+35506a3e2d7c4d Christophe Leroy 2021-03-10  26  	__gui_ret;							\
+35506a3e2d7c4d Christophe Leroy 2021-03-10  27  })
+35506a3e2d7c4d Christophe Leroy 2021-03-10  28  
+
 ---
- arch/powerpc/include/asm/book3s/64/hugetlb.h |  4 --
- arch/powerpc/mm/book3s64/radix_hugetlbpage.c | 55 --------------
- arch/powerpc/mm/book3s64/slice.c             | 76 ++++++++++++++++++++
- arch/powerpc/mm/hugetlbpage.c                | 28 --------
- 4 files changed, 76 insertions(+), 87 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index 12e150e615b7..b37a28f62cf6 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -8,10 +8,6 @@
-  */
- void radix__flush_hugetlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
- void radix__local_flush_hugetlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
--extern unsigned long
--radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
--				unsigned long len, unsigned long pgoff,
--				unsigned long flags);
- 
- extern void radix__huge_ptep_modify_prot_commit(struct vm_area_struct *vma,
- 						unsigned long addr, pte_t *ptep,
-diff --git a/arch/powerpc/mm/book3s64/radix_hugetlbpage.c b/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
-index 23d3e08911d3..d2fb776febb4 100644
---- a/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
-+++ b/arch/powerpc/mm/book3s64/radix_hugetlbpage.c
-@@ -41,61 +41,6 @@ void radix__flush_hugetlb_tlb_range(struct vm_area_struct *vma, unsigned long st
- 		radix__flush_tlb_range_psize(vma->vm_mm, start, end, psize);
- }
- 
--/*
-- * A vairant of hugetlb_get_unmapped_area doing topdown search
-- * FIXME!! should we do as x86 does or non hugetlb area does ?
-- * ie, use topdown or not based on mmap_is_legacy check ?
-- */
--unsigned long
--radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
--				unsigned long len, unsigned long pgoff,
--				unsigned long flags)
--{
--	struct mm_struct *mm = current->mm;
--	struct vm_area_struct *vma;
--	struct hstate *h = hstate_file(file);
--	int fixed = (flags & MAP_FIXED);
--	unsigned long high_limit;
--	struct vm_unmapped_area_info info;
--
--	high_limit = DEFAULT_MAP_WINDOW;
--	if (addr >= high_limit || (fixed && (addr + len > high_limit)))
--		high_limit = TASK_SIZE;
--
--	if (len & ~huge_page_mask(h))
--		return -EINVAL;
--	if (len > high_limit)
--		return -ENOMEM;
--
--	if (fixed) {
--		if (addr > high_limit - len)
--			return -ENOMEM;
--		if (prepare_hugepage_range(file, addr, len))
--			return -EINVAL;
--		return addr;
--	}
--
--	if (addr) {
--		addr = ALIGN(addr, huge_page_size(h));
--		vma = find_vma(mm, addr);
--		if (high_limit - len >= addr && addr >= mmap_min_addr &&
--		    (!vma || addr + len <= vm_start_gap(vma)))
--			return addr;
--	}
--	/*
--	 * We are always doing an topdown search here. Slice code
--	 * does that too.
--	 */
--	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
--	info.length = len;
--	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
--	info.high_limit = mm->mmap_base + (high_limit - DEFAULT_MAP_WINDOW);
--	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
--	info.align_offset = 0;
--
--	return vm_unmapped_area(&info);
--}
--
- void radix__huge_ptep_modify_prot_commit(struct vm_area_struct *vma,
- 					 unsigned long addr, pte_t *ptep,
- 					 pte_t old_pte, pte_t pte)
-diff --git a/arch/powerpc/mm/book3s64/slice.c b/arch/powerpc/mm/book3s64/slice.c
-index c83be371c6e7..4c3e9601fdf6 100644
---- a/arch/powerpc/mm/book3s64/slice.c
-+++ b/arch/powerpc/mm/book3s64/slice.c
-@@ -777,4 +777,80 @@ int slice_is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
- 
- 	return !slice_check_range_fits(mm, maskp, addr, len);
- }
-+
-+unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
-+{
-+	/* With radix we don't use slice, so derive it from vma*/
-+	if (radix_enabled())
-+		return vma_kernel_pagesize(vma);
-+
-+	return 1UL << mmu_psize_to_shift(get_slice_psize(vma->vm_mm, vma->vm_start));
-+}
-+
-+/*
-+ * A variant of hugetlb_get_unmapped_area() doing topdown search
-+ * FIXME!! should we do as x86 does or non hugetlb area does ?
-+ * ie, use topdown or not based on mmap_is_legacy check ?
-+ */
-+static unsigned long
-+radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
-+				 unsigned long pgoff, unsigned long flags)
-+{
-+	struct mm_struct *mm = current->mm;
-+	struct vm_area_struct *vma;
-+	struct hstate *h = hstate_file(file);
-+	int fixed = (flags & MAP_FIXED);
-+	unsigned long high_limit;
-+	struct vm_unmapped_area_info info;
-+
-+	high_limit = DEFAULT_MAP_WINDOW;
-+	if (addr >= high_limit || (fixed && (addr + len > high_limit)))
-+		high_limit = TASK_SIZE;
-+
-+	if (len & ~huge_page_mask(h))
-+		return -EINVAL;
-+	if (len > high_limit)
-+		return -ENOMEM;
-+
-+	if (fixed) {
-+		if (addr > high_limit - len)
-+			return -ENOMEM;
-+		if (prepare_hugepage_range(file, addr, len))
-+			return -EINVAL;
-+		return addr;
-+	}
-+
-+	if (addr) {
-+		addr = ALIGN(addr, huge_page_size(h));
-+		vma = find_vma(mm, addr);
-+		if (high_limit - len >= addr && addr >= mmap_min_addr &&
-+		    (!vma || addr + len <= vm_start_gap(vma)))
-+			return addr;
-+	}
-+	/*
-+	 * We are always doing an topdown search here. Slice code
-+	 * does that too.
-+	 */
-+	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
-+	info.length = len;
-+	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
-+	info.high_limit = mm->mmap_base + (high_limit - DEFAULT_MAP_WINDOW);
-+	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
-+	info.align_offset = 0;
-+
-+	return vm_unmapped_area(&info);
-+}
-+
-+unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
-+					unsigned long len, unsigned long pgoff,
-+					unsigned long flags)
-+{
-+	struct hstate *hstate = hstate_file(file);
-+	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
-+
-+	if (radix_enabled())
-+		return radix__hugetlb_get_unmapped_area(file, addr, len, pgoff, flags);
-+
-+	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
-+}
- #endif
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 82d8b368ca6d..eb9de09e49a3 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -542,34 +542,6 @@ struct page *follow_huge_pd(struct vm_area_struct *vma,
- 	return page;
- }
- 
--#ifdef CONFIG_PPC_MM_SLICES
--unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
--					unsigned long len, unsigned long pgoff,
--					unsigned long flags)
--{
--	struct hstate *hstate = hstate_file(file);
--	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
--
--#ifdef CONFIG_PPC_RADIX_MMU
--	if (radix_enabled())
--		return radix__hugetlb_get_unmapped_area(file, addr, len,
--						       pgoff, flags);
--#endif
--	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1);
--}
--#endif
--
--unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
--{
--	/* With radix we don't use slice, so derive it from vma*/
--	if (IS_ENABLED(CONFIG_PPC_MM_SLICES) && !radix_enabled()) {
--		unsigned int psize = get_slice_psize(vma->vm_mm, vma->vm_start);
--
--		return 1UL << mmu_psize_to_shift(psize);
--	}
--	return vma_kernel_pagesize(vma);
--}
--
- bool __init arch_hugetlb_valid_size(unsigned long size)
- {
- 	int shift = __ffs(size);
--- 
-2.33.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
