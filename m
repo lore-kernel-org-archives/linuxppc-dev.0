@@ -4,97 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04A14C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 13:47:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05C33C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 14:20:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J2mr91BXpz3bbx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 00:47:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bVJLzlJj;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J2nYp2Vrzz3cY3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 01:20:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=bVJLzlJj; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2mqG2Yhkz2xsr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 00:46:49 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1ATDKS9G004864
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 13:46:46 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type : content-transfer-encoding; s=pp1;
- bh=b+nAvchDqIgKKyj5+puGrN0h+4yOemQYx1uWFGryATI=;
- b=bVJLzlJjfpWNFHjdjLIlUBO/jN5/D9irr+RNem9+j7h92lyV4kJr7nHB9Wu1ncRburXI
- f4R57gG7cw/6Go9x6NlYwKVJgAk9XlYEXFQiVGj1KHjtwYJ/KoIy95FBVigSulALD1qu
- 7nj4F1rId6MnnEYSf3KYtdEp79ToQKxrnDAaF6WJ7kbcOpW/5M5V24BxLMM0gWGijl+p
- X2AQrszPY2e4qREKcAouCAGY2UbNKCybX8zIj8SjWqWmsh0EYRtGyOajw4OOEH90ab/P
- CyPipP7E3fdNejGjY+eXdxHN2dCtpfDTB7VdBcCnJ1XQ1VNWYAVMOCHyaznShXRr7fJG xQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3cmynhgm68-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 13:46:45 +0000
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1ATDKRVD004829
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 13:46:45 GMT
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3cmynhgm5r-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 29 Nov 2021 13:46:45 +0000
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1ATDg6HB031821;
- Mon, 29 Nov 2021 13:46:44 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma05wdc.us.ibm.com with ESMTP id 3ckcaa23h7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 29 Nov 2021 13:46:44 +0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1ATDkh8E58523908
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 29 Nov 2021 13:46:43 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1E51F112062;
- Mon, 29 Nov 2021 13:46:43 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 282E3112075;
- Mon, 29 Nov 2021 13:46:42 +0000 (GMT)
-Received: from localhost (unknown [9.211.119.53])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTPS;
- Mon, 29 Nov 2021 13:46:41 +0000 (GMT)
-From: Fabiano Rosas <farosas@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 15/17] powerpc/64s: Make hash MMU support configurable
-In-Reply-To: <20211129030803.1888161-16-npiggin@gmail.com>
-References: <20211129030803.1888161-1-npiggin@gmail.com>
- <20211129030803.1888161-16-npiggin@gmail.com>
-Date: Mon, 29 Nov 2021 10:46:39 -0300
-Message-ID: <877dcrqdkw.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2nYH485Gz2xKT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 01:19:44 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4J2nY91Fhzz9sSc;
+ Mon, 29 Nov 2021 15:19:41 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id bL_dvNsQHksr; Mon, 29 Nov 2021 15:19:41 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4J2nY374fgz9sSg;
+ Mon, 29 Nov 2021 15:19:35 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E13BF8B7B7;
+ Mon, 29 Nov 2021 15:19:35 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Vif0z8hvEbTZ; Mon, 29 Nov 2021 15:19:35 +0100 (CET)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 902068B763;
+ Mon, 29 Nov 2021 15:19:35 +0100 (CET)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1ATEJSml959576
+ (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+ Mon, 29 Nov 2021 15:19:28 +0100
+Received: (from chleroy@localhost)
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1ATEJSF5959575;
+ Mon, 29 Nov 2021 15:19:28 +0100
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
+ christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, alex@ghiti.fr
+Subject: [PATCH v3 07/10] powerpc/mm: Convert to default topdown mmap layout
+Date: Mon, 29 Nov 2021 15:19:21 +0100
+Message-Id: <4e2561c7e278a3e571dfdecb32e391cbd2f0ecdd.1638195388.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.33.1
+In-Reply-To: <cover.1638195388.git.christophe.leroy@csgroup.eu>
+References: <cover.1638195388.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: N-6TBv501eLFkRDr2eS2NYDoXIay1mTK
-X-Proofpoint-GUID: EROkXlaa0xUt4du6nQw3Rls812lWZhA0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
- definitions=2021-11-29_08,2021-11-28_01,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 adultscore=0
- suspectscore=0 clxscore=1011 priorityscore=1501 lowpriorityscore=0
- malwarescore=0 impostorscore=0 mlxlogscore=999 mlxscore=0 spamscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2110150000 definitions=main-2111290068
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1638195562; l=5473; s=20211009;
+ h=from:subject:message-id; bh=X2UE0abDATx31ceHIUsnp0zbB1ebB37p+ztZRqaXuh4=;
+ b=9vcs2eKNlUh7nIJVrQ6eoY6MejCmeAvalCajp2xl7sSKQhdJ6sIGH1XjAGm6MJeCxZYXzjBdlL6B
+ 5ByC9U4nA824eMtoeJuGDPUfC8trUJWpsLNsi2bh23CiV1084IKZ
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
+ pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,58 +76,188 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Select CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT and
+remove arch/powerpc/mm/mmap.c
 
-> This adds Kconfig selection which allows 64s hash MMU support to be
-> disabled. It can be disabled if radix support is enabled, the minimum
-> supported CPU type is POWER9 (or higher), and KVM is not selected.
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/Kconfig                     |  3 ++-
->  arch/powerpc/include/asm/mmu.h           | 16 +++++++++++++---
->  arch/powerpc/kernel/dt_cpu_ftrs.c        | 14 ++++++++++----
->  arch/powerpc/kvm/Kconfig                 |  1 +
->  arch/powerpc/mm/init_64.c                | 13 +++++++++++--
->  arch/powerpc/platforms/Kconfig.cputype   | 23 +++++++++++++++++++++--
->  arch/powerpc/platforms/cell/Kconfig      |  1 +
->  arch/powerpc/platforms/maple/Kconfig     |  1 +
->  arch/powerpc/platforms/microwatt/Kconfig |  2 +-
->  arch/powerpc/platforms/pasemi/Kconfig    |  1 +
->  arch/powerpc/platforms/powermac/Kconfig  |  1 +
->  arch/powerpc/platforms/powernv/Kconfig   |  2 +-
+This change provides standard randomisation of mmaps.
 
-powernv_defconfig brings CONFIG_CXL=3Dm
+See commit 8b8addf891de ("x86/mm/32: Enable full randomization on i386
+and X86_32") for all the benefits of mmap randomisation.
 
-../drivers/misc/cxl/main.c: In function =E2=80=98cxl_alloc_sst=E2=80=99:=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-../drivers/misc/cxl/main.c:127:45: error: =E2=80=98mmu_linear_psize=E2=80=
-=99 undeclared (first use in this function); did you mean =E2=80=98mmu_virt=
-ual_psize=E2=80=99?=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20
-  127 |  sstp0 |=3D (SLB_VSID_KERNEL | mmu_psize_defs[mmu_linear_psize].sll=
-p) << 50;=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20
-      |                                             ^~~~~~~~~~~~~~~~=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20
-      |                                             mmu_virtual_psize=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20
-../drivers/misc/cxl/main.c:127:45: note: each undeclared identifier is repo=
-rted only once for each function it appears in=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20
-make[4]: *** [../scripts/Makefile.build:287: drivers/misc/cxl/main.o] Error=
- 1=20
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v2: Also remove selection of ARCH_HAS_ELF_RANDOMIZE as it is already selected by CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
+---
+ arch/powerpc/Kconfig                 |   2 +-
+ arch/powerpc/include/asm/processor.h |   2 -
+ arch/powerpc/mm/Makefile             |   2 +-
+ arch/powerpc/mm/mmap.c               | 105 ---------------------------
+ 4 files changed, 2 insertions(+), 109 deletions(-)
+ delete mode 100644 arch/powerpc/mm/mmap.c
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index fb48823ccd62..20504a9901f2 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -122,7 +122,6 @@ config PPC
+ 	select ARCH_HAS_DEBUG_WX		if STRICT_KERNEL_RWX
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+ 	select ARCH_HAS_DMA_MAP_DIRECT 		if PPC_PSERIES
+-	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_FORTIFY_SOURCE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+ 	select ARCH_HAS_HUGEPD			if HUGETLB_PAGE
+@@ -158,6 +157,7 @@ config PPC
+ 	select ARCH_USE_MEMTEST
+ 	select ARCH_USE_QUEUED_RWLOCKS		if PPC_QUEUED_SPINLOCKS
+ 	select ARCH_USE_QUEUED_SPINLOCKS	if PPC_QUEUED_SPINLOCKS
++	select ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
+ 	select ARCH_WANT_LD_ORPHAN_WARN
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index e39bd0ff69f3..d906b14dd599 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -378,8 +378,6 @@ static inline void prefetchw(const void *x)
+ 
+ #define spin_lock_prefetch(x)	prefetchw(x)
+ 
+-#define HAVE_ARCH_PICK_MMAP_LAYOUT
+-
+ /* asm stubs */
+ extern unsigned long isa300_idle_stop_noloss(unsigned long psscr_val);
+ extern unsigned long isa300_idle_stop_mayloss(unsigned long psscr_val);
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index d4c20484dad9..503a6e249940 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -5,7 +5,7 @@
+ 
+ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
+ 
+-obj-y				:= fault.o mem.o pgtable.o mmap.o maccess.o pageattr.o \
++obj-y				:= fault.o mem.o pgtable.o maccess.o pageattr.o \
+ 				   init_$(BITS).o pgtable_$(BITS).o \
+ 				   pgtable-frag.o ioremap.o ioremap_$(BITS).o \
+ 				   init-common.o mmu_context.o drmem.o \
+diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+deleted file mode 100644
+index 5972d619d274..000000000000
+--- a/arch/powerpc/mm/mmap.c
++++ /dev/null
+@@ -1,105 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/*
+- *  flexible mmap layout support
+- *
+- * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
+- * All Rights Reserved.
+- *
+- * Started by Ingo Molnar <mingo@elte.hu>
+- */
+-
+-#include <linux/personality.h>
+-#include <linux/mm.h>
+-#include <linux/random.h>
+-#include <linux/sched/signal.h>
+-#include <linux/sched/mm.h>
+-#include <linux/elf-randomize.h>
+-#include <linux/security.h>
+-#include <linux/mman.h>
+-
+-/*
+- * Top of mmap area (just below the process stack).
+- *
+- * Leave at least a ~128 MB hole.
+- */
+-#define MIN_GAP (128*1024*1024)
+-#define MAX_GAP (TASK_SIZE/6*5)
+-
+-static inline int mmap_is_legacy(struct rlimit *rlim_stack)
+-{
+-	if (current->personality & ADDR_COMPAT_LAYOUT)
+-		return 1;
+-
+-	if (rlim_stack->rlim_cur == RLIM_INFINITY)
+-		return 1;
+-
+-	return sysctl_legacy_va_layout;
+-}
+-
+-unsigned long arch_mmap_rnd(void)
+-{
+-	unsigned long shift, rnd;
+-
+-	shift = mmap_rnd_bits;
+-#ifdef CONFIG_COMPAT
+-	if (is_32bit_task())
+-		shift = mmap_rnd_compat_bits;
+-#endif
+-	rnd = get_random_long() % (1ul << shift);
+-
+-	return rnd << PAGE_SHIFT;
+-}
+-
+-static inline unsigned long stack_maxrandom_size(void)
+-{
+-	if (!(current->flags & PF_RANDOMIZE))
+-		return 0;
+-
+-	/* 8MB for 32bit, 1GB for 64bit */
+-	if (is_32bit_task())
+-		return (1<<23);
+-	else
+-		return (1<<30);
+-}
+-
+-static inline unsigned long mmap_base(unsigned long rnd,
+-				      struct rlimit *rlim_stack)
+-{
+-	unsigned long gap = rlim_stack->rlim_cur;
+-	unsigned long pad = stack_maxrandom_size() + stack_guard_gap;
+-
+-	/* Values close to RLIM_INFINITY can overflow. */
+-	if (gap + pad > gap)
+-		gap += pad;
+-
+-	if (gap < MIN_GAP)
+-		gap = MIN_GAP;
+-	else if (gap > MAX_GAP)
+-		gap = MAX_GAP;
+-
+-	return PAGE_ALIGN(DEFAULT_MAP_WINDOW - gap - rnd);
+-}
+-
+-/*
+- * This function, called very early during the creation of a new
+- * process VM image, sets up which VM layout function to use:
+- */
+-void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
+-{
+-	unsigned long random_factor = 0UL;
+-
+-	if (current->flags & PF_RANDOMIZE)
+-		random_factor = arch_mmap_rnd();
+-
+-	/*
+-	 * Fall back to the standard layout if the personality
+-	 * bit is set, or if the expected stack growth is unlimited:
+-	 */
+-	if (mmap_is_legacy(rlim_stack)) {
+-		mm->mmap_base = TASK_UNMAPPED_BASE;
+-		mm->get_unmapped_area = arch_get_unmapped_area;
+-	} else {
+-		mm->mmap_base = mmap_base(random_factor, rlim_stack);
+-		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
+-	}
+-}
+-- 
+2.33.1
 
