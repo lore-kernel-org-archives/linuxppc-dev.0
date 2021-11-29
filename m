@@ -4,73 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA327C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 07:39:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEB7DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 07:42:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J2cfw1l4Hz3bTS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 18:39:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Ximtyy9D;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J2clL4Cy9z3cRj
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 18:42:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f2d;
- helo=mail-qv1-xf2d.google.com; envelope-from=yury.norov@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=Ximtyy9D; dkim-atps=neutral
-Received: from mail-qv1-xf2d.google.com (mail-qv1-xf2d.google.com
- [IPv6:2607:f8b0:4864:20::f2d])
+ smtp.mailfrom=kaod.org (client-ip=46.105.48.137; helo=9.mo548.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Received: from 9.mo548.mail-out.ovh.net (9.mo548.mail-out.ovh.net
+ [46.105.48.137])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2bKP6WZVz2xYQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 17:38:47 +1100 (AEDT)
-Received: by mail-qv1-xf2d.google.com with SMTP id i12so280717qvh.11
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Nov 2021 22:38:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=GW7wD7qKvROu8z9xZL5o2Gh9JvMEXrXNdc/d8bAaPNs=;
- b=Ximtyy9D6hF34jeHkx2abhxO2fEDksv5f5qJu4CbvoNWokti3yxmfDL3L7TYPRNI1N
- nLBExnAtE1kHxfW3UuSIcTZjpfdkrYaWw77PtYlgHprrRWmhg8onSirLlPaay6tbmdGV
- QOolCDulR6Tk/EKA2Gv8Xlb2VKcWxKtuMIpV9m8bP/Y2OIkRrwh1D8Uy/bj62ViSMN2l
- ZvGgVYwmHud/XyWXGXVdXp5Qsb6Tf/NpieRKvdWwCGOCaqCRU7xxjxP8pUys/Y0my6pK
- DI87mJm/+MqXPnLUnP7Gv+O+UoGKFiXftZWbYzOV5qGvrEcopuUsleS20idOc1qycgZd
- CJ3A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=GW7wD7qKvROu8z9xZL5o2Gh9JvMEXrXNdc/d8bAaPNs=;
- b=fsHnrY8QWSC8SFrw2gXXf6KKjqTEcLZXtoNyg3wxr2ZjJM+ZwD3xTzwCVUB46MlbV2
- WntcNZk0hMP+fjy6sEONHJ00/mUbClwVI3aQuSvv8H0uIGkh28gQtESFG7DvfgejN82t
- OpGnCo7Kfxl+o1dmW9BMsicaWLx+y4q+ezUI/2CZFXtOO/gL+6f8XOYtbGb7lVqx4Kg0
- guASQHiHKDDsCZVU4xZgwiVSp2TToVkh1f84xunDM4XlPd+SLOZk+LTiOmUxVmwXy28T
- iKu73Hc2tB+/KU1cKOtHRcjOxtLzQq5uPCSVRTAjzAbdMAJ2Cl0NfuDVfReFPZ3xPV4+
- a1IA==
-X-Gm-Message-State: AOAM532AJ9zUrzse3LjGIPq7zI99DgFFNRu42NYTnHTi+AxUWmnCdyY5
- mqhTWnUwqLxLL3YAZUi5zM4=
-X-Google-Smtp-Source: ABdhPJwSywxmnS7RgaW8ur/GbWm8YSeTFfi4rMgLh/NdfnxtrZBeDnmatO6ciZp/cAThb6LO+btZbw==
-X-Received: by 2002:a05:6214:984:: with SMTP id
- dt4mr30031399qvb.120.1638167922796; 
- Sun, 28 Nov 2021 22:38:42 -0800 (PST)
-Received: from localhost ([66.216.211.25])
- by smtp.gmail.com with ESMTPSA id h19sm8495514qth.63.2021.11.28.22.38.41
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 28 Nov 2021 22:38:42 -0800 (PST)
-Date: Sun, 28 Nov 2021 22:38:39 -0800
-From: Yury Norov <yury.norov@gmail.com>
-To: mirq-test@rere.qmqm.pl
-Subject: Re: [PATCH 0/9] lib/bitmap: optimize bitmap_weight() usage
-Message-ID: <20211129063839.GA338729@lapt>
-References: <20211128035704.270739-1-yury.norov@gmail.com>
- <YaPEfZ0t9UFGwpml@qmqm.qmqm.pl>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2ckm3Prvz2xXy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 18:42:24 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.20.7])
+ by mo548.mail-out.ovh.net (Postfix) with ESMTPS id D10AB2064C;
+ Mon, 29 Nov 2021 07:33:34 +0000 (UTC)
+Received: from kaod.org (37.59.142.103) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.20; Mon, 29 Nov
+ 2021 08:33:33 +0100
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-103G0058ffb0110-7673-40ee-a51a-c9a65a45fa89,
+ 3279756C2EB34864E332BB908A933B747C53BE44) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 82.64.250.170
+Message-ID: <b1a6d267-c7b4-c4b9-ab0e-f5cc32bfe9bf@kaod.org>
+Date: Mon, 29 Nov 2021 08:33:33 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YaPEfZ0t9UFGwpml@qmqm.qmqm.pl>
-X-Mailman-Approved-At: Mon, 29 Nov 2021 18:38:27 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+Subject: Re: [patch 05/22] genirq/msi: Fixup includes
+Content-Language: en-US
+To: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
+References: <20211126222700.862407977@linutronix.de>
+ <20211126223824.382273262@linutronix.de>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+In-Reply-To: <20211126223824.382273262@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.103]
+X-ClientProxiedBy: DAG1EX2.mxp5.local (172.16.2.2) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: 67cb6c92-6833-4394-901b-34c8b386eb6d
+X-Ovh-Tracer-Id: 9389442276353674140
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvuddrheekgdegjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefkffggfgfuvfhfhfgjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeeigedvffekgeeftedutddttdevudeihfegudffkeeitdekkeetkefhffelveelleenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtfeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,144 +63,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Andrew Lunn <andrew@lunn.ch>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Guo Ren <guoren@kernel.org>,
- Christoph Lameter <cl@linux.com>, Christoph Hellwig <hch@lst.de>,
- Andi Kleen <ak@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Mel Gorman <mgorman@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>,
- Petr Mladek <pmladek@suse.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Jens Axboe <axboe@fb.com>, Andy Lutomirski <luto@kernel.org>,
- Lee Jones <lee.jones@linaro.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org,
- Sergey Senozhatsky <senozhatsky@chromium.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-crypto@vger.kernel.org,
- Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Mark Rutland <mark.rutland@arm.com>, Anup Patel <anup.patel@wdc.com>,
- linux-ia64@vger.kernel.org, David Airlie <airlied@linux.ie>,
- Roy Pledge <Roy.Pledge@nxp.com>, Dave Hansen <dave.hansen@linux.intel.com>,
- Solomon Peachy <pizza@shaftnet.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
- Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
- Dennis Zhou <dennis@kernel.org>, Matti Vaittinen <mazziesaccount@gmail.com>,
- linux-alpha@vger.kernel.org, Kalle Valo <kvalo@codeaurora.org>,
- Stephen Boyd <sboyd@kernel.org>, Tariq Toukan <tariqt@nvidia.com>,
- Dinh Nguyen <dinguyen@kernel.org>, Jonathan Cameron <jic23@kernel.org>,
- Ulf Hansson <ulf.hansson@linaro.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Mike Marciniszyn <mike.marciniszyn@cornelisnetworks.com>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Subbaraya Sundeep <sbhatta@marvell.com>, Will Deacon <will@kernel.org>,
- Sagi Grimberg <sagi@grimberg.me>, linux-csky@vger.kernel.org,
- bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org,
- linux-snps-arc@lists.infradead.org, Kees Cook <keescook@chromium.org>,
- Yury Norov <yury.norov@gmail.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>,
- Vineet Gupta <vgupta@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- Mark Gross <markgross@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
+Cc: linux-hyperv@vger.kernel.org, linux-pci@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ Wei Liu <wei.liu@kernel.org>, Ashok Raj <ashok.raj@intel.com>,
+ Marc Zygnier <maz@kernel.org>, x86@kernel.org,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Bjorn Helgaas <helgaas@kernel.org>, Jason Gunthorpe <jgg@nvidia.com>,
+ xen-devel@lists.xenproject.org, ath11k@lists.infradead.org,
+ Kevin Tian <kevin.tian@intel.com>, Heiko Carstens <hca@linux.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>, Megha Dey <megha.dey@intel.com>,
+ Juergen Gross <jgross@suse.com>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- David Laight <David.Laight@aculab.com>, Sudeep Holla <sudeep.holla@arm.com>,
- Geetha sowjanya <gakula@marvell.com>, Ian Rogers <irogers@google.com>,
- kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Amitkumar Karwar <amitkarwar@gmail.com>, linux-mm@kvack.org,
- linux-riscv@lists.infradead.org, Jiri Olsa <jolsa@redhat.com>,
- Ard Biesheuvel <ardb@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Marc Zyngier <maz@kernel.org>, Russell King <linux@armlinux.org.uk>,
- Andy Gross <agross@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
- Vivien Didelot <vivien.didelot@gmail.com>,
- Sunil Goutham <sgoutham@marvell.com>, "Paul E. McKenney" <paulmck@kernel.org>,
- linux-s390@vger.kernel.org, Alexey Klimov <aklimov@redhat.com>,
- Heiko Carstens <hca@linux.ibm.com>, Hans de Goede <hdegoede@redhat.com>,
- Nicholas Piggin <npiggin@gmail.com>, Marcin Wojtas <mw@semihalf.com>,
- Vlastimil Babka <vbabka@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>,
- Daniel Vetter <daniel@ffwll.ch>, Jason Wessel <jason.wessel@windriver.com>,
- Saeed Mahameed <saeedm@nvidia.com>, Andy Shevchenko <andy@infradead.org>
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mips@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Nov 28, 2021 at 07:03:41PM +0100, mirq-test@rere.qmqm.pl wrote:
-> On Sat, Nov 27, 2021 at 07:56:55PM -0800, Yury Norov wrote:
-> > In many cases people use bitmap_weight()-based functions like this:
-> > 
-> > 	if (num_present_cpus() > 1)
-> > 		do_something();
-> > 
-> > This may take considerable amount of time on many-cpus machines because
-> > num_present_cpus() will traverse every word of underlying cpumask
-> > unconditionally.
-> > 
-> > We can significantly improve on it for many real cases if stop traversing
-> > the mask as soon as we count present cpus to any number greater than 1:
-> > 
-> > 	if (num_present_cpus_gt(1))
-> > 		do_something();
-> > 
-> > To implement this idea, the series adds bitmap_weight_{eq,gt,le}
-> > functions together with corresponding wrappers in cpumask and nodemask.
+On 11/27/21 02:18, Thomas Gleixner wrote:
+> Remove the kobject.h include from msi.h as it's not required and add a
+> sysfs.h include to the core code instead.
 > 
-> Having slept on it I have more structured thoughts:
-> 
-> First, I like substituting bitmap_empty/full where possible - I think
-> the change stands on its own, so could be split and sent as is.
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-Ok, I can do it.
 
-> I don't like the proposed API very much. One problem is that it hides
-> the comparison operator and makes call sites less readable:
-> 
-> 	bitmap_weight(...) > N
-> 
-> becomes:
-> 
-> 	bitmap_weight_gt(..., N)
-> 
-> and:
-> 	bitmap_weight(...) <= N
-> 
-> becomes:
-> 
-> 	bitmap_weight_lt(..., N+1)
-> or:
-> 	!bitmap_weight_gt(..., N)
-> 
-> I'd rather see something resembling memcmp() API that's known enough
-> to be easier to grasp. For above examples:
-> 
-> 	bitmap_weight_cmp(..., N) > 0
-> 	bitmap_weight_cmp(..., N) <= 0
-> 	...
+This patch breaks compile on powerpc :
 
-bitmap_weight_cmp() cannot be efficient. Consider this example:
+   CC      arch/powerpc/kernel/msi.o
+In file included from ../arch/powerpc/kernel/msi.c:7:
+../include/linux/msi.h:410:65: error: ‘struct cpumask’ declared inside parameter list will not be visible outside of this definition or declaration [-Werror]
+   410 | int msi_domain_set_affinity(struct irq_data *data, const struct cpumask *mask,
+       |                                                                 ^~~~~~~
+cc1: all warnings being treated as errors
 
-bitmap_weight_lt(1000 0000 0000 0000, 1) == false
-                 ^
-                 stop here
-
-bitmap_weight_cmp(1000 0000 0000 0000, 1) == 0
-                                 ^
-                                 stop here
-
-I agree that '_gt' is less verbose than '>', but the advantage of 
-'_gt' over '>' is proportional to length of bitmap, and it means
-that this API should exist.
-
-> This would also make the implementation easier in not having to
-> copy and paste the code three times. Could also use a simple
-> optimization reducing code size:
-
-In the next version I'll reduce code duplication like this:
-
-bool bitmap_eq(..., N);
-bool bitmap_ge(..., N);
-
-#define bitmap_weight_gt(..., N)  bitmap_weight_ge(..., N + 1)
-#define bitmap_weight_lt(..., N) !bitmap_weight_ge(..., N)
-#define bitmap_weight_le(..., N) !bitmap_weight_gt(..., N)
+Below is fix you can merge in patch 5.
 
 Thanks,
-Yury
+
+C.
+
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -2,6 +2,7 @@
+  #ifndef LINUX_MSI_H
+  #define LINUX_MSI_H
+  
++#include <linux/cpumask.h>
+  #include <linux/list.h>
+  #include <asm/msi.h>
+
+> ---
+>   include/linux/msi.h |    1 -
+>   kernel/irq/msi.c    |    1 +
+>   2 files changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- a/include/linux/msi.h
+> +++ b/include/linux/msi.h
+> @@ -2,7 +2,6 @@
+>   #ifndef LINUX_MSI_H
+>   #define LINUX_MSI_H
+>   
+> -#include <linux/kobject.h>
+>   #include <linux/list.h>
+>   #include <asm/msi.h>
+>   
+> --- a/kernel/irq/msi.c
+> +++ b/kernel/irq/msi.c
+> @@ -14,6 +14,7 @@
+>   #include <linux/irqdomain.h>
+>   #include <linux/msi.h>
+>   #include <linux/slab.h>
+> +#include <linux/sysfs.h>
+>   #include <linux/pci.h>
+>   
+>   #include "internals.h"
+> 
+
