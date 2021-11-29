@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96FCAC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 17:50:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FF62C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 17:51:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J2tDt1Mrqz3cBl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 04:50:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J2tFL0n1pz3cVr
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 04:51:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,51 +16,51 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2tD05prdz3clm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 04:50:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2tD52F4tz3cks
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 04:50:13 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4J2tCp0Z4fz9sSp;
- Mon, 29 Nov 2021 18:49:58 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4J2tCq6gKXz9sSr;
+ Mon, 29 Nov 2021 18:49:59 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id HmAs7gbUB6xq; Mon, 29 Nov 2021 18:49:58 +0100 (CET)
+ with ESMTP id opmSJnmzTvVT; Mon, 29 Nov 2021 18:49:59 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4J2tCn6cmbz9sSQ;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4J2tCn6kz4z9sSh;
  Mon, 29 Nov 2021 18:49:57 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D23238B7AF;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D35828B7B2;
  Mon, 29 Nov 2021 18:49:57 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id PyG3-rNDVByz; Mon, 29 Nov 2021 18:49:57 +0100 (CET)
+ with ESMTP id 7SepyU8EpgJH; Mon, 29 Nov 2021 18:49:57 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.92])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 56A308B7AB;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 59CA38B7AD;
  Mon, 29 Nov 2021 18:49:57 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1ATHnoFt015570
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1ATHno0J015562
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Mon, 29 Nov 2021 18:49:50 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1ATHnoRB015569;
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1ATHnoTp015561;
  Mon, 29 Nov 2021 18:49:50 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v5 5/5] powerpc/inst: Optimise copy_inst_from_kernel_nofault()
-Date: Mon, 29 Nov 2021 18:49:41 +0100
-Message-Id: <0d5b12183d5176dd702d29ad94c39c384e51c78f.1638208156.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v5 3/5] powerpc/inst: Define ppc_inst_t as u32 on PPC32
+Date: Mon, 29 Nov 2021 18:49:39 +0100
+Message-Id: <c6d0c46f598f76ad0b0a88bc0d84773bd921b17c.1638208156.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <1f0ede830ccb33a659119a55cb590820c27004db.1638208156.git.christophe.leroy@csgroup.eu>
 References: <1f0ede830ccb33a659119a55cb590820c27004db.1638208156.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1638208179; l=4527; s=20211009;
- h=from:subject:message-id; bh=fTslvI2FBnUZmL2VtwTjeTaEtgoSGT27H2cJtyNw/9o=;
- b=qJN6WXatWGf7mCrm2QqMRz4Ujj8POWEoDwA9M5x+7/QT45KBAPnrDnI3UdbwYeHvEjhztKVTyo7F
- tt0yFaUvBAav/hwJANW3QhJNU9OMljXdXI3ZYetN1HFe4MN/Qt22
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1638208179; l=2480; s=20211009;
+ h=from:subject:message-id; bh=bRSXL/bM2fHo0+BAsYi79ROpQjL4J98x+R5UsmSQH6w=;
+ b=7fWmrDcjPGQDzRKmPO+3yLfzB8eKw5YZVJgCxvuDvDHx5Oc3XXj9aJVowao5kGJt7NWQZJe7IdWa
+ jjmwB5ZkBMTVuadzGInNqMo3MsH3AtdnuvpXGCmZzGoUoqroaDgK
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -80,141 +80,83 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-copy_inst_from_kernel_nofault() uses copy_from_kernel_nofault() to
-copy one or two 32bits words. This means calling an out-of-line
-function which itself calls back copy_from_kernel_nofault_allowed()
-then performs a generic copy with loops.
+Unlike PPC64 ABI, PPC32 uses the stack to pass a parameter defined
+as a struct, even when the struct has a single simple element.
 
-Rewrite copy_inst_from_kernel_nofault() to do everything at a
-single place and use __get_kernel_nofault() directly to perform
-single accesses without loops.
+To avoid that, define ppc_inst_t as u32 on PPC32.
 
-Allthough the generic function uses pagefault_disable(), it is not
-required on powerpc because do_page_fault() bails earlier when a
-kernel mode fault happens on a kernel address.
+Keep it as 'struct ppc_inst' when __CHECKER__ is defined so that
+sparse can perform type checking.
 
-As the function has now become very small, inline it.
-
-With this change, on an 8xx the time spent in the loop in
-ftrace_replace_code() is reduced by 23% at function tracer activation
-and 27% at nop tracer activation.
-The overall time to activate function tracer (measured with shell
-command 'time') is 570ms before the patch and 470ms after the patch.
-
-Even vmlinux size is reduced (by 152 instruction).
-
-Before the patch:
-
-	00000018 <copy_inst_from_kernel_nofault>:
-	  18:	94 21 ff e0 	stwu    r1,-32(r1)
-	  1c:	7c 08 02 a6 	mflr    r0
-	  20:	38 a0 00 04 	li      r5,4
-	  24:	93 e1 00 1c 	stw     r31,28(r1)
-	  28:	7c 7f 1b 78 	mr      r31,r3
-	  2c:	38 61 00 08 	addi    r3,r1,8
-	  30:	90 01 00 24 	stw     r0,36(r1)
-	  34:	48 00 00 01 	bl      34 <copy_inst_from_kernel_nofault+0x1c>
-				34: R_PPC_REL24	copy_from_kernel_nofault
-	  38:	2c 03 00 00 	cmpwi   r3,0
-	  3c:	40 82 00 0c 	bne     48 <copy_inst_from_kernel_nofault+0x30>
-	  40:	81 21 00 08 	lwz     r9,8(r1)
-	  44:	91 3f 00 00 	stw     r9,0(r31)
-	  48:	80 01 00 24 	lwz     r0,36(r1)
-	  4c:	83 e1 00 1c 	lwz     r31,28(r1)
-	  50:	38 21 00 20 	addi    r1,r1,32
-	  54:	7c 08 03 a6 	mtlr    r0
-	  58:	4e 80 00 20 	blr
-
-After the patch (before inlining):
-
-	00000018 <copy_inst_from_kernel_nofault>:
-	  18:	3d 20 b0 00 	lis     r9,-20480
-	  1c:	7c 04 48 40 	cmplw   r4,r9
-	  20:	7c 69 1b 78 	mr      r9,r3
-	  24:	41 80 00 14 	blt     38 <copy_inst_from_kernel_nofault+0x20>
-	  28:	81 44 00 00 	lwz     r10,0(r4)
-	  2c:	38 60 00 00 	li      r3,0
-	  30:	91 49 00 00 	stw     r10,0(r9)
-	  34:	4e 80 00 20 	blr
-
-	  38:	38 60 ff de 	li      r3,-34
-	  3c:	4e 80 00 20 	blr
-	  40:	38 60 ff f2 	li      r3,-14
-	  44:	4e 80 00 20 	blr
+Also revert commit 511eea5e2ccd ("powerpc/kprobes: Fix Oops by passing
+ppc_inst as a pointer to emulate_step() on ppc32") as now the
+instruction to be emulated is passed as a register to emulate_step().
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v4: Inline and remove pagefault_disable()
-
-v3: New
+v2: Make it work with kprobes
 ---
- arch/powerpc/include/asm/inst.h | 21 ++++++++++++++++++++-
- arch/powerpc/mm/maccess.c       | 17 -----------------
- 2 files changed, 20 insertions(+), 18 deletions(-)
+ arch/powerpc/include/asm/inst.h | 15 +++++++++++++--
+ arch/powerpc/kernel/optprobes.c |  8 ++------
+ 2 files changed, 15 insertions(+), 8 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
-index 53a40faf362a..631436f3f5c3 100644
+index b3502f21e0f4..7ef5fd3bb167 100644
 --- a/arch/powerpc/include/asm/inst.h
 +++ b/arch/powerpc/include/asm/inst.h
-@@ -4,6 +4,8 @@
+@@ -34,6 +34,7 @@
+  * Instruction data type for POWER
+  */
  
- #include <asm/ppc-opcode.h>
- #include <asm/reg.h>
-+#include <asm/disassemble.h>
-+#include <asm/uaccess.h>
- 
- #define ___get_user_instr(gu_op, dest, ptr)				\
- ({									\
-@@ -148,6 +150,23 @@ static inline char *__ppc_inst_as_str(char str[PPC_INST_STR_LEN], ppc_inst_t x)
- 	__str;				\
- })
- 
--int copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src);
-+static inline int copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
-+{
-+	unsigned int val, suffix;
-+
-+	if (unlikely(!is_kernel_addr((unsigned long)src)))
-+		return -ERANGE;
-+
-+	__get_kernel_nofault(&val, src, u32, Efault);
-+	if (IS_ENABLED(CONFIG_PPC64) && get_op(val) == OP_PREFIX) {
-+		__get_kernel_nofault(&suffix, src + 1, u32, Efault);
-+		*inst = ppc_inst_prefix(val, suffix);
-+	} else {
-+		*inst = ppc_inst(val);
-+	}
-+	return 0;
-+Efault:
-+	return -EFAULT;
-+}
- 
- #endif /* _ASM_POWERPC_INST_H */
-diff --git a/arch/powerpc/mm/maccess.c b/arch/powerpc/mm/maccess.c
-index 5abae96b2b46..ea821d0ffe16 100644
---- a/arch/powerpc/mm/maccess.c
-+++ b/arch/powerpc/mm/maccess.c
-@@ -11,20 +11,3 @@ bool copy_from_kernel_nofault_allowed(const void *unsafe_src, size_t size)
- {
- 	return is_kernel_addr((unsigned long)unsafe_src);
++#if defined(CONFIG_PPC64) || defined(__CHECKER__)
+ typedef struct {
+ 	u32 val;
+ #ifdef CONFIG_PPC64
+@@ -46,13 +47,23 @@ static inline u32 ppc_inst_val(ppc_inst_t x)
+ 	return x.val;
  }
+ 
++#define ppc_inst(x) ((ppc_inst_t){ .val = (x) })
++
++#else
++typedef u32 ppc_inst_t;
++
++static inline u32 ppc_inst_val(ppc_inst_t x)
++{
++	return x;
++}
++#define ppc_inst(x) (x)
++#endif
++
+ static inline int ppc_inst_primary_opcode(ppc_inst_t x)
+ {
+ 	return ppc_inst_val(x) >> 26;
+ }
+ 
+-#define ppc_inst(x) ((ppc_inst_t){ .val = (x) })
 -
--int copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
--{
--	unsigned int val, suffix;
--	int err;
--
--	err = copy_from_kernel_nofault(&val, src, sizeof(val));
--	if (err)
--		return err;
--	if (IS_ENABLED(CONFIG_PPC64) && get_op(val) == OP_PREFIX) {
--		err = copy_from_kernel_nofault(&suffix, src + 1, sizeof(suffix));
--		*inst = ppc_inst_prefix(val, suffix);
+ #ifdef CONFIG_PPC64
+ #define ppc_inst_prefix(x, y) ((ppc_inst_t){ .val = (x), .suffix = (y) })
+ 
+diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+index 378db980ded3..3b1c2236cbee 100644
+--- a/arch/powerpc/kernel/optprobes.c
++++ b/arch/powerpc/kernel/optprobes.c
+@@ -228,12 +228,8 @@ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
+ 	/*
+ 	 * 3. load instruction to be emulated into relevant register, and
+ 	 */
+-	if (IS_ENABLED(CONFIG_PPC64)) {
+-		temp = ppc_inst_read(p->ainsn.insn);
+-		patch_imm_load_insns(ppc_inst_as_ulong(temp), 4, buff + TMPL_INSN_IDX);
 -	} else {
--		*inst = ppc_inst(val);
+-		patch_imm_load_insns((unsigned long)p->ainsn.insn, 4, buff + TMPL_INSN_IDX);
 -	}
--	return err;
--}
++	temp = ppc_inst_read(p->ainsn.insn);
++	patch_imm_load_insns(ppc_inst_as_ulong(temp), 4, buff + TMPL_INSN_IDX);
+ 
+ 	/*
+ 	 * 4. branch back from trampoline
 -- 
 2.33.1
 
