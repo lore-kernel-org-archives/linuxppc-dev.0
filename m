@@ -4,54 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D3E1C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 00:33:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 127FDC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 00:35:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J2RCK2wZ5z3c6K
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 11:33:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J2RFn2w5Mz3bWk
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Nov 2021 11:35:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pIi2m4UO;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kx8fY+oo;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bugzilla.kernel.org (client-ip=2604:1380:4641:c500::1;
- helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
+ smtp.mailfrom=bugzilla.kernel.org (client-ip=2604:1380:4601:e00::1;
+ helo=ams.source.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=pIi2m4UO; 
+ header.s=k20201202 header.b=kx8fY+oo; 
  dkim-atps=neutral
-X-Greylist: delayed 36707 seconds by postgrey-1.36 at boromir;
- Mon, 29 Nov 2021 11:32:17 AEDT
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
+X-Greylist: delayed 81 seconds by postgrey-1.36 at boromir;
+ Mon, 29 Nov 2021 11:34:28 AEDT
+Received: from ams.source.kernel.org (ams.source.kernel.org
+ [IPv6:2604:1380:4601:e00::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2RBT2z3cz2yYS
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 11:32:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J2RF05xcQz2yYS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 11:34:28 +1100 (AEDT)
 Received: from mail.kernel.org (unknown [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 848ED61027
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 00:32:11 +0000 (UTC)
-Received: by mail.kernel.org (Postfix) with ESMTPS id DEFD86069B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 00:32:10 +0000 (UTC)
+ by ams.source.kernel.org (Postfix) with ESMTPS id 42150B80DD0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 00:34:26 +0000 (UTC)
+Received: by mail.kernel.org (Postfix) with ESMTPS id B1F5A604DC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 00:34:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1638145930;
- bh=VGeJPlnlNXAtOgSdl4fbdcY79RB/AHmFdkNOH8RIHxw=;
+ s=k20201202; t=1638146064;
+ bh=m+ddBF8p4EclGkwrb+tXJRFDbKKcHS0DFuPKuuj2Z8E=;
  h=From:To:Subject:Date:In-Reply-To:References:From;
- b=pIi2m4UOxZq7aRqDQLy0btBtH1pAqv/7PqbihRAYTBfqRnNvoI4OuwgpFs9ZDV7IN
- h3hXFNENKut2vVWpjgoVohSa8yLr5uYNG8W6M3+E/U6Kf3fPcRAnmz5Qq5JQwqF2VS
- pWlRbSdMR0O9FGfVhx6R+EuehKLuQHBbE0JexPyuJeBMH219mGoAoG3iKc3DTpIw6d
- Su/N+kMyatrW07EhYGp8uKkh10zgAFr3GqHOkdn9+potVQohxwM5nz8Wqd5Nvai6cD
- bbB3BAoUjwSJGC2EaS2Mw55Gjqm50PGAQ/NiQB7Vyv45eW0t9aj3yuQOxZ9ZHXQZFY
- c1DwUO/hykccA==
+ b=kx8fY+oogmakbD9zSsfV3Y1z43Q5pzRBJYIxjNqUk42UCB827dorRzHywnLvMN8cN
+ IMotC7WPC65mUG31jJ3wje9MIwYcUXuem5oOFW+S4XdMr4dyu1mEQMzfbfHSIc+CwV
+ cZPxu3JX9KSBFSUyLoxqJjAFYiWJnZVuPHGMJV58hRjdU7MJ9rn1qdNIAQJqmI49Xh
+ jK8GDG1o+l5QwChBAfFPAX0O4TULlo4fQT36xECtItaFLeUIl2O6k046JG2iMXuAqA
+ y9XTgCn6u3EjQhqugMOFpjg+26/9pvh+vfBv1CKV+yv2TKjLsOrKdJW8ckhsLWvqBy
+ Rb/1wJD3YoqIg==
 Received: by pdx-korg-bugzilla-2.web.codeaurora.org (Postfix, from userid 48)
- id BF84D60F46; Mon, 29 Nov 2021 00:32:10 +0000 (UTC)
+ id A68A960F46; Mon, 29 Nov 2021 00:34:24 +0000 (UTC)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 205099] KASAN hit at raid6_pq: BUG: Unable to handle kernel
  data access at 0x00f0fd0d
-Date: Mon, 29 Nov 2021 00:32:10 +0000
+Date: Mon, 29 Nov 2021 00:34:24 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -67,7 +67,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.isobsolete attachments.created
-Message-ID: <bug-205099-206035-NF40tAaYCz@https.bugzilla.kernel.org/>
+Message-ID: <bug-205099-206035-LW1fCIVVvY@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-205099-206035@https.bugzilla.kernel.org/>
 References: <bug-205099-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -96,24 +96,13 @@ Erhard F. (erhard_f@mailbox.org) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
- Attachment #299711|0                           |1
+ Attachment #299715|0                           |1
         is obsolete|                            |
 
---- Comment #41 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 299759
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D299759&action=3Dedit
-dmesg (5.15.5, OUTLINE KASAN, LOWMEM_SIZE=3D0x28000000, PowerMac G4 DP)
-
-Ok, finally getting somewhere.. With CONFIG_LOWMEM_SIZE=3D0x28000000 I don'=
-t get
-this "vmap allocation for size 33562624 failed" error and also OUTLINE KASAN
-does not show the originally reported "BUG: Unable to handle kernel data ac=
-cess
-at 0x00f0fd0d" for raid6_pq!
-
-For INLINE KASAN I still get "vmap allocation for size 33562624 failed", ev=
-en
-with CONFIG_LOWMEM_SIZE=3D0x28000000 or CONFIG_LOWMEM_SIZE=3D0x20000000.
+--- Comment #43 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 299763
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D299763&action=3Dedit
+kernel .config (5.15.5, PowerMac G4 DP)
 
 --=20
 You may reply to this email to add a comment.
