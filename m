@@ -4,101 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E743DC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 13:31:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF287C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 13:54:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J3NQW0TNTz3c7y
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Dec 2021 00:30:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J3Nxt0Vr0z3cT5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Dec 2021 00:54:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ODqiebSF;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=pLHexAzN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=mailbox.org (client-ip=2001:67c:2050::465:101;
+ helo=mout-p-101.mailbox.org; envelope-from=erhard_f@mailbox.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=ODqiebSF; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+X-Greylist: delayed 448 seconds by postgrey-1.36 at boromir;
+ Wed, 01 Dec 2021 00:53:32 AEDT
+Received: from mout-p-101.mailbox.org (mout-p-101.mailbox.org
+ [IPv6:2001:67c:2050::465:101])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J3NPf29Qnz2xYG
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Dec 2021 00:30:13 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1AUDI7JG002806; 
- Tue, 30 Nov 2021 13:30:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to; s=pp1;
- bh=CVjwGkb7p5udWMQVSq4oYFBOvcOFjuiIzwPA+NteRIA=;
- b=ODqiebSFQz2+R3MOt/BdEFmZIiYbLL6k9KfyLEXpiWWFukxVMs/A5NfNPt86fmKF2uqV
- SakoFEeDWrGpUc+ynOOL6ldteBU3vdwMpt3E3KHegK2WbU5XtX5cxZTd505fpjzCDeEX
- LxngNWeqHHsTSkPzkeqQeiTH3ZejpsxhA59KmuyXCEoUxhDnBni/vJkdC+ToixyNkmxe
- 2ZyQT0ZtremVKOHdA2APgnfteptirJXvqxt4tcs0PM9pNphsEqCIpoO8kJ1qikdtAjxB
- Ohm7RFvFsQCgfrg8FiDfO7qyfyzkOJlX1p1BG4qdV+bTQlvVZhQ0ufpoJVqrNEjkEm5K 8Q== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3cnmqc07st-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 30 Nov 2021 13:29:59 +0000
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1AUDKtJW013557;
- Tue, 30 Nov 2021 13:29:59 GMT
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3cnmqc07s5-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 30 Nov 2021 13:29:59 +0000
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1AUDOe5m004394;
- Tue, 30 Nov 2021 13:29:56 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma02fra.de.ibm.com with ESMTP id 3ckca9wreu-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 30 Nov 2021 13:29:56 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1AUDTqhQ22217204
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 30 Nov 2021 13:29:52 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 941B0A408D;
- Tue, 30 Nov 2021 13:29:52 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 335C8A4085;
- Tue, 30 Nov 2021 13:29:48 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.211.87.86])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Tue, 30 Nov 2021 13:29:47 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 14.0 \(3654.120.0.1.13\))
-Subject: Re: [PATCH 1/2] tools/perf: Include global and local variants for
- p_stage_cyc sort key
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <YaUJwxHPTz1J7K1e@krava>
-Date: Tue, 30 Nov 2021 18:59:43 +0530
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <6597729D-0CBE-4872-A78E-ADA10A76F765@linux.vnet.ibm.com>
-References: <20211125024851.22895-1-atrajeev@linux.vnet.ibm.com>
- <YaUJwxHPTz1J7K1e@krava>
-To: Jiri Olsa <jolsa@redhat.com>
-X-Mailer: Apple Mail (2.3654.120.0.1.13)
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: bbJb1Oovm4ji3i0wFcaBsXON0MDf5B-6
-X-Proofpoint-GUID: 72xBwhf1G5BTtDhRk0p9hIcHrrhV7x6S
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
- definitions=2021-11-30_07,2021-11-28_01,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 bulkscore=0
- spamscore=0 malwarescore=0 impostorscore=0 adultscore=0 phishscore=0
- clxscore=1015 mlxscore=0 mlxlogscore=999 priorityscore=1501
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2110150000 definitions=main-2111300075
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J3NwX674tz2xv5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Dec 2021 00:53:31 +1100 (AEDT)
+Received: from smtp202.mailbox.org (smtp202.mailbox.org [80.241.60.245])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mout-p-101.mailbox.org (Postfix) with ESMTPS id 4J3NwN2C1QzQjlj;
+ Tue, 30 Nov 2021 14:53:24 +0100 (CET)
+X-Virus-Scanned: amavisd-new at heinlein-support.de
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org;
+ s=mail20150812; t=1638280401;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=181oU0HPgQagS5rGNx1alC4GUB5Nvu1JRAcuMk+Je3I=;
+ b=pLHexAzNxCgIST0bt1VHCUKePxUguTHTrSRk+9wbvMTNTVsFP8xVdsZkMse439DnjlGnOT
+ QWlIXhw7uApDzCHq30k+FBxFBCqCqz5G5jg53sKwcy0egJGGidOTBqHQsAlcduRVrHyZmE
+ Sc5sOfG3cGx2Dit5YWISHN6T++AwNFZW17Yct54ahI65bD9p13kWHR4D9H0N+nORrh772F
+ gjJ1MWJqAL1s41uPblYr4oCrQy+aqwVgLTGBW/aeVVCzrqa8KFWoXcRZ+uteaJDFRAZpb5
+ ON1i81dFMXEMbhWg2BtYDxxBhdxQVCYH2va/Ok64lbxi8keUruQspAQADpVYsg==
+Date: Tue, 30 Nov 2021 14:53:18 +0100
+From: "Erhard F." <erhard_f@mailbox.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/powermac: Add missing lockdep_register_key()
+Message-ID: <20211130145318.5fcdf633@yea>
+In-Reply-To: <69e4f55565bb45ebb0843977801b245af0c666fe.1638264741.git.christophe.leroy@csgroup.eu>
+References: <69e4f55565bb45ebb0843977801b245af0c666fe.1638264741.git.christophe.leroy@csgroup.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,205 +65,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com,
- Arnaldo Carvalho de Melo <acme@kernel.org>, linux-perf-users@vger.kernel.org,
- Jiri Olsa <jolsa@kernel.org>, kjain@linux.ibm.com,
- Namhyung Kim <namhyung@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, 30 Nov 2021 10:32:42 +0100
+Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
 
+> KeyWest i2c @0xf8001003 irq 42 /uni-n@f8000000/i2c@f8001000
+> BUG: key c2d00cbc has not been registered!
+> ------------[ cut here ]------------
+> DEBUG_LOCKS_WARN_ON(1)
+> WARNING: CPU: 0 PID: 1 at kernel/locking/lockdep.c:4801 lockdep_init_map_type+0x4c0/0xb4c
+> Modules linked in:
+> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 5.15.5-gentoo-PowerMacG4 #9
+> NIP:  c01a9428 LR: c01a9428 CTR: 00000000
+> REGS: e1033cf0 TRAP: 0700   Not tainted  (5.15.5-gentoo-PowerMacG4)
+> MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 24002002  XER: 00000000
+> 
+> GPR00: c01a9428 e1033db0 c2d1cf20 00000016 00000004 00000001 c01c0630 e1033a73
+> GPR08: 00000000 00000000 00000000 e1033db0 24002004 00000000 f8729377 00000003
+> GPR16: c1829a9c 00000000 18305357 c1416fc0 c1416f80 c006ac60 c2d00ca8 c1416f00
+> GPR24: 00000000 c21586f0 c2160000 00000000 c2d00cbc c2170000 c216e1a0 c2160000
+> NIP [c01a9428] lockdep_init_map_type+0x4c0/0xb4c
+> LR [c01a9428] lockdep_init_map_type+0x4c0/0xb4c
+> Call Trace:
+> [e1033db0] [c01a9428] lockdep_init_map_type+0x4c0/0xb4c (unreliable)
+> [e1033df0] [c1c177b8] kw_i2c_add+0x334/0x424
+> [e1033e20] [c1c18294] pmac_i2c_init+0x9ec/0xa9c
+> [e1033e80] [c1c1a790] smp_core99_probe+0xbc/0x35c
+> [e1033eb0] [c1c03cb0] kernel_init_freeable+0x190/0x5a4
+> [e1033f10] [c000946c] kernel_init+0x28/0x154
+> [e1033f30] [c0035148] ret_from_kernel_thread+0x14/0x1c
+> 
+> Add missing lockdep_register_key()
+> 
+> Reported-by: Erhard Furtner <erhard_f@mailbox.org>
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  arch/powerpc/platforms/powermac/low_i2c.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/powerpc/platforms/powermac/low_i2c.c b/arch/powerpc/platforms/powermac/low_i2c.c
+> index f77a59b5c2e1..de34fa34c42d 100644
+> --- a/arch/powerpc/platforms/powermac/low_i2c.c
+> +++ b/arch/powerpc/platforms/powermac/low_i2c.c
+> @@ -582,6 +582,7 @@ static void __init kw_i2c_add(struct pmac_i2c_host_kw *host,
+>  	bus->close = kw_i2c_close;
+>  	bus->xfer = kw_i2c_xfer;
+>  	mutex_init(&bus->mutex);
+> +	lockdep_register_key(&bus->lock_key);
+>  	lockdep_set_class(&bus->mutex, &bus->lock_key);
+>  	if (controller == busnode)
+>  		bus->flags = pmac_i2c_multibus;
+> -- 
+> 2.33.1
+> 
 
-> On 29-Nov-2021, at 10:41 PM, Jiri Olsa <jolsa@redhat.com> wrote:
->=20
-> On Thu, Nov 25, 2021 at 08:18:50AM +0530, Athira Rajeev wrote:
->> Sort key p_stage_cyc is used to present the latency
->> cycles spend in pipeline stages. perf tool has local
->> p_stage_cyc sort key to display this info. There is no
->> global variant available for this sort key. local variant
->> shows latency in a sinlge sample, whereas, global value
->> will be useful to present the total latency (sum of
->> latencies) in the hist entry. It represents latency
->> number multiplied by the number of samples.
->>=20
->> Add global (p_stage_cyc) and local variant
->> (local_p_stage_cyc) for this sort key. Use the
->> local_p_stage_cyc as default option for "mem" sort mode.
->> Also add this to list of dynamic sort keys.
->>=20
->> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
->> Reported-by: Namhyung Kim <namhyung@kernel.org>
->> ---
->> tools/perf/util/hist.c |  4 +++-
->> tools/perf/util/hist.h |  3 ++-
->> tools/perf/util/sort.c | 34 +++++++++++++++++++++++++---------
->> tools/perf/util/sort.h |  3 ++-
->> 4 files changed, 32 insertions(+), 12 deletions(-)
->>=20
->> diff --git a/tools/perf/util/hist.c b/tools/perf/util/hist.c
->> index b776465e04ef..0a8033b09e28 100644
->> --- a/tools/perf/util/hist.c
->> +++ b/tools/perf/util/hist.c
->> @@ -211,7 +211,9 @@ void hists__calc_col_len(struct hists *hists, =
-struct hist_entry *h)
->> 	hists__new_col_len(hists, HISTC_MEM_BLOCKED, 10);
->> 	hists__new_col_len(hists, HISTC_LOCAL_INS_LAT, 13);
->> 	hists__new_col_len(hists, HISTC_GLOBAL_INS_LAT, 13);
->> -	hists__new_col_len(hists, HISTC_P_STAGE_CYC, 13);
->> +	hists__new_col_len(hists, HISTC_LOCAL_P_STAGE_CYC, 13);
->> +	hists__new_col_len(hists, HISTC_GLOBAL_P_STAGE_CYC, 13);
->> +
->> 	if (symbol_conf.nanosecs)
->> 		hists__new_col_len(hists, HISTC_TIME, 16);
->> 	else
->> diff --git a/tools/perf/util/hist.h b/tools/perf/util/hist.h
->> index 5343b62476e6..2752ce681108 100644
->> --- a/tools/perf/util/hist.h
->> +++ b/tools/perf/util/hist.h
->> @@ -75,7 +75,8 @@ enum hist_column {
->> 	HISTC_MEM_BLOCKED,
->> 	HISTC_LOCAL_INS_LAT,
->> 	HISTC_GLOBAL_INS_LAT,
->> -	HISTC_P_STAGE_CYC,
->> +	HISTC_LOCAL_P_STAGE_CYC,
->> +	HISTC_GLOBAL_P_STAGE_CYC,
->> 	HISTC_NR_COLS, /* Last entry */
->> };
->>=20
->> diff --git a/tools/perf/util/sort.c b/tools/perf/util/sort.c
->> index e9216a292a04..e978f7883e07 100644
->> --- a/tools/perf/util/sort.c
->> +++ b/tools/perf/util/sort.c
->> @@ -37,7 +37,7 @@ const char	default_parent_pattern[] =3D =
-"^sys_|^do_page_fault";
->> const char	*parent_pattern =3D default_parent_pattern;
->> const char	*default_sort_order =3D "comm,dso,symbol";
->> const char	default_branch_sort_order[] =3D =
-"comm,dso_from,symbol_from,symbol_to,cycles";
->> -const char	default_mem_sort_order[] =3D =
-"local_weight,mem,sym,dso,symbol_daddr,dso_daddr,snoop,tlb,locked,blocked,=
-local_ins_lat,p_stage_cyc";
->> +const char	default_mem_sort_order[] =3D =
-"local_weight,mem,sym,dso,symbol_daddr,dso_daddr,snoop,tlb,locked,blocked,=
-local_ins_lat,local_p_stage_cyc";
->> const char	default_top_sort_order[] =3D "dso,symbol";
->> const char	default_diff_sort_order[] =3D "dso,symbol";
->> const char	default_tracepoint_sort_order[] =3D "trace";
->> @@ -46,8 +46,8 @@ const char	*field_order;
->> regex_t		ignore_callees_regex;
->> int		have_ignore_callees =3D 0;
->> enum sort_mode	sort__mode =3D SORT_MODE__NORMAL;
->> -const char	*dynamic_headers[] =3D {"local_ins_lat", "p_stage_cyc"};
->> -const char	*arch_specific_sort_keys[] =3D {"p_stage_cyc"};
->> +const char	*dynamic_headers[] =3D {"local_ins_lat", "ins_lat", =
-"local_p_stage_cyc", "p_stage_cyc"};
->=20
-> so you also add global ins_lat, right? will this change
-> some default behaviour?
+The patch applied on 5.15.5 but unfortunately was not enough to fix the lockdep bug.
 
-Hi Jiri,
+Originally was bug #200055 (https://bugzilla.kernel.org/show_bug.cgi?id=200055).
 
-By default, if the architecture doesn=E2=80=99t have a dynamic header =
-entry for this sort key ( taken care by arch_perf_header_entry() =
-function ),
-It will use the default se_header value in perf report. So default =
-behaviour will not be changed.
-
->=20
->> +const char	*arch_specific_sort_keys[] =3D {"local_p_stage_cyc", =
-"p_stage_cyc"};
->=20
-> nit.. both dynamic_headers and arch_specific_sort_keys could be static =
-right?
-
-Sure, this is used only in util/sort.c=20
-I will add the change to make these static in next version.
-
-Thanks
-Athira
->=20
-> thanks,
-> jirka
->=20
->>=20
->> /*
->>  * Replaces all occurrences of a char used with the:
->> @@ -1392,22 +1392,37 @@ struct sort_entry sort_global_ins_lat =3D {
->> };
->>=20
->> static int64_t
->> -sort__global_p_stage_cyc_cmp(struct hist_entry *left, struct =
-hist_entry *right)
->> +sort__p_stage_cyc_cmp(struct hist_entry *left, struct hist_entry =
-*right)
->> {
->> 	return left->p_stage_cyc - right->p_stage_cyc;
->> }
->>=20
->> +static int hist_entry__global_p_stage_cyc_snprintf(struct hist_entry =
-*he, char *bf,
->> +					size_t size, unsigned int width)
->> +{
->> +	return repsep_snprintf(bf, size, "%-*u", width,
->> +			he->p_stage_cyc * he->stat.nr_events);
->> +}
->> +
->> +
->> static int hist_entry__p_stage_cyc_snprintf(struct hist_entry *he, =
-char *bf,
->> 					size_t size, unsigned int width)
->> {
->> 	return repsep_snprintf(bf, size, "%-*u", width, =
-he->p_stage_cyc);
->> }
->>=20
->> -struct sort_entry sort_p_stage_cyc =3D {
->> -	.se_header      =3D "Pipeline Stage Cycle",
->> -	.se_cmp         =3D sort__global_p_stage_cyc_cmp,
->> +struct sort_entry sort_local_p_stage_cyc =3D {
->> +	.se_header      =3D "Local Pipeline Stage Cycle",
->> +	.se_cmp         =3D sort__p_stage_cyc_cmp,
->> 	.se_snprintf	=3D hist_entry__p_stage_cyc_snprintf,
->> -	.se_width_idx	=3D HISTC_P_STAGE_CYC,
->> +	.se_width_idx	=3D HISTC_LOCAL_P_STAGE_CYC,
->> +};
->> +
->> +struct sort_entry sort_global_p_stage_cyc =3D {
->> +	.se_header      =3D "Pipeline Stage Cycle",
->> +	.se_cmp         =3D sort__p_stage_cyc_cmp,
->> +	.se_snprintf    =3D hist_entry__global_p_stage_cyc_snprintf,
->> +	.se_width_idx   =3D HISTC_GLOBAL_P_STAGE_CYC,
->> };
->>=20
->> struct sort_entry sort_mem_daddr_sym =3D {
->> @@ -1858,7 +1873,8 @@ static struct sort_dimension =
-common_sort_dimensions[] =3D {
->> 	DIM(SORT_CODE_PAGE_SIZE, "code_page_size", sort_code_page_size),
->> 	DIM(SORT_LOCAL_INS_LAT, "local_ins_lat", sort_local_ins_lat),
->> 	DIM(SORT_GLOBAL_INS_LAT, "ins_lat", sort_global_ins_lat),
->> -	DIM(SORT_PIPELINE_STAGE_CYC, "p_stage_cyc", sort_p_stage_cyc),
->> +	DIM(SORT_LOCAL_PIPELINE_STAGE_CYC, "local_p_stage_cyc", =
-sort_local_p_stage_cyc),
->> +	DIM(SORT_GLOBAL_PIPELINE_STAGE_CYC, "p_stage_cyc", =
-sort_global_p_stage_cyc),
->> };
->>=20
->> #undef DIM
->> diff --git a/tools/perf/util/sort.h b/tools/perf/util/sort.h
->> index 3c7518378d62..83abe5e6812a 100644
->> --- a/tools/perf/util/sort.h
->> +++ b/tools/perf/util/sort.h
->> @@ -235,7 +235,8 @@ enum sort_type {
->> 	SORT_CODE_PAGE_SIZE,
->> 	SORT_LOCAL_INS_LAT,
->> 	SORT_GLOBAL_INS_LAT,
->> -	SORT_PIPELINE_STAGE_CYC,
->> +	SORT_LOCAL_PIPELINE_STAGE_CYC,
->> +	SORT_GLOBAL_PIPELINE_STAGE_CYC,
->>=20
->> 	/* branch stack specific sort keys */
->> 	__SORT_BRANCH_STACK,
->> --=20
->> 2.27.0
-
+Regards,
+Erhard
