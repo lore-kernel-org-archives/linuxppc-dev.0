@@ -4,83 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30B51C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 09:12:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BFB1C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 09:33:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J3Gh63P7rz3c7R
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 20:12:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=GbGxdWqS;
-	dkim=fail reason="signature verification failed" header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=O8UDBVoK;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
- (client-ip=195.135.220.29; helo=smtp-out2.suse.de;
- envelope-from=vbabka@suse.cz; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256
- header.s=susede2_rsa header.b=GbGxdWqS; 
- dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=O8UDBVoK; 
- dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J3H8S592Nz3cYN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 20:33:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J3GgK5X1Gz2xsb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 20:11:41 +1100 (AEDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
- (No client certificate requested)
- by smtp-out2.suse.de (Postfix) with ESMTPS id 4CB341FD38;
- Tue, 30 Nov 2021 09:11:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
- t=1638263497; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=V8fxSkdBQ2ajgsZMhQYuiid+yRFZut1IgGX00dpY3vw=;
- b=GbGxdWqS1PKYITNOyIsjZ8f0rMM+b17I8L3kRhVKESRkn6E0ETjrVP9iYQH5OjyGCAotPj
- VX8JPdAgH1+Bt08MkB7ShuBbHuFliZzI/XYxKsIufjKsXZzmTH4yG2SoHagH5lkYBx7YFJ
- xQRlnWbWisJoN2wKOIuS6Lhf6qmik38=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
- s=susede2_ed25519; t=1638263497;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=V8fxSkdBQ2ajgsZMhQYuiid+yRFZut1IgGX00dpY3vw=;
- b=O8UDBVoKu0061EyDRxTTT6iRINdMQ5VnRmzqlz2yOrUzueRjRUeOLpi9YLsImfspmpMTn8
- mbCD40CcLeVDpoAg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
- (No client certificate requested)
- by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 182D913C3D;
- Tue, 30 Nov 2021 09:11:37 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
- by imap2.suse-dmz.suse.de with ESMTPSA id PNstBcnqpWGtEAAAMHmgww
- (envelope-from <vbabka@suse.cz>); Tue, 30 Nov 2021 09:11:37 +0000
-Message-ID: <1c67bb96-24db-f5a6-7520-3d97e54e5192@suse.cz>
-Date: Tue, 30 Nov 2021 10:11:36 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J3H7z4Gt7z2yfm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 20:33:02 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4J3H7t4qKvz9sSS;
+ Tue, 30 Nov 2021 10:32:58 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id M8dvxSuXvK3x; Tue, 30 Nov 2021 10:32:58 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4J3H7t42YRz9sSP;
+ Tue, 30 Nov 2021 10:32:58 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 76F198B779;
+ Tue, 30 Nov 2021 10:32:58 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id OZQIerElkGTJ; Tue, 30 Nov 2021 10:32:58 +0100 (CET)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.93])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3E6E78B763;
+ Tue, 30 Nov 2021 10:32:58 +0100 (CET)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1AU9Wh7o087713
+ (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+ Tue, 30 Nov 2021 10:32:43 +0100
+Received: (from chleroy@localhost)
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1AU9WhcQ087712;
+ Tue, 30 Nov 2021 10:32:43 +0100
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
+ christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/powermac: Add missing lockdep_register_key()
+Date: Tue, 30 Nov 2021 10:32:42 +0100
+Message-Id: <69e4f55565bb45ebb0843977801b245af0c666fe.1638264741.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.33.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.2
-Subject: Re: [RFC PATCH 0/3] Use pageblock_order for cma and
- alloc_contig_range alignment.
-Content-Language: en-US
-To: Zi Yan <ziy@nvidia.com>
-References: <20211115193725.737539-1-zi.yan@sent.com>
- <3083463d-978b-fbe6-dadf-670d400ed437@suse.cz>
- <AEFF28CF-0ED8-450F-96A4-A6CD59CB1F3D@nvidia.com>
- <BF8FB68A-6E1D-4465-8A2B-884FC034660B@nvidia.com>
- <52dbf824-76be-cc34-3983-d45510b1b618@suse.cz>
- <35A20739-152A-450E-8535-2236D2B28748@nvidia.com>
-From: Vlastimil Babka <vbabka@suse.cz>
-In-Reply-To: <35A20739-152A-450E-8535-2236D2B28748@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1638264761; l=2154; s=20211009;
+ h=from:subject:message-id; bh=pEt+Jk2y0jzMiZJdN1RkeSCWdiDbGBZApQ2iXQ3zvBA=;
+ b=Lo4PAS/pkJ9BZS68a5C1KH12Euzq8XLNij2qEEFMFP//VD9ZS7YIZCk8KPXZmvoZhdu6qVplZJ1T
+ QCP9Pw3tDd//jRjGE5Fzz5AAKtew03csxH+pa/GrHcp67AFp/tH+
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
+ pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,68 +73,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mel Gorman <mgorman@techsingularity.net>,
- David Hildenbrand <david@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Robin Murphy <robin.murphy@arm.com>, Christoph Hellwig <hch@lst.de>,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Erhard Furtner <erhard_f@mailbox.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/29/21 23:08, Zi Yan wrote:
-> On 23 Nov 2021, at 12:32, Vlastimil Babka wrote:
-> 
->> On 11/23/21 17:35, Zi Yan wrote:
->>> On 19 Nov 2021, at 10:15, Zi Yan wrote:
->>>>>> From what my understanding, cma required alignment of
->>>>>> max(MAX_ORDER - 1, pageblock_order), because when MIGRATE_CMA was introduced,
->>>>>> __free_one_page() does not prevent merging two different pageblocks, when
->>>>>> MAX_ORDER - 1 > pageblock_order. But current __free_one_page() implementation
->>>>>> does prevent that.
->>>>>
->>>>> But it does prevent that only for isolated pageblock, not CMA, and yout
->>>>> patchset doesn't seem to expand that to CMA? Or am I missing something.
->>>>
->>>> Yeah, you are right. Originally, I thought preventing merging isolated pageblock
->>>> with other types of pageblocks is sufficient, since MIGRATE_CMA is always
->>>> converted from MIGRATE_ISOLATE. But that is not true. I will rework the code.
->>>> Thanks for pointing this out.
->>>>
->>>
->>> I find that two pageblocks with different migratetypes, like MIGRATE_RECLAIMABLE
->>> and MIGRATE_MOVABLE can be merged into a single free page after I checked
->>> __free_one_page() in detail and printed pageblock information during buddy page
->>> merging.
->>
->> Yes, that can happen.
->>
->> I am not sure what consequence it will cause. Do you have any idea?
->>
->> For MIGRATE_RECLAIMABLE or MIGRATE_MOVABLE or even MIGRATE_UNMOVABLE it's
->> absolutely fine. As long as these pageblocks are fully free (and they are if
->> it's a single free page spanning 2 pageblocks), they can be of any of these
->> type, as they can be reused as needed without causing fragmentation.
->>
->> But in case of MIGRATE_CMA and MIGRATE_ISOLATE, uncontrolled merging would
->> break the specifics of those types. That's why the code is careful for
->> MIGRATE_ISOLATE, and MIGRATE_CMA was until now done in MAX_ORDER granularity.
-> 
-> Thanks for the explanation. Basically migratetypes that can fall back to each
-> other can be merged into a single free page, right?
+KeyWest i2c @0xf8001003 irq 42 /uni-n@f8000000/i2c@f8001000
+BUG: key c2d00cbc has not been registered!
+------------[ cut here ]------------
+DEBUG_LOCKS_WARN_ON(1)
+WARNING: CPU: 0 PID: 1 at kernel/locking/lockdep.c:4801 lockdep_init_map_type+0x4c0/0xb4c
+Modules linked in:
+CPU: 0 PID: 1 Comm: swapper/0 Not tainted 5.15.5-gentoo-PowerMacG4 #9
+NIP:  c01a9428 LR: c01a9428 CTR: 00000000
+REGS: e1033cf0 TRAP: 0700   Not tainted  (5.15.5-gentoo-PowerMacG4)
+MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 24002002  XER: 00000000
 
-Yes.
+GPR00: c01a9428 e1033db0 c2d1cf20 00000016 00000004 00000001 c01c0630 e1033a73
+GPR08: 00000000 00000000 00000000 e1033db0 24002004 00000000 f8729377 00000003
+GPR16: c1829a9c 00000000 18305357 c1416fc0 c1416f80 c006ac60 c2d00ca8 c1416f00
+GPR24: 00000000 c21586f0 c2160000 00000000 c2d00cbc c2170000 c216e1a0 c2160000
+NIP [c01a9428] lockdep_init_map_type+0x4c0/0xb4c
+LR [c01a9428] lockdep_init_map_type+0x4c0/0xb4c
+Call Trace:
+[e1033db0] [c01a9428] lockdep_init_map_type+0x4c0/0xb4c (unreliable)
+[e1033df0] [c1c177b8] kw_i2c_add+0x334/0x424
+[e1033e20] [c1c18294] pmac_i2c_init+0x9ec/0xa9c
+[e1033e80] [c1c1a790] smp_core99_probe+0xbc/0x35c
+[e1033eb0] [c1c03cb0] kernel_init_freeable+0x190/0x5a4
+[e1033f10] [c000946c] kernel_init+0x28/0x154
+[e1033f30] [c0035148] ret_from_kernel_thread+0x14/0x1c
 
-> How about MIGRATE_HIGHATOMIC? It should not be merged with other migratetypes
-> from my understanding.
+Add missing lockdep_register_key()
 
-Hmm it shouldn't minimally because it has an accounting that would become
-broken. So it should prevent merging or make sure the reservations are with
-MAX_ORDER granularity, but seems that neither is true? CCing Mel.
+Reported-by: Erhard Furtner <erhard_f@mailbox.org>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/platforms/powermac/low_i2c.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-> --
-> Best Regards,
-> Yan, Zi
-> 
+diff --git a/arch/powerpc/platforms/powermac/low_i2c.c b/arch/powerpc/platforms/powermac/low_i2c.c
+index f77a59b5c2e1..de34fa34c42d 100644
+--- a/arch/powerpc/platforms/powermac/low_i2c.c
++++ b/arch/powerpc/platforms/powermac/low_i2c.c
+@@ -582,6 +582,7 @@ static void __init kw_i2c_add(struct pmac_i2c_host_kw *host,
+ 	bus->close = kw_i2c_close;
+ 	bus->xfer = kw_i2c_xfer;
+ 	mutex_init(&bus->mutex);
++	lockdep_register_key(&bus->lock_key);
+ 	lockdep_set_class(&bus->mutex, &bus->lock_key);
+ 	if (controller == busnode)
+ 		bus->flags = pmac_i2c_multibus;
+-- 
+2.33.1
 
