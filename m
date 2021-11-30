@@ -4,59 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 702DEC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 13:56:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EA0BC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 13:58:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J3P075M8Hz3cPf
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Dec 2021 00:56:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J3P2j1HH4z3c4p
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Dec 2021 00:58:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=h9aIgWAn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Gp/ukwW9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=mailbox.org (client-ip=80.241.56.171;
- helo=mout-p-201.mailbox.org; envelope-from=erhard_f@mailbox.org;
+ smtp.mailfrom=bugzilla.kernel.org (client-ip=2604:1380:40e1:4800::1;
+ helo=sin.source.kernel.org; envelope-from=bugzilla-daemon@bugzilla.kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256
- header.s=mail20150812 header.b=h9aIgWAn; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=Gp/ukwW9; 
  dkim-atps=neutral
-X-Greylist: delayed 594 seconds by postgrey-1.36 at boromir;
- Wed, 01 Dec 2021 00:56:02 AEDT
-Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from sin.source.kernel.org (sin.source.kernel.org
+ [IPv6:2604:1380:40e1:4800::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J3NzQ3pWbz2yJL
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Dec 2021 00:56:02 +1100 (AEDT)
-Received: from smtp202.mailbox.org (smtp202.mailbox.org [80.241.60.245])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4J3Nlf29wCzQjgG;
- Tue, 30 Nov 2021 14:45:50 +0100 (CET)
-X-Virus-Scanned: amavisd-new at heinlein-support.de
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org;
- s=mail20150812; t=1638279947;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=2ItI444G9e5tXrP/g4X348MAJhSBK9T/nqdzoxQSk2I=;
- b=h9aIgWAnQJz9DAnlN7AgJI3JYRj2oFrTby7AHHS4j74xzpm1ZpCFz8A+zGm40ZzeaZraEk
- XNWc1EnoAks4s0E8JEW6CVm75CZ49rPQ2+IKr92Z4eAohs67aN/0xoqi9M34B0EJp/HVQf
- +82zBznhJC4Kt/z/AQrHsaPMGzpgebI28+MMbQVZ3rwSkGoqxc8X7kBzLwqCyYeugRCWme
- y4ouOC1RFtOni5e1my5RGg4hNICxmQQkcakAYsVh0SzXpFCE64yyBMAM2GRJfwApRPctfD
- pyyOddFogTsjoKY6XhEX2SQBFV7+KPHsUViMhp+lHzD1kH7LSKc08vAoXIOPsA==
-Date: Tue, 30 Nov 2021 14:45:41 +0100
-From: "Erhard F." <erhard_f@mailbox.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/32s: Fix shift-out-of-bounds in KASAN init
-Message-ID: <20211130144541.2597f936@yea>
-In-Reply-To: <15cbc3439d4ad988b225e2119ec99502a5cc6ad3.1638261744.git.christophe.leroy@csgroup.eu>
-References: <15cbc3439d4ad988b225e2119ec99502a5cc6ad3.1638261744.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J3P1t2XmSz2yP0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Dec 2021 00:58:10 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by sin.source.kernel.org (Postfix) with ESMTPS id CC29DCE19E4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 13:58:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 096EFC53FC7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 13:58:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1638280684;
+ bh=ZTV9erazNY3IEhaqfN7SbHaWRHTK8MVhaCYIfokMJp8=;
+ h=From:To:Subject:Date:In-Reply-To:References:From;
+ b=Gp/ukwW9HkJrO91ympzEPdm2qwpkl5trHV9JWFGMVYJhTVmohX0uM/Qy/BVPDNdcw
+ 8mr58ioaPY7tUiY7UEPuy0QHJ90jVf5iYdSC6xv+UbQqDuVSEcTdKcDJeFCljZidrn
+ iyIfJWEs86QAf6wdc0J17ZQVAKN3J29BGoU0CM09Gw2I/ORipHawH2jbvCMvjcLwBg
+ 2bDgTihQwT6SIyL9YJUvixV8EXMc838f5dssYbbpfbYwClzrPV+lRxbVd6L0eBvm5+
+ n5SZ8GLxeAhvqSm7AQPxkG9PeDdqR241XCQP7ejQoJemi3Tys4y4/pmQ6k5/qT6snu
+ W+qE2BKHfnyMw==
+Received: by pdx-korg-bugzilla-2.web.codeaurora.org (Postfix, from userid 48)
+ id C36B860F3A; Tue, 30 Nov 2021 13:58:03 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 205099] KASAN hit at raid6_pq: BUG: Unable to handle kernel
+ data access at 0x00f0fd0d
+Date: Tue, 30 Nov 2021 13:58:03 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-32
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: attachments.created
+Message-ID: <bug-205099-206035-rPL1j4R74p@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-205099-206035@https.bugzilla.kernel.org/>
+References: <bug-205099-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,63 +84,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 30 Nov 2021 09:42:37 +0100
-Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
+https://bugzilla.kernel.org/show_bug.cgi?id=3D205099
 
-> ================================================================================
-> UBSAN: shift-out-of-bounds in arch/powerpc/mm/kasan/book3s_32.c:22:23
-> shift exponent -1 is negative
-> CPU: 0 PID: 0 Comm: swapper Not tainted 5.15.5-gentoo-PowerMacG4 #9
-> Call Trace:
-> [c214be60] [c0ba0048] dump_stack_lvl+0x80/0xb0 (unreliable)
-> [c214be80] [c0b99288] ubsan_epilogue+0x10/0x5c
-> [c214be90] [c0b98fe0] __ubsan_handle_shift_out_of_bounds+0x94/0x138
-> [c214bf00] [c1c0f010] kasan_init_region+0xd8/0x26c
-> [c214bf30] [c1c0ed84] kasan_init+0xc0/0x198
-> [c214bf70] [c1c08024] setup_arch+0x18/0x54c
-> [c214bfc0] [c1c037f0] start_kernel+0x90/0x33c
-> [c214bff0] [00003610] 0x3610
-> ================================================================================
-> 
-> This happens when the directly mapped memory is a power of 2.
-> 
-> Fix it by checking the shift and set the result to 0 when shift is -1
-> 
-> Reported-by: Erhard Furtner <erhard_f@mailbox.org>
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=215169
-> Fixes: 7974c4732642 ("powerpc/32s: Implement dedicated kasan_init_region()")
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
->  arch/powerpc/mm/kasan/book3s_32.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/mm/kasan/book3s_32.c b/arch/powerpc/mm/kasan/book3s_32.c
-> index 202bd260a009..35b287b0a8da 100644
-> --- a/arch/powerpc/mm/kasan/book3s_32.c
-> +++ b/arch/powerpc/mm/kasan/book3s_32.c
-> @@ -19,7 +19,8 @@ int __init kasan_init_region(void *start, size_t size)
->  	block = memblock_alloc(k_size, k_size_base);
->  
->  	if (block && k_size_base >= SZ_128K && k_start == ALIGN(k_start, k_size_base)) {
-> -		int k_size_more = 1 << (ffs(k_size - k_size_base) - 1);
-> +		int shift = ffs(k_size - k_size_base);
-> +		int k_size_more = shift ? 1 << (shift - 1) : 0;
->  
->  		setbat(-1, k_start, __pa(block), k_size_base, PAGE_KERNEL);
->  		if (k_size_more >= SZ_128K)
-> -- 
-> 2.33.1
-> 
+--- Comment #47 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 299793
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D299793&action=3Dedit
+kernel_page_tables (5.15.5 + patch, OUTLINE KASAN, LOWMEM_SIZE=3D0x30000000,
+PowerMac G4 DP)
 
-Tested Christophes patch applied on 5.15.5 which works fine. Thanks!
+--=20
+You may reply to this email to add a comment.
 
-I'll close the bugzilla report once it gets into stable.
-
-Regards
-Erhard
+You are receiving this mail because:
+You are watching the assignee of the bug.=
