@@ -4,114 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 389CAC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 09:34:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA160C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 10:11:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J3H9X4yF1z3cZn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 20:34:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AgNEnk6r;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
- [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J3J0M1bQjz3cCG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 21:11:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J3H8h4zLQz3bXJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 20:33:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=AgNEnk6r; dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
- by gandalf.ozlabs.org (Postfix) with ESMTP id 4J3H8h04zVz4xR5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 20:33:40 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
- id 4J3H8g74gbz4xYy; Tue, 30 Nov 2021 20:33:39 +1100 (AEDT)
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: gandalf.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=AgNEnk6r; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by gandalf.ozlabs.org (Postfix) with ESMTPS id 4J3H8g36Jlz4xR5
- for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2021 20:33:38 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1AU9HRp4000394
- for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2021 09:33:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : to : cc :
- subject : message-id : reply-to : references : content-type : in-reply-to
- : mime-version; s=pp1; bh=aFquFBW7FGtUi9gh0dvyJ70ZryLza7RBondrpBHASDQ=;
- b=AgNEnk6rl/1UqbmLk5xpDIUgvNLBHGMQhsmI6ZX9co7StWDrowTadtbLg6O2bo7i4DlE
- BkAZiQCV3Z1tIxExkdt/oicpg4J4Z+Yay4fwOnJ7GD0PDBJ5PdNl/nvwXo7DUxHK82zC
- vDuh00xT9Pu0yBml1/NVLaBpoAkugsxTX4ThDVLjrGzePr5A/yvx0Bc0r0AlH+hyk88v
- 8rfml4nUJhj5wsLtJg6Z4Yjil9CmAULqW++aqTNq8r+dTWf/AqLv388P8o6vSERqagiL
- ExnqoKRPSxCISJaYkFhWmm+8xZvG0tijohnTjD1T2tSApC+FjfZOuLlHo2TnCBGNJHcW QQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3cnh6pg97s-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2021 09:33:36 +0000
-Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1AU9UnHN016851
- for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2021 09:33:35 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3cnh6pg8w2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 30 Nov 2021 09:33:33 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1AU9D39Z027364;
- Tue, 30 Nov 2021 09:31:51 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma04ams.nl.ibm.com with ESMTP id 3ckcaccscy-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 30 Nov 2021 09:31:51 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1AU9VmPS30277956
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 30 Nov 2021 09:31:48 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0C5A111C066;
- Tue, 30 Nov 2021 09:31:48 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EFD7311C06C;
- Tue, 30 Nov 2021 09:31:46 +0000 (GMT)
-Received: from in.ibm.com (unknown [9.43.54.94])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Tue, 30 Nov 2021 09:31:46 +0000 (GMT)
-Date: Tue, 30 Nov 2021 15:01:44 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-To: Nathan Lynch <nathanl@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/rtas: Introduce rtas_get_sensor_nonblocking()
- for pci hotplug driver.
-Message-ID: <20211130093144.zpjcxnbkz3jsxfql@in.ibm.com>
-References: <163817631601.2016996.16085383012429651821.stgit@jupiter>
- <87o862nt0q.fsf@linux.ibm.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87o862nt0q.fsf@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: hg4tlSh6MaHnuQkB3ZFw3ahK5HvAqHPF
-X-Proofpoint-GUID: DsW-w7G_JPw28LH9zEF5KrAHsSAsOtn9
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J3Hzs5z4Jz2xt7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 21:11:03 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4J3Hzn35hyz9sSd;
+ Tue, 30 Nov 2021 11:11:01 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id gsDELywhyH98; Tue, 30 Nov 2021 11:11:01 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4J3Hzn1gvlz9sSc;
+ Tue, 30 Nov 2021 11:11:01 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2A5558B779;
+ Tue, 30 Nov 2021 11:11:01 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id SgXnWZs3btvD; Tue, 30 Nov 2021 11:11:01 +0100 (CET)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.93])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DBB078B763;
+ Tue, 30 Nov 2021 11:11:00 +0100 (CET)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1AUAAjqH094665
+ (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+ Tue, 30 Nov 2021 11:10:45 +0100
+Received: (from chleroy@localhost)
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1AUAAhgf094664;
+ Tue, 30 Nov 2021 11:10:43 +0100
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
+ christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/modules: Don't WARN on first module allocation
+ tentative
+Date: Tue, 30 Nov 2021 11:10:43 +0100
+Message-Id: <93c9b84d6ec76aaf7b4f03468e22433a6d308674.1638267035.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.33.1
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
- definitions=2021-11-30_06,2021-11-28_01,2020-04-07_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- impostorscore=0 priorityscore=1501 malwarescore=0 spamscore=0 phishscore=0
- bulkscore=0 clxscore=1015 suspectscore=0 mlxlogscore=999 adultscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2110150000 definitions=main-2111300054
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1638267042; l=5518; s=20211009;
+ h=from:subject:message-id; bh=mCYAogm/65zifEIL01Oksf4pr9Xuln76i2+GlWEIig8=;
+ b=QzQhHLpps4fKYaM7UEeCJvsnqzBXy7obsntt4kqChCOy8MyoxPkHAaJcNiA+0XhTBHIDIOcQ77/Y
+ FPg0rdVzAw6ASCcQM1CnnIYPXAPp9ZpdXxhshDurRbsVz5v0vxbg
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
+ pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,150 +74,120 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: mahesh@linux.ibm.com
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Oliver O'Halloran <oohall@gmail.com>
+Cc: Erhard Furtner <erhard_f@mailbox.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2021-11-29 22:53:41 Mon, Nathan Lynch wrote:
-> Mahesh Salgaonkar <mahesh@linux.ibm.com> writes:
-> > When certain PHB HW failure causes phyp to recover PHB, it marks the PE
-> > state as temporarily unavailable until recovery is complete. This also
-> > triggers an EEH handler in Linux which needs to notify drivers, and perform
-> > recovery. But before notifying the driver about the pci error it uses
-> > get_adapter_state()->get-sesnor-state() operation of the hotplug_slot to
-> > determine if the slot contains a device or not. if the slot is empty, the
-> > recovery is skipped entirely.
-> >
-> > However on certain PHB failures, the rtas call get-sesnor-state() returns
-> > extended busy error (9902) until PHB is recovered by phyp. Once PHB is
-> > recovered, the get-sensor-state() returns success with correct presence
-> > status. The rtas call interface rtas_get_sensor() loops over the rtas call
-> > on extended delay return code (9902) until the return value is either
-> > success (0) or error (-1). This causes the EEH handler to get stuck for ~6
-> > seconds before it could notify that the pci error has been detected and
-> > stop any active operations.
-> 
-> I am curious whether you see any difference with "powerpc/rtas:
-> rtas_busy_delay() improvements" which was recently applied. It will
-> cause the the calling task to sleep in response to a 990x status instead
-> of immediately retrying:
+module_alloc() first tries to allocate module text within
+24 bits direct jump from kernel text, and tries a wider
+allocation if first one fails.
 
-If it is still sleeping it may not help, however I will give a try.
+When first allocation fails the following is observed in kernel logs:
 
-> 
-> https://git.kernel.org/powerpc/c/38f7b7067dae0c101be573106018e8af22a90fdf
-> 
-> If that commit helps then maybe this change isn't needed.
-> 
-> Otherwise, see my comments below.
-> 
-> 
-> > -int rtas_get_sensor_fast(int sensor, int index, int *state)
-> > +static int
-> > +__rtas_get_sensor(int sensor, int index, int *state, bool warn_on)
-> 
-> Boolean flag parameters in this style are undesirable. As a reader you
-> can't infer the significance of a 'true' or 'false' in the argument list
-> at the call site.
-> 
-> >  {
-> >  	int token = rtas_token("get-sensor-state");
-> >  	int rc;
-> > @@ -618,14 +619,26 @@ int rtas_get_sensor_fast(int sensor, int index, int *state)
-> >  		return -ENOENT;
-> >  
-> >  	rc = rtas_call(token, 2, 2, state, sensor, index);
-> > -	WARN_ON(rc == RTAS_BUSY || (rc >= RTAS_EXTENDED_DELAY_MIN &&
-> > -				    rc <= RTAS_EXTENDED_DELAY_MAX));
-> > +	WARN_ON(warn_on &&
-> > +		(rc == RTAS_BUSY || (rc >= RTAS_EXTENDED_DELAY_MIN &&
-> > +				    rc <= RTAS_EXTENDED_DELAY_MAX)));
-> >  
-> >  	if (rc < 0)
-> >  		return rtas_error_rc(rc);
-> >  	return rc;
-> >  }
-> 
-> Issues I see with this, in terms of correctness and convention:
-> 
-> * On non-negative status from rtas_call(), including 990x,
->   __rtas_get_sensor() returns the RTAS status unchanged. On a negative
->   status, it returns a Linux errno value. On a -2 (busy) status
->   rtas_error_rc() prints an error message and returns -ERANGE. Seems
->   difficult for a caller to handle. Generally we want rtas_* APIs to
->   adhere to a Linux 0/-errno convention or to return the RTAS
->   status unchanged, but not a mixture.
-> 
-> * __rtas_get_sensor() is called by rtas_get_sensor_fast() and
->   rtas_get_sensor_nonblocking(), but is not called by rtas_get_sensor(),
->   despite common practice with __-prefixed functions.
-> 
-> > +int rtas_get_sensor_fast(int sensor, int index, int *state)
-> > +{
-> > +	return __rtas_get_sensor(sensor, index, state, true);
-> > +}
-> > +
-> > +int rtas_get_sensor_nonblocking(int sensor, int index, int *state)
-> > +{
-> > +	return __rtas_get_sensor(sensor, index, state, false);
-> > +}
-> > +EXPORT_SYMBOL(rtas_get_sensor_nonblocking);
-> > +
-> >  bool rtas_indicator_present(int token, int *maxindex)
-> >  {
-> >  	int proplen, count, i;
-> > diff --git a/drivers/pci/hotplug/rpaphp_pci.c b/drivers/pci/hotplug/rpaphp_pci.c
-> > index c380bdacd1466..8a7d681254ce9 100644
-> > --- a/drivers/pci/hotplug/rpaphp_pci.c
-> > +++ b/drivers/pci/hotplug/rpaphp_pci.c
-> > @@ -23,7 +23,7 @@ int rpaphp_get_sensor_state(struct slot *slot, int *state)
-> >  	int rc;
-> >  	int setlevel;
-> >  
-> > -	rc = rtas_get_sensor(DR_ENTITY_SENSE, slot->index, state);
-> > +	rc = rtas_get_sensor_nonblocking(DR_ENTITY_SENSE, slot->index, state);
-> >  
-> >  	if (rc < 0) {
-> >  		if (rc == -EFAULT || rc == -EEXIST) {
-> > @@ -38,10 +38,10 @@ int rpaphp_get_sensor_state(struct slot *slot, int *state)
-> >  			if (rc < 0) {
-> >  				dbg("%s: power on slot[%s] failed rc=%d.\n",
-> >  				    __func__, slot->name, rc);
-> > -			} else {
-> > -				rc = rtas_get_sensor(DR_ENTITY_SENSE,
-> > -						     slot->index, state);
-> > +				return rc;
-> >  			}
-> > +			rc = rtas_get_sensor_nonblocking(DR_ENTITY_SENSE,
-> > +							 slot->index, state);
-> >  		} else if (rc == -ENODEV)
-> >  			info("%s: slot is unusable\n", __func__);
-> >  		else
-> 
-> If I'm reading it right rpaphp_get_sensor_state() now returns 9902 in
-> the situation this change is trying to address. I checked a couple of
-> its call sites and it seems like this is going to propagate back into
-> the PCI hotplug core which of course doesn't understand RTAS call
-> statuses. So this doesn't seem right.
+vmap allocation for size 2400256 failed: use vmalloc=<size> to increase size
+systemd-udevd: vmalloc error: size 2395133, vm_struct allocation failed, mode:0xcc0(GFP_KERNEL), nodemask=(null)
+CPU: 0 PID: 127 Comm: systemd-udevd Tainted: G        W         5.15.5-gentoo-PowerMacG4 #9
+Call Trace:
+[e2a53a50] [c0ba0048] dump_stack_lvl+0x80/0xb0 (unreliable)
+[e2a53a70] [c0540128] warn_alloc+0x11c/0x2b4
+[e2a53b50] [c0531be8] __vmalloc_node_range+0xd8/0x64c
+[e2a53c10] [c00338c0] module_alloc+0xa0/0xac
+[e2a53c40] [c027a368] load_module+0x2ae0/0x8148
+[e2a53e30] [c027fc78] sys_finit_module+0xfc/0x130
+[e2a53f30] [c0035098] ret_from_syscall+0x0/0x28
+--- interrupt: c00 at 0x25df10
+NIP:  0025df10 LR: 00416180 CTR: 00000000
+REGS: e2a53f40 TRAP: 0c00   Tainted: G        W          (5.15.5-gentoo-PowerMacG4)
+MSR:  0000d032 <EE,PR,ME,IR,DR,RI>  CR: 2822242c  XER: 20000000
 
-Thanks for pointing it out. I should convert that into an error before
-returning. I overlooked this when I moved away from get_sensor_state().
+GPR00: 00000161 afa8f060 a73a6160 00000011 0041dfa5 00000000 00000011 00000000
+GPR08: 00000000 20000000 0000007a afa8efe0 002113f8 0072f924 00000000 00000000
+GPR16: 00000005 afa8f1fc afa8f1e8 00000000 22222422 00000000 009603b0 22222422
+GPR24: 00000000 00000000 0041dfa5 008a5fc0 00020000 00000000 00444cc4 009958f0
+NIP [0025df10] 0x25df10
+LR [00416180] 0x416180
+--- interrupt: c00
+Mem-Info:
+active_anon:36 inactive_anon:4417 isolated_anon:0
+ active_file:3496 inactive_file:10535 isolated_file:0
+ unevictable:0 dirty:59 writeback:0
+ slab_reclaimable:3672 slab_unreclaimable:20540
+ mapped:5700 shmem:166 pagetables:185 bounce:0
+ kernel_misc_reclaimable:0
+ free:438282 free_pcp:1121 free_cma:0
+Node 0 active_anon:144kB inactive_anon:17668kB active_file:13984kB inactive_file:42140kB unevictable:0kB isolated(anon):0kB isolated(file):0kB mapped:22800kB dirty:404kB writeback:0kB shmem:664kB writeback_tmp:0kB kernel_stack:1352kB pagetables:740kB all_unreclaimable? no
+DMA free:267900kB min:2488kB low:3108kB high:3728kB reserved_highatomic:4096KB active_anon:0kB inactive_anon:0kB active_file:4016kB inactive_file:4224kB unevictable:0kB writepending:76kB present:524288kB managed:389432kB mlocked:0kB bounce:0kB free_pcp:2480kB local_pcp:1176kB free_cma:0kB
+lowmem_reserve[]: 0 0 1536 1536
+HighMem free:1485036kB min:512kB low:3032kB high:5552kB reserved_highatomic:0KB active_anon:136kB inactive_anon:17612kB active_file:9976kB inactive_file:37912kB unevictable:0kB writepending:364kB present:1572864kB managed:1572864kB mlocked:0kB bounce:0kB free_pcp:1776kB local_pcp:404kB free_cma:0kB
+BTRFS: selftest: sectorsize: 4096  nodesize: 8192
+lowmem_reserve[]: 0 0 0 0
+BTRFS: selftest: running btrfs free space cache tests
+DMA: 283*4kB (UMH) 282*8kB (UMH) 242*16kB (UMEH) 422*32kB (UMH) 187*64kB (UMH) 139*128kB (UME) 118*256kB (UM) 87*512kB (UME) 61*1024kB (UME) 27*2048kB (U) 6*4096kB (U) = 267612kB
+BTRFS: selftest: running extent only tests
+HighMem: 1*4kB (M) 1*8kB (M) 92*16kB (M) 43*32kB (UM) 21*64kB (M) 7*128kB (M) 3*256kB (UM) 1*512kB (U) 2*1024kB (UM) 1*2048kB (U) 360*4096kB (UM) = 1485036kB
+BTRFS: selftest: running bitmap only tests
+14218 total pagecache pages
+0 pages in swap cache
+Swap cache stats: add 0, delete 0, find 0/0
+Free swap  = 8388604kB
+Total swap = 8388604kB
+524288 pages RAM
+393216 pages HighMem/MovableOnly
+33714 pages reserved
 
-> 
-> Maybe it would be better to have rpaphp_get_sensor_state() invoke
-> rtas_call("get-sensor-state", ...) directly and code whatever special
-> behavior is needed there, instead of introducing a new exported API. The
-> driver seems to want to deal with the RTAS return values anyway - it's
-> implicitly mapping ENODEV, EFAULT, EEXIST from rtas_get_sensor() back to
-> -9002, -9000, -9001 respectively.
+Add __GFP_NOWARN flag to first allocation so that no warning appears
+when it fails.
 
-Sure I will try this.
+Reported-by: Erhard Furtner <erhard_f@mailbox.org>
+Fixes: 2ec13df16704 ("powerpc/modules: Load modules closer to kernel text")
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/kernel/module.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-Thanks,
--Mahesh.
-
+diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
+index ed04a3ba66fe..40a583e9d3c7 100644
+--- a/arch/powerpc/kernel/module.c
++++ b/arch/powerpc/kernel/module.c
+@@ -90,16 +90,17 @@ int module_finalize(const Elf_Ehdr *hdr,
+ }
+ 
+ static __always_inline void *
+-__module_alloc(unsigned long size, unsigned long start, unsigned long end)
++__module_alloc(unsigned long size, unsigned long start, unsigned long end, bool nowarn)
+ {
+ 	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
++	gfp_t gfp = GFP_KERNEL | (nowarn ? __GFP_NOWARN : 0);
+ 
+ 	/*
+ 	 * Don't do huge page allocations for modules yet until more testing
+ 	 * is done. STRICT_MODULE_RWX may require extra work to support this
+ 	 * too.
+ 	 */
+-	return __vmalloc_node_range(size, 1, start, end, GFP_KERNEL, prot,
++	return __vmalloc_node_range(size, 1, start, end, gfp, prot,
+ 				    VM_FLUSH_RESET_PERMS | VM_NO_HUGE_VMAP,
+ 				    NUMA_NO_NODE, __builtin_return_address(0));
+ }
+@@ -114,13 +115,13 @@ void *module_alloc(unsigned long size)
+ 
+ 	/* First try within 32M limit from _etext to avoid branch trampolines */
+ 	if (MODULES_VADDR < PAGE_OFFSET && MODULES_END > limit)
+-		ptr = __module_alloc(size, limit, MODULES_END);
++		ptr = __module_alloc(size, limit, MODULES_END, true);
+ 
+ 	if (!ptr)
+-		ptr = __module_alloc(size, MODULES_VADDR, MODULES_END);
++		ptr = __module_alloc(size, MODULES_VADDR, MODULES_END, false);
+ 
+ 	return ptr;
+ #else
+-	return __module_alloc(size, VMALLOC_START, VMALLOC_END);
++	return __module_alloc(size, VMALLOC_START, VMALLOC_END, false);
+ #endif
+ }
 -- 
-Mahesh J Salgaonkar
+2.33.1
+
