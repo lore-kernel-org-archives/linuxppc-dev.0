@@ -4,53 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDCE4C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 00:43:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 002B3C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 00:44:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J33P973Wfz3cYy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 11:43:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256 header.s=1 header.b=GV8Md+4w;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J33Pd3QWNz3cnK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Nov 2021 11:44:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rere.qmqm.pl (client-ip=91.227.64.183; helo=rere.qmqm.pl;
- envelope-from=mirq-linux@rere.qmqm.pl; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256
- header.s=1 header.b=GV8Md+4w; dkim-atps=neutral
-Received: from rere.qmqm.pl (rere.qmqm.pl [91.227.64.183])
+ smtp.mailfrom=gmail.com (client-ip=209.85.210.52; helo=mail-ot1-f52.google.com;
+ envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ot1-f52.google.com (mail-ot1-f52.google.com
+ [209.85.210.52])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J2rXm2h6tz2ynV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 03:34:31 +1100 (AEDT)
-Received: from remote.user (localhost [127.0.0.1])
- by rere.qmqm.pl (Postfix) with ESMTPSA id 4J2rXL58g0z9h;
- Mon, 29 Nov 2021 17:34:10 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
- t=1638203665; bh=qlu3mL+FOvVS9aPE/gZoS7KdAdQ/avBctxZ8QxqT38I=;
- h=Date:From:To:CC:Subject:In-Reply-To:References:From;
- b=GV8Md+4wLJhNSJZqrJvdjyVU0DlzlhbpPkGnTNqVApkG+uUQ6A+MoaqEQT9dgrjXq
- q+escBY9SwJTtDVYNHqesyY22ZcfBKeLVi2I4yINeaBpICc3EsCTOMz8/JkEhkxKwH
- 5jlUqEb0yuAf8eVUX8cWy9bi6RovdDbzWpM+g8ZdNeFAwiFdkLHHM+FUiQ+x0Dv37t
- bEpCos1VGSJffWt42H8cWp9GNUDKdAgiFLCcBLScmau30GyMgUFylkw6qvpMGUFype
- xiTzGA2klsrhcAXTQoeGJ7H6y00R/3ukWQ3tN7aMIYo31vE1Ni41oAjMZVdXQclWDE
- FhYcDpXStxEZw==
-X-Virus-Status: Clean
-X-Virus-Scanned: clamav-milter 0.103.3 at mail
-Date: Mon, 29 Nov 2021 16:34:07 +0000
-From: =?UTF-8?Q?Micha=C5=82_Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-To: Yury Norov <yury.norov@gmail.com>
-Subject: Re: [PATCH 0/9] lib/bitmap: optimize bitmap_weight() usage
-User-Agent: K-9 Mail for Android
-In-Reply-To: <20211129063839.GA338729@lapt>
-References: <20211128035704.270739-1-yury.norov@gmail.com>
- <YaPEfZ0t9UFGwpml@qmqm.qmqm.pl> <20211129063839.GA338729@lapt>
-Message-ID: <3CD9ECD8-901E-497B-9AE1-0DDB02346892@rere.qmqm.pl>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J32T36DvHz30Hv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Nov 2021 11:01:57 +1100 (AEDT)
+Received: by mail-ot1-f52.google.com with SMTP id
+ v15-20020a9d604f000000b0056cdb373b82so27823941otj.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Nov 2021 16:01:57 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=aV2EodJh346t+Wbm3YErslm1vIVsKkg3za0JyncYukQ=;
+ b=rePWlfb0/MBXyWYNevC59nOreC/vpe4yvvhenzLuyskUKCMhDhE1LJfooyHHcROjW9
+ LMX0ahG5eVI+9bz7/TWX15+FFKRlZrwaQ/macQUl6ZCuLWJdM0YHWAmLtnw7smx85Oty
+ /8oxVwDOZzO0QNj3BNVWP18A8NNUw2w7IQjsJ551Z+nGhQMGvEqDV7D97gO1ldy9MK9J
+ LBhJ9PRpUCRSKxccKTcP/x3xgKJWL5+7GgQa+wkMVVa/gOgtVKoVmkE2y02xKk/LAAt8
+ kELskN3n/SvKrJ3yAa/iyKhnnb5HLUa5Jdf8ZoLUekoIXDJeL7akxjBYE3TZyYxSgCLc
+ e4oA==
+X-Gm-Message-State: AOAM532JOwmIlCAdqnfRkhKs3rivcltr/CauJgYSGDKlKlVJsNh8rEf7
+ +6JaXzaEjdzy64ks37e8Yw==
+X-Google-Smtp-Source: ABdhPJxGmP7W+hR5b8+EQ325tbSTlD38AnnrDu+nyHVAQB1cJ7/x12F1fry2XTHV2cl6Sy01eQGOWA==
+X-Received: by 2002:a05:6830:4389:: with SMTP id
+ s9mr47068865otv.97.1638230514850; 
+ Mon, 29 Nov 2021 16:01:54 -0800 (PST)
+Received: from robh.at.kernel.org (66-90-148-213.dyn.grandenetworks.net.
+ [66.90.148.213])
+ by smtp.gmail.com with ESMTPSA id s17sm2465101ooj.42.2021.11.29.16.01.51
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 29 Nov 2021 16:01:53 -0800 (PST)
+Received: (nullmailer pid 855745 invoked by uid 1000);
+ Tue, 30 Nov 2021 00:01:51 -0000
+Date: Mon, 29 Nov 2021 18:01:50 -0600
+From: Rob Herring <robh@kernel.org>
+To: Calvin Zhang <calvinzhang.cool@gmail.com>
+Subject: Re: [PATCH 1/2] of: Sort reserved_mem related code
+Message-ID: <YaVp7ubpCLN1xWfF@robh.at.kernel.org>
+References: <20211119075844.2902592-1-calvinzhang.cool@gmail.com>
+ <20211119075844.2902592-2-calvinzhang.cool@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211119075844.2902592-2-calvinzhang.cool@gmail.com>
 X-Mailman-Approved-At: Tue, 30 Nov 2021 11:43:13 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -63,145 +69,509 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Andrew Lunn <andrew@lunn.ch>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Guo Ren <guoren@kernel.org>,
- Christoph Lameter <cl@linux.com>, Christoph Hellwig <hch@lst.de>,
- Andi Kleen <ak@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Mel Gorman <mgorman@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>,
- Petr Mladek <pmladek@suse.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Jens Axboe <axboe@fb.com>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org,
- Sergey Senozhatsky <senozhatsky@chromium.org>, linux-crypto@vger.kernel.org,
- Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Mark Rutland <mark.rutland@arm.com>, Anup Patel <anup.patel@wdc.com>,
- linux-ia64@vger.kernel.org, David Airlie <airlied@linux.ie>,
- Roy Pledge <Roy.Pledge@nxp.com>, Dave Hansen <dave.hansen@linux.intel.com>,
- Solomon Peachy <pizza@shaftnet.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
- Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
- Dennis Zhou <dennis@kernel.org>, Matti Vaittinen <mazziesaccount@gmail.com>,
- linux-alpha@vger.kernel.org, Kalle Valo <kvalo@codeaurora.org>,
- Stephen Boyd <sboyd@kernel.org>, Tariq Toukan <tariqt@nvidia.com>,
- Dinh Nguyen <dinguyen@kernel.org>, Jonathan Cameron <jic23@kernel.org>,
- Ulf Hansson <ulf.hansson@linaro.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Mike Marciniszyn <mike.marciniszyn@cornelisnetworks.com>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Subbaraya Sundeep <sbhatta@marvell.com>, Will Deacon <will@kernel.org>,
- Sagi Grimberg <sagi@grimberg.me>, linux-csky@vger.kernel.org,
- bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org,
- linux-snps-arc@lists.infradead.org, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, "James E.J. Bottomley" <jejb@linux.ibm.com>,
- Vineet Gupta <vgupta@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- Mark Gross <markgross@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Kefeng Wang <wangkefeng.wang@huawei.com>, Rich Felker <dalias@libc.org>,
+ Jinyang He <hejinyang@loongson.cn>, David Hildenbrand <david@redhat.com>,
+ Palmer Dabbelt <palmerdabbelt@google.com>, linux-kernel@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, Anup Patel <anup.patel@wdc.com>,
+ Guo Ren <guoren@linux.alibaba.com>, Guo Ren <guoren@kernel.org>,
+ linux-csky@vger.kernel.org, Nick Kossifidis <mick@ics.forth.gr>,
+ Vladimir Isaev <isaev@synopsys.com>, Tiezhu Yang <yangtiezhu@loongson.cn>,
+ Vincent Chen <deanbo422@gmail.com>, Will Deacon <will@kernel.org>,
+ Markus Elfring <elfring@users.sourceforge.net>,
+ Vitaly Wool <vitaly.wool@konsulko.com>, Jonas Bonn <jonas@southpole.se>,
+ devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ Russell King <linux@armlinux.org.uk>, Ley Foon Tan <ley.foon.tan@intel.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Ganesh Goudar <ganeshgr@linux.ibm.com>, David Brazdil <dbrazdil@google.com>,
+ linux-riscv@lists.infradead.org, Guenter Roeck <linux@roeck-us.net>,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org,
+ Albert Ou <aou@eecs.berkeley.edu>, Arnd Bergmann <arnd@arndb.de>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Vineet Gupta <vgupta@kernel.org>, Andreas Oetken <andreas.oetken@siemens.com>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ "Russell King \(Oracle\)" <rmk+kernel@armlinux.org.uk>,
+ openrisc@lists.librecores.org,
+ Alexander Sverdlin <alexander.sverdlin@nokia.com>,
+ Greentime Hu <green.hu@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Stafford Horne <shorne@gmail.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Atish Patra <atish.patra@wdc.com>, linux-arm-kernel@lists.infradead.org,
+ Andrey Konovalov <andreyknvl@gmail.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>, Chris Zankel <chris@zankel.net>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- David Laight <David.Laight@aculab.com>, Sudeep Holla <sudeep.holla@arm.com>,
- Geetha sowjanya <gakula@marvell.com>, Ian Rogers <irogers@google.com>,
- kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Amitkumar Karwar <amitkarwar@gmail.com>, linux-mm@kvack.org,
- linux-riscv@lists.infradead.org, Lee Jones <lee.jones@linaro.org>,
- Ard Biesheuvel <ardb@kernel.org>, Marc Zyngier <maz@kernel.org>,
- Jiri Olsa <jolsa@redhat.com>, Russell King <linux@armlinux.org.uk>,
- Andy Gross <agross@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
- Vivien Didelot <vivien.didelot@gmail.com>,
- Sunil Goutham <sgoutham@marvell.com>, "Paul E. McKenney" <paulmck@kernel.org>,
- linux-s390@vger.kernel.org, Alexey Klimov <aklimov@redhat.com>,
- Heiko Carstens <hca@linux.ibm.com>, Hans de Goede <hdegoede@redhat.com>,
- Nicholas Piggin <npiggin@gmail.com>, Marcin Wojtas <mw@semihalf.com>,
- Vlastimil Babka <vbabka@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>,
- Daniel Vetter <daniel@ffwll.ch>, Jason Wessel <jason.wessel@windriver.com>,
- Saeed Mahameed <saeedm@nvidia.com>, Andy Shevchenko <andy@infradead.org>
+ Alexandre Ghiti <alex@ghiti.fr>, Nick Hu <nickhu@andestech.com>,
+ Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-mips@vger.kernel.org,
+ Randy Dunlap <rdunlap@infradead.org>, Frank Rowand <frowand.list@gmail.com>,
+ Serge Semin <Sergey.Semin@baikalelectronics.ru>,
+ Dinh Nguyen <dinguyen@kernel.org>, Zhang Yunkai <zhang.yunkai@zte.com.cn>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Souptick Joarder <jrdr.linux@gmail.com>,
+ Marc Zyngier <maz@kernel.org>, Mauri Sandberg <sandberg@mailfence.com>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Dnia 29 listopada 2021 06:38:39 UTC, Yury Norov <yury=2Enorov@gmail=2Ecom> =
-napisa=C5=82/a:
->On Sun, Nov 28, 2021 at 07:03:41PM +0100, mirq-test@rere=2Eqmqm=2Epl wrot=
-e:
->> On Sat, Nov 27, 2021 at 07:56:55PM -0800, Yury Norov wrote:
->> > In many cases people use bitmap_weight()-based functions like this:
->> >=20
->> > 	if (num_present_cpus() > 1)
->> > 		do_something();
->> >=20
->> > This may take considerable amount of time on many-cpus machines becau=
-se
->> > num_present_cpus() will traverse every word of underlying cpumask
->> > unconditionally=2E
->> >=20
->> > We can significantly improve on it for many real cases if stop traver=
-sing
->> > the mask as soon as we count present cpus to any number greater than =
-1:
->> >=20
->> > 	if (num_present_cpus_gt(1))
->> > 		do_something();
->> >=20
->> > To implement this idea, the series adds bitmap_weight_{eq,gt,le}
->> > functions together with corresponding wrappers in cpumask and nodemas=
-k=2E
->>=20
->> Having slept on it I have more structured thoughts:
->>=20
->> First, I like substituting bitmap_empty/full where possible - I think
->> the change stands on its own, so could be split and sent as is=2E
->
->Ok, I can do it=2E
->
->> I don't like the proposed API very much=2E One problem is that it hides
->> the comparison operator and makes call sites less readable:
->>=20
->> 	bitmap_weight(=2E=2E=2E) > N
->>=20
->> becomes:
->>=20
->> 	bitmap_weight_gt(=2E=2E=2E, N)
->>=20
->> and:
->> 	bitmap_weight(=2E=2E=2E) <=3D N
->>=20
->> becomes:
->>=20
->> 	bitmap_weight_lt(=2E=2E=2E, N+1)
->> or:
->> 	!bitmap_weight_gt(=2E=2E=2E, N)
->>=20
->> I'd rather see something resembling memcmp() API that's known enough
->> to be easier to grasp=2E For above examples:
->>=20
->> 	bitmap_weight_cmp(=2E=2E=2E, N) > 0
->> 	bitmap_weight_cmp(=2E=2E=2E, N) <=3D 0
->> 	=2E=2E=2E
->
->bitmap_weight_cmp() cannot be efficient=2E Consider this example:
->
->bitmap_weight_lt(1000 0000 0000 0000, 1) =3D=3D false
->                 ^
->                 stop here
->
->bitmap_weight_cmp(1000 0000 0000 0000, 1) =3D=3D 0
->                                 ^
->                                 stop here
->
->I agree that '_gt' is less verbose than '>', but the advantage of=20
->'_gt' over '>' is proportional to length of bitmap, and it means
->that this API should exist=2E
+On Fri, Nov 19, 2021 at 03:58:18PM +0800, Calvin Zhang wrote:
+> Move code about parsing /reserved-memory and initializing of
+> reserved_mems array to of_reserved_mem.c for better modularity.
+> 
+> Rename array name from reserved_mem to reserved_mems to distinguish
+> from type definition.
+> 
+> Signed-off-by: Calvin Zhang <calvinzhang.cool@gmail.com>
+> ---
+>  drivers/of/fdt.c                | 108 +--------------------
+>  drivers/of/of_private.h         |  12 ++-
+>  drivers/of/of_reserved_mem.c    | 163 ++++++++++++++++++++++++++------
+>  include/linux/of_reserved_mem.h |   4 +
+>  4 files changed, 149 insertions(+), 138 deletions(-)
+> 
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index bdca35284ceb..445af4e69300 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -80,7 +80,7 @@ void __init of_fdt_limit_memory(int limit)
+>  	}
+>  }
+>  
+> -static bool of_fdt_device_is_available(const void *blob, unsigned long node)
+> +bool of_fdt_device_is_available(const void *blob, unsigned long node)
+>  {
+>  	const char *status = fdt_getprop(blob, node, "status", NULL);
+>  
+> @@ -476,7 +476,7 @@ void *initial_boot_params __ro_after_init;
+>  
+>  static u32 of_fdt_crc32;
+>  
+> -static int __init early_init_dt_reserve_memory_arch(phys_addr_t base,
+> +int __init early_init_dt_reserve_memory_arch(phys_addr_t base,
+>  					phys_addr_t size, bool nomap)
 
-Thank you for the example=2E Indeed, for less-than to be efficient here yo=
-u would need to replace
- bitmap_weight_cmp(=2E=2E=2E, N) < 0
-with
- bitmap_weight_cmp(=2E=2E=2E, N-1) <=3D 0
+I think you can move this function too if you change the nomap==false 
+callers to just call memblock_reserve directly.
 
-It would still be more readable, I think=2E
 
-Best Regards
-Micha=C5=82 Miros=C5=82aw
+>  {
+>  	if (nomap) {
+> @@ -492,108 +492,6 @@ static int __init early_init_dt_reserve_memory_arch(phys_addr_t base,
+>  	return memblock_reserve(base, size);
+>  }
+>  
+> -/*
+> - * __reserved_mem_reserve_reg() - reserve all memory described in 'reg' property
+> - */
+> -static int __init __reserved_mem_reserve_reg(unsigned long node,
+> -					     const char *uname)
+> -{
+> -	int t_len = (dt_root_addr_cells + dt_root_size_cells) * sizeof(__be32);
+> -	phys_addr_t base, size;
+> -	int len;
+> -	const __be32 *prop;
+> -	int first = 1;
+> -	bool nomap;
+> -
+> -	prop = of_get_flat_dt_prop(node, "reg", &len);
+> -	if (!prop)
+> -		return -ENOENT;
+> -
+> -	if (len && len % t_len != 0) {
+> -		pr_err("Reserved memory: invalid reg property in '%s', skipping node.\n",
+> -		       uname);
+> -		return -EINVAL;
+> -	}
+> -
+> -	nomap = of_get_flat_dt_prop(node, "no-map", NULL) != NULL;
+> -
+> -	while (len >= t_len) {
+> -		base = dt_mem_next_cell(dt_root_addr_cells, &prop);
+> -		size = dt_mem_next_cell(dt_root_size_cells, &prop);
+> -
+> -		if (size &&
+> -		    early_init_dt_reserve_memory_arch(base, size, nomap) == 0)
+> -			pr_debug("Reserved memory: reserved region for node '%s': base %pa, size %lu MiB\n",
+> -				uname, &base, (unsigned long)(size / SZ_1M));
+> -		else
+> -			pr_info("Reserved memory: failed to reserve memory for node '%s': base %pa, size %lu MiB\n",
+> -				uname, &base, (unsigned long)(size / SZ_1M));
+> -
+> -		len -= t_len;
+> -		if (first) {
+> -			fdt_reserved_mem_save_node(node, uname, base, size);
+> -			first = 0;
+> -		}
+> -	}
+> -	return 0;
+> -}
+> -
+> -/*
+> - * __reserved_mem_check_root() - check if #size-cells, #address-cells provided
+> - * in /reserved-memory matches the values supported by the current implementation,
+> - * also check if ranges property has been provided
+> - */
+> -static int __init __reserved_mem_check_root(unsigned long node)
+> -{
+> -	const __be32 *prop;
+> -
+> -	prop = of_get_flat_dt_prop(node, "#size-cells", NULL);
+> -	if (!prop || be32_to_cpup(prop) != dt_root_size_cells)
+> -		return -EINVAL;
+> -
+> -	prop = of_get_flat_dt_prop(node, "#address-cells", NULL);
+> -	if (!prop || be32_to_cpup(prop) != dt_root_addr_cells)
+> -		return -EINVAL;
+> -
+> -	prop = of_get_flat_dt_prop(node, "ranges", NULL);
+> -	if (!prop)
+> -		return -EINVAL;
+> -	return 0;
+> -}
+> -
+> -/*
+> - * fdt_scan_reserved_mem() - scan a single FDT node for reserved memory
+> - */
+> -static int __init fdt_scan_reserved_mem(void)
+> -{
+> -	int node, child;
+> -	const void *fdt = initial_boot_params;
+> -
+> -	node = fdt_path_offset(fdt, "/reserved-memory");
+> -	if (node < 0)
+> -		return -ENODEV;
+> -
+> -	if (__reserved_mem_check_root(node) != 0) {
+> -		pr_err("Reserved memory: unsupported node format, ignoring\n");
+> -		return -EINVAL;
+> -	}
+> -
+> -	fdt_for_each_subnode(child, fdt, node) {
+> -		const char *uname;
+> -		int err;
+> -
+> -		if (!of_fdt_device_is_available(fdt, child))
+> -			continue;
+> -
+> -		uname = fdt_get_name(fdt, child, NULL);
+> -
+> -		err = __reserved_mem_reserve_reg(child, uname);
+> -		if (err == -ENOENT && of_get_flat_dt_prop(child, "size", NULL))
+> -			fdt_reserved_mem_save_node(child, uname, 0, 0);
+> -	}
+> -	return 0;
+> -}
+> -
+>  /*
+>   * fdt_reserve_elfcorehdr() - reserves memory for elf core header
+>   *
+> @@ -642,7 +540,7 @@ void __init early_init_fdt_scan_reserved_mem(void)
+>  	}
+>  
+>  	fdt_scan_reserved_mem();
+> -	fdt_init_reserved_mem();
+> +	of_reserved_mem_init();
+>  	fdt_reserve_elfcorehdr();
+>  }
+>  
+> diff --git a/drivers/of/of_private.h b/drivers/of/of_private.h
+> index 9324483397f6..88b67f8ed698 100644
+> --- a/drivers/of/of_private.h
+> +++ b/drivers/of/of_private.h
+> @@ -163,8 +163,14 @@ static inline int of_dma_get_range(struct device_node *np,
+>  }
+>  #endif
+>  
+> -void fdt_init_reserved_mem(void);
+> -void fdt_reserved_mem_save_node(unsigned long node, const char *uname,
+> -			       phys_addr_t base, phys_addr_t size);
+> +bool of_fdt_device_is_available(const void *blob, unsigned long node);
+> +int early_init_dt_reserve_memory_arch(phys_addr_t base,
+> +					phys_addr_t size, bool nomap);
+> +#ifdef CONFIG_OF_RESERVED_MEM
+> +int fdt_scan_reserved_mem(void);
+> +#else
+> +static inline int fdt_scan_reserved_mem(void) { }
+> +#endif
+> +
+>  
+>  #endif /* _LINUX_OF_PRIVATE_H */
+> diff --git a/drivers/of/of_reserved_mem.c b/drivers/of/of_reserved_mem.c
+> index 9c0fb962c22b..784cfc5cd251 100644
+> --- a/drivers/of/of_reserved_mem.c
+> +++ b/drivers/of/of_reserved_mem.c
+> @@ -20,13 +20,14 @@
+>  #include <linux/of_reserved_mem.h>
+>  #include <linux/sort.h>
+>  #include <linux/slab.h>
+> +#include <linux/libfdt.h>
+>  #include <linux/memblock.h>
+>  #include <linux/kmemleak.h>
+>  
+>  #include "of_private.h"
+>  
+>  #define MAX_RESERVED_REGIONS	64
+> -static struct reserved_mem reserved_mem[MAX_RESERVED_REGIONS];
+> +static struct reserved_mem reserved_mems[MAX_RESERVED_REGIONS];
+
+Would be a bit easier to review without the rename.
+
+
+>  static int reserved_mem_count;
+>  
+>  static int __init early_init_dt_alloc_reserved_memory_arch(phys_addr_t size,
+> @@ -56,12 +57,12 @@ static int __init early_init_dt_alloc_reserved_memory_arch(phys_addr_t size,
+>  /*
+>   * fdt_reserved_mem_save_node() - save fdt node for second pass initialization
+>   */
+> -void __init fdt_reserved_mem_save_node(unsigned long node, const char *uname,
+> +static void __init fdt_reserved_mem_save_node(unsigned long node, const char *uname,
+>  				      phys_addr_t base, phys_addr_t size)
+>  {
+> -	struct reserved_mem *rmem = &reserved_mem[reserved_mem_count];
+> +	struct reserved_mem *rmem = &reserved_mems[reserved_mem_count];
+>  
+> -	if (reserved_mem_count == ARRAY_SIZE(reserved_mem)) {
+> +	if (reserved_mem_count == ARRAY_SIZE(reserved_mems)) {
+>  		pr_err("not enough space for all defined regions.\n");
+>  		return;
+>  	}
+> @@ -173,29 +174,105 @@ static const struct of_device_id __rmem_of_table_sentinel
+>  	__used __section("__reservedmem_of_table_end");
+>  
+>  /*
+> - * __reserved_mem_init_node() - call region specific reserved memory init code
+> + * __reserved_mem_check_root() - check if #size-cells, #address-cells provided
+> + * in /reserved-memory matches the values supported by the current implementation,
+> + * also check if ranges property has been provided
+>   */
+> -static int __init __reserved_mem_init_node(struct reserved_mem *rmem)
+> +static int __init __reserved_mem_check_root(unsigned long node)
+>  {
+> -	extern const struct of_device_id __reservedmem_of_table[];
+> -	const struct of_device_id *i;
+> -	int ret = -ENOENT;
+> +	const __be32 *prop;
+>  
+> -	for (i = __reservedmem_of_table; i < &__rmem_of_table_sentinel; i++) {
+> -		reservedmem_of_init_fn initfn = i->data;
+> -		const char *compat = i->compatible;
+> +	prop = of_get_flat_dt_prop(node, "#size-cells", NULL);
+> +	if (!prop || be32_to_cpup(prop) != dt_root_size_cells)
+> +		return -EINVAL;
+>  
+> -		if (!of_flat_dt_is_compatible(rmem->fdt_node, compat))
+> -			continue;
+> +	prop = of_get_flat_dt_prop(node, "#address-cells", NULL);
+> +	if (!prop || be32_to_cpup(prop) != dt_root_addr_cells)
+> +		return -EINVAL;
+>  
+> -		ret = initfn(rmem);
+> -		if (ret == 0) {
+> -			pr_info("initialized node %s, compatible id %s\n",
+> -				rmem->name, compat);
+> -			break;
+> +	prop = of_get_flat_dt_prop(node, "ranges", NULL);
+> +	if (!prop)
+> +		return -EINVAL;
+> +	return 0;
+> +}
+> +
+> +/*
+> + * __reserved_mem_reserve_reg() - reserve all memory described in 'reg' property
+> + */
+> +static int __init __reserved_mem_reserve_reg(unsigned long node,
+> +					     const char *uname)
+> +{
+> +	int t_len = (dt_root_addr_cells + dt_root_size_cells) * sizeof(__be32);
+> +	phys_addr_t base, size;
+> +	int len;
+> +	const __be32 *prop;
+> +	int first = 1;
+> +	bool nomap;
+> +
+> +	prop = of_get_flat_dt_prop(node, "reg", &len);
+> +	if (!prop)
+> +		return -ENOENT;
+> +
+> +	if (len && len % t_len != 0) {
+> +		pr_err("Reserved memory: invalid reg property in '%s', skipping node.\n",
+> +		       uname);
+> +		return -EINVAL;
+> +	}
+> +
+> +	nomap = of_get_flat_dt_prop(node, "no-map", NULL) != NULL;
+> +
+> +	while (len >= t_len) {
+> +		base = dt_mem_next_cell(dt_root_addr_cells, &prop);
+> +		size = dt_mem_next_cell(dt_root_size_cells, &prop);
+> +
+> +		if (size &&
+> +		    early_init_dt_reserve_memory_arch(base, size, nomap) == 0)
+> +			pr_debug("Reserved memory: reserved region for node '%s': base %pa, size %lu MiB\n",
+> +				uname, &base, (unsigned long)(size / SZ_1M));
+> +		else
+> +			pr_info("Reserved memory: failed to reserve memory for node '%s': base %pa, size %lu MiB\n",
+> +				uname, &base, (unsigned long)(size / SZ_1M));
+> +
+> +		len -= t_len;
+> +		if (first) {
+> +			fdt_reserved_mem_save_node(node, uname, base, size);
+> +			first = 0;
+>  		}
+>  	}
+> -	return ret;
+> +	return 0;
+> +}
+> +
+> +/*
+> + * fdt_scan_reserved_mem() - scan a single FDT node for reserved memory
+> + */
+> +int __init fdt_scan_reserved_mem(void)
+> +{
+> +	int node, child;
+> +	const void *fdt = initial_boot_params;
+> +
+> +	node = fdt_path_offset(fdt, "/reserved-memory");
+> +	if (node < 0)
+> +		return -ENODEV;
+> +
+> +	if (__reserved_mem_check_root(node) != 0) {
+> +		pr_err("Reserved memory: unsupported node format, ignoring\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	fdt_for_each_subnode(child, fdt, node) {
+> +		const char *uname;
+> +		int err;
+> +
+> +		if (!of_fdt_device_is_available(fdt, child))
+> +			continue;
+> +
+> +		uname = fdt_get_name(fdt, child, NULL);
+> +
+> +		err = __reserved_mem_reserve_reg(child, uname);
+> +		if (err == -ENOENT && of_get_flat_dt_prop(child, "size", NULL))
+> +			fdt_reserved_mem_save_node(child, uname, 0, 0);
+> +	}
+> +	return 0;
+>  }
+>  
+>  static int __init __rmem_cmp(const void *a, const void *b)
+> @@ -228,13 +305,13 @@ static void __init __rmem_check_for_overlap(void)
+>  	if (reserved_mem_count < 2)
+>  		return;
+>  
+> -	sort(reserved_mem, reserved_mem_count, sizeof(reserved_mem[0]),
+> +	sort(reserved_mems, reserved_mem_count, sizeof(reserved_mems[0]),
+>  	     __rmem_cmp, NULL);
+>  	for (i = 0; i < reserved_mem_count - 1; i++) {
+>  		struct reserved_mem *this, *next;
+>  
+> -		this = &reserved_mem[i];
+> -		next = &reserved_mem[i + 1];
+> +		this = &reserved_mems[i];
+> +		next = &reserved_mems[i + 1];
+>  
+>  		if (this->base + this->size > next->base) {
+>  			phys_addr_t this_end, next_end;
+> @@ -248,10 +325,36 @@ static void __init __rmem_check_for_overlap(void)
+>  	}
+>  }
+>  
+> +/*
+> + * __reserved_mem_init_node() - call region specific reserved memory init code
+> + */
+> +static int __init __reserved_mem_init_node(struct reserved_mem *rmem)
+> +{
+> +	extern const struct of_device_id __reservedmem_of_table[];
+> +	const struct of_device_id *i;
+> +	int ret = -ENOENT;
+> +
+> +	for (i = __reservedmem_of_table; i < &__rmem_of_table_sentinel; i++) {
+> +		reservedmem_of_init_fn initfn = i->data;
+> +		const char *compat = i->compatible;
+> +
+> +		if (!of_flat_dt_is_compatible(rmem->fdt_node, compat))
+> +			continue;
+> +
+> +		ret = initfn(rmem);
+> +		if (ret == 0) {
+> +			pr_info("initialized node %s, compatible id %s\n",
+> +				rmem->name, compat);
+> +			break;
+> +		}
+> +	}
+> +	return ret;
+> +}
+> +
+>  /**
+> - * fdt_init_reserved_mem() - allocate and init all saved reserved memory regions
+> + * of_reserved_mem_init() - allocate and init all saved reserved memory regions
+>   */
+> -void __init fdt_init_reserved_mem(void)
+> +void __init of_reserved_mem_init(void)
+>  {
+>  	int i;
+>  
+> @@ -259,7 +362,7 @@ void __init fdt_init_reserved_mem(void)
+>  	__rmem_check_for_overlap();
+>  
+>  	for (i = 0; i < reserved_mem_count; i++) {
+> -		struct reserved_mem *rmem = &reserved_mem[i];
+> +		struct reserved_mem *rmem = &reserved_mems[i];
+>  		unsigned long node = rmem->fdt_node;
+>  		int len;
+>  		const __be32 *prop;
+> @@ -299,8 +402,8 @@ static inline struct reserved_mem *__find_rmem(struct device_node *node)
+>  		return NULL;
+>  
+>  	for (i = 0; i < reserved_mem_count; i++)
+> -		if (reserved_mem[i].phandle == node->phandle)
+> -			return &reserved_mem[i];
+> +		if (reserved_mems[i].phandle == node->phandle)
+> +			return &reserved_mems[i];
+>  	return NULL;
+>  }
+>  
+> @@ -442,8 +545,8 @@ struct reserved_mem *of_reserved_mem_lookup(struct device_node *np)
+>  
+>  	name = kbasename(np->full_name);
+>  	for (i = 0; i < reserved_mem_count; i++)
+> -		if (!strcmp(reserved_mem[i].name, name))
+> -			return &reserved_mem[i];
+> +		if (!strcmp(reserved_mems[i].name, name))
+> +			return &reserved_mems[i];
+>  
+>  	return NULL;
+>  }
+> diff --git a/include/linux/of_reserved_mem.h b/include/linux/of_reserved_mem.h
+> index 4de2a24cadc9..34e134bec606 100644
+> --- a/include/linux/of_reserved_mem.h
+> +++ b/include/linux/of_reserved_mem.h
+> @@ -32,6 +32,8 @@ typedef int (*reservedmem_of_init_fn)(struct reserved_mem *rmem);
+>  #define RESERVEDMEM_OF_DECLARE(name, compat, init)			\
+>  	_OF_DECLARE(reservedmem, name, compat, init, reservedmem_of_init_fn)
+>  
+> +void of_reserved_mem_init(void);
+> +
+>  int of_reserved_mem_device_init_by_idx(struct device *dev,
+>  				       struct device_node *np, int idx);
+>  int of_reserved_mem_device_init_by_name(struct device *dev,
+> @@ -45,6 +47,8 @@ struct reserved_mem *of_reserved_mem_lookup(struct device_node *np);
+>  #define RESERVEDMEM_OF_DECLARE(name, compat, init)			\
+>  	_OF_DECLARE_STUB(reservedmem, name, compat, init, reservedmem_of_init_fn)
+>  
+> +static inline void of_reserved_mem_init(void) { }
+> +
+>  static inline int of_reserved_mem_device_init_by_idx(struct device *dev,
+>  					struct device_node *np, int idx)
+>  {
+> -- 
+> 2.30.2
+> 
+> 
