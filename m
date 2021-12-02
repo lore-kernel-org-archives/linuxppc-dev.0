@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1D93C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Dec 2021 12:04:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEA48C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Dec 2021 12:04:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J4ZPS30Hlz3f0f
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Dec 2021 23:04:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J4ZPx3Jc1z3f54
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Dec 2021 23:04:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,52 +16,52 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J4ZL25Lv2z3c9T
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Dec 2021 23:01:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J4ZL669ZSz3cR0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Dec 2021 23:01:18 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4J4ZKT1WDCz9sSs;
- Thu,  2 Dec 2021 13:00:45 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4J4ZKV0k8Dz9sT3;
+ Thu,  2 Dec 2021 13:00:46 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id UTfZHapRIyB5; Thu,  2 Dec 2021 13:00:45 +0100 (CET)
+ with ESMTP id KoZyMEmFwKPV; Thu,  2 Dec 2021 13:00:46 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4J4ZKM1H09z9sT3;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4J4ZKM153wz9sSw;
  Thu,  2 Dec 2021 13:00:39 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 131E58B7C8;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0FD398B7C4;
  Thu,  2 Dec 2021 13:00:39 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id rqQ-ej2kdoAP; Thu,  2 Dec 2021 13:00:38 +0100 (CET)
+ with ESMTP id qNd-pJtiBJps; Thu,  2 Dec 2021 13:00:38 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.163])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 57CD18B7CC;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 54B2B8B7CB;
  Thu,  2 Dec 2021 13:00:38 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1B2C0V7I177257
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1B2C0Wbv177273
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Thu, 2 Dec 2021 13:00:31 +0100
+ Thu, 2 Dec 2021 13:00:32 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1B2C0Vti177256;
- Thu, 2 Dec 2021 13:00:31 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1B2C0WKb177272;
+ Thu, 2 Dec 2021 13:00:32 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v1 05/11] powerpc/code-patching: Reorganise
- do_patch_instruction() to ease error handling
-Date: Thu,  2 Dec 2021 13:00:21 +0100
-Message-Id: <dbc85980a0d2a935731b272e8907e8bb1d8fc8c5.1638446239.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 09/11] powerpc/code-patching: Move
+ instr_is_branch_{i/b}form() in code-patching.h
+Date: Thu,  2 Dec 2021 13:00:25 +0100
+Message-Id: <fca0f3b191211b3681020885a611bf73eef20563.1638446239.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <3ff9823c0a812a8a145d979a9600a6d4591b80ee.1638446239.git.christophe.leroy@csgroup.eu>
 References: <3ff9823c0a812a8a145d979a9600a6d4591b80ee.1638446239.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1638446425; l=2137; s=20211009;
- h=from:subject:message-id; bh=wwZgBZ4TyaaRC4WE1uUClwsvYY/KCs2dRTHFQ4EYX00=;
- b=9IIAm4Ce+/f05uvxzfBsrCseiULZgMDWC+9As5Lm9o69ZRJJYuP/KqP5p9rWwfTTtAGF/jl+A6QW
- eNBVqZP7AssQFhTXPhWPIdcuScbiXabRCl1filVCMXVMGFXwpuTP
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1638446425; l=2047; s=20211009;
+ h=from:subject:message-id; bh=wRDSISeicKDJX6JeNkgMtSJNyflikmT2k1wJ8bYmY5c=;
+ b=klC2D+6jP1pd2auvXwF/87IrfjkrJm4iCn1AgeBISGbBm1r0hSDajSW/4U8g2UD6YiKRM3T0YVa6
+ 9F3ciZiQC9WuRdwR4ViiW4MGVdF2ZmdR6oZl+Jr6FMJlued1jrdE
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -81,78 +81,68 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Split do_patch_instruction() in two functions, the caller doing the
-spin locking and the callee doing everything else.
-
-And remove a few unnecessary initialisations and intermediate
-variables.
-
-This allows the callee to return from anywhere in the function.
+To enable moving selftests in their own C file in following patch,
+move instr_is_branch_iform() and instr_is_branch_bform()
+to code-patching.h
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/lib/code-patching.c | 37 ++++++++++++++++++--------------
- 1 file changed, 21 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/code-patching.h | 15 +++++++++++++++
+ arch/powerpc/lib/code-patching.c         | 15 ---------------
+ 2 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 5fa719a4ee69..a43ca22313ee 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -129,13 +129,30 @@ static void unmap_patch_area(unsigned long addr)
- 	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+index 275061c3c977..e26080539c31 100644
+--- a/arch/powerpc/include/asm/code-patching.h
++++ b/arch/powerpc/include/asm/code-patching.h
+@@ -58,6 +58,21 @@ static inline int modify_instruction_site(s32 *site, unsigned int clr, unsigned
+ 	return modify_instruction((unsigned int *)patch_site_addr(site), clr, set);
  }
  
-+static int __do_patch_instruction(u32 *addr, ppc_inst_t instr)
++static inline unsigned int branch_opcode(ppc_inst_t instr)
 +{
-+	int err;
-+	u32 *patch_addr;
-+	unsigned long text_poke_addr;
-+
-+	text_poke_addr = (unsigned long)__this_cpu_read(text_poke_area)->addr;
-+	patch_addr = (u32 *)(text_poke_addr + offset_in_page(addr));
-+
-+	err = map_patch_area(addr, text_poke_addr);
-+	if (err)
-+		return err;
-+
-+	err = __patch_instruction(addr, instr, patch_addr);
-+
-+	unmap_patch_area(text_poke_addr);
-+
-+	return err;
++	return ppc_inst_primary_opcode(instr) & 0x3F;
 +}
 +
- static int do_patch_instruction(u32 *addr, ppc_inst_t instr)
++static inline int instr_is_branch_iform(ppc_inst_t instr)
++{
++	return branch_opcode(instr) == 18;
++}
++
++static inline int instr_is_branch_bform(ppc_inst_t instr)
++{
++	return branch_opcode(instr) == 16;
++}
++
+ int instr_is_relative_branch(ppc_inst_t instr);
+ int instr_is_relative_link_branch(ppc_inst_t instr);
+ unsigned long branch_target(const u32 *instr);
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 17e6443eb6c8..e07de5db06c0 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -285,21 +285,6 @@ int create_cond_branch(ppc_inst_t *instr, const u32 *addr,
+ 	return 0;
+ }
+ 
+-static unsigned int branch_opcode(ppc_inst_t instr)
+-{
+-	return ppc_inst_primary_opcode(instr) & 0x3F;
+-}
+-
+-static int instr_is_branch_iform(ppc_inst_t instr)
+-{
+-	return branch_opcode(instr) == 18;
+-}
+-
+-static int instr_is_branch_bform(ppc_inst_t instr)
+-{
+-	return branch_opcode(instr) == 16;
+-}
+-
+ int instr_is_relative_branch(ppc_inst_t instr)
  {
- 	int err;
--	u32 *patch_addr = NULL;
- 	unsigned long flags;
--	unsigned long text_poke_addr;
--	unsigned long kaddr = (unsigned long)addr;
- 
- 	/*
- 	 * During early early boot patch_instruction is called
-@@ -146,19 +163,7 @@ static int do_patch_instruction(u32 *addr, ppc_inst_t instr)
- 		return raw_patch_instruction(addr, instr);
- 
- 	local_irq_save(flags);
--
--	text_poke_addr = (unsigned long)__this_cpu_read(text_poke_area)->addr;
--	err = map_patch_area(addr, text_poke_addr);
--	if (err)
--		goto out;
--
--	patch_addr = (u32 *)(text_poke_addr + (kaddr & ~PAGE_MASK));
--
--	err = __patch_instruction(addr, instr, patch_addr);
--
--	unmap_patch_area(text_poke_addr);
--
--out:
-+	err = __do_patch_instruction(addr, instr);
- 	local_irq_restore(flags);
- 
- 	return err;
+ 	if (ppc_inst_val(instr) & BRANCH_ABSOLUTE)
 -- 
 2.33.1
 
