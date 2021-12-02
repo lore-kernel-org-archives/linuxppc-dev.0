@@ -4,49 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BFECC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Dec 2021 09:35:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C8C1C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Dec 2021 12:01:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J4W6C5dzxz3cN6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Dec 2021 20:35:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J4ZL02T5Nz3cQN
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Dec 2021 23:01:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=mga12.intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
- envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J4W5m0PTpz2yHS
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Dec 2021 20:35:22 +1100 (AEDT)
-X-IronPort-AV: E=McAfee;i="6200,9189,10185"; a="216686970"
-X-IronPort-AV: E=Sophos;i="5.87,281,1631602800"; d="scan'208";a="216686970"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Dec 2021 01:34:20 -0800
-X-IronPort-AV: E=Sophos;i="5.87,281,1631602800"; d="scan'208";a="477858873"
-Received: from smile.fi.intel.com ([10.237.72.184])
- by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Dec 2021 01:34:18 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.95)
- (envelope-from <andriy.shevchenko@linux.intel.com>)
- id 1msiSp-001LGD-5E; Thu, 02 Dec 2021 11:33:15 +0200
-Date: Thu, 2 Dec 2021 11:33:14 +0200
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Li Yang <leoyang.li@nxp.com>
-Subject: Re: [PATCH v2 3/3] soc: fsl: Replace kernel.h with the necessary
- inclusions
-Message-ID: <YaiS2iHCrGkXgTdX@smile.fi.intel.com>
-References: <20211110105952.62013-1-andriy.shevchenko@linux.intel.com>
- <20211110105952.62013-3-andriy.shevchenko@linux.intel.com>
- <YZJExzxJ4j8g6jEY@smile.fi.intel.com>
- <AS8PR04MB8946B4800AE34258F7F2BA688F989@AS8PR04MB8946.eurprd04.prod.outlook.com>
- <YZN7+UlXtJi8/i1L@smile.fi.intel.com>
- <YZ0WlMyS36Gj565C@smile.fi.intel.com>
- <CADRPPNT3yhr3jAPZm=hcON3nd97eLSrkWqFBV6kh6W5gf0w3Xg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J4ZKV1ytGz2yb3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Dec 2021 23:00:43 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4J4ZKL6DJgz9sSX;
+ Thu,  2 Dec 2021 13:00:38 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id zIl2SpClUTkL; Thu,  2 Dec 2021 13:00:38 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4J4ZKL4wH9z9sSM;
+ Thu,  2 Dec 2021 13:00:38 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 993858B7CF;
+ Thu,  2 Dec 2021 13:00:38 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id EeCYdGBNA92H; Thu,  2 Dec 2021 13:00:38 +0100 (CET)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.163])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3CD4F8B7BB;
+ Thu,  2 Dec 2021 13:00:38 +0100 (CET)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 1B2C0WXU177281
+ (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+ Thu, 2 Dec 2021 13:00:32 +0100
+Received: (from chleroy@localhost)
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 1B2C0Wwe177280;
+ Thu, 2 Dec 2021 13:00:32 +0100
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
+ christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v1 11/11] powerpc/code-patching: Replace patch_instruction()
+ by ppc_inst_write() in selftests
+Date: Thu,  2 Dec 2021 13:00:27 +0100
+Message-Id: <7cf5335cc07ca9b6f8cdaa20ca9887fce4df3bea.1638446239.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.33.1
+In-Reply-To: <3ff9823c0a812a8a145d979a9600a6d4591b80ee.1638446239.git.christophe.leroy@csgroup.eu>
+References: <3ff9823c0a812a8a145d979a9600a6d4591b80ee.1638446239.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CADRPPNT3yhr3jAPZm=hcON3nd97eLSrkWqFBV6kh6W5gf0w3Xg@mail.gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1638446425; l=11271; s=20211009;
+ h=from:subject:message-id; bh=eu/UtozL+LWI/F74I45fXXFSZD9lrFw/4yGMAolwIg8=;
+ b=cMdwc1hcB5y/l893DJAdvXEDP13cSut0Mtia553m7kg4EvZAEPE4P7Wb7W/6oDr9hQdUYbtncuPb
+ 0kjkOW/kDayMwJnDxVFFWxyqNpBprOOep6PrKTfiycw6lDMFdJDM
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
+ pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,51 +76,304 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Qiang Zhao <qiang.zhao@nxp.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 01, 2021 at 01:41:16PM -0600, Li Yang wrote:
-> On Tue, Nov 23, 2021 at 10:32 AM Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> wrote:
-> >
-> > On Tue, Nov 16, 2021 at 11:38:01AM +0200, Andy Shevchenko wrote:
-> > > On Mon, Nov 15, 2021 at 10:24:36PM +0000, Leo Li wrote:
-> > > > > From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > > > > Sent: Monday, November 15, 2021 5:30 AM
-> > > > > On Wed, Nov 10, 2021 at 12:59:52PM +0200, Andy Shevchenko wrote:
-> > >
-> > > ...
-> > >
-> > > > > > v2: updated Cc list based on previous changes to MAINTAINERS
-> > > > >
-> > > > > Any comments on this, please?
-> > > > >
-> > > > > I really want to decrease amount of kernel.h usage in the common headers.
-> > > > > So others won't copy'n'paste bad example.
-> > > >
-> > > > There seems to be no problem with the patch although I didn't get time to really compile with it applied.
-> > > >
-> > > > Will pick them up later after build test.
-> > >
-> > > Thank you!
-> > >
-> > > Note, it has two fixes against MAINTAINERS which may be sent, I believe,
-> > > sooner than later to Linus.
-> >
-> > Any new so far?
-> 
-> The build test is good.  I have applied it for next.  Thanks.
+The purpose of selftests is to check that instructions are
+properly formed. Not to check that they properly run.
 
-Thanks, what about MAINTAINERS updates? I don't see them neither in next nor in
-your tree.
+For that test it uses normal memory, not special test
+memory.
 
+In preparation of a future patch enforcing patch_instruction()
+to be used only on valid text areas, implement a ppc_inst_write()
+instruction which is the complement of ppc_inst_read(). This
+new function writes the formated instruction in valid kernel
+memory and doesn't bother about icache.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/inst.h       |  8 +++
+ arch/powerpc/lib/test-code-patching.c | 85 ++++++++++++++-------------
+ 2 files changed, 53 insertions(+), 40 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
+index 631436f3f5c3..21fe8594e078 100644
+--- a/arch/powerpc/include/asm/inst.h
++++ b/arch/powerpc/include/asm/inst.h
+@@ -131,6 +131,14 @@ static inline unsigned long ppc_inst_as_ulong(ppc_inst_t x)
+ 		return (u64)ppc_inst_val(x) << 32 | ppc_inst_suffix(x);
+ }
+ 
++static inline void ppc_inst_write(u32 *ptr, ppc_inst_t x)
++{
++	if (!ppc_inst_prefixed(x))
++		*ptr = ppc_inst_val(x);
++	else
++		*(u64 *)ptr = ppc_inst_as_ulong(x);
++}
++
+ #define PPC_INST_STR_LEN sizeof("00000000 00000000")
+ 
+ static inline char *__ppc_inst_as_str(char str[PPC_INST_STR_LEN], ppc_inst_t x)
+diff --git a/arch/powerpc/lib/test-code-patching.c b/arch/powerpc/lib/test-code-patching.c
+index e358c9d8a03e..c44823292f73 100644
+--- a/arch/powerpc/lib/test-code-patching.c
++++ b/arch/powerpc/lib/test-code-patching.c
+@@ -54,39 +54,39 @@ static void __init test_branch_iform(void)
+ 	check(!instr_is_branch_iform(ppc_inst(0x7bfffffd)));
+ 
+ 	/* Absolute branch to 0x100 */
+-	patch_instruction(iptr, ppc_inst(0x48000103));
++	ppc_inst_write(iptr, ppc_inst(0x48000103));
+ 	check(instr_is_branch_to_addr(iptr, 0x100));
+ 	/* Absolute branch to 0x420fc */
+-	patch_instruction(iptr, ppc_inst(0x480420ff));
++	ppc_inst_write(iptr, ppc_inst(0x480420ff));
+ 	check(instr_is_branch_to_addr(iptr, 0x420fc));
+ 	/* Maximum positive relative branch, + 20MB - 4B */
+-	patch_instruction(iptr, ppc_inst(0x49fffffc));
++	ppc_inst_write(iptr, ppc_inst(0x49fffffc));
+ 	check(instr_is_branch_to_addr(iptr, addr + 0x1FFFFFC));
+ 	/* Smallest negative relative branch, - 4B */
+-	patch_instruction(iptr, ppc_inst(0x4bfffffc));
++	ppc_inst_write(iptr, ppc_inst(0x4bfffffc));
+ 	check(instr_is_branch_to_addr(iptr, addr - 4));
+ 	/* Largest negative relative branch, - 32 MB */
+-	patch_instruction(iptr, ppc_inst(0x4a000000));
++	ppc_inst_write(iptr, ppc_inst(0x4a000000));
+ 	check(instr_is_branch_to_addr(iptr, addr - 0x2000000));
+ 
+ 	/* Branch to self, with link */
+ 	err = create_branch(&instr, iptr, addr, BRANCH_SET_LINK);
+-	patch_instruction(iptr, instr);
++	ppc_inst_write(iptr, instr);
+ 	check(instr_is_branch_to_addr(iptr, addr));
+ 
+ 	/* Branch to self - 0x100, with link */
+ 	err = create_branch(&instr, iptr, addr - 0x100, BRANCH_SET_LINK);
+-	patch_instruction(iptr, instr);
++	ppc_inst_write(iptr, instr);
+ 	check(instr_is_branch_to_addr(iptr, addr - 0x100));
+ 
+ 	/* Branch to self + 0x100, no link */
+ 	err = create_branch(&instr, iptr, addr + 0x100, 0);
+-	patch_instruction(iptr, instr);
++	ppc_inst_write(iptr, instr);
+ 	check(instr_is_branch_to_addr(iptr, addr + 0x100));
+ 
+ 	/* Maximum relative negative offset, - 32 MB */
+ 	err = create_branch(&instr, iptr, addr - 0x2000000, BRANCH_SET_LINK);
+-	patch_instruction(iptr, instr);
++	ppc_inst_write(iptr, instr);
+ 	check(instr_is_branch_to_addr(iptr, addr - 0x2000000));
+ 
+ 	/* Out of range relative negative offset, - 32 MB + 4*/
+@@ -103,7 +103,7 @@ static void __init test_branch_iform(void)
+ 
+ 	/* Check flags are masked correctly */
+ 	err = create_branch(&instr, iptr, addr, 0xFFFFFFFC);
+-	patch_instruction(iptr, instr);
++	ppc_inst_write(iptr, instr);
+ 	check(instr_is_branch_to_addr(iptr, addr));
+ 	check(ppc_inst_equal(instr, ppc_inst(0x48000000)));
+ }
+@@ -143,19 +143,19 @@ static void __init test_branch_bform(void)
+ 	check(!instr_is_branch_bform(ppc_inst(0x7bffffff)));
+ 
+ 	/* Absolute conditional branch to 0x100 */
+-	patch_instruction(iptr, ppc_inst(0x43ff0103));
++	ppc_inst_write(iptr, ppc_inst(0x43ff0103));
+ 	check(instr_is_branch_to_addr(iptr, 0x100));
+ 	/* Absolute conditional branch to 0x20fc */
+-	patch_instruction(iptr, ppc_inst(0x43ff20ff));
++	ppc_inst_write(iptr, ppc_inst(0x43ff20ff));
+ 	check(instr_is_branch_to_addr(iptr, 0x20fc));
+ 	/* Maximum positive relative conditional branch, + 32 KB - 4B */
+-	patch_instruction(iptr, ppc_inst(0x43ff7ffc));
++	ppc_inst_write(iptr, ppc_inst(0x43ff7ffc));
+ 	check(instr_is_branch_to_addr(iptr, addr + 0x7FFC));
+ 	/* Smallest negative relative conditional branch, - 4B */
+-	patch_instruction(iptr, ppc_inst(0x43fffffc));
++	ppc_inst_write(iptr, ppc_inst(0x43fffffc));
+ 	check(instr_is_branch_to_addr(iptr, addr - 4));
+ 	/* Largest negative relative conditional branch, - 32 KB */
+-	patch_instruction(iptr, ppc_inst(0x43ff8000));
++	ppc_inst_write(iptr, ppc_inst(0x43ff8000));
+ 	check(instr_is_branch_to_addr(iptr, addr - 0x8000));
+ 
+ 	/* All condition code bits set & link */
+@@ -163,22 +163,22 @@ static void __init test_branch_bform(void)
+ 
+ 	/* Branch to self */
+ 	err = create_cond_branch(&instr, iptr, addr, flags);
+-	patch_instruction(iptr, instr);
++	ppc_inst_write(iptr, instr);
+ 	check(instr_is_branch_to_addr(iptr, addr));
+ 
+ 	/* Branch to self - 0x100 */
+ 	err = create_cond_branch(&instr, iptr, addr - 0x100, flags);
+-	patch_instruction(iptr, instr);
++	ppc_inst_write(iptr, instr);
+ 	check(instr_is_branch_to_addr(iptr, addr - 0x100));
+ 
+ 	/* Branch to self + 0x100 */
+ 	err = create_cond_branch(&instr, iptr, addr + 0x100, flags);
+-	patch_instruction(iptr, instr);
++	ppc_inst_write(iptr, instr);
+ 	check(instr_is_branch_to_addr(iptr, addr + 0x100));
+ 
+ 	/* Maximum relative negative offset, - 32 KB */
+ 	err = create_cond_branch(&instr, iptr, addr - 0x8000, flags);
+-	patch_instruction(iptr, instr);
++	ppc_inst_write(iptr, instr);
+ 	check(instr_is_branch_to_addr(iptr, addr - 0x8000));
+ 
+ 	/* Out of range relative negative offset, - 32 KB + 4*/
+@@ -195,7 +195,7 @@ static void __init test_branch_bform(void)
+ 
+ 	/* Check flags are masked correctly */
+ 	err = create_cond_branch(&instr, iptr, addr, 0xFFFFFFFC);
+-	patch_instruction(iptr, instr);
++	ppc_inst_write(iptr, instr);
+ 	check(instr_is_branch_to_addr(iptr, addr));
+ 	check(ppc_inst_equal(instr, ppc_inst(0x43FF0000)));
+ }
+@@ -215,20 +215,22 @@ static void __init test_translate_branch(void)
+ 	/* Simple case, branch to self moved a little */
+ 	p = buf;
+ 	addr = (unsigned long)p;
+-	patch_branch(p, addr, 0);
++	create_branch(&instr, p, addr, 0);
++	ppc_inst_write(p, instr);
+ 	check(instr_is_branch_to_addr(p, addr));
+ 	q = p + 4;
+ 	translate_branch(&instr, q, p);
+-	patch_instruction(q, instr);
++	ppc_inst_write(q, instr);
+ 	check(instr_is_branch_to_addr(q, addr));
+ 
+ 	/* Maximum negative case, move b . to addr + 32 MB */
+ 	p = buf;
+ 	addr = (unsigned long)p;
+-	patch_branch(p, addr, 0);
++	create_branch(&instr, p, addr, 0);
++	ppc_inst_write(p, instr);
+ 	q = buf + 0x2000000;
+ 	translate_branch(&instr, q, p);
+-	patch_instruction(q, instr);
++	ppc_inst_write(q, instr);
+ 	check(instr_is_branch_to_addr(p, addr));
+ 	check(instr_is_branch_to_addr(q, addr));
+ 	check(ppc_inst_equal(ppc_inst_read(q), ppc_inst(0x4a000000)));
+@@ -236,10 +238,11 @@ static void __init test_translate_branch(void)
+ 	/* Maximum positive case, move x to x - 32 MB + 4 */
+ 	p = buf + 0x2000000;
+ 	addr = (unsigned long)p;
+-	patch_branch(p, addr, 0);
++	create_branch(&instr, p, addr, 0);
++	ppc_inst_write(p, instr);
+ 	q = buf + 4;
+ 	translate_branch(&instr, q, p);
+-	patch_instruction(q, instr);
++	ppc_inst_write(q, instr);
+ 	check(instr_is_branch_to_addr(p, addr));
+ 	check(instr_is_branch_to_addr(q, addr));
+ 	check(ppc_inst_equal(ppc_inst_read(q), ppc_inst(0x49fffffc)));
+@@ -247,20 +250,22 @@ static void __init test_translate_branch(void)
+ 	/* Jump to x + 16 MB moved to x + 20 MB */
+ 	p = buf;
+ 	addr = 0x1000000 + (unsigned long)buf;
+-	patch_branch(p, addr, BRANCH_SET_LINK);
++	create_branch(&instr, p, addr, BRANCH_SET_LINK);
++	ppc_inst_write(p, instr);
+ 	q = buf + 0x1400000;
+ 	translate_branch(&instr, q, p);
+-	patch_instruction(q, instr);
++	ppc_inst_write(q, instr);
+ 	check(instr_is_branch_to_addr(p, addr));
+ 	check(instr_is_branch_to_addr(q, addr));
+ 
+ 	/* Jump to x + 16 MB moved to x - 16 MB + 4 */
+ 	p = buf + 0x1000000;
+ 	addr = 0x2000000 + (unsigned long)buf;
+-	patch_branch(p, addr, 0);
++	create_branch(&instr, p, addr, 0);
++	ppc_inst_write(p, instr);
+ 	q = buf + 4;
+ 	translate_branch(&instr, q, p);
+-	patch_instruction(q, instr);
++	ppc_inst_write(q, instr);
+ 	check(instr_is_branch_to_addr(p, addr));
+ 	check(instr_is_branch_to_addr(q, addr));
+ 
+@@ -271,21 +276,21 @@ static void __init test_translate_branch(void)
+ 	p = buf;
+ 	addr = (unsigned long)p;
+ 	create_cond_branch(&instr, p, addr, 0);
+-	patch_instruction(p, instr);
++	ppc_inst_write(p, instr);
+ 	check(instr_is_branch_to_addr(p, addr));
+ 	q = buf + 4;
+ 	translate_branch(&instr, q, p);
+-	patch_instruction(q, instr);
++	ppc_inst_write(q, instr);
+ 	check(instr_is_branch_to_addr(q, addr));
+ 
+ 	/* Maximum negative case, move b . to addr + 32 KB */
+ 	p = buf;
+ 	addr = (unsigned long)p;
+ 	create_cond_branch(&instr, p, addr, 0xFFFFFFFC);
+-	patch_instruction(p, instr);
++	ppc_inst_write(p, instr);
+ 	q = buf + 0x8000;
+ 	translate_branch(&instr, q, p);
+-	patch_instruction(q, instr);
++	ppc_inst_write(q, instr);
+ 	check(instr_is_branch_to_addr(p, addr));
+ 	check(instr_is_branch_to_addr(q, addr));
+ 	check(ppc_inst_equal(ppc_inst_read(q), ppc_inst(0x43ff8000)));
+@@ -294,10 +299,10 @@ static void __init test_translate_branch(void)
+ 	p = buf + 0x8000;
+ 	addr = (unsigned long)p;
+ 	create_cond_branch(&instr, p, addr, 0xFFFFFFFC);
+-	patch_instruction(p, instr);
++	ppc_inst_write(p, instr);
+ 	q = buf + 4;
+ 	translate_branch(&instr, q, p);
+-	patch_instruction(q, instr);
++	ppc_inst_write(q, instr);
+ 	check(instr_is_branch_to_addr(p, addr));
+ 	check(instr_is_branch_to_addr(q, addr));
+ 	check(ppc_inst_equal(ppc_inst_read(q), ppc_inst(0x43ff7ffc)));
+@@ -306,10 +311,10 @@ static void __init test_translate_branch(void)
+ 	p = buf;
+ 	addr = 0x3000 + (unsigned long)buf;
+ 	create_cond_branch(&instr, p, addr, BRANCH_SET_LINK);
+-	patch_instruction(p, instr);
++	ppc_inst_write(p, instr);
+ 	q = buf + 0x5000;
+ 	translate_branch(&instr, q, p);
+-	patch_instruction(q, instr);
++	ppc_inst_write(q, instr);
+ 	check(instr_is_branch_to_addr(p, addr));
+ 	check(instr_is_branch_to_addr(q, addr));
+ 
+@@ -317,10 +322,10 @@ static void __init test_translate_branch(void)
+ 	p = buf + 0x2000;
+ 	addr = 0x4000 + (unsigned long)buf;
+ 	create_cond_branch(&instr, p, addr, 0);
+-	patch_instruction(p, instr);
++	ppc_inst_write(p, instr);
+ 	q = buf + 4;
+ 	translate_branch(&instr, q, p);
+-	patch_instruction(q, instr);
++	ppc_inst_write(q, instr);
+ 	check(instr_is_branch_to_addr(p, addr));
+ 	check(instr_is_branch_to_addr(q, addr));
+ 
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.33.1
 
