@@ -4,50 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF5B7C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Dec 2021 01:12:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26DCDC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Dec 2021 02:21:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J4vtf1SG5z3cHP
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Dec 2021 12:12:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J4xR61Lh5z3bnJ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Dec 2021 13:21:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=j/t8FbUT;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Nqidfk5T;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J4vsw3Nysz2yJv
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Dec 2021 12:11:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=j/t8FbUT; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4J4vsv3CSNz4xbC;
- Fri,  3 Dec 2021 12:11:31 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1638493891;
- bh=+JylP2RVIbtJzYpK2ZtaZSsm+v7AMw7cQapVbRNSwI8=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=j/t8FbUTVygIvVEoxzzZeVOIlusztuSn4HuxDqsS5CfLp5BE/rNBKoWcnGHmhPitv
- PzUTw22HhaYWs+WvRmGOXGuScXvgCT3wxz6PIV4ZAjlb8kRYnDCZKhmuQW3vM3TeSi
- nIz+9c9qz9/3zi1SF13P9qFNiJIWHQqMSGAQnj272Jkd/hMLVJQQTDguqSFB2aQmWj
- QZp81bpe2lrteGS8N190rWVOJU3dCiIKDgqeB16b+oM2pmF17lblSKI/ydd7qxTCNM
- kOsh7WJS7l225DTMkC6wTJh7ppHqwW1i1WX+A60L+imI6V/Xhbm2ecGQnWdX3d9ZDu
- CnBhtLuPtJOLA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH] of: unmap memory regions in /memreserve node
-In-Reply-To: <YaiRAD40xCK7u3Hl@FVFF77S0Q05N>
-References: <20211124133347.3861391-1-calvinzhang.cool@gmail.com>
- <YaapE8oys5zQEdD5@robh.at.kernel.org> <YaiRAD40xCK7u3Hl@FVFF77S0Q05N>
-Date: Fri, 03 Dec 2021 12:11:26 +1100
-Message-ID: <874k7qpk5d.fsf@mpe.ellerman.id.au>
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=Nqidfk5T; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J4xQD3s3Wz2ynk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Dec 2021 13:21:07 +1100 (AEDT)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1B31Idpk033995; 
+ Fri, 3 Dec 2021 02:20:58 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=yaixhyjv29iIVGHfr1cMju6oywxs6+Q44ihuiU5tfQc=;
+ b=Nqidfk5TWM0xYCe9yf4XXJmHn9TPxvmvK3Ff1jC9sUfQ0XTJTFBjcVF1Kk+BCSME/6z7
+ GklJxIGubu0JoS7gqZRGZs5l145SbVjXP4zgKbvQDz+vhuqWbvmIjONo3HwIpqNKTYGE
+ sNFO6PxZmZ7aRf+e+u5YddHidyHyDRUtjAjSX2hEAEp1p6locE7gtfE7atkssF6TglzX
+ qTkBAGCXBNefNsgEI9RMwmzQ2r0dQn0vMFec4rBIrwY0C8pRPBzj/sAW0alJrByS9RB8
+ wQPcVhimlBpWQdRwn0ejK/3fonzk8HUQF4ik3LCWRs62MWEOsYbC+J2EiP+ydvdhzQQx Pw== 
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.71])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3cq9eu8wgf-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 03 Dec 2021 02:20:58 +0000
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+ by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1B32IYuN005668;
+ Fri, 3 Dec 2021 02:20:56 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma02fra.de.ibm.com with ESMTP id 3ckcaapr27-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 03 Dec 2021 02:20:56 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 1B32DMkV28901692
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 3 Dec 2021 02:13:22 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E3D3F11C054;
+ Fri,  3 Dec 2021 02:20:52 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8AFEC11C05E;
+ Fri,  3 Dec 2021 02:20:48 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.211.109.106])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri,  3 Dec 2021 02:20:48 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org
+Subject: [PATCH V2 2/2] tools/perf: Update global/local variants for
+ p_stage_cyc in powerpc
+Date: Fri,  3 Dec 2021 07:50:38 +0530
+Message-Id: <20211203022038.48240-2-atrajeev@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20211203022038.48240-1-atrajeev@linux.vnet.ibm.com>
+References: <20211203022038.48240-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: P3ZaHHjRHbE67_r3-2YGURwRPidryqdI
+X-Proofpoint-ORIG-GUID: P3ZaHHjRHbE67_r3-2YGURwRPidryqdI
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2021-12-02_16,2021-12-02_01,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 adultscore=0
+ lowpriorityscore=0 bulkscore=0 phishscore=0 clxscore=1015 spamscore=0
+ priorityscore=1501 mlxscore=0 mlxlogscore=999 impostorscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2110150000 definitions=main-2112030012
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,62 +100,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Frank Rowand <frowand.list@gmail.com>,
- Calvin Zhang <calvinzhang.cool@gmail.com>, linux-kernel@vger.kernel.org
+Cc: maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com,
+ linux-perf-users@vger.kernel.org, kjain@linux.ibm.com, namhyung@kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mark Rutland <mark.rutland@arm.com> writes:
-> On Tue, Nov 30, 2021 at 04:43:31PM -0600, Rob Herring wrote:
->> +linuxppc-dev
+Update the arch_support_sort_key() function in powerpc
+to enable presenting local and global variants of sort
+key: p_stage_cyc. Update the "se_header" strings for
+these in arch_perf_header_entry() function along with
+instruction latency.
+
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Reported-by: Namhyung Kim <namhyung@kernel.org>
+---
+ tools/perf/arch/powerpc/util/event.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/tools/perf/arch/powerpc/util/event.c b/tools/perf/arch/powerpc/util/event.c
+index 3bf441257466..cf430a4c55b9 100644
+--- a/tools/perf/arch/powerpc/util/event.c
++++ b/tools/perf/arch/powerpc/util/event.c
+@@ -40,8 +40,12 @@ const char *arch_perf_header_entry(const char *se_header)
+ {
+ 	if (!strcmp(se_header, "Local INSTR Latency"))
+ 		return "Finish Cyc";
+-	else if (!strcmp(se_header, "Pipeline Stage Cycle"))
++	else if (!strcmp(se_header, "INSTR Latency"))
++		return "Global Finish_cyc";
++	else if (!strcmp(se_header, "Local Pipeline Stage Cycle"))
+ 		return "Dispatch Cyc";
++	else if (!strcmp(se_header, "Pipeline Stage Cycle"))
++		return "Global Dispatch_cyc";
+ 	return se_header;
+ }
  
-Sorry missed this until now ...
+@@ -49,5 +53,7 @@ int arch_support_sort_key(const char *sort_key)
+ {
+ 	if (!strcmp(sort_key, "p_stage_cyc"))
+ 		return 1;
++	if (!strcmp(sort_key, "local_p_stage_cyc"))
++		return 1;
+ 	return 0;
+ }
+-- 
+2.33.0
 
->> On Wed, Nov 24, 2021 at 09:33:47PM +0800, Calvin Zhang wrote:
->> > Reserved memory regions in /memreserve node aren't and shouldn't
->> > be referenced elsewhere. So mark them no-map to skip direct mapping
->> > for them.
->> 
->> I suspect this has a high chance of breaking some platform. There's no 
->> rule a region can't be accessed.
->
-> The subtlety is that the region shouldn't be explicitly accessed (e.g.
-> modified),
-
-I think "modified" is the key there, reserved means Linux doesn't use
-the range for its own data, but may still read from whatever is in the
-range.
-
-On some platforms the initrd will be marked as reserved, which Linux
-obviously needs to read from.
-
-> but the OS is permitted to have the region mapped. In ePAPR this is
-> described as:
->
->    This requirement is necessary because the client program is permitted to map
->    memory with storage attributes specified as not Write Through Required, not
->    Caching Inhibited, and Memory Coherence Required (i.e., WIMG = 0b001x), and
->    VLE=0 where supported. The client program may use large virtual pages that
->    contain reserved memory. However, the client program may not modify reserved
->    memory, so the boot program may perform accesses to reserved memory as Write
->    Through Required where conflicting values for this storage attribute are
->    architecturally permissible.
->
-> Historically arm64 relied upon this for spin-table to work, and I *think* we
-> might not need that any more I agree that there's a high chance this will break
-> something (especially on 16K or 64K page size kernels), so I'd prefer to leave
-> it as-is.
-
-Yeah I agree. On powerpc we still use large pages for the linear mapping
-(direct map), so reserved regions will be incidentally mapped as
-described above.
-
-> If someone requires no-map behaviour, they should use a /reserved-memory entry
-> with a no-map property, which will work today and document their requirement
-> explicitly.
-
-+1.
-
-cheers
