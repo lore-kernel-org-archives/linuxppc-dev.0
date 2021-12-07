@@ -4,52 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53021C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Dec 2021 13:01:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C5A9C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Dec 2021 13:06:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J7gQh6W7Sz2yn2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Dec 2021 00:01:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J7gY860wyz3c8x
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Dec 2021 00:06:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Hj2icwL+;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
- [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=217.72.192.73; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J7gPz5ZnFz2x9W
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2021 00:00:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=Hj2icwL+; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4J7gPz281fz4xYy;
- Wed,  8 Dec 2021 00:00:23 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1638882023;
- bh=EEXHaA1s4zOx91lNyu76SR/+DGlGotoLakXn+wokueA=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=Hj2icwL+aOphUgAmLCQKTzLnJhDza6UQgt4WPT3aksSm4+xYf8lF3jO4Q/aqU7lPG
- LNFXBp1WfllODi+4DgX0zl1z/xbKYTds2mQNZcEnxQtR82IyzTHbQvDkmZcUf6tXzs
- 7Eb5tSHLxHotECA0XZGOo7mwdKkmqRliHq9N1RAqk4eV36U5OhbwFsxqWIJDwb6UwO
- 3y7c7hybv6qJTmxcPWNx/Ni0oAEWePsLaKpkoCTCjMSYRGwQ8BGCEwqDdLK98jCTa6
- SA0ZVxgExHUWiIMCN+3yx9IeJaSUN/O2JdkIYOYAaw62ALF9yidDnUrxFA04qHQlYf
- z9SQdx//EwV7A==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v6 17/18] powerpc/64s: Move hash MMU support code under
- CONFIG_PPC_64S_HASH_MMU
-In-Reply-To: <20211201144153.2456614-18-npiggin@gmail.com>
-References: <20211201144153.2456614-1-npiggin@gmail.com>
- <20211201144153.2456614-18-npiggin@gmail.com>
-Date: Wed, 08 Dec 2021 00:00:22 +1100
-Message-ID: <87czm8o9i1.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J7gXf6Ltqz2xXy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2021 00:06:10 +1100 (AEDT)
+Received: from mail-wr1-f47.google.com ([209.85.221.47]) by
+ mrelayeu.kundenserver.de (mreue106 [213.165.67.113]) with ESMTPSA (Nemesis)
+ id 1MVMNF-1n1QH016M3-00SRyH for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Dec
+ 2021 14:00:57 +0100
+Received: by mail-wr1-f47.google.com with SMTP id o13so29246579wrs.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Dec 2021 05:00:56 -0800 (PST)
+X-Gm-Message-State: AOAM531Lbg+xCbu8z9/UR/Gp1ECdCO30AQLxfzb14cfaqDPaAN06C/h0
+ 1p21D1oLdyM0U81utrabrmunvJsddSLDcixMML4=
+X-Google-Smtp-Source: ABdhPJxPTZb1NEgHTgiRZ5k7TV56wTLpaTAV0tigTfyAj6yjgVEdlWqbHmbxec81GQE5rsfdo8Evow6Ud4USOVQhzcM=
+X-Received: by 2002:a5d:4107:: with SMTP id l7mr50868012wrp.209.1638882056495; 
+ Tue, 07 Dec 2021 05:00:56 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <20211207110228.698956-1-anders.roxell@linaro.org>
+In-Reply-To: <20211207110228.698956-1-anders.roxell@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 7 Dec 2021 14:00:40 +0100
+X-Gmail-Original-Message-ID: <CAK8P3a2xJJutbwujzh57QqEAgOUwBz5aT78ZFsSam7TfZuQ_Dg@mail.gmail.com>
+Message-ID: <CAK8P3a2xJJutbwujzh57QqEAgOUwBz5aT78ZFsSam7TfZuQ_Dg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: platforms: cell: pervasive: fix clang
+ -Wimplicit-fallthrough
+To: Anders Roxell <anders.roxell@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:hEF2dA95KtrAXYgxX9iHiiiPc2TzE9uJKkEfm5eeut2yNnh/fyN
+ W5U0AkqB/TTGQbxBqdlCj8D8qN/VwUf74qRQ+fCym3dh3eLoErSjAoH2VQLr31xE16l0WDa
+ zaG0WE5Ssm5mp50anLcICBOKWsd9gOIvHMNQTKYuAc6AmfR+ImnXYxJ1aMd8vF4dIRIeyrn
+ FqVXBgnNRmZINuIEvrW0g==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:MvIe23BErLc=:nP4v4ZXVOlMTfuArqad779
+ W7EuFwMD6FUACy67qMatJL/BcwmuoQsLB626UW+uoICxzP/u4MTw8ysbyMAizj+C+++6xXzhT
+ WkRRno8cJNS7ykybBlJFhCka5B1R2Kzm8NlsnbnTi1uv/ZJ6mivZMOQ4Z9bqPg/HWrbJX/adf
+ OHzloxW1Lrs+eS9RwT3R/uQNiZO6v3tfGZLwyR/qCIXkPAQWfnBtEJqW7lZ1PWHIaw3hiKUx6
+ aif2shA5RdfSxPNrXjKmAPt/4TErqkkNZOVuIokWXV0tWpJzrBmSeijIXmi3KEvbcE7d0YRrL
+ Kfe1DPCZNSOLB79DM9bnAVfVw4ZZClMGkMBbv4qilI455LeZSUqL5S4+Mkt0wczhLLqDYilUB
+ p5y51SRit15gYlQEHFWKrKA9tF9L5JyFDcV9bg5V6JndgMVfXuMmY40313+NFUmJnbnZWCFMO
+ 9PO+0t0jlb2ZcboOeUFhIlnO1Ey9Wx7e6f/LZRSNY48M/sbgCwrggW/a80P6oQ25mhobVrIqg
+ 0ns1GeCAvzxIx2BKkkrZnO9xOgCQa0YYG6D6teVLQ9YVAL2L6ypyfLtY0sfWgqzZ1tzk6/Kv2
+ UyJKH7KQK60FE7HQ7yFMajcy1JqnJ09AecPq7XI7p24sC9HulTgE+Y/pHyXh21dH3CcD0b3kg
+ cr2aUd2lfdT1McXxdaTaNhHb/VNlO2pG1n1RUHeAq+0RKKgmSXFhu8hfz0sOYW0t5Bs0=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,216 +67,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Naresh Kamboju <naresh.kamboju@linaro.org>,
+ llvm@lists.linux.dev, Nick Desaulniers <ndesaulniers@google.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Nathan Chancellor <nathan@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> Compiling out hash support code when CONFIG_PPC_64S_HASH_MMU=n saves
-> 128kB kernel image size (90kB text) on powernv_defconfig minus KVM,
-> 350kB on pseries_defconfig minus KVM, 40kB on a tiny config.
+On Tue, Dec 7, 2021 at 12:02 PM Anders Roxell <anders.roxell@linaro.org> wrote:
 >
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/Kconfig                          |  2 +-
->  arch/powerpc/include/asm/book3s/64/mmu.h      | 21 ++++++++++--
->  .../include/asm/book3s/64/tlbflush-hash.h     |  6 ++++
->  arch/powerpc/include/asm/book3s/pgtable.h     |  4 +++
->  arch/powerpc/include/asm/mmu_context.h        |  2 ++
->  arch/powerpc/include/asm/paca.h               |  8 +++++
->  arch/powerpc/kernel/asm-offsets.c             |  2 ++
->  arch/powerpc/kernel/entry_64.S                |  4 +--
->  arch/powerpc/kernel/exceptions-64s.S          | 16 ++++++++++
->  arch/powerpc/kernel/mce.c                     |  2 +-
->  arch/powerpc/kernel/mce_power.c               | 10 ++++--
->  arch/powerpc/kernel/paca.c                    | 18 ++++-------
->  arch/powerpc/kernel/process.c                 | 13 ++++----
->  arch/powerpc/kernel/prom.c                    |  2 ++
->  arch/powerpc/kernel/setup_64.c                |  5 +++
->  arch/powerpc/kexec/core_64.c                  |  4 +--
->  arch/powerpc/kexec/ranges.c                   |  4 +++
->  arch/powerpc/mm/book3s64/Makefile             | 15 +++++----
->  arch/powerpc/mm/book3s64/hugetlbpage.c        |  2 ++
->  arch/powerpc/mm/book3s64/mmu_context.c        | 32 +++++++++++++++----
->  arch/powerpc/mm/book3s64/pgtable.c            |  2 +-
->  arch/powerpc/mm/book3s64/radix_pgtable.c      |  4 +++
->  arch/powerpc/mm/copro_fault.c                 |  2 ++
->  arch/powerpc/mm/ptdump/Makefile               |  2 +-
->  arch/powerpc/platforms/powernv/idle.c         |  2 ++
->  arch/powerpc/platforms/powernv/setup.c        |  2 ++
->  arch/powerpc/platforms/pseries/lpar.c         | 11 +++++--
->  arch/powerpc/platforms/pseries/lparcfg.c      |  2 +-
->  arch/powerpc/platforms/pseries/mobility.c     |  6 ++++
->  arch/powerpc/platforms/pseries/ras.c          |  2 ++
->  arch/powerpc/platforms/pseries/reconfig.c     |  2 ++
->  arch/powerpc/platforms/pseries/setup.c        |  6 ++--
->  arch/powerpc/xmon/xmon.c                      |  8 +++--
->  drivers/misc/lkdtm/core.c                     |  2 +-
->  34 files changed, 173 insertions(+), 52 deletions(-)
+> Clang warns:
+>
+> arch/powerpc/platforms/cell/pervasive.c:81:2: error: unannotated fall-through between switch labels [-Werror,-Wimplicit-fallthrough]
+>         case SRR1_WAKEEE:
+>         ^
+> arch/powerpc/platforms/cell/pervasive.c:81:2: note: insert 'break;' to avoid fall-through
+>         case SRR1_WAKEEE:
+>         ^
+>         break;
+> 1 error generated.
+>
+> Clang is more pedantic than GCC, which does not warn when failing
+> through to a case that is just break or return. Clang's version
+> is more in line with the kernel's own stance in deprecated.rst.
+> Add athe missing break to silence the warning.
+>
+> Fixes: 6e83985b0f6e ("powerpc/cbe: Do not process external or decremeter interrupts from sreset")
+> Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
+> Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
 
+Thanks for the fix!
 
-I was able to clean up some of the ifdefs a little with the changes
-below. I'll run these through some test builds and then squash them in.
-
-cheers
-
-
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 3004f3323144..21f780942911 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -523,8 +523,14 @@ void slb_save_contents(struct slb_entry *slb_ptr);
- void slb_dump_contents(struct slb_entry *slb_ptr);
- 
- extern void slb_vmalloc_update(void);
--extern void slb_set_size(u16 size);
- void preload_new_slb_context(unsigned long start, unsigned long sp);
-+
-+#ifdef CONFIG_PPC_64S_HASH_MMU
-+void slb_set_size(u16 size);
-+#else
-+static inline void slb_set_size(u16 size) { }
-+#endif
-+
- #endif /* __ASSEMBLY__ */
- 
- /*
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 2197404cdcc4..75678ff04dd7 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -231,10 +231,9 @@ static void __init check_cpu_pa_features(unsigned long node)
- 		      ibm_pa_features, ARRAY_SIZE(ibm_pa_features));
- }
- 
--#ifdef CONFIG_PPC_BOOK3S_64
-+#ifdef CONFIG_PPC_64S_HASH_MMU
- static void __init init_mmu_slb_size(unsigned long node)
- {
--#ifdef CONFIG_PPC_64S_HASH_MMU
- 	const __be32 *slb_size_ptr;
- 
- 	slb_size_ptr = of_get_flat_dt_prop(node, "slb-size", NULL) ? :
-@@ -242,7 +241,6 @@ static void __init init_mmu_slb_size(unsigned long node)
- 
- 	if (slb_size_ptr)
- 		mmu_slb_size = be32_to_cpup(slb_size_ptr);
--#endif
- }
- #else
- #define init_mmu_slb_size(node) do { } while(0)
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 22647bb82198..703a2e6ab08d 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -886,9 +886,7 @@ void __init setup_per_cpu_areas(void)
- 		atom_size = SZ_1M;
- 	} else if (radix_enabled()) {
- 		atom_size = PAGE_SIZE;
--	} else {
--#ifdef CONFIG_PPC_64S_HASH_MMU
--
-+	} else if (IS_ENABLED(CONFIG_PPC_64S_HASH_MMU)) {
- 		/*
- 		 * Linear mapping is one of 4K, 1M and 16M.  For 4K, no need
- 		 * to group units.  For larger mappings, use 1M atom which
-@@ -898,9 +896,6 @@ void __init setup_per_cpu_areas(void)
- 			atom_size = PAGE_SIZE;
- 		else
- 			atom_size = SZ_1M;
--#else
--		BUILD_BUG(); // radix_enabled() should be constant true
--#endif
- 	}
- 
- 	if (pcpu_chosen_fc != PCPU_FC_PAGE) {
-diff --git a/arch/powerpc/kexec/ranges.c b/arch/powerpc/kexec/ranges.c
-index 92d831621fa0..563e9989a5bf 100644
---- a/arch/powerpc/kexec/ranges.c
-+++ b/arch/powerpc/kexec/ranges.c
-@@ -296,7 +296,7 @@ int add_initrd_mem_range(struct crash_mem **mem_ranges)
- 	return ret;
- }
- 
--#ifdef CONFIG_PPC_BOOK3S_64
-+#ifdef CONFIG_PPC_64S_HASH_MMU
- /**
-  * add_htab_mem_range - Adds htab range to the given memory ranges list,
-  *                      if it exists
-@@ -306,14 +306,10 @@ int add_initrd_mem_range(struct crash_mem **mem_ranges)
-  */
- int add_htab_mem_range(struct crash_mem **mem_ranges)
- {
--#ifdef CONFIG_PPC_64S_HASH_MMU
- 	if (!htab_address)
- 		return 0;
- 
- 	return add_mem_range(mem_ranges, __pa(htab_address), htab_size_bytes);
--#else
--	return 0;
--#endif
- }
- #endif
- 
-diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index 5f8cbeca8080..3c4f0ebe5df8 100644
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -333,10 +333,8 @@ static void __init radix_init_pgtable(void)
- 	phys_addr_t start, end;
- 	u64 i;
- 
--#ifdef CONFIG_PPC_64S_HASH_MMU
- 	/* We don't support slb for radix */
--	mmu_slb_size = 0;
--#endif
-+	slb_set_size(0);
- 
- 	/*
- 	 * Create the linear mapping
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 21b706bcea76..85033f392c78 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -484,9 +484,7 @@ static int do_suspend(void)
- 	ret = rtas_ibm_suspend_me(&status);
- 	if (ret != 0) {
- 		pr_err("ibm,suspend-me error: %d\n", status);
--#ifdef CONFIG_PPC_64S_HASH_MMU
- 		slb_set_size(saved_slb_size);
--#endif
- 	}
- 
- 	return ret;
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 3544778e06d0..b4c63c481f33 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -113,6 +113,11 @@ int dlpar_workqueue_init(void);
- 
- extern u32 pseries_security_flavor;
- void pseries_setup_security_mitigations(void);
-+
-+#ifdef CONFIG_PPC_64S_HASH_MMU
- void pseries_lpar_read_hblkrm_characteristics(void);
-+#else
-+static inline void pseries_lpar_read_hblkrm_characteristics(void) { }
-+#endif
- 
- #endif /* _PSERIES_PSERIES_H */
-diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index 80dae18d6621..7f7369fec46b 100644
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -337,10 +337,8 @@ static int do_update_property(char *buf, size_t bufsize)
- 	if (!newprop)
- 		return -ENOMEM;
- 
--#ifdef CONFIG_PPC_64S_HASH_MMU
- 	if (!strcmp(name, "slb-size") || !strcmp(name, "ibm,slb-size"))
- 		slb_set_size(*(int *)value);
--#endif
- 
- 	return of_update_property(np, newprop);
- }
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
