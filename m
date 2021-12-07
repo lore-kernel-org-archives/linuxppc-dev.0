@@ -4,94 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15FDEC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Dec 2021 16:08:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3398C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Dec 2021 16:11:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J7lZs1Xwrz304v
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Dec 2021 03:08:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J7lfx1mWPz3c6l
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Dec 2021 03:11:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=N2u/XNXY;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XtY+L/Cm;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XtY+L/Cm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com;
+ smtp.mailfrom=redhat.com (client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=prudo@redhat.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=N2u/XNXY; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=XtY+L/Cm; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=XtY+L/Cm; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J7lZ26W6Kz2yZx
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2021 03:07:38 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1B7EqWt3018172; 
- Tue, 7 Dec 2021 16:07:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=KhR7aBzxn5ylYqmhqahWZ1ONXD7ujdIkLRxq8HLSKhU=;
- b=N2u/XNXYxIEMkKaIt7BmbFZLY/e1AJKvrJxPRDsipGhTGLkPSdUtm3se/sKLpX7JhCEF
- YRkKiiiTzgFqHzB2sKhnSQ/tCcXOg/BTWWOKMA8JxWRn3jPWTjEWSyEr46XQfdgcOzOV
- I2wOrppeQXW4SNYWpAsCdpJIBcHFnRC9vpABbr8bMFEBw+qZpsXqrdrjWRovNWLEc0uM
- 09xlhAwfjVO9vZ9ZMLiqAVoNfU7PhIxod5/pux73rRT/JO6fXBCXb1xcz1FvLnEx8ArW
- iCVbXzbnbLzKO9imxzSJU2s01xcVfzbsOZ5/wsuyuymIeFbMnlRjMw6QBv8wR0DhpfgG dw== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3ct9ru1sq9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 07 Dec 2021 16:07:35 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1B7G2joN025848;
- Tue, 7 Dec 2021 16:07:33 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma06ams.nl.ibm.com with ESMTP id 3cqykj88xh-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 07 Dec 2021 16:07:33 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 1B7G7UV030474578
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 7 Dec 2021 16:07:30 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 651F8A405E;
- Tue,  7 Dec 2021 16:07:30 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3BFA7A4051;
- Tue,  7 Dec 2021 16:07:30 +0000 (GMT)
-Received: from [9.145.91.80] (unknown [9.145.91.80])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  7 Dec 2021 16:07:30 +0000 (GMT)
-Message-ID: <bbaa0d78-a09f-3ce3-25a9-67434039b741@linux.ibm.com>
-Date: Tue, 7 Dec 2021 17:07:29 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J7lf9271zz2yY7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2021 03:11:13 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1638893470;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=Onz5Twi1yBYsmurLPM8Oy6J1rZ5yDH44DYmuLT6gN40=;
+ b=XtY+L/CmDsNlBB1VlPgYOtHXCCoDZXSC0EwGy/ngGfAqVMEH4b4zZddV+AJ6ld8udVkVHK
+ Vn0QMVlWhRw4D9jtDILWeQFixKzq+/lPsJ5pgP4f/w88IfSCo7xdVNfxT1gvcm8+ARH5o6
+ oc3hPdWsS5/jnfgnCIrlw5BmhxW/m9s=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1638893470;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=Onz5Twi1yBYsmurLPM8Oy6J1rZ5yDH44DYmuLT6gN40=;
+ b=XtY+L/CmDsNlBB1VlPgYOtHXCCoDZXSC0EwGy/ngGfAqVMEH4b4zZddV+AJ6ld8udVkVHK
+ Vn0QMVlWhRw4D9jtDILWeQFixKzq+/lPsJ5pgP4f/w88IfSCo7xdVNfxT1gvcm8+ARH5o6
+ oc3hPdWsS5/jnfgnCIrlw5BmhxW/m9s=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-524-FPUfGenlPk2WNeICvGOZDQ-1; Tue, 07 Dec 2021 11:11:07 -0500
+X-MC-Unique: FPUfGenlPk2WNeICvGOZDQ-1
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id BBFD31023F53;
+ Tue,  7 Dec 2021 16:11:03 +0000 (UTC)
+Received: from rhtmp (unknown [10.39.192.202])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id BF2305DF4B;
+ Tue,  7 Dec 2021 16:10:36 +0000 (UTC)
+Date: Tue, 7 Dec 2021 17:10:34 +0100
+From: Philipp Rudo <prudo@redhat.com>
+To: Michal Suchanek <msuchanek@suse.de>
+Subject: Re: [PATCH v2 6/6] module: Move duplicate mod_check_sig users code
+ to mod_parse_sig
+Message-ID: <20211207171034.0b782d82@rhtmp>
+In-Reply-To: <d464e1f45d21a29cbbe828dea412206cdc94866b.1637862358.git.msuchanek@suse.de>
+References: <cover.1637862358.git.msuchanek@suse.de>
+ <d464e1f45d21a29cbbe828dea412206cdc94866b.1637862358.git.msuchanek@suse.de>
+Organization: Red Hat inc.
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
- Gecko/20100101 Thunderbird/91.3.2
-Subject: Re: [PATCH v3] powerpc/pseries: read the lpar name from the firmware
-Content-Language: en-US
-To: Nathan Lynch <nathanl@linux.ibm.com>
-References: <20211203154321.13168-1-ldufour@linux.ibm.com>
- <87bl1so588.fsf@linux.ibm.com>
-From: Laurent Dufour <ldufour@linux.ibm.com>
-In-Reply-To: <87bl1so588.fsf@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: KvSKrxeJPNMmUHxXyKeJ_sgKxjGxyvy7
-X-Proofpoint-GUID: KvSKrxeJPNMmUHxXyKeJ_sgKxjGxyvy7
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.11.62.513
- definitions=2021-12-07_06,2021-12-06_02,2021-12-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 mlxscore=0
- lowpriorityscore=0 mlxlogscore=999 clxscore=1015 priorityscore=1501
- adultscore=0 suspectscore=0 bulkscore=0 phishscore=0 spamscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2110150000 definitions=main-2112070098
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,104 +88,226 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Nayna <nayna@linux.vnet.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
+ David Howells <dhowells@redhat.com>, keyrings@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Rob Herring <robh@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>,
+ Baoquan He <bhe@redhat.com>, Christian Borntraeger <borntraeger@de.ibm.com>,
+ James Morris <jmorris@namei.org>,
+ Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ linux-s390@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
+ linux-crypto@vger.kernel.org, Hari Bathini <hbathini@linux.ibm.com>,
+ Daniel Axtens <dja@axtens.net>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ Frank van der Linden <fllinden@amazon.com>, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>,
+ Sven Schnelle <svens@linux.ibm.com>, linux-security-module@vger.kernel.org,
+ Jessica Yu <jeyu@kernel.org>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>, buendgen@de.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 07/12/2021, 15:32:39, Nathan Lynch wrote:
-> Hi Laurent,
-> 
-> Laurent Dufour <ldufour@linux.ibm.com> writes:
->> +/*
->> + * PAPR defines, in section "7.3.16 System Parameters Option", the token 55 to
->> + * read the LPAR name.
->> + */
->> +#define SPLPAR_LPAR_NAME_TOKEN	55
->> +static void read_lpar_name(struct seq_file *m)
->> +{
->> +	int rc, len, token;
->> +	union {
->> +		char raw_buffer[RTAS_DATA_BUF_SIZE];
->> +		struct {
->> +			__be16 len;
-> 
-> This:
-> 
->> +			char name[RTAS_DATA_BUF_SIZE-2];
->                                        ^^^^^^
-> 
-> should be 4000, not (4K - 2), according to PAPR (it's weird and I don't
-> know the reason).
+Hi Michal,
 
-That's true, PAPR defines the largest output buffer for
-ibm,get-system-parameter to 4002, so we could limit this to 4002, not sure
-whether this would make a big difference here. Anyway I will limit that
-buffer size this way.
-> 
-> 
->> +		};
->> +	} *local_buffer;
->> +
->> +	token = rtas_token("ibm,get-system-parameter");
->> +	if (token == RTAS_UNKNOWN_SERVICE)
->> +		return;
->> +
->> +	local_buffer = kmalloc(sizeof(*local_buffer), GFP_KERNEL);
->> +	if (!local_buffer)
->> +		return;
->> +
->> +	do {
->> +		spin_lock(&rtas_data_buf_lock);
->> +		memset(rtas_data_buf, 0, RTAS_DATA_BUF_SIZE);
->> +		rc = rtas_call(token, 3, 1, NULL, SPLPAR_LPAR_NAME_TOKEN,
->> +			       __pa(rtas_data_buf), RTAS_DATA_BUF_SIZE);
->> +		if (!rc)
->> +			memcpy(local_buffer->raw_buffer, rtas_data_buf,
->> +			       RTAS_DATA_BUF_SIZE);
->> +		spin_unlock(&rtas_data_buf_lock);
->> +	} while (rtas_busy_delay(rc));
->> +
->> +	if (rc != 0) {
->> +		pr_err_once(
->> +			"%s %s Error calling get-system-parameter (0x%x)\n",
->> +			__FILE__, __func__, rc);
-> 
-> The __FILE__ and __func__ in the message seem unnecessary, and rc should
-> be reported in decimal so the error meaning is apparent.
+On Thu, 25 Nov 2021 19:02:44 +0100
+Michal Suchanek <msuchanek@suse.de> wrote:
 
-Fair enough.
-
-> Is there a reasonable fallback for VMs where this parameter doesn't
-> exist? PowerVM partitions should always have it, but what do we want the
-> behavior to be on other hypervisors?
-
-In that case, there is no value displayed in the /proc/powerpc/lparcfg and
-the lparstat -i command will fall back to the device tree value. I can't
-see any valid reason to report the value defined in the device tree here.
-
+> Multiple users of mod_check_sig check for the marker, then call
+> mod_check_sig, extract signature length, and remove the signature.
 > 
+> Put this code in one place together with mod_check_sig.
 > 
->> +	} else {
->> +		/* Force end of string */
->> +		len = be16_to_cpu(local_buffer->len);
->> +		if (len >= (RTAS_DATA_BUF_SIZE-2))
->> +			len = RTAS_DATA_BUF_SIZE-2;
+> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> ---
+>  include/linux/module_signature.h    |  1 +
+>  kernel/module_signature.c           | 56 ++++++++++++++++++++++++++++-
+>  kernel/module_signing.c             | 26 +++-----------
+>  security/integrity/ima/ima_modsig.c | 22 ++----------
+>  4 files changed, 63 insertions(+), 42 deletions(-)
 > 
-> Could use min() or clamp(), and it would be better to build the
-> expression using the value of sizeof(local_buffer->name).
+> diff --git a/include/linux/module_signature.h b/include/linux/module_signature.h
+> index 7eb4b00381ac..1343879b72b3 100644
+> --- a/include/linux/module_signature.h
+> +++ b/include/linux/module_signature.h
+> @@ -42,5 +42,6 @@ struct module_signature {
+>  
+>  int mod_check_sig(const struct module_signature *ms, size_t file_len,
+>  		  const char *name);
+> +int mod_parse_sig(const void *data, size_t *len, size_t *sig_len, const char *name);
+>  
+>  #endif /* _LINUX_MODULE_SIGNATURE_H */
+> diff --git a/kernel/module_signature.c b/kernel/module_signature.c
+> index 00132d12487c..784b40575ee4 100644
+> --- a/kernel/module_signature.c
+> +++ b/kernel/module_signature.c
+> @@ -8,14 +8,36 @@
+>  
+>  #include <linux/errno.h>
+>  #include <linux/printk.h>
+> +#include <linux/string.h>
+>  #include <linux/module_signature.h>
+>  #include <asm/byteorder.h>
+>  
+> +/**
+> + * mod_check_sig_marker - check that the given data has signature marker at the end
+> + *
+> + * @data:	Data with appended signature
+> + * @len:	Length of data. Signature marker length is subtracted on success.
+> + */
+> +static inline int mod_check_sig_marker(const void *data, size_t *len)
 
-Fair enough.
+I personally don't like it when a function has a "check" in it's name
+as it doesn't describe what the function is checking for. For me
+mod_has_sig_marker is much more precise. I would use that instead.
 
-> 
->> +		local_buffer->name[len] = '\0';
-> 
-> If 'len' can be (RTAS_DATA_BUF_SIZE - 2), then this writes past the end
-> of the buffer, no?
+Thanks
+Philipp
 
-Oh yes, the previous test should be
-		if (len >= (RTAS_DATA_BUF_SIZE-2))
-			len = RTAS_DATA_BUF_SIZE-3;
+> +{
+> +	const unsigned long markerlen = sizeof(MODULE_SIG_STRING) - 1;
+> +
+> +	if (markerlen > *len)
+> +		return -ENODATA;
+> +
+> +	if (memcmp(data + *len - markerlen, MODULE_SIG_STRING,
+> +		   markerlen))
+> +		return -ENODATA;
+> +
+> +	*len -= markerlen;
+> +	return 0;
+> +}
+> +
+>  /**
+>   * mod_check_sig - check that the given signature is sane
+>   *
+>   * @ms:		Signature to check.
+> - * @file_len:	Size of the file to which @ms is appended.
+> + * @file_len:	Size of the file to which @ms is appended (without the marker).
+>   * @name:	What is being checked. Used for error messages.
+>   */
+>  int mod_check_sig(const struct module_signature *ms, size_t file_len,
+> @@ -44,3 +66,35 @@ int mod_check_sig(const struct module_signature *ms, size_t file_len,
+>  
+>  	return 0;
+>  }
+> +
+> +/**
+> + * mod_parse_sig - check that the given signature is sane and determine signature length
+> + *
+> + * @data:	Data with appended signature.
+> + * @len:	Length of data. Signature and marker length is subtracted on success.
+> + * @sig_len:	Length of signature. Filled on success.
+> + * @name:	What is being checked. Used for error messages.
+> + */
+> +int mod_parse_sig(const void *data, size_t *len, size_t *sig_len, const char *name)
+> +{
+> +	const struct module_signature *sig;
+> +	int rc;
+> +
+> +	rc = mod_check_sig_marker(data, len);
+> +	if (rc)
+> +		return rc;
+> +
+> +	if (*len < sizeof(*sig))
+> +		return -ENODATA;
+> +
+> +	sig = (const struct module_signature *)(data + (*len - sizeof(*sig)));
+> +
+> +	rc = mod_check_sig(sig, *len, name);
+> +	if (rc)
+> +		return rc;
+> +
+> +	*sig_len = be32_to_cpu(sig->sig_len);
+> +	*len -= *sig_len + sizeof(*sig);
+> +
+> +	return 0;
+> +}
+> diff --git a/kernel/module_signing.c b/kernel/module_signing.c
+> index cef72a6f6b5d..02bbca90f467 100644
+> --- a/kernel/module_signing.c
+> +++ b/kernel/module_signing.c
+> @@ -25,35 +25,17 @@ int verify_appended_signature(const void *data, size_t *len,
+>  			      struct key *trusted_keys,
+>  			      enum key_being_used_for purpose)
+>  {
+> -	const unsigned long markerlen = sizeof(MODULE_SIG_STRING) - 1;
+>  	struct module_signature ms;
+> -	size_t sig_len, modlen = *len;
+> +	size_t sig_len;
+>  	int ret;
+>  
+> -	pr_devel("==>%s %s(,%zu)\n", __func__, key_being_used_for[purpose], modlen);  
+> +	pr_devel("==>%s %s(,%zu)\n", __func__, key_being_used_for[purpose], *len);
+>  
+> -	if (markerlen > modlen)
+> -		return -ENODATA;
+> -
+> -	if (memcmp(data + modlen - markerlen, MODULE_SIG_STRING,
+> -		   markerlen))
+> -		return -ENODATA;
+> -	modlen -= markerlen;
+> -
+> -	if (modlen <= sizeof(ms))
+> -		return -EBADMSG;
+> -
+> -	memcpy(&ms, data + (modlen - sizeof(ms)), sizeof(ms));
+> -
+> -	ret = mod_check_sig(&ms, modlen, key_being_used_for[purpose]);
+> +	ret = mod_parse_sig(data, len, &sig_len, key_being_used_for[purpose]);
+>  	if (ret)
+>  		return ret;
+>  
+> -	sig_len = be32_to_cpu(ms.sig_len);
+> -	modlen -= sig_len + sizeof(ms);
+> -	*len = modlen;
+> -
+> -	return verify_pkcs7_signature(data, modlen, data + modlen, sig_len,
+> +	return verify_pkcs7_signature(data, *len, data + *len, sig_len,
+>  				      trusted_keys,
+>  				      purpose,
+>  				      NULL, NULL);
+> diff --git a/security/integrity/ima/ima_modsig.c b/security/integrity/ima/ima_modsig.c
+> index fb25723c65bc..46917eb37fd8 100644
+> --- a/security/integrity/ima/ima_modsig.c
+> +++ b/security/integrity/ima/ima_modsig.c
+> @@ -37,33 +37,17 @@ struct modsig {
+>   *
+>   * Return: 0 on success, error code otherwise.
+>   */
+> -int ima_read_modsig(enum ima_hooks func, const void *buf, loff_t buf_len,
+> +int ima_read_modsig(enum ima_hooks func, const void *buf, loff_t len,
+>  		    struct modsig **modsig)
+>  {
+> -	const size_t marker_len = strlen(MODULE_SIG_STRING);
+> -	const struct module_signature *sig;
+>  	struct modsig *hdr;
+> -	size_t sig_len;
+> -	const void *p;
+> +	size_t sig_len, buf_len = len;
+>  	int rc;
+>  
+> -	if (buf_len <= marker_len + sizeof(*sig))
+> -		return -ENOENT;
+> -
+> -	p = buf + buf_len - marker_len;
+> -	if (memcmp(p, MODULE_SIG_STRING, marker_len))
+> -		return -ENOENT;
+> -
+> -	buf_len -= marker_len;
+> -	sig = (const struct module_signature *)(p - sizeof(*sig));
+> -
+> -	rc = mod_check_sig(sig, buf_len, func_tokens[func]);
+> +	rc = mod_parse_sig(buf, &buf_len, &sig_len, func_tokens[func]);
+>  	if (rc)
+>  		return rc;
+>  
+> -	sig_len = be32_to_cpu(sig->sig_len);
+> -	buf_len -= sig_len + sizeof(*sig);
+> -
+>  	/* Allocate sig_len additional bytes to hold the raw PKCS#7 data. */
+>  	hdr = kzalloc(sizeof(*hdr) + sig_len, GFP_KERNEL);
+>  	if (!hdr)
 
-Thanks,
-Laurent.
