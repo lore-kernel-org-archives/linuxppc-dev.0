@@ -4,31 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C2A4C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Dec 2021 13:28:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41B55C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Dec 2021 13:29:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J7h2h15Ztz300S
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Dec 2021 00:28:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J7h363XHwz3cTl
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Dec 2021 00:29:06 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
  [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J7h2J53H5z2xX0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2021 00:28:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J7h2L1JDlz2xX0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2021 00:28:26 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4J7h2J2Hzmz4xgq;
- Wed,  8 Dec 2021 00:28:24 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4J7h2K0Xh4z4xgY;
+ Wed,  8 Dec 2021 00:28:25 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <1626846509-1350-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-References: <1626846509-1350-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4 0/1] powerpc/perf: Clear pending PMI in ppmu callbacks
-Message-Id: <163888362657.3690807.10860814455501399694.b4-ty@ellerman.id.au>
-Date: Wed, 08 Dec 2021 00:27:06 +1100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <15cbc3439d4ad988b225e2119ec99502a5cc6ad3.1638261744.git.christophe.leroy@csgroup.eu>
+References: <15cbc3439d4ad988b225e2119ec99502a5cc6ad3.1638261744.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/32s: Fix shift-out-of-bounds in KASAN init
+Message-Id: <163888363476.3690807.11887155536707238032.b4-ty@ellerman.id.au>
+Date: Wed, 08 Dec 2021 00:27:14 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,29 +45,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
- rnsastry@linux.ibm.com
+Cc: Erhard Furtner <erhard_f@mailbox.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 21 Jul 2021 01:48:28 -0400, Athira Rajeev wrote:
-> Running perf fuzzer testsuite popped up below messages
-> in the dmesg logs:
-> 
-> "Can't find PMC that caused IRQ"
-> 
-> This means a PMU exception happened, but none of the PMC's (Performance
-> Monitor Counter) were found to be overflown. Perf interrupt handler checks
-> the PMC's to see which PMC has overflown and if none of the PMCs are
-> overflown ( counter value not >= 0x80000000 ), it throws warning:
-> "Can't find PMC that caused IRQ".
+On Tue, 30 Nov 2021 09:42:37 +0100, Christophe Leroy wrote:
+> ================================================================================
+> UBSAN: shift-out-of-bounds in arch/powerpc/mm/kasan/book3s_32.c:22:23
+> shift exponent -1 is negative
+> CPU: 0 PID: 0 Comm: swapper Not tainted 5.15.5-gentoo-PowerMacG4 #9
+> Call Trace:
+> [c214be60] [c0ba0048] dump_stack_lvl+0x80/0xb0 (unreliable)
+> [c214be80] [c0b99288] ubsan_epilogue+0x10/0x5c
+> [c214be90] [c0b98fe0] __ubsan_handle_shift_out_of_bounds+0x94/0x138
+> [c214bf00] [c1c0f010] kasan_init_region+0xd8/0x26c
+> [c214bf30] [c1c0ed84] kasan_init+0xc0/0x198
+> [c214bf70] [c1c08024] setup_arch+0x18/0x54c
+> [c214bfc0] [c1c037f0] start_kernel+0x90/0x33c
+> [c214bff0] [00003610] 0x3610
+> ================================================================================
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/perf: Fix PMU callbacks to clear pending PMI before resetting an overflown PMC
-      https://git.kernel.org/powerpc/c/2c9ac51b850d84ee496b0a5d832ce66d411ae552
+[1/1] powerpc/32s: Fix shift-out-of-bounds in KASAN init
+      https://git.kernel.org/powerpc/c/af11dee4361b3519981fa04d014873f9d9edd6ac
 
 cheers
