@@ -4,33 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51F45C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Dec 2021 13:30:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31994C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Dec 2021 13:31:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J7h4q5w8Hz3dl9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Dec 2021 00:30:35 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
- [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J7h5G5Nldz3dqC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Dec 2021 00:30:58 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J7h2N1VRvz3054
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2021 00:28:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J7h2P426yz2ymt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2021 00:28:29 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4J7h2N0WRxz4xgy;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4J7h2N45kjz4xh0;
  Wed,  8 Dec 2021 00:28:28 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <f16c30f5c9185a63335322cf1a8b22f189d335ef.1637922595.git.christophe.leroy@csgroup.eu>
-References: <f16c30f5c9185a63335322cf1a8b22f189d335ef.1637922595.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/ptdump: Fix display a BAT's size unit
-Message-Id: <163888364104.3690807.15744779328710272705.b4-ty@ellerman.id.au>
-Date: Wed, 08 Dec 2021 00:27:21 +1100
+To: Steven Rostedt <rostedt@goodmis.org>,
+ Joe Lawrence <joe.lawrence@redhat.com>, Miroslav Benes <mbenes@suse.cz>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Petr Mladek <pmladek@suse.com>,
+ Ingo Molnar <mingo@redhat.com>,
+ "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Jiri Kosina <jikos@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1635423081.git.christophe.leroy@csgroup.eu>
+References: <cover.1635423081.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v1 0/5] Implement livepatch on PPC32
+Message-Id: <163888361002.3690807.9338254360501011290.b4-ty@ellerman.id.au>
+Date: Wed, 08 Dec 2021 00:26:50 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,29 +47,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: live-patching@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 26 Nov 2021 11:30:03 +0100, Christophe Leroy wrote:
-> We have wrong units on BAT's sizes (G instead of M, M instead of ...)
+On Thu, 28 Oct 2021 14:24:00 +0200, Christophe Leroy wrote:
+> This series implements livepatch on PPC32.
 > 
-> 	---[ Instruction Block Address Translation ]---
-> 	0: 0xc0000000-0xc03fffff 0x00000000         4G Kernel   x     m
-> 	1: 0xc0400000-0xc05fffff 0x00400000         2G Kernel   x     m
-> 	2: 0xc0600000-0xc06fffff 0x00600000         1G Kernel   x     m
-> 	3: 0xc0700000-0xc077ffff 0x00700000       512M Kernel   x     m
-> 	4: 0xc0780000-0xc079ffff 0x00780000       128M Kernel   x     m
-> 	5: 0xc07a0000-0xc07bffff 0x007a0000       128M Kernel   x     m
-> 	6:         -
-> 	7:         -
+> This is largely copied from what's done on PPC64.
+> 
+> Christophe Leroy (5):
+>   livepatch: Fix build failure on 32 bits processors
+>   powerpc/ftrace: No need to read LR from stack in _mcount()
+>   powerpc/ftrace: Add module_trampoline_target() for PPC32
+>   powerpc/ftrace: Activate HAVE_DYNAMIC_FTRACE_WITH_REGS on PPC32
+>   powerpc/ftrace: Add support for livepatch to PPC32
 > 
 > [...]
 
-Applied to powerpc/next.
+Patches 2-4 applied to powerpc/next.
 
-[1/1] powerpc/ptdump: Fix display a BAT's size unit
-      https://git.kernel.org/powerpc/c/cdc81aece8041fd5437bdabde6c543cdeb2891a8
+[2/5] powerpc/ftrace: No need to read LR from stack in _mcount()
+      https://git.kernel.org/powerpc/c/88670fdb26800228606c078ba4a018e9522a75a8
+[3/5] powerpc/ftrace: Add module_trampoline_target() for PPC32
+      https://git.kernel.org/powerpc/c/c93d4f6ecf4b0699d0f2088f7bd9cd09af45d65a
+[4/5] powerpc/ftrace: Activate HAVE_DYNAMIC_FTRACE_WITH_REGS on PPC32
+      https://git.kernel.org/powerpc/c/7dfbfb87c243cf08bc2b9cc23699ac207b726458
 
 cheers
