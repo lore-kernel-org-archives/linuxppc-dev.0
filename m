@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41B55C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Dec 2021 13:29:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD2B6C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Dec 2021 13:29:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J7h363XHwz3cTl
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Dec 2021 00:29:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J7h3Y1XdXz3cCJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Dec 2021 00:29:29 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
  [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J7h2L1JDlz2xX0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J7h2L5bVtz2yYS
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Dec 2021 00:28:26 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4J7h2K0Xh4z4xgY;
- Wed,  8 Dec 2021 00:28:25 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4J7h2L3sWtz4xgr;
+ Wed,  8 Dec 2021 00:28:26 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <15cbc3439d4ad988b225e2119ec99502a5cc6ad3.1638261744.git.christophe.leroy@csgroup.eu>
-References: <15cbc3439d4ad988b225e2119ec99502a5cc6ad3.1638261744.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/32s: Fix shift-out-of-bounds in KASAN init
-Message-Id: <163888363476.3690807.11887155536707238032.b4-ty@ellerman.id.au>
-Date: Wed, 08 Dec 2021 00:27:14 +1100
+In-Reply-To: <3eb14570612eef17e01bb67f14a4450136001794.1637840601.git.christophe.leroy@csgroup.eu>
+References: <3eb14570612eef17e01bb67f14a4450136001794.1637840601.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: Don't bother about .data..Lubsan sections
+Message-Id: <163888361204.3690807.4937169274874065902.b4-ty@ellerman.id.au>
+Date: Wed, 08 Dec 2021 00:26:52 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,33 +45,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Erhard Furtner <erhard_f@mailbox.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 30 Nov 2021 09:42:37 +0100, Christophe Leroy wrote:
-> ================================================================================
-> UBSAN: shift-out-of-bounds in arch/powerpc/mm/kasan/book3s_32.c:22:23
-> shift exponent -1 is negative
-> CPU: 0 PID: 0 Comm: swapper Not tainted 5.15.5-gentoo-PowerMacG4 #9
-> Call Trace:
-> [c214be60] [c0ba0048] dump_stack_lvl+0x80/0xb0 (unreliable)
-> [c214be80] [c0b99288] ubsan_epilogue+0x10/0x5c
-> [c214be90] [c0b98fe0] __ubsan_handle_shift_out_of_bounds+0x94/0x138
-> [c214bf00] [c1c0f010] kasan_init_region+0xd8/0x26c
-> [c214bf30] [c1c0ed84] kasan_init+0xc0/0x198
-> [c214bf70] [c1c08024] setup_arch+0x18/0x54c
-> [c214bfc0] [c1c037f0] start_kernel+0x90/0x33c
-> [c214bff0] [00003610] 0x3610
-> ================================================================================
+On Thu, 25 Nov 2021 12:43:33 +0100, Christophe Leroy wrote:
+> Since commit 9a427556fb8e ("vmlinux.lds.h: catch compound literals
+> into data and BSS") .data..Lubsan sections are taken into account
+> in DATA_MAIN which is included in DATA_DATA macro.
+> 
+> No need to take care of them anymore in powerpc vmlinux.lds.S
+> 
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/32s: Fix shift-out-of-bounds in KASAN init
-      https://git.kernel.org/powerpc/c/af11dee4361b3519981fa04d014873f9d9edd6ac
+[1/1] powerpc: Don't bother about .data..Lubsan sections
+      https://git.kernel.org/powerpc/c/57dd3a7bdf311e4a499fe0decabcdf2484e2538a
 
 cheers
