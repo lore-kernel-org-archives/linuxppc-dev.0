@@ -4,51 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16489C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Dec 2021 20:22:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 681D2C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Dec 2021 20:42:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J95792H06z3cYn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Dec 2021 07:22:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.23; helo=cstnet.cn;
- envelope-from=jiasheng@iscas.ac.cn; receiver=<UNKNOWN>)
-X-Greylist: delayed 906 seconds by postgrey-1.36 at boromir;
- Thu, 09 Dec 2021 21:01:21 AEDT
-Received: from cstnet.cn (smtp23.cstnet.cn [159.226.251.23])
- by lists.ozlabs.org (Postfix) with ESMTP id 4J8qLT0dt9z3017
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Dec 2021 21:01:20 +1100 (AEDT)
-Received: from localhost.localdomain (unknown [124.16.138.128])
- by APP-03 (Coremail) with SMTP id rQCowAAXMJJY0LFhwyzAAQ--.33737S2;
- Thu, 09 Dec 2021 17:46:04 +0800 (CST)
-From: Jiasheng Jiang <jiasheng@iscas.ac.cn>
-To: ruscur@russell.cc,
-	oohall@gmail.com,
-	bhelgaas@google.com
-Subject: [PATCH] PCI/AER: potential dereference of null pointer
-Date: Thu,  9 Dec 2021 17:45:56 +0800
-Message-Id: <20211209094556.2085357-1-jiasheng@iscas.ac.cn>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J95ZC577Gz3c7k
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Dec 2021 07:42:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=qLim/VmX;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+7e47f1e73b406a1d398c+6682+infradead.org+dwmw2@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=bombadil.20210309 header.b=qLim/VmX; 
+ dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J95YP1g8nz2yP0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Dec 2021 07:41:41 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20210309; h=MIME-Version:Content-Type:References:
+ In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=uSyJMaW/SvNLnUFnRFZXYo5bhsJ8p/CGtudZrQrj4OQ=; b=qLim/VmXvC7vp7q71i6566MgaE
+ iEGThHcNVJgT9xg0Lx3nWKF+fjIm0NwTy4faSGUnkCTBSzTsAVQ1MoYDN0vuni8YbD++MjZSWy9ZH
+ znm3vR0hVxSINhDva+MZb3FUGrWNlO7JGMTX3yK+eTwhpE5ltt+I0ifJBvSIrnp1IwbuZhBLXwlJV
+ SVR1OwtMg/ugxmR0B3OK7X0m3n3FEK60MCpLiOtluztVKtjgkLyRGfZnh3ElZ0b8KqKWPLGeueDUQ
+ 4tBejdGK2z8jgnaRkUsA1LVE96cBD/CIkPWvwoGb+Lg40YIsaNZ2QurShEWh1q16Z4vGjUysRoVwd
+ oZpm4SeQ==;
+Received: from 54-240-197-234.amazon.com ([54.240.197.234]
+ helo=freeip.amazon.com)
+ by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+ id 1mvQDn-00HVUV-CH; Thu, 09 Dec 2021 20:40:55 +0000
+Message-ID: <b614d9ae0fe7910cfa72eee0b4077776f8012e5f.camel@infradead.org>
+Subject: Re: [PATCH v5 08/12] KVM: Reinstate gfn_to_pfn_cache with
+ invalidation support
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paolo Bonzini <pbonzini@redhat.com>, kvm <kvm@vger.kernel.org>
+Date: Thu, 09 Dec 2021 20:40:48 +0000
+In-Reply-To: <b1bacc6f-be56-4108-6e52-4315a021184b@redhat.com>
+References: <20211121125451.9489-1-dwmw2@infradead.org>
+ <20211121125451.9489-9-dwmw2@infradead.org>
+ <b1bacc6f-be56-4108-6e52-4315a021184b@redhat.com>
+Content-Type: multipart/signed; micalg="sha-256";
+ protocol="application/pkcs7-signature"; 
+ boundary="=-tGdrPlP/CxoRpyQj0J8H"
+User-Agent: Evolution 3.36.5-0ubuntu1 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: rQCowAAXMJJY0LFhwyzAAQ--.33737S2
-X-Coremail-Antispam: 1UD129KBjvdXoWrtw4xtrW8CFykXry5uF1rJFb_yoW3XFg_u3
- yxWrnrGrWUKFs3WFn0yr4rZryjva4DXrWIqanaqa93Cas7uF97XFyUXr13JF47WFZ3CryD
- C3sFkr13Cw17KjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
- 9fnUUIcSsGvfJTRUUUbckFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
- 6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
- A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
- Cr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
- 0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
- jxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr
- 1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7MxkIecxEwVAFwVW8uwCF
- 04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r
- 18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_JF0_Jw1lIxkGc2Ij64vI
- r41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_Gr
- 1lIxAIcVCF04k26cxKx2IYs7xG6rWUJVWrZr1UMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF
- 0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUhNVgUUUUU=
-X-Originating-IP: [124.16.138.128]
-X-CM-SenderInfo: pmld2xxhqjqxpvfd2hldfou0/
-X-Mailman-Approved-At: Fri, 10 Dec 2021 07:21:22 +1100
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,34 +70,254 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, Jiasheng Jiang <jiasheng@iscas.ac.cn>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Anup Patel <anup.patel@wdc.com>,
+ "wanpengli @ tencent . com" <wanpengli@tencent.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Joao Martins <joao.m.martins@oracle.com>, Will Deacon <will@kernel.org>,
+ kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org,
+ "joro @ 8bytes . org" <joro@8bytes.org>, Huacai Chen <chenhuacai@kernel.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, karahmed@amazon.com,
+ Suzuki K Poulose <suzuki.poulose@arm.com>,
+ butt3rflyh4ck <butterflyhuangxx@gmail.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Alexandru Elisei <alexandru.elisei@arm.com>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ "jmattson @ google . com" <jmattson@google.com>,
+ "seanjc @ google . com" <seanjc@google.com>,
+ "mtosatti @ redhat . com" <mtosatti@redhat.com>, linux-mips@vger.kernel.org,
+ James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org,
+ Marc Zyngier <maz@kernel.org>, "vkuznets @ redhat . com" <vkuznets@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-he return value of kzalloc() needs to be checked.
-To avoid use of null pointer in case of the failure of alloc.
 
-Fixes: db89ccbe52c7 ("PCI/AER: Define aer_stats structure for AER capable devices")
-Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
----
- drivers/pci/pcie/aer.c | 2 ++
- 1 file changed, 2 insertions(+)
+--=-tGdrPlP/CxoRpyQj0J8H
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index ec943cee5ecc..d04303edf468 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -376,6 +376,8 @@ void pci_aer_init(struct pci_dev *dev)
- 		return;
- 
- 	dev->aer_stats = kzalloc(sizeof(struct aer_stats), GFP_KERNEL);
-+	if (!dev->aer_stats)
-+		return;
- 
- 	/*
- 	 * We save/restore PCI_ERR_UNCOR_MASK, PCI_ERR_UNCOR_SEVER,
--- 
-2.25.1
+On Thu, 2021-12-09 at 19:34 +0100, Paolo Bonzini wrote:
+> Sorry for the late review...
+
+
+NP, very useful fixes. Thanks. Incremental patch looks like this. It
+passes the xen_shinfo_test self-test; will test it with real Xen guests
+tomorrow and repost based on your kvm/next tree once it shows up.
+
+diff --git a/virt/kvm/pfncache.c b/virt/kvm/pfncache.c
+index d8c6e1d4a647..9e3c662f815f 100644
+--- a/virt/kvm/pfncache.c
++++ b/virt/kvm/pfncache.c
+@@ -124,6 +124,33 @@ static void __release_gpc(struct kvm *kvm, kvm_pfn_t p=
+fn, void *khva,
+ 	}
+ }
+=20
++static kvm_pfn_t hva_to_pfn_retry(struct kvm *kvm, unsigned long uhva)
++{
++	unsigned long mmu_seq;
++	kvm_pfn_t new_pfn;
++	int retry;
++
++	do {
++		mmu_seq =3D kvm->mmu_notifier_seq;
++		smp_rmb();
++
++		/* We always request a writeable mapping */
++		new_pfn =3D hva_to_pfn(uhva, false, NULL, true, NULL);
++		if (is_error_noslot_pfn(new_pfn))
++			break;
++
++		KVM_MMU_READ_LOCK(kvm);
++		retry =3D mmu_notifier_retry_hva(kvm, mmu_seq, uhva);
++		KVM_MMU_READ_UNLOCK(kvm);
++		if (!retry)
++			break;
++
++		cond_resched();
++	} while (1);
++
++	return new_pfn;
++}
++
+ int kvm_gfn_to_pfn_cache_refresh(struct kvm *kvm, struct gfn_to_pfn_cache =
+*gpc,
+ 				 gpa_t gpa, unsigned long len, bool dirty)
+ {
+@@ -147,7 +174,7 @@ int kvm_gfn_to_pfn_cache_refresh(struct kvm *kvm, struc=
+t gfn_to_pfn_cache *gpc,
+=20
+ 	old_gpa =3D gpc->gpa;
+ 	old_pfn =3D gpc->pfn;
+-	old_khva =3D gpc->khva;
++	old_khva =3D (void *)((unsigned long)gpc->khva & ~PAGE_MASK);
+ 	old_uhva =3D gpc->uhva;
+ 	old_valid =3D gpc->valid;
+ 	old_dirty =3D gpc->dirty;
+@@ -178,8 +205,6 @@ int kvm_gfn_to_pfn_cache_refresh(struct kvm *kvm, struc=
+t gfn_to_pfn_cache *gpc,
+ 	if (!old_valid || old_uhva !=3D gpc->uhva) {
+ 		unsigned long uhva =3D gpc->uhva;
+ 		void *new_khva =3D NULL;
+-		unsigned long mmu_seq;
+-		int retry;
+=20
+ 		/* Placeholders for "hva is valid but not yet mapped" */
+ 		gpc->pfn =3D KVM_PFN_ERR_FAULT;
+@@ -188,28 +213,15 @@ int kvm_gfn_to_pfn_cache_refresh(struct kvm *kvm, str=
+uct gfn_to_pfn_cache *gpc,
+=20
+ 		write_unlock_irq(&gpc->lock);
+=20
+-	retry_map:
+-		mmu_seq =3D kvm->mmu_notifier_seq;
+-		smp_rmb();
+-
+-		/* We always request a writeable mapping */
+-		new_pfn =3D hva_to_pfn(uhva, false, NULL, true, NULL);
++		new_pfn =3D hva_to_pfn_retry(kvm, uhva);
+ 		if (is_error_noslot_pfn(new_pfn)) {
+ 			ret =3D -EFAULT;
+ 			goto map_done;
+ 		}
+=20
+-		KVM_MMU_READ_LOCK(kvm);
+-		retry =3D mmu_notifier_retry_hva(kvm, mmu_seq, uhva);
+-		KVM_MMU_READ_UNLOCK(kvm);
+-		if (retry) {
+-			cond_resched();
+-			goto retry_map;
+-		}
+-
+ 		if (gpc->kernel_map) {
+ 			if (new_pfn =3D=3D old_pfn) {
+-				new_khva =3D (void *)((unsigned long)old_khva - page_offset);
++				new_khva =3D old_khva;
+ 				old_pfn =3D KVM_PFN_ERR_FAULT;
+ 				old_khva =3D NULL;
+ 			} else if (pfn_valid(new_pfn)) {
+@@ -219,7 +231,9 @@ int kvm_gfn_to_pfn_cache_refresh(struct kvm *kvm, struc=
+t gfn_to_pfn_cache *gpc,
+ 				new_khva =3D memremap(pfn_to_hpa(new_pfn), PAGE_SIZE, MEMREMAP_WB);
+ #endif
+ 			}
+-			if (!new_khva)
++			if (new_khva)
++				new_khva +=3D page_offset;
++			else
+ 				ret =3D -EFAULT;
+ 		}
+=20
+@@ -232,7 +246,7 @@ int kvm_gfn_to_pfn_cache_refresh(struct kvm *kvm, struc=
+t gfn_to_pfn_cache *gpc,
+ 		} else {
+ 			/* At this point, gpc->valid may already have been cleared */
+ 			gpc->pfn =3D new_pfn;
+-			gpc->khva =3D new_khva + page_offset;
++			gpc->khva =3D new_khva;
+ 		}
+ 	} else {
+ 		/* If the HVA=E2=86=92PFN mapping was already valid, don't unmap it. */
+
+--=-tGdrPlP/CxoRpyQj0J8H
+Content-Type: application/pkcs7-signature; name="smime.p7s"
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Transfer-Encoding: base64
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0BBwEAAKCCECow
+ggUcMIIEBKADAgECAhEA4rtJSHkq7AnpxKUY8ZlYZjANBgkqhkiG9w0BAQsFADCBlzELMAkGA1UE
+BhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEaMBgG
+A1UEChMRQ09NT0RPIENBIExpbWl0ZWQxPTA7BgNVBAMTNENPTU9ETyBSU0EgQ2xpZW50IEF1dGhl
+bnRpY2F0aW9uIGFuZCBTZWN1cmUgRW1haWwgQ0EwHhcNMTkwMTAyMDAwMDAwWhcNMjIwMTAxMjM1
+OTU5WjAkMSIwIAYJKoZIhvcNAQkBFhNkd213MkBpbmZyYWRlYWQub3JnMIIBIjANBgkqhkiG9w0B
+AQEFAAOCAQ8AMIIBCgKCAQEAsv3wObLTCbUA7GJqKj9vHGf+Fa+tpkO+ZRVve9EpNsMsfXhvFpb8
+RgL8vD+L133wK6csYoDU7zKiAo92FMUWaY1Hy6HqvVr9oevfTV3xhB5rQO1RHJoAfkvhy+wpjo7Q
+cXuzkOpibq2YurVStHAiGqAOMGMXhcVGqPuGhcVcVzVUjsvEzAV9Po9K2rpZ52FE4rDkpDK1pBK+
+uOAyOkgIg/cD8Kugav5tyapydeWMZRJQH1vMQ6OVT24CyAn2yXm2NgTQMS1mpzStP2ioPtTnszIQ
+Ih7ASVzhV6csHb8Yrkx8mgllOyrt9Y2kWRRJFm/FPRNEurOeNV6lnYAXOymVJwIDAQABo4IB0zCC
+Ac8wHwYDVR0jBBgwFoAUgq9sjPjF/pZhfOgfPStxSF7Ei8AwHQYDVR0OBBYEFLfuNf820LvaT4AK
+xrGK3EKx1DE7MA4GA1UdDwEB/wQEAwIFoDAMBgNVHRMBAf8EAjAAMB0GA1UdJQQWMBQGCCsGAQUF
+BwMEBggrBgEFBQcDAjBGBgNVHSAEPzA9MDsGDCsGAQQBsjEBAgEDBTArMCkGCCsGAQUFBwIBFh1o
+dHRwczovL3NlY3VyZS5jb21vZG8ubmV0L0NQUzBaBgNVHR8EUzBRME+gTaBLhklodHRwOi8vY3Js
+LmNvbW9kb2NhLmNvbS9DT01PRE9SU0FDbGllbnRBdXRoZW50aWNhdGlvbmFuZFNlY3VyZUVtYWls
+Q0EuY3JsMIGLBggrBgEFBQcBAQR/MH0wVQYIKwYBBQUHMAKGSWh0dHA6Ly9jcnQuY29tb2RvY2Eu
+Y29tL0NPTU9ET1JTQUNsaWVudEF1dGhlbnRpY2F0aW9uYW5kU2VjdXJlRW1haWxDQS5jcnQwJAYI
+KwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmNvbW9kb2NhLmNvbTAeBgNVHREEFzAVgRNkd213MkBpbmZy
+YWRlYWQub3JnMA0GCSqGSIb3DQEBCwUAA4IBAQALbSykFusvvVkSIWttcEeifOGGKs7Wx2f5f45b
+nv2ghcxK5URjUvCnJhg+soxOMoQLG6+nbhzzb2rLTdRVGbvjZH0fOOzq0LShq0EXsqnJbbuwJhK+
+PnBtqX5O23PMHutP1l88AtVN+Rb72oSvnD+dK6708JqqUx2MAFLMevrhJRXLjKb2Mm+/8XBpEw+B
+7DisN4TMlLB/d55WnT9UPNHmQ+3KFL7QrTO8hYExkU849g58Dn3Nw3oCbMUgny81ocrLlB2Z5fFG
+Qu1AdNiBA+kg/UxzyJZpFbKfCITd5yX49bOriL692aMVDyqUvh8fP+T99PqorH4cIJP6OxSTdxKM
+MIIFHDCCBASgAwIBAgIRAOK7SUh5KuwJ6cSlGPGZWGYwDQYJKoZIhvcNAQELBQAwgZcxCzAJBgNV
+BAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGjAY
+BgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMT0wOwYDVQQDEzRDT01PRE8gUlNBIENsaWVudCBBdXRo
+ZW50aWNhdGlvbiBhbmQgU2VjdXJlIEVtYWlsIENBMB4XDTE5MDEwMjAwMDAwMFoXDTIyMDEwMTIz
+NTk1OVowJDEiMCAGCSqGSIb3DQEJARYTZHdtdzJAaW5mcmFkZWFkLm9yZzCCASIwDQYJKoZIhvcN
+AQEBBQADggEPADCCAQoCggEBALL98Dmy0wm1AOxiaio/bxxn/hWvraZDvmUVb3vRKTbDLH14bxaW
+/EYC/Lw/i9d98CunLGKA1O8yogKPdhTFFmmNR8uh6r1a/aHr301d8YQea0DtURyaAH5L4cvsKY6O
+0HF7s5DqYm6tmLq1UrRwIhqgDjBjF4XFRqj7hoXFXFc1VI7LxMwFfT6PStq6WedhROKw5KQytaQS
+vrjgMjpICIP3A/CroGr+bcmqcnXljGUSUB9bzEOjlU9uAsgJ9sl5tjYE0DEtZqc0rT9oqD7U57My
+ECIewElc4VenLB2/GK5MfJoJZTsq7fWNpFkUSRZvxT0TRLqznjVepZ2AFzsplScCAwEAAaOCAdMw
+ggHPMB8GA1UdIwQYMBaAFIKvbIz4xf6WYXzoHz0rcUhexIvAMB0GA1UdDgQWBBS37jX/NtC72k+A
+CsaxitxCsdQxOzAOBgNVHQ8BAf8EBAMCBaAwDAYDVR0TAQH/BAIwADAdBgNVHSUEFjAUBggrBgEF
+BQcDBAYIKwYBBQUHAwIwRgYDVR0gBD8wPTA7BgwrBgEEAbIxAQIBAwUwKzApBggrBgEFBQcCARYd
+aHR0cHM6Ly9zZWN1cmUuY29tb2RvLm5ldC9DUFMwWgYDVR0fBFMwUTBPoE2gS4ZJaHR0cDovL2Ny
+bC5jb21vZG9jYS5jb20vQ09NT0RPUlNBQ2xpZW50QXV0aGVudGljYXRpb25hbmRTZWN1cmVFbWFp
+bENBLmNybDCBiwYIKwYBBQUHAQEEfzB9MFUGCCsGAQUFBzAChklodHRwOi8vY3J0LmNvbW9kb2Nh
+LmNvbS9DT01PRE9SU0FDbGllbnRBdXRoZW50aWNhdGlvbmFuZFNlY3VyZUVtYWlsQ0EuY3J0MCQG
+CCsGAQUFBzABhhhodHRwOi8vb2NzcC5jb21vZG9jYS5jb20wHgYDVR0RBBcwFYETZHdtdzJAaW5m
+cmFkZWFkLm9yZzANBgkqhkiG9w0BAQsFAAOCAQEAC20spBbrL71ZEiFrbXBHonzhhirO1sdn+X+O
+W579oIXMSuVEY1LwpyYYPrKMTjKECxuvp24c829qy03UVRm742R9Hzjs6tC0oatBF7KpyW27sCYS
+vj5wbal+TttzzB7rT9ZfPALVTfkW+9qEr5w/nSuu9PCaqlMdjABSzHr64SUVy4ym9jJvv/FwaRMP
+gew4rDeEzJSwf3eeVp0/VDzR5kPtyhS+0K0zvIWBMZFPOPYOfA59zcN6AmzFIJ8vNaHKy5QdmeXx
+RkLtQHTYgQPpIP1Mc8iWaRWynwiE3ecl+PWzq4i+vdmjFQ8qlL4fHz/k/fT6qKx+HCCT+jsUk3cS
+jDCCBeYwggPOoAMCAQICEGqb4Tg7/ytrnwHV2binUlYwDQYJKoZIhvcNAQEMBQAwgYUxCzAJBgNV
+BAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGjAY
+BgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMSswKQYDVQQDEyJDT01PRE8gUlNBIENlcnRpZmljYXRp
+b24gQXV0aG9yaXR5MB4XDTEzMDExMDAwMDAwMFoXDTI4MDEwOTIzNTk1OVowgZcxCzAJBgNVBAYT
+AkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGjAYBgNV
+BAoTEUNPTU9ETyBDQSBMaW1pdGVkMT0wOwYDVQQDEzRDT01PRE8gUlNBIENsaWVudCBBdXRoZW50
+aWNhdGlvbiBhbmQgU2VjdXJlIEVtYWlsIENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC
+AQEAvrOeV6wodnVAFsc4A5jTxhh2IVDzJXkLTLWg0X06WD6cpzEup/Y0dtmEatrQPTRI5Or1u6zf
++bGBSyD9aH95dDSmeny1nxdlYCeXIoymMv6pQHJGNcIDpFDIMypVpVSRsivlJTRENf+RKwrB6vcf
+WlP8dSsE3Rfywq09N0ZfxcBa39V0wsGtkGWC+eQKiz4pBZYKjrc5NOpG9qrxpZxyb4o4yNNwTqza
+aPpGRqXB7IMjtf7tTmU2jqPMLxFNe1VXj9XB1rHvbRikw8lBoNoSWY66nJN/VCJv5ym6Q0mdCbDK
+CMPybTjoNCQuelc0IAaO4nLUXk0BOSxSxt8kCvsUtQIDAQABo4IBPDCCATgwHwYDVR0jBBgwFoAU
+u69+Aj36pvE8hI6t7jiY7NkyMtQwHQYDVR0OBBYEFIKvbIz4xf6WYXzoHz0rcUhexIvAMA4GA1Ud
+DwEB/wQEAwIBhjASBgNVHRMBAf8ECDAGAQH/AgEAMBEGA1UdIAQKMAgwBgYEVR0gADBMBgNVHR8E
+RTBDMEGgP6A9hjtodHRwOi8vY3JsLmNvbW9kb2NhLmNvbS9DT01PRE9SU0FDZXJ0aWZpY2F0aW9u
+QXV0aG9yaXR5LmNybDBxBggrBgEFBQcBAQRlMGMwOwYIKwYBBQUHMAKGL2h0dHA6Ly9jcnQuY29t
+b2RvY2EuY29tL0NPTU9ET1JTQUFkZFRydXN0Q0EuY3J0MCQGCCsGAQUFBzABhhhodHRwOi8vb2Nz
+cC5jb21vZG9jYS5jb20wDQYJKoZIhvcNAQEMBQADggIBAHhcsoEoNE887l9Wzp+XVuyPomsX9vP2
+SQgG1NgvNc3fQP7TcePo7EIMERoh42awGGsma65u/ITse2hKZHzT0CBxhuhb6txM1n/y78e/4ZOs
+0j8CGpfb+SJA3GaBQ+394k+z3ZByWPQedXLL1OdK8aRINTsjk/H5Ns77zwbjOKkDamxlpZ4TKSDM
+KVmU/PUWNMKSTvtlenlxBhh7ETrN543j/Q6qqgCWgWuMAXijnRglp9fyadqGOncjZjaaSOGTTFB+
+E2pvOUtY+hPebuPtTbq7vODqzCM6ryEhNhzf+enm0zlpXK7q332nXttNtjv7VFNYG+I31gnMrwfH
+M5tdhYF/8v5UY5g2xANPECTQdu9vWPoqNSGDt87b3gXb1AiGGaI06vzgkejL580ul+9hz9D0S0U4
+jkhJiA7EuTecP/CFtR72uYRBcunwwH3fciPjviDDAI9SnC/2aPY8ydehzuZutLbZdRJ5PDEJM/1t
+yZR2niOYihZ+FCbtf3D9mB12D4ln9icgc7CwaxpNSCPt8i/GqK2HsOgkL3VYnwtx7cJUmpvVdZ4o
+gnzgXtgtdk3ShrtOS1iAN2ZBXFiRmjVzmehoMof06r1xub+85hFQzVxZx5/bRaTKTlL8YXLI8nAb
+R9HWdFqzcOoB/hxfEyIQpx9/s81rgzdEZOofSlZHynoSMYIDyjCCA8YCAQEwga0wgZcxCzAJBgNV
+BAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGjAY
+BgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMT0wOwYDVQQDEzRDT01PRE8gUlNBIENsaWVudCBBdXRo
+ZW50aWNhdGlvbiBhbmQgU2VjdXJlIEVtYWlsIENBAhEA4rtJSHkq7AnpxKUY8ZlYZjANBglghkgB
+ZQMEAgEFAKCCAe0wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjEx
+MjA5MjA0MDQ4WjAvBgkqhkiG9w0BCQQxIgQgNKR+2FqdFvuYYS5QlSdWvFjgvLdXA/Zk2SF3Qw/T
+GQIwgb4GCSsGAQQBgjcQBDGBsDCBrTCBlzELMAkGA1UEBhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIg
+TWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEaMBgGA1UEChMRQ09NT0RPIENBIExpbWl0ZWQx
+PTA7BgNVBAMTNENPTU9ETyBSU0EgQ2xpZW50IEF1dGhlbnRpY2F0aW9uIGFuZCBTZWN1cmUgRW1h
+aWwgQ0ECEQDiu0lIeSrsCenEpRjxmVhmMIHABgsqhkiG9w0BCRACCzGBsKCBrTCBlzELMAkGA1UE
+BhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEaMBgG
+A1UEChMRQ09NT0RPIENBIExpbWl0ZWQxPTA7BgNVBAMTNENPTU9ETyBSU0EgQ2xpZW50IEF1dGhl
+bnRpY2F0aW9uIGFuZCBTZWN1cmUgRW1haWwgQ0ECEQDiu0lIeSrsCenEpRjxmVhmMA0GCSqGSIb3
+DQEBAQUABIIBALE2mhhxIH4wj9n5zA1zicXIStKsDJdtlfqqWxmNgfPaTJCXNfnffCKDw9bUMFnM
+bpypluAGM6E9cdxUq18ztElwau4NSqTaI5bgDfcUv8dDORzxSsFTc3jpEcLSrRAYXmaS6z1+XfxL
+Imc8mWmfyAUJJPxA+kkubrUYpPZw5lwnlyFWRhf4rZliWJso7cE2I0AOLCPW+sgrPzP1l8lnyEia
+4O1Af8HmlfeHECLYqpYwcSzJpRQMf42a7f2iIzxa+2tTNN74Eo3NsygW/XhxWnnjqTCfRdqY+GgZ
+ZNUTvjeV5u3iFGEOPPDfIW3I1QQCld+3VIRi73d0iGGsBQzzQRgAAAAAAAA=
+
+
+--=-tGdrPlP/CxoRpyQj0J8H--
 
