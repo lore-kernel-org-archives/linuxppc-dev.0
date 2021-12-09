@@ -4,87 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA16BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Dec 2021 23:10:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 712F0C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Dec 2021 23:56:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J98rW2l2Xz3dmw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Dec 2021 10:10:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J99tY4YsLz3c4h
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Dec 2021 10:56:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm2 header.b=TuuRuLss;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=dTp5YN8n;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=k4Ixw+o1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=sent.com (client-ip=66.111.4.221;
- helo=new1-smtp.messagingengine.com; envelope-from=zi.yan@sent.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256
- header.s=fm2 header.b=TuuRuLss; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm1 header.b=dTp5YN8n; 
- dkim-atps=neutral
-Received: from new1-smtp.messagingengine.com (new1-smtp.messagingengine.com
- [66.111.4.221])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
+ [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J98kR4dmJz3bXP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Dec 2021 10:04:47 +1100 (AEDT)
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
- by mailnew.nyi.internal (Postfix) with ESMTP id 2ACDE5802C9;
- Thu,  9 Dec 2021 18:04:42 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute3.internal (MEProxy); Thu, 09 Dec 2021 18:04:42 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sent.com; h=from
- :to:cc:subject:date:message-id:in-reply-to:references:reply-to
- :mime-version:content-transfer-encoding; s=fm2; bh=UTQs1ux+hZ7wP
- wqBSLphwUkfQ6f0lSb5ot+4msaDpHs=; b=TuuRuLssMKg6UBRpj/SlIFAWKPmqa
- s+1erp14Y9Z35RZSebwiDROJcjArV2wRAmJBjjX3uEEbDHV6qChrQcfmMdIFce7i
- szjDQPkGHVOHJLgC3+AY3iqMVelNSYSPa/7FhfSQ3mcx4XFHNKTsbJRMO0YhxZtB
- 2jq0UT2K5ZPUJdFqfiwoTcKtsEXjEdwJj6blyVPQ7/n2O2uzXZZJx3knBjJKDKGD
- ln9hIdsuSHCBcVBdHNF4VNWtHRG+0/A3ZZISc3e6on4Njg3oJLUjCfL5bBRPsTqX
- lIZmC4qR835uuOA05xjmm3bIjA5WiH5J8YUFs7c3zwAnWCjvRQa8SwjFg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:date:from
- :in-reply-to:message-id:mime-version:references:reply-to:subject
- :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm1; bh=UTQs1ux+hZ7wPwqBSLphwUkfQ6f0lSb5ot+4msaDpHs=; b=dTp5YN8n
- NtGl0Q1FCz+Ay7HWSTl7DdQPolH5VXkIDGCHCA57hz0dFeNaCrC4cnAJJicMQmBA
- JlxuJYU7S4lGdLLK0NXpfSQi2jbck+onVDsYNJEqdwj2wjCwYwvFCSmNrZxyeYut
- Z+gS6VrkBSBcQLTFmdrxoDg0YKkSQH0PpgIgqzQCZ4GU3z5hHriKkalvxe+dJ3ur
- 853yQ/qjrRseoiy0mfCXDWJTAF7lse+m8bhYxJs0yfr+oeQJdmUwWI7zSiQDo866
- syGhBzkc8H1QGu5blmZYAwDC71n4xDHHhNIs6Ykc2k33jD3Lg5a68VaJpnYGz6PZ
- kHyXZxRCfwAKWQ==
-X-ME-Sender: <xms:iYuyYck0WYFqaCD_WJ4jOvDYi898Fbo7RFveIA_M73YY1bNC0R7yeg>
- <xme:iYuyYb0rqnc7K8ue5vQv3x9rMvRzb5zQAjvLP_nXm9Gl0pxg83zogVESeUXPsYrQ5
- qjqCxNjwYXjt7grcQ>
-X-ME-Received: <xmr:iYuyYarFXAZsHAtOn4M6sDjTNLM5rLGrPfqzpZvcpzkqEuHADwiKMhO0aabh45rwzxFGQLUW>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvuddrkedugddtgecutefuodetggdotefrodftvf
- curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
- uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
- fjughrpefhvffufffkofgjfhhrggfgsedtqhertdertddtnecuhfhrohhmpegkihcujggr
- nhcuoeiiihdrhigrnhesshgvnhhtrdgtohhmqeenucggtffrrghtthgvrhhnpeeijeeuvd
- euudeuhfeghfehieeuvdetvdeugfeigeevteeuieeuhedtgeduheefleenucevlhhushht
- vghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpeiiihdrhigrnhesshgvnh
- htrdgtohhm
-X-ME-Proxy: <xmx:iYuyYYlRsvjzvKR13_WATPZX6pQGBfVbrzROhdKBN-GTQ-3Q50BO0Q>
- <xmx:iYuyYa2RvU11-ltbh154NTkkUlTTCBgE95K_DCfpMLKeE8P-zWj79w>
- <xmx:iYuyYfsQ-zwAi1n3M7mBT5c7NjKZLkTReI_mo9_VLpbeB7m-LHDQ9w>
- <xmx:iouyYQOyibWXBG_QwhJoKzINkPiUFnGMOJHiezyfZ2RY9ICjW5sGgA>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 9 Dec 2021 18:04:41 -0500 (EST)
-From: Zi Yan <zi.yan@sent.com>
-To: David Hildenbrand <david@redhat.com>,
-	linux-mm@kvack.org
-Subject: [RFC PATCH v2 6/7] drivers: virtio_mem: use pageblock size as the
- minimum virtio_mem size.
-Date: Thu,  9 Dec 2021 18:04:13 -0500
-Message-Id: <20211209230414.2766515-7-zi.yan@sent.com>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20211209230414.2766515-1-zi.yan@sent.com>
-References: <20211209230414.2766515-1-zi.yan@sent.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J99sp2s7Dz2yYS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Dec 2021 10:56:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=k4Ixw+o1; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4J99sn4XY5z4xZ1;
+ Fri, 10 Dec 2021 10:56:12 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1639094174;
+ bh=/v4SVtZq8xW+evoRy4+yM+wHmPlfA9nlX7pd5+hkz40=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=k4Ixw+o1rT6uKSLGyAz9FDErqBItZ0z/IJjiPwPEEjOgFLb/Z/rHctYSMJ0nkj2Vh
+ P4yJKALFXD1W6yrnl+kKtZE9lQ5KI5ZQ1K1ARmodGr3xtyRGrSeYs3S3RoeAZvBrE7
+ C2n/mUVNgeKx+AX9Dv4NZ7BtgRRqqCDD71OCe55pHw/5Pq4zKKHEGWHHWav0kEArSE
+ M6Ddew6uJFVhz9ss/8oNLA3/G/xAI2Hw9B4HetqPfJzdZ/igxLgPXNd2qfVi1ts1dl
+ n3PkPAHdqjSQ2/1I0XJzJcgvFHbuO5RMZAGxoaLmlW5msnOXjs1HMzlzVV9SMu4XNi
+ xf8Fk9DnbM7zg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin
+ <npiggin@gmail.com>, "alex@ghiti.fr" <alex@ghiti.fr>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v4 09/10] powerpc/mm: Convert to default topdown mmap
+ layout
+In-Reply-To: <7990b457-0b16-b4fb-d279-89a4cdc093a7@csgroup.eu>
+References: <cover.1638976228.git.christophe.leroy@csgroup.eu>
+ <d2d5510115cba2d56866fa01dab267655a20da71.1638976229.git.christophe.leroy@csgroup.eu>
+ <1639044621.jeow25j0pr.astroid@bobo.none>
+ <360e2a3e-63c6-3ce2-f481-695ad0ec4880@csgroup.eu>
+ <1639046542.qkwu4mjtew.astroid@bobo.none>
+ <87v8zym39m.fsf@mpe.ellerman.id.au>
+ <7990b457-0b16-b4fb-d279-89a4cdc093a7@csgroup.eu>
+Date: Fri, 10 Dec 2021 10:56:11 +1100
+Message-ID: <87r1almixw.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -97,51 +69,112 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Zi Yan <ziy@nvidia.com>
-Cc: Mel Gorman <mgorman@techsingularity.net>, Zi Yan <ziy@nvidia.com>,
- Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, Eric Ren <renzhengeek@gmail.com>,
- virtualization@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>, Vlastimil Babka <vbabka@suse.cz>,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Zi Yan <ziy@nvidia.com>
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> Le 09/12/2021 =C3=A0 12:22, Michael Ellerman a =C3=A9crit=C2=A0:
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>>=20
+>>> Excerpts from Christophe Leroy's message of December 9, 2021 8:22 pm:
+>>>>
+>>>>
+>>>> Le 09/12/2021 =C3=A0 11:15, Nicholas Piggin a =C3=A9crit=C2=A0:
+>>>>> Excerpts from Christophe Leroy's message of December 9, 2021 3:18 am:
+>>>>>> Select CONFIG_ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT and
+>>>>>> remove arch/powerpc/mm/mmap.c
+>>>>>>
+>>>>>> This change provides standard randomisation of mmaps.
+>>>>>>
+>>>>>> See commit 8b8addf891de ("x86/mm/32: Enable full randomization on i3=
+86
+>>>>>> and X86_32") for all the benefits of mmap randomisation.
+>>>>>
+>>>>> The justification seems pretty reasonable.
+>>>>>
+>>>>>>
+>>>>>> Comparison between powerpc implementation and the generic one:
+>>>>>> - mmap_is_legacy() is identical.
+>>>>>> - arch_mmap_rnd() does exactly the same allthough it's written
+>>>>>> slightly differently.
+>>>>>> - MIN_GAP and MAX_GAP are identical.
+>>>>>> - mmap_base() does the same but uses STACK_RND_MASK which provides
+>>>>>> the same values as stack_maxrandom_size().
+>>>>>> - arch_pick_mmap_layout() is almost identical. The only difference
+>>>>>> is that it also adds the random factor to mm->mmap_base in legacy mo=
+de.
+>>>>>>
+>>>>>> That last point is what provides the standard randomisation of mmaps.
+>>>>>
+>>>>> Thanks for describing it. Could you add random_factor to mmap_base for
+>>>>> the legacy path for powerpc as a 2-line change that adds the legacy
+>>>>> randomisation. And then this bigger patch would be closer to a no-op.
+>>>>>
+>>>>
+>>>> You mean you would like to see the following patch before doing the
+>>>> convert ?
+>>>>
+>>>> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/7dabf1cbde67a3=
+46a187881d4f0bd17347e0334a.1533732583.git.christophe.leroy@c-s.fr/
+>>>
+>>> Yes.
+>>=20
+>> My comment at the time was:
+>>=20
+>>    Basically mmap_is_legacy() tells you if any of these is true:
+>>=20=20=20=20
+>>     - process has the ADDR_COMPAT_LAYOUT personality
+>>     - global legacy_va_layout sysctl is enabled
+>>     - stack is unlimited
+>>=20
+>>    And we only want to change the behaviour for the stack. Or at least t=
+he
+>>    change log of your patch only talks about the stack limit, not the
+>>    others.
+>>=20=20=20=20
+>>    Possibly we should just enable randomisation for all three of those
+>>    cases, but if so we must spell it out in the patch.
+>>=20=20=20=20
+>>    It'd also be good to see the output of /proc/x/maps for some processes
+>>    before and after, to show what actually changes.
+>>=20
+>>=20
+>> From: https://github.com/linuxppc/issues/issues/59#issuecomment-502066947
+>>=20
+>>=20
+>> So I think at least the change log on that patch still needs updating to
+>> be clear that it's changing behaviour for all mmap_is_legacy() cases,
+>> not just the stack unlimited case.
+>>=20
+>> There's also a risk changing the mmap legacy behaviour breaks something.
+>> But we are at least matching the behaviour of other architectures, and
+>> there is also an escape hatch in the form of `setarch -R`.
+>
+> That was the purpose of adding in the change log a reference to commit=20
+> 8b8addf891de ("x86/mm/32: Enable full randomization on i386
+> and X86_32")
+>
+> All this applies to powerpc as well.
 
-alloc_contig_range() now only needs to be aligned to pageblock_order,
-drop virtio_mem size requirement that it needs to be the max of
-pageblock_order and MAX_ORDER.
+Yeah, I'm just a pessimist :) So although the security benefit is nice,
+I'm more worried that the layout change will break some mission critical
+legacy app somewhere. So I just like to have that spelled out in the
+change log, or at least in the discussion like here.
 
-Signed-off-by: Zi Yan <ziy@nvidia.com>
----
- drivers/virtio/virtio_mem.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/virtio/virtio_mem.c b/drivers/virtio/virtio_mem.c
-index 96e5a8782769..dab4bce417fd 100644
---- a/drivers/virtio/virtio_mem.c
-+++ b/drivers/virtio/virtio_mem.c
-@@ -2436,15 +2436,13 @@ static int virtio_mem_init_hotplug(struct virtio_me=
-m *vm)
- 				      VIRTIO_MEM_DEFAULT_OFFLINE_THRESHOLD);
+> But I can copy paste the changelog of that commit into mine if you think=
 =20
- 	/*
--	 * We want subblocks to span at least MAX_ORDER_NR_PAGES and
--	 * pageblock_nr_pages pages. This:
-+	 * We want subblocks to span at least pageblock_nr_pages pages. This:
- 	 * - Simplifies our page onlining code (virtio_mem_online_page_cb)
- 	 *   and fake page onlining code (virtio_mem_fake_online).
- 	 * - Is required for now for alloc_contig_range() to work reliably -
- 	 *   it doesn't properly handle smaller granularity on ZONE_NORMAL.
- 	 */
--	sb_size =3D max_t(uint64_t, MAX_ORDER_NR_PAGES,
--			pageblock_nr_pages) * PAGE_SIZE;
-+	sb_size =3D pageblock_nr_pages * PAGE_SIZE;
- 	sb_size =3D max_t(uint64_t, vm->device_block_size, sb_size);
-=20
- 	if (sb_size < memory_block_size_bytes() && !force_bbm) {
---=20
-2.33.0
+> it is more explicit.
 
+Just referring to it is probably fine.
+
+> I agree that old patch was only refering to stack limit, I had no clue=20
+> of everything else at that time.
+
+No worries.
+
+cheers
