@@ -4,80 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF415C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Dec 2021 18:56:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 078E6C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Dec 2021 19:18:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J93DB1GZrz3c6j
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Dec 2021 05:56:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J93jL1dTHz3cGl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Dec 2021 06:18:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=BgFP9f2A;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ckgeEJQI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::52f;
- helo=mail-ed1-x52f.google.com; envelope-from=paolo.bonzini@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1;
+ helo=sin.source.kernel.org; envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=BgFP9f2A; dkim-atps=neutral
-Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com
- [IPv6:2a00:1450:4864:20::52f])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=ckgeEJQI; 
+ dkim-atps=neutral
+Received: from sin.source.kernel.org (sin.source.kernel.org
+ [IPv6:2604:1380:40e1:4800::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J93CN43c3z3bXW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Dec 2021 05:55:58 +1100 (AEDT)
-Received: by mail-ed1-x52f.google.com with SMTP id x10so5327564edd.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Dec 2021 10:55:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=sender:message-id:date:mime-version:user-agent:subject
- :content-language:to:cc:references:from:in-reply-to
- :content-transfer-encoding;
- bh=pWwoYV6f5eE3TAEXwDK4FFkFf2kDxMmFmHp/m8WrKqU=;
- b=BgFP9f2AS8qbKScGYulFkIKBIZF7JhPtQutQZsMXRAyJ3VsVqzndrMn244/YxeSa51
- 1JUMrJPUwH6WLWl6wKGB+t4kB+BfxBS/3tylxelJEEsxjfutVgkY0NGGWdXlHSxUH9/s
- IG5V5H9F2fbokZUBDHFl4GJeYwFtPdJjNvWKwn/iXALcP0VtLbtjDrHf8WZWTCwB3Xhm
- geXXoQOtv6TQOuhRK4Dwojif5cLxpkeylANQuiS2B3K1Yq5gB28MA62ZLyfdvPigvuID
- /R8nJ2bNX2pioETM5nl38v0+1+ad+KAxF1M3iKasVf2dXhApLQn8URlgJhmcpu2xwC3Q
- 0KEQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:sender:message-id:date:mime-version:user-agent
- :subject:content-language:to:cc:references:from:in-reply-to
- :content-transfer-encoding;
- bh=pWwoYV6f5eE3TAEXwDK4FFkFf2kDxMmFmHp/m8WrKqU=;
- b=FRGZKBthpIrdEal1LegWKwYhfogyaLSoabzbN+StA5CQzyRxMfqUPkTbGicZtAAF1E
- dyolUHTYx/Hl/PG1cWvRJ6n+FF06gR0LG0cDP5frmdGyXvLEvfUuFdytMY9Fv5p4Dm3d
- QtLTWDAcU4010ZFbbnxNABYgaURiKKm6S2fWXZd59Fri3fyDJcBxQbkoYls6W7tysGvY
- BWqfWaqXDutP1x52NSMGIgr8SOZSbvutMGBfj2hbco47zgdZrDmFpGueO4Z9kBHrn2BY
- 6ivHvJlEDeKKMfN1cFqJymZSMXjBsbNGI1NcwHOlmkWDTfeaoHbpee5ZENC1jJXO0GPT
- IYIg==
-X-Gm-Message-State: AOAM532Naq9fKl8e22CXpYN4FyLZFosHZMyO+hhs1fC/AoqdaSfq4s/d
- HJq2Zoe1DH9gVepjDBbCjDI=
-X-Google-Smtp-Source: ABdhPJwFiK8t4T2rMj2CnTJwfI5KDFX/WPkj8rfHAoRspVvoAsdM3AeM8i4uwXNbLWDTdu8wAOHXxw==
-X-Received: by 2002:a05:6402:40d2:: with SMTP id
- z18mr31216197edb.395.1639076154663; 
- Thu, 09 Dec 2021 10:55:54 -0800 (PST)
-Received: from ?IPV6:2001:b07:6468:f312:c8dd:75d4:99ab:290a?
- ([2001:b07:6468:f312:c8dd:75d4:99ab:290a])
- by smtp.googlemail.com with ESMTPSA id h7sm279134edb.89.2021.12.09.10.55.52
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 09 Dec 2021 10:55:54 -0800 (PST)
-Message-ID: <68d867c7-1031-00be-e28d-bd435d9c4170@redhat.com>
-Date: Thu, 9 Dec 2021 19:55:52 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J93hZ0SBLz30J3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Dec 2021 06:17:49 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by sin.source.kernel.org (Postfix) with ESMTPS id A4791CE27EF;
+ Thu,  9 Dec 2021 19:17:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B08CEC341C6;
+ Thu,  9 Dec 2021 19:17:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1639077463;
+ bh=l8aT2KFL66nTXjJzC+nFcTYlOzHn82GOsxi5oeVWqXE=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=ckgeEJQIO8DMz1SvfiIwuXablyJcWbuWPrlZfMFBsL7PHVeL+tKZC5OQhmYbvMoJS
+ 2MAnUpmjSgIZJcwQV7maFNq67++Jv+PeWQwGJIF1shOh+jMQlXfBqS0RfkNxl/nwoK
+ /c8U2jJ2E0RSEDn8zbypb1bbuvC7IgET/dqeGLCtqHleCQyL74ptX/ovL+OOjnTk4/
+ svFVOKla7gMg4bdxhHiv99W8HfKviDpsOth4+qsZr053ksruRrkNgTyDNgxyXgPdJZ
+ EkdzOR0TkZJMvKrLIxJp6wXHQA8AW1FeTsQanJKzzvfC1ekiX/92ddtHef/Y+xW/oz
+ ouBiUv7YQ5AcQ==
+Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
+ id 77CF3405D8; Thu,  9 Dec 2021 16:17:41 -0300 (-03)
+Date: Thu, 9 Dec 2021 16:17:41 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Kajol Jain <kjain@linux.ibm.com>
+Subject: Re: [PATCH 0/4] perf: Add new macros for mem_hops field
+Message-ID: <YbJWVYZg1el9PR1I@kernel.org>
+References: <20211206091749.87585-1-kjain@linux.ibm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.2.0
-Subject: Re: [PATCH v5 00/12] KVM: x86/xen: Add in-kernel Xen event channel
- delivery
-Content-Language: en-US
-To: David Woodhouse <dwmw2@infradead.org>, kvm <kvm@vger.kernel.org>
-References: <20211121125451.9489-1-dwmw2@infradead.org>
- <2617aea0-af09-5c0d-1fd7-65e2a814b516@redhat.com>
- <5706a7fec0ffdb18097792374dad90c0400b17cd.camel@infradead.org>
-From: Paolo Bonzini <pbonzini@redhat.com>
-In-Reply-To: <5706a7fec0ffdb18097792374dad90c0400b17cd.camel@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211206091749.87585-1-kjain@linux.ibm.com>
+X-Url: http://acmel.wordpress.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,38 +66,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anup Patel <anup.patel@wdc.com>,
- "wanpengli @ tencent . com" <wanpengli@tencent.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Joao Martins <joao.m.martins@oracle.com>, Will Deacon <will@kernel.org>,
- kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org,
- "joro @ 8bytes . org" <joro@8bytes.org>, Huacai Chen <chenhuacai@kernel.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, karahmed@amazon.com,
- Suzuki K Poulose <suzuki.poulose@arm.com>,
- butt3rflyh4ck <butterflyhuangxx@gmail.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Alexandru Elisei <alexandru.elisei@arm.com>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- "jmattson @ google . com" <jmattson@google.com>,
- "seanjc @ google . com" <seanjc@google.com>,
- "mtosatti @ redhat . com" <mtosatti@redhat.com>, linux-mips@vger.kernel.org,
- James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org,
- Marc Zyngier <maz@kernel.org>, "vkuznets @ redhat . com" <vkuznets@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: mark.rutland@arm.com, atrajeev@linux.vnet.ibm.com, ak@linux.intel.com,
+ daniel@iogearbox.net, rnsastry@linux.ibm.com, peterz@infradead.org,
+ linux-kernel@vger.kernel.org, ast@kernel.org, linux-perf-users@vger.kernel.org,
+ alexander.shishkin@linux.intel.com, yao.jin@linux.intel.com, mingo@redhat.com,
+ paulus@samba.org, maddy@linux.ibm.com, jolsa@kernel.org, namhyung@kernel.org,
+ songliubraving@fb.com, linuxppc-dev@lists.ozlabs.org,
+ kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/9/21 19:47, David Woodhouse wrote:
->>> As in the previous two rounds, the last patch (this time patch 12) is
->>> included as illustration of how we*might*  use this for fixing the UAF
->>> bugs in nesting, but isn't intended to be applied as-is. Patches 1-11 are.
->> Queued 1-7, will be on kvm/next tomorrow though.
->
-> Thanks. I assume you made the changes you wanted to the makefiles then,
-> and will work on the gfn_to_pfn_cache changes you suggested.
+Em Mon, Dec 06, 2021 at 02:47:45PM +0530, Kajol Jain escreveu:
+> Patchset adds new macros for mem_hops field which can be
+> used to represent remote-node, socket and board level details.
+> 
+> Currently the code had macro for HOPS_0, which corresponds
+> to data coming from another core but same node.
+> Add new macros for HOPS_1 to HOPS_3 to represent
+> remote-node, socket and board level data.
+> 
+> For ex: Encodings for mem_hops fields with L2 cache:
 
-Yes, thanks.
+I checked and this hasn't hit mainstream, is it already merged on a tree
+where this is slated to be submitted in the next window? If so please
+let me know which one so that I can merge it on perf/core.
 
-Paolo
+- Arnaldo
+ 
+> L2                      - local L2
+> L2 | REMOTE | HOPS_0    - remote core, same node L2
+> L2 | REMOTE | HOPS_1    - remote node, same socket L2
+> L2 | REMOTE | HOPS_2    - remote socket, same board L2
+> L2 | REMOTE | HOPS_3    - remote board L2
+> 
+> Patch 1 & 2 adds tool and kernel side changes to add new macros for
+> mem_hops field
+> 
+> Patch 3 add data source encodings for power10 and older platforms
+> to represent data based on newer composite  PERF_MEM_LVLNUM* fields
+> 
+> Patch 4 add data source encodings with proper sub_index used to
+> represent memory/cache level data for power10 platform.
+> 
+> Kajol Jain (4):
+>   perf: Add new macros for mem_hops field
+>   tools/perf: Add new macros for mem_hops field
+>   powerpc/perf: Add encodings to represent data based on newer composite
+>     PERF_MEM_LVLNUM* fields
+>   powerpc/perf: Add data source encodings for power10 platform
+> 
+>  arch/powerpc/perf/isa207-common.c     | 60 ++++++++++++++++++++-------
+>  include/uapi/linux/perf_event.h       |  5 ++-
+>  tools/include/uapi/linux/perf_event.h |  5 ++-
+>  tools/perf/util/mem-events.c          | 29 ++++++++-----
+>  4 files changed, 71 insertions(+), 28 deletions(-)
+> 
+> -- 
+> 2.27.0
+
+-- 
+
+- Arnaldo
