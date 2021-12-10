@@ -4,48 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0C2EC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Dec 2021 13:45:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7B26C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Dec 2021 14:54:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J9XG41KDgz3dcQ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Dec 2021 00:45:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J9Ynw6lS0z3bTS
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Dec 2021 01:54:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=axcBhrYY;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=loongson.cn (client-ip=114.242.206.163; helo=loongson.cn;
- envelope-from=yangtiezhu@loongson.cn; receiver=<UNKNOWN>)
-Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
- by lists.ozlabs.org (Postfix) with ESMTP id 4J9XDd3gWBz3bmr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Dec 2021 00:43:43 +1100 (AEDT)
-Received: from linux.localdomain (unknown [113.200.148.30])
- by mail.loongson.cn (Coremail) with SMTP id AQAAf9AxusjBV7Nh3OEFAA--.12281S3; 
- Fri, 10 Dec 2021 21:36:02 +0800 (CST)
-From: Tiezhu Yang <yangtiezhu@loongson.cn>
-To: Dave Young <dyoung@redhat.com>, Baoquan He <bhe@redhat.com>,
- Vivek Goyal <vgoyal@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/2] kdump: vmcore: move copy_to() from vmcore.c to uaccess.h
-Date: Fri, 10 Dec 2021 21:36:00 +0800
-Message-Id: <1639143361-17773-2-git-send-email-yangtiezhu@loongson.cn>
-X-Mailer: git-send-email 2.1.0
-In-Reply-To: <1639143361-17773-1-git-send-email-yangtiezhu@loongson.cn>
-References: <1639143361-17773-1-git-send-email-yangtiezhu@loongson.cn>
-X-CM-TRANSID: AQAAf9AxusjBV7Nh3OEFAA--.12281S3
-X-Coremail-Antispam: 1UD129KBjvJXoW7WF43Ar4Utr4rKr43tw4ktFb_yoW8AF4Upr
- nxJry3Gr48KryUJFnFywnru3WrX3Z3CF4Uta97GF1rZ3sxZr12vrn3uFyagrW8JrZ2kFW5
- CF95GrW3Gr4DXw7anT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDU0xBIdaVrnRJUUUPIb7Iv0xC_KF4lb4IE77IF4wAFF20E14v26rWj6s0DM7CY07I2
- 0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28IrcIa0xkI8VA2jI
- 8067AKxVWUGwA2048vs2IY020Ec7CjxVAFwI0_Gr0_Xr1l8cAvFVAK0II2c7xJM28CjxkF
- 64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVWUCVW8JwA2z4x0Y4vE2Ix0cI8IcV
- CY1x0267AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY
- 1x0267AKxVW0oVCq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4
- xG6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCa
- FVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4IIrI8v6xkF7I0E8cxan2IY04v7MxkIec
- xEwVAFwVW5GwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02
- F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GF
- ylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7Cj
- xVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r
- 1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x07jD
- fHUUUUUU=
-X-CM-SenderInfo: p1dqw3xlh2x3gn0dqz5rrqw2lrqou0/
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::529;
+ helo=mail-ed1-x529.google.com; envelope-from=paolo.bonzini@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=axcBhrYY; dkim-atps=neutral
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com
+ [IPv6:2a00:1450:4864:20::529])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J9Yn66Twbz3bXV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Dec 2021 01:53:28 +1100 (AEDT)
+Received: by mail-ed1-x529.google.com with SMTP id y12so30102620eda.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Dec 2021 06:53:28 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=sender:message-id:date:mime-version:user-agent:subject
+ :content-language:to:cc:references:from:in-reply-to
+ :content-transfer-encoding;
+ bh=ZPopxfZRkg4NTOl+klIySl5FTmEnEGA7/rHJVRlm4p0=;
+ b=axcBhrYY5F+b/7Id5o19CVMf16DlNK++Iv+QQkzI9Mnf7ZTRnJCaH9XidNQOFsOBwc
+ KF/wXTKGrFlcXFR9QcXh0tmfQaqluH4DlsgXOrJpdK/LJQrYRJUCa1eRc6to96/IwV2B
+ BlyqvjvgggseyLJ8qtFA8u7nkulUxlTbfdET3/IxAhjbM4n3l7+In1S5EkRZyqGZl5Ck
+ wKgANnRzx+uuEJWvWG98rzsSbQ650jB+d4dvhyUIs42e58MDzXi1cDPbfAvmMlzdfpM0
+ BOcEFYO9Tm6j84wjCz2oTA6sCdsavxKcq1hTPn1dIX2c8ATBFG3sdm+KRLTm8NvOgy5R
+ pgDw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:sender:message-id:date:mime-version:user-agent
+ :subject:content-language:to:cc:references:from:in-reply-to
+ :content-transfer-encoding;
+ bh=ZPopxfZRkg4NTOl+klIySl5FTmEnEGA7/rHJVRlm4p0=;
+ b=L9jOdQxEMDW9fVyNWYsjgGXc8JYXDr5EgP7/oluPBilr2yyfce7eJ5VvWu4UYzwpEE
+ ingJ4qutHuFR+vYcg0/VgiV1IB24imOMDoyq9KybfUg6yCXRjeRZbK9K9FfwYsL40yxe
+ gYt7amH0RIitJJMLPfcxHxCin4294vsGelyC0Cpf0uOAC880T2vbcVZW7wGC1ZLmd+ep
+ 7ArNKFQajCHcpret/3HjPoFA4ELvKuL+k7O5G4ZtYCXPKaT+Mh/M/Yd6PGqRIoVFTzBl
+ wBOqaxzP75ZTeoVFXalewEsc+RzkB1Lo76YzYZ7H8rVfGbNEhoPSOxabNk72tmegjfb3
+ UdFg==
+X-Gm-Message-State: AOAM532PAvwOvdg8sinOQm1+J9EMiWTO13S9DhSTXHrBQZJ3fsAuzwS+
+ KNpm/yaGiMZNDLoXTy0Gyac=
+X-Google-Smtp-Source: ABdhPJzHeROj3HC5Sukl5Uto4GX2p0nJsKAKZ5t4nooil+qkn+wpDmJamxHHNUoZnQ1//006tmFgjQ==
+X-Received: by 2002:a50:e003:: with SMTP id e3mr38840536edl.374.1639147986203; 
+ Fri, 10 Dec 2021 06:53:06 -0800 (PST)
+Received: from ?IPV6:2001:b07:6468:f312:48f9:bea:a04c:3dfe?
+ ([2001:b07:6468:f312:48f9:bea:a04c:3dfe])
+ by smtp.googlemail.com with ESMTPSA id
+ yc24sm1573561ejb.104.2021.12.10.06.53.04
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Fri, 10 Dec 2021 06:53:05 -0800 (PST)
+Message-ID: <2d864e94-1bae-4cc2-7242-676ef102398f@redhat.com>
+Date: Fri, 10 Dec 2021 15:53:04 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.2.0
+Subject: Re: [PATCH v5 08/12] KVM: Reinstate gfn_to_pfn_cache with
+ invalidation support
+Content-Language: en-US
+To: David Woodhouse <dwmw2@infradead.org>, kvm <kvm@vger.kernel.org>
+References: <20211121125451.9489-1-dwmw2@infradead.org>
+ <20211121125451.9489-9-dwmw2@infradead.org>
+ <b1bacc6f-be56-4108-6e52-4315a021184b@redhat.com>
+ <b614d9ae0fe7910cfa72eee0b4077776f8012e5f.camel@infradead.org>
+ <6cb2cd57-16f3-d0ec-adf6-cb8fdcbae035@redhat.com>
+ <5d0a68cd0d06884a2a58338aace811144990f8f5.camel@infradead.org>
+From: Paolo Bonzini <pbonzini@redhat.com>
+In-Reply-To: <5d0a68cd0d06884a2a58338aace811144990f8f5.camel@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,75 +92,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- kexec@lists.infradead.org, linux-mips@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: Anup Patel <anup.patel@wdc.com>,
+ "wanpengli @ tencent . com" <wanpengli@tencent.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Joao Martins <joao.m.martins@oracle.com>, Will Deacon <will@kernel.org>,
+ kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org,
+ "joro @ 8bytes . org" <joro@8bytes.org>, Huacai Chen <chenhuacai@kernel.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, karahmed@amazon.com,
+ Suzuki K Poulose <suzuki.poulose@arm.com>,
+ butt3rflyh4ck <butterflyhuangxx@gmail.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Alexandru Elisei <alexandru.elisei@arm.com>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ "jmattson @ google . com" <jmattson@google.com>,
+ "seanjc @ google . com" <seanjc@google.com>,
+ "mtosatti @ redhat . com" <mtosatti@redhat.com>, linux-mips@vger.kernel.org,
+ James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org,
+ Marc Zyngier <maz@kernel.org>, "vkuznets @ redhat . com" <vkuznets@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In arch/*/kernel/crash_dump*.c, there exist similar code about
-copy_oldmem_page(), move copy_to() from vmcore.c to uaccess.h,
-and then we can use copy_to() to simplify the related code.
+On 12/10/21 13:25, David Woodhouse wrote:
+> On Thu, 2021-12-09 at 23:34 +0100, Paolo Bonzini wrote:
+>>
+>> Compared to the review it's missing this hunk:
+>>
+>> @@ -265,7 +265,7 @@ void kvm_gfn_to_pfn_cache_unmap(struct kvm *kvm, struct gfn_to_pfn_cache *gpc)
+>>
+>>          gpc->valid = false;
+>>
+>> -       old_khva = gpc->khva;
+>> +       old_khva = (void *)((unsigned long)gpc->khva & ~PAGE_MASK);
+>>          old_dirty = gpc->dirty;
+> 
+> Do you know what? I couldn't bring myself to add that a second time. I
+> managed it once, but it made me sad.
+> 
+> Did it like this instead:
+> 
+> -       old_khva = gpc->khva;
+> +       old_khva = gpc->khva - offset_in_page(gpc->khva);
 
-Signed-off-by: Tiezhu Yang <yangtiezhu@loongson.cn>
----
- fs/proc/vmcore.c        | 14 --------------
- include/linux/uaccess.h | 14 ++++++++++++++
- 2 files changed, 14 insertions(+), 14 deletions(-)
+Very nice, and it would have deserved a macro in include/linux if there 
+wasn't a decent way to write it.
 
-diff --git a/fs/proc/vmcore.c b/fs/proc/vmcore.c
-index 509f851..c5976a8 100644
---- a/fs/proc/vmcore.c
-+++ b/fs/proc/vmcore.c
-@@ -238,20 +238,6 @@ copy_oldmem_page_encrypted(unsigned long pfn, char *buf, size_t csize,
- 	return copy_oldmem_page(pfn, buf, csize, offset, userbuf);
- }
- 
--/*
-- * Copy to either kernel or user space
-- */
--static int copy_to(void *target, void *src, size_t size, int userbuf)
--{
--	if (userbuf) {
--		if (copy_to_user((char __user *) target, src, size))
--			return -EFAULT;
--	} else {
--		memcpy(target, src, size);
--	}
--	return 0;
--}
--
- #ifdef CONFIG_PROC_VMCORE_DEVICE_DUMP
- static int vmcoredd_copy_dumps(void *dst, u64 start, size_t size, int userbuf)
- {
-diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
-index ac03940..4a6c3e4 100644
---- a/include/linux/uaccess.h
-+++ b/include/linux/uaccess.h
-@@ -201,6 +201,20 @@ copy_to_user(void __user *to, const void *from, unsigned long n)
- 	return n;
- }
- 
-+/*
-+ * Copy to either kernel or user space
-+ */
-+static inline int copy_to(void *target, void *src, size_t size, int userbuf)
-+{
-+	if (userbuf) {
-+		if (copy_to_user((char __user *) target, src, size))
-+			return -EFAULT;
-+	} else {
-+		memcpy(target, src, size);
-+	}
-+	return 0;
-+}
-+
- #ifndef copy_mc_to_kernel
- /*
-  * Without arch opt-in this generic copy_mc_to_kernel() will not handle
--- 
-2.1.0
+> I checked that for me at least, GCC is clever enough to just do the
+> mask.
+> 
+>          old_khva = gpc->khva - offset_in_page(gpc->khva);
+>   131:   48 8b 43 78             mov    0x78(%rbx),%rax
+>   135:   48 25 00 f0 ff ff       and    $0xfffffffffffff000,%rax
+> 
+> 
+> I still don't see the previous patches in kvm/next — is that an
+> automatic push after testing has passed, or is the kernel.org
+> infrastructure just *really* slow?
+
+No, it's me really wanting to send out the -rc5 pull request before the 
+weekend.  Just wait five more minutes.
+
+Paolo
+
+> I've pushed based on the currently-visible kvm/next to
+> https://git.infradead.org/users/dwmw2/linux.git/shortlog/refs/heads/xen-evtchn
+> and can resend when the tree finally surfaces.
+> 
 
