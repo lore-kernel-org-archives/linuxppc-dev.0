@@ -4,81 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1D03C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Dec 2021 20:39:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AB60C4167E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Dec 2021 22:19:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4J9jSh2cR5z3cNQ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Dec 2021 07:39:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4J9lgc6RvYz3cTc
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Dec 2021 09:19:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=BRCUsPR0;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=0nUrI//w;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vv6Me8N9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=canonical.com (client-ip=185.125.188.123;
- helo=smtp-relay-internal-1.canonical.com;
- envelope-from=alexandre.ghiti@canonical.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
+ helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20210705 header.b=BRCUsPR0; 
+ secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
+ header.s=2020 header.b=0nUrI//w; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=vv6Me8N9; 
  dkim-atps=neutral
-Received: from smtp-relay-internal-1.canonical.com
- (smtp-relay-internal-1.canonical.com [185.125.188.123])
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4J9jRw66Nrz2yng
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Dec 2021 07:39:08 +1100 (AEDT)
-Received: from mail-ed1-f70.google.com (mail-ed1-f70.google.com
- [209.85.208.70])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id 30B3A3F1BA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Dec 2021 20:38:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
- s=20210705; t=1639168739;
- bh=5yoGUr7pzPnZBDOdChvpH3bNEBPR4tkHUNd2RR7JJH4=;
- h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
- To:Cc:Content-Type;
- b=BRCUsPR06OVqA3BSsD2JDjbk0HpixY2uxOL+YPspNWLiElif4YZ/QmhfKPeNczP17
- kt7Lm2ZJbHUmiPzO+Ow4d3qOY2kQfEeaUFUnW7TS2SYvychOKysswYMLNh/FSS/CH5
- a7QEzF7+Tpned5dvgBdKfCfCNoM7+yV6M7DtZJdWJtr2yj3EEOFc6OIo1Fmu/0LbeR
- BhAmQ29pvEZHK592tlMl5l9hFP5OoCBJDNAJRWoFd/CxH24OR34Xe8HbhZ4yyzd8J3
- gbIX64rcF1/C/s+ReLqKPbtPFk0z6kySgnRaLhMrigwqK2VLGYVRvH/UER1lgkkUEI
- 5pENmOAe6qpMQ==
-Received: by mail-ed1-f70.google.com with SMTP id
- c1-20020aa7c741000000b003e7bf1da4bcso9125034eds.21
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Dec 2021 12:38:59 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=5yoGUr7pzPnZBDOdChvpH3bNEBPR4tkHUNd2RR7JJH4=;
- b=S9dDSQ2+0y61OfFJfeCcgyNmftIXl2nYAWgBzLeZUmXTmSYj8R04dgRdWHevZLxvg6
- B1Q8bCIEtc3C6KHtSuWSpfhKcb8yUejrmiF5uOpZgfyNxiG/35GInL1I4aSleQL17KAz
- x7RANrl/6tBjACJOQeVdD7FScoIrPthBbBG+t3B2Z63ehR4t8sAeNbhWUGE2is1EHbHV
- osjlOUQZwxu8CFPrFgYQVF/d4gVtbc8o/CeuQkYXZiKzp4/CDoPzqTUBgAPafeNSGWzt
- R+GVT9BoE3mCtI+IfBTExM60rx6Z9fpeIboUSDwiqG8Dw7cjV5QvVojQPNpOlxTuLcK2
- yLzg==
-X-Gm-Message-State: AOAM531qsnZ6Lxgv2WWM9NRGt9v/ONQRbAlv9QxouvYZy7xqYQfPrkHs
- KYSP1X1BOuBPMGFZ+UHNNyMIpckXVEF9M5dRjGFpmbM89pKgEgh2z5kwDkRE7zzajNonRXYxZnp
- a8D+V322EhCtNFHvzRll4h7t7qtnIrsAHHXzYUzRoQ+ut1ybQHSAjFnwrIVg=
-X-Received: by 2002:a05:6402:274c:: with SMTP id
- z12mr43261404edd.294.1639168738751; 
- Fri, 10 Dec 2021 12:38:58 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxgA236x/yjx6TWkXOleXezvnEgrIAVa1yzBQb8Ze+JaO9/0KXgBOBtxlFprZiSdLFnjBlcdw/PZl80G6UL+y4=
-X-Received: by 2002:a05:6402:274c:: with SMTP id
- z12mr43261361edd.294.1639168738589; 
- Fri, 10 Dec 2021 12:38:58 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4J9lfz2ByNz2xtp
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Dec 2021 09:18:51 +1100 (AEDT)
+Message-ID: <20211210221813.372357371@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020; t=1639174728;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ references:references; bh=jxff/xJv3Qst4ZB5tRChjTLXCWZK8WA2PIPQRiU/rvY=;
+ b=0nUrI//widUx8A75bvq7IZvZU0OgOd7DLmm1Zp2ltSlJUJ9r/TrE9oF6ObjsG/CcBOkiYi
+ qXw9+h4dQG4uyEMuyKeiBlxL4kElXM0TpMwsf3wmE81Z2stJW+ptloJgs/g6qP6M8dR2QU
+ njRyGX3+6rX5xnHULZR7tzFqLrE14gpMsFum/pVWgPlIZ+TpaG54gue+YwCmJ2mvy52BBv
+ eJfY6AUb8aIr3HCk56T6i2B/ksAdJHhdmvylSbmQ1UvjRhp/j3IltXf1nTsUbtPgTPyfJ7
+ dTv1xOVMJ9eZrRTBBhQoxRXkLcJLQxyY0zHx9KeMYtAVYinBZUzQopdXWot8gQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020e; t=1639174728;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ references:references; bh=jxff/xJv3Qst4ZB5tRChjTLXCWZK8WA2PIPQRiU/rvY=;
+ b=vv6Me8N9GQvFvm+KtHhMWgm41j6C3fva9jay/jD8ClFpKD7/3pJq+KAqrq6JZCZO9BTGwf
+ CoMF7Kja5mNu2oDA==
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [patch V3 03/35] x86/apic/msi: Use PCI device MSI property
+References: <20211210221642.869015045@linutronix.de>
 MIME-Version: 1.0
-References: <20211105154334.1841927-1-alexandre.ghiti@canonical.com>
- <CAK8P3a2AnLJgGNBFvjUQqXd-Az9vjgE7yJQXGDwCav5E0btSsg@mail.gmail.com>
-In-Reply-To: <CAK8P3a2AnLJgGNBFvjUQqXd-Az9vjgE7yJQXGDwCav5E0btSsg@mail.gmail.com>
-From: Alexandre Ghiti <alexandre.ghiti@canonical.com>
-Date: Fri, 10 Dec 2021 21:38:47 +0100
-Message-ID: <CA+zEjCtajRJhs8zSdR_oFBOO3P5FWWZJ3L6N-GK+JnUjdymTiA@mail.gmail.com>
-Subject: Re: [PATCH 0/7] Cleanup after removal of configs
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 10 Dec 2021 23:18:47 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,62 +66,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Lee Jones <lee.jones@linaro.org>, linux-cifs@vger.kernel.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>,
- Linux-sh list <linux-sh@vger.kernel.org>, Russell King <linux@armlinux.org.uk>,
- linux-cachefs@redhat.com, Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Lukas Bulwahn <lukas.bulwahn@gmail.com>, Guenter Roeck <linux@roeck-us.net>,
- Wim Van Sebroeck <wim@linux-watchdog.org>, Kalle Valo <kvalo@codeaurora.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- samba-technical@lists.samba.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Ronnie Sahlberg <lsahlber@redhat.com>, Steve French <sfrench@samba.org>,
- Luis Chamberlain <mcgrof@kernel.org>, Jeff Layton <jlayton@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-power@fi.rohmeurope.com
+Cc: Nishanth Menon <nm@ti.com>, Mark Rutland <mark.rutland@arm.com>,
+ Stuart Yoder <stuyoder@gmail.com>, Will Deacon <will@kernel.org>,
+ Ashok Raj <ashok.raj@intel.com>, Joerg Roedel <joro@8bytes.org>,
+ Jassi Brar <jassisinghbrar@gmail.com>, Sinan Kaya <okaya@kernel.org>,
+ iommu@lists.linux-foundation.org, Peter Ujfalusi <peter.ujfalusi@gmail.com>,
+ Bjorn Helgaas <helgaas@kernel.org>, linux-arm-kernel@lists.infradead.org,
+ Jason Gunthorpe <jgg@nvidia.com>, linux-pci@vger.kernel.org,
+ xen-devel@lists.xenproject.org, Kevin Tian <kevin.tian@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>, Robin Murphy <robin.murphy@arm.com>,
+ Alex Williamson <alex.williamson@redhat.com>, Cedric Le Goater <clg@kaod.org>,
+ Santosh Shilimkar <ssantosh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ Megha Dey <megha.dey@intel.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>,
+ Juergen Gross <jgross@suse.com>, Tero Kristo <kristo@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vkoul@kernel.org>,
+ Marc Zygnier <maz@kernel.org>, dmaengine@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Nov 5, 2021 at 4:56 PM Arnd Bergmann <arnd@arndb.de> wrote:
->
-> On Fri, Nov 5, 2021 at 4:43 PM Alexandre Ghiti
-> <alexandre.ghiti@canonical.com> wrote:
-> >
-> > While bumping from 5.13 to 5.15, I found that a few deleted configs had
-> > left some pieces here and there: this patchset cleans that.
-> >
-> > Alexandre Ghiti (7):
-> >   Documentation, arch: Remove leftovers from fscache/cachefiles
-> >     histograms
-> >   Documentation, arch: Remove leftovers from raw device
-> >   Documentation, arch: Remove leftovers from CIFS_WEAK_PW_HASH
-> >   arch: Remove leftovers from mandatory file locking
-> >   Documentation, arch, fs: Remove leftovers from fscache object list
-> >   include: mfd: Remove leftovers from bd70528 watchdog
-> >   arch: Remove leftovers from prism54 wireless driver
->
-> Looks all good to me, thanks a lot for the cleanup!
->
-> For arch/arm/configs:
->
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
->
-> assuming this goes through someone else's tree. Let me know if you need me
-> to pick up the patches in the asm-generic tree for cross-architecture work.
+From: Thomas Gleixner <tglx@linutronix.de>
 
-Arnd, do you mind taking the whole series except patch 6 ("include:
-mfd: Remove leftovers from bd70528 watchdog") as this will be handled
-separately. I can ask Jonathan for the doc patches if needed.
+instead of fiddling with MSI descriptors.
 
-Thanks,
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+V3: Use pci_dev->msix_enabled - Jason
+---
+ arch/x86/kernel/apic/msi.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-Alex
+--- a/arch/x86/kernel/apic/msi.c
++++ b/arch/x86/kernel/apic/msi.c
+@@ -160,11 +160,8 @@ static struct irq_chip pci_msi_controlle
+ int pci_msi_prepare(struct irq_domain *domain, struct device *dev, int nvec,
+ 		    msi_alloc_info_t *arg)
+ {
+-	struct pci_dev *pdev = to_pci_dev(dev);
+-	struct msi_desc *desc = first_pci_msi_entry(pdev);
+-
+ 	init_irq_alloc_info(arg, NULL);
+-	if (desc->pci.msi_attrib.is_msix) {
++	if (to_pci_dev(dev)->msix_enabled) {
+ 		arg->type = X86_IRQ_ALLOC_TYPE_PCI_MSIX;
+ 	} else {
+ 		arg->type = X86_IRQ_ALLOC_TYPE_PCI_MSI;
 
->
->          Arnd
