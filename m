@@ -4,62 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 003DDC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Dec 2021 17:54:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87B33C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Dec 2021 17:55:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JBFlL0cxhz3cTN
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Dec 2021 04:54:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JBFmg5Ckmz3cZ7
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Dec 2021 04:55:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.130; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JBFkm35Cyz2xCB
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Dec 2021 04:53:50 +1100 (AEDT)
-Received: from mail-wm1-f46.google.com ([209.85.128.46]) by
- mrelayeu.kundenserver.de (mreue011 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1N3KkM-1mW19v3hHm-010P0m for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Dec
- 2021 18:53:45 +0100
-Received: by mail-wm1-f46.google.com with SMTP id
- k37-20020a05600c1ca500b00330cb84834fso11239045wms.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Dec 2021 09:53:45 -0800 (PST)
-X-Gm-Message-State: AOAM530GhUgKJFsjj6xVNwi7WdVNiM2Gey7gtpJYqHYvSWaDnDYoTTs/
- If/tjPGPFQ/I7msFkpzO+7wNH5qtbr4RHQuO6pU=
-X-Google-Smtp-Source: ABdhPJz9JqWJLeTUfS5IahRcetLl+JbMiIvXpgsv1eGAXoUb1XDPjjtJEfoNcEXB+cjjosPGuUvpUWQic5X/F+X6I8s=
-X-Received: by 2002:a1c:1c1:: with SMTP id 184mr24672882wmb.1.1639236184421;
- Sat, 11 Dec 2021 07:23:04 -0800 (PST)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i5MBNOa7;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1;
+ helo=sin.source.kernel.org; envelope-from=helgaas@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=i5MBNOa7; 
+ dkim-atps=neutral
+Received: from sin.source.kernel.org (sin.source.kernel.org
+ [IPv6:2604:1380:40e1:4800::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JBFm11r3jz2xCB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Dec 2021 04:54:57 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by sin.source.kernel.org (Postfix) with ESMTPS id 00BA5CE000E;
+ Sat, 11 Dec 2021 17:54:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B49D5C004DD;
+ Sat, 11 Dec 2021 17:54:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1639245292;
+ bh=Jo5vuURk4kAxgHfUfbWfY4wl1/saPxtBexHyy82NpVI=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:From;
+ b=i5MBNOa7UbMhaF8Qi1kXozP9kU+uRRnv8rt5PGCSwloZN+Hq+sGPClErbZ02FmHQz
+ FZqg0HfwnxjaYSpBTuvuKodKN86pHyZRcv0fTf7EaBYbc7hzj36ozg3PAguJWJCa0c
+ VwZnPCExI2LewKGyuDW+sOqh2fH0kkZKTRJ7idKUMI/QOzhOh1/dqjHdBJOgvikrwY
+ KUOzLpel2aBXN/K0XJ/5tgiwOikXuteZidjxfLjIxJi1BQulM+Xv8ii6ARNgqM2YVG
+ hbBNhQax507aYsOaniPlWMPmd+TtMTOZLfJ4LCJ8XIZleu1Lq/4205NLz1IjYTk+nd
+ Kihn5fOrnHkZQ==
+Date: Sat, 11 Dec 2021 11:54:50 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Jiasheng Jiang <jiasheng@iscas.ac.cn>
+Subject: Re: [PATCH] PCI/AER: potential dereference of null pointer
+Message-ID: <20211211175450.GA398271@bhelgaas>
 MIME-Version: 1.0
-References: <20211210221642.869015045@linutronix.de>
- <20211210221813.928842960@linutronix.de>
-In-Reply-To: <20211210221813.928842960@linutronix.de>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Sat, 11 Dec 2021 16:22:48 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a00M1MGPEwMQpgGJ9-g9-P6e9wo8G1frfVMqJ4bRp1Okg@mail.gmail.com>
-Message-ID: <CAK8P3a00M1MGPEwMQpgGJ9-g9-P6e9wo8G1frfVMqJ4bRp1Okg@mail.gmail.com>
-Subject: Re: [patch V3 12/35] soc: ti: ti_sci_inta_msi: Allocate MSI device
- data on first use
-To: Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:goIvRmBq6GW605QwxHNzgR80bP+pjoP9H6gy436CPjD6DGAN2s3
- 7+QX5+hjW/5x0CD7kfMWLPpCSZc/8AbAZ9a0m5wW9DrloraDTkhb2Es01kjhhtY+QqX72Tz
- tpZt3mV5VvsPpBvYKUVN1r7rBuAL45Ii//MYlM4HRLpo7MZipUK7bw0QyIoDSkanPmM+2u1
- o/O4oIj3ULSng0nq4RsQA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:W7311HDxBoc=:7LNSBUA2sTU747yIP+a0E/
- HGaPL1BEzKQu3XF3kHAN3O+zhIVdjBuKudDXgNejoUKMrzit+Dtg2VukE90P9T4D5xIpozs4F
- 4PCwRJL4zBj8F9vEEgvrFL9G/q+P51MoTuO+3hWFxAPnmUVtBfjdxXnLuNn6YFiyv0zTE28VB
- 5LDKI2BhOZUAExwklTFbrgzL+Otdaip7zfXDOp9hVOk0E2TahTbdk5Su4NfBs5y+dL4N7KsYs
- s4NebLZefQ3nbCINGwEbE5iXRrFTTZgDFQP1YVz70CIeqWspMNsTP+ZxuB1UcyPijXBVXM9Ov
- Mrmb42JFO+Gka86o2PO8YUNIqRBUlBRbNnp82G3Y/upcTOLsMkj83DA8H1yGP6jC3xPirogmd
- hWjRlwUB4ZgLuyksJcBsK5thE96ifxwoB63BiDIiV2Xjm5tMcAxVVRXMja2jIpkrJkxf57xhB
- 13t/RYdRssKRUmFE652DsoC9XE9SC5x84Ou9B5jkuDB1q1V7ku9wr8ruFTxrrf4ql4+GewLZX
- X2gVQ19ZLWA/4wAv5JE+eClgU1TtE+5rnzrA48/WaD2dVtoxwQrB9XQVhzonngE52h/uxUd78
- 1SSQZG+CVY1FR3m2cAPEL4c30WdsXn9FoSa86fgCM6AxUJyaxj8KBwxaHPQL7KnrXLEiB+CnI
- 9QwxzWuwlnsKyUjUo125mJAW89D+MnCUy5337zSc+vIsIL5+ivmbpdDiY9NHk2LfyXtOtoWq0
- lnheROE4c9CaNR8T1Ds1QDHJPOEMQ41S2bJs6+4VFwO0tV2bQp2oe9nzy9tcDtPsnfWqC4L4R
- uN+GjP1HA63UgAJYgRCVJJowgkyacO9ucYDIgkeqCUT6Tr5KYA=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211209094556.2085357-1-jiasheng@iscas.ac.cn>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,40 +63,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nishanth Menon <nm@ti.com>, Mark Rutland <mark.rutland@arm.com>,
- Stuart Yoder <stuyoder@gmail.com>, Will Deacon <will@kernel.org>,
- Ashok Raj <ashok.raj@intel.com>, Joerg Roedel <joro@8bytes.org>,
- Jassi Brar <jassisinghbrar@gmail.com>, Sinan Kaya <okaya@kernel.org>,
- "open list:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
- Peter Ujfalusi <peter.ujfalusi@gmail.com>, Bjorn Helgaas <helgaas@kernel.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Jason Gunthorpe <jgg@nvidia.com>, linux-pci <linux-pci@vger.kernel.org>,
- xen-devel <xen-devel@lists.xenproject.org>, Kevin Tian <kevin.tian@intel.com>,
- Arnd Bergmann <arnd@arndb.de>, Robin Murphy <robin.murphy@arm.com>,
- Alex Williamson <alex.williamson@redhat.com>, Cedric Le Goater <clg@kaod.org>,
- Santosh Shilimkar <ssantosh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Megha Dey <megha.dey@intel.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>,
- Juergen Gross <jgross@suse.com>, Tero Kristo <kristo@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Vinod Koul <vkoul@kernel.org>,
- Marc Zygnier <maz@kernel.org>, dmaengine@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, oohall@gmail.com,
+ bhelgaas@google.com, Rajat Jain <rajatja@google.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Dec 10, 2021 at 11:19 PM Thomas Gleixner <tglx@linutronix.de> wrote:
->
-> From: Thomas Gleixner <tglx@linutronix.de>
->
-> Allocate the MSI device data on first invocation of the allocation function.
->
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
-> Cc: Nishanth Menon <nm@ti.com>
-> Cc: Tero Kristo <kristo@kernel.org>
-> Cc: Santosh Shilimkar <ssantosh@kernel.org>
-> Cc: linux-arm-kernel@lists.infradead.org
+[+cc Rajat, author of aer_stats:
+db89ccbe52c7 ("PCI/AER: Define aer_stats structure for AER capable devices"
+81aa5206f9a7 ("PCI/AER: Add sysfs attributes to provide AER stats and breakdown"]
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+On Thu, Dec 09, 2021 at 05:45:56PM +0800, Jiasheng Jiang wrote:
+> he return value of kzalloc() needs to be checked.
+> To avoid use of null pointer in case of the failure of alloc.
+> 
+> Fixes: db89ccbe52c7 ("PCI/AER: Define aer_stats structure for AER capable devices")
+> Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
+> ---
+>  drivers/pci/pcie/aer.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> index ec943cee5ecc..d04303edf468 100644
+> --- a/drivers/pci/pcie/aer.c
+> +++ b/drivers/pci/pcie/aer.c
+> @@ -376,6 +376,8 @@ void pci_aer_init(struct pci_dev *dev)
+>  		return;
+>  
+>  	dev->aer_stats = kzalloc(sizeof(struct aer_stats), GFP_KERNEL);
+> +	if (!dev->aer_stats)
+> +		return;
+
+Did you actually trip over a null pointer dereference, and if so,
+where was it?
+
+I think the intent here was that aer_stats is a non-essential feature,
+and if we can't allocate space to keep the statistics, we can still
+use the device without the stats.
+
+I *think* all the users of dev->aer_stats check for NULL before
+dereferencing it, but if you found a case that doesn't do that, we
+should definitely fix it.
+
+In a few cases (aer_stats_dev_attr, aer_stats_rootport_attr), the
+check isn't obvious -- it happens in aer_stats_attrs_are_visible().
+If aer_stats_attrs_are_visible() finds that aer_stats is NULL, those
+sysfs attributes should not be visible, and the corresponding *_show()
+functions should never be called.
+
+>  	/*
+>  	 * We save/restore PCI_ERR_UNCOR_MASK, PCI_ERR_UNCOR_SEVER,
+> -- 
+> 2.25.1
+> 
