@@ -4,110 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18530C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 14:48:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0983C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 02:29:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JCPX11xFHz3bd0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Dec 2021 01:48:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JC57815t6z3c9t
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 13:29:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IV2309X7;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IV2309X7;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=foxmail.com header.i=@foxmail.com header.a=rsa-sha256 header.s=s201512 header.b=OarK1TFf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=joe.lawrence@redhat.com;
+ smtp.mailfrom=foxmail.com (client-ip=203.205.251.27;
+ helo=out203-205-251-27.mail.qq.com; envelope-from=xkernel.wang@foxmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=IV2309X7; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=IV2309X7; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ unprotected) header.d=foxmail.com header.i=@foxmail.com header.a=rsa-sha256
+ header.s=s201512 header.b=OarK1TFf; dkim-atps=neutral
+X-Greylist: delayed 52033 seconds by postgrey-1.36 at boromir;
+ Mon, 13 Dec 2021 13:28:40 AEDT
+Received: from out203-205-251-27.mail.qq.com (out203-205-251-27.mail.qq.com
+ [203.205.251.27])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JCPWB3zVGz2yLX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Dec 2021 01:47:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1639406864;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=A8hcGLH+T0gUqYBZFFXWjQPxtS91IvQDULYdbE3ot/k=;
- b=IV2309X7lLP0zIPOKI6ekGIqcuquVYpCj+Pcte1D0J7GC6yDea6NM9oEmjbaz9wUBxf03Q
- 2T34m191hBq+7wvaRlgWpXxIELevXZCo7oo9RwtbMMpr/wdVjFIOsj0yagh1A088cxMnWr
- c1H/Aw/Py/zrUcSeI2BHIHCkGeOR/Ks=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1639406864;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=A8hcGLH+T0gUqYBZFFXWjQPxtS91IvQDULYdbE3ot/k=;
- b=IV2309X7lLP0zIPOKI6ekGIqcuquVYpCj+Pcte1D0J7GC6yDea6NM9oEmjbaz9wUBxf03Q
- 2T34m191hBq+7wvaRlgWpXxIELevXZCo7oo9RwtbMMpr/wdVjFIOsj0yagh1A088cxMnWr
- c1H/Aw/Py/zrUcSeI2BHIHCkGeOR/Ks=
-Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com
- [209.85.160.200]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-555-9wIZez-5M_q3bF3-Ad2WFQ-1; Mon, 13 Dec 2021 09:47:42 -0500
-X-MC-Unique: 9wIZez-5M_q3bF3-Ad2WFQ-1
-Received: by mail-qt1-f200.google.com with SMTP id
- p7-20020a05622a00c700b002b2f6944e7dso23379549qtw.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2021 06:47:42 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:to:cc:references:from:subject:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=A8hcGLH+T0gUqYBZFFXWjQPxtS91IvQDULYdbE3ot/k=;
- b=zDLAxQsLpDW4+CUTbf1k0w1p7BNocfqhDS4No6fEKRzeMckSqJoGCtYRUwPBMrje7Q
- 825vfImDqCFHGO7K4OyXGGCPJfkOXEYGA8/2TCDGHrcFgDI59QDvj4RxNj3p6YheKb5h
- PNtiqSbS0OyOD+mYp9b414yfAPuKEM83WyfUWwUqzCZ2KLExeGd+tOh3oLsjmmDyVD3k
- tMcmjKdPTpofyDcVfvYM90v4mmC/a5XWQOLYEGGXeDj+8UssDm5O70XMaF45vwsBYzr/
- iNhdysBj7AJ/Yy7qqFdSFhExZxEQvm6En+DGIGrMtk7L8Aahb5Puabfvou2el0kclDS7
- kE4g==
-X-Gm-Message-State: AOAM530ELqI7FwoxRlgcHcdy2O+3u04GW05jAXQ2tH/Suc7OvMoqMgqp
- e+hzw0Q8/BSNzM1Z60y8Xea0upu8dDczRUzbvhkIxnLSPqNjEQGP859E5uUw9v8//Ek8tEOXhNN
- C+HcTqoVUytfvKXuF1UBOyyF/aA==
-X-Received: by 2002:a05:620a:1a8d:: with SMTP id
- bl13mr33725405qkb.200.1639406862157; 
- Mon, 13 Dec 2021 06:47:42 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJy1pytTz0rFDYInzO60wUAQXH29a2E/VAmEu6qrge4tTzr5qgfYjG6Yp5J6Sqb4lCXlwrm7qw==
-X-Received: by 2002:a05:620a:1a8d:: with SMTP id
- bl13mr33725367qkb.200.1639406861848; 
- Mon, 13 Dec 2021 06:47:41 -0800 (PST)
-Received: from [192.168.1.9] (pool-68-163-101-245.bstnma.fios.verizon.net.
- [68.163.101.245])
- by smtp.gmail.com with ESMTPSA id o17sm6004570qkp.89.2021.12.13.06.47.41
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 13 Dec 2021 06:47:41 -0800 (PST)
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Russell Currey <ruscur@russell.cc>,
- "live-patching@vger.kernel.org" <live-patching@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <YX9UUBeudSUuJs01@redhat.com>
- <7ee0c84650617e6307b29674dd0a12c7258417cf.camel@russell.cc>
- <f8a96ac1-fda3-92da-cf27-0992a43a2f3f@redhat.com>
- <bed88ff4-e5d3-4b78-4f28-29fc635c2f97@csgroup.eu>
-From: Joe Lawrence <joe.lawrence@redhat.com>
-Subject: Re: ppc64le STRICT_MODULE_RWX and livepatch apply_relocate_add()
- crashes
-Message-ID: <919a79b8-feff-b0a4-b96a-73f376b7f6dc@redhat.com>
-Date: Mon, 13 Dec 2021 09:47:40 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
-MIME-Version: 1.0
-In-Reply-To: <bed88ff4-e5d3-4b78-4f28-29fc635c2f97@csgroup.eu>
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=joe.lawrence@redhat.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JC56J6Y8Tz2x9N
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2021 13:28:22 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
+ s=s201512; t=1639362497;
+ bh=dJKtjTSKz62rNy49syVpqD28WJWax6LS+Mw42ExvDiE=;
+ h=Date:From:To:Cc:Subject;
+ b=OarK1TFfplfbv/lwm3EjdNCQoi0rAi9wc0XExlEaqUE9lG6NTAgoHN2XkUoZ3JHHB
+ GWl+OM1WxLifKH08dKTgiVEg/mZ/0BoK49NJ/IQHo19kNZLsHttmJKOTmzIj3hLtWF
+ e4KQ9/bhxzxWrRPfkLLd3ZdwAf1d7L0iwwkpO58s=
+Received: from LAPTOP-4BSPBRI7 ([59.172.176.92])
+ by newxmesmtplogicsvrsza7.qq.com (NewEsmtp) with SMTP
+ id 6A90BE4C; Mon, 13 Dec 2021 10:26:41 +0800
+X-QQ-mid: xmsmtpt1639362401t6u5s3bdr
+Message-ID: <tencent_C982943047E43271285358863729A5FF630A@qq.com>
+X-QQ-XMAILINFO: M1xqn9pGP6LN76WbLmg5E+5W3cSr5Q2BaM6+cpZekx2T5StSOh/kW47VGafMPZ
+ 0nVODas39U+GjjKp1zZEzdK2GGnE7fBhyy2sCHnk2lIjgHTdl663jtqa4hJxN19dZozX61y0Ksdi
+ JbqUUEtVMjg0vf0UWYC97ldrThhooIAUTCc/VyBr3/AIb6IfWObbX3iOMeLJ+v9LNSm6HY9sRUia
+ 34LRPoAq271C3M26VP5gWFzGWkH2rt5j970znP3IF5RH/wxAgSlwRD8cU/na7xRl622cjhWOE0+J
+ IZX3fUIbMFtHzgGUv30lJ9vqKTp94Mib+z2NbKsOq3lnwI0pAgwEEYUaYkop90f/fIvQz6c17p6m
+ 8rcdn7fcjpoWArb7Bn3steomCXJoEleNwYro3IJsxQXTOYRWfobdoOILGKNhST1Tx5yyfCV2KI6U
+ Z6Ypm3CtEXZ09JbS0x5rnq3LB5QaBgdWUuX4/Y7gcQzB19y+vriMP+fK0eU7Swzc4Ur8Ql+ATwck
+ 3OuNK972mKzeWPKvzK1qfxEJdlI61CDlQtypeo0dj+RsrIlXSzUSg1XN7gtQBk0cFPaeKTEztpWX
+ gRlTTsOPCCXNSIdQ4T1sJ/JhWImNk5WPeVUnuUy7t61Jcf/+m5r7L1/8OTlolJ8JjbCzo2GEDHi/
+ OizURGyvLWNfKD0mZ8H+4LHG8bluv6abpL9OjeEF3KyUJU8TYYggluHqRKF2b+fvqhvz6QYqK2Pk
+ J/qw8o5lf/wkZ9nmdQgZj47G6X7LHFjIu7xVYYy6DTKrJlTxflYF7ILsh9gttU7PNbaxH36KoFaJ
+ +EqD8CPP2UASVpFuA2x/ccvdlEkH4GmDobT65D8xZsXzxA1N3+Qoaax2dG2e4kYHs=
+Date: Mon, 13 Dec 2021 10:26:41 +0800
+From: "xkernel.wang@foxmail.com" <xkernel.wang@foxmail.com>
+To: mpe <mpe@ellerman.id.au>, 
+	agust <agust@denx.de>
+Subject: Re: [PATCH] powerpc: mpc52xx_gpt: fix a potential memory leak
+X-Priority: 3
+X-GUID: 0E828642-9115-4B73-A131-B82288F17D29
+X-Has-Attach: no
+X-Mailer: Foxmail 7.2.14.410[en]
+Mime-Version: 1.0
+Message-ID: <202112131026410462899@foxmail.com>
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: base64
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,65 +76,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jordan Niethe <jniethe5@gmail.com>,
- Jessica Yu <jeyu@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: paulus <paulus@samba.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/13/21 2:42 AM, Christophe Leroy wrote:
-> 
-> Hello Joe,
-> 
-> I'm implementing LIVEPATCH on PPC32 and I wanted to test with 
-> STRICT_MODULE_RWX enabled so I took your branch as suggested, but I'm 
-> getting the following errors on build. What shall I do ?
-> 
->    CALL    scripts/checksyscalls.sh
->    CALL    scripts/atomic/check-atomics.sh
->    CHK     include/generated/compile.h
->    KLP     lib/livepatch/test_klp_convert1.ko
-> klp-convert: section .rela.klp.module_relocs.test_klp_convert_mod length 
-> beyond nr_entries
-> 
-> klp-convert: Unable to load user-provided sympos
-> make[2]: *** [scripts/Makefile.modfinal:79: 
-> lib/livepatch/test_klp_convert1.ko] Error 255
->    KLP     lib/livepatch/test_klp_convert2.ko
-> klp-convert: section .rela.klp.module_relocs.test_klp_convert_mod length 
-> beyond nr_entries
-> 
-> klp-convert: Unable to load user-provided sympos
-> make[2]: *** [scripts/Makefile.modfinal:79: 
-> lib/livepatch/test_klp_convert2.ko] Error 255
->    KLP     lib/livepatch/test_klp_convert_sections.ko
-> klp-convert: section .rela.klp.module_relocs.test_klp_convert_mod length 
-> beyond nr_entries
-> 
-> klp-convert: Unable to load user-provided sympos
-> make[2]: *** [scripts/Makefile.modfinal:79: 
-> lib/livepatch/test_klp_convert_sections.ko] Error 255
-> make[2]: Target '__modfinal' not remade because of errors.
-> make[1]: *** [scripts/Makefile.modpost:145: __modpost] Error 2
-> make: *** [Makefile:1770: modules] Error 2
-> 
+TWljaGFlbCBFbGxlcm1hbiA8bXBlQGVsbGVybWFuLmlkLmF1PiB3cm90ZToKPiA+IFdoZW4gc29t
+ZSBpbnRlcm5hbCBtZW1vcnkgZXJyb3JzIGhhcHBlbmQgaW4gb2ZfaW9tYXAoKSwgd2Ugc2hvdWxk
+IGZyZWUKPiA+IGdwdCB0byBwcmV2ZW50IG1lbW9yeSBsZWFrLgo+Cj4gQnV0IGl0J3MgYWxsb2Nh
+dGVkIHdpdGggZGV2bV9remFsbG9jKCksIHNvIHRoZSBkZXZyZXMgY29yZSBpcyBtZWFudCB0bwo+
+IGZyZWUgaXQgZm9yIHVzIGlzbid0IGl0PwoKWWVzLCBtYXliZSB5b3UgYXJlIHJpZ2h0LiBJIGRp
+ZCB0aGF0IGFzIEkgbWVudGlvbmVkIHdoZW4gZ3B0LXJlZ3MgaXMgTlVMTCwgaXTCoAp3aWxsIHJl
+dHVybiAtRU5PTUVNLCB3aGljaCBpcyB0aGUgc2FtZSB3aGVuIGdwdCBpcyBOVUxMLiBTbyBJIHN1
+cHBvc2UgdG8gCmZyZWXCoGl0IGluIHRpbWUgaXMgYmV0dGVyOgo+CWdwdCA9IGRldm1fa3phbGxv
+Yygmb2ZkZXYtPmRldiwgc2l6ZW9mICpncHQsIEdGUF9LRVJORUwpOwo+CWlmICghZ3B0KQo+CQly
+ZXR1cm4gLUVOT01FTTsKCmNoZWVycwoK
 
-Hi Christophe,
-
-Interesting failure mode.  That's klp-convert complaining that it found
-more relocations in a .klp.module_relocs.<objname> section than
-expected, i.e. nr_entries = sec->size / sizeof(struct klp_module_reloc).
-
-A few possibilities: the ELF sec->size was incorrectly set/read by
-build/libelf (I doubt that).  Or maybe the layout/size of struct
-klp_module_reloc is not consistent between kernel and userspace (I'm
-more suspicious of this).
-
-Can you post a copy of the build's symbols.klp and
-lib/livepatch/test_klp_convert1.tmp.ko somewhere?  I should be able to
-start debug with those files.
-
-Thanks,
--- 
-Joe
+.
 
