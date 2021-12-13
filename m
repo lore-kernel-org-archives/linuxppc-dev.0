@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1900EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 18:31:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60222C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 18:37:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JCVTf2cDrz3cDn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Dec 2021 05:31:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JCVcR48lyz30JT
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Dec 2021 05:37:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=ti.com header.i=@ti.com header.a=rsa-sha256 header.s=ti-com-17Q1 header.b=aQr+rT7A;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=ti.com header.i=@ti.com header.a=rsa-sha256 header.s=ti-com-17Q1 header.b=peIGlhxd;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=ti.com
- (client-ip=198.47.19.142; helo=fllv0016.ext.ti.com; envelope-from=nm@ti.com;
+ (client-ip=198.47.19.141; helo=fllv0015.ext.ti.com; envelope-from=nm@ti.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=ti.com header.i=@ti.com header.a=rsa-sha256
- header.s=ti-com-17Q1 header.b=aQr+rT7A; 
+ header.s=ti-com-17Q1 header.b=peIGlhxd; 
  dkim-atps=neutral
-X-Greylist: delayed 1988 seconds by postgrey-1.36 at boromir;
- Tue, 14 Dec 2021 05:31:08 AEDT
-Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
+Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JCVSr75Xqz2yNY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Dec 2021 05:31:07 +1100 (AEDT)
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
- by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 1BDITweD032784;
- Mon, 13 Dec 2021 12:29:58 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JCVbj2pHsz2yNY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Dec 2021 05:37:04 +1100 (AEDT)
+Received: from fllv0034.itg.ti.com ([10.64.40.246])
+ by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 1BDHujtF024081;
+ Mon, 13 Dec 2021 11:56:45 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
- s=ti-com-17Q1; t=1639420199;
- bh=CIwJXsDVc6MpWMxloZbtRdlpLw1Ztan/9G2UzPwMY0E=;
+ s=ti-com-17Q1; t=1639418205;
+ bh=a28kR5uLU4CD//Euze4R1opzKiH1O9AJ1Fk3ypys7po=;
  h=Date:From:To:CC:Subject:References:In-Reply-To;
- b=aQr+rT7AbNmri1BYm4glcZYUB4D0/LtbXNn0eGzLe1Xq4LgTziMH/fZw9NMlUSxOJ
- eUvgRnz/JUOtWmI/LUlydZmqlDtGvShVqc/335BSewifnzHFovUoMb7LUYizCR9g/k
- /rYDbql0vQTQMlM2Nnxl+1kL4PPvB9mCQmf5UIQI=
-Received: from DFLE113.ent.ti.com (dfle113.ent.ti.com [10.64.6.34])
- by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 1BDITwlR038320
+ b=peIGlhxdMjC3Tv7BKDuC4dnIJLJD6NNqavyceGxzcMAbairrnjR3yTGhM8fnpSB+o
+ LGnxmZZ+cPdn3cdj2Vh+HIDRSsHJFI5t6VLAnJoolBDO5WfVc3E6rlks1pUGJ4Legj
+ 6gdbz27M7Fz8c/olN0n/YrBf2Pb3R5c8bQO/HjxI=
+Received: from DLEE115.ent.ti.com (dlee115.ent.ti.com [157.170.170.26])
+ by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 1BDHujCb095191
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 13 Dec 2021 12:29:58 -0600
-Received: from DFLE108.ent.ti.com (10.64.6.29) by DFLE113.ent.ti.com
- (10.64.6.34) with Microsoft SMTP Server (version=TLS1_2,
+ Mon, 13 Dec 2021 11:56:45 -0600
+Received: from DLEE112.ent.ti.com (157.170.170.23) by DLEE115.ent.ti.com
+ (157.170.170.26) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14; Mon, 13
- Dec 2021 12:29:58 -0600
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DFLE108.ent.ti.com
- (10.64.6.29) with Microsoft SMTP Server (version=TLS1_2,
+ Dec 2021 11:56:45 -0600
+Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE112.ent.ti.com
+ (157.170.170.23) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14 via
- Frontend Transport; Mon, 13 Dec 2021 12:29:58 -0600
+ Frontend Transport; Mon, 13 Dec 2021 11:56:45 -0600
 Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
- by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 1BDITwZX089938;
- Mon, 13 Dec 2021 12:29:58 -0600
-Date: Mon, 13 Dec 2021 12:29:58 -0600
+ by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 1BDHuiov010619;
+ Mon, 13 Dec 2021 11:56:44 -0600
+Date: Mon, 13 Dec 2021 11:56:43 -0600
 From: Nishanth Menon <nm@ti.com>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch V3 00/35] genirq/msi, PCI/MSI: Spring cleaning - Part 2
-Message-ID: <20211213182958.ytj4m6gsg35u77cv@detonator>
+Subject: Re: [patch V3 12/35] soc: ti: ti_sci_inta_msi: Allocate MSI device
+ data on first use
+Message-ID: <20211213175643.2gmosys3o4g4hsrb@cursor>
 References: <20211210221642.869015045@linutronix.de>
+ <20211210221813.928842960@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20211210221642.869015045@linutronix.de>
+In-Reply-To: <20211210221813.928842960@linutronix.de>
 User-Agent: NeoMutt/20171215
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -80,14 +80,15 @@ Cc: Mark Rutland <mark.rutland@arm.com>, Stuart Yoder <stuyoder@gmail.com>,
  Joerg Roedel <joro@8bytes.org>, Jassi Brar <jassisinghbrar@gmail.com>,
  Sinan Kaya <okaya@kernel.org>, iommu@lists.linux-foundation.org,
  Peter Ujfalusi <peter.ujfalusi@gmail.com>, Bjorn Helgaas <helgaas@kernel.org>,
- linux-arm-kernel@lists.infradead.org, Jason Gunthorpe <jgg@nvidia.com>,
+ Megha Dey <megha.dey@intel.com>, Jason Gunthorpe <jgg@nvidia.com>,
  linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
  Kevin Tian <kevin.tian@intel.com>, Arnd Bergmann <arnd@arndb.de>,
  Robin Murphy <robin.murphy@arm.com>,
  Alex Williamson <alex.williamson@redhat.com>, Cedric Le Goater <clg@kaod.org>,
  Santosh Shilimkar <ssantosh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Megha Dey <megha.dey@intel.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>,
- Juergen Gross <jgross@suse.com>, Tero Kristo <kristo@kernel.org>,
+ linux-arm-kernel@lists.infradead.org,
+ Laurentiu Tudor <laurentiu.tudor@nxp.com>, Juergen Gross <jgross@suse.com>,
+ Tero Kristo <kristo@kernel.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  LKML <linux-kernel@vger.kernel.org>, Vinod Koul <vkoul@kernel.org>,
  Marc Zygnier <maz@kernel.org>, dmaengine@vger.kernel.org,
@@ -96,43 +97,21 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 23:18-20211210, Thomas Gleixner wrote:
-[...]
-
+On 23:19-20211210, Thomas Gleixner wrote:
+> From: Thomas Gleixner <tglx@linutronix.de>
 > 
-> It's also available from git:
+> Allocate the MSI device data on first invocation of the allocation function.
 > 
->      git://git.kernel.org/pub/scm/linux/kernel/git/tglx/devel.git msi-v3-part-2
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+> Cc: Nishanth Menon <nm@ti.com>
+> Cc: Tero Kristo <kristo@kernel.org>
+> Cc: Santosh Shilimkar <ssantosh@kernel.org>
+> Cc: linux-arm-kernel@lists.infradead.org
 
-[...]
 
-> ---
->  drivers/dma/ti/k3-udma-private.c                    |    6 
->  drivers/dma/ti/k3-udma.c                            |   14 -
->  drivers/irqchip/irq-ti-sci-inta.c                   |    2 
->  drivers/soc/ti/k3-ringacc.c                         |    6 
->  drivers/soc/ti/ti_sci_inta_msi.c                    |   22 --
->  include/linux/soc/ti/ti_sci_inta_msi.h              |    1 
-
-Also while testing on TI K3 platforms, I noticed:
-
-msi_device_data_release/msi_device_destroy_sysfs in am64xx-evm / j7200
-[1] https://gist.github.com/nmenon/36899c7819681026cfe1ef185fb95f33#file-am64xx-evm-txt-L1018
-[2] https://gist.github.com/nmenon/36899c7819681026cfe1ef185fb95f33#file-j7200-evm-txt-L1076
-
-Which is not present in vanilla v5.16-rc4
-
-v5.16-rc4:
-https://gist.github.com/nmenon/1aee3f0a7da47d5e9dcb7336b32a70cb
-
-msi-v3-part-2:
-https://gist.github.com/nmenon/36899c7819681026cfe1ef185fb95f33
-
-(.config https://gist.github.com/nmenon/ec6f95303828abf16a64022d8e3a269f)
-
-Vs:
-next-20211208:
-https://gist.github.com/nmenon/f5ca3558bd5c1fbe62dc5ceb420b536e
+Acked-by: Nishanth Menon <nm@ti.com>
 
 -- 
 Regards,
