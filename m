@@ -4,46 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E69EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 18:02:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B920C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 18:07:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JCTqH58PZz3cRq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Dec 2021 05:02:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
- helo=metis.ext.pengutronix.de; envelope-from=a.fatoum@pengutronix.de;
- receiver=<UNKNOWN>)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JCTx54RvQz3bvH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Dec 2021 05:07:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=kB4bbvIe;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PVFq5fsr;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.29; helo=smtp-out2.suse.de;
+ envelope-from=msuchanek@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
+ header.s=susede2_rsa header.b=kB4bbvIe; 
+ dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
+ header.s=susede2_ed25519 header.b=PVFq5fsr; 
+ dkim-atps=neutral
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JCMgZ5c6Zz2yQw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Dec 2021 00:24:57 +1100 (AEDT)
-Received: from gallifrey.ext.pengutronix.de
- ([2001:67c:670:201:5054:ff:fe8d:eefb] helo=[IPv6:::1])
- by metis.ext.pengutronix.de with esmtp (Exim 4.92)
- (envelope-from <a.fatoum@pengutronix.de>)
- id 1mwlJx-0008Sf-9N; Mon, 13 Dec 2021 14:24:49 +0100
-From: Ahmad Fatoum <a.fatoum@pengutronix.de>
-Subject: [BUG] mtd: cfi_cmdset_0002: write regression since v4.17-rc1
-To: linux-mtd@lists.infradead.org, ikegami@allied-telesis.co.jp,
- Joakim.Tjernlund@infinera.com, miquel.raynal@bootlin.com, vigneshr@ti.com,
- richard@nod.at, ikegami.t@gmail.com
-Message-ID: <b687c259-6413-26c9-d4c9-b3afa69ea124@pengutronix.de>
-Date: Mon, 13 Dec 2021 14:24:39 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.14.0
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JCTwD54wKz2xsj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Dec 2021 05:06:20 +1100 (AEDT)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+ by smtp-out2.suse.de (Postfix) with ESMTP id 8C8D71F3B9;
+ Mon, 13 Dec 2021 18:06:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+ t=1639418776; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=qWxzseejwZyTZ++HZonSBD5ITvu3/IfjEy9A76Uqkn4=;
+ b=kB4bbvIeiQDG4KZp40WnqvXCnCB4Rdybk77ruhyUFtfVewTOhpuI63qYS6wtHGe+nqxkYI
+ JFDQ6oQ5AAy8Li6vYLF9EesA1ABUWHXpYq7rHXFyKAGhtskOjMduB4u+yNt71wlI3U6NkG
+ Zwg6iEuKykO5MGot2faYd2ZWE5HS4s4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+ s=susede2_ed25519; t=1639418776;
+ h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=qWxzseejwZyTZ++HZonSBD5ITvu3/IfjEy9A76Uqkn4=;
+ b=PVFq5fsrpjsQQyZPIhYIBlk2Xjufl+SPQnSyz1lfIN9R31Lqt3c3GkwXpmJEm/Q6n7bWoW
+ SZ5fQfbtmxtxdeBA==
+Received: from kunlun.suse.cz (unknown [10.100.128.76])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by relay2.suse.de (Postfix) with ESMTPS id C4E98A3B84;
+ Mon, 13 Dec 2021 18:06:12 +0000 (UTC)
+Date: Mon, 13 Dec 2021 19:06:11 +0100
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Philipp Rudo <prudo@redhat.com>
+Subject: Re: [PATCH v2 6/6] module: Move duplicate mod_check_sig users code
+ to mod_parse_sig
+Message-ID: <20211213180611.GU117207@kunlun.suse.cz>
+References: <cover.1637862358.git.msuchanek@suse.de>
+ <d464e1f45d21a29cbbe828dea412206cdc94866b.1637862358.git.msuchanek@suse.de>
+ <20211207171034.0b782d82@rhtmp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 2001:67c:670:201:5054:ff:fe8d:eefb
-X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
- SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
-X-Mailman-Approved-At: Tue, 14 Dec 2021 05:01:41 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211207171034.0b782d82@rhtmp>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,85 +78,239 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- marek.vasut@gmail.com, Chris Packham <chris.packham@alliedtelesis.co.nz>,
- Pengutronix Kernel Team <kernel@pengutronix.de>, cyrille.pitchen@wedev4u.fr,
- Shaohui.Xie@nxp.com, Brian Norris <computersforpeace@gmail.com>,
- David Woodhouse <dwmw2@infradead.org>
+Cc: Nayna <nayna@linux.vnet.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
+ David Howells <dhowells@redhat.com>, keyrings@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Rob Herring <robh@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>,
+ Baoquan He <bhe@redhat.com>, Christian Borntraeger <borntraeger@de.ibm.com>,
+ James Morris <jmorris@namei.org>,
+ Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ linux-s390@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
+ linux-crypto@vger.kernel.org, Hari Bathini <hbathini@linux.ibm.com>,
+ Daniel Axtens <dja@axtens.net>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ Frank van der Linden <fllinden@amazon.com>, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>,
+ Sven Schnelle <svens@linux.ibm.com>, linux-security-module@vger.kernel.org,
+ Jessica Yu <jeyu@kernel.org>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>, buendgen@de.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Hello,
 
-I've been investigating a breakage on a PowerPC MPC8313: The SoC is connected
-via the "Enhanced Local Bus Controller" to a 8-bit-parallel S29GL064N flash,
-which is represented as a memory-mapped cfi-flash.
+On Tue, Dec 07, 2021 at 05:10:34PM +0100, Philipp Rudo wrote:
+> Hi Michal,
+> 
+> On Thu, 25 Nov 2021 19:02:44 +0100
+> Michal Suchanek <msuchanek@suse.de> wrote:
+> 
+> > Multiple users of mod_check_sig check for the marker, then call
+> > mod_check_sig, extract signature length, and remove the signature.
+> > 
+> > Put this code in one place together with mod_check_sig.
+> > 
+> > Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> > ---
+> >  include/linux/module_signature.h    |  1 +
+> >  kernel/module_signature.c           | 56 ++++++++++++++++++++++++++++-
+> >  kernel/module_signing.c             | 26 +++-----------
+> >  security/integrity/ima/ima_modsig.c | 22 ++----------
+> >  4 files changed, 63 insertions(+), 42 deletions(-)
+> > 
+> > diff --git a/include/linux/module_signature.h b/include/linux/module_signature.h
+> > index 7eb4b00381ac..1343879b72b3 100644
+> > --- a/include/linux/module_signature.h
+> > +++ b/include/linux/module_signature.h
+> > @@ -42,5 +42,6 @@ struct module_signature {
+> >  
+> >  int mod_check_sig(const struct module_signature *ms, size_t file_len,
+> >  		  const char *name);
+> > +int mod_parse_sig(const void *data, size_t *len, size_t *sig_len, const char *name);
+> >  
+> >  #endif /* _LINUX_MODULE_SIGNATURE_H */
+> > diff --git a/kernel/module_signature.c b/kernel/module_signature.c
+> > index 00132d12487c..784b40575ee4 100644
+> > --- a/kernel/module_signature.c
+> > +++ b/kernel/module_signature.c
+> > @@ -8,14 +8,36 @@
+> >  
+> >  #include <linux/errno.h>
+> >  #include <linux/printk.h>
+> > +#include <linux/string.h>
+> >  #include <linux/module_signature.h>
+> >  #include <asm/byteorder.h>
+> >  
+> > +/**
+> > + * mod_check_sig_marker - check that the given data has signature marker at the end
+> > + *
+> > + * @data:	Data with appended signature
+> > + * @len:	Length of data. Signature marker length is subtracted on success.
+> > + */
+> > +static inline int mod_check_sig_marker(const void *data, size_t *len)
+> 
+> I personally don't like it when a function has a "check" in it's name
+> as it doesn't describe what the function is checking for. For me
 
-The regression began in v4.17-rc1 with
+It is consistent with mod_check_sig
 
-  dfeae1073583 ("mtd: cfi_cmdset_0002: Change write buffer to check correct value")
+> mod_has_sig_marker is much more precise. I would use that instead.
 
-and causes all flash write accesses on the hardware to fail. Example output
-after v5.1-rc2[1]:
+It actually would not because it does more than that.
 
-  root@host:~# mount -t jffs2 /dev/mtdblock0 /mnt
-  MTD do_write_buffer_wait(): software timeout, address:0x000c000b.
-  jffs2: Write clean marker to block at 0x000c0000 failed: -5
+Thanks
 
-This issue still persists with v5.16-rc. Reverting aforementioned patch fixes
-it, but I am still looking for a change that keeps both Tokunori's and my
-hardware happy.
+Michal
 
-What Tokunori's patch did is that it strengthened the success condition
-for flash writes:
-
- - Prior to the patch, DQ polling was done until bits
-   stopped toggling. This was taken as an indicator that the write succeeded
-   and was reported up the stack. i.e. success condition is chip_ready()
-
- - After the patch, polling continues until the just written data is
-   actually read back, i.e. success condition is chip_good()
-
-This new condition never holds for me, when DQ stabilizes, it reads 0xFF,
-never the just written data. The data is still written and can be read back
-on subsequent reads, just not at that point of time in the poll loop.
-
-We haven't had write issues for the years predating that patch. As the
-regression has been mainline for a while, I am wondering what about my setup
-that makes it pop up here, but not elsewhere?
-
-I consulted the data sheet[2] and found Figure 27, which describes DQ polling
-during embedded algorithms. DQ switches from status output to "True" (I assume
-True == all bits set == 0xFF) until CS# is reasserted. 
-
-I compared with another chip's datasheet, and it (Figure 8.4) doesn't describe
-such an intermittent "True" state. In any case, the driver polls a few hundred
-times, however, before giving up, so there should be enough CS# toggles.
-
-
-Locally, I'll revert this patch for now. I think accepting 0xFF as a success
-condition may be appropriate, but I don't yet have the rationale to back it up.
-
-I am investigating this some more, probably with a logic trace, but I wanted
-to report this in case someone has pointers and in case other people run into
-the same issue.
-
-
-Cheers,
-Ahmad
-
-[1] Prior to d9b8a67b3b95 ("mtd: cfi: fix deadloop in cfi_cmdset_0002.c do_write_buffer") 
-    first included with v5.1-rc2, failing writes just hung indefinitely in kernel space.
-    That's fixed, but the writes still fail.
-
-[2]: 001-98525 Rev. *B, https://www.infineon.com/dgdl/Infineon-S29GL064N_S29GL032N_64_Mbit_32_Mbit_3_V_Page_Mode_MirrorBit_Flash-DataSheet-v03_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ed556fd548b
-
-[3]: https://www.mouser.com/datasheet/2/268/SST39VF1601C-SST39VF1602C-16-Mbit-x16-Multi-Purpos-709008.pdf
-     Note that "true data" means valid data here, not all bits one.
--- 
-Pengutronix e.K.                           |                             |
-Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
-31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+> 
+> Thanks
+> Philipp
+> 
+> > +{
+> > +	const unsigned long markerlen = sizeof(MODULE_SIG_STRING) - 1;
+> > +
+> > +	if (markerlen > *len)
+> > +		return -ENODATA;
+> > +
+> > +	if (memcmp(data + *len - markerlen, MODULE_SIG_STRING,
+> > +		   markerlen))
+> > +		return -ENODATA;
+> > +
+> > +	*len -= markerlen;
+> > +	return 0;
+> > +}
+> > +
+> >  /**
+> >   * mod_check_sig - check that the given signature is sane
+> >   *
+> >   * @ms:		Signature to check.
+> > - * @file_len:	Size of the file to which @ms is appended.
+> > + * @file_len:	Size of the file to which @ms is appended (without the marker).
+> >   * @name:	What is being checked. Used for error messages.
+> >   */
+> >  int mod_check_sig(const struct module_signature *ms, size_t file_len,
+> > @@ -44,3 +66,35 @@ int mod_check_sig(const struct module_signature *ms, size_t file_len,
+> >  
+> >  	return 0;
+> >  }
+> > +
+> > +/**
+> > + * mod_parse_sig - check that the given signature is sane and determine signature length
+> > + *
+> > + * @data:	Data with appended signature.
+> > + * @len:	Length of data. Signature and marker length is subtracted on success.
+> > + * @sig_len:	Length of signature. Filled on success.
+> > + * @name:	What is being checked. Used for error messages.
+> > + */
+> > +int mod_parse_sig(const void *data, size_t *len, size_t *sig_len, const char *name)
+> > +{
+> > +	const struct module_signature *sig;
+> > +	int rc;
+> > +
+> > +	rc = mod_check_sig_marker(data, len);
+> > +	if (rc)
+> > +		return rc;
+> > +
+> > +	if (*len < sizeof(*sig))
+> > +		return -ENODATA;
+> > +
+> > +	sig = (const struct module_signature *)(data + (*len - sizeof(*sig)));
+> > +
+> > +	rc = mod_check_sig(sig, *len, name);
+> > +	if (rc)
+> > +		return rc;
+> > +
+> > +	*sig_len = be32_to_cpu(sig->sig_len);
+> > +	*len -= *sig_len + sizeof(*sig);
+> > +
+> > +	return 0;
+> > +}
+> > diff --git a/kernel/module_signing.c b/kernel/module_signing.c
+> > index cef72a6f6b5d..02bbca90f467 100644
+> > --- a/kernel/module_signing.c
+> > +++ b/kernel/module_signing.c
+> > @@ -25,35 +25,17 @@ int verify_appended_signature(const void *data, size_t *len,
+> >  			      struct key *trusted_keys,
+> >  			      enum key_being_used_for purpose)
+> >  {
+> > -	const unsigned long markerlen = sizeof(MODULE_SIG_STRING) - 1;
+> >  	struct module_signature ms;
+> > -	size_t sig_len, modlen = *len;
+> > +	size_t sig_len;
+> >  	int ret;
+> >  
+> > -	pr_devel("==>%s %s(,%zu)\n", __func__, key_being_used_for[purpose], modlen);  
+> > +	pr_devel("==>%s %s(,%zu)\n", __func__, key_being_used_for[purpose], *len);
+> >  
+> > -	if (markerlen > modlen)
+> > -		return -ENODATA;
+> > -
+> > -	if (memcmp(data + modlen - markerlen, MODULE_SIG_STRING,
+> > -		   markerlen))
+> > -		return -ENODATA;
+> > -	modlen -= markerlen;
+> > -
+> > -	if (modlen <= sizeof(ms))
+> > -		return -EBADMSG;
+> > -
+> > -	memcpy(&ms, data + (modlen - sizeof(ms)), sizeof(ms));
+> > -
+> > -	ret = mod_check_sig(&ms, modlen, key_being_used_for[purpose]);
+> > +	ret = mod_parse_sig(data, len, &sig_len, key_being_used_for[purpose]);
+> >  	if (ret)
+> >  		return ret;
+> >  
+> > -	sig_len = be32_to_cpu(ms.sig_len);
+> > -	modlen -= sig_len + sizeof(ms);
+> > -	*len = modlen;
+> > -
+> > -	return verify_pkcs7_signature(data, modlen, data + modlen, sig_len,
+> > +	return verify_pkcs7_signature(data, *len, data + *len, sig_len,
+> >  				      trusted_keys,
+> >  				      purpose,
+> >  				      NULL, NULL);
+> > diff --git a/security/integrity/ima/ima_modsig.c b/security/integrity/ima/ima_modsig.c
+> > index fb25723c65bc..46917eb37fd8 100644
+> > --- a/security/integrity/ima/ima_modsig.c
+> > +++ b/security/integrity/ima/ima_modsig.c
+> > @@ -37,33 +37,17 @@ struct modsig {
+> >   *
+> >   * Return: 0 on success, error code otherwise.
+> >   */
+> > -int ima_read_modsig(enum ima_hooks func, const void *buf, loff_t buf_len,
+> > +int ima_read_modsig(enum ima_hooks func, const void *buf, loff_t len,
+> >  		    struct modsig **modsig)
+> >  {
+> > -	const size_t marker_len = strlen(MODULE_SIG_STRING);
+> > -	const struct module_signature *sig;
+> >  	struct modsig *hdr;
+> > -	size_t sig_len;
+> > -	const void *p;
+> > +	size_t sig_len, buf_len = len;
+> >  	int rc;
+> >  
+> > -	if (buf_len <= marker_len + sizeof(*sig))
+> > -		return -ENOENT;
+> > -
+> > -	p = buf + buf_len - marker_len;
+> > -	if (memcmp(p, MODULE_SIG_STRING, marker_len))
+> > -		return -ENOENT;
+> > -
+> > -	buf_len -= marker_len;
+> > -	sig = (const struct module_signature *)(p - sizeof(*sig));
+> > -
+> > -	rc = mod_check_sig(sig, buf_len, func_tokens[func]);
+> > +	rc = mod_parse_sig(buf, &buf_len, &sig_len, func_tokens[func]);
+> >  	if (rc)
+> >  		return rc;
+> >  
+> > -	sig_len = be32_to_cpu(sig->sig_len);
+> > -	buf_len -= sig_len + sizeof(*sig);
+> > -
+> >  	/* Allocate sig_len additional bytes to hold the raw PKCS#7 data. */
+> >  	hdr = kzalloc(sizeof(*hdr) + sig_len, GFP_KERNEL);
+> >  	if (!hdr)
+> 
