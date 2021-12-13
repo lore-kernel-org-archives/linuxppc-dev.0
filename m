@@ -4,85 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A120BC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 16:43:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E17E0C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 17:16:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JCS4L733Pz3bd0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Dec 2021 03:43:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=d4CLBK3p;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=sachinp@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=d4CLBK3p; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JCSpK0kP6z3c50
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Dec 2021 04:16:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org;
+ envelope-from=srs0=gc06=q6=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JCS3b00yyz2xtL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Dec 2021 03:42:34 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1BDGTU7T022427
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2021 16:42:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : date : message-id : subject; s=pp1;
- bh=9gNJol1L+ZIGAM70Z2Xg561qU+ZlT2e0JTgYhI5RHGg=;
- b=d4CLBK3pSN/nJsa1DOPqvthQm3nkan2xZ/+5oYy7/7/L5w3FWIiJ7UHsoRn3MOLudK9C
- JY6kcLlfaBYg6VbKmLx2rbEWA2luojJlnj5NpGmR9c+d6H13FtsACW/Oj2TlySZL1AcV
- 2TNQxFyou0oHqWHJZ/Ik3SxDtHL7ButvG8rCfNVUXUOMHFiZ94uROayD5VZSKLky+Fua
- x+bZoly4j8qvP+ssW4b6plNpXBsvtESfElCjOR0b9gybrTUhN2npQE7mmqkbZ+5jBH2x
- Z4ddqaVZ4IruaOQ1HVYt0ucbgnmbGDVHu2he71Md3MryDUGwJTvaOH8GM1DQgvoH9G76 eA== 
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3cx9r9rata-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2021 16:42:31 +0000
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1BDGgC3p027995
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2021 16:42:29 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma02fra.de.ibm.com with ESMTP id 3cvkm8p51f-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2021 16:42:29 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 1BDGYUCt45941168
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 13 Dec 2021 16:34:30 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7CCABA405B;
- Mon, 13 Dec 2021 16:42:25 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7F9DBA4055;
- Mon, 13 Dec 2021 16:42:24 +0000 (GMT)
-Received: from
- 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa
- (unknown [9.79.183.212])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 13 Dec 2021 16:42:24 +0000 (GMT)
-From: Sachin Sant <sachinp@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 13 Dec 2021 22:12:23 +0530
-Message-Id: <163941374362.36967.18016981579099073379.sendpatchset@1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa>
-Subject: [PATCH]selftests/powerpc: skip tests for unavailable mitigations.
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: mL9oDK8DkQFioOlUWwGbnBc2xWoLYKOu
-X-Proofpoint-GUID: mL9oDK8DkQFioOlUWwGbnBc2xWoLYKOu
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.11.62.513
- definitions=2021-12-13_08,2021-12-13_01,2021-12-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0
- impostorscore=0 malwarescore=0 mlxscore=0 lowpriorityscore=0
- mlxlogscore=715 phishscore=0 adultscore=0 bulkscore=0 clxscore=1015
- spamscore=0 priorityscore=1501 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2110150000 definitions=main-2112130105
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JCSnr65Zmz2yMc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Dec 2021 04:15:44 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id 7FEE7B8119C;
+ Mon, 13 Dec 2021 17:15:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 21F6FC34602;
+ Mon, 13 Dec 2021 17:15:38 +0000 (UTC)
+Date: Mon, 13 Dec 2021 12:15:36 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v1 0/5] Implement livepatch on PPC32
+Message-ID: <20211213121536.25e5488d@gandalf.local.home>
+In-Reply-To: <6209682d-0caa-b779-8763-376a984d8ed8@csgroup.eu>
+References: <cover.1635423081.git.christophe.leroy@csgroup.eu>
+ <20211028093547.48c69dfe@gandalf.local.home>
+ <6209682d-0caa-b779-8763-376a984d8ed8@csgroup.eu>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,40 +48,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
- Nageswara R Sastry <rnsastry@linux.ibm.com>
+Cc: Petr Mladek <pmladek@suse.com>, Joe Lawrence <joe.lawrence@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ "live-patching@vger.kernel.org" <live-patching@vger.kernel.org>, "Naveen
+ N . Rao" <naveen.n.rao@linux.vnet.ibm.com>, Miroslav Benes <mbenes@suse.cz>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mitigation patching test iterates over a set of mitigations irrespective
-of whether a certain mitigation is supported/available in the kernel.
-This causes following messages on a kernel where some mitigations
-are unavailable:
+On Mon, 13 Dec 2021 14:39:15 +0000
+Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
 
-  Spawned threads enabling/disabling mitigations ...
-  cat: entry_flush: No such file or directory
-  cat: uaccess_flush: No such file or directory
-  Waiting for timeout ...
-  OK
+> > Note, you can implement this first, (I looked over the patches and they
+> > seem fine) and then update both ppc64 and ppc32 to implement
+> > DYNAMIC_FTRACE_WITH_ARGS.
+> >   
+> 
+> I tried to activate DYNAMIC_FTRACE_WITH_ARGS on PPC32.
+> 
+> I copied into powerpc the changes from 5740a7c71ab6 ("s390/ftrace: add 
+> HAVE_DYNAMIC_FTRACE_WITH_ARGS support")
+> 
+> Ftrace selftests tell "Testing tracer function_graph: FAILED!".
+> 
+> Is there anything else to do ?
 
-This patch adds a check for available mitigations in the kernel.
+Yes. Because BPF is now hooking into the function callbacks, it causes
+issues with function graph tracer. So what we did was to have function
+graph tracing to now use the function tracer callback as well (this allows
+both the BPF direct trampolines to work with function graph tracer).
 
-Reported-by: Nageswara R Sastry <rnsastry@linux.ibm.com>
-Signed-off-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
----
-diff -Naurp aa/tools/testing/selftests/powerpc/security/mitigation-patching.sh bb/tools/testing/selftests/powerpc/security/mitigation-patching.sh
---- aa/tools/testing/selftests/powerpc/security/mitigation-patching.sh	2021-12-13 10:17:05.714127154 -0500
-+++ bb/tools/testing/selftests/powerpc/security/mitigation-patching.sh	2021-12-13 10:19:32.575315913 -0500
-@@ -44,7 +44,10 @@ mitigations="barrier_nospec stf_barrier
- 
- for m in $mitigations
- do
--    do_one "$m" &
-+    if [[ -f /sys/kernel/debug/powerpc/$m ]]
-+    then
-+        do_one "$m" &
-+    fi
- done
- 
- echo "Spawned threads enabling/disabling mitigations ..."
+As it requires DYNAMIC_FTRACE_WITH_ARGS, and x86 was the only one to
+support that for now, I decided to make all the archs change function graph
+tracing when they implement DYNAMIC_FTRACE_WITH_ARGS too. (It is becoming a
+pain to have too many variants of function tracing between the archs).
+
+The change that did this for x86 was:
+
+0c0593b45c9b4 ("x86/ftrace: Make function graph use ftrace directly")
+
+This actually simplifies the function graph tracer, as you no longer need
+it's own entry trampoline (still need the trampoline for the return of the
+function).
+
+What you need to do is:
+
+In your arch/*/include/asm/ftrace.h add:
+
+struct ftrace_ops;
+
+#define ftrace_graph_func ftrace_graph_func
+void ftrace_graph_func(unsigned long ip, unsigned long parent_ip,
+                      struct ftrace_ops *op, struct ftrace_regs *fregs);
+
+
+Where ftrace_graph_func() is now what is called for the function graph
+tracer, directly from the ftrace callbacks (no longer a secondary
+trampoline).
+
+Define the ftrace_graph_func() to be something like:
+
+void ftrace_graph_func(unsigned long ip, unsigned long parent_ip,
+                      struct ftrace_ops *op, struct ftrace_regs *fregs)
+{
+       struct pt_regs *regs = &fregs->regs;
+       unsigned long *stack = (unsigned long *)kernel_stack_pointer(regs);
+
+       prepare_ftrace_return(ip, (unsigned long *)stack, 0);
+}
+
+This is called by the function tracer code. But because with
+DYNAMIC_FTRACE_WITH_ARGS, we have access to the argument register, we should
+also have access to the link register and the stack. Then you can use that
+to modify the stack and or link register to jump to the the return
+trampoline.
+
+This should all work with powerpc (both 64 and 32) but if it does not, let
+me know. I'm happy to help out.
+
+-- Steve
