@@ -4,71 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43051C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 10:15:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31622C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 12:47:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JCHSX4CTcz3cPk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 21:15:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.210.182;
- helo=mail-pf1-f182.google.com; envelope-from=geert.uytterhoeven@gmail.com;
- receiver=<UNKNOWN>)
-Received: from mail-pf1-f182.google.com (mail-pf1-f182.google.com
- [209.85.210.182])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JCLrV3cWmz2yxx
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 23:47:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=FCYCETjA;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
+ [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JCGK917hpz2xYL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2021 20:23:39 +1100 (AEDT)
-Received: by mail-pf1-f182.google.com with SMTP id x131so14344350pfc.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2021 01:23:38 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=7JQ6xhDuC8UGs/jm3YR6x8QoCCs8KyehtdxluDCRZKo=;
- b=IUnErhH49a53wpj4Tzhx9efMyyfWaOJvYXIR38En1GLLb4PF92XqSOolRd1CilpTzv
- YvWESrNbL5kM4GSdJt0nC0YyzrGzYQFq6jZA5T2T16BkgWgCToTCuOwfCE9c6vXVAaFn
- UGwwWXcA2fsnOBKNb75sZqUnQ1bLft/n7c7HXPWGyRtv1gTVLv+4w5Qu1CwMK40HB2PE
- 12HxlUtZas80tsbFHDEjGmlERPXSrMJIxU8+wEeY1xFiGJQ4wtaBBaUe+4Mv7sqKCjEs
- OGXf5c9s+yk0UFUsWsYAWWLQKRFF2GsweimoHMIfxIyvy0+7tyINVEUAjkpbKnupn/Og
- 45YA==
-X-Gm-Message-State: AOAM5334Sumu3zFAOqiGjnmlHWsiNzR1UYDlSYJkkX3Z6Z9a1qu4liF4
- Q4k5P3+bBdiUM9VEdHlVfDsx9vHus8T83w==
-X-Google-Smtp-Source: ABdhPJzZUDXQ50DUC3HqjEzny757aTqL993MJGY+7xjO/+cf30sOI8EBthPPF1TFtheh/aQirCwEUg==
-X-Received: by 2002:a63:b307:: with SMTP id i7mr52968070pgf.445.1639387415625; 
- Mon, 13 Dec 2021 01:23:35 -0800 (PST)
-Received: from mail-pg1-f182.google.com (mail-pg1-f182.google.com.
- [209.85.215.182])
- by smtp.gmail.com with ESMTPSA id r16sm9612807pgk.45.2021.12.13.01.23.34
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 13 Dec 2021 01:23:35 -0800 (PST)
-Received: by mail-pg1-f182.google.com with SMTP id j11so14040970pgs.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2021 01:23:34 -0800 (PST)
-X-Received: by 2002:a67:c106:: with SMTP id d6mr26074577vsj.77.1639387403608; 
- Mon, 13 Dec 2021 01:23:23 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JCLqj2HLvz2yZ2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2021 23:46:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=FCYCETjA; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JCLqg21XHz4xQs;
+ Mon, 13 Dec 2021 23:46:55 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1639399616;
+ bh=W5VnYCvz7/mlHDYZbPhaQ5CNO1ZBQOxPjLpWHYJP0oo=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=FCYCETjAr0YAA0gTNjmpVVzSxElRjWZqAR1vlrvWLoAb7OiEpV7Mbp4Mnr7gQq4DX
+ Wtz0UJAt5d7bOKGQDXQT/bHJY4mhZPa2nAYEFaeR/DAWO2NeblIfVhGCVFkklHxN4g
+ JU8ToWI6dxI7oWuYorKFyadjdIAqoFQ1Sv7visIsjjFaMmAvnt4JjGoiDflRDXIJo2
+ Dh03DlQSGX9PkelFfqk88s5EAdyduc8VKFJW7CSqJUbPQObr5w9RjqjtftGLAnEkMJ
+ PtFUPSpkOjCetftc0sGd7fOtjnc7xTkpmBoWzd93b93LxlEz6P9sErMcB62uSXUX55
+ UGXkIkz3yUahA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Rob Herring <robh@kernel.org>, John Crispin <john@phrozen.org>, Thomas
+ Bogendoerfer <tsbogend@alpha.franken.de>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Frank
+ Rowand <frowand.list@gmail.com>
+Subject: Re: [PATCH v2] of/fdt: Rework early_init_dt_scan_memory() to call
+ directly
+In-Reply-To: <20211208155839.4084795-1-robh@kernel.org>
+References: <20211208155839.4084795-1-robh@kernel.org>
+Date: Mon, 13 Dec 2021 23:46:51 +1100
+Message-ID: <87fsqwn03o.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-References: <20211126180101.27818-1-digetx@gmail.com>
- <20211126180101.27818-6-digetx@gmail.com>
- <YaLNOJTM+lVq+YNS@qmqm.qmqm.pl>
- <033ddf2a-6223-1a82-ec64-30f17c891f67@gmail.com>
- <YaQeQgbW+CjEdsqG@qmqm.qmqm.pl>
- <091321ea-4919-0579-88a8-23d05871575d@gmail.com>
- <CAJZ5v0jMvdhfBqjY+V9h_Z6EH1ohuJH+KjuGiOw_Jor1Tnp7vg@mail.gmail.com>
- <45025b2d-4be1-f694-be61-31903795cf5d@gmail.com>
- <CAJZ5v0ieTwnBVjW8R_VTdPFH3yr5AwLc+ZEG5N3KrpTH+j8qZw@mail.gmail.com>
-In-Reply-To: <CAJZ5v0ieTwnBVjW8R_VTdPFH3yr5AwLc+ZEG5N3KrpTH+j8qZw@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 13 Dec 2021 10:23:12 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXW1bCLkJhC1Jnf2rkS1rBnXsMX=4LMVdXDvMV5HOzrLw@mail.gmail.com>
-Message-ID: <CAMuHMdXW1bCLkJhC1Jnf2rkS1rBnXsMX=4LMVdXDvMV5HOzrLw@mail.gmail.com>
-Subject: Re: [PATCH v4 05/25] reboot: Warn if restart handler has duplicated
- priority
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Mon, 13 Dec 2021 21:14:44 +1100
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,182 +63,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, Santosh Shilimkar <ssantosh@kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Linus Walleij <linus.walleij@linaro.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, Liam Girdwood <lgirdwood@gmail.com>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Thierry Reding <thierry.reding@gmail.com>, Guo Ren <guoren@kernel.org>,
- Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
- Dmitry Osipenko <digetx@gmail.com>, Vincent Chen <deanbo422@gmail.com>,
- Will Deacon <will@kernel.org>, Greg Ungerer <gerg@linux-m68k.org>,
- Stefano Stabellini <sstabellini@kernel.org>, alankao@andestech.com,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
- Helge Deller <deller@gmx.de>, the arch/x86 maintainers <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
- Jonathan Hunter <jonathanh@nvidia.com>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
- Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org,
- linux-mips@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>,
- Len Brown <lenb@kernel.org>, Albert Ou <aou@eecs.berkeley.edu>,
- Lee Jones <lee.jones@linaro.org>,
- =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>,
- linux-m68k@lists.linux-m68k.org, Mark Brown <broonie@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Greentime Hu <green.hu@gmail.com>,
- Paul Walmsley <paul.walmsley@sifive.com>,
- linux-tegra <linux-tegra@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Juergen Gross <jgross@suse.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, linux-parisc@vger.kernel.org,
- Linux PM <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "K . C . Kuen-Chern Lin" <kclin@andestech.com>,
- linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>,
- Philipp Zabel <p.zabel@pengutronix.de>, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Joshua Thompson <funaho@jurai.org>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Dec 10, 2021 at 8:14 PM Rafael J. Wysocki <rafael@kernel.org> wrote=
-:
-> On Fri, Dec 10, 2021 at 8:04 PM Dmitry Osipenko <digetx@gmail.com> wrote:
-> > 10.12.2021 21:27, Rafael J. Wysocki =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
-> > > On Mon, Nov 29, 2021 at 12:34 PM Dmitry Osipenko <digetx@gmail.com> w=
-rote:
-> > >> 29.11.2021 03:26, Micha=C5=82 Miros=C5=82aw =D0=BF=D0=B8=D1=88=D0=B5=
-=D1=82:
-> > >>> On Mon, Nov 29, 2021 at 12:06:19AM +0300, Dmitry Osipenko wrote:
-> > >>>> 28.11.2021 03:28, Micha=C5=82 Miros=C5=82aw =D0=BF=D0=B8=D1=88=D0=
-=B5=D1=82:
-> > >>>>> On Fri, Nov 26, 2021 at 09:00:41PM +0300, Dmitry Osipenko wrote:
-> > >>>>>> Add sanity check which ensures that there are no two restart han=
-dlers
-> > >>>>>> registered with the same priority. Normally it's a direct sign o=
-f a
-> > >>>>>> problem if two handlers use the same priority.
-> > >>>>>
-> > >>>>> The patch doesn't ensure the property that there are no duplicate=
-d-priority
-> > >>>>> entries on the chain.
-> > >>>>
-> > >>>> It's not the exact point of this patch.
-> > >>>>
-> > >>>>> I'd rather see a atomic_notifier_chain_register_unique() that ret=
-urns
-> > >>>>> -EBUSY or something istead of adding an entry with duplicate prio=
-rity.
-> > >>>>> That way it would need only one list traversal unless you want to
-> > >>>>> register the duplicate anyway (then you would call the older
-> > >>>>> atomic_notifier_chain_register() after reporting the error).
-> > >>>>
-> > >>>> The point of this patch is to warn developers about the problem th=
-at
-> > >>>> needs to be fixed. We already have such troubling drivers in mainl=
-ine.
-> > >>>>
-> > >>>> It's not critical to register different handlers with a duplicated
-> > >>>> priorities, but such cases really need to be corrected. We shouldn=
-'t
-> > >>>> break users' machines during transition to the new API, meanwhile
-> > >>>> developers should take action of fixing theirs drivers.
-> > >>>>
-> > >>>>> (Or you could return > 0 when a duplicate is registered in
-> > >>>>> atomic_notifier_chain_register() if the callers are prepared
-> > >>>>> for that. I don't really like this way, though.)
-> > >>>>
-> > >>>> I had a similar thought at some point before and decided that I'm =
-not in
-> > >>>> favor of this approach. It's nicer to have a dedicated function th=
-at
-> > >>>> verifies the uniqueness, IMO.
-> > >>>
-> > >>> I don't like the part that it traverses the list second time to che=
-ck
-> > >>> the uniqueness. But actually you could avoid that if
-> > >>> notifier_chain_register() would always add equal-priority entries i=
-n
-> > >>> reverse order:
-> > >>>
-> > >>>  static int notifier_chain_register(struct notifier_block **nl,
-> > >>>               struct notifier_block *n)
-> > >>>  {
-> > >>>       while ((*nl) !=3D NULL) {
-> > >>>               if (unlikely((*nl) =3D=3D n)) {
-> > >>>                       WARN(1, "double register detected");
-> > >>>                       return 0;
-> > >>>               }
-> > >>> -             if (n->priority > (*nl)->priority)
-> > >>> +             if (n->priority >=3D (*nl)->priority)
-> > >>>                       break;
-> > >>>               nl =3D &((*nl)->next);
-> > >>>       }
-> > >>>       n->next =3D *nl;
-> > >>>       rcu_assign_pointer(*nl, n);
-> > >>>       return 0;
-> > >>>  }
-> > >>>
-> > >>> Then the check for uniqueness after adding would be:
-> > >>>
-> > >>>  WARN(nb->next && nb->priority =3D=3D nb->next->priority);
-> > >>
-> > >> We can't just change the registration order because invocation order=
- of
-> > >> the call chain depends on the registration order
-> > >
-> > > It doesn't if unique priorities are required and isn't that what you =
-want?
-> > >
-> > >> and some of current
-> > >> users may rely on that order. I'm pretty sure that changing the orde=
-r
-> > >> will have unfortunate consequences.
-> > >
-> > > Well, the WARN() doesn't help much then.
-> > >
-> > > Either you can make all of the users register with unique priorities,
-> > > and then you can make the registration reject non-unique ones, or you
-> > > cannot assume them to be unique.
-> >
-> > There is no strong requirement for priorities to be unique, the reboot.=
-c
-> > code will work properly.
->
-> In which case adding the WARN() is not appropriate IMV.
->
-> Also I've looked at the existing code and at least in some cases the
-> order in which the notifiers run doesn't matter.  I'm not sure what
-> the purpose of this patch is TBH.
->
-> > The potential problem is on the user's side and the warning is intended
-> > to aid the user.
->
-> Unless somebody has the panic_on_warn mentioned previously set and
-> really the user need not understand what the WARN() is about.  IOW,
-> WARN() helps developers, not users.
+Rob Herring <robh@kernel.org> writes:
+> Use of the of_scan_flat_dt() function predates libfdt and is discouraged
+> as libfdt provides a nicer set of APIs. Rework
+> early_init_dt_scan_memory() to be called directly and use libfdt.
+...
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 6e1a106f02eb..63762a3b75e8 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -532,19 +532,19 @@ static int  __init early_init_drmem_lmb(struct drmem_lmb *lmb,
+>  }
+>  #endif /* CONFIG_PPC_PSERIES */
+>  
+> -static int __init early_init_dt_scan_memory_ppc(unsigned long node,
+> -						const char *uname,
+> -						int depth, void *data)
+> +static int __init early_init_dt_scan_memory_ppc(void)
+>  {
+>  #ifdef CONFIG_PPC_PSERIES
+> -	if (depth == 1 &&
+> -	    strcmp(uname, "ibm,dynamic-reconfiguration-memory") == 0) {
+> +	const void *fdt = initial_boot_params;
+> +	int node = fdt_path_offset(fdt, "/ibm,dynamic-reconfiguration-memory");
+> +
+> +	if (node > 0) {
+>  		walk_drmem_lmbs_early(node, NULL, early_init_drmem_lmb);
+>  		return 0;
+>  	}
+>  #endif
+>  	
+> -	return early_init_dt_scan_memory(node, uname, depth, data);
+> +	return early_init_dt_scan_memory();
+>  }
+>  
+>  /*
+> @@ -749,7 +749,7 @@ void __init early_init_devtree(void *params)
+>  
+>  	/* Scan memory nodes and rebuild MEMBLOCKs */
+>  	early_init_dt_scan_root();
+> -	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
+> +	early_init_dt_scan_memory_ppc();
+>  
+>  	parse_early_param();
+>  
+> @@ -858,7 +858,7 @@ void __init early_get_first_memblock_info(void *params, phys_addr_t *size)
+>  	 */
+>  	add_mem_to_memblock = 0;
+>  	early_init_dt_scan_root();
+> -	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
+> +	early_init_dt_scan_memory_ppc();
+>  	add_mem_to_memblock = 1;
+>  
+>  	if (size)
 
-Do panic_on_warn and reboot_on_panic play well with having a WARN()
-in the reboot notifier handling?
 
-Gr{oetje,eeting}s,
+This blows up one of my machines with:
 
-                        Geert
+  [    0.000000][    T0] printk: bootconsole [udbg0] enabled
+   -> early_setup(), dt_ptr: 0x1ec90000
+  [    0.000000][    T0] ------------[ cut here ]------------
+  [    0.000000][    T0] kernel BUG at arch/powerpc/mm/book3s64/hash_utils.c:2117!
+  [    0.000000][    T0] Oops: Exception in kernel mode, sig: 5 [#1]
+  [    0.000000][    T0] LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA
+  [    0.000000][    T0] Modules linked in:
+  [    0.000000][    T0] CPU: 0 PID: 0 Comm: swapper Not tainted 5.16.0-rc4-00073-g81291383ffde-dirty #69
+  [    0.000000][    T0] NIP:  c0000000000924d8 LR: c000000002009764 CTR: c0000000000924d0
+  [    0.000000][    T0] REGS: c000000002833bc0 TRAP: 0700   Not tainted  (5.16.0-rc4-00073-g81291383ffde-dirty)
+  [    0.000000][    T0] MSR:  8000000000021003 <SF,ME,RI,LE>  CR: 24000244  XER: 20000001
+  [    0.000000][    T0] CFAR: 0000000000000730 IRQMASK: 1
+  [    0.000000][    T0] GPR00: c000000002009764 c000000002833e60 c000000002834100 ffffffffffffffff
+  [    0.000000][    T0] GPR04: 0000000000000000 c000000002080866 0000000000000000 0000000000000000
+  [    0.000000][    T0] GPR08: c000000002080864 0000000000000001 c0000000028d4100 c000000000ffe598
+  [    0.000000][    T0] GPR12: c0000000000924d0 c000000002082200 0000000000000000 0000000000000000
+  [    0.000000][    T0] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+  [    0.000000][    T0] GPR20: 0000000000000001 0000000010004604 0000000000000000 0000000010004bfc
+  [    0.000000][    T0] GPR24: 0000000000000000 c000000000000000 0000000002970000 c00000000008a480
+  [    0.000000][    T0] GPR28: c0000000028e19f8 c00000001ec90000 c000000002865af8 000000001ec90000
+  [    0.000000][    T0] NIP [c0000000000924d8] hash__setup_initial_memory_limit+0x18/0x110
+  [    0.000000][    T0] LR [c000000002009764] early_init_devtree+0x13c/0x4ec
+  [    0.000000][    T0] Call Trace:
+  [    0.000000][    T0] [c000000002833e60] [c0000000020096fc] early_init_devtree+0xd4/0x4ec (unreliable)
+  [    0.000000][    T0] [c000000002833f10] [c00000000200b008] early_setup+0xc8/0x22c
+  [    0.000000][    T0] [c000000002833f90] [000000000000d368] 0xd368
+  [    0.000000][    T0] Instruction dump:
+  [    0.000000][    T0] 4bffff0c eaa10028 4bffff44 60000000 60000000 60420000 3c4c027a 38421c40
+  [    0.000000][    T0] 7c0802a6 4bfe2e5d 3123ffff 7d291910 <0b090000> 3d220003 392919f8 e9290000
+  [    0.000000][    T0] random: get_random_bytes called from oops_exit+0x54/0xa0 with crng_init=0
+  [    0.000000][    T0] ---[ end trace 0000000000000000 ]---
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+It's complaining about memstart_addr being 0, which implies
+early_init_dt_add_memory_arch() was never called.
+
+Will try and get some more debug tomorrow.
+
+cheers
+
