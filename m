@@ -4,56 +4,119 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFE0BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 08:31:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14BFDC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 09:44:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JCF8Z0KK7z3bWC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 19:31:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JCGn21tXWz3c7w
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Dec 2021 20:44:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=vivo0.onmicrosoft.com header.i=@vivo0.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-vivo0-onmicrosoft-com header.b=i19xTbCg;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=185.58.85.151;
- helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
- receiver=<UNKNOWN>)
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
+ smtp.mailfrom=vivo.com (client-ip=40.107.130.101;
+ helo=apc01-hk2-obe.outbound.protection.outlook.com;
+ envelope-from=wangqing@vivo.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=vivo0.onmicrosoft.com header.i=@vivo0.onmicrosoft.com
+ header.a=rsa-sha256 header.s=selector2-vivo0-onmicrosoft-com
+ header.b=i19xTbCg; dkim-atps=neutral
+Received: from APC01-HK2-obe.outbound.protection.outlook.com
+ (mail-eopbgr1300101.outbound.protection.outlook.com [40.107.130.101])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JCF822nShz2yng
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2021 19:30:40 +1100 (AEDT)
-Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- uk-mta-48-uEn-QkNbO3KqUuXVw7bKDg-1; Mon, 13 Dec 2021 08:30:34 +0000
-X-MC-Unique: uEn-QkNbO3KqUuXVw7bKDg-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
- Server (TLS) id 15.0.1497.26; Mon, 13 Dec 2021 08:30:33 +0000
-Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
- AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
- 15.00.1497.026; Mon, 13 Dec 2021 08:30:33 +0000
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Matthew Wilcox' <willy@infradead.org>
-Subject: RE: [PATCH v2 0/2] kdump: simplify code
-Thread-Topic: [PATCH v2 0/2] kdump: simplify code
-Thread-Index: AQHX7j/jzYqw5kMpA0qY43nH0kUm2Kwtku5wgAEsrYCAAVr28A==
-Date: Mon, 13 Dec 2021 08:30:33 +0000
-Message-ID: <b7a75ae9253445af81ff2fedd5268af4@AcuMS.aculab.com>
-References: <1639193588-7027-1-git-send-email-yangtiezhu@loongson.cn>
- <0c5cb37139af4f3e85cc2c5115d7d006@AcuMS.aculab.com>
- <YbXhVxRJfjvKw++W@casper.infradead.org>
-In-Reply-To: <YbXhVxRJfjvKw++W@casper.infradead.org>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JCGm61RSBz2yw9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Dec 2021 20:43:22 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=OjQ/RtbYfOcU+stJlaaQzfXXEL1SeFxA3m0Ate+R7OOIHhoGPF6N4oLANIh6nkewHBaoyojdN1PVohkytgomhk5mfVrZc6WoAUrlMXicUY7eyHTF3WZStqXgog58z0U2BJzEJEiwIc9R1z7GFJCaWgpoAyo3UIG80wjf4bTnYz6ZG22hezlcC2nUgArHpKxswVJr4MZqqYpOa39vplisV9uoKRVOmqFNLo6sVLBjWVl9/72tfgST0kKW3i5epn3lI6kT5wcbsfenVJMoso8NsmxbOS04Y109VBbojbfuinTDaEOgtjKnoyCfXBxOuGG49QlXnFE+i4dVZ9AVAVphFQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=IZv6rWuXraT/4KPE6oifLgxFcTswNiwroZQH7Zaoddo=;
+ b=V34P2OmWx3Flng90mWoCHpukHr97RJinlD1nCbjqi5vszw5iE1BY/KtprisM/cympak7M57WRqI/FXarc7PveS63bQqwLBp4FkDiV43q48FqwjhghAWTSfDHeb2tnRYLO1ma68+TT+li+SrwSpQ6vRtEbI6ix1c4LdjttTM8KQQfbnzC7/sm20SNLjWuRQEOzIwlB4nPucEI6Igtjcch8nqBuYOdU+V36G+Fjn51FL1l7BJzTszLORjijuYqqi7VaVf6/wyJAnO19/RlqKWB/UuSTahD/5agcfzRLgd+ssoOTPiuEfwbBoLe2Ya6d4Ns41WmGY41kTl7ODp1s6bdjw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
+ dkim=pass header.d=vivo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo0.onmicrosoft.com; 
+ s=selector2-vivo0-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=IZv6rWuXraT/4KPE6oifLgxFcTswNiwroZQH7Zaoddo=;
+ b=i19xTbCgINoFuGF0QPQ/sRJXIOrxmrwVpdEqmDnonOXDysIjX//TCC+wTeZUDP2uhgSHtn1IGlc+P34ndG4BS2um6HQWpYOf5FEY4fsS85UTC+mJePdcHMR/U7Pl+AtN3omMj7h6PkedXQqEs4dhz0dPrqBPpjLU0QWxhTxnxEs=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=vivo.com;
+Received: from SL2PR06MB3082.apcprd06.prod.outlook.com (2603:1096:100:37::17)
+ by SL2PR06MB3050.apcprd06.prod.outlook.com (2603:1096:100:39::14)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4778.16; Mon, 13 Dec
+ 2021 09:43:00 +0000
+Received: from SL2PR06MB3082.apcprd06.prod.outlook.com
+ ([fe80::a0cf:a0e2:ee48:a396]) by SL2PR06MB3082.apcprd06.prod.outlook.com
+ ([fe80::a0cf:a0e2:ee48:a396%4]) with mapi id 15.20.4778.017; Mon, 13 Dec 2021
+ 09:43:00 +0000
+From: Qing Wang <wangqing@vivo.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] arch: powerpc: add missing of_node_put before break
+Date: Mon, 13 Dec 2021 01:42:52 -0800
+Message-Id: <1639388572-63704-1-git-send-email-wangqing@vivo.com>
+X-Mailer: git-send-email 2.7.4
+Content-Type: text/plain
+X-ClientProxiedBy: HK0PR01CA0069.apcprd01.prod.exchangelabs.com
+ (2603:1096:203:a6::33) To SL2PR06MB3082.apcprd06.prod.outlook.com
+ (2603:1096:100:37::17)
 MIME-Version: 1.0
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 65cc7d38-5296-42d1-45da-08d9be1cf33f
+X-MS-TrafficTypeDiagnostic: SL2PR06MB3050:EE_
+X-Microsoft-Antispam-PRVS: <SL2PR06MB305010D17ECBA96211AE7E5DBD749@SL2PR06MB3050.apcprd06.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:3631;
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: UQSTfRqnvtjctO/0L6HeokhsnMZMqBL0sulvuKXMyVyPTAGWOB40GHyYVY2sf9c4uENvdqd0WlvrA0s6O44KGKso7hFe1Q90zm+8zs0p8/FXiiozok5LuiEWX7aB1OeXoaQW75DUcX131NWbAl0qfFDlkRNKcVqQ0G/Iofo9jmiApEqczgdBDZA9MYPH0IQYV/cuaZbRvG5AaAE6i0EdaBxS8MSAB9RTPAfcyCLLhssChvAojpvvE7hWzc9H/51sI8hfSjzdnEsK9mgogSwxDDOeFp99decvPRLgIwOu9TbSEf9kgzj8strOKtcc44YDcjOrgcuo4VRSCmD9yqlH4PS0E8BuJIB78zRl6MpjtSirV5aKI57MZzmxY+QZ5ucKKgWpRrLBAHfdtOTzq9mBOk5/UV5Crm0eryLVMriueniWFMbI50hmtIWYbZvDdegzCuE0dh29p5nfW8uOKjvQCy5xx5MuMj6zERn6UNkaOYjdZfdKjFhBXb0q4b6xeGLhlwB6Yw2sVmhK81HfIANTTrDH7ezJJAKv9ZpvVvxoLSeLGPk5bssY5hVx93E8sy13s29R2zGVD0vvfB7z0Z8Jq+ZXvVasertu2C1FEopP/gKfyVB6Yt4dizLg29FGOKRlai/B2Cd6QF0HbsM/CKX1w2ihjlTQBD80t0I7URFJJtGaRJZTXYGBRRX4Ah310xFLL5JexC1NmoZ2PcHKoxLwmg==
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:SL2PR06MB3082.apcprd06.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(4636009)(366004)(86362001)(83380400001)(52116002)(6506007)(110136005)(2906002)(316002)(508600001)(26005)(186003)(66946007)(36756003)(107886003)(66476007)(2616005)(66556008)(8936002)(6512007)(8676002)(4326008)(5660300002)(6486002)(38100700002)(4744005)(38350700002)(6666004);
+ DIR:OUT; SFP:1102; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?77UTGkerUJEbY4bkbVY+OMG7sxWxmUAEoUZYL3tWlWc94ZZeGxliDlCCRQRb?=
+ =?us-ascii?Q?Z+bIOTNopXF0raXc5Wc/5QzRBgXUfMOjBgwJnAJQg0N76gQHF9Jv1zvG5fyC?=
+ =?us-ascii?Q?0q86+luTHJyl+SGWMZoWiOXG7mHb4gzgb0FE70XYKmmfXWRWbEOVgo+f1aWN?=
+ =?us-ascii?Q?9enr6qbwa18YHsMTqPct4yOA9B5N4v+3WZMmnPLCEHFKt7otyl0dVyoCumxc?=
+ =?us-ascii?Q?cb++5y216gUb9mHoOZHHclJh1XoW7hOkR0haSJc02KBbRaGrHFked5nBd5u9?=
+ =?us-ascii?Q?PXTvKBRtDBpV+5YRQQb1kiVG834Vga3IKc3Bw5spSmYfo/NBdU5OirtA2UYI?=
+ =?us-ascii?Q?NPQ5Dct1IBIsvKSX/p3+Tj33LNJPDn8h07cGKxEcjaJx366gu4p8wxQCxvYQ?=
+ =?us-ascii?Q?R9/wW7Rbqj4qMk1Ua/1+X6HhKlCUCqQqs+zFcGlo7/4tmYokeAmlXwO7FbVE?=
+ =?us-ascii?Q?3vd/XO1ZxbfeOpGiMmND+MxuptPR0q2jMl+9uwNwkAKV1X+f7pJJEioBeze9?=
+ =?us-ascii?Q?FNOkvMzjxEEpaVJ6F6qO1cGGXhKB0nBxFHGCL3S4u3vDDaipRzUa/15RSvxz?=
+ =?us-ascii?Q?5YgLY3d6DBSSLcUnC7uYtNknaaX+wybAZxd+VyeuM0/6Ep7TxqOPbwKL2gRs?=
+ =?us-ascii?Q?H0M6hcHtFc31Dit/i51WgFMm6U7eKl0XDw37WxtzpJrieKC3QW6ky1c6CUfg?=
+ =?us-ascii?Q?+qDj4E9GMLSaJSxNHGsHDkLIqcRR4rNdPGG1TCASh45YsmO2B6PmlFfuef50?=
+ =?us-ascii?Q?0q9DFbCGDgmC5GAm2BzH21QLhw6CbUyYxcTZc+EI4Py8ySAqOxgtmypBHS9g?=
+ =?us-ascii?Q?rgVvHiYKm03xfSjpgziWZ+s6yoPqnmJUflKLLKGD/SpfqZ9C9Jld1lCQsJaE?=
+ =?us-ascii?Q?YkbxaB/QUCCC6t4RlVvmUwZiNqpDsWKod0d2v7IskUo2hKeRFL+yMH9POSlN?=
+ =?us-ascii?Q?mNzw1tX20oK/g3OnLHvryyG2Ah2+HmAM1D6wfZGPzAZBCDa+eDC/yeoCugjW?=
+ =?us-ascii?Q?nu9b+Ng8wsA23OvyY1au0F1zfS+4SuUmdPWKAGqzjDGm6kx36iVEAtzpjBuX?=
+ =?us-ascii?Q?JY51t3lT/9hOcyGlCo3WKIt8XMlrwCnHNGPczlYd2iWonCVBqFxBb8CEbcYd?=
+ =?us-ascii?Q?YBhEV8A/DDQdf+J5UBXv5QmvC0dKt0ocLPxuo243psgF0Vru7FrNyD3LYQBU?=
+ =?us-ascii?Q?oxLSUgR0Zcq4R8xNZMHsecVf5vBPGG7ia2vKpU8IW4JiKIZWgLW6gfazl8wd?=
+ =?us-ascii?Q?xJkyQwsoCBcFeGI8iShH/VYdSlIRgEFhDGT0aL4ZbTKEC/wvPUs28LPDz3b0?=
+ =?us-ascii?Q?VHXbNJ6dp7zdWcYClpDF6jBfEOPlodvB3MsMd0g7ncIVYO8jSJdpzNT2ia2K?=
+ =?us-ascii?Q?Aal3jiyuKjEjCF3fryvLDPHXexAmvaKSrvRBuXgczTq9pakBG5ttRW9TjCRt?=
+ =?us-ascii?Q?8Ei18JXl3k6gxXC7+cvYUuIgWQEJFLZmxbbefauR5T9AKJvw+0oUs9FtOBsW?=
+ =?us-ascii?Q?Qi/UnFgA7Z0vcph+EmUb1MrddLV8JAGSW753rVHStjtlPsJi+zRO5i9DY2lu?=
+ =?us-ascii?Q?dcoeT3P+LVoI9aXXnfwrRHIcNMGj9bJrFeUrPxDknnPoUScGe5Fv576MQYoM?=
+ =?us-ascii?Q?y0Hu8xusqQJeWQ8odYWg5RY=3D?=
+X-OriginatorOrg: vivo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 65cc7d38-5296-42d1-45da-08d9be1cf33f
+X-MS-Exchange-CrossTenant-AuthSource: SL2PR06MB3082.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Dec 2021 09:43:00.2105 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 6FJi9MFKtRFhM+sv1NlM/mCMVxg2hw9WOAvei4I5dNri9sEJLJs+/KlKL2JXatiEgB/JU8VeBfYxEnyumbrQJg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SL2PR06MB3050
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,51 +128,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Baoquan He <bhe@redhat.com>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
- "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
- "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Xuefeng Li <lixuefeng@loongson.cn>,
- "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, Dave Young <dyoung@redhat.com>,
- 'Tiezhu Yang' <yangtiezhu@loongson.cn>, Vivek Goyal <vgoyal@redhat.com>
+Cc: Wang Qing <wangqing@vivo.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Matthew Wilcox
-> Sent: 12 December 2021 11:48
->=20
-> On Sat, Dec 11, 2021 at 05:53:46PM +0000, David Laight wrote:
-> > From: Tiezhu Yang
-> > > Sent: 11 December 2021 03:33
-> > >
-> > > v2:
-> > >   -- add copy_to_user_or_kernel() in lib/usercopy.c
-> > >   -- define userbuf as bool type
-> >
-> > Instead of having a flag to indicate whether the buffer is user or kern=
-el,
-> > would it be better to have two separate buffer pointers.
-> > One for a user space buffer, the other for a kernel space buffer.
-> > Exactly one of the buffers should always be NULL.
->=20
-> No.  You should be using an iov_iter instead.  See
-> https://lore.kernel.org/all/Ya4bdB0UBJCZhUSo@casper.infradead.org/
-> for a start on this.
+From: Wang Qing <wangqing@vivo.com>
 
-iov_iter gets horribly expensive...
+Fix following coccicheck warning:
+WARNING: Function "for_each_node_by_name" 
+should have of_node_put() before return.
 
-=09David
+Early exits from for_each_node_by_name should decrement the
+node reference counter.
 
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
+Signed-off-by: Wang Qing <wangqing@vivo.com>
+---
+ arch/powerpc/platforms/powermac/smp.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
+index 3256a31..c9a044a
+--- a/arch/powerpc/platforms/powermac/smp.c
++++ b/arch/powerpc/platforms/powermac/smp.c
+@@ -598,8 +598,10 @@ static void __init smp_core99_setup_i2c_hwsync(int ncpus)
+ 			name = "Pulsar";
+ 			break;
+ 		}
+-		if (pmac_tb_freeze != NULL)
++		if (pmac_tb_freeze != NULL) {
++			of_node_put(cc);
+ 			break;
++		}
+ 	}
+ 	if (pmac_tb_freeze != NULL) {
+ 		/* Open i2c bus for synchronous access */
+-- 
+2.7.4
 
