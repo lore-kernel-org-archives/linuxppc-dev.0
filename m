@@ -4,33 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 052BFC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Dec 2021 00:29:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93A29C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Dec 2021 00:30:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JDGNH4Dz7z3f0J
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Dec 2021 11:29:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JDGNj4d80z3f49
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Dec 2021 11:30:13 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
  [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JDGJr30sXz3c9Y
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JDGJr38g5z3c9d
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Dec 2021 11:26:52 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JDGJm5345z4xhs;
- Wed, 15 Dec 2021 11:26:48 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JDGJn2hv2z4xht;
+ Wed, 15 Dec 2021 11:26:49 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- Hari Bathini <hbathini@linux.ibm.com>, npiggin@gmail.com
-In-Reply-To: <20211207103719.91117-1-hbathini@linux.ibm.com>
-References: <20211207103719.91117-1-hbathini@linux.ibm.com>
-Subject: Re: [PATCH v3 1/2] powerpc: handle kdump appropriately with
- crash_kexec_post_notifiers option
-Message-Id: <163952788224.919625.4766990349365852809.b4-ty@ellerman.id.au>
-Date: Wed, 15 Dec 2021 11:24:42 +1100
+To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+In-Reply-To: <20211201144153.2456614-1-npiggin@gmail.com>
+References: <20211201144153.2456614-1-npiggin@gmail.com>
+Subject: Re: [PATCH v6 00/18] powerpc: Make hash MMU code build configurable
+Message-Id: <163952785837.919625.843097926961983649.b4-ty@ellerman.id.au>
+Date: Wed, 15 Dec 2021 11:24:18 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,32 +43,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mahesh@linux.ibm.com, sourabhjain@linux.ibm.com,
- kernel test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 7 Dec 2021 16:07:18 +0530, Hari Bathini wrote:
-> Kdump can be triggered after panic_notifers since commit f06e5153f4ae2
-> ("kernel/panic.c: add "crash_kexec_post_notifiers" option for kdump
-> after panic_notifers") introduced crash_kexec_post_notifiers option.
-> But using this option would mean smp_send_stop(), that marks all other
-> CPUs as offline, gets called before kdump is triggered. As a result,
-> kdump routines fail to save other CPUs' registers. To fix this, kdump
-> friendly crash_smp_send_stop() function was introduced with kernel
-> commit 0ee59413c967 ("x86/panic: replace smp_send_stop() with kdump
-> friendly version in panic path"). Override this kdump friendly weak
-> function to handle crash_kexec_post_notifiers option appropriately
-> on powerpc.
+On Thu, 2 Dec 2021 00:41:35 +1000, Nicholas Piggin wrote:
+> Now that there's a platform that can make good use of it, here's
+> a series that can prevent the hash MMU code being built for 64s
+> platforms that don't need it.
+> 
+> Since v5:
+> - Make cxl select hash.
+> - Add new patch (15) to prevent radix using different get_unmapped_area
+>   code when hash support is disabled. This is an intermediate step for
+>   now, ideally we will end up with radix always going via the generic
+>   code.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc: handle kdump appropriately with crash_kexec_post_notifiers option
-      https://git.kernel.org/powerpc/c/219572d2fc4135b5ce65c735d881787d48b10e71
-[2/2] ppc64/fadump: fix inaccurate CPU state info in vmcore generated with panic
-      https://git.kernel.org/powerpc/c/06e629c25daa519be620a8c17359ae8fc7a2e903
+[01/18] powerpc: Remove unused FW_FEATURE_NATIVE references
+        https://git.kernel.org/powerpc/c/79b74a68486765a4fe685ac4069bc71366c538f5
+[02/18] powerpc: Rename PPC_NATIVE to PPC_HASH_MMU_NATIVE
+        https://git.kernel.org/powerpc/c/7ebc49031d0418dc9ca8475b8133a3a161221ef5
+[03/18] powerpc/pseries: Stop selecting PPC_HASH_MMU_NATIVE
+        https://git.kernel.org/powerpc/c/a4135cbebde8375e2a9d91261b4546ce3f3b9b0f
+[04/18] powerpc/64s: Move and rename do_bad_slb_fault as it is not hash specific
+        https://git.kernel.org/powerpc/c/935b534c24f014325b72a3619bbbdc18191f9c3d
+[05/18] powerpc/pseries: move process table registration away from hash-specific code
+        https://git.kernel.org/powerpc/c/0c7cc15e92157c8886c8df3151eac2c43c3dfa2b
+[06/18] powerpc/pseries: lparcfg don't include slb_size line in radix mode
+        https://git.kernel.org/powerpc/c/3d3282fd34d82caac5005d9c4d4525054eb3cac1
+[07/18] powerpc/64s: move THP trace point creation out of hash specific file
+        https://git.kernel.org/powerpc/c/162b0889bba6e721c33d12e15971618785ca778e
+[08/18] powerpc/64s: Make flush_and_reload_slb a no-op when radix is enabled
+        https://git.kernel.org/powerpc/c/310dce6201fd27fda484e34bf543fb55c33d80b1
+[09/18] powerpc/64s: move page size definitions from hash specific file
+        https://git.kernel.org/powerpc/c/bdad5d57dfcc6d2b2f8d0bc9d7e85ee794d1d50e
+[10/18] powerpc/64s: Rename hash_hugetlbpage.c to hugetlbpage.c
+        https://git.kernel.org/powerpc/c/f43d2ffb47c9e86f5ec24e1de6ce6da6808634a2
+[11/18] powerpc/64: pcpu setup avoid reading mmu_linear_psize on 64e or radix
+        https://git.kernel.org/powerpc/c/ffbe5d21d10f9c7890c07fca17db772f941385bf
+[12/18] powerpc: make memremap_compat_align 64s-only
+        https://git.kernel.org/powerpc/c/20626177c9de726c48802c15e8635cc154645588
+[13/18] powerpc/64e: remove mmu_linear_psize
+        https://git.kernel.org/powerpc/c/8dbfc0092b5c8c50f011509893bf0396253cd2ab
+[14/18] powerpc/64s: Fix radix MMU when MMU_FTR_HPTE_TABLE is clear
+        https://git.kernel.org/powerpc/c/af3a0ea41cbf38e967611e262126357d2fd23955
+[15/18] powerpc/64s: Always define arch unmapped area calls
+        https://git.kernel.org/powerpc/c/debeda017189e40bff23d1c3d2e4567ca8541aed
+[16/18] powerpc/64s: Make hash MMU support configurable
+        https://git.kernel.org/powerpc/c/c28573744b74eb6de19add503d6a986795c4c137
+[17/18] powerpc/64s: Move hash MMU support code under CONFIG_PPC_64S_HASH_MMU
+        https://git.kernel.org/powerpc/c/387e220a2e5e630794e1f5219ed6f11e56271c21
+[18/18] powerpc/microwatt: add POWER9_CPU, clear PPC_64S_HASH_MMU
+        https://git.kernel.org/powerpc/c/31284f703db2f1605b2dbc6bb0632b04d7be13e7
 
 cheers
