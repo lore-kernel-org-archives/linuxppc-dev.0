@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74935C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Dec 2021 00:45:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61333C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Dec 2021 00:46:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JDGkS5tzwz3cNK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Dec 2021 11:45:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JDGkv660Wz3cYK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Dec 2021 11:45:59 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JDGk220wtz2xtR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JDGk24n6Vz2xtR
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Dec 2021 11:45:14 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JDGjz73kyz4xRB;
- Wed, 15 Dec 2021 11:45:11 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JDGk23nZqz4xd4;
+ Wed, 15 Dec 2021 11:45:14 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20210901084550.1658699-1-aik@ozlabs.ru>
-References: <20210901084550.1658699-1-aik@ozlabs.ru>
-Subject: Re: [PATCH kernel] KVM: PPC: Book3S: Suppress failed alloc warning in
- H_COPY_TOFROM_GUEST
-Message-Id: <163952881392.928111.6712272924823006428.b4-ty@ellerman.id.au>
+In-Reply-To: <20210901084512.1658628-1-aik@ozlabs.ru>
+References: <20210901084512.1658628-1-aik@ozlabs.ru>
+Subject: Re: [PATCH kernel] KVM: PPC: Book3S: Suppress warnings when
+ allocating too big memory slots
+Message-Id: <163952881326.928111.10777487820265480047.b4-ty@ellerman.id.au>
 Date: Wed, 15 Dec 2021 11:40:13 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -48,19 +48,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 1 Sep 2021 18:45:50 +1000, Alexey Kardashevskiy wrote:
-> H_COPY_TOFROM_GUEST is an hcall for an upper level VM to access its nested
-> VMs memory. The userspace can trigger WARN_ON_ONCE(!(gfp & __GFP_NOWARN))
-> in __alloc_pages() by constructing a tiny VM which only does
-> H_COPY_TOFROM_GUEST with a too big GPR9 (number of bytes to copy).
+On Wed, 1 Sep 2021 18:45:12 +1000, Alexey Kardashevskiy wrote:
+> The userspace can trigger "vmalloc size %lu allocation failure: exceeds
+> total pages" via the KVM_SET_USER_MEMORY_REGION ioctl.
 > 
-> This silences the warning by adding __GFP_NOWARN.
+> This silences the warning by checking the limit before calling vzalloc()
+> and returns ENOMEM if failed.
+> 
+> This does not call underlying valloc helpers as __vmalloc_node() is only
+> exported when CONFIG_TEST_VMALLOC_MODULE and __vmalloc_node_range() is not
+> exported at all.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] KVM: PPC: Book3S: Suppress failed alloc warning in H_COPY_TOFROM_GUEST
-      https://git.kernel.org/powerpc/c/792020907b11c6f9246c21977cab3bad985ae4b6
+[1/1] KVM: PPC: Book3S: Suppress warnings when allocating too big memory slots
+      https://git.kernel.org/powerpc/c/511d25d6b789fffcb20a3eb71899cf974a31bd9d
 
 cheers
