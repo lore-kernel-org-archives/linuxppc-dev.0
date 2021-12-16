@@ -4,58 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70CEEC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Dec 2021 17:50:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBEC4C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Dec 2021 17:50:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JFKQ35vK5z3ccb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Dec 2021 04:50:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JFKR01rhSz3ckp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Dec 2021 04:50:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=Yt6iQrPR;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=185.58.85.151;
- helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
+ smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::52b;
+ helo=mail-ed1-x52b.google.com; envelope-from=torvalds@linuxfoundation.org;
  receiver=<UNKNOWN>)
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.a=rsa-sha256 header.s=google header.b=Yt6iQrPR; 
+ dkim-atps=neutral
+Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com
+ [IPv6:2a00:1450:4864:20::52b])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JFKPX2NYHz2yK3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Dec 2021 04:49:34 +1100 (AEDT)
-Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- uk-mta-82-kIcKgVwCMVG34NOJowHCJQ-1; Thu, 16 Dec 2021 17:49:29 +0000
-X-MC-Unique: kIcKgVwCMVG34NOJowHCJQ-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
- Server (TLS) id 15.0.1497.26; Thu, 16 Dec 2021 17:49:27 +0000
-Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
- AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
- 15.00.1497.026; Thu, 16 Dec 2021 17:49:27 +0000
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Ard Biesheuvel' <ardb@kernel.org>, Arnd Bergmann <arnd@kernel.org>,
- "Jason A. Donenfeld" <Jason@zx2c4.com>, "johannes@sipsolutions.net"
- <johannes@sipsolutions.net>, Kees Cook <keescook@chromium.org>, "Nick
- Desaulniers" <ndesaulniers@google.com>
-Subject: RE: [PATCH v2 00/13] Unify asm/unaligned.h around struct helper
-Thread-Topic: [PATCH v2 00/13] Unify asm/unaligned.h around struct helper
-Thread-Index: AQHX8qKmJnIWdY3H8E+V3sMdrqJgg6w1YkAg
-Date: Thu, 16 Dec 2021 17:49:27 +0000
-Message-ID: <5a46959bfe654ae9a8a4e1b1adf0db95@AcuMS.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JFKQH5qhbz2x9B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Dec 2021 04:50:14 +1100 (AEDT)
+Received: by mail-ed1-x52b.google.com with SMTP id r11so88941471edd.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Dec 2021 09:50:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=ms/wuM8WAzRPY4WykXwi0/YehvvfoHEwDko5JETWgyY=;
+ b=Yt6iQrPRR02VnMfhyQFLe4lPoyYi1LLJZh1EAgoFFL5odLJNrpYEgdV1gCmEQ/8Ebm
+ vqyvFiXql5+DLQ9/AE42zzsnV8GD+7jyfxwfcG0fq/qlAeVI5VhSB0SiPNjhiYS6tgxi
+ kvXLQUaOrvL+UE8xSz2YpOdT/AUCe9TuJhNKQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=ms/wuM8WAzRPY4WykXwi0/YehvvfoHEwDko5JETWgyY=;
+ b=GZMVjA78il6f6ISXKnoGHdoDh5wQbMjitK1RS6I3Rl2E5P3zq3pHePE5ZBFzAP/IcQ
+ DX8Pp8juPD7mAdsOyqAzoRLxYrsEraZBHZJ0ya8bBYeaP+DvI+WAqlwaUZdOFqiXxIID
+ drIotA9UlY7/4UM+dhi4B3pDmrgaXEXErJ2B1gAGKrixa+bpy7/+O8frxfUlMh8QesCv
+ YxxPDe59U7P/TJQI8+asDh/cf7upac+69+OQJh47vX+1dVcBjQbmj/0e9l7LIgOxNCLo
+ sj8kDUAAHxRiD/ijvt7SmxIIAhOVWa+bQo36sTZ2C5Q7s1bafn8Q8l9Uq7BEpcXPKSTE
+ mgDg==
+X-Gm-Message-State: AOAM531cHhKD+Qa2kngqkbVL0h1UGcoNQk+aweiVttduLJI94+U2SzZo
+ KZrPRwBv4oMnKWE9K+dvCbYrriZDqsVv7m0ThC0=
+X-Google-Smtp-Source: ABdhPJwO2uIjw1bU3AwzWUQCfi9GQdy+PwG8ch9hN/ow018avE9IdtFMHGWrKSYKokN+lx5fBLA6cg==
+X-Received: by 2002:a05:6402:22c6:: with SMTP id
+ dm6mr3541287edb.405.1639677010488; 
+ Thu, 16 Dec 2021 09:50:10 -0800 (PST)
+Received: from mail-ed1-f52.google.com (mail-ed1-f52.google.com.
+ [209.85.208.52])
+ by smtp.gmail.com with ESMTPSA id hb36sm2010372ejc.73.2021.12.16.09.50.10
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 16 Dec 2021 09:50:10 -0800 (PST)
+Received: by mail-ed1-f52.google.com with SMTP id z9so34383277edb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Dec 2021 09:50:10 -0800 (PST)
+X-Received: by 2002:adf:8b0e:: with SMTP id n14mr9660488wra.281.1639676577218; 
+ Thu, 16 Dec 2021 09:42:57 -0800 (PST)
+MIME-Version: 1.0
 References: <20210514100106.3404011-1-arnd@kernel.org>
  <CAMj1kXG0CNomZ0aXxh_4094fT+g4bVWFCkrd7QwgTQgiqoxMWA@mail.gmail.com>
 In-Reply-To: <CAMj1kXG0CNomZ0aXxh_4094fT+g4bVWFCkrd7QwgTQgiqoxMWA@mail.gmail.com>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
-MIME-Version: 1.0
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 16 Dec 2021 09:42:41 -0800
+X-Gmail-Original-Message-ID: <CAHk-=wiKkdYLY0bv+nXrcJz3NH9mAqPAafX7PpW5EwVtxsEu7Q@mail.gmail.com>
+Message-ID: <CAHk-=wiKkdYLY0bv+nXrcJz3NH9mAqPAafX7PpW5EwVtxsEu7Q@mail.gmail.com>
+Subject: Re: [PATCH v2 00/13] Unify asm/unaligned.h around struct helper
+To: Ard Biesheuvel <ardb@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,38 +85,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "Richard Russon \(FlatCap\)" <ldm@flatcap.org>,
- Amitkumar Karwar <amitkarwar@gmail.com>, James Morris <jmorris@namei.org>,
- Eric Dumazet <edumazet@google.com>, Paul
- Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>, "open
- list:SPARC + UltraSPARC \(sparc/sparc64\)" <sparclinux@vger.kernel.org>,
- Stafford Horne <shorne@gmail.com>, linux-arch <linux-arch@vger.kernel.org>,
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+ "Jason A. Donenfeld" <Jason@zx2c4.com>, Rich Felker <dalias@libc.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Amitkumar Karwar <amitkarwar@gmail.com>, Russell King <linux@armlinux.org.uk>,
+ Eric Dumazet <edumazet@google.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ "open list:SPARC + UltraSPARC \(sparc/sparc64\)" <sparclinux@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arch <linux-arch@vger.kernel.org>,
  Florian Fainelli <f.fainelli@gmail.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, X86 ML <x86@kernel.org>, Russell
- King <linux@armlinux.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Kalle Valo <kvalo@codeaurora.org>, Vladimir Oltean <vladimir.oltean@nxp.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, X86 ML <x86@kernel.org>,
+ James Morris <jmorris@namei.org>, Ingo Molnar <mingo@redhat.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ "Richard Russon \(FlatCap\)" <ldm@flatcap.org>,
  Jakub Kicinski <kuba@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- Jonas Bonn <jonas@southpole.se>, Arnd Bergmann <arnd@arndb.de>,
- Ganapathi Bhat <ganapathi017@gmail.com>,
+ Jonas Bonn <jonas@southpole.se>, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>, Ganapathi Bhat <ganapathi017@gmail.com>,
  Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- "openrisc@lists.librecores.org" <openrisc@lists.librecores.org>,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>, Jens Axboe <axboe@kernel.dk>,
- John Johansen <john.johansen@canonical.com>,
+ linux-block <linux-block@vger.kernel.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>, openrisc@lists.librecores.org,
+ Borislav Petkov <bp@alien8.de>, Stafford Horne <shorne@gmail.com>,
+ Kalle Valo <kvalo@codeaurora.org>, Jens Axboe <axboe@kernel.dk>,
+ Arnd Bergmann <arnd@kernel.org>, John Johansen <john.johansen@canonical.com>,
  Xinming Hu <huxinming820@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
- "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+ Nick Desaulniers <ndesaulniers@google.com>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "linux-ntfs-dev@lists.sourceforge.net" <linux-ntfs-dev@lists.sourceforge.net>,
- "linux-security-module@vger.kernel.org"
- <linux-security-module@vger.kernel.org>,
+ Vladimir Oltean <vladimir.oltean@nxp.com>,
+ linux-ntfs-dev@lists.sourceforge.net,
+ LSM List <linux-security-module@vger.kernel.org>,
  Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
- "open list:BPF JIT for MIPS \(32-BIT AND
- 64-BIT\)" <netdev@vger.kernel.org>,
+ "open list:BPF JIT for MIPS \(32-BIT AND 64-BIT\)" <netdev@vger.kernel.org>,
+ Johannes Berg <johannes@sipsolutions.net>,
  "open list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
  <linuxppc-dev@lists.ozlabs.org>,
  Sharvari Harisangam <sharvari.harisangam@nxp.com>
@@ -106,51 +124,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-RnJvbTogQXJkIEJpZXNoZXV2ZWwNCj4gU2VudDogMTYgRGVjZW1iZXIgMjAyMSAxNzozMA0KPiAN
-Cj4gSGkgQXJuZCwNCj4gDQo+IChyZXBseWluZyB0byBhbiBvbGQgdGhyZWFkIGFzIHRoaXMgY2Ft
-ZSB1cCBpbiB0aGUgZGlzY3Vzc2lvbiByZWdhcmRpbmcNCj4gbWlzYWxpZ25lZCBsb2FkcyBhbmQg
-c3RvcmVkIGluIHNpcGhhc2goKSB3aGVuIGNvbXBpbGVkIGZvciBBUk0NCj4gW2Y3ZTViOWJmYTZj
-ODgyMDQwN2I2NGVhYmMxZjI5YzlhODdlODk5M2RdKQ0KPiANCj4gT24gRnJpLCAxNCBNYXkgMjAy
-MSBhdCAxMjowMiwgQXJuZCBCZXJnbWFubiA8YXJuZEBrZXJuZWwub3JnPiB3cm90ZToNCj4gPg0K
-PiA+IEZyb206IEFybmQgQmVyZ21hbm4gPGFybmRAYXJuZGIuZGU+DQo+ID4NCj4gPiBUaGUgZ2V0
-X3VuYWxpZ25lZCgpL3B1dF91bmFsaWduZWQoKSBoZWxwZXJzIGFyZSB0cmFkaXRpb25hbGx5IGFy
-Y2hpdGVjdHVyZQ0KPiA+IHNwZWNpZmljLCB3aXRoIHRoZSB0d28gbWFpbiB2YXJpYW50cyBiZWlu
-ZyB0aGUgImFjY2Vzcy1vay5oIiB2ZXJzaW9uDQo+ID4gdGhhdCBhc3N1bWVzIHVuYWxpZ25lZCBw
-b2ludGVyIGFjY2Vzc2VzIGFsd2F5cyB3b3JrIG9uIGEgcGFydGljdWxhcg0KPiA+IGFyY2hpdGVj
-dHVyZSwgYW5kIHRoZSAibGUtc3RydWN0LmgiIHZlcnNpb24gdGhhdCBjYXN0cyB0aGUgZGF0YSB0
-byBhDQo+ID4gYnl0ZSBhbGlnbmVkIHR5cGUgYmVmb3JlIGRlcmVmZXJlbmNpbmcsIGZvciBhcmNo
-aXRlY3R1cmVzIHRoYXQgY2Fubm90DQo+ID4gYWx3YXlzIGRvIHVuYWxpZ25lZCBhY2Nlc3NlcyBp
-biBoYXJkd2FyZS4NCg0KSSdtIHByZXR0eSBzdXJlIHRoZSBjb21waWxlciBpcyBhbGxvd2VkIHRv
-ICdyZWFkIHRocm91Z2gnIHRoYXQgY2FzdA0KYW5kIHN0aWxsIGRvIGFuIGFsaWduZWQgYWNjZXNz
-Lg0KSXQgaGFzIGFsd2F5cyBiZWVuIGhhcmQgdG8gZ2V0IHRoZSBjb21waWxlciB0byAnZm9yZ2V0
-JyBhYm91dCBrbm93bi9leHBlY3RlZA0KYWxpZ25tZW50IC0gdHlwaWNhbGx5IHRyeWluZyB0byBz
-dG9wIG1lbWNweSgpIGZhdWx0aW5nIG9uIHNwYXJjLg0KUmVhbCBmdW5jdGlvbiBjYWxscyBhcmUg
-dXN1YWxseSByZXF1aXJlZCAtIGJ1dCBMVE8gbWF5IHNjdXBwZXIgdGhhdC4NCg0KPiA+DQo+ID4g
-QmFzZWQgb24gdGhlIGRpc2N1c3Npb24gbGlua2VkIGJlbG93LCBpdCBhcHBlYXJzIHRoYXQgdGhl
-IGFjY2Vzcy1vaw0KPiA+IHZlcnNpb24gaXMgbm90IHJlYWxpYWJsZSBvbiBhbnkgYXJjaGl0ZWN0
-dXJlLCBidXQgdGhlIHN0cnVjdCB2ZXJzaW9uDQo+ID4gcHJvYmFibHkgaGFzIG5vIGRvd25zaWRl
-cy4gVGhpcyBzZXJpZXMgY2hhbmdlcyB0aGUgY29kZSB0byB1c2UgdGhlDQo+ID4gc2FtZSBpbXBs
-ZW1lbnRhdGlvbiBvbiBhbGwgYXJjaGl0ZWN0dXJlcywgYWRkcmVzc2luZyB0aGUgZmV3IGV4Y2Vw
-dGlvbnMNCj4gPiBzZXBhcmF0ZWx5Lg0KPiA+DQo+ID4gSSd2ZSBpbmNsdWRlZCB0aGlzIHZlcnNp
-b24gaW4gdGhlIGFzbS1nZW5lcmljIHRyZWUgZm9yIDUuMTQgYWxyZWFkeSwNCj4gPiBhZGRyZXNz
-aW5nIHRoZSBmZXcgaXNzdWVzIHRoYXQgd2VyZSBwb2ludGVkIG91dCBpbiB0aGUgUkZDLiBJZiB0
-aGVyZQ0KPiA+IGFyZSBhbnkgcmVtYWluaW5nIHByb2JsZW1zLCBJIGhvcGUgdGhvc2UgY2FuIGJl
-IGFkZHJlc3NlZCBhcyBmb2xsb3ctdXANCj4gPiBwYXRjaGVzLg0KPiA+DQo+IA0KPiBJIHRoaW5r
-IHRoaXMgc2VyaWVzIGlzIGEgaHVnZSBpbXByb3ZlbWVudCwgYnV0IGl0IGRvZXMgbm90IHNvbHZl
-IHRoZQ0KPiBVQiBwcm9ibGVtIGNvbXBsZXRlbHkuIEFzIHdlIGZvdW5kLCB0aGVyZSBhcmUgb3Bl
-biBpc3N1ZXMgaW4gdGhlIEdDQw0KPiBidWd6aWxsYSByZWdhcmRpbmcgYXNzdW1wdGlvbnMgaW4g
-dGhlIGNvbXBpbGVyIHRoYXQgYWxpZ25lZCBxdWFudGl0aWVzDQo+IGVpdGhlciBvdmVybGFwIGVu
-dGlyZWx5IG9yIG5vdCBhdCBhbGwuIChlLmcuLA0KPiBodHRwczovL2djYy5nbnUub3JnL2J1Z3pp
-bGxhL3Nob3dfYnVnLmNnaT9pZD0xMDAzNjMpDQoNCkkgdGhpbmsgd2UgY2FuIHN0b3AgdGhlIGNv
-bXBpbGVyIG1lcmdpbmcgdW5hbGlnbmVkIHJlcXVlc3RzIGJ5IGFkZGluZyBhIGJ5dGUtc2l6ZWQN
-Cm1lbW9yeSBiYXJyaWVyIGZvciB0aGUgYmFzZSBhZGRyZXNzIGJlZm9yZSBhbmQgYWZ0ZXIgdGhl
-IGFjY2Vzcy4NClRoYXQgc2hvdWxkIHN0aWxsIHN1cHBvcnQgY29tcGxleCBhZGRyZXNzaW5nIG1v
-ZGVzIChlc3Agb24geDg2KS4NCg0KQW5vdGhlciBvcHRpb24gaXMgdG8gZG8gdGhlIG1pc2FsaWdu
-ZWQgYWNjZXNzIGZyb20gd2l0aGluIGFuIGFzbSBzdGF0ZW1lbnQuDQpXaGlsZSBhcmNoaXRlY3R1
-cmUgZGVwZW5kYW50LCBpdCBvbmx5IHJlYWxseSBkZXBlbmRzIG9uIHRoZSBzeW50YXggb2YgdGhl
-IGxkL3N0DQppbnN0cnVjdGlvbi4NClRoZSBjb21waWxlciBjYW4ndCBtZXJnZSB0aG9zZSBiZWNh
-dXNlIGl0IGRvZXNuJ3Qga25vdyB3aGV0aGVyIHRoZSBkYXRhIGlzDQonZnJvYmJlZCcgYmVmb3Jl
-L2FmdGVyIHRoZSBtZW1vcnkgYWNjZXNzLg0KDQoJRGF2aWQNCg0KLQ0KUmVnaXN0ZXJlZCBBZGRy
-ZXNzIExha2VzaWRlLCBCcmFtbGV5IFJvYWQsIE1vdW50IEZhcm0sIE1pbHRvbiBLZXluZXMsIE1L
-MSAxUFQsIFVLDQpSZWdpc3RyYXRpb24gTm86IDEzOTczODYgKFdhbGVzKQ0K
+On Thu, Dec 16, 2021 at 9:29 AM Ard Biesheuvel <ardb@kernel.org> wrote:
+>
+> CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS is used in many places to
+> conditionally emit code that violates C alignment rules. E.g., there
+> is this example in Documentation/core-api/unaligned-memory-access.rst:
+>
+> bool ether_addr_equal(const u8 *addr1, const u8 *addr2)
+> {
+> #ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+>   u32 fold = ((*(const u32 *)addr1) ^ (*(const u32 *)addr2)) |
+>              ((*(const u16 *)(addr1 + 4)) ^ (*(const u16 *)(addr2 + 4)));
+>   return fold == 0;
+> #else
 
+It probably works fine in practice - the one case we had was really
+pretty special, and about the vectorizer doing odd things.
+
+But I think we should strive to convert these to use
+"get_unaligned()", since code generation is fine. It still often makes
+sense to have that test for the config variable, simply because the
+approach might be different if we know unaligned accesses are slow.
+
+So I'll happily take patches that do obvious conversions to
+get_unaligned() where they make sense, but I don't think we should
+consider this some huge hard requirement.
+
+                 Linus
