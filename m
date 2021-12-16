@@ -4,46 +4,125 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97CBBC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Dec 2021 11:16:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10836C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Dec 2021 14:24:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JF8gl1LdTz3dkD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Dec 2021 22:16:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JFDsF2G47z3cTy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Dec 2021 01:24:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com;
- envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JF8dk2KThz3cC2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Dec 2021 22:14:34 +1100 (AEDT)
-Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.54])
- by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4JF8YY3DLSzZdcZ;
- Thu, 16 Dec 2021 19:10:57 +0800 (CST)
-Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.20; Thu, 16 Dec 2021 19:13:58 +0800
-Received: from localhost.localdomain.localdomain (10.175.113.25) by
- dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.20; Thu, 16 Dec 2021 19:13:57 +0800
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-To: <dennis@kernel.org>, <akpm@linux-foundation.org>,
- <linux-kernel@vger.kernel.org>, <linux-mm@kvack.org>
-Subject: [PATCH 2/4] mm: percpu: Add pcpu_fc_cpu_to_node_fn_t typedef
-Date: Thu, 16 Dec 2021 19:23:57 +0800
-Message-ID: <20211216112359.103822-3-wangkefeng.wang@huawei.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20211216112359.103822-1-wangkefeng.wang@huawei.com>
-References: <20211216112359.103822-1-wangkefeng.wang@huawei.com>
+ smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::62d;
+ helo=fra01-mr2-obe.outbound.protection.outlook.com;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from FRA01-MR2-obe.outbound.protection.outlook.com
+ (mail-mr2fra01on062d.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:7e19::62d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JFDrf5VPyz3051
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Dec 2021 01:24:17 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=JsYqbkwoU6SKcGaoVaFOy/23Qfm4wraLQnfjTtFojLGhZm1EQG8dqpHWvA9T8Ow/CClN80azLXEzcbtcLaeNwscU+3//rlZJjg0gVi4i7vWw5hOybFYLqPMtA0rVc2+grlZs8xuSPNwhe1+2rmEXfvY3IQ9qXRa/IjE96GxcrBhMZKeIZG5f86Kd7ZiTm/uz/feB0OYpXJnRlM/+cz4RQ85w8XzjZn2NaGNFnRQd/2iAqlGU6H0i5zK2NK9Ju+SrmBjIkum9M2uyowZYRQFTsT4LwdyAfFfKdimExqUMXbUNRgD8S5nbL7DCoXKE0maJgJVxuXxk88EGtURoklHL5w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Gt7/8Kz/Rm5X83sKK6IFQswZij0jLVKaDt8LeckCL+Y=;
+ b=A+6YGJ3Oy5ThgkqvdfsO8QZq8Wxb5vPyiZSB8JuUzs3F5Gx7SBjdKD/3lkEREnEOGMXV5GIe1vCekVAjhtAlJ7UEPuU8sufZIEGUb3Xw8N/CWsYbqC5P9HGgezUqz/UN9R6PVbjgGEbH/XqpA7HlbE5QRjRO+E14nz2+hXE/a8sCUBuaSyH+40B9JaqdV+qbT0i9FSo+JGF9oEDzeGB9D7gYfoiUB4L0Ct1WtQTjSBwy5M9gtER5UAWnLi8KPzjrsV0aWse2bLOsHVCWAXW+n0nF8wucLVdqZgIqFpA+t46Stz+JresjlG5dMhoc5uRf/lK3SP42WvOO77ICFP9hYw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+Received: from MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:3d::7) by
+ MRXP264MB0038.FRAP264.PROD.OUTLOOK.COM (2603:10a6:500:23::22) with
+ Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.4778.17; Thu, 16 Dec 2021 14:23:53 +0000
+Received: from MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::30e4:16d5:f514:b8f8]) by MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::30e4:16d5:f514:b8f8%2]) with mapi id 15.20.4801.015; Thu, 16 Dec 2021
+ 14:23:53 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: =?utf-8?B?S3J6eXN6dG9mIFdpbGN6ecWEc2tp?= <kw@linux.com>
+Subject: Re: [PATCH 1/2] sizes.h: Add SZ_1T macro
+Thread-Topic: [PATCH 1/2] sizes.h: Add SZ_1T macro
+Thread-Index: AQHX7EB14E671PmylUi/GGPQpSm/KawpGf2AgAwenIA=
+Date: Thu, 16 Dec 2021 14:23:53 +0000
+Message-ID: <b32bd540-ca84-8de4-00b8-500a8cfdaf79@csgroup.eu>
+References: <b03f5cf556f1a89ccb4d7ae2f56414520cfd9209.1638973836.git.christophe.leroy@csgroup.eu>
+ <YbEhUeUy7PlOk2iR@rocinante>
+In-Reply-To: <YbEhUeUy7PlOk2iR@rocinante>
+Accept-Language: fr-FR, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: d39564f4-858c-4a8a-6f08-08d9c09fb042
+x-ms-traffictypediagnostic: MRXP264MB0038:EE_
+x-microsoft-antispam-prvs: <MRXP264MB0038B53A239C238C719DD913ED779@MRXP264MB0038.FRAP264.PROD.OUTLOOK.COM>
+x-ms-oob-tlc-oobclassifiers: OLM:9508;
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: j0OxsL7/5zC+l7Tq9QR+sfJrvaxqMpvXiERsiuVw6eIBwKEvLxanG4I7CiW6atIH4Lr++CF1eEIaYauh+/F5sm9amgoh5NZV9Cu+zKwsgOcCXdqp4Ykoj+HfOuZQWfn1ZWo11sMnXxMprea5w1emP0fpURVBu4qm/EAkSxSHk/0yN1kcwhJjGreT1irXh6C22IVcpeH297RaMYca3MZrJJ3BoKy4erkiyFHb4L5DnC1Ex7pSgrn52/HQmfqwfYRjYe+20EwTFIldqzcuUvcdoHHV6/Fvjgzpr8xUkVvTAJO/zkJZU4K0AGXVsyCWZPm6tcnK90GWqyhAG9BRld5gLUixM7qdfzHsL8eTRLLVjLEggRgmyqo2AZ/iMq/u+PjFuBAmvSzqT34xvAvpQGYOk2hUtBFbRHOQAvUg3gCPanhjB0DC0EeVZUJPzsgnNqr+N1tYqYX8Iw281Dnvt36QGOwPeEW/H7eEHF7CpxwITFmOvrkb/advevQgmX7LTW0szc5Wt5oE1af2RulhPtFlUoAPtsfqiOdQerxaxIYTZv5GsBS4aim6t6gZXmoeQfTMmXHANacli9SfK3alezzx2LdVvbd2w1N09OPSEVE0gxYogOZzAEXHLEp5GD8fD8eEDyU4CTPVnqa77QU7WHDqHkClogM2OjOHRN+CDyEAHcPw+5uCJI+18g03qD6tsgyxGm+T5zeIStuz6xI4MFTaRnb9RkyfWObu5KHtVXAtGBY1Baspafbkgl5mxyHRuTY8JK8HMf+8zIdLZx6kP6/Hp0QLoLOWrWI+A1Jqcaj4wFfaG5lK0l9V8Lmp79wgurIi+uFPfvALAcsg+/DmfFnoeK6S1ahmEeF6wU9sl9xcKxw=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
+ SFS:(4636009)(366004)(64756008)(316002)(6512007)(966005)(6486002)(38100700002)(8936002)(54906003)(2906002)(26005)(2616005)(31696002)(76116006)(91956017)(66476007)(66556008)(6916009)(8676002)(86362001)(31686004)(66446008)(508600001)(122000001)(186003)(71200400001)(44832011)(5660300002)(36756003)(6506007)(4326008)(66946007)(38070700005)(45980500001)(43740500002);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?cllvTnBSSFNwdUxkQ00zcWZoTE1Oa3pSd01ZRlVTSklSdWRSQ2tBR28rdXBr?=
+ =?utf-8?B?czY1VFprUEZFSXd5bjJWbDlOczdHdXdGaXFEekt6K01zVFFmNk1kVDN2RHBi?=
+ =?utf-8?B?a0FXWkRoaDVjU0x3YVpJTlN5dkpEdlFyR3RhM0VXOFVQR2VNdVdCdk1iTURq?=
+ =?utf-8?B?T0xkRU1qZTRsU2pwV3VPRy9DVSs0WkxEWWdyZHNDMlRhRkErU3FiWUFvWHY2?=
+ =?utf-8?B?NDgwcmFpdlhSQkltU0xOUW1KSXlzTW82blg0RXNCNWN6bloxU3hudGZvbjhr?=
+ =?utf-8?B?QjFQNFkvZmtjWVFaYmhUQWRKQ3BFcnVVWFFtdnlnL21LUDhCalZ0bGk5aXFW?=
+ =?utf-8?B?a0ZNazFqekVMR0xXUHZWOVhNQ0pnbkZ6Q1pVdjlKOUdTc0l1Q0w5WThiVE5v?=
+ =?utf-8?B?bS9OdU01T0I1RVZxRHE3YXJSaUIycWw4SlFGNkhEUU1peFdrNm04Z3dTMmp0?=
+ =?utf-8?B?SHhpTnB6QkVUZ2RYUGdDU2FZcmM0SlNBUGVhWTZFOWIvR2txUnlJQWh3bjhp?=
+ =?utf-8?B?dHcwdXN6Uk8rVG9ZYmFhcEg3RzVXZW9wQ3JaWGdObU1mMmRvRjBkeUhDRjJl?=
+ =?utf-8?B?aWI0U3ZPZkF3Ykw4bjNUMUd6amV2RzQwU1c2ZHVLRnp0RXJLbmF3K2w1ZUpq?=
+ =?utf-8?B?U2ZmbzROZVcraXBjVnlSVzVaWFlONXhhOFFlb0RtaHFuRHRZYXB0R09zZ2VB?=
+ =?utf-8?B?dTFrRVdCbE1BUldsUVB5T2FSdktrVVJvSlZHTzJhUTR0ZEkxSEM0cFh1ekhq?=
+ =?utf-8?B?K3B4YVgwbXkzbmNlREtYc092NjdsYklpOGljSTZka2tFN2M0QUhONTlkRDA2?=
+ =?utf-8?B?LzJmRThKZUVOMlZ6d1MvR3dnUWVEb2dvVDBwZ3FVWjVGTWNHTEpqQ285K1lI?=
+ =?utf-8?B?NklDbzdmQ0NENUpaL3dwWGY1N3RSOHo5Z3V6TjhhVlc4MzZGMjU1cVJ6Rk5p?=
+ =?utf-8?B?RmxQSmFTYWdEL1NmaXVsL2ZOaTBDTVRtdHEvc3BBUGk3TDlndEhmZitMb3hZ?=
+ =?utf-8?B?c1dZQlZTclNldk9vUTR6dHkrd254bzZteThZNlJJQ00waHdzSXlTTEpHRlVu?=
+ =?utf-8?B?QkFaQXBYSWlXT29aVTNLMmZNMnNzR1QzbDl6akJZeHhuLzgwcUNHZXNuZ2dH?=
+ =?utf-8?B?VDdya1JycHFiRFJnRENlQXh2Rk0vUTdkM2hqYzhUeHNHS3QyMUhJRUU4NSs0?=
+ =?utf-8?B?YnJVdlF3ZWZNdEtLOGI3TTVwN1BuQkhIT3M3K2xhdGlnWWk3WTVFV0J0WEJP?=
+ =?utf-8?B?Zm55RkRobXRsUXcycFNqTGhiUnNwQjB0RFQ3L1BpWUVhQ1ROdEtuSXhQY2pY?=
+ =?utf-8?B?S2pUVDNiNUxvaCtaQko4UFQzdEl3VjJBcUhVWEhOdmtXeGxTSmVCeXJFazJE?=
+ =?utf-8?B?R3pWaDR3WWNzUTlEdkVrdzlzWmx6NHZwWjRka1RBZkZia29rVmZ0VDY4ZmlS?=
+ =?utf-8?B?Tll1UlR2Wml4WDh3bEdYTnhpRTYyaFdLRGxCNDYyT202aG1FQnBtS1d3OUJL?=
+ =?utf-8?B?SFJsQ2twb1VKRlFzdnRVV25JVG5UeTR6Rms5M2E2cXpMdE9KVkNrOVljUTRy?=
+ =?utf-8?B?M2l3ZjBQckxvTDB2ZVRtZG1YRU9aUGlVd0V4UkF2aEdXSlBtZmRwNFl5Wnlu?=
+ =?utf-8?B?dkw5UTdJRmUyZ0puOUM3eFVUODNKZkxnQkpGZCtuc2E5TTVLbHpiUUx4aFlH?=
+ =?utf-8?B?eldwMzU5d2YzMENZNEJNZnRoNHhuNEtiK2NqOWxteDE0cW1CeTJoeGpsZ0Vm?=
+ =?utf-8?B?RTlTeEtHdHQyV2c2YzN0aTFNY2haTXlXVi9WUDJNd01iT1RoRlJQeFBzUkJw?=
+ =?utf-8?B?Rnp6KzIyUmVWSDU2UkFTK3JpdDRKem4xQ3hxSllmWHV4TVcvRU1sZjZxdkVx?=
+ =?utf-8?B?a2VRWTdwL04yMjcvOVh3eVc3WEEweUd1ejIzNlNHb1d3dEVHeG5KcU9BM0JE?=
+ =?utf-8?B?SWNGMDI3Nm9Yb3U2THZNc3pyUm1PT3VNOHg0UWU2L1VhTzYrTTcyR1pVT2x2?=
+ =?utf-8?B?UFZkRSs5djRDT3JEc1Jka1RVSkZITW5WbHNkaTFKT0RtVmY3TlBBem1MSzNE?=
+ =?utf-8?B?azBDRjhUL0hPT2kzMjlkQTNlMkNaSTd6Smc1NCsreitnSDgvYjNKR1ZaU0hz?=
+ =?utf-8?B?UThYNHd0U01QTFlWOGJPUGI5NnZCOXFZZVg3dWZ5VDNoQVJld2NoY0hZT3Jn?=
+ =?utf-8?B?SU1YbEZIMm9JUFFZQUlBb3JqME90c0EwSlc4eEFQWW9zdjRSZEpxRFc3Nklp?=
+ =?utf-8?Q?xLoj2/TxmR75qN/udOK/3T5qUKKnDwwxqLiNl9br1Q=3D?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <355C3C06615C43448986A1837CB0F7CF@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.113.25]
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- dggpemm500001.china.huawei.com (7.185.36.107)
-X-CFilter-Loop: Reflected
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: d39564f4-858c-4a8a-6f08-08d9c09fb042
+X-MS-Exchange-CrossTenant-originalarrivaltime: 16 Dec 2021 14:23:53.8465 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: zQQX2E34KmNLkM47vbmMA18fJGoC3iUoiRCDhMj1RRHpznOi6oXtDwdmm5wA3SZaFQFE4p+zjufcunv+Tt544P6QpYHGJPFQnlXlnMT4fPA=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MRXP264MB0038
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,380 +134,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wangkefeng.wang@huawei.com, linux-ia64@vger.kernel.org,
- "Rafael J. Wysocki" <rafael@kernel.org>, dave.hansen@linux.intel.com,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
- will@kernel.org, linux-riscv@lists.infradead.org, x86@kernel.org,
- mingo@redhat.com, catalin.marinas@arm.com, aou@eecs.berkeley.edu, bp@alien8.de,
- paul.walmsley@sifive.com, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, tsbogend@alpha.franken.de,
- gregkh@linuxfoundation.org, linux-mips@vger.kernel.org, palmer@dabbelt.com,
- tj@kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Toan Le <toan@os.amperecomputing.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add pcpu_fc_cpu_to_node_fn_t and pass it into pcpu_fc_alloc_fn_t,
-pcpu first chunk allocation will call it to alloc memblock on the
-corresponding node by it, this is prepare for the next patch.
-
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Dennis Zhou <dennis@kernel.org>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Christoph Lameter <cl@linux.com>
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
- arch/mips/mm/init.c            | 12 +++++++++---
- arch/powerpc/kernel/setup_64.c | 15 +++++++++++----
- arch/sparc/kernel/smp_64.c     | 13 ++++++++++---
- arch/x86/kernel/setup_percpu.c | 18 +++++++++++++-----
- drivers/base/arch_numa.c       |  8 +++++---
- include/linux/percpu.h         |  7 +++++--
- mm/percpu.c                    | 14 +++++++++-----
- 7 files changed, 62 insertions(+), 25 deletions(-)
-
-diff --git a/arch/mips/mm/init.c b/arch/mips/mm/init.c
-index 325e1552cbea..1d8f2844704c 100644
---- a/arch/mips/mm/init.c
-+++ b/arch/mips/mm/init.c
-@@ -519,12 +519,17 @@ static int __init pcpu_cpu_distance(unsigned int from, unsigned int to)
- 	return node_distance(cpu_to_node(from), cpu_to_node(to));
- }
- 
--static void * __init pcpu_fc_alloc(unsigned int cpu, size_t size,
--				       size_t align)
-+static int __init pcpu_cpu_to_node(int cpu)
-+{
-+	return cpu_to_node(cpu);
-+}
-+
-+static void * __init pcpu_fc_alloc(unsigned int cpu, size_t size, size_t align,
-+				   pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn)
- {
- 	return memblock_alloc_try_nid(size, align, __pa(MAX_DMA_ADDRESS),
- 				      MEMBLOCK_ALLOC_ACCESSIBLE,
--				      cpu_to_node(cpu));
-+				      cpu_to_nd_fn(cpu));
- }
- 
- static void __init pcpu_fc_free(void *ptr, size_t size)
-@@ -545,6 +550,7 @@ void __init setup_per_cpu_areas(void)
- 	rc = pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE,
- 				    PERCPU_DYNAMIC_RESERVE, PAGE_SIZE,
- 				    pcpu_cpu_distance,
-+				    pcpu_cpu_to_node,
- 				    pcpu_fc_alloc, pcpu_fc_free);
- 	if (rc < 0)
- 		panic("Failed to initialize percpu areas.");
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 6052f5d5ded3..b79b10ae466f 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -784,12 +784,12 @@ void __init emergency_stack_init(void)
-  * RETURNS:
-  * Pointer to the allocated area on success, NULL on failure.
-  */
--static void * __init pcpu_alloc_bootmem(unsigned int cpu, size_t size,
--					size_t align)
-+static void * __init pcpu_alloc_bootmem(unsigned int cpu, size_t size, size_t align,
-+					pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn)
- {
- 	const unsigned long goal = __pa(MAX_DMA_ADDRESS);
- #ifdef CONFIG_NUMA
--	int node = early_cpu_to_node(cpu);
-+	int node = cpu_to_nd_fun(cpu);
- 	void *ptr;
- 
- 	if (!node_online(node) || !NODE_DATA(node)) {
-@@ -823,6 +823,11 @@ static int pcpu_cpu_distance(unsigned int from, unsigned int to)
- 		return REMOTE_DISTANCE;
- }
- 
-+static __init int pcpu_cpu_to_node(int cpu)
-+{
-+	return early_cpu_to_node(cpu);
-+}
-+
- unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
- EXPORT_SYMBOL(__per_cpu_offset);
- 
-@@ -891,6 +896,7 @@ void __init setup_per_cpu_areas(void)
- 
- 	if (pcpu_chosen_fc != PCPU_FC_PAGE) {
- 		rc = pcpu_embed_first_chunk(0, dyn_size, atom_size, pcpu_cpu_distance,
-+					    pcpu_cpu_to_node,
- 					    pcpu_alloc_bootmem, pcpu_free_bootmem);
- 		if (rc)
- 			pr_warn("PERCPU: %s allocator failed (%d), "
-@@ -899,7 +905,8 @@ void __init setup_per_cpu_areas(void)
- 	}
- 
- 	if (rc < 0)
--		rc = pcpu_page_first_chunk(0, pcpu_alloc_bootmem, pcpu_free_bootmem,
-+		rc = pcpu_page_first_chunk(0, pcpu_cpu_to_node,
-+					   pcpu_alloc_bootmem, pcpu_free_bootmem,
- 					   pcpu_populate_pte);
- 	if (rc < 0)
- 		panic("cannot initialize percpu area (err=%d)", rc);
-diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
-index b98a7bbe6728..14d719aa318d 100644
---- a/arch/sparc/kernel/smp_64.c
-+++ b/arch/sparc/kernel/smp_64.c
-@@ -1539,12 +1539,12 @@ void smp_send_stop(void)
-  * RETURNS:
-  * Pointer to the allocated area on success, NULL on failure.
-  */
--static void * __init pcpu_alloc_bootmem(unsigned int cpu, size_t size,
--					size_t align)
-+static void * __init pcpu_alloc_bootmem(unsigned int cpu, size_t size, size_t align,
-+					pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn)
- {
- 	const unsigned long goal = __pa(MAX_DMA_ADDRESS);
- #ifdef CONFIG_NUMA
--	int node = cpu_to_node(cpu);
-+	int node = cpu_to_nd_fn(cpu);
- 	void *ptr;
- 
- 	if (!node_online(node) || !NODE_DATA(node)) {
-@@ -1578,6 +1578,11 @@ static int __init pcpu_cpu_distance(unsigned int from, unsigned int to)
- 		return REMOTE_DISTANCE;
- }
- 
-+static int __init pcpu_cpu_to_node(int cpu)
-+{
-+	return cpu_to_node(cpu);
-+}
-+
- static void __init pcpu_populate_pte(unsigned long addr)
- {
- 	pgd_t *pgd = pgd_offset_k(addr);
-@@ -1641,6 +1646,7 @@ void __init setup_per_cpu_areas(void)
- 		rc = pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE,
- 					    PERCPU_DYNAMIC_RESERVE, 4 << 20,
- 					    pcpu_cpu_distance,
-+					    pcpu_cpu_to_node,
- 					    pcpu_alloc_bootmem,
- 					    pcpu_free_bootmem);
- 		if (rc)
-@@ -1650,6 +1656,7 @@ void __init setup_per_cpu_areas(void)
- 	}
- 	if (rc < 0)
- 		rc = pcpu_page_first_chunk(PERCPU_MODULE_RESERVE,
-+					   pcpu_cpu_to_node,
- 					   pcpu_alloc_bootmem,
- 					   pcpu_free_bootmem,
- 					   pcpu_populate_pte);
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 7b65275544b2..1d41f4844149 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -97,12 +97,12 @@ static bool __init pcpu_need_numa(void)
-  * RETURNS:
-  * Pointer to the allocated area on success, NULL on failure.
-  */
--static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
--					unsigned long align)
-+static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size, unsigned long align,
-+					pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn)
- {
- 	const unsigned long goal = __pa(MAX_DMA_ADDRESS);
- #ifdef CONFIG_NUMA
--	int node = early_cpu_to_node(cpu);
-+	int node = cpu_to_nd_fn(cpu);
- 	void *ptr;
- 
- 	if (!node_online(node) || !NODE_DATA(node)) {
-@@ -128,9 +128,10 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
- /*
-  * Helpers for first chunk memory allocation
-  */
--static void * __init pcpu_fc_alloc(unsigned int cpu, size_t size, size_t align)
-+static void * __init pcpu_fc_alloc(unsigned int cpu, size_t size, size_t align,
-+				   pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn)
- {
--	return pcpu_alloc_bootmem(cpu, size, align);
-+	return pcpu_alloc_bootmem(cpu, size, align, cpu_to_nd_fn);
- }
- 
- static void __init pcpu_fc_free(void *ptr, size_t size)
-@@ -150,6 +151,11 @@ static int __init pcpu_cpu_distance(unsigned int from, unsigned int to)
- #endif
- }
- 
-+static int __init pcpu_cpu_to_node(int cpu)
-+{
-+	return early_cpu_to_node(cpu);
-+}
-+
- static void __init pcpup_populate_pte(unsigned long addr)
- {
- 	populate_extra_pte(addr);
-@@ -205,6 +211,7 @@ void __init setup_per_cpu_areas(void)
- 		rc = pcpu_embed_first_chunk(PERCPU_FIRST_CHUNK_RESERVE,
- 					    dyn_size, atom_size,
- 					    pcpu_cpu_distance,
-+					    pcpu_cpu_to_node,
- 					    pcpu_fc_alloc, pcpu_fc_free);
- 		if (rc < 0)
- 			pr_warn("%s allocator failed (%d), falling back to page size\n",
-@@ -212,6 +219,7 @@ void __init setup_per_cpu_areas(void)
- 	}
- 	if (rc < 0)
- 		rc = pcpu_page_first_chunk(PERCPU_FIRST_CHUNK_RESERVE,
-+					   pcpu_cpu_to_node,
- 					   pcpu_fc_alloc, pcpu_fc_free,
- 					   pcpup_populate_pte);
- 	if (rc < 0)
-diff --git a/drivers/base/arch_numa.c b/drivers/base/arch_numa.c
-index bc1876915457..dae861838535 100644
---- a/drivers/base/arch_numa.c
-+++ b/drivers/base/arch_numa.c
-@@ -155,10 +155,10 @@ static int __init pcpu_cpu_distance(unsigned int from, unsigned int to)
- 	return node_distance(early_cpu_to_node(from), early_cpu_to_node(to));
- }
- 
--static void * __init pcpu_fc_alloc(unsigned int cpu, size_t size,
--				       size_t align)
-+static void * __init pcpu_fc_alloc(unsigned int cpu, size_t size, size_t align,
-+				   pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn)
- {
--	int nid = early_cpu_to_node(cpu);
-+	int nid = cpu_to_nd_fn(cpu);
- 
- 	return  memblock_alloc_try_nid(size, align,
- 			__pa(MAX_DMA_ADDRESS), MEMBLOCK_ALLOC_ACCESSIBLE, nid);
-@@ -229,6 +229,7 @@ void __init setup_per_cpu_areas(void)
- 		rc = pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE,
- 					    PERCPU_DYNAMIC_RESERVE, PAGE_SIZE,
- 					    pcpu_cpu_distance,
-+					    early_cpu_to_node,
- 					    pcpu_fc_alloc, pcpu_fc_free);
- #ifdef CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK
- 		if (rc < 0)
-@@ -240,6 +241,7 @@ void __init setup_per_cpu_areas(void)
- #ifdef CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK
- 	if (rc < 0)
- 		rc = pcpu_page_first_chunk(PERCPU_MODULE_RESERVE,
-+					   early_cpu_to_node,
- 					   pcpu_fc_alloc,
- 					   pcpu_fc_free,
- 					   pcpu_populate_pte);
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index ae4004e7957e..e4078bf45fd5 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -94,8 +94,9 @@ extern const char * const pcpu_fc_names[PCPU_FC_NR];
- 
- extern enum pcpu_fc pcpu_chosen_fc;
- 
--typedef void * (*pcpu_fc_alloc_fn_t)(unsigned int cpu, size_t size,
--				     size_t align);
-+typedef int (pcpu_fc_cpu_to_node_fn_t)(int cpu);
-+typedef void * (*pcpu_fc_alloc_fn_t)(unsigned int cpu, size_t size, size_t align,
-+				     pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn);
- typedef void (*pcpu_fc_free_fn_t)(void *ptr, size_t size);
- typedef void (*pcpu_fc_populate_pte_fn_t)(unsigned long addr);
- typedef int (pcpu_fc_cpu_distance_fn_t)(unsigned int from, unsigned int to);
-@@ -111,12 +112,14 @@ extern void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
- extern int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
- 				size_t atom_size,
- 				pcpu_fc_cpu_distance_fn_t cpu_distance_fn,
-+				pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn,
- 				pcpu_fc_alloc_fn_t alloc_fn,
- 				pcpu_fc_free_fn_t free_fn);
- #endif
- 
- #ifdef CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK
- extern int __init pcpu_page_first_chunk(size_t reserved_size,
-+				pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn,
- 				pcpu_fc_alloc_fn_t alloc_fn,
- 				pcpu_fc_free_fn_t free_fn,
- 				pcpu_fc_populate_pte_fn_t populate_pte_fn);
-diff --git a/mm/percpu.c b/mm/percpu.c
-index f5b2c2ea5a54..267a4d295fcf 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -3001,6 +3001,7 @@ static struct pcpu_alloc_info * __init __flatten pcpu_build_alloc_info(
-  * @dyn_size: minimum free size for dynamic allocation in bytes
-  * @atom_size: allocation atom size
-  * @cpu_distance_fn: callback to determine distance between cpus, optional
-+ * @cpu_to_nd_fn: callback to convert cpu to it's node, optional
-  * @alloc_fn: function to allocate percpu page
-  * @free_fn: function to free percpu page
-  *
-@@ -3030,6 +3031,7 @@ static struct pcpu_alloc_info * __init __flatten pcpu_build_alloc_info(
- int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
- 				  size_t atom_size,
- 				  pcpu_fc_cpu_distance_fn_t cpu_distance_fn,
-+				  pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn,
- 				  pcpu_fc_alloc_fn_t alloc_fn,
- 				  pcpu_fc_free_fn_t free_fn)
- {
-@@ -3066,7 +3068,7 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
- 		BUG_ON(cpu == NR_CPUS);
- 
- 		/* allocate space for the whole group */
--		ptr = alloc_fn(cpu, gi->nr_units * ai->unit_size, atom_size);
-+		ptr = alloc_fn(cpu, gi->nr_units * ai->unit_size, atom_size, cpu_to_nd_fn);
- 		if (!ptr) {
- 			rc = -ENOMEM;
- 			goto out_free_areas;
-@@ -3143,6 +3145,7 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
- /**
-  * pcpu_page_first_chunk - map the first chunk using PAGE_SIZE pages
-  * @reserved_size: the size of reserved percpu area in bytes
-+ * @cpu_to_nd_fn: callback to convert cpu to it's node, optional
-  * @alloc_fn: function to allocate percpu page, always called with PAGE_SIZE
-  * @free_fn: function to free percpu page, always called with PAGE_SIZE
-  * @populate_pte_fn: function to populate pte
-@@ -3157,6 +3160,7 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
-  * 0 on success, -errno on failure.
-  */
- int __init pcpu_page_first_chunk(size_t reserved_size,
-+				 pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn,
- 				 pcpu_fc_alloc_fn_t alloc_fn,
- 				 pcpu_fc_free_fn_t free_fn,
- 				 pcpu_fc_populate_pte_fn_t populate_pte_fn)
-@@ -3201,7 +3205,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
- 		for (i = 0; i < unit_pages; i++) {
- 			void *ptr;
- 
--			ptr = alloc_fn(cpu, PAGE_SIZE, PAGE_SIZE);
-+			ptr = alloc_fn(cpu, PAGE_SIZE, PAGE_SIZE, cpu_to_nd_fn);
- 			if (!ptr) {
- 				pr_warn("failed to allocate %s page for cpu%u\n",
- 						psize_str, cpu);
-@@ -3278,8 +3282,8 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
- unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
- EXPORT_SYMBOL(__per_cpu_offset);
- 
--static void * __init pcpu_dfl_fc_alloc(unsigned int cpu, size_t size,
--				       size_t align)
-+static void * __init pcpu_dfl_fc_alloc(unsigned int cpu, size_t size, size_t align,
-+				       pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn)
- {
- 	return  memblock_alloc_from(size, align, __pa(MAX_DMA_ADDRESS));
- }
-@@ -3300,7 +3304,7 @@ void __init setup_per_cpu_areas(void)
- 	 * what the legacy allocator did.
- 	 */
- 	rc = pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE,
--				    PERCPU_DYNAMIC_RESERVE, PAGE_SIZE, NULL,
-+				    PERCPU_DYNAMIC_RESERVE, PAGE_SIZE, NULL, NULL,
- 				    pcpu_dfl_fc_alloc, pcpu_dfl_fc_free);
- 	if (rc < 0)
- 		panic("Failed to initialize percpu areas.");
--- 
-2.18.0.huawei.25
-
+DQoNCkxlIDA4LzEyLzIwMjEgw6AgMjI6MTksIEtyenlzenRvZiBXaWxjennFhHNraSBhIMOpY3Jp
+dMKgOg0KPiBIZWxsbyBDaHJpc3RvcGhlLA0KPiANCj4+IFRvZGF5IGRyaXZlcnMvcGNpL2NvbnRy
+b2xsZXIvcGNpLXhnZW5lLmMgZGVmaW5lcyBTWl8xVA0KPj4NCj4+IE1vdmUgaXQgaW50byBsaW51
+eC9zaXplcy5oIHNvIHRoYXQgaXQgY2FuIGJlIHJlLXVzZWQgZWxzZXdoZXJlLg0KPiANCj4gU291
+bmRzIGxpa2UgYSBnb29kIGlkZWEhDQo+IA0KPiBCeSB0aGUgd2F5LCB0aGVyZSB3YXMgYW4gZWFy
+bGllciB2ZXJzaW9uIG9mIHRoaXMgcGF0Y2gsIGRpZCBzb21ldGhpbmcNCj4gaGFwcGVuZWQ/ICBJ
+IHRoaW5rIHlvdSBzaW1wbHkgZXh0cmFjdGVkIHRoZXNlIGNoYW5nZXMgZnJvbSB0aGUgb3RoZXIN
+Cj4gc2VyaWVzLCBjb3JyZWN0Pw0KDQoNClllcyBpdCB3YXMgcHJldmlvdXNseSBpbiBzZXJpZXMg
+DQpodHRwczovL3BhdGNod29yay5vemxhYnMub3JnL3Byb2plY3QvbGludXhwcGMtZGV2L2xpc3Qv
+P3Nlcmllcz0yNzQyMjkmc3RhdGU9Kg0KDQpJIGRlY2lkZWQgdG8gcHV0IGl0IGFzaWRlIGluIGEg
+bmV3IHNlcGFyYXRlIHNlcmllcyANCmh0dHBzOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcHJvamVj
+dC9saW51eHBwYy1kZXYvbGlzdC8/c2VyaWVzPTI3NTgyOSZzdGF0ZT0qIA0KYmVjYXVzZSB0aGUg
+Y2hhbmdlIGluIHBhdGNoIDIgaXMgaW5kZXBlbmRhbnQuDQoNCj4gDQo+PiBkaWZmIC0tZ2l0IGEv
+ZHJpdmVycy9wY2kvY29udHJvbGxlci9wY2kteGdlbmUuYyBiL2RyaXZlcnMvcGNpL2NvbnRyb2xs
+ZXIvcGNpLXhnZW5lLmMNCj4+IGluZGV4IDU2ZDBkNTAzMzhjOC4uNzE2ZGNhYjVjYTQ3IDEwMDY0
+NA0KPj4gLS0tIGEvZHJpdmVycy9wY2kvY29udHJvbGxlci9wY2kteGdlbmUuYw0KPj4gKysrIGIv
+ZHJpdmVycy9wY2kvY29udHJvbGxlci9wY2kteGdlbmUuYw0KPj4gQEAgLTQ5LDcgKzQ5LDYgQEAN
+Cj4+ICAgI2RlZmluZSBFTl9SRUcJCQkJMHgwMDAwMDAwMQ0KPj4gICAjZGVmaW5lIE9CX0xPX0lP
+CQkJMHgwMDAwMDAwMg0KPj4gICAjZGVmaW5lIFhHRU5FX1BDSUVfREVWSUNFSUQJCTB4RTAwNA0K
+Pj4gLSNkZWZpbmUgU1pfMVQJCQkJKFNaXzFHKjEwMjRVTEwpDQo+PiAgICNkZWZpbmUgUElQRV9Q
+SFlfUkFURV9SRChzcmMpCQkoKDB4YzAwMCAmICh1MzIpKHNyYykpID4+IDB4ZSkNCj4+ICAgDQo+
+PiAgICNkZWZpbmUgWEdFTkVfVjFfUENJX0VYUF9DQVAJCTB4NDANCj4+IGRpZmYgLS1naXQgYS9p
+bmNsdWRlL2xpbnV4L3NpemVzLmggYi9pbmNsdWRlL2xpbnV4L3NpemVzLmgNCj4+IGluZGV4IDFh
+Yzc5YmNlZTJiYi4uODRhYTQ0OGQ4YmIzIDEwMDY0NA0KPj4gLS0tIGEvaW5jbHVkZS9saW51eC9z
+aXplcy5oDQo+PiArKysgYi9pbmNsdWRlL2xpbnV4L3NpemVzLmgNCj4+IEBAIC00Nyw2ICs0Nyw4
+IEBADQo+PiAgICNkZWZpbmUgU1pfOEcJCQkJX0FDKDB4MjAwMDAwMDAwLCBVTEwpDQo+PiAgICNk
+ZWZpbmUgU1pfMTZHCQkJCV9BQygweDQwMDAwMDAwMCwgVUxMKQ0KPj4gICAjZGVmaW5lIFNaXzMy
+RwkJCQlfQUMoMHg4MDAwMDAwMDAsIFVMTCkNCj4+ICsNCj4+ICsjZGVmaW5lIFNaXzFUCQkJCV9B
+QygweDEwMDAwMDAwMDAwLCBVTEwpDQo+PiAgICNkZWZpbmUgU1pfNjRUCQkJCV9BQygweDQwMDAw
+MDAwMDAwMCwgVUxMKQ0KPj4gICANCj4+ICAgI2VuZGlmIC8qIF9fTElOVVhfU0laRVNfSF9fICov
+DQo+IA0KPiBUaGFuayB5b3UhDQo+IA0KPiBSZXZpZXdlZC1ieTogS3J6eXN6dG9mIFdpbGN6ecWE
+c2tpIDxrd0BsaW51eC5jb20+DQoNClRoYW5rcw0KDQpDaHJpc3RvcGhl
