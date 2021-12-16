@@ -4,68 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 088D8C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Dec 2021 22:01:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5088C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Dec 2021 22:02:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JFR0628Qlz3c4b
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Dec 2021 09:01:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JFR0p4G0Xz3c6W
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Dec 2021 09:02:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Frkc/RjO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=V+hp+c+/;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::82f;
- helo=mail-qt1-x82f.google.com; envelope-from=nnac123@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f31;
+ helo=mail-qv1-xf31.google.com; envelope-from=nnac123@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=Frkc/RjO; dkim-atps=neutral
-Received: from mail-qt1-x82f.google.com (mail-qt1-x82f.google.com
- [IPv6:2607:f8b0:4864:20::82f])
+ header.s=20210112 header.b=V+hp+c+/; dkim-atps=neutral
+Received: from mail-qv1-xf31.google.com (mail-qv1-xf31.google.com
+ [IPv6:2607:f8b0:4864:20::f31])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JFQzV1c3jz3056
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Dec 2021 09:00:52 +1100 (AEDT)
-Received: by mail-qt1-x82f.google.com with SMTP id p19so680470qtw.12
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JFQzV1Gr4z304j
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Dec 2021 09:00:53 +1100 (AEDT)
+Received: by mail-qv1-xf31.google.com with SMTP id kc16so632174qvb.3
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Dec 2021 14:00:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=sMr6Qm2ZRAPWHO8VKmFAg9zNVh0B4CLiVKOXqBkVgVs=;
- b=Frkc/RjO4I9YYdDeG17GlBUcNHe0yfzyy6/JuDQnuKixhABzIk600AxlXhj4FoGWQS
- ebuauO5Gx6/Bfg0G9m4jnTPyn1bbOwS28Qyia6DbarQgk9yu2YhRFQobj8Xs3crngYJr
- wh2WBySPE+RDNv1zAFUp45tiWGNI2+RC9IqfaLSxZ8lWPPL1v+H7B2Wwtg56SvKJpEHh
- SEfFgryUQX701I/p+fdzdpQ8W/mBTc1eX6tqKwAYCZKxWa9jq67IgzEOQReAvRYRc0oq
- eUA4i8t6oFpv8BY3RKVeyepKjr5Q8PTPbR8zjHyeeMAgitXx5dxmGs3Cts6sg/glVALX
- gDRg==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=eWFRV4YVkN/SeNWScFvsbWjza3Jt9Zc7/qiBkNUkoEk=;
+ b=V+hp+c+/Ev/nFrg8EpGpSctnTk4A2iHsE5G8BVQQ0dia2fyNszsork+n69iwumaUZP
+ +DDNwq8O94IwK9y6jehNiZQ3UWdfPGP64Yx7wD5Q4flLeqvxeMJsr2Xj9EvT+NU+IXfe
+ RcMd4O41+WjC3Fu90RbdfsaFjHPKU58XruhjiXjyCoezXf8NdIP83F48GbdI1kHVLMUA
+ 4SVJ239mnx/1lqHxIiLWco1N/G8M1Hpnr9RxFnCrfg5DnlA7OoKPhjJ5u2gdRHdLPDl+
+ WavsuTuuDF9bNDcMYDQJeM7PQgNAm3HYOZR8+ThFLdxf89vwaI0S8KpDsyvm5karluVg
+ oDSg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=sMr6Qm2ZRAPWHO8VKmFAg9zNVh0B4CLiVKOXqBkVgVs=;
- b=UlwZZfJuRHMPDQWy9msL1KhihVxLueAxw7BoPYOrLnnUPCQTPFcJjjp9ndxm4TGJK5
- eK7+cfEBBzwKPbtfo+1DGrnwbnlqAzpXh2KHyfCjMtgdoitVQlNG8ipEelsNzk0+PEyu
- BghJzXpmUr239AJDwCVH+FyZL93GJJvPZbZK8nX9Jaw6PUQiyk72M7mbNktFvvKqiQdO
- +TD4MVhkRm18OWfNOisVWVeDxNjwj3SLc4rz8w9rypuL4mxu4VyRHfidF3eSEcgPz72T
- MB905/B8I0re153rujq+5askQ8rho9YNthVn/GRxyjLLgeQ4lXyRUkThyQSF0UQMWPkR
- HUcw==
-X-Gm-Message-State: AOAM530BA29iXW6JT/qoe555XeeMGLWq0aKRtZ/EIHd2XqrIQvuta5nT
- yBJUUY5yLfZH3y8Udh4KBbUVqaisvJ4=
-X-Google-Smtp-Source: ABdhPJxjIFQ6HBpdvmTrMVY0QClxHbwlhvO9HhJ5qX5ZfemZkNsUMKhCtnPVomBuRN63VMXDNUXApg==
-X-Received: by 2002:ac8:5a0b:: with SMTP id n11mr18897718qta.485.1639692046543; 
- Thu, 16 Dec 2021 14:00:46 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=eWFRV4YVkN/SeNWScFvsbWjza3Jt9Zc7/qiBkNUkoEk=;
+ b=hufRLiFc9O1k4oxTiWLYcSawbjBwu8z8wofbfUY58xwtjA5jJ5VA1HnwAtmX/BPHV9
+ zeak84Sz0q/MaEAUC+IINL7pQ2oizvE3S9AtRpetR0G3tUOKkmJpqwN+HJIzWK//iL8o
+ Bel2VxzQ46T+AAVAT7gl/WMJA1wNybLV4fdT/UhXR3N7pR93SroocNtOp/bu5c0pk++f
+ LKAPVZAYRK4Rcxo50okiHpinPUBL09QUTzHOTS392vXqLB6ZQLgsI7yDnB0GTSqKPzkS
+ gTfHauOjoGMnmwE0cTnOrhHqrxMcYnFog6C8NmWi0G36Zm1vrO1kgLWL1OEyouXheEMB
+ lngw==
+X-Gm-Message-State: AOAM530n0qqA/BWIBc3Y0sC7MfNw+Nwjs1o3HX9+bsWpl7ebSVYCl504
+ pAYoGokGUjEYnOyWz8uFiVjRbBSKJkg=
+X-Google-Smtp-Source: ABdhPJzWpkkejlixpl3WpK0L+2V/bHuRn0YtLkMzN514xG12BgwgRa3AlF/xnYjd/4w8B6X5TGXwFg==
+X-Received: by 2002:a05:6214:2a45:: with SMTP id
+ jf5mr169559qvb.15.1639692049685; 
+ Thu, 16 Dec 2021 14:00:49 -0800 (PST)
 Received: from starship-12.hsd1.fl.comcast.net
  ([2601:589:4a00:1ed0:dce6:135:603d:e519])
- by smtp.gmail.com with ESMTPSA id y21sm5478483qtw.10.2021.12.16.14.00.45
+ by smtp.gmail.com with ESMTPSA id y21sm5478483qtw.10.2021.12.16.14.00.48
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 16 Dec 2021 14:00:46 -0800 (PST)
+ Thu, 16 Dec 2021 14:00:49 -0800 (PST)
 From: Nick Child <nnac123@gmail.com>
 X-Google-Original-From: Nick Child <nick.child@ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 00/20] powerpc: Define eligible functions as __init
-Date: Thu, 16 Dec 2021 17:00:15 -0500
-Message-Id: <20211216220035.605465-1-nick.child@ibm.com>
+Subject: [PATCH v2 03/20] powerpc/mm: Add __init attribute to eligible
+ functions
+Date: Thu, 16 Dec 2021 17:00:18 -0500
+Message-Id: <20211216220035.605465-4-nick.child@ibm.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20211216220035.605465-1-nick.child@ibm.com>
+References: <20211216220035.605465-1-nick.child@ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -84,257 +88,260 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello all,
+Some functions defined in 'arch/powerpc/mm' are deserving of an
+`__init` macro attribute. These functions are only called by other
+initialization functions and therefore should inherit the attribute.
+Also, change function declarations in header files to include `__init`.
 
-This patchset focuses on redefining/declaring functions that could be 
-labeled with the macro `__init`. From my understanding, an
-initialization function is one which is only needed during the initial
-phases of booting, after which it's resources can be freed. I figure
-that any function which is only called by other initialization
-functions may also be labeled as an initialization function. There are 
-several (mostly static) functions which can and should be labeled as
-`__init`. I created some scripts to help identify these functions. It
-scans all functions defined in `arch/powerpc` and, if it is only called
-by functions with the `__init` attribute, it will go on to adjust the
-prototype and definition to include the `__init` declaration. This 
-patchset hopes to solve related issue #282:
-  https://github.com/linuxppc/issues/issues/282
+Signed-off-by: Nick Child <nick.child@ibm.com>
+---
+ arch/powerpc/include/asm/hugetlb.h       | 2 +-
+ arch/powerpc/include/asm/mmu_context.h   | 2 +-
+ arch/powerpc/mm/book3s32/mmu.c           | 2 +-
+ arch/powerpc/mm/book3s64/hash_utils.c    | 6 +++---
+ arch/powerpc/mm/book3s64/hugetlbpage.c   | 2 +-
+ arch/powerpc/mm/book3s64/mmu_context.c   | 2 +-
+ arch/powerpc/mm/book3s64/pkeys.c         | 2 +-
+ arch/powerpc/mm/book3s64/radix_pgtable.c | 4 ++--
+ arch/powerpc/mm/nohash/44x.c             | 4 ++--
+ arch/powerpc/mm/nohash/fsl_book3e.c      | 2 +-
+ arch/powerpc/mm/nohash/tlb.c             | 4 ++--
+ arch/powerpc/mm/numa.c                   | 6 +++---
+ arch/powerpc/mm/ptdump/ptdump.c          | 2 +-
+ 13 files changed, 20 insertions(+), 20 deletions(-)
 
-Some notes about the scripts:
-  1. Trying to handle things like functions assigned to macros and
-      function pointers proved to be a bit too complicated to track. I
-      ended up just halting the investigation of these functions. In
-      the future, I would like to be able to attempt to `__init` them
-      but for now we leave them alone.
-
-  2. The proper syntax for adding the `__init` macro is followed as it
-      is defined in `include/linux/init.h`. 
-
-  3. There are some odd looking functions that look something like:
-      `char *__init foo(...`. I have found that this happens in many 
-      other places in the kernel source prior to running the scripts.
-      Additionally, after running the scripts. I have successfully
-      built all powerpc defconfigs without error. For these reasons, I
-      assume the odd syntax is valid but I am interested in other
-      opinions on this.
-
-  5. I have run my scripts on the Dec 14, 2021 `merge` branch
-      (specifically 798527287598)
-
-After running my script for 3 rounds, they have identified about 250
-functions so I tried to break the patches up into related platforms and
-subdirectories. There are only two functions with a prototype outside
-of `arch/powerpc`, these are `find_via_cuda` and `find_via_pmu`. I put
-those in their own patch.
-
-Other than building all the ppc defconfigs, I have tested the changes 
-by building kernels with and without the patches using defconfigs
-ppc64le_guest, powernv and pseries_le. There were no size differences
-reported in the boot logs. However, when using `readelf -t` we see the 
-following differences in the size of the .text section:
-  ppc64le_guest -> .text decreased in size by 12.8k, init.text unchanged
-  powernv -> .text decreased in size by 7.7k, init.text unchanged
-  pseries_le -> .text decreased in size by 9.6k, init.text increased 65.5k
-
-I figured the size differences (or lack of) in .init.text might have
-something to do with the requirement that the .init.text "section ends
-on a page boundary", as described in 
-`arch/powerpc/kernel/vmlinux.lds.S`. 
-
-I am excited to say this is my first attempt at kernel development. I
-know this patchset is in no way important but I figured it was a good
-starting point. Please let me know if there is anything I am doing
-wrong or if I can do anything to help meet the kernel contribution 
-guidelines.
-
-Special thanks to Daniel Axtens for mentoring me and helping me get my 
-first patchset out!
-
-Changes in v2:
- - add `__init` in prototypes right before the funtion name instead of 
-    at the end.
- - respond to ./scripts/checkpatch feedback
- - reference the related github issue in cover letter
- - fix date in cover letter
- - rebase onto latest `merge`
-v1:
-  https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=277093&state=
-    
-
-Nick Child (20):
-  powerpc/kernel: Add __init attribute to eligible functions
-  powerpc/lib: Add __init attribute to eligible functions
-  powerpc/mm: Add __init attribute to eligible functions
-  powerpc/perf: Add __init attribute to eligible functions
-  powerpc/sysdev: Add __init attribute to eligible functions
-  powerpc/xmon: Add __init attribute to eligible functions
-  powerpc/cell: Add __init attribute to eligible functions
-  powerpc/chrp: Add __init attribute to eligible functions
-  powerpc/pasemi: Add __init attribute to eligible functions
-  powerpc/powermac: Add __init attribute to eligible functions
-  powerpc/powernv: Add __init attribute to eligible functions
-  powerpc/pseries: Add __init attribute to eligible functions
-  powerpc/ps3: Add __init attribute to eligible functions
-  powerpc/4xx: Add __init attribute to eligible functions
-  powerpc/44x: Add __init attribute to eligible functions
-  powerpc/embedded6xx: Add __init attribute to eligible functions
-  powerpc/83xx: Add __init attribute to eligible functions
-  powerpc/85xx: Add __init attribute to eligible functions
-  powerpc/512x: Add __init attribute to eligible functions
-  cuda/pmu: Make find_via_cuda/pmu init functions
-
- arch/powerpc/include/asm/book3s/64/mmu.h      |  2 +-
- arch/powerpc/include/asm/btext.h              | 10 ++--
- arch/powerpc/include/asm/cpm2.h               |  6 +--
- arch/powerpc/include/asm/cpuidle.h            |  2 +-
- arch/powerpc/include/asm/eeh.h                |  2 +-
- arch/powerpc/include/asm/fadump-internal.h    |  6 +--
- arch/powerpc/include/asm/hugetlb.h            |  2 +-
- arch/powerpc/include/asm/i8259.h              |  2 +-
- arch/powerpc/include/asm/iommu.h              |  2 +-
- arch/powerpc/include/asm/ipic.h               |  2 +-
- arch/powerpc/include/asm/kexec.h              |  2 +-
- arch/powerpc/include/asm/kvm_guest.h          |  2 +-
- arch/powerpc/include/asm/mmu_context.h        |  2 +-
- arch/powerpc/include/asm/mpic.h               |  2 +-
- arch/powerpc/include/asm/opal.h               |  2 +-
- arch/powerpc/include/asm/pci.h                |  2 +-
- arch/powerpc/include/asm/perf_event_server.h  |  2 +-
- arch/powerpc/include/asm/setup.h              |  8 +--
- arch/powerpc/include/asm/smu.h                |  2 +-
- arch/powerpc/include/asm/udbg.h               | 10 ++--
- arch/powerpc/include/asm/xics.h               |  4 +-
- arch/powerpc/include/asm/xmon.h               |  2 +-
- arch/powerpc/kernel/btext.c                   | 12 ++---
- arch/powerpc/kernel/dt_cpu_ftrs.c             |  2 +-
- arch/powerpc/kernel/eeh_cache.c               |  2 +-
- arch/powerpc/kernel/fadump.c                  | 18 +++----
- arch/powerpc/kernel/nvram_64.c                |  6 +--
- arch/powerpc/kernel/pci-common.c              |  2 +-
- arch/powerpc/kernel/pci_32.c                  |  4 +-
- arch/powerpc/kernel/prom.c                    |  4 +-
- arch/powerpc/kernel/prom_init.c               | 12 ++---
- arch/powerpc/kernel/rtasd.c                   |  6 +--
- arch/powerpc/kernel/security.c                |  4 +-
- arch/powerpc/kernel/setup_64.c                |  2 +-
- arch/powerpc/kernel/smp.c                     |  5 +-
- arch/powerpc/kernel/sysfs.c                   | 10 ++--
- arch/powerpc/kernel/udbg_16550.c              | 10 ++--
- arch/powerpc/kexec/core.c                     |  2 +-
- arch/powerpc/lib/code-patching.c              |  2 +-
- arch/powerpc/lib/feature-fixups.c             | 26 +++++-----
- arch/powerpc/mm/book3s32/mmu.c                |  2 +-
- arch/powerpc/mm/book3s64/hash_utils.c         |  6 +--
- arch/powerpc/mm/book3s64/hugetlbpage.c        |  2 +-
- arch/powerpc/mm/book3s64/mmu_context.c        |  2 +-
- arch/powerpc/mm/book3s64/pkeys.c              |  2 +-
- arch/powerpc/mm/book3s64/radix_pgtable.c      |  4 +-
- arch/powerpc/mm/nohash/44x.c                  |  4 +-
- arch/powerpc/mm/nohash/fsl_book3e.c           |  2 +-
- arch/powerpc/mm/nohash/tlb.c                  |  4 +-
- arch/powerpc/mm/numa.c                        |  6 +--
- arch/powerpc/mm/ptdump/ptdump.c               |  2 +-
- arch/powerpc/perf/core-book3s.c               |  2 +-
- arch/powerpc/perf/generic-compat-pmu.c        |  2 +-
- arch/powerpc/perf/internal.h                  | 18 +++----
- arch/powerpc/perf/power10-pmu.c               |  2 +-
- arch/powerpc/perf/power5+-pmu.c               |  2 +-
- arch/powerpc/perf/power5-pmu.c                |  2 +-
- arch/powerpc/perf/power6-pmu.c                |  2 +-
- arch/powerpc/perf/power7-pmu.c                |  2 +-
- arch/powerpc/perf/power8-pmu.c                |  2 +-
- arch/powerpc/perf/power9-pmu.c                |  2 +-
- arch/powerpc/perf/ppc970-pmu.c                |  2 +-
- arch/powerpc/platforms/44x/fsp2.c             |  4 +-
- arch/powerpc/platforms/4xx/cpm.c              |  4 +-
- arch/powerpc/platforms/4xx/pci.c              |  2 +-
- arch/powerpc/platforms/512x/clock-commonclk.c | 52 +++++++++----------
- arch/powerpc/platforms/512x/mpc512x.h         |  4 +-
- arch/powerpc/platforms/512x/mpc512x_shared.c  |  4 +-
- arch/powerpc/platforms/83xx/km83xx.c          |  2 +-
- arch/powerpc/platforms/83xx/mpc834x_mds.c     |  2 +-
- arch/powerpc/platforms/83xx/mpc837x_mds.c     |  2 +-
- arch/powerpc/platforms/83xx/mpc837x_rdb.c     |  2 +-
- arch/powerpc/platforms/83xx/mpc83xx.h         |  6 +--
- arch/powerpc/platforms/83xx/usb.c             |  6 +--
- arch/powerpc/platforms/85xx/ge_imp3a.c        |  2 +-
- arch/powerpc/platforms/85xx/mpc85xx_cds.c     |  2 +-
- .../platforms/85xx/socrates_fpga_pic.c        |  2 +-
- .../platforms/85xx/socrates_fpga_pic.h        |  2 +-
- arch/powerpc/platforms/85xx/xes_mpc85xx.c     |  4 +-
- arch/powerpc/platforms/cell/cbe_regs.c        |  2 +-
- arch/powerpc/platforms/cell/iommu.c           | 14 ++---
- arch/powerpc/platforms/cell/spu_base.c        |  6 +--
- arch/powerpc/platforms/cell/spu_manage.c      | 16 +++---
- arch/powerpc/platforms/cell/spufs/inode.c     |  2 +-
- arch/powerpc/platforms/chrp/pegasos_eth.c     |  2 +-
- arch/powerpc/platforms/embedded6xx/hlwd-pic.c |  4 +-
- arch/powerpc/platforms/embedded6xx/hlwd-pic.h |  2 +-
- arch/powerpc/platforms/embedded6xx/holly.c    |  2 +-
- .../platforms/embedded6xx/usbgecko_udbg.c     |  4 +-
- arch/powerpc/platforms/embedded6xx/wii.c      |  2 +-
- arch/powerpc/platforms/pasemi/msi.c           |  2 +-
- arch/powerpc/platforms/pasemi/pasemi.h        |  2 +-
- arch/powerpc/platforms/pasemi/pci.c           |  2 +-
- arch/powerpc/platforms/pasemi/setup.c         |  2 +-
- arch/powerpc/platforms/powermac/feature.c     |  2 +-
- arch/powerpc/platforms/powermac/nvram.c       |  2 +-
- arch/powerpc/platforms/powermac/pfunc_base.c  |  6 +--
- arch/powerpc/platforms/powermac/setup.c       |  6 +--
- arch/powerpc/platforms/powermac/smp.c         |  4 +-
- arch/powerpc/platforms/powermac/udbg_scc.c    |  2 +-
- arch/powerpc/platforms/powernv/idle.c         |  6 +--
- arch/powerpc/platforms/powernv/opal-core.c    |  6 +--
- arch/powerpc/platforms/powernv/opal-fadump.c  |  2 +-
- arch/powerpc/platforms/powernv/opal-msglog.c  |  4 +-
- arch/powerpc/platforms/powernv/opal-power.c   |  2 +-
- .../powerpc/platforms/powernv/opal-powercap.c |  2 +-
- arch/powerpc/platforms/powernv/opal-rtc.c     |  2 +-
- .../platforms/powernv/opal-sensor-groups.c    |  4 +-
- arch/powerpc/platforms/powernv/opal.c         |  8 +--
- arch/powerpc/platforms/powernv/pci-ioda.c     |  4 +-
- arch/powerpc/platforms/powernv/powernv.h      |  4 +-
- arch/powerpc/platforms/powernv/rng.c          |  2 +-
- arch/powerpc/platforms/powernv/setup.c        |  6 +--
- arch/powerpc/platforms/ps3/gelic_udbg.c       |  2 +-
- arch/powerpc/platforms/ps3/mm.c               |  4 +-
- arch/powerpc/platforms/ps3/os-area.c          |  4 +-
- arch/powerpc/platforms/ps3/platform.h         | 14 ++---
- arch/powerpc/platforms/ps3/repository.c       | 20 +++----
- arch/powerpc/platforms/ps3/smp.c              |  2 +-
- arch/powerpc/platforms/ps3/spu.c              |  2 +-
- .../powerpc/platforms/pseries/event_sources.c |  2 +-
- arch/powerpc/platforms/pseries/iommu.c        |  2 +-
- arch/powerpc/platforms/pseries/lpar.c         |  6 +--
- arch/powerpc/platforms/pseries/pseries.h      |  2 +-
- arch/powerpc/platforms/pseries/rtas-fadump.c  |  6 +--
- arch/powerpc/platforms/pseries/setup.c        |  4 +-
- arch/powerpc/platforms/pseries/vas.c          |  2 +-
- arch/powerpc/platforms/pseries/vio.c          |  6 +--
- arch/powerpc/sysdev/cpm2.c                    |  6 +--
- arch/powerpc/sysdev/dart_iommu.c              |  2 +-
- arch/powerpc/sysdev/fsl_mpic_err.c            |  4 +-
- arch/powerpc/sysdev/fsl_pci.c                 |  2 +-
- arch/powerpc/sysdev/fsl_pci.h                 |  2 +-
- arch/powerpc/sysdev/i8259.c                   |  2 +-
- arch/powerpc/sysdev/ipic.c                    |  2 +-
- arch/powerpc/sysdev/mpic.c                    |  2 +-
- arch/powerpc/sysdev/mpic.h                    | 10 ++--
- arch/powerpc/sysdev/mpic_msi.c                |  6 +--
- arch/powerpc/sysdev/mpic_timer.c              |  6 +--
- arch/powerpc/sysdev/mpic_u3msi.c              |  2 +-
- arch/powerpc/sysdev/tsi108_pci.c              |  2 +-
- arch/powerpc/sysdev/udbg_memcons.c            |  2 +-
- arch/powerpc/sysdev/xics/icp-hv.c             |  2 +-
- arch/powerpc/sysdev/xics/icp-opal.c           |  2 +-
- arch/powerpc/sysdev/xics/xics-common.c        |  2 +-
- arch/powerpc/sysdev/xive/native.c             |  4 +-
- arch/powerpc/sysdev/xive/spapr.c              |  6 +--
- arch/powerpc/xmon/xmon.c                      |  2 +-
- include/linux/cuda.h                          |  2 +-
- include/linux/pmu.h                           |  2 +-
- 150 files changed, 335 insertions(+), 334 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index f18c543bc01d..962708fa1017 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -15,7 +15,7 @@
+ 
+ extern bool hugetlb_disabled;
+ 
+-void hugetlbpage_init_default(void);
++void __init hugetlbpage_init_default(void);
+ 
+ int slice_is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+ 			   unsigned long len);
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index e46394d27785..fd277b15635c 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -71,7 +71,7 @@ static inline void switch_mmu_context(struct mm_struct *prev,
+ }
+ 
+ extern int hash__alloc_context_id(void);
+-extern void hash__reserve_context_id(int id);
++void __init hash__reserve_context_id(int id);
+ extern void __destroy_context(int context_id);
+ static inline void mmu_context_init(void) { }
+ 
+diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
+index 33ab63d56435..94045b265b6b 100644
+--- a/arch/powerpc/mm/book3s32/mmu.c
++++ b/arch/powerpc/mm/book3s32/mmu.c
+@@ -76,7 +76,7 @@ unsigned long p_block_mapped(phys_addr_t pa)
+ 	return 0;
+ }
+ 
+-static int find_free_bat(void)
++static int __init find_free_bat(void)
+ {
+ 	int b;
+ 	int n = mmu_has_feature(MMU_FTR_USE_HIGH_BATS) ? 8 : 4;
+diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+index eced266dc5e9..7abf82a698d3 100644
+--- a/arch/powerpc/mm/book3s64/hash_utils.c
++++ b/arch/powerpc/mm/book3s64/hash_utils.c
+@@ -662,7 +662,7 @@ static int __init htab_dt_scan_hugepage_blocks(unsigned long node,
+ }
+ #endif /* CONFIG_HUGETLB_PAGE */
+ 
+-static void mmu_psize_set_default_penc(void)
++static void __init mmu_psize_set_default_penc(void)
+ {
+ 	int bpsize, apsize;
+ 	for (bpsize = 0; bpsize < MMU_PAGE_COUNT; bpsize++)
+@@ -672,7 +672,7 @@ static void mmu_psize_set_default_penc(void)
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+ 
+-static bool might_have_hea(void)
++static bool __init might_have_hea(void)
+ {
+ 	/*
+ 	 * The HEA ethernet adapter requires awareness of the
+@@ -743,7 +743,7 @@ static void __init htab_scan_page_sizes(void)
+  * low-order N bits as the encoding for the 2^(12+N) byte page size
+  * (if it exists).
+  */
+-static void init_hpte_page_sizes(void)
++static void __init init_hpte_page_sizes(void)
+ {
+ 	long int ap, bp;
+ 	long int shift, penc;
+diff --git a/arch/powerpc/mm/book3s64/hugetlbpage.c b/arch/powerpc/mm/book3s64/hugetlbpage.c
+index 95b2a283fd6e..ea8f83afb0ae 100644
+--- a/arch/powerpc/mm/book3s64/hugetlbpage.c
++++ b/arch/powerpc/mm/book3s64/hugetlbpage.c
+@@ -150,7 +150,7 @@ void huge_ptep_modify_prot_commit(struct vm_area_struct *vma, unsigned long addr
+ 	set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
+ }
+ 
+-void hugetlbpage_init_default(void)
++void __init hugetlbpage_init_default(void)
+ {
+ 	/* Set default large page size. Currently, we pick 16M or 1M
+ 	 * depending on what is available
+diff --git a/arch/powerpc/mm/book3s64/mmu_context.c b/arch/powerpc/mm/book3s64/mmu_context.c
+index 24aa953c9311..c766e4c26e42 100644
+--- a/arch/powerpc/mm/book3s64/mmu_context.c
++++ b/arch/powerpc/mm/book3s64/mmu_context.c
+@@ -32,7 +32,7 @@ static int alloc_context_id(int min_id, int max_id)
+ }
+ 
+ #ifdef CONFIG_PPC_64S_HASH_MMU
+-void hash__reserve_context_id(int id)
++void __init hash__reserve_context_id(int id)
+ {
+ 	int result = ida_alloc_range(&mmu_context_ida, id, id, GFP_KERNEL);
+ 
+diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
+index a2d9ad138709..753e62ba67af 100644
+--- a/arch/powerpc/mm/book3s64/pkeys.c
++++ b/arch/powerpc/mm/book3s64/pkeys.c
+@@ -66,7 +66,7 @@ static int __init dt_scan_storage_keys(unsigned long node,
+ 	return 1;
+ }
+ 
+-static int scan_pkey_feature(void)
++static int __init scan_pkey_feature(void)
+ {
+ 	int ret;
+ 	int pkeys_total = 0;
+diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
+index 3c4f0ebe5df8..fe09f8a7650a 100644
+--- a/arch/powerpc/mm/book3s64/radix_pgtable.c
++++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
+@@ -499,7 +499,7 @@ static int __init probe_memory_block_size(unsigned long node, const char *uname,
+ 	return 1;
+ }
+ 
+-static unsigned long radix_memory_block_size(void)
++static unsigned long __init radix_memory_block_size(void)
+ {
+ 	unsigned long mem_block_size = MIN_MEMORY_BLOCK_SIZE;
+ 
+@@ -517,7 +517,7 @@ static unsigned long radix_memory_block_size(void)
+ 
+ #else   /* CONFIG_MEMORY_HOTPLUG */
+ 
+-static unsigned long radix_memory_block_size(void)
++static unsigned long __init radix_memory_block_size(void)
+ {
+ 	return 1UL * 1024 * 1024 * 1024;
+ }
+diff --git a/arch/powerpc/mm/nohash/44x.c b/arch/powerpc/mm/nohash/44x.c
+index 796c824acc8c..1beae802bb1c 100644
+--- a/arch/powerpc/mm/nohash/44x.c
++++ b/arch/powerpc/mm/nohash/44x.c
+@@ -38,7 +38,7 @@ int icache_44x_need_flush;
+ 
+ unsigned long tlb_47x_boltmap[1024/8];
+ 
+-static void ppc44x_update_tlb_hwater(void)
++static void __init ppc44x_update_tlb_hwater(void)
+ {
+ 	/* The TLB miss handlers hard codes the watermark in a cmpli
+ 	 * instruction to improve performances rather than loading it
+@@ -122,7 +122,7 @@ static void __init ppc47x_update_boltmap(void)
+ /*
+  * "Pins" a 256MB TLB entry in AS0 for kernel lowmem for 47x type MMU
+  */
+-static void ppc47x_pin_tlb(unsigned int virt, unsigned int phys)
++static void __init ppc47x_pin_tlb(unsigned int virt, unsigned int phys)
+ {
+ 	unsigned int rA;
+ 	int bolted;
+diff --git a/arch/powerpc/mm/nohash/fsl_book3e.c b/arch/powerpc/mm/nohash/fsl_book3e.c
+index 7f71bc3bf85f..dfe715e0f70a 100644
+--- a/arch/powerpc/mm/nohash/fsl_book3e.c
++++ b/arch/powerpc/mm/nohash/fsl_book3e.c
+@@ -259,7 +259,7 @@ void __init MMU_init_hw(void)
+ 	flush_instruction_cache();
+ }
+ 
+-static unsigned long tlbcam_sz(int idx)
++static unsigned long __init tlbcam_sz(int idx)
+ {
+ 	return tlbcam_addrs[idx].limit - tlbcam_addrs[idx].start + 1;
+ }
+diff --git a/arch/powerpc/mm/nohash/tlb.c b/arch/powerpc/mm/nohash/tlb.c
+index 311281063d48..fd2c77af5c55 100644
+--- a/arch/powerpc/mm/nohash/tlb.c
++++ b/arch/powerpc/mm/nohash/tlb.c
+@@ -432,7 +432,7 @@ void tlb_flush_pgtable(struct mmu_gather *tlb, unsigned long address)
+ 	}
+ }
+ 
+-static void setup_page_sizes(void)
++static void __init setup_page_sizes(void)
+ {
+ 	unsigned int tlb0cfg;
+ 	unsigned int tlb0ps;
+@@ -570,7 +570,7 @@ static void setup_page_sizes(void)
+ 	}
+ }
+ 
+-static void setup_mmu_htw(void)
++static void __init setup_mmu_htw(void)
+ {
+ 	/*
+ 	 * If we want to use HW tablewalk, enable it by patching the TLB miss
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 59d3cfcd7887..9d5f710d2c20 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -134,7 +134,7 @@ static int __init fake_numa_create_new_node(unsigned long end_pfn,
+ 	return 0;
+ }
+ 
+-static void reset_numa_cpu_lookup_table(void)
++static void __init reset_numa_cpu_lookup_table(void)
+ {
+ 	unsigned int cpu;
+ 
+@@ -372,7 +372,7 @@ void update_numa_distance(struct device_node *node)
+  * ibm,numa-lookup-index-table= {N, domainid1, domainid2, ..... domainidN}
+  * ibm,numa-distance-table = { N, 1, 2, 4, 5, 1, 6, .... N elements}
+  */
+-static void initialize_form2_numa_distance_lookup_table(void)
++static void __init initialize_form2_numa_distance_lookup_table(void)
+ {
+ 	int i, j;
+ 	struct device_node *root;
+@@ -581,7 +581,7 @@ static int of_get_assoc_arrays(struct assoc_arrays *aa)
+ 	return 0;
+ }
+ 
+-static int get_nid_and_numa_distance(struct drmem_lmb *lmb)
++static int __init get_nid_and_numa_distance(struct drmem_lmb *lmb)
+ {
+ 	struct assoc_arrays aa = { .arrays = NULL };
+ 	int default_nid = NUMA_NO_NODE;
+diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
+index 031956d0ee84..473960e4b07a 100644
+--- a/arch/powerpc/mm/ptdump/ptdump.c
++++ b/arch/powerpc/mm/ptdump/ptdump.c
+@@ -315,7 +315,7 @@ static int ptdump_show(struct seq_file *m, void *v)
+ 
+ DEFINE_SHOW_ATTRIBUTE(ptdump);
+ 
+-static void build_pgtable_complete_mask(void)
++static void __init build_pgtable_complete_mask(void)
+ {
+ 	unsigned int i, j;
+ 
 -- 
 2.25.1
 
