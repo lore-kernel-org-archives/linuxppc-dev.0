@@ -4,68 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44C6AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Dec 2021 22:03:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47F37C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Dec 2021 22:04:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JFR2H5Z15z3cSK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Dec 2021 09:03:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JFR333cNNz3cjd
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Dec 2021 09:03:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Qm5fciFY;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=I2cOTLe0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::72b;
- helo=mail-qk1-x72b.google.com; envelope-from=nnac123@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f2d;
+ helo=mail-qv1-xf2d.google.com; envelope-from=nnac123@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=Qm5fciFY; dkim-atps=neutral
-Received: from mail-qk1-x72b.google.com (mail-qk1-x72b.google.com
- [IPv6:2607:f8b0:4864:20::72b])
+ header.s=20210112 header.b=I2cOTLe0; dkim-atps=neutral
+Received: from mail-qv1-xf2d.google.com (mail-qv1-xf2d.google.com
+ [IPv6:2607:f8b0:4864:20::f2d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JFQzV1jrwz305W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Dec 2021 09:00:52 +1100 (AEDT)
-Received: by mail-qk1-x72b.google.com with SMTP id t83so333557qke.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Dec 2021 14:00:52 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JFQzV17Vbz304V
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Dec 2021 09:00:53 +1100 (AEDT)
+Received: by mail-qv1-xf2d.google.com with SMTP id m6so590678qvh.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Dec 2021 14:00:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=FGlxhpZofU0sZTJhq0pcfG1o3G8FhbhXguoAwLHafxA=;
- b=Qm5fciFY/QsX9EJZ41ddycEO9cY7L6HH94NFc2rVWHPTN35Xy0WCUgIg07B0zatJR/
- hbCi0TBic8GAHqVhJMl32WvdxwYEeY4jxPuNPoIyBA9nmSbAL9h4u8FyKZWhsf8oF0x1
- Cm43SokIUs9iivlmRzW2ZCF+BF9Vyt14HKrFiJE9rR7Rz5mNuhRdjG0VXPCgD3fUoyZv
- r7f7MXLb/QHonIVk4NrLLzZRk1jGVxi7RBThhwZ0/F4/kOpUdpfJChXVzdAaqJn1svMB
- YY+tCb2BTSZ/uqy39VSMG9dYksISFDmOOfXucC9HbIKXKNTD3PT20G6FE9JCUFVeA2pG
- 17Xw==
+ bh=8j10UXEHLrL4Uxp9Y6hxfOFIwQv0UYRt8V9/xVxi+pA=;
+ b=I2cOTLe0c8ABy1dSr+2D4+PIsizf5ZSXV6ULTM/MNlNfXpxFmxqjqVINsEqZ71rV/S
+ j8+UlFkJPNhcm1umrFCQ+N6T7x9W7QlbheY6HW/kwjJXm0qaNs3rTcpe1PY7hgh0xO6+
+ jBpdfjLFEY8MqhvtVKtwYJOqNl4kZzEKMC0wYDqkYmfIRUWBNr+nrbDm/wAStNuu9HxS
+ 2jOAIqRSWWY8p+CdrjxHTYUaaG6EeFnLyYiaJEtwZM+nOX8CBcCwyJDk/1tbWCA2cSb9
+ rjZCzo8TMVUjmYDGEUizTW4RrfejUbaYBLu1jeUsXTJm+lUYF9fkxYwC8nAusXVONh6D
+ iIjw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=FGlxhpZofU0sZTJhq0pcfG1o3G8FhbhXguoAwLHafxA=;
- b=Bx6dLUfjxgy+RtLH8a5UTFRGuKf2ijypj7a723JuJ/YDDNds/NK+BHEH5FxuT213uf
- Cs0pzP7YBfXEQP+lTT+0wQaL+Tut2Sd6gKyh9C+KvPDAJKRTFd11/YC8EzH77R2KSxuM
- i2rUQLNtnv5fSOC5699fBOJw4QP5qrmXKQTwOaiVo1ZtEVoYxjr3+xbaOjt/TXs3xaod
- kvsYU+GWvSLQFIh2GUs2gnlrwwfIdXQ4NLOxgkvQbMWVkmbw541bD+jcVlWBqwiv6CTR
- GCnPEibEwuyUb/RdovSntARmb19al67V1/IO99unxxUopykLgetuDczMrGSiyLuAZjJM
- UHtA==
-X-Gm-Message-State: AOAM531HJEx2zfc8kW0zISdGlj/vaVNN1ThuJFpmkh8G4+G5O7rgmZdx
- MxgpyPQa2vA7RZ0yQUkwoBLXqdNA58M=
-X-Google-Smtp-Source: ABdhPJw11CtbUwJD0uQUQ0XPtPafJPv5AEqLIgoNwgPxO5DV39UpZboZb83c/2PC99oQFcWN/4t4+g==
-X-Received: by 2002:a05:620a:ce3:: with SMTP id c3mr71900qkj.306.1639692048724; 
- Thu, 16 Dec 2021 14:00:48 -0800 (PST)
+ bh=8j10UXEHLrL4Uxp9Y6hxfOFIwQv0UYRt8V9/xVxi+pA=;
+ b=hfmCXx6RGgjH08dlDBmAKKwewbvR+029kHQ9Vu9FRzIGnlYDGR56+to0Y+KxtVzbRf
+ GQ8VmcHZcQ6ykvVEKuiPH26ahYbaIbNNpCfFoUQxNg8O27Wnve5+SaiLz03jzhgJEGiY
+ KEnj2mgvbAhqZKqIVr4RVF/3D1kq10L3TvSpKeZVWQcUIJl5RDqCZMBk/t08ENezat9j
+ J3yF/Lp1fjX7W4ljCymAdNn5wWBe4NbBvVcW3hXnvJLegLiY08i82cb/aoXwhk2dRSok
+ 5Olb5Vxz0r3NdqDBazJvTfNQ9PZ5aM7r8qe2/uOiCtGG2udOpt8AMd+LmoGm8xH9tK/C
+ wQhw==
+X-Gm-Message-State: AOAM532270rCKpyL+cxH/0DgzTehAkxv4U9s7fjshAUcbnAGKS8n4YQZ
+ ZvfUA/Lm6Y4CYDMaA49BNE5CAVY/IdQ=
+X-Google-Smtp-Source: ABdhPJxgJ6a16qmStzaXxM6oB0wNn8FZZiPy/q9z/t7Y3N1iC+XxeC5svRwZwPUPzykJqvsWFLRVhw==
+X-Received: by 2002:a05:6214:29e7:: with SMTP id
+ jv7mr8355757qvb.16.1639692050830; 
+ Thu, 16 Dec 2021 14:00:50 -0800 (PST)
 Received: from starship-12.hsd1.fl.comcast.net
  ([2601:589:4a00:1ed0:dce6:135:603d:e519])
- by smtp.gmail.com with ESMTPSA id y21sm5478483qtw.10.2021.12.16.14.00.47
+ by smtp.gmail.com with ESMTPSA id y21sm5478483qtw.10.2021.12.16.14.00.49
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 16 Dec 2021 14:00:48 -0800 (PST)
+ Thu, 16 Dec 2021 14:00:50 -0800 (PST)
 From: Nick Child <nnac123@gmail.com>
 X-Google-Original-From: Nick Child <nick.child@ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 02/20] powerpc/lib: Add __init attribute to eligible
+Subject: [PATCH v2 04/20] powerpc/perf: Add __init attribute to eligible
  functions
-Date: Thu, 16 Dec 2021 17:00:17 -0500
-Message-Id: <20211216220035.605465-3-nick.child@ibm.com>
+Date: Thu, 16 Dec 2021 17:00:19 -0500
+Message-Id: <20211216220035.605465-5-nick.child@ibm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20211216220035.605465-1-nick.child@ibm.com>
 References: <20211216220035.605465-1-nick.child@ibm.com>
@@ -87,162 +88,196 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some functions defined in 'arch/powerpc/lib' are deserving of an `__init`
-macro attribute. These functions are only called by other initialization
-functions and therefore should inherit the attribute.
+Some functions defined in 'arch/powerpc/perf' are deserving of an
+`__init` macro attribute. These functions are only called by other
+initialization functions and therefore should inherit the attribute.
 Also, change function declarations in header files to include `__init`.
 
 Signed-off-by: Nick Child <nick.child@ibm.com>
 ---
- arch/powerpc/include/asm/setup.h  |  2 +-
- arch/powerpc/lib/code-patching.c  |  2 +-
- arch/powerpc/lib/feature-fixups.c | 26 +++++++++++++-------------
- 3 files changed, 15 insertions(+), 15 deletions(-)
+ arch/powerpc/include/asm/perf_event_server.h |  2 +-
+ arch/powerpc/perf/core-book3s.c              |  2 +-
+ arch/powerpc/perf/generic-compat-pmu.c       |  2 +-
+ arch/powerpc/perf/internal.h                 | 18 +++++++++---------
+ arch/powerpc/perf/power10-pmu.c              |  2 +-
+ arch/powerpc/perf/power5+-pmu.c              |  2 +-
+ arch/powerpc/perf/power5-pmu.c               |  2 +-
+ arch/powerpc/perf/power6-pmu.c               |  2 +-
+ arch/powerpc/perf/power7-pmu.c               |  2 +-
+ arch/powerpc/perf/power8-pmu.c               |  2 +-
+ arch/powerpc/perf/power9-pmu.c               |  2 +-
+ arch/powerpc/perf/ppc970-pmu.c               |  2 +-
+ 12 files changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index cff58db6130f..607e42b8cbf0 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -75,7 +75,7 @@ void __init setup_spectre_v2(void);
- #else
- static inline void setup_spectre_v2(void) {}
- #endif
--void do_btb_flush_fixups(void);
-+void __init do_btb_flush_fixups(void);
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index f4c3428e816b..e2221d29fdf9 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -98,7 +98,7 @@ struct power_pmu {
+ #define PPMU_LIMITED_PMC_REQD	2	/* have to put this on a limited PMC */
+ #define PPMU_ONLY_COUNT_RUN	4	/* only counting in run state */
  
- #endif /* !__ASSEMBLY__ */
+-extern int register_power_pmu(struct power_pmu *);
++int __init register_power_pmu(struct power_pmu *pmu);
  
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 312324a26df3..ee54cb447f80 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -397,7 +397,7 @@ void __patch_exception(int exc, unsigned long addr)
- 
- #ifdef CONFIG_CODE_PATCHING_SELFTEST
- 
--static int instr_is_branch_to_addr(const u32 *instr, unsigned long addr)
-+static int __init instr_is_branch_to_addr(const u32 *instr, unsigned long addr)
- {
- 	if (instr_is_branch_iform(ppc_inst_read(instr)) ||
- 	    instr_is_branch_bform(ppc_inst_read(instr)))
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 57c6bb802f6c..343a78826035 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -580,7 +580,7 @@ void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_
- 	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
+ struct pt_regs;
+ extern unsigned long perf_misc_flags(struct pt_regs *regs);
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 1f1ded29a06e..15a4f3b87bcf 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -2448,7 +2448,7 @@ static int power_pmu_prepare_cpu(unsigned int cpu)
+ 	return 0;
  }
  
--static void patch_btb_flush_section(long *curr)
-+static void __init patch_btb_flush_section(long *curr)
+-int register_power_pmu(struct power_pmu *pmu)
++int __init register_power_pmu(struct power_pmu *pmu)
  {
- 	unsigned int *start, *end;
+ 	if (ppmu)
+ 		return -EBUSY;		/* something's already registered */
+diff --git a/arch/powerpc/perf/generic-compat-pmu.c b/arch/powerpc/perf/generic-compat-pmu.c
+index 695975227e60..b6e25f75109d 100644
+--- a/arch/powerpc/perf/generic-compat-pmu.c
++++ b/arch/powerpc/perf/generic-compat-pmu.c
+@@ -307,7 +307,7 @@ static struct power_pmu generic_compat_pmu = {
+ 	.attr_groups		= generic_compat_pmu_attr_groups,
+ };
  
-@@ -592,7 +592,7 @@ static void patch_btb_flush_section(long *curr)
- 	}
- }
- 
--void do_btb_flush_fixups(void)
-+void __init do_btb_flush_fixups(void)
+-int init_generic_compat_pmu(void)
++int __init init_generic_compat_pmu(void)
  {
- 	long *start, *end;
+ 	int rc = 0;
  
-@@ -621,7 +621,7 @@ void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
- 	}
- }
+diff --git a/arch/powerpc/perf/internal.h b/arch/powerpc/perf/internal.h
+index 80bbf72bfec2..4c18b5504326 100644
+--- a/arch/powerpc/perf/internal.h
++++ b/arch/powerpc/perf/internal.h
+@@ -2,12 +2,12 @@
+ //
+ // Copyright 2019 Madhavan Srinivasan, IBM Corporation.
  
--static void do_final_fixups(void)
-+static void __init do_final_fixups(void)
+-extern int init_ppc970_pmu(void);
+-extern int init_power5_pmu(void);
+-extern int init_power5p_pmu(void);
+-extern int init_power6_pmu(void);
+-extern int init_power7_pmu(void);
+-extern int init_power8_pmu(void);
+-extern int init_power9_pmu(void);
+-extern int init_power10_pmu(void);
+-extern int init_generic_compat_pmu(void);
++int __init init_ppc970_pmu(void);
++int __init init_power5_pmu(void);
++int __init init_power5p_pmu(void);
++int __init init_power6_pmu(void);
++int __init init_power7_pmu(void);
++int __init init_power8_pmu(void);
++int __init init_power9_pmu(void);
++int __init init_power10_pmu(void);
++int __init init_generic_compat_pmu(void);
+diff --git a/arch/powerpc/perf/power10-pmu.c b/arch/powerpc/perf/power10-pmu.c
+index 9dd75f385837..0975ad0b42c4 100644
+--- a/arch/powerpc/perf/power10-pmu.c
++++ b/arch/powerpc/perf/power10-pmu.c
+@@ -592,7 +592,7 @@ static struct power_pmu power10_pmu = {
+ 	.check_attr_config	= power10_check_attr_config,
+ };
+ 
+-int init_power10_pmu(void)
++int __init init_power10_pmu(void)
  {
- #if defined(CONFIG_PPC64) && defined(CONFIG_RELOCATABLE)
- 	ppc_inst_t inst;
-@@ -715,12 +715,12 @@ late_initcall(check_features);
- /* This must be after the text it fixes up, vmlinux.lds.S enforces that atm */
- static struct fixup_entry fixup;
+ 	unsigned int pvr;
+ 	int rc;
+diff --git a/arch/powerpc/perf/power5+-pmu.c b/arch/powerpc/perf/power5+-pmu.c
+index 18732267993a..753b4740ef64 100644
+--- a/arch/powerpc/perf/power5+-pmu.c
++++ b/arch/powerpc/perf/power5+-pmu.c
+@@ -677,7 +677,7 @@ static struct power_pmu power5p_pmu = {
+ 	.cache_events		= &power5p_cache_events,
+ };
  
--static long calc_offset(struct fixup_entry *entry, unsigned int *p)
-+static long __init calc_offset(struct fixup_entry *entry, unsigned int *p)
+-int init_power5p_pmu(void)
++int __init init_power5p_pmu(void)
  {
- 	return (unsigned long)p - (unsigned long)entry;
- }
+ 	if (!cur_cpu_spec->oprofile_cpu_type ||
+ 	    (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5+")
+diff --git a/arch/powerpc/perf/power5-pmu.c b/arch/powerpc/perf/power5-pmu.c
+index cb611c1e7abe..1f83c4cba0aa 100644
+--- a/arch/powerpc/perf/power5-pmu.c
++++ b/arch/powerpc/perf/power5-pmu.c
+@@ -618,7 +618,7 @@ static struct power_pmu power5_pmu = {
+ 	.flags			= PPMU_HAS_SSLOT,
+ };
  
--static void test_basic_patching(void)
-+static void __init test_basic_patching(void)
+-int init_power5_pmu(void)
++int __init init_power5_pmu(void)
  {
- 	extern unsigned int ftr_fixup_test1[];
- 	extern unsigned int end_ftr_fixup_test1[];
-@@ -751,7 +751,7 @@ static void test_basic_patching(void)
- 	check(memcmp(ftr_fixup_test1, ftr_fixup_test1_expected, size) == 0);
- }
+ 	if (!cur_cpu_spec->oprofile_cpu_type ||
+ 	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5"))
+diff --git a/arch/powerpc/perf/power6-pmu.c b/arch/powerpc/perf/power6-pmu.c
+index 69ef38216418..aec746f86804 100644
+--- a/arch/powerpc/perf/power6-pmu.c
++++ b/arch/powerpc/perf/power6-pmu.c
+@@ -539,7 +539,7 @@ static struct power_pmu power6_pmu = {
+ 	.cache_events		= &power6_cache_events,
+ };
  
--static void test_alternative_patching(void)
-+static void __init test_alternative_patching(void)
+-int init_power6_pmu(void)
++int __init init_power6_pmu(void)
  {
- 	extern unsigned int ftr_fixup_test2[];
- 	extern unsigned int end_ftr_fixup_test2[];
-@@ -784,7 +784,7 @@ static void test_alternative_patching(void)
- 	check(memcmp(ftr_fixup_test2, ftr_fixup_test2_expected, size) == 0);
- }
+ 	if (!cur_cpu_spec->oprofile_cpu_type ||
+ 	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power6"))
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index 894c17f9a762..99b5ba314ea7 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -445,7 +445,7 @@ static struct power_pmu power7_pmu = {
+ 	.cache_events		= &power7_cache_events,
+ };
  
--static void test_alternative_case_too_big(void)
-+static void __init test_alternative_case_too_big(void)
+-int init_power7_pmu(void)
++int __init init_power7_pmu(void)
  {
- 	extern unsigned int ftr_fixup_test3[];
- 	extern unsigned int end_ftr_fixup_test3[];
-@@ -810,7 +810,7 @@ static void test_alternative_case_too_big(void)
- 	check(memcmp(ftr_fixup_test3, ftr_fixup_test3_orig, size) == 0);
- }
+ 	if (!cur_cpu_spec->oprofile_cpu_type ||
+ 	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power7"))
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index 5282e8415ddf..f21194b5604a 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -378,7 +378,7 @@ static struct power_pmu power8_pmu = {
+ 	.bhrb_nr		= 32,
+ };
  
--static void test_alternative_case_too_small(void)
-+static void __init test_alternative_case_too_small(void)
+-int init_power8_pmu(void)
++int __init init_power8_pmu(void)
  {
- 	extern unsigned int ftr_fixup_test4[];
- 	extern unsigned int end_ftr_fixup_test4[];
-@@ -856,7 +856,7 @@ static void test_alternative_case_with_branch(void)
- 	check(memcmp(ftr_fixup_test5, ftr_fixup_test5_expected, size) == 0);
- }
+ 	int rc;
  
--static void test_alternative_case_with_external_branch(void)
-+static void __init test_alternative_case_with_external_branch(void)
- {
- 	extern unsigned int ftr_fixup_test6[];
- 	extern unsigned int end_ftr_fixup_test6[];
-@@ -866,7 +866,7 @@ static void test_alternative_case_with_external_branch(void)
- 	check(memcmp(ftr_fixup_test6, ftr_fixup_test6_expected, size) == 0);
- }
+diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
+index ff3382140d7e..4b7c17e36100 100644
+--- a/arch/powerpc/perf/power9-pmu.c
++++ b/arch/powerpc/perf/power9-pmu.c
+@@ -452,7 +452,7 @@ static struct power_pmu power9_pmu = {
+ 	.check_attr_config	= power9_check_attr_config,
+ };
  
--static void test_alternative_case_with_branch_to_end(void)
-+static void __init test_alternative_case_with_branch_to_end(void)
+-int init_power9_pmu(void)
++int __init init_power9_pmu(void)
  {
- 	extern unsigned int ftr_fixup_test7[];
- 	extern unsigned int end_ftr_fixup_test7[];
-@@ -876,7 +876,7 @@ static void test_alternative_case_with_branch_to_end(void)
- 	check(memcmp(ftr_fixup_test7, ftr_fixup_test7_expected, size) == 0);
- }
+ 	int rc = 0;
+ 	unsigned int pvr = mfspr(SPRN_PVR);
+diff --git a/arch/powerpc/perf/ppc970-pmu.c b/arch/powerpc/perf/ppc970-pmu.c
+index 1f8263785286..09802482ba72 100644
+--- a/arch/powerpc/perf/ppc970-pmu.c
++++ b/arch/powerpc/perf/ppc970-pmu.c
+@@ -489,7 +489,7 @@ static struct power_pmu ppc970_pmu = {
+ 	.flags			= PPMU_NO_SIPR | PPMU_NO_CONT_SAMPLING,
+ };
  
--static void test_cpu_macros(void)
-+static void __init test_cpu_macros(void)
+-int init_ppc970_pmu(void)
++int __init init_ppc970_pmu(void)
  {
- 	extern u8 ftr_fixup_test_FTR_macros[];
- 	extern u8 ftr_fixup_test_FTR_macros_expected[];
-@@ -888,7 +888,7 @@ static void test_cpu_macros(void)
- 		     ftr_fixup_test_FTR_macros_expected, size) == 0);
- }
- 
--static void test_fw_macros(void)
-+static void __init test_fw_macros(void)
- {
- #ifdef CONFIG_PPC64
- 	extern u8 ftr_fixup_test_FW_FTR_macros[];
-@@ -902,7 +902,7 @@ static void test_fw_macros(void)
- #endif
- }
- 
--static void test_lwsync_macros(void)
-+static void __init test_lwsync_macros(void)
- {
- 	extern u8 lwsync_fixup_test[];
- 	extern u8 end_lwsync_fixup_test[];
+ 	if (!cur_cpu_spec->oprofile_cpu_type ||
+ 	    (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/970")
 -- 
 2.25.1
 
