@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E357C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Dec 2021 09:30:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FF5BC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Dec 2021 09:30:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JHZ7T4wxDz3dfQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Dec 2021 20:30:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JHZ8406SBz3dkb
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Dec 2021 20:30:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.133;
- helo=out30-133.freemail.mail.aliyun.com;
+ smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.130;
+ helo=out30-130.freemail.mail.aliyun.com;
  envelope-from=tianjia.zhang@linux.alibaba.com; receiver=<UNKNOWN>)
-Received: from out30-133.freemail.mail.aliyun.com
- (out30-133.freemail.mail.aliyun.com [115.124.30.133])
+Received: from out30-130.freemail.mail.aliyun.com
+ (out30-130.freemail.mail.aliyun.com [115.124.30.130])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JHZ5n5qnVz301v
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Dec 2021 20:28:44 +1100 (AEDT)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R111e4; CH=green; DM=||false|;
- DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04357;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JHZ5w3CkWz2ymg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Dec 2021 20:28:51 +1100 (AEDT)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R161e4; CH=green; DM=||false|;
+ DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04394;
  MF=tianjia.zhang@linux.alibaba.com; NM=1; PH=DS; RN=17; SR=0;
- TI=SMTPD_---0V.CdyjU_1639992201; 
+ TI=SMTPD_---0V.B9zcn_1639992206; 
 Received: from localhost(mailfrom:tianjia.zhang@linux.alibaba.com
- fp:SMTPD_---0V.CdyjU_1639992201) by smtp.aliyun-inc.com(127.0.0.1);
- Mon, 20 Dec 2021 17:23:21 +0800
+ fp:SMTPD_---0V.B9zcn_1639992206) by smtp.aliyun-inc.com(127.0.0.1);
+ Mon, 20 Dec 2021 17:23:27 +0800
 From: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
 To: Herbert Xu <herbert@gondor.apana.org.au>,
  "David S. Miller" <davem@davemloft.net>,
@@ -40,10 +40,10 @@ To: Herbert Xu <herbert@gondor.apana.org.au>,
  linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
  sparclinux@vger.kernel.org
-Subject: [PATCH 1/5] crypto: sha256 - remove duplicate generic hash init
- function
-Date: Mon, 20 Dec 2021 17:23:14 +0800
-Message-Id: <20211220092318.5793-2-tianjia.zhang@linux.alibaba.com>
+Subject: [PATCH 5/5] crypto: s390/sha512 - Use macros instead of direct IV
+ numbers
+Date: Mon, 20 Dec 2021 17:23:18 +0800
+Message-Id: <20211220092318.5793-6-tianjia.zhang@linux.alibaba.com>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20211220092318.5793-1-tianjia.zhang@linux.alibaba.com>
 References: <20211220092318.5793-1-tianjia.zhang@linux.alibaba.com>
@@ -65,56 +65,64 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-crypto_sha256_init() and sha256_base_init() are the same repeated
-implementations, remove the crypto_sha256_init() in generic
-implementation, sha224 is the same process.
+In the init functions of sha512 and sha384, the initial hash value
+use macros instead of numbers.
 
 Signed-off-by: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
 ---
- crypto/sha256_generic.c | 16 ++--------------
- 1 file changed, 2 insertions(+), 14 deletions(-)
+ arch/s390/crypto/sha512_s390.c | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/crypto/sha256_generic.c b/crypto/sha256_generic.c
-index 3b377197236e..bf147b01e313 100644
---- a/crypto/sha256_generic.c
-+++ b/crypto/sha256_generic.c
-@@ -33,18 +33,6 @@ const u8 sha256_zero_message_hash[SHA256_DIGEST_SIZE] = {
- };
- EXPORT_SYMBOL_GPL(sha256_zero_message_hash);
- 
--static int crypto_sha256_init(struct shash_desc *desc)
--{
--	sha256_init(shash_desc_ctx(desc));
--	return 0;
--}
--
--static int crypto_sha224_init(struct shash_desc *desc)
--{
--	sha224_init(shash_desc_ctx(desc));
--	return 0;
--}
--
- int crypto_sha256_update(struct shash_desc *desc, const u8 *data,
- 			  unsigned int len)
+diff --git a/arch/s390/crypto/sha512_s390.c b/arch/s390/crypto/sha512_s390.c
+index 29a6bd404c59..43ce4956df73 100644
+--- a/arch/s390/crypto/sha512_s390.c
++++ b/arch/s390/crypto/sha512_s390.c
+@@ -22,14 +22,14 @@ static int sha512_init(struct shash_desc *desc)
  {
-@@ -72,7 +60,7 @@ EXPORT_SYMBOL(crypto_sha256_finup);
+ 	struct s390_sha_ctx *ctx = shash_desc_ctx(desc);
  
- static struct shash_alg sha256_algs[2] = { {
- 	.digestsize	=	SHA256_DIGEST_SIZE,
--	.init		=	crypto_sha256_init,
-+	.init		=	sha256_base_init,
- 	.update		=	crypto_sha256_update,
- 	.final		=	crypto_sha256_final,
- 	.finup		=	crypto_sha256_finup,
-@@ -86,7 +74,7 @@ static struct shash_alg sha256_algs[2] = { {
- 	}
- }, {
- 	.digestsize	=	SHA224_DIGEST_SIZE,
--	.init		=	crypto_sha224_init,
-+	.init		=	sha224_base_init,
- 	.update		=	crypto_sha256_update,
- 	.final		=	crypto_sha256_final,
- 	.finup		=	crypto_sha256_finup,
+-	*(__u64 *)&ctx->state[0] = 0x6a09e667f3bcc908ULL;
+-	*(__u64 *)&ctx->state[2] = 0xbb67ae8584caa73bULL;
+-	*(__u64 *)&ctx->state[4] = 0x3c6ef372fe94f82bULL;
+-	*(__u64 *)&ctx->state[6] = 0xa54ff53a5f1d36f1ULL;
+-	*(__u64 *)&ctx->state[8] = 0x510e527fade682d1ULL;
+-	*(__u64 *)&ctx->state[10] = 0x9b05688c2b3e6c1fULL;
+-	*(__u64 *)&ctx->state[12] = 0x1f83d9abfb41bd6bULL;
+-	*(__u64 *)&ctx->state[14] = 0x5be0cd19137e2179ULL;
++	*(__u64 *)&ctx->state[0] = SHA512_H0;
++	*(__u64 *)&ctx->state[2] = SHA512_H1;
++	*(__u64 *)&ctx->state[4] = SHA512_H2;
++	*(__u64 *)&ctx->state[6] = SHA512_H3;
++	*(__u64 *)&ctx->state[8] = SHA512_H4;
++	*(__u64 *)&ctx->state[10] = SHA512_H5;
++	*(__u64 *)&ctx->state[12] = SHA512_H6;
++	*(__u64 *)&ctx->state[14] = SHA512_H7;
+ 	ctx->count = 0;
+ 	ctx->func = CPACF_KIMD_SHA_512;
+ 
+@@ -87,14 +87,14 @@ static int sha384_init(struct shash_desc *desc)
+ {
+ 	struct s390_sha_ctx *ctx = shash_desc_ctx(desc);
+ 
+-	*(__u64 *)&ctx->state[0] = 0xcbbb9d5dc1059ed8ULL;
+-	*(__u64 *)&ctx->state[2] = 0x629a292a367cd507ULL;
+-	*(__u64 *)&ctx->state[4] = 0x9159015a3070dd17ULL;
+-	*(__u64 *)&ctx->state[6] = 0x152fecd8f70e5939ULL;
+-	*(__u64 *)&ctx->state[8] = 0x67332667ffc00b31ULL;
+-	*(__u64 *)&ctx->state[10] = 0x8eb44a8768581511ULL;
+-	*(__u64 *)&ctx->state[12] = 0xdb0c2e0d64f98fa7ULL;
+-	*(__u64 *)&ctx->state[14] = 0x47b5481dbefa4fa4ULL;
++	*(__u64 *)&ctx->state[0] = SHA384_H0;
++	*(__u64 *)&ctx->state[2] = SHA384_H1;
++	*(__u64 *)&ctx->state[4] = SHA384_H2;
++	*(__u64 *)&ctx->state[6] = SHA384_H3;
++	*(__u64 *)&ctx->state[8] = SHA384_H4;
++	*(__u64 *)&ctx->state[10] = SHA384_H5;
++	*(__u64 *)&ctx->state[12] = SHA384_H6;
++	*(__u64 *)&ctx->state[14] = SHA384_H7;
+ 	ctx->count = 0;
+ 	ctx->func = CPACF_KIMD_SHA_512;
+ 
 -- 
 2.32.0
 
