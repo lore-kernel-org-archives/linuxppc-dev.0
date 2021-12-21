@@ -4,48 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89298C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Dec 2021 13:53:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A08A4C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Dec 2021 14:02:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JJHwJ6YPGz3cX2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Dec 2021 00:53:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JJJ6j2g6sz3c63
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Dec 2021 01:02:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=by7iycom;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NzgLPNLH;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JJHtF1x1Jz2y7Q
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Dec 2021 00:51:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=stefanb@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=by7iycom; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JJHtC2bpPz4xbd;
- Wed, 22 Dec 2021 00:51:15 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1640094675;
- bh=VkegTdsz50hBFtARFdPFEYLF5Ii3nTvOaWgksXVdTG8=;
- h=From:To:Cc:Subject:Date:From;
- b=by7iycomqZv0o3L5DgjtnRHyEsPLAM9Mas4P66EKN6WarpI+VBW+EIlGYJUgYG/iW
- Kj/oA9zxhbCL89ZIYK1I/qeI3xKErrSAFZy0rf6EUrm6rB6vSj/BGXyYnzRlCCWSxJ
- 086IgR0hqAXEE8GGPT9htqDiZClfxknQPCtJBfNbBT8EuEAHK5tspvGxA982wl2JBq
- 6qJJy7sljeiUaGYvBYiPFmWDZRYoEAqP5pXftiEbguKxAaDXNyg3f/VSJaRGP6gsp2
- vlTRtGl2UpXUdpClEPQvm9S/AOB1FmQFdekfBjRPj9SBIBEMfvb8+frj223u1W6Gd1
- PSUAbylYAVF/g==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/3] powerpc/64s: Mask NIP before checking against SRR0
-Date: Wed, 22 Dec 2021 00:50:59 +1100
-Message-Id: <20211221135101.2085547-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.31.1
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=NzgLPNLH; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JJJ5s1ZrKz2ynV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Dec 2021 01:01:20 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1BLDe0Cd007258; 
+ Tue, 21 Dec 2021 14:01:14 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=Y2f1JQNiS0TkECCmHkDm6yIUjMCDTlb5T57vxkzTkfw=;
+ b=NzgLPNLHcmIx4YuA5k/SH/RKRK1Z7XuLM1O63eg/eZpzQGqQCw7ni63kJTvpUKWTxcDj
+ CaZZOoqzz8IfKk9oknUJ8FrKL9/PC0pG16viZOobfPRMzDxs9yrEzybyZ59quOwQ0Azt
+ ULy+VwhwTRdbCqnRO1fX3m9TED82UW0s8nM2uPEH5gJfuzfXfQA/kCIJPUCixmqzmokn
+ nkBZZ2Gbm0Xks3Ln3bOTT3mpf4twdjvoZwr3GkvG4CQ9h0v2KB3UWuUpkGF4LnQw0j4o
+ b/PfjsfkgjYzbfedX83Z/ontygBgH0zyPqPwSuRtKEeHsOAqhxq89QSNFz1vsaNWGb39 EA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3d3g0u8emv-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 21 Dec 2021 14:01:14 +0000
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1BLDehno008320;
+ Tue, 21 Dec 2021 14:01:14 GMT
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3d3g0u8emf-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 21 Dec 2021 14:01:14 +0000
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1BLDwHRb012382;
+ Tue, 21 Dec 2021 14:01:13 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma02wdc.us.ibm.com with ESMTP id 3d179ahx1r-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 21 Dec 2021 14:01:13 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1BLE19dV11075864
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 21 Dec 2021 14:01:09 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9ED297805C;
+ Tue, 21 Dec 2021 14:01:09 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CB41878098;
+ Tue, 21 Dec 2021 14:01:07 +0000 (GMT)
+Received: from [9.47.158.152] (unknown [9.47.158.152])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 21 Dec 2021 14:01:07 +0000 (GMT)
+Message-ID: <8b0c9683-d29b-38a2-8dfe-8f47db6544f2@linux.ibm.com>
+Date: Tue, 21 Dec 2021 09:01:06 -0500
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+Subject: Re: [PATCH] tpm: Fix kexec crash due to access to ops NULL pointer
+ (powerpc)
+Content-Language: en-US
+To: Jarkko Sakkinen <jarkko@kernel.org>
+References: <20211212012804.1555661-1-stefanb@linux.ibm.com>
+ <YcGUoJCtmqfCWER0@iki.fi>
+From: Stefan Berger <stefanb@linux.ibm.com>
+In-Reply-To: <YcGUoJCtmqfCWER0@iki.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: YHJNSFTPngVAQ5P_j1u33_1jnTL2ToE9
+X-Proofpoint-ORIG-GUID: RMqKfdeYynsKsm3JE-UXzhEFk2o4fXi2
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2021-12-21_04,2021-12-21_01,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 adultscore=0
+ lowpriorityscore=0 mlxlogscore=999 spamscore=0 mlxscore=0 clxscore=1015
+ impostorscore=0 bulkscore=0 suspectscore=0 priorityscore=1501 phishscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2110150000
+ definitions=main-2112210065
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,45 +111,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sachinp@linux.ibm.com, npiggin@gmail.com
+Cc: Korrapati.Likhitha@ibm.com, pavrampu@in.ibm.com,
+ linux-kernel@vger.kernel.org, jgg@ziepe.ca,
+ linux-security-module@vger.kernel.org, gcwilson@us.ibm.com, peterhuewe@gmx.de,
+ linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When CONFIG_PPC_RFI_SRR_DEBUG=y we check that NIP and SRR0 match when
-returning from interrupts. This can trigger falsely if NIP has either of
-its two low bits set via sigreturn or ptrace, while SRR0 has its low two
-bits masked in hardware.
 
-As a quick fix make sure to mask the low bits before doing the check.
+On 12/21/21 03:47, Jarkko Sakkinen wrote:
+> On Sat, Dec 11, 2021 at 08:28:04PM -0500, Stefan Berger wrote:
+>> Fix the following crash on kexec by checking chip->ops for a NULL pointer
+>> in tpm_chip_start() and returning an error code if this is the case.
+>>
+>> BUG: Kernel NULL pointer dereference on read at 0x00000060
+>> Faulting instruction address: 0xc00000000099a06c
+>> Oops: Kernel access of bad area, sig: 11 [#1]
+>> ...
+>> NIP [c00000000099a06c] tpm_chip_start+0x2c/0x140
+>>   LR [c00000000099a808] tpm_chip_unregister+0x108/0x170
+>> Call Trace:
+>> [c0000000188bfa00] [c000000002b03930] fw_devlink_strict+0x0/0x8 (unreliable)
+>> [c0000000188bfa30] [c00000000099a808] tpm_chip_unregister+0x108/0x170
+>> [c0000000188bfa70] [c0000000009a3874] tpm_ibmvtpm_remove+0x34/0x130
+>> [c0000000188bfae0] [c000000000110dbc] vio_bus_remove+0x5c/0xb0
+>> [c0000000188bfb20] [c0000000009bc154] device_shutdown+0x1d4/0x3a8
+>> [c0000000188bfbc0] [c000000000196e14] kernel_restart_prepare+0x54/0x70
+>>
+>> The referenced patch below introduced a function to shut down the VIO bus.
+>> The bus shutdown now calls tpm_del_char_device (via tpm_chip_unregister)
+>> after a call to tpm_class_shutdown, which already set chip->ops to NULL.
+>> The crash occurrs when tpm_del_char_device calls tpm_chip_start with the
+>> chip->ops NULL pointer.
+>>
+>> Fixes: 39d0099f9439 ("powerpc/pseries: Add shutdown() to vio_driver and vio_bus")
+>> Signed-off-by: Stefan Berger <stefanb@linux.ibm.com>
+>> ---
+>>   drivers/char/tpm/tpm-chip.c | 3 +++
+>>   1 file changed, 3 insertions(+)
+>>
+>> diff --git a/drivers/char/tpm/tpm-chip.c b/drivers/char/tpm/tpm-chip.c
+>> index ddaeceb7e109..cca1bde296ee 100644
+>> --- a/drivers/char/tpm/tpm-chip.c
+>> +++ b/drivers/char/tpm/tpm-chip.c
+>> @@ -101,6 +101,9 @@ int tpm_chip_start(struct tpm_chip *chip)
+>>   {
+>>   	int ret;
+>>   
+>> +	if (!chip->ops)
+>> +		return -EINVAL;
+> This triggers to all drivers, not just tpm_ibmvtpm, i.e. the fix has
+> side-effects.
 
-Fixes: 59dc5bfca0cb ("powerpc/64s: avoid reloading (H)SRR registers if they are still valid")
-Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/interrupt_64.S | 2 ++
- 1 file changed, 2 insertions(+)
+What are those side-effects?
 
-diff --git a/arch/powerpc/kernel/interrupt_64.S b/arch/powerpc/kernel/interrupt_64.S
-index 2ad223597ca2..4fd65d39d5d3 100644
---- a/arch/powerpc/kernel/interrupt_64.S
-+++ b/arch/powerpc/kernel/interrupt_64.S
-@@ -30,6 +30,7 @@
- 	.ifc \srr,srr
- 	mfspr	r11,SPRN_SRR0
- 	ld	r12,_NIP(r1)
-+	clrrdi  r12,r12,2
- 100:	tdne	r11,r12
- 	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
- 	mfspr	r11,SPRN_SRR1
-@@ -39,6 +40,7 @@
- 	.else
- 	mfspr	r11,SPRN_HSRR0
- 	ld	r12,_NIP(r1)
-+	clrrdi  r12,r12,2
- 100:	tdne	r11,r12
- 	EMIT_BUG_ENTRY 100b,__FILE__,__LINE__,(BUGFLAG_WARNING | BUGFLAG_ONCE)
- 	mfspr	r11,SPRN_HSRR1
--- 
-2.31.1
+   Stefan
 
+>
+> /Jarkko
+>
