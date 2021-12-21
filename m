@@ -4,33 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22235C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Dec 2021 12:17:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E240EC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Dec 2021 13:51:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JJFnq3kMrz3dgq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Dec 2021 23:17:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JJHtw4KsDz3c6W
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Dec 2021 00:51:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=J5pG9+BJ;
+	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
  [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JJFlb2MZJz2xXV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Dec 2021 23:15:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JJHtD5VtSz2yb5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Dec 2021 00:51:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=J5pG9+BJ; 
+ dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JJFlX5s6zz4xmy;
- Tue, 21 Dec 2021 23:15:20 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20210922145452.352571-1-npiggin@gmail.com>
-References: <20210922145452.352571-1-npiggin@gmail.com>
-Subject: Re: [PATCH v3 0/6] powerpc/64s: interrupt speedups
-Message-Id: <164008885546.2078648.14999431252016019800.b4-ty@ellerman.id.au>
-Date: Tue, 21 Dec 2021 23:14:15 +1100
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JJHtD2hC2z4xmw;
+ Wed, 22 Dec 2021 00:51:16 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1640094676;
+ bh=ezPXUv5+nw6NHWDgONhT6tdR1kAn7ZIOV6VY52Fxh/U=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=J5pG9+BJvbAtezLFXIvhkBBXcZZV26AWYzrAMMjtcs8luNXlYU0kZbbyVkqULDola
+ nGD/57Pj+HbhnWuD5rcN9Qq2x84BCyCI0TsayULQ47w8ghhumoHcskvFGX92jntPg2
+ q3J5I1YwnjJhLt4klGKEor9IprcC5e5avHbzhxa+5V79lCRoADa1QytGRaZkkPR5L3
+ +UINtH5j3Sij5nuie3Dtzpw2aQx7Ns3/7jxdwoRZfgmSNX7nEiZ4ixCwJF8W7LUVEX
+ 4NWnJEbsOn9PHa+4qWOBs7N4XcFOdcPVLpCxq+0m+rQjED8vEpRDTbS4xnx65FcvuJ
+ 5dQK6wThSzDlw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 3/3] selftests/powerpc: Add a test of sigreturning to an
+ unaligned address
+Date: Wed, 22 Dec 2021 00:51:01 +1100
+Message-Id: <20211221135101.2085547-3-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20211221135101.2085547-1-mpe@ellerman.id.au>
+References: <20211221135101.2085547-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -43,33 +61,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: sachinp@linux.ibm.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 23 Sep 2021 00:54:46 +1000, Nicholas Piggin wrote:
-> Here's a few stragglers. The first patch was submitted already but had
-> some bugs with unrecoverable exceptions on HPT (current->blah being
-> accessed before MSR[RI] was enabled). Those should be fixed now.
-> 
-> The others are generally for helping asynch interrupts, which are a bit
-> harder to measure well but important for IO and IPIs.
-> 
-> [...]
+Add a test of sigreturning to an unaligned address (low two bits set).
+This should have no effect because the hardware will mask those bits.
+However it previously falsely triggered a warning when
+CONFIG_PPC_RFI_SRR_DEBUG=y.
 
-Applied to powerpc/next.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ .../selftests/powerpc/signal/.gitignore       |  1 +
+ .../testing/selftests/powerpc/signal/Makefile |  1 +
+ .../powerpc/signal/sigreturn_unaligned.c      | 43 +++++++++++++++++++
+ 3 files changed, 45 insertions(+)
+ create mode 100644 tools/testing/selftests/powerpc/signal/sigreturn_unaligned.c
 
-[1/6] powerpc/64/interrupt: make normal synchronous interrupts enable MSR[EE] if possible
-      https://git.kernel.org/powerpc/c/4423eb5ae32ec613af3fceee2fe84234e417ee55
-[2/6] powerpc/64s/interrupt: handle MSR EE and RI in interrupt entry wrapper
-      https://git.kernel.org/powerpc/c/ff0b0d6e1a7bc202241a9b1e28d1da4b744e0312
-[3/6] powerpc/64s/perf: add power_pmu_wants_prompt_pmi to say whether perf wants PMIs to be soft-NMI
-      https://git.kernel.org/powerpc/c/5a7745b96f43c69f9b4875bcf516a0341acbc3fb
-[4/6] powerpc/64s/interrupt: Don't enable MSR[EE] in irq handlers unless perf is in use
-      https://git.kernel.org/powerpc/c/0faf20a1ad1647c0fc0f5a367c71e5e84deaf899
-[5/6] powerpc/64/interrupt: reduce expensive debug tests
-      https://git.kernel.org/powerpc/c/ecb1057c0f9a0f3f052294de6cc2eb43ecf7547b
-[6/6] powerpc/64s/interrupt: avoid saving CFAR in some asynchronous interrupts
-      https://git.kernel.org/powerpc/c/af47d79b041deccc31e0dddc6310a654c13d04b6
+diff --git a/tools/testing/selftests/powerpc/signal/.gitignore b/tools/testing/selftests/powerpc/signal/.gitignore
+index 8f6c816099a4..9d0915777fed 100644
+--- a/tools/testing/selftests/powerpc/signal/.gitignore
++++ b/tools/testing/selftests/powerpc/signal/.gitignore
+@@ -5,3 +5,4 @@ sigfuz
+ sigreturn_vdso
+ sig_sc_double_restart
+ sigreturn_kernel
++sigreturn_unaligned
+diff --git a/tools/testing/selftests/powerpc/signal/Makefile b/tools/testing/selftests/powerpc/signal/Makefile
+index 84e201572466..f679d260afc8 100644
+--- a/tools/testing/selftests/powerpc/signal/Makefile
++++ b/tools/testing/selftests/powerpc/signal/Makefile
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
+ TEST_GEN_PROGS := signal signal_tm sigfuz sigreturn_vdso sig_sc_double_restart
+ TEST_GEN_PROGS += sigreturn_kernel
++TEST_GEN_PROGS += sigreturn_unaligned
+ 
+ CFLAGS += -maltivec
+ $(OUTPUT)/signal_tm: CFLAGS += -mhtm
+diff --git a/tools/testing/selftests/powerpc/signal/sigreturn_unaligned.c b/tools/testing/selftests/powerpc/signal/sigreturn_unaligned.c
+new file mode 100644
+index 000000000000..6e58ee4f0fdf
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/signal/sigreturn_unaligned.c
+@@ -0,0 +1,43 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Test sigreturn to an unaligned address, ie. low 2 bits set.
++ * Nothing bad should happen.
++ * This was able to trigger warnings with CONFIG_PPC_RFI_SRR_DEBUG=y.
++ */
++
++#include <signal.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <ucontext.h>
++#include <unistd.h>
++
++#include "utils.h"
++
++
++static void sigusr1_handler(int signo, siginfo_t *info, void *ptr)
++{
++	ucontext_t *uc = ptr;
++
++	UCONTEXT_NIA(uc) |= 3;
++}
++
++static int test_sigreturn_unaligned(void)
++{
++	struct sigaction action;
++
++	memset(&action, 0, sizeof(action));
++	action.sa_sigaction = sigusr1_handler;
++	action.sa_flags = SA_SIGINFO;
++
++	FAIL_IF(sigaction(SIGUSR1, &action, NULL) == -1);
++
++	raise(SIGUSR1);
++
++	return 0;
++}
++
++int main(void)
++{
++	return test_harness(test_sigreturn_unaligned, "sigreturn_unaligned");
++}
+-- 
+2.31.1
 
-cheers
