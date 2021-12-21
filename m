@@ -4,64 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC35FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Dec 2021 14:22:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CD1AC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Dec 2021 14:49:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JJJZK48L1z2xnb
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Dec 2021 01:22:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JJK8y3bqRz304x
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Dec 2021 01:49:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=S58ARfQ+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=QwYotQVA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::833;
+ helo=mail-qt1-x833.google.com; envelope-from=cgel.zte@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=S58ARfQ+; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=QwYotQVA; dkim-atps=neutral
+Received: from mail-qt1-x833.google.com (mail-qt1-x833.google.com
+ [IPv6:2607:f8b0:4864:20::833])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JJH5l1CL6z2yQH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Dec 2021 00:16:09 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=GBBnAb3uzp4suSaLhtbSHK02SXI8tanA6M9OarZBIic=; b=S58ARfQ+ZDNc9V8XHYU6WB4hFJ
- y+GXTGZ6uxOOM4T0uUpg9W97tcenH36WWd97bsX/V2yeLeFj32EovBKMUbCY7SIPJqp4Fnq9w0oEc
- B7qbhrfsijGjjSKOkgQurQWLW0Nbd6XVj4+Gce2fGyfrwpaq6w3Cy77w/woPDtJjlvhwqWl2L7pr3
- RVKh7cYkp2KGkRFGF/BfNObt5tlY2fcgq1UQblASBMKnLHYGJe9yLPVQQIsWYxD0rb4MILLfUlo/+
- 8w3AgFvC50lfGcJ3tiF5dq9Y1S83zi5i1T+z66g6ctbm178rr+VxCGRFiybAGmP+SPCSYxsGQ/JMW
- D/VUXqdQ==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1mzezl-002UYX-9z; Tue, 21 Dec 2021 13:15:57 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id AF198300347;
- Tue, 21 Dec 2021 14:15:56 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 9D91A2072814B; Tue, 21 Dec 2021 14:15:56 +0100 (CET)
-Date: Tue, 21 Dec 2021 14:15:56 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Yury Norov <yury.norov@gmail.com>
-Subject: Re: [PATCH 13/17] kernel/cpu: add num_possible_cpus counter
-Message-ID: <YcHTjJxmUntOHKXB@hirez.programming.kicks-ass.net>
-References: <20211218212014.1315894-1-yury.norov@gmail.com>
- <20211218212014.1315894-14-yury.norov@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JJK892w6fz2xtw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Dec 2021 01:48:23 +1100 (AEDT)
+Received: by mail-qt1-x833.google.com with SMTP id v22so12997298qtx.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Dec 2021 06:48:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=zZuDkRiIkR9ys/6q9NNmS5Lq8rxb7QfIIo9v52hklq8=;
+ b=QwYotQVAOw8t142MhQtL5+mbjmyHKWsbUStue/SPP7IY9tm5RYJdi7gtxSTCyIJo/O
+ IpimVtyfCBPML408CUBDpht1PQswdsEokBKl4jg4euhi6pg7H8MChYJVNbG//xr39NTn
+ d/mRWIWTEQdTKq1LODzeNdA1yAAr8aTM2zrV/VClEpZ+g5CxLtjFf/p776IDItuOYed5
+ a5UbzizCDkLkmFJvjF4D3wVXNwSuff/olsX1y7V2yWn2J4b3juMBRyIHQ25wjMsUFWMW
+ uqrJEYrVQSv01yGAAE7tbvifskxNi4PZVXJy8CGhSiMnmkG+z5RtB+AP8jfKA5LQ0UkK
+ kEqw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=zZuDkRiIkR9ys/6q9NNmS5Lq8rxb7QfIIo9v52hklq8=;
+ b=Mp+59EdVQvAtBsgEiUitt6w697yYFTx849q8VaUZMMDfCpgnqWqm4+BO/2f+E8+5bl
+ E6KwJwdq+QPCbvvCFyg/w/rKMFQXk/Sqa3vU/quqQdmp4ZgrJ8soed+6SXwVmDYyoDS2
+ 4HJXcQQ29nr4FTu84b79NX0rFGRQSRXU9xQGiNx4PdGkQiH8gTFRGV21+duCI0zFgxmG
+ IN5JpZT7iqKKxxPuRDuJvdV0mGWHHMmZtrn/9r+jpbWvfu7udWljoSOXWqgPfX9dpcoN
+ of/XK9R0qlmj70S8UaW/SWF/P2iiJ9CHJXhzXFYrRMMRsOKiYnrKFgHV804B+Fo99Dbx
+ p91Q==
+X-Gm-Message-State: AOAM531SKDkAN7US/RHPSCz7z+aGIiI5LVRRoPM+i2vz8sZxp++6CaZ1
+ 0U255wSchvTYATthTysnVzs=
+X-Google-Smtp-Source: ABdhPJycfYQf2KP5PZ7xjWj+VSDFrXKBOwWd5EsILfz2JTg5hj204QyNxDQyiJNBB5Ho2MIZXAm3Pw==
+X-Received: by 2002:a05:622a:c8:: with SMTP id p8mr2483288qtw.52.1640098099976; 
+ Tue, 21 Dec 2021 06:48:19 -0800 (PST)
+Received: from localhost.localdomain ([193.203.214.57])
+ by smtp.gmail.com with ESMTPSA id y11sm18110177qta.6.2021.12.21.06.48.17
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 21 Dec 2021 06:48:19 -0800 (PST)
+From: cgel.zte@gmail.com
+X-Google-Original-From: deng.changcheng@zte.com.cn
+To: arnd@arndb.de
+Subject: [PATCH] powerpc/cell/axon_msi: replace DEFINE_SIMPLE_ATTRIBUTE with
+ DEFINE_DEBUGFS_ATTRIBUTE
+Date: Tue, 21 Dec 2021 14:48:14 +0000
+Message-Id: <20211221144814.480849-1-deng.changcheng@zte.com.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211218212014.1315894-14-yury.norov@gmail.com>
-X-Mailman-Approved-At: Wed, 22 Dec 2021 01:20:39 +1100
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,75 +79,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Andrew Lunn <andrew@lunn.ch>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Guo Ren <guoren@kernel.org>,
- Christoph Lameter <cl@linux.com>, Christoph Hellwig <hch@lst.de>,
- Andi Kleen <ak@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Mel Gorman <mgorman@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>,
- Petr Mladek <pmladek@suse.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>,
- Jens Axboe <axboe@fb.com>, Andy Lutomirski <luto@kernel.org>,
- Lee Jones <lee.jones@linaro.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org,
- Sergey Senozhatsky <senozhatsky@chromium.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-crypto@vger.kernel.org,
- Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- Mark Rutland <mark.rutland@arm.com>, Anup Patel <anup.patel@wdc.com>,
- linux-ia64@vger.kernel.org, David Airlie <airlied@linux.ie>,
- Dave Hansen <dave.hansen@linux.intel.com>, Solomon Peachy <pizza@shaftnet.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
- Dennis Zhou <dennis@kernel.org>, Matti Vaittinen <mazziesaccount@gmail.com>,
- Sudeep Holla <sudeep.holla@arm.com>, Tejun Heo <tj@kernel.org>,
- linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@kernel.org>,
- Tariq Toukan <tariqt@nvidia.com>, Jonathan Cameron <jic23@kernel.org>,
- Ulf Hansson <ulf.hansson@linaro.org>, Emil Renner Berthing <kernel@esmil.dk>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Mike Marciniszyn <mike.marciniszyn@cornelisnetworks.com>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Subbaraya Sundeep <sbhatta@marvell.com>, Will Deacon <will@kernel.org>,
- Sagi Grimberg <sagi@grimberg.me>, linux-csky@vger.kernel.org,
- bcm-kernel-feedback-list@broadcom.com, linux-snps-arc@lists.infradead.org,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- "James E.J. Bottomley" <jejb@linux.ibm.com>, Vineet Gupta <vgupta@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Mark Gross <markgross@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Mauro Carvalho Chehab <mchehab@kernel.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- David Laight <David.Laight@aculab.com>, linux-alpha@vger.kernel.org,
- Geetha sowjanya <gakula@marvell.com>, Ian Rogers <irogers@google.com>,
- kvm@vger.kernel.org, Amitkumar Karwar <amitkarwar@gmail.com>,
- linux-mm@kvack.org, linux-riscv@lists.infradead.org,
- Jiri Olsa <jolsa@redhat.com>, Ard Biesheuvel <ardb@kernel.org>,
- Marc Zyngier <maz@kernel.org>, Russell King <linux@armlinux.org.uk>,
- Andy Gross <agross@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
- Vivien Didelot <vivien.didelot@gmail.com>,
- Sunil Goutham <sgoutham@marvell.com>, "Paul E. McKenney" <paulmck@kernel.org>,
- linux-s390@vger.kernel.org, Alexey Klimov <aklimov@redhat.com>,
- Heiko Carstens <hca@linux.ibm.com>, Hans de Goede <hdegoede@redhat.com>,
- Nicholas Piggin <npiggin@gmail.com>, Marcin Wojtas <mw@semihalf.com>,
- Vlastimil Babka <vbabka@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>,
- Daniel Vetter <daniel@ffwll.ch>, Jason Wessel <jason.wessel@windriver.com>,
- Saeed Mahameed <saeedm@nvidia.com>, Andy Shevchenko <andy@infradead.org>
+Cc: Zeal Robot <zealci@zte.com.cn>,
+ Changcheng Deng <deng.changcheng@zte.com.cn>, linux-kernel@vger.kernel.org,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Dec 18, 2021 at 01:20:09PM -0800, Yury Norov wrote:
-> Similarly to the online cpus, the cpu_possible_mask is actively used
-> in the kernel. This patch adds a counter for possible cpus, so that
-> users that call num_possible_cpus() would know the result immediately,
-> instead of calling the bitmap_weight for the mask underlying.
+From: Changcheng Deng <deng.changcheng@zte.com.cn>
 
-So what user actually cares about performance here enough to warrant
-this?
+Fix the following coccicheck warning:
+./arch/powerpc/platforms/cell/axon_msi.c: 456: 0-23: WARNING: fops_msic
+should be defined with DEFINE_DEBUGFS_ATTRIBUTE
 
+Use DEFINE_DEBUGFS_ATTRIBUTE rather than DEFINE_SIMPLE_ATTRIBUTE for
+debugfs files.
 
-> +EXPORT_SYMBOL(set_cpu_possible);
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Changcheng Deng <deng.changcheng@zte.com.cn>
+---
+ arch/powerpc/platforms/cell/axon_msi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-NAK
+diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+index 354a58c1e6f2..47bb0ae8d6c9 100644
+--- a/arch/powerpc/platforms/cell/axon_msi.c
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -453,7 +453,7 @@ static int msic_get(void *data, u64 *val)
+ 	return 0;
+ }
+ 
+-DEFINE_SIMPLE_ATTRIBUTE(fops_msic, msic_get, msic_set, "%llu\n");
++DEFINE_DEBUGFS_ATTRIBUTE(fops_msic, msic_get, msic_set, "%llu\n");
+ 
+ void axon_msi_debug_setup(struct device_node *dn, struct axon_msic *msic)
+ {
+-- 
+2.25.1
+
