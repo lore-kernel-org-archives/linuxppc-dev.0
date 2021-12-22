@@ -4,73 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B35EAC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Dec 2021 10:34:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F1B9C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Dec 2021 12:37:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JJqSR1wqTz2ypj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Dec 2021 21:34:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JJtBv31YWz2ywV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Dec 2021 23:37:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-ipv6.be header.i=@linux-ipv6.be header.a=rsa-sha256 header.s=502B7754-045F-11E5-BBC5-64595FD46BE8 header.b=LtjSdDAW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GY70V05O;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux-ipv6.be (client-ip=51.83.127.189; helo=mail.tintel.eu;
- envelope-from=stijn@linux-ipv6.be; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dkim=fail reason="signature verification failed" (1024-bit key;
- unprotected) header.d=linux-ipv6.be header.i=@linux-ipv6.be
- header.a=rsa-sha256 header.s=502B7754-045F-11E5-BBC5-64595FD46BE8
- header.b=LtjSdDAW; dkim-atps=neutral
-X-Greylist: delayed 430 seconds by postgrey-1.36 at boromir;
- Wed, 22 Dec 2021 12:28:11 AEDT
-Received: from mail.tintel.eu (mail.tintel.eu [51.83.127.189])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org;
+ envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=GY70V05O; 
+ dkim-atps=neutral
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JJbLN068Jz2yZ2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Dec 2021 12:28:08 +1100 (AEDT)
-Received: from localhost (localhost [IPv6:::1])
- by mail.tintel.eu (Postfix) with ESMTP id 4ECC944765F0;
- Wed, 22 Dec 2021 02:20:52 +0100 (CET)
-Received: from mail.tintel.eu ([IPv6:::1])
- by localhost (mail.tintel.eu [IPv6:::1]) (amavisd-new, port 10032)
- with ESMTP id du51wOW9K5_c; Wed, 22 Dec 2021 02:20:51 +0100 (CET)
-Received: from localhost (localhost [IPv6:::1])
- by mail.tintel.eu (Postfix) with ESMTP id 9CA9E447661B;
- Wed, 22 Dec 2021 02:20:51 +0100 (CET)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.tintel.eu 9CA9E447661B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux-ipv6.be;
- s=502B7754-045F-11E5-BBC5-64595FD46BE8; t=1640136051;
- bh=sgZi3FX1MEN1jsNrcB4hRvGin5TRbonOnvMI4OQeeQY=;
- h=Message-ID:Date:MIME-Version:From:To;
- b=LtjSdDAWslhvch5XHpD7f7d84SrZtUA5aioNVjyI8YHg7imEeYsxgHRJaKuzpKHH3
- AehEKGH/+mOcOwm/W+SQvp8fCviooX3G/R2+jIt8uh4Al6DYWS4ia6xpkI8ffacNwd
- U2rTKyIvGApISBQ1Yj/fzxwbELRlEXvx5hrTAg1A=
-X-Virus-Scanned: amavisd-new at mail.tintel.eu
-Received: from mail.tintel.eu ([IPv6:::1])
- by localhost (mail.tintel.eu [IPv6:::1]) (amavisd-new, port 10026)
- with ESMTP id W_J_Qe-LSKhs; Wed, 22 Dec 2021 02:20:51 +0100 (CET)
-Received: from [10.50.16.10] (ar0.sof.bg.adlevio.net [87.227.188.250])
- (Authenticated sender: stijn@tintel.eu)
- by mail.tintel.eu (Postfix) with ESMTPSA id 67AA244765F0;
- Wed, 22 Dec 2021 02:20:46 +0100 (CET)
-Message-ID: <c9abdadc-bc38-dbba-7f96-1ce15db8ab79@linux-ipv6.be>
-Date: Wed, 22 Dec 2021 03:20:45 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JJtB45m1Nz2xb1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Dec 2021 23:37:00 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id 25A0EB81C48;
+ Wed, 22 Dec 2021 12:36:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF05EC36AE8;
+ Wed, 22 Dec 2021 12:36:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1640176615;
+ bh=qGl8dUD8CJWsNsQWAUSoBTpV2v/CDrYNgJo4cg1vapM=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=GY70V05Ou21b3HPsS6FkVNh1AdjRnP7ZgxsaRp9EnTrqbKW6B9XBbmPilVMw8Id+3
+ jOA4LaFiz0x+5IUKkf/UKFpm1g7BbE9jl96i50PWj/2gp5OZwlWGT0647JLYsalHgx
+ Y5x62AahXIlrUOTKBKR4kWp9cSTox/7kdQG1UhHsLCRVBaA5KJG07cUPHmUZ+ulktX
+ yry0SJm76Oj94QSNdDDaKTz+aRAijivpXn6s2Y0e0XRhhocH0H6gAbO5kOZqDv5BLU
+ UNMmCiB5J/OrnVRGVjGd78kYvhRkvmJy20QovxDNHKAfCyWa+llrkP/TxEGSEFyC1j
+ ebucyUoBzhbTQ==
+Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
+ id 36DA340B92; Wed, 22 Dec 2021 09:36:53 -0300 (-03)
+Date: Wed, 22 Dec 2021 09:36:53 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Kajol Jain <kjain@linux.ibm.com>
+Subject: Re: [PATCH 2/4] tools/perf: Add new macros for mem_hops field
+Message-ID: <YcMb5bUOW8BYw9fP@kernel.org>
+References: <20211206091749.87585-1-kjain@linux.ibm.com>
+ <20211206091749.87585-3-kjain@linux.ibm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.1
-Content-Language: en-GB
-From: Stijn Tintel <stijn@linux-ipv6.be>
-Subject: [BISECTED] power8: watchdog: CPU 3 self-detected hard LOCKUP @
- queued_spin_lock_slowpath+0x154/0x2d0
-To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
- Davidlohr Bueso <dbueso@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Wed, 22 Dec 2021 21:33:35 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211206091749.87585-3-kjain@linux.ibm.com>
+X-Url: http://acmel.wordpress.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,157 +66,127 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: mark.rutland@arm.com, atrajeev@linux.vnet.ibm.com, ak@linux.intel.com,
+ daniel@iogearbox.net, rnsastry@linux.ibm.com, peterz@infradead.org,
+ linux-kernel@vger.kernel.org, ast@kernel.org, linux-perf-users@vger.kernel.org,
+ alexander.shishkin@linux.intel.com, yao.jin@linux.intel.com, mingo@redhat.com,
+ paulus@samba.org, maddy@linux.ibm.com, jolsa@kernel.org, namhyung@kernel.org,
+ songliubraving@fb.com, linuxppc-dev@lists.ozlabs.org,
+ kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Em Mon, Dec 06, 2021 at 02:47:47PM +0530, Kajol Jain escreveu:
+> Add new macros for mem_hops field which can be used to
+> represent remote-node, socket and board level details.
+> 
+> Currently the code had macro for HOPS_0 which, corresponds
+> to data coming from another core but same node.
+> Add new macros for HOPS_1 to HOPS_3 to represent
+> remote-node, socket and board level data.
+> 
+> Also add corresponding strings in the mem_hops array to
+> represent mem_hop field data in perf_mem__lvl_scnprintf function
+> 
+> Incase mem_hops field is used, PERF_MEM_LVLNUM field also need
+> to be set inorder to represent the data source. Hence printing
+> data source via PERF_MEM_LVL field can be skip in that scenario.
+> 
+> For ex: Encodings for mem_hops fields with L2 cache:
 
-After upgrading my Power8 server from 5.10 LTS to 5.15 LTS, I started
-experiencing CPU hard lockups, usually rather quickly after boot:
+Thanks, applied.
 
+- Arnaldo
 
-watchdog: CPU 3 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x154/0x2d0
-watchdog: CPU 3 TB:265651929071, last heartbeat TB:259344820187 (12318ms
-ago)
-watchdog: CPU 4 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x22c/0x2d0
-watchdog: CPU 4 TB:265651929059, last heartbeat TB:259344820045 (12318ms
-ago)
-watchdog: CPU 5 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 5 TB:265651929037, last heartbeat TB:259349940303 (12308ms
-ago)
-watchdog: CPU 6 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x144/0x2d0
-watchdog: CPU 6 TB:265651929056, last heartbeat TB:259349940294 (12308ms
-ago)
-watchdog: CPU 12 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x280/0x2d0
-watchdog: CPU 12 TB:242479050267, last heartbeat TB:236822174350
-(11048ms ago)
-watchdog: CPU 26 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x22c/0x2d0
-watchdog: CPU 26 TB:265657049348, last heartbeat TB:259355060595
-(12308ms ago)
-watchdog: CPU 40 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 40 TB:265657049289, last heartbeat TB:259360180427
-(12298ms ago)
-watchdog: CPU 47 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x21c/0x2d0
-watchdog: CPU 47 TB:265657049213, last heartbeat TB:259365300321
-(12288ms ago)
-watchdog: CPU 60 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 60 TB:265651929348, last heartbeat TB:259370420527
-(12268ms ago)
-watchdog: CPU 72 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 72 TB:265718488733, last heartbeat TB:259375540545
-(12388ms ago)
-watchdog: CPU 13 detected hard LOCKUP on other CPUs 0-2,7,10,44
-watchdog: CPU 13 TB:267541867921, last SMP heartbeat TB:259380660378
-(15939ms ago)
-watchdog: CPU 34 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 34 TB:269913954376, last heartbeat TB:263456144470
-(12612ms ago)
-watchdog: CPU 41 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 41 TB:267865972392, last heartbeat TB:261408162383
-(12612ms ago)
-watchdog: CPU 74 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 74 TB:267766470637, last heartbeat TB:261423522630
-(12388ms ago)
-watchdog: CPU 8 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 8 TB:274978264599, last heartbeat TB:269237436681 (11212ms
-ago)
-watchdog: CPU 9 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 9 TB:268029810836, last heartbeat TB:261397922093 (12952ms
-ago)
-watchdog: CPU 11 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 11 TB:279685725759, last heartbeat TB:273685814104
-(11718ms ago)
-watchdog: CPU 16 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 16 TB:267865972449, last heartbeat TB:261397922458
-(12632ms ago)
-watchdog: CPU 18 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 18 TB:269913954314, last heartbeat TB:263445904285
-(12632ms ago)
-watchdog: CPU 24 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 24 TB:267865972338, last heartbeat TB:261403042311
-(12622ms ago)
-watchdog: CPU 31 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x22c/0x2d0
-watchdog: CPU 31 TB:268029811095, last heartbeat TB:261403042673
-(12942ms ago)
-watchdog: CPU 32 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 32 TB:267865972528, last heartbeat TB:261403042589
-(12622ms ago)
-watchdog: CPU 33 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 33 TB:268029811013, last heartbeat TB:261408162474
-(12932ms ago)
-watchdog: CPU 35 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 35 TB:280174344471, last heartbeat TB:273696054625
-(12652ms ago)
-watchdog: CPU 37 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x230/0x2d0
-watchdog: CPU 37 TB:269913954356, last heartbeat TB:263456144501
-(12612ms ago)
-watchdog: CPU 38 self-detected hard LOCKUP @
-queued_spin_lock_slowpath+0x228/0x2d0
-watchdog: CPU 38 TB:290393774681, last heartbeat TB:283946212510
-(12592ms ago)
+ 
+> L2                      - local L2
+> L2 | REMOTE | HOPS_0    - remote core, same node L2
+> L2 | REMOTE | HOPS_1    - remote node, same socket L2
+> L2 | REMOTE | HOPS_2    - remote socket, same board L2
+> L2 | REMOTE | HOPS_3    - remote board L2
+> 
+> Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
+> ---
+>  tools/include/uapi/linux/perf_event.h |  5 ++++-
+>  tools/perf/util/mem-events.c          | 29 +++++++++++++++++----------
+>  2 files changed, 22 insertions(+), 12 deletions(-)
+> 
+> diff --git a/tools/include/uapi/linux/perf_event.h b/tools/include/uapi/linux/perf_event.h
+> index bd8860eeb291..4cd39aaccbe7 100644
+> --- a/tools/include/uapi/linux/perf_event.h
+> +++ b/tools/include/uapi/linux/perf_event.h
+> @@ -1332,7 +1332,10 @@ union perf_mem_data_src {
+>  
+>  /* hop level */
+>  #define PERF_MEM_HOPS_0		0x01 /* remote core, same node */
+> -/* 2-7 available */
+> +#define PERF_MEM_HOPS_1         0x02 /* remote node, same socket */
+> +#define PERF_MEM_HOPS_2         0x03 /* remote socket, same board */
+> +#define PERF_MEM_HOPS_3         0x04 /* remote board */
+> +/* 5-7 available */
+>  #define PERF_MEM_HOPS_SHIFT	43
+>  
+>  #define PERF_MEM_S(a, s) \
+> diff --git a/tools/perf/util/mem-events.c b/tools/perf/util/mem-events.c
+> index 3167b4628b6d..ed0ab838bcc5 100644
+> --- a/tools/perf/util/mem-events.c
+> +++ b/tools/perf/util/mem-events.c
+> @@ -309,6 +309,9 @@ static const char * const mem_hops[] = {
+>  	 * to be set with mem_hops field.
+>  	 */
+>  	"core, same node",
+> +	"node, same socket",
+> +	"socket, same board",
+> +	"board",
+>  };
+>  
+>  int perf_mem__lvl_scnprintf(char *out, size_t sz, struct mem_info *mem_info)
+> @@ -316,7 +319,7 @@ int perf_mem__lvl_scnprintf(char *out, size_t sz, struct mem_info *mem_info)
+>  	size_t i, l = 0;
+>  	u64 m =  PERF_MEM_LVL_NA;
+>  	u64 hit, miss;
+> -	int printed;
+> +	int printed = 0;
+>  
+>  	if (mem_info)
+>  		m  = mem_info->data_src.mem_lvl;
+> @@ -335,18 +338,22 @@ int perf_mem__lvl_scnprintf(char *out, size_t sz, struct mem_info *mem_info)
+>  		l += 7;
+>  	}
+>  
+> -	if (mem_info && mem_info->data_src.mem_hops)
+> +	/*
+> +	 * Incase mem_hops field is set, we can skip printing data source via
+> +	 * PERF_MEM_LVL namespace.
+> +	 */
+> +	if (mem_info && mem_info->data_src.mem_hops) {
+>  		l += scnprintf(out + l, sz - l, "%s ", mem_hops[mem_info->data_src.mem_hops]);
+> -
+> -	printed = 0;
+> -	for (i = 0; m && i < ARRAY_SIZE(mem_lvl); i++, m >>= 1) {
+> -		if (!(m & 0x1))
+> -			continue;
+> -		if (printed++) {
+> -			strcat(out, " or ");
+> -			l += 4;
+> +	} else {
+> +		for (i = 0; m && i < ARRAY_SIZE(mem_lvl); i++, m >>= 1) {
+> +			if (!(m & 0x1))
+> +				continue;
+> +			if (printed++) {
+> +				strcat(out, " or ");
+> +				l += 4;
+> +			}
+> +			l += scnprintf(out + l, sz - l, mem_lvl[i]);
+>  		}
+> -		l += scnprintf(out + l, sz - l, mem_lvl[i]);
+>  	}
+>  
+>  	if (mem_info && mem_info->data_src.mem_lvl_num) {
+> -- 
+> 2.27.0
 
-Bisecting lead to the following commit:
+-- 
 
-deb9b13eb2571fbde164ae012c77985fd14f2f02 is the first bad commit
-commit deb9b13eb2571fbde164ae012c77985fd14f2f02
-Author: Davidlohr Bueso <dave@stgolabs.net>
-Date: =C2=A0=C2=A0Mon Mar 8 17:59:50 2021 -0800
-
-=C2=A0=C2=A0=C2=A0powerpc/qspinlock: Use generic smp_cond_load_relaxed
-=C2=A0=C2=A0=C2=A0
-
-The problem persists in 2f47a9a4dfa3674fad19a49b40c5103a9a8e1589 and
-goes away if I revert deb9b13eb2571fbde164ae012c77985fd14f2f02 on top of
-that. As deb9b13eb2571fbde164ae012c77985fd14f2f02 seems to be a revert
-of 49a7d46a06c30c7beabbf9d1a8ea1de0f9e4fdfe, I suspect this problem
-might have existed before 49a7d46a06c30c7beabbf9d1a8ea1de0f9e4fdfe. I
-therefore tried to build 49a7d46a06c30c7beabbf9d1a8ea1de0f9e4fdfe and
-49a7d46a06c30c7beabbf9d1a8ea1de0f9e4fdfe^1 to verify if the problem
-exists there as well, unfortunately these commits don't build due to the
-following compile error:
-
-kernel/smp.c:In function 'smp_init':
-./include/linux/compiler.h:392:38:error: call to
-'__compiletime_assert_150' declared with attribute error: BUILD_BUG_ON
-failed: offsetof(struct task_struct, wake_entry_type) - offsetof(struct
-task_struct, wake_entry) !=3D offsetof(struct __call_single_data, flags) =
--
-offsetof(struct __call_single_data, llist)
-=C2=A0392 | =C2=A0_compiletime_assert(condition, msg, __compiletime_asser=
-t_,
-__COUNTER__)
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0^
-
-Is this report enough to revert deb9b13eb2571fbde164ae012c77985fd14f2f02
-for now?
-
-Stijn
-
+- Arnaldo
