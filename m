@@ -4,93 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 651C5C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Dec 2021 21:20:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC343C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Dec 2021 21:21:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JKjlT4F6Cz3cVN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Dec 2021 08:20:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JKjmG28KXz3051
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Dec 2021 08:21:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aPYwd4ky;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PdNfjxGh;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=aPYwd4ky; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=PdNfjxGh; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JKjkk1vgpz2xsG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Dec 2021 08:19:42 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1BNJfcra013473; 
- Thu, 23 Dec 2021 21:19:37 GMT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JKjkr3C5Sz3c53
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Dec 2021 08:19:48 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1BNL5qvt028886; 
+ Thu, 23 Dec 2021 21:19:44 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=n7QC9KPx0EVWIF8oX62NKqQNiUvUZY4sfYuzmvckQrQ=;
- b=aPYwd4ky6Yojrjt8N2O4znvI9cjtGFaD2Ll8CU2MBbCo8V/szThLdwROMhGdLZ09jSfu
- wVy2MH3lqKp8g2ZxJGWI6WbXxHjMmuHQRxpTfbjgPxHgXc724nVRWbNdotYoLm6NKt4i
- MHNwbk0KO+2910OZhAziUcFc1NBQB8QOFns8vUUeOxRfS90juKha57pZF0ztZhnr97Ss
- AGUN02hGOVdFrwLAJBa1YKXR62APrNwZ0D5zgDvmZSZb87Hyc8CutyVu/UkNv353IttS
- bFo2lbBxbD8wsw9hOVdsDxYM9qmh5VCPWHfVCndYo4V6AdiwQyq2LRBLkUZOUz7l5ej6 NQ== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=himf4nqViNdME7f5Fn0dx0Uj2a2JkriHSzZZyh/AASU=;
+ b=PdNfjxGh0bcPiRNu+TNbegvN61ay+ge9dapN2D2aIWN1Qaqxhmn0vQM5f2lr/LAMZoa+
+ 6IC1UdSI6ITEjjKUDdK37pA0rRxouulGSGz0xANkXdq95eezWjCxXLBdvZXXi6Pzfz7V
+ EaSFOsoDYkOci4V1VLA5ffGYrlXxZS6boKVMX2bAxdEVHc245JNrFe6MCySz9k69Gt5M
+ q4218+Uq4yp6qztcPyhLWpeXFhxPeQivc/vYOxa/OJOARjAXHYpAimrN+t0ZlkzvoSlf
+ t4kTcdHMcUxDSWLA6+1gSkINlPR3N2xp/l2Tnm952wAKp54wfNVAIG0+RjExnrPGBiQn 7A== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3d4yg6hghc-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3d4u3p6gqh-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 23 Dec 2021 21:19:36 +0000
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1BNLD0Ib003696;
- Thu, 23 Dec 2021 21:19:36 GMT
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3d4yg6hgh2-1
+ Thu, 23 Dec 2021 21:19:44 +0000
+Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1BNLJhRT032011;
+ Thu, 23 Dec 2021 21:19:43 GMT
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3d4u3p6gq6-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 23 Dec 2021 21:19:36 +0000
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1BNLILLW019476;
- Thu, 23 Dec 2021 21:19:35 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma05wdc.us.ibm.com with ESMTP id 3d179cg4hk-1
+ Thu, 23 Dec 2021 21:19:43 +0000
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1BNLHOja004596;
+ Thu, 23 Dec 2021 21:19:42 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma01dal.us.ibm.com with ESMTP id 3d179cybyx-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 23 Dec 2021 21:19:35 +0000
+ Thu, 23 Dec 2021 21:19:42 +0000
 Received: from b03ledav005.gho.boulder.ibm.com
  (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 1BNLJYJ425362874
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1BNLJeM111272932
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 23 Dec 2021 21:19:34 GMT
+ Thu, 23 Dec 2021 21:19:40 GMT
 Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7D78ABE05D;
- Thu, 23 Dec 2021 21:19:34 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id A0992BE05D;
+ Thu, 23 Dec 2021 21:19:40 +0000 (GMT)
 Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0B793BE05F;
- Thu, 23 Dec 2021 21:19:32 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 1DAE0BE058;
+ Thu, 23 Dec 2021 21:19:39 +0000 (GMT)
 Received: from farosas.linux.ibm.com.com (unknown [9.163.19.83])
  by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 23 Dec 2021 21:19:32 +0000 (GMT)
+ Thu, 23 Dec 2021 21:19:38 +0000 (GMT)
 From: Fabiano Rosas <farosas@linux.ibm.com>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 0/3] KVM: PPC: KVM module exit fixes
-Date: Thu, 23 Dec 2021 18:19:28 -0300
-Message-Id: <20211223211931.3560887-1-farosas@linux.ibm.com>
+Subject: [PATCH 3/3] KVM: PPC: Book3S HV: Free allocated memory if module init
+ fails
+Date: Thu, 23 Dec 2021 18:19:31 -0300
+Message-Id: <20211223211931.3560887-4-farosas@linux.ibm.com>
 X-Mailer: git-send-email 2.33.1
+In-Reply-To: <20211223211931.3560887-1-farosas@linux.ibm.com>
+References: <20211223211931.3560887-1-farosas@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: R_vplOgVhBfGPpJRKV2P-BZS9mez--dG
-X-Proofpoint-ORIG-GUID: CbqZrPJlHzIHKVx9cMrmPBQemwet1Dw9
+X-Proofpoint-ORIG-GUID: 7ohbHWmd_bUce-D2sURNTqkrIYljxiyX
+X-Proofpoint-GUID: buAxf0rA5X5yAh6f2Wtx-BB-7BA3usD6
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.11.62.513
  definitions=2021-12-23_04,2021-12-22_01,2021-12-02_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 impostorscore=0
- lowpriorityscore=0 priorityscore=1501 phishscore=0 suspectscore=0
- malwarescore=0 clxscore=1015 mlxscore=0 spamscore=0 mlxlogscore=786
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ clxscore=1015 bulkscore=0
+ priorityscore=1501 mlxlogscore=855 adultscore=0 malwarescore=0
+ phishscore=0 lowpriorityscore=0 mlxscore=0 suspectscore=0 impostorscore=0
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2110150000 definitions=main-2112230106
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -108,17 +112,65 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a resend the module cleanup fixes but this time without the
-HV/PR merge.
+The module's exit function is not called when the init fails, we need
+to do cleanup before returning.
 
-Fabiano Rosas (1):
-  KVM: PPC: Book3S HV: Check return value of kvmppc_radix_init
-  KVM: PPC: Book3S HV: Delay setting of kvm ops
-  KVM: PPC: Book3S HV: Free allocated memory if module init fails
+Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
+---
+ arch/powerpc/kvm/book3s_hv.c | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
- arch/powerpc/kvm/book3s_hv.c | 28 ++++++++++++++++++++--------
- 1 file changed, 20 insertions(+), 8 deletions(-)
-
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 53400932f5d8..2d79298e7ca4 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -6065,7 +6065,7 @@ static int kvmppc_book3s_init_hv(void)
+ 
+ 	r = kvm_init_subcore_bitmap();
+ 	if (r)
+-		return r;
++		goto err;
+ 
+ 	/*
+ 	 * We need a way of accessing the XICS interrupt controller,
+@@ -6080,7 +6080,8 @@ static int kvmppc_book3s_init_hv(void)
+ 		np = of_find_compatible_node(NULL, NULL, "ibm,opal-intc");
+ 		if (!np) {
+ 			pr_err("KVM-HV: Cannot determine method for accessing XICS\n");
+-			return -ENODEV;
++			r = -ENODEV;
++			goto err;
+ 		}
+ 		/* presence of intc confirmed - node can be dropped again */
+ 		of_node_put(np);
+@@ -6093,12 +6094,12 @@ static int kvmppc_book3s_init_hv(void)
+ 
+ 	r = kvmppc_mmu_hv_init();
+ 	if (r)
+-		return r;
++		goto err;
+ 
+ 	if (kvmppc_radix_possible()) {
+ 		r = kvmppc_radix_init();
+ 		if (r)
+-			return r;
++			goto err;
+ 	}
+ 
+ 	r = kvmppc_uvmem_init();
+@@ -6111,6 +6112,12 @@ static int kvmppc_book3s_init_hv(void)
+ 	kvmppc_hv_ops = &kvm_ops_hv;
+ 
+ 	return 0;
++
++err:
++	kvmhv_nested_exit();
++	kvmppc_radix_exit();
++
++	return r;
+ }
+ 
+ static void kvmppc_book3s_exit_hv(void)
 -- 
 2.33.1
 
