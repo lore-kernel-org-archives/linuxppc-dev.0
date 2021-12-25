@@ -4,43 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73AFDC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Dec 2021 11:57:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52536C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Dec 2021 11:57:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JLj9B5WHkz3c8j
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Dec 2021 22:57:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JLj9d6227z3cV9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Dec 2021 22:57:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
  envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JLj8k4gTZz2xYQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Dec 2021 22:57:08 +1100 (AEDT)
-Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.54])
- by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4JLj4t03dTz1DK73;
- Sat, 25 Dec 2021 19:53:50 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JLj8k4lp3z2ymc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Dec 2021 22:57:09 +1100 (AEDT)
+Received: from dggpemm500024.china.huawei.com (unknown [172.30.72.53])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4JLj834bjHzbjRx;
+ Sat, 25 Dec 2021 19:56:35 +0800 (CST)
 Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
+ dggpemm500024.china.huawei.com (7.185.36.203) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.20; Sat, 25 Dec 2021 19:57:02 +0800
+ 15.1.2308.20; Sat, 25 Dec 2021 19:57:01 +0800
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.20; Sat, 25 Dec 2021 19:57:02 +0800
+ 15.1.2308.20; Sat, 25 Dec 2021 19:57:00 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: Kees Cook <keescook@chromium.org>, Laura Abbott <labbott@redhat.com>,
  "Mark Rutland" <mark.rutland@arm.com>, <linux-mm@kvack.org>, Andrew Morton
  <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>, Michael Ellerman
  <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  "Paul Mackerras" <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 2/2] mm: usercopy: Warn vmalloc/module address in
- check_heap_object()
-Date: Sat, 25 Dec 2021 20:06:21 +0800
-Message-ID: <20211225120621.13908-3-wangkefeng.wang@huawei.com>
+Subject: [PATCH v2 0/2] mm: Fix kernel BUG in __check_heap_object() on
+ PowerPC64
+Date: Sat, 25 Dec 2021 20:06:19 +0800
+Message-ID: <20211225120621.13908-1-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20211225120621.13908-1-wangkefeng.wang@huawei.com>
-References: <20211225120621.13908-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -65,31 +63,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-virt_addr_valid() could be insufficient to validate the virt addr
-on some architecture, which could lead to potential BUG which has
-been found on arm64/powerpc64.
+v2:
+- Fix powerpc virt_addr_valid() instead of workaround in
+  check_heap_object(), suggested by Christophe and Nicholas
+- Add WARN_ON in check_heap_object() incase of virt_addr_valid is
+  insufficient on some archs
 
-Let's add WARN_ON to check if the virt addr is passed virt_addr_valid()
-but is a vmalloc/module address.
+Kefeng Wang (2):
+  powerpc: Fix virt_addr_valid() check
+  mm: usercopy: Warn vmalloc/module address in check_heap_object()
 
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
- mm/usercopy.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/include/asm/page.h | 5 ++++-
+ mm/usercopy.c                   | 2 ++
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/mm/usercopy.c b/mm/usercopy.c
-index b3de3c4eefba..ce83e0b137dd 100644
---- a/mm/usercopy.c
-+++ b/mm/usercopy.c
-@@ -228,6 +228,8 @@ static inline void check_heap_object(const void *ptr, unsigned long n,
- 	if (!virt_addr_valid(ptr))
- 		return;
- 
-+	WARN_ON_ONCE(is_vmalloc_or_module_addr(ptr));
-+
- 	/*
- 	 * When CONFIG_HIGHMEM=y, kmap_to_page() will give either the
- 	 * highmem page or fallback to virt_to_page(). The following
 -- 
 2.26.2
 
