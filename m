@@ -4,60 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FDE9C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Dec 2021 12:01:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A919DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Dec 2021 16:27:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JLjFX2CG7z3cDy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Dec 2021 23:01:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JLq8R3Hvxz3096
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Dec 2021 03:27:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bu6sJrVd;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com;
- envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JLjF35ChQz2xYQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Dec 2021 23:00:55 +1100 (AEDT)
-Received: from dggpemm500022.china.huawei.com (unknown [172.30.72.54])
- by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4JLjCx00W9zcc1r;
- Sat, 25 Dec 2021 19:59:56 +0800 (CST)
-Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggpemm500022.china.huawei.com (7.185.36.162) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.20; Sat, 25 Dec 2021 20:00:22 +0800
-Received: from [10.174.177.243] (10.174.177.243) by
- dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256) id
- 15.1.2308.20; Sat, 25 Dec 2021 20:00:21 +0800
-Message-ID: <4b4f142a-8d32-e6f5-b9ff-8905bcefb77d@huawei.com>
-Date: Sat, 25 Dec 2021 20:00:21 +0800
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=bu6sJrVd; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JLq7X2qlmz2yp5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Dec 2021 03:26:31 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1BPFbYVI007744; 
+ Sat, 25 Dec 2021 16:25:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=VMq+orNvVrYzmkq8guGGYpWmBSvGM4QTihzK/n+8Nws=;
+ b=bu6sJrVd6ld2DWxDDjHBvx0dsuDz1uZdLP6LejUVknyiOidJHvtW2IlUTCiGAm239iBb
+ bbPyIjvuyHoO5N7p0Y9vbm7pNX/CPZ50qo1BUhGJwnMfmCt0gkRxePcAv6wUpq1PLQYh
+ 6U5c2JNv+QOtJFwUhNE+3ee5Xt3jDP1SYsbnKNBjHZPPsOX84FsFTUlhlK1H/Cf1j6jj
+ XqQI7ClUiwMObh3Cfchv0nguWTUT6E11d124eSOlJ6UviIRCLQdx5HrUW53U41n1OKRj
+ WQQ5KeddfveRCRdrqs0dGaOF89dnVqgxAGEezFatPdg4alK15JvkANGyFQtEAcSAqJSz dQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3d64ugh4vm-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sat, 25 Dec 2021 16:25:54 +0000
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1BPGPf7P008499;
+ Sat, 25 Dec 2021 16:25:54 GMT
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3d64ugh4va-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sat, 25 Dec 2021 16:25:54 +0000
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1BPGKU9m001117;
+ Sat, 25 Dec 2021 16:25:52 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma06fra.de.ibm.com with ESMTP id 3d5tjj25jw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sat, 25 Dec 2021 16:25:51 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 1BPGPniJ46924238
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sat, 25 Dec 2021 16:25:49 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A2C0B11C04A;
+ Sat, 25 Dec 2021 16:25:49 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DA26211C04C;
+ Sat, 25 Dec 2021 16:25:48 +0000 (GMT)
+Received: from osiris (unknown [9.145.52.227])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Sat, 25 Dec 2021 16:25:48 +0000 (GMT)
+Date: Sat, 25 Dec 2021 17:25:47 +0100
+From: Heiko Carstens <hca@linux.ibm.com>
+To: guoren@kernel.org
+Subject: Re: [PATCH V2 5/8] sched: s390: Remove unused TASK_SIZE_OF
+Message-ID: <YcdGC4ZNejSgZgRG@osiris>
+References: <20211225045430.2868608-1-guoren@kernel.org>
+ <20211225045430.2868608-6-guoren@kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.2.0
-Subject: Re: [PATCH] Revert "mm/usercopy: Drop extra is_vmalloc_or_module()
- check"
-Content-Language: en-US
-To: Nicholas Piggin <npiggin@gmail.com>, Andrew Morton
- <akpm@linux-foundation.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Christophe Leroy <christophe.leroy@csgroup.eu>,
- Kees Cook <keescook@chromium.org>, Laura Abbott <labbott@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Mark Rutland <mark.rutland@arm.com>,
- "Michael Ellerman" <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-References: <20211223102126.161848-1-wangkefeng.wang@huawei.com>
- <ffd77bcf-b9d8-956c-9f83-14b9f0b496e7@csgroup.eu>
- <96fe1826-aeaf-4ea0-9f01-03d6b3933b34@huawei.com>
- <6e2ddc83-bec3-fdd4-4d91-3ade0de0b7c8@csgroup.eu>
- <ccf311bd-c0ed-3e42-8057-849a9c3e9a98@huawei.com>
- <1640429980.38ev9qg7xc.astroid@bobo.none>
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-In-Reply-To: <1640429980.38ev9qg7xc.astroid@bobo.none>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.174.177.243]
-X-ClientProxiedBy: dggeme714-chm.china.huawei.com (10.1.199.110) To
- dggpemm500001.china.huawei.com (7.185.36.107)
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211225045430.2868608-6-guoren@kernel.org>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: -atRMtwxqSfN1mZI4uRDUeADm09Mlt3_
+X-Proofpoint-ORIG-GUID: nmg8Ty_J-4NM8K4-4F2UN7I-J9MfO6Hp
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2021-12-25_03,2021-12-24_01,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 clxscore=1011
+ priorityscore=1501 malwarescore=0 mlxscore=0 bulkscore=0 impostorscore=0
+ suspectscore=0 adultscore=0 lowpriorityscore=0 mlxlogscore=999
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2110150000 definitions=main-2112250080
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,64 +106,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: juri.lelli@redhat.com, linux-s390@vger.kernel.org, x86@kernel.org,
+ arnd@arndb.de, peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
+ Guo Ren <guoren@linux.alibaba.com>, linux-kernel@vger.kernel.org,
+ inux-parisc@vger.kernel.org, mingo@redhat.com, sparclinux@vger.kernel.or,
+ tglx@linutronix.de, linux-mips@vger.kernel.org, will@kernel.org,
+ linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Sat, Dec 25, 2021 at 12:54:27PM +0800, guoren@kernel.org wrote:
+> From: Guo Ren <guoren@linux.alibaba.com>
+> 
+> This macro isn't used in Linux sched, now. Delete in
+> include/linux/sched.h and arch's include/asm.
+> 
+> Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  arch/s390/include/asm/processor.h | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-On 2021/12/25 19:04, Nicholas Piggin wrote:
-> Excerpts from Kefeng Wang's message of December 25, 2021 12:05 pm:
->
-...
->>> Can you try that ?
->>>
->>> #define virt_addr_valid(kaddr)	((kaddr & PAGE_OFFSET) == PAGE_OFFSET &&
->>> pfn_valid(virt_to_pfn(kaddr)))
->> I got this commit,
->>
->> commit 4dd7554a6456d124c85e0a4ad156625b71390b5c
->>
->> Author: Nicholas Piggin <npiggin@gmail.com>
->> Date:   Wed Jul 24 18:46:37 2019 +1000
->>
->>       powerpc/64: Add VIRTUAL_BUG_ON checks for __va and __pa addresses
->>
->>       Ensure __va is given a physical address below PAGE_OFFSET, and __pa is
->>       given a virtual address above PAGE_OFFSET.
->>
->> It has check the PAGE_OFFSET in __pa,  will test it and resend the
->> patch(with above warning changes).
-> What did you get with this commit? Is this what causes the crash?
+I could pick this up for s390, however sender (From: field) of this patch
+series does not match From: and Signed-off-by: fields above.
 
-I mean that your patch does the check to make sure the virt addr should 
-above PAGE_OFFSET,
-
-and we can add the check in the virt_addr_valid too.
-
->
-> riscv for example with flatmem also relies on pfn_valid to do the right
-> thing, so as far as I can see the check should exclude vmalloc addresses
-> and it's just a matter of virt_addr_valid not to give virt_to_pfn an
-> address < PAGE_OFFSET.
->
-> If we take riscv's implementation
->
-> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-> index 254687258f42..7713188516a6 100644
-> --- a/arch/powerpc/include/asm/page.h
-> +++ b/arch/powerpc/include/asm/page.h
-> @@ -132,7 +132,10 @@ static inline bool pfn_valid(unsigned long pfn)
->   #define virt_to_page(kaddr)    pfn_to_page(virt_to_pfn(kaddr))
->   #define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
->   
-> -#define virt_addr_valid(kaddr) pfn_valid(virt_to_pfn(kaddr))
-> +#define virt_addr_valid(vaddr) ({                                      \
-> +       unsigned long _addr = (unsigned long)vaddr;                     \
-> +       (unsigned long)(_addr) >= PAGE_OFFSET && pfn_valid(virt_to_pfn(_addr)); \
-> +})
-Yes, I send a new v2  with this change, thanks
->   
->   /*
->    * On Book-E parts we need __va to parse the device tree and we can't
->
-> .
+In general I don't pick up such patches, since this doesn't match the
+"Developer's Certificate of Origin" requirements.
+-> Documentation/process/submitting-patches.rst
