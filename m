@@ -4,30 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16248C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Dec 2021 21:56:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42B5EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Dec 2021 21:56:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JMZPk4ylGz3dpW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Dec 2021 08:56:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JMZQ94k3Xz3dtD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Dec 2021 08:56:49 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JMZLw2kQrz305P
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JMZLw6LZxz2ynj
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Dec 2021 08:54:00 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JMZLw1pRFz4xmy;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JMZLw5P6Qz4xn1;
  Mon, 27 Dec 2021 08:54:00 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20211221135101.2085547-1-mpe@ellerman.id.au>
-References: <20211221135101.2085547-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/3] powerpc/64s: Mask NIP before checking against SRR0
-Message-Id: <164055556397.3187272.15095835229382770382.b4-ty@ellerman.id.au>
-Date: Mon, 27 Dec 2021 08:52:43 +1100
+In-Reply-To: <20211209115944.4062384-1-mpe@ellerman.id.au>
+References: <20211209115944.4062384-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] selftests/powerpc: Add a test of sigreturning to the
+ kernel
+Message-Id: <164055553269.3187272.9055381081762369428.b4-ty@ellerman.id.au>
+Date: Mon, 27 Dec 2021 08:52:12 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,28 +43,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sachinp@linux.ibm.com, npiggin@gmail.com
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 22 Dec 2021 00:50:59 +1100, Michael Ellerman wrote:
-> When CONFIG_PPC_RFI_SRR_DEBUG=y we check that NIP and SRR0 match when
-> returning from interrupts. This can trigger falsely if NIP has either of
-> its two low bits set via sigreturn or ptrace, while SRR0 has its low two
-> bits masked in hardware.
+On Thu, 9 Dec 2021 22:59:44 +1100, Michael Ellerman wrote:
+> We have a general signal fuzzer, sigfuz, which can modify the MSR & NIP
+> before sigreturn. But the chance of it hitting a kernel address and also
+> clearing MSR_PR is fairly slim.
 > 
-> As a quick fix make sure to mask the low bits before doing the check.
+> So add a specific test of sigreturn to a kernel address, both with and
+> without attempting to clear MSR_PR (which the kernel must block).
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/3] powerpc/64s: Mask NIP before checking against SRR0
-      https://git.kernel.org/powerpc/c/314f6c23dd8d417281eb9e8a516dd98036f2e7b3
-[2/3] powerpc/64s: Use EMIT_WARN_ENTRY for SRR debug warnings
-      https://git.kernel.org/powerpc/c/fd1eaaaaa6864b5fb8f99880fcefb49760b8fe4e
-[3/3] selftests/powerpc: Add a test of sigreturning to an unaligned address
-      https://git.kernel.org/powerpc/c/beeac538c366cd2828092adecd1edab28326c55b
+[1/1] selftests/powerpc: Add a test of sigreturning to the kernel
+      https://git.kernel.org/powerpc/c/a8968521cfdc3e339fe69473d6632e0aa8d7202a
 
 cheers
