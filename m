@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D18DEC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Dec 2021 21:56:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16248C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Dec 2021 21:56:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JMZPJ351Hz2yfr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Dec 2021 08:56:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JMZPk4ylGz3dpW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Dec 2021 08:56:26 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JMZLv6S6hz2xXg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Dec 2021 08:53:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JMZLw2kQrz305P
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Dec 2021 08:54:00 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JMZLv5f0Vz4xmx;
- Mon, 27 Dec 2021 08:53:59 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JMZLw1pRFz4xmy;
+ Mon, 27 Dec 2021 08:54:00 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: benh@kernel.crashing.org, davidcomponentone@gmail.com
-In-Reply-To: <71a702c2189b16c152affd8a8cda1d84ce32741c.1639792543.git.yang.guang5@zte.com.cn>
-References: <71a702c2189b16c152affd8a8cda1d84ce32741c.1639792543.git.yang.guang5@zte.com.cn>
-Subject: Re: [PATCH] powerpc: use swap() to make code cleaner
-Message-Id: <164055553057.3187272.3605630723670438648.b4-ty@ellerman.id.au>
-Date: Mon, 27 Dec 2021 08:52:10 +1100
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20211221135101.2085547-1-mpe@ellerman.id.au>
+References: <20211221135101.2085547-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/3] powerpc/64s: Mask NIP before checking against SRR0
+Message-Id: <164055556397.3187272.15095835229382770382.b4-ty@ellerman.id.au>
+Date: Mon, 27 Dec 2021 08:52:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Zeal Robot <zealci@zte.com.cn>, linux-kernel@vger.kernel.org,
- yang.guang5@zte.com.cn, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: sachinp@linux.ibm.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 18 Dec 2021 09:59:17 +0800, davidcomponentone@gmail.com wrote:
-> From: Yang Guang <yang.guang5@zte.com.cn>
+On Wed, 22 Dec 2021 00:50:59 +1100, Michael Ellerman wrote:
+> When CONFIG_PPC_RFI_SRR_DEBUG=y we check that NIP and SRR0 match when
+> returning from interrupts. This can trigger falsely if NIP has either of
+> its two low bits set via sigreturn or ptrace, while SRR0 has its low two
+> bits masked in hardware.
 > 
-> Use the macro 'swap()' defined in 'include/linux/minmax.h' to avoid
-> opencoding it.
+> As a quick fix make sure to mask the low bits before doing the check.
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: use swap() to make code cleaner
-      https://git.kernel.org/powerpc/c/a605b39e8ef703828b9e26750ea1925a6a5ef848
+[1/3] powerpc/64s: Mask NIP before checking against SRR0
+      https://git.kernel.org/powerpc/c/314f6c23dd8d417281eb9e8a516dd98036f2e7b3
+[2/3] powerpc/64s: Use EMIT_WARN_ENTRY for SRR debug warnings
+      https://git.kernel.org/powerpc/c/fd1eaaaaa6864b5fb8f99880fcefb49760b8fe4e
+[3/3] selftests/powerpc: Add a test of sigreturning to an unaligned address
+      https://git.kernel.org/powerpc/c/beeac538c366cd2828092adecd1edab28326c55b
 
 cheers
