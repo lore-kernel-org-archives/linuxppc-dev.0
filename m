@@ -4,30 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04658C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Dec 2021 21:54:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0033C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Dec 2021 21:55:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JMZN225VXz3c6f
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Dec 2021 08:54:58 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JMZNS0wMGz3cnV
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Dec 2021 08:55:20 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
+ [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JMZLt4wlbz2ynD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JMZLt6XLrz2yp0
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Dec 2021 08:53:58 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JMZLp6sXsz4xgt;
- Mon, 27 Dec 2021 08:53:54 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JMZLt4mSnz4xmv;
+ Mon, 27 Dec 2021 08:53:58 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: cgel.zte@gmail.com, fbarrat@linux.ibm.com
-In-Reply-To: <20211215060438.441918-1-chi.minghao@zte.com.cn>
-References: <20211215060438.441918-1-chi.minghao@zte.com.cn>
-Subject: Re: [PATCH misc-next] drivers/misc: remove redundant rc variable
-Message-Id: <164055553192.3187272.15008325315150052113.b4-ty@ellerman.id.au>
-Date: Mon, 27 Dec 2021 08:52:11 +1100
+To: Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <2bac55483b8daf5b1caa163a45fa5f9cdbe18be4.1640178426.git.christophe.leroy@csgroup.eu>
+References: <2bac55483b8daf5b1caa163a45fa5f9cdbe18be4.1640178426.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/32: Fix boot failure with GCC latent entropy
+ plugin
+Message-Id: <164055556121.3187272.3735190778169205691.b4-ty@ellerman.id.au>
+Date: Mon, 27 Dec 2021 08:52:41 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,24 +47,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com, arnd@arndb.de, gregkh@linuxfoundation.org,
- Zeal Robot <zealci@zte.com.cn>, linux-kernel@vger.kernel.org,
- Minghao Chi <chi.minghao@zte.com.cn>, linuxppc-dev@lists.ozlabs.org
+Cc: Erhard Furtner <erhard_f@mailbox.org>, Emese Revfy <re.emese@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 15 Dec 2021 06:04:38 +0000, cgel.zte@gmail.com wrote:
-> From: Minghao Chi <chi.minghao@zte.com.cn>
+On Wed, 22 Dec 2021 13:07:31 +0000, Christophe Leroy wrote:
+> Boot fails with GCC latent entropy plugin enabled.
 > 
-> Return value from ocxl_context_attach() directly instead
-> of taking this in another redundant variable.
+> This is due to early boot functions trying to access 'latent_entropy'
+> global data while the kernel is not relocated at its final
+> destination yet.
 > 
+> As there is no way to tell GCC to use PTRRELOC() to access it,
+> disable latent entropy plugin in early_32.o and feature-fixups.o and
+> code-patching.o
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] drivers/misc: remove redundant rc variable
-      https://git.kernel.org/powerpc/c/30e120e6a9d247cec7effd55fd6783d5c619ed4c
+[1/1] powerpc/32: Fix boot failure with GCC latent entropy plugin
+      https://git.kernel.org/powerpc/c/bba496656a73fc1d1330b49c7f82843836e9feb1
 
 cheers
