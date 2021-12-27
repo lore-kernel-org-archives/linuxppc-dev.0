@@ -4,49 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 109C8C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Dec 2021 14:51:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 387FEC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Dec 2021 15:58:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JN0ww5CTMz3dbX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Dec 2021 01:51:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JN2Pp4hwWz3c5q
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Dec 2021 02:58:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jisFFYjc;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com;
- envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JN0v55dpGz2xF1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Dec 2021 01:49:51 +1100 (AEDT)
-Received: from dggpemm500022.china.huawei.com (unknown [172.30.72.54])
- by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4JN0q76hTkz1DKFm;
- Mon, 27 Dec 2021 22:46:27 +0800 (CST)
-Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggpemm500022.china.huawei.com (7.185.36.162) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.20; Mon, 27 Dec 2021 22:49:43 +0800
-Received: from localhost.localdomain.localdomain (10.175.113.25) by
- dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.20; Mon, 27 Dec 2021 22:49:42 +0800
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-To: Jonathan Corbet <corbet@lwn.net>, Andrew Morton
- <akpm@linux-foundation.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linux-mm@kvack.org>, <x86@kernel.org>,
- <linux-arm-kernel@lists.infradead.org>
-Subject: [PATCH v2 2/3] arm64: Support huge vmalloc mappings
-Date: Mon, 27 Dec 2021 22:59:02 +0800
-Message-ID: <20211227145903.187152-3-wangkefeng.wang@huawei.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20211227145903.187152-1-wangkefeng.wang@huawei.com>
+ smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com;
+ envelope-from=dave.hansen@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=jisFFYjc; dkim-atps=neutral
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JN2P149Hjz2yRf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Dec 2021 02:57:20 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1640620645; x=1672156645;
+ h=subject:to:cc:references:from:message-id:date:
+ mime-version:in-reply-to:content-transfer-encoding;
+ bh=Qopi0GCbZb8D3tqnGHATwO1hv9M0cdIa+FRZv6opEto=;
+ b=jisFFYjcsMFGdhcNtR6u3V8vWmG643xpIVaBOx7i29GmKMFyYXdZzlPZ
+ d/zNYbpzJxkO62/Jva0fgv5p5bSkNqhr4f3fkuSMyltE0JRe7muoNQBet
+ r2wViAInfNYk0GeBnH9QrnQ98wjd79vd7Zyi0Ou+ItieRXlWlQZfEmkvS
+ jfVd1GqoJlCWXF8MJARfkFVkyNF4LUzuSggsrDH0+TFB1Ya4U85/il4NR
+ smHL+cN5qIc7qWtyCEGomJ0jlSXnK3B13/oEC3srqICZdk3Dmyif/NQnO
+ xIia6Xn8xnn1bpcmA/OS55nQ/7imfJDBNWMvojWNiL+l8JOpwaYxLbBoZ g==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10209"; a="327552172"
+X-IronPort-AV: E=Sophos;i="5.88,239,1635231600"; d="scan'208";a="327552172"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 Dec 2021 07:56:17 -0800
+X-IronPort-AV: E=Sophos;i="5.88,239,1635231600"; d="scan'208";a="486053937"
+Received: from dannysua-mobl2.amr.corp.intel.com (HELO [10.212.232.47])
+ ([10.212.232.47])
+ by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 Dec 2021 07:56:16 -0800
+Subject: Re: [PATCH v2 3/3] x86: Support huge vmalloc mappings
+To: Kefeng Wang <wangkefeng.wang@huawei.com>, Jonathan Corbet
+ <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-arm-kernel@lists.infradead.org
 References: <20211227145903.187152-1-wangkefeng.wang@huawei.com>
+ <20211227145903.187152-4-wangkefeng.wang@huawei.com>
+From: Dave Hansen <dave.hansen@intel.com>
+Message-ID: <70ff58bc-3a92-55c2-2da8-c5877af72e44@intel.com>
+Date: Mon, 27 Dec 2021 07:56:14 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.14.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.113.25]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggpemm500001.china.huawei.com (7.185.36.107)
-X-CFilter-Loop: Reflected
+In-Reply-To: <20211227145903.187152-4-wangkefeng.wang@huawei.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,8 +74,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>,
- Matthew Wilcox <willy@infradead.org>,
+Cc: Matthew Wilcox <willy@infradead.org>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Dave Hansen <dave.hansen@linux.intel.com>, Nicholas Piggin <npiggin@gmail.com>,
  Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
@@ -69,75 +84,47 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch select HAVE_ARCH_HUGE_VMALLOC to let arm64 support huge
-vmalloc mappings.
+On 12/27/21 6:59 AM, Kefeng Wang wrote:
+> This patch select HAVE_ARCH_HUGE_VMALLOC to let X86_64 and X86_PAE
+> support huge vmalloc mappings.
 
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
- Documentation/admin-guide/kernel-parameters.txt | 4 ++--
- arch/arm64/Kconfig                              | 1 +
- arch/arm64/kernel/module.c                      | 5 +++--
- 3 files changed, 6 insertions(+), 4 deletions(-)
+In general, this seems interesting and the diff is simple.  But, I don't
+see _any_ x86-specific data.  I think the bare minimum here would be a
+few kernel compiles and some 'perf stat' data for some TLB events.
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 7b2f900fd243..e3f9fd7ec106 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -1639,7 +1639,7 @@
- 			precedence over memory_hotplug.memmap_on_memory.
- 
- 
--	hugevmalloc=	[PPC] Reguires CONFIG_HAVE_ARCH_HUGE_VMALLOC
-+	hugevmalloc=	[KNL,PPC,ARM64] Reguires CONFIG_HAVE_ARCH_HUGE_VMALLOC
- 			Format: { on | off }
- 			Default set by CONFIG_HUGE_VMALLOC_DEFAULT_ENABLED.
- 
-@@ -3424,7 +3424,7 @@
- 
- 	nohugeiomap	[KNL,X86,PPC,ARM64] Disable kernel huge I/O mappings.
- 
--	nohugevmalloc	[PPC] Disable kernel huge vmalloc mappings.
-+	nohugevmalloc	[KNL,PPC,ARM64] Disable kernel huge vmalloc mappings.
- 
- 	nosmt		[KNL,S390] Disable symmetric multithreading (SMT).
- 			Equivalent to smt=1.
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 3bb0b67292b5..c34bbb4482b0 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -142,6 +142,7 @@ config ARM64
- 	select HAVE_ARCH_AUDITSYSCALL
- 	select HAVE_ARCH_BITREVERSE
- 	select HAVE_ARCH_COMPILER_H
-+	select HAVE_ARCH_HUGE_VMALLOC
- 	select HAVE_ARCH_HUGE_VMAP
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_ARCH_JUMP_LABEL_RELATIVE
-diff --git a/arch/arm64/kernel/module.c b/arch/arm64/kernel/module.c
-index 309a27553c87..af7b4cbace2b 100644
---- a/arch/arm64/kernel/module.c
-+++ b/arch/arm64/kernel/module.c
-@@ -36,7 +36,8 @@ void *module_alloc(unsigned long size)
- 		module_alloc_end = MODULES_END;
- 
- 	p = __vmalloc_node_range(size, MODULE_ALIGN, module_alloc_base,
--				module_alloc_end, gfp_mask, PAGE_KERNEL, VM_DEFER_KMEMLEAK,
-+				module_alloc_end, gfp_mask, PAGE_KERNEL,
-+				VM_DEFER_KMEMLEAK | VM_NO_HUGE_VMAP,
- 				NUMA_NO_NODE, __builtin_return_address(0));
- 
- 	if (!p && IS_ENABLED(CONFIG_ARM64_MODULE_PLTS) &&
-@@ -55,7 +56,7 @@ void *module_alloc(unsigned long size)
- 		 */
- 		p = __vmalloc_node_range(size, MODULE_ALIGN, module_alloc_base,
- 				module_alloc_base + SZ_2G, GFP_KERNEL,
--				PAGE_KERNEL, 0, NUMA_NO_NODE,
-+				PAGE_KERNEL, VM_NO_HUGE_VMAP, NUMA_NO_NODE,
- 				__builtin_return_address(0));
- 
- 	if (p && (kasan_module_alloc(p, size, gfp_mask) < 0)) {
--- 
-2.26.2
+> diff --git a/arch/x86/kernel/module.c b/arch/x86/kernel/module.c
+> index 95fa745e310a..6bf5cb7d876a 100644
+> --- a/arch/x86/kernel/module.c
+> +++ b/arch/x86/kernel/module.c
+> @@ -75,8 +75,8 @@ void *module_alloc(unsigned long size)
+>  
+>  	p = __vmalloc_node_range(size, MODULE_ALIGN,
+>  				    MODULES_VADDR + get_module_load_offset(),
+> -				    MODULES_END, gfp_mask,
+> -				    PAGE_KERNEL, VM_DEFER_KMEMLEAK, NUMA_NO_NODE,
+> +				    MODULES_END, gfp_mask, PAGE_KERNEL,
+> +				    VM_DEFER_KMEMLEAK | VM_NO_HUGE_VMAP, NUMA_NO_NODE,
+>  				    __builtin_return_address(0));
+>  	if (p && (kasan_module_alloc(p, size, gfp_mask) < 0)) {
+>  		vfree(p);
 
+To figure out what's going on in this hunk, I had to look at the cover
+letter (which I wasn't cc'd on).  That's not great and it means that
+somebody who stumbles upon this in the code is going to have a really
+hard time figuring out what is going on.  Cover letters don't make it
+into git history.
+
+This desperately needs a comment and some changelog material in *this*
+patch.
+
+But, even the description from the cover letter is sparse:
+
+> There are some disadvantages about this feature[2], one of the main
+> concerns is the possible memory fragmentation/waste in some scenarios,
+> also archs must ensure that any arch specific vmalloc allocations that
+> require PAGE_SIZE mappings(eg, module alloc with STRICT_MODULE_RWX)
+> use the VM_NO_HUGE_VMAP flag to inhibit larger mappings.
+
+That just says that x86 *needs* PAGE_SIZE allocations.  But, what
+happens if VM_NO_HUGE_VMAP is not passed (like it was in v1)?  Will the
+subsequent permission changes just fragment the 2M mapping?
