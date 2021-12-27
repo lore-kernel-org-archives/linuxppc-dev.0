@@ -4,40 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DE59C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Dec 2021 14:50:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DE5CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Dec 2021 14:51:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JN0w145Jzz3cV4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Dec 2021 01:50:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JN0wS5mGsz2yy3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Dec 2021 01:51:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com;
  envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JN0v55Qqwz2xF0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Dec 2021 01:49:52 +1100 (AEDT)
-Received: from dggpemm500020.china.huawei.com (unknown [172.30.72.57])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4JN0sq5Vv9z91vr;
- Mon, 27 Dec 2021 22:48:47 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JN0v55hKbz2xRn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Dec 2021 01:49:53 +1100 (AEDT)
+Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.54])
+ by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4JN0r63gHfz8w6s;
+ Mon, 27 Dec 2021 22:47:18 +0800 (CST)
 Received: from dggpemm500001.china.huawei.com (7.185.36.107) by
- dggpemm500020.china.huawei.com (7.185.36.49) with Microsoft SMTP Server
+ dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.20; Mon, 27 Dec 2021 22:49:42 +0800
+ 15.1.2308.20; Mon, 27 Dec 2021 22:49:44 +0800
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.20; Mon, 27 Dec 2021 22:49:41 +0800
+ 15.1.2308.20; Mon, 27 Dec 2021 22:49:43 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: Jonathan Corbet <corbet@lwn.net>, Andrew Morton
  <akpm@linux-foundation.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
  <linux-mm@kvack.org>, <x86@kernel.org>,
  <linux-arm-kernel@lists.infradead.org>
-Subject: [PATCH v2 1/3] mm: vmalloc: Let user to control huge vmalloc default
- behavior
-Date: Mon, 27 Dec 2021 22:59:01 +0800
-Message-ID: <20211227145903.187152-2-wangkefeng.wang@huawei.com>
+Subject: [PATCH v2 3/3] x86: Support huge vmalloc mappings
+Date: Mon, 27 Dec 2021 22:59:03 +0800
+Message-ID: <20211227145903.187152-4-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20211227145903.187152-1-wangkefeng.wang@huawei.com>
 References: <20211227145903.187152-1-wangkefeng.wang@huawei.com>
@@ -70,99 +69,70 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce HUGE_VMALLOC_DEFAULT_ENABLED and make it default y, this
-let user to choose whether or not enable huge vmalloc mappings by
-default.
+This patch select HAVE_ARCH_HUGE_VMALLOC to let X86_64 and X86_PAE
+support huge vmalloc mappings.
 
-Meanwhile, add new hugevmalloc=on/off parameter to enable or disable
-this feature at boot time, nohugevmalloc is still supported and
-equivalent to hugevmalloc=off.
-
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
 Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
 ---
- .../admin-guide/kernel-parameters.txt          | 12 ++++++++++++
- mm/Kconfig                                     |  8 ++++++++
- mm/vmalloc.c                                   | 18 +++++++++++++++++-
- 3 files changed, 37 insertions(+), 1 deletion(-)
+ Documentation/admin-guide/kernel-parameters.txt | 4 ++--
+ arch/x86/Kconfig                                | 1 +
+ arch/x86/kernel/module.c                        | 4 ++--
+ 3 files changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index a069d8fe2fee..7b2f900fd243 100644
+index e3f9fd7ec106..ffce6591ae64 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -1638,6 +1638,18 @@
- 			If both parameters are enabled, hugetlb_free_vmemmap takes
+@@ -1639,7 +1639,7 @@
  			precedence over memory_hotplug.memmap_on_memory.
  
-+
-+	hugevmalloc=	[PPC] Reguires CONFIG_HAVE_ARCH_HUGE_VMALLOC
-+			Format: { on | off }
-+			Default set by CONFIG_HUGE_VMALLOC_DEFAULT_ENABLED.
-+
-+			This parameter enables/disables kernel huge vmalloc
-+			mappings at boot time.
-+
-+			on:  Enable the feature
-+			off: Disable the feature
-+			     Equivalent to: nohugevmalloc
-+
- 	hung_task_panic=
- 			[KNL] Should the hung task detector generate panics.
- 			Format: 0 | 1
-diff --git a/mm/Kconfig b/mm/Kconfig
-index a99bd499ef51..8d8a92f22905 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -262,6 +262,14 @@ config HUGETLB_PAGE_SIZE_VARIABLE
- 	  HUGETLB_PAGE_ORDER when there are multiple HugeTLB page sizes available
- 	  on a platform.
  
-+config HUGE_VMALLOC_DEFAULT_ENABLED
-+	bool "Enable huge vmalloc mappings by default"
-+	default y
-+	depends on HAVE_ARCH_HUGE_VMALLOC
-+	help
-+	  Enable huge vmalloc mappings by default, this value could be overridden
-+	  by hugevmalloc=off|on.
-+
- config CONTIG_ALLOC
- 	def_bool (MEMORY_ISOLATION && COMPACTION) || CMA
+-	hugevmalloc=	[KNL,PPC,ARM64] Reguires CONFIG_HAVE_ARCH_HUGE_VMALLOC
++	hugevmalloc=	[KNL,PPC,ARM64,X86] Reguires CONFIG_HAVE_ARCH_HUGE_VMALLOC
+ 			Format: { on | off }
+ 			Default set by CONFIG_HUGE_VMALLOC_DEFAULT_ENABLED.
  
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 9bf838817a47..0d0f8deb5639 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -60,7 +60,7 @@ static const unsigned int ioremap_max_page_shift = PAGE_SHIFT;
- #endif	/* CONFIG_HAVE_ARCH_HUGE_VMAP */
+@@ -3424,7 +3424,7 @@
  
- #ifdef CONFIG_HAVE_ARCH_HUGE_VMALLOC
--static bool __ro_after_init vmap_allow_huge = true;
-+static bool __ro_after_init vmap_allow_huge = IS_ENABLED(CONFIG_HUGE_VMALLOC_DEFAULT_ENABLED);
+ 	nohugeiomap	[KNL,X86,PPC,ARM64] Disable kernel huge I/O mappings.
  
- static int __init set_nohugevmalloc(char *str)
- {
-@@ -68,6 +68,22 @@ static int __init set_nohugevmalloc(char *str)
- 	return 0;
- }
- early_param("nohugevmalloc", set_nohugevmalloc);
-+
-+static int __init set_hugevmalloc(char *str)
-+{
-+	if (!str)
-+		return -EINVAL;
-+
-+	if (!strcmp(str, "on"))
-+		vmap_allow_huge = true;
-+	else if (!strcmp(str, "off"))
-+		vmap_allow_huge = false;
-+	else
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+early_param("hugevmalloc", set_hugevmalloc);
- #else /* CONFIG_HAVE_ARCH_HUGE_VMALLOC */
- static const bool vmap_allow_huge = false;
- #endif	/* CONFIG_HAVE_ARCH_HUGE_VMALLOC */
+-	nohugevmalloc	[KNL,PPC,ARM64] Disable kernel huge vmalloc mappings.
++	nohugevmalloc	[KNL,PPC,ARM64,X86] Disable kernel huge vmalloc mappings.
+ 
+ 	nosmt		[KNL,S390] Disable symmetric multithreading (SMT).
+ 			Equivalent to smt=1.
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index ebe8fc76949a..f6bf6675bbe7 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -157,6 +157,7 @@ config X86
+ 	select HAVE_ACPI_APEI_NMI		if ACPI
+ 	select HAVE_ALIGNED_STRUCT_PAGE		if SLUB
+ 	select HAVE_ARCH_AUDITSYSCALL
++	select HAVE_ARCH_HUGE_VMALLOC		if HAVE_ARCH_HUGE_VMAP
+ 	select HAVE_ARCH_HUGE_VMAP		if X86_64 || X86_PAE
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select HAVE_ARCH_JUMP_LABEL_RELATIVE
+diff --git a/arch/x86/kernel/module.c b/arch/x86/kernel/module.c
+index 95fa745e310a..6bf5cb7d876a 100644
+--- a/arch/x86/kernel/module.c
++++ b/arch/x86/kernel/module.c
+@@ -75,8 +75,8 @@ void *module_alloc(unsigned long size)
+ 
+ 	p = __vmalloc_node_range(size, MODULE_ALIGN,
+ 				    MODULES_VADDR + get_module_load_offset(),
+-				    MODULES_END, gfp_mask,
+-				    PAGE_KERNEL, VM_DEFER_KMEMLEAK, NUMA_NO_NODE,
++				    MODULES_END, gfp_mask, PAGE_KERNEL,
++				    VM_DEFER_KMEMLEAK | VM_NO_HUGE_VMAP, NUMA_NO_NODE,
+ 				    __builtin_return_address(0));
+ 	if (p && (kasan_module_alloc(p, size, gfp_mask) < 0)) {
+ 		vfree(p);
 -- 
 2.26.2
 
