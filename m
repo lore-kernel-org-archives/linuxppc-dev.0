@@ -4,66 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90FC4C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Dec 2021 21:49:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0A9FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Dec 2021 22:06:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JQ23j6lMJz305P
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Dec 2021 08:49:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JQ2Qz0ggLz3c7L
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Dec 2021 09:06:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=lixom-net.20210112.gappssmtp.com header.i=@lixom-net.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=qlkNIjcl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=lNa/u+Ek;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lixom.net
- (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com;
- envelope-from=olof@lixom.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::12f;
+ helo=mail-lf1-x12f.google.com; envelope-from=bigunclemax@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=lixom-net.20210112.gappssmtp.com
- header.i=@lixom-net.20210112.gappssmtp.com header.a=rsa-sha256
- header.s=20210112 header.b=qlkNIjcl; dkim-atps=neutral
-Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com
- [IPv6:2607:f8b0:4864:20::535])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=lNa/u+Ek; dkim-atps=neutral
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com
+ [IPv6:2a00:1450:4864:20::12f])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JQ22v67Sfz2xYK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Dec 2021 08:48:37 +1100 (AEDT)
-Received: by mail-pg1-x535.google.com with SMTP id g22so22400567pgn.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Dec 2021 13:48:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=lixom-net.20210112.gappssmtp.com; s=20210112;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=GEcklNFD65j4kAPxqT7FBidrmJ3x+5F/2wsu3+ms61k=;
- b=qlkNIjclBJdx5nlGVwRBbrGI01mALgjZRcAIg/yKcGlhViS1qVZ48FHhACsxBadAPm
- l+GtkjsldrP1F8v7qmBF5YQv7ylBT1aPWFar9lOOCcgBZiw/FucQi7323bxXloDLSmtG
- Jkyl/rBeYBWrXSi0AIQOV9J2oo/gJhGQWFWAHoNwqGPSD0xUbBB+kdM27StCY1KmF4r9
- CkJoMg6tCEtJGhMjFwwY/R143FN/CHrQWK9tXlQPMO5YMIYUM4mDTj716I/g5noUKAil
- XYPdw5Ahw9iLDEVNE9GTgHdsEzI1CpSLiAEtcAkx4Yv9GTC9vLhSYrZAvPqSuBl4LjPV
- k9Nw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JPlHx0gDNz2xMF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Dec 2021 21:43:54 +1100 (AEDT)
+Received: by mail-lf1-x12f.google.com with SMTP id g11so53707252lfu.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Dec 2021 02:43:54 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Yg7RYwQR6VzpeYXfKgQCnzyp5pnZmL7af7luHvu61fc=;
+ b=lNa/u+Ek5xQPIlUHU834NDKAfYUkbUPHHZifKo+AfSMUOXXltiU2wSjnbSmqGwNQzi
+ lbmeQBwPjmgxwQmDg8ofdBazoDgb07z/cVG9Il9VLi6m4mAPzFI/boNNeL+UO52wqfsY
+ agEdMEsefBBMh+SaMKdedflZJ9tNbU8FmxmOrqNQ8wcsYrA2EYc7cNHGscR3+G8WGGfT
+ U/rM/japyp5ETxUeOMArNklQEagt+U3p2cjejB/bg6Ap+NNQQkcvdKUJK0Mk7bis3zwx
+ 023QBY7ZTVYp9noFR4IKlZAvP2rwvXHXTTUL7MQEQ5G+4e4LHWn4IGw2aIAEtNLlkuOF
+ ScKQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=GEcklNFD65j4kAPxqT7FBidrmJ3x+5F/2wsu3+ms61k=;
- b=g/lgb/UxEMw+f2e1YSJUmmaFmBsa/ZhNxr4ZeYqaH++wJwC48p2Jjt/FW8L0gEKQls
- bniRMc80jq3KDdwYJ6EYAJpS0koqqTdDixo5Ms5vSa7Q5Wt/vXWzfr7NyEcJkhAqXg53
- vD1sg53QmsvXRHQ+Ttj9pOYhac4YGdkpphsyqHhLOpj0tznrP6r1fDv7fP8y/9V2IfMC
- El9mPalE+8tFPpI/SFSYjI3rK2qUPCC13zlu596RtMqwY3FcmRspZAxiVQVInL0lxTGa
- G3yAQmDIKQUATfsv/YmXK5rbOg8zeyJPGBkgJRq7gW33taNCBDeqaDu83JYlWXwxM1ig
- Rw2Q==
-X-Gm-Message-State: AOAM533Dzf90ZaJcWZChgdu/3dK4j4DcgWaC+zl6e6k4E1GCm1JxiPD9
- Y4aIShpAVlTEwotrJtDJk6/yUGwq/m+3duNwoFiF2Q==
-X-Google-Smtp-Source: ABdhPJxB2+L0Ilgtxo24InThDxdI6L7PXX8L6YGcNe9PhKz0Hrp3Pr2ndaWJaDS+U/lZleW8xu0XDuGdqqRipaSCzkM=
-X-Received: by 2002:a63:b909:: with SMTP id z9mr29347618pge.26.1640900912949; 
- Thu, 30 Dec 2021 13:48:32 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Yg7RYwQR6VzpeYXfKgQCnzyp5pnZmL7af7luHvu61fc=;
+ b=Ro+ueekD2ZN9Govb+FzyqDzrKffT77aGGAEMlL8081xdaRr+rb741O8SiYks9XG9v4
+ QMgNpAsdcVb8zC9Vf+Rgkfd9pJNilzH5qHo2OP4vaW2orAHEqnI23lgH/nncNW25RkPH
+ ZawjAjc7+HZThCBqn7URwuqPpbR2FaOt0SaxM5tmuz2AwjP8GULYypRiZytZrfqVnf43
+ LJdJgGTNFmTnV1Rl4srB0XbjvG48zHamL1/B4IEL1OMMhAMZjyeR83Skha4OfE5EXqov
+ k8dTJXzVJXYwe2cVMy+V7OYoxB+Wj+5trf78HhJx6Qd6dwdsHQVJW5hgK28+GTe9FsW+
+ 4aog==
+X-Gm-Message-State: AOAM5336kkLsyBncvlsonXyQ5nDruNOIQRwwz6oPfTC0DIqnl9gHuFkl
+ IbLfiI1fNxmtEk91mcI2wxE=
+X-Google-Smtp-Source: ABdhPJzf2njYku29J1mLh79MjFff32ygDd5sAK2tIEx+v+Us0NJh3+fxkWemvyzuBDMPfMQpUSPprw==
+X-Received: by 2002:a05:6512:1504:: with SMTP id
+ bq4mr27433290lfb.27.1640861025294; 
+ Thu, 30 Dec 2021 02:43:45 -0800 (PST)
+Received: from localhost.localdomain ([185.6.236.169])
+ by smtp.googlemail.com with ESMTPSA id u19sm1522644lje.56.2021.12.30.02.43.43
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 30 Dec 2021 02:43:44 -0800 (PST)
+From: Maxim Kiselev <bigunclemax@gmail.com>
+To: 
+Subject: [PATCH] powerpc: dts: t1040rdb: fix ports names for Seville Ethernet
+ switch
+Date: Thu, 30 Dec 2021 13:43:28 +0300
+Message-Id: <20211230104329.677138-1-bigunclemax@gmail.com>
+X-Mailer: git-send-email 2.32.0
 MIME-Version: 1.0
-References: <F651905D-FC8B-43D4-A5DC-FFAFEF5AD69F@xenosoft.de>
-In-Reply-To: <F651905D-FC8B-43D4-A5DC-FFAFEF5AD69F@xenosoft.de>
-From: Olof Johansson <olof@lixom.net>
-Date: Thu, 30 Dec 2021 13:48:21 -0800
-Message-ID: <CAOesGMgaTtP3Tjs9ZBj_OP6AzBWCK1n84iD6KdK4c+LUF=tgtw@mail.gmail.com>
-Subject: Re: The PA6T is still vulnerable
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Fri, 31 Dec 2021 09:05:26 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,58 +80,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "R.T.Dickinson" <rtd@a-eon.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Matthew Leaman <matthew@a-eon.biz>
+Cc: Andrew Lunn <andrew@lunn.ch>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Vladimir Oltean <vladimir.oltean@nxp.com>,
+ fido_max@inbox.ru, Rob Herring <robh+dt@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Maxim Kiselev <bigunclemax@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 29, 2021 at 8:07 AM Christian Zigotzky
-<chzigotzky@xenosoft.de> wrote:
->
-> Hi All,
->
-> The P.A. Semi PA6T is still vulnerable.
->
-> Architecture:                    ppc64
-> CPU op-mode(s):                  32-bit, 64-bit
-> Byte Order:                      Big Endian
-> CPU(s):                          2
-> On-line CPU(s) list:             0,1
-> Thread(s) per core:              1
-> Core(s) per socket:              2
-> Socket(s):                       1
-> Model:                           1.2 (pvr 0090 0102)
-> Model name:                      PA6T, altivec supported
-> L1d cache:                       128 KiB
-> L1i cache:                       128 KiB
-> Vulnerability Itlb multihit:     Not affected
-> Vulnerability L1tf:              Vulnerable
-> Vulnerability Mds:               Not affected
-> Vulnerability Meltdown:          Vulnerable
-> Vulnerability Spec store bypass: Vulnerable
-> Vulnerability Spectre v1:        Mitigation; __user pointer sanitization
-> Vulnerability Spectre v2:        Vulnerable
-> Vulnerability Srbds:             Not affected
-> Vulnerability Tsx async abort:   Not affected
->
-> Could you please check this issue?
+Fix network interface names for the switch ports according to labels
+that are written on the front panel of the board. They start from ETH3
+and end at ETH10.
 
-I'm not sure where you are directing this inquiry, you sent it to: me
-and the mailing list. So, just in case there's any expectation of a
-response:
+Fixes: e69eb0824d8c ("powerpc: dts: t1040rdb: add ports for Seville
+Ethernet switch")
+Signed-off-by: Maxim Kiselev <bigunclemax@gmail.com>
+Reviewed-by: Maxim Kochetkov <fido_max@inbox.ru>
+---
+ arch/powerpc/boot/dts/fsl/t1040rdb.dts | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-I'm not able to spend time investigating side channel exposures on
-PA6T, the platform is unsupported and best-effort on spare time (of
-which I don't have enough). I don't have hardware set up to test it at
-the moment.
+diff --git a/arch/powerpc/boot/dts/fsl/t1040rdb.dts b/arch/powerpc/boot/dts/fsl/t1040rdb.dts
+index af0c8a6f56138..b6733e7e65805 100644
+--- a/arch/powerpc/boot/dts/fsl/t1040rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t1040rdb.dts
+@@ -119,7 +119,7 @@ &seville_port0 {
+ 	managed = "in-band-status";
+ 	phy-handle = <&phy_qsgmii_0>;
+ 	phy-mode = "qsgmii";
+-	label = "ETH5";
++	label = "ETH3";
+ 	status = "okay";
+ };
+ 
+@@ -135,7 +135,7 @@ &seville_port2 {
+ 	managed = "in-band-status";
+ 	phy-handle = <&phy_qsgmii_2>;
+ 	phy-mode = "qsgmii";
+-	label = "ETH7";
++	label = "ETH5";
+ 	status = "okay";
+ };
+ 
+@@ -151,7 +151,7 @@ &seville_port4 {
+ 	managed = "in-band-status";
+ 	phy-handle = <&phy_qsgmii_4>;
+ 	phy-mode = "qsgmii";
+-	label = "ETH9";
++	label = "ETH7";
+ 	status = "okay";
+ };
+ 
+@@ -167,7 +167,7 @@ &seville_port6 {
+ 	managed = "in-band-status";
+ 	phy-handle = <&phy_qsgmii_6>;
+ 	phy-mode = "qsgmii";
+-	label = "ETH11";
++	label = "ETH9";
+ 	status = "okay";
+ };
+ 
+-- 
+2.32.0
 
-While enabling some of the powerpc shared mitigations wouldn't be a
-lot of work (cache flushes, etc), I expect them to have performance
-impact that needs some effort to measure/investigate.
-
-Have you confirmed that the published exploits are reproducible on the platform?
-
-
--Olof
