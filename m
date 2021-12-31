@@ -4,69 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 855D0C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Dec 2021 22:07:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31021C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Dec 2021 12:05:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JQ2SN6m58z3cBQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Dec 2021 09:07:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=pEDv+2QI;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JQP3b2B12z3cCj
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Dec 2021 23:05:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::135;
- helo=mail-lf1-x135.google.com; envelope-from=bigunclemax@gmail.com;
+ smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18;
+ helo=fornost.hmeau.com; envelope-from=herbert@gondor.apana.org.au;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=pEDv+2QI; dkim-atps=neutral
-Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com
- [IPv6:2a00:1450:4864:20::135])
+X-Greylist: delayed 1791 seconds by postgrey-1.36 at boromir;
+ Fri, 31 Dec 2021 23:05:03 AEDT
+Received: from fornost.hmeau.com (helcar.hmeau.com [216.24.177.18])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JPsF60xl2z2yN4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Dec 2021 02:11:51 +1100 (AEDT)
-Received: by mail-lf1-x135.google.com with SMTP id g11so55136126lfu.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Dec 2021 07:11:51 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=25gPE1M09oN8YrsQ7EedKvu1Nlub3NmgdpsF+z+nV2o=;
- b=pEDv+2QIhGyWVoakqtkOEPAge/rRZUZ4H7/dtqrlICetNG02IT8UgWsbOqU+EM4ya6
- pIsiLng+8FoQaBvcCpzdA4dbKMWkH+WckGl3R4HnYGPFDhCvhTfzATWRMQn1C9dLS+yM
- 6K++jQrzn/WSDVAaPEToh7RqMo9Cb6o3JX0e0PJOaadsmyJGiRTWwdKrLNRsDvxPxcjH
- 6n8+YVYxddQu/g4y3h7WRIztsqNF0KNykNTf/dK9GZPBncW+qgJdbVTnaUyU1zoIsvGt
- 9UULvXumRTymp+9x/YPyXkO68GWa6tKOORPK6TY5Ry+Cobd3Yo/kU0w4PiXFaUOUXarA
- l6eA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=25gPE1M09oN8YrsQ7EedKvu1Nlub3NmgdpsF+z+nV2o=;
- b=jETc4gmQuin4ZOBEq+7f+rmeVX1TZAmRVghiebXOw/hdi5wfaRrQolnBEeIWAr6OKD
- 5QSMg33JGRAi055kO/wYBxP9/goe48qy+xrD2clSjTvl/bDTpOihxajm8Lfvde2PuQ6z
- Kk0JXlFyo0skNSOMKabXf3jeO5ZjliO52u8RtDw3iUNr2jt82Pz0fCGj3vPogwtRmqp0
- 8pm0pGZ7/zDzUECwjODLtYmbIopBU15txGBgS0WBe22w+OmRSckwRSIvLtn/gJ7cOWCl
- /nkQ1cX+8Rj76O7WucRHb6Q5KO+AhwDSx6/+NOQyy6vjsyFFtxX5RonjV/AjXXiOaQl+
- eRHg==
-X-Gm-Message-State: AOAM5321fJtOjLWlTSU1oGn0OcBfodgq4YgrVkzn/UDDT3XK6bTm/tU4
- pIEYqEaXF1Ri8Cyb5IL+K6o=
-X-Google-Smtp-Source: ABdhPJw/+ynSKnGXNZQ0sEEeoH7eFHBqPDdsjXpW3eYkqYPGV98hOjcDeDedrPDAavUPldcQ1xKOUQ==
-X-Received: by 2002:ac2:51bc:: with SMTP id f28mr27486987lfk.222.1640877103736; 
- Thu, 30 Dec 2021 07:11:43 -0800 (PST)
-Received: from localhost.localdomain ([185.6.236.169])
- by smtp.googlemail.com with ESMTPSA id l7sm1983392lfg.89.2021.12.30.07.11.42
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 30 Dec 2021 07:11:43 -0800 (PST)
-From: Maxim Kiselev <bigunclemax@gmail.com>
-To: 
-Subject: [PATCH] powerpc: dts: t104xrdb: fix phy type for FMAN 4/5
-Date: Thu, 30 Dec 2021 18:11:21 +0300
-Message-Id: <20211230151123.1258321-1-bigunclemax@gmail.com>
-X-Mailer: git-send-email 2.32.0
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JQP333njFz2xDY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Dec 2021 23:05:03 +1100 (AEDT)
+Received: from gwarestrin.arnor.me.apana.org.au ([192.168.103.7])
+ by fornost.hmeau.com with smtp (Exim 4.92 #5 (Debian))
+ id 1n3GB5-0004sN-4E; Fri, 31 Dec 2021 22:34:32 +1100
+Received: by gwarestrin.arnor.me.apana.org.au (sSMTP sendmail emulation);
+ Fri, 31 Dec 2021 22:34:30 +1100
+Date: Fri, 31 Dec 2021 22:34:30 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
+Subject: Re: [PATCH 0/5] Remove duplicate context init function for sha
+ algorithm
+Message-ID: <Yc7qxrxxIMr5kPSj@gondor.apana.org.au>
+References: <20211220092318.5793-1-tianjia.zhang@linux.alibaba.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 31 Dec 2021 09:05:26 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211220092318.5793-1-tianjia.zhang@linux.alibaba.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,44 +48,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, fido_max@inbox.ru,
- Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Maxim Kiselev <bigunclemax@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
+ linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linux-crypto@vger.kernel.org,
+ sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-T1040RDB has two RTL8211E-VB phys which requires setting
-of internal delays for correct work.
+On Mon, Dec 20, 2021 at 05:23:13PM +0800, Tianjia Zhang wrote:
+> This series of patches is mainly for repetitive code cleaning. The sha
+> algorithm has provided generic context initialization implementation.
+> The context initialization code in the optimized implementation of each
+> platform is a repetitive code and can be deleted. The sha*_base_init()
+> series of functions are used uniformly.
+> 
+> Tianjia Zhang (5):
+>   crypto: sha256 - remove duplicate generic hash init function
+>   crypto: mips/sha - remove duplicate hash init function
+>   crypto: powerpc/sha - remove duplicate hash init function
+>   crypto: sparc/sha - remove duplicate hash init function
+>   crypto: s390/sha512 - Use macros instead of direct IV numbers
+> 
+>  arch/mips/cavium-octeon/crypto/octeon-sha1.c  | 17 +-------
+>  .../mips/cavium-octeon/crypto/octeon-sha256.c | 39 ++-----------------
+>  .../mips/cavium-octeon/crypto/octeon-sha512.c | 39 ++-----------------
+>  arch/powerpc/crypto/sha1-spe-glue.c           | 17 +-------
+>  arch/powerpc/crypto/sha1.c                    | 14 +------
+>  arch/powerpc/crypto/sha256-spe-glue.c         | 39 ++-----------------
+>  arch/s390/crypto/sha512_s390.c                | 32 +++++++--------
+>  arch/sparc/crypto/sha1_glue.c                 | 14 +------
+>  arch/sparc/crypto/sha256_glue.c               | 37 ++----------------
+>  arch/sparc/crypto/sha512_glue.c               | 37 ++----------------
+>  crypto/sha256_generic.c                       | 16 +-------
+>  11 files changed, 41 insertions(+), 260 deletions(-)
 
-Changing the phy-connection-type property to `rgmii-id`
-will fix this issue.
-
-Signed-off-by: Maxim Kiselev <bigunclemax@gmail.com>
-Reviewed-by: Maxim Kochetkov <fido_max@inbox.ru>
----
- arch/powerpc/boot/dts/fsl/t104xrdb.dtsi | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-index 099a598c74c00..bfe1ed5be3374 100644
---- a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-@@ -139,12 +139,12 @@ pca9546@77 {
- 		fman@400000 {
- 			ethernet@e6000 {
- 				phy-handle = <&phy_rgmii_0>;
--				phy-connection-type = "rgmii";
-+				phy-connection-type = "rgmii-id";
- 			};
- 
- 			ethernet@e8000 {
- 				phy-handle = <&phy_rgmii_1>;
--				phy-connection-type = "rgmii";
-+				phy-connection-type = "rgmii-id";
- 			};
- 
- 			mdio0: mdio@fc000 {
+All applied.  Thanks.
 -- 
-2.32.0
-
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
