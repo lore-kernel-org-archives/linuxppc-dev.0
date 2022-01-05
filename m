@@ -4,88 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E73AFC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jan 2022 21:54:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B709CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jan 2022 23:20:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JTjtv3HDdz3cP8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jan 2022 08:54:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JTlpN0HM5z30Cw
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jan 2022 10:20:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm2 header.b=jGom0jRZ;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=SO02xALW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LpOZLfG/;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=sent.com (client-ip=66.111.4.230;
- helo=new4-smtp.messagingengine.com; envelope-from=zi.yan@sent.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256
- header.s=fm2 header.b=jGom0jRZ; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm1 header.b=SO02xALW; 
- dkim-atps=neutral
-Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com
- [66.111.4.230])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=LpOZLfG/; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JTjm112D7z2xgb
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jan 2022 08:48:33 +1100 (AEDT)
-Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
- by mailnew.nyi.internal (Postfix) with ESMTP id ECF0E580561;
- Wed,  5 Jan 2022 16:48:26 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute4.internal (MEProxy); Wed, 05 Jan 2022 16:48:26 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sent.com; h=from
- :to:cc:subject:date:message-id:in-reply-to:references:reply-to
- :mime-version:content-transfer-encoding; s=fm2; bh=i5PR4FWm5EakP
- MkM2WD3s3D7Gp7BwGYZgyto5AB1H+A=; b=jGom0jRZSFHXrg1CS6RUip8HsmYj0
- 3PheJTpvIcw5TEN3ohqR/Ma28+eS3iu6zlhcTP7cpjlNbSRIE7YjpML56aHPrvIA
- +4GCENqlIs1mrOA8cTTe6ODjaj/IIYn3v8Qtnh4HttRhILcr/pd8ruEjGU4hNGLV
- 1/U3mzoPK1PlgfFENaYnLxCYwzg0lcObzxYKbQIClfbgKOIq4/g7ESkYp4G16GaS
- SkUw4/Cd2XElHlNC+nSdsqJ6mfysMNjUhgm69pVRho2izlvpuUSfRQA2u3WNXQdi
- /OMBHAnq7TMG7/Anti0xBbKSe8Qv5J0Q0JemZrb5BY048UH5QAAWRht0g==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:date:from
- :in-reply-to:message-id:mime-version:references:reply-to:subject
- :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm1; bh=i5PR4FWm5EakPMkM2WD3s3D7Gp7BwGYZgyto5AB1H+A=; b=SO02xALW
- XLfRTAl0GBWZ21+X0VJGIktyQxLwkvOh1ddauSqlMPL0vAt1wDSerfK+IGkyIKzq
- quhPthzVNMPD+LyBukxDsTP89RoxSq3jwYOKrLqBdShkg5IdkzsDrloNQLCcPSHA
- 35JMuHFblanwxMyV6jrcK1PHNQI5NU9br75DPp971SoUx/EyUuh14KUtFmg0PYj6
- szv/SLRDYtYTeDwj7DdjY5ErT9qlO8lrryqEQCOQYj8oMiUBsKPEqpAOahGpIoHm
- zSDFrgc/nfTo5K45SbfshUEKCsL4hLo/lSqJ3n8MsUibeourM4SwPREC65DN/96f
- 2WqsXmvVvF9HUg==
-X-ME-Sender: <xms:KhLWYSpj6x5nBkE68re68OwL3j37lag2EAyowxRoI4Lmfl60nt-kbQ>
- <xme:KhLWYQoR_8MWTGNKel2lNOXQZ4MEukT3tG6PTiTcz4uY3x_auD4JrcaHLZJuYlfSC
- pFtKzkjp5uLSkJ-SA>
-X-ME-Received: <xmr:KhLWYXOVgfWwxFdvWfF96vAimZ1NbGvvX2U8uwTxk25Hpb0BaCke4zZwskkXkowsDNyqAFJc>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvuddrudefjedgieekucetufdoteggodetrfdotf
- fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
- uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- cujfgurhephffvufffkffojghfrhgggfestdhqredtredttdenucfhrhhomhepkghiucgj
- rghnuceoiihirdihrghnsehsvghnthdrtghomheqnecuggftrfgrthhtvghrnhepieejue
- dvueduuefhgefhheeiuedvtedvuefgieegveetueeiueehtdegudehfeelnecuvehluhhs
- thgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepiihirdihrghnsehsvg
- hnthdrtghomh
-X-ME-Proxy: <xmx:KhLWYR5gWblxfqEOHQHmeqm7Pk1tG-0IAb18i-LCKfgHhFyjrcBI8w>
- <xmx:KhLWYR6lVBPqe2BN07Rb-SbdpKZuqC9FilGEdGlCBDlGhJRjjVZg9A>
- <xmx:KhLWYRje8QPp0PSHpCB4XK2fqu6vShfn2DzGe_ium3yaD6moXQlxXw>
- <xmx:KhLWYZydFgNoPX96UAxqOmfB6HJJWhSavlcNiZflMTEg2II6l7ycZw>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
- 5 Jan 2022 16:48:26 -0500 (EST)
-From: Zi Yan <zi.yan@sent.com>
-To: David Hildenbrand <david@redhat.com>,
-	linux-mm@kvack.org
-Subject: [RFC PATCH v3 5/8] mm: page_isolation: check specified range for
- unmovable pages during isolation.
-Date: Wed,  5 Jan 2022 16:47:53 -0500
-Message-Id: <20220105214756.91065-6-zi.yan@sent.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220105214756.91065-1-zi.yan@sent.com>
-References: <20220105214756.91065-1-zi.yan@sent.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JTlnX3Fmqz2yY0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jan 2022 10:19:59 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 205MC5m7013705; 
+ Wed, 5 Jan 2022 23:19:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=5nhAuUGy4s/feljIwBRFAak36LkwKkjrrPJnBSJyHw4=;
+ b=LpOZLfG/yorAP1uqCownEE2tB5vYpx6Z/6JYUsqzx6804FgGe7wwbSeKGbFki6KN5Voo
+ DT9f+Eb643E2TNu0hrW6jh43Xv6xd6ujPZk4jRrR4unKMlpYu2wVVIbAqELQq5KF6gFS
+ r4iHlmIiQqGA5Wbw9VQEmKAIqaYAAgNESIGhb98zQIgmojXdc7ZkbP+9l6DvGc1+uKSU
+ PLomTeaZGYFIKiYAQpRdmmbTq4/WTIwvFOLKkMKQ60BbUrgLgYHFvE49qOmTb3QWq2U9
+ qRzi1FgPM2fexLheUTzYrez8nNH/5v2k0JI5UQqGmZ6PITlWGlddLklCzVjueVWuBd4c 0Q== 
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3dckxtd1hc-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 05 Jan 2022 23:19:53 +0000
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 205NIK11022817;
+ Wed, 5 Jan 2022 23:19:52 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma02dal.us.ibm.com with ESMTP id 3daekbj5a3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 05 Jan 2022 23:19:52 +0000
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 205NJoOq36897172
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 5 Jan 2022 23:19:50 GMT
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C359B6E054;
+ Wed,  5 Jan 2022 23:19:50 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 602986E053;
+ Wed,  5 Jan 2022 23:19:50 +0000 (GMT)
+Received: from localhost (unknown [9.65.92.26])
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed,  5 Jan 2022 23:19:49 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Laurent Dufour <ldufour@linux.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>
+Subject: Re: [PATCH v4] powerpc/pseries: read the lpar name from the firmware
+In-Reply-To: <25527544-b0ac-596c-3876-560493b99f6b@linux.ibm.com>
+References: <20211207171109.22793-1-ldufour@linux.ibm.com>
+ <25527544-b0ac-596c-3876-560493b99f6b@linux.ibm.com>
+Date: Wed, 05 Jan 2022 17:19:49 -0600
+Message-ID: <8735m1ixd6.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: AHwdpzrmszQBOJqeRl9Xam2MeG5QAYGM
+X-Proofpoint-ORIG-GUID: AHwdpzrmszQBOJqeRl9Xam2MeG5QAYGM
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2022-01-05_07,2022-01-04_01,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0
+ lowpriorityscore=0 mlxlogscore=801 priorityscore=1501 spamscore=0
+ mlxscore=0 bulkscore=0 clxscore=1011 suspectscore=0 malwarescore=0
+ adultscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2110150000 definitions=main-2201050146
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,425 +99,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Zi Yan <ziy@nvidia.com>
-Cc: Mel Gorman <mgorman@techsingularity.net>, Zi Yan <ziy@nvidia.com>,
- Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, Eric Ren <renzhengeek@gmail.com>,
- virtualization@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>, Vlastimil Babka <vbabka@suse.cz>,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Zi Yan <ziy@nvidia.com>
+Laurent Dufour <ldufour@linux.ibm.com> writes:
+> On 07/12/2021, 18:11:09, Laurent Dufour wrote:
+>> The LPAR name may be changed after the LPAR has been started in the HMC.
+>> In that case lparstat command is not reporting the updated value because it
+>> reads it from the device tree which is read at boot time.
+>> 
+>> However this value could be read from RTAS.
+>> 
+>> Adding this value in the /proc/powerpc/lparcfg output allows to read the
+>> updated value.
+>
+> Do you consider taking that patch soon?
 
-Enable set_migratetype_isolate() to check specified sub-range for
-unmovable pages during isolation. Page isolation is done
-at max(MAX_ORDER_NR_PAEGS, pageblock_nr_pages) granularity, but not all
-pages within that granularity are intended to be isolated. For example,
-alloc_contig_range(), which uses page isolation, allows ranges without
-alignment. This commit makes unmovable page check only look for
-interesting pages, so that page isolation can succeed for any
-non-overlapping ranges.
+This version prints an error on non-PowerVM guests the first time
+lparcfg is read.
 
-has_unmovable_pages() is moved to mm/page_isolation.c since it is only
-used by page isolation.
-
-Signed-off-by: Zi Yan <ziy@nvidia.com>
----
- include/linux/page-isolation.h |   3 +-
- mm/memory_hotplug.c            |  12 ++-
- mm/page_alloc.c                | 122 +--------------------------
- mm/page_isolation.c            | 148 +++++++++++++++++++++++++++++++--
- 4 files changed, 153 insertions(+), 132 deletions(-)
-
-diff --git a/include/linux/page-isolation.h b/include/linux/page-isolation.h
-index 572458016331..a4d2687ed4e6 100644
---- a/include/linux/page-isolation.h
-+++ b/include/linux/page-isolation.h
-@@ -33,8 +33,6 @@ static inline bool is_migrate_isolate(int migratetype)
- #define MEMORY_OFFLINE	0x1
- #define REPORT_FAILURE	0x2
-=20
--struct page *has_unmovable_pages(struct zone *zone, struct page *page,
--				 int migratetype, int flags);
- void set_pageblock_migratetype(struct page *page, int migratetype);
- int move_freepages_block(struct zone *zone, struct page *page,
- 				int migratetype, int *num_movable);
-@@ -44,6 +42,7 @@ int move_freepages_block(struct zone *zone, struct page *=
-page,
-  */
- int
- start_isolate_page_range(unsigned long start_pfn, unsigned long end_pfn,
-+			 unsigned long isolate_start, unsigned long isolate_end,
- 			 unsigned migratetype, int flags);
-=20
- /*
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 0139b77c51d5..5db84c3fa882 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1901,8 +1901,18 @@ int __ref offline_pages(unsigned long start_pfn, uns=
-igned long nr_pages,
- 	zone_pcp_disable(zone);
- 	lru_cache_disable();
-=20
--	/* set above range as isolated */
-+	/*
-+	 * set above range as isolated
-+	 *
-+	 * start_pfn and end_pfn are the same as isolate_start and isolate_end,
-+	 * because start_pfn and end_pfn are already PAGES_PER_SECTION
-+	 * (>=3D MAX_ORDER_NR_PAGES) aligned; if start_pfn is
-+	 * pageblock_nr_pages aligned in memmap_on_memory case, there is no
-+	 * need to isolate pages before start_pfn, since they are used by
-+	 * memmap thus not user visible.
-+	 */
- 	ret =3D start_isolate_page_range(start_pfn, end_pfn,
-+				       start_pfn, end_pfn,
- 				       MIGRATE_MOVABLE,
- 				       MEMORY_OFFLINE | REPORT_FAILURE);
- 	if (ret) {
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index e1c09ae54e31..faee7637740a 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -8864,125 +8864,6 @@ void *__init alloc_large_system_hash(const char *ta=
-blename,
- 	return table;
- }
-=20
--/*
-- * This function checks whether pageblock includes unmovable pages or not.
-- *
-- * PageLRU check without isolation or lru_lock could race so that
-- * MIGRATE_MOVABLE block might include unmovable pages. And __PageMovable
-- * check without lock_page also may miss some movable non-lru pages at
-- * race condition. So you can't expect this function should be exact.
-- *
-- * Returns a page without holding a reference. If the caller wants to
-- * dereference that page (e.g., dumping), it has to make sure that it
-- * cannot get removed (e.g., via memory unplug) concurrently.
-- *
-- */
--struct page *has_unmovable_pages(struct zone *zone, struct page *page,
--				 int migratetype, int flags)
--{
--	unsigned long iter =3D 0;
--	unsigned long pfn =3D page_to_pfn(page);
--	unsigned long offset =3D pfn % pageblock_nr_pages;
--
--	if (is_migrate_cma_page(page)) {
--		/*
--		 * CMA allocations (alloc_contig_range) really need to mark
--		 * isolate CMA pageblocks even when they are not movable in fact
--		 * so consider them movable here.
--		 */
--		if (is_migrate_cma(migratetype))
--			return NULL;
--
--		return page;
--	}
--
--	for (; iter < pageblock_nr_pages - offset; iter++) {
--		page =3D pfn_to_page(pfn + iter);
--
--		/*
--		 * Both, bootmem allocations and memory holes are marked
--		 * PG_reserved and are unmovable. We can even have unmovable
--		 * allocations inside ZONE_MOVABLE, for example when
--		 * specifying "movablecore".
--		 */
--		if (PageReserved(page))
--			return page;
--
--		/*
--		 * If the zone is movable and we have ruled out all reserved
--		 * pages then it should be reasonably safe to assume the rest
--		 * is movable.
--		 */
--		if (zone_idx(zone) =3D=3D ZONE_MOVABLE)
--			continue;
--
--		/*
--		 * Hugepages are not in LRU lists, but they're movable.
--		 * THPs are on the LRU, but need to be counted as #small pages.
--		 * We need not scan over tail pages because we don't
--		 * handle each tail page individually in migration.
--		 */
--		if (PageHuge(page) || PageTransCompound(page)) {
--			struct page *head =3D compound_head(page);
--			unsigned int skip_pages;
--
--			if (PageHuge(page)) {
--				if (!hugepage_migration_supported(page_hstate(head)))
--					return page;
--			} else if (!PageLRU(head) && !__PageMovable(head)) {
--				return page;
--			}
--
--			skip_pages =3D compound_nr(head) - (page - head);
--			iter +=3D skip_pages - 1;
--			continue;
--		}
--
--		/*
--		 * We can't use page_count without pin a page
--		 * because another CPU can free compound page.
--		 * This check already skips compound tails of THP
--		 * because their page->_refcount is zero at all time.
--		 */
--		if (!page_ref_count(page)) {
--			if (PageBuddy(page))
--				iter +=3D (1 << buddy_order(page)) - 1;
--			continue;
--		}
--
--		/*
--		 * The HWPoisoned page may be not in buddy system, and
--		 * page_count() is not 0.
--		 */
--		if ((flags & MEMORY_OFFLINE) && PageHWPoison(page))
--			continue;
--
--		/*
--		 * We treat all PageOffline() pages as movable when offlining
--		 * to give drivers a chance to decrement their reference count
--		 * in MEM_GOING_OFFLINE in order to indicate that these pages
--		 * can be offlined as there are no direct references anymore.
--		 * For actually unmovable PageOffline() where the driver does
--		 * not support this, we will fail later when trying to actually
--		 * move these pages that still have a reference count > 0.
--		 * (false negatives in this function only)
--		 */
--		if ((flags & MEMORY_OFFLINE) && PageOffline(page))
--			continue;
--
--		if (__PageMovable(page) || PageLRU(page))
--			continue;
--
--		/*
--		 * If there are RECLAIMABLE pages, we need to check
--		 * it.  But now, memory offline itself doesn't call
--		 * shrink_node_slabs() and it still to be fixed.
--		 */
--		return page;
--	}
--	return NULL;
--}
--
- #ifdef CONFIG_CONTIG_ALLOC
- static unsigned long pfn_max_align_down(unsigned long pfn)
- {
-@@ -9226,7 +9107,8 @@ int alloc_contig_range(unsigned long start, unsigned =
-long end,
- 	 * put back to page allocator so that buddy can use them.
- 	 */
-=20
--	ret =3D start_isolate_page_range(isolate_start, isolate_end, migratetype,=
- 0);
-+	ret =3D start_isolate_page_range(start, end, isolate_start, isolate_end,
-+				       migratetype, 0);
- 	if (ret)
- 		goto done;
-=20
-diff --git a/mm/page_isolation.c b/mm/page_isolation.c
-index 6a0ddda6b3c5..7a7991460eb9 100644
---- a/mm/page_isolation.c
-+++ b/mm/page_isolation.c
-@@ -15,12 +15,143 @@
- #define CREATE_TRACE_POINTS
- #include <trace/events/page_isolation.h>
-=20
--static int set_migratetype_isolate(struct page *page, int migratetype, int=
- isol_flags)
-+/*
-+ * This function checks whether pageblock within [start_pfn, end_pfn) incl=
-udes
-+ * unmovable pages or not.
-+ *
-+ * PageLRU check without isolation or lru_lock could race so that
-+ * MIGRATE_MOVABLE block might include unmovable pages. And __PageMovable
-+ * check without lock_page also may miss some movable non-lru pages at
-+ * race condition. So you can't expect this function should be exact.
-+ *
-+ * Returns a page without holding a reference. If the caller wants to
-+ * dereference that page (e.g., dumping), it has to make sure that it
-+ * cannot get removed (e.g., via memory unplug) concurrently.
-+ *
-+ */
-+static struct page *has_unmovable_pages(struct zone *zone, struct page *pa=
-ge,
-+				 int migratetype, int flags,
-+				 unsigned long start_pfn, unsigned long end_pfn)
-+{
-+	unsigned long first_pfn =3D max(page_to_pfn(page), start_pfn);
-+	unsigned long pfn =3D first_pfn;
-+	unsigned long last_pfn =3D min(ALIGN(pfn + 1, pageblock_nr_pages), end_pf=
-n);
-+
-+	page =3D pfn_to_page(pfn);
-+
-+	if (is_migrate_cma_page(page)) {
-+		/*
-+		 * CMA allocations (alloc_contig_range) really need to mark
-+		 * isolate CMA pageblocks even when they are not movable in fact
-+		 * so consider them movable here.
-+		 */
-+		if (is_migrate_cma(migratetype))
-+			return NULL;
-+
-+		return page;
-+	}
-+
-+	for (pfn =3D first_pfn; pfn < last_pfn; pfn++) {
-+		page =3D pfn_to_page(pfn);
-+
-+		/*
-+		 * Both, bootmem allocations and memory holes are marked
-+		 * PG_reserved and are unmovable. We can even have unmovable
-+		 * allocations inside ZONE_MOVABLE, for example when
-+		 * specifying "movablecore".
-+		 */
-+		if (PageReserved(page))
-+			return page;
-+
-+		/*
-+		 * If the zone is movable and we have ruled out all reserved
-+		 * pages then it should be reasonably safe to assume the rest
-+		 * is movable.
-+		 */
-+		if (zone_idx(zone) =3D=3D ZONE_MOVABLE)
-+			continue;
-+
-+		/*
-+		 * Hugepages are not in LRU lists, but they're movable.
-+		 * THPs are on the LRU, but need to be counted as #small pages.
-+		 * We need not scan over tail pages because we don't
-+		 * handle each tail page individually in migration.
-+		 */
-+		if (PageHuge(page) || PageTransCompound(page)) {
-+			struct page *head =3D compound_head(page);
-+			unsigned int skip_pages;
-+
-+			if (PageHuge(page)) {
-+				if (!hugepage_migration_supported(page_hstate(head)))
-+					return page;
-+			} else if (!PageLRU(head) && !__PageMovable(head)) {
-+				return page;
-+			}
-+
-+			skip_pages =3D compound_nr(head) - (page - head);
-+			pfn +=3D skip_pages - 1;
-+			continue;
-+		}
-+
-+		/*
-+		 * We can't use page_count without pin a page
-+		 * because another CPU can free compound page.
-+		 * This check already skips compound tails of THP
-+		 * because their page->_refcount is zero at all time.
-+		 */
-+		if (!page_ref_count(page)) {
-+			if (PageBuddy(page))
-+				pfn +=3D (1 << buddy_order(page)) - 1;
-+			continue;
-+		}
-+
-+		/*
-+		 * The HWPoisoned page may be not in buddy system, and
-+		 * page_count() is not 0.
-+		 */
-+		if ((flags & MEMORY_OFFLINE) && PageHWPoison(page))
-+			continue;
-+
-+		/*
-+		 * We treat all PageOffline() pages as movable when offlining
-+		 * to give drivers a chance to decrement their reference count
-+		 * in MEM_GOING_OFFLINE in order to indicate that these pages
-+		 * can be offlined as there are no direct references anymore.
-+		 * For actually unmovable PageOffline() where the driver does
-+		 * not support this, we will fail later when trying to actually
-+		 * move these pages that still have a reference count > 0.
-+		 * (false negatives in this function only)
-+		 */
-+		if ((flags & MEMORY_OFFLINE) && PageOffline(page))
-+			continue;
-+
-+		if (__PageMovable(page) || PageLRU(page))
-+			continue;
-+
-+		/*
-+		 * If there are RECLAIMABLE pages, we need to check
-+		 * it.  But now, memory offline itself doesn't call
-+		 * shrink_node_slabs() and it still to be fixed.
-+		 */
-+		return page;
-+	}
-+	return NULL;
-+}
-+
-+/*
-+ * This function set pageblock migratetype to isolate if no unmovable page=
- is
-+ * present in [start_pfn, end_pfn). The pageblock must be within
-+ * [start_pfn, end_pfn).
-+ */
-+static int set_migratetype_isolate(struct page *page, int migratetype, int=
- isol_flags,
-+			unsigned long start_pfn, unsigned long end_pfn)
- {
- 	struct zone *zone =3D page_zone(page);
- 	struct page *unmovable;
- 	unsigned long flags;
-=20
-+	VM_BUG_ON(page_to_pfn(page) < start_pfn || page_to_pfn(page) >=3D end_pfn=
-);
-+
- 	spin_lock_irqsave(&zone->lock, flags);
-=20
- 	/*
-@@ -37,7 +168,7 @@ static int set_migratetype_isolate(struct page *page, in=
-t migratetype, int isol_
- 	 * FIXME: Now, memory hotplug doesn't call shrink_slab() by itself.
- 	 * We just check MOVABLE pages.
- 	 */
--	unmovable =3D has_unmovable_pages(zone, page, migratetype, isol_flags);
-+	unmovable =3D has_unmovable_pages(zone, page, migratetype, isol_flags, st=
-art_pfn, end_pfn);
- 	if (!unmovable) {
- 		unsigned long nr_pages;
- 		int mt =3D get_pageblock_migratetype(page);
-@@ -185,20 +316,19 @@ __first_valid_page(unsigned long pfn, unsigned long n=
-r_pages)
-  * Return: 0 on success and -EBUSY if any part of range cannot be isolated.
-  */
- int start_isolate_page_range(unsigned long start_pfn, unsigned long end_pf=
-n,
-+			     unsigned long isolate_start, unsigned long isolate_end,
- 			     unsigned migratetype, int flags)
- {
- 	unsigned long pfn;
- 	struct page *page;
-=20
--	BUG_ON(!IS_ALIGNED(start_pfn, pageblock_nr_pages));
--	BUG_ON(!IS_ALIGNED(end_pfn, pageblock_nr_pages));
--
--	for (pfn =3D start_pfn;
--	     pfn < end_pfn;
-+	for (pfn =3D isolate_start;
-+	     pfn < isolate_end;
- 	     pfn +=3D pageblock_nr_pages) {
- 		page =3D __first_valid_page(pfn, pageblock_nr_pages);
--		if (page && set_migratetype_isolate(page, migratetype, flags)) {
--			undo_isolate_page_range(start_pfn, pfn, migratetype);
-+		if (page && set_migratetype_isolate(page, migratetype, flags,
-+					start_pfn, end_pfn)) {
-+			undo_isolate_page_range(isolate_start, pfn, migratetype);
- 			return -EBUSY;
- 		}
- 	}
---=20
-2.34.1
-
+And I still contend that having this function fall back to reporting the
+partition name in the DT would provide a beneficial consistency in the
+user-facing API, allowing programs to avoid hypervisor-specific branches
+in their code. I don't understand the resistance I've encountered here.
+The fallback I'm suggesting (a root node property lookup) is certainly
+not more complex than the RTAS call sequence you've already implemented.
