@@ -4,55 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 147A6C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jan 2022 20:29:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1890C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jan 2022 21:14:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JVHyP4Srmz3cD3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 07:29:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JVJyM6bM0z301M
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 08:14:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=F+qwbyGH;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CutrWWLq;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org;
- envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=F+qwbyGH; 
- dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=CutrWWLq; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JVHx11h0Jz2xv0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jan 2022 07:28:21 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id 7D836B823F8;
- Thu,  6 Jan 2022 20:28:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B656C36AE3;
- Thu,  6 Jan 2022 20:28:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1641500897;
- bh=21uqmI0sF0iqFXzWvfwSr8yWzQwcFoXEvQOSpJlA73Q=;
- h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
- b=F+qwbyGHuzSd59HvZAdcWL05m/1dwoHw0g/OWlN9NjtsNLYA9CjiZ2ElVAOi8ifoU
- nwjK6pBaLzl9SFkc64aiFm9xXA/60dEPD5gfqwFNH9Ja1YK+GMSCdk5QV54Gm3K5Lq
- x9wN2hC7VsVxD8mKZpexdSqzLaCZoixn7AOiYc1YrO1/PSpONTvYJtNOCNe76RdbWL
- 00LAaDGFeYt1WoPPpAmE0J8p5+xuLVnLB7jyIwYoJydwywAweOIBdZ5DmzezjNWGTV
- 6/WHdrxYrWqndNnjrbAlWzgPj4yMz7CWcbQyHCiYvRGKunDcR+7p3bQmPPBO9u/ZM2
- SBTXbdFyaBxBg==
-From: Mark Brown <broonie@kernel.org>
-To: perex@perex.cz, tiwai@suse.com, Xiubo.Lee@gmail.com,
- alsa-devel@alsa-project.org, festevam@gmail.com, nicoleotsuka@gmail.com,
- timur@kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>
-In-Reply-To: <1641292835-19085-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1641292835-19085-1-git-send-email-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH 0/3] ASoC: imx-card: several improvement and fixes
-Message-Id: <164150089509.2243486.810361187856950551.b4-ty@kernel.org>
-Date: Thu, 06 Jan 2022 20:28:15 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JVJxV25vdz2xBV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jan 2022 08:13:49 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 206IVb3g017615; 
+ Thu, 6 Jan 2022 21:13:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=KuEOMtUyfPPM9MezCJTSQ3xStJ2buUjqJB18gGW8+Z4=;
+ b=CutrWWLqC0wenAD7aTQK9y5IWQ7WPi5gXR13bEihGS2oyiHRHz8X3ftIuNTW14GzkOxg
+ SaQlGRfx8JQFPNwFUcBaN7OVnsNNGV+Gz+3/g58ByAXcGUgouo55ZAAKuL/TLxkqWRiq
+ BwV2F5XBZBuQjj9b6BvcjDdx5RY5F+KyJD0V17jGW/v/4NtLLeNXHU8+550W/+5boEP6
+ gZynsbX12AmTO1OlQ2bwBq+Avd2tBBaF11pnW+YX6h5t0pmip+y/YcP+gWZJqHGWKmxs
+ DwJUthbbm0tl/J1WPdhypyBrWCDvB/v5RbBs4jnxKRdjLRw7CINSv7ePEmY6kTi8I06+ 7g== 
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3de5sfjmsd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 06 Jan 2022 21:13:47 +0000
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 206L4jKK021871;
+ Thu, 6 Jan 2022 21:13:46 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma02dal.us.ibm.com with ESMTP id 3de5r9km6h-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 06 Jan 2022 21:13:46 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 206LDjDa28770704
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 6 Jan 2022 21:13:45 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5FC116A054;
+ Thu,  6 Jan 2022 21:13:45 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2586C6A04D;
+ Thu,  6 Jan 2022 21:13:45 +0000 (GMT)
+Received: from localhost (unknown [9.160.191.186])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu,  6 Jan 2022 21:13:44 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Laurent Dufour <ldufour@linux.ibm.com>
+Subject: Re: [PATCH v5] powerpc/pseries: read the lpar name from the firmware
+In-Reply-To: <20220106161339.74656-1-ldufour@linux.ibm.com>
+References: <20220106161339.74656-1-ldufour@linux.ibm.com>
+Date: Thu, 06 Jan 2022 15:13:44 -0600
+Message-ID: <878rvsva7r.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: MauGligxdyA9gUZfrr9DY5zagpl3FgWe
+X-Proofpoint-GUID: MauGligxdyA9gUZfrr9DY5zagpl3FgWe
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2022-01-06_09,2022-01-06_01,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 phishscore=0
+ impostorscore=0 mlxscore=0 mlxlogscore=999 clxscore=1015
+ lowpriorityscore=0 suspectscore=0 malwarescore=0 spamscore=0 adultscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2110150000 definitions=main-2201060133
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,49 +97,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: tyreld@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 4 Jan 2022 18:40:32 +0800, Shengjiu Wang wrote:
-> Several improvement and fixes for AK codecs supported on i.MX platfroms
-> 
-> Shengjiu Wang (3):
->   ASoC: imx-card: Need special setting for ak4497 on i.MX8MQ
->   ASoC: imx-card: Fix mclk calculation issue for akcodec
->   ASoC: imx-card: improve the sound quality for low rate
-> 
-> [...]
+Laurent Dufour <ldufour@linux.ibm.com> writes:
+> The LPAR name may be changed after the LPAR has been started in the HMC.
+> In that case lparstat command is not reporting the updated value because it
+> reads it from the device tree which is read at boot time.
+>
+> However this value could be read from RTAS.
+>
+> Adding this value in the /proc/powerpc/lparcfg output allows to read the
+> updated value.
+>
+> However the hypervisor, like Qemu/KVM, may not support this RTAS
+> parameter. In that case the value reported in lparcfg is read from the
+> device tree and so is not updated accordingly.
+>
+> Cc: Nathan Lynch <nathanl@linux.ibm.com>
+> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+> ---
+> v5:
+>  fallback to the device tree value if RTAS is not providing the value.
+> v4:
+>  address Nathan's new comments limiting size of the buffer.
+> v3:
+>  address Michael's comments.
+> v2:
+>  address Nathan's comments.
+>  change title to partition_name aligning with existing partition_id
 
-Applied to
+Thanks Laurent.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
-
-Thanks!
-
-[1/3] ASoC: imx-card: Need special setting for ak4497 on i.MX8MQ
-      commit: 3349b3d0c63b8b6fcca58156d72407f0b2e101ac
-[2/3] ASoC: imx-card: Fix mclk calculation issue for akcodec
-      commit: f331ae5fa59fbfb748317b290648fc3f1a50d932
-[3/3] ASoC: imx-card: improve the sound quality for low rate
-      commit: 3969341813eb56d2dfc39bb64229359a6ae3c195
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+Reviewed-by: Nathan Lynch <nathanl@linux.ibm.com>
