@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5181C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jan 2022 21:53:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BEE2EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jan 2022 21:55:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JVKqL1GClz30LQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 08:53:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JVKt11ZpQz30Dy
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 08:55:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=wanadoo.fr
  (client-ip=80.12.242.129; helo=smtp.smtpout.orange.fr;
@@ -17,27 +17,24 @@ Received: from smtp.smtpout.orange.fr (smtp07.smtpout.orange.fr
  [80.12.242.129])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JVKpm4QKHz2xKR
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jan 2022 08:53:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JVKsY51Jzz2xKR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jan 2022 08:55:29 +1100 (AEDT)
 Received: from pop-os.home ([90.11.185.88]) by smtp.orange.fr with ESMTPA
- id 5aZQntTbg2lVY5aZRnSkzN; Thu, 06 Jan 2022 22:45:28 +0100
+ id 5abzntURZ2lVY5ac0nSlBx; Thu, 06 Jan 2022 22:47:57 +0100
 X-ME-Helo: pop-os.home
 X-ME-Auth: YWZlNiIxYWMyZDliZWIzOTcwYTEyYzlhMmU3ZiQ1M2U2MzfzZDfyZTMxZTBkMTYyNDBjNDJlZmQ3ZQ==
-X-ME-Date: Thu, 06 Jan 2022 22:45:28 +0100
+X-ME-Date: Thu, 06 Jan 2022 22:47:57 +0100
 X-ME-IP: 90.11.185.88
 From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 To: arnd@arndb.de, hch@infradead.org, akpm@linux-foundation.org,
- rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
- mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
- davem@davemloft.net, airlied@linux.ie, vkoul@kernel.org, hao.wu@intel.com,
- trix@redhat.com, mdf@kernel.org, yilun.xu@intel.com,
- awalls@md.metrocast.net, mchehab@kernel.org, sathya.prakash@broadcom.com,
- sreekanth.reddy@broadcom.com, suganath-prabu.subramani@broadcom.com,
- mporter@kernel.crashing.org, alex.bou9@gmail.com, bhelgaas@google.com
-Subject: [PATCH 00/16] Remove usage of the deprecated "pci-dma-compat.h" API
-Date: Thu,  6 Jan 2022 22:45:13 +0100
-Message-Id: <cover.1641500561.git.christophe.jaillet@wanadoo.fr>
+ mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH 02/16] floppy: Remove usage of the deprecated
+ "pci-dma-compat.h" API
+Date: Thu,  6 Jan 2022 22:47:54 +0100
+Message-Id: <3b8dfc91908327b983a44adc18bd6a6f4c4b2d9f.1641500561.git.christophe.jaillet@wanadoo.fr>
 X-Mailer: git-send-email 2.32.0
+In-Reply-To: <cover.1641500561.git.christophe.jaillet@wanadoo.fr>
+References: <cover.1641500561.git.christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -51,105 +48,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linux-scsi@vger.kernel.org,
- MPT-FusionLinux.pdl@broadcom.com, linux-fpga@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- dmaengine@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-media@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This serie axes all the remaining usages of the deprecated "pci-dma-compat.h"
-API.
+In [1], Christoph Hellwig has proposed to remove the wrappers in
+include/linux/pci-dma-compat.h.
 
-All these patches have already been posted.
+Some reasons why this API should be removed have been given by Julia
+Lawall in [2].
 
-They have been generated with a coccinelle script.
-The tricky parts are patches that use dma_alloc_coherent() because the correct
-GFP flag has to be used in place of the previous embedded GFP_ATOMIC.
+A coccinelle script has been used to perform the needed transformation.
+It can be found in [3].
 
-Patches 1-3 are already Reviewed. References to the corresponding mail is
-given below the ---
+[1]: https://lore.kernel.org/kernel-janitors/20200421081257.GA131897@infradead.org/
+[2]: https://lore.kernel.org/kernel-janitors/alpine.DEB.2.22.394.2007120902170.2424@hadrien/
+[3]: https://lore.kernel.org/kernel-janitors/20200716192821.321233-1-christophe.jaillet@wanadoo.fr/
 
-Patch 1-2,4-10 are just generated from the coccinelle script. Only too long
-lines have been hand modified. dma_alloc_coherent() modification are NOT part
-of these patches.
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+---
+Reviewed in: https://lore.kernel.org/kernel-janitors/YdLAqi+WQu4ZhAxE@infradead.org/
+---
+ arch/powerpc/include/asm/floppy.h | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Patch 3 also includes some 'dma_set_mask_and_coherent()' instead of
-'pci_set_dma_mask()/pci_set_consistent_dma_mask()'.
-I've left this additional modification because it was reviewed with it.
-
-Patch 10-15 are the tricky parts. Explanation of which GFP flag is the right one
-is given in each patch. It has been divided in several patches to ease review.
-
-Patch 15 is the only one I'm slighly unsure with. The old code was using a
-GFP_USER flag in the function. I'm not familiar with it.
-I *guess*  that GFP_KERNEL is fine, but maybe it should also be GFP_USER or left
-as GFP_ATOMIC so that nothing is changed.
-
-Patch 16 is the last step that remove "pci-dma-compat.h" and its only usage.
-
-
-All patches, exept 1-2,6 that are architecture specific, have been compile tested.
-
-
-After all that, a few rst files, 1 or 2 strings in error messages and some
-error branching labels should still need some attention. 
-This is some minor issues.
-
-
-Only the cover letter is sent to every one. Each patch is sent to the
-corresponding maintainer(s) + Andrew Morton, Christoph Hellwig and Arnd Bergmann.
-
-
-Best regards.
-
-
-Christophe JAILLET (16):
-  alpha: Remove usage of the deprecated "pci-dma-compat.h" API
-  floppy: Remove usage of the deprecated "pci-dma-compat.h" API
-  fpga: dfl: pci: Remove usage of the deprecated "pci-dma-compat.h" API
-  media: Remove usage of the deprecated "pci-dma-compat.h" API
-  agp/intel: Remove usage of the deprecated "pci-dma-compat.h" API
-  sparc: Remove usage of the deprecated "pci-dma-compat.h" API
-  dmaengine: pch_dma: Remove usage of the deprecated "pci-dma-compat.h"
-    API
-  rapidio/tsi721: Remove usage of the deprecated "pci-dma-compat.h" API
-  media: v4l2-pci-skeleton: Remove usage of the deprecated
-    "pci-dma-compat.h" API
-  scsi: message: fusion: Remove usage of the deprecated
-    "pci-dma-compat.h" API
-  scsi: mptbase: Use dma_alloc_coherent() in 'mpt_alloc_fw_memory()'
-  scsi: mptbase: Use dma_alloc_coherent()
-  scsi: mptsas: Use dma_alloc_coherent() in
-    mptsas_exp_repmanufacture_info()
-  scsi: mptsas: Use dma_alloc_coherent()
-  scsi: mptctl: Use dma_alloc_coherent()
-  PCI: Remove usage of the deprecated "pci-dma-compat.h" API
-
- arch/alpha/include/asm/floppy.h     |   7 +-
- arch/alpha/kernel/pci_iommu.c       |  12 +--
- arch/powerpc/include/asm/floppy.h   |   8 +-
- arch/sparc/kernel/ioport.c          |   2 +-
- drivers/char/agp/intel-gtt.c        |  26 ++---
- drivers/dma/pch_dma.c               |   2 +-
- drivers/fpga/dfl-pci.c              |  14 +--
- drivers/media/pci/cx18/cx18-queue.h |   6 +-
- drivers/media/pci/ivtv/ivtv-queue.h |  25 +++--
- drivers/media/pci/ivtv/ivtv-udma.h  |   8 +-
- drivers/message/fusion/mptbase.c    | 149 ++++++++++++++++------------
- drivers/message/fusion/mptctl.c     |  82 +++++++++------
- drivers/message/fusion/mptlan.c     |  90 +++++++++--------
- drivers/message/fusion/mptsas.c     |  94 +++++++++---------
- drivers/rapidio/devices/tsi721.c    |   8 +-
- include/linux/pci-dma-compat.h      | 129 ------------------------
- include/linux/pci.h                 |   3 -
- samples/v4l/v4l2-pci-skeleton.c     |   2 +-
- 18 files changed, 289 insertions(+), 378 deletions(-)
- delete mode 100644 include/linux/pci-dma-compat.h
-
+diff --git a/arch/powerpc/include/asm/floppy.h b/arch/powerpc/include/asm/floppy.h
+index 7af9a68fd949..f8ce178b43b7 100644
+--- a/arch/powerpc/include/asm/floppy.h
++++ b/arch/powerpc/include/asm/floppy.h
+@@ -134,17 +134,19 @@ static int hard_dma_setup(char *addr, unsigned long size, int mode, int io)
+ 	int dir;
+ 
+ 	doing_vdma = 0;
+-	dir = (mode == DMA_MODE_READ) ? PCI_DMA_FROMDEVICE : PCI_DMA_TODEVICE;
++	dir = (mode == DMA_MODE_READ) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
+ 
+ 	if (bus_addr 
+ 	    && (addr != prev_addr || size != prev_size || dir != prev_dir)) {
+ 		/* different from last time -- unmap prev */
+-		pci_unmap_single(isa_bridge_pcidev, bus_addr, prev_size, prev_dir);
++		dma_unmap_single(&isa_bridge_pcidev->dev, bus_addr, prev_size,
++				 prev_dir);
+ 		bus_addr = 0;
+ 	}
+ 
+ 	if (!bus_addr)	/* need to map it */
+-		bus_addr = pci_map_single(isa_bridge_pcidev, addr, size, dir);
++		bus_addr = dma_map_single(&isa_bridge_pcidev->dev, addr, size,
++					  dir);
+ 
+ 	/* remember this one as prev */
+ 	prev_addr = addr;
 -- 
 2.32.0
 
