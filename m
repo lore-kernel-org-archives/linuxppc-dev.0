@@ -4,48 +4,104 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04AADC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jan 2022 22:07:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23861C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jan 2022 22:26:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JVL7l35Dsz3bcg
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 09:07:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JVLXt2kkxz3bY4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 09:26:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nEUbAZSO;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=iogearbox.net (client-ip=213.133.104.62;
- helo=www62.your-server.de; envelope-from=daniel@iogearbox.net;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sukadev@linux.ibm.com;
  receiver=<UNKNOWN>)
-X-Greylist: delayed 1241 seconds by postgrey-1.36 at boromir;
- Fri, 07 Jan 2022 09:07:23 AEDT
-Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=nEUbAZSO; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JVL7H1CNrz2xsm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jan 2022 09:07:23 +1100 (AEDT)
-Received: from sslproxy03.your-server.de ([88.198.220.132])
- by www62.your-server.de with esmtpsa (TLSv1.3:TLS_AES_256_GCM_SHA384:256)
- (Exim 4.92.3) (envelope-from <daniel@iogearbox.net>)
- id 1n5aaK-000DAv-QH; Thu, 06 Jan 2022 22:46:12 +0100
-Received: from [85.1.206.226] (helo=linux.home)
- by sslproxy03.your-server.de with esmtpsa (TLSv1.3:TLS_AES_256_GCM_SHA384:256)
- (Exim 4.92) (envelope-from <daniel@iogearbox.net>)
- id 1n5aaK-000Xvd-GZ; Thu, 06 Jan 2022 22:46:12 +0100
-Subject: Re: [PATCH 00/13] powerpc/bpf: Some fixes and updates
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>
-References: <cover.1641468127.git.naveen.n.rao@linux.vnet.ibm.com>
-From: Daniel Borkmann <daniel@iogearbox.net>
-Message-ID: <f4f3437d-084f-0858-8795-76e4a0fa5627@iogearbox.net>
-Date: Thu, 6 Jan 2022 22:46:11 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JVLX13G4Fz30CV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jan 2022 09:25:20 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 206KbmbC008728; 
+ Thu, 6 Jan 2022 22:25:03 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ content-transfer-encoding : in-reply-to; s=pp1;
+ bh=HQCuZ4dUomIErA9nvcbt2gQysvho0T2Y1gYkmLHPLdU=;
+ b=nEUbAZSO/p1B+zSpbnYLo1S6ikJYX32JOxalc7e/lxW7cMTNPVSd89At4Bv0ln7dG4QG
+ 1qkzoUbyI6ARq75fPJdwlVsB+gfeHYYxUaM6OF/2GXCejQ9nSIlb9fen8aMif+fBOILw
+ 0cRMsFgOa9oeZdI8sV0DGUwKOTm6pfIt1B1gSRMNd31qobl2S9n/IiFp42Peohl3vUgS
+ e86rLXHgx10Kt8HrS75lwC2NwOPw23ZVBUZoYY+ctFYuldttH8M04isjC2gLfdlQp+mY
+ C84MFpcdghVp4q75cC3JvdsTWPyc68jB4TKvqtnJP0WkG/U9mUQQ72hkLPfuK47g5FEg YA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3de4y7m8y4-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 06 Jan 2022 22:25:03 +0000
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 206M0mvG000731;
+ Thu, 6 Jan 2022 22:25:02 GMT
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3de4y7m8xu-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 06 Jan 2022 22:25:02 +0000
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 206MNskm028676;
+ Thu, 6 Jan 2022 22:25:01 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma03wdc.us.ibm.com with ESMTP id 3de5k8v0am-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 06 Jan 2022 22:25:01 +0000
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 206MP1kw23789998
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 6 Jan 2022 22:25:01 GMT
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E8F226E05B;
+ Thu,  6 Jan 2022 22:25:00 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5ED5E6E054;
+ Thu,  6 Jan 2022 22:24:59 +0000 (GMT)
+Received: from suka-w540.localdomain (unknown [9.160.73.209])
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with SMTP;
+ Thu,  6 Jan 2022 22:24:59 +0000 (GMT)
+Received: by suka-w540.localdomain (Postfix, from userid 1000)
+ id 33CFA2E128C; Thu,  6 Jan 2022 14:24:56 -0800 (PST)
+Date: Thu, 6 Jan 2022 14:24:56 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [5.16.0-rc5][ppc][net] kernel oops when hotplug remove of vNIC
+ interface
+Message-ID: <YddsOKc9DaRg5HTf@us.ibm.com>
+References: <63380c22-a163-2664-62be-2cf401065e73@linux.vnet.ibm.com>
+ <20220105102625.2738186e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <87lezt3398.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <cover.1641468127.git.naveen.n.rao@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: daniel@iogearbox.net
-X-Virus-Scanned: Clear (ClamAV 0.103.3/26414/Thu Jan  6 10:26:00 2022)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <87lezt3398.fsf@mpe.ellerman.id.au>
+X-Operating-System: Linux 2.0.32 on an i486
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: Cxz1C8dGMaytgdrdpEDv4lvbHGNoRt7q
+X-Proofpoint-ORIG-GUID: sbIAicQaLACxR57qRAvw2tUc02ctvY0e
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2022-01-06_10,2022-01-06_01,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0
+ lowpriorityscore=0 adultscore=0 phishscore=0 suspectscore=0 mlxscore=0
+ bulkscore=0 impostorscore=0 malwarescore=0 clxscore=1011
+ priorityscore=1501 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2110150000 definitions=main-2201060136
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,29 +113,214 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ykaliuta@redhat.com, johan.almbladh@anyfinetworks.com,
- linuxppc-dev@lists.ozlabs.org, song@kernel.org, bpf@vger.kernel.org,
- Jiri Olsa <jolsa@redhat.com>, Hari Bathini <hbathini@linux.ibm.com>
+Cc: dumazet@google.com, Dany Madden <drt@linux.ibm.com>,
+ netdev <netdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>, alexandr.lobakin@intel.com,
+ brian King <brking@linux.vnet.ibm.com>, Jakub Kicinski <kuba@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Naveen,
+Michael Ellerman [mpe@ellerman.id.au] wrote:
+> Jakub Kicinski <kuba@kernel.org> writes:
+> > On Wed, 5 Jan 2022 13:56:53 +0530 Abdul Haleem wrote:
+> >> Greeting's
+> >>=20
+> >> Mainline kernel 5.16.0-rc5 panics when DLPAR ADD of vNIC device on my=
+=20
+> >> Powerpc LPAR
+> >>=20
+> >> Perform below dlpar commands in a loop from linux OS
+> >>=20
+> >> drmgr -r -c slot -s U9080.HEX.134C488-V1-C3 -w 5 -d 1
+> >> drmgr -a -c slot -s U9080.HEX.134C488-V1-C3 -w 5 -d 1
+> >>=20
+> >> after 7th iteration, the kernel panics with below messages
+> >>=20
+> >> console messages:
+> >> [102056] ibmvnic 30000003 env3: Sending CRQ: 801e000864000000=20
+> >> 0060000000000000
+> >> <intr> ibmvnic 30000003 env3: Handling CRQ: 809e000800000000=20
+> >> 0000000000000000
+> >> [102056] ibmvnic 30000003 env3: Disabling tx_scrq[0] irq
+> >> [102056] ibmvnic 30000003 env3: Disabling tx_scrq[1] irq
+> >> [102056] ibmvnic 30000003 env3: Disabling rx_scrq[0] irq
+> >> [102056] ibmvnic 30000003 env3: Disabling rx_scrq[1] irq
+> >> [102056] ibmvnic 30000003 env3: Disabling rx_scrq[2] irq
+> >> [102056] ibmvnic 30000003 env3: Disabling rx_scrq[3] irq
+> >> [102056] ibmvnic 30000003 env3: Disabling rx_scrq[4] irq
+> >> [102056] ibmvnic 30000003 env3: Disabling rx_scrq[5] irq
+> >> [102056] ibmvnic 30000003 env3: Disabling rx_scrq[6] irq
+> >> [102056] ibmvnic 30000003 env3: Disabling rx_scrq[7] irq
+> >> [102056] ibmvnic 30000003 env3: Replenished 8 pools
+> >> Kernel attempted to read user page (10) - exploit attempt? (uid: 0)
+> >> BUG: Kernel NULL pointer dereference on read at 0x00000010
+> >> Faulting instruction address: 0xc000000000a3c840
+> >> Oops: Kernel access of bad area, sig: 11 [#1]
+> >> LE PAGE_SIZE=3D64K MMU=3DRadix SMP NR_CPUS=3D2048 NUMA pSeries
+> >> Modules linked in: bridge stp llc ib_core rpadlpar_io rpaphp nfnetlink=
+=20
+> >> tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag=20
+> >> bonding rfkill ibmvnic sunrpc pseries_rng xts vmx_crypto gf128mul=20
+> >> sch_fq_codel binfmt_misc ip_tables ext4 mbcache jbd2 dm_service_time=
+=20
+> >> sd_mod t10_pi sg ibmvfc scsi_transport_fc ibmveth dm_multipath dm_mirr=
+or=20
+> >> dm_region_hash dm_log dm_mod fuse
+> >> CPU: 9 PID: 102056 Comm: kworker/9:2 Kdump: loaded Not tainted=20
+> >> 5.16.0-rc5-autotest-g6441998e2e37 #1
+> >> Workqueue: events_long __ibmvnic_reset [ibmvnic]
+> >> NIP:=A0 c000000000a3c840 LR: c0080000029b5378 CTR: c000000000a3c820
+> >> REGS: c0000000548e37e0 TRAP: 0300=A0=A0 Not tainted=20
+> >> (5.16.0-rc5-autotest-g6441998e2e37)
+> >> MSR:=A0 8000000000009033 <SF,EE,ME,IR,DR,RI,LE>=A0 CR: 28248484=A0 XER=
+: 00000004
+> >> CFAR: c0080000029bdd24 DAR: 0000000000000010 DSISR: 40000000 IRQMASK: 0
+> >> GPR00: c0080000029b55d0 c0000000548e3a80 c0000000028f0200 000000000000=
+0000
+> >> GPR04: c000000c7d1a7e00 fffffffffffffff6 0000000000000027 c000000c7d1a=
+7e08
+> >> GPR08: 0000000000000023 0000000000000000 0000000000000010 c0080000029b=
+dd10
+> >> GPR12: c000000000a3c820 c000000c7fca6680 0000000000000000 c00000013301=
+6bf8
+> >> GPR16: 00000000000003fe 0000000000001000 0000000000000002 000000000000=
+0008
+> >> GPR20: c000000133016eb0 0000000000000000 0000000000000000 000000000000=
+0003
+> >> GPR24: c000000133016000 c000000133017168 0000000020000000 c00000013301=
+6a00
+> >> GPR28: 0000000000000006 c000000133016a00 0000000000000001 c00000013301=
+6000
+> >> NIP [c000000000a3c840] napi_enable+0x20/0xc0
+> >> LR [c0080000029b5378] __ibmvnic_open+0xf0/0x430 [ibmvnic]
+> >> Call Trace:
+> >> [c0000000548e3a80] [0000000000000006] 0x6 (unreliable)
+> >> [c0000000548e3ab0] [c0080000029b55d0] __ibmvnic_open+0x348/0x430 [ibmv=
+nic]
+> >> [c0000000548e3b40] [c0080000029bcc28] __ibmvnic_reset+0x500/0xdf0 [ibm=
+vnic]
+> >> [c0000000548e3c60] [c000000000176228] process_one_work+0x288/0x570
+> >> [c0000000548e3d00] [c000000000176588] worker_thread+0x78/0x660
+> >> [c0000000548e3da0] [c0000000001822f0] kthread+0x1c0/0x1d0
+> >> [c0000000548e3e10] [c00000000000cf64] ret_from_kernel_thread+0x5c/0x64
+> >> Instruction dump:
+> >> 7d2948f8 792307e0 4e800020 60000000 3c4c01eb 384239e0 f821ffd1 39430010
+> >> 38a0fff6 e92d1100 f9210028 39200000 <e9030010> f9010020 60420000 e9210=
+020
+> >> ---[ end trace 5f8033b08fd27706 ]---
+> >> radix-mmu: Page sizes from device-tree:
+> >>=20
+> >> the fault instruction points to
+> >>=20
+> >> [root@ltcden11-lp1 boot]# gdb -batch=20
+> >> vmlinuz-5.16.0-rc5-autotest-g6441998e2e37 -ex 'list *(0xc000000000a3c8=
+40)'
+> >> 0xc000000000a3c840 is in napi_enable (net/core/dev.c:6966).
+> >> 6961=A0=A0=A0 void napi_enable(struct napi_struct *n)
+> >> 6962=A0=A0=A0 {
+> >> 6963=A0=A0=A0 =A0=A0=A0 unsigned long val, new;
+> >> 6964
+> >> 6965=A0=A0=A0 =A0=A0=A0 do {
+> >> 6966=A0=A0=A0 =A0=A0=A0 =A0=A0=A0 val =3D READ_ONCE(n->state);
+> >
+> > If n is NULL here that's gotta be a driver problem.
+>=20
+> Definitely looks like it, the disassembly is:
+>=20
+>   not     r9,r9
+>   clrldi  r3,r9,63
+>   blr				# end of previous function
+>   nop
+>   addis   r2,r12,491		# function entry
+>   addi    r2,r2,14816
+>   stdu    r1,-48(r1)		# stack frame creation
+>   li      r5,-10
+>   ld      r9,4352(r13)
+>   std     r9,40(r1)
+>   li      r9,0
+>   ld      r8,16(r3)		# load from r3 (n) + 16
+>=20
+>=20
+> The register dump shows that r3 is NULL, and it comes directly from the
+> caller. So we've been called with n =3D NULL.
 
-On 1/6/22 12:45 PM, Naveen N. Rao wrote:
-> A set of fixes and updates to powerpc BPF JIT:
-> - Patches 1-3 fix issues with the existing powerpc JIT and are tagged
->    for -stable.
-> - Patch 4 fixes a build issue with bpf selftests on powerpc.
-> - Patches 5-9 handle some corner cases and make some small improvements.
-> - Patches 10-13 optimize how function calls are handled in ppc64.
-> 
-> Patches 7 and 8 were previously posted, and while patch 7 has no
-> changes, patch 8 has been reworked to handle BPF_EXIT differently.
+Yeah, Good catch Abdul.
 
-Is the plan to route these via ppc trees? Fwiw, patch 1 and 4 look generic
-and in general good to me, we could also take these two via bpf-next tree
-given outside of arch/powerpc/? Whichever works best.
+I suspect its due to the release_resources() in __ibmvnic_open(). The
+problem is hard to reproduce but we are testing following patch with
+error injection. Will formally submit after testing/review.
 
-Thanks,
-Daniel
+---
+=46rom 8a78083e5ec6914be197352f391bfa17420a147c Mon Sep 17 00:00:00 2001
+=46rom: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
+Date: Wed, 5 Jan 2022 16:22:58 -0500
+Subject: [PATCH 1/1] ibmvnic: don't release napi in __ibmvnic_open()
+
+If __ibmvnic_open() encounters an error such as when setting link state,
+it calls release_resources() which frees the napi structures needlessly.
+Instead, have __ibmvnic_open() only clean up the work it did so far (i.e.
+disable napi and irqs) and leave the rest to the callers.
+
+If caller of __ibmvnic_open() is ibmvnic_open(), it should release the
+resources immediately. If the caller is do_reset() or do_hard_reset(),
+they will release the resources on the next reset.
+
+Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/=
+ibmvnic.c
+index 0bb3911dd014..34efba6c117b 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -110,6 +110,7 @@ static void ibmvnic_tx_scrq_clean_buffer(struct ibmvnic=
+_adapter *adapter,
+ 					 struct ibmvnic_sub_crq_queue *tx_scrq);
+ static void free_long_term_buff(struct ibmvnic_adapter *adapter,
+ 				struct ibmvnic_long_term_buff *ltb);
++static void ibmvnic_disable_irqs(struct ibmvnic_adapter *adapter);
+=20
+ struct ibmvnic_stat {
+ 	char name[ETH_GSTRING_LEN];
+@@ -1418,7 +1419,7 @@ static int __ibmvnic_open(struct net_device *netdev)
+ 	rc =3D set_link_state(adapter, IBMVNIC_LOGICAL_LNK_UP);
+ 	if (rc) {
+ 		ibmvnic_napi_disable(adapter);
+-		release_resources(adapter);
++		ibmvnic_disable_irqs(adapter);
+ 		return rc;
+ 	}
+=20
+@@ -1468,9 +1469,6 @@ static int ibmvnic_open(struct net_device *netdev)
+ 		rc =3D init_resources(adapter);
+ 		if (rc) {
+ 			netdev_err(netdev, "failed to initialize resources\n");
+-			release_resources(adapter);
+-			release_rx_pools(adapter);
+-			release_tx_pools(adapter);
+ 			goto out;
+ 		}
+ 	}
+@@ -1487,6 +1485,12 @@ static int ibmvnic_open(struct net_device *netdev)
+ 		adapter->state =3D VNIC_OPEN;
+ 		rc =3D 0;
+ 	}
++	if (rc) {
++		release_resources(adapter);
++		release_rx_pools(adapter);
++		release_tx_pools(adapter);
++	}
++
+ 	return rc;
+ }
+=20
+--=20
+2.27.0
+
+>=20
+> cheers
