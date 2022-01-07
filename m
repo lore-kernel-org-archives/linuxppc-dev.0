@@ -4,45 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6998FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 02:56:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78002C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 04:56:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JVSXV6jLBz30Lt
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 13:56:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=marcan.st (client-ip=2a01:298:fe:f::2; helo=mail.marcansoft.com;
- envelope-from=marcan@marcan.st; receiver=<UNKNOWN>)
-X-Greylist: delayed 594 seconds by postgrey-1.36 at boromir;
- Fri, 07 Jan 2022 13:55:46 AEDT
-Received: from mail.marcansoft.com (marcansoft.com [IPv6:2a01:298:fe:f::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JVWCW3vdpz3bZC
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 15:56:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=dxzQHmNi;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JVSX229Pmz30FH
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jan 2022 13:55:45 +1100 (AEDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JVWBk3TbYz2ynD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jan 2022 15:55:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=dxzQHmNi; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits))
- (No client certificate requested)
- (Authenticated sender: marcan@marcan.st)
- by mail.marcansoft.com (Postfix) with ESMTPSA id 70AEA43320;
- Fri,  7 Jan 2022 02:45:40 +0000 (UTC)
-Message-ID: <d8cd9082-4514-9c6c-85c7-418356f1f66d@marcan.st>
-Date: Fri, 7 Jan 2022 11:45:38 +0900
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
- Gecko/20100101 Thunderbird/91.4.1
-Subject: Re: [PATCH] fs: btrfs: Disable BTRFS on platforms having 256K pages
-Content-Language: en-US
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JVWBf5zFXz4xPt;
+ Fri,  7 Jan 2022 15:55:54 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1641531357;
+ bh=+0gt3Ce/FGhwyld+iB75eE7kUGD74gyF9fLmCmmqJI0=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=dxzQHmNiOmvWH1t16AItMd6p2d3tqG+A+i+kTTwCUtjXndn/8t9HVsubSR2LYK9eq
+ qLV+AKENtXbVxF82SjKPi5H6auA5H+E4xy6aiXfHuirtVyc7Qhxg+wabbGX3nLq2I+
+ EVwFipTHBcl1/0TSEOGQGu0eMTP1XgIOY5vXGnkyOyrZB/q+fnCh70MZQMo3GoAc8U
+ IN5HuWy0bik/ia7uIcPDYvlI3PUdoNflPOt4Fs8Jm6ZUFT+FCtexoWndZbvp/N+ycV
+ DPSDznKiugLXkGclPgPiKw9E5UlaFcBlFWMybBsKimfWKwiQ3hmOKf+nRWyw2oAdgE
+ Y2f4UI+/F3KVw==
+From: Michael Ellerman <mpe@ellerman.id.au>
 To: Qu Wenruo <quwenruo.btrfs@gmx.com>, Neal Gompa <ngompa13@gmail.com>
+Subject: Re: [PATCH] fs: btrfs: Disable BTRFS on platforms having 256K pages
+In-Reply-To: <db88497c-ea17-27ca-6158-2a987acb7a1c@gmx.com>
 References: <a16c31f3caf448dda5d9315e056585b6fafc22c5.1623302442.git.christophe.leroy@csgroup.eu>
  <6c7a6762-6bec-842b-70b4-4a53297687d1@gmx.com>
  <CAEg-Je9UJDJ=hvLLqQDsHijWnxh1Z1CwaLKCFm+-bLTfCFingg@mail.gmail.com>
  <db88497c-ea17-27ca-6158-2a987acb7a1c@gmx.com>
-From: Hector Martin <marcan@marcan.st>
-In-Reply-To: <db88497c-ea17-27ca-6158-2a987acb7a1c@gmx.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Date: Fri, 07 Jan 2022 15:55:51 +1100
+Message-ID: <87bl0o2lgo.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,7 +61,8 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hexagon@vger.kernel.org, Josef Bacik <josef@toxicpanda.com>,
+Cc: linux-hexagon@vger.kernel.org, Hector Martin <marcan@marcan.st>,
+ Josef Bacik <josef@toxicpanda.com>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Chris Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
  linuxppc-dev@lists.ozlabs.org, Btrfs BTRFS <linux-btrfs@vger.kernel.org>
@@ -62,9 +70,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2022/01/07 9:13, Qu Wenruo wrote:
-> 
-> 
+Qu Wenruo <quwenruo.btrfs@gmx.com> writes:
 > On 2022/1/7 00:31, Neal Gompa wrote:
 >> On Wed, Jan 5, 2022 at 7:05 AM Qu Wenruo <quwenruo.btrfs@gmx.com> wrote:
 >>>
@@ -84,19 +90,19 @@ On 2022/01/07 9:13, Qu Wenruo wrote:
 >>>
 >>
 >> The Linux Asahi folks have a 16K page environment (M1 Macs)...
-> 
+>
 > Su Yue kindly helped me testing 16K page size, and it's pretty OK there.
-> 
+>
 > So I'm not that concerned.
-> 
+>
 > It's 128K page size that I'm a little concerned, and I have not machine
 > supporting that large page size to do the test.
-> 
-> Thanks,
-> Qu
 
-I'm happy to test things on 16K in the future if you need me to :-)
+Did Christophe say he had a 128K system to test on?
 
--- 
-Hector Martin (marcan@marcan.st)
-Public Key: https://mrcn.st/pub
+In mainline powerpc only supports 4K/16K/64K/256K.
+
+AFAIK there's no arch with 128K page size support, but that's only based
+on some grepping, maybe it's hidden somewhere.
+
+cheers
