@@ -4,61 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC1EAC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 02:41:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E63BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 02:48:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JVSCT4bMBz3cB2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 13:41:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JVSMW6bpFz3bWj
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jan 2022 13:48:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NjuuNA3S;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.219.43; helo=mail-qv1-f43.google.com;
- envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-qv1-f43.google.com (mail-qv1-f43.google.com
- [209.85.219.43])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=NjuuNA3S; dkim-atps=neutral
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JVSC06079z2yZh
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jan 2022 13:40:59 +1100 (AEDT)
-Received: by mail-qv1-f43.google.com with SMTP id r6so4192723qvr.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jan 2022 18:40:59 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=a3oveBvk/TJ7E2R11hx57UheCl6wg4a+PXG4wzrlHrU=;
- b=Cfc5jZv9wMrBAmfqadq0/73q8qNLc7AQmhxQ31fWpJzLeLewH9AuNF1Z98rpqyO0dg
- nNX9T0VP/l1JCfkuJHfC5ETdrx91FZjRpqHLTIcn1UDbUDG34GkSLElwORTeAjB2qZn5
- vALD8zUlhirRXwgYnFyuQJpB4x9OXpiGknMreRIhBKWqsa2ZJrP74m50cBVr2glF5Hex
- R/83vKKkXfN5T2sF/AQtXEymR1hc9tXRL0lf4MHdfwGXPCFRdu/Ovd4UKWVUPBG/i0yk
- NYx76CXxWORIVy4jqqvSswFNj8ebb5bKmRpEAejw4tRfZsd20M61+LfzvzJHvNvNHvHZ
- N/Xg==
-X-Gm-Message-State: AOAM533Q/dSjVAtWyHUujjwktZXC7Ew3see3q7m/OVG8ifMizLo2TnzW
- jv0VUu4zhP6z3w/Uy8lQ0IUOOqefGwWV9toV
-X-Google-Smtp-Source: ABdhPJxY3MzmMdsRprs4sDu4W3EpZVw/i+wbL+X2gwbKVRJ01JEhMB4QOJQm4OVVCnKD+xYwqJ+brw==
-X-Received: by 2002:ad4:5f89:: with SMTP id jp9mr57812810qvb.39.1641523256329; 
- Thu, 06 Jan 2022 18:40:56 -0800 (PST)
-Received: from mail-qt1-f175.google.com (mail-qt1-f175.google.com.
- [209.85.160.175])
- by smtp.gmail.com with ESMTPSA id p67sm2374951qkf.49.2022.01.06.18.40.55
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 06 Jan 2022 18:40:56 -0800 (PST)
-Received: by mail-qt1-f175.google.com with SMTP id s19so4259139qtc.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jan 2022 18:40:55 -0800 (PST)
-X-Received: by 2002:ac8:4e85:: with SMTP id 5mr54938490qtp.416.1641523255287; 
- Thu, 06 Jan 2022 18:40:55 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JVSLn0kXVz30K4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jan 2022 13:47:44 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1641523665; x=1673059665;
+ h=date:from:to:cc:subject:message-id:mime-version:
+ content-transfer-encoding;
+ bh=BCs7kJI+VNw4bVi+DkdjWFsGpd3dk9XFF9SXY/M11I8=;
+ b=NjuuNA3SKja66CUHrs7ip5GQoCvxf00X1OgQPktuRTN7vaMbJU8p6N+d
+ zko/e7T5MyON2P2meFoR0tQJwDb42+7WXJreVINnl045vozUbJQc8tnBd
+ HkRa08e9L90bm6I123xRDeLZnW1YC0w2Z3R5pV3A6ZVjZlS2gwW70sZfu
+ /SBhM9IwlEaPwJyIAt6atzMYjhiKePD2QWjkNQCU4uokws925lOg5CgjX
+ g6Yk+dRtaRu+UBwUzYwLqNUfXNjFM8Nq5Yo2vH2Bvqtw8giCFgOntncwZ
+ Sy3wKUSbDEmF69zdcolYdY3vrnEHC+NOHsP5XdoR3rV4l/nNxIU2axSiN w==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10219"; a="267089057"
+X-IronPort-AV: E=Sophos;i="5.88,268,1635231600"; d="scan'208";a="267089057"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Jan 2022 18:46:40 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.88,268,1635231600"; d="scan'208";a="473167725"
+Received: from lkp-server01.sh.intel.com (HELO e357b3ef1427) ([10.239.97.150])
+ by orsmga006.jf.intel.com with ESMTP; 06 Jan 2022 18:46:38 -0800
+Received: from kbuild by e357b3ef1427 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1n5fH4-000ICC-2L; Fri, 07 Jan 2022 02:46:38 +0000
+Date: Fri, 07 Jan 2022 10:46:05 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS 80fdcf45da5a677ff7f284210b0f86f443a836a0
+Message-ID: <61d7a96d.sX9Dqc5ifJ0xdQWg%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-References: <1063e5a4738d897adcaffce2ab8e4e45f07998ff.1635969326.git.christophe.jaillet@wanadoo.fr>
- <4890990418ecbcfb8921efe8adb2019a03e5a1c1.1635969326.git.christophe.jaillet@wanadoo.fr>
-In-Reply-To: <4890990418ecbcfb8921efe8adb2019a03e5a1c1.1635969326.git.christophe.jaillet@wanadoo.fr>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Fri, 7 Jan 2022 10:40:43 +0800
-X-Gmail-Original-Message-ID: <CADRPPNTRE9sUX-4XxvtoQkGqOXzBPm_1h-FRSRepWsxdFz3Tvg@mail.gmail.com>
-Message-ID: <CADRPPNTRE9sUX-4XxvtoQkGqOXzBPm_1h-FRSRepWsxdFz3Tvg@mail.gmail.com>
-Subject: Re: [PATCH 2/2] soc: fsl: guts: Add a missing memory allocation
- failure check
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,58 +67,115 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tyreld@linux.ibm.com, kernel-janitors@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, lkml <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 4, 2021 at 4:10 AM Christophe JAILLET
-<christophe.jaillet@wanadoo.fr> wrote:
->
-> If 'devm_kstrdup()' fails, we should return -ENOMEM.
->
-> While at it, move the 'of_node_put()' call in the error handling path and
-> after the 'machine' has been copied.
-> Better safe than sorry.
->
-> Suggested-by: Tyrel Datwyler <tyreld@linux.ibm.com>
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 80fdcf45da5a677ff7f284210b0f86f443a836a0  Automatic merge of 'master' into merge (2021-12-29 09:33)
 
-Applied with Fixes tag and Depends-on tag added.  Thanks.
+elapsed time: 734m
 
-> ---
-> Not sure of which Fixes tag to add. Should be a6fc3b698130, but since
-> another commit needs to be reverted for this patch to make sense, I'm
-> unsure of what to do. :(
-> So, none is given.
-> ---
->  drivers/soc/fsl/guts.c | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-> index af7741eafc57..5ed2fc1c53a0 100644
-> --- a/drivers/soc/fsl/guts.c
-> +++ b/drivers/soc/fsl/guts.c
-> @@ -158,9 +158,14 @@ static int fsl_guts_probe(struct platform_device *pdev)
->         root = of_find_node_by_path("/");
->         if (of_property_read_string(root, "model", &machine))
->                 of_property_read_string_index(root, "compatible", 0, &machine);
-> -       of_node_put(root);
-> -       if (machine)
-> +       if (machine) {
->                 soc_dev_attr.machine = devm_kstrdup(dev, machine, GFP_KERNEL);
-> +               if (!soc_dev_attr.machine) {
-> +                       of_node_put(root);
-> +                       return -ENOMEM;
-> +               }
-> +       }
-> +       of_node_put(root);
->
->         svr = fsl_guts_get_svr();
->         soc_die = fsl_soc_die_match(svr, fsl_soc_die);
-> --
-> 2.30.2
->
+configs tested: 89
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm64                               defconfig
+arm64                            allyesconfig
+arm                            lart_defconfig
+arm                          iop32x_defconfig
+powerpc                         wii_defconfig
+powerpc                      chrp32_defconfig
+arc                    vdk_hs38_smp_defconfig
+sh                   secureedge5410_defconfig
+arm                           viper_defconfig
+arm                           sunxi_defconfig
+arm                  randconfig-c002-20220106
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allmodconfig
+s390                                defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+x86_64               randconfig-a012-20220106
+x86_64               randconfig-a014-20220106
+x86_64               randconfig-a013-20220106
+x86_64               randconfig-a011-20220106
+x86_64               randconfig-a016-20220106
+x86_64               randconfig-a015-20220106
+i386                 randconfig-a012-20220106
+i386                 randconfig-a014-20220106
+i386                 randconfig-a011-20220106
+i386                 randconfig-a013-20220106
+i386                 randconfig-a016-20220106
+i386                 randconfig-a015-20220106
+arc                  randconfig-r043-20220106
+riscv                randconfig-r042-20220106
+s390                 randconfig-r044-20220106
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                           allyesconfig
+x86_64                          rhel-8.3-func
+x86_64                    rhel-8.3-kselftests
+
+clang tested configs:
+arm                  colibri_pxa300_defconfig
+mips                       lemote2f_defconfig
+powerpc                 xes_mpc85xx_defconfig
+i386                 randconfig-a003-20220106
+i386                 randconfig-a002-20220106
+i386                 randconfig-a001-20220106
+i386                 randconfig-a004-20220106
+i386                 randconfig-a006-20220106
+i386                 randconfig-a005-20220106
+hexagon              randconfig-r041-20220106
+hexagon              randconfig-r045-20220106
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
