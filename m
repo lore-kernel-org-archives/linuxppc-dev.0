@@ -4,33 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6F9AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jan 2022 01:57:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9115DC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jan 2022 01:58:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JXH5g2LVMz3cCj
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jan 2022 12:57:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JXH660qWgz3bTs
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jan 2022 12:58:06 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
  [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JXH2H3RVnz2yYl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jan 2022 12:54:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JXH2J06fSz2x9M
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jan 2022 12:54:48 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JXH2H2MyJz4xmx;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JXH2H65Mwz4xtf;
  Mon, 10 Jan 2022 12:54:47 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Guo Ren <guoren@linux.alibaba.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20211228064730.2882351-1-guoren@kernel.org>
-References: <20211228064730.2882351-1-guoren@kernel.org>
-Subject: Re: (subset) [PATCH V3 0/8] sched: Remove unused TASK_SIZE_OF for all
- archs
-Message-Id: <164177945855.1604045.2872871817685076139.b4-ty@ellerman.id.au>
-Date: Mon, 10 Jan 2022 12:50:58 +1100
+To: Sachin Sant <sachinp@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <164139226833.12930.272224382183014664.sendpatchset@MacBook-Pro.local>
+References: <164139226833.12930.272224382183014664.sendpatchset@MacBook-Pro.local>
+Subject: Re: [PATCH]powerpc/xmon: Dump XIVE information for online-only
+ processors.
+Message-Id: <164177946079.1604045.2233211193189990856.b4-ty@ellerman.id.au>
+Date: Mon, 10 Jan 2022 12:51:00 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,26 +44,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: clg@kaod.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 28 Dec 2021 14:47:21 +0800, guoren@kernel.org wrote:
-> From: Guo Ren <guoren@linux.alibaba.com>
+On Wed, 05 Jan 2022 19:47:48 +0530, Sachin Sant wrote:
+> dxa command in XMON debugger iterates through all possible processors.
+> As a result, empty lines are printed even for processors which are not
+> online.
 > 
-> This macro isn't used in Linux, now. Delete in include/linux/sched.h
-> and arch's include/asm. This would confuse people who are
-> implementing the COMPAT feature for architecture.
-> 
-> Changes in v3:
->  - Fixup Documentation/process/submitting-patches.rst, add sender
->    Signed-off-by.
+> CPU 47:pp=00 CPPR=ff IPI=0x0040002f PQ=-- EQ idx=699 T=0 00000000 00000000
+> CPU 48:
+> CPU 49:
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[4/8] sched: powerpc: Remove unused TASK_SIZE_OF
-      https://git.kernel.org/powerpc/c/08035a67f35a8765cac39bb12e56c61ee880227a
+[1/1] powerpc/xmon: Dump XIVE information for online-only processors.
+      https://git.kernel.org/powerpc/c/f1aa0e47c29268776205698f2453dc07fab49855
 
 cheers
