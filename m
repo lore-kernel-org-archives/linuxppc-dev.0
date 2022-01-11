@@ -4,102 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64419C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jan 2022 10:32:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D17EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jan 2022 11:38:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JY6TZ5cRdz3bNs
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jan 2022 21:32:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JY7xZ31zpz3bbR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jan 2022 22:38:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cv7XWVna;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=znTOGD7o;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=vMq8zMm6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=cv7XWVna; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
+ envelope-from=msuchanek@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
+ header.s=susede2_rsa header.b=znTOGD7o; 
+ dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
+ header.s=susede2_ed25519 header.b=vMq8zMm6; 
+ dkim-atps=neutral
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JY6Sm09Mvz2yN3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jan 2022 21:32:06 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20B9RkCF013712; 
- Tue, 11 Jan 2022 10:31:43 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : subject :
- to : cc : references : in-reply-to : mime-version : message-id :
- content-type : content-transfer-encoding; s=pp1;
- bh=4ZMFTZXf7hlcK7/oqIgDRGd1D0qV4EjXs38VeR/nWD0=;
- b=cv7XWVna5SLB2NEsBk/OWsCXyU+ivuXerpvpBKHJaGovNKEtKKdVmVzLQGzKYrvjDwNA
- 5LIswN1XO1Ezaxy9vF6/Cu/FbHhX+OQQ8j+DHvwHM6qC17uoQ490DQW4p3HRUwPQVIcM
- 7yJ383hC89hX9h14JCjmSX9MIYq7w/WzuvNOeHuDNbRZAcsN46/PJ7IGJQ9hd4FZ755C
- +nazIbpRjiDLcODg0PuJRrKXU5EfgRt1Z4gvYwt3lr9LdmbZZI6nTGfd99KgHeCLJs93
- 2ig/tOPrV77xO3g6IPR+70eRvkKOnk62Q2DrRiG5qeqlH+8ltiA1RGPHJYRQoF+txhdD Hw== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3dh79ks5ee-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 11 Jan 2022 10:31:43 +0000
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 20BA8db2029381;
- Tue, 11 Jan 2022 10:31:43 GMT
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.72])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3dh79ks5ds-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 11 Jan 2022 10:31:42 +0000
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
- by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20BASWdR021967;
- Tue, 11 Jan 2022 10:31:40 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma06fra.de.ibm.com with ESMTP id 3df1vjc8n1-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 11 Jan 2022 10:31:40 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 20BAVcBd46793004
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 11 Jan 2022 10:31:38 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EC293A408C;
- Tue, 11 Jan 2022 10:31:37 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 88252A405C;
- Tue, 11 Jan 2022 10:31:37 +0000 (GMT)
-Received: from localhost (unknown [9.43.113.132])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 11 Jan 2022 10:31:37 +0000 (GMT)
-Date: Tue, 11 Jan 2022 16:01:36 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH 11/13] powerpc64/bpf elfv2: Setup kernel TOC in r2 on entry
-To: Alexei Starovoitov <alexei.starovoitov@gmail.com>, Christophe Leroy
- <christophe.leroy@csgroup.eu>, Daniel Borkmann <daniel@iogearbox.net>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <cover.1641468127.git.naveen.n.rao@linux.vnet.ibm.com>
- <4501050f6080f12bd3ba1b5d9d7bef8d3aa57d23.1641468127.git.naveen.n.rao@linux.vnet.ibm.com>
- <d0e28f07-c24c-200d-de04-5d27c651a5e6@csgroup.eu>
-In-Reply-To: <d0e28f07-c24c-200d-de04-5d27c651a5e6@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JY7wn3xwhz2yfb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jan 2022 22:38:00 +1100 (AEDT)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+ by smtp-out1.suse.de (Postfix) with ESMTP id E6FB421637;
+ Tue, 11 Jan 2022 11:37:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+ t=1641901077; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=9Sg8NmS9Cl8uGlravuAR0TWOLfnwUgnMmpUpTIKU9d8=;
+ b=znTOGD7oDlO37qys6vssvIotOp/zOsuYwxgqbGFZV4RYfVpTGNrzFxKkMnktG9fWCqQ5hC
+ KB1Wp+aSfhWjV2uYAAXyFZ6EaBae376nM+cVkVkidnkXqHRF0wbjE8DUlkT3SfVc/YS9PR
+ IBk8Ou7yRDHoc3KdT6Dmv43MXLtkIHc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+ s=susede2_ed25519; t=1641901077;
+ h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=9Sg8NmS9Cl8uGlravuAR0TWOLfnwUgnMmpUpTIKU9d8=;
+ b=vMq8zMm62k4dH5aGzsUbtvmqfiDQMe811JVuN7Nqu7LtZTfJe1uUyAWVdPTZ/+8d0tyVIJ
+ x0Hvv8PGNjZbhcAw==
+Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
+ by relay2.suse.de (Postfix) with ESMTP id 9B859A3B90;
+ Tue, 11 Jan 2022 11:37:57 +0000 (UTC)
+From: Michal Suchanek <msuchanek@suse.de>
+To: keyrings@vger.kernel.org, linux-crypto@vger.kernel.org,
+ linux-integrity@vger.kernel.org
+Subject: [PATCH v5 4/6] module: strip the signature marker in the verification
+ function.
+Date: Tue, 11 Jan 2022 12:37:46 +0100
+Message-Id: <96d29773b9ef418a71b1d8bbfd0a456a0f996ec6.1641900831.git.msuchanek@suse.de>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <cover.1641900831.git.msuchanek@suse.de>
+References: <cover.1641900831.git.msuchanek@suse.de>
 MIME-Version: 1.0
-User-Agent: astroid/v0.16-1-g4d6b06ad (https://github.com/astroidmail/astroid)
-Message-Id: <1641896867.1ukblu8135.naveen@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: izk6wKCVy3XsnSMUy3f28k7Mqsw4QMOf
-X-Proofpoint-ORIG-GUID: UB1NidJDBLQ7pmHuG9_-I7mR6_fVF_pZ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.11.62.513
- definitions=2022-01-11_04,2022-01-11_01,2021-12-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 spamscore=0
- impostorscore=0 adultscore=0 mlxlogscore=999 lowpriorityscore=0
- priorityscore=1501 bulkscore=0 suspectscore=0 clxscore=1015 phishscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2110150000 definitions=main-2201110061
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,78 +76,169 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "ykaliuta@redhat.com" <ykaliuta@redhat.com>,
- "johan.almbladh@anyfinetworks.com" <johan.almbladh@anyfinetworks.com>,
- Jiri Olsa <jolsa@redhat.com>, "song@kernel.org" <song@kernel.org>,
- "bpf@vger.kernel.org" <bpf@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Hari Bathini <hbathini@linux.ibm.com>
+Cc: Nayna <nayna@linux.vnet.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
+ David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>, Rob Herring <robh@kernel.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, Baoquan He <bhe@redhat.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ James Morris <jmorris@namei.org>,
+ Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
+ Michal Suchanek <msuchanek@suse.de>, "Serge E. Hallyn" <serge@hallyn.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, linux-s390@vger.kernel.org,
+ Heiko Carstens <hca@linux.ibm.com>,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ Hari Bathini <hbathini@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Philipp Rudo <prudo@redhat.com>, Frank van der Linden <fllinden@amazon.com>,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Luis Chamberlain <mcgrof@kernel.org>, Sven Schnelle <svens@linux.ibm.com>,
+ linux-security-module@vger.kernel.org, Jessica Yu <jeyu@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>, buendgen@de.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy wrote:
->=20
->=20
-> Le 06/01/2022 =C3=A0 12:45, Naveen N. Rao a =C3=A9crit=C2=A0:
->> In preparation for using kernel TOC, load the same in r2 on entry. With
->> elfv1, the kernel TOC is already setup by our caller so we just emit a
->> nop. We adjust the number of instructions to skip on a tail call
->> accordingly.
->>=20
->> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/net/bpf_jit_comp64.c | 8 +++++++-
->>   1 file changed, 7 insertions(+), 1 deletion(-)
->>=20
->> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_ji=
-t_comp64.c
->> index ce4fc59bbd6a92..e05b577d95bf11 100644
->> --- a/arch/powerpc/net/bpf_jit_comp64.c
->> +++ b/arch/powerpc/net/bpf_jit_comp64.c
->> @@ -73,6 +73,12 @@ void bpf_jit_build_prologue(u32 *image, struct codege=
-n_context *ctx)
->>   {
->>   	int i;
->>  =20
->> +#ifdef PPC64_ELF_ABI_v2
->> +	PPC_BPF_LL(_R2, _R13, offsetof(struct paca_struct, kernel_toc));
->> +#else
->> +	EMIT(PPC_RAW_NOP());
->> +#endif
->=20
-> Can we avoid the #ifdef, using
->=20
-> 	if (__is_defined(PPC64_ELF_ABI_v2))
-> 		PPC_BPF_LL(_R2, _R13, offsetof(struct paca_struct, kernel_toc));
-> 	else
-> 		EMIT(PPC_RAW_NOP());
+It is stripped by each caller separately.
 
-Hmm... that doesn't work for me. Is __is_defined() expected to work with=20
-macros other than CONFIG options?
+Note: this changes the error for kexec_file from EKEYREJECTED to ENODATA
+when the signature marker is missing.
 
->=20
->> +
->>   	/*
->>   	 * Initialize tail_call_cnt if we do tail calls.
->>   	 * Otherwise, put in NOPs so that it can be skipped when we are
->> @@ -87,7 +93,7 @@ void bpf_jit_build_prologue(u32 *image, struct codegen=
-_context *ctx)
->>   		EMIT(PPC_RAW_NOP());
->>   	}
->>  =20
->> -#define BPF_TAILCALL_PROLOGUE_SIZE	8
->> +#define BPF_TAILCALL_PROLOGUE_SIZE	12
->=20
-> Why not change that for v2 ABI only instead of adding a NOP ? ABI won't=20
-> change during runtime AFAIU
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+v3: - Philipp Rudo <prudo@redhat.com>: Update the commit with note about
+      change of raturn value
+    - the module_signature.h is now no longer needed for kexec_file
+---
+ arch/powerpc/kexec/elf_64.c           | 11 -----------
+ arch/s390/kernel/machine_kexec_file.c | 11 -----------
+ kernel/module.c                       |  7 +------
+ kernel/module_signing.c               | 12 ++++++++++--
+ 4 files changed, 11 insertions(+), 30 deletions(-)
 
-Yeah, I wanted to keep this simple and I felt an additional nop=20
-shouldn't matter too much. But, I guess we can get rid of=20
-BPF_TAILCALL_PROLOGUE_SIZE since the only user is the function emitting=20
-a tail call. I will submit that as a separate cleanup unless I need to=20
-redo this series.
-
-Thanks for the reviews!
-- Naveen
+diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
+index 64cd314cce0d..6dec8151ef73 100644
+--- a/arch/powerpc/kexec/elf_64.c
++++ b/arch/powerpc/kexec/elf_64.c
+@@ -24,7 +24,6 @@
+ #include <linux/slab.h>
+ #include <linux/types.h>
+ #include <linux/verification.h>
+-#include <linux/module_signature.h>
+ 
+ static void *elf64_load(struct kimage *image, char *kernel_buf,
+ 			unsigned long kernel_len, char *initrd,
+@@ -156,16 +155,6 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
+ #ifdef CONFIG_KEXEC_SIG
+ int elf64_verify_sig(const char *kernel, unsigned long kernel_len)
+ {
+-	const unsigned long marker_len = sizeof(MODULE_SIG_STRING) - 1;
+-
+-	if (marker_len > kernel_len)
+-		return -EKEYREJECTED;
+-
+-	if (memcmp(kernel + kernel_len - marker_len, MODULE_SIG_STRING,
+-		   marker_len))
+-		return -EKEYREJECTED;
+-	kernel_len -= marker_len;
+-
+ 	return verify_appended_signature(kernel, &kernel_len, VERIFY_USE_PLATFORM_KEYRING,
+ 					 "kexec_file");
+ }
+diff --git a/arch/s390/kernel/machine_kexec_file.c b/arch/s390/kernel/machine_kexec_file.c
+index 345f2eab6e04..c3deccf1da83 100644
+--- a/arch/s390/kernel/machine_kexec_file.c
++++ b/arch/s390/kernel/machine_kexec_file.c
+@@ -12,7 +12,6 @@
+ #include <linux/elf.h>
+ #include <linux/errno.h>
+ #include <linux/kexec.h>
+-#include <linux/module_signature.h>
+ #include <linux/verification.h>
+ #include <linux/vmalloc.h>
+ #include <asm/boot_data.h>
+@@ -28,20 +27,10 @@ const struct kexec_file_ops * const kexec_file_loaders[] = {
+ #ifdef CONFIG_KEXEC_SIG
+ int s390_verify_sig(const char *kernel, unsigned long kernel_len)
+ {
+-	const unsigned long marker_len = sizeof(MODULE_SIG_STRING) - 1;
+-
+ 	/* Skip signature verification when not secure IPLed. */
+ 	if (!ipl_secure_flag)
+ 		return 0;
+ 
+-	if (marker_len > kernel_len)
+-		return -EKEYREJECTED;
+-
+-	if (memcmp(kernel + kernel_len - marker_len, MODULE_SIG_STRING,
+-		   marker_len))
+-		return -EKEYREJECTED;
+-	kernel_len -= marker_len;
+-
+ 	return verify_appended_signature(kernel, &kernel_len, VERIFY_USE_PLATFORM_KEYRING,
+ 					"kexec_file");
+ }
+diff --git a/kernel/module.c b/kernel/module.c
+index 8481933dfa92..d91ca0f93a40 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2882,7 +2882,6 @@ static inline void kmemleak_load_module(const struct module *mod,
+ static int module_sig_check(struct load_info *info, int flags)
+ {
+ 	int err = -ENODATA;
+-	const unsigned long markerlen = sizeof(MODULE_SIG_STRING) - 1;
+ 	const char *reason;
+ 	const void *mod = info->hdr;
+ 
+@@ -2890,11 +2889,7 @@ static int module_sig_check(struct load_info *info, int flags)
+ 	 * Require flags == 0, as a module with version information
+ 	 * removed is no longer the module that was signed
+ 	 */
+-	if (flags == 0 &&
+-	    info->len > markerlen &&
+-	    memcmp(mod + info->len - markerlen, MODULE_SIG_STRING, markerlen) == 0) {
+-		/* We truncate the module to discard the signature */
+-		info->len -= markerlen;
++	if (flags == 0) {
+ 		err = verify_appended_signature(mod, &info->len,
+ 						VERIFY_USE_SECONDARY_KEYRING, "module");
+ 		if (!err) {
+diff --git a/kernel/module_signing.c b/kernel/module_signing.c
+index 30149969f21f..39a6dd7c6dd2 100644
+--- a/kernel/module_signing.c
++++ b/kernel/module_signing.c
+@@ -15,8 +15,7 @@
+ #include "module-internal.h"
+ 
+ /**
+- * verify_appended_signature - Verify the signature on a module with the
+- * signature marker stripped.
++ * verify_appended_signature - Verify the signature on a module
+  * @data: The data to be verified
+  * @len: Size of @data.
+  * @trusted_keys: Keyring to use for verification
+@@ -25,12 +24,21 @@
+ int verify_appended_signature(const void *data, unsigned long *len,
+ 			      struct key *trusted_keys, const char *what)
+ {
++	const unsigned long markerlen = sizeof(MODULE_SIG_STRING) - 1;
+ 	struct module_signature *ms;
+ 	unsigned long sig_len, modlen = *len;
+ 	int ret;
+ 
+ 	pr_devel("==>%s(,%lu)\n", __func__, modlen);
+ 
++	if (markerlen > modlen)
++		return -ENODATA;
++
++	if (memcmp(data + modlen - markerlen, MODULE_SIG_STRING,
++		   markerlen))
++		return -ENODATA;
++	modlen -= markerlen;
++
+ 	if (modlen <= sizeof(*ms))
+ 		return -EBADMSG;
+ 
+-- 
+2.31.1
 
