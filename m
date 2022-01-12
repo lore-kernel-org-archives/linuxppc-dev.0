@@ -4,63 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6F69C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jan 2022 12:09:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28629C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jan 2022 13:11:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JYmZN1z08z3bct
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jan 2022 23:09:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JYnxt3QnKz3bPR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jan 2022 00:11:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.133; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JYmYq4yMkz2xsG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jan 2022 23:08:45 +1100 (AEDT)
-Received: from mail-wr1-f49.google.com ([209.85.221.49]) by
- mrelayeu.kundenserver.de (mreue011 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1MrhDg-1mbd8v2MlA-00nhAd for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jan
- 2022 13:08:41 +0100
-Received: by mail-wr1-f49.google.com with SMTP id h10so3871941wrb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jan 2022 04:08:40 -0800 (PST)
-X-Gm-Message-State: AOAM532dFRapCMoCJx7aRfTVv61ab26eCNbVQOdYb4AdUTEE4a9qyWEq
- ApqEzPY6OT5HMscaCdatg75HG/zRfUvGuMJZhD4=
-X-Google-Smtp-Source: ABdhPJyNUKzidEWwkYa+wfOUEohIKCR5feZK5S3WXkq+SYeCBRFZTq1mqc61Ubm+2cYuonDIFIyFwZ5WRZ3fGi7ACRI=
-X-Received: by 2002:adf:fd46:: with SMTP id h6mr7767440wrs.192.1641989320742; 
- Wed, 12 Jan 2022 04:08:40 -0800 (PST)
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IMJYWb8o;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=IMJYWb8o; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JYnwy4J72z2xs7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jan 2022 00:10:25 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20CC0nxE010267; 
+ Wed, 12 Jan 2022 13:10:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=WE/h8p+zfUwl0XsOgyrkKm55pvwEA29XYRNXiHXrPs8=;
+ b=IMJYWb8oloNk2epW2AqRtQWlsLoXMzEfJ6vfY7n8/M+w1pUA3Qs+z2+ZClahD28qRl9K
+ 6YSiT7gSEcQDvfc9SauuKO+3A8gF0YWgBxh6fP33pLOAQ7pupGR/HaGyWPOsZ1pSlSOJ
+ Gaz3oxUigsKBdx0zNaCcZQjpVWpj2a9L33YJu42/g1KEIw7lyArOnuQQvGGpvxZdo7BV
+ QDhnddl8nbIpND+FmWzDbSFZL5bBbEcWmeGcNip5lqO5iWHH3vS1CZOqQNQIxGNFmIzb
+ YY5SybTmwIew0WS3W8Jd/G0/q058H120JUDV1JhWFM2ZdGwbASvuc/Qec55T2TK7uwOc PA== 
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3dhtht0fj2-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 12 Jan 2022 13:10:21 +0000
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20CD70cq025221;
+ Wed, 12 Jan 2022 13:10:19 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma04ams.nl.ibm.com with ESMTP id 3df289bxym-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 12 Jan 2022 13:10:19 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 20CDAFwG34603438
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 12 Jan 2022 13:10:15 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C7CE1AE04D;
+ Wed, 12 Jan 2022 13:10:15 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 977C5AE058;
+ Wed, 12 Jan 2022 13:10:15 +0000 (GMT)
+Received: from [9.145.93.126] (unknown [9.145.93.126])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 12 Jan 2022 13:10:15 +0000 (GMT)
+Message-ID: <ba78ac07-d3c1-ad7a-12eb-9bc53cdb9c43@linux.ibm.com>
+Date: Wed, 12 Jan 2022 14:10:15 +0100
 MIME-Version: 1.0
-References: <20220111083515.502308-1-hch@lst.de>
- <20220111083515.502308-5-hch@lst.de>
- <CAK8P3a0mHC5=OOGV=sGnC9JqZWxzsJyZbTefnCtryQU3o3PY_g@mail.gmail.com>
- <20220112075609.GA4854@lst.de>
- <CAK8P3a1ONn=FiPU3669MjBMntS-1K5bgX4pHforUsYJ7yhwZ-g@mail.gmail.com>
- <f86483fca8b0dc68ce243ba47998ff3296a3b6f8.camel@kernel.org>
-In-Reply-To: <f86483fca8b0dc68ce243ba47998ff3296a3b6f8.camel@kernel.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 12 Jan 2022 13:08:24 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a3FgHQ+w+Sj00yOERRLWfVhx7NYsGJ1NBAXQ0=is3G=Kg@mail.gmail.com>
-Message-ID: <CAK8P3a3FgHQ+w+Sj00yOERRLWfVhx7NYsGJ1NBAXQ0=is3G=Kg@mail.gmail.com>
-Subject: Re: [PATCH 4/5] uapi: always define F_GETLK64/F_SETLK64/F_SETLKW64 in
- fcntl.h
-To: Jeff Layton <jlayton@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:IP4v/PU0GUQmEBzFR34Nn696PyDeZ9BhaTPNbE7A3pojQkVXe/m
- ZEp+GdH5sCDhCM6otRoyPErg2chJrhxB7o1O6X8HDWtiPcpjnNL4uCVgFCCFVBzVEvKuheo
- FKxy45rSF9nb1sB0ZxG3zCtLY6maP0AKSovEa0MoZts9C/wSrMlO+4SYAiZOXLEudYNiezz
- DWeNGAp0vF589mHKezFYQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:r7ZzGcufUeM=:dyfX/vNeyTrI5fksKegGMy
- l6/9W6Bu9yjnjqKihmqfUDjODYpve7MZiypRRHJ8znd/giHdKXHAM/NlCbEMBZBJywOpYbP7n
- DD0BlBuqwXnnUbGmgEWOZSi1+SJtHV+JUJh544L0i8xgEaNpEXnsBnHUq/WDsAdqCRRutbZiS
- Q5/5UgqXW6BtY9KuSJSycgjqSXDXIBq7T4SqJqDnj5lR3wkCt++xC87mT9YB60GpuP0lgj5f8
- +xxTqvAclciHC84SRzUa5r21yrDJoqK6m8pD4OfDON8Eud2GZSZQJdJrh0ffOiUdULlJ+Vq36
- jxa9Bo9Unm+y+Q4k9SaPKTLHTRLmISU9eAnUWpkrWionC5qiwrTEYXUIqeglcVo9AkQKq0KQF
- 95ewLki9tNSVNQkNYf6eFG6rhVXppewfhT1TlmAoOLIvlvFftPq/ngxcHBR42CkwoAB7w1TYw
- bsJ4KBty0Svf6JVIlgLLfjG0345/AUInnC0E1m174UIu+mLeed7qa6AA0B62Y8KKy13fSFE17
- jcC2MN8DWZdYRklxK99wctDuXsWNwWv+Tqry4jajNZheudhY1htQu6aT4xQUjbw1opUsdhv1E
- ISfLAKCE/InIJWA899n3Gcbg8OXtryoYZ34Jo+KlD9ck1Vn659DAtgqUXcN5ytmPp8YjYLjrV
- gA4ge83xkcWRTm0lbu0j8l2HchfPzeiSMIFcvgcyi1phz8QZWDpV6n1MtmOFI3PJxFkU=
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
+ Gecko/20100101 Thunderbird/91.4.1
+Subject: Re: [PATCH v5] powerpc/pseries: read the lpar name from the firmware
+Content-Language: en-US
+To: Michael Ellerman <michaele@au1.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20220106161339.74656-1-ldufour@linux.ibm.com>
+ <c26f2961-dd19-b888-b601-af5ade74c140@linux.ibm.com>
+ <87zgo128x0.fsf@mpe.ellerman.id.au>
+From: Laurent Dufour <ldufour@linux.ibm.com>
+In-Reply-To: <87zgo128x0.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: __8lH80r6UhtEQcTThHPRTptXKA3aFmv
+X-Proofpoint-ORIG-GUID: __8lH80r6UhtEQcTThHPRTptXKA3aFmv
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2022-01-12_04,2022-01-11_01,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 clxscore=1015
+ malwarescore=0 bulkscore=0 phishscore=0 mlxlogscore=999 mlxscore=0
+ priorityscore=1501 adultscore=0 suspectscore=0 spamscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2110150000 definitions=main-2201120086
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,56 +106,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Parisc List <linux-parisc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- the arch/x86 maintainers <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- "J. Bruce Fields" <bfields@fieldses.org>, Guo Ren <guoren@kernel.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 12, 2022 at 12:15 PM Jeff Layton <jlayton@kernel.org> wrote:
-> On Wed, 2022-01-12 at 09:28 +0100, Arnd Bergmann wrote:
-> > On Wed, Jan 12, 2022 at 8:56 AM Christoph Hellwig <hch@lst.de> wrote:
-> >
-> > Exactly, that is the tradeoff, which is why I'd like the flock maintainers
-> > to say which way they prefer. We can either do it more correctly (hiding
-> > the constants from user space when they are not usable), or with less
-> > change (removing the incorrect #ifdef). Either way sounds reasonable
-> > to me, I mainly care that this is explained in the changelog and that the
-> > maintainers are aware of the two options.
-> >
->
-> I don't have a strong opinion here. If we were taking symbols away that
-> were previously visible to userland it would be one thing, but since
-> we're just adding symbols that may not have been there before, this
-> seems less likely to break anything.
+On 11/01/2022, 23:40:27, Michael Ellerman wrote:
+> Tyrel Datwyler <tyreld@linux.ibm.com> writes:
+>> On 1/6/22 8:13 AM, Laurent Dufour wrote:
+>>> The LPAR name may be changed after the LPAR has been started in the HMC.
+>>> In that case lparstat command is not reporting the updated value because it
+>>> reads it from the device tree which is read at boot time.
+>>>
+>>> However this value could be read from RTAS.
+>>>
+>>> Adding this value in the /proc/powerpc/lparcfg output allows to read the
+>>> updated value.
+>>>
+>>> However the hypervisor, like Qemu/KVM, may not support this RTAS
+>>> parameter. In that case the value reported in lparcfg is read from the
+>>> device tree and so is not updated accordingly.
+>>>
+>>> Cc: Nathan Lynch <nathanl@linux.ibm.com>
+>>> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+>>
+>> My only nit would be that in general for consistency with other function names
+>> _RTAS_ and _DT_ should be lowercase. Seeing as they are statically scoped within
+>> lparcfg.c maybe its ok. Otherwise,
+> 
+> Yeah I agree, I changed them to lower case when applying.
 
-Changing
+Thanks Michael and Tyrel.
 
-#ifndef CONFIG_64BIT
-
-to
-
-#if __BITS_PER_LONG==32 || defined(__KERNEL__),
-
-would take symbols away, since the CONFIG_64BIT macro is never
-set in user space.
-
-> I probably lean toward Christoph's original solution instead of keeping
-> the conditional definitions. It's hard to imagine there are many
-> programs that care whether these other symbols are defined or not.
->
-> You can add this to the original patch:
->
-> Acked-by: Jeff Layton <jlayton@kernel.org>
-
-Sounds good, thanks
-
-         Arnd
