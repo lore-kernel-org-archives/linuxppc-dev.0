@@ -4,75 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1421C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Jan 2022 21:38:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D749BC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Jan 2022 21:57:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JcT1k49chz3bZc
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 08:38:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JcTQl2JFXz3bWj
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 08:57:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=waldekranz-com.20210112.gappssmtp.com header.i=@waldekranz-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=c1jnt9LO;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=JvdGu9kx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=waldekranz.com (client-ip=2a00:1450:4864:20::32c;
- helo=mail-wm1-x32c.google.com; envelope-from=tobias@waldekranz.com;
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch
+ (client-ip=185.16.172.187; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=waldekranz-com.20210112.gappssmtp.com
- header.i=@waldekranz-com.20210112.gappssmtp.com header.a=rsa-sha256
- header.s=20210112 header.b=c1jnt9LO; dkim-atps=neutral
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com
- [IPv6:2a00:1450:4864:20::32c])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256
+ header.s=20171124 header.b=JvdGu9kx; dkim-atps=neutral
+X-Greylist: delayed 121 seconds by postgrey-1.36 at boromir;
+ Mon, 17 Jan 2022 08:56:22 AEDT
+Received: from vps0.lunn.ch (vps0.lunn.ch [185.16.172.187])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JcSWV13bTz2x9p
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jan 2022 08:16:05 +1100 (AEDT)
-Received: by mail-wm1-x32c.google.com with SMTP id w26so16504537wmi.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jan 2022 13:16:05 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=waldekranz-com.20210112.gappssmtp.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version:organization
- :content-transfer-encoding;
- bh=3QZ0N7OQ7WTbnu80qig6uAdTcqYmEl53ggaPSmqUeaw=;
- b=c1jnt9LObMrUYLGaIhqskWoP9sKHKhO+e8vAdgCBxcr97/HMrV89Ugr+xKinTUWW1Q
- aCMIV/0vOiwwwff9ehBOKeh8tnDDIfON/NnPuT/qfWlsWq7iLzgzwN2oBVQpNUmju8n9
- 3+MJR/VpDIDJhgL4RcqZ9BC/Hx/Oo1jR/ha2DUZcIuisH5Lc2vhUWSCZbP2TDlFhRpPX
- 6B2rWuopCf53HxJNRwMxq0zA5+fJpjnOGopmEmBON88zrY7I6R1qQhC8x4kVGk+DjoX3
- hifRlONifozSxXYF5cK/0Eez/TDiqtSKK+outWw8wDgmQin01ZM3pQLKfFxzjr2qpsfm
- a9Hw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :organization:content-transfer-encoding;
- bh=3QZ0N7OQ7WTbnu80qig6uAdTcqYmEl53ggaPSmqUeaw=;
- b=Xali+UgeF4Kx6I9/4yDJX8BG4MokpW8Tz55RnGWyLVLV1kILqjmsogRrzrSuhIgN9z
- IC++bbtJZB0wv4os9Y/dcQbOK33J+At5qaxOP0pFnyFEpJo9seP84wT9p1+vVQzi0fQj
- oTjl0YhG8HG/ZHlVZmnKpVrakC+3E+YOtrDdAOkGoZgJ1KFYscSwXsXp0OkWhe1ZaNXF
- UP2jMGzETt+oRtD1BA4VEbp6Zee2TSiJC1jRfZulli9CDCj3f1A5ayxwEnJmfBRgx2J1
- I1svBsOqcRtFvw6DYqOpJNSJaZI0GnU6chTVtgfBlahSbPJwavINpzxZnusfBomwqGRt
- zTsg==
-X-Gm-Message-State: AOAM531WFtB0ucffYwKmieXoBk7HN/aX9KJohAtujqdv4b7O5dmuzEJI
- cwvV7Qos7BKTshnlEJV9czSAdg==
-X-Google-Smtp-Source: ABdhPJzD1oP97IbwHbToBOTUMnI4ANtJ7cxAwXpeh+t2rnuTEo90nJq02h/TMXpn06Ykp+q1yuQe/Q==
-X-Received: by 2002:a1c:f70d:: with SMTP id v13mr17481238wmh.133.1642367757045; 
- Sun, 16 Jan 2022 13:15:57 -0800 (PST)
-Received: from veiron.westermo.com (static-193-12-47-89.cust.tele2.se.
- [193.12.47.89])
- by smtp.gmail.com with ESMTPSA id l12sm8820445wrz.15.2022.01.16.13.15.55
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 16 Jan 2022 13:15:56 -0800 (PST)
-From: Tobias Waldekranz <tobias@waldekranz.com>
-To: davem@davemloft.net,
-	kuba@kernel.org
-Subject: [PATCH net 0/4] net/fsl: xgmac_mdio: Add workaround for erratum
- A-009885
-Date: Sun, 16 Jan 2022 22:15:25 +0100
-Message-Id: <20220116211529.25604-1-tobias@waldekranz.com>
-X-Mailer: git-send-email 2.25.1
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JcTPy54t5z2xKK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jan 2022 08:56:22 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+ s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+ Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+ Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+ bh=sRsITLO5u/pAQ1Z0Am0m1XUSe/AdN8DsI20qxqEL8YY=; b=JvdGu9kxitbSrUVCv5eEE9qaFX
+ A7Q3oEa7bDSmRD501rse9cz01KSGAr6/far+2kA42XJA14k1QoRNod0FInePb3+OydE2n+stnjTO3
+ rcq54CEiJjYbSQF+O1mIzxw6rEgK7EMFXSV1BQYFI3pls4nPvXUTq5YmIO2JFPmEV6Ig=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+ (envelope-from <andrew@lunn.ch>)
+ id 1n9DVR-001Yvk-Ii; Sun, 16 Jan 2022 22:56:09 +0100
+Date: Sun, 16 Jan 2022 22:56:09 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Tobias Waldekranz <tobias@waldekranz.com>
+Subject: Re: [PATCH net 2/4] dt-bindings: net: Document fsl,erratum-a009885
+Message-ID: <YeSUeURzYvX27eT7@lunn.ch>
+References: <20220116211529.25604-1-tobias@waldekranz.com>
+ <20220116211529.25604-3-tobias@waldekranz.com>
 MIME-Version: 1.0
-Organization: Westermo
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Mon, 17 Jan 2022 08:35:45 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220116211529.25604-3-tobias@waldekranz.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,33 +61,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: devicetree@vger.kernel.org, madalin.bucur@nxp.com, robh+dt@kernel.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
+ paulus@samba.org, kuba@kernel.org, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The individual messages mostly speak for themselves.
+On Sun, Jan 16, 2022 at 10:15:27PM +0100, Tobias Waldekranz wrote:
+> Update FMan binding documentation with the newly added workaround for
+> erratum A-009885.
+> 
+> Signed-off-by: Tobias Waldekranz <tobias@waldekranz.com>
 
-It is very possible that there are more chips out there that are
-impacted by this, but I only have access to the errata document for
-the T1024 family, so I've limited the DT changes to the exact FMan
-version used in that device. Hopefully someone from NXP can supply a
-follow-up if need be.
+Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 
-The final commit is an unrelated fix that was brought to my attention
-by sparse.
-
-Tobias Waldekranz (4):
-  net/fsl: xgmac_mdio: Add workaround for erratum A-009885
-  dt-bindings: net: Document fsl,erratum-a009885
-  powerpc/fsl/dts: Enable WA for erratum A-009885 on fman3l MDIO buses
-  net/fsl: xgmac_mdio: Fix incorrect iounmap when removing module
-
- .../devicetree/bindings/net/fsl-fman.txt      |  9 ++++++
- arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi |  2 ++
- drivers/net/ethernet/freescale/xgmac_mdio.c   | 28 ++++++++++++++-----
- 3 files changed, 32 insertions(+), 7 deletions(-)
-
--- 
-2.25.1
-
+    Andrew
