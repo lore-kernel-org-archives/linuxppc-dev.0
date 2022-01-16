@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 828D4C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Jan 2022 21:58:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27789C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Jan 2022 22:03:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JcTSx0TjWz3bVG
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 08:58:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JcTYj4YHZz30Jh
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 09:03:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=fmxgnOFp;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=KKqMO7ku;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch
@@ -18,36 +18,36 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256
- header.s=20171124 header.b=fmxgnOFp; dkim-atps=neutral
+ header.s=20171124 header.b=KKqMO7ku; dkim-atps=neutral
 Received: from vps0.lunn.ch (vps0.lunn.ch [185.16.172.187])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JcTSF0ykfz2xDY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jan 2022 08:58:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JcTY15rTBz2y8P
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jan 2022 09:02:29 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
  s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
  References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
  Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
  Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
- bh=Y62WBf7WncHPVF1rPc3S4E5knHjrE+JJV2IuxkQAh3U=; b=fmxgnOFptHQcJCqzjXWVmbFkm9
- VO8Lo4wAfNHSboCGaSwhYHYTx29Y24Kn/kw5WUZtK0DSSLWxwGufDNVsbrqkJnHTj4CggAeMRx7jr
- TUlEkB0mudzVRSGnykFM10wFkj7THfBq3UPX86tuG1HAuogm/HSeMweyC6BiDPPOOMqo=;
+ bh=3knO7OSDFmDrjBjUFT/RKq5UesrI35HL2yAjB5FjxUQ=; b=KKqMO7ku8+sHLs6c2XiTL5FYUM
+ X/U+EMcydUfqksaFOUHi7pLm6xHOZxFzf/wmEtLiNY5hvjBtbjcWsi/5kEXmFvs9P4gLJBYJhM9St
+ X6imZ6F02flpYAKBRyXWkuX3Xj+VSpWJMcZmFzuz1gJKvEPG3rKLlyBOH+f4nnF3PFmM=;
 Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
  (envelope-from <andrew@lunn.ch>)
- id 1n9DTN-001Yup-Iv; Sun, 16 Jan 2022 22:54:01 +0100
-Date: Sun, 16 Jan 2022 22:54:01 +0100
+ id 1n9DbP-001YxH-83; Sun, 16 Jan 2022 23:02:19 +0100
+Date: Sun, 16 Jan 2022 23:02:19 +0100
 From: Andrew Lunn <andrew@lunn.ch>
 To: Tobias Waldekranz <tobias@waldekranz.com>
-Subject: Re: [PATCH net 4/4] net/fsl: xgmac_mdio: Fix incorrect iounmap when
- removing module
-Message-ID: <YeST+TAREKIh2RXp@lunn.ch>
+Subject: Re: [PATCH net 1/4] net/fsl: xgmac_mdio: Add workaround for erratum
+ A-009885
+Message-ID: <YeSV67WeMTSDigUK@lunn.ch>
 References: <20220116211529.25604-1-tobias@waldekranz.com>
- <20220116211529.25604-5-tobias@waldekranz.com>
+ <20220116211529.25604-2-tobias@waldekranz.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220116211529.25604-5-tobias@waldekranz.com>
+In-Reply-To: <20220116211529.25604-2-tobias@waldekranz.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,18 +66,18 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Jan 16, 2022 at 10:15:29PM +0100, Tobias Waldekranz wrote:
-> As reported by sparse: In the remove path, the driver would attempt to
-> unmap its own priv pointer - instead of the io memory that it mapped
-> in probe.
+On Sun, Jan 16, 2022 at 10:15:26PM +0100, Tobias Waldekranz wrote:
+> Once an MDIO read transaction is initiated, we must read back the data
+> register within 16 MDC cycles after the transaction completes. Outside
+> of this window, reads may return corrupt data.
+> 
+> Therefore, disable local interrupts in the critical section, to
+> maximize the probability that we can satisfy this requirement.
 
-Hi Tobias
-
-The change itself is O.K.
+Since this is for net, a Fixes: tag would be nice. Maybe that would be
+for the commit which added this driver, or maybe when the DTSI files
+for the SOCs which have this errata we added?
 
 Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 
-But you could also change to devm_ so the core will handle the unmap,
-it is very unlikely to unmap the wrong thing.
-
-     Andrew
+    Andrew
