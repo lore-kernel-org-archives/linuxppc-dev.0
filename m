@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 023D9C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 13:22:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB634C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 13:22:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JcsyH4qGrz30MF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jan 2022 00:22:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jcsz02LkHz3bVf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jan 2022 00:22:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=YnrIjYhs;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=kQFwjUcI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=collabora.com (client-ip=46.235.227.227;
@@ -18,32 +18,33 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=collabora.com header.i=@collabora.com
- header.a=rsa-sha256 header.s=mail header.b=YnrIjYhs; 
+ header.a=rsa-sha256 header.s=mail header.b=kQFwjUcI; 
  dkim-atps=neutral
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jcsxc4xKbz2xrD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jan 2022 00:21:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jcsxb6K7Kz2x9G
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jan 2022 00:21:39 +1100 (AEDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
- (Authenticated sender: adalessandro) with ESMTPSA id 89B7A1F439D6
+ (Authenticated sender: adalessandro) with ESMTPSA id CA9291F439D5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
- s=mail; t=1642425698;
- bh=CaYg+p9O0uAGbG4kMt1HbrD2S8z16L4o0uwZIImjC/g=;
+ s=mail; t=1642425692;
+ bh=3fTXaIpo9AJuHFiL7k/mRr9jk4KYAcVNY7PnsYOxdAM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=YnrIjYhsktlNV9VWQB6Vu9aXtuIPF8B3cBwyYVAMia4ACvZ9PskaiUCyN+16WejaR
- sxslWLJoi/paPh7eiTaExz70GTt7EuAcOW05dRGmGVmkFrPYgBVeR5y3PR+DNjDzgH
- CHDuv7UVJW3cPjOvps4oAKdwHuezLaaFj9opnKeioCjGsrLzE1pEwARlpza8BnCjU0
- 5DCJeg8rtmhdfHg3Yf6mlH4oDrG0aeNRV6S9vuIuJAv9+j3RnmkeobDpz117oIPe2E
- 4WM7i3m8Y5nPQ5OKjsjgLosu2F5b6/kwafELT8qENcH2h7uDDHsl5O3q7b1D8VKUnY
- sAOWcpFA9veHQ==
+ b=kQFwjUcIfwqO57DIoDoOdtCMQkA1U4dKBFqgVeIxEUgJzk4gvmEjQiwKK17rwp6VP
+ dLj2Si97ySQiyt1Gn64IMNmO2wJdH8Fq+EQq+lGvoO5cqqGQVnFHgpTcaBHLHrggne
+ PR8BeQWW7mDDHqgyoOlvY+xP3Xxpamp4o3/so7ttc1OF7/Y8Cc8yIdy00ZMlgzDHPn
+ yd0xMpKr/HeyxDCZUhoTd5pikiwsIWXtD1Wd44R4v3z7IxhBkBxBW5i4glZ8xMKsNU
+ +yDADxL1hpXloHWT1qo/DOZ7BkrGLO4A34Qy9ZMgEc8FK3RbouaTVcNf2FmyYFhTh0
+ FGmt/EF9yMG3A==
 From: Ariel D'Alessandro <ariel.dalessandro@collabora.com>
 To: alsa-devel@alsa-project.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/5] dt-bindings: tlv320aic31xx: Define PLL clock inputs
-Date: Mon, 17 Jan 2022 10:21:06 -0300
-Message-Id: <20220117132109.283365-3-ariel.dalessandro@collabora.com>
+Subject: [PATCH v2 1/5] dt-bindings: sound: Rename tlv320aic31xx-micbias as
+ tlv320aic31xx
+Date: Mon, 17 Jan 2022 10:21:05 -0300
+Message-Id: <20220117132109.283365-2-ariel.dalessandro@collabora.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220117132109.283365-1-ariel.dalessandro@collabora.com>
 References: <20220117132109.283365-1-ariel.dalessandro@collabora.com>
@@ -69,27 +70,90 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add constants for the different PLL clock inputs in tlv320aic31xx.
+Let's use a more generic name, so other definitions for tlv320aic31xx
+can be included.
 
 Signed-off-by: Ariel D'Alessandro <ariel.dalessandro@collabora.com>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
- include/dt-bindings/sound/tlv320aic31xx.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ .../devicetree/bindings/sound/tlv320aic31xx.txt          | 2 +-
+ arch/arm/boot/dts/am43x-epos-evm.dts                     | 2 +-
+ include/dt-bindings/sound/tlv320aic31xx-micbias.h        | 9 ---------
+ include/dt-bindings/sound/tlv320aic31xx.h                | 9 +++++++++
+ sound/soc/codecs/tlv320aic31xx.c                         | 2 +-
+ 5 files changed, 12 insertions(+), 12 deletions(-)
+ delete mode 100644 include/dt-bindings/sound/tlv320aic31xx-micbias.h
+ create mode 100644 include/dt-bindings/sound/tlv320aic31xx.h
 
-diff --git a/include/dt-bindings/sound/tlv320aic31xx.h b/include/dt-bindings/sound/tlv320aic31xx.h
-index 3a845fbba992..4a80238ab250 100644
---- a/include/dt-bindings/sound/tlv320aic31xx.h
-+++ b/include/dt-bindings/sound/tlv320aic31xx.h
-@@ -6,4 +6,9 @@
- #define MICBIAS_2_5V		2
- #define MICBIAS_AVDDV		3
+diff --git a/Documentation/devicetree/bindings/sound/tlv320aic31xx.txt b/Documentation/devicetree/bindings/sound/tlv320aic31xx.txt
+index e372303697dc..bbad98d5b986 100644
+--- a/Documentation/devicetree/bindings/sound/tlv320aic31xx.txt
++++ b/Documentation/devicetree/bindings/sound/tlv320aic31xx.txt
+@@ -58,7 +58,7 @@ The pins can be used in referring sound node's audio-routing property.
  
-+#define PLL_CLKIN_MCLK		0x00
-+#define PLL_CLKIN_BCLK		0x01
-+#define PLL_CLKIN_GPIO1		0x02
-+#define PLL_CLKIN_DIN		0x03
+ Example:
+ #include <dt-bindings/gpio/gpio.h>
+-#include <dt-bindings/sound/tlv320aic31xx-micbias.h>
++#include <dt-bindings/sound/tlv320aic31xx.h>
+ 
+ tlv320aic31xx: tlv320aic31xx@18 {
+ 	compatible = "ti,tlv320aic311x";
+diff --git a/arch/arm/boot/dts/am43x-epos-evm.dts b/arch/arm/boot/dts/am43x-epos-evm.dts
+index 2f4d2e4e9b3e..4f9a7251a107 100644
+--- a/arch/arm/boot/dts/am43x-epos-evm.dts
++++ b/arch/arm/boot/dts/am43x-epos-evm.dts
+@@ -11,7 +11,7 @@
+ #include <dt-bindings/pinctrl/am43xx.h>
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/pwm/pwm.h>
+-#include <dt-bindings/sound/tlv320aic31xx-micbias.h>
++#include <dt-bindings/sound/tlv320aic31xx.h>
+ 
+ / {
+ 	model = "TI AM43x EPOS EVM";
+diff --git a/include/dt-bindings/sound/tlv320aic31xx-micbias.h b/include/dt-bindings/sound/tlv320aic31xx-micbias.h
+deleted file mode 100644
+index c6895a18a455..000000000000
+--- a/include/dt-bindings/sound/tlv320aic31xx-micbias.h
++++ /dev/null
+@@ -1,9 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-#ifndef __DT_TLV320AIC31XX_MICBIAS_H
+-#define __DT_TLV320AIC31XX_MICBIAS_H
+-
+-#define MICBIAS_2_0V		1
+-#define MICBIAS_2_5V		2
+-#define MICBIAS_AVDDV		3
+-
+-#endif /* __DT_TLV320AIC31XX_MICBIAS_H */
+diff --git a/include/dt-bindings/sound/tlv320aic31xx.h b/include/dt-bindings/sound/tlv320aic31xx.h
+new file mode 100644
+index 000000000000..3a845fbba992
+--- /dev/null
++++ b/include/dt-bindings/sound/tlv320aic31xx.h
+@@ -0,0 +1,9 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef __DT_TLV320AIC31XX_H
++#define __DT_TLV320AIC31XX_H
 +
- #endif /* __DT_TLV320AIC31XX_H */
++#define MICBIAS_2_0V		1
++#define MICBIAS_2_5V		2
++#define MICBIAS_AVDDV		3
++
++#endif /* __DT_TLV320AIC31XX_H */
+diff --git a/sound/soc/codecs/tlv320aic31xx.c b/sound/soc/codecs/tlv320aic31xx.c
+index e77342aff46d..8331dc26bcd2 100644
+--- a/sound/soc/codecs/tlv320aic31xx.c
++++ b/sound/soc/codecs/tlv320aic31xx.c
+@@ -32,7 +32,7 @@
+ #include <sound/soc.h>
+ #include <sound/initval.h>
+ #include <sound/tlv.h>
+-#include <dt-bindings/sound/tlv320aic31xx-micbias.h>
++#include <dt-bindings/sound/tlv320aic31xx.h>
+ 
+ #include "tlv320aic31xx.h"
+ 
 -- 
 2.34.1
 
