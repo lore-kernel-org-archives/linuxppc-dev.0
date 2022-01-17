@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC9A6C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 16:59:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3A3AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 17:00:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JcynF1P5Qz3bbj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jan 2022 03:59:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jcynv10bBz3cPd
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jan 2022 04:00:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jkE6eDbG;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ckLq59fP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=jkE6eDbG; 
+ header.s=k20201202 header.b=ckLq59fP; 
  dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JcymW1p3Wz2x9L
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jan 2022 03:59:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JcymZ5DqYz2x9L
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jan 2022 03:59:10 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 38A0E611C6;
- Mon, 17 Jan 2022 16:59:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C1EB1C36AE7;
- Mon, 17 Jan 2022 16:59:01 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id E835A611C2;
+ Mon, 17 Jan 2022 16:59:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04766C36AE7;
+ Mon, 17 Jan 2022 16:59:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1642438742;
- bh=GjXLsfRDL+vMnvwCNX4tCqIZuHwbl8YDD1glN2o18Y8=;
+ s=k20201202; t=1642438748;
+ bh=noPkjLggVRzhHtJtUyyY8AiSqQGvqU0JZkwRb0GYV3U=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=jkE6eDbGoqB/2j5ZWZmcgg60NaC1BRquhwRd0EDrCRcgKgytQxAXt4QLAhbTbqWJW
- ToJWxF0ktiieIcvCcrvMujJ99z/FDGkGrEJrEXhA90OAIMX6sWg9v5nvQCo/UIe1x8
- dtFrumQRFN/SZnlRsWYxfe1VDehnCzl3gN0CAPEGDvshXz5gySdHLUfLlgYVMzEQTG
- SGOi7PNHOTNolU/aVum60TeX/BrFsS1SastgwpmCRxg/nFSRj7XwyhEJ4mjTcZr8Pn
- M7DZAfT45yZ8h/6vhZECLDUazo0RFX5nkkxUvdiDKG+CWDqo3I74PeLDitAJVO004s
- wSBcq8yPGDPjQ==
+ b=ckLq59fPO9SqttJJShCYw+MSjWS0r6xL4jcKUtgdsOj9L+EjyHXPM9CYeOAcNlQ8t
+ UTQQsqPFWphG8M40mTRIas4pGsSFEphxbA8wSc9yK4piGQ4spum69Cf4hQIYY2oORL
+ g9AOHKd8WBDrpDt/Xn77CyMr8MhkVHEW+WLhW7Xbaw7Cz4zWB6qC3jpASu3SfkB9Ny
+ e0nrZpbztBMLf8ZXtM294CWutlp4nbt+Sw8Idcza7OWHrm5v0hSnd8uBkDmGR01V91
+ Th2UEOm5wr6KoRt9rsvahLKoLbptE4QtD7UlXWc41qSdChtn8/7OvSFgRmrB6CRcRA
+ OGrmMmp5iXBjw==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.16 03/52] powerpc/6xx: add missing of_node_put
-Date: Mon, 17 Jan 2022 11:58:04 -0500
-Message-Id: <20220117165853.1470420-3-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.16 06/52] powerpc/btext: add missing of_node_put
+Date: Mon, 17 Jan 2022 11:58:07 -0500
+Message-Id: <20220117165853.1470420-6-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220117165853.1470420-1-sashal@kernel.org>
 References: <20220117165853.1470420-1-sashal@kernel.org>
@@ -65,17 +65,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, nick.child@ibm.com, maz@kernel.org,
- Julia Lawall <Julia.Lawall@lip6.fr>, linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, Julia Lawall <Julia.Lawall@lip6.fr>,
+ linuxppc-dev@lists.ozlabs.org, nick.child@ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-[ Upstream commit f6e82647ff71d427d4148964b71f239fba9d7937 ]
+[ Upstream commit a1d2b210ffa52d60acabbf7b6af3ef7e1e69cda0 ]
 
-for_each_compatible_node performs an of_node_get on each iteration, so
+for_each_node_by_type performs an of_node_get on each iteration, so
 a break out of the loop requires an of_node_put.
 
 A simplified version of the semantic patch that fixes this problem is as
@@ -83,16 +83,11 @@ follows (http://coccinelle.lip6.fr):
 
 // <smpl>
 @@
-expression e;
-local idexpression n;
-@@
-
-@@
 local idexpression n;
 expression e;
 @@
 
- for_each_compatible_node(n,...) {
+ for_each_node_by_type(n,...) {
    ...
 (
    of_node_put(n);
@@ -109,24 +104,28 @@ expression e;
 
 Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/1448051604-25256-2-git-send-email-Julia.Lawall@lip6.fr
+Link: https://lore.kernel.org/r/1448051604-25256-6-git-send-email-Julia.Lawall@lip6.fr
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/embedded6xx/hlwd-pic.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/kernel/btext.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-index 15396333a90bd..a4b020e4b6af0 100644
---- a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-+++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-@@ -214,6 +214,7 @@ void hlwd_pic_probe(void)
- 			irq_set_chained_handler(cascade_virq,
- 						hlwd_pic_irq_cascade);
- 			hlwd_irq_host = host;
+diff --git a/arch/powerpc/kernel/btext.c b/arch/powerpc/kernel/btext.c
+index 803c2a45b22ac..1cffb5e7c38d6 100644
+--- a/arch/powerpc/kernel/btext.c
++++ b/arch/powerpc/kernel/btext.c
+@@ -241,8 +241,10 @@ int __init btext_find_display(int allow_nonstdout)
+ 			rc = btext_initialize(np);
+ 			printk("result: %d\n", rc);
+ 		}
+-		if (rc == 0)
++		if (rc == 0) {
 +			of_node_put(np);
  			break;
- 		}
++		}
  	}
+ 	return rc;
+ }
 -- 
 2.34.1
 
