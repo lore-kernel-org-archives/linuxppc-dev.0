@@ -4,94 +4,112 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30C22C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 08:33:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7731AC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 10:07:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JclY23x1xz30Lt
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 19:33:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bJOJfBEY;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jcndl5S4tz30NZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 21:07:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=bJOJfBEY; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::618;
+ helo=fra01-mr2-obe.outbound.protection.outlook.com;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from FRA01-MR2-obe.outbound.protection.outlook.com
+ (mail-mr2fra01on0618.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:7e19::618])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JclXD4391z2x9H
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jan 2022 19:32:44 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20H5vRnG014618; 
- Mon, 17 Jan 2022 08:32:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=Z3qE7rvusP/nu70ds0Tc+daqJpL/nOOb/I8fXQhGz4M=;
- b=bJOJfBEYvk/uaBMsIY2UR7IjQ2Ot7NAEWrbvYuk+YdxpPYslSrk+BjYJNgpW0/gP6W5I
- eDPlwaeuh4S/NOD6m2GjypgIS7mUfiZyiLCbeSS9e/aHeiRrb7dAIqK8/1dZ8GCe5OOL
- NS/k7Xw+8Aky1I9bAM3wytoLBEpDO/vgFW6DyLgrSXNmBsHH6wtP3GrE1GB9mtuvtxDi
- MzpastZNYlqDgI2PV3CeZF5TZXRCkTPGm9BDED+DC3v6cqg1FzLJ7dTUJmY+FT4+Cpl4
- wM4paRv/fUED80B77PAF5BlS/WGDEBPksF66lIbcU9Gb2CFp9GwZ+3paEfACqHFOxHhR fg== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3dn2s02kh6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 17 Jan 2022 08:32:39 +0000
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 20H8OVuu024455;
- Mon, 17 Jan 2022 08:32:38 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3dn2s02kgq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 17 Jan 2022 08:32:38 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20H8PQEf024861;
- Mon, 17 Jan 2022 08:32:36 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma04ams.nl.ibm.com with ESMTP id 3dknw8sk0v-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 17 Jan 2022 08:32:36 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 20H8WUxw41419078
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 17 Jan 2022 08:32:30 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D2A9AAE053;
- Mon, 17 Jan 2022 08:32:30 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 02EB3AE051;
- Mon, 17 Jan 2022 08:32:29 +0000 (GMT)
-Received: from li-c7b85bcc-2727-11b2-a85c-a9ba7f3a2193.ibm.com.com (unknown
- [9.43.43.186]) by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 17 Jan 2022 08:32:28 +0000 (GMT)
-From: Ganesh Goudar <ganeshgr@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v4] powerpc/mce: Avoid using irq_work_queue() in realmode
-Date: Mon, 17 Jan 2022 14:02:17 +0530
-Message-Id: <20220117083217.330110-1-ganeshgr@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jcnd64Gg2z2xDM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jan 2022 21:07:04 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=WCk4fy5/APxSx7+bZ5kbBZfpHdGAKtNmnPjlOqLMWH/tBS0Ar1VtI91qj8vsvLq6QN5oBpc6lzOECEm4/BLJZ30jfFngayn2jmPDXZWnh9olP0CDYk5YjpdUJytDEA1DXTrJ6WJiHBxwIECKdg/2fxtvedmA/ZebB5d80ojKk+4aozfKyTtOvPRWwW2zx3I64QyyE2rQSX3IOjuYwGavugmSBMlmgzJ8g0KqgrYOAvi/EZVDvOQfek2LDpiVVARUlRKjEvWVNyFbI6yd/FFz/+8q/GXtg9soL+WFsXZPn43hgV62iGJl9RnZCCd+18Wy66xde6cS6JC6ZaPxMd6NEg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ZChNNeWBMA/w9hnSGFwBn1OHXD4XBocmcjf/kIKBCp0=;
+ b=PHOQeF2fCHWN5Mr6mF9bd7qEILzP+mfrHzUsDcmGgNOH42pKtn9pY3d0NtzM0ipxstkxMur8lV1CfmCIZS7+5ShfHKFVEbWfSTnaCjiHsajN6TNXUG8SfVg0JziDjhNxj8xhMlP1wH8ZjbFHfOeyg6id66qwznrcu12VqvmIRl3K1CziiZ7WzuQ5lXWPGOJx7YqY3qBVmbCzbCyjFGQ71iM6HMeTX9oxmvoJJkjghlAcUtvNqqXukylKyKRLlybEWDFUgwRKeQBaL56v2TCr5MD5GR2oRjy1oxVHsr04OXug79AZy7AWHm4sIr/MScQMdFw/IY9iPUGJ6HBqOQSjkA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+Received: from MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:3d::7) by
+ PR0P264MB3625.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:146::6) with
+ Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.4888.11; Mon, 17 Jan 2022 10:06:39 +0000
+Received: from MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::30e4:16d5:f514:b8f8]) by MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::30e4:16d5:f514:b8f8%2]) with mapi id 15.20.4888.013; Mon, 17 Jan 2022
+ 10:06:39 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/32s: Enable STRICT_MODULE_RWX for the 603 core
+Thread-Topic: [PATCH] powerpc/32s: Enable STRICT_MODULE_RWX for the 603 core
+Thread-Index: AQHYC4nrAjqfbFaQXE6sowexREg9UA==
+Date: Mon, 17 Jan 2022 10:06:39 +0000
+Message-ID: <1e6162f334167e75f1140082932e3a354b16daba.1642413973.git.christophe.leroy@csgroup.eu>
+Accept-Language: fr-FR, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 4b73ff81-ffde-4df0-ee38-08d9d9a10da4
+x-ms-traffictypediagnostic: PR0P264MB3625:EE_
+x-microsoft-antispam-prvs: <PR0P264MB3625722183EBA6224B30AA5DED579@PR0P264MB3625.FRAP264.PROD.OUTLOOK.COM>
+x-ms-oob-tlc-oobclassifiers: OLM:3826;
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: AC/WYSni0NoTfmKow3tOr/hTnFnXNTLL4JrXnTAsWgTGEnRTfws9tHuasMDDH2GdAlc5K+5PKrndnowk/ezhScjIHLdPOnI3Z/LBB2vC+SZXcZxaA9fverEKB4JpeCn6NvGXX0Q8PfCWQMgHOhz2fZ5o5HSiq6pmDmLGeeGLG177Z/8vDDBf7u75Watq0gaIzZyWHVEdZ0xBp5OrF2UL/yry0UzbHQQI9vTCYsdTuoaYJGp230mRPsw1x4LG9kyM/jzz+KpNILBJXXRnuxNydvdJf82GqJizu/yC76LEI7AKJPDTAZcPJDEOW6oBeKtXIvwNtrhyl2VP0pTbHg59mGL40R5DylET/yjXp/973hSMX7AbNKhMp4nQ541GTMXATsHVk0mUq2PD0TqVDB+9GD76o9fjtppZj+gyCEN0RqZ5JPAwNqsc3dwEf7o4hNzPndSOCXelXmEOb9B5dRoFdmS+Q68JeKPWwe9g4k10ciLlV3TkJk7SAA6rHjymXeCKZ4uRKGRK2uYwrgryI33MKIET0O7EQqWOxT4ctr7W3dXUvm4r7sqp5CmOibzMxD5qu/ki7efMlZSuYrptdyKapKmURG0W5jML+B9wbIZPB/BekhHPe70weplrIFEh46JZpUMsxCJ7JiJbVSVfeNKjBn5jR2xUXpJWB+XeYtf6j7YOGkbHuJrGbcUMYmbdu3Am6L47A+LMwDEe8Z8z7wvwZQ==
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
+ SFS:(4636009)(366004)(54906003)(76116006)(186003)(71200400001)(66946007)(6506007)(6512007)(86362001)(2616005)(4326008)(44832011)(66556008)(508600001)(122000001)(64756008)(66446008)(8676002)(5660300002)(316002)(38070700005)(66476007)(38100700002)(36756003)(83380400001)(91956017)(6486002)(8936002)(2906002)(26005)(110136005);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?iso-8859-1?Q?MzpRRgqZp9vZnyHhx8uzP7wcuYg4Hz4RT8wF9iGpGvP8VdKaxp6m7Cg6Ym?=
+ =?iso-8859-1?Q?OEMxo7S3W4ozm/0VKmfmGXwmXTXsV2dQN1DSey44ZjQVmSxKgHCAjEr3gt?=
+ =?iso-8859-1?Q?39pW8TDPgLynx6SOrfMe8yuUvb4VTs+phxfDUI0y7YjlGSYHCsQ/rrbu63?=
+ =?iso-8859-1?Q?5TMPZ5AyEegPW+TDLgCqY+IiJR11biRFXX6PHKA+C+hdI1zpkpUr/9VW0V?=
+ =?iso-8859-1?Q?A/th3PAJulLX4GzrptURhM/vm1gSnUcrlT2Wsc99q+MdYZXOmIUjWZAKdo?=
+ =?iso-8859-1?Q?uF7hTe+qUmQPAbcEZbs1/S8wYAgAhav1JoCyCVhQyugMes2LyD5z/AeCuf?=
+ =?iso-8859-1?Q?qWu4VdKk6bPOXmECJEMF5tJpwnKqIF3JQFTOcNZYfhU9hl0bW7ZWOduPJ/?=
+ =?iso-8859-1?Q?MSzlI3HThzfUI1VYFzGxWyRsz+NZ+pFntoqyNNuahnWRjAeRaX9k2ad8uh?=
+ =?iso-8859-1?Q?VZ8t3nJSD8VJtkp2jIXgKwK7gGwR0m3xgUeHacaez05ntbNxnp/Ko8VzDL?=
+ =?iso-8859-1?Q?vKwu7j9trTUvIak3t1Jt0Itx3kBiTPdCRxofDnzUQyeBAzbvJfzzBfhKqg?=
+ =?iso-8859-1?Q?6dty362pHgLRqyaKa+stycZ6J1d6TozuwtzK2xfm1RS2S/RCXp9KvR8HKl?=
+ =?iso-8859-1?Q?fOM9J3MrWlC7CJxgA1Dwa0Q3YxMgXprUBiKk9nni7pHQ4N8R0iRxurM25w?=
+ =?iso-8859-1?Q?XEPaFUvQcGSMIyFAakCV4ofi+gpaIzYhS4e7uooiUz/UvqVbpymM6aViQZ?=
+ =?iso-8859-1?Q?/PazBQUDnAlNOnqcry/ilh+LqCankmW+oZDKPwH69lk909ij/dE4FQ+V/b?=
+ =?iso-8859-1?Q?A9dRXh8cmgc1ZM489LJOr39slxtthtv4hH53YDQ4d0gNQdyQCoiT3bqb25?=
+ =?iso-8859-1?Q?28e+UFZ4rmRZWSs9mRCPjab08HwcZbX0Ao2hzYB3h4BKOJjUHiWFtf+7DM?=
+ =?iso-8859-1?Q?N0EJJ7dNpYph9WK7bTJKi9GfagWL4E7IQ4YI6npJMKqTySBa54mb/c+Rdp?=
+ =?iso-8859-1?Q?ZCrEyxxrIrPv1bpZx6RwmPr/NsTfVhIsROnAYqtZ/1ICG5JwSQ+fdysZwv?=
+ =?iso-8859-1?Q?xLpll0+GYdqaOOvN/2hmAJihKBYinXNaQ54nJ6T07nNeV+lJMW2mRsmzx4?=
+ =?iso-8859-1?Q?t6oOzCKG7Muqfp5Ea7F/7Kv3jKw7mjbdFGmnOBG4KgFhsNCdXkqgP6DCBb?=
+ =?iso-8859-1?Q?HpKQK22U2GTBsG+gMe7CmpKpTsfFj8en8NRp2VJl3Ac5wFaLI6CxzAy55U?=
+ =?iso-8859-1?Q?0CyP2EyQRQkPXk/zQogrWxTKE9mlWpWkoOdrhJU54RRxNiwQ7d90tNsQy6?=
+ =?iso-8859-1?Q?NEf/Yu1vLhGe+qrAJIbcvUi325fv8ZFco20tZw7ppDBqW4whe89R2xDhs7?=
+ =?iso-8859-1?Q?bn0CE5PtXxTiLea+EtsArV/pj792NoeiW6MCAajNhj3V17e/jWqdvLvY5X?=
+ =?iso-8859-1?Q?ERHquyhY8okfryToX5ECbDNfFWnMq9bR0bbIl8UjH31ALxXmhydsm7uX0T?=
+ =?iso-8859-1?Q?qh9GnyERB5e614DbwQD43bJAqfjLbcb7nkZKYvEtEjDFeI/ki47/Xd6YzE?=
+ =?iso-8859-1?Q?sB0gQpdz02KT0zcLuxH2yAk7E6AVlHpGQmuktwDjuAp2addFGI81a0G670?=
+ =?iso-8859-1?Q?FWJ6EekBFiBvIc3Nvl9F9Lkgcu/9TGocTFC6GttUd2vM0n6/eizJ452I8s?=
+ =?iso-8859-1?Q?Zj+5kfYeKaDehnaPId2bKFfOS1DCocGbNm96mbJQKFqBkoR8sg6pISrOc8?=
+ =?iso-8859-1?Q?raF+Kssi15QCsB2H9maD02X9E=3D?=
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: ypbnHYN1gPxYhAWV6ypJGTA0vbvO8bVQ
-X-Proofpoint-GUID: Lpbwc5oNCutnU_1TUVVkOKhP56_fyl8b
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
- definitions=2022-01-17_02,2022-01-14_01,2021-12-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 impostorscore=0
- lowpriorityscore=0 spamscore=0 clxscore=1015 priorityscore=1501
- adultscore=0 malwarescore=0 phishscore=0 mlxlogscore=999 bulkscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2110150000 definitions=main-2201170055
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MR1P264MB2980.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4b73ff81-ffde-4df0-ee38-08d9d9a10da4
+X-MS-Exchange-CrossTenant-originalarrivaltime: 17 Jan 2022 10:06:39.1191 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: RrNWxdVyAWKRWwMBMXNxxYbhJhL+7+gJ0n85np/REmjo/4RLSMHkGj+jnrcay0QfXLYWEz8TIkQ77fV5R4nbmwUPLHElgC2MKWdxTlMbS2w=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR0P264MB3625
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,323 +121,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ganesh Goudar <ganeshgr@linux.ibm.com>, mahesh@linux.ibm.com,
- npiggin@gmail.com, dja@axtens.net
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In realmode mce handler we use irq_work_queue() to defer
-the processing of mce events, irq_work_queue() can only
-be called when translation is enabled because it touches
-memory outside RMA, hence we enable translation before
-calling irq_work_queue and disable on return, though it
-is not safe to do in realmode.
+The book3s/32 MMU doesn't support per page execution protection and
+doesn't support RO protection for kernel pages.
 
-To avoid this, program the decrementer and call the event
-processing functions from timer handler.
+However, on the 603 which implements software loaded TLBs, execution
+protection is honored by the TLB Miss handler which doesn't load
+Instruction TLB for non executable pages. And RO protection is
+honored by clearing the C bit for RO pages, leading to DSI.
 
-Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
+So on the 603, STRICT_MODULE_RWX is possible without much effort.
+Don't disable STRICT_MODULE_RWX on book3s/32 and print a warning
+in case STRICT_MODULE_RWX has been selected and the platform has
+a Hardware HASH MMU.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-V2:
-* Use arch_irq_work_raise to raise decrementer interrupt.
-* Avoid having atomic variable.
+ arch/powerpc/Kconfig         | 2 +-
+ arch/powerpc/mm/pgtable_32.c | 3 +++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
-V3:
-* Fix build error.
-  Reported by kernel test bot.
-
-V4:
-* Rename some functions and variables
-* Remove mces_to_process counter and add a flag to indicate
-  there is a mce info to process.
----
- arch/powerpc/include/asm/machdep.h       |  2 +
- arch/powerpc/include/asm/mce.h           | 13 +++++
- arch/powerpc/include/asm/paca.h          |  1 +
- arch/powerpc/kernel/mce.c                | 60 +++++++++++++-----------
- arch/powerpc/kernel/time.c               |  2 +
- arch/powerpc/platforms/pseries/pseries.h |  1 +
- arch/powerpc/platforms/pseries/ras.c     | 31 +-----------
- arch/powerpc/platforms/pseries/setup.c   |  1 +
- 8 files changed, 53 insertions(+), 58 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 9c3c9f04129f..d22b222ba471 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -99,6 +99,8 @@ struct machdep_calls {
- 	/* Called during machine check exception to retrive fixup address. */
- 	bool		(*mce_check_early_recovery)(struct pt_regs *regs);
- 
-+	void            (*machine_check_log_err)(void);
-+
- 	/* Motherboard/chipset features. This is a kind of general purpose
- 	 * hook used to control some machine specific features (like reset
- 	 * lines, chip power control, etc...).
-diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-index 331d944280b8..c9f0936bd3c9 100644
---- a/arch/powerpc/include/asm/mce.h
-+++ b/arch/powerpc/include/asm/mce.h
-@@ -235,8 +235,21 @@ extern void machine_check_print_event_info(struct machine_check_event *evt,
- unsigned long addr_to_pfn(struct pt_regs *regs, unsigned long addr);
- extern void mce_common_process_ue(struct pt_regs *regs,
- 				  struct mce_error_info *mce_err);
-+void mce_irq_work_queue(void);
- int mce_register_notifier(struct notifier_block *nb);
- int mce_unregister_notifier(struct notifier_block *nb);
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
-+void mce_run_irq_context_handlers(void);
-+#else
-+static inline void mce_run_irq_context_handlers(void) { };
-+#endif /* CONFIG_PPC_BOOK3S_64 */
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
-+void set_mce_pending_irq_work(void);
-+void clear_mce_pending_irq_work(void);
-+#endif /* CONFIG_PPC_BOOK3S_64 */
-+
- #ifdef CONFIG_PPC_BOOK3S_64
- void flush_and_reload_slb(void);
- void flush_erat(void);
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index dc05a862e72a..963030689cfa 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -280,6 +280,7 @@ struct paca_struct {
- #endif
- #ifdef CONFIG_PPC_BOOK3S_64
- 	struct mce_info *mce_info;
-+	u8 mce_pending_irq_work;
- #endif /* CONFIG_PPC_BOOK3S_64 */
- } ____cacheline_aligned;
- 
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index fd829f7f25a4..6af798803ece 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -28,19 +28,9 @@
- 
- #include "setup.h"
- 
--static void machine_check_process_queued_event(struct irq_work *work);
--static void machine_check_ue_irq_work(struct irq_work *work);
- static void machine_check_ue_event(struct machine_check_event *evt);
- static void machine_process_ue_event(struct work_struct *work);
- 
--static struct irq_work mce_event_process_work = {
--        .func = machine_check_process_queued_event,
--};
--
--static struct irq_work mce_ue_event_irq_work = {
--	.func = machine_check_ue_irq_work,
--};
--
- static DECLARE_WORK(mce_ue_event_work, machine_process_ue_event);
- 
- static BLOCKING_NOTIFIER_HEAD(mce_notifier_list);
-@@ -89,6 +79,13 @@ static void mce_set_error_info(struct machine_check_event *mce,
- 	}
- }
- 
-+void mce_irq_work_queue(void)
-+{
-+	/* Raise decrementer interrupt */
-+	arch_irq_work_raise();
-+	set_mce_pending_irq_work();
-+}
-+
- /*
-  * Decode and save high level MCE information into per cpu buffer which
-  * is an array of machine_check_event structure.
-@@ -217,7 +214,7 @@ void release_mce_event(void)
- 	get_mce_event(NULL, true);
- }
- 
--static void machine_check_ue_irq_work(struct irq_work *work)
-+static void machine_check_ue_work(void)
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 0631c9241af3..cabd26b2c103 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -140,7 +140,7 @@ config PPC
+ 	select ARCH_HAS_SET_MEMORY
+ 	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC_BOOK3S || PPC_8xx || 40x) && !H=
+IBERNATION
+ 	select ARCH_HAS_STRICT_KERNEL_RWX	if FSL_BOOKE && !HIBERNATION && !RANDOM=
+IZE_BASE
+-	select ARCH_HAS_STRICT_MODULE_RWX	if ARCH_HAS_STRICT_KERNEL_RWX && !PPC_B=
+OOK3S_32
++	select ARCH_HAS_STRICT_MODULE_RWX	if ARCH_HAS_STRICT_KERNEL_RWX
+ 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
+ 	select ARCH_HAS_UACCESS_FLUSHCACHE
+ 	select ARCH_HAS_UBSAN_SANITIZE_ALL
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index f71ededdc02a..a56ade39dc68 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -148,6 +148,9 @@ void mark_rodata_ro(void)
  {
- 	schedule_work(&mce_ue_event_work);
- }
-@@ -239,7 +236,7 @@ static void machine_check_ue_event(struct machine_check_event *evt)
- 	       evt, sizeof(*evt));
- 
- 	/* Queue work to process this event later. */
--	irq_work_queue(&mce_ue_event_irq_work);
-+	mce_irq_work_queue();
- }
- 
- /*
-@@ -249,7 +246,6 @@ void machine_check_queue_event(void)
- {
- 	int index;
- 	struct machine_check_event evt;
--	unsigned long msr;
- 
- 	if (!get_mce_event(&evt, MCE_EVENT_RELEASE))
- 		return;
-@@ -263,20 +259,7 @@ void machine_check_queue_event(void)
- 	memcpy(&local_paca->mce_info->mce_event_queue[index],
- 	       &evt, sizeof(evt));
- 
--	/*
--	 * Queue irq work to process this event later. Before
--	 * queuing the work enable translation for non radix LPAR,
--	 * as irq_work_queue may try to access memory outside RMO
--	 * region.
--	 */
--	if (!radix_enabled() && firmware_has_feature(FW_FEATURE_LPAR)) {
--		msr = mfmsr();
--		mtmsr(msr | MSR_IR | MSR_DR);
--		irq_work_queue(&mce_event_process_work);
--		mtmsr(msr);
--	} else {
--		irq_work_queue(&mce_event_process_work);
--	}
-+	mce_irq_work_queue();
- }
- 
- void mce_common_process_ue(struct pt_regs *regs,
-@@ -338,7 +321,7 @@ static void machine_process_ue_event(struct work_struct *work)
-  * process pending MCE event from the mce event queue. This function will be
-  * called during syscall exit.
-  */
--static void machine_check_process_queued_event(struct irq_work *work)
-+static void machine_check_process_queued_event(void)
- {
- 	int index;
- 	struct machine_check_event *evt;
-@@ -363,6 +346,27 @@ static void machine_check_process_queued_event(struct irq_work *work)
- 	}
- }
- 
-+void set_mce_pending_irq_work(void)
-+{
-+	local_paca->mce_pending_irq_work = 1;
-+}
+ 	unsigned long numpages;
+=20
++	if (IS_ENABLED(CONFIG_STRICT_MODULE_RWX) && mmu_has_feature(MMU_FTR_HPTE_=
+TABLE))
++		pr_warn("This platform has HASH MMU, STRICT_MODULE_RWX won't work\n");
 +
-+void clear_mce_pending_irq_work(void)
-+{
-+	local_paca->mce_pending_irq_work = 0;
-+}
-+
-+void mce_run_irq_context_handlers(void)
-+{
-+	if (unlikely(local_paca->mce_pending_irq_work)) {
-+		if (ppc_md.machine_check_log_err)
-+			ppc_md.machine_check_log_err();
-+		machine_check_process_queued_event();
-+		machine_check_ue_work();
-+		clear_mce_pending_irq_work();
-+	}
-+}
-+
- void machine_check_print_event_info(struct machine_check_event *evt,
- 				    bool user_mode, bool in_guest)
- {
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index cae8f03a44fe..4cff842180e8 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -70,6 +70,7 @@
- #include <asm/vdso_datapage.h>
- #include <asm/firmware.h>
- #include <asm/asm-prototypes.h>
-+#include <asm/mce.h>
- 
- /* powerpc clocksource/clockevent code */
- 
-@@ -594,6 +595,7 @@ DEFINE_INTERRUPT_HANDLER_ASYNC(timer_interrupt)
- 
- 	if (test_irq_work_pending()) {
- 		clear_irq_work_pending();
-+		mce_run_irq_context_handlers();
- 		irq_work_run();
- 	}
- 
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 3544778e06d0..9cf0d33dfbf5 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -21,6 +21,7 @@ struct pt_regs;
- extern int pSeries_system_reset_exception(struct pt_regs *regs);
- extern int pSeries_machine_check_exception(struct pt_regs *regs);
- extern long pseries_machine_check_realmode(struct pt_regs *regs);
-+void pSeries_machine_check_log_err(void);
- 
- #ifdef CONFIG_SMP
- extern void smp_init_pseries(void);
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 56092dccfdb8..8613f9cc5798 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -23,11 +23,6 @@ static DEFINE_SPINLOCK(ras_log_buf_lock);
- 
- static int ras_check_exception_token;
- 
--static void mce_process_errlog_event(struct irq_work *work);
--static struct irq_work mce_errlog_process_work = {
--	.func = mce_process_errlog_event,
--};
--
- #define EPOW_SENSOR_TOKEN	9
- #define EPOW_SENSOR_INDEX	0
- 
-@@ -729,40 +724,16 @@ static int mce_handle_error(struct pt_regs *regs, struct rtas_error_log *errp)
- 	error_type = mce_log->error_type;
- 
- 	disposition = mce_handle_err_realmode(disposition, error_type);
--
--	/*
--	 * Enable translation as we will be accessing per-cpu variables
--	 * in save_mce_event() which may fall outside RMO region, also
--	 * leave it enabled because subsequently we will be queuing work
--	 * to workqueues where again per-cpu variables accessed, besides
--	 * fwnmi_release_errinfo() crashes when called in realmode on
--	 * pseries.
--	 * Note: All the realmode handling like flushing SLB entries for
--	 *       SLB multihit is done by now.
--	 */
- out:
--	msr = mfmsr();
--	mtmsr(msr | MSR_IR | MSR_DR);
--
- 	disposition = mce_handle_err_virtmode(regs, errp, mce_log,
- 					      disposition);
--
--	/*
--	 * Queue irq work to log this rtas event later.
--	 * irq_work_queue uses per-cpu variables, so do this in virt
--	 * mode as well.
--	 */
--	irq_work_queue(&mce_errlog_process_work);
--
--	mtmsr(msr);
--
- 	return disposition;
- }
- 
- /*
-  * Process MCE rtas errlog event.
-  */
--static void mce_process_errlog_event(struct irq_work *work)
-+void pSeries_machine_check_log_err(void)
- {
- 	struct rtas_error_log *err;
- 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 8a62af5b9c24..9bdc487b8e35 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -1084,6 +1084,7 @@ define_machine(pseries) {
- 	.system_reset_exception = pSeries_system_reset_exception,
- 	.machine_check_early	= pseries_machine_check_realmode,
- 	.machine_check_exception = pSeries_machine_check_exception,
-+	.machine_check_log_err	= pSeries_machine_check_log_err,
- #ifdef CONFIG_KEXEC_CORE
- 	.machine_kexec          = pSeries_machine_kexec,
- 	.kexec_cpu_down         = pseries_kexec_cpu_down,
--- 
-2.31.1
-
+ 	if (v_block_mapped((unsigned long)_stext + 1)) {
+ 		mmu_mark_rodata_ro();
+ 		ptdump_check_wx();
+--=20
+2.33.1
