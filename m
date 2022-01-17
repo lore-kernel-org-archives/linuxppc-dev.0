@@ -4,52 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B4C9C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 17:40:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97387C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jan 2022 17:41:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jczhp0cGbz3htH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jan 2022 04:40:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JczjV0kfCz3gCw
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jan 2022 04:41:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iRWWwP8c;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lCfQTuXj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1;
- helo=ams.source.kernel.org; envelope-from=sashal@kernel.org;
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
+ helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=iRWWwP8c; 
+ header.s=k20201202 header.b=lCfQTuXj; 
  dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org
- [IPv6:2604:1380:4601:e00::1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jcyy94dZJz3dgW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jan 2022 04:07:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JcyyB65rRz3f5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jan 2022 04:07:30 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id 83DE9B81164;
- Mon, 17 Jan 2022 17:07:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5969EC36AE3;
- Mon, 17 Jan 2022 17:07:24 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 13E4961290;
+ Mon, 17 Jan 2022 17:07:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 34312C36AED;
+ Mon, 17 Jan 2022 17:07:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1642439245;
- bh=qNILM1RdhmA5Zm0cLlQ79sNMcY7CTw2k9YHU8nTci04=;
- h=From:To:Cc:Subject:Date:From;
- b=iRWWwP8cAcmnCOMYs+CjL5DryTyUq7A8vBblyI4ZpsZuNaWfhwyKl3TB9PIYjkTEN
- pr7h+DkvfSZn4E0AMKSWA1RHW/RCsVJzrPm4U2+jdv90//TyC7R7iGaEx0dsfC5B6A
- c1C5WZ+x8vavUbPSieUWlft9/I8XiLmJ1pP7YcHlypkwajHWa3IwhBpyNpbae1+Zcu
- rlFX/keAb+0CF03IqIL5wX0mivNhhuF8XVDu4sPyRSka3Hfp9zcola+qkf5ti844ek
- zpvnWd/Xg6Go2rrWto4mhtsYlgVBHcWvUK1I/vbWrKQZRyPgisXuCzcq3KMOpHtV/L
- CZ8WrogV6P5zQ==
+ s=k20201202; t=1642439248;
+ bh=ehxo8YQgznHOl0EbViewbaIP5NiLJZCNpNXsawUryR8=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=lCfQTuXjcQE//JHgZKLX/fzC0QclQTVbLviYV3wJbKgb7pw/rn27SXyuGAEb8a4Vo
+ pcwCRtX9k/rFIwKCA2JisDBFar3LlRItVS1xIwOEnsR//7U9Hi+ICdiBMGugvBrTmu
+ TLLBaJQMZlc6D8L56KtvaXBbkAbsk2EHGy2RBVesfuFJEJ/LTh+J5ctO9hnuQZpzG+
+ UkKQqtD2y2st8qKKJxMZYA51Ut1MDeaYWTfJxrYZe6gXVEjl0OoW06Hk66oCKBXnlJ
+ 4/6QB5Qbg43Y+u9eUwWp7KDMIffvECoO1pDd4n2D+MUPAIReDH/zHtVQVq4LqQg6Ir
+ WlCu0qq3zO68w==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 01/13] powerpc/6xx: add missing of_node_put
-Date: Mon, 17 Jan 2022 12:07:09 -0500
-Message-Id: <20220117170722.1473137-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 03/13] powerpc/cell: add missing of_node_put
+Date: Mon, 17 Jan 2022 12:07:11 -0500
+Message-Id: <20220117170722.1473137-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220117170722.1473137-1-sashal@kernel.org>
+References: <20220117170722.1473137-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -65,17 +67,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, nick.child@ibm.com, maz@kernel.org,
- Julia Lawall <Julia.Lawall@lip6.fr>, linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, Julia Lawall <Julia.Lawall@lip6.fr>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-[ Upstream commit f6e82647ff71d427d4148964b71f239fba9d7937 ]
+[ Upstream commit a841fd009e51c8c0a8f07c942e9ab6bb48da8858 ]
 
-for_each_compatible_node performs an of_node_get on each iteration, so
+for_each_node_by_name performs an of_node_get on each iteration, so
 a break out of the loop requires an of_node_put.
 
 A simplified version of the semantic patch that fixes this problem is as
@@ -83,50 +85,43 @@ follows (http://coccinelle.lip6.fr):
 
 // <smpl>
 @@
-expression e;
+expression e,e1;
 local idexpression n;
 @@
 
-@@
-local idexpression n;
-expression e;
-@@
-
- for_each_compatible_node(n,...) {
-   ...
+ for_each_node_by_name(n, e1) {
+   ... when != of_node_put(n)
+       when != e = n
 (
-   of_node_put(n);
-|
-   e = n
+   return n;
 |
 +  of_node_put(n);
-?  break;
+?  return ...;
 )
    ...
  }
-... when != n
 // </smpl>
 
 Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/1448051604-25256-2-git-send-email-Julia.Lawall@lip6.fr
+Link: https://lore.kernel.org/r/1448051604-25256-7-git-send-email-Julia.Lawall@lip6.fr
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/embedded6xx/hlwd-pic.c | 1 +
+ arch/powerpc/platforms/cell/iommu.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-index bf4a125faec66..db2ea6b6889de 100644
---- a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-+++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-@@ -220,6 +220,7 @@ void hlwd_pic_probe(void)
- 			irq_set_chained_handler(cascade_virq,
- 						hlwd_pic_irq_cascade);
- 			hlwd_irq_host = host;
-+			of_node_put(np);
- 			break;
+diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+index 7ff51f96a00e8..8df43781f5db9 100644
+--- a/arch/powerpc/platforms/cell/iommu.c
++++ b/arch/powerpc/platforms/cell/iommu.c
+@@ -1107,6 +1107,7 @@ static int __init cell_iommu_fixed_mapping_init(void)
+ 			if (hbase < dbase || (hend > (dbase + dsize))) {
+ 				pr_debug("iommu: hash window doesn't fit in"
+ 					 "real DMA window\n");
++				of_node_put(np);
+ 				return -1;
+ 			}
  		}
- 	}
 -- 
 2.34.1
 
