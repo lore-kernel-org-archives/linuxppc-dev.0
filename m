@@ -4,88 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 868B9C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jan 2022 19:11:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 075C1C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jan 2022 19:29:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JfFcs00Wfz3dkN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 06:11:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm2 header.b=iI0Xifsc;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=ln/IExRu;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JfG142LNbz3c7S
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 06:29:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=sent.com (client-ip=66.111.4.230;
- helo=new4-smtp.messagingengine.com; envelope-from=zi.yan@sent.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256
- header.s=fm2 header.b=iI0Xifsc; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm1 header.b=ln/IExRu; 
- dkim-atps=neutral
-Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com
- [66.111.4.230])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JfFVq2grMz30LY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 06:06:43 +1100 (AEDT)
-Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
- by mailnew.nyi.internal (Postfix) with ESMTP id 4B986580730;
- Wed, 19 Jan 2022 14:06:40 -0500 (EST)
-Received: from mailfrontend1 ([10.202.2.162])
- by compute4.internal (MEProxy); Wed, 19 Jan 2022 14:06:40 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sent.com; h=from
- :to:cc:subject:date:message-id:in-reply-to:references:reply-to
- :mime-version:content-transfer-encoding; s=fm2; bh=VbnqumJAL4r7o
- PXU1B7/2AqlEeyilMgkB8Z6AdGXQWo=; b=iI0XifscyxRyNU2nNcg0p2IMkEy3e
- 1EuyVZfwKTLv+XEo9nCFdk0H5mkwD7i7Aq+gayhI/BlCO24BAgXF5jaHx3S3FQRE
- rxdrdZsc12FBtiE2Dpar0r6YxrhJU+WU6hTXLnsZjClhQ8cTTWFKKq7ea+N9rq6T
- Xh7uK0moTsH4LK4/jK0QbDVdODFQa1o+99M/gn46XI67hUpfY65bcPCyJHv6PHF/
- bGcAwer4Ms9MbJmV2ET/Tw3v54jfWJgP92rHXTF0kbhZEMuiK8LZWVccwfOF9NRx
- Y8wYL2JPLD1mXMtkWQCf9fE74qq7bnrnrOC3VPh40ulPoeJZs3qjZc/dA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:date:from
- :in-reply-to:message-id:mime-version:references:reply-to:subject
- :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm1; bh=VbnqumJAL4r7oPXU1B7/2AqlEeyilMgkB8Z6AdGXQWo=; b=ln/IExRu
- IX3Ngu9Srz6FhkcAULotpPuKNYZGxiHzOvW3borqnE/QzdlHZ9Z7R/ZXOULt5zd7
- XgZdpUUIVFX2rj1W7OkdqrhQa5/SfoU/EZFTMye5P5+TmSbriwaBHVWc7xXT8Bd7
- 9rbQ4Q0A+UecyD0TADRV1zaCKmgjNeWOE0EuXw9widzTi6YryjkGqp11INm1zwzk
- CvdrBNAUGz0bxozLyW5o9FMi//QVU3lBQAUCFoUQvB4xWcxrHjUzHmn1hmFreVpN
- V7dPt938YbZA1XI5W/flHNeegA98GnbKMOpTdQw5i4iUI92GTwy0mrqC6jT77Gv/
- KSZUvGlhcve8Wg==
-X-ME-Sender: <xms:QGHoYbtp_B1wdpMo5t2l9oE7stqZFzq20lCeQ4uCxBMgaZV1F2c9MA>
- <xme:QGHoYcci0XXibWIkEosG1VlR9Rvx_MHnWSEf1IBPA2w39EMp3Ho4N5nk0VBIMoW6u
- 1-fMcFG49YaHimOSg>
-X-ME-Received: <xmr:QGHoYezwHqjwC8A7_YI1pFVJYTWHfhXWYwjdXWq7D1l2WsX7CQUGIUK_Mt8WTAHKp8M2cak1>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvvddrudeigdeivdcutefuodetggdotefrodftvf
- curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
- uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
- fjughrpefhvffufffkofgjfhhrggfgsedtqhertdertddtnecuhfhrohhmpegkihcujggr
- nhcuoeiiihdrhigrnhesshgvnhhtrdgtohhmqeenucggtffrrghtthgvrhhnpeeijeeuvd
- euudeuhfeghfehieeuvdetvdeugfeigeevteeuieeuhedtgeduheefleenucevlhhushht
- vghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpeiiihdrhigrnhesshgvnh
- htrdgtohhm
-X-ME-Proxy: <xmx:QGHoYaMIFGiyyNjgwRGKm380P0rbj2Frq10NmQVKCCjaPPhbW2Flpw>
- <xmx:QGHoYb_j0dzi9YXmkoNqMy_hu9Ge4gKGK02fSjLO7eZTdA8DYz4a_Q>
- <xmx:QGHoYaUu9q5u7A5e7HgnMDS97TVHUVwdqePaaQYgyTAa3wtxSiJAUg>
- <xmx:QGHoYeUrjpbHQ0fZM8NhK9zLdS_e2FUfjnVkcUw25okDdKH3fWbFAg>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
- 19 Jan 2022 14:06:39 -0500 (EST)
-From: Zi Yan <zi.yan@sent.com>
-To: David Hildenbrand <david@redhat.com>,
-	linux-mm@kvack.org
-Subject: [PATCH v4 6/7] drivers: virtio_mem: use pageblock size as the minimum
- virtio_mem size.
-Date: Wed, 19 Jan 2022 14:06:22 -0500
-Message-Id: <20220119190623.1029355-7-zi.yan@sent.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220119190623.1029355-1-zi.yan@sent.com>
-References: <20220119190623.1029355-1-zi.yan@sent.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JfG0c0JpGz2xXV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 06:29:01 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4JfG0R2Jr1z9sT0;
+ Wed, 19 Jan 2022 20:28:55 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id VomG4PXD1d1F; Wed, 19 Jan 2022 20:28:55 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4JfG0R0h6xz9sSy;
+ Wed, 19 Jan 2022 20:28:55 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DB6AB8B781;
+ Wed, 19 Jan 2022 20:28:54 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id DY-vqUvxFL90; Wed, 19 Jan 2022 20:28:54 +0100 (CET)
+Received: from [192.168.4.44] (unknown [192.168.4.44])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2296E8B768;
+ Wed, 19 Jan 2022 20:28:54 +0100 (CET)
+Message-ID: <c635dff6-2bca-3486-014f-12ae00bd1777@csgroup.eu>
+Date: Wed, 19 Jan 2022 20:28:54 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.4.0
+Subject: Re: [PATCH v3 11/12] lkdtm: Fix execute_[user]_location()
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Kees Cook <keescook@chromium.org>
+References: <cover.1634457599.git.christophe.leroy@csgroup.eu>
+ <d4688c2af08dda706d3b6786ae5ec5a74e6171f1.1634457599.git.christophe.leroy@csgroup.eu>
+ <e7793192-6879-490d-1f37-3d6d6908a121@csgroup.eu>
+In-Reply-To: <e7793192-6879-490d-1f37-3d6d6908a121@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,50 +64,127 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Zi Yan <ziy@nvidia.com>
-Cc: Mel Gorman <mgorman@techsingularity.net>, Zi Yan <ziy@nvidia.com>,
- Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, Eric Ren <renzhengeek@gmail.com>,
- virtualization@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>, Vlastimil Babka <vbabka@suse.cz>,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-parisc@vger.kernel.org,
+ Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Zi Yan <ziy@nvidia.com>
+Hi Kees,
 
-alloc_contig_range() now only needs to be aligned to pageblock_order,
-drop virtio_mem size requirement that it needs to be the max of
-pageblock_order and MAX_ORDER.
 
-Signed-off-by: Zi Yan <ziy@nvidia.com>
----
- drivers/virtio/virtio_mem.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+Le 17/12/2021 à 12:49, Christophe Leroy a écrit :
+> Hi Kees,
+> 
+> Le 17/10/2021 à 14:38, Christophe Leroy a écrit :
+>> execute_location() and execute_user_location() intent
+>> to copy do_nothing() text and execute it at a new location.
+>> However, at the time being it doesn't copy do_nothing() function
+>> but do_nothing() function descriptor which still points to the
+>> original text. So at the end it still executes do_nothing() at
+>> its original location allthough using a copied function descriptor.
+>>
+>> So, fix that by really copying do_nothing() text and build a new
+>> function descriptor by copying do_nothing() function descriptor and
+>> updating the target address with the new location.
+>>
+>> Also fix the displayed addresses by dereferencing do_nothing()
+>> function descriptor.
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> 
+> Do you have any comment to this patch and to patch 12 ?
+> 
+> If not, is it ok to get your acked-by ?
 
-diff --git a/drivers/virtio/virtio_mem.c b/drivers/virtio/virtio_mem.c
-index a6a78685cfbe..eafba2119ae3 100644
---- a/drivers/virtio/virtio_mem.c
-+++ b/drivers/virtio/virtio_mem.c
-@@ -2476,13 +2476,12 @@ static int virtio_mem_init_hotplug(struct virtio_me=
-m *vm)
- 				      VIRTIO_MEM_DEFAULT_OFFLINE_THRESHOLD);
-=20
- 	/*
--	 * We want subblocks to span at least MAX_ORDER_NR_PAGES and
--	 * pageblock_nr_pages pages. This:
-+	 * We want subblocks to span at least pageblock_nr_pages pages.
-+	 * This:
- 	 * - Is required for now for alloc_contig_range() to work reliably -
- 	 *   it doesn't properly handle smaller granularity on ZONE_NORMAL.
- 	 */
--	sb_size =3D max_t(uint64_t, MAX_ORDER_NR_PAGES,
--			pageblock_nr_pages) * PAGE_SIZE;
-+	sb_size =3D pageblock_nr_pages * PAGE_SIZE;
- 	sb_size =3D max_t(uint64_t, vm->device_block_size, sb_size);
-=20
- 	if (sb_size < memory_block_size_bytes() && !force_bbm) {
---=20
-2.34.1
+Any feedback please, even if it's to say no feedback ?
 
+Many thanks,
+Christophe
+
+> 
+> Thanks
+> Christophe
+> 
+>> ---
+>>   drivers/misc/lkdtm/perms.c | 37 ++++++++++++++++++++++++++++---------
+>>   1 file changed, 28 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
+>> index 035fcca441f0..1cf24c4a79e9 100644
+>> --- a/drivers/misc/lkdtm/perms.c
+>> +++ b/drivers/misc/lkdtm/perms.c
+>> @@ -44,19 +44,34 @@ static noinline void do_overwritten(void)
+>>       return;
+>>   }
+>> +static void *setup_function_descriptor(func_desc_t *fdesc, void *dst)
+>> +{
+>> +    if (!have_function_descriptors())
+>> +        return dst;
+>> +
+>> +    memcpy(fdesc, do_nothing, sizeof(*fdesc));
+>> +    fdesc->addr = (unsigned long)dst;
+>> +    barrier();
+>> +
+>> +    return fdesc;
+>> +}
+>> +
+>>   static noinline void execute_location(void *dst, bool write)
+>>   {
+>> -    void (*func)(void) = dst;
+>> +    void (*func)(void);
+>> +    func_desc_t fdesc;
+>> +    void *do_nothing_text = dereference_function_descriptor(do_nothing);
+>> -    pr_info("attempting ok execution at %px\n", do_nothing);
+>> +    pr_info("attempting ok execution at %px\n", do_nothing_text);
+>>       do_nothing();
+>>       if (write == CODE_WRITE) {
+>> -        memcpy(dst, do_nothing, EXEC_SIZE);
+>> +        memcpy(dst, do_nothing_text, EXEC_SIZE);
+>>           flush_icache_range((unsigned long)dst,
+>>                      (unsigned long)dst + EXEC_SIZE);
+>>       }
+>> -    pr_info("attempting bad execution at %px\n", func);
+>> +    pr_info("attempting bad execution at %px\n", dst);
+>> +    func = setup_function_descriptor(&fdesc, dst);
+>>       func();
+>>       pr_err("FAIL: func returned\n");
+>>   }
+>> @@ -66,16 +81,19 @@ static void execute_user_location(void *dst)
+>>       int copied;
+>>       /* Intentionally crossing kernel/user memory boundary. */
+>> -    void (*func)(void) = dst;
+>> +    void (*func)(void);
+>> +    func_desc_t fdesc;
+>> +    void *do_nothing_text = dereference_function_descriptor(do_nothing);
+>> -    pr_info("attempting ok execution at %px\n", do_nothing);
+>> +    pr_info("attempting ok execution at %px\n", do_nothing_text);
+>>       do_nothing();
+>> -    copied = access_process_vm(current, (unsigned long)dst, do_nothing,
+>> +    copied = access_process_vm(current, (unsigned long)dst, 
+>> do_nothing_text,
+>>                      EXEC_SIZE, FOLL_WRITE);
+>>       if (copied < EXEC_SIZE)
+>>           return;
+>> -    pr_info("attempting bad execution at %px\n", func);
+>> +    pr_info("attempting bad execution at %px\n", dst);
+>> +    func = setup_function_descriptor(&fdesc, dst);
+>>       func();
+>>       pr_err("FAIL: func returned\n");
+>>   }
+>> @@ -153,7 +171,8 @@ void lkdtm_EXEC_VMALLOC(void)
+>>   void lkdtm_EXEC_RODATA(void)
+>>   {
+>> -    execute_location(lkdtm_rodata_do_nothing, CODE_AS_IS);
+>> +    
+>> execute_location(dereference_function_descriptor(lkdtm_rodata_do_nothing), 
+>>
+>> +             CODE_AS_IS);
+>>   }
+>>   void lkdtm_EXEC_USERSPACE(void)
+>>
