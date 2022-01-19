@@ -4,68 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4ABE4C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jan 2022 18:52:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A88BAC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Jan 2022 19:07:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JfFBH4rdnz30NW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 05:52:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JfFWW6c6kz3bPW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 06:07:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=jB8jTGft;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256 header.s=fm2 header.b=Bcb5wJnl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=AqlcQWYg;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::52c;
- helo=mail-pg1-x52c.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=sent.com (client-ip=66.111.4.230;
+ helo=new4-smtp.messagingengine.com; envelope-from=zi.yan@sent.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=jB8jTGft; dkim-atps=neutral
-Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com
- [IPv6:2607:f8b0:4864:20::52c])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=sent.com header.i=@sent.com header.a=rsa-sha256
+ header.s=fm2 header.b=Bcb5wJnl; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm1 header.b=AqlcQWYg; 
+ dkim-atps=neutral
+Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com
+ [66.111.4.230])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JfF9W4bhMz3050
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 05:51:40 +1100 (AEDT)
-Received: by mail-pg1-x52c.google.com with SMTP id 187so3237812pga.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Jan 2022 10:51:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=p4+HpvQqpXWwOnnXQVxrBDcjJ5yInc/mHBvdCwo/eqE=;
- b=jB8jTGftBMXo7MjLtldaBa1YH3NRmecF1y+pwQjHfQtUOVs0sUXRi5UTthYKtoUhfO
- 9gidudV/7NVCgC7Sy5njjUvBQuV82xuHTATdFKnFvPrzrV2Be/b4VTXhm+IPdPHi/95B
- yhgMPppJjJm18KCshVGY3K2kICbvbWhXQPDis=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=p4+HpvQqpXWwOnnXQVxrBDcjJ5yInc/mHBvdCwo/eqE=;
- b=ijj1VhWfnBdpyCPCSl6Lxiz8HtdPhRoES6vuXiv3gTZ/m9WryUeNkcBeGmgu39z5cK
- Sgi8u8+o6P6pWOUGPrx1ZdFviQIRh5S7MGiOdhc37NdfPGnrw3XxegvGji7Rzxiv7DUs
- Ef2ojvHhQSOu3W+9erO17SjCGjd4A/0dAin1iqg86GGF0fxKQuOEilXBSIpVhoLQ793o
- 1MtBgp/dSPoCnOSEWg/2dBNNlspuH4DdZLneerUWTX9K9MrgWeq/6oS8VFJg+dtkglGl
- 8HzeIDG+8PNaZNsgUuDJKhe+o0OuungWTxhZptfKZzeYYt7ODn+157keMq7JkKZW6m+S
- geYQ==
-X-Gm-Message-State: AOAM532s8O3P/j5LcFb8N0NuNik3+VeyFmTNq0JVKr/qcgOy0qEyPLRq
- WTAOZU7MnhdHVX27PnZACmNeWg==
-X-Google-Smtp-Source: ABdhPJyqQae4RrbN+8YvLzLqk5/OqW4MahzZOqILFVoW0wHcIsva/dbqktfdkKKRqs7wtIGsGOSxrw==
-X-Received: by 2002:a63:eb07:: with SMTP id t7mr28591515pgh.112.1642618295553; 
- Wed, 19 Jan 2022 10:51:35 -0800 (PST)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id md18sm108396pjb.9.2022.01.19.10.51.35
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 19 Jan 2022 10:51:35 -0800 (PST)
-Date: Wed, 19 Jan 2022 10:51:34 -0800
-From: Kees Cook <keescook@chromium.org>
-To: He Ying <heying24@huawei.com>
-Subject: Re: [PATCH] powerpc/process, kasan: Silence KASAN warnings in
- __get_wchan()
-Message-ID: <202201191051.E49ED291@keescook>
-References: <20220119015025.136902-1-heying24@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JfFVl3J9Jz309W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 06:06:38 +1100 (AEDT)
+Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
+ by mailnew.nyi.internal (Postfix) with ESMTP id C9E8858071F;
+ Wed, 19 Jan 2022 14:06:36 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute1.internal (MEProxy); Wed, 19 Jan 2022 14:06:36 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sent.com; h=from
+ :to:cc:subject:date:message-id:in-reply-to:references:reply-to
+ :mime-version:content-transfer-encoding; s=fm2; bh=lM5Ud4VXnPfGE
+ 4e+o+afQ6u3rvTqVxQH5x8bdxJbj/U=; b=Bcb5wJnlVrRr1fBACKLZM/68ylYyW
+ XauW4ZjUGmyFBFRSSAfWApAu7Gm8Mow//QFMWY+BS6xQD73w+ORjT3Bvj8sIoH2F
+ ec3MJrdBDthm3kl1Om7YhgBSyfHayTyNGYf6DGlKiGwPlBj/D1p7WDLlFDuMr1Tz
+ gaJ239SvQ2Gix740nZS8RFYrvTegf+DcLERjUKgULSG9ph2FjshM86TkU10G40U/
+ ZibxH8v5npX7B9T1U9spS8Hqbl6gQ2hxoM++Y4oC3V+Ru6gO5Mgcs9GqZuuB9Sa1
+ B2QUjpc+tAHf5221sVAzlI9xXqS+DYdMDOQWfha2R56vvjnwgFzJi+3kw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:reply-to:subject
+ :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm1; bh=lM5Ud4VXnPfGE4e+o+afQ6u3rvTqVxQH5x8bdxJbj/U=; b=AqlcQWYg
+ MO2piJYNJCv6ZkohbtXxE3nvvwGXpKQ5ngsH4V/nnUksWb/koS9tRBJyJMXa3Wit
+ 4feKyvzj8DKzlK/rNr9FPLORq0g9O/HgxtAxFsKuN4ONuuGIeaMd44G5yIM94c4b
+ zcVYhd0vNTJ9RKxuwoECD2dPrqsOIqvvTnGY9VyO2FdlcbcUn2LRe2wg+pNZtYe9
+ JHA3qfYY72Ua2WjAzN9GO4CapZa9waEQ6g6ck02F7cJ70BWscDpKbEVlKZQNwlyD
+ ZTNj9ekrFe7H+rMmZLwEA6kYL7FPsg0kF0v4w/+4dDe6DjFZfSo3IsXcqbKtK7dl
+ PnfOj0pUnaO3kw==
+X-ME-Sender: <xms:PGHoYbLvKdEzLmKVrCJU-585Dx1CZzXWHYKm4MlWiqbcyd2WPlYwZw>
+ <xme:PGHoYfIWQ1i0yiVnz0_UVoOiw0PQe2PFOr6d6rWS8L9xYt16e3j3_p-IT16oPkrnT
+ 8G4rBnFJ3MKoHGoZQ>
+X-ME-Received: <xmr:PGHoYTuJptWLgBmxcSS12WKfaJ50afl2Nw0PpXOdnAkCsTDKX0Z5mJRa67__alOv_QUj1xFR>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvvddrudeigdeivdcutefuodetggdotefrodftvf
+ curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+ uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+ fjughrpefhvffufffkofgjfhhrggfgsedtqhertdertddtnecuhfhrohhmpegkihcujggr
+ nhcuoeiiihdrhigrnhesshgvnhhtrdgtohhmqeenucggtffrrghtthgvrhhnpeeijeeuvd
+ euudeuhfeghfehieeuvdetvdeugfeigeevteeuieeuhedtgeduheefleenucevlhhushht
+ vghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpeiiihdrhigrnhesshgvnh
+ htrdgtohhm
+X-ME-Proxy: <xmx:PGHoYUbceoi1hG7hFjd9paFLam2W2Gts10O2ahpSWy6wXyyZ9XihQA>
+ <xmx:PGHoYSZyAn8EzQPczFpW99oG01vfTC2jrhCsmvqkk42ck47gKg9YyQ>
+ <xmx:PGHoYYBah_b6SaXXvWiu227uUXlSMW069sg3-IIJz0_h0ZTOudSntA>
+ <xmx:PGHoYeSnrCRuPuAS-GJ0u94G0E09oTdUmkR1w833zlMVLQRRIy8SXA>
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 19 Jan 2022 14:06:36 -0500 (EST)
+From: Zi Yan <zi.yan@sent.com>
+To: David Hildenbrand <david@redhat.com>,
+	linux-mm@kvack.org
+Subject: [PATCH v4 2/7] mm: page_isolation: move has_unmovable_pages() to
+ mm/page_isolation.c
+Date: Wed, 19 Jan 2022 14:06:18 -0500
+Message-Id: <20220119190623.1029355-3-zi.yan@sent.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220119190623.1029355-1-zi.yan@sent.com>
+References: <20220119190623.1029355-1-zi.yan@sent.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220119015025.136902-1-heying24@huawei.com>
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,97 +97,305 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: catalin.marinas@arm.com, linux-kernel@vger.kernel.org, sxwjean@gmail.com,
- peterz@infradead.org, paulus@samba.org, npiggin@gmail.com,
- linuxppc-dev@lists.ozlabs.org
+Reply-To: Zi Yan <ziy@nvidia.com>
+Cc: Mel Gorman <mgorman@techsingularity.net>, Zi Yan <ziy@nvidia.com>,
+ Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Eric Ren <renzhengeek@gmail.com>,
+ virtualization@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>, Vlastimil Babka <vbabka@suse.cz>,
+ Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 18, 2022 at 08:50:25PM -0500, He Ying wrote:
-> The following KASAN warning was reported in our kernel.
-> 
->   BUG: KASAN: stack-out-of-bounds in get_wchan+0x188/0x250
->   Read of size 4 at addr d216f958 by task ps/14437
-> 
->   CPU: 3 PID: 14437 Comm: ps Tainted: G           O      5.10.0 #1
->   Call Trace:
->   [daa63858] [c0654348] dump_stack+0x9c/0xe4 (unreliable)
->   [daa63888] [c035cf0c] print_address_description.constprop.3+0x8c/0x570
->   [daa63908] [c035d6bc] kasan_report+0x1ac/0x218
->   [daa63948] [c00496e8] get_wchan+0x188/0x250
->   [daa63978] [c0461ec8] do_task_stat+0xce8/0xe60
->   [daa63b98] [c0455ac8] proc_single_show+0x98/0x170
->   [daa63bc8] [c03cab8c] seq_read_iter+0x1ec/0x900
->   [daa63c38] [c03cb47c] seq_read+0x1dc/0x290
->   [daa63d68] [c037fc94] vfs_read+0x164/0x510
->   [daa63ea8] [c03808e4] ksys_read+0x144/0x1d0
->   [daa63f38] [c005b1dc] ret_from_syscall+0x0/0x38
->   --- interrupt: c00 at 0x8fa8f4
->       LR = 0x8fa8cc
-> 
->   The buggy address belongs to the page:
->   page:98ebcdd2 refcount:0 mapcount:0 mapping:00000000 index:0x2 pfn:0x1216f
->   flags: 0x0()
->   raw: 00000000 00000000 01010122 00000000 00000002 00000000 ffffffff 00000000
->   raw: 00000000
->   page dumped because: kasan: bad access detected
-> 
->   Memory state around the buggy address:
->    d216f800: 00 00 00 00 00 f1 f1 f1 f1 00 00 00 00 00 00 00
->    d216f880: f2 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
->   >d216f900: 00 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1 00
->                                             ^
->    d216f980: f2 f2 f2 f2 f2 f2 f2 00 00 00 00 00 00 00 00 00
->    d216fa00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 
-> After looking into this issue, I find the buggy address belongs
-> to the task stack region. It seems KASAN has something wrong.
-> I look into the code of __get_wchan in x86 architecture and
-> find the same issue has been resolved by the commit
-> f7d27c35ddff ("x86/mm, kasan: Silence KASAN warnings in get_wchan()").
-> The solution could be applied to powerpc architecture too.
-> 
-> As Andrey Ryabinin said, get_wchan() is racy by design, it may
-> access volatile stack of running task, thus it may access
-> redzone in a stack frame and cause KASAN to warn about this.
-> 
-> Use READ_ONCE_NOCHECK() to silence these warnings.
-> 
-> Signed-off-by: He Ying <heying24@huawei.com>
+From: Zi Yan <ziy@nvidia.com>
 
-Looks reasonable to me; thanks!
+has_unmovable_pages() is only used in mm/page_isolation.c. Move it from
+mm/page_alloc.c and make it static.
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
+Signed-off-by: Zi Yan <ziy@nvidia.com>
+---
+ include/linux/page-isolation.h |   2 -
+ mm/page_alloc.c                | 119 ---------------------------------
+ mm/page_isolation.c            | 119 +++++++++++++++++++++++++++++++++
+ 3 files changed, 119 insertions(+), 121 deletions(-)
 
--Kees
+diff --git a/include/linux/page-isolation.h b/include/linux/page-isolation.h
+index 572458016331..e14eddf6741a 100644
+--- a/include/linux/page-isolation.h
++++ b/include/linux/page-isolation.h
+@@ -33,8 +33,6 @@ static inline bool is_migrate_isolate(int migratetype)
+ #define MEMORY_OFFLINE	0x1
+ #define REPORT_FAILURE	0x2
+=20
+-struct page *has_unmovable_pages(struct zone *zone, struct page *page,
+-				 int migratetype, int flags);
+ void set_pageblock_migratetype(struct page *page, int migratetype);
+ int move_freepages_block(struct zone *zone, struct page *page,
+ 				int migratetype, int *num_movable);
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 15de65215c02..1d812268c2a9 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -8859,125 +8859,6 @@ void *__init alloc_large_system_hash(const char *ta=
+blename,
+ 	return table;
+ }
+=20
+-/*
+- * This function checks whether pageblock includes unmovable pages or not.
+- *
+- * PageLRU check without isolation or lru_lock could race so that
+- * MIGRATE_MOVABLE block might include unmovable pages. And __PageMovable
+- * check without lock_page also may miss some movable non-lru pages at
+- * race condition. So you can't expect this function should be exact.
+- *
+- * Returns a page without holding a reference. If the caller wants to
+- * dereference that page (e.g., dumping), it has to make sure that it
+- * cannot get removed (e.g., via memory unplug) concurrently.
+- *
+- */
+-struct page *has_unmovable_pages(struct zone *zone, struct page *page,
+-				 int migratetype, int flags)
+-{
+-	unsigned long iter =3D 0;
+-	unsigned long pfn =3D page_to_pfn(page);
+-	unsigned long offset =3D pfn % pageblock_nr_pages;
+-
+-	if (is_migrate_cma_page(page)) {
+-		/*
+-		 * CMA allocations (alloc_contig_range) really need to mark
+-		 * isolate CMA pageblocks even when they are not movable in fact
+-		 * so consider them movable here.
+-		 */
+-		if (is_migrate_cma(migratetype))
+-			return NULL;
+-
+-		return page;
+-	}
+-
+-	for (; iter < pageblock_nr_pages - offset; iter++) {
+-		page =3D pfn_to_page(pfn + iter);
+-
+-		/*
+-		 * Both, bootmem allocations and memory holes are marked
+-		 * PG_reserved and are unmovable. We can even have unmovable
+-		 * allocations inside ZONE_MOVABLE, for example when
+-		 * specifying "movablecore".
+-		 */
+-		if (PageReserved(page))
+-			return page;
+-
+-		/*
+-		 * If the zone is movable and we have ruled out all reserved
+-		 * pages then it should be reasonably safe to assume the rest
+-		 * is movable.
+-		 */
+-		if (zone_idx(zone) =3D=3D ZONE_MOVABLE)
+-			continue;
+-
+-		/*
+-		 * Hugepages are not in LRU lists, but they're movable.
+-		 * THPs are on the LRU, but need to be counted as #small pages.
+-		 * We need not scan over tail pages because we don't
+-		 * handle each tail page individually in migration.
+-		 */
+-		if (PageHuge(page) || PageTransCompound(page)) {
+-			struct page *head =3D compound_head(page);
+-			unsigned int skip_pages;
+-
+-			if (PageHuge(page)) {
+-				if (!hugepage_migration_supported(page_hstate(head)))
+-					return page;
+-			} else if (!PageLRU(head) && !__PageMovable(head)) {
+-				return page;
+-			}
+-
+-			skip_pages =3D compound_nr(head) - (page - head);
+-			iter +=3D skip_pages - 1;
+-			continue;
+-		}
+-
+-		/*
+-		 * We can't use page_count without pin a page
+-		 * because another CPU can free compound page.
+-		 * This check already skips compound tails of THP
+-		 * because their page->_refcount is zero at all time.
+-		 */
+-		if (!page_ref_count(page)) {
+-			if (PageBuddy(page))
+-				iter +=3D (1 << buddy_order(page)) - 1;
+-			continue;
+-		}
+-
+-		/*
+-		 * The HWPoisoned page may be not in buddy system, and
+-		 * page_count() is not 0.
+-		 */
+-		if ((flags & MEMORY_OFFLINE) && PageHWPoison(page))
+-			continue;
+-
+-		/*
+-		 * We treat all PageOffline() pages as movable when offlining
+-		 * to give drivers a chance to decrement their reference count
+-		 * in MEM_GOING_OFFLINE in order to indicate that these pages
+-		 * can be offlined as there are no direct references anymore.
+-		 * For actually unmovable PageOffline() where the driver does
+-		 * not support this, we will fail later when trying to actually
+-		 * move these pages that still have a reference count > 0.
+-		 * (false negatives in this function only)
+-		 */
+-		if ((flags & MEMORY_OFFLINE) && PageOffline(page))
+-			continue;
+-
+-		if (__PageMovable(page) || PageLRU(page))
+-			continue;
+-
+-		/*
+-		 * If there are RECLAIMABLE pages, we need to check
+-		 * it.  But now, memory offline itself doesn't call
+-		 * shrink_node_slabs() and it still to be fixed.
+-		 */
+-		return page;
+-	}
+-	return NULL;
+-}
+-
+ #ifdef CONFIG_CONTIG_ALLOC
+ static unsigned long pfn_max_align_down(unsigned long pfn)
+ {
+diff --git a/mm/page_isolation.c b/mm/page_isolation.c
+index 6a0ddda6b3c5..6c841274bf46 100644
+--- a/mm/page_isolation.c
++++ b/mm/page_isolation.c
+@@ -15,6 +15,125 @@
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/page_isolation.h>
+=20
++/*
++ * This function checks whether pageblock includes unmovable pages or not.
++ *
++ * PageLRU check without isolation or lru_lock could race so that
++ * MIGRATE_MOVABLE block might include unmovable pages. And __PageMovable
++ * check without lock_page also may miss some movable non-lru pages at
++ * race condition. So you can't expect this function should be exact.
++ *
++ * Returns a page without holding a reference. If the caller wants to
++ * dereference that page (e.g., dumping), it has to make sure that it
++ * cannot get removed (e.g., via memory unplug) concurrently.
++ *
++ */
++static struct page *has_unmovable_pages(struct zone *zone, struct page *pa=
+ge,
++				 int migratetype, int flags)
++{
++	unsigned long iter =3D 0;
++	unsigned long pfn =3D page_to_pfn(page);
++	unsigned long offset =3D pfn % pageblock_nr_pages;
++
++	if (is_migrate_cma_page(page)) {
++		/*
++		 * CMA allocations (alloc_contig_range) really need to mark
++		 * isolate CMA pageblocks even when they are not movable in fact
++		 * so consider them movable here.
++		 */
++		if (is_migrate_cma(migratetype))
++			return NULL;
++
++		return page;
++	}
++
++	for (; iter < pageblock_nr_pages - offset; iter++) {
++		page =3D pfn_to_page(pfn + iter);
++
++		/*
++		 * Both, bootmem allocations and memory holes are marked
++		 * PG_reserved and are unmovable. We can even have unmovable
++		 * allocations inside ZONE_MOVABLE, for example when
++		 * specifying "movablecore".
++		 */
++		if (PageReserved(page))
++			return page;
++
++		/*
++		 * If the zone is movable and we have ruled out all reserved
++		 * pages then it should be reasonably safe to assume the rest
++		 * is movable.
++		 */
++		if (zone_idx(zone) =3D=3D ZONE_MOVABLE)
++			continue;
++
++		/*
++		 * Hugepages are not in LRU lists, but they're movable.
++		 * THPs are on the LRU, but need to be counted as #small pages.
++		 * We need not scan over tail pages because we don't
++		 * handle each tail page individually in migration.
++		 */
++		if (PageHuge(page) || PageTransCompound(page)) {
++			struct page *head =3D compound_head(page);
++			unsigned int skip_pages;
++
++			if (PageHuge(page)) {
++				if (!hugepage_migration_supported(page_hstate(head)))
++					return page;
++			} else if (!PageLRU(head) && !__PageMovable(head)) {
++				return page;
++			}
++
++			skip_pages =3D compound_nr(head) - (page - head);
++			iter +=3D skip_pages - 1;
++			continue;
++		}
++
++		/*
++		 * We can't use page_count without pin a page
++		 * because another CPU can free compound page.
++		 * This check already skips compound tails of THP
++		 * because their page->_refcount is zero at all time.
++		 */
++		if (!page_ref_count(page)) {
++			if (PageBuddy(page))
++				iter +=3D (1 << buddy_order(page)) - 1;
++			continue;
++		}
++
++		/*
++		 * The HWPoisoned page may be not in buddy system, and
++		 * page_count() is not 0.
++		 */
++		if ((flags & MEMORY_OFFLINE) && PageHWPoison(page))
++			continue;
++
++		/*
++		 * We treat all PageOffline() pages as movable when offlining
++		 * to give drivers a chance to decrement their reference count
++		 * in MEM_GOING_OFFLINE in order to indicate that these pages
++		 * can be offlined as there are no direct references anymore.
++		 * For actually unmovable PageOffline() where the driver does
++		 * not support this, we will fail later when trying to actually
++		 * move these pages that still have a reference count > 0.
++		 * (false negatives in this function only)
++		 */
++		if ((flags & MEMORY_OFFLINE) && PageOffline(page))
++			continue;
++
++		if (__PageMovable(page) || PageLRU(page))
++			continue;
++
++		/*
++		 * If there are RECLAIMABLE pages, we need to check
++		 * it.  But now, memory offline itself doesn't call
++		 * shrink_node_slabs() and it still to be fixed.
++		 */
++		return page;
++	}
++	return NULL;
++}
++
+ static int set_migratetype_isolate(struct page *page, int migratetype, int=
+ isol_flags)
+ {
+ 	struct zone *zone =3D page_zone(page);
+--=20
+2.34.1
 
-> ---
->  arch/powerpc/kernel/process.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 984813a4d5dc..a75d20f23dac 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -2160,12 +2160,12 @@ static unsigned long ___get_wchan(struct task_struct *p)
->  		return 0;
->  
->  	do {
-> -		sp = *(unsigned long *)sp;
-> +		sp = READ_ONCE_NOCHECK(*(unsigned long *)sp);
->  		if (!validate_sp(sp, p, STACK_FRAME_OVERHEAD) ||
->  		    task_is_running(p))
->  			return 0;
->  		if (count > 0) {
-> -			ip = ((unsigned long *)sp)[STACK_FRAME_LR_SAVE];
-> +			ip = READ_ONCE_NOCHECK(((unsigned long *)sp)[STACK_FRAME_LR_SAVE]);
->  			if (!in_sched_functions(ip))
->  				return ip;
->  		}
-> -- 
-> 2.17.1
-> 
-
--- 
-Kees Cook
