@@ -4,61 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2076C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 12:46:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 165D9C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 12:53:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jfj283lDNz3cN8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 23:46:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.130; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jfj1g19Skz2yY7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 23:46:29 +1100 (AEDT)
-Received: from mail-oi1-f172.google.com ([209.85.167.172]) by
- mrelayeu.kundenserver.de (mreue009 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1M9Frj-1nGI8D2TNX-006S9c for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan
- 2022 13:46:26 +0100
-Received: by mail-oi1-f172.google.com with SMTP id s9so8643391oib.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 04:46:25 -0800 (PST)
-X-Gm-Message-State: AOAM531uUXwtzmrso4eMi9sLhpujVnNAC5UnJ2MuAhjsPJSYuk6Hn32b
- dTAR32rqKG2W4JW1VBC5ANjGzD8uCnmF3mdQHIU=
-X-Google-Smtp-Source: ABdhPJydc5loEDqeQgQKrusgbi1aGxD+tZ0GQwF7Qc/YGyFSxdDyRJjWKaddNyUDdWoTK5tk0vBiI2MFsnHozVbpMM8=
-X-Received: by 2002:a05:6808:2206:: with SMTP id
- bd6mr7227920oib.11.1642679565024; 
- Thu, 20 Jan 2022 03:52:45 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JfjB54B5bz3bVx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 23:53:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=aculab.com (client-ip=185.58.86.151;
+ helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
+ receiver=<UNKNOWN>)
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jfj9Z33M2z2yY7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 23:53:20 +1100 (AEDT)
+Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ uk-mta-321-XSo6eQ28MlKlbqVx3cst0g-1; Thu, 20 Jan 2022 12:53:13 +0000
+X-MC-Unique: XSo6eQ28MlKlbqVx3cst0g-1
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
+ AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
+ Server (TLS) id 15.0.1497.28; Thu, 20 Jan 2022 12:53:11 +0000
+Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
+ AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
+ 15.00.1497.028; Thu, 20 Jan 2022 12:53:11 +0000
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Arnd Bergmann' <arnd@arndb.de>, Guo Ren <guoren@kernel.org>
+Subject: RE: [PATCH V3 07/17] riscv: compat: Re-implement TASK_SIZE for
+ COMPAT_32BIT
+Thread-Topic: [PATCH V3 07/17] riscv: compat: Re-implement TASK_SIZE for
+ COMPAT_32BIT
+Thread-Index: AQHYDePReMzknTU7UkCjQWPLhaJn7Kxr3G8g
+Date: Thu, 20 Jan 2022 12:53:11 +0000
+Message-ID: <f16cf10425a14c2e8183d5c90667ce72@AcuMS.aculab.com>
+References: <20220120073911.99857-8-guoren@kernel.org>
+ <CAK8P3a1UvqsS-D7cVXBkp4KCRWDfquQ6QTkvrQ=FqLxhsAi7Rw@mail.gmail.com>
+In-Reply-To: <CAK8P3a1UvqsS-D7cVXBkp4KCRWDfquQ6QTkvrQ=FqLxhsAi7Rw@mail.gmail.com>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-References: <20220120073911.99857-4-guoren@kernel.org>
-In-Reply-To: <20220120073911.99857-4-guoren@kernel.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 20 Jan 2022 12:52:28 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a1UmnjHk8B6hSULiKv3FKoY5BW9=4=ESerQzc+4=LR5Zw@mail.gmail.com>
-Message-ID: <CAK8P3a1UmnjHk8B6hSULiKv3FKoY5BW9=4=ESerQzc+4=LR5Zw@mail.gmail.com>
-Subject: Re: [PATCH V3 03/17] asm-generic: compat: Cleanup duplicate
- definitions
-To: Guo Ren <guoren@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:omSINcK4H3+dgqkie3lHVkKhvSc6HI72JbKQ+CplIQjnuJzvtVc
- knk4+m62qZDLP5kSH2h36y2vZQHbSNKIUpDbvhR7huAz4k8gVx1p6xCzij7+E/T2cL6a9sC
- /VJeFM9mJjJZCvI6M4DxxvbLIzvevwOvQF4coZ8+ErQARS4mI79GB9JO6yk95DtJXMSzZIp
- UG7KCSAbULiyYEPsg4XGg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:uhSjc0JOAD8=:ESI88QfLa9JJnGNuMu9hWx
- 2Il+b2W8V/dWMVK1NIJ5fQfCpRg/+y5tb3ZXbNulK1D4p2emQHSutCmcUH0jI8YM+597FF+Lh
- jItpwHZfOJkgTKJ3QLwHudcFtBEfTIWax7LzMec3+23SU+fN0KRxenTOMDq25EQVvCQ0Mksm/
- jpK+HxJO4w8E6UXOgncfc/l9rqjS8RNEN1kD2pWPVNL02PdYbhfM0u8YnBcl7N/TFrTUlb2W8
- 8EWSJTvELBzXoZd24zTyhMbmWwso2cYXi6/T/SGhixItdpvPAbPvWFG16+a3lepcNc6nWaFli
- ZPnY025q8W/pUi3qtX4XcNQ+YoMLG04R8/WgneoZN9dTLufUemsYVF/gIwytcoFdKQq2n5jQj
- eQHn630XI0+cRyXBgQXOCbwbvLKD7tpjTniZm8Laj4sXGGHKoCz+04TuAKU8ehB8ofD6Zvkz/
- bryPFhAxyEgtdigVaJGTcw2qX8dKnz21ISTDvzpVvqAbpPYZkmTYzzrQsVA5zhVrbAriw4jf/
- oM5Vzxzoa+CiRLerGvXCNTP1AUdPKA4O1crRrvJxVl7vILjN8JnN9FvTLhyBUFU5TM1Vz87wu
- onU/NaCvFphCflDrIx5dxUHunBdVFPRvgWVnMK/KkSSTmEb0n+jnGC28HMHxJIvOqjpIXx/1a
- +ooa2QbkxZnmfgAQtJkil/kgQwUoDZHcqR0s0esqV1YzdrPQcZBQRTRiBiNWoADAE80GPoxY0
- kkxs2V1e/Jh6Y8bqCKVrp641VC1Bezowbds8PoExt+8aiLgoej1t8bNH7CZ+o1GgxMHmxasf9
- QLDsa4SJKL8LFpUMTP0diurme2GkOelwU/UtH6wtyjc24i4hb0=
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,12 +67,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-s390 <linux-s390@vger.kernel.org>, Guo Ren <guoren@linux.alibaba.com>,
- Arnd Bergmann <arnd@arndb.de>, gregkh <gregkh@linuxfoundation.org>,
- Drew Fustini <drew@beagleboard.org>, Anup Patel <anup@brainfault.org>,
- Wang Junqiang <wangjunqiang@iscas.ac.cn>,
+ gregkh <gregkh@linuxfoundation.org>, Drew Fustini <drew@beagleboard.org>,
+ Anup Patel <anup@brainfault.org>, Wang Junqiang <wangjunqiang@iscas.ac.cn>,
  the arch/x86 maintainers <x86@kernel.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-csky@vger.kernel.org, inux-parisc@vger.kernel.org,
+ "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>,
+ "inux-parisc@vger.kernel.org" <inux-parisc@vger.kernel.org>,
  Christoph Hellwig <hch@infradead.org>, Palmer Dabbelt <palmer@dabbelt.com>,
  liush <liush@allwinnertech.com>, sparclinux <sparclinux@vger.kernel.org>,
  linux-riscv <linux-riscv@lists.infradead.org>,
@@ -87,232 +83,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-  On Thu, Jan 20, 2022 at 8:38 AM <guoren@kernel.org> wrote:
->
-> From: Guo Ren <guoren@linux.alibaba.com>
->
-> There are 7 64bit architectures that support Linux COMPAT mode to
-> run 32bit applications. A lot of definitions are duplicate:
->  - COMPAT_USER_HZ
->  - COMPAT_RLIM_INFINITY
->  - COMPAT_OFF_T_MAX
->  - __compat_uid_t, __compat_uid_t
->  - compat_dev_t
->  - compat_ipc_pid_t
->  - struct compat_flock
->  - struct compat_flock64
->  - struct compat_statfs
->  - struct compat_ipc64_perm, compat_semid64_ds,
->           compat_msqid64_ds, compat_shmid64_ds
->
-> Cleanup duplicate definitions and merge them into asm-generic.
->
-> Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-> Signed-off-by: Guo Ren <guoren@kernel.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
+PiA+IExpbWl0IDMyLWJpdCBjb21wYXRpYmxlIHByb2Nlc3MgaW4gMC0yR0IgdmlydHVhbCBhZGRy
+ZXNzIHJhbmdlDQo+ID4gKHdoaWNoIGlzIGVub3VnaCBmb3IgcmVhbCBzY2VuYXJpb3MpLCBiZWNh
+dXNlIGl0IGNvdWxkIGF2b2lkDQo+ID4gYWRkcmVzcyBzaWduIGV4dGVuZCBwcm9ibGVtIHdoZW4g
+MzItYml0IGVudGVyIDY0LWJpdCBhbmQgZWFzZQ0KPiA+IHNvZnR3YXJlIGRlc2lnbi4NCg0KRWg/
+DQpJIHRob3VnaHQgbmVhcmx5IGFsbCB0aGUgb3RoZXIgMzJiaXQgdW5peCBwb3J0cyAob2YgYW55
+IGZsYXZvdXIpDQpwdXQgdGhlIHVzZXIta2VybmVsIGJvdW5kYXJ5IGF0IDNHQi4NCihBcGFydCBm
+cm9tIHNvbWUgdmVyeSBvbGQgc3BhcmMgb25lcyB0aGF0IHVzZSAzLjVHQi4pDQoNCjJHQiBpcyB1
+c2VkIGJ5IFdpbmRvd3MuDQoNCkkgdGhpbmsgdGhlIHg4Ni02NCAzMmJpdCBjb21wYXQgY29kZSBl
+dmVuIHB1dHMgdGhlIGJvdW5kYXJ5IGF0IDRHQi4NCg0KCURhdmlkDQoNCi0NClJlZ2lzdGVyZWQg
+QWRkcmVzcyBMYWtlc2lkZSwgQnJhbWxleSBSb2FkLCBNb3VudCBGYXJtLCBNaWx0b24gS2V5bmVz
+LCBNSzEgMVBULCBVSw0KUmVnaXN0cmF0aW9uIE5vOiAxMzk3Mzg2IChXYWxlcykNCg==
 
-> ---
->  arch/arm64/include/asm/compat.h   | 108 +++-----------------------
->  arch/mips/include/asm/compat.h    |  24 ++----
->  arch/parisc/include/asm/compat.h  |  47 ++----------
->  arch/powerpc/include/asm/compat.h |  47 ++----------
->  arch/s390/include/asm/compat.h    | 109 +++-----------------------
->  arch/sparc/include/asm/compat.h   |  39 ++++------
->  arch/x86/include/asm/compat.h     | 114 +++-------------------------
->  include/asm-generic/compat.h      | 122 ++++++++++++++++++++++++++++++
->  8 files changed, 191 insertions(+), 419 deletions(-)
->
-> diff --git a/arch/arm64/include/asm/compat.h b/arch/arm64/include/asm/compat.h
-> index eaa6ca062d89..f54f295efae3 100644
-> --- a/arch/arm64/include/asm/compat.h
-> +++ b/arch/arm64/include/asm/compat.h
-> @@ -5,9 +5,18 @@
->  #ifndef __ASM_COMPAT_H
->  #define __ASM_COMPAT_H
->
-> +#define COMPAT_RLIM_INFINITY           0xffffffff
-...
-> +#ifndef COMPAT_RLIM_INFINITY
-> +#define COMPAT_RLIM_INFINITY   0x7fffffff
-> +#endif
-
-While this is a correct conversion, I think the default should
-be 0xffffffff, to match the asm-generic RLIM_INFINITY
-definition, with only mips and sparc getting the exception
-
-> -struct compat_flock {
-> -       short           l_type;
-> -       short           l_whence;
-> -       compat_off_t    l_start;
-> -       compat_off_t    l_len;
-> -       compat_pid_t    l_pid;
-> -};
-...
-> +#ifndef compat_flock
-> +struct compat_flock {
-> +       compat_short_t  l_type;
-> +       compat_short_t  l_whence;
-> +       compat_off_t    l_start;
-> +       compat_off_t    l_len;
-> +       compat_pid_t    l_pid;
-> +} __attribute__((packed));
-> +#endif
-
-You are adding __attribute__((packed)) here, which I think has
-no effect on the layout on the structure on any of the architectures
-but it does change the alignment requirements needlessly.
-
-Better leave it without the attribute.
-
-> -struct compat_flock64 {
-> -       short           l_type;
-> -       short           l_whence;
-> -       compat_loff_t   l_start;
-> -       compat_loff_t   l_len;
-> -       compat_pid_t    l_pid;
-> -};
-...
-> +#ifndef compat_flock64
-> +struct compat_flock64 {
-> +       compat_short_t  l_type;
-> +       compat_short_t  l_whence;
-> +       compat_loff_t   l_start;
-> +       compat_loff_t   l_len;
-> +       compat_pid_t    l_pid;
-> +} __attribute__((packed));
-> +#endif
-
-This one is different: on all architectures other than x86,
-the added packed attribute changes the size of the
-structure by removing the four padding bytes at the
-end. x86 originally added the attribute here to work around
-the weirdness of the x86-32 ABI that aligns 64-bit values
-on a 4-byte boundary.
-
-The easiest workaround would be to have x86 keep its
-custom definition. A slightly nicer version would drop the
-attribute on x86 as well but instead change the compat_loff_t
-definition to use compat_s64 instead of s64, giving it the
-correct alignment.
-
-> -struct compat_statfs {
-> -       int             f_type;
-> -       int             f_bsize;
-> -       int             f_blocks;
-> -       int             f_bfree;
-> -       int             f_bavail;
-> -       int             f_files;
-> -       int             f_ffree;
-> -       compat_fsid_t   f_fsid;
-> -       int             f_namelen;      /* SunOS ignores this field. */
-> -       int             f_frsize;
-> -       int             f_flags;
-> -       int             f_spare[4];
-> -};
-...
-> +#ifndef compat_statfs
-> +struct compat_statfs {
-> +       compat_uint_t   f_type;
-> +       compat_uint_t   f_bsize;
-> +       compat_uint_t   f_blocks;
-> +       compat_uint_t   f_bfree;
-> +       compat_uint_t   f_bavail;
-> +       compat_uint_t   f_files;
-> +       compat_uint_t   f_ffree;
-> +       __kernel_fsid_t f_fsid;
-> +       compat_uint_t   f_namelen;
-> +       compat_uint_t   f_frsize;
-> +       compat_uint_t   f_flags;
-> +       compat_uint_t   f_spare[4];
-> +} __attribute__((packed));
-> +#endif
-
-None of the architectures use the packed attribute at the moment,
-so please don't add one here.
-
-Changing compat_fsid_t to __kernel_fsid_t is harmless, but seems
-unnecessary.
-
-Changing the signed int to an unsigned int (regardless of notation)
-may be a change in behavior. s390 is the only architecture
-using unsigned members here at the moment, as of b8668fd0a7e1
-("s390/uapi: change struct statfs[64] member types to unsigned
-values").
-The description of that patch sounds like this was changed to fix
-a bug, but I don't see what the actual problem would be in the
-put_compat_statfs().
-
-For the moment I'd suggest leaving this with the signed version,
-with s390 being another exception next to mips. We can follow-up
-with merging s390 into the common definition using either the
-signed or unsigned types, but I think that needs to be a separate
-patch with a detailed explanation.
-
- +#ifndef compat_ipc64_perm
-> +struct compat_ipc64_perm {
-> +       compat_key_t key;
-> +       __compat_uid32_t uid;
-> +       __compat_gid32_t gid;
-> +       __compat_uid32_t cuid;
-> +       __compat_gid32_t cgid;
-> +       compat_mode_t   mode;
-> +       unsigned char   __pad1[4 - sizeof(compat_mode_t)];
-> +       compat_ushort_t seq;
-> +       compat_ushort_t __pad2;
-> +       compat_ulong_t  unused1;
-> +       compat_ulong_t  unused2;
-> +} __attribute__((packed));
-> +
-> +struct compat_semid64_ds {
-> +       struct compat_ipc64_perm sem_perm;
-> +       compat_ulong_t sem_otime;
-> +       compat_ulong_t sem_otime_high;
-> +       compat_ulong_t sem_ctime;
-> +       compat_ulong_t sem_ctime_high;
-> +       compat_ulong_t sem_nsems;
-> +       compat_ulong_t __unused3;
-> +       compat_ulong_t __unused4;
-> +} __attribute__((packed));
-> +
-> +struct compat_msqid64_ds {
-> +       struct compat_ipc64_perm msg_perm;
-> +       compat_ulong_t msg_stime;
-> +       compat_ulong_t msg_stime_high;
-> +       compat_ulong_t msg_rtime;
-> +       compat_ulong_t msg_rtime_high;
-> +       compat_ulong_t msg_ctime;
-> +       compat_ulong_t msg_ctime_high;
-> +       compat_ulong_t msg_cbytes;
-> +       compat_ulong_t msg_qnum;
-> +       compat_ulong_t msg_qbytes;
-> +       compat_pid_t   msg_lspid;
-> +       compat_pid_t   msg_lrpid;
-> +       compat_ulong_t __unused4;
-> +       compat_ulong_t __unused5;
-> +} __attribute__((packed));
-> +
-> +struct compat_shmid64_ds {
-> +       struct compat_ipc64_perm shm_perm;
-> +       compat_size_t  shm_segsz;
-> +       compat_ulong_t shm_atime;
-> +       compat_ulong_t shm_atime_high;
-> +       compat_ulong_t shm_dtime;
-> +       compat_ulong_t shm_dtime_high;
-> +       compat_ulong_t shm_ctime;
-> +       compat_ulong_t shm_ctime_high;
-> +       compat_pid_t   shm_cpid;
-> +       compat_pid_t   shm_lpid;
-> +       compat_ulong_t shm_nattch;
-> +       compat_ulong_t __unused4;
-> +       compat_ulong_t __unused5;
-> +} __attribute__((packed));
-> +#endif
-
-I checked these in detail, looking at the seven architectures, and your
-conversion looks exactly right (I had initially missed the part about
-compat_mode_t that you got right).
-
-As with compat_flock, the packed attribute has no impact on the layout
-here, but please drop it anyway for consistency.
-
-        Arnd
