@@ -4,61 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39B7EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 11:29:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 910A8C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 11:33:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JfgKK59zJz3cFf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 22:29:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JfgPg6TgLz3cCv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 22:33:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.134; helo=mout.kundenserver.de;
+ (client-ip=212.227.17.13; helo=mout.kundenserver.de;
  envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JfgJr3ZKNz30Ky
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 22:29:31 +1100 (AEDT)
-Received: from mail-wm1-f45.google.com ([209.85.128.45]) by
- mrelayeu.kundenserver.de (mreue012 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1MYLqs-1mp2dZ0K8o-00VM7Y for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan
- 2022 12:29:27 +0100
-Received: by mail-wm1-f45.google.com with SMTP id
- o1-20020a1c4d01000000b0034d95625e1fso6656941wmh.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 03:29:26 -0800 (PST)
-X-Gm-Message-State: AOAM530QW/jOdatE1nMn32aDS21iI7rw0TYlCB+kWKlG04WJ7ekXPhPY
- 8SH+ERsG6QvRsVaSO3j7+HGlqFBGRIL7yM7OlUw=
-X-Google-Smtp-Source: ABdhPJxuH3ieTJMrWvtM18t+kt/eQKxNsX0S1JRfafUu0rov1od6UeEmq8/soY26aK2ZvAh1u2FgbOu1pscCT0xGmKw=
-X-Received: by 2002:a7b:ce96:: with SMTP id q22mr8086318wmj.82.1642671086465; 
- Thu, 20 Jan 2022 01:31:26 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JfgPB3694z307j
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 22:33:17 +1100 (AEDT)
+Received: from mail-lf1-f43.google.com ([209.85.167.43]) by
+ mrelayeu.kundenserver.de (mreue106 [213.165.67.113]) with ESMTPSA (Nemesis)
+ id 1Mzy6q-1mPr7E1ns6-00x6WO for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan
+ 2022 12:33:14 +0100
+Received: by mail-lf1-f43.google.com with SMTP id h26so5708401lfv.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 03:33:14 -0800 (PST)
+X-Gm-Message-State: AOAM53375mhKg+N4x5BzWdYA5mmzpMcfx3bT4zxpqBDlnVlnJwzWWN4S
+ EPmuFVN5gUu88U+VHno4edKdz1++8qz5einQLmY=
+X-Google-Smtp-Source: ABdhPJyF4dvXk+FcL9rU+G/uYHJOqasQkkfireul5EseychvyhuLX81WEAdVmBsalytJouvYJnpcpue784HKoQtJs8Q=
+X-Received: by 2002:adf:d21b:: with SMTP id j27mr1322485wrh.192.1642671701080; 
+ Thu, 20 Jan 2022 01:41:41 -0800 (PST)
 MIME-Version: 1.0
-References: <20220120073911.99857-8-guoren@kernel.org>
-In-Reply-To: <20220120073911.99857-8-guoren@kernel.org>
+References: <20220120073911.99857-17-guoren@kernel.org>
+In-Reply-To: <20220120073911.99857-17-guoren@kernel.org>
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 20 Jan 2022 10:31:09 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a1UvqsS-D7cVXBkp4KCRWDfquQ6QTkvrQ=FqLxhsAi7Rw@mail.gmail.com>
-Message-ID: <CAK8P3a1UvqsS-D7cVXBkp4KCRWDfquQ6QTkvrQ=FqLxhsAi7Rw@mail.gmail.com>
-Subject: Re: [PATCH V3 07/17] riscv: compat: Re-implement TASK_SIZE for
- COMPAT_32BIT
+Date: Thu, 20 Jan 2022 10:41:25 +0100
+X-Gmail-Original-Message-ID: <CAK8P3a1nUcYjhEE5eyFAE_QqfjhRsZZ81ni8jyR8cPaP5QKJDg@mail.gmail.com>
+Message-ID: <CAK8P3a1nUcYjhEE5eyFAE_QqfjhRsZZ81ni8jyR8cPaP5QKJDg@mail.gmail.com>
+Subject: Re: [PATCH V3 16/17] riscv: compat: Add COMPAT Kbuild skeletal support
 To: Guo Ren <guoren@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:SZ41ugoseP2Lcu3S121ZTTFGEhosnmOZttYNneUIWAhhxJKNSpf
- SInQfD4LWBIjYo4Oyl6XB8y8ZpPP8GFPPM/f77A0tpIeTIpG/5WdHnR3atlKE8sSXa83SDu
- eP7p4mD9mGnYxLdU2nTCMbQxPvwnbSEm9MCUEgnqi/1UkNHtiRyH4+18pWeHfVInDprsX++
- 7058eOK+cmms2Udp78CHg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:VLnwDnOY4zk=:Btz4f/vZVGmwl3mlBJlodm
- uO2BNJP9LLrmG2FYHtc1zKooqjGTF41l57qC+LveFFpFy9U2qny+WHEWmlcMIxo5SP+DP9w+s
- WTpea2L/wtoPjlbnQ9STqNL9XVuOetUI+Bx50c0JfHwssQElRH2QFWrtApkSmiER4F3ASgX0E
- bvlF0fnGbPn7ymKXmYOO9F7Tc52nYC9UsWvw6l7C2/AWbvfTJImF+3mgf6sICc912lwyfk9k8
- jhjUzANsRIFIt4Juua6tlYsw3PES2iF/VueZG43hlM247SSsEopSrinB6MsAjeskNLJSC7hTi
- ug0ETjy1TEMlUQNSq36d+hqwqaRqaqGjfZ65qLmGX7Z1nXVkG3IOEBZQrN+Eu77RSMLznC3Ia
- ZuOQZ1zgTToVKU1gwXgkGeiA5XxNuJq4Ylvtgs37HhQwSRISUMxG18ee+XZMyctLU7PZl1xj/
- RsqPZJ4trPn2zp8LmDZBURVCAsDrhgYgHGmOH074mtAPc5hBxgR7LrbjMSFINgRYiscSo94Kr
- +Lh1PtQFCgqYUev8FZTkPu2tIzQpwNgF+9wU+7LnGyP6PrPxMOyVtOocdJ7rnpJ/xvLYdc4Dp
- ynOQhzZWZ9u+T3RFBmoE172HvWXSvDdj94aa6qpO/x1u21wjNYMQcHz3DcFUboLIlu53dqKNO
- EMFvPPi0R74eb8vnONlHLTdftEOkVLHj0oxkwunuHvJHHvIRDxwSWhv0LS63ISfyjanoKRKf8
- 5Y5kRHjx5yOjx/Y4HWCCibgYdnhyiAO6OKe81acJvAsKEguYWBG/WlVfCnudQmRqfJchgLZ1t
- GD+jJnbgxmtg3u8pWVGuKKcrfCAaQ0tEJr2IJp/nJMszNKCy7Y=
+X-Provags-ID: V03:K1:167eSNWL64w8b60gfXB1FiwKOptH5rK4lrUU6lFYmUvdHhpXcWE
+ M7wQIV98J5kfnBf6PI0zXZaJHzmTJlV4b6VR0qHGP9wKtq9fqLU7QKYDBYUHmtPXseRSk25
+ 6Eyo4BwEOcKVE4VzcnKdS20nyl6Vao4GFVlcOHnfP0qf2cUhtX0K5vl1bKUkW3lnqBqE6Tq
+ ziNZGWnKwEIhI8pecOp1Q==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:+Dj5aUqMco0=:KO4ZkMggqVPD916o4YvalO
+ gol6KDLCqykpDcIdURKJmDePD5La1p4zvALKTZlm5ianyk1FD87Y56sgruguVxc0D/jjZS6d2
+ MbmipoJLtBh+P9HV/X6mjiBakhx1MvDYoOLbejXV33WWtRCUvDADUqB22wAsuLgwoG/5aDC/3
+ v/2DbXSXIlYVwXPGxp6UXj/DJh3io0Q+42XLZOh22LX+GV+nEJFcn1/W82zGumuoTMAJz4YNR
+ Ty5OvSoG9hyOn0ryevc6XdD8few84QIDwhOkk2tSVJUcrDzUEvZA4n4UfNnyaOy+YIcM856Kp
+ 1Mr/cBWm0CEUALae9cx/cSJ2/8blRCKMXIlCBkwWSWptONH54/rwaZpHWx45aeRENH5OdE8B/
+ ybGWZnkSXuKw0jBvsZnllQDCFd/q6SOiEn34QPGCduLJquRfbGbJ4DAIpxilJ6D7hxMQg7XNC
+ omRcHv6zQ2KqtPa3UZXDNcM3Xpi507Q9LAFHQfhZz/4WYf1M5Q5tCiXkCFNSJucd1xeWzqS4H
+ TOBnvWgQy/gAwurpCTJYk8aQRCPnPoxEKT68H5AF/h3xMOXvpz083hUblVcTUNpzOIxOTDZfQ
+ 6cxa7lZ2lkb3FPhVZwjW0z62cKCx3pdKez2O5gKVyCwKa5NMZAyEjvf4hm42xVL0Y8t3hBZrD
+ i3M4QFsQvs6pBBKGj4g1/5bd3/6pmB9SCCiscUlyIc4z/7N9Y8d4gy6A54OHbVtFcpdvVhpPU
+ Mc7+2LHoSfc3dP7pvmsubX7FqNEClRvZA382DdLgtf5KdJIIinNV9KbdXVyh5+GdQHKwxUoGU
+ le30svZykbXbuk8tfWm0oU/HpFFOKFjoVw8d0R+hOwgwjyeMRI=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,18 +89,10 @@ On Thu, Jan 20, 2022 at 8:39 AM <guoren@kernel.org> wrote:
 >
 > From: Guo Ren <guoren@linux.alibaba.com>
 >
-> Make TASK_SIZE from const to dynamic detect TIF_32BIT flag
-> function. Refer to arm64 to implement DEFAULT_MAP_WINDOW_64 for
-> efi-stub.
->
-> Limit 32-bit compatible process in 0-2GB virtual address range
-> (which is enough for real scenarios), because it could avoid
-> address sign extend problem when 32-bit enter 64-bit and ease
-> software design.
->
-> The standard 32-bit TASK_SIZE is 0x9dc00000:FIXADDR_START, and
-> compared to a compatible 32-bit, it increases 476MB for the
-> application's virtual address.
+> Adds initial skeletal COMPAT Kbuild (Runing 32bit U-mode on 64bit
+> S-mode) support.
+>  - Setup kconfig & dummy functions for compiling.
+>  - Implement compat_start_thread by the way.
 >
 > Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
 > Signed-off-by: Guo Ren <guoren@kernel.org>
