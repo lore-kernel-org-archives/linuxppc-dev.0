@@ -4,61 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BBA3C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 13:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40E45C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 13:28:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JfjY76QHzz3cCT
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jan 2022 00:10:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jfjxg4J2Qz3bWG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jan 2022 00:28:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FV+LquNr;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=leemhuis.info (client-ip=2a01:488:42:1000:50ed:8234::;
- helo=wp530.webpack.hosteurope.de; envelope-from=regressions@leemhuis.info;
- receiver=<UNKNOWN>)
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de
- [IPv6:2a01:488:42:1000:50ed:8234::])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JfjXc5Tsmz30K4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jan 2022 00:09:52 +1100 (AEDT)
-Received: from ip4d173d02.dynamic.kabel-deutschland.de ([77.23.61.2]
- helo=[192.168.66.200]); authenticated
- by wp530.webpack.hosteurope.de running ExIM with esmtpsa
- (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
- id 1nAWxb-0007aQ-Q3; Thu, 20 Jan 2022 13:54:39 +0100
-Message-ID: <ce653a10-c004-75b1-5f70-e23c0c2aee68@leemhuis.info>
-Date: Thu, 20 Jan 2022 13:54:39 +0100
+ smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org;
+ envelope-from=guoren@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=FV+LquNr; 
+ dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jfjws44dGz303n
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jan 2022 00:27:25 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 828A46175A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 13:27:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5223C340F1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 13:27:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1642685240;
+ bh=nij2NveTxD7AFS+dy/E2mbGaK4KnuKanTl6xzPnPkQc=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=FV+LquNrcNIM4IyWdRQJ+RvURALdqn9xfCmH3u+EPyPxG/8iNUaCslKvqNdupslBw
+ QBRP2q+FNxO6+wSFKXMyFDUNcAy6V3evf7SWZUwB8rE9gCJk0lFv2usPRlA4tmXnjW
+ vRGqr4TSyisCJv6r/7+ohMVsNxAxtBY3zte/1y5zEGDFC5uZXE7MNp3XDVrgmwwKCy
+ AGAIguEIxRllBb8wrI5vQZ0cZFle3X27KHhHktX3rhu2eQxIiCHXn4K2loU116xQoc
+ RLuRjDVXG8TasUHF/D9VQs3KiylNZRmOC3843iD+ztRTmijocFRzUI+MmuAOojOLAW
+ /CrONDsZ7cwvg==
+Received: by mail-vk1-f175.google.com with SMTP id z15so366951vkp.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 05:27:20 -0800 (PST)
+X-Gm-Message-State: AOAM531M/S1rMce0mfnsj/QQsbS5SOyXeDxOv+qP/v7OLGkgt4osk0ZA
+ cd/r7JQd3L/HTYnVI+SgNuGNSYh3jkRt4HMNVLo=
+X-Google-Smtp-Source: ABdhPJwXq7rWM9TR2/dX3Ce8RNnGwk7ErUknPTqNCDOUbla5Lz39Gh+9ETVvKbMYpePGn1XdP3gT3y8Rtd9l9zviaqA=
+X-Received: by 2002:ac5:cbc8:: with SMTP id h8mr12691275vkn.8.1642685239536;
+ Thu, 20 Jan 2022 05:27:19 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.4.0
-Subject: Re: bug: usb: gadget: FSL_UDC_CORE Corrupted request list leads to
- unrecoverable loop.
-Content-Language: en-BS
-To: Leo Li <leoyang.li@nxp.com>,
- "jocke@infinera.com" <joakim.tjernlund@infinera.com>,
- "regressions@leemhuis.info" <regressions@leemhuis.info>,
- "Eugene_Bordenkircher@selinc.com" <Eugene_Bordenkircher@selinc.com>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <MWHPR2201MB152074F47BF142189365627B91879@MWHPR2201MB1520.namprd22.prod.outlook.com>
- <6659a2c7fd9fffac766b8389244e5885ccbd38bd.camel@infinera.com>
- <bb5c5d0f-2ae7-8426-0021-baeca8f7dd11@leemhuis.info>
- <MWHPR2201MB15209AA4F2457934BDD3293B91999@MWHPR2201MB1520.namprd22.prod.outlook.com>
- <726d3561-1842-72c7-d4cb-9a99211bb05c@leemhuis.info>
- <MWHPR2201MB1520A85FE05B281DAA30F44A91669@MWHPR2201MB1520.namprd22.prod.outlook.com>
- <AS8PR04MB89461BF7A3272E5A18ECD0948F669@AS8PR04MB8946.eurprd04.prod.outlook.com>
- <MWHPR2201MB15205A333F1F610D332038AC91669@MWHPR2201MB1520.namprd22.prod.outlook.com>
- <d0c52d26742b082f5a953a05630a9d70e0eb1356.camel@infinera.com>
- <527ebc333daa2a1d513ea217e5beb61a5acea3fb.camel@infinera.com>
- <AS8PR04MB894614C61E57A80EB4FF7C758F699@AS8PR04MB8946.eurprd04.prod.outlook.com>
- <f31008a0f4e71ff029aa611b0ebcfd83f10ec67f.camel@infinera.com>
- <AS8PR04MB89464D90D2E92A5D401474BD8F6B9@AS8PR04MB8946.eurprd04.prod.outlook.com>
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-In-Reply-To: <AS8PR04MB89464D90D2E92A5D401474BD8F6B9@AS8PR04MB8946.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-bounce-key: webpack.hosteurope.de; regressions@leemhuis.info; 1642684192;
- 539cd251; 
-X-HE-SMSGID: 1nAWxb-0007aQ-Q3
+References: <20220120073911.99857-8-guoren@kernel.org>
+ <CAK8P3a1UvqsS-D7cVXBkp4KCRWDfquQ6QTkvrQ=FqLxhsAi7Rw@mail.gmail.com>
+ <f16cf10425a14c2e8183d5c90667ce72@AcuMS.aculab.com>
+In-Reply-To: <f16cf10425a14c2e8183d5c90667ce72@AcuMS.aculab.com>
+From: Guo Ren <guoren@kernel.org>
+Date: Thu, 20 Jan 2022 21:27:08 +0800
+X-Gmail-Original-Message-ID: <CAJF2gTRwh40xDBkoRJWZEUketKFDAy7_z=-WW7E=T46yH4zPvw@mail.gmail.com>
+Message-ID: <CAJF2gTRwh40xDBkoRJWZEUketKFDAy7_z=-WW7E=T46yH4zPvw@mail.gmail.com>
+Subject: Re: [PATCH V3 07/17] riscv: compat: Re-implement TASK_SIZE for
+ COMPAT_32BIT
+To: David Laight <David.Laight@aculab.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,87 +72,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- "balbi@kernel.org" <balbi@kernel.org>
+Cc: linux-s390 <linux-s390@vger.kernel.org>, Guo Ren <guoren@linux.alibaba.com>,
+ Arnd Bergmann <arnd@arndb.de>, gregkh <gregkh@linuxfoundation.org>,
+ Drew Fustini <drew@beagleboard.org>, Anup Patel <anup@brainfault.org>,
+ Wang Junqiang <wangjunqiang@iscas.ac.cn>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>,
+ "inux-parisc@vger.kernel.org" <inux-parisc@vger.kernel.org>,
+ Christoph Hellwig <hch@infradead.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ liush <liush@allwinnertech.com>, sparclinux <sparclinux@vger.kernel.org>,
+ linux-riscv <linux-riscv@lists.infradead.org>,
+ "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>, Wei Fu <wefu@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi, this is your Linux kernel regression tracker speaking.
+On Thu, Jan 20, 2022 at 8:53 PM David Laight <David.Laight@aculab.com> wrote:
+>
+> > > Limit 32-bit compatible process in 0-2GB virtual address range
+> > > (which is enough for real scenarios), because it could avoid
+> > > address sign extend problem when 32-bit enter 64-bit and ease
+> > > software design.
+>
+> Eh?
+> I thought nearly all the other 32bit unix ports (of any flavour)
+> put the user-kernel boundary at 3GB.
+No, riscv32 is about 2.4G, csky is 2G/2.5G.
 
-On 04.12.21 01:40, Leo Li wrote:
->> -----Original Message-----
->> From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
->> Sent: Thursday, December 2, 2021 4:45 PM
->> To: regressions@leemhuis.info; Leo Li <leoyang.li@nxp.com>;
->> Eugene_Bordenkircher@selinc.com; linux-usb@vger.kernel.org; linuxppc-
->> dev@lists.ozlabs.org
->> Cc: gregkh@linuxfoundation.org; balbi@kernel.org
->> Subject: Re: bug: usb: gadget: FSL_UDC_CORE Corrupted request list leads to
->> unrecoverable loop.
->>
->> On Thu, 2021-12-02 at 20:35 +0000, Leo Li wrote:
->>>
->>>> -----Original Message-----
->>>> From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
->>>> Sent: Wednesday, December 1, 2021 8:19 AM
->>>> To: regressions@leemhuis.info; Leo Li <leoyang.li@nxp.com>;
->>>> Eugene_Bordenkircher@selinc.com; linux-usb@vger.kernel.org;
->>>> linuxppc- dev@lists.ozlabs.org
->>>> Cc: gregkh@linuxfoundation.org; balbi@kernel.org
->>>> Subject: Re: bug: usb: gadget: FSL_UDC_CORE Corrupted request list
->>>> leads to unrecoverable loop.
->>>>
->>>> On Tue, 2021-11-30 at 12:56 +0100, Joakim Tjernlund wrote:
->>>>> On Mon, 2021-11-29 at 23:48 +0000, Eugene Bordenkircher wrote:
->>>>>> Agreed,
->>>>>>
->>>>>> We are happy pick up the torch on this, but I'd like to try and
->>>>>> hear from
->>>> Joakim first before we do.  The patch set is his, so I'd like to
->>>> give him the opportunity.  I think he's the only one that can add a
->>>> truly proper description as well because he mentioned that this
->>>> includes a "few more fixes" than just the one we ran into.  I'd
->>>> rather hear from him than try to reverse engineer what was being
->> addressed.
->>>>>>
->>>>>> Joakim, if you are still watching the thread, would you like to
->>>>>> take a stab
->>>> at it?  If I don't hear from you in a couple days, we'll pick up the
->>>> torch and do what we can.
+> (Apart from some very old sparc ones that use 3.5GB.)
+>
+> 2GB is used by Windows.
+>
+> I think the x86-64 32bit compat code even puts the boundary at 4GB.
+Yes, we could give rv32 compat for 4GB with some effort. But it's unnecessary.
 
-Did anything happen? Sure, it's a old regression from the v3.4-rc4 days,
-but there iirc was already a tested proto-patch in that thread that
-fixes the issue. Or was progress made and I just missed it?
+There are no history issues for rv32, we use compat mode to reduce
+memory footprint. eg: only 64MB memory available.
 
-Ciao, Thorsten
+At end compat for 4GB is another topic, let's give the initial compat
+for 2GB support to riscv.
 
-P.S.: As a Linux kernel regression tracker I'm getting a lot of reports
-on my table. I can only look briefly into most of them. Unfortunately
-therefore I sometimes will get things wrong or miss something important.
-I hope that's not the case here; if you think it is, don't hesitate to
-tell me about it in a public reply, that's in everyone's interest.
+>
+>         David
+>
+> -
+> Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
+> Registration No: 1397386 (Wales)
 
-BTW, I have no personal interest in this issue, which is tracked using
-regzbot, my Linux kernel regression tracking bot
-(https://linux-regtracking.leemhuis.info/regzbot/). I'm only posting
-this mail to get things rolling again and hence don't need to be CC on
-all further activities wrt to this regression.
 
-#regzbot ignore-activity
 
->>>>> I am far away from this now and still on 4.19. I don't mind if you
->>>>> tweak
->>>> tweak the patches for better "upstreamability"
->>>>
->>>> Even better would be to migrate to the chipidea driver, I am told
->>>> just a few tweaks are needed but this is probably something NXP
->>>> should do as they have access to other SOC's using chipidea.
->>>
->>> I agree with this direction but the problem was with bandwidth.  As this
->> controller was only used on legacy platforms, it is harder to justify new effort
->> on it now.
->>
->> Legacy? All PPC is legacy and not supported now?
-> 
-> I'm not saying that they are not supported, but they are in maintenance only mode.
+-- 
+Best Regards
+ Guo Ren
+
+ML: https://lore.kernel.org/linux-csky/
