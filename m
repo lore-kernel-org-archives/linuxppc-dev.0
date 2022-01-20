@@ -4,51 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F13C8C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 13:01:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E74C2C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 13:03:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JfjLb3328z30Nx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jan 2022 00:01:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JfjNg4Yrzz3cDn
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jan 2022 00:02:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=leemhuis.info (client-ip=2a01:488:42:1000:50ed:8234::;
- helo=wp530.webpack.hosteurope.de; envelope-from=regressions@leemhuis.info;
+ smtp.mailfrom=aculab.com (client-ip=185.58.86.151;
+ helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
  receiver=<UNKNOWN>)
-X-Greylist: delayed 353 seconds by postgrey-1.36 at boromir;
- Fri, 21 Jan 2022 00:00:44 AEDT
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de
- [IPv6:2a01:488:42:1000:50ed:8234::])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JfjL42m7kz303n
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jan 2022 00:00:43 +1100 (AEDT)
-Received: from ip4d173d02.dynamic.kabel-deutschland.de ([77.23.61.2]
- helo=[192.168.66.200]); authenticated
- by wp530.webpack.hosteurope.de running ExIM with esmtpsa
- (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
- id 1nAX3C-0007wO-Cv; Thu, 20 Jan 2022 14:00:26 +0100
-Message-ID: <05b24780-2846-c085-2d71-b5c530ba0917@leemhuis.info>
-Date: Thu, 20 Jan 2022 14:00:25 +0100
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JfjN96KQlz30Ky
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jan 2022 00:02:33 +1100 (AEDT)
+Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ uk-mta-33-Vn3vaJQAO5ObVFev711Zzw-1; Thu, 20 Jan 2022 13:02:29 +0000
+X-MC-Unique: Vn3vaJQAO5ObVFev711Zzw-1
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
+ AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
+ Server (TLS) id 15.0.1497.28; Thu, 20 Jan 2022 13:02:27 +0000
+Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
+ AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
+ 15.00.1497.028; Thu, 20 Jan 2022 13:02:27 +0000
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Arnd Bergmann' <arnd@arndb.de>, Guo Ren <guoren@kernel.org>
+Subject: RE: [PATCH V3 03/17] asm-generic: compat: Cleanup duplicate
+ definitions
+Thread-Topic: [PATCH V3 03/17] asm-generic: compat: Cleanup duplicate
+ definitions
+Thread-Index: AQHYDfvLsUgI09Yi+EGR4Ve6KMrB5Kxr3nRg
+Date: Thu, 20 Jan 2022 13:02:27 +0000
+Message-ID: <f2c1a3a10bf643d693afed6d23b3baf9@AcuMS.aculab.com>
+References: <20220120073911.99857-4-guoren@kernel.org>
+ <CAK8P3a1UmnjHk8B6hSULiKv3FKoY5BW9=4=ESerQzc+4=LR5Zw@mail.gmail.com>
+In-Reply-To: <CAK8P3a1UmnjHk8B6hSULiKv3FKoY5BW9=4=ESerQzc+4=LR5Zw@mail.gmail.com>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.4.0
-Subject: Re: [BUG] mtd: cfi_cmdset_0002: write regression since v4.17-rc1
-Content-Language: en-BS
-To: Tokunori Ikegami <ikegami.t@gmail.com>,
- Thorsten Leemhuis <regressions@leemhuis.info>,
- Ahmad Fatoum <a.fatoum@pengutronix.de>, linux-mtd@lists.infradead.org,
- Joakim.Tjernlund@infinera.com, miquel.raynal@bootlin.com, vigneshr@ti.com,
- richard@nod.at, "regressions@lists.linux.dev" <regressions@lists.linux.dev>
-References: <b687c259-6413-26c9-d4c9-b3afa69ea124@pengutronix.de>
- <dff2abcc-5813-2f2c-35ba-f03cd1f35ac3@leemhuis.info>
- <e11b76dc-5539-fb7e-da1c-a5005713d6b0@gmail.com>
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-In-Reply-To: <e11b76dc-5539-fb7e-da1c-a5005713d6b0@gmail.com>
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-bounce-key: webpack.hosteurope.de; regressions@leemhuis.info; 1642683644;
- 67cef0ad; 
-X-HE-SMSGID: 1nAX3C-0007wO-Cv
+Content-Transfer-Encoding: base64
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,229 +66,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- marek.vasut@gmail.com, Chris Packham <chris.packham@alliedtelesis.co.nz>,
- Pengutronix Kernel Team <kernel@pengutronix.de>, cyrille.pitchen@wedev4u.fr,
- Shaohui.Xie@nxp.com, Brian Norris <computersforpeace@gmail.com>,
- David Woodhouse <dwmw2@infradead.org>
+Cc: linux-s390 <linux-s390@vger.kernel.org>, Guo Ren <guoren@linux.alibaba.com>,
+ liush <liush@allwinnertech.com>, Drew Fustini <drew@beagleboard.org>,
+ Anup Patel <anup@brainfault.org>, Wang Junqiang <wangjunqiang@iscas.ac.cn>,
+ the arch/x86 maintainers <x86@kernel.org>, Linux
+ Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>,
+ "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>, Christoph
+ Hellwig <hch@infradead.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ gregkh <gregkh@linuxfoundation.org>, sparclinux <sparclinux@vger.kernel.org>,
+ linux-riscv <linux-riscv@lists.infradead.org>, Wei Fu <wefu@redhat.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "inux-parisc@vger.kernel.org" <inux-parisc@vger.kernel.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi, this is your Linux kernel regression tracker speaking.
-
-On 15.12.21 18:34, Tokunori Ikegami wrote:
-> Hi Ahmad-san,
-> 
-> Sorry for the regression issue by the change: dfeae1073583.
-> To make sure could you please try with the word write instead of the
-> buffered writes?
-
-Ahmad, did you try what Tokunori asked? Was any progress made to get
-this regression fixed? To me it looks like it fell through the cracks.
-Can anyone provide a status update please?
-
-Ciao, Thorsten
-
-P.S.: As a Linux kernel regression tracker I'm getting a lot of reports
-on my table. I can only look briefly into most of them. Unfortunately
-therefore I sometimes will get things wrong or miss something important.
-I hope that's not the case here; if you think it is, don't hesitate to
-tell me about it in a public reply, that's in everyone's interest.
-
-BTW, I have no personal interest in this issue, which is tracked using
-regzbot, my Linux kernel regression tracking bot
-(https://linux-regtracking.leemhuis.info/regzbot/). I'm only posting
-this mail to get things rolling again and hence don't need to be CC on
-all further activities wrt to this regression.
-
-#regzbot poke
-
-> FYI: There are some changes to disable the buffered writes as below.
->   1.
-> https://git.openwrt.org/?p=openwrt/openwrt.git;a=blob;f=target/linux/ar71xx/patches-4.9/411-mtd-cfi_cmdset_0002-force-word-write.patch;h=ddd69f17e1ac16e8fc3a694c56231fee1e2ef149;hb=fec8fe806963c96a6506c2aebc3572d3a11f285f
-> 
->   2.
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/mtd/chips/cfi_cmdset_0002.c?h=v5.16-rc5&id=7e4404113686868858a34210c28ae122e967aa64
-> 
-> 
-> Note:
->   Currently I am not able to investigate the issue on the product for
-> the change before.
-> 
->   By the way in the past I had investigated the similar issue on Buffalo
-> WZR-HP-G300NH using the S29GL256N.
->   It was not able to find the root cause by the investigation since not
-> required actually at that time.
->   Also actually the buffered writes were disabled on the OpenWrt
-> firmware as the change [1] above.
->   But I am not sure the reason detail to disable the buffered writes on
-> the OpenWrt firmware.
->   I thought the issue not caused by the change: dfeae1073583 since the
-> issue happened without the change.
-> 
->   So I am not sure why the above change [2] needed to disable the
-> buffered writes on Buffalo WZR-HP-G300NH.
->   Probably seems needed to disable the buffered writes on the other
-> firmware also but not OpenWrt firmware.
-> 
->   Anyway there are difference with your regression issue as below.
->     1. Flash device: S29GL064N (Your regression issue), S29GL256N
-> (WZR-HP-G300NH)
->     2. Regression issue: Yes (Your regression issue), No (WZR-HP-G300NH
-> as I investigated before)
-> 
-> Regards,
-> Ikegami
-> 
-> On 2021/12/14 16:23, Thorsten Leemhuis wrote:
->> [TLDR: adding this regression to regzbot; most of this mail is compiled
->> from a few templates paragraphs some of you might have seen already.]
->>
->> Hi, this is your Linux kernel regression tracker speaking.
->>
->> Top-posting for once, to make this easy accessible to everyone.
->>
->> Thanks for the report.
->>
->> Adding the regression mailing list to the list of recipients, as it
->> should be in the loop for all regressions, as explained here:
->> https://www.kernel.org/doc/html/latest/admin-guide/reporting-issues.html
->>
->> To be sure this issue doesn't fall through the cracks unnoticed, I'm
->> adding it to regzbot, my Linux kernel regression tracking bot:
->>
->> #regzbot ^introduced dfeae1073583
->> #regzbot title mtd: cfi_cmdset_0002: flash write accesses on the
->> hardware fail on a PowerPC MPC8313 to a 8-bit-parallel S29GL064N flash
->> #regzbot ignore-activity
->>
->> Reminder: when fixing the issue, please add a 'Link:' tag with the URL
->> to the report (the parent of this mail), then regzbot will automatically
->> mark the regression as resolved once the fix lands in the appropriate
->> tree. For more details about regzbot see footer.
->>
->> Sending this to everyone that got the initial report, to make all aware
->> of the tracking. I also hope that messages like this motivate people to
->> directly get at least the regression mailing list and ideally even
->> regzbot involved when dealing with regressions, as messages like this
->> wouldn't be needed then.
->>
->> Don't worry, I'll send further messages wrt to this regression just to
->> the lists (with a tag in the subject so people can filter them away), as
->> long as they are intended just for regzbot. With a bit of luck no such
->> messages will be needed anyway.
->>
->> Ciao, Thorsten (wearing his 'Linux kernel regression tracker' hat).
->>
->> P.S.: As a Linux kernel regression tracker I'm getting a lot of reports
->> on my table. I can only look briefly into most of them. Unfortunately
->> therefore I sometimes will get things wrong or miss something important.
->> I hope that's not the case here; if you think it is, don't hesitate to
->> tell me about it in a public reply. That's in everyone's interest, as
->> what I wrote above might be misleading to everyone reading this; any
->> suggestion I gave thus might sent someone reading this down the wrong
->> rabbit hole, which none of us wants.
->>
->> BTW, I have no personal interest in this issue, which is tracked using
->> regzbot, my Linux kernel regression tracking bot
->> (https://linux-regtracking.leemhuis.info/regzbot/). I'm only posting
->> this mail to get things rolling again and hence don't need to be CC on
->> all further activities wrt to this regression.
->>
->> On 13.12.21 14:24, Ahmad Fatoum wrote:
->>> Hi,
->>>
->>> I've been investigating a breakage on a PowerPC MPC8313: The SoC is
->>> connected
->>> via the "Enhanced Local Bus Controller" to a 8-bit-parallel S29GL064N
->>> flash,
->>> which is represented as a memory-mapped cfi-flash.
->>>
->>> The regression began in v4.17-rc1 with
->>>
->>>    dfeae1073583 ("mtd: cfi_cmdset_0002: Change write buffer to check
->>> correct value")
->>>
->>> and causes all flash write accesses on the hardware to fail. Example
->>> output
->>> after v5.1-rc2[1]:
->>>
->>>    root@host:~# mount -t jffs2 /dev/mtdblock0 /mnt
->>>    MTD do_write_buffer_wait(): software timeout, address:0x000c000b.
->>>    jffs2: Write clean marker to block at 0x000c0000 failed: -5
->>>
->>> This issue still persists with v5.16-rc. Reverting aforementioned
->>> patch fixes
->>> it, but I am still looking for a change that keeps both Tokunori's
->>> and my
->>> hardware happy.
->>>
->>> What Tokunori's patch did is that it strengthened the success condition
->>> for flash writes:
->>>
->>>   - Prior to the patch, DQ polling was done until bits
->>>     stopped toggling. This was taken as an indicator that the write
->>> succeeded
->>>     and was reported up the stack. i.e. success condition is
->>> chip_ready()
->>>
->>>   - After the patch, polling continues until the just written data is
->>>     actually read back, i.e. success condition is chip_good()
->>>
->>> This new condition never holds for me, when DQ stabilizes, it reads
->>> 0xFF,
->>> never the just written data. The data is still written and can be
->>> read back
->>> on subsequent reads, just not at that point of time in the poll loop.
->>>
->>> We haven't had write issues for the years predating that patch. As the
->>> regression has been mainline for a while, I am wondering what about
->>> my setup
->>> that makes it pop up here, but not elsewhere?
->>>
->>> I consulted the data sheet[2] and found Figure 27, which describes DQ
->>> polling
->>> during embedded algorithms. DQ switches from status output to "True"
->>> (I assume
->>> True == all bits set == 0xFF) until CS# is reasserted.
->>>
->>> I compared with another chip's datasheet, and it (Figure 8.4) doesn't
->>> describe
->>> such an intermittent "True" state. In any case, the driver polls a
->>> few hundred
->>> times, however, before giving up, so there should be enough CS# toggles.
->>>
->>>
->>> Locally, I'll revert this patch for now. I think accepting 0xFF as a
->>> success
->>> condition may be appropriate, but I don't yet have the rationale to
->>> back it up.
->>>
->>> I am investigating this some more, probably with a logic trace, but I
->>> wanted
->>> to report this in case someone has pointers and in case other people
->>> run into
->>> the same issue.
->>>
->>>
->>> Cheers,
->>> Ahmad
->>>
->>> [1] Prior to d9b8a67b3b95 ("mtd: cfi: fix deadloop in
->>> cfi_cmdset_0002.c do_write_buffer")
->>>      first included with v5.1-rc2, failing writes just hung
->>> indefinitely in kernel space.
->>>      That's fixed, but the writes still fail.
->>>
->>> [2]: 001-98525 Rev. *B,
->>> https://www.infineon.com/dgdl/Infineon-S29GL064N_S29GL032N_64_Mbit_32_Mbit_3_V_Page_Mode_MirrorBit_Flash-DataSheet-v03_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ed556fd548b
->>>
->>>
->>> [3]:
->>> https://www.mouser.com/datasheet/2/268/SST39VF1601C-SST39VF1602C-16-Mbit-x16-Multi-Purpos-709008.pdf
->>>
->>>       Note that "true data" means valid data here, not all bits one.
->>>
+RnJvbTogQXJuZCBCZXJnbWFubg0KPiBTZW50OiAyMCBKYW51YXJ5IDIwMjIgMTE6NTINCi4uDQo+
+IEFzIHdpdGggY29tcGF0X2Zsb2NrLCB0aGUgcGFja2VkIGF0dHJpYnV0ZSBoYXMgbm8gaW1wYWN0
+IG9uIHRoZSBsYXlvdXQNCj4gaGVyZSwgYnV0IHBsZWFzZSBkcm9wIGl0IGFueXdheSBmb3IgY29u
+c2lzdGVuY3kuDQoNCk5ldmVyIG1pbmQgdGhlIHN0cnVjdHVyZSBsYXlvdXQsIGJlY2F1c2UgJ3Bh
+Y2tlZCcgYWxsb3dzIHRoZQ0Kc3RydWN0dXJlIHRvIGJlIGFsaWduZWQgb24gYW55IGJvdW5kYXJ5
+IGl0IGZvcmNlcyB0aGUgY29tcGlsZXINCnRvIHVzZSBieXRlIG1lbW9yeSBhY2Nlc3NlcyBhbmQg
+c2hpZnRzIG9uIHNvbWUgYXJjaGl0ZWN0dXJlcy4NClRoaXMgaXMgYSBob3JyaWQgcGVyZm9ybWFu
+Y2UgcGVuYWx0eS4NCg0KJ3BhY2tlZCcgc2hvdWxkIG9ubHkgYmUgc3BlY2lmaWVkIGZvciBzdHJ1
+Y3R1cmVzIHRoYXQgY2FuDQpvY2N1ciBvbiBhbnkgYWRkcmVzcyBib3VuZGFyeS4NCmllIGJhc2lj
+YWxseSBuZXZlci4NCg0KSWYgeW91IG5lZWQgdG8gcmVtb3ZlIHRoZSBpbXBsaWNpdCBwYWQgYmVm
+b3JlIGEgZmllbGQgKGVnIDY0Yml0DQpmaWVsZHMgb24geDY0LTMyKSB0aGVuIHlvdSBjYW4gbWFy
+ayB0aGUgZmllbGQgaXRzZWxmIGFzICdwYWNrZWQnLg0KQWx0aG91Z2gsIGluIHRoYXQgY2FzZSwg
+cHV0dGluZyB0aGUgYXR0cmlidXRlIG9uIHRoZSB0eXBlIChjb21wYXRfczY0KQ0KaXMgZ2VuZXJh
+bGx5IGNsZWFuZXIuDQoNCglEYXZpZA0KDQotDQpSZWdpc3RlcmVkIEFkZHJlc3MgTGFrZXNpZGUs
+IEJyYW1sZXkgUm9hZCwgTW91bnQgRmFybSwgTWlsdG9uIEtleW5lcywgTUsxIDFQVCwgVUsNClJl
+Z2lzdHJhdGlvbiBObzogMTM5NzM4NiAoV2FsZXMpDQo=
 
