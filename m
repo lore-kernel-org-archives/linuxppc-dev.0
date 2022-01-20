@@ -4,62 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37978C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 11:10:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39B7EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 11:29:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jffv76VSVz3cTy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 22:10:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JfgKK59zJz3cFf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jan 2022 22:29:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=217.72.192.73; helo=mout.kundenserver.de;
+ (client-ip=212.227.126.134; helo=mout.kundenserver.de;
  envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jfftf3WZDz30Mf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 22:10:17 +1100 (AEDT)
-Received: from mail-oo1-f41.google.com ([209.85.161.41]) by
- mrelayeu.kundenserver.de (mreue106 [213.165.67.113]) with ESMTPSA (Nemesis)
- id 1N0FE1-1mPZPG1jXj-00xORP for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan
- 2022 12:10:13 +0100
-Received: by mail-oo1-f41.google.com with SMTP id
- v10-20020a4a860a000000b002ddc59f8900so1932364ooh.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 03:10:12 -0800 (PST)
-X-Gm-Message-State: AOAM5326MF3Iv4A74jmyjA4gjEDGGQBRsUqBD/nVns+oRYS18lC3+T0t
- fh1SleiBePSgyPEqM3fL/1o/OaRzviKLP+sszgc=
-X-Google-Smtp-Source: ABdhPJxdLg6SDZjsvGmAsYmn2qy9+2h/ODrSB5K/8pY/EXdxIA8KLQS4DyhVSmna3jImvkgL6VaV1O46bPcTyjt0SVc=
-X-Received: by 2002:a05:6808:1490:: with SMTP id
- e16mr6881848oiw.84.1642673470519; 
- Thu, 20 Jan 2022 02:11:10 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JfgJr3ZKNz30Ky
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 22:29:31 +1100 (AEDT)
+Received: from mail-wm1-f45.google.com ([209.85.128.45]) by
+ mrelayeu.kundenserver.de (mreue012 [213.165.67.97]) with ESMTPSA (Nemesis) id
+ 1MYLqs-1mp2dZ0K8o-00VM7Y for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan
+ 2022 12:29:27 +0100
+Received: by mail-wm1-f45.google.com with SMTP id
+ o1-20020a1c4d01000000b0034d95625e1fso6656941wmh.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jan 2022 03:29:26 -0800 (PST)
+X-Gm-Message-State: AOAM530QW/jOdatE1nMn32aDS21iI7rw0TYlCB+kWKlG04WJ7ekXPhPY
+ 8SH+ERsG6QvRsVaSO3j7+HGlqFBGRIL7yM7OlUw=
+X-Google-Smtp-Source: ABdhPJxuH3ieTJMrWvtM18t+kt/eQKxNsX0S1JRfafUu0rov1od6UeEmq8/soY26aK2ZvAh1u2FgbOu1pscCT0xGmKw=
+X-Received: by 2002:a7b:ce96:: with SMTP id q22mr8086318wmj.82.1642671086465; 
+ Thu, 20 Jan 2022 01:31:26 -0800 (PST)
 MIME-Version: 1.0
-References: <20220120073911.99857-18-guoren@kernel.org>
-In-Reply-To: <20220120073911.99857-18-guoren@kernel.org>
+References: <20220120073911.99857-8-guoren@kernel.org>
+In-Reply-To: <20220120073911.99857-8-guoren@kernel.org>
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 20 Jan 2022 11:10:53 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a1_qwRpfHRyF75WEqfxGxgVnfB15vNS-egQctx7R5-DvA@mail.gmail.com>
-Message-ID: <CAK8P3a1_qwRpfHRyF75WEqfxGxgVnfB15vNS-egQctx7R5-DvA@mail.gmail.com>
-Subject: Re: [PATCH V3 17/17] KVM: compat: riscv: Prevent KVM_COMPAT from
- being selected
+Date: Thu, 20 Jan 2022 10:31:09 +0100
+X-Gmail-Original-Message-ID: <CAK8P3a1UvqsS-D7cVXBkp4KCRWDfquQ6QTkvrQ=FqLxhsAi7Rw@mail.gmail.com>
+Message-ID: <CAK8P3a1UvqsS-D7cVXBkp4KCRWDfquQ6QTkvrQ=FqLxhsAi7Rw@mail.gmail.com>
+Subject: Re: [PATCH V3 07/17] riscv: compat: Re-implement TASK_SIZE for
+ COMPAT_32BIT
 To: Guo Ren <guoren@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:V+2lpM0/z4B7CFt83W8wQSERi2B8Ye9M0xhTGkecqUjLlgoHsrx
- WeFDDT5QGlAKQ9d/zAHLUfaSbOh9aq021Rl0gLKzk+2wqjm5Pfl2mmKjgXUqEeP8QKfh+8E
- KUoE0Rxiz00xsusvUqAhoDr9n6g4v74i+nuyKOs/0HXIp9PE29hNMu/rTBhwfhRxFWfxOtz
- Eni7y5x2fw8bknlt97fwA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:E+BVfOF0zJk=:KMuzx03ok2IS8YPNDgui57
- ko3glzdWM2bz1cr3wfrQ85cDJWEjWV8edEXfh8NSw/ESNFAegtHEMviaBkTNuIaDK/Bs0pOwx
- as/osu9j4MeGvnsHV6pyzWkNdoMXk02eceUkpU9+Ff+wKPeauAWwI58pKCceMWUIVenPutO2w
- 8p6r0XP9UHkuXuHK0ae2vTlvSfC2Qn8wCf9lR+xQ4cwEO2TnNQbl9hHCxsjNqUK53QOlVcC9s
- G9Fkc0AaHqM3OgAHqpJ3ksTjsop0pQDJsP26E3LTY5ybnwdan1vEX4hOcUh5SqagOg6rkKQrE
- JwCfJ6dYdI/pzeBrLDQA0XKJx/URtBkzJwaYF9XNGcSKDDLakvV95+nQ1/xOZDPqodahz3K9W
- gBlQdLePySc5cJWo9JJIthX+hHbteBLN/fUyvgmpJKHyEJo7C2AKIu5+r1sjV3HV/aC+lsYas
- GFbX3dYplDvARCca8BBGEoAVNu8OW2e6hVMX1pdzktI8LZnNRAnPr9TFHmehFyUZxaFeuzVpP
- II34lFYUXuO3WyCobqK0dgxebLChzPELDhBLNXrCCbvN68G/sZtm0m3ZlKr/cmuSoGTTiPlLa
- UCPLd3m8qIVFeuiFLCNSS3INiLslUZ6kLwREzGFzloO+LVR/zc0j960950tRTdHQHT5hrBYSP
- VJ/E93V1MerQUQHMim8RUuMrM4v21g5X8TTG2O03lClXoA0TRK02DwEvzb57jnw5FTXmQKADw
- 8lPTxiumYSz6ewqr+uXX4cOOKdxaeYWOf72b8ZjeJ6E+z1TIdvt1w6e5+7JbH3I9ZliCxOjHR
- AeSVsxGtodZui9IzXMpxAWm98TSB5F03PnLrb2X76TUJ1KgE+Q=
+X-Provags-ID: V03:K1:SZ41ugoseP2Lcu3S121ZTTFGEhosnmOZttYNneUIWAhhxJKNSpf
+ SInQfD4LWBIjYo4Oyl6XB8y8ZpPP8GFPPM/f77A0tpIeTIpG/5WdHnR3atlKE8sSXa83SDu
+ eP7p4mD9mGnYxLdU2nTCMbQxPvwnbSEm9MCUEgnqi/1UkNHtiRyH4+18pWeHfVInDprsX++
+ 7058eOK+cmms2Udp78CHg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:VLnwDnOY4zk=:Btz4f/vZVGmwl3mlBJlodm
+ uO2BNJP9LLrmG2FYHtc1zKooqjGTF41l57qC+LveFFpFy9U2qny+WHEWmlcMIxo5SP+DP9w+s
+ WTpea2L/wtoPjlbnQ9STqNL9XVuOetUI+Bx50c0JfHwssQElRH2QFWrtApkSmiER4F3ASgX0E
+ bvlF0fnGbPn7ymKXmYOO9F7Tc52nYC9UsWvw6l7C2/AWbvfTJImF+3mgf6sICc912lwyfk9k8
+ jhjUzANsRIFIt4Juua6tlYsw3PES2iF/VueZG43hlM247SSsEopSrinB6MsAjeskNLJSC7hTi
+ ug0ETjy1TEMlUQNSq36d+hqwqaRqaqGjfZ65qLmGX7Z1nXVkG3IOEBZQrN+Eu77RSMLznC3Ia
+ ZuOQZ1zgTToVKU1gwXgkGeiA5XxNuJq4Ylvtgs37HhQwSRISUMxG18ee+XZMyctLU7PZl1xj/
+ RsqPZJ4trPn2zp8LmDZBURVCAsDrhgYgHGmOH074mtAPc5hBxgR7LrbjMSFINgRYiscSo94Kr
+ +Lh1PtQFCgqYUev8FZTkPu2tIzQpwNgF+9wU+7LnGyP6PrPxMOyVtOocdJ7rnpJ/xvLYdc4Dp
+ ynOQhzZWZ9u+T3RFBmoE172HvWXSvDdj94aa6qpO/x1u21wjNYMQcHz3DcFUboLIlu53dqKNO
+ EMFvPPi0R74eb8vnONlHLTdftEOkVLHj0oxkwunuHvJHHvIRDxwSWhv0LS63ISfyjanoKRKf8
+ 5Y5kRHjx5yOjx/Y4HWCCibgYdnhyiAO6OKe81acJvAsKEguYWBG/WlVfCnudQmRqfJchgLZ1t
+ GD+jJnbgxmtg3u8pWVGuKKcrfCAaQ0tEJr2IJp/nJMszNKCy7Y=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,29 +91,21 @@ On Thu, Jan 20, 2022 at 8:39 AM <guoren@kernel.org> wrote:
 >
 > From: Guo Ren <guoren@linux.alibaba.com>
 >
-> Current riscv doesn't support the 32bit KVM/arm API. Let's make it
-> clear by not selecting KVM_COMPAT.
+> Make TASK_SIZE from const to dynamic detect TIF_32BIT flag
+> function. Refer to arm64 to implement DEFAULT_MAP_WINDOW_64 for
+> efi-stub.
+>
+> Limit 32-bit compatible process in 0-2GB virtual address range
+> (which is enough for real scenarios), because it could avoid
+> address sign extend problem when 32-bit enter 64-bit and ease
+> software design.
+>
+> The standard 32-bit TASK_SIZE is 0x9dc00000:FIXADDR_START, and
+> compared to a compatible 32-bit, it increases 476MB for the
+> application's virtual address.
 >
 > Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-> ---
->  virt/kvm/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
-> index f4834c20e4a6..a8c5c9f06b3c 100644
-> --- a/virt/kvm/Kconfig
-> +++ b/virt/kvm/Kconfig
-> @@ -53,7 +53,7 @@ config KVM_GENERIC_DIRTYLOG_READ_PROTECT
->
->  config KVM_COMPAT
->         def_bool y
-> -       depends on KVM && COMPAT && !(S390 || ARM64)
-> +       depends on KVM && COMPAT && !(S390 || ARM64 || RISCV)
+> Signed-off-by: Guo Ren <guoren@kernel.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
 
-Maybe this should be flipped around into a positive list now?
-The remaining architectures would be mips, powerpc and x86, but it's unclear
-if this actually meant to work on all of them, or any potential ones
-added in the
-future.
-
-       Arnd
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
