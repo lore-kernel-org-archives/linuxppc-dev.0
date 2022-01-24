@@ -4,68 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 769AFC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 05:59:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D34D4C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 05:59:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jhznr6Cykz3cRH
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 16:59:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JhzpZ1zd8z3cYJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 16:59:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=mlet655/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=TzhHPxiy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e;
- helo=mail-pj1-x102e.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52a;
+ helo=mail-pg1-x52a.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=mlet655/; dkim-atps=neutral
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com
- [IPv6:2607:f8b0:4864:20::102e])
+ header.s=20210112 header.b=TzhHPxiy; dkim-atps=neutral
+Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com
+ [IPv6:2607:f8b0:4864:20::52a])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JhzmK2t76z302S
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jan 2022 16:57:51 +1100 (AEDT)
-Received: by mail-pj1-x102e.google.com with SMTP id
- z10-20020a17090acb0a00b001b520826011so11066680pjt.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jan 2022 21:57:51 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JhzmL70CQz302S
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jan 2022 16:57:54 +1100 (AEDT)
+Received: by mail-pg1-x52a.google.com with SMTP id h23so14374505pgk.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jan 2022 21:57:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=572/iUmfMQMeK36G8Oj2d3ZOwWGO8dIfeilXEcFAr4M=;
- b=mlet655/2Smm9Vkf/pJ21luVZ1nF0VNnIrUj5NYQ1VmWHwK5k4dZ0eA+YKEd11zGqH
- BuGa1VofDo4H2We2Pie2tmWlm46QNEbbzV0L+NNdPahrZ82LyOnJDoAUZomgCHB+GtSR
- BAisWKQh9po+XQ7tdkjHRIQCbqzt31UytxCFK/StJ4zNj7YbgDSH+2TRiewvuCCjzk9y
- 5K33h2VPFhowu18w5D0924ZeTow0CbpAlL/wCdBoDr7PM+iroid4BtpLFbiC3VMYRv4d
- oPd3J6+3EQcUHAXqsxeVxFJZ9158jBSDAEENtum/ts0Oz0Z4wAHxfSx15aToCyzsme9Z
- X1gw==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=K4UGhOlvE88N1S5cU0LFS2HJSd8wREBKqQwlVTnpg+c=;
+ b=TzhHPxiycmtzBgSrm53Y7P0HofAMeW6++AuQakzGWptN0XInY9TL2pYZOL4PBC6vOp
+ qPiIrfQSxXHaQVt1JunfxT4lrIcNxg9Tm5BIFIOQlJNiG2wqRrhyu1wwd6/P7yhkSNIY
+ mpIDKcLx0dZKeF/1Eg4QObk2VH5Vpi6WJWGbra0SWUoVZ1SepmAL5LdzQKEWf1vq0rxY
+ nm31KlgBAvjtpGXUP+R/CjKvoFngX8hR7U9zgavQ8xsL2rTE1SCRYVx5r06dAPSwi+++
+ paMZDhf80f231ukZwZEwwqunS7VcH5RmsbLQpS5h8/TQtfFofckOKkJVlstSuZQU9KZl
+ QN3g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=572/iUmfMQMeK36G8Oj2d3ZOwWGO8dIfeilXEcFAr4M=;
- b=MANrf3hW+oFXeMTNR4bYkRNzf+bniauLPNH1lOfz6RQ2qAGycGMdP2gGJLVsOBYQLe
- YkJmkg8JfuCbuH7kFQZIRSd9Yav26NKjwmOeMoG2cV5PTM+LYeJwkhqSwBe//wC0M/BN
- DRrylN5rtAp4D17FE/AFvNdgKGOwTUmNoh+czjuRlaavuZPjrLCBCT6IKgvPbp/w5e1N
- reuByiowHW3k1EUM6mV/F5Jcw0B3/wWNLpmpGYK/owffZdGq9e8Zc1JIHwOEqngZ9MJo
- MKcv1bKZP5e1O4xL6a/lL8+40Wd41fMVz0k8EJkzvjLjq65HOWkxLGsCcsPgw1yOzA1Y
- zuGw==
-X-Gm-Message-State: AOAM533zcmg4zUqRA/iIcqdD4DgDvo/7KwjwAeF1v+ovhNpk4jK4eFTs
- 2wk/GG24S3TzJQivgn5mNu6rvHmYJ8E=
-X-Google-Smtp-Source: ABdhPJz8X5Tf0jzhfpIRQx6JnrPN+oNK0e4FDdqGURjMRGj4k92cxnymI8Y+8QyKa2EvNDjAJ2CkoA==
-X-Received: by 2002:a17:90b:2351:: with SMTP id
- ms17mr438314pjb.186.1643003867836; 
- Sun, 23 Jan 2022 21:57:47 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=K4UGhOlvE88N1S5cU0LFS2HJSd8wREBKqQwlVTnpg+c=;
+ b=3WufaXU06XSsy0lwEIKuyXwq57uUEKtGc6t4TOvDyC1Ra8sgBCovM50tPwBW0v9ya6
+ Lq62SLbm7ZkozjEKgFrsB2ElHTQe+rT2fjqzJB80DDwQnGhBAjkBK4CKztsadHxsBE7m
+ kpY9AiYanYpLKDuf14hoTkVb/PoBpmJafgYc7ZvHJkgr9dvigft+WmmeSA6yFyiZmLTd
+ Din+S83qtnD3GH3jsypVRyzog6nTpL3uXPlVs12hNhsVZXKJcdHkDYZswjutFhx+NU9t
+ advD3w769uURZsInqPadSGC18XW2VXNsBy7q66yrGJZRyR2VggBMogbJT6m11ZmZy1uF
+ jE1w==
+X-Gm-Message-State: AOAM532R22iC0Rp/z7lqcdxoAlm/Rhk7QHo/2mpnXTNVtZOW/9Rfv633
+ y8HqlWkyFEidFBeklPYTaN4RolfORpY=
+X-Google-Smtp-Source: ABdhPJzoHn0CCdlc3wReLoXSFi26FBk0YtDFzWmtxQqlUKkk8CB3yW2YNexupEopxS9EwXGUvrSL1g==
+X-Received: by 2002:a62:cf43:0:b0:4c7:e70:c163 with SMTP id
+ b64-20020a62cf43000000b004c70e70c163mr12787687pfg.48.1643003872507; 
+ Sun, 23 Jan 2022 21:57:52 -0800 (PST)
 Received: from bobo.ozlabs.ibm.com (193-116-82-75.tpgi.com.au. [193.116.82.75])
- by smtp.gmail.com with ESMTPSA id f8sm15045859pfe.67.2022.01.23.21.57.45
+ by smtp.gmail.com with ESMTPSA id f8sm15045859pfe.67.2022.01.23.21.57.50
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 23 Jan 2022 21:57:47 -0800 (PST)
+ Sun, 23 Jan 2022 21:57:52 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/2] powerpc: Disable syscall emulation and stepping
-Date: Mon, 24 Jan 2022 15:57:39 +1000
-Message-Id: <20220124055741.3686496-1-npiggin@gmail.com>
+Subject: [PATCH 2/2] powerpc/uprobes: Reject uprobe on a system call
+ instruction
+Date: Mon, 24 Jan 2022 15:57:41 +1000
+Message-Id: <20220124055741.3686496-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20220124055741.3686496-1-npiggin@gmail.com>
+References: <20220124055741.3686496-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -79,31 +81,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As discussed previously
+Per the ISA, a Trace interrupt is not generated for a system call
+[vectored] instruction. Reject uprobes on such instructions as we are
+not emulating a system call [vectored] instruction anymore.
 
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2022-January/238946.html
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+[np: Switch to pr_info_ratelimited]
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/ppc-opcode.h | 1 +
+ arch/powerpc/kernel/uprobes.c         | 6 ++++++
+ 2 files changed, 7 insertions(+)
 
-I'm wondering whether PPC32 should be returning -1 for syscall
-instructions too here? That could be done in another patch anyway.
-
-Thanks,
-Nick
-
-Nicholas Piggin (2):
-  powerpc/64: remove system call instruction emulation
-  powerpc/uprobes: Reject uprobe on a system call instruction
-
- arch/powerpc/include/asm/ppc-opcode.h |  1 +
- arch/powerpc/kernel/interrupt_64.S    | 10 -------
- arch/powerpc/kernel/uprobes.c         |  6 ++++
- arch/powerpc/lib/sstep.c              | 42 +++++++--------------------
- 4 files changed, 18 insertions(+), 41 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 9675303b724e..8bbe16ce5173 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -411,6 +411,7 @@
+ #define PPC_RAW_DCBFPS(a, b)		(0x7c0000ac | ___PPC_RA(a) | ___PPC_RB(b) | (4 << 21))
+ #define PPC_RAW_DCBSTPS(a, b)		(0x7c0000ac | ___PPC_RA(a) | ___PPC_RB(b) | (6 << 21))
+ #define PPC_RAW_SC()			(0x44000002)
++#define PPC_RAW_SCV()			(0x44000001)
+ #define PPC_RAW_SYNC()			(0x7c0004ac)
+ #define PPC_RAW_ISYNC()			(0x4c00012c)
+ 
+diff --git a/arch/powerpc/kernel/uprobes.c b/arch/powerpc/kernel/uprobes.c
+index c6975467d9ff..3779fde804bd 100644
+--- a/arch/powerpc/kernel/uprobes.c
++++ b/arch/powerpc/kernel/uprobes.c
+@@ -41,6 +41,12 @@ int arch_uprobe_analyze_insn(struct arch_uprobe *auprobe,
+ 	if (addr & 0x03)
+ 		return -EINVAL;
+ 
++	if (ppc_inst_val(ppc_inst_read(auprobe->insn)) == PPC_RAW_SC() ||
++	    ppc_inst_val(ppc_inst_read(auprobe->insn)) == PPC_RAW_SCV()) {
++		pr_info_ratelimited("Rejecting uprobe on system call instruction\n");
++		return -EINVAL;
++	}
++
+ 	if (cpu_has_feature(CPU_FTR_ARCH_31) &&
+ 	    ppc_inst_prefixed(ppc_inst_read(auprobe->insn)) &&
+ 	    (addr & 0x3f) == 60) {
 -- 
 2.23.0
 
