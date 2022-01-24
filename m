@@ -4,96 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E75C9C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 22:17:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB5E3C43219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 22:30:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JjPV54cKcz3cVK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jan 2022 09:17:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JjPp80zDJz3cCr
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jan 2022 09:30:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AWBJU1Q1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hPWnMyFf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=AWBJU1Q1; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=hPWnMyFf; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JjPSB4WBZz3cQC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jan 2022 09:15:22 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20OK2JBN017421
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jan 2022 22:15:20 GMT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JjPnJ4jggz2xYL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jan 2022 09:30:12 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20OMBfkJ013216; 
+ Mon, 24 Jan 2022 22:30:06 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=itktSqAQkq9yD4/z1IYTkj2DAw2gC8rQGifTjRuH39o=;
- b=AWBJU1Q1HrMuFijnSzKGxoKgh/DfG0PxHFkY1aNu7G8t48OQle8JPJKS98JM5kUsRT2a
- +dRUGzWubKPDhFofBxCqOLZaFdRLF9x3n8nSts3dw808x0uMvG5MuZ8nP9g8SV/kODAy
- O8uvlZYDej5EZ7MTO2tsyzJXonA+tgBikqIY0zmhpfYvkJOZkTpeWGPtxDJdToL2+upn
- EIrPrygk0+gTKPrfsgt9aNkgMDIOPjHL0EJWxDW5R6qsbc52uWRFTn6VH2ef5Bd+cX6f
- sEHSc6NZBZ8MLUZz1ueAPcRr2t1ujYT8EutaFXJoOe8obCxyGzxUSMRi/J05UnvzxMtv mQ== 
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=JEKskfy7MMeY60uvfbdDvEG2CUPcJC0iPZQsUdTJDn4=;
+ b=hPWnMyFfhHMu58Njowu+IT5Cj0AUH5clY1trtKnLkC5gH3RIPFthiDp7DioZeleNzKbP
+ y929ydEjxqSS0siz/LsoSDd8Sh0B3DboqhBJdR4Nv6g7BVSeIxRJ8tfZ5/it5LQfyIld
+ LKkMyCU1A1uLenyB0dGtZ6EgzLKdCh1hA3vRjsZBc0HUeGFLRiZBq29DMjYUOrKeTgOi
+ Jc9yozmM2dOSYpWK44myqQBtuRdKiVKHy3K7hQ1vAYKf8UEt92P4hdGOFLlFYrW74wgE
+ 3O6OomYEh3Ila0edkPypJ47rpgjRBwiWKy7SknQOTNXA9kAVMZ4Kb3kXcRmxOtMXlN2B xQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3dt09w65p2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jan 2022 22:15:20 +0000
-Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 20OMCLY4028956
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jan 2022 22:15:19 GMT
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3dt09w65nu-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3dt4pfg929-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 24 Jan 2022 22:15:19 +0000
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20OM7Zuv023337;
- Mon, 24 Jan 2022 22:15:19 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma05wdc.us.ibm.com with ESMTP id 3dr9j9r1x7-1
+ Mon, 24 Jan 2022 22:30:06 +0000
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 20OMU6BR012526;
+ Mon, 24 Jan 2022 22:30:06 GMT
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3dt4pfg8y5-11
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 24 Jan 2022 22:15:19 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 20OMFI9828180908
+ Mon, 24 Jan 2022 22:30:06 +0000
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20OM7SWr016616;
+ Mon, 24 Jan 2022 22:08:12 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma01dal.us.ibm.com with ESMTP id 3dr9ja9n0q-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 24 Jan 2022 22:08:12 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 20OM8BVp15204840
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 24 Jan 2022 22:15:18 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5D01CBE05F;
- Mon, 24 Jan 2022 22:15:18 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 88261BE056;
- Mon, 24 Jan 2022 22:15:17 +0000 (GMT)
-Received: from localhost (unknown [9.163.24.67])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Mon, 24 Jan 2022 22:15:17 +0000 (GMT)
+ Mon, 24 Jan 2022 22:08:11 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 10C757807D;
+ Mon, 24 Jan 2022 22:08:11 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5A37E78067;
+ Mon, 24 Jan 2022 22:08:09 +0000 (GMT)
+Received: from farosas.linux.ibm.com.com (unknown [9.163.24.67])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon, 24 Jan 2022 22:08:08 +0000 (GMT)
 From: Fabiano Rosas <farosas@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 6/6] KVM: PPC: Book3S HV: Remove KVMPPC_NR_LPIDS
-In-Reply-To: <20220123120043.3586018-7-npiggin@gmail.com>
-References: <20220123120043.3586018-1-npiggin@gmail.com>
- <20220123120043.3586018-7-npiggin@gmail.com>
-Date: Mon, 24 Jan 2022 19:15:15 -0300
-Message-ID: <87a6fkeq6k.fsf@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH v2 0/4] KVM: PPC: KVM module exit fixes
+Date: Mon, 24 Jan 2022 19:07:59 -0300
+Message-Id: <20220124220803.1011673-1-farosas@linux.ibm.com>
+X-Mailer: git-send-email 2.34.1
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: W7HL1Tdov0-pNMnIrvuefA2emClOqWUa
-X-Proofpoint-ORIG-GUID: Gb9HlmoebLiSG3KPE8cxBhd4TDGq2nPF
+X-Proofpoint-GUID: nh1JxCTDAdQFaxWnn1YgWMQh03ZY4XOS
+X-Proofpoint-ORIG-GUID: sKKTOAlDESd2P1lNyrBeguayvJwGSjwu
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
  definitions=2022-01-24_09,2022-01-24_02,2021-12-02_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999
- suspectscore=0 spamscore=0 impostorscore=0 malwarescore=0
- lowpriorityscore=0 clxscore=1015 mlxscore=0 phishscore=0 adultscore=0
- bulkscore=0 priorityscore=1501 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2201110000 definitions=main-2201240143
+ phishscore=0 adultscore=0
+ lowpriorityscore=0 impostorscore=0 priorityscore=1501 mlxlogscore=861
+ malwarescore=0 clxscore=1015 suspectscore=0 mlxscore=0 spamscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2201110000 definitions=main-2201240143
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,51 +104,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, aik@ozlabs.ru
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+I stumbled upon another issue with our module exit so I'm sending
+another version to add a fix for it.
 
-> KVMPPC_NR_LPIDS no longer represents any size restriction on the
-> LPID space and can be removed. A CPU with more than 12 LPID bits
-> implemented will now be able to create more than 4095 guests.
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+- patches 1 and 3 are already reviewed;
 
-Reviewed-by: Fabiano Rosas <farosas@linux.ibm.com>
+- patch 2 lacks a Reviewed-by. Nick asked about an issue Alexey might
+  have encountered. I haven't heard of any issues with the module exit
+  aside from the ones that this series fixes;
 
-> ---
->  arch/powerpc/include/asm/kvm_book3s_asm.h | 3 ---
->  arch/powerpc/kvm/book3s_64_mmu_hv.c       | 3 ---
->  2 files changed, 6 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
-> index e6bda70b1d93..c8882d9b86c2 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s_asm.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
-> @@ -14,9 +14,6 @@
->  #define XICS_MFRR		0xc
->  #define XICS_IPI		2	/* interrupt source # for IPIs */
->
-> -/* LPIDs we support with this build -- runtime limit may be lower */
-> -#define KVMPPC_NR_LPIDS			(1UL << 12)
-> -
->  /* Maximum number of threads per physical core */
->  #define MAX_SMT_THREADS		8
->
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> index f983fb36cbf2..aafd2a74304c 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> @@ -269,9 +269,6 @@ int kvmppc_mmu_hv_init(void)
->  		nr_lpids = 1UL << KVM_MAX_NESTED_GUESTS_SHIFT;
->  	}
->
-> -	if (nr_lpids > KVMPPC_NR_LPIDS)
-> -		nr_lpids = KVMPPC_NR_LPIDS;
-> -
->  	if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
->  		/* POWER7 has 10-bit LPIDs, POWER8 has 12-bit LPIDs */
->  		if (cpu_has_feature(CPU_FTR_ARCH_207S))
+- patch 4 is new. It fixes an issue with module refcounting.
+
+v1:
+https://lore.kernel.org/r/20211223211931.3560887-1-farosas@linux.ibm.com
+
+Fabiano Rosas (4):
+  KVM: PPC: Book3S HV: Check return value of kvmppc_radix_init
+  KVM: PPC: Book3S HV: Delay setting of kvm ops
+  KVM: PPC: Book3S HV: Free allocated memory if module init fails
+  KVM: PPC: Decrement module refcount if init_vm fails
+
+ arch/powerpc/kvm/book3s_hv.c | 28 ++++++++++++++++++++--------
+ arch/powerpc/kvm/powerpc.c   |  7 ++++++-
+ 2 files changed, 26 insertions(+), 9 deletions(-)
+
+-- 
+2.34.1
+
