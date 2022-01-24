@@ -4,47 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 073B6C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 16:52:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EC92C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 17:05:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JjGH34QmLz3bcZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jan 2022 03:51:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JjGZS47Flz30jZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jan 2022 04:05:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PQnJEytB;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=techsingularity.net (client-ip=46.22.139.234;
- helo=outbound-smtp17.blacknight.com; envelope-from=mgorman@techsingularity.net;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 475 seconds by postgrey-1.36 at boromir;
- Tue, 25 Jan 2022 03:51:32 AEDT
-Received: from outbound-smtp17.blacknight.com (outbound-smtp17.blacknight.com
- [46.22.139.234])
+ smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org;
+ envelope-from=kuba@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=PQnJEytB; 
+ dkim-atps=neutral
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JjGGX6cWYz30Mb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jan 2022 03:51:32 +1100 (AEDT)
-Received: from mail.blacknight.com (pemlinmail05.blacknight.ie [81.17.254.26])
- by outbound-smtp17.blacknight.com (Postfix) with ESMTPS id
- 24C891C3C32
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jan 2022 16:43:31 +0000 (GMT)
-Received: (qmail 22301 invoked from network); 24 Jan 2022 16:43:30 -0000
-Received: from unknown (HELO techsingularity.net)
- (mgorman@techsingularity.net@[84.203.17.223])
- by 81.17.254.9 with ESMTPSA (AES256-SHA encrypted, authenticated);
- 24 Jan 2022 16:43:30 -0000
-Date: Mon, 24 Jan 2022 16:43:29 +0000
-From: Mel Gorman <mgorman@techsingularity.net>
-To: Zi Yan <ziy@nvidia.com>
-Subject: Re: [PATCH v4 1/7] mm: page_alloc: avoid merging non-fallbackable
- pageblocks with others.
-Message-ID: <20220124164329.GF3366@techsingularity.net>
-References: <20220119190623.1029355-1-zi.yan@sent.com>
- <20220119190623.1029355-2-zi.yan@sent.com>
- <20220124140203.GE3366@techsingularity.net>
- <06467F5D-25F9-42DC-9FEC-6559E6058D01@nvidia.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JjGYh3S2Jz2xCp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jan 2022 04:04:40 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id C19E1B8114A;
+ Mon, 24 Jan 2022 17:04:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B1A9C340EA;
+ Mon, 24 Jan 2022 17:04:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1643043875;
+ bh=insQqMWnYMCGenvJ/GiGEQqwN5YovpVzQGFYxKA9tQg=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=PQnJEytBbZhtef4QS9fYOrX+Ch7nDfVnbG/JevXc/AFMdYQHZSDqJKIGTkB44ufwF
+ V+18bE2CqrzYJ5hpVKIoii/NkUIZVgtlYwpzC+kdYmDhO/owqtkSnVpYY3MCWncTdd
+ zsWneK3qAoWa9TL8pJNluNkNXT53C83adwivI2Q1UVUGvgTwXLnvtSazcvdKC42x36
+ SQeMO73zU+UoAO/1q0Lxp7bifAxhzWk0oG3USUAnvA1VvcWtY3cgdS1DuUTI2cn7Zd
+ Di3bjkEISM7VrAR64kwxah+grsjKM6XDhV4ePKo6AbZVK75wfPm3/md4voEHGx9klT
+ DXM0UH/8fD42g==
+Date: Mon, 24 Jan 2022 09:04:33 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Build regressions/improvements in v5.17-rc1
+Message-ID: <20220124090433.1951e2ea@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
+In-Reply-To: <alpine.DEB.2.22.394.2201240851560.2674757@ramsan.of.borg>
+References: <20220123125737.2658758-1-geert@linux-m68k.org>
+ <alpine.DEB.2.22.394.2201240851560.2674757@ramsan.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <06467F5D-25F9-42DC-9FEC-6559E6058D01@nvidia.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,56 +63,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Eric Ren <renzhengeek@gmail.com>, Robin Murphy <robin.murphy@arm.com>,
- Christoph Hellwig <hch@lst.de>, Vlastimil Babka <vbabka@suse.cz>,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: alsa-devel@alsa-project.org, kvm@vger.kernel.org, netdev@vger.kernel.org,
+ linux-um@lists.infradead.org, linux-kernel@vger.kernel.org,
+ amd-gfx@lists.freedesktop.org, linux-mips@vger.kernel.org,
+ Lakshmi Sowjanya D <lakshmi.sowjanya.d@intel.com>, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "Tobin C. Harding" <me@tobin.cc>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jan 24, 2022 at 11:12:07AM -0500, Zi Yan wrote:
-> On 24 Jan 2022, at 9:02, Mel Gorman wrote:
+On Mon, 24 Jan 2022 08:55:40 +0100 (CET) Geert Uytterhoeven wrote:
+> >  + /kisskb/src/drivers/net/ethernet/freescale/fec_mpc52xx.c: error: passing argument 2 of 'mpc52xx_fec_set_paddr' discards 'const' qualifier from pointer target type [-Werror=discarded-qualifiers]:  => 659:29  
 > 
-> > On Wed, Jan 19, 2022 at 02:06:17PM -0500, Zi Yan wrote:
-> >> From: Zi Yan <ziy@nvidia.com>
-> >>
-> >> This is done in addition to MIGRATE_ISOLATE pageblock merge avoidance.
-> >> It prepares for the upcoming removal of the MAX_ORDER-1 alignment
-> >> requirement for CMA and alloc_contig_range().
-> >>
-> >> MIGRARTE_HIGHATOMIC should not merge with other migratetypes like
-> >> MIGRATE_ISOLATE and MIGRARTE_CMA[1], so this commit prevents that too.
-> >> Also add MIGRARTE_HIGHATOMIC to fallbacks array for completeness.
-> >>
-> >> [1] https://lore.kernel.org/linux-mm/20211130100853.GP3366@techsingularity.net/
-> >>
-> >> Signed-off-by: Zi Yan <ziy@nvidia.com>
-> >>
-> >> <SNIP>
-> >>
-> >> @@ -2484,6 +2483,7 @@ static int fallbacks[MIGRATE_TYPES][3] = {
-> >>  	[MIGRATE_UNMOVABLE]   = { MIGRATE_RECLAIMABLE, MIGRATE_MOVABLE,   MIGRATE_TYPES },
-> >>  	[MIGRATE_MOVABLE]     = { MIGRATE_RECLAIMABLE, MIGRATE_UNMOVABLE, MIGRATE_TYPES },
-> >>  	[MIGRATE_RECLAIMABLE] = { MIGRATE_UNMOVABLE,   MIGRATE_MOVABLE,   MIGRATE_TYPES },
-> >> +	[MIGRATE_HIGHATOMIC] = { MIGRATE_TYPES }, /* Never used */
-> >>  #ifdef CONFIG_CMA
-> >>  	[MIGRATE_CMA]         = { MIGRATE_TYPES }, /* Never used */
-> >>  #endif
-> >
-> > If it's never used, why is it added?
+> powerpc-gcc5/ppc32_allmodconfig
 > 
-> Just to make the fallbacks list complete, since MIGRATE_CMA and
-> MIGRATE_ISOLATE are in the list. Instead, I can remove MIGRATE_CMA and
-> MIGRATE_ISOLATE. WDYT?
+> >  + /kisskb/src/drivers/pinctrl/pinctrl-thunderbay.c: error: assignment discards 'const' qualifier from pointer target type [-Werror=discarded-qualifiers]:  => 815:8, 815:29  
 > 
+> arm64-gcc5.4/arm64-allmodconfig
+> arm64-gcc8/arm64-allmodconfig
 
-It probably makes more sense to remove them or replace them with a comment
-stating what migratetypes do not have a fallback list. Do it as a separate
-patch that stands alone. It does not need to be part of this series.
-
--- 
-Mel Gorman
-SUSE Labs
+Let me take care of these in net.
