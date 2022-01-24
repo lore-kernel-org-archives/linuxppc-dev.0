@@ -4,73 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DD0EC43219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 21:44:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2FD7C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 22:09:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JjNm21lbZz3cCG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jan 2022 08:44:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JjPJz2hSBz3bc9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jan 2022 09:09:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=RHC6VLVv;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G6sej+xJ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::d32;
- helo=mail-io1-xd32.google.com; envelope-from=dianders@chromium.org;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=RHC6VLVv; dkim-atps=neutral
-Received: from mail-io1-xd32.google.com (mail-io1-xd32.google.com
- [IPv6:2607:f8b0:4864:20::d32])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=G6sej+xJ; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JjNlJ15dYz2xDV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jan 2022 08:43:23 +1100 (AEDT)
-Received: by mail-io1-xd32.google.com with SMTP id v6so21290917iom.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jan 2022 13:43:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=Bwyi05nr6wT2ZFWR22PTFFEqIa15MbmZhLkPDJsvpx0=;
- b=RHC6VLVvqaubbaCRsVngcmpEX70I5qMnda30/M7WCCZwC5f0cqpQ3RymomMsBkULmw
- nf5/S3hSqeRVgjITKXpsUWSCPJ1zSs0WErq91oJeo4EwKAl5NWPxbZD95UmjUoLTZfxV
- UKqLgKCXjmYxAMpQTBGbu1bs6koOmgR3YMUPA=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=Bwyi05nr6wT2ZFWR22PTFFEqIa15MbmZhLkPDJsvpx0=;
- b=XbxiFnPw1Dmulgd35ZoSdEO1lH947M5bv6jHiiRIKaAeZhmPBkdIYUefqe5jlECFZB
- 2i1Ng6ravVrLKjiVUvoya1+VZ62ZY8AIlewB/Q5wuIGqGQbbm9O2d4Ddoy4mjKynSYRt
- jZpMzb9u5vyfxT5q2gBGEVWuagYnD9ysBYPGUDpQEbsrOgjGzZjQtArkBeHoWl6MtPMZ
- azRiUis5Jau3iWXqhptw2jr6/muQAaJnPPp+EH9eFLGtr924xnOGY/nPatU3/C61T4sq
- 0KqevPMRxA8tWy4m+FXaBYfgDQAENn33gAvUtDNXHeQTf227frAMg3LXea8Rx32Wpvev
- VCmQ==
-X-Gm-Message-State: AOAM533xJG1508x1o6JIwP6WyuwYUp/0dwBIB94R5sW9vgF8nQSSigR8
- UIPtNT+Yr/ApVoCjScHA5YkXE8uZx+22GQ==
-X-Google-Smtp-Source: ABdhPJyQkhXWBiM1EXYlxzmHYJUYPwc87uKccFtydXHH+IRpOCqPKud/PgjpRA3DPwiWLNihCJnUEQ==
-X-Received: by 2002:a5e:9b0e:: with SMTP id j14mr9371292iok.127.1643060599958; 
- Mon, 24 Jan 2022 13:43:19 -0800 (PST)
-Received: from mail-io1-f48.google.com (mail-io1-f48.google.com.
- [209.85.166.48])
- by smtp.gmail.com with ESMTPSA id d7sm7942937ilv.7.2022.01.24.13.43.17
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 24 Jan 2022 13:43:18 -0800 (PST)
-Received: by mail-io1-f48.google.com with SMTP id a12so21299771iod.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jan 2022 13:43:17 -0800 (PST)
-X-Received: by 2002:a02:9043:: with SMTP id y3mr7723156jaf.263.1643060597485; 
- Mon, 24 Jan 2022 13:43:17 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JjPJ769KCz2yJR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jan 2022 09:08:23 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20OLgkX5019331; 
+ Mon, 24 Jan 2022 22:08:15 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=gCgJ6gJJ9qprIe3Yz88OrLeUA7q370d6LKfJqUBgWLo=;
+ b=G6sej+xJ2bGHQyoU54nLAh16+ldd53EGLo5GuKejffZLrudu6g+Vk0mz4Yepuvseq3st
+ SaForgjkMCSBB1yBuruu2HY36AbH6STO5YvsuQWOPb7lSOCF1lAPeJPHi6dIE8vjlL2k
+ 4JuKDQavxKi/wjqsZli/1cvizm9EeBMQxRGw2mi4blUV3RrX2KDa6g0fm4R2uCl+f8GF
+ dgbE/5dS1o9yjaOIcLlfVccPw35JX9lV8YftdblAT30wGQ+FmbmupdHnP7ovF11MffvN
+ XwNWXNFvZv605V7H0d/DRnw3laDVdy6FxXZCtdSv2de//vIgE9n1WC77oMj5DCsw7LBi og== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3dt48rrfa2-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 24 Jan 2022 22:08:15 +0000
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 20OM0Oj4014530;
+ Mon, 24 Jan 2022 22:08:15 GMT
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3dt48rrf9t-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 24 Jan 2022 22:08:15 +0000
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20OM7bJT000428;
+ Mon, 24 Jan 2022 22:08:14 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma03dal.us.ibm.com with ESMTP id 3dr9ja9krn-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 24 Jan 2022 22:08:14 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 20OM8D5p29622646
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 24 Jan 2022 22:08:13 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3EA8E78067;
+ Mon, 24 Jan 2022 22:08:13 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7199F78063;
+ Mon, 24 Jan 2022 22:08:11 +0000 (GMT)
+Received: from farosas.linux.ibm.com.com (unknown [9.163.24.67])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon, 24 Jan 2022 22:08:11 +0000 (GMT)
+From: Fabiano Rosas <farosas@linux.ibm.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH v2 1/4] KVM: PPC: Book3S HV: Check return value of
+ kvmppc_radix_init
+Date: Mon, 24 Jan 2022 19:08:00 -0300
+Message-Id: <20220124220803.1011673-2-farosas@linux.ibm.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220124220803.1011673-1-farosas@linux.ibm.com>
+References: <20220124220803.1011673-1-farosas@linux.ibm.com>
 MIME-Version: 1.0
-References: <cover.1643015752.git.christophe.leroy@csgroup.eu>
- <848d857871f457f4df37e80fad468d615b237c24.1643015752.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <848d857871f457f4df37e80fad468d615b237c24.1643015752.git.christophe.leroy@csgroup.eu>
-From: Doug Anderson <dianders@chromium.org>
-Date: Mon, 24 Jan 2022 13:43:06 -0800
-X-Gmail-Original-Message-ID: <CAD=FV=VMUA+8RFOSkVQTmBDrHPSYSG5VBVA_EKKQuBjF0ZZKpQ@mail.gmail.com>
-Message-ID: <CAD=FV=VMUA+8RFOSkVQTmBDrHPSYSG5VBVA_EKKQuBjF0ZZKpQ@mail.gmail.com>
-Subject: Re: [PATCH 6/7] modules: Add CONFIG_ARCH_WANTS_MODULES_DATA_IN_VMALLOC
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: CNPtlQlSDZX2ps0LxU4N-VHISJfr5kbv
+X-Proofpoint-ORIG-GUID: V9vYCtoD4X7cjT7UqtnREOwuIQJG3iNM
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2022-01-24_09,2022-01-24_02,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0
+ priorityscore=1501 clxscore=1015 phishscore=0 bulkscore=0
+ lowpriorityscore=0 impostorscore=0 malwarescore=0 mlxscore=0 spamscore=0
+ suspectscore=0 mlxlogscore=859 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2201110000 definitions=main-2201240143
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,36 +107,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- "kgdb-bugreport@lists.sourceforge.net" <kgdb-bugreport@lists.sourceforge.net>,
- Jason Wessel <jason.wessel@windriver.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- Luis Chamberlain <mcgrof@kernel.org>, Jessica Yu <jeyu@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, aik@ozlabs.ru
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+The return of the function is being shadowed by the call to
+kvmppc_uvmem_init.
 
-On Mon, Jan 24, 2022 at 1:22 AM Christophe Leroy
-<christophe.leroy@csgroup.eu> wrote:
->
-> --- a/kernel/debug/kdb/kdb_main.c
-> +++ b/kernel/debug/kdb/kdb_main.c
-> @@ -2022,8 +2022,11 @@ static int kdb_lsmod(int argc, const char **argv)
->                 if (mod->state == MODULE_STATE_UNFORMED)
->                         continue;
->
-> -               kdb_printf("%-20s%8u  0x%px ", mod->name,
-> -                          mod->core_layout.size, (void *)mod);
-> +               kdb_printf("%-20s%8u", mod->name, mod->core_layout.size);
-> +#ifdef CONFIG_ARCH_WANTS_MODULES_DATA_IN_VMALLOC
-> +               kdb_printf("/%8u  0x%px ", mod->data_layout.size);
+Fixes: ca9f4942670c ("KVM: PPC: Book3S HV: Support for running secure guests")
+Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kvm/book3s_hv.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Just counting percentages and arguments, it seems like something's
-wrong in the above print statement.
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index d1817cd9a691..3a3845f366d4 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -6138,8 +6138,11 @@ static int kvmppc_book3s_init_hv(void)
+ 	if (r)
+ 		return r;
+ 
+-	if (kvmppc_radix_possible())
++	if (kvmppc_radix_possible()) {
+ 		r = kvmppc_radix_init();
++		if (r)
++			return r;
++	}
+ 
+ 	r = kvmppc_uvmem_init();
+ 	if (r < 0)
+-- 
+2.34.1
 
--Doug
