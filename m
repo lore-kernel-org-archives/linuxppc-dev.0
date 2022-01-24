@@ -4,103 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97394C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 05:22:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 593AEC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 05:58:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JhyzY2FtMz3bVB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 16:22:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jhzn746Rlz3bSv
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jan 2022 16:58:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WbbnshSp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=YRDa6qBU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e;
+ helo=mail-pj1-x102e.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=WbbnshSp; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=YRDa6qBU; dkim-atps=neutral
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com
+ [IPv6:2607:f8b0:4864:20::102e])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jhyyl46fMz2xtb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jan 2022 16:21:50 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20O2Bcal023859; 
- Mon, 24 Jan 2022 05:21:40 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=message-id : date :
- mime-version : subject : from : to : cc : references : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=thh4x/p/WtFf0sOLJMUb0k0ZRRXnjxxVLBax1sVxfic=;
- b=WbbnshSpz81HZgEHsB0Z5yhQ941DMC7ussg3cjdDp55Nnf7YRwI82Cl/Fz+hzOd3C1E0
- wKHqD1vasjHpeilsfW88bIw9nMho+kqtp0jiyx0a4Tguk+Db457Mv9QdtGkr//OTFIkI
- ZtIkZMY866EhTXMxC5hXfzqNzNkkRoUBkQGVI8FMCUlJpMPCfi6YGj9R8gW/NpZim4du
- QLxINEmGOml2RxHoGVxkO3BF7KmfKzpHtBPxWFyagikCrslJ/5wY9l8zIfwa02n18CjP
- UAaah4HmfCrmeR9vIPkKB74s50YW0NHW5gCaIbL83wG5kX9EO06vmGR4DDE1hgBRjPSb cg== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3dsk43t82t-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 24 Jan 2022 05:21:40 +0000
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 20O5ISvw029534;
- Mon, 24 Jan 2022 05:21:39 GMT
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3dsk43t7wx-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 24 Jan 2022 05:21:39 +0000
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20O5HGhc014141;
- Mon, 24 Jan 2022 05:21:34 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma03fra.de.ibm.com with ESMTP id 3dr9j8r4ab-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 24 Jan 2022 05:21:34 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 20O5LVb442467744
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 24 Jan 2022 05:21:31 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B0F4A42064;
- Mon, 24 Jan 2022 05:21:30 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AF75542042;
- Mon, 24 Jan 2022 05:21:24 +0000 (GMT)
-Received: from [9.211.104.169] (unknown [9.211.104.169])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 24 Jan 2022 05:21:24 +0000 (GMT)
-Message-ID: <8688c9ca-252c-c07d-d9e5-3e0392c0b6dc@linux.ibm.com>
-Date: Mon, 24 Jan 2022 10:51:22 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JhzmK3D7Jz30D5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jan 2022 16:57:51 +1100 (AEDT)
+Received: by mail-pj1-x102e.google.com with SMTP id
+ l24-20020a17090aec1800b001b55738f633so2720322pjy.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jan 2022 21:57:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=Vy6DOciF4L5omWyt7qehFiCwVe4AUoW6Gi1RHxk27h8=;
+ b=YRDa6qBUSw8/Qm+bSTjQ9pDsP5W8zYIw47iQ1pgbqHCUk/CGu+zlIg+2RRuUl7J4Kp
+ H4iLa3l84fm/rRxrqWPosJBIc5Ib+sNmTbkThwPTGqFO7Y0ackoRUasLD93Ou5uCC9b6
+ YTjWB5L5OLPVi4/FO7VDzR4lR2ii/OLVJa0rySevTOfGCTuQgBVURz3CjmraBBMKyv9G
+ xRrgJvUDdkZhgmCS3ggs0OZqKS3zxaoLOP27PxSwq44OosnBSkpr+2CwbTv0o/W7+1hF
+ fC/BermIAczwvDWrQtmUYA+tIKm7M6hvJOWxsYt7VmpTrpBeBAwsq2tZYyKnQLUavGx7
+ s/vA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=Vy6DOciF4L5omWyt7qehFiCwVe4AUoW6Gi1RHxk27h8=;
+ b=AI7ZQGu5yS9UZ6gb3rBCsUcVRB56XKvXJUaoPRBBOeJsnrTc3LhtCV7Y8z/C8wjJ+i
+ 34OWH7ry2DgmqgEueuscm8se/6zfktzDQZH7kdSk1LaQJ3NsWBFyfNDkaD/p/FtMsPPY
+ zN8CjBK4TjbHN7uQAELyTpbKJwAX2g43sR0kTXJ5t05AJbuKKcQjoWoKwohglsVvpjEE
+ 5MEM8RiVOCKOpkm2OZAWjLFOsx4KF2qjEuzu0wHw87FOI1gzqAFXLZoPlaZmYQTv8nQH
+ 0R9/SgsjrnRHfRY6BDmDFV2N+Avi2onEHb50cHg9Q537EDIeczl5AeX/lrriXBZU4cSc
+ zyQQ==
+X-Gm-Message-State: AOAM530nANyzGnP4B/wYFwj4NHJWI4wX2m9D6n4sO+7/O5r0e7przGN+
+ Ohoc699+SSM4kF2Lico5NoZ8sQeh0+k=
+X-Google-Smtp-Source: ABdhPJwwzdmGqN9YCgc0I1Xm7MOnQ03AVG2LbxA7ub2GBRHFTTZH128FuGnKRN+BvuS1bFm/PPB6MA==
+X-Received: by 2002:a17:902:9695:b0:149:208f:d9f9 with SMTP id
+ n21-20020a170902969500b00149208fd9f9mr13135803plp.139.1643003870230; 
+ Sun, 23 Jan 2022 21:57:50 -0800 (PST)
+Received: from bobo.ozlabs.ibm.com (193-116-82-75.tpgi.com.au. [193.116.82.75])
+ by smtp.gmail.com with ESMTPSA id f8sm15045859pfe.67.2022.01.23.21.57.48
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 23 Jan 2022 21:57:49 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc/64: remove system call instruction emulation
+Date: Mon, 24 Jan 2022 15:57:40 +1000
+Message-Id: <20220124055741.3686496-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20220124055741.3686496-1-npiggin@gmail.com>
+References: <20220124055741.3686496-1-npiggin@gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.4.0
-Subject: Re: [PATCH v3 1/2] mm/cma: provide option to opt out from exposing
- pages on activation failure
-Content-Language: en-US
-From: Hari Bathini <hbathini@linux.ibm.com>
-To: akpm@linux-foundation.org, david@redhat.com, linux-mm@kvack.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-References: <20220117075246.36072-1-hbathini@linux.ibm.com>
- <20220117075246.36072-2-hbathini@linux.ibm.com>
-In-Reply-To: <20220117075246.36072-2-hbathini@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: OC172XjR6KsNZ3yZVKg2vR9kHSgUnUNZ
-X-Proofpoint-GUID: _fsHVq3Mc8VCyFe1apsDDRWL4uz0Sak5
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
- definitions=2022-01-24_01,2022-01-21_01,2021-12-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- clxscore=1011 suspectscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
- malwarescore=0 adultscore=0 bulkscore=0 mlxscore=0 mlxlogscore=999
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2201110000 definitions=main-2201240033
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,98 +81,145 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: osalvador@suse.de, mahesh@linux.ibm.com, sourabhjain@linux.ibm.com,
- mike.kravetz@oracle.com
+Cc: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Andrew,
+emulate_step instruction emulation including sc instruction emulation
+initially appeared in xmon. It then emulation code was then moved into
+sstep.c where kprobes could use it too, and later hw_breakpoint and
+uprobes started to use it.
 
-Could you please pick these patches via -mm tree.
+Until uprobes, the only instruction emulation users were for kernel
+mode instructions.
 
+- xmon only steps / breaks on kernel addresses.
+- kprobes is kernel only.
+- hw_breakpoint only emulates kernel instructions, single steps user.
 
-On 17/01/22 1:22 pm, Hari Bathini wrote:
-> Commit 072355c1cf2d ("mm/cma: expose all pages to the buddy if
-> activation of an area fails") started exposing all pages to buddy
-> allocator on CMA activation failure. But there can be CMA users that
-> want to handle the reserved memory differently on CMA allocation
-> failure. Provide an option to opt out from exposing pages to buddy
-> for such cases.
-> 
-> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
-> Reviewed-by: David Hildenbrand <david@redhat.com>
-> ---
-> 
-> Changes in v3:
-> * Dropped NULL check in cma_reserve_pages_on_error().
-> * Dropped explicit initialization of cma->reserve_pages_on_error to
->    'false' in cma_init_reserved_mem().
-> * Added Reviewed-by tag from David.
-> 
-> Changes in v2:
-> * Changed cma->free_pages_on_error to cma->reserve_pages_on_error and
->    cma_dont_free_pages_on_error() to cma_reserve_pages_on_error() to
->    avoid confusion.
-> 
-> 
->   include/linux/cma.h |  2 ++
->   mm/cma.c            | 11 +++++++++--
->   mm/cma.h            |  1 +
->   3 files changed, 12 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/cma.h b/include/linux/cma.h
-> index bd801023504b..51d540eee18a 100644
-> --- a/include/linux/cma.h
-> +++ b/include/linux/cma.h
-> @@ -50,4 +50,6 @@ extern bool cma_pages_valid(struct cma *cma, const struct page *pages, unsigned
->   extern bool cma_release(struct cma *cma, const struct page *pages, unsigned long count);
->   
->   extern int cma_for_each_area(int (*it)(struct cma *cma, void *data), void *data);
-> +
-> +extern void cma_reserve_pages_on_error(struct cma *cma);
->   #endif
-> diff --git a/mm/cma.c b/mm/cma.c
-> index bc9ca8f3c487..766f1b82b532 100644
-> --- a/mm/cma.c
-> +++ b/mm/cma.c
-> @@ -131,8 +131,10 @@ static void __init cma_activate_area(struct cma *cma)
->   	bitmap_free(cma->bitmap);
->   out_error:
->   	/* Expose all pages to the buddy, they are useless for CMA. */
-> -	for (pfn = base_pfn; pfn < base_pfn + cma->count; pfn++)
-> -		free_reserved_page(pfn_to_page(pfn));
-> +	if (!cma->reserve_pages_on_error) {
-> +		for (pfn = base_pfn; pfn < base_pfn + cma->count; pfn++)
-> +			free_reserved_page(pfn_to_page(pfn));
-> +	}
->   	totalcma_pages -= cma->count;
->   	cma->count = 0;
->   	pr_err("CMA area %s could not be activated\n", cma->name);
-> @@ -150,6 +152,11 @@ static int __init cma_init_reserved_areas(void)
->   }
->   core_initcall(cma_init_reserved_areas);
->   
-> +void __init cma_reserve_pages_on_error(struct cma *cma)
-> +{
-> +	cma->reserve_pages_on_error = true;
-> +}
-> +
->   /**
->    * cma_init_reserved_mem() - create custom contiguous area from reserved memory
->    * @base: Base address of the reserved area
-> diff --git a/mm/cma.h b/mm/cma.h
-> index 2c775877eae2..88a0595670b7 100644
-> --- a/mm/cma.h
-> +++ b/mm/cma.h
-> @@ -30,6 +30,7 @@ struct cma {
->   	/* kobject requires dynamic object */
->   	struct cma_kobject *cma_kobj;
->   #endif
-> +	bool reserve_pages_on_error;
->   };
->   
->   extern struct cma cma_areas[MAX_CMA_AREAS];
+At one point there was support for the kernel to execute sc
+instructions, although that is long removed and it's not clear whether
+there was any in-tree code. So system call emulation is not required by
+the above users.
 
-Thanks
-Hari
+uprobes uses emulate_step and it appears possible to emulate sc
+instruction in userspace. Userspace system call emulation is broken and
+it's not clear it ever worked well.
+
+The big complication is that userspace takes an interrupt to the kernel
+to emulate the instruction. The user->kernel interrupt sets up registers
+and interrupt stack frame expecting to return to userspace, then system
+call instruction emulation re-directs that stack frame to the kernel,
+early in the system call interrupt handler. This means the the interrupt
+return code takes the kernel->kernel restore path, which does not restore
+everything as the system call interrupt handler would expect coming from
+userspace. regs->iamr appears to get lost for example, because the
+kernel->kernel return does not restore the user iamr. Accounting such as
+irqflags tracing and CPU accounting does not get flipped back to user
+mode as the system call handler expects, so those appear to enter the
+kernel twice without returning to userspace.
+
+These things may be individually fixable with various complication, but
+it is a big complexity for unclear real benefit.
+
+This patch removes system call emulation and disables stepping system
+calls (because they don't work with trace interrupts, as commented).
+
+Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/interrupt_64.S | 10 -------
+ arch/powerpc/lib/sstep.c           | 42 ++++++++----------------------
+ 2 files changed, 11 insertions(+), 41 deletions(-)
+
+diff --git a/arch/powerpc/kernel/interrupt_64.S b/arch/powerpc/kernel/interrupt_64.S
+index 7bab2d7de372..6471034c7909 100644
+--- a/arch/powerpc/kernel/interrupt_64.S
++++ b/arch/powerpc/kernel/interrupt_64.S
+@@ -219,16 +219,6 @@ system_call_vectored common 0x3000
+  */
+ system_call_vectored sigill 0x7ff0
+ 
+-
+-/*
+- * Entered via kernel return set up by kernel/sstep.c, must match entry regs
+- */
+-	.globl system_call_vectored_emulate
+-system_call_vectored_emulate:
+-_ASM_NOKPROBE_SYMBOL(system_call_vectored_emulate)
+-	li	r10,IRQS_ALL_DISABLED
+-	stb	r10,PACAIRQSOFTMASK(r13)
+-	b	system_call_vectored_common
+ #endif /* CONFIG_PPC_BOOK3S */
+ 
+ 	.balign IFETCH_ALIGN_BYTES
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index a94b0cd0bdc5..5f317b12b2db 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -15,9 +15,6 @@
+ #include <asm/cputable.h>
+ #include <asm/disassemble.h>
+ 
+-extern char system_call_common[];
+-extern char system_call_vectored_emulate[];
+-
+ #ifdef CONFIG_PPC64
+ /* Bits in SRR1 that are copied from MSR */
+ #define MSR_MASK	0xffffffff87c0ffffUL
+@@ -3650,39 +3647,22 @@ int emulate_step(struct pt_regs *regs, ppc_inst_t instr)
+ 		goto instr_done;
+ 
+ #ifdef CONFIG_PPC64
+-	case SYSCALL:	/* sc */
+ 		/*
+-		 * N.B. this uses knowledge about how the syscall
+-		 * entry code works.  If that is changed, this will
+-		 * need to be changed also.
++		 * Per ISA v3.1, section 7.5.15 'Trace Interrupt', we can't
++		 * single step a system call instruction:
++		 *
++		 *   Successful completion for an instruction means that the
++		 *   instruction caused no other interrupt. Thus a Trace
++		 *   interrupt never occurs for a System Call or System Call
++		 *   Vectored instruction, or for a Trap instruction that
++		 *   traps.
+ 		 */
+-		if (IS_ENABLED(CONFIG_PPC_FAST_ENDIAN_SWITCH) &&
+-				cpu_has_feature(CPU_FTR_REAL_LE) &&
+-				regs->gpr[0] == 0x1ebe) {
+-			regs_set_return_msr(regs, regs->msr ^ MSR_LE);
+-			goto instr_done;
+-		}
+-		regs->gpr[9] = regs->gpr[13];
+-		regs->gpr[10] = MSR_KERNEL;
+-		regs->gpr[11] = regs->nip + 4;
+-		regs->gpr[12] = regs->msr & MSR_MASK;
+-		regs->gpr[13] = (unsigned long) get_paca();
+-		regs_set_return_ip(regs, (unsigned long) &system_call_common);
+-		regs_set_return_msr(regs, MSR_KERNEL);
+-		return 1;
+-
++	case SYSCALL:	/* sc */
++		return -1;
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	case SYSCALL_VECTORED_0:	/* scv 0 */
+-		regs->gpr[9] = regs->gpr[13];
+-		regs->gpr[10] = MSR_KERNEL;
+-		regs->gpr[11] = regs->nip + 4;
+-		regs->gpr[12] = regs->msr & MSR_MASK;
+-		regs->gpr[13] = (unsigned long) get_paca();
+-		regs_set_return_ip(regs, (unsigned long) &system_call_vectored_emulate);
+-		regs_set_return_msr(regs, MSR_KERNEL);
+-		return 1;
++		return -1;
+ #endif
+-
+ 	case RFI:
+ 		return -1;
+ #endif
+-- 
+2.23.0
+
