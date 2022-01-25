@@ -4,52 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFA63C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jan 2022 21:10:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B686BC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jan 2022 21:57:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JjzzP3Yqnz3cBW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jan 2022 08:10:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jk11b6n9jz3bcv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Jan 2022 08:57:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=eSKbIlns;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rW1tviEZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=eSKbIlns; 
- dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=rW1tviEZ; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jjzyf0zWyz2yg5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jan 2022 08:10:18 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20210309; h=Sender:In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=9sBIA+4FUEiJsQc79gzBYm8TOBmdFpT74KXdSSubq6E=; b=eSKbIlnsv6RWgx7nwqgpkPqt5q
- EeCKatmP3k8DXITTemQLP53mSBz51qcd/VQGIhMSObhR+bTW5Cj8VBAXKYwj2Lil106cEWpZw88L5
- +VhQL/T1F4csdtkaIllFtvH3ArdQr7c4PoGbqaIhGAfeWq2WmnYyVpaPy8AjAzIvTGt65X/nxKURK
- ILINrwlO+ff2g782ZKFNBQPDrt2Zn6A5rwafsEW3/ImsPmPhBxFpMZIjNpgQnXxed6MX6D9hAABLV
- 86OBLVcWGuI5Uf68fz1pNxiLkn30JJ+zWGrL+0m5BMhMRpysm1FMtgSq4nkKQDLiF9ZhIviZ3vNhP
- SiSkuCfg==;
-Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1nCT4w-009ZLT-9v; Tue, 25 Jan 2022 21:10:14 +0000
-Date: Tue, 25 Jan 2022 13:10:14 -0800
-From: Luis Chamberlain <mcgrof@kernel.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 6/7] modules: Add CONFIG_ARCH_WANTS_MODULES_DATA_IN_VMALLOC
-Message-ID: <YfBnNuXpR2l2AuCP@bombadil.infradead.org>
-References: <cover.1643015752.git.christophe.leroy@csgroup.eu>
- <848d857871f457f4df37e80fad468d615b237c24.1643015752.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jk10n6P5tz30Kp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jan 2022 08:57:13 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20PLGhED030015; 
+ Tue, 25 Jan 2022 21:57:06 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=ctZuzhBM6CJQJJu4zT2LTPEcoV/54KLWJ/wAADHyD90=;
+ b=rW1tviEZUJQJ45luGHMRh52x4IcVwVkKLB3+MbClb8g8/3ZQdngeAsRyGY5r8O1KMt/E
+ i4Q0hyP7SUkMMN79uWgNudUidq/7XO05iwaofi4AFxPjpHmNNiIh885P2Tnp4BwalOH5
+ hxCNEQj/7lskG7x1vNWGajaV/8IPQATrQqVEawhJ2GepMhLr215FG3ahbjD3tEIjTZVF
+ RzRIbXE+XYxkNc3OaECPh5lja32cBQEhTeORHT9DwBcjpn6cSGfpDTeqQAnSICnBypSf
+ 8J6WWTRHYXZwl1AlKtPVJkr+Wd1jnPOc1QiG/yxuiZJcxtoRG7c0v8hVtYpQOVojfnJ2 5w== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3dtryw0k26-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 25 Jan 2022 21:57:06 +0000
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 20PLv2Ps006438;
+ Tue, 25 Jan 2022 21:57:06 GMT
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3dtryw0k1v-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 25 Jan 2022 21:57:06 +0000
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20PLrX67012033;
+ Tue, 25 Jan 2022 21:57:05 GMT
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by ppma01wdc.us.ibm.com with ESMTP id 3dr9jaecwh-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 25 Jan 2022 21:57:05 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 20PLv4Tf32375178
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 25 Jan 2022 21:57:04 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7C37AC605F;
+ Tue, 25 Jan 2022 21:57:04 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0C92CC6059;
+ Tue, 25 Jan 2022 21:57:03 +0000 (GMT)
+Received: from farosas.linux.ibm.com.com (unknown [9.163.21.20])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 25 Jan 2022 21:57:02 +0000 (GMT)
+From: Fabiano Rosas <farosas@linux.ibm.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH v5 1/5] KVM: PPC: Book3S HV: Stop returning internal values to
+ userspace
+Date: Tue, 25 Jan 2022 18:56:51 -0300
+Message-Id: <20220125215655.1026224-2-farosas@linux.ibm.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220125215655.1026224-1-farosas@linux.ibm.com>
+References: <20220125215655.1026224-1-farosas@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <848d857871f457f4df37e80fad468d615b237c24.1643015752.git.christophe.leroy@csgroup.eu>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: sJZ-iZLyTKkC0NFAzo7aLnsHDWso0f17
+X-Proofpoint-ORIG-GUID: Qj1QKcvDfv5q4Z_DHcxJ7qCgtRai_UTP
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2022-01-25_05,2022-01-25_02,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 lowpriorityscore=0
+ clxscore=1015 mlxlogscore=913 phishscore=0 suspectscore=0 spamscore=0
+ impostorscore=0 priorityscore=1501 bulkscore=0 adultscore=0 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2201110000
+ definitions=main-2201250128
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,30 +107,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- "kgdb-bugreport@lists.sourceforge.net" <kgdb-bugreport@lists.sourceforge.net>,
- Jason Wessel <jason.wessel@windriver.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Douglas Anderson <dianders@chromium.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, Jessica Yu <jeyu@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, aik@ozlabs.ru
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jan 24, 2022 at 09:22:34AM +0000, Christophe Leroy wrote:
-> This can also be useful on other powerpc/32 in order to maximize the
-> chance of code being close enough to kernel core to avoid branch
-> trampolines.
+Our kvm_arch_vcpu_ioctl_run currently returns the RESUME_HOST values
+to userspace, against the API of the KVM_RUN ioctl which returns 0 on
+success.
 
-Curious about all this branch trampoline talk. Do you have data to show
-negative impact with things as-is?
+Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+---
+This was noticed while enabling the kvm selftests for powerpc. There's
+an assert at the _vcpu_run function when we return a value different
+from the expected.
+---
+ arch/powerpc/kvm/powerpc.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Also, was powerpc/32 broken then without this? The commit log seems to
-suggest so, but I don't think that's the case. How was this issue noticed?
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 2ad0ccd202d5..50414fb2a5ea 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -1841,6 +1841,14 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ #ifdef CONFIG_ALTIVEC
+ out:
+ #endif
++
++	/*
++	 * We're already returning to userspace, don't pass the
++	 * RESUME_HOST flags along.
++	 */
++	if (r > 0)
++		r = 0;
++
+ 	vcpu_put(vcpu);
+ 	return r;
+ }
+-- 
+2.34.1
 
-Are there other future CPU families being planned where this is all true for
-as well? Are they goin to be 32-bit as well?
-
-  Luis
