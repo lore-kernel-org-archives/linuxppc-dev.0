@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A522AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 07:27:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07690C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 07:28:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jksc41MpZz3dpP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 18:27:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jksd03H4bz3drk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 18:28:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aBKZydcy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TH4bI18s;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
@@ -18,76 +18,77 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=aBKZydcy; dkim-atps=neutral
+ header.s=pp1 header.b=TH4bI18s; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JksTC38Y5z3bV2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2022 18:21:19 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20R7AkH5018073; 
- Thu, 27 Jan 2022 07:21:15 GMT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JksTJ5hjhz3bVB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2022 18:21:24 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20R76NMF017167; 
+ Thu, 27 Jan 2022 07:21:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=sdbjQM/LOxrgQ9vZfpegywbfRpyYFHn4FyeAyeQd4d4=;
- b=aBKZydcyWZCiRBOxrCaBdgT5ywNjEguadbjHdU8ey4sJZ30Q73NPMPbH8NlBjMtOebaz
- avYSMksc58mWXqqOw/gXQV1mcYLxKVF3/w1DFCmE67iw4nfwkfQRXdsuDS9dD0p5UVZu
- k1lCKgvI1BF495cOujUwq1+wxjeNABiGw7IbVGSbtwlb3gMbZHougZAzWhjXhZHu+Bmf
- AIRSwy3WfVtkPXxufphIxM/cHI2ds1wqAbnBQrkx3818zj4PYkh0+5lkJ+UjPWyT/4/U
- d34AkTIMfaoN3wmEiOlop09tFGUd6wzoH9gADMTU1I3zKpEu0AX7s32b40edW0AiBIlw fg== 
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3dupc3gjac-1
+ bh=mmlFOkVJ8fiwUTcGAen3LrQZSEC0+0wSvhgBflmBvsg=;
+ b=TH4bI18sn5TGtzWx7b+//8SDcwqF8T5jPdwrMXKuABgIg7CbeNKih9Q+/AxsAoVNFhZO
+ XDQcHDa/E/EZqsxqqwNf0hLvnR+CNCrexe+aaOSii+Xl7NJv9tECX+hEWzZQapffW/7D
+ 5PFCo2/aZ7iWwZlkJyoHBTri8h/GADl6a2DxgHk+ymZ8VQjgLG6zBhJBbFSpF02Qsm1b
+ 2aYM+jrly4NgVtVSVYP1W/vi8T88dqir/aVZjIura3e82+D7+kf6mYp7HzlHi6zMAJi6
+ +qylMvoHPjMS+oYvDvN427j8ZtQy/Ort24JZZtwU6gxaRbV2/LPLrys/315LlqsQNW9o Eg== 
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3dunfhssrq-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 27 Jan 2022 07:21:14 +0000
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20R77s1P027674;
- Thu, 27 Jan 2022 07:21:12 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma03fra.de.ibm.com with ESMTP id 3dr9j9jn30-1
+ Thu, 27 Jan 2022 07:21:20 +0000
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20R77AGq003864;
+ Thu, 27 Jan 2022 07:21:18 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma04fra.de.ibm.com with ESMTP id 3dr9j9tm99-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 27 Jan 2022 07:21:12 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 20R7L9FY40829198
+ Thu, 27 Jan 2022 07:21:18 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 20R7LE9P15466844
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 27 Jan 2022 07:21:09 GMT
+ Thu, 27 Jan 2022 07:21:14 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 877F442041;
- Thu, 27 Jan 2022 07:21:09 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 947CC42041;
+ Thu, 27 Jan 2022 07:21:14 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6EBFB42049;
- Thu, 27 Jan 2022 07:21:07 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 7EB1642042;
+ Thu, 27 Jan 2022 07:21:12 +0000 (GMT)
 Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com.com (unknown
  [9.43.106.251])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 27 Jan 2022 07:21:07 +0000 (GMT)
+ Thu, 27 Jan 2022 07:21:12 +0000 (GMT)
 From: Kajol Jain <kjain@linux.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH 08/20] selftest/powerpc/pmu: Add macro to extract mmcr3 and
- mmcra fields
-Date: Thu, 27 Jan 2022 12:50:00 +0530
-Message-Id: <20220127072012.662451-9-kjain@linux.ibm.com>
+Subject: [PATCH 10/20] selftest/powerpc/pmu/: Add interface test for
+ mmcr0_cc56run field
+Date: Thu, 27 Jan 2022 12:50:02 +0530
+Message-Id: <20220127072012.662451-11-kjain@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20220127072012.662451-1-kjain@linux.ibm.com>
 References: <20220127072012.662451-1-kjain@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: M55II3jlCBmm0ySOCzhuFj5ct8oxTgP9
-X-Proofpoint-GUID: M55II3jlCBmm0ySOCzhuFj5ct8oxTgP9
+X-Proofpoint-GUID: bNFD98bqGy0VKIVqR2wr9IBNWEN-PIlr
+X-Proofpoint-ORIG-GUID: bNFD98bqGy0VKIVqR2wr9IBNWEN-PIlr
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
  definitions=2022-01-27_02,2022-01-26_01,2021-12-02_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- spamscore=0 mlxscore=0 suspectscore=0 malwarescore=0 phishscore=0
- bulkscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- lowpriorityscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx
+ impostorscore=0
+ malwarescore=0 phishscore=0 adultscore=0 priorityscore=1501
+ lowpriorityscore=0 clxscore=1015 mlxscore=0 spamscore=0 suspectscore=0
+ mlxlogscore=999 bulkscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.12.0-2201110000 definitions=main-2201270040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -106,100 +107,114 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add macro and utility functions to fetch individual
-fields from Monitor Mode Control Register 3(MMCR3)and
-Monitor Mode Control Register A(MMCRA) PMU registers
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 
-Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
+The testcase uses event code 0x500fa ("instructions") to check
+the CC56RUN bit setting in Monitor Mode Control Register 0(MMCR0).
+In ISA v3.1 platform, this bit is expected to be set in MMCR0
+when using Performance Monitor Counter 5 and 6 (PMC5 and PMC6).
+Verify this is done correctly by perf interface.
+
+CC56RUN bit makes PMC5 and PMC6 count regardless
+of the run latch state. This bit is set in power10
+since PMC5 and PMC6 is used in power10 for counting
+instructions and cycles. Hence added a check to skip
+this test in other platforms
+
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 ---
- .../powerpc/pmu/sampling_tests/misc.h         | 64 +++++++++++++++++++
- 1 file changed, 64 insertions(+)
+ .../powerpc/pmu/sampling_tests/Makefile       |  4 +-
+ .../pmu/sampling_tests/mmcr0_cc56run_test.c   | 59 +++++++++++++++++++
+ 2 files changed, 61 insertions(+), 2 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_cc56run_test.c
 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/misc.h b/tools/testing/selftests/powerpc/pmu/sampling_tests/misc.h
-index fea029506aa3..b4995d4e6588 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/misc.h
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/misc.h
-@@ -15,6 +15,7 @@
- #define MMCR0_FC56      0x00000010UL /* freeze counters 5 and 6 */
- #define MMCR0_PMCCEXT   0x00000200UL /* PMCCEXT control */
- #define MMCR1_RSQ       0x200000000000ULL /* radix scope qual field */
-+#define BHRB_DISABLE    0x2000000000ULL /* MMCRA BHRB DISABLE bit */
+diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/Makefile b/tools/testing/selftests/powerpc/pmu/sampling_tests/Makefile
+index aee25c7037ac..9827bf20b90b 100644
+--- a/tools/testing/selftests/powerpc/pmu/sampling_tests/Makefile
++++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/Makefile
+@@ -1,7 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
+ include ../../../../../../scripts/Kbuild.include
  
- extern int ev_mask_pmcxsel, ev_shift_pmcxsel;
- extern int ev_mask_marked, ev_shift_marked;
-@@ -178,9 +179,72 @@ static inline int get_mmcr2_l2l3(u64 mmcr2, int pmc)
- 	return 0;
- }
+-all: $(TEST_GEN_PROGS) mmcr0_exceptionbits_test.c
++all: $(TEST_GEN_PROGS) mmcr0_exceptionbits_test.c mmcr0_cc56run_test.c
  
-+static inline int get_mmcr3_src(u64 mmcr3, int pmc)
-+{
-+	if (pvr != POWER10)
-+		return 0;
-+	return ((mmcr3 >> ((49 - (15 * ((pmc) - 1))))) & 0x7fff);
-+}
+ noarg:
+ 	$(MAKE) -C ../../
+@@ -12,7 +12,7 @@ CFLAGS += -m64 -I../../../../../lib/
+ no-pie-option := $(call try-run, echo 'int main() { return 0; }' | \
+ 	$(CC) -Werror $(KBUILD_CPPFLAGS) $(CC_OPTION_CFLAGS) -no-pie -x c - -o "$$TMP", -no-pie)
+ 
+-TEST_GEN_PROGS := mmcr0_exceptionbits_test
++TEST_GEN_PROGS := mmcr0_exceptionbits_test mmcr0_cc56run_test
+ 
+ LDFLAGS += $(no-pie-option)
+ 
+diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_cc56run_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_cc56run_test.c
+new file mode 100644
+index 000000000000..da97676b56b2
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_cc56run_test.c
+@@ -0,0 +1,59 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright 2022, Athira Rajeev, IBM Corp.
++ */
 +
-+static inline int get_mmcra_thd_cmp(u64 mmcra, int pmc)
-+{
-+	if (pvr == POWER10)
-+		return ((mmcra >> 45) & 0x7ff);
-+	return ((mmcra >> 45) & 0x3ff);
-+}
++#include <stdio.h>
++#include <stdlib.h>
 +
-+static inline int get_mmcra_sm(u64 mmcra, int pmc)
-+{
-+	return ((mmcra >> 42) & 0x3);
-+}
++#include "../event.h"
++#include "misc.h"
++#include "utils.h"
 +
-+static inline int get_mmcra_bhrb_disable(u64 mmcra, int pmc)
++extern void thirty_two_instruction_loop(int loops);
++
++/*
++ * A perf sampling test for mmcr0
++ * field: cc56run.
++ */
++static int mmcr0_cc56run(void)
 +{
-+	if (pvr == POWER10)
-+		return mmcra & BHRB_DISABLE;
++	struct event event;
++	u64 *intr_regs;
++
++	/* Check for platform support for the test */
++	SKIP_IF(check_pvr_for_sampling_tests());
++	SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_3_1));
++
++	 /* Init the event for the sampling test */
++	event_init_sampling(&event, 0x500fa);
++	event.attr.sample_regs_intr = platform_extended_mask;
++	FAIL_IF(event_open(&event));
++	event.mmap_buffer = event_sample_buf_mmap(event.fd, 1);
++
++	event_enable(&event);
++
++	/* workload to make the event overflow */
++	thirty_two_instruction_loop(10000);
++
++	event_disable(&event);
++
++	/* Check for sample count */
++	FAIL_IF(!collect_samples(event.mmap_buffer));
++
++	intr_regs = get_intr_regs(&event, event.mmap_buffer);
++
++	/* Check for intr_regs */
++	FAIL_IF(!intr_regs);
++
++	/* Verify that cc56run bit is set in MMCR0 */
++	FAIL_IF(!GET_MMCR_FIELD(0, get_reg_value(intr_regs, "MMCR0"), 5, cc56run));
++
++	event_close(&event);
 +	return 0;
 +}
 +
-+static inline int get_mmcra_ifm(u64 mmcra, int pmc)
++int main(void)
 +{
-+	return ((mmcra >> 30) & 0x3);
++	FAIL_IF(test_harness(mmcr0_cc56run, "mmcr0_cc56run"));
 +}
-+
-+static inline int get_mmcra_thd_sel(u64 mmcra, int pmc)
-+{
-+	return ((mmcra >> 16) & 0x7);
-+}
-+
-+static inline int get_mmcra_thd_start(u64 mmcra, int pmc)
-+{
-+	return ((mmcra >> 12) & 0xf);
-+}
-+
-+static inline int get_mmcra_thd_stop(u64 mmcra, int pmc)
-+{
-+	return ((mmcra >> 8) & 0xf);
-+}
-+
-+static inline int get_mmcra_rand_samp_elig(u64 mmcra, int pmc)
-+{
-+	return ((mmcra >> 4) & 0x7);
-+}
-+
-+static inline int get_mmcra_sample_mode(u64 mmcra, int pmc)
-+{
-+	return ((mmcra >> 1) & 0x3);
-+}
-+
-+static inline int get_mmcra_marked(u64 mmcra, int pmc)
-+{
-+	return mmcra & 0x1;
-+}
-+
- #define GET_MMCR0(a, b, c)        get_mmcr0_##c(a, b)
- #define GET_MMCR1(a, b, c)        get_mmcr1_##c(a, b)
- #define GET_MMCR2(a, b, c)        get_mmcr2_##c(a, b)
-+#define GET_MMCR3(a, b, c)        get_mmcr3_##c(a, b)
-+#define GET_MMCRA(a, b, c)        get_mmcra_##c(a, b)
- 
- /*
-  * Generic MMCR macro to get specific field value
 -- 
 2.27.0
 
