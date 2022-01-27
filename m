@@ -4,83 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1E6DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 02:23:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 809FBC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 02:55:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JkksW31SSz3bTN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 13:23:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JklZB5Rcdz3cH2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 13:55:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=kWBuUG85;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=kiohJPly;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=canonical.com (client-ip=185.125.188.123;
- helo=smtp-relay-internal-1.canonical.com;
+ smtp.mailfrom=canonical.com (client-ip=185.125.188.120;
+ helo=smtp-relay-canonical-0.canonical.com;
  envelope-from=kai.heng.feng@canonical.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20210705 header.b=kWBuUG85; 
+ header.a=rsa-sha256 header.s=20210705 header.b=kiohJPly; 
  dkim-atps=neutral
-Received: from smtp-relay-internal-1.canonical.com
- (smtp-relay-internal-1.canonical.com [185.125.188.123])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jkkrn04lpz2ygC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2022 13:22:49 +1100 (AEDT)
-Received: from mail-oo1-f72.google.com (mail-oo1-f72.google.com
- [209.85.161.72])
+Received: from smtp-relay-canonical-0.canonical.com
+ (smtp-relay-canonical-0.canonical.com [185.125.188.120])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id AB93E3F1C4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2022 02:22:46 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JklYS73mVz2xvP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2022 13:54:35 +1100 (AEDT)
+Received: from HP-EliteBook-840-G7.. (1-171-96-243.dynamic-ip.hinet.net
+ [1.171.96.243])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by smtp-relay-canonical-0.canonical.com (Postfix) with ESMTPSA id 086934198F; 
+ Thu, 27 Jan 2022 02:54:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
- s=20210705; t=1643250166;
- bh=VON/Z/8bdlNSxKg/CZYPTOSTIKu2Vz6VcrvLtb84DlU=;
- h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
- To:Cc:Content-Type;
- b=kWBuUG85n4C1kfpET1aN1OED57lL3fZy9kIorWk4tssmYP2PGX0677Gd7seR1GQ4l
- eX8z7KNajU2HJ1nbsLm91exT5GD3YTFH0s4xu+Kbgy/dm7xbwFuwiGtogXuGZwfpIJ
- HOMZwnhBa1Mag+jXGUd8fXY5ZuSHChmZkh9Go6mSCuU3p8BEkHjb4v3cgTLv16qv/i
- OmNWsui8V/u8RJvEHjDBFoC8XmblGvIMG1awteWbWGJbbpTyWdSvAACpe79bN5MZQN
- CjpIaS4nPTDeu7AFPF13UWQQI2W0sxWdvLgZc8sOta3ZA8gLHwBYCftHwlJNCYYSBa
- zOfY+fctlwK5w==
-Received: by mail-oo1-f72.google.com with SMTP id
- g2-20020a4a9242000000b002da7c459222so831123ooh.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Jan 2022 18:22:46 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=VON/Z/8bdlNSxKg/CZYPTOSTIKu2Vz6VcrvLtb84DlU=;
- b=uz/cCSwp+2RMRikNPAGwwM3B/qmtnC3GntY1ufwgsc3qK59bh+q7dgryLyL/6RltU/
- J0QzL9ScataDbJIgYOmwYPQsu0eqqYMgyjtw3usg2q+4sBmqNVnpt4qU2ld8BVBev63B
- CG4/rekc7BJTfWx53giWprhCxA1nzOAluXDZGdJ8Wp+y2uMWcYmaTIb9ao8i86jLS7wr
- A/MEBAVoyzSoIKDnrJc2WbhGoRNbPoyItY1UoxohEZm+xDM03UIuoIJ6y1VbYZpSkKZO
- gJ+XuhANEmWxWFMpTBiefcxnqvHpddQMx4Jc/hoJ0aPBGnytwZX2bZcDZl7YMZXL7kTs
- MC9A==
-X-Gm-Message-State: AOAM533B3yDZLZa4SuKlHVgjQXAZiD/r6XER2KtSiKJ1eKSPHn9b8H5h
- MPULo7M+Wi5GcKwYB3lxPALICeYSi6NOPP6H+n02znYln3YRJfnl9jynck5mYh2lFL4GZTHZWcL
- uqi7+W39R4f+1zWSyUqzrtJk+77o5HSuh8f+MHU5UeSNQf6uxEAx8Zx1dYqk=
-X-Received: by 2002:a05:6808:2087:: with SMTP id
- s7mr5179148oiw.21.1643250165677; 
- Wed, 26 Jan 2022 18:22:45 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwB+navU6gtFzHTGoJm+x+kCowK7+ulSkHm17hHbA227DyBZQFEB15yNQThEkQXUYewsy/No5viewb7ncXSxF0=
-X-Received: by 2002:a05:6808:2087:: with SMTP id
- s7mr5179138oiw.21.1643250165478; 
- Wed, 26 Jan 2022 18:22:45 -0800 (PST)
-MIME-Version: 1.0
-References: <20220126071853.1940111-1-kai.heng.feng@canonical.com>
- <20220126071853.1940111-2-kai.heng.feng@canonical.com>
- <YfEsC94BvFwd5MLy@lahna>
-In-Reply-To: <YfEsC94BvFwd5MLy@lahna>
+ s=20210705; t=1643252073;
+ bh=dcz08jVbu1mA7GIKnSrxl/nuKVZjYAe2DF3bK5Id0Sw=;
+ h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+ MIME-Version;
+ b=kiohJPlyf0FHjb6tqaYCzNqdpekBXpHyT69Gl8JUzQwUdEi/vZ8BZnxk95oPhdUlz
+ wCNBNKY8sZNoQB4bUr3IJSZ+UBNVVaCFFTCqBh/YS+dj7Npz75O93Ul07AEW6dQgEH
+ lqibWnbCYJ09Jk+08QXUeDYJzrInkFnWKOFPdo6CmYLgoerxG7sOqvgKfEGJQaTIgu
+ 4CHJ3hNDLeq3koCowskFyvt2i/XFIeKETucBzLOF0aHdVf4IaqVKIISCHh91HA6Xjc
+ br1P479W5A1LfLZ7w4ILExKN++OuzkwJv8qAeQsDHoBtF0WQAba4BeAjLAAEyEFuxL
+ hfkXl3I3n0T8A==
 From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Thu, 27 Jan 2022 10:22:34 +0800
-Message-ID: <CAAd53p7wPZj0DTxkfoBhhhbaGWvpU4MTbJAGGNXvAjG3qw9b9Q@mail.gmail.com>
-Subject: Re: [PATCH 2/2] PCI/DPC: Disable DPC when link is in L2/L3 ready, L2
- and L3 state
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
+To: bhelgaas@google.com
+Subject: [PATCH v2 2/2] PCI/DPC: Disable DPC service when link is in L2/L3
+ ready, L2 and L3 state
+Date: Thu, 27 Jan 2022 10:54:18 +0800
+Message-Id: <20220127025418.1989642-2-kai.heng.feng@canonical.com>
+X-Mailer: git-send-email 2.33.1
+In-Reply-To: <20220127025418.1989642-1-kai.heng.feng@canonical.com>
+References: <20220127025418.1989642-1-kai.heng.feng@canonical.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,71 +67,123 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- koba.ko@canonical.com, Oliver O'Halloran <oohall@gmail.com>,
- bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, koba.ko@canonical.com,
+ Kai-Heng Feng <kai.heng.feng@canonical.com>,
+ Oliver O'Halloran <oohall@gmail.com>, mika.westerberg@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 26, 2022 at 7:10 PM Mika Westerberg
-<mika.westerberg@linux.intel.com> wrote:
->
-> Hi,
->
-> On Wed, Jan 26, 2022 at 03:18:52PM +0800, Kai-Heng Feng wrote:
-> > Since TLP and DLLP transmission is disabled for a Link in L2/L3 Ready,
-> > L2 and L3, and DPC depends on AER, so also disable DPC here.
->
-> Here too I think it is good to mention that the DPC "service" never
-> implemented the PM hooks in the first place
+Since TLP and DLLP transmission is disabled for a Link in L2/L3 Ready,
+L2 and L3 (i.e. device in D3hot and D3cold), and DPC depends on AER, so
+also disable DPC here.
 
-Will amend the commit message a bit.
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+---
+v2:
+ - Wording change.
+ - Empty line dropped.
 
->
-> > Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
->
-> One minor comment below, but other than that looks good,
->
-> Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
->
-> > ---
-> >  drivers/pci/pcie/dpc.c | 61 +++++++++++++++++++++++++++++++-----------
-> >  1 file changed, 45 insertions(+), 16 deletions(-)
-> >
-> > diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
-> > index 3e9afee02e8d1..9585c10b7c577 100644
-> > --- a/drivers/pci/pcie/dpc.c
-> > +++ b/drivers/pci/pcie/dpc.c
-> > @@ -343,13 +343,34 @@ void pci_dpc_init(struct pci_dev *pdev)
-> >       }
-> >  }
-> >
-> > +static void dpc_enable(struct pcie_device *dev)
-> > +{
-> > +     struct pci_dev *pdev = dev->port;
-> > +     u16 ctl;
-> > +
-> > +     pci_read_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CTL, &ctl);
-> > +
->
-> Drop the empty line here.
+ drivers/pci/pcie/dpc.c | 60 +++++++++++++++++++++++++++++++-----------
+ 1 file changed, 44 insertions(+), 16 deletions(-)
 
-OK, will do.
+diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
+index 3e9afee02e8d1..414258967f08e 100644
+--- a/drivers/pci/pcie/dpc.c
++++ b/drivers/pci/pcie/dpc.c
+@@ -343,13 +343,33 @@ void pci_dpc_init(struct pci_dev *pdev)
+ 	}
+ }
+ 
++static void dpc_enable(struct pcie_device *dev)
++{
++	struct pci_dev *pdev = dev->port;
++	u16 ctl;
++
++	pci_read_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CTL, &ctl);
++	ctl = (ctl & 0xfff4) | PCI_EXP_DPC_CTL_EN_FATAL | PCI_EXP_DPC_CTL_INT_EN;
++	pci_write_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CTL, ctl);
++}
++
++static void dpc_disable(struct pcie_device *dev)
++{
++	struct pci_dev *pdev = dev->port;
++	u16 ctl;
++
++	pci_read_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CTL, &ctl);
++	ctl &= ~(PCI_EXP_DPC_CTL_EN_FATAL | PCI_EXP_DPC_CTL_INT_EN);
++	pci_write_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CTL, ctl);
++}
++
+ #define FLAG(x, y) (((x) & (y)) ? '+' : '-')
+ static int dpc_probe(struct pcie_device *dev)
+ {
+ 	struct pci_dev *pdev = dev->port;
+ 	struct device *device = &dev->device;
+ 	int status;
+-	u16 ctl, cap;
++	u16 cap;
+ 
+ 	if (!pcie_aer_is_native(pdev) && !pcie_ports_dpc_native)
+ 		return -ENOTSUPP;
+@@ -364,10 +384,7 @@ static int dpc_probe(struct pcie_device *dev)
+ 	}
+ 
+ 	pci_read_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CAP, &cap);
+-	pci_read_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CTL, &ctl);
+-
+-	ctl = (ctl & 0xfff4) | PCI_EXP_DPC_CTL_EN_FATAL | PCI_EXP_DPC_CTL_INT_EN;
+-	pci_write_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CTL, ctl);
++	dpc_enable(dev);
+ 	pci_info(pdev, "enabled with IRQ %d\n", dev->irq);
+ 
+ 	pci_info(pdev, "error containment capabilities: Int Msg #%d, RPExt%c PoisonedTLP%c SwTrigger%c RP PIO Log %d, DL_ActiveErr%c\n",
+@@ -380,22 +397,33 @@ static int dpc_probe(struct pcie_device *dev)
+ 	return status;
+ }
+ 
+-static void dpc_remove(struct pcie_device *dev)
++static int dpc_suspend(struct pcie_device *dev)
+ {
+-	struct pci_dev *pdev = dev->port;
+-	u16 ctl;
++	dpc_disable(dev);
++	return 0;
++}
+ 
+-	pci_read_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CTL, &ctl);
+-	ctl &= ~(PCI_EXP_DPC_CTL_EN_FATAL | PCI_EXP_DPC_CTL_INT_EN);
+-	pci_write_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CTL, ctl);
++static int dpc_resume(struct pcie_device *dev)
++{
++	dpc_enable(dev);
++	return 0;
++}
++
++static void dpc_remove(struct pcie_device *dev)
++{
++	dpc_disable(dev);
+ }
+ 
+ static struct pcie_port_service_driver dpcdriver = {
+-	.name		= "dpc",
+-	.port_type	= PCIE_ANY_PORT,
+-	.service	= PCIE_PORT_SERVICE_DPC,
+-	.probe		= dpc_probe,
+-	.remove		= dpc_remove,
++	.name			= "dpc",
++	.port_type		= PCIE_ANY_PORT,
++	.service		= PCIE_PORT_SERVICE_DPC,
++	.probe			= dpc_probe,
++	.suspend		= dpc_suspend,
++	.resume			= dpc_resume,
++	.runtime_suspend	= dpc_suspend,
++	.runtime_resume		= dpc_resume,
++	.remove			= dpc_remove,
+ };
+ 
+ int __init pcie_dpc_init(void)
+-- 
+2.33.1
 
-Kai-Heng
-
->
-> > +     ctl = (ctl & 0xfff4) | PCI_EXP_DPC_CTL_EN_FATAL | PCI_EXP_DPC_CTL_INT_EN;
-> > +     pci_write_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CTL, ctl);
-> > +}
-> > +
-> > +static void dpc_disable(struct pcie_device *dev)
-> > +{
-> > +     struct pci_dev *pdev = dev->port;
-> > +     u16 ctl;
-> > +
-> > +     pci_read_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CTL, &ctl);
-> > +     ctl &= ~(PCI_EXP_DPC_CTL_EN_FATAL | PCI_EXP_DPC_CTL_INT_EN);
-> > +     pci_write_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_CTL, ctl);
-> > +}
