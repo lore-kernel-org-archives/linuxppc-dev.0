@@ -4,62 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED67BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 07:03:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6D35C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 07:21:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jks4P210pz30jP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 18:03:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JksTc0vgSz3cP7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 18:21:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ieuPUH8G;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r+Qmnngs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=134.134.136.126; helo=mga18.intel.com;
- envelope-from=baolu.lu@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=ieuPUH8G; dkim-atps=neutral
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=r+Qmnngs; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jks3f383Bz2ybD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2022 18:02:37 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1643266958; x=1674802958;
- h=message-id:date:mime-version:cc:to:references:from:
- subject:in-reply-to:content-transfer-encoding;
- bh=PLFjvjJZ1+L8VTRJtrYhTLsi/UU8pUGMt6QmxvWQWRE=;
- b=ieuPUH8G6XBnPojWeWFXAuP0uIUiz+8ffupmJN9VcnPVT6q2dOQGq45V
- nuiKJXmaPf98lYuaS8Glw5HHZE0ZC2jkP3fp/AR4FfDXcPeySNEKVJobp
- RoLOA6M6SRbtqUBts04PKw5dgUTdWZ/rUy3b8/8KQ1qGvef1t8azosaMY
- +3wz32ZR9wF+Jtbfb+YBy/YiSQnliTjQ2cbk2YUov+SZ86AsROJTjYbq9
- 38MS3cAq1Yfon41uQ0YNcVJxw3qCOMZpzbvaRnGmFOeAAk/CzAw5tsn2z
- Kldl+gkfE2DAQt9IUVocQi74IaR0UQqsVjgcXNcYWeouZhDhEKxe3BYxL g==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10239"; a="230343577"
-X-IronPort-AV: E=Sophos;i="5.88,320,1635231600"; d="scan'208";a="230343577"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Jan 2022 23:01:34 -0800
-X-IronPort-AV: E=Sophos;i="5.88,320,1635231600"; d="scan'208";a="480181330"
-Received: from blu2-mobl3.ccr.corp.intel.com (HELO [10.254.214.18])
- ([10.254.214.18])
- by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Jan 2022 23:01:30 -0800
-Message-ID: <0259955f-8bbb-1778-f234-398f1356db8b@linux.intel.com>
-Date: Thu, 27 Jan 2022 15:01:25 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JksSt0Vbdz2ybD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2022 18:21:01 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20R5a8C7026121; 
+ Thu, 27 Jan 2022 07:20:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=uSt5Zu+F7wWQ9q4rZ5/96Vz3xfjPmeJVAY9a2gjnYz4=;
+ b=r+Qmnngs2fOq4tpfEfdIAJMUtd626IgVZuUUBQpXS67KxKiC2nmoRjgBOQAQXbjMzGjJ
+ PkyPy0RvtXZZTIj1S9ugCvJ0tdt4FHGsUl16Scf1hq0CRaOPL8wRZ7MlA30LSv6NxqTP
+ MaYvtxlFwIa/JEDhu4jM+4Mgkm4ffQUdmRXCuQB2S4/s5WnvfXSZOf4EhR/VxPI+V+4X
+ uCjXEZ4/j0AmAdSU02mquvz/VOW+3C1HDnd98EO5kEPf7m911y//PSCK0mPnCXvtDdGE
+ L5vc3p3LATc0xIQCA6SYrpspW6t0ursjdGAmdtmNDF6V8jpjncjUJJ03CyTdhXYAHq6X 1Q== 
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3dumkutru9-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 27 Jan 2022 07:20:55 +0000
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20R78JKb021662;
+ Thu, 27 Jan 2022 07:20:53 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma04ams.nl.ibm.com with ESMTP id 3dr9j9mp95-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 27 Jan 2022 07:20:53 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 20R7KoxG45679078
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 27 Jan 2022 07:20:50 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4536F42045;
+ Thu, 27 Jan 2022 07:20:50 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3F0424203F;
+ Thu, 27 Jan 2022 07:20:48 +0000 (GMT)
+Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com.com (unknown
+ [9.43.106.251])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 27 Jan 2022 07:20:47 +0000 (GMT)
+From: Kajol Jain <kjain@linux.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH 01/20] selftest/powerpc/pmu: Include mmap_buffer field as part
+ of struct event
+Date: Thu, 27 Jan 2022 12:49:53 +0530
+Message-Id: <20220127072012.662451-2-kjain@linux.ibm.com>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20220127072012.662451-1-kjain@linux.ibm.com>
+References: <20220127072012.662451-1-kjain@linux.ibm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Content-Language: en-US
-To: Kai-Heng Feng <kai.heng.feng@canonical.com>, bhelgaas@google.com
-References: <20220127025418.1989642-1-kai.heng.feng@canonical.com>
-From: Lu Baolu <baolu.lu@linux.intel.com>
-Subject: Re: [PATCH v2 1/2] PCI/AER: Disable AER service when link is in L2/L3
- ready, L2 and L3 state
-In-Reply-To: <20220127025418.1989642-1-kai.heng.feng@canonical.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: L_rcF16pLH6Ytd7KEMqH3pXKZywStahr
+X-Proofpoint-ORIG-GUID: L_rcF16pLH6Ytd7KEMqH3pXKZywStahr
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2022-01-27_01,2022-01-26_01,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ phishscore=0 spamscore=0 impostorscore=0 malwarescore=0 adultscore=0
+ lowpriorityscore=0 mlxscore=0 mlxlogscore=999 clxscore=1015 bulkscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2201110000 definitions=main-2201270036
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,54 +100,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Joerg Roedel <jroedel@suse.de>, koba.ko@canonical.com,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- Lalithambika Krishnakumar <lalithambika.krishnakumar@intel.com>,
- Oliver O'Halloran <oohall@gmail.com>, mika.westerberg@linux.intel.com,
- baolu.lu@linux.intel.com
+Cc: kjain@linux.ibm.com, atrajeev@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, rnsastry@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2022/1/27 10:54, Kai-Heng Feng wrote:
-> Commit 50310600ebda ("iommu/vt-d: Enable PCI ACS for platform opt in
-> hint") enables ACS, and some platforms lose its NVMe after resume from
-> S3:
-> [   50.947816] pcieport 0000:00:1b.0: DPC: containment event, status:0x1f01 source:0x0000
-> [   50.947817] pcieport 0000:00:1b.0: DPC: unmasked uncorrectable error detected
-> [   50.947829] pcieport 0000:00:1b.0: PCIe Bus Error: severity=Uncorrected (Non-Fatal), type=Transaction Layer, (Receiver ID)
-> [   50.947830] pcieport 0000:00:1b.0:   device [8086:06ac] error status/mask=00200000/00010000
-> [   50.947831] pcieport 0000:00:1b.0:    [21] ACSViol                (First)
-> [   50.947841] pcieport 0000:00:1b.0: AER: broadcast error_detected message
-> [   50.947843] nvme nvme0: frozen state error detected, reset controller
-> 
-> It happens right after ACS gets enabled during resume.
-> 
-> There's another case, when Thunderbolt reaches D3cold:
-> [   30.100211] pcieport 0000:00:1d.0: AER: Uncorrected (Non-Fatal) error received: 0000:00:1d.0
-> [   30.100251] pcieport 0000:00:1d.0: PCIe Bus Error: severity=Uncorrected (Non-Fatal), type=Transaction Layer, (Requester ID)
-> [   30.100256] pcieport 0000:00:1d.0:   device [8086:7ab0] error status/mask=00100000/00004000
-> [   30.100262] pcieport 0000:00:1d.0:    [20] UnsupReq               (First)
-> [   30.100267] pcieport 0000:00:1d.0: AER:   TLP Header: 34000000 08000052 00000000 00000000
-> [   30.100372] thunderbolt 0000:0a:00.0: AER: can't recover (no error_detected callback)
-> [   30.100401] xhci_hcd 0000:3e:00.0: AER: can't recover (no error_detected callback)
-> [   30.100427] pcieport 0000:00:1d.0: AER: device recovery failed
-> 
-> So disable AER service to avoid the noises from turning power rails
-> on/off when the device is in low power states (D3hot and D3cold), as
-> PCIe spec "5.2 Link State Power Management" states that TLP and DLLP
-> transmission is disabled for a Link in L2/L3 Ready (D3hot), L2 (D3cold
-> with aux power) and L3 (D3cold).
-> 
-> Bugzilla:https://bugzilla.kernel.org/show_bug.cgi?id=209149
-> Bugzilla:https://bugzilla.kernel.org/show_bug.cgi?id=215453
-> Fixes: 50310600ebda ("iommu/vt-d: Enable PCI ACS for platform opt in hint")
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 
-I don't know what this fix has to do with the commit 50310600ebda.
-Commit 50310600ebda only makes sure that PCI ACS is enabled whenever
-Intel IOMMU is on. Before this commit, PCI ACS could also be enabled
-and result in the same problem. Or anything I missed?
+To enable the capturing of samples as part of perf event,
+add a new field "mmap_buffer" to "struct event". This
+field is a place-holder for sample collection
 
-Best regards,
-baolu
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+---
+ tools/testing/selftests/powerpc/pmu/event.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/tools/testing/selftests/powerpc/pmu/event.h b/tools/testing/selftests/powerpc/pmu/event.h
+index 302eaab51706..23d20340a160 100644
+--- a/tools/testing/selftests/powerpc/pmu/event.h
++++ b/tools/testing/selftests/powerpc/pmu/event.h
+@@ -22,6 +22,11 @@ struct event {
+ 		u64 running;
+ 		u64 enabled;
+ 	} result;
++	/*
++	 * mmap buffer used while recording sample.
++	 * Accessed as "struct perf_event_mmap_page"
++	 */
++	void *mmap_buffer;
+ };
+ 
+ void event_init(struct event *e, u64 config);
+-- 
+2.27.0
+
