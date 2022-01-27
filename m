@@ -4,55 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68048C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 02:55:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDF63C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 06:31:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JklZt6V7Gz3cTd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 13:55:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JkrMD06ZGz3bTD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 17:31:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=YrYx55cj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=MSumarAh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=canonical.com (client-ip=185.125.188.120;
- helo=smtp-relay-canonical-0.canonical.com;
- envelope-from=kai.heng.feng@canonical.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=linux.intel.com
+ (client-ip=192.55.52.43; helo=mga05.intel.com;
+ envelope-from=mika.westerberg@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20210705 header.b=YrYx55cj; 
- dkim-atps=neutral
-Received: from smtp-relay-canonical-0.canonical.com
- (smtp-relay-canonical-0.canonical.com [185.125.188.120])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=MSumarAh; dkim-atps=neutral
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JklYT09V3z3033
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2022 13:54:35 +1100 (AEDT)
-Received: from HP-EliteBook-840-G7.. (1-171-96-243.dynamic-ip.hinet.net
- [1.171.96.243])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by smtp-relay-canonical-0.canonical.com (Postfix) with ESMTPSA id 05F0640E01; 
- Thu, 27 Jan 2022 02:54:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
- s=20210705; t=1643252069;
- bh=sWpBSBUjt4fjMhNwnvEmEn/DRq50Xif7PGU+Uxhifrg=;
- h=From:To:Cc:Subject:Date:Message-Id:MIME-Version;
- b=YrYx55cj/JtoN3vXNr8MX1tcSJDJLHkw9C1yFzc/SCGZNsnAxTnHQ7NF1O6lR4WKI
- J5OmBuzjxj+KxE3DsYtMdva7dbppHT9qTATWFmM7BMnvPlQRY52JBZFX/0eFiATaMV
- 21i9hdgbHhWEbcXR557uMn9ryfIHluPENJlEh7n3EF8QdML8+w4+CBDRlmKs82fWgn
- g7kQDGfYh7phsToYNFfjrkx7UNSaPp5FtmqTurvJyCjQsL0Qm7YagFfr/3656xvH0W
- i4vvmzZFEV3IySjQ3edO+e5pwQC843vNCZVrQ5RVtNY2TPvRTvke0t+PeL027iR675
- NnBVhdPrAkMLg==
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-To: bhelgaas@google.com
-Subject: [PATCH v2 1/2] PCI/AER: Disable AER service when link is in L2/L3
- ready, L2 and L3 state
-Date: Thu, 27 Jan 2022 10:54:17 +0800
-Message-Id: <20220127025418.1989642-1-kai.heng.feng@canonical.com>
-X-Mailer: git-send-email 2.33.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JkrLS501lz2xsb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2022 17:30:24 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1643265024; x=1674801024;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=JkOo36tz8YaoDuZXPsp9O8nW6ib1sRzLUQMQhkkfdUQ=;
+ b=MSumarAhHMLbd73Owu8v11/dLD4tTa6WJ2q8sPQfntaanwKVUzgkTP32
+ VF2WFCN2MOxNNPyMC1dzXT/T21ElGsS3AokcKyREIfN+Nxh0oMQHcN/58
+ NoCEJn5IxPvGDRN5zISrnHwrVLVTFsS4642Fl+aNiY4Qgwj+muxv0xBUN
+ pUNLtfIZpoxo/Wg/6rmER+glcrB2hdSwGyiUE7bvhtn8zDHrfpqAqi67V
+ GAlLGcOOI6QPYgGu2GMmGlKoNDyRxu1TaHJ6w2bWz3x7Ktam4/aM5WSPr
+ +kIASRaRawFum5YGP8WoxNgfr0t8m+oA//6YiksjGKCkYW+5gCNbQcVJP w==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10239"; a="333118447"
+X-IronPort-AV: E=Sophos;i="5.88,320,1635231600"; d="scan'208";a="333118447"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 26 Jan 2022 22:29:22 -0800
+X-IronPort-AV: E=Sophos;i="5.88,320,1635231600"; d="scan'208";a="618225100"
+Received: from lahna.fi.intel.com (HELO lahna) ([10.237.72.162])
+ by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 26 Jan 2022 22:29:18 -0800
+Received: by lahna (sSMTP sendmail emulation); Thu, 27 Jan 2022 08:29:15 +0200
+Date: Thu, 27 Jan 2022 08:29:15 +0200
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+To: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Subject: Re: [PATCH 1/2] PCI/AER: Disable AER when link is in L2/L3 ready, L2
+ and L3 state
+Message-ID: <YfI7u5XSlNlx2w4I@lahna>
+References: <20220126071853.1940111-1-kai.heng.feng@canonical.com>
+ <YfEqZMUS9jyiErmF@lahna>
+ <CAAd53p7H3RApEHOzJYorD9VBnaPqYRkzE2g+8hAUXRToc=jbGg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAAd53p7H3RApEHOzJYorD9VBnaPqYRkzE2g+8hAUXRToc=jbGg@mail.gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,106 +71,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Joerg Roedel <jroedel@suse.de>, koba.ko@canonical.com,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org,
+Cc: Joerg Roedel <jroedel@suse.de>,
  Lalithambika Krishnakumar <lalithambika.krishnakumar@intel.com>,
- Kai-Heng Feng <kai.heng.feng@canonical.com>,
- Oliver O'Halloran <oohall@gmail.com>, mika.westerberg@linux.intel.com,
- Lu Baolu <baolu.lu@linux.intel.com>
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, koba.ko@canonical.com,
+ Oliver O'Halloran <oohall@gmail.com>, bhelgaas@google.com,
+ linuxppc-dev@lists.ozlabs.org, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 50310600ebda ("iommu/vt-d: Enable PCI ACS for platform opt in
-hint") enables ACS, and some platforms lose its NVMe after resume from
-S3:
-[   50.947816] pcieport 0000:00:1b.0: DPC: containment event, status:0x1f01 source:0x0000
-[   50.947817] pcieport 0000:00:1b.0: DPC: unmasked uncorrectable error detected
-[   50.947829] pcieport 0000:00:1b.0: PCIe Bus Error: severity=Uncorrected (Non-Fatal), type=Transaction Layer, (Receiver ID)
-[   50.947830] pcieport 0000:00:1b.0:   device [8086:06ac] error status/mask=00200000/00010000
-[   50.947831] pcieport 0000:00:1b.0:    [21] ACSViol                (First)
-[   50.947841] pcieport 0000:00:1b.0: AER: broadcast error_detected message
-[   50.947843] nvme nvme0: frozen state error detected, reset controller
+Hi,
 
-It happens right after ACS gets enabled during resume.
+On Thu, Jan 27, 2022 at 10:21:35AM +0800, Kai-Heng Feng wrote:
+> On Wed, Jan 26, 2022 at 7:03 PM Mika Westerberg
+> <mika.westerberg@linux.intel.com> wrote:
+> >
+> > Hi,
+> >
+> > On Wed, Jan 26, 2022 at 03:18:51PM +0800, Kai-Heng Feng wrote:
+> > > Commit 50310600ebda ("iommu/vt-d: Enable PCI ACS for platform opt in
+> > > hint") enables ACS, and some platforms lose its NVMe after resume from
+> > > S3:
+> > > [   50.947816] pcieport 0000:00:1b.0: DPC: containment event, status:0x1f01 source:0x0000
+> > > [   50.947817] pcieport 0000:00:1b.0: DPC: unmasked uncorrectable error detected
+> > > [   50.947829] pcieport 0000:00:1b.0: PCIe Bus Error: severity=Uncorrected (Non-Fatal), type=Transaction Layer, (Receiver ID)
+> > > [   50.947830] pcieport 0000:00:1b.0:   device [8086:06ac] error status/mask=00200000/00010000
+> > > [   50.947831] pcieport 0000:00:1b.0:    [21] ACSViol                (First)
+> > > [   50.947841] pcieport 0000:00:1b.0: AER: broadcast error_detected message
+> > > [   50.947843] nvme nvme0: frozen state error detected, reset controller
+> > >
+> > > It happens right after ACS gets enabled during resume.
+> >
+> > Is this really because of the above commit of due the fact that AER
+> > "service" never implemented the PM hooks in the first place ;-)
+> 
+> >From what I can understand, all services other than PME should be
+> disabled during suspend.
+> 
+> For example, should we convert commit a697f072f5da8 ("PCI: Disable PTM
+> during suspend to save power") to PM hooks in PTM service?
 
-There's another case, when Thunderbolt reaches D3cold:
-[   30.100211] pcieport 0000:00:1d.0: AER: Uncorrected (Non-Fatal) error received: 0000:00:1d.0
-[   30.100251] pcieport 0000:00:1d.0: PCIe Bus Error: severity=Uncorrected (Non-Fatal), type=Transaction Layer, (Requester ID)
-[   30.100256] pcieport 0000:00:1d.0:   device [8086:7ab0] error status/mask=00100000/00004000
-[   30.100262] pcieport 0000:00:1d.0:    [20] UnsupReq               (First)
-[   30.100267] pcieport 0000:00:1d.0: AER:   TLP Header: 34000000 08000052 00000000 00000000
-[   30.100372] thunderbolt 0000:0a:00.0: AER: can't recover (no error_detected callback)
-[   30.100401] xhci_hcd 0000:3e:00.0: AER: can't recover (no error_detected callback)
-[   30.100427] pcieport 0000:00:1d.0: AER: device recovery failed
-
-So disable AER service to avoid the noises from turning power rails
-on/off when the device is in low power states (D3hot and D3cold), as
-PCIe spec "5.2 Link State Power Management" states that TLP and DLLP
-transmission is disabled for a Link in L2/L3 Ready (D3hot), L2 (D3cold
-with aux power) and L3 (D3cold).
-
-Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=209149
-Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=215453
-Fixes: 50310600ebda ("iommu/vt-d: Enable PCI ACS for platform opt in hint")
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
----
-v2:
- - Wording change.
-
- drivers/pci/pcie/aer.c | 31 +++++++++++++++++++++++++------
- 1 file changed, 25 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index 9fa1f97e5b270..e4e9d4a3098d7 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -1367,6 +1367,22 @@ static int aer_probe(struct pcie_device *dev)
- 	return 0;
- }
- 
-+static int aer_suspend(struct pcie_device *dev)
-+{
-+	struct aer_rpc *rpc = get_service_data(dev);
-+
-+	aer_disable_rootport(rpc);
-+	return 0;
-+}
-+
-+static int aer_resume(struct pcie_device *dev)
-+{
-+	struct aer_rpc *rpc = get_service_data(dev);
-+
-+	aer_enable_rootport(rpc);
-+	return 0;
-+}
-+
- /**
-  * aer_root_reset - reset Root Port hierarchy, RCEC, or RCiEP
-  * @dev: pointer to Root Port, RCEC, or RCiEP
-@@ -1433,12 +1449,15 @@ static pci_ers_result_t aer_root_reset(struct pci_dev *dev)
- }
- 
- static struct pcie_port_service_driver aerdriver = {
--	.name		= "aer",
--	.port_type	= PCIE_ANY_PORT,
--	.service	= PCIE_PORT_SERVICE_AER,
--
--	.probe		= aer_probe,
--	.remove		= aer_remove,
-+	.name			= "aer",
-+	.port_type		= PCIE_ANY_PORT,
-+	.service		= PCIE_PORT_SERVICE_AER,
-+	.probe			= aer_probe,
-+	.suspend		= aer_suspend,
-+	.resume			= aer_resume,
-+	.runtime_suspend	= aer_suspend,
-+	.runtime_resume		= aer_resume,
-+	.remove			= aer_remove,
- };
- 
- /**
--- 
-2.33.1
-
+Yes, I think that's the right thing to do. I wonder how it was not using
+the PM hooks in the first place.
