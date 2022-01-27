@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D8F3C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 07:22:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69245C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 07:23:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JksVK3hsMz3cCT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 18:22:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JksW655Skz3bdF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jan 2022 18:22:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BOlsxkqw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WNB1uxto;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
@@ -18,75 +18,78 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=BOlsxkqw; dkim-atps=neutral
+ header.s=pp1 header.b=WNB1uxto; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JksSt0snWz306f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2022 18:21:01 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20R6cTLE015469; 
- Thu, 27 Jan 2022 07:20:53 GMT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JksSv2MW3z306f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jan 2022 18:21:02 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20R6BaAQ006113; 
+ Thu, 27 Jan 2022 07:20:58 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=HUhYlUJJpoZZ0PyCbtHK7t8JIXqEDEveXGrUwH9+oB8=;
- b=BOlsxkqwLSQy+SZfObgfK23iOtPeUp2eih7Ow5SX9E2t0MhuQQwW0hcqoe1dK3VwvzsK
- uEMQS5weHcaRZzbKuKvuauyjSWRIQ3xbz2krd/jJB94U8WxEScEAFwzcZOHlZfhKYXnP
- UNZ113RYX42Htk1L4LlWesgCX6pfFBYQFqj2pczd/XbYLh4G+Hxru7SR/lzmiSLcCdFN
- M8G/8xGhnEr405Pv/Y2ykREf/c3EeA0HQe36bUXpkyJqjxbw51Hvw13O6b6YrVil+Qf0
- aYU+YvvQlyBjAssgETxCELwPUBgEeYVW4SpcZbGe/KBxcwsXd/J6z2wsjV5tnHoDDLrw 4w== 
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.70])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3dung21tqb-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=44Y9l6MIKXWSUJK+AI/MUwYqaXfMtBDECXVqAK3o5Xk=;
+ b=WNB1uxto6iSg+/HAWK8KwhfO+SmQMRXsbbAwRpziPJ5jdwdhwk0DY2n/Pcei8Sculbn9
+ sDUR1+qr/bEKt6BCuVQ8qiC5xeZjXH+wlFlwqbfG2YZnKYFW45o/dWSv7jnQ0DJPDa+V
+ FRnbs5kM6YZhUpwXhEMW1SVKxRETvUeCL4F5siZG99QwjWacA4Yi+z3Xs6GHMmznUWYo
+ OTa+pueg6crvWEX0AibA+km6y8TZgByWg1xbxWLQgPVcHj8yDxFjPsH8xU3A/ENP0Xb3
+ FbsF5H3rpmX/YkE6F8GXMqO5versqtsF5AxDpSf725HwJxeqmLciERdWxFshwhIpy8Oz uQ== 
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3dunwh1daj-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 27 Jan 2022 07:20:53 +0000
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
- by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20R78MA8005986;
- Thu, 27 Jan 2022 07:20:51 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma01fra.de.ibm.com with ESMTP id 3dr9j9tmyu-1
+ Thu, 27 Jan 2022 07:20:57 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20R784Eo016044;
+ Thu, 27 Jan 2022 07:20:56 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma03ams.nl.ibm.com with ESMTP id 3dr9j9mn31-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 27 Jan 2022 07:20:51 +0000
+ Thu, 27 Jan 2022 07:20:56 +0000
 Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
  [9.149.105.60])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 20R7Kl5v44302838
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 20R7KqmX30081348
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 27 Jan 2022 07:20:47 GMT
+ Thu, 27 Jan 2022 07:20:53 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BD38242047;
- Thu, 27 Jan 2022 07:20:47 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C6C8D42042;
+ Thu, 27 Jan 2022 07:20:52 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4578E4204C;
- Thu, 27 Jan 2022 07:20:45 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id BF2CA42045;
+ Thu, 27 Jan 2022 07:20:50 +0000 (GMT)
 Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com.com (unknown
  [9.43.106.251])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 27 Jan 2022 07:20:44 +0000 (GMT)
+ Thu, 27 Jan 2022 07:20:50 +0000 (GMT)
 From: Kajol Jain <kjain@linux.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH 00/20] Add perf sampling tests as part of selftest
-Date: Thu, 27 Jan 2022 12:49:52 +0530
-Message-Id: <20220127072012.662451-1-kjain@linux.ibm.com>
+Subject: [PATCH 02/20] selftest/powerpc/pmu: Add support for perf sampling
+ tests
+Date: Thu, 27 Jan 2022 12:49:54 +0530
+Message-Id: <20220127072012.662451-3-kjain@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: VTb7poY1Kpq1skE8OOcqWf20Z3t9IIOJ
-X-Proofpoint-GUID: VTb7poY1Kpq1skE8OOcqWf20Z3t9IIOJ
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+In-Reply-To: <20220127072012.662451-1-kjain@linux.ibm.com>
+References: <20220127072012.662451-1-kjain@linux.ibm.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: d5aOacdUzSvsc8UPnv-8vyt_fJCOQalz
+X-Proofpoint-ORIG-GUID: d5aOacdUzSvsc8UPnv-8vyt_fJCOQalz
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
  definitions=2022-01-27_02,2022-01-26_01,2021-12-02_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- phishscore=0 suspectscore=0 bulkscore=0 spamscore=0 malwarescore=0
- adultscore=0 lowpriorityscore=0 clxscore=1011 impostorscore=0 mlxscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2201110000 definitions=main-2201270036
+ clxscore=1015
+ priorityscore=1501 mlxscore=0 bulkscore=0 mlxlogscore=999 malwarescore=0
+ spamscore=0 impostorscore=0 phishscore=0 suspectscore=0 adultscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2201110000 definitions=main-2201270040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,122 +107,227 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Patch series adds support for perf sampling tests that
-enables capturing sampling data in perf mmap buffer and
-further support for reading and processing the samples.
-It also addds basic utility functions to process the
-mmap buffer inorder to read total count of samples as
-well as the contents of sample.
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 
-With enablement of extended regs in powerpc, sample can
-also capture performance monitor registers (different
-Monitor Mode control Registers) by specifying sample type
-for extended regs. This information from sample is
-used to verify the perf interface, by comparing the event
-code fields with interrupt registers value.
+Add support functions for enabling perf sampling test in
+a new folder "sampling_tests" under "selftests/powerpc/pmu".
+This includes support functions for allocating and processing
+the mmap buffer. These functions are added/defined in
+"sampling_tests/misc.*" files.
 
-Patch series also include support for macros which does the
-job of extracting the event code fields and specific
-fields from supported Monitor Mode Control Registers.
+Also updates the corresponding Makefiles in "selftests/powerpc"
+and "sampling_tests" folder.
 
-The sampling support functions and testcases are added in new
-folder  "sampling_tests" under "selftests/powerpc/pmu" and
-corresponding updates are done Makefiles in "selftests/powerpc"
-and "sampling_tests" folder. Testcases are added for PMU registers
-which verifies that the perf interface programs these SPR's
-correctly.
-
-Patch 1 of the series add new field "mmap_buffer" to "struct event"
-to enable capturing of samples as part of perf event.
-This field is a place-holder for the mmap-buffer incase of
-sample collection
-
-Patch 2-4 adds support functions for enabling perf sampling test and
-adds couple of basic utility functions to post process the
-mmap buffer. It also adds macros to parse event codes.
-
-Patch 5 adds event_init_sampling function to initialise event
-attribute fields for sampling events.
-
-Patch 6-8 adds generic Monitor Mode Control Register(MMCR) macro to get
-specific field value from a specific MMCR. It also adds macros and
-utility functions to fetch individual fields from all MMCRx PMU registers.
-
-Patch 9-20 adds testcases to verify if fields values of MMCRx registers
-are set correctly from event code via perf interface
-
-Link to the linux-ci:
-https://github.com/athira-rajeev/linux-ci/actions?query=branch%3Asefltests
-
-Patchset contains initial set of test cases along with basic
-utilities to verify basic perf interface. More sampling testcases
-are in plan which will cover additional scenarios.
-
-Athira Rajeev (11):
-  selftest/powerpc/pmu: Include mmap_buffer field as part of struct
-    event
-  selftest/powerpc/pmu: Add support for perf sampling tests
-  selftest/powerpc/pmu: Add macro to extract mmcr0/mmcr1 fields
-  selftest/powerpc/pmu/: Add interface test for mmcr0 exception bits
-  selftest/powerpc/pmu/: Add interface test for mmcr0_cc56run field
-  selftest/powerpc/pmu/: Add interface test for mmcr0_pmccext bit
-  selftest/powerpc/pmu/: Add interface test for mmcr0_pmcjce field
-  selftest/powerpc/pmu/: Add interface test for mmcr0_fc56 field using
-    pmc1
-  selftest/powerpc/pmu/: Add interface test for mmcr0_pmc56 using pmc5
-  selftest/powerpc/pmu/: Add interface test for mmcr1_comb field
-  selftest/powerpc/pmu/: Add selftest for mmcr1 pmcxsel/unit/cache
-    fields
-
-Kajol Jain (4):
-  selftest/powerpc/pmu: Add utility functions to post process the mmap
-    buffer
-  selftest/powerpc/pmu: Add macro to extract mmcr3 and mmcra fields
-  selftest/powerpc/pmu/: Add interface test for mmcr3_src fields
-  selftest/powerpc/pmu: Add interface test for mmcra register fields
-
-Madhavan Srinivasan (5):
-  selftest/powerpc/pmu: Add macros to parse event codes
-  selftest/powerpc/pmu: Add event_init_sampling function
-  selftest/powerpc/pmu: Add macros to extract mmcr fields
-  selftest/powerpc/pmu/: Add interface test for mmcr2_l2l3 field
-  selftest/powerpc/pmu/: Add interface test for mmcr2_fcs_fch fields
-
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+---
  tools/testing/selftests/powerpc/pmu/Makefile  |  11 +-
- tools/testing/selftests/powerpc/pmu/event.c   |  18 +-
- tools/testing/selftests/powerpc/pmu/event.h   |   6 +
- .../powerpc/pmu/sampling_tests/Makefile       |  28 +
- .../powerpc/pmu/sampling_tests/misc.c         | 507 ++++++++++++++++++
- .../powerpc/pmu/sampling_tests/misc.h         | 263 +++++++++
- .../pmu/sampling_tests/mmcr0_cc56run_test.c   |  59 ++
- .../sampling_tests/mmcr0_exceptionbits_test.c |  59 ++
- .../sampling_tests/mmcr0_fc56_pmc1ce_test.c   |  58 ++
- .../sampling_tests/mmcr0_fc56_pmc56_test.c    |  58 ++
- .../pmu/sampling_tests/mmcr0_pmccext_test.c   |  59 ++
- .../pmu/sampling_tests/mmcr0_pmcjce_test.c    |  58 ++
- .../pmu/sampling_tests/mmcr1_comb_test.c      |  66 +++
- .../mmcr1_sel_unit_cache_test.c               |  70 +++
- .../pmu/sampling_tests/mmcr2_fcs_fch_test.c   |  67 +++
- .../pmu/sampling_tests/mmcr2_l2l3_test.c      |  74 +++
- .../pmu/sampling_tests/mmcr3_src_test.c       |  67 +++
- .../mmcra_thresh_marked_sample_test.c         |  80 +++
- 18 files changed, 1605 insertions(+), 3 deletions(-)
+ .../powerpc/pmu/sampling_tests/Makefile       |  20 ++++
+ .../powerpc/pmu/sampling_tests/misc.c         | 105 ++++++++++++++++++
+ .../powerpc/pmu/sampling_tests/misc.h         |   9 ++
+ 4 files changed, 143 insertions(+), 2 deletions(-)
  create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/Makefile
  create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/misc.c
  create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/misc.h
- create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_cc56run_test.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_exceptionbits_test.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_fc56_pmc1ce_test.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_fc56_pmc56_test.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_pmccext_test.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_pmcjce_test.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr1_comb_test.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr1_sel_unit_cache_test.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr2_fcs_fch_test.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr2_l2l3_test.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr3_src_test.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_thresh_marked_sample_test.c
 
+diff --git a/tools/testing/selftests/powerpc/pmu/Makefile b/tools/testing/selftests/powerpc/pmu/Makefile
+index 904672fb78dd..edbd96d3b2ab 100644
+--- a/tools/testing/selftests/powerpc/pmu/Makefile
++++ b/tools/testing/selftests/powerpc/pmu/Makefile
+@@ -8,7 +8,7 @@ EXTRA_SOURCES := ../harness.c event.c lib.c ../utils.c
+ top_srcdir = ../../../../..
+ include ../../lib.mk
+ 
+-all: $(TEST_GEN_PROGS) ebb
++all: $(TEST_GEN_PROGS) ebb sampling_tests
+ 
+ $(TEST_GEN_PROGS): $(EXTRA_SOURCES)
+ 
+@@ -26,25 +26,32 @@ DEFAULT_RUN_TESTS := $(RUN_TESTS)
+ override define RUN_TESTS
+ 	$(DEFAULT_RUN_TESTS)
+ 	TARGET=ebb; BUILD_TARGET=$$OUTPUT/$$TARGET; $(MAKE) OUTPUT=$$BUILD_TARGET -C $$TARGET run_tests
++	TARGET=sampling_tests; BUILD_TARGET=$$OUTPUT/$$TARGET; $(MAKE) OUTPUT=$$BUILD_TARGET -C $$TARGET run_tests
+ endef
+ 
+ DEFAULT_EMIT_TESTS := $(EMIT_TESTS)
+ override define EMIT_TESTS
+ 	$(DEFAULT_EMIT_TESTS)
+ 	TARGET=ebb; BUILD_TARGET=$$OUTPUT/$$TARGET; $(MAKE) OUTPUT=$$BUILD_TARGET -s -C $$TARGET emit_tests
++	TARGET=sampling_tests; BUILD_TARGET=$$OUTPUT/$$TARGET; $(MAKE) OUTPUT=$$BUILD_TARGET -s -C $$TARGET emit_tests
+ endef
+ 
+ DEFAULT_INSTALL_RULE := $(INSTALL_RULE)
+ override define INSTALL_RULE
+ 	$(DEFAULT_INSTALL_RULE)
+ 	TARGET=ebb; BUILD_TARGET=$$OUTPUT/$$TARGET; $(MAKE) OUTPUT=$$BUILD_TARGET -C $$TARGET install
++	TARGET=sampling_tests; BUILD_TARGET=$$OUTPUT/$$TARGET; $(MAKE) OUTPUT=$$BUILD_TARGET -C $$TARGET install
+ endef
+ 
+ clean:
+ 	$(RM) $(TEST_GEN_PROGS) $(OUTPUT)/loop.o
+ 	TARGET=ebb; BUILD_TARGET=$$OUTPUT/$$TARGET; $(MAKE) OUTPUT=$$BUILD_TARGET -C $$TARGET clean
++	TARGET=sampling_tests; BUILD_TARGET=$$OUTPUT/$$TARGET; $(MAKE) OUTPUT=$$BUILD_TARGET -C $$TARGET clean
+ 
+ ebb:
+ 	TARGET=$@; BUILD_TARGET=$$OUTPUT/$$TARGET; mkdir -p $$BUILD_TARGET; $(MAKE) OUTPUT=$$BUILD_TARGET -k -C $$TARGET all
+ 
+-.PHONY: all run_tests clean ebb
++sampling_tests:
++	TARGET=$@; BUILD_TARGET=$$OUTPUT/$$TARGET; mkdir -p $$BUILD_TARGET; $(MAKE) OUTPUT=$$BUILD_TARGET -k -C $$TARGET all
++
++.PHONY: all run_tests clean ebb sampling_tests
+diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/Makefile b/tools/testing/selftests/powerpc/pmu/sampling_tests/Makefile
+new file mode 100644
+index 000000000000..eb00c9f931ec
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/Makefile
+@@ -0,0 +1,20 @@
++# SPDX-License-Identifier: GPL-2.0
++include ../../../../../../scripts/Kbuild.include
++
++all: $(TEST_GEN_PROGS)
++
++noarg:
++	$(MAKE) -C ../../
++
++CFLAGS += -m64 -I../../../../../lib/
++
++# Toolchains may build PIE by default which breaks the assembly
++no-pie-option := $(call try-run, echo 'int main() { return 0; }' | \
++	$(CC) -Werror $(KBUILD_CPPFLAGS) $(CC_OPTION_CFLAGS) -no-pie -x c - -o "$$TMP", -no-pie)
++
++LDFLAGS += $(no-pie-option)
++
++top_srcdir = ../../../../../..
++include ../../../lib.mk
++
++$(TEST_GEN_PROGS): ../../harness.c ../../utils.c ../event.c ../lib.c misc.c misc.h
+diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/misc.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/misc.c
+new file mode 100644
+index 000000000000..4779b107f43b
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/misc.c
+@@ -0,0 +1,105 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright 2022, Athira Rajeev, IBM Corp.
++ */
++
++#include <unistd.h>
++#include <sys/syscall.h>
++#include <string.h>
++#include <stdio.h>
++#include <sys/ioctl.h>
++#include <sys/mman.h>
++#include <stdlib.h>
++#include <ctype.h>
++
++#include "misc.h"
++
++#define PAGE_SIZE               sysconf(_SC_PAGESIZE)
++
++/*
++ * Allocate mmap buffer of "mmap_pages" number of
++ * pages.
++ */
++void *event_sample_buf_mmap(int fd, int mmap_pages)
++{
++	size_t page_size = sysconf(_SC_PAGESIZE);
++	size_t mmap_size;
++	void *buff;
++
++	if (mmap_pages <= 0)
++		return NULL;
++
++	if (fd <= 0)
++		return NULL;
++
++	mmap_size =  page_size * (1 + mmap_pages);
++	buff = mmap(NULL, mmap_size,
++		PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
++
++	if (buff == MAP_FAILED) {
++		perror("mmap() failed.");
++		return NULL;
++	}
++	return buff;
++}
++
++/*
++ * Post process the mmap buffer.
++ * - If sample_count != NULL then return count of total
++ *   number of samples present in the mmap buffer.
++ * - If sample_count == NULL then return the address
++ *   of first sample from the mmap buffer
++ */
++void *__event_read_samples(void *sample_buff, size_t *size, u64 *sample_count)
++{
++	size_t page_size = sysconf(_SC_PAGESIZE);
++	struct perf_event_header *header = sample_buff + page_size;
++	struct perf_event_mmap_page *metadata_page = sample_buff;
++	unsigned long data_head, data_tail;
++
++	/*
++	 * PERF_RECORD_SAMPLE:
++	 * struct {
++	 *     struct perf_event_header hdr;
++	 *     u64 data[];
++	 * };
++	 */
++
++	data_head = metadata_page->data_head;
++	/* sync memory before reading sample */
++	mb();
++	data_tail = metadata_page->data_tail;
++
++	/* Check for sample_count */
++	if (sample_count)
++		*sample_count = 0;
++
++	while (1) {
++		/*
++		 * Reads the mmap data buffer by moving
++		 * the data_tail to know the last read data.
++		 * data_head points to head in data buffer.
++		 * refer "struct perf_event_mmap_page" in
++		 * "include/uapi/linux/perf_event.h".
++		 */
++		if (data_head - data_tail < sizeof(header))
++			return NULL;
++
++		data_tail += sizeof(header);
++		if (header->type == PERF_RECORD_SAMPLE) {
++			*size = (header->size - sizeof(header));
++			if (!sample_count)
++				return sample_buff + page_size + data_tail;
++			data_tail += *size;
++			*sample_count += 1;
++		} else {
++			*size = (header->size - sizeof(header));
++			if ((metadata_page->data_tail + *size) > metadata_page->data_head)
++				data_tail = metadata_page->data_head;
++			else
++				data_tail += *size;
++		}
++		header = (struct perf_event_header *)((void *)header + header->size);
++	}
++	return NULL;
++}
+diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/misc.h b/tools/testing/selftests/powerpc/pmu/sampling_tests/misc.h
+new file mode 100644
+index 000000000000..291f9adba817
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/misc.h
+@@ -0,0 +1,9 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright 2022, Athira Rajeev, IBM Corp.
++ */
++
++#include "../event.h"
++
++void *event_sample_buf_mmap(int fd, int mmap_pages);
++void *__event_read_samples(void *sample_buff, size_t *size, u64 *sample_count);
 -- 
 2.27.0
 
