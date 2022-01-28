@@ -4,104 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 743C6C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jan 2022 11:31:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AD93C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jan 2022 13:07:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JlZzJ6qJVz3cCr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jan 2022 22:31:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jld6k0ZMyz3cRp
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jan 2022 00:07:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kP64T6oy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=cNBEtVx5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::b2a;
+ helo=mail-yb1-xb2a.google.com; envelope-from=anders.roxell@linaro.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=kP64T6oy; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=cNBEtVx5; dkim-atps=neutral
+Received: from mail-yb1-xb2a.google.com (mail-yb1-xb2a.google.com
+ [IPv6:2607:f8b0:4864:20::b2a])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JlZyR0F9Sz301M
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jan 2022 22:30:38 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20S9CuDm032740; 
- Fri, 28 Jan 2022 11:30:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=mime-version :
- content-type : content-transfer-encoding : date : from : to : cc : subject
- : in-reply-to : references : message-id; s=pp1;
- bh=O4IVPk5PRXF339S6gpZVKKJ+UVjlIgEBdlZQuGAoImQ=;
- b=kP64T6oyaNVRNvN0iOb0r/uV5GlZdpm4V4YjmOsatNGWDfXsQU5ZS2i6YWpQexIquJyl
- 4wRlZZaAgXW88USlMNK+xqnHvF5mk2WjBZxffARobL+f9rZJjrvTDky8lyn/w2ybVP0e
- KnzBVAVXfW6PM6byQ+pnK/WVqfxyCN3CpKtKb3NOPSvHnt2vwLBLb8PLpo//Y2JCDUCM
- JJ/sutvkw3ay+IxW2bE222EZJVb9qxb9SBryzSQXpiuVOnXjQoPqeDv5mt6SYtXyAxbF
- gDdlXVMTVAep67OBwkN/W/qFSoxUzAqKQ+T3H3MCQZy0/1RbhHFB58aMAdw9CJboaLkd +Q== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3dvdnntjnv-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 28 Jan 2022 11:30:31 +0000
-Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 20SBMPjq025763;
- Fri, 28 Jan 2022 11:30:31 GMT
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3dvdnntjnm-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 28 Jan 2022 11:30:31 +0000
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20SBCgrH015659;
- Fri, 28 Jan 2022 11:30:30 GMT
-Received: from b03cxnp07027.gho.boulder.ibm.com
- (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
- by ppma04wdc.us.ibm.com with ESMTP id 3dr9jcffbc-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 28 Jan 2022 11:30:30 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 20SBUUqX32375150
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 28 Jan 2022 11:30:30 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 15E7E78096;
- Fri, 28 Jan 2022 11:30:30 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F3CF278124;
- Fri, 28 Jan 2022 11:30:25 +0000 (GMT)
-Received: from ltc.linux.ibm.com (unknown [9.10.229.42])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 28 Jan 2022 11:30:25 +0000 (GMT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jld5x6dnZz2xsq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jan 2022 00:07:15 +1100 (AEDT)
+Received: by mail-yb1-xb2a.google.com with SMTP id g14so18227386ybs.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jan 2022 05:07:15 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc:content-transfer-encoding;
+ bh=YgGxwqesxYhk+GrHgJnKwpv75Cf0zbWqGe6zVs0QN+M=;
+ b=cNBEtVx5FT1+KykCzEe9T2FFs9AIQBumaxy53+2enGDqLWGuhatShrWWnhC49Jy9xw
+ VmTHspZqGebuddH4NHpFewL2UtFVBpApT3VtMcKLUIBuB/WhObXIS47vBZw4v3RpZ/HM
+ q5of2qbhTXbKMMRrGBrJEwq9vP20jD9Q+OBNWFLYgvH+Bm4JCrCO2xlDtTR217dtey2i
+ kuaKb7v1zs6oPJeRtzhyGmy3hR+bFGpG3lR36aJXckQNlP4uqZRLDN0mhpFpZCE81jEg
+ ImcsFQXJCnKDW4AzBbhzX+Ajy1vnY2eqn+d9RADdGcZGQHfk43bOCwvVKr3QM2jXvMGF
+ yH7A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=YgGxwqesxYhk+GrHgJnKwpv75Cf0zbWqGe6zVs0QN+M=;
+ b=vTKTj/NAeJaV624DuTgA59kHLN8BLo5tQLeJp93+Hw/lDH4SlwD6tYN4mN7BsHeKwl
+ L9HMzfEbkbnyCMrBQ1H5ES0979VHaan02JvvDRXwztCxQLU2z3ZgJkE9bmq3q5uDAuEB
+ UxDkT6J1yM5NDVDxqFFCKxImikIx3qzCPmgriuBgK2BotyPY3KNMBCpYxh2wILkrX8g4
+ niMktALLJBQsaWcxkq7KJ1XoJwwycEfgmg5DBJPRA4v5lBkNIc8uN88vVgUFrU/R4Nbx
+ bZflCpr20iQovJrlzDrVJ/OZGsVxIHjrf4yEORs2sIzQgTJZGciTbztuv6jQ6uX9oxA5
+ Pq6w==
+X-Gm-Message-State: AOAM532Hp6NJp5/85sMX43I4ljuAeZT+zfYTVSY4zM7UDIhSpbINv8DB
+ LIkl/ceEzxGghnARwG0vtDnw4gSTo+uCmUinSoBkhg==
+X-Google-Smtp-Source: ABdhPJzb57UArYumAtcFeFp1C6yIxpu8it15t9WtSxwl45jhC2s8WeqrPkgaWoXnmz9TXVUA2MkZKhDWx0uFxL1ECgM=
+X-Received: by 2002:a25:bb4d:: with SMTP id b13mr12751188ybk.129.1643375230778; 
+ Fri, 28 Jan 2022 05:07:10 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Date: Fri, 28 Jan 2022 17:00:25 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 2/2] powerpc/uprobes: Reject uprobe on a system call
- instruction
-In-Reply-To: <1643269209.jj1krtc1vx.astroid@bobo.none>
-References: <20220124055741.3686496-1-npiggin@gmail.com>
- <20220124055741.3686496-3-npiggin@gmail.com>
- <874k5sm42l.fsf@mpe.ellerman.id.au>
- <1643269209.jj1krtc1vx.astroid@bobo.none>
-Message-ID: <1d756bcb9c747cc618bc8c205183eebd@imap.linux.ibm.com>
-X-Sender: naveen.n.rao@linux.vnet.ibm.com
-User-Agent: Roundcube Webmail/1.1.12
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: Ovdz0scUTUOsURsX4F7HkrulLcCFwfwx
-X-Proofpoint-ORIG-GUID: IKRnuvv5Tb8badW9C6QkqHyGuruCjzns
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
- definitions=2022-01-28_02,2022-01-27_01,2021-12-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1015
- lowpriorityscore=0 phishscore=0 mlxlogscore=824 bulkscore=0 adultscore=0
- spamscore=0 impostorscore=0 mlxscore=0 priorityscore=1501 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2201110000
- definitions=main-2201280069
+References: <20220128100815.3231551-1-anders.roxell@linaro.org>
+ <c6beb8a8-ecf3-1c17-f685-f5e69cd6265a@csgroup.eu>
+In-Reply-To: <c6beb8a8-ecf3-1c17-f685-f5e69cd6265a@csgroup.eu>
+From: Anders Roxell <anders.roxell@linaro.org>
+Date: Fri, 28 Jan 2022 14:07:00 +0100
+Message-ID: <CADYN=9L=RB2AoBNU6Cfy2UKyznJy+oo0aPvapHp-v1f12uVs-A@mail.gmail.com>
+Subject: Re: [PATCHv2] powerpc: mm: radix_tlb: rearrange the if-else block
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,94 +76,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ "llvm@lists.linux.dev" <llvm@lists.linux.dev>,
+ "ndesaulniers@google.com" <ndesaulniers@google.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "nathan@kernel.org" <nathan@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2022-01-27 13:14, Nicholas Piggin wrote:
-> Excerpts from Michael Ellerman's message of January 25, 2022 9:45 pm:
->> Nicholas Piggin <npiggin@gmail.com> writes:
->>> Per the ISA, a Trace interrupt is not generated for a system call
->>> [vectored] instruction. Reject uprobes on such instructions as we are
->>> not emulating a system call [vectored] instruction anymore.
->> 
->> This should really be patch 1, otherwise there's a single commit 
->> window
->> where we allow uprobes on sc but don't honour them.
-> 
-> Yep true. I also messed up Naveen's attribution! Will re-send (or maybe
-> Naveen would take over the series).
+On Fri, 28 Jan 2022 at 11:14, Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
+>
+>
+>
+> Le 28/01/2022 =C3=A0 11:08, Anders Roxell a =C3=A9crit :
+> > Clang warns:
+> >
+> > arch/powerpc/mm/book3s64/radix_tlb.c:1191:23: error: variable 'hstart' =
+is uninitialized when used here [-Werror,-Wuninitialized]
+> >                                  __tlbiel_va_range(hstart, hend, pid,
+> >                                                    ^~~~~~
+> > arch/powerpc/mm/book3s64/radix_tlb.c:1175:23: note: initialize the vari=
+able 'hstart' to silence this warning
+> >                  unsigned long hstart, hend;
+> >                                      ^
+> >                                       =3D 0
+> > arch/powerpc/mm/book3s64/radix_tlb.c:1191:31: error: variable 'hend' is=
+ uninitialized when used here [-Werror,-Wuninitialized]
+> >                                  __tlbiel_va_range(hstart, hend, pid,
+> >                                                            ^~~~
+> > arch/powerpc/mm/book3s64/radix_tlb.c:1175:29: note: initialize the vari=
+able 'hend' to silence this warning
+> >                  unsigned long hstart, hend;
+> >                                            ^
+> >                                             =3D 0
+> > 2 errors generated.
+> >
+> > Rework the 'if (IS_ENABLE(CONFIG_TRANSPARENT_HUGEPAGE))' so hstart/hend
+> > always gets initialized, this will silence the warnings. That will also
+> > simplify the 'else' path. Clang is getting confused with these warnings=
+,
+> > but the warnings is a false-positive.
+> >
+> > Suggested-by: Arnd Bergmann <arnd@arndb.de>
+> > Suggested-by: Nathan Chancellor <nathan@kernel.org>
+> > Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+> > ---
+> >   arch/powerpc/mm/book3s64/radix_tlb.c | 9 +++------
+> >   1 file changed, 3 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/boo=
+k3s64/radix_tlb.c
+> > index 7724af19ed7e..7d65965a0688 100644
+> > --- a/arch/powerpc/mm/book3s64/radix_tlb.c
+> > +++ b/arch/powerpc/mm/book3s64/radix_tlb.c
+> > @@ -1174,12 +1174,9 @@ static inline void __radix__flush_tlb_range(stru=
+ct mm_struct *mm,
+> >               bool hflush =3D false;
+>
+> You should then remove the default initialisation of hflush to false
+> which has become pointless.
+>
+> With that fixed,
+>
+> Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-Yes, let me come up with a better, more complete patch for this.
+Thank you for the review.
+I will send a v3 shortly with that fixed.
 
-> 
->> 
->>> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
->>> [np: Switch to pr_info_ratelimited]
->>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->>> ---
->>>  arch/powerpc/include/asm/ppc-opcode.h | 1 +
->>>  arch/powerpc/kernel/uprobes.c         | 6 ++++++
->>>  2 files changed, 7 insertions(+)
->>> 
->>> diff --git a/arch/powerpc/include/asm/ppc-opcode.h 
->>> b/arch/powerpc/include/asm/ppc-opcode.h
->>> index 9675303b724e..8bbe16ce5173 100644
->>> --- a/arch/powerpc/include/asm/ppc-opcode.h
->>> +++ b/arch/powerpc/include/asm/ppc-opcode.h
->>> @@ -411,6 +411,7 @@
->>>  #define PPC_RAW_DCBFPS(a, b)		(0x7c0000ac | ___PPC_RA(a) | 
->>> ___PPC_RB(b) | (4 << 21))
->>>  #define PPC_RAW_DCBSTPS(a, b)		(0x7c0000ac | ___PPC_RA(a) | 
->>> ___PPC_RB(b) | (6 << 21))
->>>  #define PPC_RAW_SC()			(0x44000002)
->>> +#define PPC_RAW_SCV()			(0x44000001)
->>>  #define PPC_RAW_SYNC()			(0x7c0004ac)
->>>  #define PPC_RAW_ISYNC()			(0x4c00012c)
->>> 
->>> diff --git a/arch/powerpc/kernel/uprobes.c 
->>> b/arch/powerpc/kernel/uprobes.c
->>> index c6975467d9ff..3779fde804bd 100644
->>> --- a/arch/powerpc/kernel/uprobes.c
->>> +++ b/arch/powerpc/kernel/uprobes.c
->>> @@ -41,6 +41,12 @@ int arch_uprobe_analyze_insn(struct arch_uprobe 
->>> *auprobe,
->>>  	if (addr & 0x03)
->>>  		return -EINVAL;
->>> 
->>> +	if (ppc_inst_val(ppc_inst_read(auprobe->insn)) == PPC_RAW_SC() ||
->>> +	    ppc_inst_val(ppc_inst_read(auprobe->insn)) == PPC_RAW_SCV()) {
->> 
->> We should probably reject hypercall too?
->> 
->> There's also a lot of reserved fields in `sc`, so doing an exact match
->> like this risks missing instructions that are badly formed but the CPU
->> will happily execute as `sc`.
-> 
-> Yeah, scv as well has lev != 0 unsupported so should be excluded.
->> 
->> We'd obviously never expect to see those in compiler generated code, 
->> but
->> it'd still be safer to mask. We could probably just reject opcode 17
->> entirely.
-
-Indeed, thanks.
-
->> 
->> And I guess for a subsequent patch, but we should be rejecting some
->> others here as well shouldn't we? Like rfid etc.
-> 
-> Traps under discussion I guess. For uprobe, rfid will be just another
-> privilege fault. Is that dealt with somehow or do all privileged and
-> illegal instructions also need to be excluded from stepping? (I assume
-> we must handle that in a general way somehow)
-
-Yes, this is all handled in our interrupt code if we emulate any of 
-those
-privileged instructions. Otherwise, if a signal is generated, that would
-be caught by uprobe_deny_signal().
-
-
-Thanks,
-Naveen
+Cheers,
+Anders
