@@ -4,113 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF1A5C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jan 2022 15:26:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37688C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jan 2022 15:43:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JlhBn319Pz30R0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jan 2022 02:26:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JlhZJ3jmxz30Mn
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jan 2022 02:43:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O66WXT1P;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org
- [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jlh9z6JBwz2xsc
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jan 2022 02:25:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=O66WXT1P; dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
- by gandalf.ozlabs.org (Postfix) with ESMTP id 4Jlh9x4K48z4xcS
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jan 2022 02:25:57 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
- id 4Jlh9x4Gnzz4xcT; Sat, 29 Jan 2022 02:25:57 +1100 (AEDT)
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: gandalf.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=O66WXT1P; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by gandalf.ozlabs.org (Postfix) with ESMTPS id 4Jlh9w5rcLz4xcS
- for <linuxppc-dev@ozlabs.org>; Sat, 29 Jan 2022 02:25:56 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20SFDr8b016419
- for <linuxppc-dev@ozlabs.org>; Fri, 28 Jan 2022 15:25:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : to : cc :
- subject : message-id : reply-to : references : mime-version : content-type
- : in-reply-to; s=pp1; bh=oV59mwBS7uLINR8s9L7VUsjZ2ZwCpOmCIR7/TmmmpYA=;
- b=O66WXT1PgqhgVXsOg/s1OeA2vva0FIVPbWNRmrPr2Dq1HxtpKsBYayep48nS3JGL4rMh
- jrl7f9DkEk+m7k6pLFW4Kcf8Di/OsxHNBkqV9CBjza6x9bB2ObLA6Zr+GVopP94NRvs9
- Fp+4lKWJrheV5yTYpCp5ubSTVo8v3b9ygOS1omnPr4EprcD39b8zUGpEoZZ63fbvFJFb
- TdE5m+LmYhG3LMgy40X6MvoYiIqKG9eIMeWp8Mu1/D2Rg0dhuP07qwTRNvJFKcRQUVUr
- Nfk7AGqVQva9DxwIxoBx3wn07zcIye/OMFs+uKPbvBgl+C58itq05eOUt3vO1r4BPmAe sQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3dvd757fkn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 28 Jan 2022 15:25:53 +0000
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 20SFF1IM022781
- for <linuxppc-dev@ozlabs.org>; Fri, 28 Jan 2022 15:25:53 GMT
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.72])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3dvd757fjp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 28 Jan 2022 15:25:52 +0000
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
- by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20SEwfDp001766;
- Fri, 28 Jan 2022 15:07:07 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma06fra.de.ibm.com with ESMTP id 3dr96k890c-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 28 Jan 2022 15:07:07 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 20SEvOQ132440598
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 28 Jan 2022 14:57:24 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E85114C040;
- Fri, 28 Jan 2022 15:07:03 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9D6094C050;
- Fri, 28 Jan 2022 15:07:02 +0000 (GMT)
-Received: from in.ibm.com (unknown [9.43.30.55])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Fri, 28 Jan 2022 15:07:02 +0000 (GMT)
-Date: Fri, 28 Jan 2022 20:36:59 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-To: Nathan Lynch <nathanl@linux.ibm.com>
-Subject: Re: [PATCH v3] PCI hotplug: rpaphp: Error out on busy status from
- get-sensor-state
-Message-ID: <20220128150659.noid5h5p53m6gxpm@in.ibm.com>
-References: <163853708110.360679.18375283379078566258.stgit@jupiter>
- <87y24tn7ms.fsf@linux.ibm.com>
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4JlhYm31Blz30Mn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jan 2022 02:43:05 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E493712FC;
+ Fri, 28 Jan 2022 07:43:01 -0800 (PST)
+Received: from FVFF77S0Q05N (unknown [10.57.13.45])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4654F3F793;
+ Fri, 28 Jan 2022 07:42:59 -0800 (PST)
+Date: Fri, 28 Jan 2022 15:42:48 +0000
+From: Mark Rutland <mark.rutland@arm.com>
+To: Sven Schnelle <svens@linux.ibm.com>
+Subject: Re: ftrace hangs waiting for rcu (was: Re: [PATCH] ftrace: Have
+ architectures opt-in for mcount build time sorting)
+Message-ID: <YfQCohKWJg9H+uID@FVFF77S0Q05N>
+References: <20220127114249.03b1b52b@gandalf.local.home>
+ <YfLjIOlGfFmbh1Zv@FVFF77S0Q05N> <yt9dy231yq90.fsf_-_@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87y24tn7ms.fsf@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: BTL2Dgl-aTmvI4OmkpERNumEbIAhU9WQ
-X-Proofpoint-GUID: 9iCdZOuf1aZnWDOWsy8nG-0yCjgUZGAu
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
- definitions=2022-01-28_04,2022-01-28_01,2021-12-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999
- lowpriorityscore=0 impostorscore=0 phishscore=0 priorityscore=1501
- malwarescore=0 bulkscore=0 mlxscore=0 spamscore=0 clxscore=1011
- suspectscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2201110000 definitions=main-2201280095
+In-Reply-To: <yt9dy231yq90.fsf_-_@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -122,90 +45,124 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: mahesh@linux.ibm.com
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Kees Cook <keescook@chromium.org>, "Paul E. McKenney" <paulmck@kernel.org>,
+ hca@linux.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@kernel.org>,
+ linux-s390@vgr.kernel.org, Sachin Sant <sachinp@linux.ibm.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Andrew Morton <akpm@linux-foundation.org>, Yinan Liu <yinan@linux.alibaba.com>,
+ linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2021-12-09 09:02:51 Thu, Nathan Lynch wrote:
-> Mahesh Salgaonkar <mahesh@linux.ibm.com> writes:
-> > To avoid this issue, fix the pci hotplug driver (rpaphp) to return an error
-> > if the slot presence state can not be detected immediately. Current
-> > implementation uses rtas_get_sensor() API which blocks the slot check state
-> > until rtas call returns success. Change rpaphp_get_sensor_state() to invoke
-> > rtas_call(get-sensor-state) directly and take actions based on rtas return
-> > status. This patch now errors out immediately on busy return status from
-> > rtas_call.
-> >
-> > Please note that, only on certain PHB failures, the slot presence check
-> > returns BUSY condition. In normal cases it returns immediately with a
-> > correct presence state value. Hence this change has no impact on normal pci
-> > dlpar operations.
-> 
-> I was wondering about this. This seems to be saying -2/990x cannot
-> happen in other cases. I couldn't find this specified in the
-> architecture. It seems a bit risky to me to *always* error out on
-> -2/990x - won't we have intermittent slot enable failures?
+Hi Sven,
 
-Sorry for the late response. So instead of always returning error out
-how about we error out only if pe is going through EEH recovery ? During
-get_adapter_status I can check if pe->state is set to EEH_PE_RECOVERING
-and only then return error on busy else fallback to existing method of
-rtas_get_sensor. Let me send out another version with this approach.
+On Thu, Jan 27, 2022 at 07:42:35PM +0100, Sven Schnelle wrote:
+> Mark Rutland <mark.rutland@arm.com> writes:
+> 
+> > * I intermittently see a hang when running the tests. I previously hit that
+> >   when originally trying to bisect this issue (and IIRC that bisected down to
+> >   some RCU changes, but I need to re-run that). When the tests hang I
+> >   magic-srsrq + L tells me:
+> >
+> >   [  271.938438] sysrq: Show Blocked State
+> >   [  271.939245] task:ftracetest      state:D stack:    0 pid: 5687 ppid:  5627 flags:0x00000200
+> >   [  271.940961] Call trace:
+> >   [  271.941472]  __switch_to+0x104/0x160
+> >   [  271.942213]  __schedule+0x2b0/0x6e0
+> >   [  271.942933]  schedule+0x5c/0xf0
+> >   [  271.943586]  schedule_timeout+0x184/0x1c4
+> >   [  271.944410]  wait_for_completion+0x8c/0x12c
+> >   [  271.945274]  __wait_rcu_gp+0x184/0x190
+> >   [  271.946047]  synchronize_rcu_tasks_rude+0x48/0x70
+> >   [  271.947007]  update_ftrace_function+0xa4/0xec
+> >   [  271.947897]  __unregister_ftrace_function+0xa4/0xf0
+> >   [  271.948898]  unregister_ftrace_function+0x34/0x70
+> >   [  271.949857]  wakeup_tracer_reset+0x4c/0x100
+> >   [  271.950713]  tracing_set_tracer+0xd0/0x2b0
+> >   [  271.951552]  tracing_set_trace_write+0xe8/0x150
+> >   [  271.952477]  vfs_write+0xfc/0x284
+> >   [  271.953171]  ksys_write+0x7c/0x110
+> >   [  271.953874]  __arm64_sys_write+0x2c/0x40
+> >   [  271.954678]  invoke_syscall+0x5c/0x130
+> >   [  271.955442]  el0_svc_common.constprop.0+0x108/0x130
+> >   [  271.956435]  do_el0_svc+0x74/0x90
+> >   [  271.957124]  el0_svc+0x2c/0x90
+> >   [  271.957757]  el0t_64_sync_handler+0xa8/0x12c
+> >   [  271.958629]  el0t_64_sync+0x1a0/0x1a4
+
+On arm64 I bisected this down to:
+
+  7a30871b6a27de1a ("rcu-tasks: Introduce ->percpu_enqueue_shift for dynamic queue selection")
+
+Which was going wrong because ilog2() rounds down, and so the shift was wrong
+for any nr_cpus that was not a power-of-two. Paul had already fixed that in
+rcu-next, and just sent a pull request to Linus:
+
+  https://lore.kernel.org/lkml/20220128143251.GA2398275@paulmck-ThinkPad-P17-Gen-1/
+
+With that applied, I no longer see these hangs.
+
+Does your s390 test machine have a non-power-of-two nr_cpus, and does that fix
+the issue for you?
+
+On arm64 the startup tests didn't seem to trigger the hang, but I was able to
+trigger the hang fairly reliably with the ftrace selftests, e.g.
+
+  $ for N in $(seq 1 10); do ./ftracetest test.d/00basic/basic2.tc; done
+
+... which prior to the fix, would hang between runs 2 to 5.
 
 Thanks,
--Mahesh.
+Mark.
 
+> that's interesting. On s390 i'm seeing the same problem in CI, but with
+> the startup ftrace tests. So that's likely not arm64 spacific.
 > 
-> > +/*
-> > + * RTAS call get-sensor-state(DR_ENTITY_SENSE) return values as per PAPR:
-> > + *    -1: Hardware Error
-> > + *    -2: RTAS_BUSY
-> > + *    -3: Invalid sensor. RTAS Parameter Error.
-> > + * -9000: Need DR entity to be powered up and unisolated before RTAS call
-> > + * -9001: Need DR entity to be powered up, but not unisolated, before RTAS call
-> > + * -9002: DR entity unusable
-> > + *  990x: Extended delay - where x is a number in the range of 0-5
-> > + */
-> > +#define RTAS_HARDWARE_ERROR	-1
-> > +#define RTAS_INVALID_SENSOR	-3
-> > +#define SLOT_UNISOLATED		-9000
-> > +#define SLOT_NOT_UNISOLATED	-9001
-> > +#define SLOT_NOT_USABLE		-9002
-> > +
-> > +static int rtas_to_errno(int rtas_rc)
-> > +{
-> > +	int rc;
-> > +
-> > +	switch (rtas_rc) {
-> > +	case RTAS_HARDWARE_ERROR:
-> > +		rc = -EIO;
-> > +		break;
-> > +	case RTAS_INVALID_SENSOR:
-> > +		rc = -EINVAL;
-> > +		break;
-> > +	case SLOT_UNISOLATED:
-> > +	case SLOT_NOT_UNISOLATED:
-> > +		rc = -EFAULT;
-> > +		break;
-> > +	case SLOT_NOT_USABLE:
-> > +		rc = -ENODEV;
-> > +		break;
-> > +	case RTAS_BUSY:
-> > +	case RTAS_EXTENDED_DELAY_MIN...RTAS_EXTENDED_DELAY_MAX:
-> > +		rc = -EBUSY;
-> > +		break;
-> > +	default:
-> > +		err("%s: unexpected RTAS error %d\n", __func__, rtas_rc);
-> > +		rc = -ERANGE;
-> > +		break;
-> > +	}
-> > +	return rc;
-> > +}
+> On s390, the last messages from ftrace are [    5.663568] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+> [    5.667099] futex hash table entries: 65536 (order: 12, 16777216 bytes, vmalloc)
+> [    5.739549] Running postponed tracer tests:
+> [    5.740662] Testing tracer function: PASSED
+> [    6.194635] Testing dynamic ftrace: PASSED
+> [    6.471213] Testing dynamic ftrace ops #1: 
+> [    6.558445] (1 0 1 0 0) 
+> [    6.558458] (1 1 2 0 0) 
+> [    6.699135] (2 1 3 0 764347) 
+> [    6.699252] (2 2 4 0 766466) 
+> [    6.759857] (3 2 4 0 1159604)
+> [..] hangs here
 > 
-> These conversions look OK to me.
-
--- 
-Mahesh J Salgaonkar
+> The backtrace looks like this, which is very similar to the one above:
+> 
+> crash> bt 1
+> PID: 1      TASK: 80e68100          CPU: 133  COMMAND: "swapper/0"
+>  #0 [380004df808] __schedule at cda39f0e
+>  #1 [380004df880] schedule at cda3a488
+>  #2 [380004df8b0] schedule_timeout at cda41ef6
+>  #3 [380004df978] wait_for_completion at cda3bd0a
+>  #4 [380004df9d8] __wait_rcu_gp at ccdddd92
+>  #5 [380004dfa30] synchronize_rcu_tasks_generic at ccdde0aa
+>  #6 [380004dfad8] ftrace_shutdown at cce7b050
+>  #7 [380004dfb18] unregister_ftrace_function at cce7b192
+>  #8 [380004dfb50] trace_selftest_ops at cda1e0fa
+>  #9 [380004dfba0] run_tracer_selftest at cda1e4f2
+> #10 [380004dfc00] trace_selftest_startup_function at ce74355c
+> #11 [380004dfc58] run_tracer_selftest at cda1e2fc
+> #12 [380004dfc98] init_trace_selftests at ce742d30
+> #13 [380004dfcd0] do_one_initcall at cccdca16
+> #14 [380004dfd68] do_initcalls at ce72e776
+> #15 [380004dfde0] kernel_init_freeable at ce72ea60
+> #16 [380004dfe50] kernel_init at cda333fe
+> #17 [380004dfe68] __ret_from_fork at cccdf920
+> #18 [380004dfe98] ret_from_fork at cda444ca
+> 
+> I didn't had success reproducing it so far, but it is good to know that
+> this also happens when running the ftrace testsuite.
+> 
+> I have several crashdumps, so i could try to pull out some information
+> if someone tells me what to look for.
+> 
+> Thanks,
+> Sven
