@@ -4,60 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C25C1C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jan 2022 09:58:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A930C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jan 2022 11:15:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jm8sj68Pfz3c5j
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jan 2022 20:58:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256 header.s=phobos-20191101 header.b=Ytd+bRoJ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=denx.de
- (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
- envelope-from=agust@denx.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=denx.de header.i=@denx.de header.a=rsa-sha256
- header.s=phobos-20191101 header.b=Ytd+bRoJ; 
- dkim-atps=neutral
-X-Greylist: delayed 455 seconds by postgrey-1.36 at boromir;
- Sat, 29 Jan 2022 20:57:54 AEDT
-Received: from phobos.denx.de (phobos.denx.de
- [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JmBZb4qRRz3cVF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jan 2022 22:15:35 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jm8ry1NWWz2yPq
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jan 2022 20:57:54 +1100 (AEDT)
-Received: from crub (p508b6e90.dip0.t-ipconnect.de [80.139.110.144])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- (Authenticated sender: agust@denx.de)
- by phobos.denx.de (Postfix) with ESMTPSA id BD2D78210D;
- Sat, 29 Jan 2022 10:50:07 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
- s=phobos-20191101; t=1643449808;
- bh=wcVkdXf9yFZ5R/QSWp9DJkR9pJYiKAivTu+9LpeeBSQ=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=Ytd+bRoJLgNjHWWwFhyqm9CGOLMwNRGwOafo7NDZc5AmzDdttsgAIFY3xkIjrB4Ng
- 2yFd7qr/HACHUWiU85gEFaTcYLue/uJf2SV/tqzNXaY59l8Is4x8uFCwyL23LzEYTr
- 8UO1Tgtyr2jAe5yU3qYG1lQhQh4uV9POl+8TdBC7clfpgLomdxDW58mjttmtnYyWiy
- MnlZ/R0j6MZQw7MonX8QU2Vu0C9nSv0TQC973aDjuYXi/axZYReZoirZRwi19FKmwl
- d40aUvl1doehfxjKifA4qIX/wzhhnuTIREplC/9kniI3LRdEAcFEtbqG51ljS9K2rv
- lDosRuD3nOpIQ==
-Date: Sat, 29 Jan 2022 10:50:07 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: Re: [PATCH] powerpc: platforms: 52xx: Fix a resource leak in an
- error handling path
-Message-ID: <20220129105007.6dfdea45@crub>
-In-Reply-To: <dec1496d46ccd5311d0f6e9f9ca4238be11bf6a6.1643440531.git.christophe.jaillet@wanadoo.fr>
-References: <dec1496d46ccd5311d0f6e9f9ca4238be11bf6a6.1643440531.git.christophe.jaillet@wanadoo.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JmBZ65ttcz2ymv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Jan 2022 22:15:10 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JmBZ44CnLz4xcH;
+ Sat, 29 Jan 2022 22:15:08 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: mpe@ellerman.id.au, Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+In-Reply-To: <20220122033429.25395-1-atrajeev@linux.vnet.ibm.com>
+References: <20220122033429.25395-1-atrajeev@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2] powerpc/perf: Fix power_pmu_disable to call
+ clear_pmi_irq_pending only if PMI is pending
+Message-Id: <164345486591.1545234.3866440099321840393.b4-ty@ellerman.id.au>
+Date: Sat, 29 Jan 2022 22:14:25 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Virus-Scanned: clamav-milter 0.103.5 at phobos.denx.de
-X-Virus-Status: Clean
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,37 +43,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, John Bonesio <bones@secretlab.ca>,
- linuxppc-dev@lists.ozlabs.org
+Cc: kjain@linux.ibm.com, maddy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, rnsastry@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 29 Jan 2022 08:16:04 +0100
-Christophe JAILLET christophe.jaillet@wanadoo.fr wrote:
+On Sat, 22 Jan 2022 09:04:29 +0530, Athira Rajeev wrote:
+> Running selftest with CONFIG_PPC_IRQ_SOFT_MASK_DEBUG enabled in kernel
+> triggered below warning:
+> 
+> [  172.851380] ------------[ cut here ]------------
+> [  172.851391] WARNING: CPU: 8 PID: 2901 at arch/powerpc/include/asm/hw_irq.h:246 power_pmu_disable+0x270/0x280
+> [  172.851402] Modules linked in: dm_mod bonding nft_ct nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 ip_set nf_tables rfkill nfnetlink sunrpc xfs libcrc32c pseries_rng xts vmx_crypto uio_pdrv_genirq uio sch_fq_codel ip_tables ext4 mbcache jbd2 sd_mod t10_pi sg ibmvscsi ibmveth scsi_transport_srp fuse
+> [  172.851442] CPU: 8 PID: 2901 Comm: lost_exception_ Not tainted 5.16.0-rc5-03218-g798527287598 #2
+> [  172.851451] NIP:  c00000000013d600 LR: c00000000013d5a4 CTR: c00000000013b180
+> [  172.851458] REGS: c000000017687860 TRAP: 0700   Not tainted  (5.16.0-rc5-03218-g798527287598)
+> [  172.851465] MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 48004884  XER: 20040000
+> [  172.851482] CFAR: c00000000013d5b4 IRQMASK: 1
+> [  172.851482] GPR00: c00000000013d5a4 c000000017687b00 c000000002a10600 0000000000000004
+> [  172.851482] GPR04: 0000000082004000 c0000008ba08f0a8 0000000000000000 00000008b7ed0000
+> [  172.851482] GPR08: 00000000446194f6 0000000000008000 c00000000013b118 c000000000d58e68
+> [  172.851482] GPR12: c00000000013d390 c00000001ec54a80 0000000000000000 0000000000000000
+> [  172.851482] GPR16: 0000000000000000 0000000000000000 c000000015d5c708 c0000000025396d0
+> [  172.851482] GPR20: 0000000000000000 0000000000000000 c00000000a3bbf40 0000000000000003
+> [  172.851482] GPR24: 0000000000000000 c0000008ba097400 c0000000161e0d00 c00000000a3bb600
+> [  172.851482] GPR28: c000000015d5c700 0000000000000001 0000000082384090 c0000008ba0020d8
+> [  172.851549] NIP [c00000000013d600] power_pmu_disable+0x270/0x280
+> [  172.851557] LR [c00000000013d5a4] power_pmu_disable+0x214/0x280
+> [  172.851565] Call Trace:
+> [  172.851568] [c000000017687b00] [c00000000013d5a4] power_pmu_disable+0x214/0x280 (unreliable)
+> [  172.851579] [c000000017687b40] [c0000000003403ac] perf_pmu_disable+0x4c/0x60
+> [  172.851588] [c000000017687b60] [c0000000003445e4] __perf_event_task_sched_out+0x1d4/0x660
+> [  172.851596] [c000000017687c50] [c000000000d1175c] __schedule+0xbcc/0x12a0
+> [  172.851602] [c000000017687d60] [c000000000d11ea8] schedule+0x78/0x140
+> [  172.851608] [c000000017687d90] [c0000000001a8080] sys_sched_yield+0x20/0x40
+> [  172.851615] [c000000017687db0] [c0000000000334dc] system_call_exception+0x18c/0x380
+> [  172.851622] [c000000017687e10] [c00000000000c74c] system_call_common+0xec/0x268
+> 
+> [...]
 
->The error handling path of mpc52xx_lpbfifo_probe() and a request_irq() is
->not balanced by a corresponding free_irq().
->
->Add the missing call, as already done in the remove function.
->
->Fixes: 3c9059d79f5e ("powerpc/5200: add LocalPlus bus FIFO device driver")
->Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
->---
->Another strange thing is that the remove function has:
->	/* Release the bestcomm transmit task */
->	free_irq(bcom_get_task_irq(lpbfifo.bcom_tx_task), &lpbfifo);
->but I've not been able to find a corresponding request_irq().
+Applied to powerpc/fixes.
 
-This driver does not request the tx task irq itself, but a fifo
-client driver can request/free tx interrupts for submitted
-fifo write tasks, like mpc5200 fec and pata drivers do, so
-it is okay.
+[1/1] powerpc/perf: Fix power_pmu_disable to call clear_pmi_irq_pending only if PMI is pending
+      https://git.kernel.org/powerpc/c/fb6433b48a178d4672cb26632454ee0b21056eaa
 
->Is it dead code? Is there something missing in the probe?
-
-No.
-
---
-Anatolij
+cheers
