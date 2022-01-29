@@ -4,49 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39AD0C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jan 2022 17:05:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59B7CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Jan 2022 17:05:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JmLL15LkVz3dqT
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Jan 2022 04:05:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JmLLW6CpMz3dsp
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Jan 2022 04:05:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::61f;
+ smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::609;
  helo=fra01-mr2-obe.outbound.protection.outlook.com;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from FRA01-MR2-obe.outbound.protection.outlook.com
- (mail-mr2fra01on061f.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:7e19::61f])
+ (mail-mr2fra01on0609.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:7e19::609])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JmLGx245tz3bSk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JmLGx40jxz3bTp
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Jan 2022 04:02:33 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=PzdIMkfYAmkDVNuC5iZTEa+JF/y3u6ACtcnoxro3KRT/FsrF5zKNrnMnkzuOFk89GL+uL29u5dH6qvJEG8+RTEbtlIEORha6L3aK9S4sFXoLc5TL+Eyns70Jnm9AYgEiErXcyTW/LulCOcVmZp9GPMtpgxYJOljvMCkmc7346Z3dHefuK03Cup/TpJkT4u5g1CIhrAS10BLmXo5Wz9cr1zpnMq37PMJMQoBGJlSZX8iMhWVBDS7pc0kczRWHbB7Og05pslfZeeJUHPfopaQV8QhfrFNG6WZhK+DL6HOXDenmqRa+86AYl2JCSPh672Ayw9Zup23FFIgHqO8SOWXsmQ==
+ b=lf1RZYhEzuv8B9+5AMHJIePX0nOIUO6IUW+f1BkQKM/tsWtf8a+8CZkpW2WaK3A4dO4Dfq8NSZSV1BJB9pICKQ4s6+JMzAdpPEoX5SyqRGRJDlUd5mWsurYgMplDnYLp1jDep4up8foyNNG5XlpLSsJ5XQcQuBF6Ohpsponyl2I7Qlvnclmdk5VQJXCdi+qzN+kL6QO9xLCd2HLgtvH8PfDHiHJ1WihzPl5qqpdfYseTO8FVlCD8SB2b9kY3dn63JlLfSn0+xsI+7f6bIekvKI7tpdtkQjTazQ7u/0j4jb5tbFuiVYxh3f65X01Ya0stYrgH74cpS5CfgOFQK8PwAQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=hDmVjj830CtXExXD123euZ+os2WqKPyfIrNuhETOUf0=;
- b=GmBMH1vQPoffveeJA/PM3mu66uzJI8l3WPBZBVGMB/y/JtmkzqjdbnubmxOcG2djLuuhURUDMFDQoaH7uPCo9Qjh7s2wcxN6QfHc01iJZ9zAvrYYTGe4MonFxfYjP81sqoLM7ZehJ9Go+nXpDgrm+GekIUO/jNJz0c6W8qSnIUcO6EXro+ZduaBzPviQ8QTdDPAwYm50y8Ik7Llht7J6bfQEaMYBPUN43ZbW5pejks9bsG4Iodd4qCX+/N57RJYjszzSNQ4H1tG45nthmh+SbY1c+odwTKyJRGJNrLr4PZiLH+AsFkDQWzAHYh6/LQwboduK4re8mb/D3sG4nMUohw==
+ bh=VJplCcR9Zkx4G0K2Wjd0QLzNxJNdkoySv2NqjcWI/Ik=;
+ b=EO7teiGeybXqSa3YGeJCpfd9/a7NkjOgx5lx+pTyNYmtzM9JTWcJzdy9wnUhMNKSMVBVNJdpL3AzdXHP1D/CXCxQ1bRJjbXxtHldZJlXZMnVWppZa4yxzrp0S/DlLUpMXUhnjKwieq4VUR1LSm6G2dBDEvgiSOb+f4TIyV+ujlLxEQIqathJ2NVkZnfFwdmIATbwMkDW/Fgv+o5Zc0ugIq6WXJ2fhoN1VgHJqpx1kwBw4BtS44ytEHWevNF/nXHo0ceRzaRFmyx6Vxmtwn1W4oFF5UiZLS7vx2T5Yzt8Hae2vsPzbA7zUF/UUhjR5LfqvA0o3OvjZLap5Zpy1TXH1Q==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
  dkim=none; arc=none
 Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
  by PR0P264MB2584.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:1e3::17) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4930.15; Sat, 29 Jan
- 2022 17:02:14 +0000
+ 2022 17:02:04 +0000
 Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
  ([fe80::c9a2:1db0:5469:54e1]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
  ([fe80::c9a2:1db0:5469:54e1%6]) with mapi id 15.20.4930.020; Sat, 29 Jan 2022
- 17:02:14 +0000
+ 17:02:04 +0000
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Luis Chamberlain <mcgrof@kernel.org>, Jessica Yu <jeyu@kernel.org>
-Subject: [PATCH v3 6/6] powerpc: Select ARCH_WANTS_MODULES_DATA_IN_VMALLOC on
- book3s/32 and 8xx
-Thread-Topic: [PATCH v3 6/6] powerpc: Select
- ARCH_WANTS_MODULES_DATA_IN_VMALLOC on book3s/32 and 8xx
-Thread-Index: AQHYFTH2Z+9BZHr+mkubHJQ6ewTMHg==
-Date: Sat, 29 Jan 2022 17:02:14 +0000
-Message-ID: <04a0d5550f331d68f7eab4b512d50978712f989e.1643475473.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 1/6] modules: Always have struct mod_tree_root
+Thread-Topic: [PATCH v3 1/6] modules: Always have struct mod_tree_root
+Thread-Index: AQHYFTHwBkgteju0lUKhtOmDC0OODg==
+Date: Sat, 29 Jan 2022 17:02:04 +0000
+Message-ID: <79a93898cfc4fcab56bdadd06bd9233f78caeb81.1643475473.git.christophe.leroy@csgroup.eu>
 References: <cover.1643475473.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1643475473.git.christophe.leroy@csgroup.eu>
 Accept-Language: fr-FR, en-US
@@ -56,61 +54,61 @@ X-MS-TNEF-Correlator:
 authentication-results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=csgroup.eu;
 x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: c8448cf0-569c-4b8b-c1a8-08d9e3491907
+x-ms-office365-filtering-correlation-id: 5431cea2-0cce-43ff-add0-08d9e3491320
 x-ms-traffictypediagnostic: PR0P264MB2584:EE_
-x-microsoft-antispam-prvs: <PR0P264MB25847AFC69401D65E4663A16ED239@PR0P264MB2584.FRAP264.PROD.OUTLOOK.COM>
-x-ms-oob-tlc-oobclassifiers: OLM:5797;
+x-microsoft-antispam-prvs: <PR0P264MB2584B60C018B6DB8B0C5BAB2ED239@PR0P264MB2584.FRAP264.PROD.OUTLOOK.COM>
+x-ms-oob-tlc-oobclassifiers: OLM:556;
 x-ms-exchange-senderadcheck: 1
 x-ms-exchange-antispam-relay: 0
 x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: iwv5BXfDzUnohE3Dhxxj3ViUEOzp38nRo/dx/VgebUiBPwRV9YmfDJbKwgK6+r4yiqqWejLAao2JiSi38V40BrAL2jiV36cPOHBxFW7+/lBX5/yriRbsohIMXTfuTN2hzlIqQVKsAHGhp33IioH/W2YkuJtJl9D6ljuhQR7uo7h98qLjk/V/bHiyLyTRuZh4k2ytLgiu90u9DFIe0S3K7ByVv3VFeeSjeV+PNHbdXTJeap3QfOg5bnUXLWfK5kDmcKGz2aduCSu+qHbk+j4GzKfycFqAOVFS+SQ742DNj9NbcI3u5PVW9WMzmn5QUggMgKQnE5w3o1DCE9/+ngAWa2N8cIXonrpvNHytzGUiWcjlPrSjXspJ53xsLAYQEDOmSaaw6Ftq3lJM1s1agvzVINB+I+fENd52KLy0qKVwWbzaoNmEHEIFkf1sajYzqn7GcCF1nbbIWGIHuHsQbkB8UruowWYZuxuu+8iboawcu0AOlIq1hmk/A+PoVUoL0Yg3uzDishAkdhfZi0KrrNtC2VBxHXJ67/pZOgAuQRy6m3tWjLG35cxoMY+2Yy4rYm2/o09kxI7ujAevof/XCR8K9mOAW0glv2leh0Q3tWgZMZH5q1RFwBScWLF5dmhFnu+r0Io4cvHl6GY23JbZudnXxc8V6GFEadJtWkrQNwuyGnm8G+qzV/67a0RCfK1xxsc962Ofb/5VCQzYUCGXolleQwjvXPDS0VwHuLVQcQ9cVOY=
+x-microsoft-antispam-message-info: /50+geNmZLhhxp7pF6rvhMNVFH8QLSwZ0LcFAxDc2KYyCsX55kC3ethHp8768UZkPVTdVQRF5cH9w9Edy5ebQEEh3S3EGd+ja+gKtpqX6M9KJBRqJ09tPCSPqo689OxCkPQ2kOWod5hHaapiJEMSAwd+21tlqSr2M0mlNwy2YTaVinU6EKOG6BVYEE5GA4tPYltfAe8Kv7SHCCYPOJEozgOMWTwyA6+NEXcUHQgsNnZy0BJx5oBLtQngjvC6amiQPSyn40pWOz68io2oMC+N+ENzJpafVHuHsiZbwkfpLIrVPIbaT/TxcB9yo6mcQjES2IG1tJUqnUah3TEum7FHJu1Xn2VVT5QS/jmtzI3FiF1qGgNKEqc9GOFQi2ePi3d07WKVhudsJr+P4buo2TJucFzPXjOfBxcuQ7rkN15wprwM3E3+cTLZ23YqE/oGPLfNRU1PXDX2oqh3D7kgCj+PTS2EM9LfslM2G/8/OZp6roCDYqBfCDlY+7vrhN+PCkXMuyX8MjkpZNke2GXTzRyG/DsTEWwrObrrVUZxqbY0a5Z3AH9jd7kg2CiCzmKRfWGKOfXf+RVGWunuQDTRqX9ckdN5rkX8i5a4R4HAZSXS6JKHwnLHrYifeUaaW6B1csj6RLSm/7oQsNDnvWznJg0oouwIqi2EgNzBU6fC2gnaIYCbNYyJPAgf2TgeF9h0ExlMI1j9PN+ARlxhNWsiBCdZhQ==
 x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
- SFS:(13230001)(4636009)(366004)(54906003)(110136005)(6512007)(2906002)(86362001)(6486002)(508600001)(4326008)(122000001)(38100700002)(91956017)(316002)(76116006)(26005)(64756008)(6506007)(8936002)(186003)(5660300002)(44832011)(66476007)(66556008)(71200400001)(66946007)(8676002)(66446008)(83380400001)(2616005)(7416002)(36756003)(38070700005)(32563001)(20210929001);
+ SFS:(13230001)(4636009)(366004)(54906003)(110136005)(6512007)(2906002)(86362001)(6486002)(508600001)(4326008)(122000001)(38100700002)(91956017)(316002)(76116006)(26005)(64756008)(6506007)(8936002)(186003)(5660300002)(44832011)(66476007)(66556008)(71200400001)(66946007)(8676002)(66446008)(83380400001)(2616005)(36756003)(38070700005)(20210929001);
  DIR:OUT; SFP:1101; 
 x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?iso-8859-1?Q?j73f71ns0JUnRc3p8L3L7g8Z4IvNoRIeizCMijE2bSQI4DpV3pUISSxIMv?=
- =?iso-8859-1?Q?mzb1QiLYfaneeZY6SxfvVc38aUbQJ4IG/vBvgeXZnp77QiDlCsY5Czwyie?=
- =?iso-8859-1?Q?jteFq/OG/nLKmFLKzc0Grz2cQhEbQkiwDhmtCHaRCqiLtfuefpZlGqaOMM?=
- =?iso-8859-1?Q?u/OKkZgwEOcPKatp9+Gf6bENwAUSeYMUFx8MksOVwlqGr76wkLEQ4Q84nA?=
- =?iso-8859-1?Q?IHEBpwM3xF4Cjfnz6z1R9jW96Uwu5WD2PJBpbbx29y2PzR2Wgl5STsbRSj?=
- =?iso-8859-1?Q?AxyfKAq6DsssLpsmtzRmN5L7DWpUAk63GC2+aaocPyJVO7JlXAwQqGS5m2?=
- =?iso-8859-1?Q?Ym5bC0veMAmaRPAZY1wxIh4VDIBqNRHtUSa0BZZsyalFKycBwBAVoZWsAP?=
- =?iso-8859-1?Q?n+0QOcL01AZwkS+mgmiFa7Q9kjdcNYXNDQpajtDYNyzz+tf9JnaqCO4UQU?=
- =?iso-8859-1?Q?B2WZcfc2Eepa/U5vPwhUert/GMlLz3dBMIhr9UqHK0hITi0BTTOEJid/rq?=
- =?iso-8859-1?Q?qXQ56ttalTeyXIp08TpJHYTZ+bE9+vrlrX3SHkmmxjWUnzMDDsCw7BrF91?=
- =?iso-8859-1?Q?l2KFsjE276J4nmv/5QpQPB5kNTfruNrjYhR05FnYh6vJ42QAUCjpsf/eZB?=
- =?iso-8859-1?Q?p0kv4q/ywLniv6gnF9VryRl255wgY71486gVzn1JbtQ0z6be01uot6JB+K?=
- =?iso-8859-1?Q?I02meSVAp37objuh2K4xdlrKcx+TbpX3mkEwwSNdUwEoWfu9mOTp1CHJsc?=
- =?iso-8859-1?Q?2q3/h4expdtXeYqCKoaF54ab/9GCXsrHV7oT2KyTmCJ7fqpEK3w3OHHrD+?=
- =?iso-8859-1?Q?2mkkeFQWpXPUC/aJIFb9FJiZS5QJYhfCpJvC1RsymC+5u2q+dzm6ClQZl0?=
- =?iso-8859-1?Q?4v3Zh0M5fi/UGDUPb5Xk5+hj9bIB5lIq5P8U8Mb1IsxL6p+CNswdYobuY1?=
- =?iso-8859-1?Q?wgovDwcHSMlH8u8O8JF+2NEpN5sjXKi4MO+W4ZSnTEOAHd+CkOw6ET8yMs?=
- =?iso-8859-1?Q?D9eJrYLHf9/ANSycaUa6LOAx621hXxWI6zAZ/ixf3eFCpuBUedX8lPM0wk?=
- =?iso-8859-1?Q?tEK6ZfGDpjABnYSyxaHrvryCfWyyKcnl//DS9dDMmzbGhBnyTASFLOYrpo?=
- =?iso-8859-1?Q?dWLXwo4zdR6aq1f4nJAh9z6dMK7GP+CT+tijozU7Ja3gGXTgH88/2h072t?=
- =?iso-8859-1?Q?8ReoWjkVPyV+ExjEVLLOOtD3QGmByXiwvQFENkjDhOftF8WDu+PS5zQ6vr?=
- =?iso-8859-1?Q?NSs9lprBNj5yIynZTo7kK7JSgV+EjLdYyvIhEEkW3qGxy+Xq3yajeWueYA?=
- =?iso-8859-1?Q?YxXNGl0qZT5knwTc4B/4zrChWa1O9Vwe3ePyCkF2VdLhJfFhwwQCYW0U5O?=
- =?iso-8859-1?Q?OMO9U30s0WUxE4CS/IqDOnXt3C9SEzyFaxMt8nnQJqWXFONh9p8pZjr3Lx?=
- =?iso-8859-1?Q?6EsAzGGs0RR8RsfqNegeiPu/+W8HNp3ITtYHNaNX/Ln1ARvEX8F7Ep8q2P?=
- =?iso-8859-1?Q?OGPY2hYc8epSLdNhT1jrJHFuSu76l93K0BSXx85uHjY9jpvAtqqeXZRCSt?=
- =?iso-8859-1?Q?lQ7FVMcbxQU3AqW4S27niYuqsS/xr+m3NbFAQJQ+voFMma7kfxx+NXPxlC?=
- =?iso-8859-1?Q?O2tDfDjVzVpQR7L4KRMS3qf9T9gj+ManbYnQKsqiZ3covKFzpsHiu5YPhE?=
- =?iso-8859-1?Q?++E7N8ShMfxyynz+40QXXjDXHsSIACrTukK0iZ/E408g9otiAm/yQL8fQ7?=
- =?iso-8859-1?Q?x1qHxTsBWsQmrHAFX7SizpTbY=3D?=
+x-ms-exchange-antispam-messagedata-0: =?iso-8859-1?Q?914jvIorz8kxfZKlhd3jVND2DCYK/x+mTl5Ju4hnvbW0OarUbKlO9B/gKW?=
+ =?iso-8859-1?Q?ytJvW6jP5TZMk83LiK1DsKsO9fNVaOO4sXnwz4CLY09xSk1hDjHRS61N+D?=
+ =?iso-8859-1?Q?oRPBODodYiLgWdIVXS9ChJRfIYwxm4aig6hwunGT+G7d4H8e0tj4Gt+OEy?=
+ =?iso-8859-1?Q?IlBk96ZEJV3piWzBD7X+B4XA9oZXqld0XFrNOXrtguCsdO4J1DoPSYG2b4?=
+ =?iso-8859-1?Q?FY1cQS95P2O2oCnwZPncBZ8+m6G5BOCkSkxn8PCFGDGHKUayM41kBY5WLh?=
+ =?iso-8859-1?Q?0TqhsFfbFRJn2RBMA1JVH0p0xpgOV8WxwszD8EGTJbhIbscowCaYBynO4m?=
+ =?iso-8859-1?Q?1ZGoxir25MuwsDpkRo1aAFCC3sAzzCfUn/t/gGWxtRD8MLRGXAxkCOocee?=
+ =?iso-8859-1?Q?EzdV35H4H5ABqhrA37XJ4oUGiTL/Si2CsmUyUGawZ45TXOVAC5j7IDb0pW?=
+ =?iso-8859-1?Q?ehYNBSV5c8b0pUKI6uwS9CwsjwzVKJcL1YClimMMdY9mKSGoIKLuKtxUos?=
+ =?iso-8859-1?Q?2n8AO+rkfmKeClWzj2w1hs9fGXeprDiqVA+UWAO/laf7dH8SDbmi5VMc89?=
+ =?iso-8859-1?Q?nZBWrpGKNcZundDRTfzgdmkdlh452Dx5+RKnWtcECxphARfE/gwjqSGGnU?=
+ =?iso-8859-1?Q?LRkLl+gr+KtO9v8SzwYIM9cTkHBcDGi87MEbTwfAq1gvM3Hrfb9sFx9zM9?=
+ =?iso-8859-1?Q?RMME9C3BWg942zoRu+FTdsClwKhsnNCGntOZ2Pa29CRImxp+oQ3moQ84RJ?=
+ =?iso-8859-1?Q?o44grY5LxPQaleB15m8gqwymi8jz8TxEKTdsEOY6ie0dnIvuiS+oCnK4wP?=
+ =?iso-8859-1?Q?ZWCd1qnrO1UuNoRsAMdTVTaAlQMNLaXnD3VGFkjkrORiUeGCkYZXcYcOap?=
+ =?iso-8859-1?Q?RmqneY2kn5ZqzS841x7RqqZ9naD0UuYm5s9fv8DSYKaXO1a0awGSFr91zj?=
+ =?iso-8859-1?Q?c+V3wGCy6h4gVpT8KmZisHVZUU+J5uSLOAkYRaGj+ayPvtRRBpTSif1gLs?=
+ =?iso-8859-1?Q?hm8dIa+Li9hNIV4Pp0qq6ovGmyt3a+nqVCZqs/9ygS8KYv6Ykfc8Gnn9Zu?=
+ =?iso-8859-1?Q?Kziwyi7UddMtQwGcvjpsFk6Y+DS14rISUTPglVmmcBTs6Y2o2dZrs4O1gE?=
+ =?iso-8859-1?Q?dzW8OEI6PnA1/QuYrInbPRdECJstr3g1CfMvbhgZl2s7lUHaiZ/AN5D6oo?=
+ =?iso-8859-1?Q?Tq+YXbsATEvLTrxG/OSTbhksUk3qfReaByJpD/+CZrzMROAMHGViB4/Sl/?=
+ =?iso-8859-1?Q?k1PXN/cUQfaAZ6SCntaCZRgiW+oIHoMFX+XGN/cU7qFiy0o3H1UVD/auge?=
+ =?iso-8859-1?Q?UPL5YxKG9wg72joIzoleDSrxlSQ04SDISdxIJZHnXCenXw/hPqiLRS3Iw5?=
+ =?iso-8859-1?Q?5J1O35tPk0ucdPhIGaq8od1e+bjIDXG14Uj4HY8igZ+D9eJcmkbMScH8fJ?=
+ =?iso-8859-1?Q?nr/RXMHiKZHwA6OSfv3iuC3Kb5HvSN2DyK/Ggt/mX1rq2JJ0UOHr74Pidn?=
+ =?iso-8859-1?Q?A9BEpnKRNbjvz8ej8B7/FaaMmcNcai6kEkgbYyZuMglgeRueSzNRmkyjEJ?=
+ =?iso-8859-1?Q?fM0LkVrojzxsfhVXJ5yiblx4ar4TnuRYjDvkT0TKzikUzJ/87G+zUH1/27?=
+ =?iso-8859-1?Q?nx5zBpGVRYILRwInOTOg7dr+qz6oTxo+9gSzrXdb1t9nxJVTocPTcOJzj5?=
+ =?iso-8859-1?Q?pLBnfPEidSytrbz+VjI06IkswkqwdhTw6cmEnk65HIZ5i352BVjHvpiuN+?=
+ =?iso-8859-1?Q?SH4g+bGSuAA0suGM5w2jZ/NcU=3D?=
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
 X-OriginatorOrg: csgroup.eu
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-Network-Message-Id: c8448cf0-569c-4b8b-c1a8-08d9e3491907
-X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Jan 2022 17:02:14.0755 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5431cea2-0cce-43ff-add0-08d9e3491320
+X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Jan 2022 17:02:04.1881 (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 6djKFQr0cHMhrf6Tp+sNdDrT700aVyYKZ+t5IOoSqzEcz7ADs6/oGc5Y6d9B96S1UVn3cQi5o4s5j6QmgEjsM9VVhqWgKvn1wakt6iQfqC8=
+X-MS-Exchange-CrossTenant-userprincipalname: 6j5EVAHKC2Cc9TFaQQWcM+IWDgyGMUvkhKiZ1usUhYEtoLVnUeeU2hYN89gdD95h/lvk33Zau2PskYU37pXLgOYf/Wiex07OvQxqS+G6Ijg=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR0P264MB2584
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -127,52 +125,73 @@ Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
  "kgdb-bugreport@lists.sourceforge.net"
  <kgdb-bugreport@lists.sourceforge.net>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-book3s/32 and 8xx have a separate area for allocating modules,
-defined by MODULES_VADDR / MODULES_END.
+In order to separate text and data, we need to setup
+two rb trees.
 
-On book3s/32, it is not possible to protect against execution
-on a page basis. A full 256M segment is either Exec or NoExec.
-The module area is in an Exec segment while vmalloc area is
-in a NoExec segment.
-
-In order to protect module data against execution, select
-ARCH_WANTS_MODULES_DATA_IN_VMALLOC.
-
-For the 8xx (and possibly other 32 bits platform in the future),
-there is no such constraint on Exec/NoExec protection, however
-there is a critical distance between kernel functions and callers
-that needs to remain below 32Mbytes in order to avoid costly
-trampolines. By allocating data outside of module area, we
-increase the chance for module text to remain within acceptable
-distance from kernel core text.
-
-So select ARCH_WANTS_MODULES_DATA_IN_VMALLOC for 8xx as well.
+This means that struct mod_tree_root is required even without
+MODULES_TREE_LOOKUP.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ kernel/module.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b779603978e1..242eed8cedf8 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -152,6 +152,7 @@ config PPC
- 	select ARCH_WANT_IPC_PARSE_VERSION
- 	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
- 	select ARCH_WANT_LD_ORPHAN_WARN
-+	select ARCH_WANTS_MODULES_DATA_IN_VMALLOC	if PPC_BOOK3S_32 || PPC_8xx
- 	select ARCH_WEAK_RELEASE_ACQUIRE
- 	select BINFMT_ELF
- 	select BUILDTIME_TABLE_SORT
+diff --git a/kernel/module.c b/kernel/module.c
+index 24dab046e16c..080193e15d24 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -96,6 +96,19 @@ static void do_free_init(struct work_struct *w);
+ static DECLARE_WORK(init_free_wq, do_free_init);
+ static LLIST_HEAD(init_free_list);
+=20
++static struct mod_tree_root {
++#ifdef CONFIG_MODULES_TREE_LOOKUP
++	struct latch_tree_root root;
++#endif
++	unsigned long addr_min;
++	unsigned long addr_max;
++} mod_tree __cacheline_aligned =3D {
++	.addr_min =3D -1UL,
++};
++
++#define module_addr_min mod_tree.addr_min
++#define module_addr_max mod_tree.addr_max
++
+ #ifdef CONFIG_MODULES_TREE_LOOKUP
+=20
+ /*
+@@ -149,17 +162,6 @@ static const struct latch_tree_ops mod_tree_ops =3D {
+ 	.comp =3D mod_tree_comp,
+ };
+=20
+-static struct mod_tree_root {
+-	struct latch_tree_root root;
+-	unsigned long addr_min;
+-	unsigned long addr_max;
+-} mod_tree __cacheline_aligned =3D {
+-	.addr_min =3D -1UL,
+-};
+-
+-#define module_addr_min mod_tree.addr_min
+-#define module_addr_max mod_tree.addr_max
+-
+ static noinline void __mod_tree_insert(struct mod_tree_node *node)
+ {
+ 	latch_tree_insert(&node->node, &mod_tree.root, &mod_tree_ops);
+@@ -209,8 +211,6 @@ static struct module *mod_find(unsigned long addr)
+=20
+ #else /* MODULES_TREE_LOOKUP */
+=20
+-static unsigned long module_addr_min =3D -1UL, module_addr_max =3D 0;
+-
+ static void mod_tree_insert(struct module *mod) { }
+ static void mod_tree_remove_init(struct module *mod) { }
+ static void mod_tree_remove(struct module *mod) { }
 --=20
 2.33.1
