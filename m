@@ -4,63 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30B0DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jan 2022 13:47:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF7FAC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jan 2022 13:51:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JnTrP4q3Hz3cRF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 00:47:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JnTy32VTkz3cG2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 00:51:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.134; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JnTqq4Gm9z2xBl
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Feb 2022 00:46:30 +1100 (AEDT)
-Received: from mail-oi1-f174.google.com ([209.85.167.174]) by
- mrelayeu.kundenserver.de (mreue011 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1Mf0Ru-1mcSQy1RPe-00gViq for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jan
- 2022 14:46:26 +0100
-Received: by mail-oi1-f174.google.com with SMTP id x193so26815902oix.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jan 2022 05:46:26 -0800 (PST)
-X-Gm-Message-State: AOAM533n6gSol5Nx/f+xmKqxZoN2L5f0XUKYcqtBJm4nhVb+z6D5L+mp
- pNcq2+fvlmLnzIQ328Z1XKUDJD7Xwclblo61ax4=
-X-Google-Smtp-Source: ABdhPJxqzdad29yoPfVQVqkeuINyquIZpxlEvxSx06sdTnz4rryvUZKfSJUaDKGmBUmu6Be3uaLlJuvMhrTHZxz8Zkc=
-X-Received: by 2002:aca:f03:: with SMTP id 3mr13235991oip.102.1643635190773;
- Mon, 31 Jan 2022 05:19:50 -0800 (PST)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VB1HtyLz;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1;
+ helo=ams.source.kernel.org; envelope-from=guoren@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=VB1HtyLz; 
+ dkim-atps=neutral
+Received: from ams.source.kernel.org (ams.source.kernel.org
+ [IPv6:2604:1380:4601:e00::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JnTxK48xWz2xMQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Feb 2022 00:51:17 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id 441A0B82B2E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jan 2022 13:51:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 92F44C340F9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jan 2022 13:51:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1643637070;
+ bh=Zm6bqi0OhyogvNh7aVMw7s3EunV9nSGhxKYNcbdO5KQ=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=VB1HtyLzdS8WyvTpKJiOpoPPxcoguxNbLzYv4abyqilCHSyogINouv1glvQJZFH4Q
+ klN9Wf3wTM0XCcb+sbaTp/p8xQ3BGlv3yDFVAn7mISzfv+RJ6uwysKLrZqcIeuZsV0
+ BafaHReeaiYXGCqOvoDbXH50/QdF/KmcOkwUxcC6z5s7S+ynuf4rtQHXbffR8BjGLb
+ OitbrZLld31AnRz+oX2yFY1TO1RrEA5ZhTTBsfnzjWQo8vsm9Slf91RTtqGsq68Oz9
+ hbWbewIN8h4nsorfwtz6FBkTHNk15L724FloIzYmecGANavOB6kIoQwYSRDlSCKONR
+ zPKyniu/L1/aw==
+Received: by mail-vs1-f47.google.com with SMTP id a19so11839484vsi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jan 2022 05:51:10 -0800 (PST)
+X-Gm-Message-State: AOAM532IaMEN67PMdovw85rzkc4exNxlQhEompBOOpH8hPTfcZ9Nvzc/
+ sdJXyL0iH/g+muKUDwwzMkGK1ZbNLYqnkKiOxMY=
+X-Google-Smtp-Source: ABdhPJz6ty+HfMaRNZhEmkeOc11XYS0No2YCxA7dV1DvlPk1ApPFjUS4E1RUl7Xx1jtPl3XXvKrXpTneiT3oAugpR68=
+X-Received: by 2002:a67:e947:: with SMTP id p7mr7921986vso.59.1643637069468;
+ Mon, 31 Jan 2022 05:51:09 -0800 (PST)
 MIME-Version: 1.0
 References: <20220129121728.1079364-1-guoren@kernel.org>
- <20220129121728.1079364-6-guoren@kernel.org>
- <YffUqErSVDgbGLTu@infradead.org>
- <CAK8P3a1jZyVBW70K6_u3mvXYNowV4DTBxivKc2L=HbRK8SgRXg@mail.gmail.com>
- <YffdbErmAjAWYuD9@infradead.org>
-In-Reply-To: <YffdbErmAjAWYuD9@infradead.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 31 Jan 2022 14:19:34 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a0VZt8PF1C4W0X4+SNhP=NbHAigq3N6fEawNpPd-RZDjw@mail.gmail.com>
-Message-ID: <CAK8P3a0VZt8PF1C4W0X4+SNhP=NbHAigq3N6fEawNpPd-RZDjw@mail.gmail.com>
-Subject: Re: [PATCH V4 05/17] riscv: Fixup difference with defconfig
+ <20220129121728.1079364-17-guoren@kernel.org>
+ <YffVZZg9GNcjgVdm@infradead.org>
+In-Reply-To: <YffVZZg9GNcjgVdm@infradead.org>
+From: Guo Ren <guoren@kernel.org>
+Date: Mon, 31 Jan 2022 21:50:58 +0800
+X-Gmail-Original-Message-ID: <CAJF2gTRXDotO1L1FMojQs6msrqvCzA782Pux8rg3AfZgA=y0ew@mail.gmail.com>
+Message-ID: <CAJF2gTRXDotO1L1FMojQs6msrqvCzA782Pux8rg3AfZgA=y0ew@mail.gmail.com>
+Subject: Re: [PATCH V4 16/17] riscv: compat: Add COMPAT Kbuild skeletal support
 To: Christoph Hellwig <hch@infradead.org>
 Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:EZCShChMx+P7xz8yqKDtr8YUEeElzWDN54AHOsQ5GvMoxXS2xEh
- L0G0CoT7MY3Kt/kSbrYF/AXdq0Wtjs0/sPcPb44os6e3GS2/QRRsXo36L+7i/GJR69Nxmq4
- 1tHHJzrCsUOE+/atPOS5wj/8guUwo/ulIELkC2BtQHyJ0+gzk+DeioiZepIkD9a7Rr0dMco
- dm8xvUq1+hSlcmkiOjA1w==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:nLIYVSri5Oc=:pc+UJbFvkdmRgCgcUqnolM
- E2NQtXlIbdT6M4b76s9yBmjMaFQ0BidghigD4MZBzn6iW4Gf2iyxkEUNevFL1+KiDKrpU50xz
- 71jC4VhmS7NT/QfkYkw5InkZc0a79tc93mEDzbY1X1yJ2YrFG141Vsz7nd+P4+u0B3pPSn22P
- NJcrMwUScDXIo8C4nx0zNVsRSGyD/pVRuuK7IKld/0SoqbXGs6XbXLcdEJcacpaXvle++6W98
- FhCPLz91BUYYQdq6ULLzJ1+wGM6TWlCSo5U2pXPAMjCbavJuFI55D9NprfDDBwekyRnBaeSa9
- RRy63HBlYaREmgCGbGQflvsZSi8U2UiQHbCPMpkSN1XbWV5/pijnr4w5dsqYpV+Gxpvb01duX
- m8j/4eZdL7Nv4jYJhjbaMWoFYXS0JE9MfZBU8luq/2WeNHRsKjVsmAikM5SONEE4EXXZZAG1s
- OFpqExAvBvc3HEUK35BE3n6NiQf6umBrD02u5ZvnTjFgqVSSJ0DR4+0tGnF+ka711eI/FFq3D
- 2B61kzbjBX5zVt84cXzVhPf33P7D80vBTLOf0NcZxcX/nDXUO5Sx5gAseYXGKujdXbdgLpIK9
- HalPplpKLeAgJEuvOunm7JEyvK3yOs5g4wLtpUdqcmdyM0ZhD0bSDzwHU6H4w25MYpXBHFdKg
- NeMNStUC740TGrq8gJ8EJFs9P5C3YVd6ZiC5RxZby75vBzy2UFPBvBmNFNlQ4/f4h5amgHskq
- rxvUn0cqMCCwArYu3vKpxHcVu4f4wXNV0HTUV8o/v/K1z7QdMcRS7DKR7U2BLb2fk/bVgIOvQ
- 5YySHIWAjDtd9V4Rv+Jh0V+J+/LSHb9zIER9GQa2f9qGpdhb73pqwOfXUnpsXbcmTkKu1Rz
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,39 +73,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Guo Ren <guoren@linux.alibaba.com>,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- Guo Ren <guoren@kernel.org>, sparclinux <sparclinux@vger.kernel.org>,
- linux-riscv <linux-riscv@lists.infradead.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Anup Patel <anup@brainfault.org>,
- the arch/x86 maintainers <x86@kernel.org>, linux-csky@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- Drew Fustini <drew@beagleboard.org>, liush <liush@allwinnertech.com>,
- Wang Junqiang <wangjunqiang@iscas.ac.cn>, Anup Patel <anup.patel@wdc.com>,
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Guo Ren <guoren@linux.alibaba.com>,
+ Parisc List <linux-parisc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Drew Fustini <drew@beagleboard.org>, Anup Patel <anup@brainfault.org>,
+ Wang Junqiang <wangjunqiang@iscas.ac.cn>,
+ the arch/x86 maintainers <x86@kernel.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, gregkh <gregkh@linuxfoundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Wei Fu <wefu@redhat.com>
+ linux-csky@vger.kernel.org,
+ "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, liush <liush@allwinnertech.com>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linux-riscv <linux-riscv@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>, Wei Fu <wefu@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jan 31, 2022 at 2:00 PM Christoph Hellwig <hch@infradead.org> wrote:
+On Mon, Jan 31, 2022 at 8:26 PM Christoph Hellwig <hch@infradead.org> wrote:
 >
-> On Mon, Jan 31, 2022 at 01:48:58PM +0100, Arnd Bergmann wrote:
-> > I thought that is what the patch does, there is already the normal 64-bit
-> > defconfig, and the new makefile target makes this shared with 32-bit
-> > to prevent them from diverging again.
->
-> I ment using a common fragment and the deriving both 32-bit and 64-bit
-> configs from it. The 64-bit specific fragment will be empty for now,
-> but we will sooner or later have an option that can only go into the
-> 64-bit defconfig.
+> Given that most rv64 implementations can't run in rv32 mode, what is the
+> failure mode if someone tries it with the compat mode enabled?
+A static linked simple hello_world could still run on a non-compat
+support hardware. But most rv32 apps would meet different userspace
+segment faults.
 
-Ah right, that should work as well, not sure if it makes much of a difference.
+Current code would let the machine try the rv32 apps without detecting
+whether hw support or not.
 
-I suggested this method because it is the same thing we do on powerpc.
 
-        Arnd
+-- 
+Best Regards
+ Guo Ren
+
+ML: https://lore.kernel.org/linux-csky/
