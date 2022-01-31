@@ -4,82 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E803C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jan 2022 08:44:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 810D0C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jan 2022 09:41:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JnM6z3ZB0z3bZY
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jan 2022 19:44:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JnNP65SkXz3cBv
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jan 2022 20:41:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256 header.s=amazon201209 header.b=FligwSrc;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=TAvjGCxB;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=xUgFlc+6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=amazon.com (client-ip=207.171.190.10;
- helo=smtp-fw-33001.amazon.com; envelope-from=prvs=023802125=benh@amazon.com;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.29; helo=smtp-out2.suse.de;
+ envelope-from=osalvador@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256
- header.s=amazon201209 header.b=FligwSrc; 
+ unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
+ header.s=susede2_rsa header.b=TAvjGCxB; 
+ dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
+ header.s=susede2_ed25519 header.b=xUgFlc+6; 
  dkim-atps=neutral
-Received: from smtp-fw-33001.amazon.com (smtp-fw-33001.amazon.com
- [207.171.190.10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JnGSl0hP4z2xt0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jan 2022 16:14:14 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
- t=1643606055; x=1675142055;
- h=from:to:subject:date:message-id:references:in-reply-to:
- content-id:content-transfer-encoding:mime-version;
- bh=sYezgLX++Ilm0+TT6roWXiPSazQDCgKINxx+amJpcWE=;
- b=FligwSrc92cRqAteRwforkKdUquo+kGY59bj8iFJCQBDDNK971Hfmh6U
- YbS531YzCv6jscxqqllq9ToHotGlhDQ+xeSm4R4s6I5TrJcsiv8045faI
- 0xzdferTdGU+kGMiG5gfYFmYKKAnycbDatvx3fELjYJ5I0y7HT4KgmdlC c=;
-X-IronPort-AV: E=Sophos;i="5.88,330,1635206400"; d="scan'208";a="172974595"
-Received: from iad12-co-svc-p1-lb1-vlan2.amazon.com (HELO
- email-inbound-relay-iad-1d-8ac79c09.us-east-1.amazon.com) ([10.43.8.2])
- by smtp-border-fw-33001.sea14.amazon.com with ESMTP; 31 Jan 2022 05:12:57 +0000
-Received: from EX13MTAUWB001.ant.amazon.com
- (iad12-ws-svc-p26-lb9-vlan3.iad.amazon.com [10.40.163.38])
- by email-inbound-relay-iad-1d-8ac79c09.us-east-1.amazon.com (Postfix) with
- ESMTPS id 6D24480B3C; Mon, 31 Jan 2022 05:12:55 +0000 (UTC)
-Received: from EX13D21UWB002.ant.amazon.com (10.43.161.177) by
- EX13MTAUWB001.ant.amazon.com (10.43.161.249) with Microsoft SMTP Server (TLS)
- id 15.0.1497.28; Mon, 31 Jan 2022 05:12:54 +0000
-Received: from EX13D21UWB003.ant.amazon.com (10.43.161.212) by
- EX13D21UWB002.ant.amazon.com (10.43.161.177) with Microsoft SMTP Server (TLS)
- id 15.0.1497.28; Mon, 31 Jan 2022 05:12:54 +0000
-Received: from EX13D21UWB003.ant.amazon.com ([10.43.161.212]) by
- EX13D21UWB003.ant.amazon.com ([10.43.161.212]) with mapi id 15.00.1497.028;
- Mon, 31 Jan 2022 05:12:54 +0000
-From: "Herrenschmidt, Benjamin" <benh@amazon.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "luke.leighton@gmail.com" <luke.leighton@gmail.com>, "lkcl@lkcl.net"
- <lkcl@lkcl.net>, "npiggin@gmail.com" <npiggin@gmail.com>,
- "libre-soc-dev@lists.libre-soc.org" <libre-soc-dev@lists.libre-soc.org>,
- "openpower-hdl-cores@mailinglist.openpowerfoundation.org"
- <openpower-hdl-cores@mailinglist.openpowerfoundation.org>
-Subject: Re: [OpenPOWER-HDL-Cores] microwatt booting linux-5.7 under verilator
-Thread-Topic: [OpenPOWER-HDL-Cores] microwatt booting linux-5.7 under verilator
-Thread-Index: AQHYFmEzi+xyDaan+UC2lQvsqU8GqQ==
-Date: Mon, 31 Jan 2022 05:12:54 +0000
-Message-ID: <926247767e2ac3b59ad918508ba78bf14569fde1.camel@amazon.com>
-References: <CAPweEDw710zFK8KLZY5gsQxEkQKrDiFkNRgABY9HJZ1rxpeVCg@mail.gmail.com>
- <1643598916.2hjoqtw60c.astroid@bobo.none>
- <994E627C-0194-4634-8DBC-0845493E6744@gmail.com>
-In-Reply-To: <994E627C-0194-4634-8DBC-0845493E6744@gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.43.162.55]
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <73F08B28B723854F98483B65843D3C24@amazon.com>
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JnNNL52J5z2xtp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jan 2022 20:40:50 +1100 (AEDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+ (No client certificate requested)
+ by smtp-out2.suse.de (Postfix) with ESMTPS id 42D361F380;
+ Mon, 31 Jan 2022 09:40:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+ t=1643622047; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=Y00ZKxq/dpqUDwh0rX8TbLgQbvVTvbkuCSKi0GTnT4o=;
+ b=TAvjGCxBgtVEooteuwYwy7uWXHIEi1iRNO342s4/jJ+IIGBmHSjZzV5GBJojCxowtd9VF/
+ o3CAUfL8yGH9rRehhR4/C5FstjONcFAU8j7o3FYVmx80A08KFhFcu/K4azbvNlmWYom+Ua
+ 6mK0Ha0OUepOw9iyGtTEgdVyGEbI2ng=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+ s=susede2_ed25519; t=1643622047;
+ h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=Y00ZKxq/dpqUDwh0rX8TbLgQbvVTvbkuCSKi0GTnT4o=;
+ b=xUgFlc+6YdMvHQgFdTVnfhl595dV1vnsZnMruHRjkkwO5586I6U3elglHK3ZC5shbyTZxG
+ 3d8GjzSobgWcibCQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+ (No client certificate requested)
+ by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7204D13B68;
+ Mon, 31 Jan 2022 09:40:45 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+ by imap2.suse-dmz.suse.de with ESMTPSA id f0PrF52u92G+DgAAMHmgww
+ (envelope-from <osalvador@suse.de>); Mon, 31 Jan 2022 09:40:45 +0000
+Date: Mon, 31 Jan 2022 10:40:43 +0100
+From: Oscar Salvador <osalvador@suse.de>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH RFC v1] drivers/base/node: consolidate node device
+ subsystem initialization in node_dev_init()
+Message-ID: <20220131094041.GA15392@linux>
+References: <20220128151540.164759-1-david@redhat.com>
+ <YfeARpenqPii1WQH@localhost.localdomain>
+ <3be2e20c-f0b9-c080-adf4-b0e17c046eb0@redhat.com>
 MIME-Version: 1.0
-X-Mailman-Approved-At: Mon, 31 Jan 2022 19:43:31 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3be2e20c-f0b9-c080-adf4-b0e17c046eb0@redhat.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,33 +85,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Michal Hocko <mhocko@suse.com>, linux-ia64@vger.kernel.org,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org,
+ linux-mm@kvack.org, Rich Felker <dalias@libc.org>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
+ linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-sh@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
+ Borislav Petkov <bp@alien8.de>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-T24gTW9uLCAyMDIyLTAxLTMxIGF0IDA0OjE5ICswMDAwLCBsa2NsIHdyb3RlOg0KPiA+IEhvdyBk
-byB5b3UgZXZlbiByZWFkIHRoZSBTWVNDT04gcGFyYW1ldGVyIGZvciBmcmVxdWVuY3k/DQo+IA0K
-PiANCj4gU1lTQ09OIGlzIGp1c3QgYSB0ZXJtIGZvciBhIG1lbW9yeS1tYXBwZWQgd2lzaGJvbmUg
-Uk9NIHdoaWNoIGNvbnRhaW5zDQo+IGEgY3J1ZGUgZWFzaWx5LWRlY29kZWQgYmluYXJ5IGZvcm0g
-b2YgZGV2aWNldHJlZS4NCg0KVGFsa2luZyBvZiB3aGljaCwgaWYgd2UncmUgZ29pbmcgdG8gbWFr
-ZSB1c2UgaWYgaXQgKHdlIHNob3VsZCksIHdlDQpwcm9iYWJseSBuZWVkIHRvIGVuc3VyZSBpdCdz
-IGFsc28gcG9ydGVkIHRvIG1pY3Jvd2F0dCBvbiBMaXRlWC4gVGhvdWdoDQpMaXRlWCBoYXMgYW5v
-dGhlciBpc3N1ZSBpbiB0aGF0IGl0IHB1dHMgTU1JTyBlbHNld2hlcmUgaWlyYy4NCg0KVGhhdCBv
-ciB3ZSByZWx5IDEwMCUgb24gTGl0ZVggaGF2aW5nIGEgZ29vZCBEVCAoYW5kIHRodXMgdXNlIGEN
-CmRpZmZlcmVudCBwbGF0Zm9ybSBmb3IgaXQpLg0KPiANCj4gd2hlbiB5b3UgcmVhZCAweGMwMDAx
-MDAwIChzYXkpIGl0cyBjb250ZW50cyB0ZWxsIHlvdSB0aGUgY2xvY2sgc3BlZWQuDQo+IA0KPiAN
-Cj4gDQo+IGF0IDB4YzAwMDEwMDggaXMgdGhlIG51bWJlciBvZiBVQVJUcy4NCj4gDQo+IDB4YzAw
-MDEwMTAgY29udGFpbnMgdGhlIFVBUlQwIHNwZWVkIG9yIHdlbGwgeW91IGNhbiBzZWUgdGhlIHJl
-YWwNCj4gY29udGVudHMgc3lzY29uLnZoZGwNCj4gDQo+IA0KPiANCj4gaXQgaXMgX3JlYWxfIGJh
-c2ljIGJ1dCBjb250YWlucyBldmVyeXRoaW5nIHRoYXQNCj4gDQo+IGEgY29sZC1zdGFydCBCSU9T
-IG5lZWRzIHRvIGtub3csIHN1Y2ggYXMgImRvIGkgZXZlbiBoYXZlIERSQU0sIGRvIGkNCj4gaGF2
-ZSBhbiBTUEkgRmxhc2ggaSBjYW4gcmVhZCBhIHNlY29uZA0KPiANCj4gc3RhZ2UgYm9vdGxvYWRl
-ciBmcm9tIiBldGMgZXRjDQo+IA0KPiANCj4gDQo+IGh0dHBzOi8vZ2l0aHViLmNvbS9hbnRvbmJs
-YW5jaGFyZC9taWNyb3dhdHQvYmxvYi9tYXN0ZXIvc3lzY29uLnZoZGwNCj4gDQo+IA0KPiANCj4g
-UGF1bCBzYWlkIGl0IHdhcyBhbHdheXMgcGxhbm5lZCB0byBkbyByZWFkaW5nIG9mIHRoZXNlIHBh
-cmFtcywgdGhlDQo+IGVudHJpZXMgaW4gZGV2aWNldHJlZSBhcmUgYSB0ZW1wb3JhcnkgaGFjay4N
-Cj4gDQo+IA0KPiANCj4gbC4NCj4gDQo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fDQo+IA0KPiBPcGVuUE9XRVItSERMLUNvcmVzIG1haWxpbmcgbGlzdA0K
-PiANCj4gT3BlblBPV0VSLUhETC1Db3Jlc0BtYWlsaW5nbGlzdC5vcGVucG93ZXJmb3VuZGF0aW9u
-Lm9yZw0KPiANCj4gaHR0cDovL2xpc3RzLm1haWxpbmdsaXN0Lm9wZW5wb3dlcmZvdW5kYXRpb24u
-b3JnL21haWxtYW4vbGlzdGluZm8vb3BlbnBvd2VyLWhkbC1jb3Jlcw0K
+On Mon, Jan 31, 2022 at 08:48:54AM +0100, David Hildenbrand wrote:
+> Hi Oscar,
+
+Hi David :-),
+
+> Right, and the idea is that the online state of nodes (+ node/zone
+> ranges) already has to be known at that point in time, because
+> otherwise, we'd be in bigger trouble.
+
+Yeah, I wanted to check where exactly did we mark the nodes online,
+and for the few architectures I checked it happens in setup_arch(),
+which is called very early in start_kernel(), while driver_init()
+gets called through arch_call_rest_init(), which happens at the end
+of the function.
+
+I am not sure whether we want to remark that somehow in the changelog,
+so it is crystal clear that by the time the node_dev_init() gets called,
+we already set the nodes online.
+
+Anyway, just saying, but is fine as is.
+ 
+
+-- 
+Oscar Salvador
+SUSE Labs
