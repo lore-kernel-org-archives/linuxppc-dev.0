@@ -4,76 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73F8FC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jan 2022 15:22:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99AF5C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Jan 2022 16:40:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JnWyf3wnbz3bc9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 02:22:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JnYhY6pCPz3bcj
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 03:40:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=NXQ2vh5W;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bRhiw9Vi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::22d;
- helo=mail-oi1-x22d.google.com; envelope-from=groeck7@gmail.com;
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
+ helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=NXQ2vh5W; dkim-atps=neutral
-Received: from mail-oi1-x22d.google.com (mail-oi1-x22d.google.com
- [IPv6:2607:f8b0:4864:20::22d])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=bRhiw9Vi; 
+ dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JnWxs02bHz2ywb
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Feb 2022 02:21:50 +1100 (AEDT)
-Received: by mail-oi1-x22d.google.com with SMTP id q8so12754749oiw.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Jan 2022 07:21:50 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=sender:message-id:date:mime-version:user-agent:content-language:to
- :cc:references:from:subject:in-reply-to:content-transfer-encoding;
- bh=oVZWckNIPsWHeKbXJ2sFvACBl5okPcSAEIsKC6XhxDU=;
- b=NXQ2vh5WqJcNrwvi+uhxOeXRwL3TuQvr8zI74nXKNlbA4THVcrFQe20l84a2F3rCSl
- fb+2O3VmewcReatZ19klOskQ2upf6qljRrD6n2B9Y4PhroYWW+XOfsdsfB3MZuirxQ9t
- X+vPYa1ikH13JYbnSKqVdMeH1jmxa4D6k59/FHZubOFHJbDfNxiaB8VfMIjtaMgLtJV+
- 3A2GEeuqlrodVHjFD7y9lvjUf+N31nBGTmFabP1WX1nvXw95IBSd2qgNRGX0BxRvAmns
- 3J8DZp0qcC/r7rrsLbS0TgQNcR7BR3VDw0NU5D6j9PO9dXHpEDeoVqLmRligf9NcdWA6
- MSIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:sender:message-id:date:mime-version:user-agent
- :content-language:to:cc:references:from:subject:in-reply-to
- :content-transfer-encoding;
- bh=oVZWckNIPsWHeKbXJ2sFvACBl5okPcSAEIsKC6XhxDU=;
- b=R8ZB/ZVAEw6MhDSy4PR33ZbGPbUxZrVArRxFMtNDWwpO90NA97+PFG4obSme+txzvv
- Oul/HeVNuG3/FcOq6dfwB70N+SqveXGl6Q84afk31VsKJxicd7RK2/EqvFHwuCJnCyDL
- 3+I0EBZ/MaBBKLs5r6ShXCr8Q1hiMdjIyUuNF/zXVzb+pk7tx0JLrEVRZxUxPQGbLG7X
- MhQaK+7KJP4fHoefUiJTiJ6syht5ngnM8zrqISySgLtAWOUoKuTZn1hrALrJF2vlvbY5
- hcFZUKpKFbpQeMnXqfWrViL3DBfREL3P/FsOApYx9kApVuIN8ajjs3Rfmf/7ZCmmZhea
- mcqA==
-X-Gm-Message-State: AOAM533YcQ9hj7mt6tsQFZnixwmOuLa90konmwT5/ekclM8kQLhSc3Ao
- wuBuMZk+0Boc0YX7hp4nAOw=
-X-Google-Smtp-Source: ABdhPJwZ2DsfGoZh9WlCulrelJMyxXaQWZM7t1bPVVjVsAMl6JMrpJ5ac6K1xcqWaqkMGtPCEBWrHw==
-X-Received: by 2002:a05:6808:211f:: with SMTP id
- r31mr12780920oiw.194.1643642506160; 
- Mon, 31 Jan 2022 07:21:46 -0800 (PST)
-Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c?
- ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
- by smtp.gmail.com with ESMTPSA id d65sm9789045otb.17.2022.01.31.07.21.42
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 31 Jan 2022 07:21:44 -0800 (PST)
-Message-ID: <c78df469-1a9f-5778-24d1-8f08a6bf5bcc@roeck-us.net>
-Date: Mon, 31 Jan 2022 07:21:40 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JnYgq29HNz2ywb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Feb 2022 03:39:51 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id EF6B2614DF;
+ Mon, 31 Jan 2022 16:39:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B7970C340EE;
+ Mon, 31 Jan 2022 16:39:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1643647187;
+ bh=imto9F2z5oex/qRfPVAM1kIE3TqUhhJL2QnXPJoiuUo=;
+ h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+ b=bRhiw9Vibn3iUdRFJykebh1A2tkruLDvnIf5E4L5WuCCxf50YkSI8eeb7Plv6Ayy8
+ bhX8kayBY9g4kC3UrjVWG1tf8WE2A7LnaqPnQM3y6wSJL1ljVER/B5+Uk8uIeynRt5
+ u9uUl4DfCPO7lQdwxXxDBycZ2Gf5v82rcHl+UqJBhCvnCSYKFPMzUGxqnEH3+f2l8C
+ 0Vg2kpOiQgiz7OeAw5J7rMikxYADfeF1cNVX5bDMehARKTzgtIO+sZnPzUagkphPU6
+ T+9kPgbz+hp3vksdhI45wIYFq99acNy5kmRxU8nTR7xRHhv+RWXmo/7pqr8ra+NvDA
+ FqHhfjEKsTz3Q==
+From: Mark Brown <broonie@kernel.org>
+To: linux-spi@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>
+In-Reply-To: <20220120002600.216667-1-linus.walleij@linaro.org>
+References: <20220120002600.216667-1-linus.walleij@linaro.org>
+Subject: Re: [PATCH v2] spi: mpc512x-psc: Convert to use GPIO descriptors
+Message-Id: <164364718647.1030816.7386114038958613078.b4-ty@kernel.org>
+Date: Mon, 31 Jan 2022 16:39:46 +0000
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Content-Language: en-US
-To: Thomas Gleixner <tglx@linutronix.de>
-References: <87mtjc2lhe.ffs@tglx>
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [patch V3 28/35] PCI/MSI: Simplify pci_irq_get_affinity()
-In-Reply-To: <87mtjc2lhe.ffs@tglx>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,47 +64,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nishanth Menon <nm@ti.com>, Mark Rutland <mark.rutland@arm.com>,
- Stuart Yoder <stuyoder@gmail.com>, linux-pci@vger.kernel.org,
- Will Deacon <will@kernel.org>, Peter Ujfalusi <peter.ujfalusi@gmail.com>,
- Ashok Raj <ashok.raj@intel.com>, Jassi Brar <jassisinghbrar@gmail.com>,
- Sinan Kaya <okaya@kernel.org>, Vinod Koul <vkoul@kernel.org>,
- Bjorn Helgaas <helgaas@kernel.org>, Megha Dey <megha.dey@intel.com>,
- Jason Gunthorpe <jgg@nvidia.com>, xen-devel@lists.xenproject.org,
- Kevin Tian <kevin.tian@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- linuxppc-dev@lists.ozlabs.org, Alex Williamson <alex.williamson@redhat.com>,
- Cedric Le Goater <clg@kaod.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, linux-arm-kernel@lists.infradead.org,
- Juergen Gross <jgross@suse.com>, Tero Kristo <kristo@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>, iommu@lists.linux-foundation.org,
- Marc Zygnier <maz@kernel.org>, dmaengine@vger.kernel.org,
- Robin Murphy <robin.murphy@arm.com>
+Cc: Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org, Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/31/22 03:27, Thomas Gleixner wrote:
-> On Sun, Jan 30 2022 at 09:12, Guenter Roeck wrote:
->> On Fri, Dec 10, 2021 at 11:19:26PM +0100, Thomas Gleixner wrote:
->> This patch results in the following runtime warning when booting x86
->> (32 bit) nosmp images from NVME in qemu.
->>
->> [   14.825482] nvme nvme0: 1/0/0 default/read/poll queues
->> ILLOPC: ca7c6d10: 0f 0b
->> [   14.826188] ------------[ cut here ]------------
->> [   14.826307] WARNING: CPU: 0 PID: 7 at drivers/pci/msi/msi.c:1114 pci_irq_get_affinity+0x80/0x90
+On Thu, 20 Jan 2022 01:26:00 +0100, Linus Walleij wrote:
+> This driver is already relying on the core to provide
+> valid GPIO numbers in spi->cs_gpio through
+> of_spi_get_gpio_numbers(), so we can switch to letting
+> the core use GPIO descriptors instead.
 > 
-> This complains about msi_desc->affinity being NULL.
+> The driver was assigning a local function to the custom
+> chipselect callback, but I chose to just open code the
+> gpiod setting instead, this is easier to read.
 > 
->> git bisect bad f48235900182d64537c6e8f8dc0932b57a1a0638
->> # first bad commit: [f48235900182d64537c6e8f8dc0932b57a1a0638] PCI/MSI: Simplify pci_irq_get_affinity()
-> 
-> Hrm. Can you please provide dmesg and /proc/interrupts from a
-> kernel before that commit?
-> 
+> [...]
 
-Sure. Please see http://server.roeck-us.net/qemu/x86/.
-The logs are generated with with v5.16.4.
+Applied to
 
-Guenter
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-next
+
+Thanks!
+
+[1/1] spi: mpc512x-psc: Convert to use GPIO descriptors
+      commit: 2818824ced4be5abc22c450340d548702f166d9a
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
