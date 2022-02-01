@@ -4,63 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70926C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 12:06:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F95FC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 12:25:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jp3Yh6S4wz3bbl
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 23:06:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jp40M4pFhz3bTd
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 23:25:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="key not found in DNS" header.d=lkcl.net header.i=@lkcl.net header.a=rsa-sha256 header.s=201607131 header.b=HRCrndLT;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=i4K5yKyp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Void lookup limit
- of 2 exceeded) smtp.mailfrom=lkcl.net (client-ip=2a00:1098:82:f::1;
- helo=libre-soc.org; envelope-from=prvs=0031aac83d=lkcl@lkcl.net;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dkim=fail reason="key not found in DNS" header.d=lkcl.net header.i=@lkcl.net
- header.a=rsa-sha256 header.s=201607131 header.b=HRCrndLT; 
- dkim-atps=neutral
-Received: from libre-soc.org (libre-soc.org [IPv6:2a00:1098:82:f::1])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jp3zf3Y6hz2yZ6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Feb 2022 23:25:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=i4K5yKyp; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jp3Y0259nz2yPm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Feb 2022 23:05:39 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lkcl.net;
- s=201607131; h=Content-Type:Cc:To:Subject:Message-ID:Date:From:In-Reply-To:
- References:MIME-Version:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
- Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
- :Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
- List-Post:List-Owner:List-Archive;
- bh=nl2iv7RGCFVM9xUx8KeWfP7J+sKHNA+3BynLRkORNAU=; b=HRCrndLTgjEZwwFX8l6l3LquvA
- hZdJKrmrfA3dcqW7a5qqTI/cABQ03p/ZoRYLhnH36IfdwFGxctK8ZGtG8DKbpiaOosldHeYePqZ2L
- S8MwrisB6TJ9HguPsfwD7a/R3Gxog71kKD/m2aNzdIsyMza8hNfRHO3kt+t9io4mgxSw=;
-Received: from mail-ot1-f52.google.com ([209.85.210.52])
- by libre-soc.org with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
- (Exim 4.92) (envelope-from <lkcl@lkcl.net>) id 1nEruj-0006Ae-6r
- for linuxppc-dev@lists.ozlabs.org; Tue, 01 Feb 2022 12:05:37 +0000
-Received: by mail-ot1-f52.google.com with SMTP id
- g15-20020a9d6b0f000000b005a062b0dc12so15967045otp.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Feb 2022 04:05:36 -0800 (PST)
-X-Gm-Message-State: AOAM532uewOlefspDZnpb/eVRPAjFfgBaUTJhui7PoPsBZxXjW8VzcCl
- Qr+UWdj0V0v2Tvm4SBKwu9ZCiBvyKD3Zn64Q4sE=
-X-Google-Smtp-Source: ABdhPJxgSb8CEEMzPHjIg/OlTBptypW6Lfd51hbyLqG8kikBufwztAEr1yH6qcq+EXZdtyQPTZ07qo4n4ZnwTE0s7ak=
-X-Received: by 2002:ab0:6215:: with SMTP id m21mr9585215uao.65.1643716778713; 
- Tue, 01 Feb 2022 03:59:38 -0800 (PST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Jp3zd47dzz4xRB;
+ Tue,  1 Feb 2022 23:25:17 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1643718318;
+ bh=Eo0VMNs93fqn5QtpRNO6vn2uRm7WoC7mDC/GIQ51f0A=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=i4K5yKyp07XRnPGRReWiS76W4XMGCUwlQtDgD2ynHm612NOghGzevhEdamEjFHOyE
+ VhgQJIBvLqMMmAdkmQAfzcWw88FFn8AB6r8BkPF21PUOrtkotTo60PLlR4X1yb1bhP
+ rqR3BhkDPn6vbiC/XarQVYOj0iDnR+QNjcw6sU4Mvc2zUUnaqVzSTZ3TfScTYAL9b9
+ CXS1o6CWmnV2AVXj7uw2kFjN+Z9PeaAxMfgabHcOLMg//9FPSMYYpAhax5ZXBC6aXY
+ kWgIDCyhuTuqDWpjR6/AZeSi4TqNVifVBZVT66hImSxVAi699V/JT/0sw8ZU6YQyrJ
+ KEW7xJstS9Egw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc/ptdump: Fix sparse warning in hashpagetable.c
+In-Reply-To: <bbc196451dd34521d239023ccca488db35b8fff1.1643567900.git.christophe.leroy@csgroup.eu>
+References: <bbc196451dd34521d239023ccca488db35b8fff1.1643567900.git.christophe.leroy@csgroup.eu>
+Date: Tue, 01 Feb 2022 23:25:16 +1100
+Message-ID: <87k0een58z.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-References: <CAPweEDw710zFK8KLZY5gsQxEkQKrDiFkNRgABY9HJZ1rxpeVCg@mail.gmail.com>
- <1643598916.2hjoqtw60c.astroid@bobo.none>
- <994E627C-0194-4634-8DBC-0845493E6744@gmail.com>
- <1643696448.f3llnvzeyb.astroid@bobo.none> <87o83qn6qd.fsf@mpe.ellerman.id.au>
-In-Reply-To: <87o83qn6qd.fsf@mpe.ellerman.id.au>
-From: Luke Kenneth Casson Leighton <lkcl@lkcl.net>
-Date: Tue, 1 Feb 2022 11:59:27 +0000
-X-Gmail-Original-Message-ID: <CAPweEDz8BqP3JMRi3SzWcH9K7BuyQbJDeXn-sgJDH7ePJB6qew@mail.gmail.com>
-Message-ID: <CAPweEDz8BqP3JMRi3SzWcH9K7BuyQbJDeXn-sgJDH7ePJB6qew@mail.gmail.com>
-Subject: Re: microwatt booting linux-5.7 under verilator
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,20 +59,156 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: openpower-hdl-cores
- <openpower-hdl-cores@mailinglist.openpowerfoundation.org>,
- Libre-Soc General Development <libre-soc-dev@lists.libre-soc.org>,
- linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ kernel test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 1, 2022 at 11:53 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+>   arch/powerpc/mm/ptdump/hashpagetable.c:264:29: warning: restricted __be64 degrades to integer
+>   arch/powerpc/mm/ptdump/hashpagetable.c:265:49: warning: restricted __be64 degrades to integer
+>   arch/powerpc/mm/ptdump/hashpagetable.c:267:36: warning: incorrect type in assignment (different base types)
+>   arch/powerpc/mm/ptdump/hashpagetable.c:267:36:    expected unsigned long long [usertype]
+>   arch/powerpc/mm/ptdump/hashpagetable.c:267:36:    got restricted __be64 [usertype] v
+>   arch/powerpc/mm/ptdump/hashpagetable.c:268:36: warning: incorrect type in assignment (different base types)
+>   arch/powerpc/mm/ptdump/hashpagetable.c:268:36:    expected unsigned long long [usertype]
+>   arch/powerpc/mm/ptdump/hashpagetable.c:268:36:    got restricted __be64 [usertype] r
+>
+> struct hash_pte fields have type __be64. Convert them to
+> regular long before using them.
 
-> If you build with CONFIG_RELOCATABLE=y and CONFIG_RELOCATABLE_TEST=y the
-> kernel will run wherever you load it (must be 64K aligned), without
-> copying itself down to zero first. That will save you a few cycles.
+Your patch changes one side of the comparison but not the other, which
+implies the code doesn't work at the moment, ie. it should never be
+matching.
 
-ahh, thank you :)
+But it does work at the moment, so there must be something else going on.
 
-l.
+> diff --git a/arch/powerpc/mm/ptdump/hashpagetable.c b/arch/powerpc/mm/ptdump/hashpagetable.c
+> index c7f824d294b2..bf60ab1bedb9 100644
+> --- a/arch/powerpc/mm/ptdump/hashpagetable.c
+> +++ b/arch/powerpc/mm/ptdump/hashpagetable.c
+> @@ -261,11 +261,11 @@ static int pseries_find(unsigned long ea, int psize, bool primary, u64 *v, u64 *
+
+Expanding the context a little:
+
+	for (i = 0; i < HPTES_PER_GROUP; i += 4, hpte_group += 4) {
+		lpar_rc = plpar_pte_read_4(0, hpte_group, (void *)ptes);
+
+>  		if (lpar_rc)
+>  			continue;
+>  		for (j = 0; j < 4; j++) {
+> -			if (HPTE_V_COMPARE(ptes[j].v, want_v) &&
+> -					(ptes[j].v & HPTE_V_VALID)) {
+> +			if (HPTE_V_COMPARE(be64_to_cpu(ptes[j].v), want_v) &&
+> +			    (be64_to_cpu(ptes[j].v) & HPTE_V_VALID)) {
+>  				/* HPTE matches */
+> -				*v = ptes[j].v;
+> -				*r = ptes[j].r;
+> +				*v = be64_to_cpu(ptes[j].v);
+> +				*r = be64_to_cpu(ptes[j].r);
+>  				return 0;
+>  			}
+>  		}
+
+Turns out the values returned from plpar_pte_read_4() are already in CPU
+endian.
+
+We pass an on-stack buffer to plpar_pte_read_4():
+
+  plpar_pte_read_4(0, hpte_group, (void *)ptes);
+
+Which makes it look like the hypercall is writing to memory (our
+buffer), so we'd expect the values to need an endian swap.
+
+But plpar_pte_read_4() writes into that buffer from another on-stack
+buffer:
+
+static inline long plpar_pte_read_4(unsigned long flags, unsigned long ptex,
+				    unsigned long *ptes)
+
+{
+	long rc;
+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
+
+	rc = plpar_hcall9(H_READ, retbuf, flags | H_READ_4, ptex);
+
+	memcpy(ptes, retbuf, 8*sizeof(unsigned long));
+
+	return rc;
+}
+
+
+And the values in that stack buffer are actually returned from the
+hypervisor in registers, r4-r11, and written into retbuf by the asm
+wrapper:
+
+_GLOBAL_TOC(plpar_hcall9)
+	HMT_MEDIUM
+
+	mfcr	r0
+	stw	r0,8(r1)
+
+	HCALL_BRANCH(plpar_hcall9_trace)
+
+	std     r4,STK_PARAM(R4)(r1)     /* Save ret buffer */ 		<- this is retbuf
+
+	mr	r4,r5
+	mr	r5,r6
+	mr	r6,r7
+	mr	r7,r8
+	mr	r8,r9
+	mr	r9,r10
+	ld	r10,STK_PARAM(R11)(r1)	 /* put arg7 in R10 */
+	ld	r11,STK_PARAM(R12)(r1)	 /* put arg8 in R11 */
+	ld	r12,STK_PARAM(R13)(r1)    /* put arg9 in R12 */
+
+	HVSC				/* invoke the hypervisor */
+
+	mr	r0,r12
+	ld	r12,STK_PARAM(R4)(r1)		<- reload retbuf into r12
+	std	r4,  0(r12)
+	std	r5,  8(r12)
+	std	r6, 16(r12)
+	std	r7, 24(r12)
+	std	r8, 32(r12)
+	std	r9, 40(r12)
+	std	r10,48(r12)
+	std	r11,56(r12)
+	std	r0, 64(r12)
+
+
+Although the values are BE in memory in the actual HPT, they're read by
+the hypervisor which does the byte swap for us, and then when the
+hypervisor returns they're returned in the registers. So there's no
+extra byte swap needed.
+
+Possibly we should move struct hash_pte into hash_native.c, which is
+where it's almost exclusively used, and is used to point to actual HPTEs
+in memory.
+
+But for now I think the patch below is a minimal fix for this sparse
+warning, it's what other callers of plpar_pte_read_4() are doing.
+
+cheers
+
+
+diff --git a/arch/powerpc/mm/ptdump/hashpagetable.c b/arch/powerpc/mm/ptdump/hashpagetable.c
+index c7f824d294b2..9a601587836b 100644
+--- a/arch/powerpc/mm/ptdump/hashpagetable.c
++++ b/arch/powerpc/mm/ptdump/hashpagetable.c
+@@ -238,7 +238,10 @@ static int native_find(unsigned long ea, int psize, bool primary, u64 *v, u64
+ 
+ static int pseries_find(unsigned long ea, int psize, bool primary, u64 *v, u64 *r)
+ {
+-	struct hash_pte ptes[4];
++	struct {
++		unsigned long v;
++		unsigned long r;
++	} ptes[4];
+ 	unsigned long vsid, vpn, hash, hpte_group, want_v;
+ 	int i, j, ssize = mmu_kernel_ssize;
+ 	long lpar_rc = 0;
+
+
