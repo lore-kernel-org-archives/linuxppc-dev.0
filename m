@@ -4,44 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B70E2C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 12:40:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0ED2CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 13:29:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jp4KZ0qtdz3cQS
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 23:40:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=wanadoo.fr
- (client-ip=80.12.242.132; helo=smtp.smtpout.orange.fr;
- envelope-from=christophe.jaillet@wanadoo.fr; receiver=<UNKNOWN>)
-Received: from smtp.smtpout.orange.fr (smtp10.smtpout.orange.fr
- [80.12.242.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jp5PJ0wMwz3Wtr
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Feb 2022 00:29:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kaod.org (client-ip=188.165.49.213;
+ helo=5.mo548.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Received: from 5.mo548.mail-out.ovh.net (5.mo548.mail-out.ovh.net
+ [188.165.49.213])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jp4K53qpGz2x9G
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Feb 2022 23:40:25 +1100 (AEDT)
-Received: from [192.168.1.18] ([90.126.236.122]) by smtp.orange.fr with ESMTPA
- id EsL6nNxOhIz5VEsL6nR6YE; Tue, 01 Feb 2022 13:32:53 +0100
-X-ME-Helo: [192.168.1.18]
-X-ME-Auth: YWZlNiIxYWMyZDliZWIzOTcwYTEyYzlhMmU3ZiQ1M2U2MzfzZDfyZTMxZTBkMTYyNDBjNDJlZmQ3ZQ==
-X-ME-Date: Tue, 01 Feb 2022 13:32:53 +0100
-X-ME-IP: 90.126.236.122
-Message-ID: <7c34009b-0d34-baa8-f4ff-68f2203422c5@wanadoo.fr>
-Date: Tue, 1 Feb 2022 13:32:52 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jp5Nl5d1Jz2yLg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Feb 2022 00:28:37 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.143.188])
+ by mo548.mail-out.ovh.net (Postfix) with ESMTPS id A45B120B2A;
+ Tue,  1 Feb 2022 13:28:30 +0000 (UTC)
+Received: from kaod.org (37.59.142.97) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.18; Tue, 1 Feb
+ 2022 14:28:29 +0100
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-97G002ded4642f-2264-41dd-88eb-91ec928a76b3,
+ FC28BB27814F05D37416E671BAFA2F1ED858982E) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 82.64.250.170
+Message-ID: <ebf35275-cfb3-567d-97ba-ec81a6b40cb5@kaod.org>
+Date: Tue, 1 Feb 2022 14:28:29 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH] powerpc/xive: Add some error handling code to
+ Thunderbird/91.3.0
+Subject: Re: [PATCH v2] powerpc/xive: Add some error handling code to
  'xive_spapr_init()'
 Content-Language: en-US
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, benh@kernel.crashing.org, 
- paulus@samba.org, mpe@ellerman.id.au, allison@lohutok.net,
- tglx@linutronix.de, clg@kaod.org, groug@kaod.org
-References: <20190801110956.8517-1-christophe.jaillet@wanadoo.fr>
- <1ea13a2a-90fd-07d3-2031-19e81ea349b4@csgroup.eu>
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-In-Reply-To: <1ea13a2a-90fd-07d3-2031-19e81ea349b4@csgroup.eu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ <christophe.leroy@csgroup.eu>, <benh@kernel.crashing.org>,
+ <paulus@samba.org>, <mpe@ellerman.id.au>, <allison@lohutok.net>,
+ <tglx@linutronix.de>, <groug@kaod.org>
+References: <564998101804886b151235c8a9f93020923bfd2c.1643718324.git.christophe.jaillet@wanadoo.fr>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+In-Reply-To: <564998101804886b151235c8a9f93020923bfd2c.1643718324.git.christophe.jaillet@wanadoo.fr>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.97]
+X-ClientProxiedBy: DAG8EX1.mxp5.local (172.16.2.71) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: 4ec3683f-a038-485c-ad83-90f117bf23d3
+X-Ovh-Tracer-Id: 3854518332830878709
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvvddrgeefgdehfecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefkffggfgfuvfhfhfgjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeeuveelvdejteegteefieevfeetffefvddvieekteevleefgeelgfeutedvfedvfeenucffohhmrghinhepghhithhhuhgsrdgtohhmnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrdeljeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdpnhgspghrtghpthhtohepuddprhgtphhtthhopehgrhhouhhgsehkrghougdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,27 +72,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le 01/02/2022 à 12:31, Christophe Leroy a écrit :
-> Hi,
+On 2/1/22 13:31, Christophe JAILLET wrote:
+> 'xive_irq_bitmap_add()' can return -ENOMEM.
+> In this case, we should free the memory already allocated and return
+> 'false' to the caller.
 > 
-> Le 01/08/2019 à 13:09, Christophe JAILLET a écrit :
->> 'xive_irq_bitmap_add()' can return -ENOMEM.
->> In this case, we should free the memory already allocated and return
->> 'false' to the caller.
->>
->> Also add an error path which undoes the 'tima = ioremap(...)'
+> Also add an error path which undoes the 'tima = ioremap(...)'
 > 
-> This old patch doesn't apply, if it is still relevant can you please 
-> rebase ?
-> 
-> Thanks
-> Christophe
-> 
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-Hi, funny to see a 2 1/2 years old patch to pop-up like that :)
-It still looks relevant to me.
+Reviewed-by: Cédric Le Goater <clg@kaod.org>
 
-V2 sent.
-Still not compile tested.
+> ---
+> NOT compile tested (I don't have a cross compiler and won't install one).
+> So if some correction or improvement are needed, feel free to propose and
+> commit it directly.
 
-CJ
+
+A cross compiler takes a couple of seconds to install on any distro.
+It takes a little more to compile the pseries defconfig. To test with
+QEMU, grab the disk image here :
+
+   https://github.com/legoater/qemu-ppc-boot/blob/main/buildroot/qemu_ppc64le_pseries-2021.11-7-g3058e75456-20211206
+
+run :
+
+   qemu-system-ppc64 -M pseries -cpu POWER9 -kernel vmlinux -append "console=hvc0 rootwait root=/dev/sda" -drive file=rootfs.ext2,if=scsi,index=0,format=raw -nographic -net nic -net user -serial mon:stdio
+
+and you will have a pseries machine with network and disk using the
+XIVE interrupt controller.
+
+To get more info on the genirq layer and the XIVE driver, simply
+append :
+
+   dyndbg="file arch/powerpc/sysdev/xive/* +p; file kernel/irq/* +p"
+
+Thanks,
+
+C.
