@@ -4,127 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 357C2C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 11:58:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DD0DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 12:02:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jp3Nq5nbwz3cNS
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 22:58:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e18::626;
- helo=fra01-pr2-obe.outbound.protection.outlook.com;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from FRA01-PR2-obe.outbound.protection.outlook.com
- (mail-pr2fra01on0626.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:7e18::626])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jp3Ts3CYDz3cQP
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Feb 2022 23:02:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=CHbuvPp7;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jp3NH6G9Bz2y8P
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Feb 2022 22:58:06 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=IIyhuZIXgyBaylhRsusgCNpZRy4wcpQ72MMbb2uY/xsT9/4cSYOmApJTq4bGOrE8n6t20FHN1wwExhb6HerUmWXyfP27Im/SnUZaLoP7Vy7jOtpiOrD8UQzDHTLSCBLxIFqPj4/2gnjazCe6e6BNsg7Dddfx2saKrtAgmZ/i3n90tZql9FjBLlWqbngzop0OzKvxu3GL2NcfFd8+6C8GByvrNzOhS90Tyeb2A3R7znh4fGRDPu+5jBwqSprq/JICsijsuRbASkBDcOUOYWWwFaBHohuNNK0g2p0XF1Cstmq9GsuzgT4LTBHwJDcOqztoyLM85M8ncyF5N259aChvbQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=C8AOpY1XqgEnNLUgrx0yw/JHCFlEeNeAZzaV8+eOn3k=;
- b=FMbYrPQdFg+HXk03fpfhKae6roca1YdPu7WKf36K8Z78+NuGvtNeLjGOrFX83TSPNXjk5dyOTk9VIBVnowrNbUCW84ZLkNqBWiXmCHJ4v8bDYjYbQDfp5sz8H6ogE5VF3AIlUJzKfQAxT+JexTNeQkFBKGjNVBWNaZKujSCEEiEQDXI724No1b2ZblgVbsD5THfyO7PesTgwO3aPcvOa+dywE6Ftv0+rnWPzGpEsxxDxWk63UXUYpbVRXGp0s2uuBtKnl5GqdigQ0zfwJnWZ63OkR1FNfMfumwQq4TLgaJL56OuLz9hqncZ32f/RlHjvz2MzNUM/zs65Cu0A3rK72w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
- by PR0P264MB2647.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:1d2::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4930.15; Tue, 1 Feb
- 2022 11:57:45 +0000
-Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
- ([fe80::c9a2:1db0:5469:54e1]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
- ([fe80::c9a2:1db0:5469:54e1%6]) with mapi id 15.20.4930.022; Tue, 1 Feb 2022
- 11:57:45 +0000
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Kefeng Wang <wangkefeng.wang@huawei.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3] powerpc: Fix virt_addr_valid() check
-Thread-Topic: [PATCH v3] powerpc: Fix virt_addr_valid() check
-Thread-Index: AQHYE7IubZGX/TJzNEu385KbWjPcjKx+nnMA
-Date: Tue, 1 Feb 2022 11:57:45 +0000
-Message-ID: <17b1fca7-bb83-fa53-32ac-56b3bf45944c@csgroup.eu>
-References: <20220127123754.77825-1-wangkefeng.wang@huawei.com>
-In-Reply-To: <20220127123754.77825-1-wangkefeng.wang@huawei.com>
-Accept-Language: fr-FR, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.4.0
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=csgroup.eu;
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 6cf8c7a4-48b0-496e-2741-08d9e57a0f64
-x-ms-traffictypediagnostic: PR0P264MB2647:EE_
-x-microsoft-antispam-prvs: <PR0P264MB26475F399CA4FB9CDCF4DEABED269@PR0P264MB2647.FRAP264.PROD.OUTLOOK.COM>
-x-ms-oob-tlc-oobclassifiers: OLM:1388;
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: ZsIruLBzGcGzRyZx9RVDf5jP9XqvUDU8psFOgrtv6V14mnvlab+aIloBf+ciLAq0EEhGfU6elK2ziCneBc17Dlump2a3lO/9CMSLPQj93csjTy2QZOYX7kpv8/alGwxuiYWVwUnDo/oNCYvsoWHsbGRLkou+sB8C1HhLqoWR9M1SBR/IT045ltQBImejSWtnjUufFP7j7Tmkc1UD5wjLYD9PcH7+XtwJPyDnDPR34/Ae9E09Jr03c0Wg/94ptOEp7MSNxV9DsOSRw8w0ZpgtpObDwMn+RoXT5N55DzUXSjVsOpz6gvL+Cq01k2rjuFhQPVFuhKTmQr7L77W27s5WdBtriU5iGSUAfpZd4H8ywBN4ke297Kl6WO2awRNErUBkZY/uiqpQrL1D9kPDJ7yD+Pbd9dhTiQcFJDvhrVa8OyyhYGMEE4weh/ejTc0Ontip7asIbV8G1i2vZ8XW53TQHTjevU82+E1/hivFBhlbKVY8HTRSYpzs7auahNDy1NrE0l8ZPT8Wa1+FhZmywFD9s71sCUzu6mkyoO1pn62AbvqEF9UveLcR6nIvPK5TIgfVkwGALWvkZlGqTBJXQo3CFa1Oxq2JyIbr+Ts+NfPjQ/Gwf8QN7y9/FeE3k7aNOi6ONKHiId6TmqHt9lEq8042CZ9iXC22wquwqPMHuelwY2MiYeWFNGE9XFE/NjxegAO9lbK5aYjlhetpa1+wpUFgZrtPfruLNz9k4CacZSxjw0ztudbBhNkzfXuwWH3s+IgNY4vstOZHy2a0waFt8lUqqg==
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
- SFS:(13230001)(4636009)(366004)(66476007)(66556008)(76116006)(91956017)(71200400001)(4326008)(8676002)(38070700005)(66946007)(64756008)(66446008)(38100700002)(6506007)(5660300002)(8936002)(44832011)(122000001)(508600001)(6486002)(186003)(26005)(110136005)(54906003)(31686004)(2616005)(86362001)(2906002)(31696002)(6512007)(36756003)(83380400001)(66574015)(316002)(45980500001)(43740500002)(20210929001);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?VFR5SGxIcGFrNkcxenNpVWh0L1l5azlDbXZ4QlJoVWtuRlRMZkZUTGVkbDJm?=
- =?utf-8?B?ZmxVUENVa1dQdWdSWStCYWUxZlI3QzkwOWlSbmxOWklwZStiVW9mMUxXUUg3?=
- =?utf-8?B?dTA4cTU1N0pGY2hsZGloMDFCRWJYM0FJWEFrYVN1Vnc0eE5peU5BR3JYeE1Z?=
- =?utf-8?B?VEF2ZTV2R1V1RW9MSHo5WE05S3dURCsveGlYbVorWVlNR1JKTjVvMHlLWnRo?=
- =?utf-8?B?V0dzRFZRNmdGbkExYUVEb3NLZWJZdEt1ekdselY3cE1OQVQ4bjhsK1F1YXZh?=
- =?utf-8?B?Vmo4azN5YmV2TzZ5TWF5UTBQekIxNXZKQ21IMGpZVzNqK0VyQUJVVktSbkUy?=
- =?utf-8?B?ejExTnM4eXA4Y050Mi9RM2pzdzltY2xjSk5SQ2gyeUwrbHZkb2RCSFJHVmlk?=
- =?utf-8?B?OHVQelREZFdIVE5ZR2QyNTFUUENERUNqcXNaTVdhV1paWFhkYk5Pa1BkQXkz?=
- =?utf-8?B?bjFlY2I3MlQyYURnL2tvNDN3UDgxUDhvektsVk9qMWtsRVBCU0dIYjN3VzUy?=
- =?utf-8?B?Uk4wRHhwdmVQSHdxU0Z0OUFsRG9zK3B2MUUvK3ZpZkNwV01UNDBJSDlOTWV5?=
- =?utf-8?B?MU56VEYyNDUrMTdENGNDT0F5MmZEeDhHWWg3M2gyMWtWUU8zWGRacFVrZEly?=
- =?utf-8?B?ZHcwVGVZbWZINWttV1Qyc2s3TWJKOTAxbFhLYk1xR0JvOWVPNnZYeEc5SzAr?=
- =?utf-8?B?ZmJjOXZyNUdCS0lUVWdOaU9ad3V4Vk1qWVlHMWVubjdKak91MCtPb0doVXk4?=
- =?utf-8?B?bDB1RVJrNmFyRjV3MDI2cVF2M1ZiWmMveWdvU2N6QmdYbFpZWXVlRTJRSDdl?=
- =?utf-8?B?YU5FckttODV0UWxZcUt4cWZTRGxtYjFwOCtMMFlmYXhicWxVWUcwOHEvbFpa?=
- =?utf-8?B?M1NoQmpPeGJ1RTZkbkJOTG9PZFYwWkUzUCtLNGpxNkx5NHg0dXBuK25MNlFH?=
- =?utf-8?B?T1NObktYak9FMTBwd2pubXkrb05iVWxjZ2c2alVzNUZPbjhucXFyMUpZMnZ1?=
- =?utf-8?B?Q3lTL2tLTzlza2ZraDUwSGhJeG9RRGJFWklaNEh3eVJBVVBsV0x0TEpwa0pn?=
- =?utf-8?B?aFIxSmNQTGxTT3RMN05PamFNd2dtSUtkT2ttUnFlT0VhZk5DZ0xjT2FOYTJZ?=
- =?utf-8?B?SXQ1K0tJQTVHSlBvS251THBjVFRLNWVwaGpPVkVwU28wc0NLZ0RZRHlucnJ4?=
- =?utf-8?B?b0JObkhoRGpvRnAxTnNVRGltWUZBWkd6cWZUNmtmTExkYnUrMTFnRUxwRksy?=
- =?utf-8?B?MXdMdHppQS9YVHU0MmRPTVNNSUlyZkdJRVF4bEVtSkdPdjZLdGdMTEdnTDhY?=
- =?utf-8?B?S1NyL2R6YlMveTN6dndveDltdWc3dWpHaWtwa3ZQV0tnVnVMQlFHYzJ4YUtP?=
- =?utf-8?B?OUZqcDk1UHFqVit4aTZLQ1Y3MzRrWlhlOUZSSVhNRnBtUVJHZDlEM1B1U3BL?=
- =?utf-8?B?WFByVHlBc2xwVEQ0U2lDdzN5UmJmQ1ArK3lWdklJR0tBdkNlUGhTK05ITDFl?=
- =?utf-8?B?OUtoYWR2bHE4bk9TZ0dWT3BrTjVTNTI5MHZFcGZRcVh2dlRVR0dhakwxaDg4?=
- =?utf-8?B?MW9DNjhmdzZ1MjI5YVExMnBhenMxbnVKVEtSNytOb2EvdE5IV2JIbEdacEx0?=
- =?utf-8?B?ZVpxVVhMRVo4LzkyUFRDWm5hVGdwR2FINk1JRnZHcHgzQ3FlUlFoOWNIUDRO?=
- =?utf-8?B?a3R3REMxenJXMzFuWXR1aDNOSzdYWUhONjA1NXBvYTNhbUpyQW5CNFpoSjFl?=
- =?utf-8?B?QmtTL29SMGtLWG9kWW1DYjkrY0NLNU5rUXBrK2hpVUwyQlpqN2tTU3NzTDZ6?=
- =?utf-8?B?QVN1ODUza0c5RDF5VGcvSHBERDJNcjVrVHJrNVBXUnAwbnNNeW9JRHB1YVBS?=
- =?utf-8?B?eDFST2tncXZUVEQrTHFrV2Q0Z1RTY0xzU2ZVT3RDdFY3YnU0SDV0YlZUQzVt?=
- =?utf-8?B?aWRHS2NNNzdWUlcxU0R1ZEVrZGlGajVXYkozOXdaUTdjWWh4Q2hoNGpyYXNm?=
- =?utf-8?B?OTNucm1vRzhtQUQwSmdFWGIzY2pSbVpUalE0WFhrcEZLaDkzaG5td1p2L2RU?=
- =?utf-8?B?R080WHlmOCtSWXV0SWc1L0NpR3RFMXJXT3d1NlJQKzg3TGJLQXd0enlDNUNL?=
- =?utf-8?B?TUd0VWU0cUc5Yy83TnJPTU16SWQyNmpzUXdZMVNIZUZ0aFoxallqOEtsQmk5?=
- =?utf-8?B?L0tPTlQ0anNxWkZqREtTMzRSaDJYZVhWR0VvRkRZRGsxWGlRSjlkYk9zbFpL?=
- =?utf-8?Q?qnzjfBdG9TxCD1diiXhGiE49YKAcjVfqrThRTleEd4=3D?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <DA2A6832C34DCB48AB59B087E62F3D03@FRAP264.PROD.OUTLOOK.COM>
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jp3T85qh4z2xs7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Feb 2022 23:02:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=CHbuvPp7; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Jp3T76FXZz4xcT;
+ Tue,  1 Feb 2022 23:02:19 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1643716940;
+ bh=71VALrlG0fypET2mh+qfwMtZY4552VG0f/3Dazr4eKM=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=CHbuvPp7WVx4vxJTxwU+ApR/Ye/FJNp8qrNgEOsbg1N7O5O+Fs2yXtXuWBfUsWTbr
+ QZDwUPsKhnJe+u41DeyRIG8u4ehy2+l5Vve4wK2SSymO3YZWxlpv5RhtF6+AeE1rrV
+ G3qG7su+W551f18MyNF4mb50wupAxwsPGD/ZFqTc/79DjMACGL44zm3PtwGsvepI/w
+ QKiGY/+OBGne07Q/JcmXPQUQdCL28OXkUlePvf2bWfkOqvUCzk2g6JFmzTJMLnPqAY
+ 6DcLJT1KxcNMCX+nIRJ9UIsrmNKfIIuY9wcYsdEKUiz6gWf/YfQDYwpGPvu3VSl0DT
+ bpWyfJRL6zG6Q==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Abdul Haleem
+ <abdhalee@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Oops][next-20220128] 5.17.0-rc1 kernel panics on my powerpc box
+In-Reply-To: <YffISHu7b/qMEdUa@smile.fi.intel.com>
+References: <352a3db0-3e84-ee91-2f51-f687899d9bd2@linux.vnet.ibm.com>
+ <YffISHu7b/qMEdUa@smile.fi.intel.com>
+Date: Tue, 01 Feb 2022 23:02:19 +1100
+Message-ID: <87leyun6b8.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-X-OriginatorOrg: csgroup.eu
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6cf8c7a4-48b0-496e-2741-08d9e57a0f64
-X-MS-Exchange-CrossTenant-originalarrivaltime: 01 Feb 2022 11:57:45.6159 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: Mi0WB+7N8MppCUr6GsB0hdghCUL7rTf+5LBElbbHdogs7U4pZ3XLDahFyBscA4HuG16M42wMMmKrLT5VbSE1yFgQ9ipyX7M9RN+hjpp1ttk=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR0P264MB2647
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -136,51 +60,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "npiggin@gmail.com" <npiggin@gmail.com>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, heikki.krogerus@linux.intel.com,
+ peterz@infradead.org, linux-next <linux-next@vger.kernel.org>,
+ Brian King <brking@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-DQoNCkxlIDI3LzAxLzIwMjIgw6AgMTM6MzcsIEtlZmVuZyBXYW5nIGEgw6ljcml0wqA6DQo+IFdo
-ZW4gcnVuIGV0aHRvb2wgZXRoMCBvbiBQb3dlclBDNjQsIHRoZSBCVUcgb2NjdXJyZWQsDQo+IA0K
-PiAgICB1c2VyY29weTogS2VybmVsIG1lbW9yeSBleHBvc3VyZSBhdHRlbXB0IGRldGVjdGVkIGZy
-b20gU0xVQiBvYmplY3Qgbm90IGluIFNMVUIgcGFnZT8hIChvZmZzZXQgMCwgc2l6ZSAxMDQ4KSEN
-Cj4gICAga2VybmVsIEJVRyBhdCBtbS91c2VyY29weS5jOjk5DQo+ICAgIC4uLg0KPiAgICB1c2Vy
-Y29weV9hYm9ydCsweDY0LzB4YTAgKHVucmVsaWFibGUpDQo+ICAgIF9fY2hlY2tfaGVhcF9vYmpl
-Y3QrMHgxNjgvMHgxOTANCj4gICAgX19jaGVja19vYmplY3Rfc2l6ZSsweDFhMC8weDIwMA0KPiAg
-ICBkZXZfZXRodG9vbCsweDI0OTQvMHgyYjIwDQo+ICAgIGRldl9pb2N0bCsweDVkMC8weDc3MA0K
-PiAgICBzb2NrX2RvX2lvY3RsKzB4ZjAvMHgxZDANCj4gICAgc29ja19pb2N0bCsweDNlYy8weDVh
-MA0KPiAgICBfX3NlX3N5c19pb2N0bCsweGYwLzB4MTYwDQo+ICAgIHN5c3RlbV9jYWxsX2V4Y2Vw
-dGlvbisweGZjLzB4MWYwDQo+ICAgIHN5c3RlbV9jYWxsX2NvbW1vbisweGY4LzB4MjAwDQo+IA0K
-PiBUaGUgY29kZSBzaG93cyBiZWxvdywNCj4gDQo+ICAgIGRhdGEgPSB2emFsbG9jKGFycmF5X3Np
-emUoZ3N0cmluZ3MubGVuLCBFVEhfR1NUUklOR19MRU4pKTsNCj4gICAgY29weV90b191c2VyKHVz
-ZXJhZGRyLCBkYXRhLCBnc3RyaW5ncy5sZW4gKiBFVEhfR1NUUklOR19MRU4pKQ0KPiANCj4gVGhl
-IGRhdGEgaXMgYWxsb2NlZCBieSB2bWFsbG9jKCksIHZpcnRfYWRkcl92YWxpZChwdHIpIHdpbGwg
-cmV0dXJuIHRydWUNCj4gb24gUG93ZXJQQzY0LCB3aGljaCBsZWFkcyB0byB0aGUgcGFuaWMuDQo+
-IA0KPiBBcyBjb21taXQgNGRkNzU1NGE2NDU2ICgicG93ZXJwYy82NDogQWRkIFZJUlRVQUxfQlVH
-X09OIGNoZWNrcyBmb3IgX192YQ0KPiBhbmQgX19wYSBhZGRyZXNzZXMiKSBkb2VzLCBsZXQncyBj
-aGVjayB0aGUgdmlydCBhZGRyIGFib3ZlIFBBR0VfT0ZGU0VUIGluDQo+IHRoZSB2aXJ0X2FkZHJf
-dmFsaWQoKSBmb3IgUG93ZXJQQzY0LCB3aGljaCB3aWxsIG1ha2Ugc3VyZSB0aGF0IHRoZSBwYXNz
-ZWQNCj4gYWRkcmVzcyBpcyBhIHZhbGlkIGxpbmVhciBtYXAgYWRkcmVzcy4NCj4gDQo+IE1lYW53
-aGlsZSwgUEFHRV9PRkZTRVQgaXMgdGhlIHZpcnR1YWwgYWRkcmVzcyBvZiB0aGUgc3RhcnQgb2Yg
-bG93bWVtLA0KPiB0aGUgY2hlY2sgaXMgc3VpdGFibGUgZm9yIFBvd2VyUEMzMiB0b28uDQo+IA0K
-PiBTaWduZWQtb2ZmLWJ5OiBLZWZlbmcgV2FuZyA8d2FuZ2tlZmVuZy53YW5nQGh1YXdlaS5jb20+
-DQoNClJldmlld2VkLWJ5OiBDaHJpc3RvcGhlIExlcm95IDxjaHJpc3RvcGhlLmxlcm95QGNzZ3Jv
-dXAuZXU+DQoNCj4gLS0tDQo+IHYzOg0KPiAtIHVwZGF0ZSBjaGFuZ2Vsb2cgYW5kIHJlbW92ZSBh
-IHJlZHVuZGFudCBjYXN0DQo+ICAgYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BhZ2UuaCB8IDUg
-KysrKy0NCj4gICAxIGZpbGUgY2hhbmdlZCwgNCBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0p
-DQo+IA0KPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BhZ2UuaCBiL2Fy
-Y2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wYWdlLmgNCj4gaW5kZXggMjU0Njg3MjU4ZjQyLi5hOGEy
-OWEyM2NlMmQgMTAwNjQ0DQo+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wYWdlLmgN
-Cj4gKysrIGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BhZ2UuaA0KPiBAQCAtMTMyLDcgKzEz
-MiwxMCBAQCBzdGF0aWMgaW5saW5lIGJvb2wgcGZuX3ZhbGlkKHVuc2lnbmVkIGxvbmcgcGZuKQ0K
-PiAgICNkZWZpbmUgdmlydF90b19wYWdlKGthZGRyKQlwZm5fdG9fcGFnZSh2aXJ0X3RvX3Bmbihr
-YWRkcikpDQo+ICAgI2RlZmluZSBwZm5fdG9fa2FkZHIocGZuKQlfX3ZhKChwZm4pIDw8IFBBR0Vf
-U0hJRlQpDQo+ICAgDQo+IC0jZGVmaW5lIHZpcnRfYWRkcl92YWxpZChrYWRkcikJcGZuX3ZhbGlk
-KHZpcnRfdG9fcGZuKGthZGRyKSkNCj4gKyNkZWZpbmUgdmlydF9hZGRyX3ZhbGlkKHZhZGRyKQko
-ewkJCQkJCVwNCj4gKwl1bnNpZ25lZCBsb25nIF9hZGRyID0gKHVuc2lnbmVkIGxvbmcpdmFkZHI7
-CQkJCVwNCj4gKwlfYWRkciA+PSBQQUdFX09GRlNFVCAmJiBwZm5fdmFsaWQodmlydF90b19wZm4o
-X2FkZHIpKTsJXA0KPiArfSkNCj4gICANCj4gICAvKg0KPiAgICAqIE9uIEJvb2stRSBwYXJ0cyB3
-ZSBuZWVkIF9fdmEgdG8gcGFyc2UgdGhlIGRldmljZSB0cmVlIGFuZCB3ZSBjYW4ndA==
+Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
+> On Mon, Jan 31, 2022 at 12:30:14PM +0530, Abdul Haleem wrote:
+>> Greeting's
+>> 
+>> Today's linux-next kernel failed to boot 5.17.0-rc1-next-20220128 with kernel Oops on PowerVM LPAR
+>> 
+>> dmesg:
+>> Started hybrid virtual network scan and config.
+>> Started VDO volume services.
+>> Started Dynamic System Tuning Daemon.
+>> Attempted to run process '/opt/rsct/bin/trspoolmgr' with NULL argv
+>> Created slice system-systemd\x2dcoredump.slice.
+>> Started Process Core Dump (PID 3726/UID 0).
+>> Started Process Core Dump (PID 4032/UID 0).
+>> Started Process Core Dump (PID 4200/UID 0).
+>> Started RMC-Resource Monitioring and Control.
+>> Started Process Core Dump (PID 4319/UID 0).
+>> rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+>> rpaphp: Slot [U78D2.001.WZS01DT-P1-C10] registered
+>> Started Process Core Dump (PID 4687/UID 0).
+>> Started Process Core Dump (PID 4806/UID 0).
+>> Started Process Core Dump (PID 4973/UID 0).
+>> Async-gnnft timeout - hdl=7.
+>> BUG: Unable to handle kernel data access on read at 0x5deadbeef000012a
+>> Faulting instruction address: 0xc000000000221f4c
+>> Oops: Kernel access of bad area, sig: 11 [#1]
+>> LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
+>> Modules linked in: rpadlpar_io rpaphp tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag bonding rfkill sunrpc dm_round_robin dm_multipath dm_mod ocrdma ib_uverbs ib_core pseries_rng xts vmx_crypto uio_pdrv_genirq gf128mul uio sch_fq_codel ext4 mbcache jbd2 sd_mod sg qla2xxx ibmvscsi ibmveth scsi_transport_srp nvme_fc nvme_fabrics nvme_core be2net t10_pi scsi_transport_fc
+>> CPU: 8 PID: 5782 Comm: mksquashfs Not tainted 5.17.0-rc1-next-20220128-autotest #1
+>> NIP:  c000000000221f4c LR: c000000000221ee4 CTR: 0000000000000006
+>> REGS: c0000001008bb920 TRAP: 0380   Not tainted  (5.17.0-rc1-next-20220128-autotest)
+>> MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 24004224  XER: 20040000
+>> CFAR: c000000000220df8 IRQMASK: 1
+>> GPR00: c000000000221ee4 c0000001008bbbc0 c0000000028d6100 00000000ffff9cc0
+>> GPR04: 0000000000000000 00000000000001c0 00000000000001c0 0000000000000000
+>> GPR08: 0000000000000000 5deadbeef0000122 c0000001008bbbe8 0000000000000001
+>> GPR12: c000000000221d50 c000000007fe6680 00007fffbcf00000 0000000000000100
+>> GPR16: 0000000000000100 00007fffbce64420 0000000000000001 0000000000000002
+>> GPR20: c000000002912108 5deadbeef0000122 c00000079c008668 0000000000000000
+>> GPR24: 0000000000000000 c0000001008bbbe8 00000000ffff9540 c000000002913a00
+>> GPR28: 0000000000000000 c0000000a4560950 c00000079c008600 c0000000020e8600
+>> NIP [c000000000221f4c] run_timer_softirq+0x1fc/0x7c0
+>> LR [c000000000221ee4] run_timer_softirq+0x194/0x7c0
+>> Call Trace:
+>> [c0000001008bbbc0] [c000000000221ee4] run_timer_softirq+0x194/0x7c0 (unreliable)
+>> [c0000001008bbc90] [c000000000ca7e5c] __do_softirq+0x15c/0x3d0
+>> [c0000001008bbd80] [c00000000014f538] irq_exit+0x168/0x1b0
+>> [c0000001008bbdb0] [c000000000027184] timer_interrupt+0x1a4/0x3e0
+>> [c0000001008bbe10] [c000000000009a08] decrementer_common_virt+0x208/0x210
+>> --- interrupt: 900 at 0x7fffbccb3850
+>> NIP:  00007fffbccb3850 LR: 00007fffbccb51f8 CTR: 0000000000000000
+>> REGS: c0000001008bbe80 TRAP: 0900   Not tainted  (5.17.0-rc1-next-20220128-autotest)
+>> MSR:  800000000280f033 <SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 42004488  XER: 20040000
+>> CFAR: 0000000000000000 IRQMASK: 0
+>> GPR00: 0000000000007fff 00007ffe8afde4d0 00007fffbcce7f00 00007ffe74020c50
+>> GPR04: 0000000000006bfa 0000000000003cf1 00007ffe740223a0 0000000000000005
+>> GPR08: 00007ffe74028fb4 00000000000009a3 0000000000000004 0000000000000039
+>> GPR12: 00007ffe740323b0 00007ffe8afe68e0 00007fffbcf00000 00007ffe8a7d0000
+>> GPR16: 00007fffbce64410 00007fffbce64420 0000000000000000 00007fffbce60318
+>> GPR20: 00007ffe740323b0 00007ffe740423c0 0000000000003fff 0000000000000005
+>> GPR24: 0000000000000004 00007fffbccc8058 0000000000000000 000000000000000c
+>> GPR28: 0000000000000102 0000000000004415 00007ffe7402df8b 00007ffe7402e08d
+>> NIP [00007fffbccb3850] 0x7fffbccb3850
+>> LR [00007fffbccb51f8] 0x7fffbccb51f8
+>> --- interrupt: 900
+>> Instruction dump:
+>> 60000000 e9390000 2fa90000 419effc8 ebb90000 fbbe0008 60000000 e93d0000
+>> e95d0008 2fa90000 f92a0000 419e0008 <f9490008> 813d0020 fb1d0008 ea9d0018
+>> ---[ end trace 0000000000000000 ]---
+>> 
+>> The fault instruction points to
+>> 
+>> # gdb -batch /boot/vmlinuz-5.17.0-rc1-next-20220128-autotest -ex 'list *(0xc000000000221f4c)'
+>> 0xc000000000221f4c is in run_timer_softirq (./include/linux/list.h:850).
+>> 845		struct hlist_node *next = n->next;
+>> 846		struct hlist_node **pprev = n->pprev;
+>> 847	
+>> 848		WRITE_ONCE(*pprev, next);
+>> 849		if (next)
+>> 850			WRITE_ONCE(next->pprev, pprev);
+>> 851	}
+>> 852	
+>> 853	/**
+>> 854	 * hlist_del - Delete the specified hlist_node from its list
+>
+> It's quite likely not a culprit, but the result of some (race?) condition.
+> Cc'ing to Thomas, maybe he has an idea.
+
+The disassembly says we're storing r10 to r9 + 8. If you look at the
+first register dump, r9 is 5deadbeef0000122 which is:
+
+#define LIST_POISON2  ((void *) 0x122 + POISON_POINTER_DELTA)
+
+
+So we seem to be deleting a list entry that's already been deleted?
+
+cheers
