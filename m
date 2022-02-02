@@ -4,37 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DC67C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Feb 2022 20:59:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE0BFC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Feb 2022 20:59:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JpvLQ6gQXz3clm
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Feb 2022 07:59:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=neutral (access neither permitted nor denied)
- smtp.mailfrom=codon.org.uk (client-ip=2a00:1098:84:22e::2;
- helo=cavan.codon.org.uk; envelope-from=mjg59@codon.org.uk; receiver=<UNKNOWN>)
-Received: from cavan.codon.org.uk (irc.codon.org.uk [IPv6:2a00:1098:84:22e::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JpvLt2mj1z3dft
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Feb 2022 07:59:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=codon.org.uk (client-ip=176.126.240.207; helo=cavan.codon.org.uk;
+ envelope-from=mjg59@codon.org.uk; receiver=<UNKNOWN>)
+X-Greylist: delayed 11304 seconds by postgrey-1.36 at boromir;
+ Wed, 02 Feb 2022 18:10:26 AEDT
+Received: from cavan.codon.org.uk (cavan.codon.org.uk [176.126.240.207])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JpXbp1Z16z30Bc
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Feb 2022 17:54:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JpXxt1wBFz30Dg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Feb 2022 18:10:26 +1100 (AEDT)
 Received: by cavan.codon.org.uk (Postfix, from userid 1000)
- id 87B0840A4A; Wed,  2 Feb 2022 06:54:43 +0000 (GMT)
-Date: Wed, 2 Feb 2022 06:54:43 +0000
+ id 56FE540A51; Wed,  2 Feb 2022 07:10:23 +0000 (GMT)
+Date: Wed, 2 Feb 2022 07:10:23 +0000
 From: Matthew Garrett <mjg59@srcf.ucam.org>
 To: Greg KH <gregkh@linuxfoundation.org>
 Subject: Re: [PATCH v7 0/5] Allow guest access to EFI confidential computing
  secret area
-Message-ID: <20220202065443.GA9249@srcf.ucam.org>
+Message-ID: <20220202071023.GA9489@srcf.ucam.org>
 References: <20220201124413.1093099-1-dovmurik@linux.ibm.com>
  <Yfk6vEuZFtgtA+G+@kroah.com>
  <37779659ca96ac9c1f11bcc0ac0665895c795b54.camel@linux.ibm.com>
  <20220202040157.GA8019@srcf.ucam.org> <YfogOurPZb7+Yelo@kroah.com>
+ <20220202065443.GA9249@srcf.ucam.org> <YfotMyQiQ66xfCOQ@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <YfogOurPZb7+Yelo@kroah.com>
+In-Reply-To: <YfotMyQiQ66xfCOQ@kroah.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-Mailman-Approved-At: Thu, 03 Feb 2022 07:58:06 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,26 +69,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 02, 2022 at 07:10:02AM +0100, Greg KH wrote:
-> On Wed, Feb 02, 2022 at 04:01:57AM +0000, Matthew Garrett wrote:
-> > We're talking about things that have massively different semantics.
-> 
-> I see lots of different platforms trying to provide access to their
-> "secure" firmware data to userspace in different ways.  That feels to me
-> like they are the same thing that userspace would care about in a
-> unified way.
+On Wed, Feb 02, 2022 at 08:05:23AM +0100, Greg KH wrote:
 
-EFI variables are largely for the OS to provide information to the 
-firmware, while this patchset is to provide information from the 
-firmware to the OS. I don't see why we'd expect to use the same userland 
-tooling for both.
+> I see different platform patches trying to stick these blobs in
+> different locations and ways to access (securityfs, sysfs, char device
+> node), which seems crazy to me.  Why can't we at least pick one way to
+> access these to start with, and then have the filesystem layout be
+> platform-specific as needed, which will give the correct hints to
+> userspace as to what it needs to do here?
 
-In the broader case - I don't think we *can* use the same userland
-tooling for everything. For example, the patches to add support for 
-manipulating the Power secure boot keys originally attempted to make it 
-look like efivars, but the underlying firmware semantics are 
-sufficiently different that even exposing the same kernel interface 
-wouldn't be a sufficient abstraction and userland would still need to 
-behave differently. Exposing an interface that looks consistent but 
-isn't is arguably worse for userland than exposing explicitly distinct 
-interfaces.
+Which other examples are you thinking of? I think this conversation may 
+have accidentally become conflated with a different prior one and now 
+we're talking at cross purposes.
