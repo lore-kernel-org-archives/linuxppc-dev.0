@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D17CC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Feb 2022 07:49:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9E6EC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Feb 2022 07:52:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JpYpk4JNGz3cSN
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Feb 2022 18:49:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JpYtf1LVHz3cS3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Feb 2022 18:52:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -16,22 +16,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JpYpH0fRQz30NC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Feb 2022 18:48:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JpYsx2Zzkz3bZb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Feb 2022 18:52:05 +1100 (AEDT)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id 0D24367373; Wed,  2 Feb 2022 08:48:47 +0100 (CET)
-Date: Wed, 2 Feb 2022 08:48:46 +0100
+ id D45AE67373; Wed,  2 Feb 2022 08:51:59 +0100 (CET)
+Date: Wed, 2 Feb 2022 08:51:59 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: guoren@kernel.org
-Subject: Re: [PATCH V5 06/21] asm-generic: compat: Cleanup duplicate
- definitions
-Message-ID: <20220202074846.GA18398@lst.de>
+Subject: Re: [PATCH V5 15/21] riscv: compat: Add hw capability check for elf
+Message-ID: <20220202075159.GB18398@lst.de>
 References: <20220201150545.1512822-1-guoren@kernel.org>
- <20220201150545.1512822-7-guoren@kernel.org>
+ <20220201150545.1512822-16-guoren@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220201150545.1512822-7-guoren@kernel.org>
+In-Reply-To: <20220201150545.1512822-16-guoren@kernel.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -57,6 +56,38 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Looks good,
+On Tue, Feb 01, 2022 at 11:05:39PM +0800, guoren@kernel.org wrote:
+> +bool compat_elf_check_arch(Elf32_Ehdr *hdr)
+> +{
+> +	if (compat_mode_support && (hdr->e_machine == EM_RISCV))
+> +		return true;
+> +	else
+> +		return false;
+> +}
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+This can be simplified to:
+
+	return compat_mode_support && hdr->e_machine == EM_RISCV;
+
+I'd also rename compat_mode_support to compat_mode_supported
+
+> +
+> +static int compat_mode_detect(void)
+> +{
+> +	unsigned long tmp = csr_read(CSR_STATUS);
+> +
+> +	csr_write(CSR_STATUS, (tmp & ~SR_UXL) | SR_UXL_32);
+> +
+> +	if ((csr_read(CSR_STATUS) & SR_UXL) != SR_UXL_32) {
+> +		pr_info("riscv: 32bit compat mode detect failed\n");
+> +		compat_mode_support = false;
+> +	} else {
+> +		compat_mode_support = true;
+> +		pr_info("riscv: 32bit compat mode detected\n");
+> +	}
+
+I don't think we need these printks here.
+
+Also this could be simplified to:
+
+	compat_mode_supported = (csr_read(CSR_STATUS) & SR_UXL) == SR_UXL_32;
