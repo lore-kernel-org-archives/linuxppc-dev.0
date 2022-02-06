@@ -4,54 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BF86C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Feb 2022 17:17:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AED98C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Feb 2022 19:24:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JsGD065MZz3cDy
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Feb 2022 04:17:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JsK2S3bdYz3bZG
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Feb 2022 06:24:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=WLwbEJez;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=aUt25WVM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1;
+ smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217;
  helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=WLwbEJez; 
+ header.a=rsa-sha256 header.s=korg header.b=aUt25WVM; 
  dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JsGCH1zfSz2xXV
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Feb 2022 04:16:25 +1100 (AEDT)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JsK1h3LfFz2xF0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Feb 2022 06:23:19 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 0D814611CF;
- Sun,  6 Feb 2022 17:16:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 767DBC340E9;
- Sun,  6 Feb 2022 17:16:20 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id B56E461232;
+ Sun,  6 Feb 2022 19:23:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F0788C340E9;
+ Sun,  6 Feb 2022 19:23:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
- s=korg; t=1644167781;
- bh=dutNgCjLlsK7EJjpiN3hfWC7nD9xcLFnJCxXg/6t3TQ=;
+ s=korg; t=1644175396;
+ bh=lzQaIyJEJ68hfqoYIJIOmjmJEqoy+tJ5fZpio7lcJ/8=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=WLwbEJezKBgpLCe6SE0R9h9wzMaMOT9YY/6IxgDzsLUUsBRz06Rgea0bVy64qCk7X
- CKfP02bw/OJM7L03FHy6lySTOTOs2sNnVoCcPWBNqMrOv5J+gEvba3eLzfv2lfwg7C
- XZ2PiZEfpUMLNWihHHB7OWzDoP/orIcy8VVtZj0M=
-Date: Sun, 6 Feb 2022 18:16:07 +0100
+ b=aUt25WVMt8rXAY7QLfSjuPytIBaP/O9X72QIBB6hpKl/QNZ2OxtkXKtS+tF4GPuCn
+ TIQuADZWoXXlTEKiUEYxmC6EOyqbYgRvKepsz6fafT74q0SMXNn1+QrMzuapTAstue
+ I0xGkGhmpIsPrTwm9dBss++orFJFtl8wQZRU4rFM=
+Date: Sun, 6 Feb 2022 20:23:10 +0100
 From: Greg KH <gregkh@linuxfoundation.org>
-To: Walt Drummond <walt@drummond.us>
-Subject: Re: [PATCH v2 3/3] vstatus: Display an informational message when
- the VSTATUS character is pressed or TIOCSTAT ioctl is called.
-Message-ID: <YgACV9CZFRDndJ96@kroah.com>
-References: <20220206154856.2355838-1-walt@drummond.us>
- <20220206154856.2355838-4-walt@drummond.us>
+To: Ankit Kumar Pandey <itsankitkp@gmail.com>
+Subject: Re: [PATCH] Styleguide fix: Removed un-needed whitespaces and
+ formatting errors in drivers/tty
+Message-ID: <YgAgHs1qJAUrxE1S@kroah.com>
+References: <YgAWN0ytumzY/n8W@ankit-vm>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220206154856.2355838-4-walt@drummond.us>
+In-Reply-To: <YgAWN0ytumzY/n8W@ankit-vm>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,425 +61,715 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-mips@vger.kernel.org, James.Bottomley@hansenpartnership.com,
- jcmvbkbc@gmail.com, paulus@samba.org, sparclinux@vger.kernel.org,
- agordeev@linux.ibm.com, ar@cs.msu.ru, jirislaby@kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, arnd@arndb.de,
- deller@gmx.de, ysato@users.osdn.me, borntraeger@de.ibm.com, mattst88@gmail.com,
- linux-xtensa@linux-xtensa.org, gor@linux.ibm.com, hca@linux.ibm.com,
- ink@jurassic.park.msu.ru, rth@twiddle.net, chris@zankel.net,
- tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: linuxppc-dev@lists.ozlabs.org, jirislaby@kernel.org,
+ linux-kernel@vger.kernel.org, laurentiu.tudor@nxp.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Feb 06, 2022 at 07:48:54AM -0800, Walt Drummond wrote:
-> When triggered by pressing the VSTATUS key or calling the TIOCSTAT
-> ioctl, the n_tty line discipline will display a message on the user's
-> tty that provides basic information about the system and an
-> 'interesting' process in the current foreground process group, eg:
+On Mon, Feb 07, 2022 at 12:33:07AM +0530, Ankit Kumar Pandey wrote:
+> There were lot of styleguide errors raised by checkpatch.pl against
+> drivers/tty/* which I have fixed. There is zero code change apart from
+> changes related to styleguide. checkpatch.pl returns 0 error for
+> style guide now.
 > 
->   load: 0.58  cmd: sleep 744474 [sleeping] 0.36r 0.00u 0.00s 0% 772k
-> 
-> The status message provides:
->  - System load average
->  - Command name and process id (from the perspective of the session)
->  - Scheduler state
->  - Total wall-clock run time
->  - User space run time
->  - System space run time
->  - Percentage of on-cpu time
->  - Resident set size
-
-This should be documented somewhere, and not buried in a changelog text
-like this.  Can you also add this information somewhere in the
-Documentation/ directory so that people have a hint as to what is going
-on here?
-
-> The message is only displayed when the tty has the VSTATUS character
-> set, the local flags ICANON and IEXTEN are enabled and NOKERNINFO is
-> disabled; it is always displayed when TIOCSTAT is called regardless of
-> tty settings.
-> 
-> Signed-off-by: Walt Drummond <walt@drummond.us>
 > ---
->  drivers/tty/Makefile       |   2 +-
->  drivers/tty/n_tty.c        |  34 +++++++
->  drivers/tty/n_tty_status.c | 181 +++++++++++++++++++++++++++++++++++++
->  drivers/tty/tty_io.c       |   2 +-
->  include/linux/tty.h        |   5 +
->  5 files changed, 222 insertions(+), 2 deletions(-)
->  create mode 100644 drivers/tty/n_tty_status.c
-
-Also, any chance for a test to be added so that we can ensure that this
-doesn't change over time in ways that confuse/break people?
-
-Is this now a new user/kernel api format that we must preserve for
-forever?  Can we add/remove items over time that make sense or are
-programs (not just people), going to parse this?
-
+>  drivers/tty/amiserial.c    | 285 ++++++++++++++++++-------------------
+>  drivers/tty/ehv_bytechan.c |   5 +-
+>  drivers/tty/goldfish.c     |   2 +
+>  3 files changed, 142 insertions(+), 150 deletions(-)
 > 
-> diff --git a/drivers/tty/Makefile b/drivers/tty/Makefile
-> index a2bd75fbaaa4..3539d7ab77e5 100644
-> --- a/drivers/tty/Makefile
-> +++ b/drivers/tty/Makefile
-> @@ -2,7 +2,7 @@
->  obj-$(CONFIG_TTY)		+= tty_io.o n_tty.o tty_ioctl.o tty_ldisc.o \
->  				   tty_buffer.o tty_port.o tty_mutex.o \
->  				   tty_ldsem.o tty_baudrate.o tty_jobctrl.o \
-> -				   n_null.o
-> +				   n_null.o n_tty_status.o
->  obj-$(CONFIG_LEGACY_PTYS)	+= pty.o
->  obj-$(CONFIG_UNIX98_PTYS)	+= pty.o
->  obj-$(CONFIG_AUDIT)		+= tty_audit.o
-> diff --git a/drivers/tty/n_tty.c b/drivers/tty/n_tty.c
-> index 64a058a4c63b..fd70efc333d7 100644
-> --- a/drivers/tty/n_tty.c
-> +++ b/drivers/tty/n_tty.c
-> @@ -80,6 +80,7 @@
->  #define ECHO_BLOCK		256
->  #define ECHO_DISCARD_WATERMARK	N_TTY_BUF_SIZE - (ECHO_BLOCK + 32)
+> diff --git a/drivers/tty/amiserial.c b/drivers/tty/amiserial.c
+> index 1e60dbef6..15917254e 100644
+> --- a/drivers/tty/amiserial.c
+> +++ b/drivers/tty/amiserial.c
+> @@ -12,13 +12,13 @@
+>   * (non hardware specific) changes to serial.c.
+>   *
+>   * The port is registered with the tty driver as minor device 64, and
+> - * therefore other ports should should only use 65 upwards.
+> + * therefore other ports should only use 65 upwards.
+>   *
+>   * Richard Lucock 28/12/99
+>   *
+>   *  Copyright (C) 1991, 1992  Linus Torvalds
+> - *  Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 
+> - * 		1998, 1999  Theodore Ts'o
+> + *  Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997,
+> + *		1998, 1999  Theodore Ts'o
+>   *
+>   */
 >  
-> +#define STATUS_LINE_LEN 160   /* tty status line will truncate at this length */
-
-Tabs please.
-
-
->  
->  #undef N_TTY_TRACE
->  #ifdef N_TTY_TRACE
-> @@ -127,6 +128,8 @@ struct n_tty_data {
->  	struct mutex output_lock;
+> @@ -78,8 +78,8 @@ struct serial_state {
+>  	int			ignore_status_mask;
+>  	int			timeout;
+>  	int			quot;
+> -	int			IER; 	/* Interrupt Enable Register */
+> -	int			MCR; 	/* Modem control register */
+> +	int			IER;	/* Interrupt Enable Register */
+> +	int			MCR;	/* Modem control register */
+>  	int			x_char;	/* xon/xoff character */
 >  };
 >  
-> +static void n_tty_status(struct tty_struct *tty);
-> +
->  #define MASK(x) ((x) & (N_TTY_BUF_SIZE - 1))
+> @@ -116,9 +116,9 @@ static struct serial_state serial_state;
+>  #define SER_CTS     (1<<4)
+>  #define SER_DSR     (1<<3)
 >  
->  static inline size_t read_cnt(struct n_tty_data *ldata)
-> @@ -1334,6 +1337,11 @@ static void n_tty_receive_char_special(struct tty_struct *tty, unsigned char c)
->  			commit_echoes(tty);
->  			return;
->  		}
-> +		if (c == STATUS_CHAR(tty) && L_IEXTEN(tty)) {
-> +			if (!L_NOKERNINFO(tty))
-> +				n_tty_status(tty);
-> +			return;
-> +		}
->  		if (c == '\n') {
->  			if (L_ECHO(tty) || L_ECHONL(tty)) {
->  				echo_char_raw('\n', ldata);
-> @@ -1763,6 +1771,7 @@ static void n_tty_set_termios(struct tty_struct *tty, struct ktermios *old)
->  			set_bit(EOF_CHAR(tty), ldata->char_map);
->  			set_bit('\n', ldata->char_map);
->  			set_bit(EOL_CHAR(tty), ldata->char_map);
-> +			set_bit(STATUS_CHAR(tty), ldata->char_map);
->  			if (L_IEXTEN(tty)) {
->  				set_bit(WERASE_CHAR(tty), ldata->char_map);
->  				set_bit(LNEXT_CHAR(tty), ldata->char_map);
-> @@ -2413,6 +2422,26 @@ static unsigned long inq_canon(struct n_tty_data *ldata)
->  	return nr;
+> -static __inline__ void rtsdtr_ctrl(int bits)
+> +static inline void rtsdtr_ctrl(int bits)
+>  {
+> -    ciab.pra = ((bits & (SER_RTS | SER_DTR)) ^ (SER_RTS | SER_DTR)) | (ciab.pra & ~(SER_RTS | SER_DTR));
+> +	ciab.pra = ((bits & (SER_RTS | SER_DTR)) ^ (SER_RTS | SER_DTR)) | (ciab.pra & ~(SER_RTS | SER_DTR));
 >  }
 >  
-> +static void n_tty_status(struct tty_struct *tty)
-> +{
-> +	struct n_tty_data *ldata = tty->disc_data;
-> +	char *msg;
-> +	size_t len;
-> +
-> +	msg = kzalloc(STATUS_LINE_LEN, GFP_KERNEL);
-
-Please check for memory failures.
-
-> +
-> +	if (ldata->column != 0) {
-> +		*msg = '\n';
-> +		len = n_tty_get_status(tty, msg + 1, STATUS_LINE_LEN - 1);
-> +	} else {
-> +		len = n_tty_get_status(tty, msg, STATUS_LINE_LEN);
-> +	}
-> +
-> +	do_n_tty_write(tty, NULL, msg, len);
-> +
-> +	kfree(msg);
-> +}
-> +
->  static int n_tty_ioctl(struct tty_struct *tty, struct file *file,
->  		       unsigned int cmd, unsigned long arg)
+>  /*
+> @@ -175,7 +175,7 @@ static void rs_start(struct tty_struct *tty)
+>  
+>  static void receive_chars(struct serial_state *info)
 >  {
-> @@ -2430,6 +2459,11 @@ static int n_tty_ioctl(struct tty_struct *tty, struct file *file,
->  			retval = read_cnt(ldata);
->  		up_write(&tty->termios_rwsem);
->  		return put_user(retval, (unsigned int __user *) arg);
-> +	case TIOCSTAT:
-> +		down_read(&tty->termios_rwsem);
-> +		n_tty_status(tty);
-> +		up_read(&tty->termios_rwsem);
-> +		return 0;
->  	default:
->  		return n_tty_ioctl_helper(tty, file, cmd, arg);
+> -        int status;
+> +	int status;
+>  	int serdatr;
+>  	unsigned char ch, flag;
+>  	struct	async_icount *icount;
+> @@ -189,10 +189,10 @@ static void receive_chars(struct serial_state *info)
+>  	amiga_custom.intreq = IF_RBF;
+>  	mb();
+>  
+> -	if((serdatr & 0x1ff) == 0)
+> -	    status |= UART_LSR_BI;
+> -	if(serdatr & SDR_OVRUN)
+> -	    status |= UART_LSR_OE;
+> +	if ((serdatr & 0x1ff) == 0)
+> +		status |= UART_LSR_BI;
+> +	if (serdatr & SDR_OVRUN)
+> +		status |= UART_LSR_OE;
+>  
+>  	ch = serdatr & 0xff;
+>  	icount->rx++;
+> @@ -213,45 +213,44 @@ static void receive_chars(struct serial_state *info)
+>  	  /*
+>  	   * For statistics only
+>  	   */
+> -	  if (status & UART_LSR_BI) {
+> -	    status &= ~(UART_LSR_FE | UART_LSR_PE);
+> -	    icount->brk++;
+> -	  } else if (status & UART_LSR_PE)
+> -	    icount->parity++;
+> -	  else if (status & UART_LSR_FE)
+> -	    icount->frame++;
+> -	  if (status & UART_LSR_OE)
+> -	    icount->overrun++;
+> +		if (status & UART_LSR_BI) {
+> +			status &= ~(UART_LSR_FE | UART_LSR_PE);
+> +			icount->brk++;
+> +		} else if (status & UART_LSR_PE)
+> +			icount->parity++;
+> +		else if (status & UART_LSR_FE)
+> +			icount->frame++;
+> +		if (status & UART_LSR_OE)
+> +			icount->overrun++;
+>  
+>  	  /*
+>  	   * Now check to see if character should be
+>  	   * ignored, and mask off conditions which
+>  	   * should be ignored.
+>  	   */
+> -	  if (status & info->ignore_status_mask)
+> -	    goto out;
+> +		if (status & info->ignore_status_mask)
+> +			goto out;
+>  
+> -	  status &= info->read_status_mask;
+> -
+> -	  if (status & (UART_LSR_BI)) {
+> +		status &= info->read_status_mask;
+> +		if (status & (UART_LSR_BI)) {
+>  #ifdef SERIAL_DEBUG_INTR
+> -	    printk("handling break....");
+> +			printk("handling break....");
+>  #endif
+> -	    flag = TTY_BREAK;
+> -	    if (info->tport.flags & ASYNC_SAK)
+> -	      do_SAK(info->tport.tty);
+> -	  } else if (status & UART_LSR_PE)
+> -	    flag = TTY_PARITY;
+> -	  else if (status & UART_LSR_FE)
+> -	    flag = TTY_FRAME;
+> -	  if (status & UART_LSR_OE) {
+> -	    /*
+> -	     * Overrun is special, since it's
+> -	     * reported immediately, and doesn't
+> -	     * affect the current character
+> -	     */
+> -	     oe = 1;
+> -	  }
+> +			flag = TTY_BREAK;
+> +			if (info->tport.flags & ASYNC_SAK)
+> +				do_SAK(info->tport.tty);
+> +		} else if (status & UART_LSR_PE)
+> +			flag = TTY_PARITY;
+> +		else if (status & UART_LSR_FE)
+> +			flag = TTY_FRAME;
+> +		if (status & UART_LSR_OE) {
+> +			/*
+> +			 * Overrun is special, since it's
+> +			 * reported immediately, and doesn't
+> +			 * affect the current character
+> +			 */
+> +			oe = 1;
+> +		}
 >  	}
-> diff --git a/drivers/tty/n_tty_status.c b/drivers/tty/n_tty_status.c
-> new file mode 100644
-> index 000000000000..f0e053651368
-> --- /dev/null
-> +++ b/drivers/tty/n_tty_status.c
-> @@ -0,0 +1,181 @@
-> +// SPDX-License-Identifier: GPL-1.0+
-
-We can not take GPL-1.0 code into the kernel anymore, sorry.  Please
-consider using a sane license :)
-
-
-> +/*
-> + * n_tty_status.c --- implements VSTATUS and TIOCSTAT from BSD
-> + *
-> + * Display a basic status message containing information about the
-> + * foreground process and system load on the users tty, triggered by
-> + * the VSTATUS character or TIOCSTAT. Ex,
-> + *
-> + *   load: 14.11  cmd: tcsh 19623 [running] 185756.62r 88.00u 17.50s 0% 4260k
-> + *
-> + */
-> +
-> +#include <linux/tty.h>
-> +#include <linux/mm.h>
-> +#include <linux/sched/loadavg.h>
-> +#include <linux/sched/mm.h>
-> +
-> +/* Convert nanoseconds into centiseconds */
-> +static inline long ns_to_cs(long l)
-> +{
-> +	return l / (NSEC_PER_MSEC * 10);
-> +
-> +}
-
-Unneded blank line.
-
-
-> +
-> +/* We want the pid from the context of session */
-> +static inline pid_t __get_pid(struct task_struct *tsk, struct tty_struct *tty)
-> +{
-> +	struct pid_namespace *ns;
-> +
-> +	spin_lock_irq(&tty->ctrl.lock);
-> +	ns = ns_of_pid(tty->ctrl.session);
-> +	spin_unlock_irq(&tty->ctrl.lock);
-> +
-> +	return __task_pid_nr_ns(tsk, PIDTYPE_PID, ns);
-> +}
-> +
-> +/* This is the same odd "bitmap" described in
-> + * fs/proc/array.c:get_task_state().  Consistency with standard
-> + * implementations of VSTATUS requires a different set of state
-> + * names.
-> + */
-> +static const char * const task_state_name_array[] = {
-> +	"running",
-> +	"sleeping",
-> +	"disk sleep",
-> +	"stopped",
-> +	"tracing stop",
-> +	"dead",
-> +	"zombie",
-> +	"parked",
-> +	"idle",
-> +};
-
-How often is this going to get out-of-sync?  Should we use a real
-enumerated type here?  Put the string somewhere else to keep this only
-in one place?
-
-
-> +
-> +static inline const char *get_task_state_name(struct task_struct *tsk)
-> +{
-> +	BUILD_BUG_ON(1 + ilog2(TASK_REPORT_MAX) != ARRAY_SIZE(task_state_name_array));
-
-What is this protecting from?  What is going to change that requires
-this to be increased?
-
-> +	return task_state_name_array[task_state_index(tsk)];
-> +}
-> +
-> +static inline struct task_struct *compare(struct task_struct *new,
-> +					  struct task_struct *old)
-> +{
-> +	unsigned int ostate, nstate;
-> +
-> +	if (old == NULL)
-> +		return new;
-> +
-> +	ostate = task_state_index(old);
-> +	nstate = task_state_index(new);
-> +
-> +	if (ostate == nstate) {
-> +		if (old->start_time > new->start_time)
-> +			return old;
-> +		return new;
-> +	}
-> +
-> +	if (ostate < nstate)
-> +		return old;
-> +
-> +	return new;
-> +}
-> +
-> +static struct task_struct *pick_process(struct tty_struct *tty)
-> +{
-> +	struct task_struct *new, *winner = NULL;
-> +
-> +	read_lock(&tasklist_lock);
-> +	spin_lock_irq(&tty->ctrl.lock);
-> +
-> +	do_each_pid_task(tty->ctrl.pgrp, PIDTYPE_PGID, new) {
-> +		winner = compare(new, winner);
-> +	} while_each_pid_task(tty->ctrl.pgrp, PIDTYPE_PGID, new);
-> +
-> +	spin_unlock_irq(&tty->ctrl.lock);
-> +
-> +	if (winner)
-> +		winner = get_task_struct(winner);
-> +
-> +	read_unlock(&tasklist_lock);
-> +
-> +	return winner;
-> +}
-
-
-What are these two functions trying to do?  A comment would be nice to
-give us a hint as I am guessing I am going to have to maintain this for
-forever :)
-
-> +
-> +size_t n_tty_get_status(struct tty_struct *tty, char *msg, size_t msglen)
-> +{
-> +	struct task_struct *p;
-> +	struct mm_struct *mm;
-> +	struct rusage rusage;
-> +	unsigned long loadavg[3];
-> +	uint64_t pcpu, cputime, wallclock;
-> +	struct timespec64 utime, stime, rtime;
-> +	char tname[TASK_COMM_LEN];
-> +	unsigned int pid;
-> +	char *state;
-> +	unsigned long rss = 0;
-> +	size_t len = 0;
-> +
-> +	get_avenrun(loadavg, FIXED_1/200, 0);
-
-Why 200?
-
-> +	len = scnprintf(msg + len, msglen - len, "load: %lu.%02lu  ",
-> +			LOAD_INT(loadavg[0]), LOAD_FRAC(loadavg[0]));
-> +
-> +	if (tty->ctrl.session == NULL) {
-> +		len += scnprintf(msg + len, msglen - len,
-> +				 "not a controlling terminal\n");
-> +		goto out;
-> +	}
-> +
-> +	if (tty->ctrl.pgrp == NULL) {
-> +		len += scnprintf(msg + len, msglen - len,
-> +				 "no foreground process group\n");
-> +		goto out;
-> +	}
-> +
-> +	/* Note that if p is refcounted */
-> +	p = pick_process(tty);
-> +	if (p == NULL) {
-> +		len += scnprintf(msg + len, msglen - len,
-> +				 "empty foreground process group\n");
-> +		goto out;
-> +	}
-> +
-> +	mm = get_task_mm(p);
-> +	if (mm) {
-> +		rss = get_mm_rss(mm) * PAGE_SIZE / 1024;
-> +		mmput(mm);
-> +	}
-> +	get_task_comm(tname, p);
-> +	getrusage(p, RUSAGE_BOTH, &rusage);
-> +	pid = __get_pid(p, tty);
-> +	state = (char *) get_task_state_name(p);
-> +	wallclock = ktime_get_ns() - p->start_time;
-> +	put_task_struct(p);
-> +
-> +	/* After this point, any of the information we have on p might
-> +	 * become stale.  It's OK if the status message is a little bit
-> +	 * lossy.
-> +	 */
-> +
-> +	utime.tv_sec = rusage.ru_utime.tv_sec;
-> +	utime.tv_nsec = rusage.ru_utime.tv_usec * NSEC_PER_USEC;
-> +	stime.tv_sec = rusage.ru_stime.tv_sec;
-> +	stime.tv_nsec = rusage.ru_stime.tv_usec * NSEC_PER_USEC;
-> +	rtime = ns_to_timespec64(wallclock);
-> +
-> +	cputime = timespec64_to_ns(&utime) + timespec64_to_ns(&stime);
-> +	pcpu = div64_u64(cputime * 100, wallclock);
-> +
-> +	len += scnprintf(msg + len, msglen - len,
-> +			 /* task, PID, task state */
-> +			 "cmd: %s %d [%s] "
-> +			 /* rtime,    utime,      stime,      %cpu   rss */
-> +			 "%llu.%02lur %llu.%02luu %llu.%02lus %llu%% %luk\n",
-> +			 tname,	pid, state,
-> +			 rtime.tv_sec, ns_to_cs(rtime.tv_nsec),
-> +			 utime.tv_sec, ns_to_cs(utime.tv_nsec),
-> +			 stime.tv_sec, ns_to_cs(stime.tv_nsec),
-> +			 pcpu, rss);
-> +
-> +out:
-> +	return len;
-> +}
-> diff --git a/drivers/tty/tty_io.c b/drivers/tty/tty_io.c
-> index 6616d4a0d41d..f2f4f48ea502 100644
-> --- a/drivers/tty/tty_io.c
-> +++ b/drivers/tty/tty_io.c
-> @@ -125,7 +125,7 @@ struct ktermios tty_std_termios = {	/* for the benefit of tty drivers  */
->  	.c_oflag = OPOST | ONLCR,
->  	.c_cflag = B38400 | CS8 | CREAD | HUPCL,
->  	.c_lflag = ISIG | ICANON | ECHO | ECHOE | ECHOK |
-> -		   ECHOCTL | ECHOKE | IEXTEN,
-> +		   ECHOCTL | ECHOKE | IEXTEN | NOKERNINFO,
->  	.c_cc = INIT_C_CC,
->  	.c_ispeed = 38400,
->  	.c_ospeed = 38400,
-> diff --git a/include/linux/tty.h b/include/linux/tty.h
-> index cbe5d535a69d..2e483708608c 100644
-> --- a/include/linux/tty.h
-> +++ b/include/linux/tty.h
-> @@ -49,6 +49,7 @@
->  #define WERASE_CHAR(tty) ((tty)->termios.c_cc[VWERASE])
->  #define LNEXT_CHAR(tty)	((tty)->termios.c_cc[VLNEXT])
->  #define EOL2_CHAR(tty) ((tty)->termios.c_cc[VEOL2])
-> +#define STATUS_CHAR(tty) ((tty)->termios.c_cc[VSTATUS])
+>  	tty_insert_flip_char(&info->tport, ch, flag);
+>  	if (oe == 1)
+> @@ -266,7 +265,7 @@ static void transmit_chars(struct serial_state *info)
+>  	amiga_custom.intreq = IF_TBE;
+>  	mb();
+>  	if (info->x_char) {
+> -	        amiga_custom.serdat = info->x_char | 0x100;
+> +		amiga_custom.serdat = info->x_char | 0x100;
+>  		mb();
+>  		info->icount.tx++;
+>  		info->x_char = 0;
+> @@ -276,7 +275,7 @@ static void transmit_chars(struct serial_state *info)
+>  	    || info->tport.tty->flow.stopped
+>  	    || info->tport.tty->hw_stopped) {
+>  		info->IER &= ~UART_IER_THRI;
+> -	        amiga_custom.intena = IF_TBE;
+> +		amiga_custom.intena = IF_TBE;
+>  		mb();
+>  		return;
+>  	}
+> @@ -295,7 +294,7 @@ static void transmit_chars(struct serial_state *info)
+>  	printk("THRE...");
+>  #endif
+>  	if (info->xmit.head == info->xmit.tail) {
+> -	        amiga_custom.intena = IF_TBE;
+> +		amiga_custom.intena = IF_TBE;
+>  		mb();
+>  		info->IER &= ~UART_IER_THRI;
+>  	}
+> @@ -317,9 +316,8 @@ static void check_modem_status(struct serial_state *info)
+>  		/* update input line counters */
+>  		if (dstatus & SER_DSR)
+>  			icount->dsr++;
+> -		if (dstatus & SER_DCD) {
+> +		if (dstatus & SER_DCD)
+>  			icount->dcd++;
+> -		}
+>  		if (dstatus & SER_CTS)
+>  			icount->cts++;
+>  		wake_up_interruptible(&port->delta_msr_wait);
+> @@ -372,17 +370,16 @@ static void check_modem_status(struct serial_state *info)
+>  		}
+>  	}
+>  }
+> -
+> -static irqreturn_t ser_vbl_int( int irq, void *data)
+> +static irqreturn_t ser_vbl_int(int irq, void *data)
+>  {
+> -        /* vbl is just a periodic interrupt we tie into to update modem status */
+> +	/* vbl is just a periodic interrupt we tie into to update modem status */
+>  	struct serial_state *info = data;
+>  	/*
+>  	 * TBD - is it better to unregister from this interrupt or to
+>  	 * ignore it if MSI is clear ?
+>  	 */
+> -	if(info->IER & UART_IER_MSI)
+> -	  check_modem_status(info);
+> +	if (info->IER & UART_IER_MSI)
+> +		check_modem_status(info);
+>  	return IRQ_HANDLED;
+>  }
 >  
->  #define _I_FLAG(tty, f)	((tty)->termios.c_iflag & (f))
->  #define _O_FLAG(tty, f)	((tty)->termios.c_oflag & (f))
-> @@ -114,6 +115,7 @@
->  #define L_PENDIN(tty)	_L_FLAG((tty), PENDIN)
->  #define L_IEXTEN(tty)	_L_FLAG((tty), IEXTEN)
->  #define L_EXTPROC(tty)	_L_FLAG((tty), EXTPROC)
-> +#define L_NOKERNINFO(tty) _L_FLAG((tty), NOKERNINFO)
+> @@ -410,10 +407,9 @@ static irqreturn_t ser_tx_int(int irq, void *dev_id)
 >  
->  struct device;
->  struct signal_struct;
-> @@ -389,6 +391,9 @@ extern void __init n_tty_init(void);
->  static inline void n_tty_init(void) { }
+>  	if (amiga_custom.serdatr & SDR_TBE) {
+>  #ifdef SERIAL_DEBUG_INTR
+> -	  printk("ser_tx_int...");
+> +		printk("ser_tx_int...");
+>  #endif
+> -
+> -	  if (!info->tport.tty)
+> +	if (!info->tport.tty)
+>  		return IRQ_NONE;
+>  
+>  	  transmit_chars(info);
+> @@ -443,7 +439,7 @@ static int startup(struct tty_struct *tty, struct serial_state *info)
+>  {
+>  	struct tty_port *port = &info->tport;
+>  	unsigned long flags;
+> -	int	retval=0;
+> +	int	retval = 0;
+>  	unsigned long page;
+>  
+>  	page = get_zeroed_page(GFP_KERNEL);
+> @@ -490,7 +486,7 @@ static int startup(struct tty_struct *tty, struct serial_state *info)
+>  
+>  	info->MCR = 0;
+>  	if (C_BAUD(tty))
+> -	  info->MCR = SER_DTR | SER_RTS;
+> +		info->MCR = SER_DTR | SER_RTS;
+>  	rtsdtr_ctrl(info->MCR);
+>  
+>  	clear_bit(TTY_IO_ERROR, &tty->flags);
+> @@ -571,7 +567,7 @@ static void change_speed(struct tty_struct *tty, struct serial_state *info,
+>  {
+>  	struct tty_port *port = &info->tport;
+>  	int	quot = 0, baud_base, baud;
+> -	unsigned cflag, cval = 0;
+> +	unsigned int cflag, cval = 0;
+>  	int	bits;
+>  	unsigned long	flags;
+>  
+> @@ -668,7 +664,7 @@ static void change_speed(struct tty_struct *tty, struct serial_state *info,
+>  	if (I_IGNBRK(tty)) {
+>  		info->ignore_status_mask |= UART_LSR_BI;
+>  		/*
+> -		 * If we're ignore parity and break indicators, ignore 
+> +		 * If we're ignore parity and break indicators, ignore
+>  		 * overruns too.  (For real raw support).
+>  		 */
+>  		if (I_IGNPAR(tty))
+> @@ -682,16 +678,13 @@ static void change_speed(struct tty_struct *tty, struct serial_state *info,
+>  	local_irq_save(flags);
+>  
+>  	{
+> -	  short serper;
+> -
+> +	short serper;
+>  	/* Set up the baud rate */
+> -	  serper = quot - 1;
+> +	serper = quot - 1;
+>  
+>  	/* Enable or disable parity bit */
+> -
+> -	if(cval & UART_LCR_PARITY)
+> -	  serper |= (SERPER_PARENB);
+> -
+> +	if (cval & UART_LCR_PARITY)
+> +		serper |= (SERPER_PARENB);
+>  	amiga_custom.serper = serper;
+>  	mb();
+>  	}
+> @@ -744,7 +737,7 @@ static void rs_flush_chars(struct tty_struct *tty)
+>  	local_irq_restore(flags);
+>  }
+>  
+> -static int rs_write(struct tty_struct * tty, const unsigned char *buf, int count)
+> +static int rs_write(struct tty_struct *tty, const unsigned char *buf, int count)
+>  {
+>  	int	c, ret = 0;
+>  	struct serial_state *info = tty->driver_data;
+> @@ -760,9 +753,8 @@ static int rs_write(struct tty_struct * tty, const unsigned char *buf, int count
+>  				      SERIAL_XMIT_SIZE);
+>  		if (count < c)
+>  			c = count;
+> -		if (c <= 0) {
+> +		if (c <= 0)
+>  			break;
+> -		}
+>  		memcpy(info->xmit.buf + info->xmit.head, buf, c);
+>  		info->xmit.head = ((info->xmit.head + c) &
+>  				   (SERIAL_XMIT_SIZE-1));
+> @@ -820,20 +812,20 @@ static void rs_flush_buffer(struct tty_struct *tty)
+>  static void rs_send_xchar(struct tty_struct *tty, char ch)
+>  {
+>  	struct serial_state *info = tty->driver_data;
+> -        unsigned long flags;
+> +	unsigned long flags;
+>  
+>  	info->x_char = ch;
+>  	if (ch) {
+>  		/* Make sure transmit interrupts are on */
+>  
+> -	        /* Check this ! */
+> -	        local_irq_save(flags);
+> -		if(!(amiga_custom.intenar & IF_TBE)) {
+> -		    amiga_custom.intena = IF_SETCLR | IF_TBE;
+> -		    mb();
+> -		    /* set a pending Tx Interrupt, transmitter should restart now */
+> -		    amiga_custom.intreq = IF_SETCLR | IF_TBE;
+> -		    mb();
+> +		/* Check this ! */
+> +		local_irq_save(flags);
+> +		if (!(amiga_custom.intenar & IF_TBE)) {
+> +			amiga_custom.intena = IF_SETCLR | IF_TBE;
+> +			mb();
+> +			/* set a pending Tx Interrupt, transmitter should restart now */
+> +			amiga_custom.intreq = IF_SETCLR | IF_TBE;
+> +			mb();
+>  		}
+>  		local_irq_restore(flags);
+>  
+> @@ -844,12 +836,12 @@ static void rs_send_xchar(struct tty_struct *tty, char ch)
+>  /*
+>   * ------------------------------------------------------------
+>   * rs_throttle()
+> - * 
+> + *
+>   * This routine is called by the upper-layer tty layer to signal that
+>   * incoming characters should be throttled.
+>   * ------------------------------------------------------------
+>   */
+> -static void rs_throttle(struct tty_struct * tty)
+> +static void rs_throttle(struct tty_struct *tty)
+>  {
+>  	struct serial_state *info = tty->driver_data;
+>  	unsigned long flags;
+> @@ -868,7 +860,7 @@ static void rs_throttle(struct tty_struct * tty)
+>  	local_irq_restore(flags);
+>  }
+>  
+> -static void rs_unthrottle(struct tty_struct * tty)
+> +static void rs_unthrottle(struct tty_struct *tty)
+>  {
+>  	struct serial_state *info = tty->driver_data;
+>  	unsigned long flags;
+> @@ -923,7 +915,7 @@ static int set_serial_info(struct tty_struct *tty, struct serial_struct *ss)
+>  	struct serial_state *state = tty->driver_data;
+>  	struct tty_port *port = &state->tport;
+>  	bool change_spd;
+> -	int 			retval = 0;
+> +	int retval = 0;
+>  	unsigned int close_delay, closing_wait;
+>  
+>  	tty_lock(tty);
+> @@ -990,11 +982,11 @@ static int set_serial_info(struct tty_struct *tty, struct serial_struct *ss)
+>   * get_lsr_info - get line status register info
+>   *
+>   * Purpose: Let user call ioctl() to get info when the UART physically
+> - * 	    is emptied.  On bus types like RS485, the transmitter must
+> - * 	    release the bus after transmitting. This must be done when
+> - * 	    the transmit shift register is empty, not be done when the
+> - * 	    transmit holding register is empty.  This functionality
+> - * 	    allows an RS485 driver to be written in user space. 
+> + *	    is emptied.  On bus types like RS485, the transmitter must
+> + *	    release the bus after transmitting. This must be done when
+> + *	    the transmit shift register is empty, not be done when the
+> + *	    transmit holding register is empty.  This functionality
+> + *	    allows an RS485 driver to be written in user space.
+>   */
+>  static int get_lsr_info(struct serial_state *info, unsigned int __user *value)
+>  {
+> @@ -1065,9 +1057,9 @@ static int rs_break(struct tty_struct *tty, int break_state)
+>  
+>  	local_irq_save(flags);
+>  	if (break_state == -1)
+> -	  amiga_custom.adkcon = AC_SETCLR | AC_UARTBRK;
+> +		amiga_custom.adkcon = AC_SETCLR | AC_UARTBRK;
+>  	else
+> -	  amiga_custom.adkcon = AC_UARTBRK;
+> +		amiga_custom.adkcon = AC_UARTBRK;
+>  	mb();
+>  	local_irq_restore(flags);
+>  	return 0;
+> @@ -1117,59 +1109,57 @@ static int rs_ioctl(struct tty_struct *tty,
+>  	if ((cmd != TIOCSERCONFIG) &&
+>  	    (cmd != TIOCMIWAIT) && (cmd != TIOCGICOUNT)) {
+>  		if (tty_io_error(tty))
+> -		    return -EIO;
+> +			return -EIO;
+>  	}
+> -
+>  	switch (cmd) {
+> -		case TIOCSERCONFIG:
+> -			return 0;
+> +	case TIOCSERCONFIG:
+> +		return 0;
+>  
+> -		case TIOCSERGETLSR: /* Get line status register */
+> -			return get_lsr_info(info, argp);
+> +	case TIOCSERGETLSR: /* Get line status register */
+> +		return get_lsr_info(info, argp);
+>  
+>  		/*
+>  		 * Wait for any of the 4 modem inputs (DCD,RI,DSR,CTS) to change
+>  		 * - mask passed in arg for lines of interest
+> - 		 *   (use |'ed TIOCM_RNG/DSR/CD/CTS for masking)
+> -		 * Caller should use TIOCGICOUNT to see which one it was
+> +		 *   (use |'ed TIOCM_RNG/DSR/CD/CTS for masking)
+> +		 *   Caller should use TIOCGICOUNT to see which one it was
+>  		 */
+> -		case TIOCMIWAIT:
+> +	case TIOCMIWAIT:
+> +		local_irq_save(flags);
+> +		/* note the counters on entry */
+> +		cprev = info->icount;
+> +		local_irq_restore(flags);
+> +		while (1) {
+> +			prepare_to_wait(&info->tport.delta_msr_wait,
+> +					&wait, TASK_INTERRUPTIBLE);
+>  			local_irq_save(flags);
+> -			/* note the counters on entry */
+> -			cprev = info->icount;
+> +			cnow = info->icount; /* atomic copy */
+>  			local_irq_restore(flags);
+> -			while (1) {
+> -				prepare_to_wait(&info->tport.delta_msr_wait,
+> -						&wait, TASK_INTERRUPTIBLE);
+> -				local_irq_save(flags);
+> -				cnow = info->icount; /* atomic copy */
+> -				local_irq_restore(flags);
+> -				if (cnow.rng == cprev.rng && cnow.dsr == cprev.dsr && 
+> -				    cnow.dcd == cprev.dcd && cnow.cts == cprev.cts) {
+> -					ret = -EIO; /* no change => error */
+> -					break;
+> -				}
+> -				if ( ((arg & TIOCM_RNG) && (cnow.rng != cprev.rng)) ||
+> -				     ((arg & TIOCM_DSR) && (cnow.dsr != cprev.dsr)) ||
+> -				     ((arg & TIOCM_CD)  && (cnow.dcd != cprev.dcd)) ||
+> -				     ((arg & TIOCM_CTS) && (cnow.cts != cprev.cts)) ) {
+> -					ret = 0;
+> -					break;
+> -				}
+> -				schedule();
+> -				/* see if a signal did it */
+> -				if (signal_pending(current)) {
+> -					ret = -ERESTARTSYS;
+> -					break;
+> -				}
+> -				cprev = cnow;
+> +			if (cnow.rng == cprev.rng && cnow.dsr == cprev.dsr &&
+> +					cnow.dcd == cprev.dcd && cnow.cts == cprev.cts) {
+> +				ret = -EIO; /* no change => error */
+> +				break;
+>  			}
+> -			finish_wait(&info->tport.delta_msr_wait, &wait);
+> -			return ret;
+> -
+> -		default:
+> -			return -ENOIOCTLCMD;
+> +			if (((arg & TIOCM_RNG) && (cnow.rng != cprev.rng)) ||
+> +					((arg & TIOCM_DSR) && (cnow.dsr != cprev.dsr)) ||
+> +					((arg & TIOCM_CD)  && (cnow.dcd != cprev.dcd)) ||
+> +					((arg & TIOCM_CTS) && (cnow.cts != cprev.cts))) {
+> +				ret = 0;
+> +				break;
+> +			}
+> +			schedule();
+> +			/* see if a signal did it */
+> +			if (signal_pending(current)) {
+> +				ret = -ERESTARTSYS;
+> +				break;
+> +			}
+> +			cprev = cnow;
+>  		}
+> +		finish_wait(&info->tport.delta_msr_wait, &wait);
+> +		return ret;
+> +	default:
+> +		return -ENOIOCTLCMD;
+> +	}
+>  	return 0;
+>  }
+>  
+> @@ -1220,14 +1210,14 @@ static void rs_set_termios(struct tty_struct *tty, struct ktermios *old_termios)
+>  /*
+>   * ------------------------------------------------------------
+>   * rs_close()
+> - * 
+> + *
+>   * This routine is called when the serial port gets closed.  First, we
+>   * wait for the last remaining data to be sent.  Then, we unlink its
+>   * async structure from the interrupt chain if necessary, and we free
+>   * that IRQ if nothing is left in the chain.
+>   * ------------------------------------------------------------
+>   */
+> -static void rs_close(struct tty_struct *tty, struct file * filp)
+> +static void rs_close(struct tty_struct *tty, struct file *filp)
+>  {
+>  	struct serial_state *state = tty->driver_data;
+>  	struct tty_port *port = &state->tport;
+> @@ -1243,8 +1233,8 @@ static void rs_close(struct tty_struct *tty, struct file * filp)
+>  	 */
+>  	state->read_status_mask &= ~UART_LSR_DR;
+>  	if (tty_port_initialized(port)) {
+> -	        /* disable receive interrupts */
+> -	        amiga_custom.intena = IF_RBF;
+> +		/* disable receive interrupts */
+> +		amiga_custom.intena = IF_RBF;
+>  		mb();
+>  		/* clear any pending receive interrupt */
+>  		amiga_custom.intreq = IF_RBF;
+> @@ -1259,7 +1249,7 @@ static void rs_close(struct tty_struct *tty, struct file * filp)
+>  	}
+>  	shutdown(tty, state);
+>  	rs_flush_buffer(tty);
+> -		
+> +
+>  	tty_ldisc_flush(tty);
+>  	port->tty = NULL;
+>  
+> @@ -1281,7 +1271,7 @@ static void rs_wait_until_sent(struct tty_struct *tty, int timeout)
+>  	 * Set the check interval to be 1/5 of the estimated time to
+>  	 * send a single character, and make it at least 1.  The check
+>  	 * interval should also be less than the timeout.
+> -	 * 
+> +	 *
+>  	 * Note: we have to use pretty tight timings here to satisfy
+>  	 * the NIST-PCTS.
+>  	 */
+> @@ -1290,7 +1280,7 @@ static void rs_wait_until_sent(struct tty_struct *tty, int timeout)
+>  	if (char_time == 0)
+>  		char_time = 1;
+>  	if (timeout)
+> -	  char_time = min_t(unsigned long, char_time, timeout);
+> +		char_time = min_t(unsigned long, char_time, timeout);
+>  	/*
+>  	 * If the transmitter hasn't cleared in twice the approximate
+>  	 * amount of time to send the entire FIFO, it probably won't
+> @@ -1306,7 +1296,7 @@ static void rs_wait_until_sent(struct tty_struct *tty, int timeout)
+>  	printk("In rs_wait_until_sent(%d) check=%lu...", timeout, char_time);
+>  	printk("jiff=%lu...", jiffies);
+>  #endif
+> -	while(!((lsr = amiga_custom.serdatr) & SDR_TSRE)) {
+> +	while (!((lsr = amiga_custom.serdatr) & SDR_TSRE)) {
+>  #ifdef SERIAL_DEBUG_RS_WAIT_UNTIL_SENT
+>  		printk("serdatr = %d (jiff=%lu)...", lsr, jiffies);
+>  #endif
+> @@ -1344,7 +1334,7 @@ static void rs_hangup(struct tty_struct *tty)
+>   * the IRQ chain.   It also performs the serial-specific
+>   * initialization for the tty structure.
+>   */
+> -static int rs_open(struct tty_struct *tty, struct file * filp)
+> +static int rs_open(struct tty_struct *tty, struct file *filp)
+>  {
+>  	struct tty_port *port = tty->port;
+>  	struct serial_state *info = container_of(port, struct serial_state,
+> @@ -1356,9 +1346,8 @@ static int rs_open(struct tty_struct *tty, struct file * filp)
+>  	tty->driver_data = info;
+>  
+>  	retval = startup(tty, info);
+> -	if (retval) {
+> +	if (retval)
+>  		return retval;
+> -	}
+>  
+>  	return tty_port_block_til_ready(port, tty, filp);
+>  }
+> @@ -1382,15 +1371,15 @@ static inline void line_info(struct seq_file *m, int line,
+>  
+>  	stat_buf[0] = 0;
+>  	stat_buf[1] = 0;
+> -	if(!(control & SER_RTS))
+> +	if (!(control & SER_RTS))
+>  		strcat(stat_buf, "|RTS");
+> -	if(!(status & SER_CTS))
+> +	if (!(status & SER_CTS))
+>  		strcat(stat_buf, "|CTS");
+> -	if(!(control & SER_DTR))
+> +	if (!(control & SER_DTR))
+>  		strcat(stat_buf, "|DTR");
+> -	if(!(status & SER_DSR))
+> +	if (!(status & SER_DSR))
+>  		strcat(stat_buf, "|DSR");
+> -	if(!(status & SER_DCD))
+> +	if (!(status & SER_DCD))
+>  		strcat(stat_buf, "|CD");
+>  
+>  	if (state->quot)
+> @@ -1418,7 +1407,7 @@ static inline void line_info(struct seq_file *m, int line,
+>  
+>  static int rs_proc_show(struct seq_file *m, void *v)
+>  {
+> -	seq_printf(m, "serinfo:1.0 driver:4.30\n");
+> +	seq_puts(m, "serinfo:1.0 driver:4.30\n");
+>  	line_info(m, 0, &serial_state);
+>  	return 0;
+>  }
+> @@ -1618,7 +1607,7 @@ static void amiga_serial_putc(char c)
+>   *	The console must be locked when we get here.
+>   */
+>  static void serial_console_write(struct console *co, const char *s,
+> -				unsigned count)
+> +				unsigned int count)
+>  {
+>  	unsigned short intena = amiga_custom.intenar;
+>  
+> diff --git a/drivers/tty/ehv_bytechan.c b/drivers/tty/ehv_bytechan.c
+> index 19d32cb6a..c41c4c07b 100644
+> --- a/drivers/tty/ehv_bytechan.c
+> +++ b/drivers/tty/ehv_bytechan.c
+> @@ -324,8 +324,9 @@ static int __init ehv_bc_console_init(void)
 >  #endif
 >  
-> +/* n_tty_status.c */
-> +size_t n_tty_get_status(struct tty_struct *tty, char *msg, size_t msglen);
+>  	/* add_preferred_console() must be called before register_console(),
+> -	   otherwise it won't work.  However, we don't want to enumerate all the
+> -	   byte channels here, either, since we only care about one. */
+> +	 * otherwise it won't work.  However, we don't want to enumerate all the
+> +	 * byte channels here, either, since we only care about one.
+> +	 */
+>  
+>  	add_preferred_console(ehv_bc_console.name, ehv_bc_console.index, NULL);
+>  	register_console(&ehv_bc_console);
+> diff --git a/drivers/tty/goldfish.c b/drivers/tty/goldfish.c
+> index 5ed19a985..61ccbf670 100644
+> --- a/drivers/tty/goldfish.c
+> +++ b/drivers/tty/goldfish.c
+> @@ -173,6 +173,7 @@ static void goldfish_tty_shutdown(struct tty_port *port)
+>  static int goldfish_tty_open(struct tty_struct *tty, struct file *filp)
+>  {
+>  	struct goldfish_tty *qtty = &goldfish_ttys[tty->index];
+> +
+>  	return tty_port_open(&qtty->port, tty, filp);
+>  }
+>  
+> @@ -202,6 +203,7 @@ static unsigned int goldfish_tty_chars_in_buffer(struct tty_struct *tty)
+>  {
+>  	struct goldfish_tty *qtty = &goldfish_ttys[tty->index];
+>  	void __iomem *base = qtty->base;
+> +
+>  	return __raw_readl(base + GOLDFISH_TTY_REG_BYTES_READY);
+>  }
+>  
+> -- 
+> 2.32.0
+> 
 
-No need for this to be in include/linux/tty.h, put it in the .h file in
-drivers/tty/ please.
+Hi,
+
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
+
+You are receiving this message because of the following common error(s)
+as indicated below:
+
+- Your patch does not have a Signed-off-by: line.  Please read the
+  kernel file, Documentation/SubmittingPatches and resend it after
+  adding that line.  Note, the line needs to be in the body of the
+  email, before the patch, not at the bottom of the patch or in the
+  email signature.
+
+- Your patch did many different things all at once, making it difficult
+  to review.  All Linux kernel patches need to only do one thing at a
+  time.  If you need to do multiple things (such as clean up all coding
+  style issues in a file/driver), do it in a sequence of patches, each
+  one doing only one thing.  This will make it easier to review the
+  patches to ensure that they are correct, and to help alleviate any
+  merge issues that larger patches can cause.
+
+- You did not specify a description of why the patch is needed, or
+  possibly, any description at all, in the email body.  Please read the
+  section entitled "The canonical patch format" in the kernel file,
+  Documentation/SubmittingPatches for what is needed in order to
+  properly describe the change.
+
+- You did not write a descriptive Subject: for the patch, allowing Greg,
+  and everyone else, to know what this patch is all about.  Please read
+  the section entitled "The canonical patch format" in the kernel file,
+  Documentation/SubmittingPatches for what a proper Subject: line should
+  look like.
+
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
 
 thanks,
 
-greg k-h
+greg k-h's patch email bot
