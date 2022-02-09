@@ -4,32 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 506E3C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Feb 2022 16:33:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93B2AC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Feb 2022 16:34:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jv56h20F5z3cQ3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Feb 2022 03:33:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jv57M5DGzz3cWG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Feb 2022 03:34:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=YHUChgd1;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=miePmVQ/;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=walle.cc (client-ip=176.9.125.105; helo=ssl.serverraum.org;
  envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256
- header.s=mail2016061301 header.b=YHUChgd1; 
+ header.s=mail2016061301 header.b=miePmVQ/; 
  dkim-atps=neutral
 Received: from ssl.serverraum.org (ssl.serverraum.org [176.9.125.105])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jv5601wFrz3Wtt
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jv5601sgVz30RT
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2022 03:33:10 +1100 (AEDT)
 Received: from mwalle01.kontron.local. (unknown [213.135.10.150])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-384) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by ssl.serverraum.org (Postfix) with ESMTPSA id 769BF223EF;
+ by ssl.serverraum.org (Postfix) with ESMTPSA id 3BECC223ED;
  Wed,  9 Feb 2022 17:33:07 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc;
  s=mail2016061301; t=1644424387;
@@ -37,16 +37,17 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc;
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=HN25io342QOR5mmEV6tf4MRIjAJRxY2Op5Ab+a0YmEg=;
- b=YHUChgd1d04ILxJbetmIN3AGxbhcgCDNGi8TMJX6336yOh3eVZNhmEIUAp3pH2A2hAQC5S
- w5VHLIr2tkAPcvc28BhIM2StcUdwJPI5tduTj2DrwlTxfGc2n8C5Tu7zc3J/zI1fN621P2
- xQUgE60xvbpSwNsqKDb/D57h5LHoe50=
+ bh=JP6sEk8Ye9HSeLSodsUhxvuoScwCGtEWcY67WHVPIzw=;
+ b=miePmVQ/1DdQbb6LxDr08xDl2eTqmNKTKv8vg+YXL/XIs/ZuIPJ4TeLT/BC2euibbnNFFj
+ c+57hSU3d+ADUP6sPmKBwbXsXaI8P/ce+actiNXLio0Q3jkse33Hn2CIGHidIap2OrhOtH
+ G2/8srJAysOt9tBm2WFQQboceihTHHs=
 From: Michael Walle <michael@walle.cc>
 To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH v2 3/7] soc: fsl: guts: embed fsl_guts_get_svr() in probe()
-Date: Wed,  9 Feb 2022 17:32:38 +0100
-Message-Id: <20220209163242.430265-4-michael@walle.cc>
+Subject: [PATCH v2 2/7] soc: fsl: guts: remove module_exit() and
+ fsl_guts_remove()
+Date: Wed,  9 Feb 2022 17:32:37 +0100
+Message-Id: <20220209163242.430265-3-michael@walle.cc>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20220209163242.430265-1-michael@walle.cc>
 References: <20220209163242.430265-1-michael@walle.cc>
@@ -70,100 +71,66 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move the reading of the SVR into the probe function as
-fsl_guts_get_svr() is the only user of the static guts variable and this
-lets us drop that as well as the malloc() for this variable. Also, we
-can unmap the memory region after we accessed it, which will simplify
-error handling later.
+This driver will never be unloaded. Firstly, it is not available as a
+module, but more importantly, other drivers will depend on this one to
+apply possible chip errata.
 
 Signed-off-by: Michael Walle <michael@walle.cc>
 ---
- drivers/soc/fsl/guts.c | 42 +++++++++++-------------------------------
- 1 file changed, 11 insertions(+), 31 deletions(-)
+ drivers/soc/fsl/guts.c | 15 +--------------
+ 1 file changed, 1 insertion(+), 14 deletions(-)
 
 diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-index 0bea43770d51..4e5675ab5f73 100644
+index be18d46c7b0f..0bea43770d51 100644
 --- a/drivers/soc/fsl/guts.c
 +++ b/drivers/soc/fsl/guts.c
-@@ -14,18 +14,12 @@
- #include <linux/platform_device.h>
- #include <linux/fsl/guts.h>
+@@ -27,7 +27,6 @@ struct fsl_soc_die_attr {
  
--struct guts {
--	struct ccsr_guts __iomem *regs;
--	bool little_endian;
--};
--
- struct fsl_soc_die_attr {
- 	char	*die;
- 	u32	svr;
- 	u32	mask;
- };
- 
--static struct guts *guts;
+ static struct guts *guts;
  static struct soc_device_attribute soc_dev_attr;
+-static struct soc_device *soc_dev;
  
  
-@@ -119,40 +113,27 @@ static const struct fsl_soc_die_attr *fsl_soc_die_match(
- 	return NULL;
- }
- 
--static u32 fsl_guts_get_svr(void)
--{
--	u32 svr = 0;
--
--	if (!guts || !guts->regs)
--		return svr;
--
--	if (guts->little_endian)
--		svr = ioread32(&guts->regs->svr);
--	else
--		svr = ioread32be(&guts->regs->svr);
--
--	return svr;
--}
--
+ /* SoC die attribute definition for QorIQ platform */
+@@ -138,6 +137,7 @@ static u32 fsl_guts_get_svr(void)
  static int fsl_guts_probe(struct platform_device *pdev)
  {
  	struct device_node *root, *np = pdev->dev.of_node;
- 	static struct soc_device *soc_dev;
++	static struct soc_device *soc_dev;
  	struct device *dev = &pdev->dev;
  	const struct fsl_soc_die_attr *soc_die;
-+	struct ccsr_guts __iomem *regs;
  	const char *machine = NULL;
-+	bool little_endian;
- 	u32 svr;
+@@ -197,12 +197,6 @@ static int fsl_guts_probe(struct platform_device *pdev)
+ 	return 0;
+ }
  
--	/* Initialize guts */
--	guts = devm_kzalloc(dev, sizeof(*guts), GFP_KERNEL);
--	if (!guts)
--		return -ENOMEM;
+-static int fsl_guts_remove(struct platform_device *dev)
+-{
+-	soc_device_unregister(soc_dev);
+-	return 0;
+-}
 -
--	guts->little_endian = of_property_read_bool(np, "little-endian");
-+	regs = of_iomap(np, 0);
-+	if (IS_ERR(regs))
-+		return PTR_ERR(regs);
+ /*
+  * Table for matching compatible strings, for device tree
+  * guts node, for Freescale QorIQ SOCs.
+@@ -242,7 +236,6 @@ static struct platform_driver fsl_guts_driver = {
+ 		.of_match_table = fsl_guts_of_match,
+ 	},
+ 	.probe = fsl_guts_probe,
+-	.remove = fsl_guts_remove,
+ };
  
--	guts->regs = devm_platform_ioremap_resource(pdev, 0);
--	if (IS_ERR(guts->regs))
--		return PTR_ERR(guts->regs);
-+	little_endian = of_property_read_bool(np, "little-endian");
-+	if (little_endian)
-+		svr = ioread32(&regs->svr);
-+	else
-+		svr = ioread32be(&regs->svr);
-+	iounmap(regs);
- 
- 	/* Register soc device */
- 	root = of_find_node_by_path("/");
-@@ -167,7 +148,6 @@ static int fsl_guts_probe(struct platform_device *pdev)
- 	}
- 	of_node_put(root);
- 
--	svr = fsl_guts_get_svr();
- 	soc_die = fsl_soc_die_match(svr, fsl_soc_die);
- 	if (soc_die) {
- 		soc_dev_attr.family = devm_kasprintf(dev, GFP_KERNEL,
+ static int __init fsl_guts_init(void)
+@@ -250,9 +243,3 @@ static int __init fsl_guts_init(void)
+ 	return platform_driver_register(&fsl_guts_driver);
+ }
+ core_initcall(fsl_guts_init);
+-
+-static void __exit fsl_guts_exit(void)
+-{
+-	platform_driver_unregister(&fsl_guts_driver);
+-}
+-module_exit(fsl_guts_exit);
 -- 
 2.30.2
 
