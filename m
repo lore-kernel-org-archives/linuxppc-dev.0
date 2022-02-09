@@ -4,49 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34BF7C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Feb 2022 16:34:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D53C9C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Feb 2022 16:35:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jv5812wHyz3cQ8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Feb 2022 03:34:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jv58f6mlPz3cNW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Feb 2022 03:35:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=RnIBXlYc;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=O+SpsGrR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=walle.cc (client-ip=176.9.125.105; helo=ssl.serverraum.org;
  envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256
- header.s=mail2016061301 header.b=RnIBXlYc; 
+ header.s=mail2016061301 header.b=O+SpsGrR; 
  dkim-atps=neutral
 Received: from ssl.serverraum.org (ssl.serverraum.org [176.9.125.105])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jv5601nRrz30L1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jv5601XVnz2ywt
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2022 03:33:10 +1100 (AEDT)
 Received: from mwalle01.kontron.local. (unknown [213.135.10.150])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-384) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by ssl.serverraum.org (Postfix) with ESMTPSA id EA05E223E9;
- Wed,  9 Feb 2022 17:33:05 +0100 (CET)
+ by ssl.serverraum.org (Postfix) with ESMTPSA id EC0A9223F0;
+ Wed,  9 Feb 2022 17:33:07 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc;
- s=mail2016061301; t=1644424386;
+ s=mail2016061301; t=1644424388;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=vRgDzyrEmORjs4lHu8d04Tc0LhNc+y24W6ANyXI3vdA=;
- b=RnIBXlYcGHC6A/9nYoCBX5vjaPeIE7KRT9I/YsK8krwYDdnhDQkq61q7FWFKfPrSYwe3r7
- iS/5hRjpmKmACrDknRZcPCvid2xs/KOT02HMuQzcUmi7xY5Bu2/R7xTNTnOkTjIWXIedv4
- XoPjI6j4L5JqjdTYOR0sf91pGMnvpaU=
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=Gq99bFkcrEikiih4d3fvkzvS2Vsk7Jsn46I5OX6vVJ0=;
+ b=O+SpsGrRpogNX69h5g8D7lKsEcmnLspbjNdlBji7ORx6z8L7v+V9B+JH42trKA5wL9fJwo
+ CgIY1hiA1/fnU5AW/mAOb5K9yunxs/e5E/vWyuEM5KrBVXQzQSToZaG1usP14ga2A8iVgd
+ DQHk42FclwwYvxY8zL4dn2yMgiiQjtg=
 From: Michael Walle <michael@walle.cc>
 To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH v2 0/7] soc: fsl: guts: cleanups and serial_number support
-Date: Wed,  9 Feb 2022 17:32:35 +0100
-Message-Id: <20220209163242.430265-1-michael@walle.cc>
+Subject: [PATCH v2 4/7] soc: fsl: guts: allocate soc_dev_attr on the heap
+Date: Wed,  9 Feb 2022 17:32:39 +0100
+Message-Id: <20220209163242.430265-5-michael@walle.cc>
 X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20220209163242.430265-1-michael@walle.cc>
+References: <20220209163242.430265-1-michael@walle.cc>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,34 +70,98 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series converts the guts driver from a platform driver to just an
-core_initcall. The driver itself cannot (or rather should never) be
-unloaded because others depends on detecting the current SoC revision
-to apply chip errata. Other SoC drivers do it the same way. Overall I
-got rid of all the global static variables.
+This is the last global static variable. Drop it and allocate the memory
+on the heap instead.
 
-The last patch finally adds unique id support to the guts driver. But
-because the binding [1] for the security fuse processor is still pending,
-it is marked as RFC.
+Signed-off-by: Michael Walle <michael@walle.cc>
+---
+ drivers/soc/fsl/guts.c | 36 +++++++++++++++++++-----------------
+ 1 file changed, 19 insertions(+), 17 deletions(-)
 
-[1] https://lore.kernel.org/linux-devicetree/20220127163728.3650648-2-michael@walle.cc/
-
-changes since v1:
- - call kfree() in error case, thanks Dan
- - add missing of_node_put(np), thanks Dan
-
-Michael Walle (7):
-  soc: fsl: guts: machine variable might be unset
-  soc: fsl: guts: remove module_exit() and fsl_guts_remove()
-  soc: fsl: guts: embed fsl_guts_get_svr() in probe()
-  soc: fsl: guts: allocate soc_dev_attr on the heap
-  soc: fsl: guts: use of_root instead of own reference
-  soc: fsl: guts: drop platform driver
-  soc: fsl: guts: add serial_number support
-
- drivers/soc/fsl/guts.c | 219 ++++++++++++++++++++++-------------------
- 1 file changed, 118 insertions(+), 101 deletions(-)
-
+diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
+index 4e5675ab5f73..f992064a7f58 100644
+--- a/drivers/soc/fsl/guts.c
++++ b/drivers/soc/fsl/guts.c
+@@ -20,9 +20,6 @@ struct fsl_soc_die_attr {
+ 	u32	mask;
+ };
+ 
+-static struct soc_device_attribute soc_dev_attr;
+-
+-
+ /* SoC die attribute definition for QorIQ platform */
+ static const struct fsl_soc_die_attr fsl_soc_die[] = {
+ 	/*
+@@ -116,6 +113,7 @@ static const struct fsl_soc_die_attr *fsl_soc_die_match(
+ static int fsl_guts_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *root, *np = pdev->dev.of_node;
++	struct soc_device_attribute *soc_dev_attr;
+ 	static struct soc_device *soc_dev;
+ 	struct device *dev = &pdev->dev;
+ 	const struct fsl_soc_die_attr *soc_die;
+@@ -136,12 +134,16 @@ static int fsl_guts_probe(struct platform_device *pdev)
+ 	iounmap(regs);
+ 
+ 	/* Register soc device */
++	soc_dev_attr = devm_kzalloc(dev, sizeof(*soc_dev_attr), GFP_KERNEL);
++	if (!soc_dev_attr)
++		return -ENOMEM;
++
+ 	root = of_find_node_by_path("/");
+ 	if (of_property_read_string(root, "model", &machine))
+ 		of_property_read_string_index(root, "compatible", 0, &machine);
+ 	if (machine) {
+-		soc_dev_attr.machine = devm_kstrdup(dev, machine, GFP_KERNEL);
+-		if (!soc_dev_attr.machine) {
++		soc_dev_attr->machine = devm_kstrdup(dev, machine, GFP_KERNEL);
++		if (!soc_dev_attr->machine) {
+ 			of_node_put(root);
+ 			return -ENOMEM;
+ 		}
+@@ -150,30 +152,30 @@ static int fsl_guts_probe(struct platform_device *pdev)
+ 
+ 	soc_die = fsl_soc_die_match(svr, fsl_soc_die);
+ 	if (soc_die) {
+-		soc_dev_attr.family = devm_kasprintf(dev, GFP_KERNEL,
+-						     "QorIQ %s", soc_die->die);
++		soc_dev_attr->family = devm_kasprintf(dev, GFP_KERNEL,
++						      "QorIQ %s", soc_die->die);
+ 	} else {
+-		soc_dev_attr.family = devm_kasprintf(dev, GFP_KERNEL, "QorIQ");
++		soc_dev_attr->family = devm_kasprintf(dev, GFP_KERNEL, "QorIQ");
+ 	}
+-	if (!soc_dev_attr.family)
++	if (!soc_dev_attr->family)
+ 		return -ENOMEM;
+-	soc_dev_attr.soc_id = devm_kasprintf(dev, GFP_KERNEL,
++	soc_dev_attr->soc_id = devm_kasprintf(dev, GFP_KERNEL,
+ 					     "svr:0x%08x", svr);
+-	if (!soc_dev_attr.soc_id)
++	if (!soc_dev_attr->soc_id)
+ 		return -ENOMEM;
+-	soc_dev_attr.revision = devm_kasprintf(dev, GFP_KERNEL, "%d.%d",
++	soc_dev_attr->revision = devm_kasprintf(dev, GFP_KERNEL, "%d.%d",
+ 					       (svr >>  4) & 0xf, svr & 0xf);
+-	if (!soc_dev_attr.revision)
++	if (!soc_dev_attr->revision)
+ 		return -ENOMEM;
+ 
+-	soc_dev = soc_device_register(&soc_dev_attr);
++	soc_dev = soc_device_register(soc_dev_attr);
+ 	if (IS_ERR(soc_dev))
+ 		return PTR_ERR(soc_dev);
+ 
+-	pr_info("Machine: %s\n", soc_dev_attr.machine);
+-	pr_info("SoC family: %s\n", soc_dev_attr.family);
++	pr_info("Machine: %s\n", soc_dev_attr->machine);
++	pr_info("SoC family: %s\n", soc_dev_attr->family);
+ 	pr_info("SoC ID: %s, Revision: %s\n",
+-		soc_dev_attr.soc_id, soc_dev_attr.revision);
++		soc_dev_attr->soc_id, soc_dev_attr->revision);
+ 	return 0;
+ }
+ 
 -- 
 2.30.2
 
