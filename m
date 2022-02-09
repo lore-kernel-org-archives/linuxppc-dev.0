@@ -4,74 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF6C1C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Feb 2022 19:54:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40C62C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Feb 2022 20:55:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jv9ZQ1DZgz3bcS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Feb 2022 06:54:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JvBwC1RdQz3cHW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Feb 2022 07:55:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=XZYtYNQG;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YBA2dck1;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=2607:f8b0:4864:20::d31;
- helo=mail-io1-xd31.google.com; envelope-from=skhan@linuxfoundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=google header.b=XZYtYNQG; 
- dkim-atps=neutral
-Received: from mail-io1-xd31.google.com (mail-io1-xd31.google.com
- [IPv6:2607:f8b0:4864:20::d31])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
+ envelope-from=chao.gao@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=YBA2dck1; dkim-atps=neutral
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jv9Yf1GWDz3bPD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2022 06:53:58 +1100 (AEDT)
-Received: by mail-io1-xd31.google.com with SMTP id p63so4601981iod.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Feb 2022 11:53:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linuxfoundation.org; s=google;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=O5WO0GhtENZ4Ge8Y89ntw8iLo0frKjtIwBpplGmqm1U=;
- b=XZYtYNQGwFDSiwdvHmn4Qx/2WbSo9LHWZVuwD5qVV9+PHAuX3IZXPRPUVPc2w8kJT3
- U6gJgjZzQGczCe8z1lUvFxDAjt3Pq12x+Y3i/gJwKN+I7Bs0gEy5N0si9NQY+1/dw3ox
- tM9LNoffy8hb3RQucX48qU+U/6KmTUrhfaLRA=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=O5WO0GhtENZ4Ge8Y89ntw8iLo0frKjtIwBpplGmqm1U=;
- b=4teUBP5O4blnWZ/vfV0rvs4t2rpgTJQDSP2b6tzK+Dzx2ZQdzD2oW8n7tx9vboUYjc
- SR0PEx0OVbzCpEorx7mezlF1A2wKLX4ErL5fhTSrKM+zYC4gg+gqXMjFCM7D9VsPC1db
- Tn5wuMap/TZUt6006h847Qs/tmL6rK9Yg7mIbadMHVIyv/zHuPjvZiDWSlYPUXbnvsl6
- HHpknQ6Cw48sNhlsQPRl1o9tOH+aMaeAHpjcInPVtdTHLbz7zL0DwaBd2zIo/NmxLsbq
- lxiG8MUoVxxNVEtqCACzHM0QqDg3xNJYb9d0VXtjEgpjg/8mMTOazbpN0ErbGERZZ449
- 9Ikg==
-X-Gm-Message-State: AOAM530CvIQyHnsHtJ/Ig/ZrOSjbSkycATEpCFM7cgvoqaTT0sUvSkw8
- x6TFXAeuQU7o+oUdVYiMZTEyHg==
-X-Google-Smtp-Source: ABdhPJz2+2fc0dL1ssZvgLiP/Y/63ErBrkUzup+hUR8RVfVHDk3lc5Se0BXrHIu6wtd4Pi3h+F3qkg==
-X-Received: by 2002:a5d:9e12:: with SMTP id h18mr1900891ioh.67.1644436435015; 
- Wed, 09 Feb 2022 11:53:55 -0800 (PST)
-Received: from [192.168.1.128] ([71.205.29.0])
- by smtp.gmail.com with ESMTPSA id b24sm10234383ioc.24.2022.02.09.11.53.53
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 09 Feb 2022 11:53:54 -0800 (PST)
-Subject: Re: [PATCH] selftest/vm: Use correct PAGE_SHIFT value for ppc64
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
- akpm@linux-foundation.org
-References: <20220209154301.42024-1-aneesh.kumar@linux.ibm.com>
-From: Shuah Khan <skhan@linuxfoundation.org>
-Message-ID: <84508bb4-9400-f429-e6d2-d8b05a1e8368@linuxfoundation.org>
-Date: Wed, 9 Feb 2022 12:53:53 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JtsKw0Rf0z301M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Feb 2022 18:42:37 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1644392564; x=1675928564;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=ptt8R/RvwFaVk8njj6dZCgZ7G353iPS7PsxtHDnt7q4=;
+ b=YBA2dck1EcNrL31PySohuUFpLNX6N4uQ4Wb/2XTvgswy7RFiSY22wNXG
+ fUKbDckHBNrj04CQwTydScLuJoMXaM0ZDy9OQFjgoBcLuVO799S271XGD
+ s9v4OAZxLTPq+nPz2z8Pn5teoR0MC5qovuro3qk+WFVyb+aUJtTkcvF4s
+ 2iDkSfaICSl3ieTNiaR60HSBIdHlV79HhKJgaa7TYgAccd+dp5NN5OUnn
+ GtSLdFbB+U2gOEN/dBfJCWOZiBeW6i/gyd9NNbvE2A3H0B5MFKwTfBtoL
+ cegywG2f9VDB6ZcubUjpeNuMtDEm9DNQlN15sGYVOvVGd9fzO53NzUOj9 Q==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10252"; a="232712935"
+X-IronPort-AV: E=Sophos;i="5.88,355,1635231600"; d="scan'208";a="232712935"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Feb 2022 23:41:34 -0800
+X-IronPort-AV: E=Sophos;i="5.88,355,1635231600"; d="scan'208";a="540984524"
+Received: from hyperv-sh4.sh.intel.com ([10.239.48.22])
+ by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Feb 2022 23:41:21 -0800
+From: Chao Gao <chao.gao@intel.com>
+To: kvm@vger.kernel.org, seanjc@google.com, pbonzini@redhat.com,
+ kevin.tian@intel.com, tglx@linutronix.de
+Subject: [PATCH v3 0/5] Improve KVM's interaction with CPU hotplug
+Date: Wed,  9 Feb 2022 15:41:01 +0800
+Message-Id: <20220209074109.453116-1-chao.gao@intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <20220209154301.42024-1-aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 10 Feb 2022 07:54:32 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,86 +65,118 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Shuah Khan <shuah@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Shuah Khan <skhan@linuxfoundation.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ David Hildenbrand <david@redhat.com>,
+ "Maciej S. Szmigiero" <maciej.szmigiero@oracle.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ linux-mips@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Wanpeng Li <wanpengli@tencent.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>,
+ kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org,
+ Janosch Frank <frankja@linux.ibm.com>, Anup Patel <anup@brainfault.org>,
+ Joerg Roedel <joro@8bytes.org>, Huacai Chen <chenhuacai@kernel.org>,
+ linux-riscv@lists.infradead.org,
+ Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>,
+ Ingo Molnar <mingo@redhat.com>, "Darrick J. Wong" <djwong@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Chao Gao <chao.gao@intel.com>, Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
+ Suzuki K Poulose <suzuki.poulose@arm.com>, Heiko Carstens <hca@linux.ibm.com>,
+ John Garry <john.garry@huawei.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Shaokun Zhang <zhangshaokun@hisilicon.com>,
+ Tom Zanussi <tom.zanussi@linux.intel.com>, Borislav Petkov <bp@alien8.de>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Atish Patra <atishp@atishpatra.org>,
+ Sumanth Korikkar <sumanthk@linux.ibm.com>,
+ Alexandru Elisei <alexandru.elisei@arm.com>,
+ linux-arm-kernel@lists.infradead.org, Jim Mattson <jmattson@google.com>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Fabiano Rosas <farosas@linux.ibm.com>,
+ Mel Gorman <mgorman@techsingularity.net>,
+ Thomas Richter <tmricht@linux.ibm.com>,
+ Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
+ Bharata B Rao <bharata@linux.ibm.com>, James Morse <james.morse@arm.com>,
+ kvm-riscv@lists.infradead.org, Marc Zyngier <maz@kernel.org>,
+ Vitaly Kuznetsov <vkuznets@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/9/22 8:43 AM, Aneesh Kumar K.V wrote:
-> Keep it simple by using a #define and limiting hugepage size to 2M.
-> This keeps the test simpler instead of dynamically finding the page size
-> and huge page size.
-> 
-> Without this tests are broken w.r.t reading /proc/self/pagemap
-> 
-> 	if (pread(pagemap_fd, ent, sizeof(ent),
-> 			(uintptr_t)ptr >> (PAGE_SHIFT - 3)) != sizeof(ent))
-> 		err(2, "read pagemap");
-> 
-> Cc: Shuah Khan <shuah@kernel.org>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
->   tools/testing/selftests/vm/ksm_tests.c        | 8 ++++++++
->   tools/testing/selftests/vm/transhuge-stress.c | 8 ++++++++
->   2 files changed, 16 insertions(+)
-> 
-> diff --git a/tools/testing/selftests/vm/ksm_tests.c b/tools/testing/selftests/vm/ksm_tests.c
-> index 1436e1a9a3d3..8200328ff018 100644
-> --- a/tools/testing/selftests/vm/ksm_tests.c
-> +++ b/tools/testing/selftests/vm/ksm_tests.c
-> @@ -22,8 +22,16 @@
->   #define KSM_MERGE_ACROSS_NODES_DEFAULT true
->   #define MB (1ul << 20)
->   
-> +#ifdef __powerpc64__
-> +#define PAGE_SHIFT	16
-> +/*
-> + * This will only work with radix 2M hugepage size
-> + */
-> +#define HPAGE_SHIFT 21
-> +#else
->   #define PAGE_SHIFT 12
->   #define HPAGE_SHIFT 21
-> +#endif
->   
->   #define PAGE_SIZE (1 << PAGE_SHIFT)
->   #define HPAGE_SIZE (1 << HPAGE_SHIFT)
-> diff --git a/tools/testing/selftests/vm/transhuge-stress.c b/tools/testing/selftests/vm/transhuge-stress.c
-> index 5e4c036f6ad3..f04c8aa4bcf6 100644
-> --- a/tools/testing/selftests/vm/transhuge-stress.c
-> +++ b/tools/testing/selftests/vm/transhuge-stress.c
-> @@ -16,8 +16,16 @@
->   #include <string.h>
->   #include <sys/mman.h>
->   
-> +#ifdef __powerpc64__
-> +#define PAGE_SHIFT	16
-> +/*
-> + * This will only work with radix 2M hugepage size
-> + */
-> +#define HPAGE_SHIFT 21
+Changes from v2->v3:
+ - rebased to the latest kvm/next branch. 
+ - patch 1: rename {svm,vmx}_check_processor_compat to follow the name
+	    convention
+ - patch 3: newly added to provide more information when hardware enabling
+	    fails
+ - patch 4: reset hardware_enable_failed if hardware enabling fails. And
+	    remove redundent kernel log.
+ - patch 5: add a pr_err() for setup_vmcs_config() path.
 
-Why not have this is in common code?
+Changes from v1->v2: (all comments/suggestions on v1 are from Sean, thanks)
+ - Merged v1's patch 2 into patch 1, and v1's patch 5 into patch 6.
+ - Use static_call for check_processor_compatibility().
+ - Generate patch 2 with "git revert" and do manual changes based on that.
+ - Loosen the WARN_ON() in kvm_arch_check_processor_compat() instead of
+   removing it.
+ - KVM always prevent incompatible CPUs from being brought up regardless of
+   running VMs.
+ - Use pr_warn instead of pr_info to emit logs when KVM finds offending
+   CPUs.
 
-> +#else
->   #define PAGE_SHIFT 12
->   #define HPAGE_SHIFT 21
+KVM registers its CPU hotplug callback to CPU starting section. And in the
+callback, KVM enables hardware virtualization on hotplugged CPUs if any VM
+is running on existing CPUs.
 
-Same here.
+There are two problems in the process:
+1. KVM doesn't do compatibility checks before enabling hardware
+virtualization on hotplugged CPUs. This may cause #GP if VMX isn't
+supported or vmentry failure if some in-use VMX features are missing on
+hotplugged CPUs. Both break running VMs.
+2. Callbacks in CPU STARTING section cannot fail. So, even if KVM finds
+some incompatible CPUs, its callback cannot block CPU hotplug.
 
-> +#endif
->   
->   #define PAGE_SIZE (1 << PAGE_SHIFT)
->   #define HPAGE_SIZE (1 << HPAGE_SHIFT)
-> 
+This series improves KVM's interaction with CPU hotplug to avoid
+incompatible CPUs breaking running VMs. Following changes are made:
 
-Please cc linux-kselftest mailing list in the future.
+1. move KVM's CPU hotplug callback to ONLINE section (suggested by Thomas)
+2. do compatibility checks on hotplugged CPUs.
+3. abort onlining incompatible CPUs
 
-With the above fixed.
+This series is a follow-up to the discussion about KVM and CPU hotplug
+https://lore.kernel.org/lkml/3d3296f0-9245-40f9-1b5a-efffdb082de9@redhat.com/T/
 
-Reviewed-by: Shuah Khan <skhan@linuxfoundation.org>
+Note: this series is tested only on Intel systems.
 
-thanks,
--- Shuah
+Chao Gao (4):
+  KVM: x86: Move check_processor_compatibility from init ops to runtime
+    ops
+  Partially revert "KVM: Pass kvm_init()'s opaque param to additional
+    arch funcs"
+  KVM: Rename and move CPUHP_AP_KVM_STARTING to ONLINE section
+  KVM: Do compatibility checks on hotplugged CPUs
+
+Sean Christopherson (1):
+  KVM: Provide more information in kernel log if hardware enabling fails
+
+ arch/arm64/kvm/arm.c               |  2 +-
+ arch/mips/kvm/mips.c               |  2 +-
+ arch/powerpc/kvm/powerpc.c         |  2 +-
+ arch/riscv/kvm/main.c              |  2 +-
+ arch/s390/kvm/kvm-s390.c           |  2 +-
+ arch/x86/include/asm/kvm-x86-ops.h |  1 +
+ arch/x86/include/asm/kvm_host.h    |  2 +-
+ arch/x86/kvm/svm/svm.c             |  4 +-
+ arch/x86/kvm/vmx/evmcs.c           |  2 +-
+ arch/x86/kvm/vmx/evmcs.h           |  2 +-
+ arch/x86/kvm/vmx/vmx.c             | 22 +++++----
+ arch/x86/kvm/x86.c                 | 16 +++++--
+ include/linux/cpuhotplug.h         |  2 +-
+ include/linux/kvm_host.h           |  2 +-
+ virt/kvm/kvm_main.c                | 73 +++++++++++++++++++-----------
+ 15 files changed, 83 insertions(+), 53 deletions(-)
+
+-- 
+2.25.1
 
