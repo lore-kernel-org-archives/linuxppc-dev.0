@@ -4,75 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EBCAC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Feb 2022 20:30:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8441CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Feb 2022 23:31:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JvpKc56Trz3cmp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Feb 2022 07:30:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JvtL92F38z3cGW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Feb 2022 10:31:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=IxkmG76b;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=2qwKcjjD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::236;
- helo=mail-lj1-x236.google.com; envelope-from=rikard.falkeborn@gmail.com;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=IxkmG76b; dkim-atps=neutral
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com
- [IPv6:2a00:1450:4864:20::236])
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=bombadil.20210309 header.b=2qwKcjjD; 
+ dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JvpGs4nVcz3bW9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Feb 2022 07:28:20 +1100 (AEDT)
-Received: by mail-lj1-x236.google.com with SMTP id o9so4826805ljq.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2022 12:28:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=8+PCp8VzJ36gwuUuZGOgQHhyJLFNLNE5NPa+Wd4bAXE=;
- b=IxkmG76bFLc42upQAfX2viuaO+Zvq3ggpHoSw+8vGvIebuVzIO6ZrfDobBHGTLCz/0
- XxSVDXbvnnPdX3AHIcnKxds+3eXeP98U5QwwlsvBgxzCuJ3xghhmj7P86XOeZInnm2kW
- 67PWvKh7LRd5qrbmweNMQYdV0+luLt0NEUzLnF4niDSeBadknLCZ3GpsON+l75M/58Ht
- 1yRKzdRE4XmQETPnFD8jjo594ks3Xl9ftEIqDM1GTyhEjB5nDjZPonp4G0gEFFV0ydNM
- eINwZkxY/ZrWyOHBSgTUWbnOkBoGzuezMESL9NHSo+GuU/Akj2EKuJo32/wyI1sFGeR2
- Jfqg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=8+PCp8VzJ36gwuUuZGOgQHhyJLFNLNE5NPa+Wd4bAXE=;
- b=pvhAK8ng9tNijX0BBK+g7RuJ5hfxhc+LcjJ3kDJvwX9wjwW5ssjjZb40E5x/R7MJLv
- 96K41SV9SBSysEf8aCMN1WMl6sI995qNSVOHR+EhnZkTqHQt81pjRM/+Yf7mVvYIxnu6
- Enw207JgOOncC256uxxiQy4mReIOIKl6X6yl0YWYCV0yk1/b5b7v2dkEA/YC4mJbcFt7
- KQECudycSn7Y+88nrICRzJXV9EF+zQJzf2q8LM1/mpRCaSHEzX/gY/JnAaow6kPhwhFp
- zetfLyH+8anKhBxrtep2lDujSHZgyAUY2GfRB/7sKpO7LTfY+q2N+YSBkQyYrqAR80pB
- Mq4Q==
-X-Gm-Message-State: AOAM530C4ObboJrBgBDiQw0B4+GXKn8eOE1QtKONltzMEuyMuoBVWXyx
- J71kYtvyBAr8h2gp81/jBU4pWkV1qzo=
-X-Google-Smtp-Source: ABdhPJxnkMhH+WCNQmT2YfTiDN+Fw9oTWgT0Xe73gy81YT+zJxyQZKdlb9nW6RBG26W2nxeMV9nUfQ==
-X-Received: by 2002:a2e:bc20:: with SMTP id b32mr5976744ljf.214.1644524896908; 
- Thu, 10 Feb 2022 12:28:16 -0800 (PST)
-Received: from localhost.localdomain (h-155-4-221-129.NA.cust.bahnhof.se.
- [155.4.221.129])
- by smtp.gmail.com with ESMTPSA id d19sm1223881lfg.108.2022.02.10.12.28.16
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 10 Feb 2022 12:28:16 -0800 (PST)
-From: Rikard Falkeborn <rikard.falkeborn@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 3/3] crypto/nx: Constify static attribute_group structs
-Date: Thu, 10 Feb 2022 21:28:05 +0100
-Message-Id: <20220210202805.7750-4-rikard.falkeborn@gmail.com>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220210202805.7750-1-rikard.falkeborn@gmail.com>
-References: <20220210202805.7750-1-rikard.falkeborn@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JvtKL2g6dz2yK6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Feb 2022 10:30:41 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20210309; h=Sender:In-Reply-To:Content-Type:
+ MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=VDWZ1wyLkqnqT/23Ht0M/a/jxjSGdpdjwIwIjoTRRRI=; b=2qwKcjjD3mCCh/1mVgk1hdA+xC
+ o2mTeS3P/3a/J49I96p9n7gshQPUYwIog5WvpAFPL31pFS8p2fRNxgmU8mEX5RoaNTgPuZnXMDfLZ
+ JWZ1ZbigBEZevMhTDtYwDT28JH8nWX3HftkxCd5K7OmQ/7bRzk06Mhs+kn2Xh5QGjm6JwLn8Ik+Nn
+ z4536VqIxXodC18gOtdY4kjUl8LClWDdhQxHTG+8VLLoqNd7ENE89lRlK/bMSBVTPJwoy+TnOd1Iq
+ 71uF/rfluUzxshhkFlCJzD8kq9rzIK5fF7MRS32xDLlMRMmy474AtN1n1zA+pqAb6gpeyqrHVfGv2
+ iKoIQMYg==;
+Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
+ (Red Hat Linux)) id 1nIItQ-005Awh-D2; Thu, 10 Feb 2022 23:30:28 +0000
+Date: Thu, 10 Feb 2022 15:30:28 -0800
+From: Luis Chamberlain <mcgrof@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v5 0/6] KEXEC_SIG with appended signature
+Message-ID: <YgWgFMRdpLvBiht7@bombadil.infradead.org>
+References: <cover.1641900831.git.msuchanek@suse.de>
+ <YfBd/EDGUx9UIHcb@bombadil.infradead.org>
+ <87pmnwlkaa.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87pmnwlkaa.fsf@mpe.ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,44 +62,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- Rikard Falkeborn <rikard.falkeborn@gmail.com>, linux-kernel@vger.kernel.org
+Cc: Nayna <nayna@linux.vnet.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, David Howells <dhowells@redhat.com>,
+ keyrings@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>, Rob Herring <robh@kernel.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, Baoquan He <bhe@redhat.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ James Morris <jmorris@namei.org>,
+ Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
+ Aaron Tomlin <atomlin@redhat.com>, Michal Suchanek <msuchanek@suse.de>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ linux-s390@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ Hari Bathini <hbathini@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Philipp Rudo <prudo@redhat.com>, Frank van der Linden <fllinden@amazon.com>,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-security-module@vger.kernel.org, linux-crypto@vger.kernel.org,
+ Jessica Yu <jeyu@kernel.org>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>, buendgen@de.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The only usage of these is to pass their address to
-sysfs_{create,remove}_group(), which takes pointers to const struct
-attribute_group. Make them const to allow the compiler to put them in
-read-only memory.
+On Wed, Feb 09, 2022 at 03:46:05PM +1100, Michael Ellerman wrote:
+> Luis Chamberlain <mcgrof@kernel.org> writes:
+> > On Tue, Jan 11, 2022 at 12:37:42PM +0100, Michal Suchanek wrote:
+> >> Hello,
+> >> 
+> >> This is a refresh of the KEXEC_SIG series.
+> >> 
+> >> This adds KEXEC_SIG support on powerpc and deduplicates the code dealing
+> >> with appended signatures in the kernel.
+> >> 
+> >> powerpc supports IMA_KEXEC but that's an exception rather than the norm.
+> >> On the other hand, KEXEC_SIG is portable across platforms.
+> >> 
+> >> For distributions to have uniform security features across platforms one
+> >> option should be used on all platforms.
+> >> 
+> >> Thanks
+> >> 
+> >> Michal
+> >> 
+> >> Previous revision: https://lore.kernel.org/linuxppc-dev/cover.1637862358.git.msuchanek@suse.de/
+> >> Patched kernel tree: https://github.com/hramrach/kernel/tree/kexec_sig
+> >> 
+> >> Michal Suchanek (6):
+> >>   s390/kexec_file: Don't opencode appended signature check.
+> >>   powerpc/kexec_file: Add KEXEC_SIG support.
+> >>   kexec_file: Don't opencode appended signature verification.
+> >>   module: strip the signature marker in the verification function.
+> >>   module: Use key_being_used_for for log messages in
+> >>     verify_appended_signature
+> >>   module: Move duplicate mod_check_sig users code to mod_parse_sig
+> >
+> > What tree should this go through? I'd prefer if over through modules
+> > tree as it can give a chance for Aaron Tomlin to work with this for his
+> > code refactoring of kernel/module*.c to kernel/module/
+> 
+> Yeah that's fine by me, the arch changes are pretty minimal and unlikely
+> to conflict much.
 
-Signed-off-by: Rikard Falkeborn <rikard.falkeborn@gmail.com>
----
- drivers/crypto/nx/nx-common-pseries.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Ok sounds good thanks.
 
-diff --git a/drivers/crypto/nx/nx-common-pseries.c b/drivers/crypto/nx/nx-common-pseries.c
-index 4e304f6081e4..7584a34ba88c 100644
---- a/drivers/crypto/nx/nx-common-pseries.c
-+++ b/drivers/crypto/nx/nx-common-pseries.c
-@@ -962,7 +962,7 @@ static struct attribute *nx842_sysfs_entries[] = {
- 	NULL,
- };
- 
--static struct attribute_group nx842_attribute_group = {
-+static const struct attribute_group nx842_attribute_group = {
- 	.name = NULL,		/* put in device directory */
- 	.attrs = nx842_sysfs_entries,
- };
-@@ -992,7 +992,7 @@ static struct attribute *nxcop_caps_sysfs_entries[] = {
- 	NULL,
- };
- 
--static struct attribute_group nxcop_caps_attr_group = {
-+static const struct attribute_group nxcop_caps_attr_group = {
- 	.name	=	"nx_gzip_caps",
- 	.attrs	=	nxcop_caps_sysfs_entries,
- };
--- 
-2.35.1
-
+  Luis
