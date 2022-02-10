@@ -4,53 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8441CC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Feb 2022 23:31:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F459C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Feb 2022 00:16:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JvtL92F38z3cGW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Feb 2022 10:31:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JvvL83kdNz3cPk
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Feb 2022 11:16:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=2qwKcjjD;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=pcjmfLwA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=mcgrof@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d33;
+ helo=mail-io1-xd33.google.com; envelope-from=yury.norov@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=2qwKcjjD; 
- dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=pcjmfLwA; dkim-atps=neutral
+Received: from mail-io1-xd33.google.com (mail-io1-xd33.google.com
+ [IPv6:2607:f8b0:4864:20::d33])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JvtKL2g6dz2yK6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Feb 2022 10:30:41 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20210309; h=Sender:In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=VDWZ1wyLkqnqT/23Ht0M/a/jxjSGdpdjwIwIjoTRRRI=; b=2qwKcjjD3mCCh/1mVgk1hdA+xC
- o2mTeS3P/3a/J49I96p9n7gshQPUYwIog5WvpAFPL31pFS8p2fRNxgmU8mEX5RoaNTgPuZnXMDfLZ
- JWZ1ZbigBEZevMhTDtYwDT28JH8nWX3HftkxCd5K7OmQ/7bRzk06Mhs+kn2Xh5QGjm6JwLn8Ik+Nn
- z4536VqIxXodC18gOtdY4kjUl8LClWDdhQxHTG+8VLLoqNd7ENE89lRlK/bMSBVTPJwoy+TnOd1Iq
- 71uF/rfluUzxshhkFlCJzD8kq9rzIK5fF7MRS32xDLlMRMmy474AtN1n1zA+pqAb6gpeyqrHVfGv2
- iKoIQMYg==;
-Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2
- (Red Hat Linux)) id 1nIItQ-005Awh-D2; Thu, 10 Feb 2022 23:30:28 +0000
-Date: Thu, 10 Feb 2022 15:30:28 -0800
-From: Luis Chamberlain <mcgrof@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v5 0/6] KEXEC_SIG with appended signature
-Message-ID: <YgWgFMRdpLvBiht7@bombadil.infradead.org>
-References: <cover.1641900831.git.msuchanek@suse.de>
- <YfBd/EDGUx9UIHcb@bombadil.infradead.org>
- <87pmnwlkaa.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JvvKL4nK6z2xtp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Feb 2022 11:15:49 +1100 (AEDT)
+Received: by mail-io1-xd33.google.com with SMTP id s18so9489396ioa.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Feb 2022 16:15:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=from:to:subject:date:message-id:in-reply-to:references:mime-version
+ :content-transfer-encoding;
+ bh=PIovVUUoTXrNkGptnZalq8qTG6elYmmkmcndd2InBI8=;
+ b=pcjmfLwAiS/XGbn7H5lJSwo1VmJtz/MoynS0X5Dcg+dWgAtP50rspk13S0E5pJvDty
+ S6taB1oBu2sz0cRmYD0OrRjqt2eHBVSewuL1cld2PkhQsvFtl9InCW6guWZsBAakxHMk
+ QeAHrP+IGJZPPsIbTyETpTaKJMX41JIs46ZQl2s+qGfwWzoybsFUJSxmhqN/EcMYGjqu
+ aLAgKKOq45uiO1viWnPybbeWGhqL5zctU9mMIOJebmWir+BUuJeDQnU4GPsD0okN+NS4
+ pJvRQWhfbiVaTp3GfeFPrI0rEQUVFFs+HDyaa7lPxlLEpozQBg6i1VzRnx8jLoMxeYZM
+ MW4w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=PIovVUUoTXrNkGptnZalq8qTG6elYmmkmcndd2InBI8=;
+ b=7sGIuipLjBLqp2eAkbe86cBrVsPtXrHv38P27VEbl/nzRqUWqkh4qidcCxtAzu1T0p
+ NBvKuIYDiIe/kz47T6ZBZhsgQyApUQBMGclFIyOxgx0te8OBUo3Wcm6RKyiQdhR9vR4+
+ Y8mCLUAR3TW+BqjJLnCsun/uNCI6WCB7y8c1EC7BYzQpqTkUOEkag+JBZ7LrbnZaojkL
+ PSRFmNBpKzW0O4F/RO9R+cX9VxMG0NfOb3U7702NHweZrLq2telXDgFfh9b6eLLZFs61
+ dFPlJsHe20rjA2IT/MLrRSEWEICqoc9YY4XUB4f3/ZywmNK8HLQmOWsgzgGDfPiPE+un
+ 3yIA==
+X-Gm-Message-State: AOAM532CSOnDJL+SzktXTh/MrH6Rqbrw06d+izhII+Pd4hFp56jOT+Ar
+ 30HzbJNY6RXFEw7ygfXhHnY=
+X-Google-Smtp-Source: ABdhPJxRcsurSAFIVa51O5zD9bcY1kB5OJeXxGfVrQ9MyMfVmVSnWSLVAohEIbusFvdw1qpbmH+QRA==
+X-Received: by 2002:a05:6638:d0c:: with SMTP id
+ q12mr5411794jaj.310.1644538546802; 
+ Thu, 10 Feb 2022 16:15:46 -0800 (PST)
+Received: from localhost ([12.28.44.171])
+ by smtp.gmail.com with ESMTPSA id h3sm12329728ioe.19.2022.02.10.16.15.45
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 10 Feb 2022 16:15:46 -0800 (PST)
+From: Yury Norov <yury.norov@gmail.com>
+To: Yury Norov <yury.norov@gmail.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ David Laight <David.Laight@aculab.com>, Joe Perches <joe@perches.com>,
+ Dennis Zhou <dennis@kernel.org>, Emil Renner Berthing <kernel@esmil.dk>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
+ Alexey Klimov <aklimov@redhat.com>, linux-kernel@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Valentin Schneider <valentin.schneider@arm.com>,
+ Parth Shah <parth@linux.ibm.com>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Hari Bathini <hbathini@linux.ibm.com>, Rob Herring <robh@kernel.org>,
+ Laurent Dufour <ldufour@linux.ibm.com>, Petr Mladek <pmladek@suse.com>,
+ John Ogness <john.ogness@linutronix.de>,
+ Sudeep Holla <sudeep.holla@arm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Xiongwei Song <sxwjean@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 38/49] arch/powerpc: replace cpumask_weight with
+ cpumask_weight_{eq, ...} where appropriate
+Date: Thu, 10 Feb 2022 14:49:22 -0800
+Message-Id: <20220210224933.379149-39-yury.norov@gmail.com>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20220210224933.379149-1-yury.norov@gmail.com>
+References: <20220210224933.379149-1-yury.norov@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87pmnwlkaa.fsf@mpe.ellerman.id.au>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,69 +108,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nayna <nayna@linux.vnet.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, David Howells <dhowells@redhat.com>,
- keyrings@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>, Rob Herring <robh@kernel.org>,
- Herbert Xu <herbert@gondor.apana.org.au>, Baoquan He <bhe@redhat.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- James Morris <jmorris@namei.org>,
- Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
- Aaron Tomlin <atomlin@redhat.com>, Michal Suchanek <msuchanek@suse.de>,
- "Serge E. Hallyn" <serge@hallyn.com>, Vasily Gorbik <gor@linux.ibm.com>,
- linux-s390@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
- Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
- Hari Bathini <hbathini@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Philipp Rudo <prudo@redhat.com>, Frank van der Linden <fllinden@amazon.com>,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-security-module@vger.kernel.org, linux-crypto@vger.kernel.org,
- Jessica Yu <jeyu@kernel.org>, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>, buendgen@de.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 09, 2022 at 03:46:05PM +1100, Michael Ellerman wrote:
-> Luis Chamberlain <mcgrof@kernel.org> writes:
-> > On Tue, Jan 11, 2022 at 12:37:42PM +0100, Michal Suchanek wrote:
-> >> Hello,
-> >> 
-> >> This is a refresh of the KEXEC_SIG series.
-> >> 
-> >> This adds KEXEC_SIG support on powerpc and deduplicates the code dealing
-> >> with appended signatures in the kernel.
-> >> 
-> >> powerpc supports IMA_KEXEC but that's an exception rather than the norm.
-> >> On the other hand, KEXEC_SIG is portable across platforms.
-> >> 
-> >> For distributions to have uniform security features across platforms one
-> >> option should be used on all platforms.
-> >> 
-> >> Thanks
-> >> 
-> >> Michal
-> >> 
-> >> Previous revision: https://lore.kernel.org/linuxppc-dev/cover.1637862358.git.msuchanek@suse.de/
-> >> Patched kernel tree: https://github.com/hramrach/kernel/tree/kexec_sig
-> >> 
-> >> Michal Suchanek (6):
-> >>   s390/kexec_file: Don't opencode appended signature check.
-> >>   powerpc/kexec_file: Add KEXEC_SIG support.
-> >>   kexec_file: Don't opencode appended signature verification.
-> >>   module: strip the signature marker in the verification function.
-> >>   module: Use key_being_used_for for log messages in
-> >>     verify_appended_signature
-> >>   module: Move duplicate mod_check_sig users code to mod_parse_sig
-> >
-> > What tree should this go through? I'd prefer if over through modules
-> > tree as it can give a chance for Aaron Tomlin to work with this for his
-> > code refactoring of kernel/module*.c to kernel/module/
-> 
-> Yeah that's fine by me, the arch changes are pretty minimal and unlikely
-> to conflict much.
+PowerPC code uses cpumask_weight() to compare the weight of cpumask with
+a given number. We can do it more efficiently with cpumask_weight_{eq, ...}
+because conditional cpumask_weight may stop traversing the cpumask earlier,
+as soon as condition is (or can't be)  met.
 
-Ok sounds good thanks.
+Signed-off-by: Yury Norov <yury.norov@gmail.com>
+---
+ arch/powerpc/kernel/smp.c      | 2 +-
+ arch/powerpc/kernel/watchdog.c | 2 +-
+ arch/powerpc/xmon/xmon.c       | 4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-  Luis
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index b7fd6a72aa76..8bff748df402 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1656,7 +1656,7 @@ void start_secondary(void *unused)
+ 		if (has_big_cores)
+ 			sibling_mask = cpu_smallcore_mask;
+ 
+-		if (cpumask_weight(mask) > cpumask_weight(sibling_mask(cpu)))
++		if (cpumask_weight_gt(mask, cpumask_weight(sibling_mask(cpu))))
+ 			shared_caches = true;
+ 	}
+ 
+diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
+index bfc27496fe7e..62937a077de7 100644
+--- a/arch/powerpc/kernel/watchdog.c
++++ b/arch/powerpc/kernel/watchdog.c
+@@ -483,7 +483,7 @@ static void start_watchdog(void *arg)
+ 
+ 	wd_smp_lock(&flags);
+ 	cpumask_set_cpu(cpu, &wd_cpus_enabled);
+-	if (cpumask_weight(&wd_cpus_enabled) == 1) {
++	if (cpumask_weight_eq(&wd_cpus_enabled, 1)) {
+ 		cpumask_set_cpu(cpu, &wd_smp_cpus_pending);
+ 		wd_smp_last_reset_tb = get_tb();
+ 	}
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index fd72753e8ad5..b423812e94e0 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -469,7 +469,7 @@ static bool wait_for_other_cpus(int ncpus)
+ 
+ 	/* We wait for 2s, which is a metric "little while" */
+ 	for (timeout = 20000; timeout != 0; --timeout) {
+-		if (cpumask_weight(&cpus_in_xmon) >= ncpus)
++		if (cpumask_weight_ge(&cpus_in_xmon, ncpus))
+ 			return true;
+ 		udelay(100);
+ 		barrier();
+@@ -1338,7 +1338,7 @@ static int cpu_cmd(void)
+ 			case 'S':
+ 			case 't':
+ 				cpumask_copy(&xmon_batch_cpus, &cpus_in_xmon);
+-				if (cpumask_weight(&xmon_batch_cpus) <= 1) {
++				if (cpumask_weight_le(&xmon_batch_cpus, 1)) {
+ 					printf("There are no other cpus in xmon\n");
+ 					break;
+ 				}
+-- 
+2.32.0
+
