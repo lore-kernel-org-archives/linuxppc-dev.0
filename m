@@ -4,65 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 806C6C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Feb 2022 10:26:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E02C1C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Feb 2022 10:34:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jw8sR6dplz3cbW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Feb 2022 21:26:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jw93W1q20z3cC3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Feb 2022 21:34:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SvqgYTsP;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org;
+ envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=SvqgYTsP; 
+ dkim-atps=neutral
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jw8rS2TKcz3cC9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Feb 2022 21:25:12 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4Jw8rK15wZz9sSL;
- Fri, 11 Feb 2022 11:25:05 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id RVC_5M6K9gs6; Fri, 11 Feb 2022 11:25:05 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4Jw8rJ088Lz9sSM;
- Fri, 11 Feb 2022 11:25:04 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E74F28B77E;
- Fri, 11 Feb 2022 11:25:03 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id avygUaqL76b8; Fri, 11 Feb 2022 11:25:03 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.6.91])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A38D28B764;
- Fri, 11 Feb 2022 11:25:03 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21BAOsOZ946508
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Fri, 11 Feb 2022 11:24:54 +0100
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21BAOq8A946507;
- Fri, 11 Feb 2022 11:24:52 +0100
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Subject: [PATCH 1/2] net: Allow csum_sub() to be provided in arch
-Date: Fri, 11 Feb 2022 11:24:48 +0100
-Message-Id: <0c8eaab8f0685d2a70d125cf876238c70afd4fb6.1644574987.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.34.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jw92p4s0Vz3bWG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Feb 2022 21:34:10 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id 3178EB8294F;
+ Fri, 11 Feb 2022 10:34:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6AED7C340E9;
+ Fri, 11 Feb 2022 10:34:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1644575645;
+ bh=wXXuyKBQt46IGOEHezmN82dITuXgKrK5o/eWPXu2fvY=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=SvqgYTsPaCzQdgevk0P6T6vM6jW6nDW8c4Md4WJQARQLFYVVvGHCfSM3lOGaDZL2m
+ zJhOtTpJWum2yeaLgVDIhHKciV0E8HE7GgjUI6g5vkGsm6QT9O9f/XEL7rO2oSGM32
+ Wb6+NgshhTdM2q/d9LDUChl7laPTCNStwtZ3wR1t2LjtwY1DazH7nJrxUByhI0cb3y
+ FKLeEyg8UjIp8pey9AYNC27YThq42ecrLJ7sUiW+Tkhq9yH2P2DJoVuv12tS9TvPhu
+ 8pzH6EhPyfHX8BH3dveaWXMJRiUYrkVK+offjxfTHFacoVRlLJBDdm8CInbKRnItbc
+ yB/EPxDXx8DvA==
+Date: Fri, 11 Feb 2022 12:33:56 +0200
+From: Mike Rapoport <rppt@kernel.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v2 1/2] selftest/vm: Use correct PAGE_SHIFT value for ppc64
+Message-ID: <YgY7lDToiQ0pM6U6@kernel.org>
+References: <20220211063330.99648-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1644575088; l=989; s=20211009;
- h=from:subject:message-id; bh=RUCXz7rcwV3vtRjuwGPzOWG1MqwEYlRVJE5g+0Z10T0=;
- b=eADc4aCLdklo7HvFbLsm7mGATs8mPnBrP4sXzi8ylYEqFq0APBPHpYUY+C3ha30J+ZcvLukGCpHz
- n6af84NTDAWj2ByZb/YbwA6p1bUFrsK2r9w+YrLcIqegfq86tYCK
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220211063330.99648-1-aneesh.kumar@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,45 +62,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Shuah Khan <shuah@kernel.org>, linux-mm@kvack.org,
+ linux-kselftest@vger.kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In the same spirit as commit 07064c6e022b ("net: Allow csum_add to be
-provided in arch"), allow csum_sub() to be provided by arch.
+On Fri, Feb 11, 2022 at 12:03:28PM +0530, Aneesh Kumar K.V wrote:
+> Keep it simple by using a #define and limiting hugepage size to 2M.
+> This keeps the test simpler instead of dynamically finding the page size
+> and huge page size.
+> 
+> Without this tests are broken w.r.t reading /proc/self/pagemap
+> 
+> 	if (pread(pagemap_fd, ent, sizeof(ent),
+> 			(uintptr_t)ptr >> (PAGE_SHIFT - 3)) != sizeof(ent))
+> 		err(2, "read pagemap");
+> 
+> Cc: Shuah Khan <shuah@kernel.org>
+> Cc: linux-kselftest@vger.kernel.org
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>  tools/testing/selftests/vm/ksm_tests.c        | 9 ++++++++-
+>  tools/testing/selftests/vm/transhuge-stress.c | 9 ++++++++-
+>  2 files changed, 16 insertions(+), 2 deletions(-)
+> 
+> diff --git a/tools/testing/selftests/vm/ksm_tests.c b/tools/testing/selftests/vm/ksm_tests.c
+> index 1436e1a9a3d3..cae72872152b 100644
+> --- a/tools/testing/selftests/vm/ksm_tests.c
+> +++ b/tools/testing/selftests/vm/ksm_tests.c
+> @@ -22,7 +22,14 @@
+>  #define KSM_MERGE_ACROSS_NODES_DEFAULT true
+>  #define MB (1ul << 20)
+>  
+> -#define PAGE_SHIFT 12
+> +#ifdef __powerpc64__
+> +#define PAGE_SHIFT	16
+> +#else
+> +#define PAGE_SHIFT	12
+> +#endif
 
-The generic implementation of csum_sub() call csum_add() with the
-complement of the addendum.
+Page size can be other than 4096 for other configurations as well. And even
+on ppc64 it's not necessarily 64k.
 
-Some architectures can do it directly.
+Ideally page size in selftests/vm should be sysconf(_SC_PAGESIZE)
 
-This will also avoid getting several copies of csum_sub() outlined
-when building with -Os.
+> +/*
+> + * On ppc64 this will only work with radix 2M hugepage size
+> + */
+>  #define HPAGE_SHIFT 21
+>  
+>  #define PAGE_SIZE (1 << PAGE_SHIFT)
+> diff --git a/tools/testing/selftests/vm/transhuge-stress.c b/tools/testing/selftests/vm/transhuge-stress.c
+> index 5e4c036f6ad3..b1f8d98355c5 100644
+> --- a/tools/testing/selftests/vm/transhuge-stress.c
+> +++ b/tools/testing/selftests/vm/transhuge-stress.c
+> @@ -16,7 +16,14 @@
+>  #include <string.h>
+>  #include <sys/mman.h>
+>  
+> -#define PAGE_SHIFT 12
+> +#ifdef __powerpc64__
+> +#define PAGE_SHIFT	16
+> +#else
+> +#define PAGE_SHIFT	12
+> +#endif
+> +/*
+> + * On ppc64 this will only work with radix 2M hugepage size
+> + */
+>  #define HPAGE_SHIFT 21
+>  
+>  #define PAGE_SIZE (1 << PAGE_SHIFT)
+> -- 
+> 2.34.1
+> 
+> 
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- include/net/checksum.h | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/include/net/checksum.h b/include/net/checksum.h
-index 9badcd5532ef..735d98724145 100644
---- a/include/net/checksum.h
-+++ b/include/net/checksum.h
-@@ -62,10 +62,12 @@ static inline __wsum csum_add(__wsum csum, __wsum addend)
- }
- #endif
- 
-+#ifndef HAVE_ARCH_CSUM_SUB
- static inline __wsum csum_sub(__wsum csum, __wsum addend)
- {
- 	return csum_add(csum, ~addend);
- }
-+#endif
- 
- static inline __sum16 csum16_add(__sum16 csum, __be16 addend)
- {
 -- 
-2.34.1
-
+Sincerely yours,
+Mike.
