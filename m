@@ -4,125 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B32D8C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Feb 2022 14:42:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B3CBC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Feb 2022 15:31:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JwGYC63thz3cQx
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Feb 2022 01:42:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JwHdz0cZsz3cQC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Feb 2022 02:31:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e18::605;
- helo=fra01-pr2-obe.outbound.protection.outlook.com;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from FRA01-PR2-obe.outbound.protection.outlook.com
- (mail-pr2fra01on0605.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:7e18::605])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=molgen.mpg.de (client-ip=141.14.17.11; helo=mx1.molgen.mpg.de;
+ envelope-from=pmenzel@molgen.mpg.de; receiver=<UNKNOWN>)
+Received: from mx1.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JwGWr5sBsz3bbC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Feb 2022 01:41:11 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Fpnyx9zkaWMSUsNp4kBiOvoOtQNA0fe9U2bZRsh+lCWspPEmPME/qOCCqVw4FhWmB6dy1BW04rcoG3ECFWwFvaK8ED+0Tr7FytqK6A89yaqTLRiExpj4YITJkqFh305Cy2K4aEVAY8yDTQ5QXxiIsrRakkIjpsqlxS83KpvpQdlDL77uUcgB7l7am+BRUdizrx9QHDPVr2IZKBSwKZ9cDlM95GLcIFoPxg79dNdeskDxktdQoo7+iEbudUAAV2j6nGf1C2ibXEoSLWWW3YrYv4iY4/2iSSpW4Ez/kGnLQDRad/RnXzhAeE6/Lh6uAqkwOelZkACquVYwo0hz04Fecg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=teqS40ATljObvx9yV3MzqGApTUSz1Q8V8A0TLlgp6rA=;
- b=dydq27cUqEvqFxU/+r0lmuSMPTvo5ePwccqzEH8kLH3+Rv+hpIYLlvqRVHuHfm+Pqs9JA+sb7KSty8rhEzaJUKu3J5uX8g6f41QGTPUamGWl4qLGI8WEJMgdxmR/zCEK2OEpKVphK/aAE+StALGPQzkT5245qk65Xlya12VciKXZi9LD71tWZiSJqJE8Lx55fC2XGbkcE0h4KtglHCrezNR9cTZ3f2ybEuLYMIhqTZfIT6myHeOcud9x+0glOCJAr0mwzYGaE1cRMUciEM+t168zcmZsdCRi+CsmiDFerllcPdKEpZlMmjHbfVklAn6zEy/HaoH7mUJpqGsTH18nFQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
- by MR1P264MB2882.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:37::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4975.12; Fri, 11 Feb
- 2022 14:40:49 +0000
-Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
- ([fe80::c9a2:1db0:5469:54e1]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
- ([fe80::c9a2:1db0:5469:54e1%9]) with mapi id 15.20.4975.011; Fri, 11 Feb 2022
- 14:40:49 +0000
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Daniel Borkmann
- <daniel@iogearbox.net>, Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH 0/3] powerpc64/bpf: Add support for BPF Trampolines
-Thread-Topic: [RFC PATCH 0/3] powerpc64/bpf: Add support for BPF Trampolines
-Thread-Index: AQHYG/GPWbNig1tz50Kf4rwZD273ZayOctWA
-Date: Fri, 11 Feb 2022 14:40:49 +0000
-Message-ID: <918b842d-f674-bbdb-c772-b43a00f1b155@csgroup.eu>
-References: <cover.1644216043.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <cover.1644216043.git.naveen.n.rao@linux.vnet.ibm.com>
-Accept-Language: fr-FR, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=csgroup.eu;
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 2a0e6860-e776-4ad8-bae3-08d9ed6c7f36
-x-ms-traffictypediagnostic: MR1P264MB2882:EE_
-x-microsoft-antispam-prvs: <MR1P264MB28825C9E620EF9CFDF23C4C0ED309@MR1P264MB2882.FRAP264.PROD.OUTLOOK.COM>
-x-ms-oob-tlc-oobclassifiers: OLM:9508;
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: apocuxWa5y0DdJ7llkveyz7QPqwG245lr2t34Eq5IVuHYTAv9YGDPsCJ3nNvKgBCZscMpyImSP8t+xZR5+nANQRYHU1tv1OPT+uH6zH0Wkb+ohaRgJAwZf9IJIwYtwATq4J2Okw45RsjFN2dw+TMr+sff9WOhJVZ0/GFY940vK3T4fmLeZ116RuElpqSFLLkwY1J4H4wgN8FkdFQcSRYq3/6Rg4jLN+Ttqm4A/lk5KfnZqgwolHj+wF4LDhzFoMcsQbeP8kHVbJSng5IL5/GApvSZ8994LOkTSwGYncoNawOx7lO4Nepo2uxuciK/xJMYHRnl85Lo3x8dPiuGYK6782JYvSrr7AGJZopjRTP4m8xOM2C9Xmi1rKXTBlWGD/HjiBDFLkzjHUJnyCQmJzZLll1eH1zdlCdexu+AJgk04Gh4txCFFIez8gO8Fp1VIPa2LleSkUDcbziSSeBr4NLOw0qb9pnPlN/09DCuvMmmudiDWJsLbD9E2zniAjN7kMFp0kNsmD7rR/zh8FOOSnsbU8rwXTOlL53ZvvLN+FvUwB45kGHYzaMNNCZExzcuK5SW1RwAVsqYSWBVVqifslJINbQbT7fnJ2i2Vw0M4O+tBjG/FCbpt/0E9vRRda4N/N4w07z/cN11e0Rn1B9xLJ9msojS5V0ai4bzkbFTJnqxkO86D5uinqo09J3sID/weQjbCj79/2H2FjTsRuSpkwsIIhhRr8hYRHqw0sCZIQiJ/IrWtMeZuF586CiOuxeAGJXDh0nC/DeHzKpk/VlGDiaGw==
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
- SFS:(13230001)(4636009)(366004)(7416002)(6506007)(38070700005)(66946007)(76116006)(6486002)(6512007)(64756008)(8676002)(66476007)(31686004)(8936002)(66556008)(36756003)(66446008)(54906003)(316002)(110136005)(186003)(508600001)(44832011)(86362001)(71200400001)(26005)(2616005)(38100700002)(66574015)(91956017)(4326008)(2906002)(83380400001)(4744005)(122000001)(5660300002)(31696002)(45980500001)(43740500002);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?MTJFclEwWDJZSXdjYkI5bGpkMXZOQkNlMjVmS2Q5b0d0TS9BWFJFcU9KcVBY?=
- =?utf-8?B?S1FLbFFKZTNtVHcxTlR0d1RGTlRUZG9XNURjdDRoRzRnMkhqWGIrYmZZS1lt?=
- =?utf-8?B?dUM1YnRKRmoyazBtUVoyNVJvbm83d3ROaDFicTh3UWtoVnVoVHljS3RtTUtt?=
- =?utf-8?B?Y0pNbWs2bTRBays3Qkh0dmpHbTVnWm1BZlF3R3MxVFpwV1o1ZXVTcGduNThh?=
- =?utf-8?B?a1IzSUtaMFRvNDliQXlUV2xhRFZ6cDM1THZGYi91MWVYOVFLV3JVaDhscWhH?=
- =?utf-8?B?Tjk2NHlSb3JGYVJSOTExeml0UGxXcXBIYkJ4WTc5d1ZTcTBVRWFhR3lUN04w?=
- =?utf-8?B?OUdBVUloQTZ1eEtOb3VocTRBczVkVDQzcFkvSmZtV3d6TE5kMHg0OFE0V0l2?=
- =?utf-8?B?SUh0MnFtVjg3bGNNQm5QUW02ZGdlQ1lmLzlXelR6K2xtQUtQbFdDZlRGVnFF?=
- =?utf-8?B?UUJWL0c0Y3Q0S2NnNU5uQnRUK3F3WTFtZDVybDBCZTdObzF2ZHJOelpyNkIx?=
- =?utf-8?B?K2RrWFExYXJhbnp1eWpnb1QxVzZkM0hxdTQwbGtjNHlTRlFoYW1XbkpDUjE1?=
- =?utf-8?B?M0k4d2hiWjhld1RFQm5ZL2RtUmJDNTJUMTdqRzF1ZE1jdVhqYU1mcXRGTElp?=
- =?utf-8?B?SjhXVE1DUWkvWW8vSnpGblJ4Yk1NbFRBc2FuTDlWUFNUNitHVnA0R0FwbXlL?=
- =?utf-8?B?TUw2bExxOFdwWVNyaGZaV1hjZkVhajF6cHpCekRuWXc3MS9nL1VpekhpRHV3?=
- =?utf-8?B?bXRxL29Wc2dlbklIWW1YRjhnMllFMFNkejN2MUFYUS9waTJxa0M3VUZlNkI2?=
- =?utf-8?B?WllsZWt5S0NpOXpYamE0K3UwY2pPYnV3Qjl6VmhoWi8vRHJpQmI5YzY4bDBo?=
- =?utf-8?B?OFo3ajAxbGhjUnNvTjR6UklmOUZzTVVkRFV5Zkt4cHZzVmhvaHRPRFBsUlJN?=
- =?utf-8?B?UCtMNTRkR0Q4dHloRlFOUy9WdThDM0JSQm1MbXVtZGhPOThFMnpUaWx5cXhH?=
- =?utf-8?B?U1BmbWgxNFVxSGR1cDl5a1JFQ0o5SzlHMzFXSG5YQXlRM2F5Vkg0K3lvcTdP?=
- =?utf-8?B?L3lxLzJ0QzhIVmNteG9wRUlsMlFKWDlVTDdYRXF2YkppRGVBZm01U1NIN3A4?=
- =?utf-8?B?SHhOWk9WWWpNZ0FUempHMUtIZkRhT0Jiem5tNzJvaUlrODBKbWtIL01aL29H?=
- =?utf-8?B?TG9lQ2lBb2ZqZ0ZrbmV6Q3lYWWZJVS9SbStwTFIvM0RaM2NTWDB1czdjVW9K?=
- =?utf-8?B?TkFBTnUxS0tXaDZpMXlITVRWaFoxWW84cXo1Q242YjdHWkdUbC96ZnQwYXh6?=
- =?utf-8?B?RzlLR2F4UjBJVGVQWDFicHlGNXpIVVRlbUFJVDZ2VVNPU3BIcGxVVDBIMFZq?=
- =?utf-8?B?RklJTFZkUHZYOVVYMWFWVExVNUkzTGw1cWhFdkJsWW1vVzUrQ2Q2Q2x0dSts?=
- =?utf-8?B?LzJyWFB3UFdGY1FSMDc4MVVLV0JrRFhjZ2hJdnluVDVsY3pqSWxPejFHay81?=
- =?utf-8?B?cG4veEJYdUhaTlVXQUJNMWZSYVRrUGZxMEp6MzI4aS9nZ2l6emVtNmlnTVhl?=
- =?utf-8?B?ejhuc0lLSks2NXdPZnI1NjVRMGlwZnpleUdlWFE3cHpqVkl3alRWQWFHNzR1?=
- =?utf-8?B?WXp4SWs2bVBDSm52RndZcnl5c1liMlFuM2FTdGJvbThxZkw3bWwxanBrK3BE?=
- =?utf-8?B?K2V3SityaG96MnNOUWxtb3FkQkgyRHFOdVZpeW1XUEg1SFczU1dNc1BKTExP?=
- =?utf-8?B?YVNwZTVyY3NmSitPZWtReExybnA4MWFubnlmdXlPSzR5cXRwaUI5azJmdW43?=
- =?utf-8?B?MzVTVGY3Ykh6bXNnWE9lVUhGVjVad3ZPaXpyTjRQbnRIV1FyR09CTU0rRTk2?=
- =?utf-8?B?YXFtU1JFY3BWeHZIekxMUk1pc1pSZXhZTHRnM1ovejJJV2FVU3huR3g1cnRQ?=
- =?utf-8?B?VU9iSnJFYUlyakVXU3lxcG5xVHJLN0RoUkh3OUI1emlLcFNrcHFyQmE3RUpK?=
- =?utf-8?B?bEFLRHJZNm0vbGFjaGQxcVBib2hQUmtXU3kzMklJMFF0NEVhSWRjTHdkcXRi?=
- =?utf-8?B?VjdsY1MyRkZFZm5Lc2MxRGoyV3RTclVtb2hJd1VuVzBQUnBOWC9OVXZTSlBN?=
- =?utf-8?B?dHI5SzRGbElvaFVMRGFvUnBlYVQxQXJ0cUZ3SmZzZC9yOFcwV3VzVThFZW5o?=
- =?utf-8?B?MWtGb2NXc1RqUWZxdFU2Rjl4MDEzNWF0K3BBQnFpNm13bGl5NWxLaThFa3Rs?=
- =?utf-8?Q?RDnyqh4UZFq1p16eE5GsdFXIh4K6Xs45UunqFI+v50=3D?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <184AB79BD660DE4BA06144E1A52B842B@FRAP264.PROD.OUTLOOK.COM>
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JwHdQ6Nghz3bZX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Feb 2022 02:31:04 +1100 (AEDT)
+Received: from [192.168.0.2] (ip5f5aebe1.dynamic.kabel-deutschland.de
+ [95.90.235.225])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 20C7A61EA1927;
+ Fri, 11 Feb 2022 16:31:01 +0100 (CET)
+Message-ID: <53069280-73e6-4502-d366-4990b74cf059@molgen.mpg.de>
+Date: Fri, 11 Feb 2022 16:31:00 +0100
 MIME-Version: 1.0
-X-OriginatorOrg: csgroup.eu
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2a0e6860-e776-4ad8-bae3-08d9ed6c7f36
-X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Feb 2022 14:40:49.5484 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 0hSa1Wi6qzoieZzhKFQ1ipfOV/rI3mpQo17WFMx/JkREU35X1L/CJVQpPSqZgBb9HihPZt30Tt3b51AlM7O7wOAlDzYtIAFzDl2+4bu5b/A=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MR1P264MB2882
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.1
+Subject: Re: [PATCH v5 2/6] powerpc/kexec_file: Add KEXEC_SIG support.
+Content-Language: en-US
+To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
+References: <cover.1641900831.git.msuchanek@suse.de>
+ <d95f7c6865bcad5ee37dcbec240e79aa742f5e1d.1641900831.git.msuchanek@suse.de>
+ <b56fe3a2-b145-9d4e-acf2-4991204b3102@molgen.mpg.de>
+ <20220209120154.GC3113@kunlun.suse.cz>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20220209120154.GC3113@kunlun.suse.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -134,23 +52,175 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Yauheni Kaliuta <yauheni.kaliuta@redhat.com>,
- Jordan Niethe <jniethe5@gmail.com>, Jiri Olsa <jolsa@redhat.com>,
- "bpf@vger.kernel.org" <bpf@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Hari Bathini <hbathini@linux.ibm.com>
+Cc: Nayna <nayna@linux.vnet.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, David Howells <dhowells@redhat.com>,
+ keyrings@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>, Rob Herring <robh@kernel.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, Baoquan He <bhe@redhat.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ James Morris <jmorris@namei.org>,
+ Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ linux-s390@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ Hari Bathini <hbathini@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
+ Philipp Rudo <prudo@redhat.com>, Frank van der Linden <fllinden@amazon.com>,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Luis Chamberlain <mcgrof@kernel.org>, linux-crypto@vger.kernel.org,
+ linux-security-module@vger.kernel.org, Jessica Yu <jeyu@kernel.org>,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>, buendgen@de.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-DQoNCkxlIDA3LzAyLzIwMjIgw6AgMDg6MDcsIE5hdmVlbiBOLiBSYW8gYSDDqWNyaXTCoDoNCj4g
-VGhpcyBpcyBhbiBlYXJseSBSRkMgc2VyaWVzIHRoYXQgYWRkcyBzdXBwb3J0IGZvciBCUEYgVHJh
-bXBvbGluZXMgb24NCj4gcG93ZXJwYzY0LiBTb21lIG9mIHRoZSBzZWxmdGVzdHMgYXJlIHBhc3Np
-bmcgZm9yIG1lLCBidXQgdGhpcyBuZWVkcyBtb3JlDQo+IHRlc3RpbmcgYW5kIEkndmUgbGlrZWx5
-IG1pc3NlZCBhIGZldyB0aGluZ3MgYXMgd2VsbC4gQSByZXZpZXcgb2YgdGhlDQo+IHBhdGNoZXMg
-YW5kIGZlZWRiYWNrIGFib3V0IHRoZSBvdmVyYWxsIGFwcHJvYWNoIHdpbGwgYmUgZ3JlYXQuDQo+
-IA0KPiBUaGlzIHNlcmllcyBkZXBlbmRzIG9uIHNvbWUgb2YgdGhlIG90aGVyIEJQRiBKSVQgZml4
-ZXMgYW5kIGVuaGFuY2VtZW50cw0KPiBwb3N0ZWQgcHJldmlvdXNseSwgYXMgd2VsbCBhcyBvbiBm
-dHJhY2UgZGlyZWN0IGVuYWJsZW1lbnQgb24gcG93ZXJwYw0KPiB3aGljaCBoYXMgYWxzbyBiZWVu
-IHBvc3RlZCBpbiB0aGUgcGFzdC4NCg0KSXMgdGhlcmUgYW55IHJlYXNvbiB0byBsaW1pdCB0aGlz
-IHRvIHBvd2VycGM2NCA/DQoNCkNocmlzdG9waGU=
+Dear Michal,
+
+
+Am 09.02.22 um 13:01 schrieb Michal Suchánek:
+
+> On Wed, Feb 09, 2022 at 07:44:15AM +0100, Paul Menzel wrote:
+
+>> Am 11.01.22 um 12:37 schrieb Michal Suchanek:
+
+[…]
+
+>> How can this be tested?
+> 
+> Apparently KEXEC_SIG_FORCE is x86 only although the use of the option is
+> arch neutral:
+> 
+> arch/x86/Kconfig:config KEXEC_SIG_FORCE
+> kernel/kexec_file.c:            if (IS_ENABLED(CONFIG_KEXEC_SIG_FORCE))
+> {
+> 
+> Maybe it should be moved?
+
+Sounds good.
+
+> I used a patched kernel that enables lockdown in secure boot, and then
+> verified that signed kernel can be loaded by kexec and unsigned not,
+> with KEXEC_SIG enabled and IMA_KEXEC disabled.
+> 
+> The lockdown support can be enabled on any platform, and although I
+> can't find it documented anywhere there appears to be code in kexec_file
+> to take it into account:
+> kernel/kexec.c: result = security_locked_down(LOCKDOWN_KEXEC);
+> kernel/kexec_file.c:                security_locked_down(LOCKDOWN_KEXEC))
+> kernel/module.c:        return security_locked_down(LOCKDOWN_MODULE_SIGNATURE);
+> kernel/params.c:            security_locked_down(LOCKDOWN_MODULE_PARAMETERS))
+> and lockdown can be enabled with a buildtime option, a kernel parameter, or a
+> debugfs file.
+> 
+> Still for testing lifting KEXEC_SIG_FORCE to some arch-neutral Kconfig file is
+> probably the simplest option.
+> 
+> kexec -s option should be used to select kexec_file rather than the old
+> style kexec which would either fail always or succeed always regardelss
+> of signature.
+
+Thank you.
+
+>>> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+>>> ---
+>>> v3: - Philipp Rudo <prudo@redhat.com>: Update the comit message with
+>>>         explanation why the s390 code is usable on powerpc.
+>>>       - Include correct header for mod_check_sig
+>>>       - Nayna <nayna@linux.vnet.ibm.com>: Mention additional IMA features
+>>>         in kconfig text
+>>> ---
+>>>    arch/powerpc/Kconfig        | 16 ++++++++++++++++
+>>>    arch/powerpc/kexec/elf_64.c | 36 ++++++++++++++++++++++++++++++++++++
+>>>    2 files changed, 52 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>>> index dea74d7717c0..1cde9b6c5987 100644
+>>> --- a/arch/powerpc/Kconfig
+>>> +++ b/arch/powerpc/Kconfig
+>>> @@ -560,6 +560,22 @@ config KEXEC_FILE
+>>>    config ARCH_HAS_KEXEC_PURGATORY
+>>>    	def_bool KEXEC_FILE
+>>> +config KEXEC_SIG
+>>> +	bool "Verify kernel signature during kexec_file_load() syscall"
+>>> +	depends on KEXEC_FILE && MODULE_SIG_FORMAT
+>>> +	help
+>>> +	  This option makes kernel signature verification mandatory for
+>>> +	  the kexec_file_load() syscall.
+>>> +
+>>> +	  In addition to that option, you need to enable signature
+>>> +	  verification for the corresponding kernel image type being
+>>> +	  loaded in order for this to work.
+>>> +
+>>> +	  Note: on powerpc IMA_ARCH_POLICY also implements kexec'ed kernel
+>>> +	  verification. In addition IMA adds kernel hashes to the measurement
+>>> +	  list, extends IMA PCR in the TPM, and implements kernel image
+>>> +	  blacklist by hash.
+>>
+>> So, what is the takeaway for the user? IMA_ARCH_POLICY is preferred? What is
+>> the disadvantage, and two implementations(?) needed then? More overhead?
+> 
+> IMA_KEXEC does more than KEXEC_SIG. The overhead is probably not big
+> unless you are trying to really minimize the kernel code size.
+> 
+> Arguably the simpler implementation has less potential for bugs, too.
+> Both in code and in user configuration required to enable the feature.
+> 
+> Interestingly IMA_ARCH_POLICY depends on KEXEC_SIG rather than
+> IMA_KEXEC. Just mind-boggling.
+
+I have not looked into that.
+
+> The main problem with IMA_KEXEC from my point of view is it is not portable.
+> To record the measurements TPM support is requireed which is not available on
+> all platforms. It does not support PE so it cannot be used on platforms
+> that use PE kernel signature format.
+
+Could you add that to the comment please?
+
+>>> +
+>>>    config RELOCATABLE
+>>>    	bool "Build a relocatable kernel"
+>>>    	depends on PPC64 || (FLATMEM && (44x || FSL_BOOKE))
+>>> diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
+>>> index eeb258002d1e..98d1cb5135b4 100644
+>>> --- a/arch/powerpc/kexec/elf_64.c
+>>> +++ b/arch/powerpc/kexec/elf_64.c
+>>> @@ -23,6 +23,7 @@
+>>>    #include <linux/of_fdt.h>
+>>>    #include <linux/slab.h>
+>>>    #include <linux/types.h>
+>>> +#include <linux/module_signature.h>
+>>>    static void *elf64_load(struct kimage *image, char *kernel_buf,
+>>>    			unsigned long kernel_len, char *initrd,
+>>> @@ -151,7 +152,42 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
+>>>    	return ret ? ERR_PTR(ret) : NULL;
+>>>    }
+>>> +#ifdef CONFIG_KEXEC_SIG
+>>> +int elf64_verify_sig(const char *kernel, unsigned long kernel_len)
+>>> +{
+>>> +	const unsigned long marker_len = sizeof(MODULE_SIG_STRING) - 1;
+>>> +	struct module_signature *ms;
+>>> +	unsigned long sig_len;
+>>
+>> Use size_t to match the signature of `verify_pkcs7_signature()`?
+> 
+> Nope. struct module_signature uses unsigned long, and this needs to be
+> matched to avoid type errors on 32bit.
+
+I meant for `sig_len`.
+
+> Technically using size_t for in-memory buffers is misguided because
+> AFAICT no memory buffer can be bigger than ULONG_MAX, and size_t is
+> non-native type on 32bit.
+> 
+> Sure, the situation with ssize_t/int is different but that's not what we
+> are dealing with here.
+True. In my experience it prevents compiler warnings when building for 
+32 bit or 64 bit. Anyway, not that important.
+
+
+Kind regards,
+
+Paul
