@@ -4,33 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A97BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 05:37:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBA5FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 05:37:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JyVGb5czlz3g1V
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 16:37:27 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JyVH20WDDz3g4M
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 16:37:50 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JyV6N28R9z3cRf
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JyV6N5ndlz3cYn
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 16:30:20 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JyV6N1Ss1z4y3m;
- Tue, 15 Feb 2022 16:30:20 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JyV6P0VShz4y4n;
+ Tue, 15 Feb 2022 16:30:21 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: rdunlap@infradead.org, paulus@samba.org, mpe@ellerman.id.au,
- benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
- Bhaskar Chowdhury <unixbhaskar@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20210320213932.22697-1-unixbhaskar@gmail.com>
-References: <20210320213932.22697-1-unixbhaskar@gmail.com>
-Subject: Re: [PATCH] powerpc: epapr: A typo fix
-Message-Id: <164490279633.270256.14303800612164733087.b4-ty@ellerman.id.au>
-Date: Tue, 15 Feb 2022 16:26:36 +1100
+To: mpe@ellerman.id.au, Wedson Almeida Filho <wedsonaf@google.com>
+In-Reply-To: <20220202055123.2144842-1-wedsonaf@google.com>
+References: <20220202055123.2144842-1-wedsonaf@google.com>
+Subject: Re: [PATCH] powerpc/module_64: use module_init_section instead of
+ patching names
+Message-Id: <164490279930.270256.11789081622461037215.b4-ty@ellerman.id.au>
+Date: Tue, 15 Feb 2022 16:26:39 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,18 +43,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ paulus@samba.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 21 Mar 2021 03:09:32 +0530, Bhaskar Chowdhury wrote:
-> s/parmeters/parameters/
+On Wed, 2 Feb 2022 05:51:23 +0000, Wedson Almeida Filho wrote:
+> Without this patch, module init sections are disabled by patching their
+> names in arch-specific code when they're loaded (which prevents code in
+> layout_sections from finding init sections). This patch uses the new
+> arch-specific module_init_section instead.
 > 
+> This allows modules that have .init_array sections to have the
+> initialisers properly called (on load, before init). Without this patch,
+> the initialisers are not called because .init_array is renamed to
+> _init_array, and thus isn't found by code in find_module_sections().
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: epapr: A typo fix
-      https://git.kernel.org/powerpc/c/a1c414093370ed50e5b952d96d4ae775c7a18420
+[1/1] powerpc/module_64: use module_init_section instead of patching names
+      https://git.kernel.org/powerpc/c/d4be60fe66b7380530868ceebe549f8eebccacc5
 
 cheers
