@@ -4,33 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1F7DC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 05:36:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72983C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 05:37:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JyVFl0tJgz3fsy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 16:36:43 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JyVG95mcwz3fxF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 16:37:05 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JyV6L1hhRz3bTr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 16:30:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JyV6M3Qggz3cYY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 16:30:19 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JyV6L3Wrkz4xsm;
- Tue, 15 Feb 2022 16:30:18 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JyV6M0Ytcz4y4m;
+ Tue, 15 Feb 2022 16:30:19 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Thierry Reding <thierry.reding@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20211220134036.683309-1-thierry.reding@gmail.com>
-References: <20211220134036.683309-1-thierry.reding@gmail.com>
-Subject: Re: [PATCH] powerpc: dts: Fix some I2C unit addresses
-Message-Id: <164490279131.270256.1190323452286806072.b4-ty@ellerman.id.au>
-Date: Tue, 15 Feb 2022 16:26:31 +1100
+ Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Joachim Wiberg <troglobit@gmail.com>
+In-Reply-To: <20220112112459.1033754-1-troglobit@gmail.com>
+References: <20220112112459.1033754-1-troglobit@gmail.com>
+Subject: Re: [PATCH 1/1] powerpc/e500/qemu-e500: allow core to idle without
+ waiting
+Message-Id: <164490278916.270256.6117416637314103088.b4-ty@ellerman.id.au>
+Date: Tue, 15 Feb 2022 16:26:29 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,22 +46,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Tobias Waldekranz <tobias@waldekranz.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 20 Dec 2021 14:40:36 +0100, Thierry Reding wrote:
-> From: Thierry Reding <treding@nvidia.com>
+On Wed, 12 Jan 2022 12:24:59 +0100, Joachim Wiberg wrote:
+> From: Tobias Waldekranz <tobias@waldekranz.com>
 > 
-> The unit-address for the Maxim MAX1237 ADCs on XPedite5200 boards don't
-> match the value in the "reg" property and cause a DTC warning.
+> This means an idle guest won't needlessly consume an entire core on
+> the host, waiting for work to show up.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc: dts: Fix some I2C unit addresses
-      https://git.kernel.org/powerpc/c/d5342fdd163ae0553a14820021a107e03eb1ea72
+[1/1] powerpc/e500/qemu-e500: allow core to idle without waiting
+      https://git.kernel.org/powerpc/c/f529edd1b69ddf832c3257dcd34e15100038d6b7
 
 cheers
