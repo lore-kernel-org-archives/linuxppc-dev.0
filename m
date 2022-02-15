@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35C1DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 12:44:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFA39C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 12:45:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jyglq4C4Rz3cmY
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 23:44:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JygmH0HmLz3f71
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 23:45:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,35 +16,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JyghW42K6z3cVd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 23:42:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jyghc01Btz3cWG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 23:42:07 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4Jyggw2JLkz9sT7;
- Tue, 15 Feb 2022 13:41:32 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4Jyggx163jz9sSm;
+ Tue, 15 Feb 2022 13:41:33 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id SRpNZ_o7l7nY; Tue, 15 Feb 2022 13:41:32 +0100 (CET)
+ with ESMTP id zg3qreolc7Gc; Tue, 15 Feb 2022 13:41:33 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4Jyggn4tztz9sSm;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4Jyggn4sBbz9sSj;
  Tue, 15 Feb 2022 13:41:25 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 916668B77A;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9BD7C8B763;
  Tue, 15 Feb 2022 13:41:25 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id N2TMBdkgVMz3; Tue, 15 Feb 2022 13:41:25 +0100 (CET)
+ with ESMTP id 9h8Fp4afQivS; Tue, 15 Feb 2022 13:41:25 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.6.174])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 96E508B786;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 856A68B77E;
  Tue, 15 Feb 2022 13:41:24 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21FCfIXI080657
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21FCfGeb080633
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 15 Feb 2022 13:41:18 +0100
+ Tue, 15 Feb 2022 13:41:16 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21FCfHUW080656;
- Tue, 15 Feb 2022 13:41:17 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21FCfGVK080632;
+ Tue, 15 Feb 2022 13:41:16 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -55,17 +55,17 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v4 13/13] lkdtm: Add a test for function descriptors protection
-Date: Tue, 15 Feb 2022 13:41:08 +0100
-Message-Id: <7eeba50d16a35e9d799820e43304150225f20197.1644928018.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v4 07/13] asm-generic: Define CONFIG_HAVE_FUNCTION_DESCRIPTORS
+Date: Tue, 15 Feb 2022 13:41:02 +0100
+Message-Id: <4a0f11fb0ea74a3197bc44dd7ba25e53a24fd03d.1644928018.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1644928018.git.christophe.leroy@csgroup.eu>
 References: <cover.1644928018.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1644928861; l=3305; s=20211009;
- h=from:subject:message-id; bh=7pxIz3r53UiI2i88RT0ONtGzhkJvXG7XjRb8xVmF5zM=;
- b=ERtgdYkFhBYCi2IAjLAfew4SVUaaYDpeMuhg/snPDyUuo9ai1hJvII99U4C2FXCF0t7eEeToN8Qz
- NR7oLIMCD3hpyXRHmVC/Ht2czXUyYwuEjSvm2TQPUSrrtghXPhNi
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1644928860; l=6540; s=20211009;
+ h=from:subject:message-id; bh=6ABwZDI/4kg6myZ4hLiDqXoWEYAseqzmv9t0HSvzsns=;
+ b=dKCVswAs5oVVckO9X36lB5XkxiysMpPL6tfKLjprVblw3YMfqxDRu7ZiRFeaMvrP6Hu9J3xvB4J0
+ P7YDkaFvA1bnsrlrx2IWnVrV0M2a1bPGDGgxL/JIEtD8PIzoR7mI
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,111 +82,185 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
  linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add WRITE_OPD to check that you can't modify function
-descriptors.
+Replace HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR by a config option
+named CONFIG_HAVE_FUNCTION_DESCRIPTORS and use it instead of
+'dereference_function_descriptor' macro to know whether an
+arch has function descriptors.
 
-Gives the following result when function descriptors are
-not protected:
+To limit churn in one of the following patches, use
+an #ifdef/#else construct with empty first part
+instead of an #ifndef in asm-generic/sections.h
 
-	lkdtm: Performing direct entry WRITE_OPD
-	lkdtm: attempting bad 16 bytes write at c00000000269b358
-	lkdtm: FAIL: survived bad write
-	lkdtm: do_nothing was hijacked!
+On powerpc, make sure the config option matches the ABI used
+by the compiler with a BUILD_BUG_ON() and add missing _CALL_ELF=2
+when calling 'sparse' so that sparse sees the same piece of
+code as GCC.
 
-Looks like a standard compiler barrier() is not enough to force
-GCC to use the modified function descriptor. Had to add a fake empty
-inline assembly to force GCC to reload the function descriptor.
+And include a helper to check whether an arch has function
+descriptors or not : have_function_descriptors()
 
+Reviewed-by: Kees Cook <keescook@chromium.org>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Acked-by: Kees Cook <keescook@chromium.org>
+Acked-by: Helge Deller <deller@gmx.de>
 ---
- drivers/misc/lkdtm/core.c               |  1 +
- drivers/misc/lkdtm/lkdtm.h              |  1 +
- drivers/misc/lkdtm/perms.c              | 22 ++++++++++++++++++++++
- tools/testing/selftests/lkdtm/tests.txt |  1 +
- 4 files changed, 25 insertions(+)
+ arch/Kconfig                        | 3 +++
+ arch/ia64/Kconfig                   | 1 +
+ arch/ia64/include/asm/sections.h    | 2 --
+ arch/parisc/Kconfig                 | 1 +
+ arch/parisc/include/asm/sections.h  | 2 --
+ arch/powerpc/Kconfig                | 1 +
+ arch/powerpc/include/asm/sections.h | 2 --
+ arch/powerpc/kernel/ptrace/ptrace.c | 6 ++++++
+ include/asm-generic/sections.h      | 8 +++++++-
+ include/linux/kallsyms.h            | 2 +-
+ 10 files changed, 20 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
-index f69b964b9952..e2228b6fc09b 100644
---- a/drivers/misc/lkdtm/core.c
-+++ b/drivers/misc/lkdtm/core.c
-@@ -149,6 +149,7 @@ static const struct crashtype crashtypes[] = {
- 	CRASHTYPE(WRITE_RO),
- 	CRASHTYPE(WRITE_RO_AFTER_INIT),
- 	CRASHTYPE(WRITE_KERN),
-+	CRASHTYPE(WRITE_OPD),
- 	CRASHTYPE(REFCOUNT_INC_OVERFLOW),
- 	CRASHTYPE(REFCOUNT_ADD_OVERFLOW),
- 	CRASHTYPE(REFCOUNT_INC_NOT_ZERO_OVERFLOW),
-diff --git a/drivers/misc/lkdtm/lkdtm.h b/drivers/misc/lkdtm/lkdtm.h
-index d6137c70ebbe..305fc2ec3f25 100644
---- a/drivers/misc/lkdtm/lkdtm.h
-+++ b/drivers/misc/lkdtm/lkdtm.h
-@@ -106,6 +106,7 @@ void __init lkdtm_perms_init(void);
- void lkdtm_WRITE_RO(void);
- void lkdtm_WRITE_RO_AFTER_INIT(void);
- void lkdtm_WRITE_KERN(void);
-+void lkdtm_WRITE_OPD(void);
- void lkdtm_EXEC_DATA(void);
- void lkdtm_EXEC_STACK(void);
- void lkdtm_EXEC_KMALLOC(void);
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index 1cf24c4a79e9..2c6aba3ff32b 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -44,6 +44,11 @@ static noinline void do_overwritten(void)
- 	return;
- }
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 678a80713b21..fe24174cb63c 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -205,6 +205,9 @@ config HAVE_FUNCTION_ERROR_INJECTION
+ config HAVE_NMI
+ 	bool
  
-+static noinline void do_almost_nothing(void)
++config HAVE_FUNCTION_DESCRIPTORS
++	bool
++
+ config TRACE_IRQFLAGS_SUPPORT
+ 	bool
+ 
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index a7e01573abd8..da85c3b23b16 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -35,6 +35,7 @@ config IA64
+ 	select HAVE_SETUP_PER_CPU_AREA
+ 	select TTY
+ 	select HAVE_ARCH_TRACEHOOK
++	select HAVE_FUNCTION_DESCRIPTORS
+ 	select HAVE_VIRT_CPU_ACCOUNTING
+ 	select HUGETLB_PAGE_SIZE_VARIABLE if HUGETLB_PAGE
+ 	select VIRT_TO_BUS
+diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
+index 35f24e52149a..2460d365a057 100644
+--- a/arch/ia64/include/asm/sections.h
++++ b/arch/ia64/include/asm/sections.h
+@@ -27,8 +27,6 @@ extern char __start_gate_brl_fsys_bubble_down_patchlist[], __end_gate_brl_fsys_b
+ extern char __start_unwind[], __end_unwind[];
+ extern char __start_ivt_text[], __end_ivt_text[];
+ 
+-#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+-
+ #undef dereference_function_descriptor
+ static inline void *dereference_function_descriptor(void *ptr)
+ {
+diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+index 43c1c880def6..82e7ab1a9764 100644
+--- a/arch/parisc/Kconfig
++++ b/arch/parisc/Kconfig
+@@ -69,6 +69,7 @@ config PARISC
+ 	select HAVE_DYNAMIC_FTRACE_WITH_REGS
+ 	select HAVE_SOFTIRQ_ON_OWN_STACK if IRQSTACKS
+ 	select TRACE_IRQFLAGS_SUPPORT
++	select HAVE_FUNCTION_DESCRIPTORS if 64BIT
+ 
+ 	help
+ 	  The PA-RISC microprocessor is designed by Hewlett-Packard and used
+diff --git a/arch/parisc/include/asm/sections.h b/arch/parisc/include/asm/sections.h
+index bb52aea0cb21..c8092e4d94de 100644
+--- a/arch/parisc/include/asm/sections.h
++++ b/arch/parisc/include/asm/sections.h
+@@ -9,8 +9,6 @@ extern char __alt_instructions[], __alt_instructions_end[];
+ 
+ #ifdef CONFIG_64BIT
+ 
+-#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+-
+ #undef dereference_function_descriptor
+ void *dereference_function_descriptor(void *);
+ 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 28e4047e99e8..23ce71367467 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -207,6 +207,7 @@ config PPC
+ 	select HAVE_EFFICIENT_UNALIGNED_ACCESS	if !(CPU_LITTLE_ENDIAN && POWER7_CPU)
+ 	select HAVE_FAST_GUP
+ 	select HAVE_FTRACE_MCOUNT_RECORD
++	select HAVE_FUNCTION_DESCRIPTORS	if PPC64 && !CPU_LITTLE_ENDIAN
+ 	select HAVE_FUNCTION_ERROR_INJECTION
+ 	select HAVE_FUNCTION_GRAPH_TRACER
+ 	select HAVE_FUNCTION_TRACER
+diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+index baca39f4c6d3..7728a7a146c3 100644
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -56,8 +56,6 @@ static inline int overlaps_kernel_text(unsigned long start, unsigned long end)
+ 
+ #ifdef PPC64_ELF_ABI_v1
+ 
+-#define HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR 1
+-
+ #undef dereference_function_descriptor
+ static inline void *dereference_function_descriptor(void *ptr)
+ {
+diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+index c43f77e2ac31..1212a812a7ab 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace.c
++++ b/arch/powerpc/kernel/ptrace/ptrace.c
+@@ -445,4 +445,10 @@ void __init pt_regs_check(void)
+ 	 * real registers.
+ 	 */
+ 	BUILD_BUG_ON(PT_DSCR < sizeof(struct user_pt_regs) / sizeof(unsigned long));
++
++#ifdef PPC64_ELF_ABI_v1
++	BUILD_BUG_ON(!IS_ENABLED(CONFIG_HAVE_FUNCTION_DESCRIPTORS));
++#else
++	BUILD_BUG_ON(IS_ENABLED(CONFIG_HAVE_FUNCTION_DESCRIPTORS));
++#endif
+ }
+diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+index 690f741764e1..3ef83e1aebee 100644
+--- a/include/asm-generic/sections.h
++++ b/include/asm-generic/sections.h
+@@ -59,11 +59,17 @@ extern char __noinstr_text_start[], __noinstr_text_end[];
+ extern __visible const void __nosave_begin, __nosave_end;
+ 
+ /* Function descriptor handling (if any).  Override in asm/sections.h */
+-#ifndef dereference_function_descriptor
++#ifdef CONFIG_HAVE_FUNCTION_DESCRIPTORS
++#else
+ #define dereference_function_descriptor(p) ((void *)(p))
+ #define dereference_kernel_function_descriptor(p) ((void *)(p))
+ #endif
+ 
++static inline bool have_function_descriptors(void)
 +{
-+	pr_info("do_nothing was hijacked!\n");
++	return IS_ENABLED(CONFIG_HAVE_FUNCTION_DESCRIPTORS);
 +}
 +
- static void *setup_function_descriptor(func_desc_t *fdesc, void *dst)
- {
- 	if (!have_function_descriptors())
-@@ -144,6 +149,23 @@ void lkdtm_WRITE_KERN(void)
- 	do_overwritten();
- }
+ /**
+  * memory_contains - checks if an object is contained within a memory region
+  * @begin: virtual address of the beginning of the memory region
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index 4176c7eca7b5..ce1bd2fbf23e 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -48,7 +48,7 @@ static inline int is_ksym_addr(unsigned long addr)
  
-+void lkdtm_WRITE_OPD(void)
-+{
-+	size_t size = sizeof(func_desc_t);
-+	void (*func)(void) = do_nothing;
-+
-+	if (!have_function_descriptors()) {
-+		pr_info("XFAIL: Platform doesn't use function descriptors.\n");
-+		return;
-+	}
-+	pr_info("attempting bad %zu bytes write at %px\n", size, do_nothing);
-+	memcpy(do_nothing, do_almost_nothing, size);
-+	pr_err("FAIL: survived bad write\n");
-+
-+	asm("" : "=m"(func));
-+	func();
-+}
-+
- void lkdtm_EXEC_DATA(void)
+ static inline void *dereference_symbol_descriptor(void *ptr)
  {
- 	execute_location(data_area, CODE_WRITE);
-diff --git a/tools/testing/selftests/lkdtm/tests.txt b/tools/testing/selftests/lkdtm/tests.txt
-index 6b36b7f5dcf9..243c781f0780 100644
---- a/tools/testing/selftests/lkdtm/tests.txt
-+++ b/tools/testing/selftests/lkdtm/tests.txt
-@@ -44,6 +44,7 @@ ACCESS_NULL
- WRITE_RO
- WRITE_RO_AFTER_INIT
- WRITE_KERN
-+WRITE_OPD
- REFCOUNT_INC_OVERFLOW
- REFCOUNT_ADD_OVERFLOW
- REFCOUNT_INC_NOT_ZERO_OVERFLOW
+-#ifdef HAVE_DEREFERENCE_FUNCTION_DESCRIPTOR
++#ifdef CONFIG_HAVE_FUNCTION_DESCRIPTORS
+ 	struct module *mod;
+ 
+ 	ptr = dereference_kernel_function_descriptor(ptr);
 -- 
 2.34.1
 
