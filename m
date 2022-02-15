@@ -4,33 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 639F6C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 05:33:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BC99C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 05:33:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JyV9n453Vz3f9F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 16:33:17 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JyVBC4Kykz3dgs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 16:33:39 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JyV694Qfxz3cRC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 16:30:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JyV6B3SwQz3cSd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 16:30:10 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JyV696Fvjz4y4F;
- Tue, 15 Feb 2022 16:30:09 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JyV6B3FFPz4y4G;
+ Tue, 15 Feb 2022 16:30:10 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
  Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <83c97bd58a3596ef1b0ff28b1e41fd492d005520.1643616989.git.christophe.leroy@csgroup.eu>
-References: <83c97bd58a3596ef1b0ff28b1e41fd492d005520.1643616989.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/nohash: Remove pte_same()
-Message-Id: <164490280514.270256.13075668635877697100.b4-ty@ellerman.id.au>
-Date: Tue, 15 Feb 2022 16:26:45 +1100
+In-Reply-To: <bbc196451dd34521d239023ccca488db35b8fff1.1643567900.git.christophe.leroy@csgroup.eu>
+References: <bbc196451dd34521d239023ccca488db35b8fff1.1643567900.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/ptdump: Fix sparse warning in hashpagetable.c
+Message-Id: <164490279413.270256.17140116336898117103.b4-ty@ellerman.id.au>
+Date: Tue, 15 Feb 2022 16:26:34 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,24 +46,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kernel test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 31 Jan 2022 08:16:48 +0000, Christophe Leroy wrote:
-> arch/powerpc/include/asm/nohash/{32/64}/pgtable.h has
-> 
-> 	#define __HAVE_ARCH_PTE_SAME
-> 	#define pte_same(A,B)      ((pte_val(A) ^ pte_val(B)) == 0)
-> 
-> include/linux/pgtable.h has
+On Sun, 30 Jan 2022 18:39:18 +0000, Christophe Leroy wrote:
+>   arch/powerpc/mm/ptdump/hashpagetable.c:264:29: warning: restricted __be64 degrades to integer
+>   arch/powerpc/mm/ptdump/hashpagetable.c:265:49: warning: restricted __be64 degrades to integer
+>   arch/powerpc/mm/ptdump/hashpagetable.c:267:36: warning: incorrect type in assignment (different base types)
+>   arch/powerpc/mm/ptdump/hashpagetable.c:267:36:    expected unsigned long long [usertype]
+>   arch/powerpc/mm/ptdump/hashpagetable.c:267:36:    got restricted __be64 [usertype] v
+>   arch/powerpc/mm/ptdump/hashpagetable.c:268:36: warning: incorrect type in assignment (different base types)
+>   arch/powerpc/mm/ptdump/hashpagetable.c:268:36:    expected unsigned long long [usertype]
+>   arch/powerpc/mm/ptdump/hashpagetable.c:268:36:    got restricted __be64 [usertype] r
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/nohash: Remove pte_same()
-      https://git.kernel.org/powerpc/c/535bda36dbf2d271f59e06fe252c32eff452666d
+[1/1] powerpc/ptdump: Fix sparse warning in hashpagetable.c
+      https://git.kernel.org/powerpc/c/961f649fb3ad9a9e384c695a050d776d970ddabd
 
 cheers
