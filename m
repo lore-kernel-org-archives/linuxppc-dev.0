@@ -4,47 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08781C4167E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 12:42:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A878C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 12:42:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JyghT5CzXz3cDB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 23:42:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jyghw1mM8z3cmD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 23:42:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jyggy0Bm3z3bZY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 23:41:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jygh23K52z3bZY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 23:41:38 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4Jyggn2R2Fz9sSQ;
- Tue, 15 Feb 2022 13:41:25 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4Jyggp13FYz9sT0;
+ Tue, 15 Feb 2022 13:41:26 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id epMSd0M7Bhjy; Tue, 15 Feb 2022 13:41:25 +0100 (CET)
+ with ESMTP id S0f10AOUrKn0; Tue, 15 Feb 2022 13:41:26 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4Jyggn1MCsz9sRw;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4Jyggn1NYjz9sSH;
  Tue, 15 Feb 2022 13:41:25 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1C8E78B788;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1DA0E8B78B;
  Tue, 15 Feb 2022 13:41:25 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id pr8hYevnppY4; Tue, 15 Feb 2022 13:41:25 +0100 (CET)
+ with ESMTP id dqfLvVJOOgX9; Tue, 15 Feb 2022 13:41:25 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.6.174])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 650108B763;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 66C808B776;
  Tue, 15 Feb 2022 13:41:24 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21FCfHY7080649
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21FCfGnW080617
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 15 Feb 2022 13:41:17 +0100
+ Tue, 15 Feb 2022 13:41:16 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21FCfHP2080648;
- Tue, 15 Feb 2022 13:41:17 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21FCfFva080616;
+ Tue, 15 Feb 2022 13:41:15 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -55,17 +55,18 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v4 11/13] lkdtm: Really write into kernel text in WRITE_KERN
-Date: Tue, 15 Feb 2022 13:41:06 +0100
-Message-Id: <31e58eaffb5bc51c07d8d4891d1982100ade8cfc.1644928018.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v4 03/13] powerpc: Use 'struct func_desc' instead of 'struct
+ ppc64_opd_entry'
+Date: Tue, 15 Feb 2022 13:40:58 +0100
+Message-Id: <34e76bac6cbe95a63ecd37df69fb7feb93b0ea7c.1644928018.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1644928018.git.christophe.leroy@csgroup.eu>
 References: <cover.1644928018.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1644928860; l=2328; s=20211009;
- h=from:subject:message-id; bh=ZctxL58TJetAA5+oFKdI1os7Sbl8JEWFwgZaaluEYa0=;
- b=Oke9y25FxwuppYh4MV7OOEQT4od24HIRzqfetvFnWGD1qdbWebu8c/DVazZEcPTRunJLJguZ1WeA
- r1YD2DOPBI4nGglA/4rBN2H3BkL7DAxrZQFFo6UVN27kQMumJh7K
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1644928860; l=2500; s=20211009;
+ h=from:subject:message-id; bh=lF3vrnWaSCZb9OJrJGlARG72CsPx1sV+HmC9+sMkkEg=;
+ b=/tPj+khmgESFC6ef3SwpSsEOUxKp2XbhHIzYXcnlariWadT07u6qaQyMZmQ7AKx3IigP1ZJHi6PM
+ HHu6BFZgBnXGYTvNULUqFxtoa+eQAMvQ5CI5TbsSn7gjRDe6KpK8
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,76 +83,81 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
  linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-WRITE_KERN is supposed to overwrite some kernel text, namely
-do_overwritten() function.
+'struct ppc64_opd_entry' is somehow redundant with 'struct func_desc',
+the later is more correct/complete as it includes the third
+field which is unused.
 
-But at the time being it overwrites do_overwritten() function
-descriptor, not function text.
+So use 'struct func_desc' instead of 'struct ppc64_opd_entry'
 
-Fix it by dereferencing the function descriptor to obtain
-function text pointer. Export dereference_function_descriptor()
-for when LKDTM is built as a module.
-
-And make do_overwritten() noinline so that it is really
-do_overwritten() which is called by lkdtm_WRITE_KERN().
-
-Acked-by: Kees Cook <keescook@chromium.org>
+Reviewed-by: Kees Cook <keescook@chromium.org>
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/misc/lkdtm/perms.c | 8 +++++---
- kernel/extable.c           | 1 +
- 2 files changed, 6 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/sections.h |  4 ++--
+ arch/powerpc/kernel/module_64.c     | 10 +++++-----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index 60b3b2fe929d..035fcca441f0 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -10,6 +10,7 @@
- #include <linux/mman.h>
- #include <linux/uaccess.h>
- #include <asm/cacheflush.h>
-+#include <asm/sections.h>
- 
- /* Whether or not to fill the target memory area with do_nothing(). */
- #define CODE_WRITE	true
-@@ -37,7 +38,7 @@ static noinline void do_nothing(void)
- }
- 
- /* Must immediately follow do_nothing for size calculuations to work out. */
--static void do_overwritten(void)
-+static noinline void do_overwritten(void)
+diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+index 38f79e42bf3c..baca39f4c6d3 100644
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -61,10 +61,10 @@ static inline int overlaps_kernel_text(unsigned long start, unsigned long end)
+ #undef dereference_function_descriptor
+ static inline void *dereference_function_descriptor(void *ptr)
  {
- 	pr_info("do_overwritten wasn't overwritten!\n");
- 	return;
-@@ -113,8 +114,9 @@ void lkdtm_WRITE_KERN(void)
- 	size_t size;
- 	volatile unsigned char *ptr;
+-	struct ppc64_opd_entry *desc = ptr;
++	struct func_desc *desc = ptr;
+ 	void *p;
  
--	size = (unsigned long)do_overwritten - (unsigned long)do_nothing;
--	ptr = (unsigned char *)do_overwritten;
-+	size = (unsigned long)dereference_function_descriptor(do_overwritten) -
-+	       (unsigned long)dereference_function_descriptor(do_nothing);
-+	ptr = dereference_function_descriptor(do_overwritten);
- 
- 	pr_info("attempting bad %zu byte write at %px\n", size, ptr);
- 	memcpy((void *)ptr, (unsigned char *)do_nothing, size);
-diff --git a/kernel/extable.c b/kernel/extable.c
-index 394c39b86e38..bda5e9761541 100644
---- a/kernel/extable.c
-+++ b/kernel/extable.c
-@@ -149,6 +149,7 @@ void *dereference_function_descriptor(void *ptr)
+-	if (!get_kernel_nofault(p, (void *)&desc->funcaddr))
++	if (!get_kernel_nofault(p, (void *)&desc->addr))
  		ptr = p;
  	return ptr;
  }
-+EXPORT_SYMBOL_GPL(dereference_function_descriptor);
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 6a45e6ddbe58..46e8eeb7c432 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -64,19 +64,19 @@ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+ #else
  
- void *dereference_kernel_function_descriptor(void *ptr)
+ /* An address is address of the OPD entry, which contains address of fn. */
+-typedef struct ppc64_opd_entry func_desc_t;
++typedef struct func_desc func_desc_t;
+ 
+ static func_desc_t func_desc(unsigned long addr)
  {
+-	return *(struct ppc64_opd_entry *)addr;
++	return *(struct func_desc *)addr;
+ }
+ static unsigned long func_addr(unsigned long addr)
+ {
+-	return func_desc(addr).funcaddr;
++	return func_desc(addr).addr;
+ }
+ static unsigned long stub_func_addr(func_desc_t func)
+ {
+-	return func.funcaddr;
++	return func.addr;
+ }
+ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+ {
+@@ -187,7 +187,7 @@ static int relacmp(const void *_x, const void *_y)
+ static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
+ 				    const Elf64_Shdr *sechdrs)
+ {
+-	/* One extra reloc so it's always 0-funcaddr terminated */
++	/* One extra reloc so it's always 0-addr terminated */
+ 	unsigned long relocs = 1;
+ 	unsigned i;
+ 
 -- 
 2.34.1
 
