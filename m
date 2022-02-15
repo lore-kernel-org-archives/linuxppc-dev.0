@@ -4,30 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34243C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 05:34:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFB93C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 05:34:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JyVBd2zhRz3fKh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 16:34:01 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JyVC316l4z3fPy
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 16:34:23 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JyV6C5MP1z3bZR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 16:30:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JyV6D2XdCz3cTw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 16:30:12 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JyV6C24lSz4y4Z;
- Tue, 15 Feb 2022 16:30:11 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JyV6D4H4yz4y4f;
+ Tue, 15 Feb 2022 16:30:12 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Corentin Labbe <clabbe@baylibre.com>, benh@kernel.crashing.org
-In-Reply-To: <20220125135421.4081740-1-clabbe@baylibre.com>
-References: <20220125135421.4081740-1-clabbe@baylibre.com>
-Subject: Re: [PATCH] macintosh: macio_asic: remove useless cast for driver.name
-Message-Id: <164490279336.270256.12209297383271051040.b4-ty@ellerman.id.au>
-Date: Tue, 15 Feb 2022 16:26:33 +1100
+To: Fabiano Rosas <farosas@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20210120181847.952106-1-farosas@linux.ibm.com>
+References: <20210120181847.952106-1-farosas@linux.ibm.com>
+Subject: Re: [PATCH] powerpc: Fix debug print in smp_setup_cpu_maps
+Message-Id: <164490279528.270256.11297930701793281955.b4-ty@ellerman.id.au>
+Date: Tue, 15 Feb 2022 16:26:35 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,19 +43,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 25 Jan 2022 13:54:21 +0000, Corentin Labbe wrote:
-> pci_driver name is const char pointer, so the cast it not necessary.
+On Wed, 20 Jan 2021 15:18:47 -0300, Fabiano Rosas wrote:
+> When figuring out the number of threads, the debug message prints "1
+> thread" for the first iteration of the loop, instead of the actual
+> number of threads calculated from the length of the
+> "ibm,ppc-interrupt-server#s" property.
 > 
+>   * /cpus/PowerPC,POWER8@20...
+>     ibm,ppc-interrupt-server#s -> 1 threads <--- WRONG
+>     thread 0 -> cpu 0 (hard id 32)
+>     thread 1 -> cpu 1 (hard id 33)
+>     thread 2 -> cpu 2 (hard id 34)
+>     thread 3 -> cpu 3 (hard id 35)
+>     thread 4 -> cpu 4 (hard id 36)
+>     thread 5 -> cpu 5 (hard id 37)
+>     thread 6 -> cpu 6 (hard id 38)
+>     thread 7 -> cpu 7 (hard id 39)
+>   * /cpus/PowerPC,POWER8@28...
+>     ibm,ppc-interrupt-server#s -> 8 threads
+>     thread 0 -> cpu 8 (hard id 40)
+>     thread 1 -> cpu 9 (hard id 41)
+>     thread 2 -> cpu 10 (hard id 42)
+>     thread 3 -> cpu 11 (hard id 43)
+>     thread 4 -> cpu 12 (hard id 44)
+>     thread 5 -> cpu 13 (hard id 45)
+>     thread 6 -> cpu 14 (hard id 46)
+>     thread 7 -> cpu 15 (hard id 47)
+> (...)
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] macintosh: macio_asic: remove useless cast for driver.name
-      https://git.kernel.org/powerpc/c/ccafe7c20b7de330d9091a114c9985305759f1ee
+[1/1] powerpc: Fix debug print in smp_setup_cpu_maps
+      https://git.kernel.org/powerpc/c/b53c86105919d4136591e3bee198a4829c0f5062
 
 cheers
