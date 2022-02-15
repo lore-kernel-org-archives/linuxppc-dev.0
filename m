@@ -4,35 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C20DC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 05:31:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75C40C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 05:31:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JyV7g1qYxz3ddM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 16:31:27 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JyV854lv6z3drP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 16:31:49 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JyV654ks0z3bPP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 16:30:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JyV682LVZz3cP5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 16:30:08 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JyV6454LFz4y3t;
- Tue, 15 Feb 2022 16:30:04 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JyV681Pdrz4xmx;
+ Tue, 15 Feb 2022 16:30:08 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chen Jingwen <chenjingwen6@huawei.com>, kasan-dev <kasan-dev@googlegroups.com>,
- linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- Christophe Leroy <christophe.leroy@c-s.fr>
-In-Reply-To: <20211229035226.59159-1-chenjingwen6@huawei.com>
-References: <20211229035226.59159-1-chenjingwen6@huawei.com>
-Subject: Re: [PATCH] powerpc/kasan: Fix early region not updated correctly
-Message-Id: <164490280217.270256.12753879562641501185.b4-ty@ellerman.id.au>
-Date: Tue, 15 Feb 2022 16:26:42 +1100
+ Paul Mackerras <paulus@samba.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <cc89d3c11fc9c742d0df3454a657a3a00be24046.1643538554.git.christophe.leroy@csgroup.eu>
+References: <cc89d3c11fc9c742d0df3454a657a3a00be24046.1643538554.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/32s: Make pte_update() non atomic on 603 core
+Message-Id: <164490280591.270256.978317263917716851.b4-ty@ellerman.id.au>
+Date: Tue, 15 Feb 2022 16:26:45 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -47,27 +45,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 29 Dec 2021 11:52:26 +0800, Chen Jingwen wrote:
-> The shadow's page table is not updated when PTE_RPN_SHIFT is 24
-> and PAGE_SHIFT is 12. It not only causes false positives but
-> also false negative as shown the following text.
+On Sun, 30 Jan 2022 10:29:34 +0000, Christophe Leroy wrote:
+> On 603 core, TLB miss handler don't do any change to the
+> page tables so pte_update() doesn't need to be atomic.
 > 
-> Fix it by bringing the logic of kasan_early_shadow_page_entry here.
 > 
-> 1. False Positive:
-> ==================================================================
-> BUG: KASAN: vmalloc-out-of-bounds in pcpu_alloc+0x508/0xa50
-> Write of size 16 at addr f57f3be0 by task swapper/0/1
-> 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/kasan: Fix early region not updated correctly
-      https://git.kernel.org/powerpc/c/dd75080aa8409ce10d50fb58981c6b59bf8707d3
+[1/1] powerpc/32s: Make pte_update() non atomic on 603 core
+      https://git.kernel.org/powerpc/c/4291d085b0b07a78403e845c187428b038c901cd
 
 cheers
