@@ -4,71 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 596A7C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 12:47:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D57DDC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 13:18:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jygpl4PFhz3fSy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 23:47:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JyhV7688gz3cCv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 00:18:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=en41RouE;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1;
+ helo=ams.source.kernel.org; envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=en41RouE; 
+ dkim-atps=neutral
+Received: from ams.source.kernel.org (ams.source.kernel.org
+ [IPv6:2604:1380:4601:e00::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jygj250YBz3ddF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 23:42:30 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4Jygh21l7Tz9sSs;
- Tue, 15 Feb 2022 13:41:38 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 1Qv4VFlf7NJM; Tue, 15 Feb 2022 13:41:38 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4Jyggp0jq5z9sSy;
- Tue, 15 Feb 2022 13:41:26 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 078F38B763;
- Tue, 15 Feb 2022 13:41:26 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id M6LRDoRwmE5a; Tue, 15 Feb 2022 13:41:25 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.6.174])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8CA808B781;
- Tue, 15 Feb 2022 13:41:24 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21FCfGmr080621
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 15 Feb 2022 13:41:16 +0100
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21FCfGGk080620;
- Tue, 15 Feb 2022 13:41:16 +0100
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Morton <akpm@linux-foundation.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
- Kees Cook <keescook@chromium.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v4 04/13] powerpc: Remove 'struct ppc64_opd_entry'
-Date: Tue, 15 Feb 2022 13:40:59 +0100
-Message-Id: <c309ccee65ec2e3802df7a7fe761d0a298584809.1644928018.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cover.1644928018.git.christophe.leroy@csgroup.eu>
-References: <cover.1644928018.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JyhTK4kHXz2xYQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Feb 2022 00:17:25 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id DB2A3B81977
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 13:17:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7EE23C340F2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 13:17:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1644931038;
+ bh=yV4ORJd5b6IZao4Zu1H2u9bAD/0nkvfeGMC8j+boEO0=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=en41RouE/EA/f7wz63guGOJgQDzTzpSHu1gIzDlk0eh3+3mMTSAf00BnXMZlARt6s
+ lMs/qZOv6PL6+MghQnSbA+7NV4vESrRm3svOh5B/rWCfo6LLtIapnoPyUEXNUCVUxZ
+ SM5/eNjHSVB0faWLDASH4Z3RBCxDND/GXUOk0wBzYzTo35C9/bozc9mrIpu4PzzP4L
+ vdJ0tSnn6vVBCH3McB/vLyXMNRN/hK/qgW/7ElOPsieLxNJU0DX0VVdQVgbX81UPGp
+ 543MNrYS2T69bw5l7VfHlP0ByvGETR6i+fo7tz93ZNH2MLTYoNKcSPZjc3aKvb3lb/
+ rnqKGi4/pbe3g==
+Received: by mail-wm1-f52.google.com with SMTP id n8so6477497wms.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 05:17:18 -0800 (PST)
+X-Gm-Message-State: AOAM530ett0Lji73Bv7dZAPKZFwwFfcwzgFS+WwSv15SQYrzlUV/mIVC
+ 7pbhm1o9Aycg+mzfBcNlHqz6lrOVn8ud8jig4jE=
+X-Google-Smtp-Source: ABdhPJzhbiTSvbv50mQWSJ7smaLZnr2q978YJ0F6+MeQ3SrwEp5s0NrkvRE5+WnWUVexqYiFblH5E9BGGqHgxsxWGyI=
+X-Received: by 2002:a05:600c:4ecb:: with SMTP id
+ g11mr3088436wmq.98.1644931026534; 
+ Tue, 15 Feb 2022 05:17:06 -0800 (PST)
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1644928860; l=1246; s=20211009;
- h=from:subject:message-id; bh=vx1idMeJkdOhlRkZvWHnC+mhHBjG4OZh535Q2FsolEA=;
- b=ovQ3V9ipcvhVy/DxCLHKvoDrDk5CubOQNQ3IRTv/C3FQ045y316Cko7N35eO9NVSdZ23kd79Fu+O
- Y/1D2lCLBbQOgr9Ou65SD7xGVKnb1qT/w/h+LCoX02QbvQDHZNSv
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+References: <20220214163452.1568807-1-arnd@kernel.org>
+ <20220214163452.1568807-6-arnd@kernel.org>
+ <Ygr0eAA+ZR1eX0wb@zeniv-ca.linux.org.uk>
+In-Reply-To: <Ygr0eAA+ZR1eX0wb@zeniv-ca.linux.org.uk>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Tue, 15 Feb 2022 14:16:50 +0100
+X-Gmail-Original-Message-ID: <CAK8P3a2+qG=Q9Si_2D7wjM7Qao2JCnYqKgU=W-SFwoG+fT-U3A@mail.gmail.com>
+Message-ID: <CAK8P3a2+qG=Q9Si_2D7wjM7Qao2JCnYqKgU=W-SFwoG+fT-U3A@mail.gmail.com>
+Subject: Re: [PATCH 05/14] uaccess: add generic __{get,put}_kernel_nofault
+To: Al Viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,48 +73,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+ Linux-MM <linux-mm@kvack.org>, Guo Ren <guoren@kernel.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ "open list:QUALCOMM HEXAGON..." <linux-hexagon@vger.kernel.org>,
+ linux-riscv <linux-riscv@lists.infradead.org>, Will Deacon <will@kernel.org>,
+ Christoph Hellwig <hch@lst.de>, linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Brian Cain <bcain@codeaurora.org>,
+ Helge Deller <deller@gmx.de>, the arch/x86 maintainers <x86@kernel.org>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
+ Ard Biesheuvel <ardb@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ "open list:SYNOPSYS ARC ARCHITECTURE" <linux-snps-arc@lists.infradead.org>,
+ "open list:TENSILICA XTENSA PORT \(xtensa\)" <linux-xtensa@linux-xtensa.org>,
+ Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <hca@linux.ibm.com>,
+ alpha <linux-alpha@vger.kernel.org>, linux-um <linux-um@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Openrisc <openrisc@lists.librecores.org>, Greentime Hu <green.hu@gmail.com>,
+ Stafford Horne <shorne@gmail.com>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Michal Simek <monstr@monstr.eu>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Parisc List <linux-parisc@vger.kernel.org>, Nick Hu <nickhu@andestech.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Linux API <linux-api@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Dinh Nguyen <dinguyen@kernel.org>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ Richard Weinberger <richard@nod.at>, Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ David Miller <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-'struct ppc64_opd_entry' doesn't belong to uapi/asm/elf.h
+On Tue, Feb 15, 2022 at 1:31 AM Al Viro <viro@zeniv.linux.org.uk> wrote:
+>
+> On Mon, Feb 14, 2022 at 05:34:43PM +0100, Arnd Bergmann wrote:
+> > From: Arnd Bergmann <arnd@arndb.de>
+> >
+> > All architectures that don't provide __{get,put}_kernel_nofault() yet
+> > can implement this on top of __{get,put}_user.
+> >
+> > Add a generic version that lets everything use the normal
+> > copy_{from,to}_kernel_nofault() code based on these, removing the last
+> > use of get_fs()/set_fs() from architecture-independent code.
+>
+> I'd put the list of those architectures (AFAICS, that's alpha, ia64,
+> microblaze, nds32, nios2, openrisc, sh, sparc32, xtensa) into commit
+> message - it's not that hard to find out, but...
 
-It was initially in module_64.c and commit 2d291e902791 ("Fix compile
-failure with non modular builds") moved it into asm/elf.h
+done.
 
-But it was by mistake added outside of __KERNEL__ section,
-therefore commit c3617f72036c ("UAPI: (Scripted) Disintegrate
-arch/powerpc/include/asm") moved it to uapi/asm/elf.h
+> And AFAICS, you've missed nios2 - see
+> #define __put_user(x, ptr) put_user(x, ptr)
+> in there.  nds32 oddities are dealt with earlier in the series, this
+> one is not...
 
-Now that it is not used anymore by the kernel, remove it.
+Ok, fixed my bug in nios2 __put_user() as well now. This one is not nearly
+as bad as nds32, at least without my patches it should work as expected.
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/uapi/asm/elf.h | 8 --------
- 1 file changed, 8 deletions(-)
+Unfortunately I also noticed that __get_user() on microblaze and nios2
+is completely broken for 64-bit arguments, where these copy eight bytes
+into a four byte buffer. I'll try to come up with a fix for this as well then.
 
-diff --git a/arch/powerpc/include/uapi/asm/elf.h b/arch/powerpc/include/uapi/asm/elf.h
-index 860c59291bfc..308857123a08 100644
---- a/arch/powerpc/include/uapi/asm/elf.h
-+++ b/arch/powerpc/include/uapi/asm/elf.h
-@@ -289,12 +289,4 @@ typedef elf_fpreg_t elf_vsrreghalf_t32[ELF_NVSRHALFREG];
- /* Keep this the last entry.  */
- #define R_PPC64_NUM		253
- 
--/* There's actually a third entry here, but it's unused */
--struct ppc64_opd_entry
--{
--	unsigned long funcaddr;
--	unsigned long r2;
--};
--
--
- #endif /* _UAPI_ASM_POWERPC_ELF_H */
--- 
-2.34.1
-
+         Arnd
