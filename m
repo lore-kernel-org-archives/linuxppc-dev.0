@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3515FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 12:44:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35C1DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 12:44:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JyglM3F0yz3dyB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 23:44:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jyglq4C4Rz3cmY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Feb 2022 23:44:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,35 +16,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JyghR2lrJz3cHS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 23:41:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JyghW42K6z3cVd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 23:42:03 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4Jyggv1C10z9sST;
- Tue, 15 Feb 2022 13:41:31 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4Jyggw2JLkz9sT7;
+ Tue, 15 Feb 2022 13:41:32 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id IdKtj2QNUyCc; Tue, 15 Feb 2022 13:41:31 +0100 (CET)
+ with ESMTP id SRpNZ_o7l7nY; Tue, 15 Feb 2022 13:41:32 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4Jyggn4p5kz9sSh;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4Jyggn4tztz9sSm;
  Tue, 15 Feb 2022 13:41:25 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8D2108B776;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 916668B77A;
  Tue, 15 Feb 2022 13:41:25 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Rp4IPH4rC6t9; Tue, 15 Feb 2022 13:41:25 +0100 (CET)
+ with ESMTP id N2TMBdkgVMz3; Tue, 15 Feb 2022 13:41:25 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.6.174])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 81C388B77D;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 96E508B786;
  Tue, 15 Feb 2022 13:41:24 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21FCfG60080629
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21FCfIXI080657
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 15 Feb 2022 13:41:16 +0100
+ Tue, 15 Feb 2022 13:41:18 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21FCfGfh080628;
- Tue, 15 Feb 2022 13:41:16 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21FCfHUW080656;
+ Tue, 15 Feb 2022 13:41:17 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -55,17 +55,17 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
  Kees Cook <keescook@chromium.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v4 06/13] ia64: Rename 'ip' to 'addr' in 'struct fdesc'
-Date: Tue, 15 Feb 2022 13:41:01 +0100
-Message-Id: <65b73ac614e4c002c5819d40b42f6f426d2ee52b.1644928018.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v4 13/13] lkdtm: Add a test for function descriptors protection
+Date: Tue, 15 Feb 2022 13:41:08 +0100
+Message-Id: <7eeba50d16a35e9d799820e43304150225f20197.1644928018.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1644928018.git.christophe.leroy@csgroup.eu>
 References: <cover.1644928018.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1644928860; l=2104; s=20211009;
- h=from:subject:message-id; bh=4mv1SiBbp7pTTqFBCvFgWxXkLKYIOhDRwyfgv8fTdHE=;
- b=rqmpUmT0MgrcuSuGQdvFvaQMGAC23n6tWxLMK4K8qIoig0QzZ2OFo/9wKPcNEhN7MC+goHcNFVNs
- 3Z9uhiedB8tTGfOd1+xZn9/XwLv9q5AEW1/9kfJtKEiqwcT707Ox
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1644928861; l=3305; s=20211009;
+ h=from:subject:message-id; bh=7pxIz3r53UiI2i88RT0ONtGzhkJvXG7XjRb8xVmF5zM=;
+ b=ERtgdYkFhBYCi2IAjLAfew4SVUaaYDpeMuhg/snPDyUuo9ai1hJvII99U4C2FXCF0t7eEeToN8Qz
+ NR7oLIMCD3hpyXRHmVC/Ht2czXUyYwuEjSvm2TQPUSrrtghXPhNi
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -87,73 +87,106 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are three architectures with function descriptors, try to
-have common names for the address they contain in order to
-refactor some functions into generic functions later.
+Add WRITE_OPD to check that you can't modify function
+descriptors.
 
-powerpc has 'entry'
-ia64 has 'ip'
-parisc has 'addr'
+Gives the following result when function descriptors are
+not protected:
 
-Vote for 'addr' and update 'struct fdesc' accordingly.
+	lkdtm: Performing direct entry WRITE_OPD
+	lkdtm: attempting bad 16 bytes write at c00000000269b358
+	lkdtm: FAIL: survived bad write
+	lkdtm: do_nothing was hijacked!
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
+Looks like a standard compiler barrier() is not enough to force
+GCC to use the modified function descriptor. Had to add a fake empty
+inline assembly to force GCC to reload the function descriptor.
+
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Acked-by: Kees Cook <keescook@chromium.org>
 ---
- arch/ia64/include/asm/elf.h      | 2 +-
- arch/ia64/include/asm/sections.h | 2 +-
- arch/ia64/kernel/module.c        | 6 +++---
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/misc/lkdtm/core.c               |  1 +
+ drivers/misc/lkdtm/lkdtm.h              |  1 +
+ drivers/misc/lkdtm/perms.c              | 22 ++++++++++++++++++++++
+ tools/testing/selftests/lkdtm/tests.txt |  1 +
+ 4 files changed, 25 insertions(+)
 
-diff --git a/arch/ia64/include/asm/elf.h b/arch/ia64/include/asm/elf.h
-index 6629301a2620..2ef5f9966ad1 100644
---- a/arch/ia64/include/asm/elf.h
-+++ b/arch/ia64/include/asm/elf.h
-@@ -226,7 +226,7 @@ struct got_entry {
-  * Layout of the Function Descriptor
-  */
- struct fdesc {
--	uint64_t ip;
-+	uint64_t addr;
- 	uint64_t gp;
- };
- 
-diff --git a/arch/ia64/include/asm/sections.h b/arch/ia64/include/asm/sections.h
-index 3a033d2008b3..35f24e52149a 100644
---- a/arch/ia64/include/asm/sections.h
-+++ b/arch/ia64/include/asm/sections.h
-@@ -35,7 +35,7 @@ static inline void *dereference_function_descriptor(void *ptr)
- 	struct fdesc *desc = ptr;
- 	void *p;
- 
--	if (!get_kernel_nofault(p, (void *)&desc->ip))
-+	if (!get_kernel_nofault(p, (void *)&desc->addr))
- 		ptr = p;
- 	return ptr;
+diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
+index f69b964b9952..e2228b6fc09b 100644
+--- a/drivers/misc/lkdtm/core.c
++++ b/drivers/misc/lkdtm/core.c
+@@ -149,6 +149,7 @@ static const struct crashtype crashtypes[] = {
+ 	CRASHTYPE(WRITE_RO),
+ 	CRASHTYPE(WRITE_RO_AFTER_INIT),
+ 	CRASHTYPE(WRITE_KERN),
++	CRASHTYPE(WRITE_OPD),
+ 	CRASHTYPE(REFCOUNT_INC_OVERFLOW),
+ 	CRASHTYPE(REFCOUNT_ADD_OVERFLOW),
+ 	CRASHTYPE(REFCOUNT_INC_NOT_ZERO_OVERFLOW),
+diff --git a/drivers/misc/lkdtm/lkdtm.h b/drivers/misc/lkdtm/lkdtm.h
+index d6137c70ebbe..305fc2ec3f25 100644
+--- a/drivers/misc/lkdtm/lkdtm.h
++++ b/drivers/misc/lkdtm/lkdtm.h
+@@ -106,6 +106,7 @@ void __init lkdtm_perms_init(void);
+ void lkdtm_WRITE_RO(void);
+ void lkdtm_WRITE_RO_AFTER_INIT(void);
+ void lkdtm_WRITE_KERN(void);
++void lkdtm_WRITE_OPD(void);
+ void lkdtm_EXEC_DATA(void);
+ void lkdtm_EXEC_STACK(void);
+ void lkdtm_EXEC_KMALLOC(void);
+diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
+index 1cf24c4a79e9..2c6aba3ff32b 100644
+--- a/drivers/misc/lkdtm/perms.c
++++ b/drivers/misc/lkdtm/perms.c
+@@ -44,6 +44,11 @@ static noinline void do_overwritten(void)
+ 	return;
  }
-diff --git a/arch/ia64/kernel/module.c b/arch/ia64/kernel/module.c
-index 360f36b0eb3f..8f62cf97f691 100644
---- a/arch/ia64/kernel/module.c
-+++ b/arch/ia64/kernel/module.c
-@@ -602,15 +602,15 @@ get_fdesc (struct module *mod, uint64_t value, int *okp)
- 		return value;
  
- 	/* Look for existing function descriptor. */
--	while (fdesc->ip) {
--		if (fdesc->ip == value)
-+	while (fdesc->addr) {
-+		if (fdesc->addr == value)
- 			return (uint64_t)fdesc;
- 		if ((uint64_t) ++fdesc >= mod->arch.opd->sh_addr + mod->arch.opd->sh_size)
- 			BUG();
- 	}
- 
- 	/* Create new one */
--	fdesc->ip = value;
-+	fdesc->addr = value;
- 	fdesc->gp = mod->arch.gp;
- 	return (uint64_t) fdesc;
++static noinline void do_almost_nothing(void)
++{
++	pr_info("do_nothing was hijacked!\n");
++}
++
+ static void *setup_function_descriptor(func_desc_t *fdesc, void *dst)
+ {
+ 	if (!have_function_descriptors())
+@@ -144,6 +149,23 @@ void lkdtm_WRITE_KERN(void)
+ 	do_overwritten();
  }
+ 
++void lkdtm_WRITE_OPD(void)
++{
++	size_t size = sizeof(func_desc_t);
++	void (*func)(void) = do_nothing;
++
++	if (!have_function_descriptors()) {
++		pr_info("XFAIL: Platform doesn't use function descriptors.\n");
++		return;
++	}
++	pr_info("attempting bad %zu bytes write at %px\n", size, do_nothing);
++	memcpy(do_nothing, do_almost_nothing, size);
++	pr_err("FAIL: survived bad write\n");
++
++	asm("" : "=m"(func));
++	func();
++}
++
+ void lkdtm_EXEC_DATA(void)
+ {
+ 	execute_location(data_area, CODE_WRITE);
+diff --git a/tools/testing/selftests/lkdtm/tests.txt b/tools/testing/selftests/lkdtm/tests.txt
+index 6b36b7f5dcf9..243c781f0780 100644
+--- a/tools/testing/selftests/lkdtm/tests.txt
++++ b/tools/testing/selftests/lkdtm/tests.txt
+@@ -44,6 +44,7 @@ ACCESS_NULL
+ WRITE_RO
+ WRITE_RO_AFTER_INIT
+ WRITE_KERN
++WRITE_OPD
+ REFCOUNT_INC_OVERFLOW
+ REFCOUNT_ADD_OVERFLOW
+ REFCOUNT_INC_NOT_ZERO_OVERFLOW
 -- 
 2.34.1
 
