@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5505EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:30:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9879DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:31:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JzHP73wkXz3clH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 23:30:51 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JzHPX5rLyz3dh6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 23:31:12 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JzHNL3pt1z2xrG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Feb 2022 23:30:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JzHNM0Nj1z2xrG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Feb 2022 23:30:11 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JzHNL4Hw3z4xdL;
- Wed, 16 Feb 2022 23:30:10 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JzHNM292zz4xml;
+ Wed, 16 Feb 2022 23:30:11 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <68932ec2ba6b868d35006b96e90f0890f3da3c05.1638273868.git.christophe.leroy@csgroup.eu>
-References: <68932ec2ba6b868d35006b96e90f0890f3da3c05.1638273868.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 1/2] powerpc/32: Remove remaining .stabs annotations
-Message-Id: <164501434587.521186.16713102586513485319.b4-ty@ellerman.id.au>
-Date: Wed, 16 Feb 2022 23:25:45 +1100
+In-Reply-To: <6c608fd4795e2d8ea1a0a449405a0087f76d8bb3.1642752375.git.christophe.leroy@csgroup.eu>
+References: <6c608fd4795e2d8ea1a0a449405a0087f76d8bb3.1642752375.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/3] powerpc/lib/sstep: Use l1_dcache_bytes() instead of
+ opencoding
+Message-Id: <164501435210.521186.7862995446067984760.b4-ty@ellerman.id.au>
+Date: Wed, 16 Feb 2022 23:25:52 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,24 +45,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel test robot <lkp@intel.com>,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 30 Nov 2021 13:04:49 +0100, Christophe Leroy wrote:
-> STABS debug format has been superseded long time ago by DWARF.
+On Fri, 21 Jan 2022 08:06:27 +0000, Christophe Leroy wrote:
+> Don't opencode dcache size retrieval based on whether that's ppc32 or ppc64.
 > 
-> Remove the few remaining .stabs annotations from old 32 bits code.
+> Use l1_dcache_bytes()
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/2] powerpc/32: Remove remaining .stabs annotations
-      https://git.kernel.org/powerpc/c/12318163737cd8808d13faa6e2393774191a6182
-[2/2] powerpc/32: Remove _ENTRY() macro
-      https://git.kernel.org/powerpc/c/27e21e8f128a56d3462f0fe2fd3a59c02cc002b1
+[1/3] powerpc/lib/sstep: Use l1_dcache_bytes() instead of opencoding
+      https://git.kernel.org/powerpc/c/67484e0de9c93b4a9187bb49f45dfdaa8dc03c0b
+[2/3] powerpc/lib/sstep: Remove unneeded #ifdef __powerpc64__
+      https://git.kernel.org/powerpc/c/7c3bba91999075f4cfcab0542e4eb74d2d63554b
+[3/3] powerpc/lib/sstep: use truncate_if_32bit()
+      https://git.kernel.org/powerpc/c/6836f099039e6c72fb548bf527345aa4345c3308
 
 cheers
