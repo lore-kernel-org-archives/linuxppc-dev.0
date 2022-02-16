@@ -4,33 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E674CC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:34:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83148C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 13:05:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JzHTs1l1dz3fjX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 23:34:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JzJ8l3nZkz3cQZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 00:05:11 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JzHNV0m2Gz3cN4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Feb 2022 23:30:18 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
- id 4JzHNV3Lbxz4xv6; Wed, 16 Feb 2022 23:30:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JzJ8L338nz30Ld
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Feb 2022 00:04:50 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JzHNV2n5mz4xnG;
- Wed, 16 Feb 2022 23:30:18 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JzJ8J0lWNz4xPt;
+ Thu, 17 Feb 2022 00:04:48 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Sourabh Jain <sourabhjain@linux.ibm.com>,
- linuxppc-dev@ozlabs.org
-In-Reply-To: <20220204085601.107257-1-sourabhjain@linux.ibm.com>
-References: <20220204085601.107257-1-sourabhjain@linux.ibm.com>
-Subject: Re: powerpc: Set crashkernel offset to mid of RMA region
-Message-Id: <164501434135.521186.4294901426151721880.b4-ty@ellerman.id.au>
-Date: Wed, 16 Feb 2022 23:25:41 +1100
+To: kvm-ppc@vger.kernel.org, Fabiano Rosas <farosas@linux.ibm.com>
+In-Reply-To: <20220125215655.1026224-1-farosas@linux.ibm.com>
+References: <20220125215655.1026224-1-farosas@linux.ibm.com>
+Subject: Re: [PATCH v5 0/5] KVM: PPC: MMIO fixes
+Message-Id: <164501666777.530536.8902205989828226400.b4-ty@ellerman.id.au>
+Date: Thu, 17 Feb 2022 00:04:27 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,25 +42,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Abdul haleem <abdhalee@linux.vnet.ibm.com>, hbathini@linux.ibm.com,
- mahesh@linux.vnet.ibm.com
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 4 Feb 2022 14:26:01 +0530, Sourabh Jain wrote:
-> On large config LPARs (having 192 and more cores), Linux fails to boot
-> due to insufficient memory in the first memblock. It is due to the
-> memory reservation for the crash kernel which starts at 128MB offset of
-> the first memblock. This memory reservation for the crash kernel doesn't
-> leave enough space in the first memblock to accommodate other essential
-> system resources.
+On Tue, 25 Jan 2022 18:56:50 -0300, Fabiano Rosas wrote:
+> Changes from v4:
+> 
+> -patch 4: switched to kvm_debug_ratelimited.
+> 
+> -patch 5: kept the Program interrupt for BookE.
+> 
+> v4:
+> https://lore.kernel.org/r/20220121222626.972495-1-farosas@linux.ibm.com
 > 
 > [...]
 
-Applied to powerpc/next.
+Applied to powerpc/topic/ppc-kvm.
 
-[1/1] powerpc: Set crashkernel offset to mid of RMA region
-      https://git.kernel.org/powerpc/c/7c5ed82b800d8615cdda00729e7b62e5899f0b13
+[1/5] KVM: PPC: Book3S HV: Stop returning internal values to userspace
+      https://git.kernel.org/powerpc/c/36d014d37d59065087e51b8381e37993f1ca99bc
+[2/5] KVM: PPC: Fix vmx/vsx mixup in mmio emulation
+      https://git.kernel.org/powerpc/c/b99234b918c6e36b9aa0a5b2981e86b6bd11f8e2
+[3/5] KVM: PPC: mmio: Reject instructions that access more than mmio.data size
+      https://git.kernel.org/powerpc/c/3f831504482ab0d0d53d1966987959d1485345cc
+[4/5] KVM: PPC: mmio: Return to guest after emulation failure
+      https://git.kernel.org/powerpc/c/349fbfe9b918e6dea00734f07c0fbaf4c2e2df5e
+[5/5] KVM: PPC: Book3s: mmio: Deliver DSI after emulation failure
+      https://git.kernel.org/powerpc/c/c1c8a66367a35aabbad9bd629b105b9fb49f2c1f
 
 cheers
