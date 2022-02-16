@@ -4,80 +4,101 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8350C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 01:29:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 335FAC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 01:49:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jz0kG44Gpz3bmf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:29:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jz18b2N5Cz3cD0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:49:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20210112.gappssmtp.com header.i=@ozlabs-ru.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=H+50svR9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DRmfx08x;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::42d;
- helo=mail-pf1-x42d.google.com; envelope-from=aik@ozlabs.ru;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20210112.gappssmtp.com
- header.i=@ozlabs-ru.20210112.gappssmtp.com header.a=rsa-sha256
- header.s=20210112 header.b=H+50svR9; dkim-atps=neutral
-Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com
- [IPv6:2607:f8b0:4864:20::42d])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=DRmfx08x; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jz0jS3nVgz2ybK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Feb 2022 12:28:57 +1100 (AEDT)
-Received: by mail-pf1-x42d.google.com with SMTP id z16so858738pfh.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Feb 2022 17:28:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20210112.gappssmtp.com; s=20210112;
- h=message-id:date:mime-version:user-agent:subject:content-language:to
- :cc:references:from:in-reply-to:content-transfer-encoding;
- bh=tQTDncmXURnIkQJis+wxjFZC0hGspK56+Qdf43TRr3E=;
- b=H+50svR9Fo1VEERYUeQdw5S6DLto/gQadF0oqYP7WRy6XGdQXD3BPwkjbRpy52LbV5
- rRe1ILqmSjWwAuyPZebSKMbskC5iphX7EXTVBCVZCWXtF1JOik0dvuLT4CaeLG9p4O/m
- 1WcBi1FwIdMfNxBRhSbZj0I+Li2KiEGVoioM3+BTNNIMmZHt2O4Lt7xGzDNTOBKMlLoR
- Np02mi1pjOCEOEtTvpr+BPp7oi3IrLeAwfzTnv6vX0rFOIsdSJN+RW9BYrDa9YLl553z
- NCC3WvrredcVtaKufNs/tk98SQSGWqL1gWGyJM4MkAM7CbuV8sK/ZSdWZ75H9IvdVWcn
- rxDA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
- :content-language:to:cc:references:from:in-reply-to
- :content-transfer-encoding;
- bh=tQTDncmXURnIkQJis+wxjFZC0hGspK56+Qdf43TRr3E=;
- b=TUX0eEKydi9Dzqqm6bWBmbOo7zg/Q9h+p+j0A4tw95fOG9FMvuHn4xhP/nl8pvJ1GQ
- D+hrmeDMYsgD1y9zD2k7aiAKH10hFEykml1+8W0/jo4M1qWjQtw9CErOuDrEs0gPF3rK
- undncyVdQ7LPKvgcTYkiBNOzV0DN0dk5h4jv1ULIGwq4nQmuHp2thdIqcUNBRrB5F211
- h9GUlhZRX2RrneJIiL2YztrcDmwBnprF4GMjsaN6dLjuPJiIyGvY5aDbCcYxtK8uP81V
- G43otxe2eT9gk1rfwM0Lh44FMsykFx378tPTih/tXg/TBeS3dD65EKfmJ4/+1/t3D1Rt
- plDQ==
-X-Gm-Message-State: AOAM5325GutwplOntxvDA+Lu7+aomY5f0eezuXESGlsVIix3rrILbkmp
- C/RUe+z1rOCBDxuz/SFZAYnjuw==
-X-Google-Smtp-Source: ABdhPJwM77UFLOF1OiIUZL5zuriL3dDg9+gURcyC0/EAXme+PzwciNao4NhxjcQ3KNF6vcDe8cHzUw==
-X-Received: by 2002:a63:f011:0:b0:36c:2da3:32bc with SMTP id
- k17-20020a63f011000000b0036c2da332bcmr342889pgh.40.1644974934995; 
- Tue, 15 Feb 2022 17:28:54 -0800 (PST)
-Received: from [192.168.10.24] (203-7-124-83.dyn.iinet.net.au. [203.7.124.83])
- by smtp.gmail.com with ESMTPSA id
- t22sm1149617pfg.92.2022.02.15.17.28.49
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 15 Feb 2022 17:28:54 -0800 (PST)
-Message-ID: <535eefe8-c332-4c66-30d0-c792911ee4d5@ozlabs.ru>
-Date: Wed, 16 Feb 2022 12:28:47 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jz17p6zVNz30LQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Feb 2022 12:48:22 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 21G1dIc5028349; 
+ Wed, 16 Feb 2022 01:48:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ mime-version : content-transfer-encoding; s=pp1;
+ bh=wdm9VOjYkXWGKYQ92h6odAQwq7tEXp9NpRlStUnph0U=;
+ b=DRmfx08xYRFH5exFpAhGZ9PFgx7a5Xn4sIldpqPaQ7jburP1A2DLuVQzuxk81AP5XV0C
+ NUQC5QIKHFRUGyoqOye/ofFGcwLz7AFUZJgScr57gxMixsJhbG2Fk8UJKIfq5xs8ltVp
+ oJ5+kE41hLblnVsnYLa2Gz/6+Nh1XdJEBIDkyBi73ljWpLgp10K5rkkmJRv3C2qYA5ke
+ dduhbmKe8vX//jPGM8XIxy3W6iG6flUQqkV1s/Ixkm+HhpEsSYorNkaJI0IO6sFgt7FJ
+ hdr3ejj/PPYqHYKpOfAHO7hrjDC788jzgEFpZUAPgQoyUde5nptgWsL1lm5l8WzCzvRn dA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3e8qfpr983-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 16 Feb 2022 01:48:17 +0000
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 21G1mHJ1020859;
+ Wed, 16 Feb 2022 01:48:17 GMT
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3e8qfpr97q-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 16 Feb 2022 01:48:16 +0000
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 21G1WJ92022749;
+ Wed, 16 Feb 2022 01:48:15 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma03wdc.us.ibm.com with ESMTP id 3e64hb623q-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 16 Feb 2022 01:48:15 +0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 21G1mFp222413670
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 16 Feb 2022 01:48:15 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3C572124066;
+ Wed, 16 Feb 2022 01:48:15 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 88C98124053;
+ Wed, 16 Feb 2022 01:48:14 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.160.92.72])
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed, 16 Feb 2022 01:48:14 +0000 (GMT)
+Message-ID: <429106a0fe5c129aa78de7aa9c7237ee37be3d3d.camel@linux.ibm.com>
+Subject: Re: [PATCH v3 05/10] powerpc/pseries/vas: Close windows with DLPAR
+ core removal
+From: Haren Myneni <haren@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au
+Date: Tue, 15 Feb 2022 17:48:12 -0800
+In-Reply-To: <1644806848.01buhj7y5b.astroid@bobo.none>
+References: <7d175313528ea7aae20d9141f0efa2e57f44c9f4.camel@linux.ibm.com>
+ <5bf38aba31d340f7a4a662f82746b1784891673b.camel@linux.ibm.com>
+ <1644806848.01buhj7y5b.astroid@bobo.none>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.36.5 (3.36.5-2.fc32) 
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:97.0) Gecko/20100101
- Thunderbird/97.0
-Subject: Re: [PATCH kernel 2/3] powerpc/llvm: Sample config for LLVM LTO
-Content-Language: en-US
-To: Nick Desaulniers <ndesaulniers@google.com>
-References: <20220211023125.1790960-1-aik@ozlabs.ru>
- <20220211023125.1790960-3-aik@ozlabs.ru>
- <CAKwvOdmJspxuNh-K-CeLJh4X4GGVYJWH29HnjJwuRL+jcN9G5w@mail.gmail.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-In-Reply-To: <CAKwvOdmJspxuNh-K-CeLJh4X4GGVYJWH29HnjJwuRL+jcN9G5w@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: -EU0tp9-OM06crIpLBQeauFydkeBxLYr
+X-Proofpoint-ORIG-GUID: PnFMnC-atagULui9GRg48zWLZDOWJ4l4
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2022-02-15_07,2022-02-14_04,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 lowpriorityscore=0
+ suspectscore=0 spamscore=0 clxscore=1015 malwarescore=0 impostorscore=0
+ adultscore=0 phishscore=0 priorityscore=1501 bulkscore=0 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2201110000
+ definitions=main-2202160007
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,99 +110,307 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, Fabiano Rosas <farosas@linux.ibm.com>,
- llvm@lists.linux.dev, Nicholas Piggin <npiggin@gmail.com>,
- Nathan Chancellor <nathan@kernel.org>, Joel Stanley <joel@jms.id.au>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 2/12/22 11:05, Nick Desaulniers wrote:
-> On Thu, Feb 10, 2022 at 6:31 PM Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->>
->> The config is a copy of ppc64_defconfig with a few tweaks. This could be
->> a smaller config to merge into ppc64_defconfig but unfortunately
->> merger does not allow disabling already enabled options.
+On Mon, 2022-02-14 at 13:17 +1000, Nicholas Piggin wrote:
+> Excerpts from Haren Myneni's message of January 22, 2022 5:57 am:
+> > The hypervisor reduces the available credits if the core is removed
+> > from the LPAR. So there is possibility of using excessive credits
+> > (windows) in the LPAR and the hypervisor expects the system to
+> > close
+> > the excessive windows. Even though the user space can continue to
+> > use
+> > these windows to send compression requests to NX, the hypervisor
+> > expects
+> > the LPAR to reduce these windows usage so that NX load can be
+> > equally
+> > distributed across all LPARs in the system.
+> > 
+> > When the DLPAR notifier is received, get the new VAS capabilities
+> > from
+> > the hypervisor and close the excessive windows in the hypervisor.
+> > Also
+> > the kernel unmaps the paste address so that the user space receives
+> > paste
+> > failure until these windows are active with the later DLPAR (core
+> > add).
 > 
-> Cool series!
+> The changelog needs work. Unmapping the window and the ramifications
+> of
+> that needs more description here or in comments.
+
+Thanks will change. 
 > 
->>
->> This is a command line to compile the kernel using the upstream llvm:
->>
->> make -j64 O=/home/aik/pbuild/kernels-llvm/ \
->>   "KCFLAGS=-Wmissing-braces -Wno-array-bounds" \
->>   ARCH=powerpc LLVM_IAS=1 ppc64le_lto_defconfig CC=clang LLVM=1
+> > Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/vas.h          |   1 +
+> >  arch/powerpc/platforms/book3s/vas-api.c |   2 +
+> >  arch/powerpc/platforms/pseries/vas.c    | 117
+> > ++++++++++++++++++++++--
+> >  arch/powerpc/platforms/pseries/vas.h    |   1 +
+> >  4 files changed, 112 insertions(+), 9 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/vas.h
+> > b/arch/powerpc/include/asm/vas.h
+> > index f1efe86563cc..ddc05a8fc2e3 100644
+> > --- a/arch/powerpc/include/asm/vas.h
+> > +++ b/arch/powerpc/include/asm/vas.h
+> > @@ -74,6 +74,7 @@ struct vas_user_win_ref {
+> >  	struct mm_struct *mm;	/* Linux process mm_struct */
+> >  	struct mutex mmap_mutex;	/* protects paste address mmap() */
+> >  					/* with DLPAR close/open
+> > windows */
+> > +	struct vm_area_struct *vma;	/* Save VMA and used in DLPAR ops
+> > */
+> >  };
+> >  
+> >  /*
+> > diff --git a/arch/powerpc/platforms/book3s/vas-api.c
+> > b/arch/powerpc/platforms/book3s/vas-api.c
+> > index 2b0ced611f32..a63fd48e34a7 100644
+> > --- a/arch/powerpc/platforms/book3s/vas-api.c
+> > +++ b/arch/powerpc/platforms/book3s/vas-api.c
+> > @@ -399,6 +399,8 @@ static int coproc_mmap(struct file *fp, struct
+> > vm_area_struct *vma)
+> >  	pr_devel("%s(): paste addr %llx at %lx, rc %d\n", __func__,
+> >  			paste_addr, vma->vm_start, rc);
+> >  
+> > +	txwin->task_ref.vma = vma;
+> > +
+> >  	return rc;
+> >  }
+> >  
+> > diff --git a/arch/powerpc/platforms/pseries/vas.c
+> > b/arch/powerpc/platforms/pseries/vas.c
+> > index d9ff73d7704d..75ccd0a599ec 100644
+> > --- a/arch/powerpc/platforms/pseries/vas.c
+> > +++ b/arch/powerpc/platforms/pseries/vas.c
+> > @@ -370,13 +370,28 @@ static struct vas_window
+> > *vas_allocate_window(int vas_id, u64 flags,
+> >  	if (rc)
+> >  		goto out_free;
+> >  
+> > -	vas_user_win_add_mm_context(&txwin->vas_win.task_ref);
+> >  	txwin->win_type = cop_feat_caps->win_type;
+> >  	mutex_lock(&vas_pseries_mutex);
+> > -	list_add(&txwin->win_list, &caps->list);
+> > +	/*
+> > +	 * Possible to loose the acquired credit with DLPAR core
 > 
-> That command line invocation is kind of a mess, and many things
-> shouldn't be necessary.
+> s/loose/lose/g
 > 
-> O= is just noise; if folks are doing in tree builds then that doesn't
-> add anything meaningful.
-> KCFLAGS= why? I know -Warray-bounds is being worked on actively, but
-> do we have instances of -Wmissing-braces at the moment? Let's get
-> those fixed up.
-> LLVM_IAS=1 is implied by LLVM=1.
-> CC=clang is implied by LLVM=1
+> > +	 * removal after the window is opened. So if there are any
+> > +	 * closed windows (means with lost credits), do not give new
+> > +	 * window to user space. New windows will be opened only
+> > +	 * after the existing windows are reopened when credits are
+> > +	 * available.
+> > +	 */
+> > +	if (!caps->close_wins) {
+> > +		list_add(&txwin->win_list, &caps->list);
+> > +		caps->num_wins++;
+> > +		mutex_unlock(&vas_pseries_mutex);
+> > +		vas_user_win_add_mm_context(&txwin->vas_win.task_ref);
+> > +		return &txwin->vas_win;
+> > +	}
+> >  	mutex_unlock(&vas_pseries_mutex);
+> >  
+> > -	return &txwin->vas_win;
+> > +	put_vas_user_win_ref(&txwin->vas_win.task_ref);
+> > +	rc = -EBUSY;
+> > +	pr_err("No credit is available to allocate window\n");
+> >  
+> >  out_free:
+> >  	/*
+> > @@ -439,14 +454,24 @@ static int vas_deallocate_window(struct
+> > vas_window *vwin)
+> >  
+> >  	caps = &vascaps[win->win_type].caps;
+> >  	mutex_lock(&vas_pseries_mutex);
+> > -	rc = deallocate_free_window(win);
+> > -	if (rc) {
+> > -		mutex_unlock(&vas_pseries_mutex);
+> > -		return rc;
+> > -	}
+> > +	/*
+> > +	 * VAS window is already closed in the hypervisor when
+> > +	 * lost the credit. So just remove the entry from
+> > +	 * the list, remove task references and free vas_window
+> > +	 * struct.
+> > +	 */
+> > +	if (win->vas_win.status & VAS_WIN_NO_CRED_CLOSE) {
+> > +		rc = deallocate_free_window(win);
+> > +		if (rc) {
+> > +			mutex_unlock(&vas_pseries_mutex);
+> > +			return rc;
+> > +		}
+> > +	} else
+> > +		vascaps[win->win_type].close_wins--;
+> >  
+> >  	list_del(&win->win_list);
+> >  	atomic_dec(&caps->used_creds);
+> > +	vascaps[win->win_type].num_wins--;
+> >  	mutex_unlock(&vas_pseries_mutex);
+> >  
+> >  	put_vas_user_win_ref(&vwin->task_ref);
+> > @@ -622,6 +647,72 @@ static int reconfig_open_windows(struct
+> > vas_caps *vcaps, int creds)
+> >  	return rc;
+> >  }
+> >  
+> > +/*
+> > + * The hypervisor reduces the available credits if the LPAR lost
+> > core. It
+> > + * means the excessive windows should not be active and the user
+> > space
+> > + * should not be using these windows to send compression requests
+> > to NX.
+> > + * So the kernel closes the excessive windows and unmap the paste
+> > address
+> > + * such that the user space receives paste instruction failure.
+> > Then up to
+> > + * the user space to fall back to SW compression and manage with
+> > the
+> > + * existing windows.
+> > + */
+> > +static int reconfig_close_windows(struct vas_caps *vcap, int
+> > excess_creds)
+> > +{
+> > +	struct pseries_vas_window *win, *tmp;
+> > +	struct vas_user_win_ref *task_ref;
+> > +	struct vm_area_struct *vma;
+> > +	int rc = 0;
+> > +
+> > +	list_for_each_entry_safe(win, tmp, &vcap->list, win_list) {
+> > +		/*
+> > +		 * This window is already closed due to lost credit
+> > +		 * before. Go for next window.
+> > +		 */
+> > +		if (win->vas_win.status & VAS_WIN_NO_CRED_CLOSE)
+> > +			continue;
+> > +
+> > +		task_ref = &win->vas_win.task_ref;
+> > +		mutex_lock(&task_ref->mmap_mutex);
+> > +		vma = task_ref->vma;
+> > +		/*
+> > +		 * Number of available credits are reduced, So select
+> > +		 * and close windows.
+> > +		 */
+> > +		win->vas_win.status |= VAS_WIN_NO_CRED_CLOSE;
+> > +
+> > +		mmap_write_lock(task_ref->mm);
+> > +		/*
+> > +		 * vma is set in the original mapping. But this mapping
+> > +		 * is done with mmap() after the window is opened with
+> > ioctl.
+> > +		 * so we may not see the original mapping if the core
+> > remove
+> > +		 * is done before the original mmap() and after the
+> > ioctl.
+> > +		 */
+> > +		if (vma)
+> > +			zap_page_range(vma, vma->vm_start,
+> > +					vma->vm_end - vma->vm_start);
+> > +
+> > +		mmap_write_unlock(task_ref->mm);
+> > +		mutex_unlock(&task_ref->mmap_mutex);
+> > +		/*
+> > +		 * Close VAS window in the hypervisor, but do not
+> > +		 * free vas_window struct since it may be reused
+> > +		 * when the credit is available later (DLPAR with
+> > +		 * adding cores). This struct will be used
+> > +		 * later when the process issued with close(FD).
+> > +		 */
+> > +		rc = deallocate_free_window(win);
+> > +		if (rc)
+> > +			return rc;
+> > +
+> > +		vcap->close_wins++;
+> > +
+> > +		if (!--excess_creds)
+> > +			break;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >  /*
+> >   * Get new VAS capabilities when the core add/removal
+> > configuration
+> >   * changes. Reconfig window configurations based on the credits
+> > @@ -633,7 +724,7 @@ static int vas_reconfig_capabilties(u8 type)
+> >  	struct vas_cop_feat_caps *caps;
+> >  	int lpar_creds, new_creds;
+> >  	struct vas_caps *vcaps;
+> > -	int rc = 0;
+> > +	int rc = 0, active_wins;
+> >  
+> >  	if (type >= VAS_MAX_FEAT_TYPE) {
+> >  		pr_err("Invalid credit type %d\n", type);
+> > @@ -671,6 +762,14 @@ static int vas_reconfig_capabilties(u8 type)
+> >  		 * the previous DLPAR (core removal).
+> >  		 */
+> >  		rc = reconfig_open_windows(vcaps, new_creds -
+> > lpar_creds);
+> > +	} else {
+> > +		/*
+> > +		 * # active windows is more than new LPAR available
+> > +		 * credits. So close the excessive windows.
+> > +		 */
+> > +		active_wins = vcaps->num_wins - vcaps->close_wins;
+> > +		if (active_wins > new_creds)
+> > +			rc = reconfig_close_windows(vcaps, active_wins
+> > - new_creds);
+> >  	}
+> >  
+> >  out:
+> > diff --git a/arch/powerpc/platforms/pseries/vas.h
+> > b/arch/powerpc/platforms/pseries/vas.h
+> > index 45b62565955b..8ce9b84693e8 100644
+> > --- a/arch/powerpc/platforms/pseries/vas.h
+> > +++ b/arch/powerpc/platforms/pseries/vas.h
+> > @@ -79,6 +79,7 @@ struct vas_caps {
+> >  	struct vas_cop_feat_caps caps;
+> >  	struct list_head list;	/* List of open windows */
+> >  	int close_wins;		/* closed windows in the hypervisor
+> > for DLPAR */
+> > +	int num_wins;		/* Number of windows opened */
 > 
-> why add a new config? I think it would be simpler to just show command
-> line invocations of `./scripts/config -e` and `make`. No new config
-> required.
-
-
-
-I should have added "RFC" in this one as the purpose of the patch is to 
-show what works right now and not for actual submission.
-
-
->>
->> Forces CONFIG_BTRFS_FS=y to make CONFIG_ZSTD_COMPRESS=y to fix:
->> ld.lld: error: linking module flags 'Code Model': IDs have conflicting values in 'lib/built-in.a(entropy_common.o at 5332)' and 'ld-temp.o'
->>
->> because modules are linked with -mcmodel=large but the kernel uses -mcmodel=medium
+> num -> nr is usually best.
 > 
-> Please file a bug about this.
-> https://github.com/ClangBuiltLinux/linux/issues
+> And I know you like to abbreviate names, but it helps unfamiliar
+> readers 
+> to use a few more letters. num_wins -> nr_windows or even better 
+> nr_open_windows.
 > 
->>
->> Enables CONFIG_USERFAULTFD=y as otherwise vm_userfaultfd_ctx becomes
->> 0 bytes long and clang sanitizer crashes as
->> https://bugs.llvm.org/show_bug.cgi?id=500375
+> Same comment about location of the field. Also it's not quite clear
+> to 
+> me what the relationship is between your open windows here and used 
+> credits in the vas_cop_feat_caps structure. In other comments and 
+> changelogs you use credit and window interchangeably.
 
+will change to nr_close_windows and nr_windows. 
+
+used_credits is used for how many windows / credits are used by user
+space. But when OS lost the credit, this window will be used in the
+hypervisor, but not from the user space point of view. It should expect
+this window is not active and should be available later. 
+
+But OS will be closing this window in the hypervisor. So used
+close_wins / num_wins are used to track the actual number of windows
+opened/closed in the hypervisor. 
+
+Thanks
+Haren
 > 
-> The above hyperlink doesn't work for me. Upstream llvm just moved from
-> bugzilla to github issue tracker.
-
-
-aah this is the correct one:
-https://bugs.llvm.org/show_bug.cgi?id=50037
-
 > 
-> https://github.com/llvm/llvm-project/issues
+> >  	u8 feat;		/* Feature type */
+> >  };
+> >  
+> > -- 
+> > 2.27.0
+> > 
+> > 
+> > 
 
-oh ok.
-
->>
->> Disables CONFIG_FTR_FIXUP_SELFTEST as it uses FTR_SECTION_ELSE with
->> conditional branches. There are other places like this and the following
->> patches address that.
->>
->> Disables CONFIG_FTRACE_MCOUNT_USE_RECORDMCOUNT as CONFIG_HAS_LTO_CLANG
->> depends on it being disabled. In order to avoid disabling way too many
->> options (like DYNAMIC_FTRACE/FUNCTION_TRACER), this converts
->> FTRACE_MCOUNT_USE_RECORDMCOUNT from def_bool to bool.
->>
->> Note that even with this config there is a good chance that LTO
->> is going to fail linking vmlinux because of the "bc" problem.
-> 
-> I think rather than adding a new config with LTO enabled and a few
-> things turned off, it would be better to not allow LTO to be
-> selectable if those things are turned on, until the combination of the
-> two are fixed.
-
-Well, if I want people to try this thing, I kinda need to provide an 
-easy way to allow LTO. The new config seemed the easiest (== the 
-shortest) :)
