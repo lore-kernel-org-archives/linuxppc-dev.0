@@ -4,33 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9879DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:31:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44E1FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:31:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JzHPX5rLyz3dh6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 23:31:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JzHQ53DMtz3dpW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 23:31:41 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JzHNM0Nj1z2xrG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JzHNM4L4kz2xYG
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Feb 2022 23:30:11 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JzHNM292zz4xml;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JzHNM68mqz4xmt;
  Wed, 16 Feb 2022 23:30:11 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <6c608fd4795e2d8ea1a0a449405a0087f76d8bb3.1642752375.git.christophe.leroy@csgroup.eu>
-References: <6c608fd4795e2d8ea1a0a449405a0087f76d8bb3.1642752375.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 1/3] powerpc/lib/sstep: Use l1_dcache_bytes() instead of
- opencoding
-Message-Id: <164501435210.521186.7862995446067984760.b4-ty@ellerman.id.au>
-Date: Wed, 16 Feb 2022 23:25:52 +1100
+In-Reply-To: <1e6162f334167e75f1140082932e3a354b16daba.1642413973.git.christophe.leroy@csgroup.eu>
+References: <1e6162f334167e75f1140082932e3a354b16daba.1642413973.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/32s: Enable STRICT_MODULE_RWX for the 603 core
+Message-Id: <164501434892.521186.15893809567759741150.b4-ty@ellerman.id.au>
+Date: Wed, 16 Feb 2022 23:25:48 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -50,20 +49,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 21 Jan 2022 08:06:27 +0000, Christophe Leroy wrote:
-> Don't opencode dcache size retrieval based on whether that's ppc32 or ppc64.
+On Mon, 17 Jan 2022 10:06:39 +0000, Christophe Leroy wrote:
+> The book3s/32 MMU doesn't support per page execution protection and
+> doesn't support RO protection for kernel pages.
 > 
-> Use l1_dcache_bytes()
+> However, on the 603 which implements software loaded TLBs, execution
+> protection is honored by the TLB Miss handler which doesn't load
+> Instruction TLB for non executable pages. And RO protection is
+> honored by clearing the C bit for RO pages, leading to DSI.
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/3] powerpc/lib/sstep: Use l1_dcache_bytes() instead of opencoding
-      https://git.kernel.org/powerpc/c/67484e0de9c93b4a9187bb49f45dfdaa8dc03c0b
-[2/3] powerpc/lib/sstep: Remove unneeded #ifdef __powerpc64__
-      https://git.kernel.org/powerpc/c/7c3bba91999075f4cfcab0542e4eb74d2d63554b
-[3/3] powerpc/lib/sstep: use truncate_if_32bit()
-      https://git.kernel.org/powerpc/c/6836f099039e6c72fb548bf527345aa4345c3308
+[1/1] powerpc/32s: Enable STRICT_MODULE_RWX for the 603 core
+      https://git.kernel.org/powerpc/c/0670010f3b10aeaad0dfdf0dad0bcd020fc70eb5
 
 cheers
