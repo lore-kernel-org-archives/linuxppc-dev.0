@@ -4,34 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE79BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:33:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0560C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:34:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JzHSb2J1Mz3fQN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 23:33:51 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JzHT0723cz3fVd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 23:34:12 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JzHNS3sgQz3cSg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Feb 2022 23:30:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JzHNT0Wpqz30Mf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Feb 2022 23:30:17 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JzHNS5lqJz4xv1;
- Wed, 16 Feb 2022 23:30:16 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JzHNT2J8bz4xbG;
+ Wed, 16 Feb 2022 23:30:17 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <cover.1630667612.git.christophe.leroy@csgroup.eu>
-References: <cover.1630667612.git.christophe.leroy@csgroup.eu>
-Subject: Re: [RFC PATCH v1 00/11] powerpc/machdep: Remove dust and convert to
- static calls
-Message-Id: <164501434429.521186.17328213393681621470.b4-ty@ellerman.id.au>
-Date: Wed, 16 Feb 2022 23:25:44 +1100
+To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220207221247.354454-1-nathanl@linux.ibm.com>
+References: <20220207221247.354454-1-nathanl@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/pseries: make pseries_devicetree_update() static
+Message-Id: <164501435696.521186.8070658981087390464.b4-ty@ellerman.id.au>
+Date: Wed, 16 Feb 2022 23:25:56 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -46,30 +42,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 3 Sep 2021 11:18:34 +0000 (UTC), Christophe Leroy wrote:
-> The purpose of this series is to convert machine dependent
-> functions in structure ppc_md into static calls.
+On Mon, 7 Feb 2022 16:12:47 -0600, Nathan Lynch wrote:
+> pseries_devicetree_update() has only one call site, in the same file in
+> which it is defined. Make it static.
 > 
-> First part of the series remove some dust in and around machdep.h
 > 
-> Then some helpers are defined to abstract the access to ppc_md. structure.
-> 
-> [...]
 
-Patches 3, 5, 7 and 8 applied to powerpc/next.
+Applied to powerpc/next.
 
-[03/11] powerpc/machdep: Remove CONFIG_PPC_HAS_FEATURE_CALLS
-        https://git.kernel.org/powerpc/c/d6a6c725a20467f52a41270bdaad9565c66f3b7a
-[05/11] powerpc/machdep: Move sys_ctrler_t definition into pmac.h
-        https://git.kernel.org/powerpc/c/e6d03ac156db84422519aa8628efc210d24bf889
-[07/11] powerpc/mpc86xx_hpcn: Remove obsolete statement
-        https://git.kernel.org/powerpc/c/fae65a9ac8fd2221dbf034019fa18d72b2b0c8e9
-[08/11] powerpc/corenet: Change criteria to set MPIC_ENABLE_COREINT
-        https://git.kernel.org/powerpc/c/66ada2907864cafa4578b92926cb8bc0a4bc8c9c
+[1/1] powerpc/pseries: make pseries_devicetree_update() static
+      https://git.kernel.org/powerpc/c/92e6dc257bd5771cf8db662e4d371fdb58fcbf43
 
 cheers
