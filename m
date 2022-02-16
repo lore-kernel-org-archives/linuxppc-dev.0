@@ -4,34 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DD6AC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:33:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE79BC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:33:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JzHSB2891z3dgw
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 23:33:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JzHSb2J1Mz3fQN
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 23:33:51 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JzHNS0FTPz2xtb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JzHNS3sgQz3cSg
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Feb 2022 23:30:16 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JzHNS2RPfz4xsk;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JzHNS5lqJz4xv1;
  Wed, 16 Feb 2022 23:30:16 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christophe Leroy <christophe.leroy@csgroup.eu>, masahiroy@kernel.org
-In-Reply-To: <c2cbb8f046b7efc251053521dc39b752795e26b7.1642782130.git.christophe.leroy@csgroup.eu>
-References: <c2cbb8f046b7efc251053521dc39b752795e26b7.1642782130.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v4 1/5] powerpc/vdso: augment VDSO32 functions to support
- 64 bits build
-Message-Id: <164501435616.521186.14529386881092781914.b4-ty@ellerman.id.au>
-Date: Wed, 16 Feb 2022 23:25:56 +1100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <cover.1630667612.git.christophe.leroy@csgroup.eu>
+References: <cover.1630667612.git.christophe.leroy@csgroup.eu>
+Subject: Re: [RFC PATCH v1 00/11] powerpc/machdep: Remove dust and convert to
+ static calls
+Message-Id: <164501434429.521186.17328213393681621470.b4-ty@ellerman.id.au>
+Date: Wed, 16 Feb 2022 23:25:44 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,29 +51,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 21 Jan 2022 16:30:21 +0000, Christophe Leroy wrote:
-> VDSO64 cacheflush.S datapage.S gettimeofday.S and vgettimeofday.c
-> are very similar to their VDSO32 counterpart.
+On Fri, 3 Sep 2021 11:18:34 +0000 (UTC), Christophe Leroy wrote:
+> The purpose of this series is to convert machine dependent
+> functions in structure ppc_md into static calls.
 > 
-> VDSO32 counterpart is already more complete than the VDSO64 version
-> as it supports both PPC32 vdso and 32 bits VDSO for PPC64.
+> First part of the series remove some dust in and around machdep.h
 > 
-> Use compat macros wherever necessary in PPC32 files
-> so that they can also be used to build VDSO64.
+> Then some helpers are defined to abstract the access to ppc_md. structure.
 > 
 > [...]
 
-Applied to powerpc/next.
+Patches 3, 5, 7 and 8 applied to powerpc/next.
 
-[1/5] powerpc/vdso: augment VDSO32 functions to support 64 bits build
-      https://git.kernel.org/powerpc/c/f061fb03ee611c5657010ee4fa2a3fa64dfe3bd0
-[2/5] powerpc/vdso: Rework VDSO32 makefile to add a prefix to object files
-      https://git.kernel.org/powerpc/c/d88378d8d2c776154c6b606f2a423a81d7795f6f
-[3/5] powerpc/vdso: Merge vdso64 and vdso32 into a single directory
-      https://git.kernel.org/powerpc/c/fd1feade75fb1a9275c39d76c5ccdbbbe6b37aa3
-[4/5] powerpc/vdso: Remove cvdso_call_time macro
-      https://git.kernel.org/powerpc/c/9b97bea90072a075363a200dd7b54ad4a24e9491
-[5/5] powerpc/vdso: Move cvdso_call macro into gettimeofday.S
-      https://git.kernel.org/powerpc/c/692b21d78046851e75dc25bba773189c670b49c2
+[03/11] powerpc/machdep: Remove CONFIG_PPC_HAS_FEATURE_CALLS
+        https://git.kernel.org/powerpc/c/d6a6c725a20467f52a41270bdaad9565c66f3b7a
+[05/11] powerpc/machdep: Move sys_ctrler_t definition into pmac.h
+        https://git.kernel.org/powerpc/c/e6d03ac156db84422519aa8628efc210d24bf889
+[07/11] powerpc/mpc86xx_hpcn: Remove obsolete statement
+        https://git.kernel.org/powerpc/c/fae65a9ac8fd2221dbf034019fa18d72b2b0c8e9
+[08/11] powerpc/corenet: Change criteria to set MPIC_ENABLE_COREINT
+        https://git.kernel.org/powerpc/c/66ada2907864cafa4578b92926cb8bc0a4bc8c9c
 
 cheers
