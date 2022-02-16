@@ -4,31 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45926C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:30:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5505EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 12:30:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JzHNj20wGz3cYN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 23:30:29 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JzHP73wkXz3clH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Feb 2022 23:30:51 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JzHNK6MPxz2xrG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Feb 2022 23:30:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JzHNL3pt1z2xrG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Feb 2022 23:30:10 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4JzHNL13Bsz4xbG;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4JzHNL4Hw3z4xdL;
  Wed, 16 Feb 2022 23:30:10 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220211065215.101767-1-aneesh.kumar@linux.ibm.com>
-References: <20220211065215.101767-1-aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc/mm: Update default hugetlb size early
-Message-Id: <164501435855.521186.2992256285509889819.b4-ty@ellerman.id.au>
-Date: Wed, 16 Feb 2022 23:25:58 +1100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <68932ec2ba6b868d35006b96e90f0890f3da3c05.1638273868.git.christophe.leroy@csgroup.eu>
+References: <68932ec2ba6b868d35006b96e90f0890f3da3c05.1638273868.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/2] powerpc/32: Remove remaining .stabs annotations
+Message-Id: <164501434587.521186.16713102586513485319.b4-ty@ellerman.id.au>
+Date: Wed, 16 Feb 2022 23:25:45 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,25 +45,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org
+Cc: linuxppc-dev@lists.ozlabs.org, kernel test robot <lkp@intel.com>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 11 Feb 2022 12:22:15 +0530, Aneesh Kumar K.V wrote:
-> commit: d9c234005227 ("Do not depend on MAX_ORDER when grouping pages by mobility")
-> introduced pageblock_order which will be used to group pages better.
-> The kernel now groups pages based on the value of HPAGE_SHIFT. Hence HPAGE_SHIFT
-> should be set before we call set_pageblock_order.
+On Tue, 30 Nov 2021 13:04:49 +0100, Christophe Leroy wrote:
+> STABS debug format has been superseded long time ago by DWARF.
 > 
-> set_pageblock_order happens early in the boot and default hugetlb page size
-> should be initialized before that to compute the right pageblock_order value.
+> Remove the few remaining .stabs annotations from old 32 bits code.
 > 
-> [...]
+> 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/mm: Update default hugetlb size early
-      https://git.kernel.org/powerpc/c/2354ad252b66695be02f4acd18e37bf6264f0464
+[1/2] powerpc/32: Remove remaining .stabs annotations
+      https://git.kernel.org/powerpc/c/12318163737cd8808d13faa6e2393774191a6182
+[2/2] powerpc/32: Remove _ENTRY() macro
+      https://git.kernel.org/powerpc/c/27e21e8f128a56d3462f0fe2fd3a59c02cc002b1
 
 cheers
