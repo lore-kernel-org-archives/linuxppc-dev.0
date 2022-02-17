@@ -4,14 +4,14 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B238C43217
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 10:58:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01E5BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 10:59:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JzsJN4bjVz3cR4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 21:58:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JzsK50pL8z3cX1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 21:59:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=QjyBknuE;
-	dkim=fail reason="signature verification failed" header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=kqtJMiiu;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=ZmB0wl9B;
+	dkim=fail reason="signature verification failed" header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=k0ZVrYbl;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
@@ -19,57 +19,51 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=pvorel@suse.cz; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256
- header.s=susede2_rsa header.b=QjyBknuE; 
+ header.s=susede2_rsa header.b=ZmB0wl9B; 
  dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=kqtJMiiu; 
+ header.s=susede2_ed25519 header.b=k0ZVrYbl; 
  dkim-atps=neutral
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JzsHb3X1Jz306m
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JzsHb3R3jz2ymb
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Feb 2022 21:58:03 +1100 (AEDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
  (No client certificate requested)
- by smtp-out1.suse.de (Postfix) with ESMTPS id 2D10A21991;
- Thu, 17 Feb 2022 10:58:01 +0000 (UTC)
+ by smtp-out1.suse.de (Postfix) with ESMTPS id 6A5C8210E1;
+ Thu, 17 Feb 2022 10:58:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
- t=1645095481; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=BWifxgAR/Z495cVFocnolcIW5XpC70uze6lvb8LtCTg=;
- b=QjyBknuEto9Q9s36hn0fOg9mYBlkG30wBXmAflfbDDykG40GO+NGmXHi2GDybQ/PZPCHxU
- Gxkwt6vzmnavAmxHHjoJ3doHeWQEpezRyHN+eXcm1t0lrx3z7OXBXnwxd4dXZaQP7iR6ib
- yGGN4enmc1Ch9Z0Fsd12v4qOexLInxE=
+ t=1645095480; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version: content-transfer-encoding:content-transfer-encoding;
+ bh=ejJOPMGqoqTuXltYTN+lNUEISoj2/cmQ0coSdRcZq5k=;
+ b=ZmB0wl9B9CgZyZnf/7Ct12lyeIShGiixXlRP9IOq/4vrlpDESTcIN8KW7m/QnQcMLuQUaF
+ bzzZ4SKpatk+xQqopXOBDcul+VBATMS0f79s5N3E4O0RMKPmDp6nhXoD5Wc1GUFzcYSxG+
+ C2S+N2tis9gO5C8RX93fKLmFkW559YU=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
- s=susede2_ed25519; t=1645095481;
+ s=susede2_ed25519; t=1645095480;
  h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=BWifxgAR/Z495cVFocnolcIW5XpC70uze6lvb8LtCTg=;
- b=kqtJMiiuDYJxUG1xYWedaAyqSl6ER1f5n+1Aza1p+QfHxJQB14HQ358hl+AbmAWdVG83XH
- yNNiCWRtqCK2okAQ==
+ mime-version:mime-version: content-transfer-encoding:content-transfer-encoding;
+ bh=ejJOPMGqoqTuXltYTN+lNUEISoj2/cmQ0coSdRcZq5k=;
+ b=k0ZVrYblyEUXeXXww5CqhEGKlAS7+qvgR0vU+sdgJQJFmqwkM84m7WcCBoIqxjnrXFRvUf
+ amxF66q1wDa9bnDA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
  (No client certificate requested)
- by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D20C013DD8;
- Thu, 17 Feb 2022 10:58:00 +0000 (UTC)
+ by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id EC72813DD8;
+ Thu, 17 Feb 2022 10:57:59 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
- by imap2.suse-dmz.suse.de with ESMTPSA id WBGmMTgqDmJdTgAAMHmgww
- (envelope-from <pvorel@suse.cz>); Thu, 17 Feb 2022 10:58:00 +0000
+ by imap2.suse-dmz.suse.de with ESMTPSA id dDoXODcqDmJdTgAAMHmgww
+ (envelope-from <pvorel@suse.cz>); Thu, 17 Feb 2022 10:57:59 +0000
 From: Petr Vorel <pvorel@suse.cz>
 To: linux-crypto@vger.kernel.org
-Subject: [PATCH v3 2/2] crypto: vmx - add missing dependencies
-Date: Thu, 17 Feb 2022 11:57:51 +0100
-Message-Id: <20220217105751.6330-3-pvorel@suse.cz>
+Subject: [PATCH v3 0/2] vmx-crypto: Add missing dependencies
+Date: Thu, 17 Feb 2022 11:57:49 +0100
+Message-Id: <20220217105751.6330-1-pvorel@suse.cz>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220217105751.6330-1-pvorel@suse.cz>
-References: <20220217105751.6330-1-pvorel@suse.cz>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -91,59 +85,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-vmx-crypto module depends on CRYPTO_AES, CRYPTO_CBC, CRYPTO_CTR or
-CRYPTO_XTS, thus add them.
+Hi all,
 
-These dependencies are likely to be enabled, but if
-CRYPTO_DEV_VMX=y && !CRYPTO_MANAGER_DISABLE_TESTS
-and either of CRYPTO_AES, CRYPTO_CBC, CRYPTO_CTR or CRYPTO_XTS is built
-as module or disabled, alg_test() from crypto/testmgr.c complains during
-boot about failing to allocate the generic fallback implementations
-(2 == ENOENT):
 
-[    0.540953] Failed to allocate xts(aes) fallback: -2
-[    0.541014] alg: skcipher: failed to allocate transform for p8_aes_xts: -2
-[    0.541120] alg: self-tests for p8_aes_xts (xts(aes)) failed (rc=-2)
-[    0.544440] Failed to allocate ctr(aes) fallback: -2
-[    0.544497] alg: skcipher: failed to allocate transform for p8_aes_ctr: -2
-[    0.544603] alg: self-tests for p8_aes_ctr (ctr(aes)) failed (rc=-2)
-[    0.547992] Failed to allocate cbc(aes) fallback: -2
-[    0.548052] alg: skcipher: failed to allocate transform for p8_aes_cbc: -2
-[    0.548156] alg: self-tests for p8_aes_cbc (cbc(aes)) failed (rc=-2)
-[    0.550745] Failed to allocate transformation for 'aes': -2
-[    0.550801] alg: cipher: Failed to load transform for p8_aes: -2
-[    0.550892] alg: self-tests for p8_aes (aes) failed (rc=-2)
-
-Fixes: c07f5d3da643 ("crypto: vmx - Adding support for XTS")
-Fixes: d2e3ae6f3aba ("crypto: vmx - Enabling VMX module for PPC64")
-
-Suggested-by: Nicolai Stange <nstange@suse.de>
-Signed-off-by: Petr Vorel <pvorel@suse.cz>
----
 changes v2->v3:
-* more less the same, just in drivers/crypto/Kconfig (previously it was
-  in drivers/crypto/vmx/Kconfig)
+* keep CRYPTO_DEV_VMX and merge CRYPTO_DEV_VMX_ENCRYPT into it instead
+  of vice versa (suggested by Nicolai). I have no problem to send
+  another version if maintainers want the original approach.
 * change commit subject to be compatible
+* remove MAINTAINERS changes
 
- drivers/crypto/Kconfig | 4 ++++
- 1 file changed, 4 insertions(+)
+Petr Vorel (2):
+  crypto: vmx - merge CRYPTO_DEV_VMX_ENCRYPT into CRYPTO_DEV_VMX
+  crypto: vmx - add missing dependencies
 
-diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
-index 923fa1effb4a..0eafb2a49f04 100644
---- a/drivers/crypto/Kconfig
-+++ b/drivers/crypto/Kconfig
-@@ -764,7 +764,11 @@ config CRYPTO_DEV_QCOM_RNG
- config CRYPTO_DEV_VMX
- 	tristate "Power VMX cryptographic acceleration instructions driver"
- 	depends on PPC64 && VSX
-+	select CRYPTO_AES
-+	select CRYPTO_CBC
-+	select CRYPTO_CTR
- 	select CRYPTO_GHASH
-+	select CRYPTO_XTS
- 	help
- 	  Support for VMX cryptographic acceleration instructions on Power8 CPU.
- 	  This module supports acceleration for AES and GHASH in hardware. If you
+ arch/powerpc/configs/powernv_defconfig |  2 +-
+ arch/powerpc/configs/ppc64_defconfig   |  2 +-
+ arch/powerpc/configs/pseries_defconfig |  2 +-
+ drivers/crypto/Kconfig                 | 13 +++++++++----
+ drivers/crypto/vmx/Kconfig             | 10 ----------
+ drivers/crypto/vmx/Makefile            |  4 ++--
+ 6 files changed, 14 insertions(+), 19 deletions(-)
+ delete mode 100644 drivers/crypto/vmx/Kconfig
+
 -- 
 2.35.1
 
