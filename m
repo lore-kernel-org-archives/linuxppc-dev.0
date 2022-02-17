@@ -4,97 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D349FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 12:01:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28704C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 12:03:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jzthl3sqGz3cVF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 23:01:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rk1u9ymX;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=rk1u9ymX; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JztkW34JPz3dfn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 23:02:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jztgy5YVMz3bb9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Feb 2022 23:00:46 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 21HBddKk030523; 
- Thu, 17 Feb 2022 12:00:10 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=RPK02i33myDKA4bIkfBDslJjVJucaG1dFf32Qm6oCgE=;
- b=rk1u9ymXsuEs3djR5ElAft4xFo4MRy4bFLpasvqVsK46eYuEiMBA81wE25tRWlORrpk8
- nM3xTNqufSc02jOvf4YeleHIkMGr77nlB0NVyYuUPkKZMUcsVPmMxHb3oIFJJgvgv56g
- AkiLu1nOZoKtjdU+CRj3WdMI0PkzJADUn90fLa4g4i/QtCcEuJRLMMsykV/jBry3vpjd
- A3S7sTPbqyYt8mDlN+ohJ1uACV37mQxEo4Dr8OhlIvAgNNfH/nt+ooT5tg+AjyIwxGKQ
- cTjk7iIXX+2cPATrWE2J7SfLkFn/CprV/GRw/TX94y5t/WJo1IusAuiSiUAI0+GhnHZ/ pA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3e9k53kyju-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 17 Feb 2022 12:00:10 +0000
-Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 21HBrw4A016454;
- Thu, 17 Feb 2022 12:00:09 GMT
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3e9k53kyh6-2
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 17 Feb 2022 12:00:09 +0000
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 21HBZwAv022806;
- Thu, 17 Feb 2022 11:36:46 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma05fra.de.ibm.com with ESMTP id 3e64ha7782-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 17 Feb 2022 11:36:45 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 21HBahp937028328
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 17 Feb 2022 11:36:43 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 91A4352071;
- Thu, 17 Feb 2022 11:36:42 +0000 (GMT)
-Received: from li-NotSettable.ibm.com.com (unknown [9.43.115.39])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1E43852065;
- Thu, 17 Feb 2022 11:36:39 +0000 (GMT)
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Masami Hiramatsu <mhiramat@kernel.org>
-Subject: [PATCH 0/3] powerpc/ftrace: Reserve instructions from function entry
- for ftrace
-Date: Thu, 17 Feb 2022 17:06:22 +0530
-Message-Id: <cover.1645096227.git.naveen.n.rao@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.27.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: DQ6MhTknBE0_u8Dy8aNbZyxfn4xTp6Am
-X-Proofpoint-GUID: 16gxvXOI1def_ltGAETNZW6zLj_LE4PB
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jztjw1zcPz3cDR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Feb 2022 23:02:27 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4Jztjr3ywzz9sSZ;
+ Thu, 17 Feb 2022 13:02:24 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id N8HK48oUeKlw; Thu, 17 Feb 2022 13:02:24 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4Jztjr3Bxmz9sRv;
+ Thu, 17 Feb 2022 13:02:24 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5F1478B780;
+ Thu, 17 Feb 2022 13:02:24 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id FQJtncJFfTIv; Thu, 17 Feb 2022 13:02:24 +0100 (CET)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.6.225])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1604B8B763;
+ Thu, 17 Feb 2022 13:02:24 +0100 (CET)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21HC2ITQ400842
+ (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+ Thu, 17 Feb 2022 13:02:18 +0100
+Received: (from chleroy@localhost)
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21HC2In7400841;
+ Thu, 17 Feb 2022 13:02:18 +0100
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
+ christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v1 3/4] powerpc/ftrace: Regroup PPC64 specific operations in
+ ftrace_mprofile.S
+Date: Thu, 17 Feb 2022 13:01:58 +0100
+Message-Id: <619dfb672bf4f1b777a4b3f8b4f14e637fea2716.1645099283.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <ec286d2cc6989668a96f14543275437d2f3f0e3a.1645099283.git.christophe.leroy@csgroup.eu>
+References: <ec286d2cc6989668a96f14543275437d2f3f0e3a.1645099283.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
- definitions=2022-02-17_04,2022-02-17_01,2021-12-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 spamscore=0
- lowpriorityscore=0 adultscore=0 impostorscore=0 malwarescore=0
- suspectscore=0 phishscore=0 mlxscore=0 priorityscore=1501 clxscore=1015
- mlxlogscore=564 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2201110000 definitions=main-2202170051
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1645099315; l=1188; s=20211009;
+ h=from:subject:message-id; bh=XMIYYhQft+jL7/o2oyJXW3QWdZRHg33NfV3DhZbDywQ=;
+ b=t5/JLVBulgsg7g1omxoG3MZAkrTcPSUvsnjYBnC+ZSWqQif8+O0lrHAG0EFcsi+kaN3dZvsRuXJ9
+ aDFwdjTEATn1MLYkcZLEQt1or9tfe2HXQkQK/uN0L0kQ4g/0zkP2
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
+ pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,33 +77,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Previously discussed here:
-https://lore.kernel.org/20220207102454.41b1d6b5@gandalf.local.home
+CONFIG_MPROFILE_KERNEL is only for PPC64 and ftrace_mprofile.o
+is build on PPC64 only when CONFIG_MPROFILE_KERNEL is defined.
 
-- Naveen
+Move saving of r0 inside #ifdef PPC64
 
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/kernel/trace/ftrace_mprofile.S | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-Naveen N. Rao (3):
-  powerpc/ftrace: Reserve instructions from function entry for ftrace
-  bpf/trampoline: Allow ftrace location to differ from trampoline attach
-    address
-  kprobes: Allow probing on any address belonging to ftrace
-
- arch/powerpc/include/asm/ftrace.h  |  15 ++++
- arch/powerpc/kernel/trace/ftrace.c | 110 ++++++++++++++++++++++++++---
- kernel/bpf/trampoline.c            |   2 -
- kernel/kprobes.c                   |  12 ++++
- kernel/trace/ftrace.c              |   2 +
- 5 files changed, 129 insertions(+), 12 deletions(-)
-
-
-base-commit: 1b43a74f255c5c00db25a5fedfd75ca0dc029022
+diff --git a/arch/powerpc/kernel/trace/ftrace_mprofile.S b/arch/powerpc/kernel/trace/ftrace_mprofile.S
+index 630b2de9957b..f5d31c458e6b 100644
+--- a/arch/powerpc/kernel/trace/ftrace_mprofile.S
++++ b/arch/powerpc/kernel/trace/ftrace_mprofile.S
+@@ -33,11 +33,6 @@
+  * and then arrange for the ftrace function to be called.
+  */
+ .macro	ftrace_regs_entry allregs
+-	/* Save the original return address in A's stack frame */
+-#ifdef CONFIG_MPROFILE_KERNEL
+-	PPC_STL	r0,LRSAVE(r1)
+-#endif
+-
+ 	/* Create our stack frame + pt_regs */
+ 	PPC_STLU	r1,-SWITCH_FRAME_SIZE(r1)
+ 
+@@ -46,6 +41,8 @@
+ 	SAVE_GPRS(3, 10, r1)
+ 
+ #ifdef CONFIG_PPC64
++	/* Save the original return address in A's stack frame */
++	std	r0, LRSAVE+SWITCH_FRAME_SIZE(r1)
+ 	/* Ok to continue? */
+ 	lbz	r3, PACA_FTRACE_ENABLED(r13)
+ 	cmpdi	r3, 0
 -- 
-2.35.1
+2.34.1
 
