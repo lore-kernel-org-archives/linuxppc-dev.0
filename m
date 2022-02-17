@@ -4,64 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EDF4C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 11:30:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29468C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 11:38:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Jzt1Y27h1z3cZK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 22:30:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Jzt9s2SWFz3cTr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 22:38:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SfuxF3V5;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=SfuxF3V5; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Jzt141Cpdz3bV4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Feb 2022 22:30:28 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4Jzt0x2QyZz9sS8;
- Thu, 17 Feb 2022 12:30:25 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id XUnYJCICrvgh; Thu, 17 Feb 2022 12:30:25 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4Jzt0x1Ty7z9sQv;
- Thu, 17 Feb 2022 12:30:25 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 25F258B77C;
- Thu, 17 Feb 2022 12:30:25 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 4HxbiZsXw0US; Thu, 17 Feb 2022 12:30:25 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.6.225])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DC7C08B763;
- Thu, 17 Feb 2022 12:30:24 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21HBUEOe399195
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Thu, 17 Feb 2022 12:30:14 +0100
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21HBUC30399194;
- Thu, 17 Feb 2022 12:30:12 +0100
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Subject: [PATCH net v2] net: Force inlining of checksum functions in
- net/checksum.h
-Date: Thu, 17 Feb 2022 12:30:10 +0100
-Message-Id: <6e2d915b5fc8a7edc3557bcde2fa06d82edcf974.1645097288.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.34.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Jzt9070Ksz2ybK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Feb 2022 22:37:24 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 21HB9Hvm002737; 
+ Thu, 17 Feb 2022 11:36:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=kJD/XeCV9sYc2VxxV22CxFZX2bIMIheeokMIOZ2MLgw=;
+ b=SfuxF3V5bgCDnPPnYgDZdqK03O1psJC2QgPiHC1/HQ8UOZqIEvXKGb0PNx4xscRJTINr
+ +DoUtPI83pSXsT+o5v49qzJAlP2Zmr/EvmR1MZ2x473iASAzHOpvr9WbRsPM9Yuyixli
+ 6LIfWYy/QVTsGWbkhqYUXKsjsEXNEFwx7pGnNLfs9u0AEJJHiV5VyQ8s1dwgaPX+pf8o
+ aIU8ZKqSJPAMZ9zmRT/chNScDmRYqKTv2l6sO50Ov7YG/JVqTulRcL+h+yWxDOsIiJV/
+ lFkSJpWuJGK82v9FTxrW1Zvk/NwbKz16GvQEsC94bqV4/0bE4ivxCaGOnnKYzaHaR5XT uw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3e9hu2cmrp-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 17 Feb 2022 11:36:51 +0000
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 21HBSk6J004072;
+ Thu, 17 Feb 2022 11:36:51 GMT
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3e9hu2cmqp-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 17 Feb 2022 11:36:51 +0000
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 21HBaEJW008693;
+ Thu, 17 Feb 2022 11:36:49 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma03fra.de.ibm.com with ESMTP id 3e64haf7ua-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 17 Feb 2022 11:36:48 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 21HBak5138273368
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 17 Feb 2022 11:36:46 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5873D52050;
+ Thu, 17 Feb 2022 11:36:46 +0000 (GMT)
+Received: from li-NotSettable.ibm.com.com (unknown [9.43.115.39])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id EFDEC5206D;
+ Thu, 17 Feb 2022 11:36:43 +0000 (GMT)
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Masami Hiramatsu <mhiramat@kernel.org>
+Subject: [PATCH 1/3] powerpc/ftrace: Reserve instructions from function entry
+ for ftrace
+Date: Thu, 17 Feb 2022 17:06:23 +0530
+Message-Id: <8843d65ac0878232433573d10ebee30457748624.1645096227.git.naveen.n.rao@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <cover.1645096227.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1645096227.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1645097408; l=8024; s=20211009;
- h=from:subject:message-id; bh=HcE97JbRKL/kvh1JeDkyVDbNMuB70rD3eT2NwCu2/Kw=;
- b=bEJ9jjTQGGBmJg6n/t9KzGdpavvqwn2W6x8Ax6i92YSI6+mSoN/O9CyiChojjrkhC8uYVkUPQpLe
- oEd8FwurBZ4lur5Rq/y0y8f3YDxEUEJU3q3V6oeacFQxHd0j/6Ru
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: Ru5iKSd-xiMgaB_hKuoS9FVCmjWSGT4o
+X-Proofpoint-ORIG-GUID: 4kh5FzR50R7g40nHwBWh7_1ulXDWEBPe
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2022-02-17_04,2022-02-17_01,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 impostorscore=0
+ bulkscore=0 priorityscore=1501 lowpriorityscore=0 phishscore=0
+ suspectscore=0 mlxlogscore=811 malwarescore=0 spamscore=0 clxscore=1015
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2201110000 definitions=main-2202170051
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,251 +108,267 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All functions defined as static inline in net/checksum.h are
-meant to be inlined for performance reason.
+On some architectures, enabling function tracing results in multiple
+instructions being emitted at function entry. As an example, on
+powerpc64 with -mprofile-kernel, two instructions are emitted at
+function entry:
+	mflr	r0
+	bl	_mcount
 
-But since commit ac7c3e4ff401 ("compiler: enable
-CONFIG_OPTIMIZE_INLINING forcibly") the compiler is allowed to
-uninline functions when it wants.
+It is desirable to nop out both these instructions when ftrace is not
+active. For that purpose, it is essential to mark both these
+instructions as belonging to ftrace so that other kernel subsystems
+(such as kprobes) do not modify these instructions.
 
-Fair enough in the general case, but for tiny performance critical
-checksum helpers that's counter-productive.
+Add support for this by allowing architectures to override
+ftrace_cmp_recs() and to match against address ranges over and above a
+single MCOUNT_INSN_SIZE.
 
-The problem mainly arises when selecting CONFIG_CC_OPTIMISE_FOR_SIZE,
-Those helpers being 'static inline' in header files you suddenly find
-them duplicated many times in the resulting vmlinux.
+For powerpc32, we mark the two instructions preceding the call to
+_mcount() as belonging to ftrace.
 
-Here is a typical exemple when building powerpc pmac32_defconfig
-with CONFIG_CC_OPTIMISE_FOR_SIZE. csum_sub() appears 4 times:
+For powerpc64, an additional aspect to consider is that functions can
+have a global entry point for setting up the TOC when invoked from other
+modules. If present, global entry point always involves two instructions
+(addis/lis and addi). To handle this, we provide a custom
+ftrace_init_nop() for powerpc64 where we identify functions having a
+global entry point and record this information in the LSB of
+dyn_ftrace->arch.mod. This information is used in ftrace_cmp_recs() to
+reserve instructions from the global entry point.
 
-	c04a23cc <csum_sub>:
-	c04a23cc:	7c 84 20 f8 	not     r4,r4
-	c04a23d0:	7c 63 20 14 	addc    r3,r3,r4
-	c04a23d4:	7c 63 01 94 	addze   r3,r3
-	c04a23d8:	4e 80 00 20 	blr
-		...
-	c04a2ce8:	4b ff f6 e5 	bl      c04a23cc <csum_sub>
-		...
-	c04a2d2c:	4b ff f6 a1 	bl      c04a23cc <csum_sub>
-		...
-	c04a2d54:	4b ff f6 79 	bl      c04a23cc <csum_sub>
-		...
-	c04a754c <csum_sub>:
-	c04a754c:	7c 84 20 f8 	not     r4,r4
-	c04a7550:	7c 63 20 14 	addc    r3,r3,r4
-	c04a7554:	7c 63 01 94 	addze   r3,r3
-	c04a7558:	4e 80 00 20 	blr
-		...
-	c04ac930:	4b ff ac 1d 	bl      c04a754c <csum_sub>
-		...
-	c04ad264:	4b ff a2 e9 	bl      c04a754c <csum_sub>
-		...
-	c04e3b08 <csum_sub>:
-	c04e3b08:	7c 84 20 f8 	not     r4,r4
-	c04e3b0c:	7c 63 20 14 	addc    r3,r3,r4
-	c04e3b10:	7c 63 01 94 	addze   r3,r3
-	c04e3b14:	4e 80 00 20 	blr
-		...
-	c04e5788:	4b ff e3 81 	bl      c04e3b08 <csum_sub>
-		...
-	c04e65c8:	4b ff d5 41 	bl      c04e3b08 <csum_sub>
-		...
-	c0512d34 <csum_sub>:
-	c0512d34:	7c 84 20 f8 	not     r4,r4
-	c0512d38:	7c 63 20 14 	addc    r3,r3,r4
-	c0512d3c:	7c 63 01 94 	addze   r3,r3
-	c0512d40:	4e 80 00 20 	blr
-		...
-	c0512dfc:	4b ff ff 39 	bl      c0512d34 <csum_sub>
-		...
-	c05138bc:	4b ff f4 79 	bl      c0512d34 <csum_sub>
-		...
-
-Restore the expected behaviour by using __always_inline for all
-functions defined in net/checksum.h
-
-vmlinux size is even reduced by 256 bytes with this patch:
-
-	   text	   data	    bss	    dec	    hex	filename
-	6980022	2515362	 194384	9689768	 93daa8	vmlinux.before
-	6979862	2515266	 194384	9689512	 93d9a8	vmlinux.now
-
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Suggested-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
-v2: Rebased on net tree
+ arch/powerpc/include/asm/ftrace.h  |  15 ++++
+ arch/powerpc/kernel/trace/ftrace.c | 110 ++++++++++++++++++++++++++---
+ kernel/trace/ftrace.c              |   2 +
+ 3 files changed, 117 insertions(+), 10 deletions(-)
 
- include/net/checksum.h | 40 ++++++++++++++++++++--------------------
- 1 file changed, 20 insertions(+), 20 deletions(-)
-
-diff --git a/include/net/checksum.h b/include/net/checksum.h
-index 5218041e5c8f..1e2e011c51f6 100644
---- a/include/net/checksum.h
-+++ b/include/net/checksum.h
-@@ -22,7 +22,7 @@
- #include <asm/checksum.h>
+diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+index debe8c4f706260..8eb3235831633d 100644
+--- a/arch/powerpc/include/asm/ftrace.h
++++ b/arch/powerpc/include/asm/ftrace.h
+@@ -59,6 +59,21 @@ static inline unsigned long ftrace_call_adjust(unsigned long addr)
+ struct dyn_arch_ftrace {
+ 	struct module *mod;
+ };
++
++struct dyn_ftrace;
++struct module *ftrace_mod_addr_get(struct dyn_ftrace *rec);
++void ftrace_mod_addr_set(struct dyn_ftrace *rec, struct module *mod);
++
++#ifdef CONFIG_MPROFILE_KERNEL
++int ftrace_init_nop(struct module *mod, struct dyn_ftrace *rec);
++#define ftrace_init_nop ftrace_init_nop
++#endif
++
++#if defined(CONFIG_MPROFILE_KERNEL) || defined(CONFIG_PPC32)
++int ftrace_cmp_recs(const void *a, const void *b);
++#define ftrace_cmp_recs ftrace_cmp_recs
++#endif
++
+ #endif /* __ASSEMBLY__ */
  
- #ifndef _HAVE_ARCH_COPY_AND_CSUM_FROM_USER
--static inline
-+static __always_inline
- __wsum csum_and_copy_from_user (const void __user *src, void *dst,
- 				      int len)
- {
-@@ -33,7 +33,7 @@ __wsum csum_and_copy_from_user (const void __user *src, void *dst,
- #endif
+ #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+index 80b6285769f27c..11ce9296ce3cf2 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -428,21 +428,21 @@ int ftrace_make_nop(struct module *mod,
+ 	 * We should either already have a pointer to the module
+ 	 * or it has been passed in.
+ 	 */
+-	if (!rec->arch.mod) {
++	if (!ftrace_mod_addr_get(rec)) {
+ 		if (!mod) {
+ 			pr_err("No module loaded addr=%lx\n", addr);
+ 			return -EFAULT;
+ 		}
+-		rec->arch.mod = mod;
++		ftrace_mod_addr_set(rec, mod);
+ 	} else if (mod) {
+-		if (mod != rec->arch.mod) {
++		if (mod != ftrace_mod_addr_get(rec)) {
+ 			pr_err("Record mod %p not equal to passed in mod %p\n",
+-			       rec->arch.mod, mod);
++			       ftrace_mod_addr_get(rec), mod);
+ 			return -EINVAL;
+ 		}
+ 		/* nothing to do if mod == rec->arch.mod */
+ 	} else
+-		mod = rec->arch.mod;
++		mod = ftrace_mod_addr_get(rec);
  
- #ifndef HAVE_CSUM_COPY_USER
--static __inline__ __wsum csum_and_copy_to_user
-+static __always_inline __wsum csum_and_copy_to_user
- (const void *src, void __user *dst, int len)
- {
- 	__wsum sum = csum_partial(src, len, ~0U);
-@@ -45,7 +45,7 @@ static __inline__ __wsum csum_and_copy_to_user
- #endif
- 
- #ifndef _HAVE_ARCH_CSUM_AND_COPY
--static inline __wsum
-+static __always_inline __wsum
- csum_partial_copy_nocheck(const void *src, void *dst, int len)
- {
- 	memcpy(dst, src, len);
-@@ -54,7 +54,7 @@ csum_partial_copy_nocheck(const void *src, void *dst, int len)
- #endif
- 
- #ifndef HAVE_ARCH_CSUM_ADD
--static inline __wsum csum_add(__wsum csum, __wsum addend)
-+static __always_inline __wsum csum_add(__wsum csum, __wsum addend)
- {
- 	u32 res = (__force u32)csum;
- 	res += (__force u32)addend;
-@@ -62,12 +62,12 @@ static inline __wsum csum_add(__wsum csum, __wsum addend)
- }
- #endif
- 
--static inline __wsum csum_sub(__wsum csum, __wsum addend)
-+static __always_inline __wsum csum_sub(__wsum csum, __wsum addend)
- {
- 	return csum_add(csum, ~addend);
- }
- 
--static inline __sum16 csum16_add(__sum16 csum, __be16 addend)
-+static __always_inline __sum16 csum16_add(__sum16 csum, __be16 addend)
- {
- 	u16 res = (__force u16)csum;
- 
-@@ -75,12 +75,12 @@ static inline __sum16 csum16_add(__sum16 csum, __be16 addend)
- 	return (__force __sum16)(res + (res < (__force u16)addend));
- }
- 
--static inline __sum16 csum16_sub(__sum16 csum, __be16 addend)
-+static __always_inline __sum16 csum16_sub(__sum16 csum, __be16 addend)
- {
- 	return csum16_add(csum, ~addend);
+ 	return __ftrace_make_nop(mod, rec, addr);
+ #else
+@@ -451,6 +451,96 @@ int ftrace_make_nop(struct module *mod,
+ #endif /* CONFIG_MODULES */
  }
  
--static inline __wsum csum_shift(__wsum sum, int offset)
-+static __always_inline __wsum csum_shift(__wsum sum, int offset)
++#define FUNC_MCOUNT_OFFSET_PPC32	8
++#define FUNC_MCOUNT_OFFSET_PPC64_LEP	4
++#define FUNC_MCOUNT_OFFSET_PPC64_GEP	12
++
++#ifdef CONFIG_MPROFILE_KERNEL
++struct module *ftrace_mod_addr_get(struct dyn_ftrace *rec)
++{
++	return (struct module *)((unsigned long)rec->arch.mod & ~0x1);
++}
++
++void ftrace_mod_addr_set(struct dyn_ftrace *rec, struct module *mod)
++{
++	rec->arch.mod = (struct module *)(((unsigned long)rec->arch.mod & 0x1) | (unsigned long)mod);
++}
++
++int ftrace_init_nop(struct module *mod, struct dyn_ftrace *rec)
++{
++	unsigned long offset, ip = rec->ip;
++	ppc_inst_t op1, op2;
++	int ret;
++
++	if (!kallsyms_lookup_size_offset(rec->ip, NULL, &offset) ||
++	    (offset != FUNC_MCOUNT_OFFSET_PPC64_GEP && offset != FUNC_MCOUNT_OFFSET_PPC64_LEP)) {
++		ip -= FUNC_MCOUNT_OFFSET_PPC64_GEP;
++		ret = copy_inst_from_kernel_nofault(&op1, (void *)ip);
++		ret |= copy_inst_from_kernel_nofault(&op2, (void *)(ip + MCOUNT_INSN_SIZE));
++		if (!ret &&
++		    ((ppc_inst_val(op1) & 0xffff0000) == PPC_RAW_LIS(_R2, 0) ||
++		     (ppc_inst_val(op1) & 0xffff0000) == PPC_RAW_ADDIS(_R2, _R12, 0)) &&
++		    (ppc_inst_val(op2) & 0xffff0000) == PPC_RAW_ADDI(_R2, _R2, 0))
++			ftrace_mod_addr_set(rec, (struct module *)1);
++	} else if (offset == FUNC_MCOUNT_OFFSET_PPC64_GEP) {
++		ftrace_mod_addr_set(rec, (struct module *)1);
++	}
++
++	return ftrace_make_nop(mod, rec, MCOUNT_ADDR);
++}
++#else
++struct module *ftrace_mod_addr_get(struct dyn_ftrace *rec)
++{
++	return rec->arch.mod;
++}
++
++void ftrace_mod_addr_set(struct dyn_ftrace *rec, struct module *mod)
++{
++	rec->arch.mod = mod;
++}
++#endif /* CONFIG_MPROFILE_KERNEL */
++
++#if defined(CONFIG_MPROFILE_KERNEL) || defined(CONFIG_PPC32)
++int ftrace_location_get_offset(const struct dyn_ftrace *rec)
++{
++	if (IS_ENABLED(CONFIG_MPROFILE_KERNEL))
++		/*
++		 * On ppc64le with -mprofile-kernel, function entry can have:
++		 *   addis r2, r12, M
++		 *   addi  r2, r2, N
++		 *   mflr  r0
++		 *   bl    _mcount
++		 *
++		 * The first two instructions are for TOC setup and represent the global entry
++		 * point for cross-module calls, and may be missing if the function is never called
++		 * from other modules.
++		 */
++		return ((unsigned long)rec->arch.mod & 0x1) ? FUNC_MCOUNT_OFFSET_PPC64_GEP :
++							      FUNC_MCOUNT_OFFSET_PPC64_LEP;
++	else
++		/*
++		 * On ppc32, function entry always has:
++		 *   mflr r0
++		 *   stw  r0, 4(r1)
++		 *   bl   _mcount
++		 */
++		return FUNC_MCOUNT_OFFSET_PPC32;
++}
++
++int ftrace_cmp_recs(const void *a, const void *b)
++{
++	const struct dyn_ftrace *key = a;
++	const struct dyn_ftrace *rec = b;
++	int offset = ftrace_location_get_offset(rec);
++
++	if (key->flags < rec->ip - offset)
++		return -1;
++	if (key->ip >= rec->ip + MCOUNT_INSN_SIZE)
++		return 1;
++	return 0;
++}
++#endif
++
+ #ifdef CONFIG_MODULES
+ #ifdef CONFIG_PPC64
+ /*
+@@ -494,7 +584,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 	ppc_inst_t instr;
+ 	void *ip = (void *)rec->ip;
+ 	unsigned long entry, ptr, tramp;
+-	struct module *mod = rec->arch.mod;
++	struct module *mod = ftrace_mod_addr_get(rec);
+ 
+ 	/* read where this goes */
+ 	if (copy_inst_from_kernel_nofault(op, ip))
+@@ -561,7 +651,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 	int err;
+ 	ppc_inst_t op;
+ 	u32 *ip = (u32 *)rec->ip;
+-	struct module *mod = rec->arch.mod;
++	struct module *mod = ftrace_mod_addr_get(rec);
+ 	unsigned long tramp;
+ 
+ 	/* read where this goes */
+@@ -678,7 +768,7 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 	 * Being that we are converting from nop, it had better
+ 	 * already have a module defined.
+ 	 */
+-	if (!rec->arch.mod) {
++	if (!ftrace_mod_addr_get(rec)) {
+ 		pr_err("No module loaded\n");
+ 		return -EINVAL;
+ 	}
+@@ -699,7 +789,7 @@ __ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
+ 	ppc_inst_t op;
+ 	unsigned long ip = rec->ip;
+ 	unsigned long entry, ptr, tramp;
+-	struct module *mod = rec->arch.mod;
++	struct module *mod = ftrace_mod_addr_get(rec);
+ 
+ 	/* If we never set up ftrace trampolines, then bail */
+ 	if (!mod->arch.tramp || !mod->arch.tramp_regs) {
+@@ -814,7 +904,7 @@ int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
+ 	/*
+ 	 * Out of range jumps are called from modules.
+ 	 */
+-	if (!rec->arch.mod) {
++	if (!ftrace_mod_addr_get(rec)) {
+ 		pr_err("No module loaded\n");
+ 		return -EINVAL;
+ 	}
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index f9feb197b2daaf..68f20cf34b0c47 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -1510,6 +1510,7 @@ ftrace_ops_test(struct ftrace_ops *ops, unsigned long ip, void *regs)
+ 	}
+ 
+ 
++#ifndef ftrace_cmp_recs
+ static int ftrace_cmp_recs(const void *a, const void *b)
  {
- 	/* rotate sum to align it with a 16b boundary */
- 	if (offset & 1)
-@@ -88,42 +88,42 @@ static inline __wsum csum_shift(__wsum sum, int offset)
- 	return sum;
+ 	const struct dyn_ftrace *key = a;
+@@ -1521,6 +1522,7 @@ static int ftrace_cmp_recs(const void *a, const void *b)
+ 		return 1;
+ 	return 0;
  }
++#endif
  
--static inline __wsum
-+static __always_inline __wsum
- csum_block_add(__wsum csum, __wsum csum2, int offset)
+ static struct dyn_ftrace *lookup_rec(unsigned long start, unsigned long end)
  {
- 	return csum_add(csum, csum_shift(csum2, offset));
- }
- 
--static inline __wsum
-+static __always_inline __wsum
- csum_block_add_ext(__wsum csum, __wsum csum2, int offset, int len)
- {
- 	return csum_block_add(csum, csum2, offset);
- }
- 
--static inline __wsum
-+static __always_inline __wsum
- csum_block_sub(__wsum csum, __wsum csum2, int offset)
- {
- 	return csum_block_add(csum, ~csum2, offset);
- }
- 
--static inline __wsum csum_unfold(__sum16 n)
-+static __always_inline __wsum csum_unfold(__sum16 n)
- {
- 	return (__force __wsum)n;
- }
- 
--static inline __wsum csum_partial_ext(const void *buff, int len, __wsum sum)
-+static __always_inline __wsum csum_partial_ext(const void *buff, int len, __wsum sum)
- {
- 	return csum_partial(buff, len, sum);
- }
- 
- #define CSUM_MANGLED_0 ((__force __sum16)0xffff)
- 
--static inline void csum_replace_by_diff(__sum16 *sum, __wsum diff)
-+static __always_inline void csum_replace_by_diff(__sum16 *sum, __wsum diff)
- {
- 	*sum = csum_fold(csum_add(diff, ~csum_unfold(*sum)));
- }
- 
--static inline void csum_replace4(__sum16 *sum, __be32 from, __be32 to)
-+static __always_inline void csum_replace4(__sum16 *sum, __be32 from, __be32 to)
- {
- 	__wsum tmp = csum_sub(~csum_unfold(*sum), (__force __wsum)from);
- 
-@@ -136,7 +136,7 @@ static inline void csum_replace4(__sum16 *sum, __be32 from, __be32 to)
-  *  m : old value of a 16bit field
-  *  m' : new value of a 16bit field
-  */
--static inline void csum_replace2(__sum16 *sum, __be16 old, __be16 new)
-+static __always_inline void csum_replace2(__sum16 *sum, __be16 old, __be16 new)
- {
- 	*sum = ~csum16_add(csum16_sub(~(*sum), old), new);
- }
-@@ -150,7 +150,7 @@ void inet_proto_csum_replace16(__sum16 *sum, struct sk_buff *skb,
- void inet_proto_csum_replace_by_diff(__sum16 *sum, struct sk_buff *skb,
- 				     __wsum diff, bool pseudohdr);
- 
--static inline void inet_proto_csum_replace2(__sum16 *sum, struct sk_buff *skb,
-+static __always_inline void inet_proto_csum_replace2(__sum16 *sum, struct sk_buff *skb,
- 					    __be16 from, __be16 to,
- 					    bool pseudohdr)
- {
-@@ -158,7 +158,7 @@ static inline void inet_proto_csum_replace2(__sum16 *sum, struct sk_buff *skb,
- 				 (__force __be32)to, pseudohdr);
- }
- 
--static inline __wsum remcsum_adjust(void *ptr, __wsum csum,
-+static __always_inline __wsum remcsum_adjust(void *ptr, __wsum csum,
- 				    int start, int offset)
- {
- 	__sum16 *psum = (__sum16 *)(ptr + offset);
-@@ -175,12 +175,12 @@ static inline __wsum remcsum_adjust(void *ptr, __wsum csum,
- 	return delta;
- }
- 
--static inline void remcsum_unadjust(__sum16 *psum, __wsum delta)
-+static __always_inline void remcsum_unadjust(__sum16 *psum, __wsum delta)
- {
- 	*psum = csum_fold(csum_sub(delta, (__force __wsum)*psum));
- }
- 
--static inline __wsum wsum_negate(__wsum val)
-+static __always_inline __wsum wsum_negate(__wsum val)
- {
- 	return (__force __wsum)-((__force u32)val);
- }
 -- 
-2.34.1
+2.35.1
 
