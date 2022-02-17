@@ -4,100 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6C46C4167E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 10:55:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B238C43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 10:58:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4JzsDt0CR0z3cTF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 21:55:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4JzsJN4bjVz3cR4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Feb 2022 21:58:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=n+4vsorm;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=QjyBknuE;
+	dkim=fail reason="signature verification failed" header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=kqtJMiiu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=n+4vsorm; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
+ (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
+ envelope-from=pvorel@suse.cz; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256
+ header.s=susede2_rsa header.b=QjyBknuE; 
+ dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256
+ header.s=susede2_ed25519 header.b=kqtJMiiu; 
+ dkim-atps=neutral
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4JzsBZ6Yf2z2ymb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Feb 2022 21:53:42 +1100 (AEDT)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 21H9fcQC003505; 
- Thu, 17 Feb 2022 10:53:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : subject :
- date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=vY3aqzTyxwibnZZHQr6hwj82kzqUtFjsj1aMPDrhsPg=;
- b=n+4vsorm95ZlRQrZkJwIHK2bWOJT1xQ2TK4uTb293pmY9dZInKQ8B1oHdZv/M4pysCvx
- 34zmREwuHTvb6UOX4eekrbnO7MF0Cfb+NOh/32tSeWpGbeQQ6ONPZdj1qqCfjygw9CIN
- ivpPBXJmEfeN3UnLElCFRgQGng9LeZpOSwC9oCpfgIsM80LhJ05B3QLeQR/nbqUgzjyJ
- qQIvn+H25u5h5ghW3KgCUEGg71+RXWNEPqGbxy7T55KamUJYsozVg8y0Ou8MOulVcTVL
- OZFNQaaQn9f9LFMftIFF0Ga3MkmeLM6FGog4GiEEpbZvf0QPGMxgm7KwFBgMsKR0SIIw TQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3e9ky1hf4u-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 17 Feb 2022 10:53:38 +0000
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 21HAr0Mg005560;
- Thu, 17 Feb 2022 10:53:37 GMT
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3e9ky1hf47-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 17 Feb 2022 10:53:37 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 21HAmfFF007118;
- Thu, 17 Feb 2022 10:53:35 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma03ams.nl.ibm.com with ESMTP id 3e64hagwd9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 17 Feb 2022 10:53:35 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 21HArWmX45089078
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 17 Feb 2022 10:53:32 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 46D5DA406D;
- Thu, 17 Feb 2022 10:53:32 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4EBC5A404D;
- Thu, 17 Feb 2022 10:53:29 +0000 (GMT)
-Received: from pratiks-thinkpad.ibm.com (unknown [9.43.63.58])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 17 Feb 2022 10:53:29 +0000 (GMT)
-From: "Pratik R. Sampat" <psampat@linux.ibm.com>
-To: mpe@ellerman.id.au, shuah@kernel.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, linux-kselftest@vger.kernel.org,
- linux-kernel@vger.kernel.org, psampat@linux.ibm.com,
- pratik.r.sampat@gmail.com
-Subject: [PATCH v9 2/2] selftest/powerpc: Add PAPR sysfs attributes sniff test
-Date: Thu, 17 Feb 2022 16:23:21 +0530
-Message-Id: <20220217105321.52941-3-psampat@linux.ibm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220217105321.52941-1-psampat@linux.ibm.com>
-References: <20220217105321.52941-1-psampat@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4JzsHb3X1Jz306m
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Feb 2022 21:58:03 +1100 (AEDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+ (No client certificate requested)
+ by smtp-out1.suse.de (Postfix) with ESMTPS id 2D10A21991;
+ Thu, 17 Feb 2022 10:58:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+ t=1645095481; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=BWifxgAR/Z495cVFocnolcIW5XpC70uze6lvb8LtCTg=;
+ b=QjyBknuEto9Q9s36hn0fOg9mYBlkG30wBXmAflfbDDykG40GO+NGmXHi2GDybQ/PZPCHxU
+ Gxkwt6vzmnavAmxHHjoJ3doHeWQEpezRyHN+eXcm1t0lrx3z7OXBXnwxd4dXZaQP7iR6ib
+ yGGN4enmc1Ch9Z0Fsd12v4qOexLInxE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+ s=susede2_ed25519; t=1645095481;
+ h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=BWifxgAR/Z495cVFocnolcIW5XpC70uze6lvb8LtCTg=;
+ b=kqtJMiiuDYJxUG1xYWedaAyqSl6ER1f5n+1Aza1p+QfHxJQB14HQ358hl+AbmAWdVG83XH
+ yNNiCWRtqCK2okAQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+ (No client certificate requested)
+ by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D20C013DD8;
+ Thu, 17 Feb 2022 10:58:00 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+ by imap2.suse-dmz.suse.de with ESMTPSA id WBGmMTgqDmJdTgAAMHmgww
+ (envelope-from <pvorel@suse.cz>); Thu, 17 Feb 2022 10:58:00 +0000
+From: Petr Vorel <pvorel@suse.cz>
+To: linux-crypto@vger.kernel.org
+Subject: [PATCH v3 2/2] crypto: vmx - add missing dependencies
+Date: Thu, 17 Feb 2022 11:57:51 +0100
+Message-Id: <20220217105751.6330-3-pvorel@suse.cz>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220217105751.6330-1-pvorel@suse.cz>
+References: <20220217105751.6330-1-pvorel@suse.cz>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: aW2Jdo3pQCCx8QDiesHI1GidS9isjGnY
-X-Proofpoint-ORIG-GUID: lPFbRH7Rc0vCK2OwF-0CphyiHUgzr629
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
- definitions=2022-02-17_04,2022-02-17_01,2021-12-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- phishscore=0 spamscore=0 lowpriorityscore=0 impostorscore=0 mlxscore=0
- adultscore=0 bulkscore=0 clxscore=1015 mlxlogscore=999 suspectscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2201110000 definitions=main-2202170046
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,171 +83,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, Nicolai Stange <nstange@suse.de>,
+ linux-kbuild@vger.kernel.org, Nayna Jain <nayna@linux.ibm.com>,
+ Petr Vorel <pvorel@suse.cz>, Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
+ leitao@debian.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Include a testcase to check if the sysfs files for energy and frequency
-related have its related attribute files exist and populated
+vmx-crypto module depends on CRYPTO_AES, CRYPTO_CBC, CRYPTO_CTR or
+CRYPTO_XTS, thus add them.
 
-Signed-off-by: Pratik R. Sampat <psampat@linux.ibm.com>
+These dependencies are likely to be enabled, but if
+CRYPTO_DEV_VMX=y && !CRYPTO_MANAGER_DISABLE_TESTS
+and either of CRYPTO_AES, CRYPTO_CBC, CRYPTO_CTR or CRYPTO_XTS is built
+as module or disabled, alg_test() from crypto/testmgr.c complains during
+boot about failing to allocate the generic fallback implementations
+(2 == ENOENT):
+
+[    0.540953] Failed to allocate xts(aes) fallback: -2
+[    0.541014] alg: skcipher: failed to allocate transform for p8_aes_xts: -2
+[    0.541120] alg: self-tests for p8_aes_xts (xts(aes)) failed (rc=-2)
+[    0.544440] Failed to allocate ctr(aes) fallback: -2
+[    0.544497] alg: skcipher: failed to allocate transform for p8_aes_ctr: -2
+[    0.544603] alg: self-tests for p8_aes_ctr (ctr(aes)) failed (rc=-2)
+[    0.547992] Failed to allocate cbc(aes) fallback: -2
+[    0.548052] alg: skcipher: failed to allocate transform for p8_aes_cbc: -2
+[    0.548156] alg: self-tests for p8_aes_cbc (cbc(aes)) failed (rc=-2)
+[    0.550745] Failed to allocate transformation for 'aes': -2
+[    0.550801] alg: cipher: Failed to load transform for p8_aes: -2
+[    0.550892] alg: self-tests for p8_aes (aes) failed (rc=-2)
+
+Fixes: c07f5d3da643 ("crypto: vmx - Adding support for XTS")
+Fixes: d2e3ae6f3aba ("crypto: vmx - Enabling VMX module for PPC64")
+
+Suggested-by: Nicolai Stange <nstange@suse.de>
+Signed-off-by: Petr Vorel <pvorel@suse.cz>
 ---
- tools/testing/selftests/powerpc/Makefile      |   1 +
- .../powerpc/papr_attributes/.gitignore        |   2 +
- .../powerpc/papr_attributes/Makefile          |   7 ++
- .../powerpc/papr_attributes/attr_test.c       | 107 ++++++++++++++++++
- 4 files changed, 117 insertions(+)
- create mode 100644 tools/testing/selftests/powerpc/papr_attributes/.gitignore
- create mode 100644 tools/testing/selftests/powerpc/papr_attributes/Makefile
- create mode 100644 tools/testing/selftests/powerpc/papr_attributes/attr_test.c
+changes v2->v3:
+* more less the same, just in drivers/crypto/Kconfig (previously it was
+  in drivers/crypto/vmx/Kconfig)
+* change commit subject to be compatible
 
-diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-index 0830e63818c1..c68c872efb23 100644
---- a/tools/testing/selftests/powerpc/Makefile
-+++ b/tools/testing/selftests/powerpc/Makefile
-@@ -30,6 +30,7 @@ SUB_DIRS = alignment		\
- 	   eeh			\
- 	   vphn         \
- 	   math		\
-+	   papr_attributes	\
- 	   ptrace	\
- 	   security
- 
-diff --git a/tools/testing/selftests/powerpc/papr_attributes/.gitignore b/tools/testing/selftests/powerpc/papr_attributes/.gitignore
-new file mode 100644
-index 000000000000..d5f42b6d9e99
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/papr_attributes/.gitignore
-@@ -0,0 +1,2 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+attr_test
-diff --git a/tools/testing/selftests/powerpc/papr_attributes/Makefile b/tools/testing/selftests/powerpc/papr_attributes/Makefile
-new file mode 100644
-index 000000000000..e899712d49db
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/papr_attributes/Makefile
-@@ -0,0 +1,7 @@
-+# SPDX-License-Identifier: GPL-2.0
-+TEST_GEN_PROGS := attr_test
-+
-+top_srcdir = ../../../../..
-+include ../../lib.mk
-+
-+$(TEST_GEN_PROGS): ../harness.c ../utils.c
-\ No newline at end of file
-diff --git a/tools/testing/selftests/powerpc/papr_attributes/attr_test.c b/tools/testing/selftests/powerpc/papr_attributes/attr_test.c
-new file mode 100644
-index 000000000000..bab0dc06e90b
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/papr_attributes/attr_test.c
-@@ -0,0 +1,107 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * PAPR Energy attributes sniff test
-+ * This checks if the papr folders and contents are populated relating to
-+ * the energy and frequency attributes
-+ *
-+ * Copyright 2022, Pratik Rajesh Sampat, IBM Corp.
-+ */
-+
-+#include <stdio.h>
-+#include <string.h>
-+#include <dirent.h>
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <unistd.h>
-+#include <stdlib.h>
-+
-+#include "utils.h"
-+
-+enum energy_freq_attrs {
-+	POWER_PERFORMANCE_MODE = 1,
-+	IDLE_POWER_SAVER_STATUS = 2,
-+	MIN_FREQ = 3,
-+	STAT_FREQ = 4,
-+	MAX_FREQ = 6,
-+	PROC_FOLDING_STATUS = 8
-+};
-+
-+enum type {
-+	INVALID,
-+	STR_VAL,
-+	NUM_VAL
-+};
-+
-+int value_type(int id)
-+{
-+	int val_type;
-+
-+	switch (id) {
-+	case POWER_PERFORMANCE_MODE:
-+	case IDLE_POWER_SAVER_STATUS:
-+		val_type = STR_VAL;
-+		break;
-+	case MIN_FREQ:
-+	case STAT_FREQ:
-+	case MAX_FREQ:
-+	case PROC_FOLDING_STATUS:
-+		val_type = NUM_VAL;
-+		break;
-+	default:
-+		val_type = INVALID;
-+	}
-+
-+	return val_type;
-+}
-+
-+int verify_energy_info(void)
-+{
-+	const char *path = "/sys/firmware/papr/energy_scale_info";
-+	struct dirent *entry;
-+	struct stat s;
-+	DIR *dirp;
-+
-+	if (stat(path, &s) || !S_ISDIR(s.st_mode))
-+		return -1;
-+	dirp = opendir(path);
-+
-+	while ((entry = readdir(dirp)) != NULL) {
-+		char file_name[64];
-+		int id, attr_type;
-+		FILE *f;
-+
-+		if (strcmp(entry->d_name, ".") == 0 ||
-+		    strcmp(entry->d_name, "..") == 0)
-+			continue;
-+
-+		id = atoi(entry->d_name);
-+		attr_type = value_type(id);
-+		if (attr_type == INVALID)
-+			return -1;
-+
-+		/* Check if the files exist and have data in them */
-+		sprintf(file_name, "%s/%d/desc", path, id);
-+		f = fopen(file_name, "r");
-+		if (!f || fgetc(f) == EOF)
-+			return -1;
-+
-+		sprintf(file_name, "%s/%d/value", path, id);
-+		f = fopen(file_name, "r");
-+		if (!f || fgetc(f) == EOF)
-+			return -1;
-+
-+		if (attr_type == STR_VAL) {
-+			sprintf(file_name, "%s/%d/value_desc", path, id);
-+			f = fopen(file_name, "r");
-+			if (!f || fgetc(f) == EOF)
-+				return -1;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(verify_energy_info, "papr_attributes");
-+}
+ drivers/crypto/Kconfig | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
+index 923fa1effb4a..0eafb2a49f04 100644
+--- a/drivers/crypto/Kconfig
++++ b/drivers/crypto/Kconfig
+@@ -764,7 +764,11 @@ config CRYPTO_DEV_QCOM_RNG
+ config CRYPTO_DEV_VMX
+ 	tristate "Power VMX cryptographic acceleration instructions driver"
+ 	depends on PPC64 && VSX
++	select CRYPTO_AES
++	select CRYPTO_CBC
++	select CRYPTO_CTR
+ 	select CRYPTO_GHASH
++	select CRYPTO_XTS
+ 	help
+ 	  Support for VMX cryptographic acceleration instructions on Power8 CPU.
+ 	  This module supports acceleration for AES and GHASH in hardware. If you
 -- 
-2.34.1
+2.35.1
 
