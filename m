@@ -4,36 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C285C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Feb 2022 02:21:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 890B1C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Feb 2022 02:24:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K0FnV5KYhz3cR1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Feb 2022 13:21:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=ftp.linux.org.uk (client-ip=2607:5300:60:148a::1;
- helo=zeniv-ca.linux.org.uk; envelope-from=viro@ftp.linux.org.uk;
- receiver=<UNKNOWN>)
-Received: from zeniv-ca.linux.org.uk (zeniv-ca.linux.org.uk
- [IPv6:2607:5300:60:148a::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K0Fs04rMbz3cb9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Feb 2022 13:24:52 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K0Fn324njz30Dy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Feb 2022 13:21:27 +1100 (AEDT)
-Received: from viro by zeniv-ca.linux.org.uk with local (Exim 4.94.2 #2 (Red
- Hat Linux)) id 1nKstJ-002dCt-8P; Fri, 18 Feb 2022 02:21:01 +0000
-Date: Fri, 18 Feb 2022 02:21:01 +0000
-From: Al Viro <viro@zeniv.linux.org.uk>
-To: Arnd Bergmann <arnd@kernel.org>
-Subject: Re: [PATCH v2 00/18] clean up asm/uaccess.h, kill set_fs for good
-Message-ID: <Yg8CjZwjWYIibrsd@zeniv-ca.linux.org.uk>
-References: <20220216131332.1489939-1-arnd@kernel.org>
- <00496df2-f9f2-2547-3ca3-7989e4713d6b@csgroup.eu>
- <CAK8P3a3_dPbjB23QffnYMtw+5ojfwChrVC8LLMQqNctU7Nh+mQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K0FrY0jZ8z3bV4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Feb 2022 13:24:29 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4K0FrX2PKXz4xZq;
+ Fri, 18 Feb 2022 13:24:28 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Anders Roxell <anders.roxell@linaro.org>, mpe@ellerman.id.au
+In-Reply-To: <20220211005113.1361436-1-anders.roxell@linaro.org>
+References: <20220211005113.1361436-1-anders.roxell@linaro.org>
+Subject: Re: [PATCHv2] powerpc/lib/sstep: fix 'ptesync' build error
+Message-Id: <164515104019.912400.12978382532397324353.b4-ty@ellerman.id.au>
+Date: Fri, 18 Feb 2022 13:24:00 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAK8P3a3_dPbjB23QffnYMtw+5ojfwChrVC8LLMQqNctU7Nh+mQ@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -45,69 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "dalias@libc.org" <dalias@libc.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
- "jcmvbkbc@gmail.com" <jcmvbkbc@gmail.com>,
- "guoren@kernel.org" <guoren@kernel.org>,
- "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
- "will@kernel.org" <will@kernel.org>, "ardb@kernel.org" <ardb@kernel.org>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "bcain@codeaurora.org" <bcain@codeaurora.org>,
- "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>,
- "deller@gmx.de" <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>,
- "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
- Christoph Hellwig <hch@lst.de>, "mingo@redhat.com" <mingo@redhat.com>,
- "geert@linux-m68k.org" <geert@linux-m68k.org>,
- "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- "arnd@arndb.de" <arnd@arndb.de>, "hca@linux.ibm.com" <hca@linux.ibm.com>,
- "linux-um@lists.infradead.org" <linux-um@lists.infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "richard@nod.at" <richard@nod.at>,
- "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
- "openrisc@lists.librecores.org" <openrisc@lists.librecores.org>,
- "green.hu@gmail.com" <green.hu@gmail.com>,
- "shorne@gmail.com" <shorne@gmail.com>, "monstr@monstr.eu" <monstr@monstr.eu>,
- "tsbogend@alpha.franken.de" <tsbogend@alpha.franken.de>,
- "nickhu@andestech.com" <nickhu@andestech.com>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "dinguyen@kernel.org" <dinguyen@kernel.org>,
- "ebiederm@xmission.com" <ebiederm@xmission.com>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
+ stable@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 17, 2022 at 08:49:59AM +0100, Arnd Bergmann wrote:
+On Fri, 11 Feb 2022 01:51:13 +0100, Anders Roxell wrote:
+> Building tinyconfig with gcc (Debian 11.2.0-16) and assembler (Debian
+> 2.37.90.20220207) the following build error shows up:
+> 
+> {standard input}: Assembler messages:
+> {standard input}:2088: Error: unrecognized opcode: `ptesync'
+> make[3]: *** [/builds/linux/scripts/Makefile.build:287: arch/powerpc/lib/sstep.o] Error 1
+> 
+> [...]
 
-> Same here: architectures can already provide a __put_user_fn()
-> and __get_user_fn(), to get the generic versions of the interface,
-> but few architectures use that. You can actually get all the interfaces
-> by just providing raw_copy_from_user() and raw_copy_to_user(),
-> but the get_user/put_user versions you get from that are fairly
-> inefficient.
+Applied to powerpc/fixes.
 
-FWIW, __{get,put}_user_{8,16,32,64} would probably make it easier to
-unify.  That's where the really variable part tends to be, anyway.
-IMO __get_user_fn() had been a mistake.
+[1/1] powerpc/lib/sstep: fix 'ptesync' build error
+      https://git.kernel.org/powerpc/c/fe663df7825811358531dc2e8a52d9eaa5e3515e
 
-One thing I somewhat dislike about the series is the boilerplate in
-asm/uaccess.h instances - #include <asm-generic/access-ok.h> in
-a lot of them might make sense as a transitory state, but getting
-stuck with those indefinitely...
-
-	BTW, do we need user_addr_max() anymore?  The definition in
-asm-generic/access-ok.h is the only one, so ifndef around it is pointless.
+cheers
