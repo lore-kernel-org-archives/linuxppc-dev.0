@@ -4,30 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 890B1C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Feb 2022 02:24:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31AA1C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Feb 2022 02:25:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K0Fs04rMbz3cb9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Feb 2022 13:24:52 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K0FsQ21RYz3cmy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Feb 2022 13:25:14 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K0FrY0jZ8z3bV4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Feb 2022 13:24:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K0FrZ3CtKz3bV4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Feb 2022 13:24:30 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4K0FrX2PKXz4xZq;
- Fri, 18 Feb 2022 13:24:28 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4K0FrY646xz4xbw;
+ Fri, 18 Feb 2022 13:24:29 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Anders Roxell <anders.roxell@linaro.org>, mpe@ellerman.id.au
-In-Reply-To: <20220211005113.1361436-1-anders.roxell@linaro.org>
-References: <20220211005113.1361436-1-anders.roxell@linaro.org>
-Subject: Re: [PATCHv2] powerpc/lib/sstep: fix 'ptesync' build error
-Message-Id: <164515104019.912400.12978382532397324353.b4-ty@ellerman.id.au>
-Date: Fri, 18 Feb 2022 13:24:00 +1100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <aea33b4813a26bdb9378b5f273f00bd5d4abe240.1638857364.git.christophe.leroy@csgroup.eu>
+References: <aea33b4813a26bdb9378b5f273f00bd5d4abe240.1638857364.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/603: Fix boot failure with DEBUG_PAGEALLOC and
+ KFENCE
+Message-Id: <164515103939.912400.9280138789823591343.b4-ty@ellerman.id.au>
+Date: Fri, 18 Feb 2022 13:23:59 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,25 +46,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Maxime Bizon <mbizon@freebox.fr>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 11 Feb 2022 01:51:13 +0100, Anders Roxell wrote:
-> Building tinyconfig with gcc (Debian 11.2.0-16) and assembler (Debian
-> 2.37.90.20220207) the following build error shows up:
+On Tue, 7 Dec 2021 06:10:05 +0000, Christophe Leroy wrote:
+> Allthough kernel text is always mapped with BATs, we still have
+> inittext mapped with pages, so TLB miss handling is required
+> when CONFIG_DEBUG_PAGEALLOC or CONFIG_KFENCE is set.
 > 
-> {standard input}: Assembler messages:
-> {standard input}:2088: Error: unrecognized opcode: `ptesync'
-> make[3]: *** [/builds/linux/scripts/Makefile.build:287: arch/powerpc/lib/sstep.o] Error 1
+> The final solution should be to set a BAT that also maps inittext
+> but that BAT then needs to be cleared at end of init, and it will
+> require more changes to be able to do it properly.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/lib/sstep: fix 'ptesync' build error
-      https://git.kernel.org/powerpc/c/fe663df7825811358531dc2e8a52d9eaa5e3515e
+[1/1] powerpc/603: Fix boot failure with DEBUG_PAGEALLOC and KFENCE
+      https://git.kernel.org/powerpc/c/9bb162fa26ed76031ed0e7dbc77ccea0bf977758
 
 cheers
