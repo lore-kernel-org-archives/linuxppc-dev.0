@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B0DCC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Feb 2022 06:25:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 106B3C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Feb 2022 06:26:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K0MC344QKz3cbJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Feb 2022 17:25:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K0MCW0Mtlz3cnB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Feb 2022 17:26:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -16,21 +16,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K0MBb1vYkz3bPW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Feb 2022 17:25:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K0MBk3VZtz3cWG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Feb 2022 17:25:34 +1100 (AEDT)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id C068267373; Fri, 18 Feb 2022 07:25:16 +0100 (CET)
-Date: Fri, 18 Feb 2022 07:25:16 +0100
+ id E7FD068BFE; Fri, 18 Feb 2022 07:25:29 +0100 (CET)
+Date: Fri, 18 Feb 2022 07:25:29 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: Arnd Bergmann <arnd@kernel.org>
-Subject: Re: [PATCH v2 02/18] uaccess: fix nios2 and microblaze get_user_8()
-Message-ID: <20220218062516.GA22576@lst.de>
+Subject: Re: [PATCH v2 03/18] nds32: fix access_ok() checks in get/put_user
+Message-ID: <20220218062529.GB22576@lst.de>
 References: <20220216131332.1489939-1-arnd@kernel.org>
- <20220216131332.1489939-3-arnd@kernel.org>
+ <20220216131332.1489939-4-arnd@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220216131332.1489939-3-arnd@kernel.org>
+In-Reply-To: <20220216131332.1489939-4-arnd@kernel.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -58,12 +58,24 @@ Cc: mark.rutland@arm.com, dalias@libc.org, linux-ia64@vger.kernel.org,
  viro@zeniv.linux.org.uk, shorne@gmail.com, monstr@monstr.eu,
  tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, nickhu@andestech.com,
  jcmvbkbc@gmail.com, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
- dinguyen@kernel.org, ebiederm@xmission.com, richard@nod.at,
- akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
- davem@davemloft.net, green.hu@gmail.com
+ stable@vger.kernel.org, dinguyen@kernel.org, ebiederm@xmission.com,
+ richard@nod.at, akpm@linux-foundation.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, davem@davemloft.net,
+ green.hu@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+
+On Wed, Feb 16, 2022 at 02:13:17PM +0100, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> The get_user()/put_user() functions are meant to check for
+> access_ok(), while the __get_user()/__put_user() functions
+> don't.
+> 
+> This broke in 4.19 for nds32, when it gained an extraneous
+> check in __get_user(), but lost the check it needs in
+> __put_user().
 
 Looks good:
 
