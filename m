@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54022C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 10:34:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 061BAC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 10:34:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K2wWk1Vyqz3cln
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 21:34:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K2wX95bz3z3dfS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 21:34:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,51 +16,51 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K2wVW29MVz3cBs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Feb 2022 21:33:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K2wVb4kwYz3cCS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Feb 2022 21:33:11 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4K2wVC1v0cz9sSN;
- Tue, 22 Feb 2022 11:32:51 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4K2wVD0rLkz9sSK;
+ Tue, 22 Feb 2022 11:32:52 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id kStqDpzh4zT8; Tue, 22 Feb 2022 11:32:51 +0100 (CET)
+ with ESMTP id 5jXwtrzt6ZAG; Tue, 22 Feb 2022 11:32:52 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4K2wV93ZtLz9sSK;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4K2wV93zpjz9sSP;
  Tue, 22 Feb 2022 11:32:49 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 670548B77C;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 73C258B776;
  Tue, 22 Feb 2022 11:32:49 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id iHGhXRzpFIdw; Tue, 22 Feb 2022 11:32:49 +0100 (CET)
+ with ESMTP id 9_jV63oyv3eP; Tue, 22 Feb 2022 11:32:49 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1C7558B776;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1C73C8B775;
  Tue, 22 Feb 2022 11:32:49 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21MAWfBa1075961
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21MAWgRx1075969
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 22 Feb 2022 11:32:41 +0100
+ Tue, 22 Feb 2022 11:32:42 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21MAWeA91075960;
- Tue, 22 Feb 2022 11:32:40 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21MAWgxw1075968;
+ Tue, 22 Feb 2022 11:32:42 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Aaron Tomlin <atomlin@redhat.com>, Luis Chamberlain <mcgrof@kernel.org>,
  Jessica Yu <jeyu@kernel.org>
-Subject: [PATCH v4 1/6] module: Always have struct mod_tree_root
-Date: Tue, 22 Feb 2022 11:32:15 +0100
-Message-Id: <5aa01e3616b21e0852339f16977c4748d753a877.1645525635.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v4 3/6] module: Introduce data_layout
+Date: Tue, 22 Feb 2022 11:32:17 +0100
+Message-Id: <c424c6b9580791a1ea60273542b112a5bc1fa615.1645525635.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1645525635.git.christophe.leroy@csgroup.eu>
 References: <cover.1645525635.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1645525927; l=1894; s=20211009;
- h=from:subject:message-id; bh=HWxnRsPR+jGc6DcvDzhY2sNrJsSzgtD1s5A9mBE2MuU=;
- b=1LPhH+ll8zXayfOliP9suIjyXx4+BIvF7Eh/jPDpNs/b5k/+/TrGFGFJJuraedfaGVXAhueqSAGO
- d0Hy8heTDffToQ+9n1+chwWdH3I5Z6xEO0Dk0B5qIwb9i/Y0c2lF
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1645525928; l=7494; s=20211009;
+ h=from:subject:message-id; bh=8rgmaGKdkuoT3SWfZaKSehms/HHHdC8saxwg8rNjdQw=;
+ b=ULkolsojz0rInY5QHfUy3UZu04LSh7PbZVCVDBQ+tHsHT4PeXqsm339spAJsuVCgqUo+IIG1oBXG
+ HKB9ZhdYD06g4kqCWuosjnjvBQwKreeqFialp38jrnFkSpiwSYRx
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,64 +82,171 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to separate text and data, we need to setup
-two rb trees.
+In order to allow separation of data from text, add another layout,
+called data_layout. For architectures requesting separation of text
+and data, only text will go in core_layout and data will go in
+data_layout.
 
-This means that struct mod_tree_root is required even without
-MODULES_TREE_LOOKUP.
+For architectures which keep text and data together, make data_layout
+an alias of core_layout, that way data_layout can be used for all
+data manipulations, regardless of whether data is in core_layout or
+data_layout.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- kernel/module/internal.h | 4 +++-
- kernel/module/main.c     | 5 -----
- 2 files changed, 3 insertions(+), 6 deletions(-)
+ kernel/module/internal.h   |  2 ++
+ kernel/module/kallsyms.c   | 18 +++++++++---------
+ kernel/module/main.c       | 20 ++++++++++++--------
+ kernel/module/strict_rwx.c | 10 +++++-----
+ 4 files changed, 28 insertions(+), 22 deletions(-)
 
 diff --git a/kernel/module/internal.h b/kernel/module/internal.h
-index fecfa590c149..07561753158d 100644
+index 26a1a3711d66..db85058f4acb 100644
 --- a/kernel/module/internal.h
 +++ b/kernel/module/internal.h
-@@ -143,15 +143,17 @@ static inline void module_decompress_cleanup(struct load_info *info)
- }
- #endif
+@@ -20,6 +20,8 @@
+ /* Maximum number of characters written by module_flags() */
+ #define MODULE_FLAGS_BUF_SIZE (TAINT_FLAGS_COUNT + 4)
  
--#ifdef CONFIG_MODULES_TREE_LOOKUP
- struct mod_tree_root {
-+#ifdef CONFIG_MODULES_TREE_LOOKUP
- 	struct latch_tree_root root;
-+#endif
- 	unsigned long addr_min;
- 	unsigned long addr_max;
- };
++#define	data_layout core_layout
++
+ /*
+  * Modules' sections will be aligned on page boundaries
+  * to ensure complete separation of code and data, but
+diff --git a/kernel/module/kallsyms.c b/kernel/module/kallsyms.c
+index 2ee8d2e67068..fe6723c040be 100644
+--- a/kernel/module/kallsyms.c
++++ b/kernel/module/kallsyms.c
+@@ -134,12 +134,12 @@ void layout_symtab(struct module *mod, struct load_info *info)
+ 	}
  
- extern struct mod_tree_root mod_tree;
+ 	/* Append room for core symbols at end of core part. */
+-	info->symoffs = ALIGN(mod->core_layout.size, symsect->sh_addralign ?: 1);
+-	info->stroffs = mod->core_layout.size = info->symoffs + ndst * sizeof(Elf_Sym);
+-	mod->core_layout.size += strtab_size;
+-	info->core_typeoffs = mod->core_layout.size;
+-	mod->core_layout.size += ndst * sizeof(char);
+-	mod->core_layout.size = debug_align(mod->core_layout.size);
++	info->symoffs = ALIGN(mod->data_layout.size, symsect->sh_addralign ?: 1);
++	info->stroffs = mod->data_layout.size = info->symoffs + ndst * sizeof(Elf_Sym);
++	mod->data_layout.size += strtab_size;
++	info->core_typeoffs = mod->data_layout.size;
++	mod->data_layout.size += ndst * sizeof(char);
++	mod->data_layout.size = debug_align(mod->data_layout.size);
  
-+#ifdef CONFIG_MODULES_TREE_LOOKUP
- void mod_tree_insert(struct module *mod);
- void mod_tree_remove_init(struct module *mod);
- void mod_tree_remove(struct module *mod);
+ 	/* Put string table section at end of init part of module. */
+ 	strsect->sh_flags |= SHF_ALLOC;
+@@ -186,9 +186,9 @@ void add_kallsyms(struct module *mod, const struct load_info *info)
+ 	 * Now populate the cut down core kallsyms for after init
+ 	 * and set types up while we still have access to sections.
+ 	 */
+-	mod->core_kallsyms.symtab = dst = mod->core_layout.base + info->symoffs;
+-	mod->core_kallsyms.strtab = s = mod->core_layout.base + info->stroffs;
+-	mod->core_kallsyms.typetab = mod->core_layout.base + info->core_typeoffs;
++	mod->core_kallsyms.symtab = dst = mod->data_layout.base + info->symoffs;
++	mod->core_kallsyms.strtab = s = mod->data_layout.base + info->stroffs;
++	mod->core_kallsyms.typetab = mod->data_layout.base + info->core_typeoffs;
+ 	src = rcu_dereference_sched(mod->kallsyms)->symtab;
+ 	for (ndst = i = 0; i < rcu_dereference_sched(mod->kallsyms)->num_symtab; i++) {
+ 		rcu_dereference_sched(mod->kallsyms)->typetab[i] = elf_type(src + i, info);
 diff --git a/kernel/module/main.c b/kernel/module/main.c
-index 0749afdc34b5..3b75cb97f8c2 100644
+index c0b961e02909..bd26280f2880 100644
 --- a/kernel/module/main.c
 +++ b/kernel/module/main.c
-@@ -74,7 +74,6 @@ static void do_free_init(struct work_struct *w);
- static DECLARE_WORK(init_free_wq, do_free_init);
- static LLIST_HEAD(init_free_list);
+@@ -1229,7 +1229,7 @@ static void free_module(struct module *mod)
+ 	percpu_modfree(mod);
  
--#ifdef CONFIG_MODULES_TREE_LOOKUP
- struct mod_tree_root mod_tree __cacheline_aligned = {
- 	.addr_min = -1UL,
- };
-@@ -82,10 +81,6 @@ struct mod_tree_root mod_tree __cacheline_aligned = {
- #define module_addr_min mod_tree.addr_min
- #define module_addr_max mod_tree.addr_max
+ 	/* Free lock-classes; relies on the preceding sync_rcu(). */
+-	lockdep_free_key_range(mod->core_layout.base, mod->core_layout.size);
++	lockdep_free_key_range(mod->data_layout.base, mod->data_layout.size);
  
--#else /* !CONFIG_MODULES_TREE_LOOKUP */
--static unsigned long module_addr_min = -1UL, module_addr_max;
--#endif /* CONFIG_MODULES_TREE_LOOKUP */
--
- struct symsearch {
- 	const struct kernel_symbol *start, *stop;
- 	const s32 *crcs;
+ 	/* Finally, free the core (containing the module structure) */
+ 	module_memfree(mod->core_layout.base);
+@@ -1470,13 +1470,15 @@ static void layout_sections(struct module *mod, struct load_info *info)
+ 		for (i = 0; i < info->hdr->e_shnum; ++i) {
+ 			Elf_Shdr *s = &info->sechdrs[i];
+ 			const char *sname = info->secstrings + s->sh_name;
++			unsigned int *sizep;
+ 
+ 			if ((s->sh_flags & masks[m][0]) != masks[m][0]
+ 			    || (s->sh_flags & masks[m][1])
+ 			    || s->sh_entsize != ~0UL
+ 			    || module_init_layout_section(sname))
+ 				continue;
+-			s->sh_entsize = module_get_offset(mod, &mod->core_layout.size, s, i);
++			sizep = m ? &mod->data_layout.size : &mod->core_layout.size;
++			s->sh_entsize = module_get_offset(mod, sizep, s, i);
+ 			pr_debug("\t%s\n", sname);
+ 		}
+ 		switch (m) {
+@@ -1485,15 +1487,15 @@ static void layout_sections(struct module *mod, struct load_info *info)
+ 			mod->core_layout.text_size = mod->core_layout.size;
+ 			break;
+ 		case 1: /* RO: text and ro-data */
+-			mod->core_layout.size = debug_align(mod->core_layout.size);
+-			mod->core_layout.ro_size = mod->core_layout.size;
++			mod->data_layout.size = debug_align(mod->data_layout.size);
++			mod->data_layout.ro_size = mod->data_layout.size;
+ 			break;
+ 		case 2: /* RO after init */
+-			mod->core_layout.size = debug_align(mod->core_layout.size);
+-			mod->core_layout.ro_after_init_size = mod->core_layout.size;
++			mod->data_layout.size = debug_align(mod->data_layout.size);
++			mod->data_layout.ro_after_init_size = mod->data_layout.size;
+ 			break;
+ 		case 4: /* whole core */
+-			mod->core_layout.size = debug_align(mod->core_layout.size);
++			mod->data_layout.size = debug_align(mod->data_layout.size);
+ 			break;
+ 		}
+ 	}
+@@ -2173,6 +2175,8 @@ static int move_module(struct module *mod, struct load_info *info)
+ 		if (shdr->sh_entsize & INIT_OFFSET_MASK)
+ 			dest = mod->init_layout.base
+ 				+ (shdr->sh_entsize & ~INIT_OFFSET_MASK);
++		else if (!(shdr->sh_flags & SHF_EXECINSTR))
++			dest = mod->data_layout.base + shdr->sh_entsize;
+ 		else
+ 			dest = mod->core_layout.base + shdr->sh_entsize;
+ 
+@@ -2863,7 +2867,7 @@ static int load_module(struct load_info *info, const char __user *uargs,
+ 	mutex_unlock(&module_mutex);
+  free_module:
+ 	/* Free lock-classes; relies on the preceding sync_rcu() */
+-	lockdep_free_key_range(mod->core_layout.base, mod->core_layout.size);
++	lockdep_free_key_range(mod->data_layout.base, mod->data_layout.size);
+ 
+ 	module_deallocate(mod, info);
+  free_copy:
+diff --git a/kernel/module/strict_rwx.c b/kernel/module/strict_rwx.c
+index bfee740f4bc1..a2104e9233a5 100644
+--- a/kernel/module/strict_rwx.c
++++ b/kernel/module/strict_rwx.c
+@@ -50,19 +50,19 @@ void module_enable_ro(const struct module *mod, bool after_init)
+ 	set_vm_flush_reset_perms(mod->init_layout.base);
+ 	frob_text(&mod->core_layout, set_memory_ro);
+ 
+-	frob_rodata(&mod->core_layout, set_memory_ro);
++	frob_rodata(&mod->data_layout, set_memory_ro);
+ 	frob_text(&mod->init_layout, set_memory_ro);
+ 	frob_rodata(&mod->init_layout, set_memory_ro);
+ 
+ 	if (after_init)
+-		frob_ro_after_init(&mod->core_layout, set_memory_ro);
++		frob_ro_after_init(&mod->data_layout, set_memory_ro);
+ }
+ 
+ void module_enable_nx(const struct module *mod)
+ {
+-	frob_rodata(&mod->core_layout, set_memory_nx);
+-	frob_ro_after_init(&mod->core_layout, set_memory_nx);
+-	frob_writable_data(&mod->core_layout, set_memory_nx);
++	frob_rodata(&mod->data_layout, set_memory_nx);
++	frob_ro_after_init(&mod->data_layout, set_memory_nx);
++	frob_writable_data(&mod->data_layout, set_memory_nx);
+ 	frob_rodata(&mod->init_layout, set_memory_nx);
+ 	frob_writable_data(&mod->init_layout, set_memory_nx);
+ }
 -- 
 2.34.1
 
