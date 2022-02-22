@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B5A4C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 15:01:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA331C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 15:01:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K32Rk5VHGz3cVT
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 02:01:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K32S943fMz3ck4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 02:01:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,50 +16,51 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K32RJ0Wy2z2xvP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 02:00:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K32RN6XYRz3bcK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 02:00:48 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4K32RF1vXMz9sSX;
- Tue, 22 Feb 2022 16:00:41 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4K32RG2FNsz9sSr;
+ Tue, 22 Feb 2022 16:00:42 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id aHsBMPXbzwiE; Tue, 22 Feb 2022 16:00:41 +0100 (CET)
+ with ESMTP id Jkdtpc5Rx5nb; Tue, 22 Feb 2022 16:00:42 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4K32RF16bkz9sSP;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4K32RF2YWLz9sSP;
  Tue, 22 Feb 2022 16:00:41 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 15D7D8B783;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 476688B764;
  Tue, 22 Feb 2022 16:00:41 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Rfqs5P2jSmQ5; Tue, 22 Feb 2022 16:00:41 +0100 (CET)
+ with ESMTP id rf5u4YC7nEWc; Tue, 22 Feb 2022 16:00:41 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.7.78])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BB7CB8B764;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BD5EA8B778;
  Tue, 22 Feb 2022 16:00:40 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21MF0VhI1087063
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21MF0b6D1087085
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 22 Feb 2022 16:00:31 +0100
+ Tue, 22 Feb 2022 16:00:37 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21MF0V8O1087062;
- Tue, 22 Feb 2022 16:00:31 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21MF0ZDD1087083;
+ Tue, 22 Feb 2022 16:00:35 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Luis Chamberlain <mcgrof@kernel.org>, Aaron Tomlin <atomlin@redhat.com>
-Subject: [PATCH v5 1/6] module: Always have struct mod_tree_root
-Date: Tue, 22 Feb 2022 16:00:18 +0100
-Message-Id: <c9584f48abce748e62e65e6757ceb23800f15380.1645541930.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v5 6/6] powerpc: Select ARCH_WANTS_MODULES_DATA_IN_VMALLOC on
+ book3s/32 and 8xx
+Date: Tue, 22 Feb 2022 16:00:23 +0100
+Message-Id: <c9327f71369fb1b94ec8f70cf1ad2382f63341ca.1645541930.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1645541930.git.christophe.leroy@csgroup.eu>
 References: <cover.1645541930.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1645542019; l=1894; s=20211009;
- h=from:subject:message-id; bh=LdQW7knw8SonM6V3x5dRanGW0RmzQuevemJoFaoAVWs=;
- b=Gf7wC7QYemkicc/NhrBdTVD+qjc4lnhJtPWXAc0YJAgZbJFTXdX6gN0m5lURY+4t4MD8nfsJoIVg
- SGmcTtOhARaEy/nlBipLNhQMxcFRT4kiZqtuWEy4h3O5bzlknr5V
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1645542019; l=1645; s=20211009;
+ h=from:subject:message-id; bh=K04OWtjguCoft4Etc2/16pdJhJKZWZgWbhOpnNSgE7U=;
+ b=02AslvbJ+42xnFSeBtNyfdLYNjaGt1O0uw43lPDM76mPLYfkdPVuiu0PB1rdptWrEoJFQtyvN4M/
+ ERHYtoZZCvyWYxoHT8Xy1AJVPsdTo+xC0ybeTgDmzF9rpXMotnu6
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -76,69 +77,53 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
  linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-modules@vger.kernel.org
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to separate text and data, we need to setup
-two rb trees.
+book3s/32 and 8xx have a separate area for allocating modules,
+defined by MODULES_VADDR / MODULES_END.
 
-This means that struct mod_tree_root is required even without
-MODULES_TREE_LOOKUP.
+On book3s/32, it is not possible to protect against execution
+on a page basis. A full 256M segment is either Exec or NoExec.
+The module area is in an Exec segment while vmalloc area is
+in a NoExec segment.
+
+In order to protect module data against execution, select
+ARCH_WANTS_MODULES_DATA_IN_VMALLOC.
+
+For the 8xx (and possibly other 32 bits platform in the future),
+there is no such constraint on Exec/NoExec protection, however
+there is a critical distance between kernel functions and callers
+that needs to remain below 32Mbytes in order to avoid costly
+trampolines. By allocating data outside of module area, we
+increase the chance for module text to remain within acceptable
+distance from kernel core text.
+
+So select ARCH_WANTS_MODULES_DATA_IN_VMALLOC for 8xx as well.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
 ---
- kernel/module/internal.h | 4 +++-
- kernel/module/main.c     | 5 -----
- 2 files changed, 3 insertions(+), 6 deletions(-)
+ arch/powerpc/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/kernel/module/internal.h b/kernel/module/internal.h
-index 3fc139d5074b..743b598e7cc2 100644
---- a/kernel/module/internal.h
-+++ b/kernel/module/internal.h
-@@ -143,15 +143,17 @@ static inline void module_decompress_cleanup(struct load_info *info)
- }
- #endif
- 
--#ifdef CONFIG_MODULES_TREE_LOOKUP
- struct mod_tree_root {
-+#ifdef CONFIG_MODULES_TREE_LOOKUP
- 	struct latch_tree_root root;
-+#endif
- 	unsigned long addr_min;
- 	unsigned long addr_max;
- };
- 
- extern struct mod_tree_root mod_tree;
- 
-+#ifdef CONFIG_MODULES_TREE_LOOKUP
- void mod_tree_insert(struct module *mod);
- void mod_tree_remove_init(struct module *mod);
- void mod_tree_remove(struct module *mod);
-diff --git a/kernel/module/main.c b/kernel/module/main.c
-index 0749afdc34b5..3b75cb97f8c2 100644
---- a/kernel/module/main.c
-+++ b/kernel/module/main.c
-@@ -74,7 +74,6 @@ static void do_free_init(struct work_struct *w);
- static DECLARE_WORK(init_free_wq, do_free_init);
- static LLIST_HEAD(init_free_list);
- 
--#ifdef CONFIG_MODULES_TREE_LOOKUP
- struct mod_tree_root mod_tree __cacheline_aligned = {
- 	.addr_min = -1UL,
- };
-@@ -82,10 +81,6 @@ struct mod_tree_root mod_tree __cacheline_aligned = {
- #define module_addr_min mod_tree.addr_min
- #define module_addr_max mod_tree.addr_max
- 
--#else /* !CONFIG_MODULES_TREE_LOOKUP */
--static unsigned long module_addr_min = -1UL, module_addr_max;
--#endif /* CONFIG_MODULES_TREE_LOOKUP */
--
- struct symsearch {
- 	const struct kernel_symbol *start, *stop;
- 	const s32 *crcs;
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 28e4047e99e8..478ee49a4fb4 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -156,6 +156,7 @@ config PPC
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
+ 	select ARCH_WANT_LD_ORPHAN_WARN
++	select ARCH_WANTS_MODULES_DATA_IN_VMALLOC	if PPC_BOOK3S_32 || PPC_8xx
+ 	select ARCH_WEAK_RELEASE_ACQUIRE
+ 	select BINFMT_ELF
+ 	select BUILDTIME_TABLE_SORT
 -- 
 2.34.1
 
