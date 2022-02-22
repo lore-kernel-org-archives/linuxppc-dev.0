@@ -4,65 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94483C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 10:36:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B5CCC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 11:35:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K2wYp4Tfhz3dvd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 21:35:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K2xtZ2p0dz3cPp
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 22:35:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=jmWtq9IU;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K2wVp5zR8z3cC5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Feb 2022 21:33:22 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4K2wVH1Zjyz9sSX;
- Tue, 22 Feb 2022 11:32:55 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id RiMi_WsiuT-o; Tue, 22 Feb 2022 11:32:55 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4K2wV94NjPz9sSh;
- Tue, 22 Feb 2022 11:32:49 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 870788B779;
- Tue, 22 Feb 2022 11:32:49 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id tymd31yq-Hgr; Tue, 22 Feb 2022 11:32:49 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1D60E8B778;
- Tue, 22 Feb 2022 11:32:49 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21MAWgOH1075965
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 22 Feb 2022 11:32:42 +0100
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21MAWgRT1075964;
- Tue, 22 Feb 2022 11:32:42 +0100
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Aaron Tomlin <atomlin@redhat.com>, Luis Chamberlain <mcgrof@kernel.org>,
- Jessica Yu <jeyu@kernel.org>
-Subject: [PATCH v4 2/6] module: Prepare for handling several RB trees
-Date: Tue, 22 Feb 2022 11:32:16 +0100
-Message-Id: <f8f7e052b8190fa98abe4a2a2adb9619b47c4b3e.1645525635.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K2xsv46xsz3002
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Feb 2022 22:34:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=jmWtq9IU; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4K2xsv10dFz4xdL;
+ Tue, 22 Feb 2022 22:34:59 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1645529700;
+ bh=m64AeX7xIraCTZSOukRMbUWjf7fDc7RaOTbbYlE60gY=;
+ h=From:To:Cc:Subject:Date:From;
+ b=jmWtq9IU5eswcN2NDFsfoymwIEpB21tA8EZPxZFDLh5pZIDf9Fd5gWOpzLdntDRej
+ 7IaOEA/cTfvYjMnEWFsj4/T6oXrG/IKasdC3Vy7ZD522xnZ0DjZZ1lXzj/ZejstVOf
+ H4iJx0r7kIPqNcZw2QoHShxgjoxw6SyXkRE6mB0mDKq8CS9qlumxgysI/sdOyS7A1J
+ DNHay/HbpEYLHl0vXoXejrCjwfs7gba9MCScEy8pM1CGac3bI5DUtpLRs6M9Petcfj
+ Y9eK7TwqRp7sKPLCdSW4Wf3o8V+XAUks/8IbHq1qZXX8/JNJ95rFOrkZzuxj8mMLSC
+ riOIXrIwNMyVQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/64s: Don't use DSISR for SLB faults
+Date: Tue, 22 Feb 2022 22:34:49 +1100
+Message-Id: <20220222113449.319193-1-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cover.1645525635.git.christophe.leroy@csgroup.eu>
-References: <cover.1645525635.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1645525927; l=4776; s=20211009;
- h=from:subject:message-id; bh=Y55P+lefbDvXl7Onl0oN61fsJiw/jOLXz7/hnTxCB40=;
- b=T4TgUgtng1Z89lSYq4tAQ5GtC7ah6hMe5JwBz08myA7GN+AB1D/vdJZtYUYggS408vpP4j5K9d3v
- k7LHQtJyBV4IOsaJ2mBGMLKOkd9xJIFJV/KcKHjmAzMvjlbIGcle
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -75,146 +58,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-modules@vger.kernel.org
+Cc: dja@axtens.net, rnsastry@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to separate text and data, we need to setup
-two rb trees.
+Since commit 46ddcb3950a2 ("powerpc/mm: Show if a bad page fault on data
+is read or write.") we use page_fault_is_write(regs->dsisr) in
+__bad_page_fault() to determine if the fault is for a read or write, and
+change the message printed accordingly.
 
-Modify functions to give the tree as a parameter.
+But SLB faults, aka Data Segment Interrupts, don't set DSISR (Data
+Storage Interrupt Status Register) to a useful value. All ISA versions
+from v2.03 through v3.1 specify that the Data Segment Interrupt sets
+DSISR "to an undefined value". As far as I can see there's no mention of
+SLB faults setting DSISR in any BookIV content either.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+This manifests as accesses that should be a read being incorrectly
+reported as writes, for example, using the xmon "dump" command:
+
+  0:mon> d 0x5deadbeef0000000
+  5deadbeef0000000
+  [359526.415354][    C6] BUG: Unable to handle kernel data access on write at 0x5deadbeef0000000
+  [359526.415611][    C6] Faulting instruction address: 0xc00000000010a300
+  cpu 0x6: Vector: 380 (Data SLB Access) at [c00000000ffbf400]
+      pc: c00000000010a300: mread+0x90/0x190
+
+If we disassemble the PC, we see a load instruction:
+
+  0:mon> di c00000000010a300
+  c00000000010a300 89490000      lbz     r10,0(r9)
+
+We can also see in exceptions-64s.S that the data_access_slb block
+doesn't set IDSISR=1, which means it doesn't load DSISR into pt_regs. So
+the value we're using to determine if the fault is a read/write is some
+stale value in pt_regs from a previous page fault.
+
+Rework the printing logic to separate the SLB fault case out, and only
+print read/write in the cases where we can determine it.
+
+The result looks like eg:
+
+  0:mon> d 0x5deadbeef0000000
+  5deadbeef0000000
+  [  721.779525][    C6] BUG: Unable to handle kernel data access at 0x5deadbeef0000000
+  [  721.779697][    C6] Faulting instruction address: 0xc00000000014cbe0
+  cpu 0x6: Vector: 380 (Data SLB Access) at [c00000000ffbf390]
+
+  0:mon> d 0
+  0000000000000000
+  [  742.793242][    C6] BUG: Kernel NULL pointer dereference at 0x00000000
+  [  742.793316][    C6] Faulting instruction address: 0xc00000000014cbe0
+  cpu 0x6: Vector: 380 (Data SLB Access) at [c00000000ffbf390]
+
+Fixes: 46ddcb3950a2 ("powerpc/mm: Show if a bad page fault on data is read or write.")
+Reported-by: Nageswara R Sastry <rnsastry@linux.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- kernel/module/internal.h    |  4 ++--
- kernel/module/main.c        | 16 ++++++++--------
- kernel/module/tree_lookup.c | 20 ++++++++++----------
- 3 files changed, 20 insertions(+), 20 deletions(-)
+ arch/powerpc/mm/fault.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/module/internal.h b/kernel/module/internal.h
-index 07561753158d..26a1a3711d66 100644
---- a/kernel/module/internal.h
-+++ b/kernel/module/internal.h
-@@ -157,13 +157,13 @@ extern struct mod_tree_root mod_tree;
- void mod_tree_insert(struct module *mod);
- void mod_tree_remove_init(struct module *mod);
- void mod_tree_remove(struct module *mod);
--struct module *mod_find(unsigned long addr);
-+struct module *mod_find(unsigned long addr, struct mod_tree_root *tree);
- #else /* !CONFIG_MODULES_TREE_LOOKUP */
- 
- static inline void mod_tree_insert(struct module *mod) { }
- static inline void mod_tree_remove_init(struct module *mod) { }
- static inline void mod_tree_remove(struct module *mod) { }
--static inline struct module *mod_find(unsigned long addr)
-+static inline struct module *mod_find(unsigned long addr, struct mod_tree_root *tree)
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index eb8ecd7343a9..7ba6d3eff636 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -567,18 +567,24 @@ NOKPROBE_SYMBOL(hash__do_page_fault);
+ static void __bad_page_fault(struct pt_regs *regs, int sig)
  {
- 	struct module *mod;
+ 	int is_write = page_fault_is_write(regs->dsisr);
++	const char *msg;
  
-diff --git a/kernel/module/main.c b/kernel/module/main.c
-index 3b75cb97f8c2..c0b961e02909 100644
---- a/kernel/module/main.c
-+++ b/kernel/module/main.c
-@@ -91,22 +91,22 @@ struct symsearch {
-  * Bounds of module text, for speeding up __module_address.
-  * Protected by module_mutex.
-  */
--static void __mod_update_bounds(void *base, unsigned int size)
-+static void __mod_update_bounds(void *base, unsigned int size, struct mod_tree_root *tree)
- {
- 	unsigned long min = (unsigned long)base;
- 	unsigned long max = min + size;
+ 	/* kernel has accessed a bad area */
  
--	if (min < module_addr_min)
--		module_addr_min = min;
--	if (max > module_addr_max)
--		module_addr_max = max;
-+	if (min < tree->addr_min)
-+		tree->addr_min = min;
-+	if (max > tree->addr_max)
-+		tree->addr_max = max;
- }
- 
- static void mod_update_bounds(struct module *mod)
- {
--	__mod_update_bounds(mod->core_layout.base, mod->core_layout.size);
-+	__mod_update_bounds(mod->core_layout.base, mod->core_layout.size, &mod_tree);
- 	if (mod->init_layout.size)
--		__mod_update_bounds(mod->init_layout.base, mod->init_layout.size);
-+		__mod_update_bounds(mod->init_layout.base, mod->init_layout.size, &mod_tree);
- }
- 
- static void module_assert_mutex_or_preempt(void)
-@@ -3051,7 +3051,7 @@ struct module *__module_address(unsigned long addr)
- 
- 	module_assert_mutex_or_preempt();
- 
--	mod = mod_find(addr);
-+	mod = mod_find(addr, &mod_tree);
- 	if (mod) {
- 		BUG_ON(!within_module(addr, mod));
- 		if (mod->state == MODULE_STATE_UNFORMED)
-diff --git a/kernel/module/tree_lookup.c b/kernel/module/tree_lookup.c
-index 0bc4ec3b22ce..995fe68059db 100644
---- a/kernel/module/tree_lookup.c
-+++ b/kernel/module/tree_lookup.c
-@@ -61,14 +61,14 @@ static const struct latch_tree_ops mod_tree_ops = {
- 	.comp = mod_tree_comp,
- };
- 
--static noinline void __mod_tree_insert(struct mod_tree_node *node)
-+static noinline void __mod_tree_insert(struct mod_tree_node *node, struct mod_tree_root *tree)
- {
--	latch_tree_insert(&node->node, &mod_tree.root, &mod_tree_ops);
-+	latch_tree_insert(&node->node, &tree->root, &mod_tree_ops);
- }
- 
--static void __mod_tree_remove(struct mod_tree_node *node)
-+static void __mod_tree_remove(struct mod_tree_node *node, struct mod_tree_root *tree)
- {
--	latch_tree_erase(&node->node, &mod_tree.root, &mod_tree_ops);
-+	latch_tree_erase(&node->node, &tree->root, &mod_tree_ops);
- }
- 
- /*
-@@ -80,28 +80,28 @@ void mod_tree_insert(struct module *mod)
- 	mod->core_layout.mtn.mod = mod;
- 	mod->init_layout.mtn.mod = mod;
- 
--	__mod_tree_insert(&mod->core_layout.mtn);
-+	__mod_tree_insert(&mod->core_layout.mtn, &mod_tree);
- 	if (mod->init_layout.size)
--		__mod_tree_insert(&mod->init_layout.mtn);
-+		__mod_tree_insert(&mod->init_layout.mtn, &mod_tree);
- }
- 
- void mod_tree_remove_init(struct module *mod)
- {
- 	if (mod->init_layout.size)
--		__mod_tree_remove(&mod->init_layout.mtn);
-+		__mod_tree_remove(&mod->init_layout.mtn, &mod_tree);
- }
- 
- void mod_tree_remove(struct module *mod)
- {
--	__mod_tree_remove(&mod->core_layout.mtn);
-+	__mod_tree_remove(&mod->core_layout.mtn, &mod_tree);
- 	mod_tree_remove_init(mod);
- }
- 
--struct module *mod_find(unsigned long addr)
-+struct module *mod_find(unsigned long addr, struct mod_tree_root *tree)
- {
- 	struct latch_tree_node *ltn;
- 
--	ltn = latch_tree_find((void *)addr, &mod_tree.root, &mod_tree_ops);
-+	ltn = latch_tree_find((void *)addr, &tree->root, &mod_tree_ops);
- 	if (!ltn)
- 		return NULL;
- 
++	if (regs->dar < PAGE_SIZE)
++		msg = "Kernel NULL pointer dereference";
++	else
++		msg = "Unable to handle kernel data access";
++
+ 	switch (TRAP(regs)) {
+ 	case INTERRUPT_DATA_STORAGE:
+-	case INTERRUPT_DATA_SEGMENT:
+ 	case INTERRUPT_H_DATA_STORAGE:
+-		pr_alert("BUG: %s on %s at 0x%08lx\n",
+-			 regs->dar < PAGE_SIZE ? "Kernel NULL pointer dereference" :
+-			 "Unable to handle kernel data access",
++		pr_alert("BUG: %s on %s at 0x%08lx\n", msg,
+ 			 is_write ? "write" : "read", regs->dar);
+ 		break;
++	case INTERRUPT_DATA_SEGMENT:
++		pr_alert("BUG: %s at 0x%08lx\n", msg, regs->dar);
++		break;
+ 	case INTERRUPT_INST_STORAGE:
+ 	case INTERRUPT_INST_SEGMENT:
+ 		pr_alert("BUG: Unable to handle kernel instruction fetch%s",
 -- 
 2.34.1
 
