@@ -4,67 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC271C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 06:48:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34F9DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 06:49:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K2qWp3KlZz3cPJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 17:48:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K2qXV16Z9z3cRY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Feb 2022 17:49:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=ZN3bOczt;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=nTfxQGLi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b;
- helo=mail-pf1-x42b.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42f;
+ helo=mail-pf1-x42f.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=ZN3bOczt; dkim-atps=neutral
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com
- [IPv6:2607:f8b0:4864:20::42b])
+ header.s=20210112 header.b=nTfxQGLi; dkim-atps=neutral
+Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com
+ [IPv6:2607:f8b0:4864:20::42f])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K2qVP22n8z3002
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Feb 2022 17:47:39 +1100 (AEDT)
-Received: by mail-pf1-x42b.google.com with SMTP id y5so11007045pfe.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Feb 2022 22:47:39 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K2qVR6Sypz3bPJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Feb 2022 17:47:43 +1100 (AEDT)
+Received: by mail-pf1-x42f.google.com with SMTP id z15so5260258pfe.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Feb 2022 22:47:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=y49qeHSLbsysRmrFWFJDrfEyQJx8/GQPaFEvbP+Ukrw=;
- b=ZN3bOcztuVRMyT6u3TFaoftMURDWMOScA8rb8F8dxdpu8aj/CKpHIZ/1SWUh+HMCEv
- eJyWuQ2idrqFcvz9OidKyPV+PL0LEOslBphDAW6c/QLqED1EAKHp+EzxKjUsiHsyCUo5
- t9o0WOS4MfeCrdc+1qbiOeF20S4GOnx0kHcS7VwtV0+DZcxM+zwbZUodAjOLEFNhLBDN
- 50D7TaU914L+0e7VXr8mNSrpUXiymy8n2fWxmsONGPBn9MgwiF/ueqfqDpq2KrjaIyz/
- sMPcZ73zPoqWg5/pet4M5DU1PFkB0thG3I55rofzAfjYGNrXxej090YC6CxYYI1dhqtP
- FVIQ==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=3Yszb1VhW5vQuqMzk14SvDtmn04SSl+6GxkgNXsOtcc=;
+ b=nTfxQGLi3zvpnCIzarK1KAHcr9OUbs6g4uz1ass4kLBNrNGLi6/vww8xDMkk7DhTWB
+ YBMB5DKiT2n8CnwPJeqai5zUQTyH3WVIVVAUQ7BLSEMcf34G+Ek9LALCV5/ns+sFxIJ+
+ 8ZCGg+Zjd1OnwFBXJchPDB8GfjKVbzHHIf84DA3t9gX2BzzhugTuEiAAQir92Q+Pd0L3
+ uhizVe0se+EP5skquxJb2+mdOIi66/uBZQNhYS/QNxFNz48MPZDCrw72cRZr5O0t3Dkn
+ 157ap6F4aEh2U6MVT3eCgyM3dxRUYLpI12S+dRKOwpwJzScJPEV4WZSQZux3zT73djji
+ Pr6w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=y49qeHSLbsysRmrFWFJDrfEyQJx8/GQPaFEvbP+Ukrw=;
- b=Wge5QmuJIcvjJwLS+4VgR35rExrcmfyQSMpPFj8H37SzGoFLXLyXVqVvA+ichWG3KQ
- oUbnI0wh5bYmibbkVXBxzjDqkWZbPUDPRiXwgTtivsv4ZJcaYPKIKiiE+0KzWyuS+/jo
- luNakmXfAggi6fpFq4IoS8ROps1ffpSRsdmLbyG+jdnmohVUJpOQ1kIU0IlNUZ1njRTI
- CyvQOsYiV3M9CfjiYYcA3s5Bi2Xsqg7kklXtq8+pjeEGGNf59vq8WUFlHou1sTFKltr0
- hXvy50Vpm/0N4kO3vwSa3tZ7hvYYKKpzQhOTU+7rgdInslevq39svenHox6JQleLInxX
- uIsg==
-X-Gm-Message-State: AOAM532ylwvStPc8zzW+SlVahjEcMB+kRDThK0gX2sHQo198jJHJPnjw
- 4WlUEDrWmAhhOM+dDmkPTw8YPQUFcfY=
-X-Google-Smtp-Source: ABdhPJwQWl8rMbXMOAO253k7mJBge7rkMz0FhtnaM+7AnNTJBEQuTwK5wvhHoJgc9u+Qvg3skV8gtw==
-X-Received: by 2002:a05:6a00:1687:b0:4e1:45d:3ded with SMTP id
- k7-20020a056a00168700b004e1045d3dedmr23286018pfc.0.1645512456816; 
- Mon, 21 Feb 2022 22:47:36 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=3Yszb1VhW5vQuqMzk14SvDtmn04SSl+6GxkgNXsOtcc=;
+ b=iifZ5ztgmLf+RtRnmTlfn5Yh89jMYwZfLpySAR+HCtk4JUXVNSejfjMBIYffY51AxV
+ PPzV81cT7wsnHmRWCs87WsJpZv869rN+52WH2YOuUYcoOSEFmva84mxste7L3tJMNDnq
+ 13euhGx84pTIoWhX/SeiHf8NGihZmlkI72zEy5eT5y4/FK4N0IFrbyiZ2F4Ezz/NwzZe
+ x8TIRgIqp9P4Oss0mBD6apk997YnP71/64YAt0ZeaApP+RwVLJoUKzMuICCzR12YsUfD
+ xbYQ6hRRHaBD3aBbbP76MDrCB91OzCddAmER/DV7ekJ28UQc54tWe0H/9tH0J+Ios7wk
+ N/nw==
+X-Gm-Message-State: AOAM5328jHlZdqk419uCfhRS4For66P9iFAMaivAU/Kees4yWqVU2BO7
+ kOnk66QJ5zKJOolW5EpTyuvAB2FYk7M=
+X-Google-Smtp-Source: ABdhPJyKnQMMQNrOXDylnjffub+WBwYSjI2bbl4OUZPem1TdOXRxmNhHZnfjesuPU0PiWaDiIQnIXg==
+X-Received: by 2002:a05:6a00:14ca:b0:4cf:1930:9d67 with SMTP id
+ w10-20020a056a0014ca00b004cf19309d67mr23076612pfu.55.1645512462337; 
+ Mon, 21 Feb 2022 22:47:42 -0800 (PST)
 Received: from bobo.ibm.com (193-116-225-41.tpgi.com.au. [193.116.225.41])
- by smtp.gmail.com with ESMTPSA id d8sm16346711pfv.84.2022.02.21.22.47.34
+ by smtp.gmail.com with ESMTPSA id d8sm16346711pfv.84.2022.02.21.22.47.39
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 21 Feb 2022 22:47:36 -0800 (PST)
+ Mon, 21 Feb 2022 22:47:42 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 0/3] KVM: PPC: Book3S PR: Fixes for AIL and SCV
-Date: Tue, 22 Feb 2022 16:47:24 +1000
-Message-Id: <20220222064727.2314380-1-npiggin@gmail.com>
+Subject: [PATCH v4 2/3] KVM: PPC: Book3S PR: Disallow AIL != 0
+Date: Tue, 22 Feb 2022 16:47:26 +1000
+Message-Id: <20220222064727.2314380-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20220222064727.2314380-1-npiggin@gmail.com>
+References: <20220222064727.2314380-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -79,61 +81,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Paolo Bonzini <pbonzini@redhat.com>, kvm@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>
+ Nicholas Piggin <npiggin@gmail.com>, Fabiano Rosas <farosas@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Paolo,
+KVM PR does not implement address translation modes on interrupt, so it
+must not allow H_SET_MODE to succeed. The behaviour change caused by
+this mode is architected and not advisory (interrupts *must* behave
+differently).
 
-Patch 3 requires a KVM_CAP_PPC number allocated. QEMU maintainers are
-happy with it (link in changelog) just waiting on KVM upstreaming. Do
-you have objections to the series going to ppc/kvm tree first, or
-another option is you could take patch 3 alone first (it's relatively
-independent of the other 2) and ppc/kvm gets it from you?
+QEMU does not deal with differences in AIL support in the host. The
+solution to that is a spapr capability and corresponding KVM CAP, but
+this patch does not break things more than before (the host behaviour
+already differs, this change just disallows some modes that are not
+implemented properly).
 
-The first patch in this series fixes a KVM PR host crash due to a
-guest executing the scv instruction or with a pseries SMP host, the
-host CPUs executing the scv instruction while a PR guest is running.
+By happy coincidence, this allows PR Linux guests that are using the SCV
+facility to boot and run, because Linux disables the use of SCV if AIL
+can not be set to 3. This does not fix the underlying problem of missing
+SCV support (an OS could implement real-mode SCV vectors and try to
+enable the facility). The true fix for that is for KVM PR to emulate scv
+interrupts from the facility unavailable interrupt.
 
-The second patch fixes unimplemented H_SET_MODE AIL modes by returning
-failure from the hcall rather than succeeding but not implementing
-the required behaviour. This works around missing host scv support for
-scv-capable Linux guests by causing them to disable the facility.
+Reviewed-by: Fabiano Rosas <farosas@linux.ibm.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kvm/book3s_pr_papr.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-The third patch adds a new KVM CAP to go with some QEMU work to get
-the AIL differences properly represented in QEMU. The third patch will
-need to allocate a KVM CAP number and merged with upstream KVM tree
-before the QEMU side goes ahead.
-
-Changes since v2:
-- Fix fscr compile error in patch 1.
-- Add patch 3.
-
-Changes since v3:
-- Rebased, cc kvm@
-
-Thanks,
-Nick
-
-Nicholas Piggin (3):
-  KVM: PPC: Book3S PR: Disable SCV when AIL could be disabled
-  KVM: PPC: Book3S PR: Disallow AIL != 0
-  KVM: PPC: Add KVM_CAP_PPC_AIL_MODE_3
-
- Documentation/virt/kvm/api.rst         | 14 +++++++++++++
- arch/powerpc/include/asm/setup.h       |  2 ++
- arch/powerpc/kernel/exceptions-64s.S   |  4 ++++
- arch/powerpc/kernel/setup_64.c         | 28 ++++++++++++++++++++++++++
- arch/powerpc/kvm/Kconfig               |  9 +++++++++
- arch/powerpc/kvm/book3s_pr.c           | 26 +++++++++++++++---------
- arch/powerpc/kvm/book3s_pr_papr.c      | 20 ++++++++++++++++++
- arch/powerpc/kvm/powerpc.c             | 17 ++++++++++++++++
- arch/powerpc/platforms/pseries/setup.c | 12 ++++++++++-
- include/uapi/linux/kvm.h               |  1 +
- tools/include/uapi/linux/kvm.h         |  1 +
- 11 files changed, 124 insertions(+), 10 deletions(-)
-
+diff --git a/arch/powerpc/kvm/book3s_pr_papr.c b/arch/powerpc/kvm/book3s_pr_papr.c
+index 1f10e7dfcdd0..dc4f51ac84bc 100644
+--- a/arch/powerpc/kvm/book3s_pr_papr.c
++++ b/arch/powerpc/kvm/book3s_pr_papr.c
+@@ -281,6 +281,22 @@ static int kvmppc_h_pr_logical_ci_store(struct kvm_vcpu *vcpu)
+ 	return EMULATE_DONE;
+ }
+ 
++static int kvmppc_h_pr_set_mode(struct kvm_vcpu *vcpu)
++{
++	unsigned long mflags = kvmppc_get_gpr(vcpu, 4);
++	unsigned long resource = kvmppc_get_gpr(vcpu, 5);
++
++	if (resource == H_SET_MODE_RESOURCE_ADDR_TRANS_MODE) {
++		/* KVM PR does not provide AIL!=0 to guests */
++		if (mflags == 0)
++			kvmppc_set_gpr(vcpu, 3, H_SUCCESS);
++		else
++			kvmppc_set_gpr(vcpu, 3, H_UNSUPPORTED_FLAG_START - 63);
++		return EMULATE_DONE;
++	}
++	return EMULATE_FAIL;
++}
++
+ #ifdef CONFIG_SPAPR_TCE_IOMMU
+ static int kvmppc_h_pr_put_tce(struct kvm_vcpu *vcpu)
+ {
+@@ -384,6 +400,8 @@ int kvmppc_h_pr(struct kvm_vcpu *vcpu, unsigned long cmd)
+ 		return kvmppc_h_pr_logical_ci_load(vcpu);
+ 	case H_LOGICAL_CI_STORE:
+ 		return kvmppc_h_pr_logical_ci_store(vcpu);
++	case H_SET_MODE:
++		return kvmppc_h_pr_set_mode(vcpu);
+ 	case H_XIRR:
+ 	case H_CPPR:
+ 	case H_EOI:
+@@ -421,6 +439,7 @@ int kvmppc_hcall_impl_pr(unsigned long cmd)
+ 	case H_CEDE:
+ 	case H_LOGICAL_CI_LOAD:
+ 	case H_LOGICAL_CI_STORE:
++	case H_SET_MODE:
+ #ifdef CONFIG_KVM_XICS
+ 	case H_XIRR:
+ 	case H_CPPR:
+@@ -447,6 +466,7 @@ static unsigned int default_hcall_list[] = {
+ 	H_BULK_REMOVE,
+ 	H_PUT_TCE,
+ 	H_CEDE,
++	H_SET_MODE,
+ #ifdef CONFIG_KVM_XICS
+ 	H_XIRR,
+ 	H_CPPR,
 -- 
 2.23.0
 
