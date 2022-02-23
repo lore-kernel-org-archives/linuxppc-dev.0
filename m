@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68B58C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 12:03:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37498C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 12:03:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K3ZSM1JCPz3cNV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 23:03:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K3ZSq12VRz3cnX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 23:03:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,51 +16,50 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K3ZRQ009gz3bXR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 23:02:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K3ZRV4BQBz3cC5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 23:02:46 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4K3ZRD4f4jz9sSs;
- Wed, 23 Feb 2022 13:02:32 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4K3ZRF5YZlz9sSg;
+ Wed, 23 Feb 2022 13:02:33 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id C7xzbR6pV4X9; Wed, 23 Feb 2022 13:02:32 +0100 (CET)
+ with ESMTP id PupAe0jjbyvw; Wed, 23 Feb 2022 13:02:33 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4K3ZRC0Qfsz9sSg;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4K3ZRC0gJ1z9sSh;
  Wed, 23 Feb 2022 13:02:31 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F272C8B763;
- Wed, 23 Feb 2022 13:02:30 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 085D78B779;
+ Wed, 23 Feb 2022 13:02:31 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id AMKOnWc9Kg8a; Wed, 23 Feb 2022 13:02:30 +0100 (CET)
+ with ESMTP id AROrFHZOhGpQ; Wed, 23 Feb 2022 13:02:30 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.7.201])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 686C38B779;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 65ED78B778;
  Wed, 23 Feb 2022 13:02:30 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21NC2NXC1148205
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21NC2LZS1148187
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Wed, 23 Feb 2022 13:02:23 +0100
+ Wed, 23 Feb 2022 13:02:21 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21NC2MVk1148202;
- Wed, 23 Feb 2022 13:02:22 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21NC2LuK1148186;
+ Wed, 23 Feb 2022 13:02:21 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Luis Chamberlain <mcgrof@kernel.org>, Aaron Tomlin <atomlin@redhat.com>
-Subject: [PATCH v6 6/6] powerpc: Select ARCH_WANTS_MODULES_DATA_IN_VMALLOC on
- book3s/32 and 8xx
-Date: Wed, 23 Feb 2022 13:02:16 +0100
-Message-Id: <100cc6b63ba31d527d94674453ceae201af0072e.1645607143.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v6 2/6] module: Prepare for handling several RB trees
+Date: Wed, 23 Feb 2022 13:02:12 +0100
+Message-Id: <8788e5b6180ad45ec933359bc97c1c8fe865f186.1645607143.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1645607143.git.christophe.leroy@csgroup.eu>
 References: <cover.1645607143.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1645617734; l=1645; s=20211009;
- h=from:subject:message-id; bh=K04OWtjguCoft4Etc2/16pdJhJKZWZgWbhOpnNSgE7U=;
- b=lS6FQSg3tE3yCPJb+g8j9OCMrPJZvVdMsuJ8tcj5aft81NhPKgwAmf/bVK2FEsMsiwQfML/oGvzt
- tov5L7ZdB3TPP3OUovRNJLUJrLCD9XnmUvNS+Aa8E9lK3jAt9Su+
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1645617734; l=4776; s=20211009;
+ h=from:subject:message-id; bh=zW762VTX2wgJQdaUEhSgceFO6MryOmerkmFB78i7T/o=;
+ b=opu3ZV2a7zUveKjdvLUAJlBYvn4o0Fkim4MybaD/po/M6L4Jo4sZpUoZZojQnG+EvZEEnt+68ssv
+ sFG4q5q6CiQMIjcCvJRlIX2LlhqxRcsmGyvpggqXstHlEUFEb+xb
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -77,53 +76,144 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
  linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-modules@vger.kernel.org
+ linuxppc-dev@lists.ozlabs.org, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-book3s/32 and 8xx have a separate area for allocating modules,
-defined by MODULES_VADDR / MODULES_END.
+In order to separate text and data, we need to setup
+two rb trees.
 
-On book3s/32, it is not possible to protect against execution
-on a page basis. A full 256M segment is either Exec or NoExec.
-The module area is in an Exec segment while vmalloc area is
-in a NoExec segment.
-
-In order to protect module data against execution, select
-ARCH_WANTS_MODULES_DATA_IN_VMALLOC.
-
-For the 8xx (and possibly other 32 bits platform in the future),
-there is no such constraint on Exec/NoExec protection, however
-there is a critical distance between kernel functions and callers
-that needs to remain below 32Mbytes in order to avoid costly
-trampolines. By allocating data outside of module area, we
-increase the chance for module text to remain within acceptable
-distance from kernel core text.
-
-So select ARCH_WANTS_MODULES_DATA_IN_VMALLOC for 8xx as well.
+Modify functions to give the tree as a parameter.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ kernel/module/internal.h    |  4 ++--
+ kernel/module/main.c        | 16 ++++++++--------
+ kernel/module/tree_lookup.c | 20 ++++++++++----------
+ 3 files changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 28e4047e99e8..478ee49a4fb4 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -156,6 +156,7 @@ config PPC
- 	select ARCH_WANT_IPC_PARSE_VERSION
- 	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
- 	select ARCH_WANT_LD_ORPHAN_WARN
-+	select ARCH_WANTS_MODULES_DATA_IN_VMALLOC	if PPC_BOOK3S_32 || PPC_8xx
- 	select ARCH_WEAK_RELEASE_ACQUIRE
- 	select BINFMT_ELF
- 	select BUILDTIME_TABLE_SORT
+diff --git a/kernel/module/internal.h b/kernel/module/internal.h
+index ac64e53ac5e3..0f3146347256 100644
+--- a/kernel/module/internal.h
++++ b/kernel/module/internal.h
+@@ -157,13 +157,13 @@ extern struct mod_tree_root mod_tree;
+ void mod_tree_insert(struct module *mod);
+ void mod_tree_remove_init(struct module *mod);
+ void mod_tree_remove(struct module *mod);
+-struct module *mod_find(unsigned long addr);
++struct module *mod_find(unsigned long addr, struct mod_tree_root *tree);
+ #else /* !CONFIG_MODULES_TREE_LOOKUP */
+ 
+ static inline void mod_tree_insert(struct module *mod) { }
+ static inline void mod_tree_remove_init(struct module *mod) { }
+ static inline void mod_tree_remove(struct module *mod) { }
+-static inline struct module *mod_find(unsigned long addr)
++static inline struct module *mod_find(unsigned long addr, struct mod_tree_root *tree)
+ {
+ 	struct module *mod;
+ 
+diff --git a/kernel/module/main.c b/kernel/module/main.c
+index 3832a71cdacb..a831f51595d7 100644
+--- a/kernel/module/main.c
++++ b/kernel/module/main.c
+@@ -91,22 +91,22 @@ struct symsearch {
+  * Bounds of module text, for speeding up __module_address.
+  * Protected by module_mutex.
+  */
+-static void __mod_update_bounds(void *base, unsigned int size)
++static void __mod_update_bounds(void *base, unsigned int size, struct mod_tree_root *tree)
+ {
+ 	unsigned long min = (unsigned long)base;
+ 	unsigned long max = min + size;
+ 
+-	if (min < module_addr_min)
+-		module_addr_min = min;
+-	if (max > module_addr_max)
+-		module_addr_max = max;
++	if (min < tree->addr_min)
++		tree->addr_min = min;
++	if (max > tree->addr_max)
++		tree->addr_max = max;
+ }
+ 
+ static void mod_update_bounds(struct module *mod)
+ {
+-	__mod_update_bounds(mod->core_layout.base, mod->core_layout.size);
++	__mod_update_bounds(mod->core_layout.base, mod->core_layout.size, &mod_tree);
+ 	if (mod->init_layout.size)
+-		__mod_update_bounds(mod->init_layout.base, mod->init_layout.size);
++		__mod_update_bounds(mod->init_layout.base, mod->init_layout.size, &mod_tree);
+ }
+ 
+ static void module_assert_mutex_or_preempt(void)
+@@ -3017,7 +3017,7 @@ struct module *__module_address(unsigned long addr)
+ 
+ 	module_assert_mutex_or_preempt();
+ 
+-	mod = mod_find(addr);
++	mod = mod_find(addr, &mod_tree);
+ 	if (mod) {
+ 		BUG_ON(!within_module(addr, mod));
+ 		if (mod->state == MODULE_STATE_UNFORMED)
+diff --git a/kernel/module/tree_lookup.c b/kernel/module/tree_lookup.c
+index 0bc4ec3b22ce..995fe68059db 100644
+--- a/kernel/module/tree_lookup.c
++++ b/kernel/module/tree_lookup.c
+@@ -61,14 +61,14 @@ static const struct latch_tree_ops mod_tree_ops = {
+ 	.comp = mod_tree_comp,
+ };
+ 
+-static noinline void __mod_tree_insert(struct mod_tree_node *node)
++static noinline void __mod_tree_insert(struct mod_tree_node *node, struct mod_tree_root *tree)
+ {
+-	latch_tree_insert(&node->node, &mod_tree.root, &mod_tree_ops);
++	latch_tree_insert(&node->node, &tree->root, &mod_tree_ops);
+ }
+ 
+-static void __mod_tree_remove(struct mod_tree_node *node)
++static void __mod_tree_remove(struct mod_tree_node *node, struct mod_tree_root *tree)
+ {
+-	latch_tree_erase(&node->node, &mod_tree.root, &mod_tree_ops);
++	latch_tree_erase(&node->node, &tree->root, &mod_tree_ops);
+ }
+ 
+ /*
+@@ -80,28 +80,28 @@ void mod_tree_insert(struct module *mod)
+ 	mod->core_layout.mtn.mod = mod;
+ 	mod->init_layout.mtn.mod = mod;
+ 
+-	__mod_tree_insert(&mod->core_layout.mtn);
++	__mod_tree_insert(&mod->core_layout.mtn, &mod_tree);
+ 	if (mod->init_layout.size)
+-		__mod_tree_insert(&mod->init_layout.mtn);
++		__mod_tree_insert(&mod->init_layout.mtn, &mod_tree);
+ }
+ 
+ void mod_tree_remove_init(struct module *mod)
+ {
+ 	if (mod->init_layout.size)
+-		__mod_tree_remove(&mod->init_layout.mtn);
++		__mod_tree_remove(&mod->init_layout.mtn, &mod_tree);
+ }
+ 
+ void mod_tree_remove(struct module *mod)
+ {
+-	__mod_tree_remove(&mod->core_layout.mtn);
++	__mod_tree_remove(&mod->core_layout.mtn, &mod_tree);
+ 	mod_tree_remove_init(mod);
+ }
+ 
+-struct module *mod_find(unsigned long addr)
++struct module *mod_find(unsigned long addr, struct mod_tree_root *tree)
+ {
+ 	struct latch_tree_node *ltn;
+ 
+-	ltn = latch_tree_find((void *)addr, &mod_tree.root, &mod_tree_ops);
++	ltn = latch_tree_find((void *)addr, &tree->root, &mod_tree_ops);
+ 	if (!ltn)
+ 		return NULL;
+ 
 -- 
 2.34.1
 
