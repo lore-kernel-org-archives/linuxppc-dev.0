@@ -4,71 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60168C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 01:44:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98C30C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 01:44:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K3JjX0vj2z3cYk
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 12:44:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K3JkD3GJrz3ckC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 12:44:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=dabbelt-com.20210112.gappssmtp.com header.i=@dabbelt-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=lhFeOPH1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=dabbelt-com.20210112.gappssmtp.com header.i=@dabbelt-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=4LFj9bz4;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=dabbelt.com (client-ip=2607:f8b0:4864:20::431;
- helo=mail-pf1-x431.google.com; envelope-from=palmer@dabbelt.com;
+ smtp.mailfrom=dabbelt.com (client-ip=2607:f8b0:4864:20::102e;
+ helo=mail-pj1-x102e.google.com; envelope-from=palmer@dabbelt.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=dabbelt-com.20210112.gappssmtp.com
  header.i=@dabbelt-com.20210112.gappssmtp.com header.a=rsa-sha256
- header.s=20210112 header.b=lhFeOPH1; dkim-atps=neutral
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com
- [IPv6:2607:f8b0:4864:20::431])
+ header.s=20210112 header.b=4LFj9bz4; dkim-atps=neutral
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com
+ [IPv6:2607:f8b0:4864:20::102e])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K3JhJ085rz2yK2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K3JhJ4ckpz3bPH
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 12:42:55 +1100 (AEDT)
-Received: by mail-pf1-x431.google.com with SMTP id d17so13898791pfl.0
+Received: by mail-pj1-x102e.google.com with SMTP id
+ h17-20020a17090acf1100b001bc68ecce4aso735081pju.4
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Feb 2022 17:42:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=dabbelt-com.20210112.gappssmtp.com; s=20210112;
  h=date:subject:in-reply-to:cc:from:to:message-id:mime-version
  :content-transfer-encoding;
- bh=TWhgF9FeTi8dOQVI2k/1V0qT/3+zoCpboq+qKZ5bMI8=;
- b=lhFeOPH1tXM6mZ6KGKijnCg9cWqzTSt7ZQdh4S9KiIyb9cMveL28/g42MvvbnDVtt4
- SAZ6MhDy1zYOhxh9qzkByiw6t1xZr3DP7hmRlQw7Us5N0V6vfmWmdADfTJobhfbjYDuC
- 4/RN7QFYswrzNG4mgmSZ+3ZFsnvJOTxoZ5e5LOhU6Sg8olj20480dX0azWETbCeaygdf
- wJnp5lSB5MZXA1aRKe3ZE49Bz0GXYhmqNQ5jU2i9jadxR7aM75wmDig0R7cDDC5606dk
- BGFF5Bpcu+rpjQX9S9NLcVXB4b4AwRsRuPO4Wr22oKHlFg3WcluvYcTwn0T5YOp89o2/
- evFw==
+ bh=N2UCfbLp79h/dkfWTGY4WIVSQeEuINCqmpbos16sW34=;
+ b=4LFj9bz4NwjfZrhnHEdaivZOeq/+lWRcuq5Y1wzU2pkH5M1EbGGH+iS2dAWte4zzK0
+ uhfsYDkF8v/YwKD4UrkItpNjka+Xnb5VDUm1+nNaSTfiwLfufG7rXr/ximrBJWWJ3I98
+ SVPPLrKIpK7zmmK0mTw99x5pVOqdEe7hcOHvTEa4Vd3384rUHgzjAjmsWfjUCq+/kFkH
+ LdIKEFlWMPZJtDKZwldMNodHN+jWw5yu0bDJ44NRvdh2aClgYR4rkjeegQmMBQE1UbfI
+ CHqHwSMlqOGdpTnIqkYZYWyNY/pga1f2aIBpTtYLUdCay8XLPTHf+igsHER5SXIaDjrF
+ Bjmg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:date:subject:in-reply-to:cc:from:to:message-id
  :mime-version:content-transfer-encoding;
- bh=TWhgF9FeTi8dOQVI2k/1V0qT/3+zoCpboq+qKZ5bMI8=;
- b=5A10DQN1twAErQ4WiRlXj7+D7siCRPfparnT1fR7ooeXWIn+I4VkQd2zWbmgs92wxQ
- Vnn1ljyiz7y0PF13GC9jbWhPc6k5ZTKmNBBuQ2A4NNaF+m0TwqBoYz0rw7GKoh3/9A6r
- 5gKgbC9+/7CXbhpZ8rUyekB8KPaqjpvbwvdm4Luec13QBiIqtpczcU2BXlY80GOMJMuD
- vk86HJNUbEy64Ci1ho4JolnlUqGFocniK4Qei2diuzZNbVchJPbbX5qVS4KuFK1HRA0W
- fj93dky7OOWAwmZtRKjg9uJE6/j0FmlENrIkDU0E5vIHKI7r5eJjVmKRWT7RK8uGqgZa
- 66Ew==
-X-Gm-Message-State: AOAM531ttQPMbKtvFj1iBJy7EjRbs4KT+7r1iHrRTrQfduB6679kpIZu
- 5Xzz6EPfS6c5iNnc3Q7JoJRs5g==
-X-Google-Smtp-Source: ABdhPJxNA5reRs8r3v6c0shrIzFkO76IQZ2c1KGY/GgGhDuLP8n1xhwjgWddNUq0H+VpTDObNB+pSA==
-X-Received: by 2002:a05:6a00:1744:b0:4c4:4bd:dc17 with SMTP id
- j4-20020a056a00174400b004c404bddc17mr27275420pfc.57.1645580573932; 
- Tue, 22 Feb 2022 17:42:53 -0800 (PST)
+ bh=N2UCfbLp79h/dkfWTGY4WIVSQeEuINCqmpbos16sW34=;
+ b=0+ixqtQZzF9yqPWOlOTULmumSuxlBECHAXca+mQpkdjm/pYrcTXvGltdhNeZdmIqJZ
+ bM48rlgCAy36Quex18E2LvM9P1tKXd7UefShqffPfn0eHMgbuOUNczMf+jnGczfHCjaa
+ 8BOt9nWS7g+F9zFiy4s3CgNNLmPbYwWYTkfps0EypTuK+TyisnnetNEjwtCq4NWe7Ide
+ 2B6MAvCN/fT24bwQGWlI9LyHxOsCC1pTC6lTkrZ1kmYB1z2svyZl6zNCzj/rFRHqEQYk
+ g2jCEOGJbY78z7hzkFrDDB5UptcsJUUIxYEug/XdWF004e6cDwJxUBgPcjPnOpdDfa3K
+ hAvA==
+X-Gm-Message-State: AOAM533Zxi4Dn7L7MnMRY8xpk7WfXu4iVBVEtILOi9dq+79oLVyZKeNL
+ G3GVCLqqwdZqu/vpzflceXEfLg==
+X-Google-Smtp-Source: ABdhPJziibP3VeHPcI77/p+oZjngxSrgPOeEDAz92xaYnjXHit/HBL3E+aw7A2/vfSyzdBkgFOVIog==
+X-Received: by 2002:a17:90a:a502:b0:1bc:8dd6:a859 with SMTP id
+ a2-20020a17090aa50200b001bc8dd6a859mr2404594pjq.46.1645580569193; 
+ Tue, 22 Feb 2022 17:42:49 -0800 (PST)
 Received: from localhost ([12.3.194.138])
- by smtp.gmail.com with ESMTPSA id v9sm17437449pfu.134.2022.02.22.17.42.53
+ by smtp.gmail.com with ESMTPSA id bd13sm4528769pfb.60.2022.02.22.17.42.48
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 22 Feb 2022 17:42:53 -0800 (PST)
-Date: Tue, 22 Feb 2022 17:42:53 -0800 (PST)
-X-Google-Original-Date: Tue, 22 Feb 2022 17:04:06 PST (-0800)
-Subject: Re: [PATCH V5 17/21] riscv: compat: vdso: Add setup additional pages
- implementation
-In-Reply-To: <20220201150545.1512822-18-guoren@kernel.org>
+ Tue, 22 Feb 2022 17:42:48 -0800 (PST)
+Date: Tue, 22 Feb 2022 17:42:48 -0800 (PST)
+X-Google-Original-Date: Tue, 22 Feb 2022 15:29:49 PST (-0800)
+Subject: Re: [PATCH V5 13/21] riscv: compat: process: Add UXL_32 support in
+ start_thread
+In-Reply-To: <20220201150545.1512822-14-guoren@kernel.org>
 From: Palmer Dabbelt <palmer@dabbelt.com>
 To: guoren@kernel.org
-Message-ID: <mhng-fda909a7-d09a-4835-94a9-90a0746f6a95@palmer-ri-x1c9>
+Message-ID: <mhng-5c3b969c-9a23-48dc-ab10-a1addc6a5349@palmer-ri-x1c9>
 Mime-Version: 1.0 (MHng)
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
@@ -96,288 +97,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 01 Feb 2022 07:05:41 PST (-0800), guoren@kernel.org wrote:
+On Tue, 01 Feb 2022 07:05:37 PST (-0800), guoren@kernel.org wrote:
 > From: Guo Ren <guoren@linux.alibaba.com>
 >
-> Reconstruct __setup_additional_pages() by appending vdso info
-> pointer argument to meet compat_vdso_info requirement. And change
-> vm_special_mapping *dm, *cm initialization into static.
+> If the current task is in COMPAT mode, set SR_UXL_32 in status for
+> returning userspace. We need CONFIG _COMPAT to prevent compiling
+> errors with rv32 defconfig.
 >
 > Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
 > Signed-off-by: Guo Ren <guoren@kernel.org>
 > Cc: Arnd Bergmann <arnd@arndb.de>
 > Cc: Palmer Dabbelt <palmer@dabbelt.com>
 > ---
->  arch/riscv/include/asm/elf.h |   5 ++
->  arch/riscv/include/asm/mmu.h |   1 +
->  arch/riscv/kernel/vdso.c     | 104 +++++++++++++++++++++++++----------
->  3 files changed, 81 insertions(+), 29 deletions(-)
+>  arch/riscv/kernel/process.c | 5 +++++
+>  1 file changed, 5 insertions(+)
 >
-> diff --git a/arch/riscv/include/asm/elf.h b/arch/riscv/include/asm/elf.h
-> index 3a4293dc7229..d87d3bcc758d 100644
-> --- a/arch/riscv/include/asm/elf.h
-> +++ b/arch/riscv/include/asm/elf.h
-> @@ -134,5 +134,10 @@ do {    if ((ex).e_ident[EI_CLASS] == ELFCLASS32)		\
->  typedef compat_ulong_t			compat_elf_greg_t;
->  typedef compat_elf_greg_t		compat_elf_gregset_t[ELF_NGREG];
->
-> +extern int compat_arch_setup_additional_pages(struct linux_binprm *bprm,
-> +					      int uses_interp);
-> +#define compat_arch_setup_additional_pages \
-> +				compat_arch_setup_additional_pages
-> +
->  #endif /* CONFIG_COMPAT */
->  #endif /* _ASM_RISCV_ELF_H */
-> diff --git a/arch/riscv/include/asm/mmu.h b/arch/riscv/include/asm/mmu.h
-> index 0099dc116168..cedcf8ea3c76 100644
-> --- a/arch/riscv/include/asm/mmu.h
-> +++ b/arch/riscv/include/asm/mmu.h
-> @@ -16,6 +16,7 @@ typedef struct {
->  	atomic_long_t id;
->  #endif
->  	void *vdso;
-> +	void *vdso_info;
->  #ifdef CONFIG_SMP
->  	/* A local icache flush is needed before user execution can resume. */
->  	cpumask_t icache_stale_mask;
-> diff --git a/arch/riscv/kernel/vdso.c b/arch/riscv/kernel/vdso.c
-> index a9436a65161a..deca69524799 100644
-> --- a/arch/riscv/kernel/vdso.c
-> +++ b/arch/riscv/kernel/vdso.c
-> @@ -23,6 +23,9 @@ struct vdso_data {
->  #endif
->
->  extern char vdso_start[], vdso_end[];
-> +#ifdef CONFIG_COMPAT
-> +extern char compat_vdso_start[], compat_vdso_end[];
-> +#endif
->
->  enum vvar_pages {
->  	VVAR_DATA_PAGE_OFFSET,
-> @@ -30,6 +33,11 @@ enum vvar_pages {
->  	VVAR_NR_PAGES,
->  };
->
-> +enum rv_vdso_map {
-> +	RV_VDSO_MAP_VVAR,
-> +	RV_VDSO_MAP_VDSO,
-> +};
-> +
->  #define VVAR_SIZE  (VVAR_NR_PAGES << PAGE_SHIFT)
->
->  /*
-> @@ -52,12 +60,6 @@ struct __vdso_info {
->  	struct vm_special_mapping *cm;
->  };
->
-> -static struct __vdso_info vdso_info __ro_after_init = {
-> -	.name = "vdso",
-> -	.vdso_code_start = vdso_start,
-> -	.vdso_code_end = vdso_end,
-> -};
-> -
->  static int vdso_mremap(const struct vm_special_mapping *sm,
->  		       struct vm_area_struct *new_vma)
->  {
-> @@ -66,35 +68,35 @@ static int vdso_mremap(const struct vm_special_mapping *sm,
->  	return 0;
->  }
->
-> -static int __init __vdso_init(void)
-> +static int __init __vdso_init(struct __vdso_info *vdso_info)
->  {
->  	unsigned int i;
->  	struct page **vdso_pagelist;
->  	unsigned long pfn;
->
-> -	if (memcmp(vdso_info.vdso_code_start, "\177ELF", 4)) {
-> +	if (memcmp(vdso_info->vdso_code_start, "\177ELF", 4)) {
->  		pr_err("vDSO is not a valid ELF object!\n");
->  		return -EINVAL;
+> diff --git a/arch/riscv/kernel/process.c b/arch/riscv/kernel/process.c
+> index 03ac3aa611f5..1a666ad299b4 100644
+> --- a/arch/riscv/kernel/process.c
+> +++ b/arch/riscv/kernel/process.c
+> @@ -97,6 +97,11 @@ void start_thread(struct pt_regs *regs, unsigned long pc,
 >  	}
->
-> -	vdso_info.vdso_pages = (
-> -		vdso_info.vdso_code_end -
-> -		vdso_info.vdso_code_start) >>
-> +	vdso_info->vdso_pages = (
-> +		vdso_info->vdso_code_end -
-> +		vdso_info->vdso_code_start) >>
->  		PAGE_SHIFT;
->
-> -	vdso_pagelist = kcalloc(vdso_info.vdso_pages,
-> +	vdso_pagelist = kcalloc(vdso_info->vdso_pages,
->  				sizeof(struct page *),
->  				GFP_KERNEL);
->  	if (vdso_pagelist == NULL)
->  		return -ENOMEM;
->
->  	/* Grab the vDSO code pages. */
-> -	pfn = sym_to_pfn(vdso_info.vdso_code_start);
-> +	pfn = sym_to_pfn(vdso_info->vdso_code_start);
->
-> -	for (i = 0; i < vdso_info.vdso_pages; i++)
-> +	for (i = 0; i < vdso_info->vdso_pages; i++)
->  		vdso_pagelist[i] = pfn_to_page(pfn + i);
->
-> -	vdso_info.cm->pages = vdso_pagelist;
-> +	vdso_info->cm->pages = vdso_pagelist;
->
->  	return 0;
->  }
-> @@ -116,13 +118,14 @@ int vdso_join_timens(struct task_struct *task, struct time_namespace *ns)
->  {
->  	struct mm_struct *mm = task->mm;
->  	struct vm_area_struct *vma;
-> +	struct __vdso_info *vdso_info = mm->context.vdso_info;
-
-IIUC this is the only use for context.vdso_info?  If that's the case, 
-can we just switch between VDSO targets based on __is_compat_task(task)?  
-That'd save an mm_struct pointer, which is always nice.  It'd probably 
-be worth cleaning up the arm64 port too, which zaps both mappings.
-
->
->  	mmap_read_lock(mm);
->
->  	for (vma = mm->mmap; vma; vma = vma->vm_next) {
->  		unsigned long size = vma->vm_end - vma->vm_start;
->
-> -		if (vma_is_special_mapping(vma, vdso_info.dm))
-> +		if (vma_is_special_mapping(vma, vdso_info->dm))
->  			zap_page_range(vma, vma->vm_start, size);
->  	}
->
-> @@ -187,11 +190,6 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
->  	return vmf_insert_pfn(vma, vmf->address, pfn);
->  }
->
-> -enum rv_vdso_map {
-> -	RV_VDSO_MAP_VVAR,
-> -	RV_VDSO_MAP_VDSO,
-> -};
-> -
->  static struct vm_special_mapping rv_vdso_maps[] __ro_after_init = {
->  	[RV_VDSO_MAP_VVAR] = {
->  		.name   = "[vvar]",
-> @@ -203,25 +201,53 @@ static struct vm_special_mapping rv_vdso_maps[] __ro_after_init = {
->  	},
->  };
->
-> +static struct __vdso_info vdso_info __ro_after_init = {
-> +	.name = "vdso",
-> +	.vdso_code_start = vdso_start,
-> +	.vdso_code_end = vdso_end,
-> +	.dm = &rv_vdso_maps[RV_VDSO_MAP_VVAR],
-> +	.cm = &rv_vdso_maps[RV_VDSO_MAP_VDSO],
-> +};
+>  	regs->epc = pc;
+>  	regs->sp = sp;
 > +
 > +#ifdef CONFIG_COMPAT
-> +static struct __vdso_info compat_vdso_info __ro_after_init = {
-> +	.name = "compat_vdso",
-> +	.vdso_code_start = compat_vdso_start,
-> +	.vdso_code_end = compat_vdso_end,
-> +	.dm = &rv_vdso_maps[RV_VDSO_MAP_VVAR],
-> +	.cm = &rv_vdso_maps[RV_VDSO_MAP_VDSO],
-> +};
-> +#endif
-> +
->  static int __init vdso_init(void)
->  {
-> -	vdso_info.dm = &rv_vdso_maps[RV_VDSO_MAP_VVAR];
-> -	vdso_info.cm = &rv_vdso_maps[RV_VDSO_MAP_VDSO];
-> +	int ret;
-> +
-> +	ret = __vdso_init(&vdso_info);
-> +	if (ret)
-> +		goto out;
->
-> -	return __vdso_init();
-> +#ifdef CONFIG_COMPAT
-> +	ret = __vdso_init(&compat_vdso_info);
-> +	if (ret)
-> +		goto out;
+> +	if (is_compat_task())
+> +		regs->status |= SR_UXL_32;
 
-It's a bit pedantic (we're just going to crash anyway), but this is 
-mising the cleanup for the first __vdso_init().
+Not sure if I'm just misunderstanding the bit ops here, but aren't we 
+trying to set the UXL field to 1 (for UXL=32)?  That should be a bit 
+field set op, not just an OR.
 
 > +#endif
-> +out:
-> +	return ret;
->  }
->  arch_initcall(vdso_init);
->
->  static int __setup_additional_pages(struct mm_struct *mm,
->  				    struct linux_binprm *bprm,
-> -				    int uses_interp)
-> +				    int uses_interp,
-> +				    struct __vdso_info *vdso_info)
->  {
->  	unsigned long vdso_base, vdso_text_len, vdso_mapping_len;
->  	void *ret;
->
->  	BUILD_BUG_ON(VVAR_NR_PAGES != __VVAR_PAGES);
->
-> -	vdso_text_len = vdso_info.vdso_pages << PAGE_SHIFT;
-> +	vdso_text_len = vdso_info->vdso_pages << PAGE_SHIFT;
->  	/* Be sure to map the data page */
->  	vdso_mapping_len = vdso_text_len + VVAR_SIZE;
->
-> @@ -232,16 +258,18 @@ static int __setup_additional_pages(struct mm_struct *mm,
->  	}
->
->  	ret = _install_special_mapping(mm, vdso_base, VVAR_SIZE,
-> -		(VM_READ | VM_MAYREAD | VM_PFNMAP), vdso_info.dm);
-> +		(VM_READ | VM_MAYREAD | VM_PFNMAP), vdso_info->dm);
->  	if (IS_ERR(ret))
->  		goto up_fail;
->
->  	vdso_base += VVAR_SIZE;
->  	mm->context.vdso = (void *)vdso_base;
-> +	mm->context.vdso_info = (void *)vdso_info;
-> +
->  	ret =
->  	   _install_special_mapping(mm, vdso_base, vdso_text_len,
->  		(VM_READ | VM_EXEC | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC),
-> -		vdso_info.cm);
-> +		vdso_info->cm);
->
->  	if (IS_ERR(ret))
->  		goto up_fail;
-> @@ -253,6 +281,24 @@ static int __setup_additional_pages(struct mm_struct *mm,
->  	return PTR_ERR(ret);
 >  }
 >
-> +#ifdef CONFIG_COMPAT
-> +int compat_arch_setup_additional_pages(struct linux_binprm *bprm,
-> +				       int uses_interp)
-> +{
-> +	struct mm_struct *mm = current->mm;
-> +	int ret;
-> +
-> +	if (mmap_write_lock_killable(mm))
-> +		return -EINTR;
-> +
-> +	ret = __setup_additional_pages(mm, bprm, uses_interp,
-> +							&compat_vdso_info);
-> +	mmap_write_unlock(mm);
-> +
-> +	return ret;
-> +}
-> +#endif
-> +
->  int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
->  {
->  	struct mm_struct *mm = current->mm;
-> @@ -261,7 +307,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
->  	if (mmap_write_lock_killable(mm))
->  		return -EINTR;
->
-> -	ret = __setup_additional_pages(mm, bprm, uses_interp);
-> +	ret = __setup_additional_pages(mm, bprm, uses_interp, &vdso_info);
->  	mmap_write_unlock(mm);
->
->  	return ret;
+>  void flush_thread(void)
 
-Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
-
-As I don't think either of these are big enough of a deal to keep from merging
-this.
+Additionally: this isn't really an issue so much with this patch, but it 
+does bring up that we're relying on someone else to have set UXL=64 on 
+CONFIG_COMPAT=n systems.  I don't see that in any spec anywhere, so we 
+should really be setting UXL in Linux for all systems (ie, not just those with
+COMPAT=y).
