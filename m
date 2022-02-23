@@ -4,67 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B5BCC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 12:43:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C70FC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 14:00:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K3bLK5Sw5z3bZY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 23:43:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K3d396wJ3z3cFh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 01:00:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=O/3TthIL;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=kErSueoT;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1;
- helo=ams.source.kernel.org; envelope-from=guoren@kernel.org;
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::232;
+ helo=mail-lj1-x232.google.com; envelope-from=anders.roxell@linaro.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=O/3TthIL; 
- dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org
- [IPv6:2604:1380:4601:e00::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=kErSueoT; dkim-atps=neutral
+Received: from mail-lj1-x232.google.com (mail-lj1-x232.google.com
+ [IPv6:2a00:1450:4864:20::232])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K3bKb6pSTz2xBL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 23:42:43 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id D36BBB81F52
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 12:42:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3546CC340F6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 12:42:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1645620158;
- bh=vfHK+gkNDrAvQXi1VtrHdfwiLvh+3euoD4Z2MIR/0m0=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=O/3TthIL4XfWE4YBU4n+//W2s9Oow3MOp0B72JrNSWI9KdK60Fxzenp1OHUXkcfNg
- wQ7nSn9LwIWUM+G3FYGfPJNfyAsXufq6P/hrN4O65dMg+sODhN+Eq+xESdDU6kkZPn
- KGWyOsXBMn0QXs3d1k/784mt2AhszZ2hGQ24pD0l+ywIQ8PdW3Lv6NpsT3QhFcby8J
- IgUqm/pVBKu3CC3PrhVeIq9ZhkFShwNCPKjC2XoyoUGEOvbYj6krNNEmELypMGKImn
- A7z8e4rFe7arHT49oeRXRQiNaNFWqRLSlQSuF6qDCG+RKV0Sg8fWcV0Xrgo04qcTyl
- ivzYRC93uGpoA==
-Received: by mail-vk1-f175.google.com with SMTP id w128so11452519vkd.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 04:42:38 -0800 (PST)
-X-Gm-Message-State: AOAM533rdKYybFIZPEVQe+aqYOCnE/BBLA69Qpwt5doCpLzalGc0Dc3c
- Ve5FelR6lsGVYl3glv2o4c80GeB03olAOZOzjtY=
-X-Google-Smtp-Source: ABdhPJwiS2/TnUZj6eqhOkeNucJDlHqkwMwsfsk+suYlfmqT0vHvdSP7AQRVGgao7f8HjSLljPJQRV0WirIw6+DTixk=
-X-Received: by 2002:a05:6122:887:b0:332:699e:7e67 with SMTP id
- 7-20020a056122088700b00332699e7e67mr1166442vkf.35.1645620157156; Wed, 23 Feb
- 2022 04:42:37 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K3d1S6Zjmz30RD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Feb 2022 00:58:51 +1100 (AEDT)
+Received: by mail-lj1-x232.google.com with SMTP id bn33so24758460ljb.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 05:58:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=aHyzMFtQe0EUOGyo5aNMOVUBLvuCyxjF47uhkzb6m4c=;
+ b=kErSueoTeHbWeWky89XlisWfN7RXR5Bflcws8Duv1Byb1Kjh6SF4QfOqyyH08ANsvr
+ YCBvyKZjsm46rLQCoeD5JVy+tQiKQRI+WhZ4MZP6JubaTFlr24WPJHfFvjKfMFiv7n64
+ /J+uOha29mNmckK7Skdqrj9iZ9ShzeHKZ+TEdPTJykePyCGNzgsCqXHq36TLn6MlMCmz
+ pEogmT6UzYgfoCF1MgWeFvfNElXy0hAnBm+zOZ+C4sZ79i1L6ukdUe5xmf2b+0/OCBnr
+ XXur+Bz41evUrrlQ8GLP01gv320vzdqUu3DMs6qv+PHpFSasxuk1NYXaot5vBdBdtShd
+ 1jdw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=aHyzMFtQe0EUOGyo5aNMOVUBLvuCyxjF47uhkzb6m4c=;
+ b=MErVn0tfvXqVp8T9O8K2N/394DIWQ6HSdg/ZmUjooAqSMqDcH01reCVMW0H27RHvFc
+ jVg0V+7VlQ+sVMLRnqXcXsut8uOj6UQpy47wDT3zi3Q0vvcSlN0ljV5h67atScrUFO3I
+ BsEdYwREDufiMSdBe5v4J7MvXcx0150m36HTeQKLJMoxgTa1baTqSZY/xtLUUtRWcuaW
+ icZKfFhVzyFV3gV6f+3frpGKtad97aadJOpkKPmpX3zwPri4J7c0jTKemdxpMIDkcqXe
+ UJ3SGtFOLynxFROb3JlteEJKLiyXtJLTg0/kcmWqNmCTryvJeocXOCFSQrZSz3uckHEz
+ aHpA==
+X-Gm-Message-State: AOAM531GI3ZatJpiKDhqawt1DX8FsvGo+t6YzsOkuDQ6ryjbJQRNrzyv
+ yJQj2zH8+rs9SvQrj03RT+/Bcw==
+X-Google-Smtp-Source: ABdhPJy+EUB1iUZR6g+rNGOcfuP/RW3CsnyJ4DsE44Il+ubBCSVjVoKE42htrM/ebNo+fSdbSc3ufQ==
+X-Received: by 2002:a05:651c:307:b0:244:dc4c:c2f2 with SMTP id
+ a7-20020a05651c030700b00244dc4cc2f2mr20026151ljp.531.1645624725984; 
+ Wed, 23 Feb 2022 05:58:45 -0800 (PST)
+Received: from localhost (c-9b28e555.07-21-73746f28.bbcust.telenor.se.
+ [85.229.40.155])
+ by smtp.gmail.com with ESMTPSA id v29sm2099448ljv.72.2022.02.23.05.58.45
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 23 Feb 2022 05:58:45 -0800 (PST)
+From: Anders Roxell <anders.roxell@linaro.org>
+To: mpe@ellerman.id.au
+Subject: [PATCH 3/3] powerpc: lib: sstep: fix build errors
+Date: Wed, 23 Feb 2022 14:58:20 +0100
+Message-Id: <20220223135820.2252470-3-anders.roxell@linaro.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220223135820.2252470-1-anders.roxell@linaro.org>
+References: <20220223135820.2252470-1-anders.roxell@linaro.org>
 MIME-Version: 1.0
-References: <20220201150545.1512822-1-guoren@kernel.org>
- <20220201150545.1512822-18-guoren@kernel.org>
- <4379941.LvFx2qVVIh@eto.sf-tec.de>
-In-Reply-To: <4379941.LvFx2qVVIh@eto.sf-tec.de>
-From: Guo Ren <guoren@kernel.org>
-Date: Wed, 23 Feb 2022 20:42:26 +0800
-X-Gmail-Original-Message-ID: <CAJF2gTRcfvd6Sin=3Dv91WZO6DxLsUsB=ap+F1WehKb6=w5fkA@mail.gmail.com>
-Message-ID: <CAJF2gTRcfvd6Sin=3Dv91WZO6DxLsUsB=ap+F1WehKb6=w5fkA@mail.gmail.com>
-Subject: Re: [PATCH V5 17/21] riscv: compat: vdso: Add setup additional pages
- implementation
-To: Rolf Eike Beer <eb@emlix.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,80 +81,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Guo Ren <guoren@linux.alibaba.com>,
- Parisc List <linux-parisc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Drew Fustini <drew@beagleboard.org>, Anup Patel <anup@brainfault.org>,
- Wang Junqiang <wangjunqiang@iscas.ac.cn>,
- the arch/x86 maintainers <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-csky@vger.kernel.org,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, liush <liush@allwinnertech.com>,
- sparclinux <sparclinux@vger.kernel.org>,
- linux-riscv <linux-riscv@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>, Wei Fu <wefu@redhat.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Anders Roxell <anders.roxell@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 23, 2022 at 8:19 PM Rolf Eike Beer <eb@emlix.com> wrote:
->
-> > @@ -66,35 +68,35 @@ static int vdso_mremap(const struct vm_special_mapp=
-ing
-> > *sm, return 0;
-> >  }
-> >
-> > -static int __init __vdso_init(void)
-> > +static int __init __vdso_init(struct __vdso_info *vdso_info)
-> >  {
-> >       unsigned int i;
-> >       struct page **vdso_pagelist;
-> >       unsigned long pfn;
-> >
-> > -     if (memcmp(vdso_info.vdso_code_start, "\177ELF", 4)) {
-> > +     if (memcmp(vdso_info->vdso_code_start, "\177ELF", 4)) {
-> >               pr_err("vDSO is not a valid ELF object!\n");
-> >               return -EINVAL;
-> >       }
-> >
->
-> Does anyone actually guarantee that this is at least this 4 bytes long?
+Building tinyconfig with gcc (Debian 11.2.0-16) and assembler (Debian
+2.37.90.20220207) the following build error shows up:
 
-You can ref:
-arch/arm64/kernel/vdso.c
-arch/arm/kernel/vdso.c
-arch/nds32/kernel/vdso.c
+{standard input}: Assembler messages:
+{standard input}:10576: Error: unrecognized opcode: `stbcx.'
+{standard input}:10680: Error: unrecognized opcode: `lharx'
+{standard input}:10694: Error: unrecognized opcode: `lbarx'
 
-and in arch/powerpc/boot/elf.h:
-arch/powerpc/kernel/fadump.c:   memcpy(elf->e_ident, ELFMAG, SELFMAG);
-arch/powerpc/boot/elf.h:#define ELFMAG0         0x7f    /* EI_MAG */
-arch/powerpc/boot/elf.h:#define ELFMAG1         'E'
-arch/powerpc/boot/elf.h:#define ELFMAG2         'L'
-arch/powerpc/boot/elf.h:#define ELFMAG3         'F'
-arch/powerpc/boot/elf.h:#define ELFMAG          "\177ELF"
-arch/powerpc/boot/elf.h:#define SELFMAG         4
+Rework to add assembler directives [1] around the instruction.  The
+problem with this might be that we can trick a power6 into
+single-stepping through an stbcx. for instance, and it will execute that
+in kernel mode.
 
+[1] https://sourceware.org/binutils/docs/as/PowerPC_002dPseudo.html#PowerPC_002dPseudo
 
->
-> Eike
-> --
-> Rolf Eike Beer, emlix GmbH, https://www.emlix.com
-> Fon +49 551 30664-0, Fax +49 551 30664-11
-> Gothaer Platz 3, 37083 G=C3=B6ttingen, Germany
-> Sitz der Gesellschaft: G=C3=B6ttingen, Amtsgericht G=C3=B6ttingen HR B 31=
-60
-> Gesch=C3=A4ftsf=C3=BChrung: Heike Jordan, Dr. Uwe Kracke =E2=80=93 Ust-Id=
-Nr.: DE 205 198 055
->
-> emlix - smart embedded open source
+Cc: <stable@vger.kernel.org>
+Co-developed-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+---
+ arch/powerpc/lib/sstep.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index d2d29243fa6d..b9f43bbdd55a 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -1097,7 +1097,10 @@ NOKPROBE_SYMBOL(emulate_dcbz);
+ 
+ #define __put_user_asmx(x, addr, err, op, cr)		\
+ 	__asm__ __volatile__(				\
++		".machine \"push\"\n"			\
++		".machine \"power8\"\n"			\
+ 		"1:	" op " %2,0,%3\n"		\
++		".machine \"pop\"\n"			\
+ 		"	mfcr	%1\n"			\
+ 		"2:\n"					\
+ 		".section .fixup,\"ax\"\n"		\
+@@ -1110,7 +1113,10 @@ NOKPROBE_SYMBOL(emulate_dcbz);
+ 
+ #define __get_user_asmx(x, addr, err, op)		\
+ 	__asm__ __volatile__(				\
++		".machine \"push\"\n"			\
++		".machine \"power8\"\n"			\
+ 		"1:	"op" %1,0,%2\n"			\
++		".machine \"pop\"\n"			\
+ 		"2:\n"					\
+ 		".section .fixup,\"ax\"\n"		\
+ 		"3:	li	%0,%3\n"		\
+-- 
+2.34.1
 
-
---=20
-Best Regards
- Guo Ren
-
-ML: https://lore.kernel.org/linux-csky/
