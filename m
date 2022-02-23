@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37498C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 12:03:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79E69C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 12:04:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K3ZSq12VRz3cnX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 23:03:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K3ZTG38FZz3dh2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 23:04:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,50 +16,50 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K3ZRV4BQBz3cC5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 23:02:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K3ZRb3Yt9z3bZX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 23:02:51 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4K3ZRF5YZlz9sSg;
- Wed, 23 Feb 2022 13:02:33 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4K3ZRG487wz9sSh;
+ Wed, 23 Feb 2022 13:02:34 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id PupAe0jjbyvw; Wed, 23 Feb 2022 13:02:33 +0100 (CET)
+ with ESMTP id yinfDuI92Ptz; Wed, 23 Feb 2022 13:02:34 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4K3ZRC0gJ1z9sSh;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4K3ZRC1vz1z9sSp;
  Wed, 23 Feb 2022 13:02:31 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 085D78B779;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 319858B763;
  Wed, 23 Feb 2022 13:02:31 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id AROrFHZOhGpQ; Wed, 23 Feb 2022 13:02:30 +0100 (CET)
+ with ESMTP id fASRDxKq1-x9; Wed, 23 Feb 2022 13:02:31 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.7.201])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 65ED78B778;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C2C128B77A;
  Wed, 23 Feb 2022 13:02:30 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21NC2LZS1148187
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21NC2MOf1148199
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Wed, 23 Feb 2022 13:02:21 +0100
+ Wed, 23 Feb 2022 13:02:22 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21NC2LuK1148186;
- Wed, 23 Feb 2022 13:02:21 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21NC2MIu1148198;
+ Wed, 23 Feb 2022 13:02:22 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Luis Chamberlain <mcgrof@kernel.org>, Aaron Tomlin <atomlin@redhat.com>
-Subject: [PATCH v6 2/6] module: Prepare for handling several RB trees
-Date: Wed, 23 Feb 2022 13:02:12 +0100
-Message-Id: <8788e5b6180ad45ec933359bc97c1c8fe865f186.1645607143.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v6 5/6] module: Remove module_addr_min and module_addr_max
+Date: Wed, 23 Feb 2022 13:02:15 +0100
+Message-Id: <bd51cf6126b1ed6783e8c58ac25d832c6a10e90c.1645607143.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1645607143.git.christophe.leroy@csgroup.eu>
 References: <cover.1645607143.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1645617734; l=4776; s=20211009;
- h=from:subject:message-id; bh=zW762VTX2wgJQdaUEhSgceFO6MryOmerkmFB78i7T/o=;
- b=opu3ZV2a7zUveKjdvLUAJlBYvn4o0Fkim4MybaD/po/M6L4Jo4sZpUoZZojQnG+EvZEEnt+68ssv
- sFG4q5q6CiQMIjcCvJRlIX2LlhqxRcsmGyvpggqXstHlEUFEb+xb
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1645617734; l=1101; s=20211009;
+ h=from:subject:message-id; bh=jWjaasD+hHTh5aPgfp1INYm5G+r271WEphg/TirFiO8=;
+ b=FUaYz0Nt2/uPrH/K96Jumf4uMvfK4cNPdryfDe/At+Fm7zdm5CtD24kZJ90kD7/vi/Linx2MvxRz
+ yxXKXybkB0kHy4bdQAanFFJ0bahj1Wj7/tCyStSr0ZiZ9/w6U8dK
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -81,138 +81,43 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to separate text and data, we need to setup
-two rb trees.
-
-Modify functions to give the tree as a parameter.
+Replace module_addr_min and module_addr_max by
+mod_tree.addr_min and mod_tree.addr_max
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- kernel/module/internal.h    |  4 ++--
- kernel/module/main.c        | 16 ++++++++--------
- kernel/module/tree_lookup.c | 20 ++++++++++----------
- 3 files changed, 20 insertions(+), 20 deletions(-)
+ kernel/module/main.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/module/internal.h b/kernel/module/internal.h
-index ac64e53ac5e3..0f3146347256 100644
---- a/kernel/module/internal.h
-+++ b/kernel/module/internal.h
-@@ -157,13 +157,13 @@ extern struct mod_tree_root mod_tree;
- void mod_tree_insert(struct module *mod);
- void mod_tree_remove_init(struct module *mod);
- void mod_tree_remove(struct module *mod);
--struct module *mod_find(unsigned long addr);
-+struct module *mod_find(unsigned long addr, struct mod_tree_root *tree);
- #else /* !CONFIG_MODULES_TREE_LOOKUP */
- 
- static inline void mod_tree_insert(struct module *mod) { }
- static inline void mod_tree_remove_init(struct module *mod) { }
- static inline void mod_tree_remove(struct module *mod) { }
--static inline struct module *mod_find(unsigned long addr)
-+static inline struct module *mod_find(unsigned long addr, struct mod_tree_root *tree)
- {
- 	struct module *mod;
- 
 diff --git a/kernel/module/main.c b/kernel/module/main.c
-index 3832a71cdacb..a831f51595d7 100644
+index cf236e964cf6..ce0ef17662c9 100644
 --- a/kernel/module/main.c
 +++ b/kernel/module/main.c
-@@ -91,22 +91,22 @@ struct symsearch {
-  * Bounds of module text, for speeding up __module_address.
-  * Protected by module_mutex.
+@@ -63,7 +63,7 @@
+  * Mutex protects:
+  * 1) List of modules (also safely readable with preempt_disable),
+  * 2) module_use links,
+- * 3) module_addr_min/module_addr_max.
++ * 3) mod_tree.addr_min/mod_tree.addr_max.
+  * (delete and add uses RCU list operations).
   */
--static void __mod_update_bounds(void *base, unsigned int size)
-+static void __mod_update_bounds(void *base, unsigned int size, struct mod_tree_root *tree)
- {
- 	unsigned long min = (unsigned long)base;
- 	unsigned long max = min + size;
+ DEFINE_MUTEX(module_mutex);
+@@ -2972,14 +2972,14 @@ static void cfi_init(struct module *mod)
+ 		mod->exit = *exit;
+ #endif
  
--	if (min < module_addr_min)
--		module_addr_min = min;
--	if (max > module_addr_max)
--		module_addr_max = max;
-+	if (min < tree->addr_min)
-+		tree->addr_min = min;
-+	if (max > tree->addr_max)
-+		tree->addr_max = max;
+-	cfi_module_add(mod, module_addr_min);
++	cfi_module_add(mod, mod_tree.addr_min);
+ #endif
  }
  
- static void mod_update_bounds(struct module *mod)
+ static void cfi_cleanup(struct module *mod)
  {
--	__mod_update_bounds(mod->core_layout.base, mod->core_layout.size);
-+	__mod_update_bounds(mod->core_layout.base, mod->core_layout.size, &mod_tree);
- 	if (mod->init_layout.size)
--		__mod_update_bounds(mod->init_layout.base, mod->init_layout.size);
-+		__mod_update_bounds(mod->init_layout.base, mod->init_layout.size, &mod_tree);
+ #ifdef CONFIG_CFI_CLANG
+-	cfi_module_remove(mod, module_addr_min);
++	cfi_module_remove(mod, mod_tree.addr_min);
+ #endif
  }
- 
- static void module_assert_mutex_or_preempt(void)
-@@ -3017,7 +3017,7 @@ struct module *__module_address(unsigned long addr)
- 
- 	module_assert_mutex_or_preempt();
- 
--	mod = mod_find(addr);
-+	mod = mod_find(addr, &mod_tree);
- 	if (mod) {
- 		BUG_ON(!within_module(addr, mod));
- 		if (mod->state == MODULE_STATE_UNFORMED)
-diff --git a/kernel/module/tree_lookup.c b/kernel/module/tree_lookup.c
-index 0bc4ec3b22ce..995fe68059db 100644
---- a/kernel/module/tree_lookup.c
-+++ b/kernel/module/tree_lookup.c
-@@ -61,14 +61,14 @@ static const struct latch_tree_ops mod_tree_ops = {
- 	.comp = mod_tree_comp,
- };
- 
--static noinline void __mod_tree_insert(struct mod_tree_node *node)
-+static noinline void __mod_tree_insert(struct mod_tree_node *node, struct mod_tree_root *tree)
- {
--	latch_tree_insert(&node->node, &mod_tree.root, &mod_tree_ops);
-+	latch_tree_insert(&node->node, &tree->root, &mod_tree_ops);
- }
- 
--static void __mod_tree_remove(struct mod_tree_node *node)
-+static void __mod_tree_remove(struct mod_tree_node *node, struct mod_tree_root *tree)
- {
--	latch_tree_erase(&node->node, &mod_tree.root, &mod_tree_ops);
-+	latch_tree_erase(&node->node, &tree->root, &mod_tree_ops);
- }
- 
- /*
-@@ -80,28 +80,28 @@ void mod_tree_insert(struct module *mod)
- 	mod->core_layout.mtn.mod = mod;
- 	mod->init_layout.mtn.mod = mod;
- 
--	__mod_tree_insert(&mod->core_layout.mtn);
-+	__mod_tree_insert(&mod->core_layout.mtn, &mod_tree);
- 	if (mod->init_layout.size)
--		__mod_tree_insert(&mod->init_layout.mtn);
-+		__mod_tree_insert(&mod->init_layout.mtn, &mod_tree);
- }
- 
- void mod_tree_remove_init(struct module *mod)
- {
- 	if (mod->init_layout.size)
--		__mod_tree_remove(&mod->init_layout.mtn);
-+		__mod_tree_remove(&mod->init_layout.mtn, &mod_tree);
- }
- 
- void mod_tree_remove(struct module *mod)
- {
--	__mod_tree_remove(&mod->core_layout.mtn);
-+	__mod_tree_remove(&mod->core_layout.mtn, &mod_tree);
- 	mod_tree_remove_init(mod);
- }
- 
--struct module *mod_find(unsigned long addr)
-+struct module *mod_find(unsigned long addr, struct mod_tree_root *tree)
- {
- 	struct latch_tree_node *ltn;
- 
--	ltn = latch_tree_find((void *)addr, &mod_tree.root, &mod_tree_ops);
-+	ltn = latch_tree_find((void *)addr, &tree->root, &mod_tree_ops);
- 	if (!ltn)
- 		return NULL;
  
 -- 
 2.34.1
