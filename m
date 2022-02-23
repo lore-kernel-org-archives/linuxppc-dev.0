@@ -4,57 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D149C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 09:10:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18037C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 09:10:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K46Z935S1z3f72
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 20:10:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=plqHsoA9;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+ccf00434d002d37b347b+6759+infradead.org+hch@bombadil.srs.infradead.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K46Zg1RH1z3fxw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 20:10:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=plqHsoA9; 
- dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K46LP4w8Lz3dqS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Feb 2022 20:00:11 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=0xdJtLbIyGaTkVrOoFrs1oCqE4SKHuV2ypN1+yGx8FU=; b=plqHsoA9r6qv2vcyoZWmADrMG/
- 5OPFbItTU7dR/wJsGyZ44TU7xCGfQQi8sj15lLsmxdJKWXugYw9BJI825zqqtRxeT2vsvlVL1+L+4
- Z4s86+FCMNrdAqVn80iGGZAgP1Tib8fDL9OlFVl6nNO623T8ympgHtoeQ8BY5GKQooyK/3WKhc0OJ
- RZfyDYV0j3SviZJjYHW+23G9QvaHR2MEStY2hyxNGAakVOAap9o8FDNl4jQHwk6i6bgcOGcNyf81N
- 7qkWtXciB2p6k8Q5Hv/7mbngKMtgV1QAQWdv1kadJpK9io105nqZXvfHdj7kmdHBz/G8wD2sYCdtb
- 3ygJbvwQ==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.94.2 #2 (Red
- Hat Linux)) id 1nN7Yy-00H1v4-7V; Thu, 24 Feb 2022 06:25:16 +0000
-Date: Wed, 23 Feb 2022 22:25:16 -0800
-From: Christoph Hellwig <hch@infradead.org>
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: Re: [PATCH 00/16] Remove usage of the deprecated "pci-dma-compat.h"
- API
-Message-ID: <YhckzJp5/x9zW4uQ@infradead.org>
-References: <cover.1641500561.git.christophe.jaillet@wanadoo.fr>
- <YhXmQwvjMFPQFPUr@infradead.org>
- <ddf6010e-417d-8da7-8e11-1b4a55f92fff@wanadoo.fr>
-MIME-Version: 1.0
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4K46PK2N2lz3f3T
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Feb 2022 20:02:43 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 21NNReM1024539;
+ Wed, 23 Feb 2022 17:27:40 -0600
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 21NNRd3Z024538;
+ Wed, 23 Feb 2022 17:27:39 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Wed, 23 Feb 2022 17:27:39 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: [PATCH] powerpc/32: Clear volatile regs on syscall exit
+Message-ID: <20220223232739.GJ614@gate.crashing.org>
+References: <28b040bd2357a1879df0ca1b74094323f778a472.1645636285.git.christophe.leroy@csgroup.eu>
+ <YhadiVbwao/p2N7o@lt-gp.iram.es>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ddf6010e-417d-8da7-8e11-1b4a55f92fff@wanadoo.fr>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+In-Reply-To: <YhadiVbwao/p2N7o@lt-gp.iram.es>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,34 +47,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: airlied@linux.ie, trix@redhat.com, linux-fpga@vger.kernel.org,
- linux-pci@vger.kernel.org, paulus@samba.org, sparclinux@vger.kernel.org,
- linux-scsi@vger.kernel.org, sathya.prakash@broadcom.com,
- Christoph Hellwig <hch@infradead.org>, MPT-FusionLinux.pdl@broadcom.com,
- hao.wu@intel.com, arnd@arndb.de, suganath-prabu.subramani@broadcom.com,
- sreekanth.reddy@broadcom.com, ink@jurassic.park.msu.ru, bhelgaas@google.com,
- mchehab@kernel.org, mattst88@gmail.com, awalls@md.metrocast.net,
- davem@davemloft.net, alex.bou9@gmail.com, vkoul@kernel.org,
- linux-alpha@vger.kernel.org, dmaengine@vger.kernel.org, mdf@kernel.org,
- akpm@linux-foundation.org, linux-media@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, yilun.xu@intel.com
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 23, 2022 at 09:26:56PM +0100, Christophe JAILLET wrote:
-> Patch 01, 04, 05, 06, 08, 09 have not reached -next yet.
-> They all still apply cleanly.
+On Wed, Feb 23, 2022 at 09:48:09PM +0100, Gabriel Paubert wrote:
+> On Wed, Feb 23, 2022 at 06:11:36PM +0100, Christophe Leroy wrote:
+> > +	/* Zero volatile regs that may contain sensitive kernel data */
+> > +	li	r0,0
+> > +	li	r4,0
+> > +	li	r5,0
+> > +	li	r6,0
+> > +	li	r7,0
+> > +	li	r8,0
+> > +	li	r9,0
+> > +	li	r10,0
+> > +	li	r11,0
+> > +	li	r12,0
+> > +	mtctr	r0
+> > +	mtxer	r0
 > 
-> 04 has been picked it up for inclusion in the media subsystem for 5.18.
-> The other ones all have 1 or more Reviewed-by:/Acked-by: tags.
-> 
-> Patch 16 must be resubmitted to add "#include <linux/dma-mapping.h>" in
-> order not to break builds.
+> Here, I'm almost sure that on some processors, it would be better to
+> separate mtctr form mtxer. mtxer is typically very expensive (pipeline
+> flush) but I don't know what's the best ordering for the average core.
 
-So how about this:  I'll pick up 1, 5,6,8 and 9 for the dma-mapping
-tree.  After -rc1 when presumably all other patches have reached
-mainline your resubmit one with the added include and we finish this
-off?
+mtxer is cheaper than mtctr on many cores :-)
 
-Thanks a lot for all your work already!
+On p9 mtxer is cracked into two latency 3 ops (which run in parallel).
+While mtctr has latency 5.
+
+On p8 mtxer was horrible indeed (but nothing near as bad as a pipeline
+flush).
+
+
+Segher
