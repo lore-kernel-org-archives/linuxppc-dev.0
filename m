@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 319C4C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 12:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB86CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 12:05:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K3ZTk1Mkfz3dl6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 23:04:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K3ZV86qqfz3cCM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Feb 2022 23:05:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,48 +16,50 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K3ZRg6QpRz3bct
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 23:02:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K3ZRm243pz3cRG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Feb 2022 23:03:00 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4K3ZRH0zw5z9sSp;
- Wed, 23 Feb 2022 13:02:35 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4K3ZRJ23dVz9sSZ;
+ Wed, 23 Feb 2022 13:02:36 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id fdRTHS91z5Eb; Wed, 23 Feb 2022 13:02:35 +0100 (CET)
+ with ESMTP id m9JXzGGU1xor; Wed, 23 Feb 2022 13:02:36 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4K3ZRC1vpFz9sSZ;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4K3ZRC29xVz9sSq;
  Wed, 23 Feb 2022 13:02:31 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 322AE8B778;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3C1FE8B779;
  Wed, 23 Feb 2022 13:02:31 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 1iYLXu2sbge3; Wed, 23 Feb 2022 13:02:31 +0100 (CET)
+ with ESMTP id UlqdccA2a9jd; Wed, 23 Feb 2022 13:02:31 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.7.201])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C57C48B77C;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C3A158B77B;
  Wed, 23 Feb 2022 13:02:30 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21NC2Kpc1148173
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 21NC2LXX1148191
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
  Wed, 23 Feb 2022 13:02:21 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21NC2JkP1148171;
- Wed, 23 Feb 2022 13:02:19 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 21NC2LnF1148190;
+ Wed, 23 Feb 2022 13:02:21 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Luis Chamberlain <mcgrof@kernel.org>, Aaron Tomlin <atomlin@redhat.com>
-Subject: [PATCH v6 0/6] Allocate module text and data separately
-Date: Wed, 23 Feb 2022 13:02:10 +0100
-Message-Id: <cover.1645607143.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v6 3/6] module: Introduce data_layout
+Date: Wed, 23 Feb 2022 13:02:13 +0100
+Message-Id: <50797bbf84acd87c490192ae5b8539ee67b71418.1645607143.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <cover.1645607143.git.christophe.leroy@csgroup.eu>
+References: <cover.1645607143.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1645617734; l=2137; s=20211009;
- h=from:subject:message-id; bh=5pa1UQ3HwyDZehywSQbAA8grWbJFM4jhq6fIuvgQR1I=;
- b=jJdm2BkQa9gEif7ktMD48MnhsQfgiuYZWvlcjGqSQAFNn+F4jLeHP92Z3FVUqVGswk4EzrSMHpf7
- NMKzfvJiAla9UWgpQe57Sbh0hIA1WZxEqiQX3SY3RU2XBwRh4Nj1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1645617734; l=7630; s=20211009;
+ h=from:subject:message-id; bh=SGwB0g/VxOk2Hxo10neUQCGEPvBipCTZ4EgruMPkPX8=;
+ b=3xAwSrf4ThjTcViq5YoqXp4ZAWQSGrAFOmUT3HPpL/SfcClpcVP8uAstD8Hv76DC1Ubxm+5XQBS/
+ 1fGk8wH7CDUedQC/8UuKOHw3irvOL/Vy2gNlb+pzdEJSj1/8THcD
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -79,60 +81,174 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series applies on top of my series "miscellanuous cleanups" v4.
+In order to allow separation of data from text, add another layout,
+called data_layout. For architectures requesting separation of text
+and data, only text will go in core_layout and data will go in
+data_layout.
 
+For architectures which keep text and data together, make data_layout
+an alias of core_layout, that way data_layout can be used for all
+data manipulations, regardless of whether data is in core_layout or
+data_layout.
 
-This series allow architectures to request having modules data in
-vmalloc area instead of module area.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ kernel/module/internal.h   |  2 ++
+ kernel/module/kallsyms.c   | 18 +++++++++---------
+ kernel/module/main.c       | 20 ++++++++++++--------
+ kernel/module/strict_rwx.c | 10 +++++-----
+ 4 files changed, 28 insertions(+), 22 deletions(-)
 
-This is required on powerpc book3s/32 in order to set data non
-executable, because it is not possible to set executability on page
-basis, this is done per 256 Mbytes segments. The module area has exec
-right, vmalloc area has noexec. Without this change module data
-remains executable regardless of CONFIG_STRICT_MODULES_RWX.
-
-This can also be useful on other powerpc/32 in order to maximize the
-chance of code being close enough to kernel core to avoid branch
-trampolines.
-
-Changes in v6:
-- Rebased on top of my series "miscellanuous cleanups" v4
-
-Changes in v5:
-- Rebased on top of Aaron's series "module: core code clean up" v8
-
-Changes in v4:
-- Rebased on top of Aaron's series "module: core code clean up" v6
-
-Changes in v3:
-- Fixed the tree for data_layout at one place (Thanks Miroslav)
-- Moved removal of module_addr_min/module_addr_max macro out of patch 1 in a new patch at the end of the series to reduce churn.
-
-Changes in v2:
-- Dropped first two patches which are not necessary. They may be added back later as a follow-up series.
-- Fixed the printks in GDB
-
-Christophe Leroy (6):
-  module: Always have struct mod_tree_root
-  module: Prepare for handling several RB trees
-  module: Introduce data_layout
-  module: Add CONFIG_ARCH_WANTS_MODULES_DATA_IN_VMALLOC
-  module: Remove module_addr_min and module_addr_max
-  powerpc: Select ARCH_WANTS_MODULES_DATA_IN_VMALLOC on book3s/32 and
-    8xx
-
- arch/Kconfig                |   6 +++
- arch/powerpc/Kconfig        |   1 +
- include/linux/module.h      |   8 +++
- kernel/debug/kdb/kdb_main.c |  10 +++-
- kernel/module/internal.h    |  13 +++--
- kernel/module/kallsyms.c    |  18 +++----
- kernel/module/main.c        | 103 +++++++++++++++++++++++++++---------
- kernel/module/procfs.c      |   8 ++-
- kernel/module/strict_rwx.c  |  11 ++--
- kernel/module/tree_lookup.c |  28 ++++++----
- 10 files changed, 150 insertions(+), 56 deletions(-)
-
+diff --git a/kernel/module/internal.h b/kernel/module/internal.h
+index 0f3146347256..0aabbf5cbcd1 100644
+--- a/kernel/module/internal.h
++++ b/kernel/module/internal.h
+@@ -20,6 +20,8 @@
+ /* Maximum number of characters written by module_flags() */
+ #define MODULE_FLAGS_BUF_SIZE (TAINT_FLAGS_COUNT + 4)
+ 
++#define	data_layout core_layout
++
+ /*
+  * Modules' sections will be aligned on page boundaries
+  * to ensure complete separation of code and data, but
+diff --git a/kernel/module/kallsyms.c b/kernel/module/kallsyms.c
+index 23034b50f8f5..c56de1686172 100644
+--- a/kernel/module/kallsyms.c
++++ b/kernel/module/kallsyms.c
+@@ -134,12 +134,12 @@ void layout_symtab(struct module *mod, struct load_info *info)
+ 	}
+ 
+ 	/* Append room for core symbols at end of core part. */
+-	info->symoffs = ALIGN(mod->core_layout.size, symsect->sh_addralign ?: 1);
+-	info->stroffs = mod->core_layout.size = info->symoffs + ndst * sizeof(Elf_Sym);
+-	mod->core_layout.size += strtab_size;
+-	info->core_typeoffs = mod->core_layout.size;
+-	mod->core_layout.size += ndst * sizeof(char);
+-	mod->core_layout.size = strict_align(mod->core_layout.size);
++	info->symoffs = ALIGN(mod->data_layout.size, symsect->sh_addralign ?: 1);
++	info->stroffs = mod->data_layout.size = info->symoffs + ndst * sizeof(Elf_Sym);
++	mod->data_layout.size += strtab_size;
++	info->core_typeoffs = mod->data_layout.size;
++	mod->data_layout.size += ndst * sizeof(char);
++	mod->data_layout.size = strict_align(mod->data_layout.size);
+ 
+ 	/* Put string table section at end of init part of module. */
+ 	strsect->sh_flags |= SHF_ALLOC;
+@@ -187,9 +187,9 @@ void add_kallsyms(struct module *mod, const struct load_info *info)
+ 	 * Now populate the cut down core kallsyms for after init
+ 	 * and set types up while we still have access to sections.
+ 	 */
+-	mod->core_kallsyms.symtab = dst = mod->core_layout.base + info->symoffs;
+-	mod->core_kallsyms.strtab = s = mod->core_layout.base + info->stroffs;
+-	mod->core_kallsyms.typetab = mod->core_layout.base + info->core_typeoffs;
++	mod->core_kallsyms.symtab = dst = mod->data_layout.base + info->symoffs;
++	mod->core_kallsyms.strtab = s = mod->data_layout.base + info->stroffs;
++	mod->core_kallsyms.typetab = mod->data_layout.base + info->core_typeoffs;
+ 	src = rcu_dereference_sched(mod->kallsyms)->symtab;
+ 	for (ndst = i = 0; i < rcu_dereference_sched(mod->kallsyms)->num_symtab; i++) {
+ 		rcu_dereference_sched(mod->kallsyms)->typetab[i] = elf_type(src + i, info);
+diff --git a/kernel/module/main.c b/kernel/module/main.c
+index a831f51595d7..84db7318ba2b 100644
+--- a/kernel/module/main.c
++++ b/kernel/module/main.c
+@@ -1190,7 +1190,7 @@ static void free_module(struct module *mod)
+ 	percpu_modfree(mod);
+ 
+ 	/* Free lock-classes; relies on the preceding sync_rcu(). */
+-	lockdep_free_key_range(mod->core_layout.base, mod->core_layout.size);
++	lockdep_free_key_range(mod->data_layout.base, mod->data_layout.size);
+ 
+ 	/* Finally, free the core (containing the module structure) */
+ 	module_memfree(mod->core_layout.base);
+@@ -1431,13 +1431,15 @@ static void layout_sections(struct module *mod, struct load_info *info)
+ 		for (i = 0; i < info->hdr->e_shnum; ++i) {
+ 			Elf_Shdr *s = &info->sechdrs[i];
+ 			const char *sname = info->secstrings + s->sh_name;
++			unsigned int *sizep;
+ 
+ 			if ((s->sh_flags & masks[m][0]) != masks[m][0]
+ 			    || (s->sh_flags & masks[m][1])
+ 			    || s->sh_entsize != ~0UL
+ 			    || module_init_layout_section(sname))
+ 				continue;
+-			s->sh_entsize = module_get_offset(mod, &mod->core_layout.size, s, i);
++			sizep = m ? &mod->data_layout.size : &mod->core_layout.size;
++			s->sh_entsize = module_get_offset(mod, sizep, s, i);
+ 			pr_debug("\t%s\n", sname);
+ 		}
+ 		switch (m) {
+@@ -1446,15 +1448,15 @@ static void layout_sections(struct module *mod, struct load_info *info)
+ 			mod->core_layout.text_size = mod->core_layout.size;
+ 			break;
+ 		case 1: /* RO: text and ro-data */
+-			mod->core_layout.size = strict_align(mod->core_layout.size);
+-			mod->core_layout.ro_size = mod->core_layout.size;
++			mod->data_layout.size = strict_align(mod->data_layout.size);
++			mod->data_layout.ro_size = mod->data_layout.size;
+ 			break;
+ 		case 2: /* RO after init */
+-			mod->core_layout.size = strict_align(mod->core_layout.size);
+-			mod->core_layout.ro_after_init_size = mod->core_layout.size;
++			mod->data_layout.size = strict_align(mod->data_layout.size);
++			mod->data_layout.ro_after_init_size = mod->data_layout.size;
+ 			break;
+ 		case 4: /* whole core */
+-			mod->core_layout.size = strict_align(mod->core_layout.size);
++			mod->data_layout.size = strict_align(mod->data_layout.size);
+ 			break;
+ 		}
+ 	}
+@@ -2134,6 +2136,8 @@ static int move_module(struct module *mod, struct load_info *info)
+ 		if (shdr->sh_entsize & INIT_OFFSET_MASK)
+ 			dest = mod->init_layout.base
+ 				+ (shdr->sh_entsize & ~INIT_OFFSET_MASK);
++		else if (!(shdr->sh_flags & SHF_EXECINSTR))
++			dest = mod->data_layout.base + shdr->sh_entsize;
+ 		else
+ 			dest = mod->core_layout.base + shdr->sh_entsize;
+ 
+@@ -2829,7 +2833,7 @@ static int load_module(struct load_info *info, const char __user *uargs,
+ 	mutex_unlock(&module_mutex);
+  free_module:
+ 	/* Free lock-classes; relies on the preceding sync_rcu() */
+-	lockdep_free_key_range(mod->core_layout.base, mod->core_layout.size);
++	lockdep_free_key_range(mod->data_layout.base, mod->data_layout.size);
+ 
+ 	module_deallocate(mod, info);
+  free_copy:
+diff --git a/kernel/module/strict_rwx.c b/kernel/module/strict_rwx.c
+index f36ea54c1dac..fe3c10891407 100644
+--- a/kernel/module/strict_rwx.c
++++ b/kernel/module/strict_rwx.c
+@@ -101,12 +101,12 @@ void module_enable_ro(const struct module *mod, bool after_init)
+ 	set_vm_flush_reset_perms(mod->init_layout.base);
+ 	frob_text(&mod->core_layout, set_memory_ro);
+ 
+-	frob_rodata(&mod->core_layout, set_memory_ro);
++	frob_rodata(&mod->data_layout, set_memory_ro);
+ 	frob_text(&mod->init_layout, set_memory_ro);
+ 	frob_rodata(&mod->init_layout, set_memory_ro);
+ 
+ 	if (after_init)
+-		frob_ro_after_init(&mod->core_layout, set_memory_ro);
++		frob_ro_after_init(&mod->data_layout, set_memory_ro);
+ }
+ 
+ void module_enable_nx(const struct module *mod)
+@@ -114,9 +114,9 @@ void module_enable_nx(const struct module *mod)
+ 	if (!IS_ENABLED(CONFIG_STRICT_MODULE_RWX))
+ 		return;
+ 
+-	frob_rodata(&mod->core_layout, set_memory_nx);
+-	frob_ro_after_init(&mod->core_layout, set_memory_nx);
+-	frob_writable_data(&mod->core_layout, set_memory_nx);
++	frob_rodata(&mod->data_layout, set_memory_nx);
++	frob_ro_after_init(&mod->data_layout, set_memory_nx);
++	frob_writable_data(&mod->data_layout, set_memory_nx);
+ 	frob_rodata(&mod->init_layout, set_memory_nx);
+ 	frob_writable_data(&mod->init_layout, set_memory_nx);
+ }
 -- 
 2.34.1
 
