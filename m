@@ -4,62 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91482C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 10:12:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 639C5C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 10:17:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K47yB2D8fz3c9v
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 21:12:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K483b3dDpz3bc9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 21:17:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=217.72.192.75; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K47x45l54z30H3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Feb 2022 21:11:50 +1100 (AEDT)
-Received: from mail-lj1-f181.google.com ([209.85.208.181]) by
- mrelayeu.kundenserver.de (mreue108 [213.165.67.113]) with ESMTPSA (Nemesis)
- id 1MIx7U-1ngLqS2aFe-00KQTZ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Feb
- 2022 11:11:46 +0100
-Received: by mail-lj1-f181.google.com with SMTP id t14so2063289ljh.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Feb 2022 02:11:46 -0800 (PST)
-X-Gm-Message-State: AOAM531lk4GiZCjIGtnprIJNQ3wUnPxQQ0lXG6bKCj0cBdx8i74R0FAB
- Xf7xcYhiGTTaXFToqA1v7AFgg32xvvufF6N6Yt0=
-X-Google-Smtp-Source: ABdhPJzPVQaW1f3Bbzw+kTDiMg4Tajz+c6SJ2JtQUsJaSw6D1lJ8eGh3OG9MaDTzij1odC2MMgMswcl0VWfIMCexGbY=
-X-Received: by 2002:a5d:59aa:0:b0:1ed:9f45:c2ff with SMTP id
- p10-20020a5d59aa000000b001ed9f45c2ffmr1412807wrr.192.1645694019453; Thu, 24
- Feb 2022 01:13:39 -0800 (PST)
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4K48371l2Rz2x9Q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Feb 2022 21:17:05 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E30E4ED1;
+ Thu, 24 Feb 2022 02:17:01 -0800 (PST)
+Received: from [10.163.48.178] (unknown [10.163.48.178])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E609A3F70D;
+ Thu, 24 Feb 2022 02:16:54 -0800 (PST)
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: Re: [PATCH 10/11] swiotlb: merge swiotlb-xen initialization into
+ swiotlb
+To: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org
+References: <20220222153514.593231-1-hch@lst.de>
+ <20220222153514.593231-11-hch@lst.de>
+Message-ID: <e5564871-694e-58ea-a355-5d0c3ce5d025@arm.com>
+Date: Thu, 24 Feb 2022 15:46:55 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-References: <20220224085410.399351-1-guoren@kernel.org>
- <20220224085410.399351-17-guoren@kernel.org>
-In-Reply-To: <20220224085410.399351-17-guoren@kernel.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 24 Feb 2022 10:13:23 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a13_VBpTidoF_pUdV5g0MFqpSe17rgw=XUv69CCFCN0_g@mail.gmail.com>
-Message-ID: <CAK8P3a13_VBpTidoF_pUdV5g0MFqpSe17rgw=XUv69CCFCN0_g@mail.gmail.com>
-Subject: Re: [PATCH V6 16/20] riscv: compat: vdso: Add rv32 VDSO base code
- implementation
-To: Guo Ren <guoren@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:YwC9hPLRemzSS9iv93W2npwB1GRdGAsFE8MLUPSDO72VQNcjDvp
- AtafuyY3Tq3nIJgTYHEHalw8MaaKm2adU0dkPylHs0fD5vm1e+lX253h2DAfb5VAtRUrh5N
- gyfLk+wOgXnkUp9cau3ApC5PHL6hCOyt8dVjVPiPvpcpfx5jTo7JaYeQMfvHN5b+teSkzLS
- 7AofxhParZfGUpYpXbTIw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:hEYwuA0NSFI=:RHxqmSKF0NnoMj7gdiXB0h
- YACgmsfXI3JcLyWXNWh3HGoh4n4E0xkJnFpBC8Mm31rWpG2Sdqgsij6/Bz6+CS7hlyPCa3gSb
- kfUsz6+8vJBFI1dCtWbV2KdVx0hUrCtVqbw7R5EbYjTHFtxW0MefrFMuLAUoGqW5tMIgUIg9E
- plkZ5zCPdXKbQRfHAvJ0aV/y8FMSG9LRDkmW8RCc3/zB/F0Xs1/ZNuFb9t+bkhqwDmXlx/Nxh
- ANpFqrIQ+raXyZwV1W+FrservbXqqATP6qp58VAqjgZlbwM5GEyfn9q8xK1ffFuSrzzeGRvZH
- Qj6ef15FOqeQTpwEKgPl8Nmfv8B1XVTrif5p6ovAHnr30M56msdWg/7AzpeunZ+Ip7v/R5MaW
- E2shJizWeQZ7YmqZ7OJPY0SiAwbCDc3A4s1SsdxGcFl+meGkaN5YlBqeF/i02MLBx2a8vXtTV
- to1FrRaB6TXDI/5BlyfRlAG6QyBHcUi4mtmwYkQnFn4JeR3yvVutw4DX6DSlGJI92AnljzsmK
- hrmFF6iVsDXvgGmpQBgmnmGq5QZKF4qTm9qASWfnfsbimyOBSGxJ/JweWzqeweoxJ2gzCbUq+
- ifKenmxNoTakAGEc95/LXNkRmbFLZw+cE4e84rSyNQ2TNLcUG4NfacySadKcvp/1wY4P66ap5
- wrkafTIeF/bs467i301JGiM1Ok26SysPw74JrabGQXagwQgz8B6YY0eEgfpyOdYax8ypmqfQg
- XlTPKcqV0bDHWd3Bv5n1hZ35KXCJKH/uBkgL3FhusPBoIWZwcM2Ic2yqc3jv68ABMxP+CNrES
- 2PIxhSVpU5mLxGg8eGlCPMrZv8BexwQH/T9nBx0VGt0vdMrIK0=
+In-Reply-To: <20220222153514.593231-11-hch@lst.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,42 +48,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Guo Ren <guoren@linux.alibaba.com>,
- Parisc List <linux-parisc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- gregkh <gregkh@linuxfoundation.org>, Drew Fustini <drew@beagleboard.org>,
- Anup Patel <anup@brainfault.org>, Wang Junqiang <wangjunqiang@iscas.ac.cn>,
- the arch/x86 maintainers <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-csky@vger.kernel.org,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, liush <liush@allwinnertech.com>,
- sparclinux <sparclinux@vger.kernel.org>,
- linux-riscv <linux-riscv@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>, Wei Fu <wefu@redhat.com>
+Cc: Juergen Gross <jgross@suse.com>, linux-s390@vger.kernel.org,
+ linux-hyperv@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>,
+ linux-ia64@vger.kernel.org, Robin Murphy <robin.murphy@arm.com>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org, linux-mips@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, tboot-devel@lists.sourceforge.net,
+ linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ David Woodhouse <dwmw2@infradead.org>, linux-riscv@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 24, 2022 at 9:54 AM <guoren@kernel.org> wrote:
->
-> From: Guo Ren <guoren@linux.alibaba.com>
->
-> There is no vgettimeofday supported in rv32 that makes simple to
-> generate rv32 vdso code which only needs riscv64 compiler. Other
-> architectures need change compiler or -m (machine parameter) to
-> support vdso32 compiling. If rv32 support vgettimeofday (which
-> cause C compile) in future, we would add CROSS_COMPILE to support
-> that makes more requirement on compiler enviornment.
+On 2/22/22 9:05 PM, Christoph Hellwig wrote:
+> Allow to pass a remap argument to the swiotlb initialization functions
+> to handle the Xen/x86 remap case.  ARM/ARM64 never did any remapping
+> from xen_swiotlb_fixup, so we don't even need that quirk.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  arch/arm/xen/mm.c               |  23 +++---
+>  arch/x86/include/asm/xen/page.h |   5 --
+>  arch/x86/kernel/pci-dma.c       |  27 ++++---
+>  arch/x86/pci/sta2x11-fixup.c    |   2 +-
+>  drivers/xen/swiotlb-xen.c       | 128 +-------------------------------
+>  include/linux/swiotlb.h         |   7 +-
+>  include/xen/arm/page.h          |   1 -
+>  include/xen/swiotlb-xen.h       |   8 +-
+>  kernel/dma/swiotlb.c            | 120 +++++++++++++++---------------
+>  9 files changed, 102 insertions(+), 219 deletions(-)
 
-I think it's just a bug that rv32 doesn't have the vdso version of the
-time syscalls. Fixing that is of course independent of the compat support,
-but I think you need that anyway, and it would be better to start
-out by building the compat vdso with the correct
-architecture level.
+checkpatch.pl has some warnings here.
 
-At least this should be a lot easier than on arch/arm64 because you
-can assume that an rv64 compiler is able to also build rv32 output.
+ERROR: trailing whitespace
+#151: FILE: arch/x86/kernel/pci-dma.c:217:
++ $
 
-        Arnd
+WARNING: please, no spaces at the start of a line
+#151: FILE: arch/x86/kernel/pci-dma.c:217:
++ $
+
+total: 1 errors, 1 warnings, 470 lines checked
