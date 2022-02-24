@@ -4,81 +4,101 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBBD6C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 08:47:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDEDAC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 08:53:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K463D69F0z3cPT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 19:47:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K46BC6lRvz3cBq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Feb 2022 19:53:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=SjFjmxdT;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KO0izK1R;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::f31;
- helo=mail-qv1-xf31.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=SjFjmxdT; dkim-atps=neutral
-Received: from mail-qv1-xf31.google.com (mail-qv1-xf31.google.com
- [IPv6:2607:f8b0:4864:20::f31])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=KO0izK1R; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K462S6Np1z2xs2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Feb 2022 19:46:23 +1100 (AEDT)
-Received: by mail-qv1-xf31.google.com with SMTP id fc19so2442280qvb.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Feb 2022 00:46:24 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=AMgrL5D+KiWCdMkA04nMLIuWEJUWtCL6OB6a/lKLlsk=;
- b=SjFjmxdTyjyqAf6RJdg2tHuijlejReBRn7QF/+aSua+sO0zKJmTVFZalZ5mNA7GH45
- zAzL2UJVlM7mLSOdJY/JvKpVQQg08AJJb8ESyHKkdGohUbDmqeTDDkxWEvl5zvCQwaM8
- JSWpnxydgv5Z7IU1+gUj8UOqHVzTt/CW9+jqM=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=AMgrL5D+KiWCdMkA04nMLIuWEJUWtCL6OB6a/lKLlsk=;
- b=QPZ9yA9/3VsYka2r+f0uwmnGV/AP/pCogawRgpNVYSehAFdnvw/Q4LX9c6AoF2XCBo
- k2Dm/XRwMoqTMgLcg+9K8an7OrCIJ48gQ8j7E5VfYPunF+Tsd/4oTffTLCPJUBvZLZxQ
- sXfSDnFB346udgqhWzNjBFVUoW+uCNjjYQMdvFLfGu6uRYcqt8meNHIUPeQGTRPtbIr5
- kE2y+sfMe2zeoef1WDxygI8w265xZjIuepA8tUalf4ARkuhYEnFyo0kjCVNcloMpsxNc
- acP1oppLBD3vgE0ciHGPgS5ts2COfKEIpIh1CTVTaLj7OjIDdviMEHbflDzAM2LGzIh7
- 3cXQ==
-X-Gm-Message-State: AOAM531nHP42g6gp2pdCvmNsnmFIfVkAfm3+mURKGdfvcb+h5WNTXDdQ
- cDYU6+HyJhWqvCAQvV75hwAZwUGTLUwXNw==
-X-Google-Smtp-Source: ABdhPJx6Ld80nbuarBWp5o8KCI/l5Z53qcY+ZlRGc5SLMbxpdXxgGnAwn1akrhgVmyLqoIoTxwHGMQ==
-X-Received: by 2002:a17:902:7584:b0:14d:77f4:5598 with SMTP id
- j4-20020a170902758400b0014d77f45598mr1246271pll.1.1645682626444; 
- Wed, 23 Feb 2022 22:03:46 -0800 (PST)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id bd14sm1470026pfb.165.2022.02.23.22.03.46
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 23 Feb 2022 22:03:46 -0800 (PST)
-From: Kees Cook <keescook@chromium.org>
-To: Matthew Wilcox <willy@infradead.org>
-Subject: [PATCH v2] usercopy: Check valid lifetime via stack depth
-Date: Wed, 23 Feb 2022 22:03:42 -0800
-Message-Id: <20220224060342.1855457-1-keescook@chromium.org>
-X-Mailer: git-send-email 2.30.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K46926Vp4z30Pf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Feb 2022 19:52:06 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 21O5a9R0027195; 
+ Thu, 24 Feb 2022 08:52:01 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ mime-version : content-transfer-encoding; s=pp1;
+ bh=2t8ecI3yy8Il2zdL41/YOmI9kpF4rXGLf2zGhAVANNI=;
+ b=KO0izK1R0iXXPEFaqhgPJ4yGezvQXd2LjTjp9vLotw0il5ImjWq/iQr/3EEKCA3udaDS
+ rJUVsKO+GyZ8nPV8JxEhyUdEzmLgn8ZYCvxnyl9dOrMZwrqXejFyXk5U6Ylt3CdBNs4V
+ RoNkT/ILFmL0rTpfCUG5zJ5Dd5MtRjjM0KWJO2FPN3/Zxe2uHdfGS20uFQ65rl8NsGGR
+ VjzpGDQfbPo8Z4UDO+cKeagwqVg9bXjD+GAdr9oYpE6QOVV66JDDLEtfeRYhUnPeSWl+
+ ZxYADxAvYBYTmElc2cBtZ3S7DexKxEG9wFAfbLrRXugZiGYl94DGTSKHogaDvFP5HGnE Og== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3edwkeak1m-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 24 Feb 2022 08:52:01 +0000
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 21O8n2o6022650;
+ Thu, 24 Feb 2022 08:52:00 GMT
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3edwkeak1c-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 24 Feb 2022 08:52:00 +0000
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 21O8iQbH014003;
+ Thu, 24 Feb 2022 08:51:59 GMT
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26]) by ppma03dal.us.ibm.com with ESMTP id 3ear6casu3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 24 Feb 2022 08:51:59 +0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 21O8puIY13370008
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 24 Feb 2022 08:51:56 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 42514124069;
+ Thu, 24 Feb 2022 08:51:56 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1358F12405B;
+ Thu, 24 Feb 2022 08:51:55 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.160.92.72])
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 24 Feb 2022 08:51:54 +0000 (GMT)
+Message-ID: <52bd10b05bd45d620ed16d09e7e74d628f9f2555.camel@linux.ibm.com>
+Subject: Re: [PATCH v3 2/4] powerpc/pseries/vas: Modify reconfig open/close
+ functions for migration
+From: Haren Myneni <haren@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au, nathanl@linux.ibm.com
+Date: Thu, 24 Feb 2022 00:51:53 -0800
+In-Reply-To: <1645609170.yvpqkmicgp.astroid@bobo.none>
+References: <4a23d5ec655fd00da97b0b0b46174a3a3894bfb0.camel@linux.ibm.com>
+ <fb9f17bd5ee7a4df453138769b709c60cdc42641.camel@linux.ibm.com>
+ <1645609170.yvpqkmicgp.astroid@bobo.none>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.36.5 (3.36.5-2.fc32) 
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6569; h=from:subject;
- bh=6A8mc/rhTTVnxVpbzT3BARo6XcOUZdfrInmbku4Dc4o=;
- b=owEBbQKS/ZANAwAKAYly9N/cbcAmAcsmYgBiFx+9k7mkyBUeqAXKhGpQLGTRH+td6u68zTq4WYHQ
- Ql54f0WJAjMEAAEKAB0WIQSlw/aPIp3WD3I+bhOJcvTf3G3AJgUCYhcfvQAKCRCJcvTf3G3AJhN/D/
- 9rptmz9DAb1CkNTCvTXLH+yoTu25eGKdcejSEGfbH5sbzbSrepTMvgMAUaEo4Jo/8UTRQFJq8ad1YJ
- 29LV70+iJUbjlZwZRali/FQGcNsi5QC8Zfmpo1PH0op8PjQpclPbqzAeu0mrFA7OAYxDIooE6VQhil
- ZYhpww9k4rhnFCjwLM8s18FkbClCrc8umT9LUrxaCfea7w0WgYWVblrECc3mmdMHQ+ku7+tWcMmdbP
- kD6bShQmH7d6VurCRzR12joIN8MsNFw9HDiNJK91hJraUq7pBe51ddL2EQTxQ8wvcYBmn6V6w4VApv
- Za49GBST9yohx35QqEQQLqXtEbGT+WCHCvYxVmLpzigEdVBayvJciN3jxRQg4qPH5NzrCvZvQbn5gk
- wpbEWxzvCzaOGydlCDaF0K4hqXnStUt4SsEbRrmBRxTCH75dA4ejbXIS31hbNZAzSLOVo/ZbRtRwMK
- iwuOvLFBROdqpN+7NmFczrgvSRHsOS1l7WoMoUFoMD5r36J62d70Qz/TO2UHlKVjf2oxihTqWDDv76
- APOsRc8JzJkKRhEimqn1BgOBh5CYaw0znuEi0E5IGKjVMVnDdCLY3Z+JhJeTJMX31ISHuvaFyRy9Kb
- 3VPTEzhwG/E3CcVAroWSz5SVRCR4XakTnGsk72PgX5rBKm8Tqny1HU15ZD1Q==
-X-Developer-Key: i=keescook@chromium.org; a=openpgp;
- fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: hAmzQfhegb0Cs_OAfgrYjWeQKWg8MkVQ
+X-Proofpoint-ORIG-GUID: 8Th41QxQnknOEpzscmcBg3HvoQXnGxzj
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.64.514
+ definitions=2022-02-23_09,2022-02-23_01,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 clxscore=1015
+ mlxscore=0 lowpriorityscore=0 phishscore=0 adultscore=0 suspectscore=0
+ bulkscore=0 mlxlogscore=999 priorityscore=1501 impostorscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2201110000 definitions=main-2202240050
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,197 +110,318 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Kees Cook <keescook@chromium.org>,
- linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- Muhammad Usama Anjum <usama.anjum@collabora.com>, linux-mm@kvack.org,
- linux-hardening@vger.kernel.org, Josh Poimboeuf <jpoimboe@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Under CONFIG_HARDENED_USERCOPY=y, when exact stack frame boundary checking
-is not available (i.e. everything except x86 with FRAME_POINTER), check
-a stack object as being at least "current depth valid", in the sense
-that any object within the stack region but not between start-of-stack
-and current_stack_pointer should be considered unavailable (i.e. its
-lifetime is from a call no longer present on the stack).
+On Wed, 2022-02-23 at 19:54 +1000, Nicholas Piggin wrote:
+> Excerpts from Haren Myneni's message of February 20, 2022 6:05 am:
+> > VAS is a hardware engine stays on the chip. So when the partition
+> > migrates, all VAS windows on the source system have to be closed
+> > and reopen them on the destination after migration.
+> > 
+> > This patch make changes to the current reconfig_open/close_windows
+> > functions to support migration:
+> > - Set VAS_WIN_MIGRATE_CLOSE to the window status when closes and
+> >   reopen windows with the same status during resume.
+> > - Continue to close all windows even if deallocate HCALL failed
+> >   (should not happen) since no way to stop migration with the
+> >   current LPM implementation.
+> 
+> Hmm.  pseries_migrate_partition *can* fail?
 
-Introduce ARCH_HAS_CURRENT_STACK_POINTER to track which architectures
-have actually implemented the common global register alias.
+Yes, it can fail. If pseries_suspend() fails, all VAS windows will be
+reopened again without migration. vas_migration_handler(VAS_RESUME) is
+called whether pseries_suspend() returns 0 or not.
 
-Additionally report usercopy bounds checking failures with an offset
-from current_stack_pointer, which may assist with diagnosing failures.
+> 
+> > - If the DLPAR CPU event happens while migration is in progress,
+> >   set VAS_WIN_NO_CRED_CLOSE to the window status. Close window
+> >   happens with the first event (migration or DLPAR) and Reopen
+> >   window happens only with the last event (migration or DLPAR).
+> 
+> Can DLPAR happen while migration is in progress? Couldn't
+> this cause your source and destination credits to go out of
+> whack?
 
-The LKDTM USERCOPY_STACK_FRAME_TO and USERCOPY_STACK_FRAME_FROM tests
-(once slightly adjusted in a separate patch) will pass again with
-this fixed.
+Should not be, If the DLPAR event happens while migration is in
+progress, windows will be closed in the hypervisor (and mark inactive
+with migration status bit in OS) for migration. For DLPAR event, mark
+the DLPAR_CLOSED status bits for the necessary windows. Then after the
+migration, we open windows in the hypervisor and set them active in OS
+that have only migration status. Open the other remaining windows only
+after the other DLPAR core add event. 
 
-Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org
-Reported-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
-v1: https://lore.kernel.org/all/20220216201449.2087956-1-keescook@chromium.org/
-v2: adjust for only some archs having current_stack_pointer
----
- arch/arm/Kconfig     |  1 +
- arch/arm64/Kconfig   |  1 +
- arch/powerpc/Kconfig |  1 +
- arch/s390/Kconfig    |  1 +
- arch/sh/Kconfig      |  1 +
- arch/x86/Kconfig     |  1 +
- mm/usercopy.c        | 41 ++++++++++++++++++++++++++++++++++++++---
- 7 files changed, 44 insertions(+), 3 deletions(-)
+Regarding the traget credits on the destination, we get the new
+capabilities after migration and use the new value for reopen. 
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 4c97cb40eebb..a7a09eef1852 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -5,6 +5,7 @@ config ARM
- 	select ARCH_32BIT_OFF_T
- 	select ARCH_CORRECT_STACKTRACE_ON_KRETPROBE if HAVE_KRETPROBES && FRAME_POINTER && !ARM_UNWIND
- 	select ARCH_HAS_BINFMT_FLAT
-+	select ARCH_HAS_CURRENT_STACK_POINTER
- 	select ARCH_HAS_DEBUG_VIRTUAL if MMU
- 	select ARCH_HAS_DMA_WRITE_COMBINE if !ARM_DMA_MEM_BUFFERABLE
- 	select ARCH_HAS_ELF_RANDOMIZE
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index f2b5a4abef21..b8ab790555c8 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -18,6 +18,7 @@ config ARM64
- 	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if PGTABLE_LEVELS > 2
- 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
- 	select ARCH_HAS_CACHE_LINE_SIZE
-+	select ARCH_HAS_CURRENT_STACK_POINTER
- 	select ARCH_HAS_DEBUG_VIRTUAL
- 	select ARCH_HAS_DEBUG_VM_PGTABLE
- 	select ARCH_HAS_DMA_PREP_COHERENT
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b779603978e1..7e7387bd7d53 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -108,6 +108,7 @@ config PPC
- 	select ARCH_ENABLE_MEMORY_HOTPLUG
- 	select ARCH_ENABLE_MEMORY_HOTREMOVE
- 	select ARCH_HAS_COPY_MC			if PPC64
-+	select ARCH_HAS_CURRENT_STACK_POINTER
- 	select ARCH_HAS_DEBUG_VIRTUAL
- 	select ARCH_HAS_DEBUG_VM_PGTABLE
- 	select ARCH_HAS_DEBUG_WX		if STRICT_KERNEL_RWX
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index be9f39fd06df..4845ab549dd1 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -60,6 +60,7 @@ config S390
- 	select ARCH_ENABLE_MEMORY_HOTPLUG if SPARSEMEM
- 	select ARCH_ENABLE_MEMORY_HOTREMOVE
- 	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if PGTABLE_LEVELS > 2
-+	select ARCH_HAS_CURRENT_STACK_POINTER
- 	select ARCH_HAS_DEBUG_VM_PGTABLE
- 	select ARCH_HAS_DEBUG_WX
- 	select ARCH_HAS_DEVMEM_IS_ALLOWED
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index 2474a04ceac4..1c2b53bf3093 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -7,6 +7,7 @@ config SUPERH
- 	select ARCH_HAVE_CUSTOM_GPIO_H
- 	select ARCH_HAVE_NMI_SAFE_CMPXCHG if (GUSA_RB || CPU_SH4A)
- 	select ARCH_HAS_BINFMT_FLAT if !MMU
-+	select ARCH_HAS_CURRENT_STACK_POINTER
- 	select ARCH_HAS_GIGANTIC_PAGE
- 	select ARCH_HAS_GCOV_PROFILE_ALL
- 	select ARCH_HAS_PTE_SPECIAL
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 9f5bd41bf660..90494fba3620 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -69,6 +69,7 @@ config X86
- 	select ARCH_ENABLE_THP_MIGRATION if X86_64 && TRANSPARENT_HUGEPAGE
- 	select ARCH_HAS_ACPI_TABLE_UPGRADE	if ACPI
- 	select ARCH_HAS_CACHE_LINE_SIZE
-+	select ARCH_HAS_CURRENT_STACK_POINTER
- 	select ARCH_HAS_DEBUG_VIRTUAL
- 	select ARCH_HAS_DEBUG_VM_PGTABLE	if !X86_PAE
- 	select ARCH_HAS_DEVMEM_IS_ALLOWED
-diff --git a/mm/usercopy.c b/mm/usercopy.c
-index d0d268135d96..5d28725af95f 100644
---- a/mm/usercopy.c
-+++ b/mm/usercopy.c
-@@ -22,6 +22,30 @@
- #include <asm/sections.h>
- #include "slab.h"
- 
-+/*
-+ * Only called if obj is within stack/stackend bounds. Determine if within
-+ * current stack depth.
-+ */
-+static inline int check_stack_object_depth(const void *obj,
-+					   unsigned long len)
-+{
-+#ifdef CONFIG_ARCH_HAS_CURRENT_STACK_POINTER
-+#ifndef CONFIG_STACK_GROWSUP
-+	const void * const high = stackend;
-+	const void * const low = (void *)current_stack_pointer;
-+#else
-+	const void * const high = (void *)current_stack_pointer;
-+	const void * const low = stack;
-+#endif
-+
-+	/* Reject: object not within current stack depth. */
-+	if (obj < low || high < obj + len)
-+		return BAD_STACK;
-+
-+#endif
-+	return GOOD_STACK;
-+}
-+
- /*
-  * Checks if a given pointer and length is contained by the current
-  * stack frame (if possible).
-@@ -29,7 +53,7 @@
-  * Returns:
-  *	NOT_STACK: not at all on the stack
-  *	GOOD_FRAME: fully within a valid stack frame
-- *	GOOD_STACK: fully on the stack (when can't do frame-checking)
-+ *	GOOD_STACK: within the current stack (when can't frame-check exactly)
-  *	BAD_STACK: error condition (invalid stack position or bad stack frame)
-  */
- static noinline int check_stack_object(const void *obj, unsigned long len)
-@@ -55,7 +79,8 @@ static noinline int check_stack_object(const void *obj, unsigned long len)
- 	if (ret)
- 		return ret;
- 
--	return GOOD_STACK;
-+	/* Finally, check stack depth if possible. */
-+	return check_stack_object_depth(obj, len);
- }
- 
- /*
-@@ -280,7 +305,17 @@ void __check_object_size(const void *ptr, unsigned long n, bool to_user)
- 		 */
- 		return;
- 	default:
--		usercopy_abort("process stack", NULL, to_user, 0, n);
-+		usercopy_abort("process stack", NULL, to_user,
-+#ifdef CONFIG_ARCH_HAS_CURRENT_STACK_POINTER
-+# ifndef CONFIG_STACK_GROWSUP
-+				(void *)current_stack_pointer - ptr,
-+# else
-+				ptr - (void *)current_stack_pointer,
-+# endif
-+#else
-+				0,
-+#endif
-+				n);
- 	}
- 
- 	/* Check for bad heap object. */
--- 
-2.30.2
+Ex: Used the following test case -
+- Configuted 2 dedicated cores (40 credits) and exeuted the test case
+which opened 35 credits / windows
+- Removed 1 core, means available 20 credits. So closed 15 windows and
+set them with DLPAR closed status
+- Migration start: Closed the remaining 20 windows and set all windows
+(means 35) migration status
+- After migration, opened windows that have only migration status - 20
+windows, and also clear migration stats for the remaining 15 widnows
+- Add core which gives the system 20 more credits, So opened the
+remaining 15 windows and these have only DLPAR closed status. 
+
+> 
+> Why do you need two close window types, what if you finish
+> LPM and just open as many as possible regardless how they
+> are closed?
+
+Adding 2 different status bits to support DLPAR and LPM closed staus.
+As I mentioned above, windows will be active only after both bits are
+cleared.
+
+Thanks
+Haren
+
+> 
+> Thanks,
+> Nick
+> 
+> > Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/vas.h       |  2 +
+> >  arch/powerpc/platforms/pseries/vas.c | 88 ++++++++++++++++++++++
+> > ------
+> >  2 files changed, 73 insertions(+), 17 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/vas.h
+> > b/arch/powerpc/include/asm/vas.h
+> > index 6baf7b9ffed4..83afcb6c194b 100644
+> > --- a/arch/powerpc/include/asm/vas.h
+> > +++ b/arch/powerpc/include/asm/vas.h
+> > @@ -36,6 +36,8 @@
+> >  					/* vas mmap() */
+> >  /* Window is closed in the hypervisor due to lost credit */
+> >  #define VAS_WIN_NO_CRED_CLOSE	0x00000001
+> > +/* Window is closed due to migration */
+> > +#define VAS_WIN_MIGRATE_CLOSE	0x00000002
+> >  
+> >  /*
+> >   * Get/Set bit fields
+> > diff --git a/arch/powerpc/platforms/pseries/vas.c
+> > b/arch/powerpc/platforms/pseries/vas.c
+> > index 3bb219f54806..fbcf311da0ec 100644
+> > --- a/arch/powerpc/platforms/pseries/vas.c
+> > +++ b/arch/powerpc/platforms/pseries/vas.c
+> > @@ -457,11 +457,12 @@ static int vas_deallocate_window(struct
+> > vas_window *vwin)
+> >  	mutex_lock(&vas_pseries_mutex);
+> >  	/*
+> >  	 * VAS window is already closed in the hypervisor when
+> > -	 * lost the credit. So just remove the entry from
+> > -	 * the list, remove task references and free vas_window
+> > +	 * lost the credit or with migration. So just remove the entry
+> > +	 * from the list, remove task references and free vas_window
+> >  	 * struct.
+> >  	 */
+> > -	if (win->vas_win.status & VAS_WIN_NO_CRED_CLOSE) {
+> > +	if (!(win->vas_win.status & VAS_WIN_NO_CRED_CLOSE) &&
+> > +		!(win->vas_win.status & VAS_WIN_MIGRATE_CLOSE)) {
+> >  		rc = deallocate_free_window(win);
+> >  		if (rc) {
+> >  			mutex_unlock(&vas_pseries_mutex);
+> > @@ -578,12 +579,14 @@ static int __init get_vas_capabilities(u8
+> > feat, enum vas_cop_feat_type type,
+> >   * by setting the remapping to new paste address if the window is
+> >   * active.
+> >   */
+> > -static int reconfig_open_windows(struct vas_caps *vcaps, int
+> > creds)
+> > +static int reconfig_open_windows(struct vas_caps *vcaps, int
+> > creds,
+> > +				 bool migrate)
+> >  {
+> >  	long domain[PLPAR_HCALL9_BUFSIZE] = {VAS_DEFAULT_DOMAIN_ID};
+> >  	struct vas_cop_feat_caps *caps = &vcaps->caps;
+> >  	struct pseries_vas_window *win = NULL, *tmp;
+> >  	int rc, mv_ents = 0;
+> > +	int flag;
+> >  
+> >  	/*
+> >  	 * Nothing to do if there are no closed windows.
+> > @@ -602,8 +605,10 @@ static int reconfig_open_windows(struct
+> > vas_caps *vcaps, int creds)
+> >  	 * (dedicated). If 1 core is added, this LPAR can have 20 more
+> >  	 * credits. It means the kernel can reopen 20 windows. So move
+> >  	 * 20 entries in the VAS windows lost and reopen next 20
+> > windows.
+> > +	 * For partition migration, reopen all windows that are closed
+> > +	 * during resume.
+> >  	 */
+> > -	if (vcaps->nr_close_wins > creds)
+> > +	if ((vcaps->nr_close_wins > creds) && !migrate)
+> >  		mv_ents = vcaps->nr_close_wins - creds;
+> >  
+> >  	list_for_each_entry_safe(win, tmp, &vcaps->list, win_list) {
+> > @@ -613,12 +618,35 @@ static int reconfig_open_windows(struct
+> > vas_caps *vcaps, int creds)
+> >  		mv_ents--;
+> >  	}
+> >  
+> > +	/*
+> > +	 * Open windows if they are closed only with migration or
+> > +	 * DLPAR (lost credit) before.
+> > +	 */
+> > +	if (migrate)
+> > +		flag = VAS_WIN_MIGRATE_CLOSE;
+> > +	else
+> > +		flag = VAS_WIN_NO_CRED_CLOSE;
+> > +
+> >  	list_for_each_entry_safe_from(win, tmp, &vcaps->list, win_list)
+> > {
+> > +		/*
+> > +		 * This window is closed with DLPAR and migration
+> > events.
+> > +		 * So reopen the window with the last event.
+> > +		 * The user space is not suspended with the current
+> > +		 * migration notifier. So the user space can issue
+> > DLPAR
+> > +		 * CPU hotplug while migration in progress. In this
+> > case
+> > +		 * this window will be opened with the last event.
+> > +		 */
+> > +		if ((win->vas_win.status & VAS_WIN_NO_CRED_CLOSE) &&
+> > +			(win->vas_win.status & VAS_WIN_MIGRATE_CLOSE))
+> > {
+> > +			win->vas_win.status &= ~flag;
+> > +			continue;
+> > +		}
+> > +
+> >  		/*
+> >  		 * Nothing to do on this window if it is not closed
+> > -		 * with VAS_WIN_NO_CRED_CLOSE
+> > +		 * with this flag
+> >  		 */
+> > -		if (!(win->vas_win.status & VAS_WIN_NO_CRED_CLOSE))
+> > +		if (!(win->vas_win.status & flag))
+> >  			continue;
+> >  
+> >  		rc = allocate_setup_window(win, (u64 *)&domain[0],
+> > @@ -634,7 +662,7 @@ static int reconfig_open_windows(struct
+> > vas_caps *vcaps, int creds)
+> >  		/*
+> >  		 * Set window status to active
+> >  		 */
+> > -		win->vas_win.status &= ~VAS_WIN_NO_CRED_CLOSE;
+> > +		win->vas_win.status &= ~flag;
+> >  		mutex_unlock(&win->vas_win.task_ref.mmap_mutex);
+> >  		win->win_type = caps->win_type;
+> >  		if (!--vcaps->nr_close_wins)
+> > @@ -661,20 +689,32 @@ static int reconfig_open_windows(struct
+> > vas_caps *vcaps, int creds)
+> >   * the user space to fall back to SW compression and manage with
+> > the
+> >   * existing windows.
+> >   */
+> > -static int reconfig_close_windows(struct vas_caps *vcap, int
+> > excess_creds)
+> > +static int reconfig_close_windows(struct vas_caps *vcap, int
+> > excess_creds,
+> > +									
+> > bool migrate)
+> >  {
+> >  	struct pseries_vas_window *win, *tmp;
+> >  	struct vas_user_win_ref *task_ref;
+> >  	struct vm_area_struct *vma;
+> > -	int rc = 0;
+> > +	int rc = 0, flag;
+> > +
+> > +	if (migrate)
+> > +		flag = VAS_WIN_MIGRATE_CLOSE;
+> > +	else
+> > +		flag = VAS_WIN_NO_CRED_CLOSE;
+> >  
+> >  	list_for_each_entry_safe(win, tmp, &vcap->list, win_list) {
+> >  		/*
+> >  		 * This window is already closed due to lost credit
+> > -		 * before. Go for next window.
+> > +		 * or for migration before. Go for next window.
+> > +		 * For migration, nothing to do since this window
+> > +		 * closed for DLPAR and will be reopened even on
+> > +		 * the destination system with other DLPAR operation.
+> >  		 */
+> > -		if (win->vas_win.status & VAS_WIN_NO_CRED_CLOSE)
+> > +		if ((win->vas_win.status & VAS_WIN_MIGRATE_CLOSE) ||
+> > +			(win->vas_win.status & VAS_WIN_NO_CRED_CLOSE))
+> > {
+> > +			win->vas_win.status |= flag;
+> >  			continue;
+> > +		}
+> >  
+> >  		task_ref = &win->vas_win.task_ref;
+> >  		mutex_lock(&task_ref->mmap_mutex);
+> > @@ -683,7 +723,7 @@ static int reconfig_close_windows(struct
+> > vas_caps *vcap, int excess_creds)
+> >  		 * Number of available credits are reduced, So select
+> >  		 * and close windows.
+> >  		 */
+> > -		win->vas_win.status |= VAS_WIN_NO_CRED_CLOSE;
+> > +		win->vas_win.status |= flag;
+> >  
+> >  		mmap_write_lock(task_ref->mm);
+> >  		/*
+> > @@ -706,12 +746,24 @@ static int reconfig_close_windows(struct
+> > vas_caps *vcap, int excess_creds)
+> >  		 * later when the process issued with close(FD).
+> >  		 */
+> >  		rc = deallocate_free_window(win);
+> > -		if (rc)
+> > +		/*
+> > +		 * This failure is from the hypervisor.
+> > +		 * No way to stop migration for these failures.
+> > +		 * So ignore error and continue closing other windows.
+> > +		 */
+> > +		if (rc && !migrate)
+> >  			return rc;
+> >  
+> >  		vcap->nr_close_wins++;
+> >  
+> > -		if (!--excess_creds)
+> > +		/*
+> > +		 * For migration, do not depend on lpar_creds in case
+> > if
+> > +		 * mismatch with the hypervisor value (should not
+> > happen).
+> > +		 * So close all active windows in the list and will be
+> > +		 * reopened windows based on the new lpar_creds on the
+> > +		 * destination system during resume.
+> > +		 */
+> > +		if (!migrate && !--excess_creds)
+> >  			break;
+> >  	}
+> >  
+> > @@ -761,7 +813,8 @@ int vas_reconfig_capabilties(u8 type)
+> >  		 * target, reopen windows if they are closed due to
+> >  		 * the previous DLPAR (core removal).
+> >  		 */
+> > -		rc = reconfig_open_windows(vcaps, new_nr_creds -
+> > old_nr_creds);
+> > +		rc = reconfig_open_windows(vcaps, new_nr_creds -
+> > old_nr_creds,
+> > +					   false);
+> >  	} else {
+> >  		/*
+> >  		 * # active windows is more than new LPAR available
+> > @@ -771,7 +824,8 @@ int vas_reconfig_capabilties(u8 type)
+> >  		nr_active_wins = vcaps->nr_open_windows - vcaps-
+> > >nr_close_wins;
+> >  		if (nr_active_wins > new_nr_creds)
+> >  			rc = reconfig_close_windows(vcaps,
+> > -					nr_active_wins - new_nr_creds);
+> > +					nr_active_wins - new_nr_creds,
+> > +					false);
+> >  	}
+> >  
+> >  out:
+> > -- 
+> > 2.27.0
+> > 
+> > 
+> > 
 
