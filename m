@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70105C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Feb 2022 14:38:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80F62C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Feb 2022 14:39:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K65jG1gFDz3f3D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 01:38:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K65jz2Yb8z3bw6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 01:39:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=gdyCXq66;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=ihBj93Gb;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -19,33 +19,33 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=gdyCXq66; 
+ header.s=bombadil.20210309 header.b=ihBj93Gb; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K65Yw36Ssz3bq7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Feb 2022 01:32:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K65bc6cRjz3brJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Feb 2022 01:33:32 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=zCMW1Q+QCPXYuvBuEGOZUQKFwE9OwdLFtYhltvQ29K4=; b=gdyCXq66VbjetEyefeZjfrjLn/
- KFQQrvNuyQDreVuu13IHX3wfCfPHEtIxvJ6JqsMNDkY0USHKy7oCaTu4H7iFuqb2PQMxvCNBFLcYY
- KZ3LS1ks43RUB2OYoxYpQZJEd07kMZ/3qKopL/s5iB/o2XydyagggAPb3Te4EjfCBCXFCTg/Y8p9z
- 2kSmzGmaN82rRP7wXwyQ+GOo4Uamo5zAprzgs98k8sgxtB+ZSJ4CjgiBANK9/V6D2jidQhWgoX7p0
- NcVk0BzE781U1ijtQTkpZZ2WxTbe57/8gozWq3sdLV4dZH4vLtkrv61f0R5MpjUuztFqcz/di9cxw
- Kqf5U4OQ==;
+ bh=fpYq2gch6ejmPkcFKPjSyDr7OAs4OQSLe0uyAoUEPa0=; b=ihBj93GbCChJ0QpAjRhTh6iHDw
+ 0V6UJQeF355QVgLts1D1r2YGkHDA1vgqG1MCi6sSzX0aU/yqPgXefij6ux0UlqgXGjeB9/GRGKdYg
+ oF8ivuYiEMCHvU+2SNZqnmJUHhwIQgxe00hyKYiad9mwYNBa3BW9GbsM5y7rI1HRXPxZCBGvuqRDR
+ fiF4970M/qxQiqg+AXq0JYfsIzNIGaD3UqdTAtUgcyN1xzoE26/iw1TRFGJjIQxipIz85o+MC6Sul
+ S52cjGS7vKJDa8qibbtunWtwfjPsgkLYNferGeEOzuQq41QVFs7XXLlP3G3aebutpxz/kUKPAwbwv
+ 5CtFglVw==;
 Received: from [213.208.157.39] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1nOKaS-009OIV-2W; Sun, 27 Feb 2022 14:31:48 +0000
+ id 1nOKZh-009Ntc-P9; Sun, 27 Feb 2022 14:31:02 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
-Subject: [PATCH 11/11] x86: remove cruft from <asm/dma-mapping.h>
-Date: Sun, 27 Feb 2022 15:30:55 +0100
-Message-Id: <20220227143055.335596-12-hch@lst.de>
+Subject: [PATCH 01/11] dma-direct: use is_swiotlb_active in dma_direct_map_page
+Date: Sun, 27 Feb 2022 15:30:45 +0100
+Message-Id: <20220227143055.335596-2-hch@lst.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20220227143055.335596-1-hch@lst.de>
 References: <20220227143055.335596-1-hch@lst.de>
@@ -78,50 +78,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-<asm/dma-mapping.h> gets pulled in by all drivers using the DMA API.
-Remove x86 internal variables and unnecessary includes from it.
+Use the more specific is_swiotlb_active check instead of checking the
+global swiotlb_force variable.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
 ---
- arch/x86/include/asm/dma-mapping.h | 11 -----------
- arch/x86/include/asm/iommu.h       |  2 ++
- 2 files changed, 2 insertions(+), 11 deletions(-)
+ kernel/dma/direct.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-index 256fd8115223d..1c66708e30623 100644
---- a/arch/x86/include/asm/dma-mapping.h
-+++ b/arch/x86/include/asm/dma-mapping.h
-@@ -2,17 +2,6 @@
- #ifndef _ASM_X86_DMA_MAPPING_H
- #define _ASM_X86_DMA_MAPPING_H
+diff --git a/kernel/dma/direct.h b/kernel/dma/direct.h
+index 4632b0f4f72eb..4dc16e08c7e1a 100644
+--- a/kernel/dma/direct.h
++++ b/kernel/dma/direct.h
+@@ -91,7 +91,7 @@ static inline dma_addr_t dma_direct_map_page(struct device *dev,
+ 		return swiotlb_map(dev, phys, size, dir, attrs);
  
--/*
-- * IOMMU interface. See Documentation/core-api/dma-api-howto.rst and
-- * Documentation/core-api/dma-api.rst for documentation.
-- */
--
--#include <linux/scatterlist.h>
--#include <asm/io.h>
--
--extern int iommu_merge;
--extern int panic_on_overflow;
--
- extern const struct dma_map_ops *dma_ops;
+ 	if (unlikely(!dma_capable(dev, dma_addr, size, true))) {
+-		if (swiotlb_force != SWIOTLB_NO_FORCE)
++		if (is_swiotlb_active(dev))
+ 			return swiotlb_map(dev, phys, size, dir, attrs);
  
- static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
-diff --git a/arch/x86/include/asm/iommu.h b/arch/x86/include/asm/iommu.h
-index dba89ed40d38d..0bef44d30a278 100644
---- a/arch/x86/include/asm/iommu.h
-+++ b/arch/x86/include/asm/iommu.h
-@@ -8,6 +8,8 @@
- 
- extern int force_iommu, no_iommu;
- extern int iommu_detected;
-+extern int iommu_merge;
-+extern int panic_on_overflow;
- 
- #ifdef CONFIG_SWIOTLB
- extern bool x86_swiotlb_enable;
+ 		dev_WARN_ONCE(dev, 1,
 -- 
 2.30.2
 
