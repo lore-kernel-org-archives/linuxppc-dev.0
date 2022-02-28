@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34290C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 07:53:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 575C8C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 07:57:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K6Xh26W80z3btb
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 18:53:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K6Xm00tw4z30QY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 18:57:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hAwzSkcd;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=h+qXmkrL;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
@@ -18,83 +18,85 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=hAwzSkcd; dkim-atps=neutral
+ header.s=pp1 header.b=h+qXmkrL; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K6Xfv6Zxbz3bk9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Feb 2022 18:52:55 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 21S7hOec024655; 
- Mon, 28 Feb 2022 07:52:52 GMT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K6XlD0Rqkz2xvV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Feb 2022 18:56:39 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 21S6hTG1004549; 
+ Mon, 28 Feb 2022 07:56:36 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=message-id : subject :
  from : to : cc : date : in-reply-to : references : content-type :
  mime-version : content-transfer-encoding; s=pp1;
- bh=dokKMTHNwvTpBKYNcK0AwP2WHYP3vWkiph8bDPYrb6w=;
- b=hAwzSkcdsLCEOuIuGXZupPg0W06m4a7UA7HjLLelO9F23SshWO4QGWTdWwbptq9DA/za
- zQfcZtlf6quAHpWK7y3XbTR3XBKvjsgZC9/Vhtz+GG4CZdTOkXG7ZG/M5k2ONcp6JEiw
- QbDNUVzVm6fxiGCJXmQNAVBlUxsOiMjI8JZDC0OUDtkZ3/A7HAhST8Vy3infgukxhZ4S
- a2lccfDPOFf04TqJkRSx6pmdvzTMPCIlEWSO4kMcbybtTN5/f4Xp822YQlnY8BclIuKs
- quKNEpO6Hdmn5I2Ii1YgkpR7NTG6IV6Bg/xtGh5R19VHgjIq1Khrmt7T2ucHYX7kWOaS AQ== 
+ bh=yQfcjeiaceKsLYpz64u0kTOkTtpa5ykAu1EIHUSjraw=;
+ b=h+qXmkrLqwTrBQijXepAzrIn86hJ0AQ6HmPaUvMh1ghxUKRFh8WF8jBStnRRmmGKOAVX
+ zm7rXUI6baKkY9dnoIwzf89b5BjiGa8atMxl8Jt+UbCWPZESliFsXYjBR3PMMm5n1kks
+ jiQh/4ANFQEvuo88r6SPh6SGzIm1MDvePG/EnGlmhKuD4ot5+pyFFiEWA4DYUNxPszeA
+ 8ssY/LbHLQbYSXr6QGuLsqgXiSSAB0xmy6QPSfrhav1TYL9UxwcVnjqSPXwjS2WeBBby
+ 6BzkX6oliHT0W1irGPlMGav1UIabNXvcqbFj8v1Xe6iOP/Y09ep0J3+69rPoVcI26ia0 Tg== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3egt8n8670-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3egscj1ets-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 28 Feb 2022 07:52:51 +0000
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 21S7poCl010289;
- Mon, 28 Feb 2022 07:52:51 GMT
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3egt8n866n-1
+ Mon, 28 Feb 2022 07:56:36 +0000
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 21S7BHuV008929;
+ Mon, 28 Feb 2022 07:56:36 GMT
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3egscj1eru-4
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 28 Feb 2022 07:52:51 +0000
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 21S7lKsV027614;
- Mon, 28 Feb 2022 07:52:50 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma05wdc.us.ibm.com with ESMTP id 3efbu9t0as-1
+ Mon, 28 Feb 2022 07:56:35 +0000
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 21S7HV3e023533;
+ Mon, 28 Feb 2022 07:36:21 GMT
+Received: from b03cxnp07027.gho.boulder.ibm.com
+ (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
+ by ppma01wdc.us.ibm.com with ESMTP id 3efbu99uy6-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 28 Feb 2022 07:52:50 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 21S7qk8j49545498
+ Mon, 28 Feb 2022 07:36:21 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 21S7aJIO23462366
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 28 Feb 2022 07:52:46 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C5937AC05B;
- Mon, 28 Feb 2022 07:52:46 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AE600AC05E;
- Mon, 28 Feb 2022 07:52:45 +0000 (GMT)
+ Mon, 28 Feb 2022 07:36:19 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 13986C6063;
+ Mon, 28 Feb 2022 07:36:19 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BD0F1C605D;
+ Mon, 28 Feb 2022 07:36:17 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.160.161.44])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 28 Feb 2022 07:52:45 +0000 (GMT)
-Message-ID: <2dcfeecddcacbb8b1248364905c2e37695f2b996.camel@linux.ibm.com>
-Subject: [PATCH v4 3/3] powerpc/pseries/vas: Add VAS migration handler
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon, 28 Feb 2022 07:36:17 +0000 (GMT)
+Message-ID: <d759aeddcff827dd298436cfb3edc4f2827219b7.camel@linux.ibm.com>
+Subject: [PATCH v5 4/9] powerpc/vas: Return paste instruction failure if no
+ active window
 From: Haren Myneni <haren@linux.ibm.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
  nathanl@linux.ibm.com
-Date: Sun, 27 Feb 2022 23:52:43 -0800
-In-Reply-To: <aab2eda3cb5b209e07cf50760649834f1d93fede.camel@linux.ibm.com>
-References: <aab2eda3cb5b209e07cf50760649834f1d93fede.camel@linux.ibm.com>
+Date: Sun, 27 Feb 2022 23:36:16 -0800
+In-Reply-To: <ccd9c0f85005c56b4d011d5c2384444ae71bda69.camel@linux.ibm.com>
+References: <ccd9c0f85005c56b4d011d5c2384444ae71bda69.camel@linux.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 User-Agent: Evolution 3.36.5 (3.36.5-2.fc32) 
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: S6MS1AbS9gxXperHeb-8HPKW-vUEiJga
-X-Proofpoint-ORIG-GUID: FF8coj9JLofRwBcLFeS1xABMnoCKl6bs
+X-Proofpoint-GUID: 0J3OUsGmrpUpX2Z4pAnAKwod2AfCvlzZ
+X-Proofpoint-ORIG-GUID: uK3eypnAMghW_V9Ol-oHVMMihVQG3oDj
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.64.514
  definitions=2022-02-28_02,2022-02-26_01,2022-02-23_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0
- mlxlogscore=999 bulkscore=0 priorityscore=1501 impostorscore=0 mlxscore=0
- clxscore=1015 spamscore=0 adultscore=0 suspectscore=0 lowpriorityscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ priorityscore=1501
+ impostorscore=0 bulkscore=0 adultscore=0 mlxlogscore=999 phishscore=0
+ clxscore=1015 mlxscore=0 spamscore=0 suspectscore=0 malwarescore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2201110000 definitions=main-2202280043
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -112,204 +114,110 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
-Since the VAS windows belong to the VAS hardware resource, the
-hypervisor expects the partition to close them on source partition
-and reopen them after the partition migrated on the destination
-machine.
+The VAS window may not be active if the system looses credits and
+the NX generates page fault when it receives request on unmap
+paste address.
 
-This handler is called before pseries_suspend() to close these
-windows and again invoked after migration. All active windows
-for both default and QoS types will be closed and mark them
-inactive and reopened after migration with this handler.
-During the migration, the user space receives paste instruction
-failure if it issues copy/paste on these inactive windows.
+The kernel handles the fault by remap new paste address if the
+window is active again, Otherwise return the paste instruction
+failure if the executed instruction that caused the fault was
+a paste.
 
-The current migration implementation does not freeze the user
-space and applications can continue to open VAS windows while
-migration is in progress. So when the migration_in_progress flag
-is set, VAS open window API returns -EBUSY.
-
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Haren Myneni <haren@linux.ibm.com>
 ---
- arch/powerpc/platforms/pseries/mobility.c |  5 ++
- arch/powerpc/platforms/pseries/vas.c      | 98 ++++++++++++++++++++++-
- arch/powerpc/platforms/pseries/vas.h      |  6 ++
- 3 files changed, 108 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/ppc-opcode.h   |  2 +
+ arch/powerpc/platforms/book3s/vas-api.c | 55 ++++++++++++++++++++++++-
+ 2 files changed, 56 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 85033f392c78..70004243e25e 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -26,6 +26,7 @@
- #include <asm/machdep.h>
- #include <asm/rtas.h>
- #include "pseries.h"
-+#include "vas.h"	/* vas_migration_handler() */
- #include "../../kernel/cacheinfo.h"
- 
- static struct kobject *mobility_kobj;
-@@ -669,12 +670,16 @@ static int pseries_migrate_partition(u64 handle)
- 	if (ret)
- 		return ret;
- 
-+	vas_migration_handler(VAS_SUSPEND);
-+
- 	ret = pseries_suspend(handle);
- 	if (ret == 0)
- 		post_mobility_fixup();
- 	else
- 		pseries_cancel_migration(handle, ret);
- 
-+	vas_migration_handler(VAS_RESUME);
-+
- 	return ret;
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 9675303b724e..82f1f0041c6f 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -262,6 +262,8 @@
+ #define PPC_INST_MFSPR_PVR		0x7c1f42a6
+ #define PPC_INST_MFSPR_PVR_MASK		0xfc1ffffe
+ #define PPC_INST_MTMSRD			0x7c000164
++#define PPC_INST_PASTE			0x7c20070d
++#define PPC_INST_PASTE_MASK		0xfc2007ff
+ #define PPC_INST_POPCNTB		0x7c0000f4
+ #define PPC_INST_POPCNTB_MASK		0xfc0007fe
+ #define PPC_INST_RFEBB			0x4c000124
+diff --git a/arch/powerpc/platforms/book3s/vas-api.c b/arch/powerpc/platforms/book3s/vas-api.c
+index f359e7b2bf90..f3e421511ea6 100644
+--- a/arch/powerpc/platforms/book3s/vas-api.c
++++ b/arch/powerpc/platforms/book3s/vas-api.c
+@@ -351,6 +351,41 @@ static int coproc_release(struct inode *inode, struct file *fp)
+ 	return 0;
  }
  
-diff --git a/arch/powerpc/platforms/pseries/vas.c b/arch/powerpc/platforms/pseries/vas.c
-index fbcf311da0ec..1f59d78c77a1 100644
---- a/arch/powerpc/platforms/pseries/vas.c
-+++ b/arch/powerpc/platforms/pseries/vas.c
-@@ -30,6 +30,7 @@ static struct hv_vas_cop_feat_caps hv_cop_caps;
- 
- static struct vas_caps vascaps[VAS_MAX_FEAT_TYPE];
- static DEFINE_MUTEX(vas_pseries_mutex);
-+static bool migration_in_progress;
- 
- static long hcall_return_busy_check(long rc)
- {
-@@ -356,7 +357,10 @@ static struct vas_window *vas_allocate_window(int vas_id, u64 flags,
- 	 * same fault IRQ is not freed by the OS before.
- 	 */
- 	mutex_lock(&vas_pseries_mutex);
--	rc = allocate_setup_window(txwin, (u64 *)&domain[0],
-+	if (migration_in_progress)
-+		rc = -EBUSY;
-+	else
-+		rc = allocate_setup_window(txwin, (u64 *)&domain[0],
- 				   cop_feat_caps->win_type);
- 	mutex_unlock(&vas_pseries_mutex);
- 	if (rc)
-@@ -869,6 +873,98 @@ static struct notifier_block pseries_vas_nb = {
- 	.notifier_call = pseries_vas_notifier,
- };
- 
 +/*
-+ * For LPM, all windows have to be closed on the source partition
-+ * before migration and reopen them on the destination partition
-+ * after migration. So closing windows during suspend and
-+ * reopen them during resume.
++ * If the executed instruction that caused the fault was a paste, then
++ * clear regs CR0[EQ], advance NIP, and return 0. Else return error code.
 + */
-+int vas_migration_handler(int action)
++static int do_fail_paste(void)
 +{
-+	struct vas_cop_feat_caps *caps;
-+	int old_nr_creds, new_nr_creds = 0;
-+	struct vas_caps *vcaps;
-+	int i, rc = 0;
++	struct pt_regs *regs = current->thread.regs;
++	u32 instword;
++
++	if (WARN_ON_ONCE(!regs))
++		return -EINVAL;
++
++	if (WARN_ON_ONCE(!user_mode(regs)))
++		return -EINVAL;
 +
 +	/*
-+	 * NX-GZIP is not enabled. Nothing to do for migration.
++	 * If we couldn't translate the instruction, the driver should
++	 * return success without handling the fault, it will be retried
++	 * or the instruction fetch will fault.
 +	 */
-+	if (!copypaste_feat)
-+		return rc;
++	if (get_user(instword, (u32 __user *)(regs->nip)))
++		return -EAGAIN;
 +
-+	mutex_lock(&vas_pseries_mutex);
++	/*
++	 * Not a paste instruction, driver may fail the fault.
++	 */
++	if ((instword & PPC_INST_PASTE_MASK) != PPC_INST_PASTE)
++		return -ENOENT;
 +
-+	if (action == VAS_SUSPEND)
-+		migration_in_progress = true;
-+	else
-+		migration_in_progress = false;
++	regs->ccr &= ~0xe0000000;	/* Clear CR0[0-2] to fail paste */
++	regs_add_return_ip(regs, 4);	/* Emulate the paste */
 +
-+	for (i = 0; i < VAS_MAX_FEAT_TYPE; i++) {
-+		vcaps = &vascaps[i];
-+		caps = &vcaps->caps;
-+		old_nr_creds = atomic_read(&caps->nr_total_credits);
-+
-+		rc = h_query_vas_capabilities(H_QUERY_VAS_CAPABILITIES,
-+					      vcaps->feat,
-+					      (u64)virt_to_phys(&hv_cop_caps));
-+		if (!rc) {
-+			new_nr_creds = be16_to_cpu(hv_cop_caps.target_lpar_creds);
-+			/*
-+			 * Should not happen. But incase print messages, close
-+			 * all windows in the list during suspend and reopen
-+			 * windows based on new lpar_creds on the destination
-+			 * system.
-+			 */
-+			if (old_nr_creds != new_nr_creds) {
-+				pr_err("Target credits mismatch with the hypervisor\n");
-+				pr_err("state(%d): lpar creds: %d HV lpar creds: %d\n",
-+					action, old_nr_creds, new_nr_creds);
-+				pr_err("Used creds: %d, Active creds: %d\n",
-+					atomic_read(&caps->nr_used_credits),
-+					vcaps->nr_open_windows - vcaps->nr_close_wins);
-+			}
-+		} else {
-+			pr_err("state(%d): Get VAS capabilities failed with %d\n",
-+				action, rc);
-+			/*
-+			 * We can not stop migration with the current lpm
-+			 * implementation. So continue closing all windows in
-+			 * the list (during suspend) and return without
-+			 * opening windows (during resume) if VAS capabilities
-+			 * HCALL failed.
-+			 */
-+			if (action == VAS_RESUME)
-+				goto out;
-+		}
-+
-+		switch (action) {
-+		case VAS_SUSPEND:
-+			rc = reconfig_close_windows(vcaps, vcaps->nr_open_windows,
-+							true);
-+			break;
-+		case VAS_RESUME:
-+			atomic_set(&caps->nr_total_credits, new_nr_creds);
-+			rc = reconfig_open_windows(vcaps, new_nr_creds, true);
-+			break;
-+		default:
-+			/* should not happen */
-+			pr_err("Invalid migration action %d\n", action);
-+			rc = -EINVAL;
-+			goto out;
-+		}
-+
-+		/*
-+		 * Ignore errors during suspend and return for resume.
-+		 */
-+		if (rc && (action == VAS_RESUME))
-+			goto out;
-+	}
-+
-+out:
-+	mutex_unlock(&vas_pseries_mutex);
-+	return rc;
++	return 0;
 +}
 +
- static int __init pseries_vas_init(void)
- {
- 	struct hv_vas_all_caps *hv_caps;
-diff --git a/arch/powerpc/platforms/pseries/vas.h b/arch/powerpc/platforms/pseries/vas.h
-index 4ddb1001a0aa..f7568d8c6ab0 100644
---- a/arch/powerpc/platforms/pseries/vas.h
-+++ b/arch/powerpc/platforms/pseries/vas.h
-@@ -33,6 +33,11 @@
- #define VAS_GZIP_QOS_CAPABILITIES	0x56516F73477A6970
- #define VAS_GZIP_DEFAULT_CAPABILITIES	0x56446566477A6970
- 
-+enum vas_migrate_action {
-+	VAS_SUSPEND,
-+	VAS_RESUME,
-+};
-+
  /*
-  * Co-processor feature - GZIP QoS windows or GZIP default windows
-  */
-@@ -132,4 +137,5 @@ struct pseries_vas_window {
- int sysfs_add_vas_caps(struct vas_cop_feat_caps *caps);
- int vas_reconfig_capabilties(u8 type);
- int __init sysfs_pseries_vas_init(struct vas_all_caps *vas_caps);
-+int vas_migration_handler(int action);
- #endif /* _VAS_H */
+  * This fault handler is invoked when the core generates page fault on
+  * the paste address. Happens if the kernel closes window in hypervisor
+@@ -408,9 +443,27 @@ static vm_fault_t vas_mmap_fault(struct vm_fault *vmf)
+ 	}
+ 	mutex_unlock(&txwin->task_ref.mmap_mutex);
+ 
+-	return VM_FAULT_SIGBUS;
++	/*
++	 * Received this fault due to closing the actual window.
++	 * It can happen during migration or lost credits.
++	 * Since no mapping, return the paste instruction failure
++	 * to the user space.
++	 */
++	ret = do_fail_paste();
++	/*
++	 * The user space can retry several times until success (needed
++	 * for migration) or should fallback to SW compression or
++	 * manage with the existing open windows if available.
++	 * Looking at sysfs interface, it can determine whether these
++	 * failures are coming during migration or core removal:
++	 * nr_used_credits > nr_total_credits when lost credits
++	 */
++	if (!ret || (ret == -EAGAIN))
++		return VM_FAULT_NOPAGE;
+ 
++	return VM_FAULT_SIGBUS;
+ }
++
+ static const struct vm_operations_struct vas_vm_ops = {
+ 	.fault = vas_mmap_fault,
+ };
 -- 
 2.27.0
 
