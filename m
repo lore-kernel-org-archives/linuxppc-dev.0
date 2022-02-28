@@ -4,81 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 127A5C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 21:13:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57E70C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 21:14:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K6tR75TkNz3bl1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Mar 2022 08:13:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K6tRr0nF1z3bxH
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Mar 2022 08:14:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=fTQp+HhE;
-	dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=fTQp+HhE;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=sipsolutions.net header.i=@sipsolutions.net header.a=rsa-sha256 header.s=mail header.b=FQR3bSjV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=hansenpartnership.com (client-ip=2607:fcd0:100:8a00::2;
- helo=bedivere.hansenpartnership.com;
- envelope-from=james.bottomley@hansenpartnership.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=hansenpartnership.com header.i=@hansenpartnership.com
- header.a=rsa-sha256 header.s=20151216 header.b=fTQp+HhE; 
- dkim=pass (1024-bit key) header.d=hansenpartnership.com
- header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216
- header.b=fTQp+HhE; dkim-atps=neutral
-X-Greylist: delayed 1812 seconds by postgrey-1.36 at boromir;
- Tue, 01 Mar 2022 08:13:17 AEDT
-Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
- [IPv6:2607:fcd0:100:8a00::2])
+ smtp.mailfrom=sipsolutions.net (client-ip=2a01:4f8:191:4433::2;
+ helo=sipsolutions.net; envelope-from=johannes@sipsolutions.net;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=sipsolutions.net header.i=@sipsolutions.net
+ header.a=rsa-sha256 header.s=mail header.b=FQR3bSjV; 
+ dkim-atps=neutral
+X-Greylist: delayed 2655 seconds by postgrey-1.36 at boromir;
+ Tue, 01 Mar 2022 08:13:32 AEDT
+Received: from sipsolutions.net (s3.sipsolutions.net
+ [IPv6:2a01:4f8:191:4433::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K6tQP1KjYz2xXZ;
- Tue,  1 Mar 2022 08:13:17 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=hansenpartnership.com; s=20151216; t=1646082795;
- bh=b0jOc0WDOwLaR9eob939Fu/T9iRVE4QNy1gcUuEgORI=;
- h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
- b=fTQp+HhEyDWfdTRw9MD74D4dNoy4lJbDD6ufhn8pOCgDG9LKN5I5E2XfQsXuEnTyE
- o41BjR/wB9Zx796mcVO5HItpPdbUBqFA5gZFvpxw0W0+8SaIBYecaW0t63X4w0ysYd
- Uxmzs2O4chqjQ5mD0m0R9/q9wYnJ2eru8WGs04Zw=
-Received: from localhost (localhost [127.0.0.1])
- by bedivere.hansenpartnership.com (Postfix) with ESMTP id EE6F612811CE;
- Mon, 28 Feb 2022 16:13:15 -0500 (EST)
-Received: from bedivere.hansenpartnership.com ([127.0.0.1])
- by localhost (bedivere.hansenpartnership.com [127.0.0.1]) (amavisd-new,
- port 10024)
- with ESMTP id fdilm1jMyJ2v; Mon, 28 Feb 2022 16:13:15 -0500 (EST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=hansenpartnership.com; s=20151216; t=1646082795;
- bh=b0jOc0WDOwLaR9eob939Fu/T9iRVE4QNy1gcUuEgORI=;
- h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
- b=fTQp+HhEyDWfdTRw9MD74D4dNoy4lJbDD6ufhn8pOCgDG9LKN5I5E2XfQsXuEnTyE
- o41BjR/wB9Zx796mcVO5HItpPdbUBqFA5gZFvpxw0W0+8SaIBYecaW0t63X4w0ysYd
- Uxmzs2O4chqjQ5mD0m0R9/q9wYnJ2eru8WGs04Zw=
-Received: from jarvis.int.hansenpartnership.com (unknown
- [IPv6:2601:5c4:4300:c551::527])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by bedivere.hansenpartnership.com (Postfix) with ESMTPSA id 980CE1280320;
- Mon, 28 Feb 2022 16:13:11 -0500 (EST)
-Message-ID: <ade13f419519350e460e7ef1e64477ec72e828ed.camel@HansenPartnership.com>
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K6tQh3s1Gz3bfb;
+ Tue,  1 Mar 2022 08:13:32 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=sipsolutions.net; s=mail; h=Content-Transfer-Encoding:MIME-Version:
+ Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
+ :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-To:
+ Resent-Cc:Resent-Message-ID; bh=uTSgVBk5w89AJnv82I9bqMWvwbVIn7Apzl6uMNeIbWY=; 
+ t=1646082812; x=1647292412; b=FQR3bSjVEFxrg2wuUtZXdc9VyNLbAt0FBXyNHdb8jr9DqUe
+ xw5RqatfQ/+hgwRd9WsD2T/tt97KovcRxlgJkm2JCuKdHtwAJTXPULe/z3zLhUgWYQrHlCVdMY3ri
+ UwiOCezgIrRv5DSYl/0JJ1VcIn72dnei/OA3EewLI0LM4aHNKHUJwxl0kXvmtIBpn58S0zfidkjsD
+ kl1j9SRHD3phckTuSIVuDsKm+t0TExx9n2o3I5sTOEbtRB1YgqpGImTkAshIIxn9YhVuufSvEXQwJ
+ kN6Nxkt7/zfUJ8WpZ/AbGUCDWwMhHEsR6tKbBhfcvB8UDWa+UCtFThQJA65it43g==;
+Received: by sipsolutions.net with esmtpsa
+ (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+ (Exim 4.95) (envelope-from <johannes@sipsolutions.net>)
+ id 1nOmc1-00716Q-Dh; Mon, 28 Feb 2022 21:27:17 +0100
+Message-ID: <e3bb7d0632f8ef60f18c19976d57330e1ef00584.camel@sipsolutions.net>
 Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop
  body as a ptr
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Christian =?ISO-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>, Linus
- Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 28 Feb 2022 16:13:09 -0500
-In-Reply-To: <0b65541a-3da7-dc35-690a-0ada75b0adae@amd.com>
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Matthew Wilcox <willy@infradead.org>, Linus Torvalds
+ <torvalds@linux-foundation.org>
+Date: Mon, 28 Feb 2022 21:27:13 +0100
+In-Reply-To: <Yh0tl3Lni4weIMkl@casper.infradead.org>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
  <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
- <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
- <0b65541a-3da7-dc35-690a-0ada75b0adae@amd.com>
+ <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
+ <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
+ <Yh0tl3Lni4weIMkl@casper.infradead.org>
 Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.34.4 
+User-Agent: Evolution 3.42.4 (3.42.4-1.fc35) 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-malware-bazaar: not-scanned
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -124,62 +108,33 @@ Cc: linux-wireless <linux-wireless@vger.kernel.org>,
  Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
  linux-fsdevel <linux-fsdevel@vger.kernel.org>,
  linux-mediatek@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Mike Rapoport <rppt@kernel.org>
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Christian =?ISO-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+ Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2022-02-28 at 21:56 +0100, Christian König wrote:
-> 
-> Am 28.02.22 um 21:42 schrieb James Bottomley:
-> > On Mon, 2022-02-28 at 21:07 +0100, Christian König wrote:
-> > > Am 28.02.22 um 20:56 schrieb Linus Torvalds:
-> > > > On Mon, Feb 28, 2022 at 4:19 AM Christian König
-> > > > <christian.koenig@amd.com> wrote:
-> > > > [SNIP]
-> > > > Anybody have any ideas?
-> > > I think we should look at the use cases why code is touching
-> > > (pos)
-> > > after the loop.
-> > > 
-> > > Just from skimming over the patches to change this and experience
-> > > with the drivers/subsystems I help to maintain I think the
-> > > primary pattern looks something like this:
-> > > 
-> > > list_for_each_entry(entry, head, member) {
-> > >       if (some_condition_checking(entry))
-> > >           break;
-> > > }
-> > > do_something_with(entry);
+On Mon, 2022-02-28 at 20:16 +0000, Matthew Wilcox wrote:
+> On Mon, Feb 28, 2022 at 12:10:24PM -0800, Linus Torvalds wrote:
+> > We can do
 > > 
-> > Actually, we usually have a check to see if the loop found
-> > anything, but in that case it should something like
+> >         typeof(pos) pos
 > > 
-> > if (list_entry_is_head(entry, head, member)) {
-> >      return with error;
-> > }
-> > do_somethin_with(entry);
+> > in the 'for ()' loop, and never use __iter at all.
 > > 
-> > Suffice?  The list_entry_is_head() macro is designed to cope with
-> > the bogus entry on head problem.
+> > That means that inside the for-loop, we use a _different_ 'pos' than outside.
 > 
-> That will work and is also what people already do.
+> Then we can never use -Wshadow ;-(  I'd love to be able to turn it on;
+> it catches real bugs.
 > 
-> The key problem is that we let people do the same thing over and
-> over again with slightly different implementations.
-> 
-> Out in the wild I've seen at least using a separate variable, using
-> a bool to indicate that something was found and just assuming that
-> the list has an entry.
-> 
-> The last case is bogus and basically what can break badly.
 
-Yes, I understand that.  I'm saying we should replace that bogus checks
-of entry->something against some_value loop termination condition with
-the list_entry_is_head() macro.  That should be a one line and fairly
-mechanical change rather than the explosion of code changes we seem to
-have in the patch series.
+I was just going to say the same thing...
 
-James
+If we're willing to change the API for the macro, we could do
 
+  list_for_each_entry(type, pos, head, member)
 
+and then actually take advantage of -Wshadow?
+
+johannes
