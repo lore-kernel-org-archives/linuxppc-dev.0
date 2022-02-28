@@ -4,62 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42A8CC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 11:01:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AB00C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 11:20:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K6crq0blqz3cdX
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 22:01:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K6dGn709Gz3bwr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 22:20:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=QSz7tR2z;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=C57riiYn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk
- (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk;
- envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217;
+ helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256
- header.s=pandora-2019 header.b=QSz7tR2z; 
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
+ header.a=rsa-sha256 header.s=korg header.b=C57riiYn; 
  dkim-atps=neutral
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
- [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K6cm82t4Tz3g1j
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Feb 2022 21:57:42 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=DM3iere1mz4IiAwYCVyOTU3E+xuCTYR85Md0nHyvzDc=; b=QSz7tR2zlZoaBSWZGCaio7Oilq
- VwpNbxcqDPOH5Kt8OjbQhKwhks/heDAW4JFpmDfExgUTPmIf+TJ10GIXRaXS+m7eIwuh+Zrmg7ard
- JKb4cBAyp9suGksD5aOyDCbwX+GG/5CmBp/gJRuLB3YTEup0rKS6dKesQIWN1THmbCdg+fDs9npwW
- 3G62kcQtbbdR93/Yp8xWQeqnioTzargs6Wc3dgV6A9bObOsm+8HNJnnVTRueD5kTaHC4WKRDrKhk3
- sYEtwY/WuFW1YR5ryQKZcakT/DA1fRo7nFdF8mglYtoE5o2X2pzfPHjvtIcfU/vD9UYjeVFBIOfpb
- OWrBs5aQ==;
-Received: from shell.armlinux.org.uk
- ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:57554)
- by pandora.armlinux.org.uk with esmtpsa (TLS1.3) tls
- TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.94.2)
- (envelope-from <linux@armlinux.org.uk>)
- id 1nOdiU-00087R-Ua; Mon, 28 Feb 2022 10:57:22 +0000
-Received: from linux by shell.armlinux.org.uk with local (Exim 4.94.2)
- (envelope-from <linux@shell.armlinux.org.uk>)
- id 1nOdiQ-00064t-9z; Mon, 28 Feb 2022 10:57:18 +0000
-Date: Mon, 28 Feb 2022 10:57:18 +0000
-From: "Russell King (Oracle)" <linux@armlinux.org.uk>
-To: Anshuman Khandual <anshuman.khandual@arm.com>
-Subject: Re: [PATCH V3 09/30] arm/mm: Enable ARCH_HAS_VM_GET_PAGE_PROT
-Message-ID: <Yhyqjo/4bozJB6j5@shell.armlinux.org.uk>
-References: <1646045273-9343-1-git-send-email-anshuman.khandual@arm.com>
- <1646045273-9343-10-git-send-email-anshuman.khandual@arm.com>
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K6dG42gtBz2yJw;
+ Mon, 28 Feb 2022 22:20:11 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id DE71F60F9E;
+ Mon, 28 Feb 2022 11:20:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 577DAC340E7;
+ Mon, 28 Feb 2022 11:20:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+ s=korg; t=1646047208;
+ bh=TZYI8CoLqZwdjhCp4FIqkyAKtFSpIqtbXR7Aczi5lHQ=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=C57riiYnEjUdxOZhn04GGyA8PIVDUJ6DJKuCKjTYwuUmTfW6bVKDrs724kyxSBaKx
+ RgI2btjN0kChcFl20e7HpTgxlexOr2YrBREdqqTBvDVt/Whdw/5z0V77N814zObmo3
+ /EeMG4N6szzw6EaZ5Y2WBm3/aL7Ea4aeZYOpa8Fs=
+Date: Mon, 28 Feb 2022 12:20:03 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Jakob Koschel <jakobkoschel@gmail.com>
+Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop body
+ as a ptr
+Message-ID: <Yhyv42ONIxTj04mg@kroah.com>
+References: <20220228110822.491923-1-jakobkoschel@gmail.com>
+ <20220228110822.491923-3-jakobkoschel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1646045273-9343-10-git-send-email-anshuman.khandual@arm.com>
+In-Reply-To: <20220228110822.491923-3-jakobkoschel@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,36 +62,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org,
- linux-csky@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
- geert@linux-m68k.org, linux-snps-arc@lists.infradead.org,
- linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
- linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, linux-aspeed@lists.ozlabs.org,
+ "Gustavo A. R. Silva" <gustavo@embeddedor.com>, linux-iio@vger.kernel.org,
+ nouveau@lists.freedesktop.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ dri-devel@lists.freedesktop.org, Cristiano Giuffrida <c.giuffrida@vu.nl>,
+ amd-gfx@lists.freedesktop.org, samba-technical@lists.samba.org,
+ linux1394-devel@lists.sourceforge.net, drbd-dev@lists.linbit.com,
+ linux-arch <linux-arch@vger.kernel.org>, linux-cifs@vger.kernel.org,
+ kvm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org,
+ linux-staging@lists.linux.dev, "Bos, H.J." <h.j.bos@vu.nl>,
+ Jason Gunthorpe <jgg@ziepe.ca>, intel-wired-lan@lists.osuosl.org,
+ kgdb-bugreport@lists.sourceforge.net, bcm-kernel-feedback-list@broadcom.com,
+ Dan Carpenter <dan.carpenter@oracle.com>, linux-media@vger.kernel.org,
+ Kees Cook <keescook@chromium.org>, Arnd Bergman <arnd@arndb.de>,
+ linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+ Brian Johannesmeyer <bjohannesmeyer@gmail.com>,
+ Nathan Chancellor <nathan@kernel.org>, linux-fsdevel@vger.kernel.org,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ v9fs-developer@lists.sourceforge.net, linux-tegra@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ linux-arm-kernel@lists.infradead.org, linux-sgx@vger.kernel.org,
+ linux-block@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+ linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
+ tipc-discussion@lists.sourceforge.net, linux-crypto@vger.kernel.org,
+ netdev@vger.kernel.org, dmaengine@vger.kernel.org,
+ linux-mediatek@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 28, 2022 at 04:17:32PM +0530, Anshuman Khandual wrote:
-> This defines and exports a platform specific custom vm_get_page_prot() via
-> subscribing ARCH_HAS_VM_GET_PAGE_PROT. Subsequently all __SXXX and __PXXX
-> macros can be dropped which are no longer needed.
+On Mon, Feb 28, 2022 at 12:08:18PM +0100, Jakob Koschel wrote:
+> If the list does not contain the expected element, the value of
+> list_for_each_entry() iterator will not point to a valid structure.
+> To avoid type confusion in such case, the list iterator
+> scope will be limited to list_for_each_entry() loop.
+> 
+> In preparation to limiting scope of a list iterator to the list traversal
+> loop, use a dedicated pointer to point to the found element.
+> Determining if an element was found is then simply checking if
+> the pointer is != NULL.
+> 
+> Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
+> ---
+>  arch/x86/kernel/cpu/sgx/encl.c       |  6 +++--
+>  drivers/scsi/scsi_transport_sas.c    | 17 ++++++++-----
+>  drivers/thermal/thermal_core.c       | 38 ++++++++++++++++++----------
+>  drivers/usb/gadget/configfs.c        | 22 ++++++++++------
+>  drivers/usb/gadget/udc/max3420_udc.c | 11 +++++---
+>  drivers/usb/gadget/udc/tegra-xudc.c  | 11 +++++---
+>  drivers/usb/mtu3/mtu3_gadget.c       | 11 +++++---
+>  drivers/usb/musb/musb_gadget.c       | 11 +++++---
+>  drivers/vfio/mdev/mdev_core.c        | 11 +++++---
+>  9 files changed, 88 insertions(+), 50 deletions(-)
 
-What I would really like to know is why having to run _code_ to work out
-what the page protections need to be is better than looking it up in a
-table.
+The drivers/usb/ portion of this patch should be in patch 1/X, right?
 
-Not only is this more expensive in terms of CPU cycles, it also brings
-additional code size with it.
+Also, you will have to split these up per-subsystem so that the
+different subsystem maintainers can take these in their trees.
 
-I'm struggling to see what the benefit is.
+thanks,
 
--- 
-RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
+greg k-h
