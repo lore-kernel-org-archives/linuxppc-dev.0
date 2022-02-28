@@ -4,78 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61C69C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 20:24:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 254EEC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 20:28:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K6sKh6G4qz3bl1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Mar 2022 07:24:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K6sQw0Pvlz3bpY
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Mar 2022 07:28:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=SFiiDask;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=Y+K+LAch;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::230;
- helo=mail-lj1-x230.google.com; envelope-from=torvalds@linuxfoundation.org;
+ smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::533;
+ helo=mail-ed1-x533.google.com; envelope-from=torvalds@linuxfoundation.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.a=rsa-sha256 header.s=google header.b=SFiiDask; 
+ header.a=rsa-sha256 header.s=google header.b=Y+K+LAch; 
  dkim-atps=neutral
-Received: from mail-lj1-x230.google.com (mail-lj1-x230.google.com
- [IPv6:2a00:1450:4864:20::230])
+Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com
+ [IPv6:2a00:1450:4864:20::533])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K6sJw6wmBz3bTK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2022 07:23:26 +1100 (AEDT)
-Received: by mail-lj1-x230.google.com with SMTP id p20so19100169ljo.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Feb 2022 12:23:27 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K6sQ753ywz3bT6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2022 07:27:59 +1100 (AEDT)
+Received: by mail-ed1-x533.google.com with SMTP id bq11so19271185edb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Feb 2022 12:28:00 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=linux-foundation.org; s=google;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=Rhevy6fb5H45VxDHjLDNCxtPhjJ0u7uFLdfSx9pxlIs=;
- b=SFiiDaskyFzzbW4jCoUqiJYglpNWscp1lwtLHE93w8dRI3h8eXZkrLgebAKqQfA9oZ
- haXikdZXvfEB810zRURGwChdn/CvMC8Q7Pab3hpE0iVI/nf3FVJvcryQMcC1uZhcoZUU
- P6IZH9h2w6s9V+B5fc5q6pR5l/tJkcQrm5JJ0=
+ :cc; bh=uod9R4vPcpqIjzHofeC96qXcIXUlGW+U5alvKq7K0ZA=;
+ b=Y+K+LAchMzIcesbCiqrzhisJgvbUIKYh3oFG/AlZJTKul1K9rRfHylHsN/EgM8hdwz
+ P3hABFpC0Wcw+/0V4cKR5X0P787Wy9QwMeL5ORY50P9+oNZqmMp6NkFq4yV6NAIkP79C
+ 0bvk8ZnwfFSPqzKfD7Qqea+fs2YLRTaNcLanw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=Rhevy6fb5H45VxDHjLDNCxtPhjJ0u7uFLdfSx9pxlIs=;
- b=0N3iPX1sjdkKcXPgagYpZ2D34i7rFfPu89BfoJTQIj2xKuQOpdv73lLSnjkhdimQz/
- nvECM+NzLkZDUDXo2Ut+tzLaq3ScZmtTd1x62sJtA6uJsd0vOcQ/kqOpOGM/0NVDvhwO
- josAYtFPsejKBX3LFjp3TfBxBwazb2VWk5jinDM1j+RypEDfF2AsOQcpQelpMX5ogmyG
- uL+oS9rj+rSzLck1Isfmv4WWwOVK4RozkrctHNyOV841VcRR/j4RI7TQ+LGbqvRBYKLz
- lygjtCy6t7H/5NvAoX/PsUqgU4kGnMlElp+LjdYcq4IVUfFcyGu9KK1uyIkLXa18pkbF
- mHlQ==
-X-Gm-Message-State: AOAM533qlc+2HeUdJMo2ElEWus1HVcl/J8vBQLedCe5+xAI39/Whk63I
- gXIDjYaLDCS7+M2ld5OhgLnXW8vXNQlk6HVA6lM=
-X-Google-Smtp-Source: ABdhPJxaVZCk1kGuDiTXwp/M2EuFsMm4xuws3C/b7zHXSFs9nPYyCJiPAodQi0ZzkLX/6z5VjvgAFA==
-X-Received: by 2002:a2e:a276:0:b0:244:d4a5:2def with SMTP id
- k22-20020a2ea276000000b00244d4a52defmr14873713ljm.141.1646079803090; 
- Mon, 28 Feb 2022 12:23:23 -0800 (PST)
-Received: from mail-lj1-f175.google.com (mail-lj1-f175.google.com.
- [209.85.208.175]) by smtp.gmail.com with ESMTPSA id
- bu20-20020a056512169400b0043eaf37af75sm1118948lfb.199.2022.02.28.12.23.22
+ bh=uod9R4vPcpqIjzHofeC96qXcIXUlGW+U5alvKq7K0ZA=;
+ b=KgzoK29JSTaTlDd9hle8Dyutd5ir7ZkSVxU5JF3Xj6qdYE084+7kslWOKsdZfV8jUe
+ csAVT7eI0U8Wg0eWlJWiwZJZ4s7bEY6TczMKRyFXpaDuhhGetnNHRKFUlU98MkbVtJQh
+ RNB2lQBMFBSv6e36pxeCQs/vwa4isfmF1WwgeKNjoQSSf4rbKRPdOcZouNuPTMYcRypO
+ J8Uppq34yZ8zK84zVA4yRh6F1FLb9lrUVrClJ4g0pTnRc6O0m2zuqQxCCpDVDpMirXIq
+ xqta8Q5Dtnt1wng+qUru4sz3ZAV3gkwtzjAcRy6Fu3XljDxihFToIidIR5VzWBU1vBwi
+ uHJw==
+X-Gm-Message-State: AOAM531qjKvBJj5f5PrC8ToSjN78/aeeLNzAcgpGtvecNEWy0f4taPg3
+ GG1tArQfFF8GHyxpUMDy2noqRmD5/k4d07kHYJg=
+X-Google-Smtp-Source: ABdhPJx4vAKpgcEXAu3t5hX/rU0KEwATqxcZJR+FIBLpynncF1qpfudmhm9wsU1el0oViXrBAVZEwQ==
+X-Received: by 2002:a05:6402:4414:b0:408:4dc0:3ee9 with SMTP id
+ y20-20020a056402441400b004084dc03ee9mr21238400eda.203.1646080076022; 
+ Mon, 28 Feb 2022 12:27:56 -0800 (PST)
+Received: from mail-ej1-f53.google.com (mail-ej1-f53.google.com.
+ [209.85.218.53]) by smtp.gmail.com with ESMTPSA id
+ l2-20020a1709060cc200b006d3d91e88c7sm4634453ejh.214.2022.02.28.12.27.55
  for <linuxppc-dev@lists.ozlabs.org>
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 28 Feb 2022 12:23:22 -0800 (PST)
-Received: by mail-lj1-f175.google.com with SMTP id v22so19052410ljh.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Feb 2022 12:23:22 -0800 (PST)
-X-Received: by 2002:a2e:924d:0:b0:246:370c:5618 with SMTP id
- v13-20020a2e924d000000b00246370c5618mr15110351ljg.358.1646079300900; Mon, 28
- Feb 2022 12:15:00 -0800 (PST)
+ Mon, 28 Feb 2022 12:27:55 -0800 (PST)
+Received: by mail-ej1-f53.google.com with SMTP id p14so27169628ejf.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Feb 2022 12:27:55 -0800 (PST)
+X-Received: by 2002:ac2:44a4:0:b0:445:8fc5:a12a with SMTP id
+ c4-20020ac244a4000000b004458fc5a12amr7653619lfm.27.1646078630855; Mon, 28 Feb
+ 2022 12:03:50 -0800 (PST)
 MIME-Version: 1.0
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
  <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
- <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
-In-Reply-To: <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
+In-Reply-To: <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
 From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 28 Feb 2022 12:14:44 -0800
-X-Gmail-Original-Message-ID: <CAHk-=wj27SZQ3kPTesBzkiGhe-mA3gOQqr_adt_bMFzmg1VNaA@mail.gmail.com>
-Message-ID: <CAHk-=wj27SZQ3kPTesBzkiGhe-mA3gOQqr_adt_bMFzmg1VNaA@mail.gmail.com>
+Date: Mon, 28 Feb 2022 12:03:34 -0800
+X-Gmail-Original-Message-ID: <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
+Message-ID: <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
 Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop body
  as a ptr
 To: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
@@ -130,31 +128,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 28, 2022 at 12:10 PM Linus Torvalds
+On Mon, Feb 28, 2022 at 11:56 AM Linus Torvalds
 <torvalds@linux-foundation.org> wrote:
 >
-> We can do
->
->         typeof(pos) pos
->
-> in the 'for ()' loop, and never use __iter at all.
->
-> That means that inside the for-loop, we use a _different_ 'pos' than outside.
+> I do wish we could actually poison the 'pos' value after the loop
+> somehow - but clearly the "might be uninitialized" I was hoping for
+> isn't the way to do it.
 
-The thing that makes me throw up in my mouth a bit is that in that
+Side note: we do need *some* way to do it.
 
-        typeof(pos) pos
+Because if we make that change, and only set it to another pointer
+when not the head, then we very much change the semantics of
+"list_for_each_head()". The "list was empty" case would now exit with
+'pos' not set at all (or set to NULL if we add that). Or it would be
+set to the last entry.
 
-the first 'pos' (that we use for just the typeof) is that outer-level
-'pos', IOW it's a *different* 'pos' than the second 'pos' in that same
-declaration that declares the inner level shadowing new 'pos'
-variable.
+And regardless, that means that all the
 
-If I was a compiler person, I would say "Linus, that thing is too ugly
-to live", and I would hate it. I'm just hoping that even compiler
-people say "that's *so* ugly it's almost beautiful".
+        if (pos == head)
 
-Because it does seem to work. It's not pretty, but hey, it's not like
-our headers are really ever be winning any beauty contests...
+kinds of checks after the loop would be fundamentally broken.
 
-                Linus
+Darn. I really hoped for (and naively expected) that we could actually
+have the compiler warn about the use-after-loop case. That whole
+"compiler will now complain about bad use" was integral to my clever
+plan to use the C99 feature of declaring the iterator inside the loop.
+
+But my "clever plan" was apparently some ACME-level Wile E. Coyote sh*t.
+
+Darn.
+
+                   Linus
