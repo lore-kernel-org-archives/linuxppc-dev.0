@@ -4,82 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61C67C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 07:43:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A201C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 07:44:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K6XSQ2gwkz3bZY
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 18:43:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K6XTh2PJtz3bsB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 18:44:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Un2fwZwN;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=USH/acjs;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Un2fwZwN; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=USH/acjs; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K6XRc2zfLz3bqN
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Feb 2022 18:43:08 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 21S7C8YJ004918; 
- Mon, 28 Feb 2022 07:43:05 GMT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K6XSt6tHxz2x9D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Feb 2022 18:44:14 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 21S5cdFD005924; 
+ Mon, 28 Feb 2022 07:44:10 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=message-id : subject :
  from : to : cc : date : in-reply-to : references : content-type :
  mime-version : content-transfer-encoding; s=pp1;
- bh=s5nIqt/FrztVosDAtO3vRjv3r1XPNlVdfArasEjk2Qg=;
- b=Un2fwZwN6GH3bK7eOPg5tyZb79F+t3ZeKmbk6fjNgerB37xH/mFTOTuJeC5LZYUFABKT
- J2PpF9R1Fzr6J9BzBW6oZIVpwRn9iSTOoB7dyaoYwnmAawcuKC5zgmRoT2s0iMm0u83i
- +7nb6yfNtCRjZKV8qJc6WX5YYUNd27JtJLLitIZty6aco9LJVpHgw2bQadsJ9eVNOq9R
- VFNrFD1g5Nx3qm6kicYTggaq7Rxr9t/DhYpJSdQQgaxWnKMwQxp9z6Q0Bo3W7mcgdTul
- tETXcEDhsxyinAOcc0zB//tZ956ifguCyKCPZIhcyeP5gAcwRlLgucQmrOUDK2lPV9ze CQ== 
+ bh=0wXITXxM9heQOkmaqFTLh+PFqj6U9FOTT+e0vupDXw8=;
+ b=USH/acjsX+OAAwLjbz2yKfe9xtWRhs2KPhw2yKpYGNEVjV85dM6Bn3tj8+/AlCVinV7u
+ LDh7v85gyuD93Zr/1rx7YKqlyqy00n5g9BaJ97EbRhNff/LZy5YpuMkZYQvC5g3QZPdb
+ qWh+dzvd2h/89a0Jh1lIS+addQiZJrvoq+35lLkdlrSr1HRJ2GEtgS0KOrwS/Q50JpX5
+ B/ONq3n8gc3FTBrVERhTSt5ajveSSNsToIwa1YtgVmzP7YE61r0aVbSh6sp8A0Dcb2KW
+ RchzPP6oAHIdYEZ7URL4wniMI2YPy+u33Lr/wu/aYkdZ6tyIuvMTu/HFCRgGFUcK0xvo fA== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3egsssrjqd-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3egnvjwvt6-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 28 Feb 2022 07:43:04 +0000
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 21S7PG6N014624;
- Mon, 28 Feb 2022 07:43:04 GMT
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3egsssrjq2-1
+ Mon, 28 Feb 2022 07:44:10 +0000
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 21S7Vu0G000930;
+ Mon, 28 Feb 2022 07:44:09 GMT
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3egnvjwvsx-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 28 Feb 2022 07:43:04 +0000
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 21S7bGNB002390;
- Mon, 28 Feb 2022 07:43:03 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma03wdc.us.ibm.com with ESMTP id 3efbu9hyc2-1
+ Mon, 28 Feb 2022 07:44:09 +0000
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 21S7bINs006185;
+ Mon, 28 Feb 2022 07:44:09 GMT
+Received: from b03cxnp07027.gho.boulder.ibm.com
+ (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
+ by ppma03dal.us.ibm.com with ESMTP id 3egfsrn5w6-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 28 Feb 2022 07:43:03 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 21S7gvEZ35848504
+ Mon, 28 Feb 2022 07:44:09 +0000
+Received: from b03ledav002.gho.boulder.ibm.com
+ (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+ by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 21S7i6HO20119954
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 28 Feb 2022 07:42:57 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4A4D7BE04F;
- Mon, 28 Feb 2022 07:42:57 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 345A7BE053;
- Mon, 28 Feb 2022 07:42:56 +0000 (GMT)
+ Mon, 28 Feb 2022 07:44:07 GMT
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D9D9C136055;
+ Mon, 28 Feb 2022 07:44:06 +0000 (GMT)
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E408D136053;
+ Mon, 28 Feb 2022 07:44:05 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.160.161.44])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 28 Feb 2022 07:42:56 +0000 (GMT)
-Message-ID: <ec5647aaa702690a2b9da84d22e970e154d5167b.camel@linux.ibm.com>
-Subject: [PATCH v5 6/9] powerpc/pseries/vas: Close windows with DLPAR core
- removal
+ by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon, 28 Feb 2022 07:44:05 +0000 (GMT)
+Message-ID: <809b32b0f38936c7f7ac576a4a8c46d06882e299.camel@linux.ibm.com>
+Subject: [PATCH v5 8/9] powerpc/pseries/vas: sysfs interface to export
+ capabilities
 From: Haren Myneni <haren@linux.ibm.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
  nathanl@linux.ibm.com
-Date: Sun, 27 Feb 2022 23:42:53 -0800
+Date: Sun, 27 Feb 2022 23:44:03 -0800
 In-Reply-To: <ccd9c0f85005c56b4d011d5c2384444ae71bda69.camel@linux.ibm.com>
 References: <ccd9c0f85005c56b4d011d5c2384444ae71bda69.camel@linux.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -87,16 +87,16 @@ User-Agent: Evolution 3.36.5 (3.36.5-2.fc32)
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: SuEMyxfcML6oUMeNNkjHkZnsk9kRuDpF
-X-Proofpoint-ORIG-GUID: TQYdxN-tyFR4umMwBl16GA-wGCDzh0op
+X-Proofpoint-GUID: ljJgMYnl5KR-hHZiAjaRV8KC0tu9gvDl
+X-Proofpoint-ORIG-GUID: 7vN7LrGVjbAksGFo_i0U-AM-sQKaBtbl
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.64.514
  definitions=2022-02-28_02,2022-02-26_01,2022-02-23_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- spamscore=0 mlxscore=0 lowpriorityscore=0 suspectscore=0 adultscore=0
- malwarescore=0 bulkscore=0 mlxlogscore=999 phishscore=0 clxscore=1015
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ adultscore=0 spamscore=0
+ lowpriorityscore=0 malwarescore=0 bulkscore=0 impostorscore=0
+ suspectscore=0 mlxlogscore=999 mlxscore=0 priorityscore=1501 clxscore=1015
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2201110000 definitions=main-2202280043
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -114,313 +114,323 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
-The hypervisor assigns vas credits (windows) for each LPAR based
-on the number of cores configured in that system. The OS is
-expected to release credits when cores are removed, and may
-allocate more when cores are added. So there is a possibility of
-using excessive credits (windows) in the LPAR and the hypervisor
-expects the system to close the excessive windows so that NX load
-can be equally distributed across all LPARs in the system.
+The hypervisor provides the available VAS GZIP capabilities such
+as default or QoS window type and the target available credits in
+each type. This patch creates sysfs entries and exports the target,
+used and the available credits for each feature.
 
-When the OS closes the excessive windows in the hypervisor,
-it sets the window status inactive and invalidates window
-virtual address mapping. The user space receives paste instruction
-failure if any NX requests are issued on the inactive window.
-Then the user space can use with the available open windows or
-retry NX requests until this window active again.
+This interface can be used by the user space to determine the credits
+usage or to set the target credits in the case of QoS type (for DLPAR).
 
-This patch also adds the notifier for core removal/add to close
-windows in the hypervisor if the system lost credits (core
-removal) and reopen windows in the hypervisor when the previously
-lost credits are available.
+/sys/devices/vas/vas0/gzip/default_capabilities (default GZIP capabilities)
+	nr_total_credits /* Total credits available. Can be
+			 /* changed with DLPAR operation */
+	nr_used_credits  /* Used credits */
+
+/sys/devices/vas/vas0/gzip/qos_capabilities (QoS GZIP capabilities)
+	nr_total_credits
+	nr_used_credits
 
 Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/vas.h       |   2 +
- arch/powerpc/platforms/pseries/vas.c | 207 +++++++++++++++++++++++++--
- arch/powerpc/platforms/pseries/vas.h |   3 +
- 3 files changed, 204 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/pseries/Makefile    |   2 +-
+ arch/powerpc/platforms/pseries/vas-sysfs.c | 226 +++++++++++++++++++++
+ arch/powerpc/platforms/pseries/vas.c       |   6 +
+ arch/powerpc/platforms/pseries/vas.h       |   6 +
+ 4 files changed, 239 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/platforms/pseries/vas-sysfs.c
 
-diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-index 27251af18c65..6baf7b9ffed4 100644
---- a/arch/powerpc/include/asm/vas.h
-+++ b/arch/powerpc/include/asm/vas.h
-@@ -34,6 +34,8 @@
-  */
- #define VAS_WIN_ACTIVE		0x0	/* Used in platform independent */
- 					/* vas mmap() */
-+/* Window is closed in the hypervisor due to lost credit */
-+#define VAS_WIN_NO_CRED_CLOSE	0x00000001
+diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
+index ee60b59024b4..29b522d2c755 100644
+--- a/arch/powerpc/platforms/pseries/Makefile
++++ b/arch/powerpc/platforms/pseries/Makefile
+@@ -29,6 +29,6 @@ obj-$(CONFIG_PPC_SVM)		+= svm.o
+ obj-$(CONFIG_FA_DUMP)		+= rtas-fadump.o
  
- /*
-  * Get/Set bit fields
-diff --git a/arch/powerpc/platforms/pseries/vas.c b/arch/powerpc/platforms/pseries/vas.c
-index 1035446f985b..a297720bcdae 100644
---- a/arch/powerpc/platforms/pseries/vas.c
-+++ b/arch/powerpc/platforms/pseries/vas.c
-@@ -370,13 +370,28 @@ static struct vas_window *vas_allocate_window(int vas_id, u64 flags,
- 	if (rc)
- 		goto out_free;
+ obj-$(CONFIG_SUSPEND)		+= suspend.o
+-obj-$(CONFIG_PPC_VAS)		+= vas.o
++obj-$(CONFIG_PPC_VAS)		+= vas.o vas-sysfs.o
  
--	vas_user_win_add_mm_context(&txwin->vas_win.task_ref);
- 	txwin->win_type = cop_feat_caps->win_type;
- 	mutex_lock(&vas_pseries_mutex);
--	list_add(&txwin->win_list, &caps->list);
-+	/*
-+	 * Possible to lose the acquired credit with DLPAR core
-+	 * removal after the window is opened. So if there are any
-+	 * closed windows (means with lost credits), do not give new
-+	 * window to user space. New windows will be opened only
-+	 * after the existing windows are reopened when credits are
-+	 * available.
-+	 */
-+	if (!caps->nr_close_wins) {
-+		list_add(&txwin->win_list, &caps->list);
-+		caps->nr_open_windows++;
-+		mutex_unlock(&vas_pseries_mutex);
-+		vas_user_win_add_mm_context(&txwin->vas_win.task_ref);
-+		return &txwin->vas_win;
-+	}
- 	mutex_unlock(&vas_pseries_mutex);
- 
--	return &txwin->vas_win;
-+	put_vas_user_win_ref(&txwin->vas_win.task_ref);
-+	rc = -EBUSY;
-+	pr_err("No credit is available to allocate window\n");
- 
- out_free:
- 	/*
-@@ -439,14 +454,24 @@ static int vas_deallocate_window(struct vas_window *vwin)
- 
- 	caps = &vascaps[win->win_type].caps;
- 	mutex_lock(&vas_pseries_mutex);
--	rc = deallocate_free_window(win);
--	if (rc) {
--		mutex_unlock(&vas_pseries_mutex);
--		return rc;
--	}
-+	/*
-+	 * VAS window is already closed in the hypervisor when
-+	 * lost the credit. So just remove the entry from
-+	 * the list, remove task references and free vas_window
-+	 * struct.
-+	 */
-+	if (win->vas_win.status & VAS_WIN_NO_CRED_CLOSE) {
-+		rc = deallocate_free_window(win);
-+		if (rc) {
-+			mutex_unlock(&vas_pseries_mutex);
-+			return rc;
-+		}
-+	} else
-+		vascaps[win->win_type].nr_close_wins--;
- 
- 	list_del(&win->win_list);
- 	atomic_dec(&caps->nr_used_credits);
-+	vascaps[win->win_type].nr_open_windows--;
- 	mutex_unlock(&vas_pseries_mutex);
- 
- 	put_vas_user_win_ref(&vwin->task_ref);
-@@ -501,6 +526,7 @@ static int __init get_vas_capabilities(u8 feat, enum vas_cop_feat_type type,
- 	memset(vcaps, 0, sizeof(*vcaps));
- 	INIT_LIST_HEAD(&vcaps->list);
- 
-+	vcaps->feat = feat;
- 	caps = &vcaps->caps;
- 
- 	rc = h_query_vas_capabilities(H_QUERY_VAS_CAPABILITIES, feat,
-@@ -539,6 +565,168 @@ static int __init get_vas_capabilities(u8 feat, enum vas_cop_feat_type type,
- 	return 0;
- }
- 
+ obj-$(CONFIG_ARCH_HAS_CC_PLATFORM)	+= cc_platform.o
+diff --git a/arch/powerpc/platforms/pseries/vas-sysfs.c b/arch/powerpc/platforms/pseries/vas-sysfs.c
+new file mode 100644
+index 000000000000..e24d3edb3021
+--- /dev/null
++++ b/arch/powerpc/platforms/pseries/vas-sysfs.c
+@@ -0,0 +1,226 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
-+ * The hypervisor reduces the available credits if the LPAR lost core. It
-+ * means the excessive windows should not be active and the user space
-+ * should not be using these windows to send compression requests to NX.
-+ * So the kernel closes the excessive windows and unmap the paste address
-+ * such that the user space receives paste instruction failure. Then up to
-+ * the user space to fall back to SW compression and manage with the
-+ * existing windows.
++ * Copyright 2022-23 IBM Corp.
 + */
-+static int reconfig_close_windows(struct vas_caps *vcap, int excess_creds)
++
++#define pr_fmt(fmt) "vas: " fmt
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/miscdevice.h>
++#include <linux/kobject.h>
++#include <linux/slab.h>
++#include <linux/mm.h>
++
++#include "vas.h"
++
++#ifdef CONFIG_SYSFS
++static struct kobject *pseries_vas_kobj;
++static struct kobject *gzip_caps_kobj;
++
++struct vas_caps_entry {
++	struct kobject kobj;
++	struct vas_cop_feat_caps *caps;
++};
++
++#define to_caps_entry(entry) container_of(entry, struct vas_caps_entry, kobj)
++
++#define sysfs_caps_entry_read(_name)					\
++static ssize_t _name##_show(struct vas_cop_feat_caps *caps, char *buf) 	\
++{									\
++	return sprintf(buf, "%d\n", atomic_read(&caps->_name));	\
++}
++
++struct vas_sysfs_entry {
++	struct attribute attr;
++	ssize_t (*show)(struct vas_cop_feat_caps *, char *);
++	ssize_t (*store)(struct vas_cop_feat_caps *, const char *, size_t);
++};
++
++#define VAS_ATTR_RO(_name)	\
++	sysfs_caps_entry_read(_name);		\
++	static struct vas_sysfs_entry _name##_attribute = __ATTR(_name,	\
++				0444, _name##_show, NULL);
++
++/*
++ * Create sysfs interface:
++ * /sys/devices/vas/vas0/gzip/default_capabilities
++ *	This directory contains the following VAS GZIP capabilities
++ *	for the defaule credit type.
++ * /sys/devices/vas/vas0/gzip/default_capabilities/nr_total_credits
++ *	Total number of default credits assigned to the LPAR which
++ *	can be changed with DLPAR operation.
++ * /sys/devices/vas/vas0/gzip/default_capabilities/nr_used_credits
++ *	Number of credits used by the user space. One credit will
++ *	be assigned for each window open.
++ *
++ * /sys/devices/vas/vas0/gzip/qos_capabilities
++ *	This directory contains the following VAS GZIP capabilities
++ *	for the Quality of Service (QoS) credit type.
++ * /sys/devices/vas/vas0/gzip/qos_capabilities/nr_total_credits
++ *	Total number of QoS credits assigned to the LPAR. The user
++ *	has to define this value using HMC interface. It can be
++ *	changed dynamically by the user.
++ * /sys/devices/vas/vas0/gzip/qos_capabilities/nr_used_credits
++ *	Number of credits used by the user space.
++ */
++
++VAS_ATTR_RO(nr_total_credits);
++VAS_ATTR_RO(nr_used_credits);
++
++static struct attribute *vas_capab_attrs[] = {
++	&nr_total_credits_attribute.attr,
++	&nr_used_credits_attribute.attr,
++	NULL,
++};
++
++static ssize_t vas_type_show(struct kobject *kobj, struct attribute *attr,
++			     char *buf)
 +{
-+	struct pseries_vas_window *win, *tmp;
-+	struct vas_user_win_ref *task_ref;
-+	struct vm_area_struct *vma;
-+	int rc = 0;
++	struct vas_caps_entry *centry;
++	struct vas_cop_feat_caps *caps;
++	struct vas_sysfs_entry *entry;
 +
-+	list_for_each_entry_safe(win, tmp, &vcap->list, win_list) {
-+		/*
-+		 * This window is already closed due to lost credit
-+		 * before. Go for next window.
-+		 */
-+		if (win->vas_win.status & VAS_WIN_NO_CRED_CLOSE)
-+			continue;
++	centry = to_caps_entry(kobj);
++	caps = centry->caps;
++	entry = container_of(attr, struct vas_sysfs_entry, attr);
 +
-+		task_ref = &win->vas_win.task_ref;
-+		mutex_lock(&task_ref->mmap_mutex);
-+		vma = task_ref->vma;
-+		/*
-+		 * Number of available credits are reduced, So select
-+		 * and close windows.
-+		 */
-+		win->vas_win.status |= VAS_WIN_NO_CRED_CLOSE;
++	if (!entry->show)
++		return -EIO;
 +
-+		mmap_write_lock(task_ref->mm);
-+		/*
-+		 * vma is set in the original mapping. But this mapping
-+		 * is done with mmap() after the window is opened with ioctl.
-+		 * so we may not see the original mapping if the core remove
-+		 * is done before the original mmap() and after the ioctl.
-+		 */
-+		if (vma)
-+			zap_page_range(vma, vma->vm_start,
-+					vma->vm_end - vma->vm_start);
++	return entry->show(caps, buf);
++}
 +
-+		mmap_write_unlock(task_ref->mm);
-+		mutex_unlock(&task_ref->mmap_mutex);
-+		/*
-+		 * Close VAS window in the hypervisor, but do not
-+		 * free vas_window struct since it may be reused
-+		 * when the credit is available later (DLPAR with
-+		 * adding cores). This struct will be used
-+		 * later when the process issued with close(FD).
-+		 */
-+		rc = deallocate_free_window(win);
-+		if (rc)
-+			return rc;
++static ssize_t vas_type_store(struct kobject *kobj, struct attribute *attr,
++			      const char *buf, size_t count)
++{
++	struct vas_caps_entry *centry;
++	struct vas_cop_feat_caps *caps;
++	struct vas_sysfs_entry *entry;
 +
-+		vcap->nr_close_wins++;
++	centry = to_caps_entry(kobj);
++	caps = centry->caps;
++	entry = container_of(attr, struct vas_sysfs_entry, attr);
++	if (!entry->store)
++		return -EIO;
 +
-+		if (!--excess_creds)
-+			break;
++	return entry->store(caps, buf, count);
++}
++
++static void vas_type_release(struct kobject *kobj)
++{
++	struct vas_caps_entry *centry = to_caps_entry(kobj);
++	kfree(centry);
++}
++
++static const struct sysfs_ops vas_sysfs_ops = {
++	.show	=	vas_type_show,
++	.store	=	vas_type_store,
++};
++
++static struct kobj_type vas_attr_type = {
++		.release	=	vas_type_release,
++		.sysfs_ops      =       &vas_sysfs_ops,
++		.default_attrs  =       vas_capab_attrs,
++};
++
++static char *vas_caps_kobj_name(struct vas_cop_feat_caps *caps,
++				struct kobject **kobj)
++{
++	if (caps->descriptor == VAS_GZIP_QOS_CAPABILITIES) {
++		*kobj = gzip_caps_kobj;
++		return "qos_capabilities";
++	} else if (caps->descriptor == VAS_GZIP_DEFAULT_CAPABILITIES) {
++		*kobj = gzip_caps_kobj;
++		return "default_capabilities";
++	} else
++		return "Unknown";
++}
++
++/*
++ * Add feature specific capability dir entry.
++ * Ex: VDefGzip or VQosGzip
++ */
++int sysfs_add_vas_caps(struct vas_cop_feat_caps *caps)
++{
++	struct vas_caps_entry *centry;
++	struct kobject *kobj = NULL;
++	int ret = 0;
++	char *name;
++
++	centry = kzalloc(sizeof(*centry), GFP_KERNEL);
++	if (!centry)
++		return -ENOMEM;
++
++	kobject_init(&centry->kobj, &vas_attr_type);
++	centry->caps = caps;
++	name  = vas_caps_kobj_name(caps, &kobj);
++
++	if (kobj) {
++		ret = kobject_add(&centry->kobj, kobj, "%s", name);
++
++		if (ret) {
++			pr_err("VAS: sysfs kobject add / event failed %d\n",
++					ret);
++			kobject_put(&centry->kobj);
++		}
++	}
++
++	return ret;
++}
++
++static struct miscdevice vas_miscdev = {
++	.minor = MISC_DYNAMIC_MINOR,
++	.name = "vas",
++};
++
++/*
++ * Add VAS and VasCaps (overall capabilities) dir entries.
++ */
++int __init sysfs_pseries_vas_init(struct vas_all_caps *vas_caps)
++{
++	int ret;
++
++	ret = misc_register(&vas_miscdev);
++	if (ret < 0) {
++		pr_err("%s: register vas misc device failed\n", __func__);
++		return ret;
++	}
++
++	/*
++	 * The hypervisor does not expose multiple VAS instances, but can
++	 * see multiple VAS instances on PowerNV. So create 'vas0' directory
++	 * on pseries.
++	 */
++	pseries_vas_kobj = kobject_create_and_add("vas0",
++					&vas_miscdev.this_device->kobj);
++	if (!pseries_vas_kobj) {
++		pr_err("Failed to create VAS sysfs entry\n");
++		return -ENOMEM;
++	}
++
++	if ((vas_caps->feat_type & VAS_GZIP_QOS_FEAT_BIT) ||
++		(vas_caps->feat_type & VAS_GZIP_DEF_FEAT_BIT)) {
++		gzip_caps_kobj = kobject_create_and_add("gzip",
++						       pseries_vas_kobj);
++		if (!gzip_caps_kobj) {
++			pr_err("Failed to create VAS GZIP capability entry\n");
++			kobject_put(pseries_vas_kobj);
++			return -ENOMEM;
++		}
 +	}
 +
 +	return 0;
 +}
 +
-+/*
-+ * Get new VAS capabilities when the core add/removal configuration
-+ * changes. Reconfig window configurations based on the credits
-+ * availability from this new capabilities.
-+ */
-+static int vas_reconfig_capabilties(u8 type)
++#else
++int sysfs_add_vas_caps(struct vas_cop_feat_caps *caps)
 +{
-+	struct hv_vas_cop_feat_caps *hv_caps;
-+	struct vas_cop_feat_caps *caps;
-+	int old_nr_creds, new_nr_creds;
-+	struct vas_caps *vcaps;
-+	int rc = 0, nr_active_wins;
-+
-+	if (type >= VAS_MAX_FEAT_TYPE) {
-+		pr_err("Invalid credit type %d\n", type);
-+		return -EINVAL;
-+	}
-+
-+	vcaps = &vascaps[type];
-+	caps = &vcaps->caps;
-+
-+	hv_caps = kmalloc(sizeof(*hv_caps), GFP_KERNEL);
-+	if (!hv_caps)
-+		return -ENOMEM;
-+
-+	mutex_lock(&vas_pseries_mutex);
-+	rc = h_query_vas_capabilities(H_QUERY_VAS_CAPABILITIES, vcaps->feat,
-+				      (u64)virt_to_phys(hv_caps));
-+	if (rc)
-+		goto out;
-+
-+	new_nr_creds = be16_to_cpu(hv_caps->target_lpar_creds);
-+
-+	old_nr_creds = atomic_read(&caps->nr_total_credits);
-+
-+	atomic_set(&caps->nr_total_credits, new_nr_creds);
-+	/*
-+	 * The total number of available credits may be decreased or
-+	 * inceased with DLPAR operation. Means some windows have to be
-+	 * closed / reopened. Hold the vas_pseries_mutex so that the
-+	 * the user space can not open new windows.
-+	 */
-+	if (old_nr_creds >  new_nr_creds) {
-+		/*
-+		 * # active windows is more than new LPAR available
-+		 * credits. So close the excessive windows.
-+		 * On pseries, each window will have 1 credit.
-+		 */
-+		nr_active_wins = vcaps->nr_open_windows - vcaps->nr_close_wins;
-+		if (nr_active_wins > new_nr_creds)
-+			rc = reconfig_close_windows(vcaps,
-+					nr_active_wins - new_nr_creds);
-+	}
-+
-+out:
-+	mutex_unlock(&vas_pseries_mutex);
-+	kfree(hv_caps);
-+	return rc;
-+}
-+/*
-+ * Total number of default credits available (target_credits)
-+ * in LPAR depends on number of cores configured. It varies based on
-+ * whether processors are in shared mode or dedicated mode.
-+ * Get the notifier when CPU configuration is changed with DLPAR
-+ * operation so that get the new target_credits (vas default capabilities)
-+ * and then update the existing windows usage if needed.
-+ */
-+static int pseries_vas_notifier(struct notifier_block *nb,
-+				unsigned long action, void *data)
-+{
-+	struct of_reconfig_data *rd = data;
-+	struct device_node *dn = rd->dn;
-+	const __be32 *intserv = NULL;
-+	int len, rc = 0;
-+
-+	if ((action == OF_RECONFIG_ATTACH_NODE) ||
-+		(action == OF_RECONFIG_DETACH_NODE))
-+		intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s",
-+					  &len);
-+	/*
-+	 * Processor config is not changed
-+	 */
-+	if (!intserv)
-+		return NOTIFY_OK;
-+
-+	rc = vas_reconfig_capabilties(VAS_GZIP_DEF_FEAT_TYPE);
-+	if (rc)
-+		pr_err("Failed reconfig VAS capabilities with DLPAR\n");
-+
-+	return rc;
++	return 0;
 +}
 +
-+static struct notifier_block pseries_vas_nb = {
-+	.notifier_call = pseries_vas_notifier,
-+};
-+
- static int __init pseries_vas_init(void)
- {
- 	struct hv_vas_cop_feat_caps *hv_cop_caps;
-@@ -592,6 +780,9 @@ static int __init pseries_vas_init(void)
- 			goto out_cop;
++int __init sysfs_pseries_vas_init(struct vas_all_caps *vas_caps)
++{
++	return 0;
++}
++#endif
+diff --git a/arch/powerpc/platforms/pseries/vas.c b/arch/powerpc/platforms/pseries/vas.c
+index 96178dd58adf..ca0ad191229d 100644
+--- a/arch/powerpc/platforms/pseries/vas.c
++++ b/arch/powerpc/platforms/pseries/vas.c
+@@ -560,6 +560,10 @@ static int __init get_vas_capabilities(u8 feat, enum vas_cop_feat_type type,
+ 		}
  	}
  
-+	if (copypaste_feat && firmware_has_feature(FW_FEATURE_LPAR))
-+		of_reconfig_notifier_register(&pseries_vas_nb);
++	rc = sysfs_add_vas_caps(caps);
++	if (rc)
++		return rc;
 +
- 	pr_info("GZIP feature is available\n");
+ 	copypaste_feat = true;
  
- out_cop:
+ 	return 0;
+@@ -844,6 +848,8 @@ static int __init pseries_vas_init(void)
+ 	caps_all.descriptor = be64_to_cpu(hv_caps->descriptor);
+ 	caps_all.feat_type = be64_to_cpu(hv_caps->feat_type);
+ 
++	sysfs_pseries_vas_init(&caps_all);
++
+ 	hv_cop_caps = kmalloc(sizeof(*hv_cop_caps), GFP_KERNEL);
+ 	if (!hv_cop_caps) {
+ 		rc = -ENOMEM;
 diff --git a/arch/powerpc/platforms/pseries/vas.h b/arch/powerpc/platforms/pseries/vas.h
-index 2872532ed72a..701363cfd7c1 100644
+index 701363cfd7c1..f1bdb776021e 100644
 --- a/arch/powerpc/platforms/pseries/vas.h
 +++ b/arch/powerpc/platforms/pseries/vas.h
-@@ -83,6 +83,9 @@ struct vas_cop_feat_caps {
- struct vas_caps {
- 	struct vas_cop_feat_caps caps;
- 	struct list_head list;	/* List of open windows */
-+	int nr_close_wins;	/* closed windows in the hypervisor for DLPAR */
-+	int nr_open_windows;	/* Number of successful open windows */
-+	u8 feat;		/* Feature type */
- };
+@@ -30,6 +30,9 @@
+ #define VAS_COPY_PASTE_USER_MODE	0x00000001
+ #define VAS_COP_OP_USER_MODE		0x00000010
  
++#define VAS_GZIP_QOS_CAPABILITIES	0x56516F73477A6970
++#define VAS_GZIP_DEFAULT_CAPABILITIES	0x56446566477A6970
++
  /*
+  * Co-processor feature - GZIP QoS windows or GZIP default windows
+  */
+@@ -125,4 +128,7 @@ struct pseries_vas_window {
+ 	char *name;
+ 	int fault_virq;
+ };
++
++int sysfs_add_vas_caps(struct vas_cop_feat_caps *caps);
++int __init sysfs_pseries_vas_init(struct vas_all_caps *vas_caps);
+ #endif /* _VAS_H */
 -- 
 2.27.0
 
