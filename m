@@ -4,65 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57E70C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 21:14:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51224C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Feb 2022 21:19:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K6tRr0nF1z3bxH
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Mar 2022 08:14:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K6tYz6Nhfz3bct
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Mar 2022 08:19:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=sipsolutions.net header.i=@sipsolutions.net header.a=rsa-sha256 header.s=mail header.b=FQR3bSjV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=JpEWCU5s;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=sipsolutions.net (client-ip=2a01:4f8:191:4433::2;
- helo=sipsolutions.net; envelope-from=johannes@sipsolutions.net;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1035;
+ helo=mail-pj1-x1035.google.com; envelope-from=noloader@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=sipsolutions.net header.i=@sipsolutions.net
- header.a=rsa-sha256 header.s=mail header.b=FQR3bSjV; 
- dkim-atps=neutral
-X-Greylist: delayed 2655 seconds by postgrey-1.36 at boromir;
- Tue, 01 Mar 2022 08:13:32 AEDT
-Received: from sipsolutions.net (s3.sipsolutions.net
- [IPv6:2a01:4f8:191:4433::2])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=JpEWCU5s; dkim-atps=neutral
+Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com
+ [IPv6:2607:f8b0:4864:20::1035])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K6tQh3s1Gz3bfb;
- Tue,  1 Mar 2022 08:13:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sipsolutions.net; s=mail; h=Content-Transfer-Encoding:MIME-Version:
- Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
- :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-To:
- Resent-Cc:Resent-Message-ID; bh=uTSgVBk5w89AJnv82I9bqMWvwbVIn7Apzl6uMNeIbWY=; 
- t=1646082812; x=1647292412; b=FQR3bSjVEFxrg2wuUtZXdc9VyNLbAt0FBXyNHdb8jr9DqUe
- xw5RqatfQ/+hgwRd9WsD2T/tt97KovcRxlgJkm2JCuKdHtwAJTXPULe/z3zLhUgWYQrHlCVdMY3ri
- UwiOCezgIrRv5DSYl/0JJ1VcIn72dnei/OA3EewLI0LM4aHNKHUJwxl0kXvmtIBpn58S0zfidkjsD
- kl1j9SRHD3phckTuSIVuDsKm+t0TExx9n2o3I5sTOEbtRB1YgqpGImTkAshIIxn9YhVuufSvEXQwJ
- kN6Nxkt7/zfUJ8WpZ/AbGUCDWwMhHEsR6tKbBhfcvB8UDWa+UCtFThQJA65it43g==;
-Received: by sipsolutions.net with esmtpsa
- (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
- (Exim 4.95) (envelope-from <johannes@sipsolutions.net>)
- id 1nOmc1-00716Q-Dh; Mon, 28 Feb 2022 21:27:17 +0100
-Message-ID: <e3bb7d0632f8ef60f18c19976d57330e1ef00584.camel@sipsolutions.net>
-Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop
- body as a ptr
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Matthew Wilcox <willy@infradead.org>, Linus Torvalds
- <torvalds@linux-foundation.org>
-Date: Mon, 28 Feb 2022 21:27:13 +0100
-In-Reply-To: <Yh0tl3Lni4weIMkl@casper.infradead.org>
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K6tYC2HbYz2yPj;
+ Tue,  1 Mar 2022 08:19:10 +1100 (AEDT)
+Received: by mail-pj1-x1035.google.com with SMTP id
+ v5-20020a17090ac90500b001bc40b548f9so336930pjt.0; 
+ Mon, 28 Feb 2022 13:19:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=mime-version:references:in-reply-to:reply-to:from:date:message-id
+ :subject:to:cc;
+ bh=pX3FOaQ5tpG+krWAy5EzbawK39YqA5YwRZTg6hddt4E=;
+ b=JpEWCU5sl0Tb/FD34RSH61Ey9dRKreZqOQa3CJ02luf0uqIT78+8GWNevF0TXmNO1k
+ V82hjNGseb3oWLNgnnFwXHAFmfIF+pTCtPsXm95pt2iCzBmJFwg04njU2K1WfIC8K4PQ
+ JYTCrkA4ACMCh2biL4u47uoOFfhnbmO/1jCCSOx3OESfK5+oDGNitg9s7NqsmIU5fVsE
+ xsR4ABTTJUTksMDshckaPyVLHegSArBm3erCaRT01IEJkH2S1g98XNdRHKV6JZW5AanM
+ gI9+nSzlxhKCRaqGLAQjGqwME5o9/K6faQyfblLD265MKP0MWlgdnuFxCRxjUTwlasET
+ Zo4g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:mime-version:references:in-reply-to:reply-to
+ :from:date:message-id:subject:to:cc;
+ bh=pX3FOaQ5tpG+krWAy5EzbawK39YqA5YwRZTg6hddt4E=;
+ b=0UKd2S9bMVLrthDnHI2cLwa7bmw7TpB0TSKnH4yRiNHYnpH3fMG7FH/uK65N2o1YtO
+ WGPuUHy1YFVUTdE6VB2kRlUBvDkrL/LXl/hj7sAlJHdVZcAklwit9Pl9D23M9BXlIfnX
+ ZsDShi5fjPUTq40mfu/5gHdh7n82OgfKMu32nh3Kz2418xakdQ3gE3ACnYmEBljaowIQ
+ h8kltA4jbZgPhP0AfVDzzdgyUtJRWLIfLhcURGfStzfC0ltSzXK2b5vBfLoSLbnspOW2
+ H6Lm/8TaRLzjo2MwVfmUqOpVhAWK2MkxCmbCgVJzxxyEjB+ojbSbt3L/B789SS9eDE0t
+ mxEg==
+X-Gm-Message-State: AOAM533/hLYKAKCAXXaa9JLvjY6ijP4VXRg0ZCGWt5htcrcIhT/59Dtg
+ DvXgfkOO6E1Nu+eiaIjKqo1s/NkooTkMdIvrOE0=
+X-Google-Smtp-Source: ABdhPJxYQDaw0FFWrTXZCk3OvnKpy6mSdQ8Z9qbCWYQ2FvSetamSp4Rz90y2uoGU7tjomvOtre1MYsL9s+rZuYttBVs=
+X-Received: by 2002:a17:902:ce8a:b0:14f:fd0e:e4a4 with SMTP id
+ f10-20020a170902ce8a00b0014ffd0ee4a4mr22765912plg.47.1646083147399; Mon, 28
+ Feb 2022 13:19:07 -0800 (PST)
+MIME-Version: 1.0
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
  <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
- <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
- <Yh0tl3Lni4weIMkl@casper.infradead.org>
+ <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
+ <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
+In-Reply-To: <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
+From: Jeffrey Walton <noloader@gmail.com>
+Date: Mon, 28 Feb 2022 16:18:56 -0500
+Message-ID: <CAH8yC8nwp8f3rANhCiiP_Oiw2cjfqCwAgZdTXY9OxtN9Tmm7HA@mail.gmail.com>
+Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop body
+ as a ptr
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
 Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.42.4 (3.42.4-1.fc35) 
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-malware-bazaar: not-scanned
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,6 +82,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Reply-To: noloader@gmail.com
 Cc: linux-wireless <linux-wireless@vger.kernel.org>,
  alsa-devel@alsa-project.org, KVM list <kvm@vger.kernel.org>,
  "Gustavo A. R. Silva" <gustavo@embeddedor.com>, linux-iio@vger.kernel.org,
@@ -92,6 +101,7 @@ Cc: linux-wireless <linux-wireless@vger.kernel.org>,
  Kees Cook <keescook@chromium.org>, Arnd Bergman <arnd@arndb.de>,
  Linux PM <linux-pm@vger.kernel.org>,
  intel-gfx <intel-gfx@lists.freedesktop.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Brian Johannesmeyer <bjohannesmeyer@gmail.com>,
  Nathan Chancellor <nathan@kernel.org>, dma <dmaengine@vger.kernel.org>,
  Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
@@ -108,33 +118,40 @@ Cc: linux-wireless <linux-wireless@vger.kernel.org>,
  Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
  linux-fsdevel <linux-fsdevel@vger.kernel.org>,
  linux-mediatek@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Christian =?ISO-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
  Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2022-02-28 at 20:16 +0000, Matthew Wilcox wrote:
-> On Mon, Feb 28, 2022 at 12:10:24PM -0800, Linus Torvalds wrote:
-> > We can do
-> > 
-> >         typeof(pos) pos
-> > 
-> > in the 'for ()' loop, and never use __iter at all.
-> > 
-> > That means that inside the for-loop, we use a _different_ 'pos' than outside.
-> 
-> Then we can never use -Wshadow ;-(  I'd love to be able to turn it on;
-> it catches real bugs.
-> 
+On Mon, Feb 28, 2022 at 3:45 PM James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> ...
+> > Just from skimming over the patches to change this and experience
+> > with the drivers/subsystems I help to maintain I think the primary
+> > pattern looks something like this:
+> >
+> > list_for_each_entry(entry, head, member) {
+> >      if (some_condition_checking(entry))
+> >          break;
+> > }
+> > do_something_with(entry);
+>
+>
+> Actually, we usually have a check to see if the loop found anything,
+> but in that case it should something like
+>
+> if (list_entry_is_head(entry, head, member)) {
+>     return with error;
+> }
+> do_somethin_with(entry);
 
-I was just going to say the same thing...
+Borrowing from c++, perhaps an explicit end should be used:
 
-If we're willing to change the API for the macro, we could do
+  if (list_entry_not_end(entry))
+    do_somethin_with(entry)
 
-  list_for_each_entry(type, pos, head, member)
+It is modelled after c++ and the 'while(begin != end) {}' pattern.
 
-and then actually take advantage of -Wshadow?
-
-johannes
+Jeff
