@@ -4,72 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFA17C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Mar 2022 17:40:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C143C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Mar 2022 17:46:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K7Pfp1y70z3by0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 04:40:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K7PnL6HwLz3bvb
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 04:46:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=jNa8kCMt;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kroah.com header.i=@kroah.com header.a=rsa-sha256 header.s=fm3 header.b=PuP2Nuoq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=EDVGv6yE;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62e;
- helo=mail-ej1-x62e.google.com; envelope-from=jakobkoschel@gmail.com;
+ smtp.mailfrom=kroah.com (client-ip=66.111.4.229;
+ helo=new3-smtp.messagingengine.com; envelope-from=greg@kroah.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=jNa8kCMt; dkim-atps=neutral
-Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com
- [IPv6:2a00:1450:4864:20::62e])
+ unprotected) header.d=kroah.com header.i=@kroah.com header.a=rsa-sha256
+ header.s=fm3 header.b=PuP2Nuoq; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm2 header.b=EDVGv6yE; 
+ dkim-atps=neutral
+X-Greylist: delayed 549 seconds by postgrey-1.36 at boromir;
+ Wed, 02 Mar 2022 04:45:47 AEDT
+Received: from new3-smtp.messagingengine.com (new3-smtp.messagingengine.com
+ [66.111.4.229])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K7Pf45zgkz2yb5;
- Wed,  2 Mar 2022 04:40:11 +1100 (AEDT)
-Received: by mail-ej1-x62e.google.com with SMTP id qa43so6428403ejc.12;
- Tue, 01 Mar 2022 09:40:12 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=mime-version:subject:from:in-reply-to:date:cc
- :content-transfer-encoding:message-id:references:to;
- bh=pFdYiycpncfTymiwtZowrsS5EyWiXpYxNs42/BHAfYg=;
- b=jNa8kCMtl/UUGI9n6DMpRCjqu31f4wAijdvFFxZnjTmTKVAPvZHGvGIS5mEbyeVH7U
- 2x/09r6Vjc5jlvMmGEJ/il9wQB7v0QaDJcbwnO54cttgXGRrRpdgplSbMXJLSVGPucZZ
- 9N0BbQ67CEO0Sz9E19ATZ7SkTLFNHyfaTEafdxDnprAieU2S7WSxP1eMUqDcJyOgT3om
- KiVwLoBVmeYUr/3jVH1Ywgf3KLmBchJpZXF9NW4w0E+aOTUpi5SfsW8FSQSkfcXvzSp5
- ZeMWPQFNXAG0u+f0IIKFL+VZxclmrwVLcWvb/ml3Qc/gpz+jEOgbpY53v+25m0fIUJKc
- BDYA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:subject:from:in-reply-to:date:cc
- :content-transfer-encoding:message-id:references:to;
- bh=pFdYiycpncfTymiwtZowrsS5EyWiXpYxNs42/BHAfYg=;
- b=ztCPbW6vRindqJblnYh88MFi0mwI/a+Ia9K/r3A1+lIpa6eWycKGojv0CIbSocylVM
- /fOJ2qrosH0cKg9ci+ZnRxjdoLoqI9dWPo6OcE7gBNNVGoJP6N4Jhf7CEPAwcW7Ax6Y2
- aV/MslanZuucihKmvrEeVdX3J1D/hH+miSlOeFbvJSM3KvR8W6ctwQYDndImt00YB1j+
- WVF/dQf/jEIeVDuVtjchcMewfhzLNl9f3Hu9orNwAWwqi3xhb8wzuVr7migDPfM1DddX
- C4n4bbBeQiE88tCDHNB3Oczbos2VHeCmxfdcL+wRWe3URt/x88ndd7povCad2fXL1TJW
- iPPw==
-X-Gm-Message-State: AOAM530TsAY0nx2c3qPGYpExwM7iCm7jgAWwXQvRyXF/YDKxuiZoLZmQ
- 4FDp9TuByjxcJS2XxNwWAi8=
-X-Google-Smtp-Source: ABdhPJwzanGhehpmLWEMTTJkMBhYufoyhmHURG9yND716ZZIbM/kd8Ex5thBnsVmcSvoj9ZPyJ3fsw==
-X-Received: by 2002:a17:906:948:b0:6d6:e479:1fe4 with SMTP id
- j8-20020a170906094800b006d6e4791fe4mr3312230ejd.240.1646156406993; 
- Tue, 01 Mar 2022 09:40:06 -0800 (PST)
-Received: from smtpclient.apple ([2a02:8109:9d80:3f6c:6db3:8d4c:747e:98ad])
- by smtp.gmail.com with ESMTPSA id
- a25-20020a50ff19000000b0040f84cd806csm7398100edu.59.2022.03.01.09.40.04
- (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 01 Mar 2022 09:40:06 -0800 (PST)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 15.0 \(3693.60.0.1.1\))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K7PmW2Z01z30J7;
+ Wed,  2 Mar 2022 04:45:47 +1100 (AEDT)
+Received: from compute2.internal (compute2.nyi.internal [10.202.2.46])
+ by mailnew.nyi.internal (Postfix) with ESMTP id 668835801CF;
+ Tue,  1 Mar 2022 12:36:34 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute2.internal (MEProxy); Tue, 01 Mar 2022 12:36:34 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=cc
+ :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
+ :message-id:mime-version:references:reply-to:sender:subject
+ :subject:to:to; s=fm3; bh=5OE8xr6GO9X7MbNpDAcWFGeEO3b3B/8LX5WMVM
+ 23luQ=; b=PuP2NuoqB9WepsjY0Uqokte1F02OSePW/KnqWPOHGfC62jDMQy8d6J
+ jihmHY7jaxPeYmV/brYSLMo2rdd0E65RFIbVZNaw+d6hF5TlV5h/HTFiyyQeuhEh
+ tTvMohVc8vJzz2F3uGXDhJ11n60AMBcwryX0OIQ4h4vBoJz9sXnQjtTWmMBfJvV8
+ ASNImP/JJmHc6aQngUkaR/9ejN6V67gkY3Ss3hOhMxZ05fa2rytR+8neryd7GnHR
+ NnoILjHkJCXbghnuIwO3WAIr0wjFgm+H99CgrlgjXtrJoB87p0eZTz8QaQ9jXLS7
+ eUmDU4ThQ2iD/GAcK9q8FPfYZ3dj5Siw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:cc:content-type:date:date:from:from
+ :in-reply-to:in-reply-to:message-id:mime-version:references
+ :reply-to:sender:subject:subject:to:to:x-me-proxy:x-me-proxy
+ :x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=5OE8xr6GO9X7MbNpD
+ AcWFGeEO3b3B/8LX5WMVM23luQ=; b=EDVGv6yEMy7PTbky8OfXVA9jYKh0oiM5+
+ sk6xt1CX3smAZYI0P9oaKzOCIkwMemVmh9foKoLwOV/IyVUBTTJc+ljLrovpUDdP
+ pIA4BCkMgcGpU96mM/8o9zjz4bY87GlxWmxlUETAhWUvR7QqjYOuAQqLjAz9vvM2
+ 9w41DE+muRcTBgXgq7R5mX2xPAK9bu7QEmldC6d/UhIWw84PgZEMMUkVZDfimvGr
+ 9rb1WTZ4HmbXffSgmjvpYAD0fz3a3kb/jxO9vzcKzkIUx9MDQUxolnVJ5gWPPm0P
+ 3SACLLdt3Ji3p4//lVUF9os4MIANF8EQiUgikZ8An4R/ZWSxaE7Og==
+X-ME-Sender: <xms:oFkeYrv0LJt2Pjt0ZOYMYd1jCK6G-Z0GZXtRlOiCbijoVlbqDToesg>
+ <xme:oFkeYsdRXoRXAxTjhPFWtM5JX8rU2-dsIwxZfpFocA89gDBFD4vx9xsWmcbxEuUyQ
+ lpRakwPpYLi7A>
+X-ME-Received: <xmr:oFkeYuzzdQb5kL72Vvj74Xn0xRRyhzff8uvNHTyUqFsrLF_56anw9-ykyIbZGqAzSj0KTqXLBgC1Qf0KKdPZ7IM>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvvddruddtvddguddttdcutefuodetggdotefrod
+ ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
+ necuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+ enucfjughrpeffhffvuffkfhggtggujgesthdtredttddtvdenucfhrhhomhepifhrvghg
+ ucfmjfcuoehgrhgvgheskhhrohgrhhdrtghomheqnecuggftrfgrthhtvghrnhepveeuhe
+ ejgfffgfeivddukedvkedtleelleeghfeljeeiueeggeevueduudekvdetnecuvehluhhs
+ thgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepghhrvghgsehkrhhorg
+ hhrdgtohhm
+X-ME-Proxy: <xmx:oFkeYqNP0oPgoNRpau1EsmnsGvsi8MuHt5Oau7Uh5DcasQw65k9YTg>
+ <xmx:oFkeYr8eoBRonSMDQgE0d2CdwAX12XsrowbLGxOxF_rvtS3YwiTEgg>
+ <xmx:oFkeYqVNxx7WBcYUGhcHc73BR9KI7xEAuh9FjZrqFDwJGYsF_7MqUw>
+ <xmx:olkeYkWtK93reuC1fg-f2X2RrUvR780eGtvCg6vOtajRgdiJ73bSmQ>
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
+ 1 Mar 2022 12:36:31 -0500 (EST)
+Date: Tue, 1 Mar 2022 18:36:27 +0100
+From: Greg KH <greg@kroah.com>
+To: Jakob Koschel <jakobkoschel@gmail.com>
 Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop body
  as a ptr
-From: Jakob Koschel <jakobkoschel@gmail.com>
-In-Reply-To: <Yh5ZmwiH5AxtQ69K@kroah.com>
-Date: Tue, 1 Mar 2022 18:40:04 +0100
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <4B1AFAD9-C1B3-499C-945A-C259361ABA8C@gmail.com>
+Message-ID: <Yh5ZmwiH5AxtQ69K@kroah.com>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
@@ -78,9 +91,11 @@ References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
  <FC710A1A-524E-481B-A668-FC258F529A2E@gmail.com>
  <CAHk-=whLK11HyvpUtEftOjc3Gup2V77KpAQ2fycj3uai=qceHw@mail.gmail.com>
- <CEDAD0D9-56EE-4105-9107-72C2EAD940B0@gmail.com> <Yh5ZmwiH5AxtQ69K@kroah.com>
-To: Greg KH <greg@kroah.com>
-X-Mailer: Apple Mail (2.3693.60.0.1.1)
+ <CEDAD0D9-56EE-4105-9107-72C2EAD940B0@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CEDAD0D9-56EE-4105-9107-72C2EAD940B0@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,82 +144,57 @@ Cc: linux-wireless <linux-wireless@vger.kernel.org>,
  linux-fsdevel <linux-fsdevel@vger.kernel.org>,
  linux-mediatek@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>,
  Linus Torvalds <torvalds@linux-foundation.org>,
- =?utf-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
  Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Mar 01, 2022 at 12:28:15PM +0100, Jakob Koschel wrote:
+> 
+> 
+> > On 1. Mar 2022, at 01:41, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > 
+> > On Mon, Feb 28, 2022 at 1:47 PM Jakob Koschel <jakobkoschel@gmail.com> wrote:
+> >> 
+> >> The goal of this is to get compiler warnings right? This would indeed be great.
+> > 
+> > Yes, so I don't mind having a one-time patch that has been gathered
+> > using some automated checker tool, but I don't think that works from a
+> > long-term maintenance perspective.
+> > 
+> > So if we have the basic rule being "don't use the loop iterator after
+> > the loop has finished, because it can cause all kinds of subtle
+> > issues", then in _addition_ to fixing the existing code paths that
+> > have this issue, I really would want to (a) get a compiler warning for
+> > future cases and (b) make it not actually _work_ for future cases.
+> > 
+> > Because otherwise it will just happen again.
+> > 
+> >> Changing the list_for_each_entry() macro first will break all of those cases
+> >> (e.g. the ones using 'list_entry_is_head()).
+> > 
+> > So I have no problems with breaking cases that we basically already
+> > have a patch for due to  your automated tool. There were certainly
+> > more than a handful, but it didn't look _too_ bad to just make the
+> > rule be "don't use the iterator after the loop".
+> > 
+> > Of course, that's just based on that patch of yours. Maybe there are a
+> > ton of other cases that your patch didn't change, because they didn't
+> > match your trigger case, so I may just be overly optimistic here.
+> 
+> Based on the coccinelle script there are ~480 cases that need fixing
+> in total. I'll now finish all of them and then split them by
+> submodules as Greg suggested and repost a patch set per submodule.
+> Sounds good?
 
+Sounds good to me!
 
-> On 1. Mar 2022, at 18:36, Greg KH <greg@kroah.com> wrote:
->=20
-> On Tue, Mar 01, 2022 at 12:28:15PM +0100, Jakob Koschel wrote:
->>=20
->>=20
->>> On 1. Mar 2022, at 01:41, Linus Torvalds =
-<torvalds@linux-foundation.org> wrote:
->>>=20
->>> On Mon, Feb 28, 2022 at 1:47 PM Jakob Koschel =
-<jakobkoschel@gmail.com> wrote:
->>>>=20
->>>> The goal of this is to get compiler warnings right? This would =
-indeed be great.
->>>=20
->>> Yes, so I don't mind having a one-time patch that has been gathered
->>> using some automated checker tool, but I don't think that works from =
-a
->>> long-term maintenance perspective.
->>>=20
->>> So if we have the basic rule being "don't use the loop iterator =
-after
->>> the loop has finished, because it can cause all kinds of subtle
->>> issues", then in _addition_ to fixing the existing code paths that
->>> have this issue, I really would want to (a) get a compiler warning =
-for
->>> future cases and (b) make it not actually _work_ for future cases.
->>>=20
->>> Because otherwise it will just happen again.
->>>=20
->>>> Changing the list_for_each_entry() macro first will break all of =
-those cases
->>>> (e.g. the ones using 'list_entry_is_head()).
->>>=20
->>> So I have no problems with breaking cases that we basically already
->>> have a patch for due to  your automated tool. There were certainly
->>> more than a handful, but it didn't look _too_ bad to just make the
->>> rule be "don't use the iterator after the loop".
->>>=20
->>> Of course, that's just based on that patch of yours. Maybe there are =
-a
->>> ton of other cases that your patch didn't change, because they =
-didn't
->>> match your trigger case, so I may just be overly optimistic here.
->>=20
->> Based on the coccinelle script there are ~480 cases that need fixing
->> in total. I'll now finish all of them and then split them by
->> submodules as Greg suggested and repost a patch set per submodule.
->> Sounds good?
->=20
-> Sounds good to me!
->=20
-> If you need help carving these up and maintaining them over time as
-> different subsystem maintainers accept/ignore them, just let me know.
-> Doing large patchsets like this can be tough without a lot of
-> experience.
+If you need help carving these up and maintaining them over time as
+different subsystem maintainers accept/ignore them, just let me know.
+Doing large patchsets like this can be tough without a lot of
+experience.
 
-Very much appreciated!
+thanks,
 
-There will probably be some cases that do not match one of the pattern
-we already discussed and need separate attention.
-
-I was planning to start with one subsystem and adjust the coming ones
-according to the feedback gather there instead of posting all of them
-in one go.
-
->=20
-> thanks,
->=20
-> greg k-h
-
-- Jakob=
+greg k-h
