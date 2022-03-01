@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96904C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Mar 2022 10:54:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB591C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Mar 2022 10:55:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K7DfG3Wfkz3c1T
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Mar 2022 21:54:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K7Dfw1fPGz3btB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Mar 2022 21:55:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=x4Ls4LGX;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=jLl0j4bS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -19,34 +19,37 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=x4Ls4LGX; 
+ header.s=bombadil.20210309 header.b=jLl0j4bS; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K7Dcx47WCz3bqM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2022 21:53:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K7Dcy16c6z3bqr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Mar 2022 21:53:35 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
- MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
- Content-ID:Content-Description:In-Reply-To:References;
- bh=FLoPcwp8W110QTyBUFSAYe56vwqhsB+0w1jgowBLDrQ=; b=x4Ls4LGXlw3mqit2JgZ989HyZb
- T5qpKmQGteCGW5NyuTbuloRJzt7HhHDSWBkn6XMthvcPktTNRGiMhEjm3jNCxNFXallKVQH7jYfkV
- yMP1NQbMBXexGqNGRQAxlptnMjCU6iBaEsSYx496tSDH97RR6D0tylDgXaeXfMovaKcRHhD1mlnuz
- OQ2BdFcAyA097bBGDwCVXhJV6sp+r3vCa43JaFB+f/7FaiduK6PaxwT2gDQredky9tC0CHGWz/iGt
- MF2HppH9e3IKlAYjXSzy/Ts9RTiST6h6Fjh5rDDovAP92KH/7Uv2VhH/n7QVymPp/mWYAgqqJl+PH
- rhUuKZnQ==;
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description;
+ bh=8kkkqKTmx4an5HwtAkctrRmIlb8tNewwdnwFgQaeBs4=; b=jLl0j4bSOfVgHsr3MQ5Bv5W25W
+ eBCL+ezlRGLhWYJUDEMLnfnY03XvNmRuJ3NVkaIN+j91e7hLR85KeZAUrre7FDsYIGG5LJVefqfFQ
+ aBw4XS4clVWlj8OlW5+no9SoBD1TeUv7rQYDWrKf4OHZIcAUPacEQWejKAQpzWZV4sMB16ogBdJNd
+ BYo+cef7t0HrzSLXHOj4597NsWHTixNewjzb8+eB6sepbzbOCAKRdiYjQ0SKHJwpHXjDNI+7jB/Nl
+ V6d7NCk96h2kf6oMslvOoIEJGHn3fDqOVyBakQxgHeZAYF5ayU7+PWsZkl0kSLTP/USHzDRJXcvab
+ v9YgSnow==;
 Received: from [2.53.44.23] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1nP083-00GCvx-8y; Tue, 01 Mar 2022 10:53:16 +0000
+ id 1nP08A-00GCxm-Dw; Tue, 01 Mar 2022 10:53:23 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
-Subject: cleanup swiotlb initialization v4
-Date: Tue,  1 Mar 2022 12:52:59 +0200
-Message-Id: <20220301105311.885699-1-hch@lst.de>
+Subject: [PATCH 02/12] swiotlb: make swiotlb_exit a no-op if SWIOTLB_FORCE is
+ set
+Date: Tue,  1 Mar 2022 12:53:01 +0200
+Message-Id: <20220301105311.885699-3-hch@lst.de>
 X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20220301105311.885699-1-hch@lst.de>
+References: <20220301105311.885699-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
@@ -77,32 +80,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi all,
+If force bouncing is enabled we can't release the buffers.
 
-this series tries to clean up the swiotlb initialization, including
-that of swiotlb-xen.  To get there is also removes the x86 iommu table
-infrastructure that massively obsfucates the initialization path.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
+---
+ kernel/dma/swiotlb.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Git tree:
+diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+index bfc56cb217059..64b390136f9ef 100644
+--- a/kernel/dma/swiotlb.c
++++ b/kernel/dma/swiotlb.c
+@@ -378,6 +378,9 @@ void __init swiotlb_exit(void)
+ 	unsigned long tbl_vaddr;
+ 	size_t tbl_size, slots_size;
+ 
++	if (swiotlb_force == SWIOTLB_FORCE)
++		return;
++
+ 	if (!mem->nslabs)
+ 		return;
+ 
+-- 
+2.30.2
 
-    git://git.infradead.org/users/hch/misc.git swiotlb-init-cleanup
-
-Gitweb:
-
-    http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/swiotlb-init-cleanup
-
-Changes since v3:
- - fix a compilation issue on some powerpc configfs
- - fix and cleanup how forced bounce buffering is enabled for
-   guest memory encryption
-
-Changes since v2:
- - make ppc_swiotlb_flags actually work again
- - also force enable swiotlb for guest encrypted memory to cater
-   to hyperv which doesn't set the host encrypted memory flag
-
-Changes since v1:
- - skip IOMMU initialization on Xen PV kernels
- - various small whitespace / typo fixes
-
-Diffstat:
