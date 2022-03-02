@@ -4,34 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BE86C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 12:51:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 406A0C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 12:51:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K7vB90yDqz3dpm
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 23:51:13 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K7vBb0sKwz3fWT
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 23:51:35 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K7v580RsKz3c1h
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2022 23:46:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K7v591vtDz3bry
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2022 23:46:53 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4K7v565VFgz4xvW;
- Wed,  2 Mar 2022 23:46:50 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4K7v592ptmz4xvc;
+ Wed,  2 Mar 2022 23:46:53 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Geoff Levand <geoff@infradead.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20220214065543.198992-1-pmenzel@molgen.mpg.de>
-References: <20220214065543.198992-1-pmenzel@molgen.mpg.de>
-Subject: Re: [PATCH] powerpc/boot: Add `otheros-too-big.bld` to .gitignore
-Message-Id: <164622487712.2052779.17970799380361079611.b4-ty@ellerman.id.au>
-Date: Wed, 02 Mar 2022 23:41:17 +1100
+To: linuxppc-dev@lists.ozlabs.org, nvdimm@lists.linux.dev,
+ Vaibhav Jain <vaibhav@linux.ibm.com>
+In-Reply-To: <20220124202204.1488346-1-vaibhav@linux.ibm.com>
+References: <20220124202204.1488346-1-vaibhav@linux.ibm.com>
+Subject: Re: [PATCH v4] powerpc/papr_scm: Implement initial support for
+ injecting smart errors
+Message-Id: <164622488229.2052779.17094749231331915996.b4-ty@ellerman.id.au>
+Date: Wed, 02 Mar 2022 23:41:22 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -46,20 +44,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Dan Williams <dan.j.williams@intel.com>, Ira Weiny <ira.weiny@intel.com>,
+ Shivaprasad G Bhat <sbhat@linux.ibm.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 14 Feb 2022 07:55:43 +0100, Paul Menzel wrote:
-> Currently, `git status` lists the file as untracked by git, so tell git
-> to ignore it.
+On Tue, 25 Jan 2022 01:52:04 +0530, Vaibhav Jain wrote:
+> Presently PAPR doesn't support injecting smart errors on an
+> NVDIMM. This makes testing the NVDIMM health reporting functionality
+> difficult as simulating NVDIMM health related events need a hacked up
+> qemu version.
 > 
+> To solve this problem this patch proposes simulating certain set of
+> NVDIMM health related events in papr_scm. Specifically 'fatal' health
+> state and 'dirty' shutdown state. These error can be injected via the
+> user-space 'ndctl-inject-smart(1)' command. With the proposed patch and
+> corresponding ndctl patches following command flow is expected:
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/boot: Add `otheros-too-big.bld` to .gitignore
-      https://git.kernel.org/powerpc/c/cb7356986db020c96f37532042fdae6706e81df7
+[1/1] powerpc/papr_scm: Implement initial support for injecting smart errors
+      https://git.kernel.org/powerpc/c/bbbca72352bb9484bc057c91a408332b35ee8f4c
 
 cheers
