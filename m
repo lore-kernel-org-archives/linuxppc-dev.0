@@ -4,80 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F042C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 01:34:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38D51C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 02:20:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K7c9q2CvJz3bfR
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 12:34:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K7dBn55WYz3btV
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 13:20:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=hVDRrGDl;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=PI7qjJXO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
- helo=mail-pl1-x643.google.com; envelope-from=hbh25y@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
+ helo=mail-pf1-x441.google.com; envelope-from=hbh25y@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=hVDRrGDl; dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
+ header.s=20210112 header.b=PI7qjJXO; dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K7c924vY7z3bZZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2022 12:34:12 +1100 (AEDT)
-Received: by mail-pl1-x643.google.com with SMTP id p17so244449plo.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Mar 2022 17:34:13 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K7dB50hzVz30Dv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2022 13:20:12 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id z15so586087pfe.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Mar 2022 18:20:13 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=message-id:date:mime-version:user-agent:subject:content-language:to
- :cc:references:from:in-reply-to:content-transfer-encoding;
- bh=WvbfaPTFctx/ZBq/LbbOp5Y1TVJ+xSqnWCCTA+Z/BLo=;
- b=hVDRrGDlFebSSqMoxkVgXMfbIhKd7vB31icR6jp+FDN9jEoc3/f+hhT+TfYm+yQ113
- Jao9U9WNhS+eUSrPnCAgyIh2K/n4cE3RCee/HhVr1YAZqW7v4wI9fQO09xsp5BKqAD2x
- VsIh7Jhw6uh0B6Zv8uP635f7wJ4TgE+HGZZaGtuZLe+FWzbQPEBSVdhTgSyaCpR65IJ8
- lM7+mmgMkj1OBNAHJXFgAkl1MtpMJnCX4V0v+lfSCoNKvVPpjfWPkEEj6hO0BbYzn6r8
- In/Ck5es2mK8aZ5AAiOammC+fCQmE346I+zs/Xj406NX2ds9JyBk+vSgx8RvC4bhqesG
- SryQ==
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Ut4FhFD89bZcY3y3faZEM5qMZpWcFX7wY9dfdN67y2k=;
+ b=PI7qjJXOIkxen0fTtw2BH8lTxYwLVGDy3+/w//euncW4ziEjf5OwJv1idGU8cGDSeL
+ tP2kKQpmtXKR6W+J4VsGvZxegrPIAERmISBIUIhN2CnJGXcn7FybAA86FNzaMNf/Y8K8
+ jl9Fcu4KLOOT1/wOisQEXKtuHVtfEZrSGy0NwT0u+DypPW+twKw4YqZ7yq+AY/kZCjGj
+ JW2QfvlkSlB2oU4Wf/lOZvzH2KznI6z0LHrff+lMTYGoIymuyvACNq2Af/1buJLvqttL
+ nVB6hMVdB6i49tOyxO8PSZLO4cvKnuXV0ptScQFJCRuEbCPBl6Nz/m54T9EBNAzaFVhU
+ 8k6w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
- :content-language:to:cc:references:from:in-reply-to
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
  :content-transfer-encoding;
- bh=WvbfaPTFctx/ZBq/LbbOp5Y1TVJ+xSqnWCCTA+Z/BLo=;
- b=EllJRDSrBjBrQ9w4Gq5FerTyk7rwBCLs6J+dCEAR8jrd93lmmyn4QhCzCUf5d3J+Q6
- jo9t8M5gmGPHH9HTTtUNE+9t7/bHuqs1k6zUuMKoE2vx37mJCUNmpG0ooLrdUTwYlYbm
- A/3yN26fCpghZqPwarz+ziL8Zyaori64Z3Ej4YFQmVaDP3yhQjLBMZp0ejqeRCfepSE0
- 9qO7nrRLvKj5+kIFnHu73et+a35gFtURuVHGVUhBV3TiysVU0Syj80iUZ9z59bDYXN7M
- CmRsZYrhdU57UyFTou3nC/wUsDuj3TaPVFgHKBrSfZNCIkg1V88biFQFimKHMPkJRHQf
- kvCg==
-X-Gm-Message-State: AOAM531tn6Q88J5CjYy8CmKaaROBubgKn9Cr+RfFPKZ66Ej5ELHCQLvH
- x2Yi/4GsXU4dBdQdY8aThKCbsQHez2oYiWXZ
-X-Google-Smtp-Source: ABdhPJz6zxh10Pr83NPul6JjmZR+Q9CQqGzwlbLF8IduW22KXvc3PsJaORPgaxeL5JcmWfaefjyRfg==
-X-Received: by 2002:a17:90b:10b:b0:1bc:6f86:b209 with SMTP id
- p11-20020a17090b010b00b001bc6f86b209mr24660317pjz.33.1646184850280; 
- Tue, 01 Mar 2022 17:34:10 -0800 (PST)
-Received: from [10.11.37.162] ([103.84.139.54])
+ bh=Ut4FhFD89bZcY3y3faZEM5qMZpWcFX7wY9dfdN67y2k=;
+ b=7jc7R+uuiantj+uLabgxVMNKK3MR5kgCz8Eva9gfGpShbt5bxWNvSufFQW6IBJy8mO
+ O4ifA2q0U+owaaTDsEu2ym/4vA5TvW47lL3LYwr9gg2fBTmjGbXK7B87DwF8Q6bGwr4y
+ 3gOjB757W1iT4TF69n5MLGOm9wegvdzQkKcOOhjOzK1u0Y5MtKiq3HzYIRYj/AtUURHN
+ 4FLPuhSitJYyERZFq6mbDxN07WMvKRjTV1vlACZtuIc1xYpHiFjpMbYQTP0CRlois7Se
+ OGNlf+vNIyJce3b9l1tCzt2Gy5wXnwcGhUmlZdvWSge7I37Pd/BXFgwv6IwTmagMz/Xt
+ KUMw==
+X-Gm-Message-State: AOAM531g87Rj9cM0TjyzYvQov2ZDQe5wJuZlLyIxhEw2yTtf0wl9fKGS
+ BRl8PbcsRCsT/Tx+IjfHZaU=
+X-Google-Smtp-Source: ABdhPJxFYXTMuT381NlVCmxAj19K234v4+6N1ZkK8rDABRKo76PGDqBEAqHfgaO40eSWXuBYOofIQA==
+X-Received: by 2002:a05:6a00:cc7:b0:4ec:c6f3:ad29 with SMTP id
+ b7-20020a056a000cc700b004ecc6f3ad29mr30774100pfv.66.1646187610156; 
+ Tue, 01 Mar 2022 18:20:10 -0800 (PST)
+Received: from slim.das-security.cn ([103.84.139.53])
  by smtp.gmail.com with ESMTPSA id
- b187-20020a621bc4000000b004f3c8f3b560sm16963844pfb.129.2022.03.01.17.34.07
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 01 Mar 2022 17:34:09 -0800 (PST)
-Message-ID: <43e1dba5-2af7-658b-ae45-c7a6c1c0dc6d@gmail.com>
-Date: Wed, 2 Mar 2022 09:34:02 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH] powerpc: kernel: fix a refcount leak in format_show()
-Content-Language: en-US
-To: Tyrel Datwyler <tyreld@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org,
- paulus@samba.org
-References: <20220228091103.39749-1-hbh25y@gmail.com>
- <87o82pomrc.fsf@mpe.ellerman.id.au>
- <825f5cba-a62b-a691-225e-22f6bb9b10a8@linux.ibm.com>
+ h5-20020a056a001a4500b004e177b8cbfdsm18589444pfv.197.2022.03.01.18.20.07
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 01 Mar 2022 18:20:09 -0800 (PST)
 From: Hangyu Hua <hbh25y@gmail.com>
-In-Reply-To: <825f5cba-a62b-a691-225e-22f6bb9b10a8@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ tyreld@linux.ibm.com
+Subject: [PATCH v2] powerpc: kernel: fix refcount leak in format_show()
+Date: Wed,  2 Mar 2022 10:19:59 +0800
+Message-Id: <20220302021959.10959-1-hbh25y@gmail.com>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,56 +80,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Hangyu Hua <hbh25y@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thanks. I will resubmit my patch latter.
+Refcount leak will happen when format_show returns failure in multiple
+cases. Unified management of of_node_put can fix this problem.
 
-On 2022/3/2 03:50, Tyrel Datwyler wrote:
-> On 3/1/22 04:55, Michael Ellerman wrote:
->> Hangyu Hua <hbh25y@gmail.com> writes:
->>> node needs to be dropped when of_property_read_string fails. So an earlier call
->>> to of_node_put is required here.
->>
->> That's true but ...
->>
->>> diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
->>> index a0a78aba2083..cd0fa7028d86 100644
->>> --- a/arch/powerpc/kernel/secvar-sysfs.c
->>> +++ b/arch/powerpc/kernel/secvar-sysfs.c
->>> @@ -30,13 +30,12 @@ static ssize_t format_show(struct kobject *kobj, struct kobj_attribute *attr,
->>>   		return -ENODEV;
->>
->> There's also a reference leak there ^
->>
->> So if you're going to touch this code I'd like you to fix both reference
->> leaks in a single patch please.
->>
->> Having the error cases set rc and then goto "out" which does the
->> of_node_put() is the obvious solution I think.
-> 
-> update_kobj_size() in the same source file provides a good example of the
-> suggested solution.
-> 
-> -Tyrel
-> 
->>
->> cheers
->>
->>>   	rc = of_property_read_string(node, "format", &format);
->>> +	of_node_put(node);
->>>   	if (rc)
->>>   		return rc;
->>>   
->>>   	rc = sprintf(buf, "%s\n", format);
->>>   
->>> -	of_node_put(node);
->>> -
->>>   	return rc;
->>>   }
->>>   
->>> -- 
->>> 2.25.1
-> 
+Signed-off-by: Hangyu Hua <hbh25y@gmail.com>
+---
+
+v2: 
+1. change the title and description information. 
+2. fix all possible refcount leak.
+
+ arch/powerpc/kernel/secvar-sysfs.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
+index a0a78aba2083..1ee4640a2641 100644
+--- a/arch/powerpc/kernel/secvar-sysfs.c
++++ b/arch/powerpc/kernel/secvar-sysfs.c
+@@ -26,15 +26,18 @@ static ssize_t format_show(struct kobject *kobj, struct kobj_attribute *attr,
+ 	const char *format;
+ 
+ 	node = of_find_compatible_node(NULL, NULL, "ibm,secvar-backend");
+-	if (!of_device_is_available(node))
+-		return -ENODEV;
++	if (!of_device_is_available(node)) {
++		rc = -ENODEV;
++		goto out;
++	}
+ 
+ 	rc = of_property_read_string(node, "format", &format);
+ 	if (rc)
+-		return rc;
++		goto out;
+ 
+ 	rc = sprintf(buf, "%s\n", format);
+ 
++out:
+ 	of_node_put(node);
+ 
+ 	return rc;
+-- 
+2.25.1
+
