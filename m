@@ -4,39 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1721AC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 12:49:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2D7CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 12:49:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K7v7w67Jyz3f4t
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 23:49:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K7v8L4WCHz3f98
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 23:49:38 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K7v516NNJz3bcm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2022 23:46:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K7v530j0pz3bZL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2022 23:46:47 +1100 (AEDT)
+Received: by gandalf.ozlabs.org (Postfix)
+ id 4K7v536R9Jz4xvL; Wed,  2 Mar 2022 23:46:47 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4K7v5031kJz4xvK;
- Wed,  2 Mar 2022 23:46:44 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4K7v532223z4xZ5;
+ Wed,  2 Mar 2022 23:46:47 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Michael Ellerman <mpe@ellerman.id.au>,
- open list <linux-kernel@vger.kernel.org>,
- "open list:LINUX FOR POWERPC 32-BIT AND 64-BIT"
- <linuxppc-dev@lists.ozlabs.org>, Russell Currey <ruscur@russell.cc>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Wedson Almeida Filho <wedsonaf@google.com>,
- Guo Zhengkui <guozhengkui@vivo.com>
-In-Reply-To: <20220223075426.20939-1-guozhengkui@vivo.com>
-References: <20220223075426.20939-1-guozhengkui@vivo.com>
-Subject: Re: [PATCH] powerpc/module_64: fix array_size.cocci warning
-Message-Id: <164622488602.2052779.922464247956478447.b4-ty@ellerman.id.au>
-Date: Wed, 02 Mar 2022 23:41:26 +1100
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <20220201105305.155511-1-hbathini@linux.ibm.com>
+References: <20220201105305.155511-1-hbathini@linux.ibm.com>
+Subject: Re: [RESEND PATCH v2] powerpc/fadump: register for fadump as early as
+ possible
+Message-Id: <164622490722.2052779.3719204745248765355.b4-ty@ellerman.id.au>
+Date: Wed, 02 Mar 2022 23:41:47 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,24 +47,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel@vivo.com
+Cc: Kairui Song <kasong@redhat.com>, Petr Tesarik <ptesarik@suse.cz>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>, Michal Suchánek <msuchanek@suse.de>, Dave Young <dyoung@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 23 Feb 2022 15:54:23 +0800, Guo Zhengkui wrote:
-> Fix following coccicheck warning:
-> ./arch/powerpc/kernel/module_64.c:432:40-41: WARNING: Use ARRAY_SIZE.
-> 
-> ARRAY_SIZE(arr) is a macro provided by the kernel. It makes sure that arr
-> is an array, so it's safer than sizeof(arr) / sizeof(arr[0]) and more
-> standard.
+On Tue, 1 Feb 2022 16:23:05 +0530, Hari Bathini wrote:
+> Crash recovery (fadump) is setup in the userspace by some service.
+> This service rebuilds initrd with dump capture capability, if it is
+> not already dump capture capable before proceeding to register for
+> firmware assisted dump (echo 1 > /sys/kernel/fadump/registered). But
+> arming the kernel with crash recovery support does not have to wait
+> for userspace configuration. So, register for fadump while setting
+> it up itself. This can at worst lead to a scenario, where /proc/vmcore
+> is ready afer crash but the initrd does not know how/where to offload
+> it, which is always better than not having a /proc/vmcore at all due
+> to incomplete configuration in the userspace at the time of crash.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/module_64: fix array_size.cocci warning
-      https://git.kernel.org/powerpc/c/8a0edc72bec25fa62450bfef1a150483558e1289
+[1/1] powerpc/fadump: register for fadump as early as possible
+      https://git.kernel.org/powerpc/c/607451ce0aa9bdff590db4d087173edba6d7a29d
 
 cheers
