@@ -4,70 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 229DDC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 10:01:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9219FC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 10:02:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K7qQH647pz3bft
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 21:01:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K7qQz3blBz3cFC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Mar 2022 21:02:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=FSwFYVuD;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GwFkGRuc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
- helo=mail-pf1-x441.google.com; envelope-from=xiam0nd.tong@gmail.com;
- receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.24; helo=mga09.intel.com;
+ envelope-from=ilpo.jarvinen@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=FSwFYVuD; dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=GwFkGRuc; dkim-atps=neutral
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K7plm4Ls1z2xm2;
- Wed,  2 Mar 2022 20:31:31 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id y11so1406820pfa.6;
- Wed, 02 Mar 2022 01:31:32 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=yRnvPGVK9XQdKYPg/H0ecgdZJeSxpiKw/X1pv37GC+w=;
- b=FSwFYVuD0cAwR74FpWh/UVnJlZEuhHuzmEJF2CmWuTU5VQk08y1iQ6Cm+4Kk/IHZ7f
- ykn4dSn+LtVJ/QNPcAOF0Kr9OP0uyQbpGUjZhyE2BsGEuIYzlTgMZwHl/BYpjMpkMG0+
- P9mnuSE0YONb1xqLwPVeO/elgzKWhvv7I7OGEBThyQYghI00EIr5RS9MGp7GsCYrqLUi
- wR7dcG4fdae3Ke7WyU9tBlNyUPSMcC8RmnmBsmKYAmxRcsIUhLqhpYW4uCJTlnf3AogC
- YxEVbABh4/fwCz1Lhf2xi5Cnii6w5cwNjqEkAadiEwyP0C/cLXPnnAaLLll6ns+CdAHq
- Ceuw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=yRnvPGVK9XQdKYPg/H0ecgdZJeSxpiKw/X1pv37GC+w=;
- b=24zoYc8V8Pm8nTaLOdPTyp6OQh5PzpLmOZJ9g+tKOHBxxYr1mAM0PXb7DhvzK/+3cm
- XG6dvTZo3Uaa7aKp9Hh+L+MhKoE33hjgOBqPAf9E4a6kzjTbACDMHP+i/vuX4UH2j/Oo
- puIu5GxD2PaAIKB9UwZSynuyJ2w+Ssm3HcrM+I3AqrCfDjFQW35pY1km/LBV6WS9BZ7a
- 7woCJahiPRogMAbDTrwvijz8p6onnutkKGWbk8jYcxTh9BOZ0ORRDvQYtCaLdXbBsbv9
- hfMrd9u3PJK4GMNu1O8oiQ7NB7Q9PsLDxeDATAoipY+ffjhlajVKH8+N+0+qLSeRGUMK
- AGlw==
-X-Gm-Message-State: AOAM533bqkkpexOnXK4vuC/grumLrZXSrkR9n9pNO5t1AeoVrzvJHIb0
- fv3qN+HUm6b0n8LdBdCurXo=
-X-Google-Smtp-Source: ABdhPJxxYDNcbSMxl56+YduSTiv9ULKN3/PKEO9PEtlxvCfSyuhc7esxotc8paaSBF6ReGk5V/MJxQ==
-X-Received: by 2002:a05:6a00:244b:b0:4c9:319e:ecb7 with SMTP id
- d11-20020a056a00244b00b004c9319eecb7mr31990006pfj.58.1646213490674; 
- Wed, 02 Mar 2022 01:31:30 -0800 (PST)
-Received: from ubuntu.huawei.com ([119.3.119.20])
- by smtp.googlemail.com with ESMTPSA id
- y74-20020a62644d000000b004f129e94f40sm19496506pfb.131.2022.03.02.01.31.11
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 02 Mar 2022 01:31:30 -0800 (PST)
-From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
-To: torvalds@linux-foundation.org
-Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop body
- as a ptr
-Date: Wed,  2 Mar 2022 17:31:06 +0800
-Message-Id: <20220302093106.8402-1-xiam0nd.tong@gmail.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <CAHk-=whLK11HyvpUtEftOjc3Gup2V77KpAQ2fycj3uai=qceHw@mail.gmail.com>
-References: <CAHk-=whLK11HyvpUtEftOjc3Gup2V77KpAQ2fycj3uai=qceHw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K7qLs67LTz30FZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Mar 2022 20:58:28 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1646215110; x=1677751110;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=VVGdFbQA5dpTmH1Oi8imwujW6M34G1DuUPJxrfXUWac=;
+ b=GwFkGRucw5JzbbmR1U9e0jYsW3u2fG+hZ2XUW1qBCMHC6jM8TnavGorP
+ nzr6iZJCBZZrPSSx8fABqc6he7SGCtIilFb6ylzLjgNCAt0oGRq7FWHxJ
+ U4bO7SCRYz8nbQ9ylrcjy2Wy0G3H9J1iH+rSR8aV1E1K2fdT7zJLxfQSx
+ 8QfdJV9kVQn33VDF7mwY8HXJ83HFruH7lp3nftGNOg8Z3zpend3fsQ1SH
+ YBQhY/DH97aR2waJarcTj1035thhFjlxCUq0y5dLqt9Cm/5ty9CpPG2+b
+ GOK9N9p6eivRuMfgHPQKJ+gGtOo4fKV5o+klTfaTcGQIw3mNQRvGHZBGn Q==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10273"; a="253094737"
+X-IronPort-AV: E=Sophos;i="5.90,148,1643702400"; d="scan'208";a="253094737"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Mar 2022 01:57:19 -0800
+X-IronPort-AV: E=Sophos;i="5.90,148,1643702400"; d="scan'208";a="551182160"
+Received: from abotoi-mobl2.ger.corp.intel.com (HELO
+ ijarvine-MOBL2.ger.corp.intel.com) ([10.251.218.48])
+ by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Mar 2022 01:57:12 -0800
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To: linux-serial@vger.kernel.org, Jiri Slaby <jirislaby@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [RFC PATCH 5/7] serial: termbits: ADDRB to indicate 9th bit
+ addressing mode
+Date: Wed,  2 Mar 2022 11:56:04 +0200
+Message-Id: <20220302095606.14818-6-ilpo.jarvinen@linux.intel.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20220302095606.14818-1-ilpo.jarvinen@linux.intel.com>
+References: <20220302095606.14818-1-ilpo.jarvinen@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Wed, 02 Mar 2022 21:00:51 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -80,121 +71,229 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, kvm@vger.kernel.org, gustavo@embeddedor.com,
- linux-iio@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
- linux@rasmusvillemoes.dk, dri-devel@lists.freedesktop.org, c.giuffrida@vu.nl,
- amd-gfx@lists.freedesktop.org, samba-technical@lists.samba.org,
- linux1394-devel@lists.sourceforge.net, drbd-dev@lists.linbit.com,
- linux-arch@vger.kernel.org, linux-cifs@vger.kernel.org,
- linux-aspeed@lists.ozlabs.org, linux-scsi@vger.kernel.org,
- linux-rdma@vger.kernel.org, linux-staging@lists.linux.dev, h.j.bos@vu.nl,
- jgg@ziepe.ca, intel-wired-lan@lists.osuosl.org, nouveau@lists.freedesktop.org,
- bcm-kernel-feedback-list@broadcom.com, dan.carpenter@oracle.com,
- linux-media@vger.kernel.org, keescook@chromium.org, arnd@arndb.de,
- linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org,
- bjohannesmeyer@gmail.com, linux-block@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, christophe.jaillet@wanadoo.fr,
- jakobkoschel@gmail.com, v9fs-developer@lists.sourceforge.net,
- linux-tegra@vger.kernel.org, tglx@linutronix.de,
- andriy.shevchenko@linux.intel.com, linux-arm-kernel@lists.infradead.org,
- linux-sgx@vger.kernel.org, nathan@kernel.org, netdev@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
- tipc-discussion@lists.sourceforge.net, linux-crypto@vger.kernel.org,
- dmaengine@vger.kernel.org, linux-mediatek@lists.infradead.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- christian.koenig@amd.com, rppt@kernel.org
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+ linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ Matt Turner <mattst88@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ Johan Hovold <johan@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Richard Henderson <rth@twiddle.net>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
+ linux-api@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-mips@vger.kernel.org, Lukas Wunner <lukas@wunner.de>,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 28 Feb 2022 16:41:04 -0800, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> But basically to _me_, the important part is that the end result is
-> maintainable longer-term.
+Add ADDRB to termbits to indicate 9th bit addressing mode.
+This change is necessary for supporting devices with RS485
+multipoint addressing [*]. A later patch in the patch series
+adds support for Synopsys Designware UART capable for 9th bit
+addressing mode. In this mode, 9th bit is used to indicate an
+address (byte) within the communication line. The 9th bit
+addressing mode is selected using ADDRB introduced by an earlier
+patch.
 
-I couldn't agree more. And because of that, I stick with the following
-approach because it's maintainable longer-term than "type(pos) pos" one:
- Implements a new macro for each list_for_each_entry* with _inside suffix.
-  #define list_for_each_entry_inside(pos, type, head, member)
+[*] Technically, RS485 is just an electronic spec and does not
+itself specify the 9th bit addressing mode but 9th bit seems
+at least "semi-standard" way to do addressing with RS485.
 
-I have posted a patch series here to demonstrate this approach:
-https://lore.kernel.org/lkml/20220301075839.4156-3-xiam0nd.tong@gmail.com/
+Cc: linux-api@vger.kernel.org
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matt Turner <mattst88@gmail.com>
+Cc: linux-alpha@vger.kernel.org
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: linux-mips@vger.kernel.org
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-parisc@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arch@vger.kernel.org
+Cc: linux-usb@vger.kernel.org
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+---
+ arch/alpha/include/uapi/asm/termbits.h   | 1 +
+ arch/mips/include/uapi/asm/termbits.h    | 1 +
+ arch/parisc/include/uapi/asm/termbits.h  | 1 +
+ arch/powerpc/include/uapi/asm/termbits.h | 1 +
+ arch/sparc/include/uapi/asm/termbits.h   | 1 +
+ drivers/tty/amiserial.c                  | 6 +++++-
+ drivers/tty/moxa.c                       | 1 +
+ drivers/tty/mxser.c                      | 1 +
+ drivers/tty/serial/serial_core.c         | 2 ++
+ drivers/tty/tty_ioctl.c                  | 2 ++
+ drivers/usb/serial/usb-serial.c          | 5 +++--
+ include/uapi/asm-generic/termbits.h      | 1 +
+ 12 files changed, 20 insertions(+), 3 deletions(-)
 
-Although we need replace all the use of list_for_each_entry* (15000+)
-with list_for_each_entry*_inside, the work can be done gradually rather
-than all at once. We can incrementally replace these callers until
-all these in the kernel are completely updated with *_inside* one. At
-that time, we can just remove the implements of origin macros and rename
-the *_inside* macro back to the origin name just in one single patch.
+diff --git a/arch/alpha/include/uapi/asm/termbits.h b/arch/alpha/include/uapi/asm/termbits.h
+index 4575ba34a0ea..285169c794ec 100644
+--- a/arch/alpha/include/uapi/asm/termbits.h
++++ b/arch/alpha/include/uapi/asm/termbits.h
+@@ -180,6 +180,7 @@ struct ktermios {
+ #define HUPCL	00040000
+ 
+ #define CLOCAL	00100000
++#define ADDRB	010000000		/* address bit */
+ #define CMSPAR	  010000000000		/* mark or space (stick) parity */
+ #define CRTSCTS	  020000000000		/* flow control */
+ 
+diff --git a/arch/mips/include/uapi/asm/termbits.h b/arch/mips/include/uapi/asm/termbits.h
+index dfeffba729b7..e7ea31cfec78 100644
+--- a/arch/mips/include/uapi/asm/termbits.h
++++ b/arch/mips/include/uapi/asm/termbits.h
+@@ -181,6 +181,7 @@ struct ktermios {
+ #define	 B3000000 0010015
+ #define	 B3500000 0010016
+ #define	 B4000000 0010017
++#define ADDRB	  0020000	/* address bit */
+ #define CIBAUD	  002003600000	/* input baud rate */
+ #define CMSPAR	  010000000000	/* mark or space (stick) parity */
+ #define CRTSCTS	  020000000000	/* flow control */
+diff --git a/arch/parisc/include/uapi/asm/termbits.h b/arch/parisc/include/uapi/asm/termbits.h
+index 40e920f8d683..629be061f5d5 100644
+--- a/arch/parisc/include/uapi/asm/termbits.h
++++ b/arch/parisc/include/uapi/asm/termbits.h
+@@ -158,6 +158,7 @@ struct ktermios {
+ #define  B3000000 0010015
+ #define  B3500000 0010016
+ #define  B4000000 0010017
++#define ADDRB	  0020000		/* address bit */
+ #define CIBAUD    002003600000		/* input baud rate */
+ #define CMSPAR    010000000000          /* mark or space (stick) parity */
+ #define CRTSCTS   020000000000          /* flow control */
+diff --git a/arch/powerpc/include/uapi/asm/termbits.h b/arch/powerpc/include/uapi/asm/termbits.h
+index ed18bc61f63d..1b778ac562a4 100644
+--- a/arch/powerpc/include/uapi/asm/termbits.h
++++ b/arch/powerpc/include/uapi/asm/termbits.h
+@@ -171,6 +171,7 @@ struct ktermios {
+ #define HUPCL	00040000
+ 
+ #define CLOCAL	00100000
++#define ADDRB	00200000		/* address bit */
+ #define CMSPAR	  010000000000		/* mark or space (stick) parity */
+ #define CRTSCTS	  020000000000		/* flow control */
+ 
+diff --git a/arch/sparc/include/uapi/asm/termbits.h b/arch/sparc/include/uapi/asm/termbits.h
+index ce5ad5d0f105..4ad60c4acf65 100644
+--- a/arch/sparc/include/uapi/asm/termbits.h
++++ b/arch/sparc/include/uapi/asm/termbits.h
+@@ -200,6 +200,7 @@ struct ktermios {
+ #define B3000000  0x00001011
+ #define B3500000  0x00001012
+ #define B4000000  0x00001013  */
++#define ADDRB	  0x00002000  /* address bit */
+ #define CIBAUD	  0x100f0000  /* input baud rate (not used) */
+ #define CMSPAR	  0x40000000  /* mark or space (stick) parity */
+ #define CRTSCTS	  0x80000000  /* flow control */
+diff --git a/drivers/tty/amiserial.c b/drivers/tty/amiserial.c
+index 533d02b38e02..3ca97007bd6e 100644
+--- a/drivers/tty/amiserial.c
++++ b/drivers/tty/amiserial.c
+@@ -1175,7 +1175,11 @@ static void rs_set_termios(struct tty_struct *tty, struct ktermios *old_termios)
+ {
+ 	struct serial_state *info = tty->driver_data;
+ 	unsigned long flags;
+-	unsigned int cflag = tty->termios.c_cflag;
++	unsigned int cflag;
++
++	tty->termios.c_cflag &= ~ADDRB;
++
++	cflag = tty->termios.c_cflag;
+ 
+ 	change_speed(tty, info, old_termios);
+ 
+diff --git a/drivers/tty/moxa.c b/drivers/tty/moxa.c
+index f3c72ab1476c..07cd88152d58 100644
+--- a/drivers/tty/moxa.c
++++ b/drivers/tty/moxa.c
+@@ -2050,6 +2050,7 @@ static int MoxaPortSetTermio(struct moxa_port *port, struct ktermios *termio,
+ 
+ 	ofsAddr = port->tableAddr;
+ 
++	termio->c_cflag &= ~ADDRB;
+ 	mode = termio->c_cflag & CSIZE;
+ 	if (mode == CS5)
+ 		mode = MX_CS5;
+diff --git a/drivers/tty/mxser.c b/drivers/tty/mxser.c
+index 836c9eca2946..220676363a07 100644
+--- a/drivers/tty/mxser.c
++++ b/drivers/tty/mxser.c
+@@ -577,6 +577,7 @@ static void mxser_change_speed(struct tty_struct *tty, struct ktermios *old_term
+ 	struct mxser_port *info = tty->driver_data;
+ 	unsigned cflag, cval;
+ 
++	tty->termios.c_cflag &= ~ADDRB;
+ 	cflag = tty->termios.c_cflag;
+ 
+ 	if (mxser_set_baud(tty, tty_get_baud_rate(tty))) {
+diff --git a/drivers/tty/serial/serial_core.c b/drivers/tty/serial/serial_core.c
+index 846192a7b4bf..8ab88293c917 100644
+--- a/drivers/tty/serial/serial_core.c
++++ b/drivers/tty/serial/serial_core.c
+@@ -1489,6 +1489,8 @@ static void uart_set_termios(struct tty_struct *tty,
+ 		goto out;
+ 	}
+ 
++	tty->termios.c_cflag &= ~ADDRB;
++
+ 	uart_change_speed(tty, state, old_termios);
+ 	/* reload cflag from termios; port driver may have overridden flags */
+ 	cflag = tty->termios.c_cflag;
+diff --git a/drivers/tty/tty_ioctl.c b/drivers/tty/tty_ioctl.c
+index 63181925ec1a..934037d78868 100644
+--- a/drivers/tty/tty_ioctl.c
++++ b/drivers/tty/tty_ioctl.c
+@@ -319,6 +319,8 @@ unsigned char tty_get_frame_size(unsigned int cflag)
+ 		bits++;
+ 	if (cflag & PARENB)
+ 		bits++;
++	if (cflag & ADDRB)
++		bits++;
+ 
+ 	return bits;
+ }
+diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
+index 24101bd7fcad..44b73aea80bb 100644
+--- a/drivers/usb/serial/usb-serial.c
++++ b/drivers/usb/serial/usb-serial.c
+@@ -525,9 +525,10 @@ static void serial_set_termios(struct tty_struct *tty, struct ktermios *old)
+ 
+ 	dev_dbg(&port->dev, "%s\n", __func__);
+ 
+-	if (port->serial->type->set_termios)
++	if (port->serial->type->set_termios) {
++		tty->termios.c_cflag &= ~ADDRB;
+ 		port->serial->type->set_termios(tty, port, old);
+-	else
++	} else
+ 		tty_termios_copy_hw(&tty->termios, old);
+ }
+ 
+diff --git a/include/uapi/asm-generic/termbits.h b/include/uapi/asm-generic/termbits.h
+index 2fbaf9ae89dd..5f5228329d45 100644
+--- a/include/uapi/asm-generic/termbits.h
++++ b/include/uapi/asm-generic/termbits.h
+@@ -157,6 +157,7 @@ struct ktermios {
+ #define  B3000000 0010015
+ #define  B3500000 0010016
+ #define  B4000000 0010017
++#define ADDRB     0020000	/* address bit */
+ #define CIBAUD	  002003600000	/* input baud rate */
+ #define CMSPAR	  010000000000	/* mark or space (stick) parity */
+ #define CRTSCTS	  020000000000	/* flow control */
+-- 
+2.30.2
 
-And the "type(pos) pos" approach need teach developers to "not initialize
-the iterator variable, otherwise the use-after-loop will not be reported by
-compiler", which is unreasonable and impossible for all developers. 
-
-And it will mess up the following code logic and no warnning reported by
-compiler, even without initializing "ext" at the beginning:
-void foo(struct mem_extent *arg) {
-  struct mem_extent *ext;  // used both for iterator and normal ptr
-  ...
-  ext = arg;  // this assignment can alse be done in another bar() func
-  ...
-  list_for_each_entry(ext, head, member) {
-    if (found(ext))
-       break;
-  }
-  ...
-  // use ext after the loop
-  ret = ext;
-}
-If the loop hit the break, the last "ret" will be the found ext iterator.
-However, if the "type(pos) pos" approach applied, the last "ret" will be
-"arg" which is not the intention of the developers, because the "ext" is
-two different variables inside and outside the loop.
-
-Thus, my idea is *better a finger off than always aching*, let's choose
-the "list_for_each_entry_inside(pos, type, head, member)" approach.
-
-> It turns out that just syntactically, it's really nice to give the
-> type of the iterator from outside the way we do now. Yeah, it may be a
-> bit odd, and maybe it's partly because I'm so used to the
-> "list_for_each_list_entry()" syntax, but moving the type into the loop
-> construct really made it nasty - either one very complex line, or
-> having to split it over two lines which was even worse.
->
-> Maybe the place I looked at just happened to have a long typename, but
-> it's basically always going to be a struct, so it's never a _simple_
-> type. And it just looked very odd adn unnatural to have the type as
-> one of the "arguments" to that list_for_each_entry() macro.
-
-we can pass a shorter type name to list_for_each_entry_inside, thus no
-need to split it over two lines. Actually it is not a big problem.
-+ #define t struct sram_bank_info
-- list_for_each_entry(pos, head, member) {
-+ list_for_each_entry_inside(pos, t, head, member) {
-
-I put the type at the second argument not the first to avoid messing up
-the pattern match in some coccinelle scripts.
-
->  (b) gives us a nice warning for any normal use-after-loop case
-> (unless you explicitly initialized it like that
-> sgx_mmu_notifier_release() function did for no good reason
-
-sometimes developers can be confused by the reported warnning:
-"used without having been initialized", and can not figure out immediately
-that "oh, now i am using another different variable but with the same name
-of the loop iterator variable", which has changed the programming habits
-of developers.
-
->  (c) also guarantees that even if you don't get a warning,
-> non-converted (or newly written) bad code won't actually _work_
->
-> so you end up getting the new rules without any ambiguity or mistaken
-
-It will lead to a wrong/NULL pointer dereference if the pointer is used
-anywhere else, depend on which value is used to initialized with.
-
-Best regard,
---
-Xiaomeng Tong
