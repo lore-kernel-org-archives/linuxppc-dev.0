@@ -4,57 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16CEBC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 04:59:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3E1CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 05:34:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K8Jfz4G47z3c8r
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 15:59:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K8KRH0xzSz3c1g
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 16:34:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=l3OKI5Ex;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=185.58.86.151;
- helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102c;
+ helo=mail-pj1-x102c.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=l3OKI5Ex; dkim-atps=neutral
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com
+ [IPv6:2607:f8b0:4864:20::102c])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K8JfK0SNFz3bcg
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2022 15:58:30 +1100 (AEDT)
-Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- uk-mtapsc-5-c9saVIHFMHux_Sno3vxg6w-1; Thu, 03 Mar 2022 04:58:25 +0000
-X-MC-Unique: c9saVIHFMHux_Sno3vxg6w-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
- Server (TLS) id 15.0.1497.28; Thu, 3 Mar 2022 04:58:23 +0000
-Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
- AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
- 15.00.1497.028; Thu, 3 Mar 2022 04:58:23 +0000
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Xiaomeng Tong' <xiam0nd.tong@gmail.com>
-Subject: RE: [PATCH 2/6] treewide: remove using list iterator after loop body
- as a ptr
-Thread-Topic: [PATCH 2/6] treewide: remove using list iterator after loop body
- as a ptr
-Thread-Index: AQHYLhg9+DU/OogLf0+tiSFmjztyUKysHu+QgADRVYCAACVtoA==
-Date: Thu, 3 Mar 2022 04:58:23 +0000
-Message-ID: <39404befad5b44b385698ff65465abe5@AcuMS.aculab.com>
-References: <1077f17e50d34dc2bbfdf4e52a1cb2fd@AcuMS.aculab.com>
- <20220303022729.9321-1-xiam0nd.tong@gmail.com>
-In-Reply-To: <20220303022729.9321-1-xiam0nd.tong@gmail.com>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K8KQb0zjJz3bfc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2022 16:33:25 +1100 (AEDT)
+Received: by mail-pj1-x102c.google.com with SMTP id
+ gj15-20020a17090b108f00b001bef86c67c1so3740113pjb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Mar 2022 21:33:26 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=omxvmnmUQDrS3/MVkFiDHiar06ZLh8rPdwBqRR9eRdo=;
+ b=l3OKI5Exzs0NHx381iaX233AyqqB1IF+5/IZgrjisTfbZgsds9vYX2GAA/r/ciije0
+ mCimCccF9eQ/aQmKJNyO4EVLfFTTmZr8GY94qjnShCp2dgIhuu/xl9adCREIO1OXznKx
+ hxErqR3KRfqlWYHtD1y4GrzwdeK4blwFAT6yfwbTu6O35ul1bBsZuqGHMsMZQjxUTudR
+ bA0p7yX3hG2pKLbLVBLlg3h1pDxncsNTtCWNrJhVukydcMlzUrvc8xT6V2eBmBauwAGl
+ dglHOd0WKmGUh0s15fjHKmuHsLiGBf+fbyv/Vjmr+OokQtNuR9jr97ZZXlDfNaidKPan
+ /Otg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=omxvmnmUQDrS3/MVkFiDHiar06ZLh8rPdwBqRR9eRdo=;
+ b=Tin4Y0F35N8HL9vmDAaPly5MF/81HxZ0HdJLfOtzuGURGknDwPL0693X+sknOV0tDz
+ gu/QvIJm8kZ+IWt/fxusiAXS9qH2vSfoOo7UPwjUJoQFEgoWEBVR5qL5uhMvJWPO2m6w
+ TZNb/FEyF8vUyEzI0/W+cbjV6HIUEMqgFL9rj5AZaastnmkCYB7mdEMI8X699CQPAaAd
+ uVZ1o0RF7JoZ/r0GKSpVCquaI/YCjyxT2WQdiz58BWO8pHI4GqJNMEnnPg04AnRhXz1S
+ UzIdceDH+URsoiIwjTd1Ge777Z2woRqmQtqBSc85eGmD0EeJP4sPGvn/gZa6fN2zr+Mg
+ vFBg==
+X-Gm-Message-State: AOAM531uxhJxJBJfVTem15X2bkwLSeYslwx2m6FS4mLvReokCQSxIENC
+ oBZeU0Zc46UM76IO4JsOq0mNAyA1ZbDVlQ==
+X-Google-Smtp-Source: ABdhPJzqShbBNsdH8pC7ib9xf3UMBcgc7jEzBMaASw7RSLcVlRfplrsE+gHNCMJW4QAYgHpBJhD8KA==
+X-Received: by 2002:a17:90b:4d88:b0:1bf:793:7134 with SMTP id
+ oj8-20020a17090b4d8800b001bf07937134mr3545746pjb.112.1646285604086; 
+ Wed, 02 Mar 2022 21:33:24 -0800 (PST)
+Received: from bobo.ozlabs.ibm.com (193-116-90-129.tpgi.com.au.
+ [193.116.90.129]) by smtp.gmail.com with ESMTPSA id
+ t7-20020a17090a024700b001bf12386db4sm170300pje.47.2022.03.02.21.33.21
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 02 Mar 2022 21:33:23 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/6] KVM: PPC: Book3S HV P9: Fix "lost kick" race
+Date: Thu,  3 Mar 2022 15:33:10 +1000
+Message-Id: <20220303053315.1056880-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20220303053315.1056880-1-npiggin@gmail.com>
+References: <20220303053315.1056880-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,133 +82,135 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "gustavo@embeddedor.com" <gustavo@embeddedor.com>,
- "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>,
- "kgdb-bugreport@lists.sourceforge.net" <kgdb-bugreport@lists.sourceforge.net>,
- "linux@rasmusvillemoes.dk" <linux@rasmusvillemoes.dk>,
- "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
- "c.giuffrida@vu.nl" <c.giuffrida@vu.nl>,
- "amd-gfx@lists.freedesktop.org" <amd-gfx@lists.freedesktop.org>,
- "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
- "samba-technical@lists.samba.org" <samba-technical@lists.samba.org>,
- "linux1394-devel@lists.sourceforge.net"
- <linux1394-devel@lists.sourceforge.net>,
- "drbd-dev@lists.linbit.com" <drbd-dev@lists.linbit.com>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-cifs@vger.kernel.org" <linux-cifs@vger.kernel.org>,
- "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>,
- "h.j.bos@vu.nl" <h.j.bos@vu.nl>, "jgg@ziepe.ca" <jgg@ziepe.ca>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "nouveau@lists.freedesktop.org" <nouveau@lists.freedesktop.org>,
- "bcm-kernel-feedback-list@broadcom.com"
- <bcm-kernel-feedback-list@broadcom.com>,
- "dan.carpenter@oracle.com" <dan.carpenter@oracle.com>,
- "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
- "keescook@chromium.org" <keescook@chromium.org>,
- "arnd@arndb.de" <arnd@arndb.de>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
- "bjohannesmeyer@gmail.com" <bjohannesmeyer@gmail.com>,
- "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
- "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
- "christophe.jaillet@wanadoo.fr" <christophe.jaillet@wanadoo.fr>,
- "jakobkoschel@gmail.com" <jakobkoschel@gmail.com>,
- "v9fs-developer@lists.sourceforge.net" <v9fs-developer@lists.sourceforge.net>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-sgx@vger.kernel.org" <linux-sgx@vger.kernel.org>,
- "nathan@kernel.org" <nathan@kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-f2fs-devel@lists.sourceforge.net"
- <linux-f2fs-devel@lists.sourceforge.net>,
- "tipc-discussion@lists.sourceforge.net"
- <tipc-discussion@lists.sourceforge.net>,
- "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
- "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
- "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "christian.koenig@amd.com" <christian.koenig@amd.com>,
- "rppt@kernel.org" <rppt@kernel.org>
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Xiaomeng Tong
-> Sent: 03 March 2022 02:27
->=20
-> On Wed, 2 Mar 2022 14:04:06 +0000, David Laight
-> <David.Laight@ACULAB.COM> wrote:
-> > I think that it would be better to make any alternate loop macro
-> > just set the variable to NULL on the loop exit.
-> > That is easier to code for and the compiler might be persuaded to
-> > not redo the test.
->=20
-> No, that would lead to a NULL dereference.
+When new work is created that requires attention from the hypervisor
+(e.g., to inject an interrupt into the guest), fast_vcpu_kick is used to
+pull the target vcpu out of the guest if it may have been running.
 
-Why, it would make it b ethe same as the 'easy to use':
-=09for (item =3D head; item; item =3D item->next) {
-=09=09...
-=09=09if (...)
-=09=09=09break;
-=09=09...
-=09}
-=09if (!item)
-=09=09return;
-=20
-> The problem is the mis-use of iterator outside the loop on exit, and
-> the iterator will be the HEAD's container_of pointer which pointers
-> to a type-confused struct. Sidenote: The *mis-use* here refers to
-> mistakely access to other members of the struct, instead of the
-> list_head member which acutally is the valid HEAD.
+Therefore the work creation side looks like this:
 
-The problem is that the HEAD's container_of pointer should never
-be calculated at all.
-This is what is fundamentally broken about the current definition.
+  vcpu->arch.doorbell_request = 1;
+  kvmppc_fast_vcpu_kick_hv(vcpu) {
+    smp_mb();
+    cpu = vcpu->cpu;
+    if (cpu != -1)
+        send_ipi(cpu);
+  }
 
-> IOW, you would dereference a (NULL + offset_of_member) address here.
+And the guest entry side *should* look like this:
 
-Where?
+  vcpu->cpu = smp_processor_id();
+  smp_mb();
+  if (vcpu->arch.doorbell_request) {
+    // do something (abort entry or inject doorbell etc)
+  }
 
-> Please remind me if i missed something, thanks.
->
-> Can you share your "alternative definitions" details? thanks!
+But currently the store and load are flipped, so it is possible for the
+entry to see no doorbell pending, and the doorbell creation misses the
+store to set cpu, resulting lost work (or at least delayed until the
+next guest exit).
 
-The loop should probably use as extra variable that points
-to the 'list node' in the next structure.
-Something like:
-=09for (xxx *iter =3D head->next;
-=09=09iter =3D=3D &head ? ((item =3D NULL),0) : ((item =3D list_item(iter),=
-1));
-=09=09iter =3D item->member->next) {
-=09   ...
-With a bit of casting you can use 'item' to hold 'iter'.
+Fix this by reordering the entry operations and adding a smp_mb
+between them. The P8 path appears to have a similar race which is
+commented but not addressed yet.
 
->=20
-> > OTOH there may be alternative definitions that can be used to get
-> > the compiler (or other compiler-like tools) to detect broken code.
-> > Even if the definition can't possibly generate a working kerrnel.
->=20
-> The "list_for_each_entry_inside(pos, type, head, member)" way makes
-> the iterator invisiable outside the loop, and would be catched by
-> compiler if use-after-loop things happened.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kvm/book3s_hv.c | 41 +++++++++++++++++++++++++++++-------
+ 1 file changed, 33 insertions(+), 8 deletions(-)
 
-It is also a compete PITA for anything doing a search.
-
-=09David
-
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 84c89f08ae9a..f8c0f1f52a1e 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -225,6 +225,13 @@ static void kvmppc_fast_vcpu_kick_hv(struct kvm_vcpu *vcpu)
+ 	int cpu;
+ 	struct rcuwait *waitp;
+ 
++	/*
++	 * rcuwait_wake_up contains smp_mb() which orders prior stores that
++	 * create pending work vs below loads of cpu fields. The other side
++	 * is the barrier in vcpu run that orders setting the cpu fields vs
++	 * testing for pending work.
++	 */
++
+ 	waitp = kvm_arch_vcpu_get_wait(vcpu);
+ 	if (rcuwait_wake_up(waitp))
+ 		++vcpu->stat.generic.halt_wakeup;
+@@ -1089,7 +1096,7 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ 			break;
+ 		}
+ 		tvcpu->arch.prodded = 1;
+-		smp_mb();
++		smp_mb(); /* This orders prodded store vs ceded load */
+ 		if (tvcpu->arch.ceded)
+ 			kvmppc_fast_vcpu_kick_hv(tvcpu);
+ 		break;
+@@ -3771,6 +3778,14 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+ 		pvc = core_info.vc[sub];
+ 		pvc->pcpu = pcpu + thr;
+ 		for_each_runnable_thread(i, vcpu, pvc) {
++			/*
++			 * XXX: is kvmppc_start_thread called too late here?
++			 * It updates vcpu->cpu and vcpu->arch.thread_cpu
++			 * which are used by kvmppc_fast_vcpu_kick_hv(), but
++			 * kick is called after new exceptions become available
++			 * and exceptions are checked earlier than here, by
++			 * kvmppc_core_prepare_to_enter.
++			 */
+ 			kvmppc_start_thread(vcpu, pvc);
+ 			kvmppc_create_dtl_entry(vcpu, pvc);
+ 			trace_kvm_guest_enter(vcpu);
+@@ -4492,6 +4507,21 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	if (need_resched() || !kvm->arch.mmu_ready)
+ 		goto out;
+ 
++	vcpu->cpu = pcpu;
++	vcpu->arch.thread_cpu = pcpu;
++	vc->pcpu = pcpu;
++	local_paca->kvm_hstate.kvm_vcpu = vcpu;
++	local_paca->kvm_hstate.ptid = 0;
++	local_paca->kvm_hstate.fake_suspend = 0;
++
++	/*
++	 * Orders set cpu/thread_cpu vs testing for pending interrupts and
++	 * doorbells below. The other side is when these fields are set vs
++	 * kvmppc_fast_vcpu_kick_hv reading the cpu/thread_cpu fields to
++	 * kick a vCPU to notice the pending interrupt.
++	 */
++	smp_mb();
++
+ 	if (!nested) {
+ 		kvmppc_core_prepare_to_enter(vcpu);
+ 		if (test_bit(BOOK3S_IRQPRIO_EXTERNAL,
+@@ -4511,13 +4541,6 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+ 
+ 	tb = mftb();
+ 
+-	vcpu->cpu = pcpu;
+-	vcpu->arch.thread_cpu = pcpu;
+-	vc->pcpu = pcpu;
+-	local_paca->kvm_hstate.kvm_vcpu = vcpu;
+-	local_paca->kvm_hstate.ptid = 0;
+-	local_paca->kvm_hstate.fake_suspend = 0;
 -
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
+ 	__kvmppc_create_dtl_entry(vcpu, pcpu, tb + vc->tb_offset, 0);
+ 
+ 	trace_kvm_guest_enter(vcpu);
+@@ -4619,6 +4642,8 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	run->exit_reason = KVM_EXIT_INTR;
+ 	vcpu->arch.ret = -EINTR;
+  out:
++	vcpu->cpu = -1;
++	vcpu->arch.thread_cpu = -1;
+ 	powerpc_local_irq_pmu_restore(flags);
+ 	preempt_enable();
+ 	goto done;
+-- 
+2.23.0
 
