@@ -4,76 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52EDCC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 10:33:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB86BC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 10:57:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K8S5H0BJPz3c3G
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 21:33:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K8Scl3dTMz3cdn
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 21:57:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FeJTHsta;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
- helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=FeJTHsta; 
- dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K8S4S5Y8Bz3bpY
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2022 21:33:12 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 78A1E612E1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2022 10:33:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id DD8D1C004E1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2022 10:33:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1646303588;
- bh=vRabCWTn3zOOBKxcaRYk6NmqMo8GOZ6hCram3/0UDiQ=;
- h=From:To:Subject:Date:In-Reply-To:References:From;
- b=FeJTHsta/G1cGtI0iVPsBcGEWTCgydlWsDDhjgkZUbCxsgV2maIp9oTwJ4vskKtz6
- nFH3X+wvWJjrBssRxvAPVKHx/wuzn/A9CtgR36JJ4Qyvhm3SzML1VK8aU72/r/qjwg
- RzmIbb2gwrGCMwdbcVp53rJ89k4NCM7qVuaTKVnH+O69348rvhRaO8xKI7HS+NiDCm
- fC9J79yKc1+CTsgVzYsCRBpAXDr0gDacALTC2n0L7cwq2X85hXqapehNOg+vG1Xcm4
- +/wRTsWBYq6fktf97/zeN+N4Nngj631cocXNvmR3VJNBtHipiJkeKgE7udcRexoNG7
- VFfUk6pLEOrLw==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix,
- from userid 48) id C576CC05FE2; Thu,  3 Mar 2022 10:33:08 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 215652] kernel 5.17-rc fail to load radeon DRM "modprobe:
- ERROR: could not insert 'radeon': Unknown symbol in module, or unknown
- parameter (see dmesg)"
-Date: Thu, 03 Mar 2022 10:33:08 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: CC platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Drivers
-X-Bugzilla-Component: Video(DRI - non Intel)
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: drivers_video-dri@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-215652-206035-9pMDU3fREQ@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-215652-206035@https.bugzilla.kernel.org/>
-References: <bug-215652-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K8ScK2B2Hz3bxf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2022 21:57:20 +1100 (AEDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id C476A68AFE; Thu,  3 Mar 2022 11:57:14 +0100 (CET)
+Date: Thu, 3 Mar 2022 11:57:14 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Subject: Re: [PATCH 11/12] swiotlb: merge swiotlb-xen initialization into
+ swiotlb
+Message-ID: <20220303105714.GB15103@lst.de>
+References: <20220301105311.885699-1-hch@lst.de>
+ <20220301105311.885699-12-hch@lst.de>
+ <alpine.DEB.2.22.394.2203011720150.3261@ubuntu-linux-20-04-desktop>
+ <ca748512-12bb-7d75-13f1-8d5ec9703e26@oracle.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ca748512-12bb-7d75-13f1-8d5ec9703e26@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,26 +46,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-hyperv@vger.kernel.org, x86@kernel.org, linux-ia64@vger.kernel.org,
+ linux-pci@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Christoph Hellwig <hch@lst.de>, linux-s390@vger.kernel.org,
+ Stefano Stabellini <sstabellini@kernel.org>, Joerg Roedel <joro@8bytes.org>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ tboot-devel@lists.sourceforge.net, xen-devel@lists.xenproject.org,
+ David Woodhouse <dwmw2@infradead.org>, Tom Lendacky <thomas.lendacky@amd.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Robin Murphy <robin.murphy@arm.com>,
+ Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D215652
+On Wed, Mar 02, 2022 at 08:15:03AM -0500, Boris Ostrovsky wrote:
+> Not for me, I fail to boot with
+>
+> [   52.202000] bnxt_en 0000:31:00.0: swiotlb buffer is full (sz: 256 bytes), total 0 (slots), used 0 (slots)
+>
+> (this is iscsi root so I need the NIC).
+>
+>
+> I bisected it to "x86: remove the IOMMU table infrastructure" but haven't actually looked at the code yet.
 
---- Comment #4 from Erhard F. (erhard_f@mailbox.org) ---
-No I don't use an initrd. The kernel to boot the Talos is on a boot partiti=
-on,
-modules are loaded from root partition. Which worked in 5.16 and before. No=
-w I
-am getting this "could not insert 'radeon': Unknown symbol in module".
-
-Though this may explain the 2nd error I got when building radeon statically
-into the kernel. I'll add the firmware in-kernel and see if the error messa=
-ge
-changes and whether it actually works then.
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are watching someone on the CC list of the bug.=
+Thanks. Looks like the sizing is going wrong.  Just to confirm, this is
+dom0 on x86 and no special command line options?
