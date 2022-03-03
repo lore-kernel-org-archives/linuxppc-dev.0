@@ -4,72 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93B85C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 05:37:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92B46C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 07:28:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K8KWb2sCFz3dNq
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 16:37:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K8Myp6QjQz3c41
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 18:28:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=LgP9pNI3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=FXSRJXcZ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::630;
- helo=mail-pl1-x630.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102d;
+ helo=mail-pj1-x102d.google.com; envelope-from=xiam0nd.tong@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=LgP9pNI3; dkim-atps=neutral
-Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com
- [IPv6:2607:f8b0:4864:20::630])
+ header.s=20210112 header.b=FXSRJXcZ; dkim-atps=neutral
+Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com
+ [IPv6:2607:f8b0:4864:20::102d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K8KQs6VBNz3bqp
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2022 16:33:41 +1100 (AEDT)
-Received: by mail-pl1-x630.google.com with SMTP id i1so3574013plr.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Mar 2022 21:33:42 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K8My53DPDz30Kt;
+ Thu,  3 Mar 2022 18:27:23 +1100 (AEDT)
+Received: by mail-pj1-x102d.google.com with SMTP id
+ mg21-20020a17090b371500b001bef9e4657cso3596570pjb.0; 
+ Wed, 02 Mar 2022 23:27:24 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=3hEwUX2M4z9sTTzqMuyxap51XtRcQqvx+Ji9wYa5XEw=;
- b=LgP9pNI3LevRjPMZrnRJX7QYZ5Wq3eKyJTvcK1nrqghRKj2Kxf6eQcO+PkP+BEI+be
- nr+nJjjHBOkir0e1zbDuG9Izhhm/W/HAJtIWvOY6RG/exYj5G1AZoRUwhc0JST/O2oS7
- 5jf3c/SvVSlzCUzrElKgqFddnd/kqNTx05MkNdGSaSEZ6kT+EMe1jL9ASnW585AQghH4
- ob1tjYuY/vkQmmCTDVD1oA2Jg/fr8a7/Ndti/RatLVNngoGNcBUY2IeARNPXnhB060J8
- pdtUoleUJstwAqIlcm7XvoDqWl7AUoXlqSg02svCbqHand2cYSIJ9rylv0o9eOK/lt7U
- FXHw==
+ bh=sgLnwuYIGskFjie2H2jjPO7yZK5PfHYTTkrYtctc5ws=;
+ b=FXSRJXcZ2cyaSSh+RFzgN891/0EsPjQQYnYlHyt7Q6au+u55Yhw9CQjtuc/Xh+IxeA
+ jmfOE8xDuyw6aNjCCweSWK23ooxkZ+FDp1vmELSXGe87/BlE9lQAJ5VCHRxCoJXheQ6e
+ z0ZjBk6ntNVuChDJjKVkipnrg4PFzEOabNhKEpFBHr+LTEWxBydNvmRMp4x1CJuZdUwr
+ yIPtetuwCR4pZCzLE6nNdjkyjeKTi+kDUarqoW7jVGs3qBeY6IJUgMC1jfObzr57dlqg
+ 9D3LdaczFYPoymDULVGPmDhvRiVgHdjXQ/LS1xahv5fAEYKipZZ05ntIAVBo2UMKI5ki
+ Sw5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=3hEwUX2M4z9sTTzqMuyxap51XtRcQqvx+Ji9wYa5XEw=;
- b=x3qBc5QtUoHrxSz93ea2ycfYN6bEazCrn5PsRhMiraQEZnz1SRA38WfOjuf+7ruwWe
- 3ixkvpUQ2/14K3b3iLXxBAdhwuTYjyvcAx/m0GmkcK22+Mn+1g4/Wled/ZGoaxoeQsGW
- 9bE95MS1fKdf0AWWpwEfX2ZQh74Sgt2ZHEtKjkWviMFCR/TvIpVjlVOspRr3Hml6OGqh
- woaSlF5OKHhyUu6rDJUds0nuEy8Kzv6EKGfw+2MY9a2MIvAa7oRIaG/LZERotAULNOGl
- XeU2D0CfXewGubNyltLObq8eggwjRIesERaL3wvHU1TqktaiYRfy5GXq/15aQcPMziK6
- MlXQ==
-X-Gm-Message-State: AOAM5326bGk0+AqW8/du1z/2h7IvUdBCo8qqExlzpf6XIgu1V8MVybNj
- r5eyO/2OiJfefQYqHiC/n2mZ0boyIogh8A==
-X-Google-Smtp-Source: ABdhPJx9FKLC3Eg3uDGbCW1KaBbRZxsxMiRhMXslt7Xu+QU6fcG3okJQDZgdiKlv2++UKq3Hg6gGLw==
-X-Received: by 2002:a17:903:244e:b0:150:9b8c:3a6f with SMTP id
- l14-20020a170903244e00b001509b8c3a6fmr30906053pls.120.1646285609607; 
- Wed, 02 Mar 2022 21:33:29 -0800 (PST)
-Received: from bobo.ozlabs.ibm.com (193-116-90-129.tpgi.com.au.
- [193.116.90.129]) by smtp.gmail.com with ESMTPSA id
- t7-20020a17090a024700b001bf12386db4sm170300pje.47.2022.03.02.21.33.27
+ bh=sgLnwuYIGskFjie2H2jjPO7yZK5PfHYTTkrYtctc5ws=;
+ b=Pcakno5ErKHudptixKAcwtwbBRdHaTDRo3kip6f4aPtIrbBiDZTVtp1BTH8zANLEf7
+ YPgAtvrlSUArBxZ7KG/aoAaCZaiJ8SGQqRArFGLxseJTFhoBO7IuPi55CTtLtNiK0+HK
+ yutC0PUAv06XUiq7dRRNhvy8TwT5amU4YGbYTx+lvy0a0Jwu9+s9JutD2q8k8HbeM24l
+ NFoWjeNBXRSobhqoLQRDdkGfNgB1S3FiFUbuxz18nB8XBpKJQKQUfnE5tgucsUCBxDpD
+ Gy6+rXwrDXcEDIW0imRLVWOfWb2NSYo2WcwI6BHP+2FMJczLb0cU/UzBlI7H+ZjpY1mq
+ Bo2g==
+X-Gm-Message-State: AOAM532H2+/BP4fKK0lUB1ei+3KfbGwIn/aL2gljNX9iItCXa17lAfJz
+ ICPuHMloEPxj6DpN5IIkHUM=
+X-Google-Smtp-Source: ABdhPJxXZq8uo59Ohm7FMpyCTbKfTT1earKguyYxXh9VkI02LjxK1/LHoatHqlibGa3Ordge+YwobQ==
+X-Received: by 2002:a17:902:9687:b0:151:7b31:9a57 with SMTP id
+ n7-20020a170902968700b001517b319a57mr13723244plp.146.1646292442145; 
+ Wed, 02 Mar 2022 23:27:22 -0800 (PST)
+Received: from ubuntu.huawei.com ([119.3.119.19])
+ by smtp.googlemail.com with ESMTPSA id
+ nu18-20020a17090b1b1200b001bbef4d9049sm1302089pjb.23.2022.03.02.23.27.01
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 02 Mar 2022 21:33:29 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/6] KVM: PPC: Book3S HV P9: Move cede logic out of XIVE
- escalation rearming
-Date: Thu,  3 Mar 2022 15:33:12 +1000
-Message-Id: <20220303053315.1056880-4-npiggin@gmail.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20220303053315.1056880-1-npiggin@gmail.com>
-References: <20220303053315.1056880-1-npiggin@gmail.com>
+ Wed, 02 Mar 2022 23:27:21 -0800 (PST)
+From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
+To: david.laight@aculab.com
+Subject: RE: [PATCH 2/6] treewide: remove using list iterator after loop body
+ as a ptr
+Date: Thu,  3 Mar 2022 15:26:57 +0800
+Message-Id: <20220303072657.11124-1-xiam0nd.tong@gmail.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <39404befad5b44b385698ff65465abe5@AcuMS.aculab.com>
+References: <39404befad5b44b385698ff65465abe5@AcuMS.aculab.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -82,106 +84,122 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: alsa-devel@alsa-project.org, kvm@vger.kernel.org, gustavo@embeddedor.com,
+ linux-iio@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+ linux@rasmusvillemoes.dk, dri-devel@lists.freedesktop.org, c.giuffrida@vu.nl,
+ amd-gfx@lists.freedesktop.org, torvalds@linux-foundation.org,
+ samba-technical@lists.samba.org, linux1394-devel@lists.sourceforge.net,
+ drbd-dev@lists.linbit.com, linux-arch@vger.kernel.org,
+ linux-cifs@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
+ linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org,
+ linux-staging@lists.linux.dev, h.j.bos@vu.nl, jgg@ziepe.ca,
+ intel-wired-lan@lists.osuosl.org, nouveau@lists.freedesktop.org,
+ bcm-kernel-feedback-list@broadcom.com, dan.carpenter@oracle.com,
+ linux-media@vger.kernel.org, keescook@chromium.org, arnd@arndb.de,
+ linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+ bjohannesmeyer@gmail.com, linux-block@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, christophe.jaillet@wanadoo.fr,
+ jakobkoschel@gmail.com, v9fs-developer@lists.sourceforge.net,
+ linux-tegra@vger.kernel.org, tglx@linutronix.de,
+ andriy.shevchenko@linux.intel.com, linux-arm-kernel@lists.infradead.org,
+ linux-sgx@vger.kernel.org, nathan@kernel.org, netdev@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
+ xiam0nd.tong@gmail.com, tipc-discussion@lists.sourceforge.net,
+ linux-crypto@vger.kernel.org, dmaengine@vger.kernel.org,
+ linux-mediatek@lists.infradead.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, christian.koenig@amd.com, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move the cede abort logic out of xive escalation rearming and into
-the caller to prepare for handling a similar case with nested guest
-entry.
+On Thu, 3 Mar 2022 04:58:23 +0000, David Laight wrote:
+> on 3 Mar 2022 10:27:29 +0800, Xiaomeng Tong wrote:
+> > The problem is the mis-use of iterator outside the loop on exit, and
+> > the iterator will be the HEAD's container_of pointer which pointers
+> > to a type-confused struct. Sidenote: The *mis-use* here refers to
+> > mistakely access to other members of the struct, instead of the
+> > list_head member which acutally is the valid HEAD.
+>
+> The problem is that the HEAD's container_of pointer should never
+> be calculated at all.
+> This is what is fundamentally broken about the current definition.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/kvm_ppc.h |  4 ++--
- arch/powerpc/kvm/book3s_hv.c       | 10 ++++++++--
- arch/powerpc/kvm/book3s_xive.c     |  9 ++++++---
- 3 files changed, 16 insertions(+), 7 deletions(-)
+Yes, the rule is "the HEAD's container_of pointer should never be
+calculated at all outside the loop", but how do you make sure everyone
+follows this rule?
+Everyone makes mistakes, but we can eliminate them all from the beginning
+with the help of compiler which can catch such use-after-loop things.
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index a14dbcd1b8ce..94fa5f246657 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -671,7 +671,7 @@ extern int kvmppc_xive_set_irq(struct kvm *kvm, int irq_source_id, u32 irq,
- 			       int level, bool line_status);
- extern void kvmppc_xive_push_vcpu(struct kvm_vcpu *vcpu);
- extern void kvmppc_xive_pull_vcpu(struct kvm_vcpu *vcpu);
--extern void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu);
-+extern bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu);
- 
- static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
- {
-@@ -709,7 +709,7 @@ static inline int kvmppc_xive_set_irq(struct kvm *kvm, int irq_source_id, u32 ir
- 				      int level, bool line_status) { return -ENODEV; }
- static inline void kvmppc_xive_push_vcpu(struct kvm_vcpu *vcpu) { }
- static inline void kvmppc_xive_pull_vcpu(struct kvm_vcpu *vcpu) { }
--static inline void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu) { }
-+static inline bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu) { return true; }
- 
- static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
- 	{ return 0; }
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 5df359053147..a0b674d3a2da 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4073,10 +4073,16 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
- 		    !(vcpu->arch.shregs.msr & MSR_PR)) {
- 			unsigned long req = kvmppc_get_gpr(vcpu, 3);
- 
--			/* H_CEDE has to be handled now, not later */
-+			/* H_CEDE has to be handled now */
- 			if (req == H_CEDE) {
- 				kvmppc_cede(vcpu);
--				kvmppc_xive_rearm_escalation(vcpu); /* may un-cede */
-+				if (!kvmppc_xive_rearm_escalation(vcpu)) {
-+					/*
-+					 * Pending escalation so abort
-+					 * the cede.
-+					 */
-+					vcpu->arch.ceded = 0;
-+				}
- 				kvmppc_set_gpr(vcpu, 3, 0);
- 				trap = 0;
- 
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index e216c068075d..7b513e14cada 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -179,12 +179,13 @@ void kvmppc_xive_pull_vcpu(struct kvm_vcpu *vcpu)
- }
- EXPORT_SYMBOL_GPL(kvmppc_xive_pull_vcpu);
- 
--void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu)
-+bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu)
- {
- 	void __iomem *esc_vaddr = (void __iomem *)vcpu->arch.xive_esc_vaddr;
-+	bool ret = true;
- 
- 	if (!esc_vaddr)
--		return;
-+		return ret;
- 
- 	/* we are using XIVE with single escalation */
- 
-@@ -197,7 +198,7 @@ void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu)
- 		 * we also don't want to set xive_esc_on to 1 here in
- 		 * case we race with xive_esc_irq().
- 		 */
--		vcpu->arch.ceded = 0;
-+		ret = false;
- 		/*
- 		 * The escalation interrupts are special as we don't EOI them.
- 		 * There is no need to use the load-after-store ordering offset
-@@ -210,6 +211,8 @@ void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu)
- 		__raw_readq(esc_vaddr + XIVE_ESB_SET_PQ_00);
- 	}
- 	mb();
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(kvmppc_xive_rearm_escalation);
- 
--- 
-2.23.0
+> > IOW, you would dereference a (NULL + offset_of_member) address here.
+>
+>Where?
 
+In the case where a developer do not follows the above rule, and mistakely
+access a non-list-head member of the HEAD's container_of pointer outside
+the loop. For example:
+    struct req{
+      int a;
+      struct list_head h;
+    }
+    struct req *r;
+    list_for_each_entry(r, HEAD, h) {
+      if (r->a == 0x10)
+        break;
+    }
+    // the developer made a mistake: he didn't take this situation into
+    // account where all entries in the list are *r->a != 0x10*, and now
+    // the r is the HEAD's container_of pointer. 
+    r->a = 0x20;
+Thus the "r->a = 0x20" would dereference a (NULL + offset_of_member)
+address here.
+
+> > Please remind me if i missed something, thanks.
+> >
+> > Can you share your "alternative definitions" details? thanks!
+>
+> The loop should probably use as extra variable that points
+> to the 'list node' in the next structure.
+> Something like:
+> 	for (xxx *iter = head->next;
+> 		iter == &head ? ((item = NULL),0) : ((item = list_item(iter),1));
+> 		iter = item->member->next) {
+> 	   ...
+> With a bit of casting you can use 'item' to hold 'iter'.
+
+you still can not make sure everyone follows this rule: 
+"do not use iterator outside the loop" without the help of compiler,
+because item is declared outside the loop.
+
+BTW, to avoid ambiguity，the "alternative definitions" here i asked is
+something from you in this context:
+"OTOH there may be alternative definitions that can be used to get
+the compiler (or other compiler-like tools) to detect broken code.
+Even if the definition can't possibly generate a working kerrnel."
+
+> > 
+> > > OTOH there may be alternative definitions that can be used to get
+> > > the compiler (or other compiler-like tools) to detect broken code.
+> > > Even if the definition can't possibly generate a working kerrnel.
+> > 
+> > The "list_for_each_entry_inside(pos, type, head, member)" way makes
+> > the iterator invisiable outside the loop, and would be catched by
+> > compiler if use-after-loop things happened.
+
+> It is also a compete PITA for anything doing a search.
+
+You mean it would be a burden on search? can you show me some examples?
+
+Or you mean it is too long the list_for_each_entry_inside* string to live
+in one single line, and should spilt into two line? If it is the case, there
+are 2 way to mitigate it.
+1. pass a shorter t as struct type to the macro
+2. after all list_for_each_entry macros be replaced with
+list_for_each_entry_inside, remove the list_for_each_entry implementations
+and rename all list_for_each_entry_inside use back to the origin
+list_for_each_entry in a single patch.
+
+For me, it is acceptable and not a such big problem.
+
+--
+Xiaomeng Tong
