@@ -4,69 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2005C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 05:37:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93B85C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 05:37:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4K8KVt3QyTz3dsp
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 16:37:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4K8KWb2sCFz3dNq
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Mar 2022 16:37:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=L1bATKQo;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=LgP9pNI3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034;
- helo=mail-pj1-x1034.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::630;
+ helo=mail-pl1-x630.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=L1bATKQo; dkim-atps=neutral
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com
- [IPv6:2607:f8b0:4864:20::1034])
+ header.s=20210112 header.b=LgP9pNI3; dkim-atps=neutral
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com
+ [IPv6:2607:f8b0:4864:20::630])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4K8KQq0kfsz3c01
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2022 16:33:38 +1100 (AEDT)
-Received: by mail-pj1-x1034.google.com with SMTP id
- m11-20020a17090a7f8b00b001beef6143a8so3869916pjl.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Mar 2022 21:33:39 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4K8KQs6VBNz3bqp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Mar 2022 16:33:41 +1100 (AEDT)
+Received: by mail-pl1-x630.google.com with SMTP id i1so3574013plr.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Mar 2022 21:33:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=1WtRymlzfOOEBptL4OCnKTBAcmjVZ3RoHCwByP43AEo=;
- b=L1bATKQov0rlO3q6A7vxSFZtE+SBUb9LqushChTwH4LhO86eAG1N0qlWAuGFSFOts3
- N+UyE9O+ljEIW7dBmiVtDTIuxiguiHzg5iRisj7dkY+r68lI5dB25BimF72B5gtP2iTH
- Qsd8i3EBHCkAY8CTeZphsshHBQthjHGYduX8CMoQCEYqgM68fo7R5XoVZPQWrJ11zqdC
- zrAPyrPRD9KysitYUB2dQwplLnz0A6PwY2kvs4oynU9Ybd96thTEGouPApsSEwkPVdUn
- NLa5lM2D0Y58UV+biVbMxVha8r7V/36eiV8qfLADyq9Jh/D9hW69rtHCvp82ojHaWOeV
- c/ew==
+ bh=3hEwUX2M4z9sTTzqMuyxap51XtRcQqvx+Ji9wYa5XEw=;
+ b=LgP9pNI3LevRjPMZrnRJX7QYZ5Wq3eKyJTvcK1nrqghRKj2Kxf6eQcO+PkP+BEI+be
+ nr+nJjjHBOkir0e1zbDuG9Izhhm/W/HAJtIWvOY6RG/exYj5G1AZoRUwhc0JST/O2oS7
+ 5jf3c/SvVSlzCUzrElKgqFddnd/kqNTx05MkNdGSaSEZ6kT+EMe1jL9ASnW585AQghH4
+ ob1tjYuY/vkQmmCTDVD1oA2Jg/fr8a7/Ndti/RatLVNngoGNcBUY2IeARNPXnhB060J8
+ pdtUoleUJstwAqIlcm7XvoDqWl7AUoXlqSg02svCbqHand2cYSIJ9rylv0o9eOK/lt7U
+ FXHw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=1WtRymlzfOOEBptL4OCnKTBAcmjVZ3RoHCwByP43AEo=;
- b=ytyutxpRM3Nso4Z/iSK8bY0Jbq29BBEHm35gaPMyVxSiJbiNrYKxWInDdBNGIfrZRU
- qLXpNdDZ7Wc8l7bkxIbCg+DlLiQY6LYv7L9WtNrWO8gWlwyUabV6p0Y1NKXFZCnfO3o/
- mfD0NiRVAyGTc8ViwwWBj9DIpqW1S53qkE1kYj+HvNBu82wWBD5W7tDhje7hXGjI/FeE
- O50Sx+a/OtKkBAIKf6i/KC+aDpimFEmHNdSpSX61XDXGtXrdzFEEfE5t5bh1WdCToeeV
- zeNDBP6MdwYOrbSR0R2jzyQYai5uP+RXZyzKmJUleMJtESU3Ub36j+s6Am5dh/HUYzCe
- L3iw==
-X-Gm-Message-State: AOAM533F6p8GRKYgQAOjWGNZYcUNGTOcldMN4Cu8urj9aIBr0shtzwcg
- oY53nqzgFCaQHtf0BM5A3pyuHUGNmtvi0Q==
-X-Google-Smtp-Source: ABdhPJwuCcSsWCAGxLC9zl6DccnnjtrBEjCM0UWM16m6wdfn6zKrby8mY/6Fqsd5e9BUZ/WPhpvE+g==
-X-Received: by 2002:a17:902:7296:b0:14f:2a67:b400 with SMTP id
- d22-20020a170902729600b0014f2a67b400mr34865322pll.172.1646285617742; 
- Wed, 02 Mar 2022 21:33:37 -0800 (PST)
+ bh=3hEwUX2M4z9sTTzqMuyxap51XtRcQqvx+Ji9wYa5XEw=;
+ b=x3qBc5QtUoHrxSz93ea2ycfYN6bEazCrn5PsRhMiraQEZnz1SRA38WfOjuf+7ruwWe
+ 3ixkvpUQ2/14K3b3iLXxBAdhwuTYjyvcAx/m0GmkcK22+Mn+1g4/Wled/ZGoaxoeQsGW
+ 9bE95MS1fKdf0AWWpwEfX2ZQh74Sgt2ZHEtKjkWviMFCR/TvIpVjlVOspRr3Hml6OGqh
+ woaSlF5OKHhyUu6rDJUds0nuEy8Kzv6EKGfw+2MY9a2MIvAa7oRIaG/LZERotAULNOGl
+ XeU2D0CfXewGubNyltLObq8eggwjRIesERaL3wvHU1TqktaiYRfy5GXq/15aQcPMziK6
+ MlXQ==
+X-Gm-Message-State: AOAM5326bGk0+AqW8/du1z/2h7IvUdBCo8qqExlzpf6XIgu1V8MVybNj
+ r5eyO/2OiJfefQYqHiC/n2mZ0boyIogh8A==
+X-Google-Smtp-Source: ABdhPJx9FKLC3Eg3uDGbCW1KaBbRZxsxMiRhMXslt7Xu+QU6fcG3okJQDZgdiKlv2++UKq3Hg6gGLw==
+X-Received: by 2002:a17:903:244e:b0:150:9b8c:3a6f with SMTP id
+ l14-20020a170903244e00b001509b8c3a6fmr30906053pls.120.1646285609607; 
+ Wed, 02 Mar 2022 21:33:29 -0800 (PST)
 Received: from bobo.ozlabs.ibm.com (193-116-90-129.tpgi.com.au.
  [193.116.90.129]) by smtp.gmail.com with ESMTPSA id
- t7-20020a17090a024700b001bf12386db4sm170300pje.47.2022.03.02.21.33.35
+ t7-20020a17090a024700b001bf12386db4sm170300pje.47.2022.03.02.21.33.27
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 02 Mar 2022 21:33:37 -0800 (PST)
+ Wed, 02 Mar 2022 21:33:29 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 6/6] KVM: PPC: Book3S HV Nested: L2 LPCR should inherit L1
- LPES setting
-Date: Thu,  3 Mar 2022 15:33:15 +1000
-Message-Id: <20220303053315.1056880-7-npiggin@gmail.com>
+Subject: [PATCH 3/6] KVM: PPC: Book3S HV P9: Move cede logic out of XIVE
+ escalation rearming
+Date: Thu,  3 Mar 2022 15:33:12 +1000
+Message-Id: <20220303053315.1056880-4-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20220303053315.1056880-1-npiggin@gmail.com>
 References: <20220303053315.1056880-1-npiggin@gmail.com>
@@ -89,50 +88,100 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The L1 should not be able to adjust LPES mode for the L2. Setting LPES
-if the L0 needs it clear would cause external interrupts to be sent to
-L2 and missed by the L0.
-
-Clearing LPES when it may be set, as typically happens with XIVE enabled
-could cause a performance issue despite having no native XIVE support in
-the guest, because it will cause mediated interrupts for the L2 to be
-taken in HV mode, which then have to be injected.
+Move the cede abort logic out of xive escalation rearming and into
+the caller to prepare for handling a similar case with nested guest
+entry.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kvm/book3s_hv.c        | 4 ++++
- arch/powerpc/kvm/book3s_hv_nested.c | 3 +--
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h |  4 ++--
+ arch/powerpc/kvm/book3s_hv.c       | 10 ++++++++--
+ arch/powerpc/kvm/book3s_xive.c     |  9 ++++++---
+ 3 files changed, 16 insertions(+), 7 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index a14dbcd1b8ce..94fa5f246657 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -671,7 +671,7 @@ extern int kvmppc_xive_set_irq(struct kvm *kvm, int irq_source_id, u32 irq,
+ 			       int level, bool line_status);
+ extern void kvmppc_xive_push_vcpu(struct kvm_vcpu *vcpu);
+ extern void kvmppc_xive_pull_vcpu(struct kvm_vcpu *vcpu);
+-extern void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu);
++extern bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu);
+ 
+ static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
+ {
+@@ -709,7 +709,7 @@ static inline int kvmppc_xive_set_irq(struct kvm *kvm, int irq_source_id, u32 ir
+ 				      int level, bool line_status) { return -ENODEV; }
+ static inline void kvmppc_xive_push_vcpu(struct kvm_vcpu *vcpu) { }
+ static inline void kvmppc_xive_pull_vcpu(struct kvm_vcpu *vcpu) { }
+-static inline void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu) { }
++static inline bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu) { return true; }
+ 
+ static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
+ 	{ return 0; }
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 77315c2c3f43..acba9cb241c9 100644
+index 5df359053147..a0b674d3a2da 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -5323,6 +5323,10 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
- 		kvm->arch.host_lpcr = lpcr = mfspr(SPRN_LPCR);
- 		lpcr &= LPCR_PECE | LPCR_LPES;
- 	} else {
-+		/*
-+		 * The L2 LPES mode will be set by the L0 according to whether
-+		 * or not it needs to take external interrupts in HV mode.
-+		 */
- 		lpcr = 0;
- 	}
- 	lpcr |= (4UL << LPCR_DPFD_SH) | LPCR_HDICE |
-diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
-index 9d373f8963ee..58e05a9122ac 100644
---- a/arch/powerpc/kvm/book3s_hv_nested.c
-+++ b/arch/powerpc/kvm/book3s_hv_nested.c
-@@ -261,8 +261,7 @@ static void load_l2_hv_regs(struct kvm_vcpu *vcpu,
- 	/*
- 	 * Don't let L1 change LPCR bits for the L2 except these:
- 	 */
--	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD |
--		LPCR_LPES | LPCR_MER;
-+	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD | LPCR_MER;
+@@ -4073,10 +4073,16 @@ static int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
+ 		    !(vcpu->arch.shregs.msr & MSR_PR)) {
+ 			unsigned long req = kvmppc_get_gpr(vcpu, 3);
  
- 	/*
- 	 * Additional filtering is required depending on hardware
+-			/* H_CEDE has to be handled now, not later */
++			/* H_CEDE has to be handled now */
+ 			if (req == H_CEDE) {
+ 				kvmppc_cede(vcpu);
+-				kvmppc_xive_rearm_escalation(vcpu); /* may un-cede */
++				if (!kvmppc_xive_rearm_escalation(vcpu)) {
++					/*
++					 * Pending escalation so abort
++					 * the cede.
++					 */
++					vcpu->arch.ceded = 0;
++				}
+ 				kvmppc_set_gpr(vcpu, 3, 0);
+ 				trap = 0;
+ 
+diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+index e216c068075d..7b513e14cada 100644
+--- a/arch/powerpc/kvm/book3s_xive.c
++++ b/arch/powerpc/kvm/book3s_xive.c
+@@ -179,12 +179,13 @@ void kvmppc_xive_pull_vcpu(struct kvm_vcpu *vcpu)
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_xive_pull_vcpu);
+ 
+-void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu)
++bool kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu)
+ {
+ 	void __iomem *esc_vaddr = (void __iomem *)vcpu->arch.xive_esc_vaddr;
++	bool ret = true;
+ 
+ 	if (!esc_vaddr)
+-		return;
++		return ret;
+ 
+ 	/* we are using XIVE with single escalation */
+ 
+@@ -197,7 +198,7 @@ void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu)
+ 		 * we also don't want to set xive_esc_on to 1 here in
+ 		 * case we race with xive_esc_irq().
+ 		 */
+-		vcpu->arch.ceded = 0;
++		ret = false;
+ 		/*
+ 		 * The escalation interrupts are special as we don't EOI them.
+ 		 * There is no need to use the load-after-store ordering offset
+@@ -210,6 +211,8 @@ void kvmppc_xive_rearm_escalation(struct kvm_vcpu *vcpu)
+ 		__raw_readq(esc_vaddr + XIVE_ESB_SET_PQ_00);
+ 	}
+ 	mb();
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_xive_rearm_escalation);
+ 
 -- 
 2.23.0
 
