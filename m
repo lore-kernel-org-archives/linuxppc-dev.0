@@ -4,58 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DADDC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Mar 2022 18:28:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9B91C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Mar 2022 18:28:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KC6QR1g0mz3bdq
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Mar 2022 05:27:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KC6R74Z06z3bcY
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Mar 2022 05:28:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eVNxLbMP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=i2BnqLMd;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
- envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42f;
+ helo=mail-pf1-x42f.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=eVNxLbMP; dkim-atps=neutral
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=i2BnqLMd; dkim-atps=neutral
+Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com
+ [IPv6:2607:f8b0:4864:20::42f])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KC6Pk0Vj9z2yws
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2022 05:27:16 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1646677643; x=1678213643;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:in-reply-to;
- bh=5qzlM+F2KLwaOV5DOusddqPgYoFFoImJzYDRDku6N50=;
- b=eVNxLbMP+nDWFXntNFFIC9FZaVPmxol3JY1zhz3G6x7hTduidyG4fj7/
- A+Py1kj9vfsBbdh1jBflc6L0vaxd73ftMaKh+NSpuoUgolDN6Ti79wpmc
- bT1zqJ57hSKECowEeixXI7gfAc4KJo0M3eKSwNSooGeKXWBdxsPA1Cl/o
- sOlmkNtyQifg/W+IjXQDoGwnAIjtehyhFNUfr4UHRyez/M3zXfst8WPek
- nSEC1aIqSz/WgNztq3K9lGfy5v3vjhJ2a81C6FCnxyJVJdGmi0mQt8ghR
- rbe8Cf/kJJ52SKZLhJ4mNey2NIrRyt6VdIIAGbigp+UrAuJwCrb8Sd5gs w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10279"; a="317695818"
-X-IronPort-AV: E=Sophos;i="5.90,162,1643702400"; d="scan'208";a="317695818"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Mar 2022 10:26:13 -0800
-X-IronPort-AV: E=Sophos;i="5.90,162,1643702400"; d="scan'208";a="641428749"
-Received: from sonalsha-mobl.amr.corp.intel.com (HELO localhost)
- ([10.212.67.25])
- by fmsmga002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Mar 2022 10:26:13 -0800
-Date: Mon, 7 Mar 2022 10:26:12 -0800
-From: Ira Weiny <ira.weiny@intel.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH] pkeys: Make pkey unsigned in arch_set_user_pkey_access()
-Message-ID: <YiZORNusRg4UTv45@iweiny-desk3>
-References: <20220304210543.3490880-1-ira.weiny@intel.com>
- <878rtmtfgs.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KC6Q85t3Rz3bbG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2022 05:27:44 +1100 (AEDT)
+Received: by mail-pf1-x42f.google.com with SMTP id t5so14858334pfg.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Mar 2022 10:27:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=WlzGmKQkWzi6Qr+WywUOdHqH4PZoISUm1CwL1+MnnnQ=;
+ b=i2BnqLMdrRJKcl5wqFruwNd/uPzX3h7Lts9Z0Ne4aqHEcF9FogZGotzwggDmhlI+04
+ fi2DCYALFrdM5PjmYVGAzvRkvTN5cD5F6cTkZxvzxUUPzzhJWvhaYyQzzjW6fTdYtZGF
+ 7SV8HthxX+2qv62AaLI18nL2SFUqj2pWQVYdaYP9XXCVTHEKG7HPdIDaLilgQOZi9Q8C
+ lirqN4PnVJZ3Hgr3P9zXDf/+WI0HHwD/9MeXtCLu0yrOjphIJKJU8eQ5K4hDX4V4Taz4
+ 7BVxJNgYJ9S6jKP34oI4WPUN8bsibZYy8E20mHUYMBpfa0YuzPEW1J9EetIRuZcVI1KF
+ 9fFQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=WlzGmKQkWzi6Qr+WywUOdHqH4PZoISUm1CwL1+MnnnQ=;
+ b=tQuc6hvZ95RRzOChJd20JHBH0z/b74wVUR3szqqPswOi+zq/n7fLTvuAW4LuibhYBC
+ LmZoP+XBCbWSYKA1APRFy5rlUiin1vhFoaXxxGZ2p8LNTIb8/0tPolR0eyRvezBfBsy5
+ BFV+6MZ6BP5h/RUa445t2moHeg1CtYqA06qdXN/rGLCO8oJFtb0C1xgSriYd1JvkaLDX
+ XhGdryLv07IluGm2w6hgRi1/3n7VPMMO/+sHfdXIVhxuX+aMmQb/Lpo3HAc6P8s0Nz2y
+ YZ6g7GIGRsSVyXrTj+z6crZacun4rWlZz0HEyYcBW2pp5FsD+fBPG9jpAGTh4c7XVZM3
+ ACfw==
+X-Gm-Message-State: AOAM532pe0h0UxWdM+jTMwSKbUFuroCsZUwZt4DfGX4uLy+1pjYLvE+G
+ UrSEhMp37d5pnQIPm3+UWplfcLL78QA=
+X-Google-Smtp-Source: ABdhPJzAjnTW5FUKRBxdhht054Dd7PpdEbFf69k0eEn2QYLSGkMAyC1mlrSw353a6i4kpo7GIF6gsA==
+X-Received: by 2002:a63:8643:0:b0:37c:996c:ecd with SMTP id
+ x64-20020a638643000000b0037c996c0ecdmr10849261pgd.416.1646677663087; 
+ Mon, 07 Mar 2022 10:27:43 -0800 (PST)
+Received: from bobo.ozlabs.ibm.com (61-68-211-196.tpgi.com.au. [61.68.211.196])
+ by smtp.gmail.com with ESMTPSA id
+ v22-20020a17090ad59600b001b7deb42251sm68767pju.15.2022.03.07.10.27.40
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 07 Mar 2022 10:27:42 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2] powerpc/signal: Report minimum signal frame size to
+ userspace via AT_MINSIGSTKSZ
+Date: Tue,  8 Mar 2022 04:27:34 +1000
+Message-Id: <20220307182734.289289-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20220307182734.289289-1-npiggin@gmail.com>
+References: <20220307182734.289289-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <878rtmtfgs.fsf@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,166 +82,154 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Tulio Magno Quites Machado Filho <tuliom@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Alan Modra <amodra@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 07, 2022 at 12:30:03PM +0530, Aneesh Kumar K.V wrote:
-> ira.weiny@intel.com writes:
-> 
-> > From: Ira Weiny <ira.weiny@intel.com>
-> >
-> > The WARN_ON check in arch_set_user_pkey_access() in the x86 architecture
-> > fails to check for an invalid negative value.
-> >
-> > A simple check for less than 0 would fix this issue however, in the call
-> > stack below arch_set_user_pkey_access() the pkey should never be
-> > negative on any architecture.  It is always best to use correct types
-> > when possible.  x86 only supports 16 keys while ppc supports 32, u8 is
-> > therefore large enough for all current architectures and likely those in
-> > the future.
-> 
-> Should we do that as a separate patch? ie, now convert the variable to
-> unsigned int and later switch all the variables to u8?
+Implement the AT_MINSIGSTKSZ AUXV entry, allowing userspace to
+dynamically size stack allocations in a manner forward-compatible with
+new processor state saved in the signal frame
 
-Maybe.
+For now these statically find the maximum signal frame size rather than
+doing any runtime testing of features to minimise the size.
 
-> because what we
-> now have is confusing.
-> 
-> static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot,
-> 		unsigned long pkey)
-> static inline u64 pkey_to_vmflag_bits(u16 pkey)
-> 
+glibc 2.34 will take advantage of this, as will applications that use
+use _SC_MINSIGSTKSZ and _SC_SIGSTKSZ.
 
-This looks like a good cleanup as well.  Why not convert
-arch_calc_vm_prot_bits() and pkey_to_vmflag_bits() to u8?  (In another patch.)
+Cc: Alan Modra <amodra@gmail.com>
+Cc: Tulio Magno Quites Machado Filho <tuliom@linux.ibm.com>
+References: 94b07c1f8c39 ("arm64: signal: Report signal frame size to userspace via auxv")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/elf.h         | 14 +++++++++++++-
+ arch/powerpc/include/asm/signal.h      |  5 +++++
+ arch/powerpc/include/uapi/asm/auxvec.h |  4 +++-
+ arch/powerpc/kernel/signal.c           | 15 +++++++++++++++
+ arch/powerpc/kernel/signal_32.c        |  6 ++++++
+ arch/powerpc/kernel/signal_64.c        |  5 +++++
+ 6 files changed, 47 insertions(+), 2 deletions(-)
 
-This is all a result of this PKS conversation:
+diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+index b8425e3cfd81..19d5c798c566 100644
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -160,7 +160,7 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+  *   even if DLINFO_ARCH_ITEMS goes to zero or is undefined.
+  * update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT entries changes
+  */
+-#define ARCH_DLINFO							\
++#define COMMON_ARCH_DLINFO						\
+ do {									\
+ 	/* Handle glibc compatibility. */				\
+ 	NEW_AUX_ENT(AT_IGNOREPPC, AT_IGNOREPPC);			\
+@@ -173,6 +173,18 @@ do {									\
+ 	ARCH_DLINFO_CACHE_GEOMETRY;					\
+ } while (0)
+ 
++#define ARCH_DLINFO							\
++do {									\
++	COMMON_ARCH_DLINFO;						\
++	NEW_AUX_ENT(AT_MINSIGSTKSZ, get_min_sigframe_size());		\
++} while (0)
++
++#define COMPAT_ARCH_DLINFO						\
++do {									\
++	COMMON_ARCH_DLINFO;						\
++	NEW_AUX_ENT(AT_MINSIGSTKSZ, get_min_sigframe_size_compat());	\
++} while (0)
++
+ /* Relocate the kernel image to @final_address */
+ void relocate(unsigned long final_address);
+ 
+diff --git a/arch/powerpc/include/asm/signal.h b/arch/powerpc/include/asm/signal.h
+index 99e1c6de27bc..922d43700fb4 100644
+--- a/arch/powerpc/include/asm/signal.h
++++ b/arch/powerpc/include/asm/signal.h
+@@ -9,4 +9,9 @@
+ struct pt_regs;
+ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags);
+ 
++unsigned long get_min_sigframe_size_32(void);
++unsigned long get_min_sigframe_size_64(void);
++unsigned long get_min_sigframe_size(void);
++unsigned long get_min_sigframe_size_compat(void);
++
+ #endif /* _ASM_POWERPC_SIGNAL_H */
+diff --git a/arch/powerpc/include/uapi/asm/auxvec.h b/arch/powerpc/include/uapi/asm/auxvec.h
+index 7af21dc0e320..aa7c16215453 100644
+--- a/arch/powerpc/include/uapi/asm/auxvec.h
++++ b/arch/powerpc/include/uapi/asm/auxvec.h
+@@ -48,6 +48,8 @@
+ #define AT_L3_CACHESIZE		46
+ #define AT_L3_CACHEGEOMETRY	47
+ 
+-#define AT_VECTOR_SIZE_ARCH	14 /* entries in ARCH_DLINFO */
++#define AT_MINSIGSTKSZ		51      /* stack needed for signal delivery */
++
++#define AT_VECTOR_SIZE_ARCH	15 /* entries in ARCH_DLINFO */
+ 
+ #endif
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index b93b87df499d..b3c458db2b8d 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -141,6 +141,21 @@ unsigned long copy_ckvsx_from_user(struct task_struct *task,
+ 
+ int show_unhandled_signals = 1;
+ 
++unsigned long get_min_sigframe_size(void)
++{
++	if (IS_ENABLED(CONFIG_PPC64))
++		return get_min_sigframe_size_64();
++	else
++		return get_min_sigframe_size_32();
++}
++
++#ifdef CONFIG_COMPAT
++unsigned long get_min_sigframe_size_compat(void)
++{
++	return get_min_sigframe_size_32();
++}
++#endif
++
+ /*
+  * Allocate space for the signal frame
+  */
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index d84c434b2b78..157a7403e3eb 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -233,6 +233,12 @@ struct rt_sigframe {
+ 	int			abigap[56];
+ };
+ 
++unsigned long get_min_sigframe_size_32(void)
++{
++	return max(sizeof(struct rt_sigframe) + __SIGNAL_FRAMESIZE + 16,
++		   sizeof(struct sigframe) + __SIGNAL_FRAMESIZE);
++}
++
+ /*
+  * Save the current user registers on the user stack.
+  * We only save the altivec/spe registers if the process has used
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index d1e1fc0acbea..7c5317e07169 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -66,6 +66,11 @@ struct rt_sigframe {
+ 	char abigap[USER_REDZONE_SIZE];
+ } __attribute__ ((aligned (16)));
+ 
++unsigned long get_min_sigframe_size_64(void)
++{
++	return sizeof(struct rt_sigframe) + __SIGNAL_FRAMESIZE;
++}
++
+ /*
+  * This computes a quad word aligned pointer inside the vmx_reserve array
+  * element. For historical reasons sigcontext might not be quad word aligned,
+-- 
+2.23.0
 
-https://lore.kernel.org/lkml/Yg8C6UkgfBmQlPSq@iweiny-desk3/
-
-That started me down the path of trying to figure out why 'int' was used for
-PKRU and I realized that negative values had meaning there which did not apply
-to me with PKS.  So at some point a conversion needs to be made between a
-'conceptual pkey' (int) and a real pkey (unsigned) IHMO.
-
-It's no bit deal to split this patch into one which converts to unsigned and
-then another to u8 (or u16 if there is some arch which may need it that big).
-
-However, digging more:
-
-Is there a reason u16 was used in pkey_to_vmflag_bits()?  How about in
-__pkru_allows_read() in the x86 code?  If possible I think u8 should be
-standardized but I'm ok with u16 if that is preferred.
-
-Also, am I missing something in init_amr() and init_iamr()?  I think I could
-have gone farther and changed init_amr() and init_iamr() right?
-
-From what I can see the argument to use unsigned long vs u8 (or u16) is some
-expectation that pkeys will grow beyond 256 in number.  From what I can see I
-don't think that is going to happen.
-
-So do we need to do this in two steps?
-
-Ira
-
-> 
-> >
-> > Change the type of the pkey passed to arch_set_user_pkey_access() to u8.
-> >
-> > To: Dave Hansen <dave.hansen@linux.intel.com>
-> > To: Michael Ellerman <mpe@ellerman.id.au>
-> > Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> > Signed-off-by: Ira Weiny <ira.weiny@intel.com>
-> > ---
-> >  arch/powerpc/include/asm/pkeys.h | 4 ++--
-> >  arch/powerpc/mm/book3s64/pkeys.c | 2 +-
-> >  arch/x86/include/asm/pkeys.h     | 4 ++--
-> >  arch/x86/kernel/fpu/xstate.c     | 2 +-
-> >  include/linux/pkeys.h            | 2 +-
-> >  5 files changed, 7 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-> > index 59a2c7dbc78f..e70615a1da9b 100644
-> > --- a/arch/powerpc/include/asm/pkeys.h
-> > +++ b/arch/powerpc/include/asm/pkeys.h
-> > @@ -143,9 +143,9 @@ static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
-> >  	return __arch_override_mprotect_pkey(vma, prot, pkey);
-> >  }
-> >  
-> > -extern int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
-> > +extern int __arch_set_user_pkey_access(struct task_struct *tsk, u8 pkey,
-> >  				       unsigned long init_val);
-> 
-> 
-> > -static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
-> > +static inline int arch_set_user_pkey_access(struct task_struct *tsk, u8 pkey,
-> >  					    unsigned long init_val)
-> >  {
-> >  	if (!mmu_has_feature(MMU_FTR_PKEY))
-> > diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
-> > index 753e62ba67af..c048467669df 100644
-> > --- a/arch/powerpc/mm/book3s64/pkeys.c
-> > +++ b/arch/powerpc/mm/book3s64/pkeys.c
-> > @@ -333,7 +333,7 @@ static inline void init_iamr(int pkey, u8 init_bits)
-> >   * Set the access rights in AMR IAMR and UAMOR registers for @pkey to that
-> >   * specified in @init_val.
-> >   */
-> > -int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
-> > +int __arch_set_user_pkey_access(struct task_struct *tsk, u8 pkey,
-> >  				unsigned long init_val)
-> >  {
-> >  	u64 new_amr_bits = 0x0ul;
-> > diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
-> > index 5292e6dfe2a7..48efb81f6cc6 100644
-> > --- a/arch/x86/include/asm/pkeys.h
-> > +++ b/arch/x86/include/asm/pkeys.h
-> > @@ -9,7 +9,7 @@
-> >   */
-> >  #define arch_max_pkey() (cpu_feature_enabled(X86_FEATURE_OSPKE) ? 16 : 1)
-> >  
-> > -extern int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
-> > +extern int arch_set_user_pkey_access(struct task_struct *tsk, u8 pkey,
-> >  		unsigned long init_val);
-> >  
-> >  static inline bool arch_pkeys_enabled(void)
-> > @@ -115,7 +115,7 @@ int mm_pkey_free(struct mm_struct *mm, int pkey)
-> >  	return 0;
-> >  }
-> >  
-> > -extern int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
-> > +extern int arch_set_user_pkey_access(struct task_struct *tsk, u8 pkey,
-> >  		unsigned long init_val);
-> >  
-> >  static inline int vma_pkey(struct vm_area_struct *vma)
-> > diff --git a/arch/x86/kernel/fpu/xstate.c b/arch/x86/kernel/fpu/xstate.c
-> > index 7c7824ae7862..db511bec57e5 100644
-> > --- a/arch/x86/kernel/fpu/xstate.c
-> > +++ b/arch/x86/kernel/fpu/xstate.c
-> > @@ -1068,7 +1068,7 @@ void *get_xsave_addr(struct xregs_state *xsave, int xfeature_nr)
-> >   * This will go out and modify PKRU register to set the access
-> >   * rights for @pkey to @init_val.
-> >   */
-> > -int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
-> > +int arch_set_user_pkey_access(struct task_struct *tsk, u8 pkey,
-> >  			      unsigned long init_val)
-> >  {
-> >  	u32 old_pkru, new_pkru_bits = 0;
-> > diff --git a/include/linux/pkeys.h b/include/linux/pkeys.h
-> > index 86be8bf27b41..aa40ed2fb0fc 100644
-> > --- a/include/linux/pkeys.h
-> > +++ b/include/linux/pkeys.h
-> > @@ -35,7 +35,7 @@ static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
-> >  	return -EINVAL;
-> >  }
-> >  
-> > -static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
-> > +static inline int arch_set_user_pkey_access(struct task_struct *tsk, u8 pkey,
-> >  			unsigned long init_val)
-> >  {
-> >  	return 0;
-> > -- 
-> > 2.35.1
