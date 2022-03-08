@@ -4,68 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6045DC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Mar 2022 13:52:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61FAFC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Mar 2022 13:52:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KCcFp6FT1z3bdF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 00:52:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KCcGV6xW0z3bpT
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 00:52:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=L2oxsHXR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=lzU2OvmU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431;
- helo=mail-pf1-x431.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::632;
+ helo=mail-pl1-x632.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=L2oxsHXR; dkim-atps=neutral
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com
- [IPv6:2607:f8b0:4864:20::431])
+ header.s=20210112 header.b=lzU2OvmU; dkim-atps=neutral
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com
+ [IPv6:2607:f8b0:4864:20::632])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KCcDQ496pz3bNx
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2022 00:51:00 +1100 (AEDT)
-Received: by mail-pf1-x431.google.com with SMTP id t5so17396403pfg.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Mar 2022 05:51:01 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KCcDR33y9z30G0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2022 00:51:03 +1100 (AEDT)
+Received: by mail-pl1-x632.google.com with SMTP id w4so6740967ply.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Mar 2022 05:51:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=u44ClPB/a5LtsTY3VUu+Bap5k5f5ROUorVM32+qN7BU=;
- b=L2oxsHXRTOGXfHJiuu/lZccr+//GvwNTieJFRa5HvJxfF9KWr0KZ7fn/8RWDKWyKPz
- x5DVYYPmj/189m+pUSRNIUlzDpReAyNY5DcarCFCBEgxRmL0x8tuA/vDQIBEDpgLbx/l
- QT0xzuMpCznhnrO0M+6LCjieRm9LNam4B1OHkYN8bTJhnk7mUFEuqQwR+Un3ZYO8Nwh8
- EtPG3+dHxY7bXRQNN8JHeeMTETw3a5b3IlUVN8OQoGfZ53f3WRu2V2M8mlEzIsdJf7vV
- HcbgSb5XZoguzjHbusBxn4EEzYNjGX5cnk6i0yWcnyekxRfzeg97g/xObweKVyTXtpCS
- GuJQ==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=GRRJKXwWejMGknJKmtYz7Ykt2Hg5PpTL/7C96be1WX0=;
+ b=lzU2OvmUjLcz/d/0N30727HNXObkDMZef3rNQHLHF/lx5Xie3K6TN74h1bGaH4H+Z9
+ zW+LtW2PB2L61SxpcZxtil6sObXGYKfC48MRLHbIebkCVCRkuhBarakj4/M1kZXbHF9k
+ Z+Ee9Z5vcIcSY6fCcrS2bO1Z49Ku2ZssfuD36NubB1UlvDyAA9i1Rgu5gFSjVMGUnyAp
+ Tiu0uzncrBXcQ+UeMbWl2aNVXt0peXwTqiMpzkuZ4mg+xqor8W7u0tnuVgzsRehZP5Ui
+ cEB1yjb6BCkMoclCJ4DIzgeowTtvH7DB9/ABQkspibz6eDSTG/7yw4N3fqZHY0893rQo
+ 7xwA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=u44ClPB/a5LtsTY3VUu+Bap5k5f5ROUorVM32+qN7BU=;
- b=XuP9tPtQgPWz3oF0bSPP/nAykvJ0Td4amy4J+73OUjR8jChYMpXDZoYZxT8x1uenp7
- uIUYLMDIOBlrbqSMlEIQdV4DI5j6hFzrC4gb355APc81X4C6e7VqEEwazozuDh3jDXEh
- RRIgRj0Qr/Qv/DPoIWiQFyoGBkuTzfRiKA84mHm7t6BASsG3UyUYc4BsftzPa+DcVjfI
- kP529Vwc53MRc8uz9c+Jmw1AfisyPVLLQueewmU3BTjWPVcxEkIAOrkXK/pozH7lHKSM
- xseun/6npwPKPOXpDJzCJ27Zz0S3sMneMQw5XGhmn0vuIhLFnLBvwoesvAZDSUPJY0Tl
- xUxA==
-X-Gm-Message-State: AOAM530FJc9V28yUWmDJwP29L6ekLkKdTbKr8X1RKC8jA5PdTB5voabc
- qBDN6cIzwKNLYOQK4XvtqiHXjmvpgOc=
-X-Google-Smtp-Source: ABdhPJwGMmUc6V7ANa/UJiZojEMDeNxc/qBha9yQweYfJ77oPUZtRkUClD0AcmOz5Ku5sa9Lmmxg1w==
-X-Received: by 2002:a05:6a00:10cf:b0:4f6:5834:aefb with SMTP id
- d15-20020a056a0010cf00b004f65834aefbmr18451503pfu.77.1646747456860; 
- Tue, 08 Mar 2022 05:50:56 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=GRRJKXwWejMGknJKmtYz7Ykt2Hg5PpTL/7C96be1WX0=;
+ b=UyQCql3yJ1luQ6gaQJXSvMWpT3OCUzQM3kwc8kFgwFqjDj53MqSAM4zlt7Yb2OOzn1
+ AkR81ew23xD2iPAZI69ddUCnLzs1LdLdnGTTijurjzfnvNnKcSs1nAHwPJFJ8PL9o9JY
+ o0lvh5j83ArDptCfDiOFGxQv2/+iTS1Xin9RTOB+xqOCVss+bIJqVYwr/NMBp4oKtSWW
+ 0bj5Rqf7hzpnetK5uXYpwq70KJdMX46QbV7K3syIUdxdCHLpXraLcLD/esl6iuee86eT
+ zoeXvc9Ok/z4kSrePjOAZ5FtVdk4caYe1fOG/HS163g/t+ij423+rCjCN4L2uxj2H2l/
+ JR1Q==
+X-Gm-Message-State: AOAM532TYeeS2T4dn3b79WAaIA1XPkKNsPTWIMjE3zcCz6tdsqO+tdz6
+ v9pGhbgXi5ynv8gjVkY88OyjZRYQu2M=
+X-Google-Smtp-Source: ABdhPJxHjfQrpW2/nlix1yfTAWYm8Hs1YtbbJw39E6xvoCpPskFO4SaV+ko1s2HrtpXN4auQ3mRS1w==
+X-Received: by 2002:a17:902:e849:b0:152:ed30:fa76 with SMTP id
+ t9-20020a170902e84900b00152ed30fa76mr60380plg.161.1646747461994; 
+ Tue, 08 Mar 2022 05:51:01 -0800 (PST)
 Received: from bobo.ozlabs.ibm.com (61-68-211-196.tpgi.com.au. [61.68.211.196])
  by smtp.gmail.com with ESMTPSA id
- q14-20020a056a00150e00b004f741b5c071sm541737pfu.86.2022.03.08.05.50.54
+ q14-20020a056a00150e00b004f741b5c071sm541737pfu.86.2022.03.08.05.51.00
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 08 Mar 2022 05:50:56 -0800 (PST)
+ Tue, 08 Mar 2022 05:51:01 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 00/14] powerpc/rtas: various cleanups and improvements
-Date: Tue,  8 Mar 2022 23:50:33 +1000
-Message-Id: <20220308135047.478297-1-npiggin@gmail.com>
+Subject: [PATCH 02/14] powerpc/rtas: Make enter_rtas a nokprobe symbol on
+ 64-bit
+Date: Tue,  8 Mar 2022 23:50:35 +1000
+Message-Id: <20220308135047.478297-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20220308135047.478297-1-npiggin@gmail.com>
+References: <20220308135047.478297-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -84,46 +87,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I had a bunch of random little fixes and cleanups around and
-was prompted to put them together and make a change to call
-RTAS with MSR[RI] enabled because of a report of the hard
-lockup watchdog NMI IPI hitting in an rtas call which then
-crashed because it's unrecoverable.
+This symbol is marked nokprobe on 32-bit but not 64-bit, add it.
 
-Could possibly move patch 9 earlier if it would help with
-backporting.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/rtas_entry.S | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks,
-Nick
-
-Nicholas Piggin (14):
-  powerpc/rtas: Move rtas entry assembly into its own file
-  powerpc/rtas: Make enter_rtas a nokprobe symbol on 64-bit
-  powerpc/rtas: Fix whitespace in rtas_entry.S
-  powerpc/rtas: Call enter_rtas with MSR[EE] disabled
-  powerpc/rtas: Modernise RI clearing on 64-bit
-  powerpc/rtas: Load rtas entry MSR explicitly
-  powerpc/rtas: PACA can be restored directly from SPRG
-  powerpc/rtas: call enter_rtas in real-mode on 64-bit
-  powerpc/rtas: Leave MSR[RI] enabled over RTAS call
-  powerpc/rtas: replace rtas_call_unlocked with raw_rtas_call
-  powerpc/rtas: tidy __fetch_rtas_last_error
-  powerpc/rtas: Close theoretical memory leak
-  powerpc/rtas: enture rtas_call is called with MMU enabled
-  powerpc/rtas: Consolidate and improve checking for rtas callers
-
- arch/powerpc/include/asm/rtas.h              |   4 +-
- arch/powerpc/kernel/Makefile                 |   2 +-
- arch/powerpc/kernel/entry_32.S               |  49 ------
- arch/powerpc/kernel/entry_64.S               | 150 -------------------
- arch/powerpc/kernel/rtas.c                   | 132 +++++++++-------
- arch/powerpc/kernel/rtas_entry.S             | 144 ++++++++++++++++++
- arch/powerpc/platforms/pseries/hotplug-cpu.c |   2 +-
- arch/powerpc/platforms/pseries/ras.c         |   7 +-
- arch/powerpc/xmon/xmon.c                     |   2 +-
- 9 files changed, 227 insertions(+), 265 deletions(-)
- create mode 100644 arch/powerpc/kernel/rtas_entry.S
-
+diff --git a/arch/powerpc/kernel/rtas_entry.S b/arch/powerpc/kernel/rtas_entry.S
+index 192fea342744..afe3b789bc36 100644
+--- a/arch/powerpc/kernel/rtas_entry.S
++++ b/arch/powerpc/kernel/rtas_entry.S
+@@ -165,6 +165,7 @@ rtas_return_loc:
+ 	mtspr	SPRN_SRR1,r4
+ 	RFI_TO_KERNEL
+ 	b	.	/* prevent speculative execution */
++_ASM_NOKPROBE_SYMBOL(enter_rtas)
+ _ASM_NOKPROBE_SYMBOL(__enter_rtas)
+ _ASM_NOKPROBE_SYMBOL(rtas_return_loc)
+ 
 -- 
 2.23.0
 
