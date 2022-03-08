@@ -4,32 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DA50C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Mar 2022 12:12:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A665C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Mar 2022 12:12:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KCZ2H6xgfz3bpr
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Mar 2022 23:12:07 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KCZ2j4y08z3br7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Mar 2022 23:12:29 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KCZ0h28rbz3bVd
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2022 23:10:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KCZ0j712xz3bYw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2022 23:10:45 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4KCZ0j1GKCz4xxt;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4KCZ0j5TNkz4xxx;
  Tue,  8 Mar 2022 23:10:45 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Ganesh Goudar <ganeshgr@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220120121931.517974-1-ganeshgr@linux.ibm.com>
-References: <20220120121931.517974-1-ganeshgr@linux.ibm.com>
-Subject: Re: [PATCH v5] powerpc/mce: Avoid using irq_work_queue() in realmode
-Message-Id: <164674128785.3322453.5070052156048774113.b4-ty@ellerman.id.au>
-Date: Tue, 08 Mar 2022 23:08:07 +1100
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, npiggin@gmail.com,
+ Haren Myneni <haren@linux.ibm.com>, nathanl@linux.ibm.com
+In-Reply-To: <3968502921a0ce3c332d7fe8da8545ae85fc09d0.camel@linux.ibm.com>
+References: <3968502921a0ce3c332d7fe8da8545ae85fc09d0.camel@linux.ibm.com>
+Subject: Re: [PATCH v6 0/9] powerpc/pseries/vas: NXGZIP support with DLPAR
+Message-Id: <164674126387.3322453.7027227419911490620.b4-ty@ellerman.id.au>
+Date: Tue, 08 Mar 2022 23:07:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -44,24 +43,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mahesh@linux.ibm.com, npiggin@gmail.com, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 20 Jan 2022 17:49:31 +0530, Ganesh Goudar wrote:
-> In realmode mce handler we use irq_work_queue() to defer
-> the processing of mce events, irq_work_queue() can only
-> be called when translation is enabled because it touches
-> memory outside RMA, hence we enable translation before
-> calling irq_work_queue and disable on return, though it
-> is not safe to do in realmode.
+On Mon, 28 Feb 2022 17:09:57 -0800, Haren Myneni wrote:
+> PowerPC provides HW compression with NX coprocessor. This feature
+> is available on both PowerNV and PowerVM and included in Linux.
+> Since each powerpc chip has one NX coprocessor, the VAS introduces
+> the concept of windows / credits to manage access to this hardware
+> resource. On powerVM, these limited resources should be available
+> across all LPARs. So the hypervisor assigns the specific credits
+> to each LPAR based on processor entitlement so that one LPAR does
+> not overload NX. The hypervisor can reject the window open request
+> to a partition if exceeds its credit limit (1 credit per window).
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/mce: Avoid using irq_work_queue() in realmode
-      https://git.kernel.org/powerpc/c/cc15ff3275694fedc33cd3d53212a43eec7aa0bc
+[1/9] powerpc/pseries/vas: Use common names in VAS capability structure
+      https://git.kernel.org/powerpc/c/40562fe4fa3d94c7462ec909ab89b075e26c59ac
+[2/9] powerpc/pseries/vas: Save PID in pseries_vas_window struct
+      https://git.kernel.org/powerpc/c/976410cd2cb4c6ed53bd12c192fc46bbcc0fbce7
+[3/9] powerpc/vas: Add paste address mmap fault handler
+      https://git.kernel.org/powerpc/c/1fe3a33ba0a37e7aa0df0acbe31d5dda7610c16e
+[4/9] powerpc/vas: Return paste instruction failure if no active window
+      https://git.kernel.org/powerpc/c/b5c63d90cc2de8ac6724fec84d1d72cfebcae41d
+[5/9] powerpc/vas: Map paste address only if window is active
+      https://git.kernel.org/powerpc/c/6a8d4ca891aa5f9402973eab5d7d9cf3929678b7
+[6/9] powerpc/pseries/vas: Close windows with DLPAR core removal
+      https://git.kernel.org/powerpc/c/8ef7b9e1765a52c8023d9133a2438ac9f6da486a
+[7/9] powerpc/pseries/vas: Reopen windows with DLPAR core add
+      https://git.kernel.org/powerpc/c/c656cfe571a9b8b882e31177f554bd79141fc015
+[8/9] powerpc/pseries/vas: sysfs interface to export capabilities
+      https://git.kernel.org/powerpc/c/b903737bc522e0ef3f45a2a60c364ff547572c9b
+[9/9] powerpc/pseries/vas: Add 'update_total_credits' entry for QoS capabilities
+      https://git.kernel.org/powerpc/c/45f06eac30e5abebecc66e41e7c89d5b4413bac1
 
 cheers
