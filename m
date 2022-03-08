@@ -4,36 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09E23C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Mar 2022 12:11:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04D87C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Mar 2022 12:11:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KCZ1221RLz3bZR
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Mar 2022 23:11:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KCZ1S1c0Mz3by2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Mar 2022 23:11:24 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KCZ0c74r7z30G0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2022 23:10:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KCZ0f6xYzz30jZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Mar 2022 23:10:42 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4KCZ0c0yctz4xcl;
- Tue,  8 Mar 2022 23:10:40 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4KCZ0d4W2hz4xvG;
+ Tue,  8 Mar 2022 23:10:41 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Helge Deller <deller@gmx.de>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
  Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <ec286d2cc6989668a96f14543275437d2f3f0e3a.1645099283.git.christophe.leroy@csgroup.eu>
-References: <ec286d2cc6989668a96f14543275437d2f3f0e3a.1645099283.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v1 1/4] powerpc/ftrace: Don't use lmw/stmw in
- ftrace_regs_caller()
-Message-Id: <164674129368.3322453.9191334445476386091.b4-ty@ellerman.id.au>
-Date: Tue, 08 Mar 2022 23:08:13 +1100
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <cover.1644928018.git.christophe.leroy@csgroup.eu>
+References: <cover.1644928018.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v4 00/13] Fix LKDTM for PPC64/IA64/PARISC v4
+Message-Id: <164674125384.3322453.12551849351633372798.b4-ty@ellerman.id.au>
+Date: Tue, 08 Mar 2022 23:07:33 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -48,30 +50,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 17 Feb 2022 13:01:56 +0100, Christophe Leroy wrote:
-> For the same reason as commit a85c728cb5e1 ("powerpc/32: Don't use
-> lmw/stmw for saving/restoring non volatile regs"), don't use
-> lmw/stmw in ftrace_regs_caller().
+On Tue, 15 Feb 2022 13:40:55 +0100, Christophe Leroy wrote:
+> PPC64/IA64/PARISC have function descriptors. LKDTM doesn't work
+> on those three architectures because LKDTM messes up function
+> descriptors with functions.
 > 
-> Use the same macros for PPC32 and PPC64.
-> 
+> This series does some cleanup in the three architectures and
+> refactors function descriptors so that it can then easily use it
+> in a generic way in LKDTM.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/4] powerpc/ftrace: Don't use lmw/stmw in ftrace_regs_caller()
-      https://git.kernel.org/powerpc/c/9bdb2eec3dde4d66b71cb4bbaebde0caed2cf0e3
-[2/4] powerpc/ftrace: Refactor ftrace_{regs_}caller
-      https://git.kernel.org/powerpc/c/228216716cb5f9a19d70bfc40bdc0d6a7fb7e72f
-[3/4] powerpc/ftrace: Regroup PPC64 specific operations in ftrace_mprofile.S
-      https://git.kernel.org/powerpc/c/a5f04d1f2724db036ba4087873c0691881932bc9
-[4/4] powerpc/ftrace: Use STK_GOT in ftrace_mprofile.S
-      https://git.kernel.org/powerpc/c/2ca48dbb210767b9e7166d7d47febc8fcd1da6e1
+[01/13] powerpc: Fix 'sparse' checking on PPC64le
+        https://git.kernel.org/powerpc/c/81df21de8fb45d3a55d41da9c7f5724797d51ce6
+[02/13] powerpc: Move and rename func_descr_t
+        https://git.kernel.org/powerpc/c/5b23cb8cc6b0aab0535253cc2aa362572bab7072
+[03/13] powerpc: Use 'struct func_desc' instead of 'struct ppc64_opd_entry'
+        https://git.kernel.org/powerpc/c/d3e32b997a4ca2e7be71cb770bcb2c000ee20b36
+[04/13] powerpc: Remove 'struct ppc64_opd_entry'
+        https://git.kernel.org/powerpc/c/0a9c5ae279c963149df9a84588281d3d607f7a1f
+[05/13] powerpc: Prepare func_desc_t for refactorisation
+        https://git.kernel.org/powerpc/c/2fd986377d546bedaf27e36554dc9090d272f15d
+[06/13] ia64: Rename 'ip' to 'addr' in 'struct fdesc'
+        https://git.kernel.org/powerpc/c/41a88b45479da873bfc5d29ba1a545a780c5329a
+[07/13] asm-generic: Define CONFIG_HAVE_FUNCTION_DESCRIPTORS
+        https://git.kernel.org/powerpc/c/a257cacc38718c83cee003487e03197f237f5c3f
+[08/13] asm-generic: Define 'func_desc_t' to commonly describe function descriptors
+        https://git.kernel.org/powerpc/c/0dc690e4ef5b901e9d4b53520854fbd5c749e09d
+[09/13] asm-generic: Refactor dereference_[kernel]_function_descriptor()
+        https://git.kernel.org/powerpc/c/e1478d8eaf27704db17a44dee4c53696ed01fc9c
+[10/13] lkdtm: Force do_nothing() out of line
+        https://git.kernel.org/powerpc/c/69b420ed8fd3917ac7073256b4929aa246b6fe31
+[11/13] lkdtm: Really write into kernel text in WRITE_KERN
+        https://git.kernel.org/powerpc/c/b64913394f123e819bffabc79a0e48f98e78dc5d
+[12/13] lkdtm: Fix execute_[user]_location()
+        https://git.kernel.org/powerpc/c/72a86433049dcfe918886645ac3d19c1eaaa67ab
+[13/13] lkdtm: Add a test for function descriptors protection
+        https://git.kernel.org/powerpc/c/5e5a6c5441654d1b9e576ce4ca8a1759e701079e
 
 cheers
