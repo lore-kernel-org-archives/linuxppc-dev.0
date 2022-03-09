@@ -4,50 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD5E4C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 10:29:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 730C1C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 10:47:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KD7jG6kTSz3bdB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 21:29:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KD85z4WJrz3bdL
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 21:47:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=reA0wEc7;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ksce+MO2;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KD7hX5GpYz30K0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2022 21:28:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KD85H5lrWz30Dh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2022 21:46:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=reA0wEc7; 
+ header.a=rsa-sha256 header.s=201909 header.b=ksce+MO2; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4KD7hX2jG0z4xcl;
- Wed,  9 Mar 2022 21:28:44 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4KD85J0yKdz4xYy;
+ Wed,  9 Mar 2022 21:46:44 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1646821724;
- bh=fIpjsewHTmjYkWokF6RA3q1V2Q8A8cV3wzX2JhLtD3A=;
+ s=201909; t=1646822804;
+ bh=UNUfMtbu8jQxJ8Ldp1KCgA9gdyw7U6mYfXdtMhAz3JI=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=reA0wEc76tJdZBYALh9kwBVspHwK07UiJRgenk3bWy4P+bGza4kSqIsh6jINCc6Np
- 89QrC+x2KWaOZXKsEck05ADBjv/d2Zx+Udx8xy51YRrDQnW3mmviF0UXE91rLs0C5h
- Zs2SPwmNh0Jtvd4dbsvRUDqCOxkvWiJCElBEvPaHQgtPwjZsZ4kzm+uwvVPIbnhcAr
- nRmcoXvCUhhR2EyZxIfcKW7jlsTMh+16d/vJJR/1mj0DynqXBwiIcNkvojWHp4iBwl
- IoTEEt7vdYEh91R7HOP7yC0pkHnpHMncBJyCjgW5EP3VZpdHPJIsuVeQ1uL3J5vm1e
- ksawGTKtIDHPQ==
+ b=ksce+MO22Ocbz72HvCfAJVVGcoiTU526DWQbDfqV/6oa144msQGikKsMAeaAbrg+M
+ WIDpNdyWPJVpJU9Vor6F+HsHbxA+GRZXGonPGbI+zNoODL3ZdsTAKZ4iMBKqiCix1L
+ /f8tYlw1G/EX94rFMbYwdcdQXsNOiAHbj+2DDnFelgxJ2B7DC0SFB5FeqAKigaB6ap
+ LiIHjxR7xKTvJEPzw9Jr8lQ14lLH7g3+UvxGB8f4mJK6ul8+OBMDle5O+LN/UbywQq
+ N2PbIj1eWmzBF7C/hasBQKYLcWQnp2otkIuLvzX8EIKYcNVKl5xMvWhpDCZzOdMazg
+ d32soOd8EXfeg==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Alistair Popple
- <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 4/7] powerpc/dt_cpu_ftrs: Set current thread fscr bits
-In-Reply-To: <4c76a361-09a6-3c91-4ee8-36e035437496@csgroup.eu>
-References: <20200521014341.29095-1-alistair@popple.id.au>
- <20200521014341.29095-5-alistair@popple.id.au>
- <4c76a361-09a6-3c91-4ee8-36e035437496@csgroup.eu>
-Date: Wed, 09 Mar 2022 21:28:40 +1100
-Message-ID: <87lexjmnc7.fsf@mpe.ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Hangyu Hua
+ <hbh25y@gmail.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "paulus@samba.org" <paulus@samba.org>, "peng.hao2@zte.com.cn"
+ <peng.hao2@zte.com.cn>, "wen.yang99@zte.com.cn" <wen.yang99@zte.com.cn>
+Subject: Re: [PATCH] powerpc: 8xx: fix a return value error in mpc8xx_pic_init
+In-Reply-To: <87b40493-7630-f714-27f4-90ad2a5a7c12@csgroup.eu>
+References: <20220223070223.26845-1-hbh25y@gmail.com>
+ <87o82fn6yw.fsf@mpe.ellerman.id.au>
+ <87b40493-7630-f714-27f4-90ad2a5a7c12@csgroup.eu>
+Date: Wed, 09 Mar 2022 21:46:43 +1100
+Message-ID: <87ilsnmmi4.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
@@ -62,32 +64,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.ibm.com, mikey@neuling.org, npiggin@gmail.com
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> Le 21/05/2020 =C3=A0 03:43, Alistair Popple a =C3=A9crit=C2=A0:
->> Setting the FSCR bit directly in the SPR only sets it during the initial
->> boot and early init of the kernel but not for the init process or any
->> subsequent kthreads. This is because the thread_struct for those is
->> copied from the current thread_struct setup at boot which doesn't
->> reflect any changes made to the FSCR during cpu feature detection. This
->> patch ensures the current thread state is updated to match once feature
->> detection is complete.
+> Le 09/03/2022 =C3=A0 04:24, Michael Ellerman a =C3=A9crit=C2=A0:
+>> Hangyu Hua <hbh25y@gmail.com> writes:
+>>> mpc8xx_pic_init() should return -ENOMEM instead of 0 when
+>>> irq_domain_add_linear() return NULL. This cause mpc8xx_pics_init to con=
+tinue
+>>> executing even if mpc8xx_pic_host is NULL.
+>>>
+>>> Fixes: cc76404feaed ("powerpc/8xx: Fix possible device node reference l=
+eak")
+>>> Signed-off-by: Hangyu Hua <hbh25y@gmail.com>
+>>> ---
+>>>   arch/powerpc/platforms/8xx/pic.c | 1 +
+>>>   1 file changed, 1 insertion(+)
+>>>
+>>> diff --git a/arch/powerpc/platforms/8xx/pic.c b/arch/powerpc/platforms/=
+8xx/pic.c
+>>> index f2ba837249d6..04a6abf14c29 100644
+>>> --- a/arch/powerpc/platforms/8xx/pic.c
+>>> +++ b/arch/powerpc/platforms/8xx/pic.c
+>>> @@ -153,6 +153,7 @@ int __init mpc8xx_pic_init(void)
 >>=20
->> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+>> Expanding the context:
+>>=20
+>> 	siu_reg =3D ioremap(res.start, resource_size(&res));
+>> 	if (siu_reg =3D=3D NULL) {
+>> 		ret =3D -EINVAL;
+>> 		goto out;
+>> 	}
+>>=20
+>> 	mpc8xx_pic_host =3D irq_domain_add_linear(np, 64, &mpc8xx_pic_host_ops,=
+ NULL);
+>>>   	if (mpc8xx_pic_host =3D=3D NULL) {
+>>>   		printk(KERN_ERR "MPC8xx PIC: failed to allocate irq host!\n");
+>>>   		ret =3D -ENOMEM;
+>>> +		goto out;
+>>>   	}
+>>>=20=20=20
+>>>   	ret =3D 0;
+>>>=20=20=20=09
+>> out:
+>> 	of_node_put(np);
+>> 	return ret;
+>> }
+>>=20
+>> Proper error cleanup should also undo the ioremap() if
+>> irq_domain_add_linear() fails.
 >
-> I see that the series has been merged but this patch was left over.
+> Uh ...
 >
-> Has it been forgotten or is it rejected ?
+> If siu_reg is NULL, you get a serious problem when __do_irq() calls=20
+> mpc8xx_get_irq()
 
-I fixed the underlying issue, see:
+Arguably it shouldn't be assigned to ppc_md.get_irq unless
+mpc8xx_pic_init() succeeds. See eg. xics_init().
 
-  912c0a7f2b5d ("powerpc/64s: Save FSCR to init_task.thread.fscr after feat=
-ure init")
+> unsigned int mpc8xx_get_irq(void)
+> {
+> 	int irq;
+>
+> 	/* For MPC8xx, read the SIVEC register and shift the bits down
+> 	 * to get the irq number.
+> 	 */
+> 	irq =3D in_be32(&siu_reg->sc_sivec) >> 26;
+>
+> 	if (irq =3D=3D PIC_VEC_SPURRIOUS)
+> 		return 0;
+>
+>          return irq_linear_revmap(mpc8xx_pic_host, irq);
+>
+> }
+>
+>
+> So I'll leave siu_reg as is even if irq_domain_add_linear() fails.
+>
+> Whatever, if we do something about that it should be done in another=20
+> patch I think.
 
-So I guess it was superseeded (by a preceeding patch).
+Yeah OK, that's becoming a bit of a larger cleanup. I'll take this patch
+as-is.
 
 cheers
