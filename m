@@ -4,42 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4926C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 09:36:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27183C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 09:53:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KD6XK02Rrz3bpD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 20:36:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 495 seconds by postgrey-1.36 at boromir;
- Wed, 09 Mar 2022 20:36:05 AEDT
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KD6w73dHvz3bky
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 20:53:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=aculab.com (client-ip=185.58.85.151;
+ helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
+ receiver=<UNKNOWN>)
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KD6Wn1mhjz2ywb
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2022 20:36:04 +1100 (AEDT)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A9FEA2028D7;
- Wed,  9 Mar 2022 10:27:47 +0100 (CET)
-Received: from aprdc01srsp001v.ap-rdc01.nxp.com
- (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 468B92027BD;
- Wed,  9 Mar 2022 10:27:47 +0100 (CET)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id C23CD183AC94;
- Wed,  9 Mar 2022 17:27:45 +0800 (+08)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
- shengjiu.wang@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
- perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org
-Subject: [PATCH] ASoC: fsl_spdif: keep all TxClk sources by txclk array
-Date: Wed,  9 Mar 2022 17:18:43 +0800
-Message-Id: <1646817523-26800-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KD6vZ5qwGz2ywb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2022 20:53:11 +1100 (AEDT)
+Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ uk-mta-170-C9CSPsPAP3CiGXY-2Cczvg-1; Wed, 09 Mar 2022 09:53:06 +0000
+X-MC-Unique: C9CSPsPAP3CiGXY-2Cczvg-1
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
+ AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
+ Server (TLS) id 15.0.1497.28; Wed, 9 Mar 2022 09:53:04 +0000
+Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
+ AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
+ 15.00.1497.028; Wed, 9 Mar 2022 09:53:04 +0000
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Christophe Leroy' <christophe.leroy@csgroup.eu>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>
+Subject: RE: [PATCH] powerpc: Use rol32() instead of opencoding in csum_fold()
+Thread-Topic: [PATCH] powerpc: Use rol32() instead of opencoding in csum_fold()
+Thread-Index: AQHYM4tAZCIa7HBaKU201H+8JgoYL6y2y/IA
+Date: Wed, 9 Mar 2022 09:53:04 +0000
+Message-ID: <d7840750e3694b30951540b4298da208@AcuMS.aculab.com>
+References: <794337eff7bb803d2c4e67d9eee635390c4c48fe.1646812553.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <794337eff7bb803d2c4e67d9eee635390c4c48fe.1646812553.git.christophe.leroy@csgroup.eu>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
+MIME-Version: 1.0
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,165 +65,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Viorel Suman <viorel.suman@nxp.com>
+From: Christophe Leroy
+> Sent: 09 March 2022 07:56
+...
+> diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/a=
+sm/checksum.h
+> index 8321f6053a67..4b573a3b7e17 100644
+> --- a/arch/powerpc/include/asm/checksum.h
+> +++ b/arch/powerpc/include/asm/checksum.h
+> @@ -38,14 +38,15 @@ extern __wsum csum_and_copy_to_user(const void *src, =
+void __user *dst,
+>   */
+>  static inline __sum16 csum_fold(__wsum sum)
+>  {
+> +=09u32 tmp =3D (__force u32)sum;
+> +
+> +=09/*
+> +=09 * swap the two 16-bit halves of sum
+> +=09 * if there is a carry from adding the two 16-bit halves,
+> +=09 * it will carry from the lower half into the upper half,
+> +=09 * giving us the correct sum in the upper half.
+> +=09 */
+> +=09return (__force __sum16)(~(tmp + rol32(tmp, 16)) >> 16);
+>  }
+>=20
+>  static inline u32 from64to32(u64 x)
+> --
+> 2.34.1
 
-Use txclk array to keep all TxClk sources instead of keeping
-clocks per rate - need to do this in order to avoid multiple
-prepare_enable/disable_unprepare of the same clock during
-suspend/resume.
+On the face of it that is pretty generic.
+Two shifts and an add (plus the invert and mask).
 
-Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/fsl_spdif.c | 41 +++++++++++++++++++--------------------
- 1 file changed, 20 insertions(+), 21 deletions(-)
+I suspect it generates better code than the current x86 version
+which is:
 
-diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
-index 57c41b2f7d17..e0acce6b2213 100644
---- a/sound/soc/fsl/fsl_spdif.c
-+++ b/sound/soc/fsl/fsl_spdif.c
-@@ -125,7 +125,7 @@ struct fsl_spdif_priv {
- 	u16 sysclk_df[SPDIF_TXRATE_MAX];
- 	u8 txclk_src[SPDIF_TXRATE_MAX];
- 	u8 rxclk_src;
--	struct clk *txclk[SPDIF_TXRATE_MAX];
-+	struct clk *txclk[STC_TXCLK_SRC_MAX];
- 	struct clk *rxclk;
- 	struct clk *coreclk;
- 	struct clk *sysclk;
-@@ -526,7 +526,7 @@ static int spdif_set_sample_rate(struct snd_pcm_substream *substream,
- 		goto clk_set_bypass;
- 
- 	/* The S/PDIF block needs a clock of 64 * fs * txclk_df */
--	ret = clk_set_rate(spdif_priv->txclk[rate],
-+	ret = clk_set_rate(spdif_priv->txclk[clk],
- 			   64 * sample_rate * txclk_df);
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to set tx clock rate\n");
-@@ -537,7 +537,7 @@ static int spdif_set_sample_rate(struct snd_pcm_substream *substream,
- 	dev_dbg(&pdev->dev, "expected clock rate = %d\n",
- 			(64 * sample_rate * txclk_df * sysclk_df));
- 	dev_dbg(&pdev->dev, "actual clock rate = %ld\n",
--			clk_get_rate(spdif_priv->txclk[rate]));
-+			clk_get_rate(spdif_priv->txclk[clk]));
- 
- 	/* set fs field in consumer channel status */
- 	spdif_set_cstatus(ctrl, IEC958_AES3_CON_FS, csfs);
-@@ -1376,12 +1376,10 @@ static int fsl_spdif_probe_txclk(struct fsl_spdif_priv *spdif_priv,
- 	struct device *dev = &pdev->dev;
- 	u64 savesub = 100000, ret;
- 	struct clk *clk;
--	char tmp[16];
- 	int i;
- 
- 	for (i = 0; i < STC_TXCLK_SRC_MAX; i++) {
--		sprintf(tmp, "rxtx%d", i);
--		clk = devm_clk_get(dev, tmp);
-+		clk = spdif_priv->txclk[i];
- 		if (IS_ERR(clk)) {
- 			dev_err(dev, "no rxtx%d clock in devicetree\n", i);
- 			return PTR_ERR(clk);
-@@ -1395,7 +1393,6 @@ static int fsl_spdif_probe_txclk(struct fsl_spdif_priv *spdif_priv,
- 			continue;
- 
- 		savesub = ret;
--		spdif_priv->txclk[index] = clk;
- 		spdif_priv->txclk_src[index] = i;
- 
- 		/* To quick catch a divisor, we allow a 0.1% deviation */
-@@ -1407,7 +1404,7 @@ static int fsl_spdif_probe_txclk(struct fsl_spdif_priv *spdif_priv,
- 			spdif_priv->txclk_src[index], rate[index]);
- 	dev_dbg(dev, "use txclk df %d for %dHz sample rate\n",
- 			spdif_priv->txclk_df[index], rate[index]);
--	if (clk_is_match(spdif_priv->txclk[index], spdif_priv->sysclk))
-+	if (clk_is_match(spdif_priv->txclk[spdif_priv->txclk_src[index]], spdif_priv->sysclk))
- 		dev_dbg(dev, "use sysclk df %d for %dHz sample rate\n",
- 				spdif_priv->sysclk_df[index], rate[index]);
- 	dev_dbg(dev, "the best rate for %dHz sample rate is %dHz\n",
-@@ -1423,6 +1420,7 @@ static int fsl_spdif_probe(struct platform_device *pdev)
- 	struct resource *res;
- 	void __iomem *regs;
- 	int irq, ret, i;
-+	char tmp[16];
- 
- 	spdif_priv = devm_kzalloc(&pdev->dev, sizeof(*spdif_priv), GFP_KERNEL);
- 	if (!spdif_priv)
-@@ -1462,8 +1460,17 @@ static int fsl_spdif_probe(struct platform_device *pdev)
- 		}
- 	}
- 
-+	for (i = 0; i < STC_TXCLK_SRC_MAX; i++) {
-+		sprintf(tmp, "rxtx%d", i);
-+		spdif_priv->txclk[i] = devm_clk_get(&pdev->dev, tmp);
-+		if (IS_ERR(spdif_priv->txclk[i])) {
-+			dev_err(&pdev->dev, "no rxtx%d clock in devicetree\n", i);
-+			return PTR_ERR(spdif_priv->txclk[i]);
-+		}
-+	}
-+
- 	/* Get system clock for rx clock rate calculation */
--	spdif_priv->sysclk = devm_clk_get(&pdev->dev, "rxtx5");
-+	spdif_priv->sysclk = spdif_priv->txclk[5];
- 	if (IS_ERR(spdif_priv->sysclk)) {
- 		dev_err(&pdev->dev, "no sys clock (rxtx5) in devicetree\n");
- 		return PTR_ERR(spdif_priv->sysclk);
-@@ -1481,7 +1488,7 @@ static int fsl_spdif_probe(struct platform_device *pdev)
- 		dev_warn(&pdev->dev, "no spba clock in devicetree\n");
- 
- 	/* Select clock source for rx/tx clock */
--	spdif_priv->rxclk = devm_clk_get(&pdev->dev, "rxtx1");
-+	spdif_priv->rxclk = spdif_priv->txclk[1];
- 	if (IS_ERR(spdif_priv->rxclk)) {
- 		dev_err(&pdev->dev, "no rxtx1 clock in devicetree\n");
- 		return PTR_ERR(spdif_priv->rxclk);
-@@ -1562,9 +1569,7 @@ static int fsl_spdif_runtime_suspend(struct device *dev)
- 			&spdif_priv->regcache_srpc);
- 	regcache_cache_only(spdif_priv->regmap, true);
- 
--	clk_disable_unprepare(spdif_priv->rxclk);
+static inline __sum16 csum_fold(__wsum sum)
+{
+=09asm("addl %1, %0=09=09;\n"
+=09    "adcl $0xffff, %0=09;\n"
+=09    : "=3Dr" (sum)
+=09    : "r" ((__force u32)sum << 16),
+=09      "0" ((__force u32)sum & 0xffff0000));
+=09return (__force __sum16)(~(__force u32)sum >> 16);
+}
+
+Which looks like 2 shifts, a mask, add, adc..
+(Oh and the adc is two clocks on anything prior to Haswell.)
+Quite why it doesn't use 16bit add and adc is anybodies guess.
+Would still be shift, add, adc.
+So shift, add, shift is no worse.
+
+I wonder if any of the asm versions are actually better?
+Some are the same algorithm, some are a lot worse.
+
+Generic is:
+static inline __sum16 csum_fold(__wsum csum)
+{
+=09u32 sum =3D (__force u32)csum;
+=09sum =3D (sum & 0xffff) + (sum >> 16);
+=09sum =3D (sum & 0xffff) + (sum >> 16);
+=09return (__force __sum16)~sum;
+}
+Clearly can be improved.
+
+=09David
+
 -
--	for (i = 0; i < SPDIF_TXRATE_MAX; i++)
-+	for (i = 0; i < STC_TXCLK_SRC_MAX; i++)
- 		clk_disable_unprepare(spdif_priv->txclk[i]);
- 
- 	if (!IS_ERR(spdif_priv->spbaclk))
-@@ -1594,16 +1599,12 @@ static int fsl_spdif_runtime_resume(struct device *dev)
- 		}
- 	}
- 
--	for (i = 0; i < SPDIF_TXRATE_MAX; i++) {
-+	for (i = 0; i < STC_TXCLK_SRC_MAX; i++) {
- 		ret = clk_prepare_enable(spdif_priv->txclk[i]);
- 		if (ret)
- 			goto disable_tx_clk;
- 	}
- 
--	ret = clk_prepare_enable(spdif_priv->rxclk);
--	if (ret)
--		goto disable_tx_clk;
--
- 	regcache_cache_only(spdif_priv->regmap, false);
- 	regcache_mark_dirty(spdif_priv->regmap);
- 
-@@ -1613,12 +1614,10 @@ static int fsl_spdif_runtime_resume(struct device *dev)
- 
- 	ret = regcache_sync(spdif_priv->regmap);
- 	if (ret)
--		goto disable_rx_clk;
-+		goto disable_tx_clk;
- 
- 	return 0;
- 
--disable_rx_clk:
--	clk_disable_unprepare(spdif_priv->rxclk);
- disable_tx_clk:
- 	for (i--; i >= 0; i--)
- 		clk_disable_unprepare(spdif_priv->txclk[i]);
--- 
-2.17.1
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
+PT, UK
+Registration No: 1397386 (Wales)
 
