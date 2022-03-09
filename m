@@ -4,64 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CEF7C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 09:30:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4926C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 09:36:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KD6PQ3kvtz3bmP
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 20:30:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KD6XK02Rrz3bpD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 20:36:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 495 seconds by postgrey-1.36 at boromir;
+ Wed, 09 Mar 2022 20:36:05 AEDT
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KD6Ny5GpXz2ywb
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2022 20:30:08 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KD6Nv0b01z9sSV;
- Wed,  9 Mar 2022 10:30:07 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ooq6_0FsSdGe; Wed,  9 Mar 2022 10:30:07 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KD6Nt6qh0z9sSR;
- Wed,  9 Mar 2022 10:30:06 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D7EB78B77E;
- Wed,  9 Mar 2022 10:30:06 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id pOpmT6DffnpU; Wed,  9 Mar 2022 10:30:06 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 88E9C8B763;
- Wed,  9 Mar 2022 10:30:06 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2299Tscg3598467
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Wed, 9 Mar 2022 10:29:54 +0100
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2299TqDE3598460;
- Wed, 9 Mar 2022 10:29:52 +0100
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc: Remove find_current_mm_pte()
-Date: Wed,  9 Mar 2022 10:29:50 +0100
-Message-Id: <ec79f462a3bfa8365b7df505e574d5d85246bc68.1646818177.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.34.1
-MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1646818188; l=2526; s=20211009;
- h=from:subject:message-id; bh=h44Sg5AgvIMvJpGkxPGM0gq65QXd16xNa43MAsRSfio=;
- b=oHkiv4ZIEp7UvFFwzb2z/ajNVIwFcw+hXyjZMtTPV39nDHiMTygEQApsjKlwdgTeYlYy4PBdfQ2k
- JJCXgKLsAox3Wfh8ffT2Z/AwuimMsc2zUcKoli3ayLGN2lw+AZsE
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KD6Wn1mhjz2ywb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Mar 2022 20:36:04 +1100 (AEDT)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A9FEA2028D7;
+ Wed,  9 Mar 2022 10:27:47 +0100 (CET)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com
+ (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 468B92027BD;
+ Wed,  9 Mar 2022 10:27:47 +0100 (CET)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id C23CD183AC94;
+ Wed,  9 Mar 2022 17:27:45 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
+ shengjiu.wang@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
+ perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org
+Subject: [PATCH] ASoC: fsl_spdif: keep all TxClk sources by txclk array
+Date: Wed,  9 Mar 2022 17:18:43 +0800
+Message-Id: <1646817523-26800-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,73 +56,160 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Last usage of find_current_mm_pte() was removed by
-commit 15759cb054ef ("powerpc/perf/callchain: Use
-__get_user_pages_fast in read_user_stack_slow")
+From: Viorel Suman <viorel.suman@nxp.com>
 
-Remove it.
+Use txclk array to keep all TxClk sources instead of keeping
+clocks per rate - need to do this in order to avoid multiple
+prepare_enable/disable_unprepare of the same clock during
+suspend/resume.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- arch/powerpc/include/asm/pte-walk.h | 25 -------------------------
- arch/powerpc/mm/book3s64/pgtable.c  |  4 ++--
- 2 files changed, 2 insertions(+), 27 deletions(-)
+ sound/soc/fsl/fsl_spdif.c | 41 +++++++++++++++++++--------------------
+ 1 file changed, 20 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pte-walk.h b/arch/powerpc/include/asm/pte-walk.h
-index 714a35f0d425..73c22c579a79 100644
---- a/arch/powerpc/include/asm/pte-walk.h
-+++ b/arch/powerpc/include/asm/pte-walk.h
-@@ -60,29 +60,4 @@ static inline phys_addr_t ppc_find_vmap_phys(unsigned long addr)
- 	return pa;
- }
+diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
+index 57c41b2f7d17..e0acce6b2213 100644
+--- a/sound/soc/fsl/fsl_spdif.c
++++ b/sound/soc/fsl/fsl_spdif.c
+@@ -125,7 +125,7 @@ struct fsl_spdif_priv {
+ 	u16 sysclk_df[SPDIF_TXRATE_MAX];
+ 	u8 txclk_src[SPDIF_TXRATE_MAX];
+ 	u8 rxclk_src;
+-	struct clk *txclk[SPDIF_TXRATE_MAX];
++	struct clk *txclk[STC_TXCLK_SRC_MAX];
+ 	struct clk *rxclk;
+ 	struct clk *coreclk;
+ 	struct clk *sysclk;
+@@ -526,7 +526,7 @@ static int spdif_set_sample_rate(struct snd_pcm_substream *substream,
+ 		goto clk_set_bypass;
  
--/*
-- * This is what we should always use. Any other lockless page table lookup needs
-- * careful audit against THP split.
-- */
--static inline pte_t *find_current_mm_pte(pgd_t *pgdir, unsigned long ea,
--					 bool *is_thp, unsigned *hshift)
--{
--	pte_t *pte;
--
--	VM_WARN(!arch_irqs_disabled(), "%s called with irq enabled\n", __func__);
--	VM_WARN(pgdir != current->mm->pgd,
--		"%s lock less page table lookup called on wrong mm\n", __func__);
--	pte = __find_linux_pte(pgdir, ea, is_thp, hshift);
--
--#if defined(CONFIG_DEBUG_VM) &&						\
--	!(defined(CONFIG_HUGETLB_PAGE) || defined(CONFIG_TRANSPARENT_HUGEPAGE))
--	/*
--	 * We should not find huge page if these configs are not enabled.
--	 */
--	if (hshift)
--		WARN_ON(*hshift);
--#endif
--	return pte;
--}
--
- #endif /* _ASM_POWERPC_PTE_WALK_H */
-diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-index 79ce3c22a29d..41a41357799d 100644
---- a/arch/powerpc/mm/book3s64/pgtable.c
-+++ b/arch/powerpc/mm/book3s64/pgtable.c
-@@ -98,14 +98,14 @@ static void do_serialize(void *arg)
- }
+ 	/* The S/PDIF block needs a clock of 64 * fs * txclk_df */
+-	ret = clk_set_rate(spdif_priv->txclk[rate],
++	ret = clk_set_rate(spdif_priv->txclk[clk],
+ 			   64 * sample_rate * txclk_df);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to set tx clock rate\n");
+@@ -537,7 +537,7 @@ static int spdif_set_sample_rate(struct snd_pcm_substream *substream,
+ 	dev_dbg(&pdev->dev, "expected clock rate = %d\n",
+ 			(64 * sample_rate * txclk_df * sysclk_df));
+ 	dev_dbg(&pdev->dev, "actual clock rate = %ld\n",
+-			clk_get_rate(spdif_priv->txclk[rate]));
++			clk_get_rate(spdif_priv->txclk[clk]));
  
- /*
-- * Serialize against find_current_mm_pte which does lock-less
-+ * Serialize against __find_linux_pte() which does lock-less
-  * lookup in page tables with local interrupts disabled. For huge pages
-  * it casts pmd_t to pte_t. Since format of pte_t is different from
-  * pmd_t we want to prevent transit from pmd pointing to page table
-  * to pmd pointing to huge page (and back) while interrupts are disabled.
-  * We clear pmd to possibly replace it with page table pointer in
-  * different code paths. So make sure we wait for the parallel
-- * find_current_mm_pte to finish.
-+ * __find_linux_pte() to finish.
-  */
- void serialize_against_pte_lookup(struct mm_struct *mm)
- {
+ 	/* set fs field in consumer channel status */
+ 	spdif_set_cstatus(ctrl, IEC958_AES3_CON_FS, csfs);
+@@ -1376,12 +1376,10 @@ static int fsl_spdif_probe_txclk(struct fsl_spdif_priv *spdif_priv,
+ 	struct device *dev = &pdev->dev;
+ 	u64 savesub = 100000, ret;
+ 	struct clk *clk;
+-	char tmp[16];
+ 	int i;
+ 
+ 	for (i = 0; i < STC_TXCLK_SRC_MAX; i++) {
+-		sprintf(tmp, "rxtx%d", i);
+-		clk = devm_clk_get(dev, tmp);
++		clk = spdif_priv->txclk[i];
+ 		if (IS_ERR(clk)) {
+ 			dev_err(dev, "no rxtx%d clock in devicetree\n", i);
+ 			return PTR_ERR(clk);
+@@ -1395,7 +1393,6 @@ static int fsl_spdif_probe_txclk(struct fsl_spdif_priv *spdif_priv,
+ 			continue;
+ 
+ 		savesub = ret;
+-		spdif_priv->txclk[index] = clk;
+ 		spdif_priv->txclk_src[index] = i;
+ 
+ 		/* To quick catch a divisor, we allow a 0.1% deviation */
+@@ -1407,7 +1404,7 @@ static int fsl_spdif_probe_txclk(struct fsl_spdif_priv *spdif_priv,
+ 			spdif_priv->txclk_src[index], rate[index]);
+ 	dev_dbg(dev, "use txclk df %d for %dHz sample rate\n",
+ 			spdif_priv->txclk_df[index], rate[index]);
+-	if (clk_is_match(spdif_priv->txclk[index], spdif_priv->sysclk))
++	if (clk_is_match(spdif_priv->txclk[spdif_priv->txclk_src[index]], spdif_priv->sysclk))
+ 		dev_dbg(dev, "use sysclk df %d for %dHz sample rate\n",
+ 				spdif_priv->sysclk_df[index], rate[index]);
+ 	dev_dbg(dev, "the best rate for %dHz sample rate is %dHz\n",
+@@ -1423,6 +1420,7 @@ static int fsl_spdif_probe(struct platform_device *pdev)
+ 	struct resource *res;
+ 	void __iomem *regs;
+ 	int irq, ret, i;
++	char tmp[16];
+ 
+ 	spdif_priv = devm_kzalloc(&pdev->dev, sizeof(*spdif_priv), GFP_KERNEL);
+ 	if (!spdif_priv)
+@@ -1462,8 +1460,17 @@ static int fsl_spdif_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++	for (i = 0; i < STC_TXCLK_SRC_MAX; i++) {
++		sprintf(tmp, "rxtx%d", i);
++		spdif_priv->txclk[i] = devm_clk_get(&pdev->dev, tmp);
++		if (IS_ERR(spdif_priv->txclk[i])) {
++			dev_err(&pdev->dev, "no rxtx%d clock in devicetree\n", i);
++			return PTR_ERR(spdif_priv->txclk[i]);
++		}
++	}
++
+ 	/* Get system clock for rx clock rate calculation */
+-	spdif_priv->sysclk = devm_clk_get(&pdev->dev, "rxtx5");
++	spdif_priv->sysclk = spdif_priv->txclk[5];
+ 	if (IS_ERR(spdif_priv->sysclk)) {
+ 		dev_err(&pdev->dev, "no sys clock (rxtx5) in devicetree\n");
+ 		return PTR_ERR(spdif_priv->sysclk);
+@@ -1481,7 +1488,7 @@ static int fsl_spdif_probe(struct platform_device *pdev)
+ 		dev_warn(&pdev->dev, "no spba clock in devicetree\n");
+ 
+ 	/* Select clock source for rx/tx clock */
+-	spdif_priv->rxclk = devm_clk_get(&pdev->dev, "rxtx1");
++	spdif_priv->rxclk = spdif_priv->txclk[1];
+ 	if (IS_ERR(spdif_priv->rxclk)) {
+ 		dev_err(&pdev->dev, "no rxtx1 clock in devicetree\n");
+ 		return PTR_ERR(spdif_priv->rxclk);
+@@ -1562,9 +1569,7 @@ static int fsl_spdif_runtime_suspend(struct device *dev)
+ 			&spdif_priv->regcache_srpc);
+ 	regcache_cache_only(spdif_priv->regmap, true);
+ 
+-	clk_disable_unprepare(spdif_priv->rxclk);
+-
+-	for (i = 0; i < SPDIF_TXRATE_MAX; i++)
++	for (i = 0; i < STC_TXCLK_SRC_MAX; i++)
+ 		clk_disable_unprepare(spdif_priv->txclk[i]);
+ 
+ 	if (!IS_ERR(spdif_priv->spbaclk))
+@@ -1594,16 +1599,12 @@ static int fsl_spdif_runtime_resume(struct device *dev)
+ 		}
+ 	}
+ 
+-	for (i = 0; i < SPDIF_TXRATE_MAX; i++) {
++	for (i = 0; i < STC_TXCLK_SRC_MAX; i++) {
+ 		ret = clk_prepare_enable(spdif_priv->txclk[i]);
+ 		if (ret)
+ 			goto disable_tx_clk;
+ 	}
+ 
+-	ret = clk_prepare_enable(spdif_priv->rxclk);
+-	if (ret)
+-		goto disable_tx_clk;
+-
+ 	regcache_cache_only(spdif_priv->regmap, false);
+ 	regcache_mark_dirty(spdif_priv->regmap);
+ 
+@@ -1613,12 +1614,10 @@ static int fsl_spdif_runtime_resume(struct device *dev)
+ 
+ 	ret = regcache_sync(spdif_priv->regmap);
+ 	if (ret)
+-		goto disable_rx_clk;
++		goto disable_tx_clk;
+ 
+ 	return 0;
+ 
+-disable_rx_clk:
+-	clk_disable_unprepare(spdif_priv->rxclk);
+ disable_tx_clk:
+ 	for (i--; i >= 0; i--)
+ 		clk_disable_unprepare(spdif_priv->txclk[i]);
 -- 
-2.34.1
+2.17.1
 
