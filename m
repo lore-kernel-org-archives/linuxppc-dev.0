@@ -4,65 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24E80C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 16:02:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77D95C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 16:31:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KDH573VcRz3bwX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Mar 2022 03:02:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KDHkZ5DMDz3bcn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Mar 2022 03:31:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=oIHRdIQt;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::429;
+ helo=mail-pf1-x429.google.com; envelope-from=keescook@chromium.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=oIHRdIQt; dkim-atps=neutral
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
+ [IPv6:2607:f8b0:4864:20::429])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KDH4h6sNtz30R0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2022 03:01:39 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KDH4f1Rkrz9sSh;
- Wed,  9 Mar 2022 17:01:38 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BBAhTgwZ5b9d; Wed,  9 Mar 2022 17:01:38 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KDH4f0Y5pz9sSX;
- Wed,  9 Mar 2022 17:01:38 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DD28C8B780;
- Wed,  9 Mar 2022 17:01:37 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id TTuj8fHFqNWr; Wed,  9 Mar 2022 17:01:37 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.27])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9F86B8B763;
- Wed,  9 Mar 2022 17:01:37 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 229G1U9q3615135
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Wed, 9 Mar 2022 17:01:30 +0100
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 229G1T1c3615133;
- Wed, 9 Mar 2022 17:01:29 +0100
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v4,2/2] powerpc: Fix virt_addr_valid() check
-Date: Wed,  9 Mar 2022 17:01:27 +0100
-Message-Id: <20220309160127.3615111-1-christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220216121109.157605-2-wangkefeng.wang@huawei.com>
-References: <20220216121109.157605-2-wangkefeng.wang@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KDHjr0f1Zz2yQC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2022 03:30:21 +1100 (AEDT)
+Received: by mail-pf1-x429.google.com with SMTP id a5so2797180pfv.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Mar 2022 08:30:22 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=OEKJ6HDfRbAYXq1y3GQ16S8ECnj8rGvJ1M6VsKHeWho=;
+ b=oIHRdIQt5LoDmfPbY/G+bBH9o203m/KAHGz2i3DiFvY04vAFtOZbiV2VNw1Bco6aPR
+ 7KbjGoeqlwQ3COOJKgMqcvt6n0uAgO8pXJ9sECo3BMw6jNYxt57ENxj/F5kjvVMnCAXv
+ jY2cx0MvlUyBrD5/D8cKaWx8Xmj0/ViDCRVWQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=OEKJ6HDfRbAYXq1y3GQ16S8ECnj8rGvJ1M6VsKHeWho=;
+ b=5xOXpFeEQIHaXh9RzngnObJZxqPy0cTyAt2R7gSCdabZnpZjpI85BeXd/laSFdsNY4
+ HeflEXB5YWSZAsQCett4dttI2Kx9jGLFlj27u/GgycFLnuKa2WbsFqnnUWulgtIUKN38
+ P1ABIVZJCjbE9TzLDvYwfI5VOBEx1qlVYVl3RATXfGHdG8+sWYRx6xVi3rPLjoOkFxne
+ I6Yd7GvhUMmn9U6bjCLUHV4/QeTMR9Fta2D3JI0div/4Er7kAxetbihOf0GNKiX+EcOn
+ p/6OpCu2zBtIDdLSlnKZn2pMASFSfvDnjEb+AV8IfdVoaaoIzxC6Ttd4TNm/zoth+3EB
+ J6cg==
+X-Gm-Message-State: AOAM533TO3uyqV5BNXoIC9w1yO6PjWeUPLrt5rDJaFT/YKL30PIwmui1
+ IYoXImFpZyjNCXUzd88STN+HBA==
+X-Google-Smtp-Source: ABdhPJysLOSUH1ejLQlt60xHSX+d3Bmy5LiPEBTc5BsVYUZY79bDZ5hXlYyKJbRu0bUDKCQC8AewHg==
+X-Received: by 2002:a05:6a00:140b:b0:4e1:2cbd:30ba with SMTP id
+ l11-20020a056a00140b00b004e12cbd30bamr340497pfu.46.1646843418232; 
+ Wed, 09 Mar 2022 08:30:18 -0800 (PST)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+ by smtp.gmail.com with ESMTPSA id
+ g28-20020a63111c000000b00374646abc42sm2841805pgl.36.2022.03.09.08.30.17
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 09 Mar 2022 08:30:17 -0800 (PST)
+Date: Wed, 9 Mar 2022 08:30:17 -0800
+From: Kees Cook <keescook@chromium.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v4 00/13] Fix LKDTM for PPC64/IA64/PARISC v4
+Message-ID: <202203090829.53A243306@keescook>
+References: <cover.1644928018.git.christophe.leroy@csgroup.eu>
+ <164674125384.3322453.12551849351633372798.b4-ty@ellerman.id.au>
+ <87r17bnbxx.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1646841674; l=61; s=20211009;
- h=from:subject; bh=K/GHGLFqpS3SqWCl68PupQPxce6PL/KQQ3V/MSamcZI=;
- b=maQtQalPLOmwa29+OYTTmNjSn5AWF+ipzKBC0VFPTCtFLchj7XKWsGQbgf9WAONOs9snz5gyURJQ
- uzHSPFRXALsc2k3d3T4dW96mH+fDPO0Fcw5Mn1kzPMM6bIbPmxHk
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87r17bnbxx.fsf@mpe.ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,8 +80,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Michael Ellerman <patch-notifications@ellerman.id.au>,
+ linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Helge Deller <deller@gmx.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+On Wed, Mar 09, 2022 at 12:37:14PM +1100, Michael Ellerman wrote:
+> Michael Ellerman <patch-notifications@ellerman.id.au> writes:
+> > On Tue, 15 Feb 2022 13:40:55 +0100, Christophe Leroy wrote:
+> >> PPC64/IA64/PARISC have function descriptors. LKDTM doesn't work
+> >> on those three architectures because LKDTM messes up function
+> >> descriptors with functions.
+> >> 
+> >> This series does some cleanup in the three architectures and
+> >> refactors function descriptors so that it can then easily use it
+> >> in a generic way in LKDTM.
+> >> 
+> >> [...]
+> >
+> > Applied to powerpc/next.
+> 
+> I also have it in an rc2-based topic branch if there are any merge
+> conflicts that people want to resolve, I don't see any in linux-next at
+> the moment though.
+> 
+> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=topic/func-desc-lkdtm
+
+Thanks! I've got some core changes coming for lkdtm, but I'm waiting
+until after the merge window to rebase them and get them into -next.
+
+-- 
+Kees Cook
