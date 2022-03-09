@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4438C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 17:46:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C9CCC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Mar 2022 17:47:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KDKPx0T3Pz3chM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Mar 2022 04:46:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KDKQM5qNnz3dqh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Mar 2022 04:47:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,53 +16,52 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KDKNG3Py4z3bZd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2022 04:45:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KDKNL2qrHz3bf5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2022 04:45:22 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KDKN2214dz9sSk;
- Wed,  9 Mar 2022 18:45:06 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4KDKN33d8pz9sSl;
+ Wed,  9 Mar 2022 18:45:07 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id O3ftt275aKUL; Wed,  9 Mar 2022 18:45:06 +0100 (CET)
+ with ESMTP id P4jMtb4PEz2B; Wed,  9 Mar 2022 18:45:07 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KDKN01Fvbz9sSl;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KDKN01T4Pz9sSp;
  Wed,  9 Mar 2022 18:45:04 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 158EA8B786;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1B0D58B788;
  Wed,  9 Mar 2022 18:45:04 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 99f6_4iQmEC2; Wed,  9 Mar 2022 18:45:04 +0100 (CET)
+ with ESMTP id fzP3Shqaepem; Wed,  9 Mar 2022 18:45:04 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.27])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0CC728B794;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F15E18B78F;
  Wed,  9 Mar 2022 18:45:02 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 229Hitro3619018
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 229HiuY83619034
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Wed, 9 Mar 2022 18:44:55 +0100
+ Wed, 9 Mar 2022 18:44:56 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 229HitwC3619016;
- Wed, 9 Mar 2022 18:44:55 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 229HiuNv3619033;
+ Wed, 9 Mar 2022 18:44:56 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, alex@ghiti.fr
-Subject: [PATCH v8 01/14] sizes.h: Add SZ_1T macro
-Date: Wed,  9 Mar 2022 18:44:35 +0100
-Message-Id: <b020d8dcedb2753a894722147a0b5de25b2ae29b.1646847561.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v8 05/14] mm, hugetlbfs: Allow for "high" userspace addresses
+Date: Wed,  9 Mar 2022 18:44:39 +0100
+Message-Id: <c234ceaf81ff37447fec5c9813d4ba5fc472a355.1646847562.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1646847561.git.christophe.leroy@csgroup.eu>
 References: <cover.1646847561.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1646847882; l=1663; s=20211009;
- h=from:subject:message-id; bh=zBJLp35l5eGoXYNCjVbBb8vFX6ukm3X2IWKMGat7C0Y=;
- b=a4sK8BeVtRibXTqsJe/VT7LuG4MOaBtM1DGNCmOxO1JDx7nld4vJy6jrNPXeTI3TIMo6yyBuh5sy
- PSPu9VD4C9jmijA/quaMNywwP4+9VJZGbkI/IRb23c1lVo5Sr+RN
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1646847882; l=4559; s=20211009;
+ h=from:subject:message-id; bh=Jj+K0Qwa2NeWktT0U34xo/gQowfdDEEU+akA04PFulc=;
+ b=AU5aQ/0lMAvnlbg4RG4c+oki0uqQ1Lz+Vf0I3OHk8FAEJbpQoXnUd67msdOE6PCijSRQp6Q3YD/l
+ QAbSV+o2DACnbA4xpavKVn9YdJQYj6sIZy9/TtTcOsq8pwTcLMWT
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -77,59 +76,135 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, will@kernel.org,
- catalin.marinas@arm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+Cc: will@kernel.org, Steve Capper <steve.capper@arm.com>,
+ catalin.marinas@arm.com, Will Deacon <will.deacon@arm.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, stable@vger.kernel.org,
  akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- Toan Le <toan@os.amperecomputing.com>, linux-arm-kernel@lists.infradead.org
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Today drivers/pci/controller/pci-xgene.c defines SZ_1T
+This is a complement of f6795053dac8 ("mm: mmap: Allow for "high"
+userspace addresses") for hugetlb.
 
-Move it into linux/sizes.h so that it can be re-used elsewhere.
+This patch adds support for "high" userspace addresses that are
+optionally supported on the system and have to be requested via a hint
+mechanism ("high" addr parameter to mmap).
 
-Link: https://lore.kernel.org/r/575cb7164cf124c75df7cb9242ea7374733942bf.1642752946.git.christophe.leroy@csgroup.eu
+Architectures such as powerpc and x86 achieve this by making changes to
+their architectural versions of hugetlb_get_unmapped_area() function.
+However, arm64 uses the generic version of that function.
+
+So take into account arch_get_mmap_base() and arch_get_mmap_end() in
+hugetlb_get_unmapped_area(). To allow that, move those two macros
+out of mm/mmap.c into include/linux/sched/mm.h
+
+If these macros are not defined in architectural code then they default
+to (TASK_SIZE) and (base) so should not introduce any behavioural
+changes to architectures that do not define them.
+
+For the time being, only ARM64 is affected by this change.
+
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Reviewed-by: Krzysztof Wilczyński <kw@linux.com>
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Toan Le <toan@os.amperecomputing.com>
-Cc: linux-pci@vger.kernel.org
+Cc: Steve Capper <steve.capper@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Fixes: f6795053dac8 ("mm: mmap: Allow for "high" userspace addresses")
+Cc: <stable@vger.kernel.org> # 5.0.x
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- This patch is already in linux-next but not in Linus' tree yet
+ fs/hugetlbfs/inode.c     | 9 +++++----
+ include/linux/sched/mm.h | 8 ++++++++
+ mm/mmap.c                | 8 --------
+ 3 files changed, 13 insertions(+), 12 deletions(-)
 
- drivers/pci/controller/pci-xgene.c | 1 -
- include/linux/sizes.h              | 2 ++
- 2 files changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/pci/controller/pci-xgene.c b/drivers/pci/controller/pci-xgene.c
-index 0d5acbfc7143..77c1fe7e11f9 100644
---- a/drivers/pci/controller/pci-xgene.c
-+++ b/drivers/pci/controller/pci-xgene.c
-@@ -49,7 +49,6 @@
- #define EN_REG				0x00000001
- #define OB_LO_IO			0x00000002
- #define XGENE_PCIE_DEVICEID		0xE004
--#define SZ_1T				(SZ_1G*1024ULL)
- #define PIPE_PHY_RATE_RD(src)		((0xc000 & (u32)(src)) >> 0xe)
+diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+index ba15a85c7dfb..73f0a1f94d78 100644
+--- a/fs/hugetlbfs/inode.c
++++ b/fs/hugetlbfs/inode.c
+@@ -205,7 +205,7 @@ hugetlb_get_unmapped_area_bottomup(struct file *file, unsigned long addr,
+ 	info.flags = 0;
+ 	info.length = len;
+ 	info.low_limit = current->mm->mmap_base;
+-	info.high_limit = TASK_SIZE;
++	info.high_limit = arch_get_mmap_end(addr, len, flags);
+ 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
+ 	info.align_offset = 0;
+ 	return vm_unmapped_area(&info);
+@@ -221,7 +221,7 @@ hugetlb_get_unmapped_area_topdown(struct file *file, unsigned long addr,
+ 	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+ 	info.length = len;
+ 	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
+-	info.high_limit = current->mm->mmap_base;
++	info.high_limit = arch_get_mmap_base(addr, current->mm->mmap_base);
+ 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
+ 	info.align_offset = 0;
+ 	addr = vm_unmapped_area(&info);
+@@ -236,7 +236,7 @@ hugetlb_get_unmapped_area_topdown(struct file *file, unsigned long addr,
+ 		VM_BUG_ON(addr != -ENOMEM);
+ 		info.flags = 0;
+ 		info.low_limit = current->mm->mmap_base;
+-		info.high_limit = TASK_SIZE;
++		info.high_limit = arch_get_mmap_end(addr, len, flags);
+ 		addr = vm_unmapped_area(&info);
+ 	}
  
- #define XGENE_V1_PCI_EXP_CAP		0x40
-diff --git a/include/linux/sizes.h b/include/linux/sizes.h
-index 1ac79bcee2bb..84aa448d8bb3 100644
---- a/include/linux/sizes.h
-+++ b/include/linux/sizes.h
-@@ -47,6 +47,8 @@
- #define SZ_8G				_AC(0x200000000, ULL)
- #define SZ_16G				_AC(0x400000000, ULL)
- #define SZ_32G				_AC(0x800000000, ULL)
+@@ -251,6 +251,7 @@ generic_hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+ 	struct mm_struct *mm = current->mm;
+ 	struct vm_area_struct *vma;
+ 	struct hstate *h = hstate_file(file);
++	const unsigned long mmap_end = arch_get_mmap_end(addr, len, flags);
+ 
+ 	if (len & ~huge_page_mask(h))
+ 		return -EINVAL;
+@@ -266,7 +267,7 @@ generic_hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+ 	if (addr) {
+ 		addr = ALIGN(addr, huge_page_size(h));
+ 		vma = find_vma(mm, addr);
+-		if (TASK_SIZE - len >= addr &&
++		if (mmap_end - len >= addr &&
+ 		    (!vma || addr + len <= vm_start_gap(vma)))
+ 			return addr;
+ 	}
+diff --git a/include/linux/sched/mm.h b/include/linux/sched/mm.h
+index 1dcf54360aea..319bbf90cc96 100644
+--- a/include/linux/sched/mm.h
++++ b/include/linux/sched/mm.h
+@@ -135,6 +135,14 @@ static inline void mm_update_next_owner(struct mm_struct *mm)
+ #endif /* CONFIG_MEMCG */
+ 
+ #ifdef CONFIG_MMU
++#ifndef arch_get_mmap_end
++#define arch_get_mmap_end(addr, len, flags)	(TASK_SIZE)
++#endif
 +
-+#define SZ_1T				_AC(0x10000000000, ULL)
- #define SZ_64T				_AC(0x400000000000, ULL)
++#ifndef arch_get_mmap_base
++#define arch_get_mmap_base(addr, base) (base)
++#endif
++
+ extern void arch_pick_mmap_layout(struct mm_struct *mm,
+ 				  struct rlimit *rlim_stack);
+ extern unsigned long
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 18cd52620719..b52e6df32ddf 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -2119,14 +2119,6 @@ unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
+ 	return addr;
+ }
  
- #endif /* __LINUX_SIZES_H__ */
+-#ifndef arch_get_mmap_end
+-#define arch_get_mmap_end(addr, len, flags)	(TASK_SIZE)
+-#endif
+-
+-#ifndef arch_get_mmap_base
+-#define arch_get_mmap_base(addr, base) (base)
+-#endif
+-
+ /* Get an address range which is currently unmapped.
+  * For shmat() with addr=0.
+  *
 -- 
 2.34.1
 
