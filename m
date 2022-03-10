@@ -4,46 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FEFBC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Mar 2022 12:23:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F4F6C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Mar 2022 12:30:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KDpB05097z2ypn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Mar 2022 23:23:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KDpLk5Mwnz306m
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Mar 2022 23:30:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=L/9onr5m;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=leemhuis.info (client-ip=2a01:488:42:1000:50ed:8234::;
- helo=wp530.webpack.hosteurope.de; envelope-from=regressions@leemhuis.info;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
  receiver=<UNKNOWN>)
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de
- [IPv6:2a01:488:42:1000:50ed:8234::])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KDp9V1Jvdz2ypn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2022 23:22:37 +1100 (AEDT)
-Received: from ip4d144895.dynamic.kabel-deutschland.de ([77.20.72.149]
- helo=[192.168.66.200]); authenticated
- by wp530.webpack.hosteurope.de running ExIM with esmtpsa
- (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
- id 1nSHoO-0000Ms-7H; Thu, 10 Mar 2022 13:22:32 +0100
-Message-ID: <09086ab6-10ff-6334-6148-2fab9df64f9a@leemhuis.info>
-Date: Thu, 10 Mar 2022 13:22:20 +0100
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=L/9onr5m; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KDpKy1j3dz2xtv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2022 23:29:57 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 22AAooOD021462; 
+ Thu, 10 Mar 2022 12:29:48 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=TzToPHVNALCunRXh9JUk1SMieMaPtIuIU3Y1haC8P/g=;
+ b=L/9onr5mIgNnd5LSoTrzSsKN7KWkiJqoyEUpId6xYf1SWKzMdmkBw6fj3vapjaj7Qn9u
+ +rlIksPgpiVrTmbfGXz31dXzMkLg3Reo3xLCscXjbI1W2EBXmoPpi/flhBoGxoc7qZBn
+ HGwJb11CmYenGhV1P2n2+g0gfZ3cVNUc+Woa3K0H1c0Zb775O30JOPvZtqBosmaHqJS2
+ 6LgKH1Ez8GbVYmmecl2tpRN7nskNHrAyBHL0UBwTAv5DIWmJdkHAGa7DwPJY/XUlRlwT
+ xCE5EsSIKf2HM8Dfjj39q/RBwYB44AE8CgsVoG6xQpYAxAs3vm0l0ai1C5u4h8Xekvpj 5w== 
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.71])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3eqfxfsy1a-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 10 Mar 2022 12:29:48 +0000
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+ by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 22ACRquT012770;
+ Thu, 10 Mar 2022 12:29:46 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma02fra.de.ibm.com with ESMTP id 3ekyg92ry5-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 10 Mar 2022 12:29:46 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 22ACThNf42270988
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 10 Mar 2022 12:29:43 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BCEA942045;
+ Thu, 10 Mar 2022 12:29:43 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0776F42041;
+ Thu, 10 Mar 2022 12:29:37 +0000 (GMT)
+Received: from [9.43.127.73] (unknown [9.43.127.73])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 10 Mar 2022 12:29:36 +0000 (GMT)
+Message-ID: <477b9bb3-a919-1ceb-28d8-89f4f02fd6a6@linux.ibm.com>
+Date: Thu, 10 Mar 2022 17:59:34 +0530
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
-Subject: Re: Bug 215658 - arch/powerpc/mm/mmu_context.o Assembler messages:
- Error: unrecognized opcode: `dssall' (PowerMac G4)
+Subject: Re: [PATCH 16/20] selftest/powerpc/pmu/: Add selftest for mmcr1
+ pmcxsel/unit/cache fields
 Content-Language: en-US
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman <mpe@ellerman.id.au>
-References: <831731e2-6769-3d36-0cdf-721437452fcc@leemhuis.info>
- <1367d2de-bc44-fb96-c1ef-fd4cf0fb82f4@csgroup.eu>
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-In-Reply-To: <1367d2de-bc44-fb96-c1ef-fd4cf0fb82f4@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+References: <20220127072012.662451-1-kjain@linux.ibm.com>
+ <20220127072012.662451-17-kjain@linux.ibm.com>
+ <4c7785cf-3b92-c273-35ea-fc95131fac46@csgroup.eu>
+ <87czium2h9.fsf@mpe.ellerman.id.au>
+From: kajoljain <kjain@linux.ibm.com>
+In-Reply-To: <87czium2h9.fsf@mpe.ellerman.id.au>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-bounce-key: webpack.hosteurope.de; regressions@leemhuis.info; 1646914958;
- d259ba8e; 
-X-HE-SMSGID: 1nSHoO-0000Ms-7H
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: dnlVsZHh6f8Nk0lxs8uGq4wA1_NRtW3e
+X-Proofpoint-ORIG-GUID: dnlVsZHh6f8Nk0lxs8uGq4wA1_NRtW3e
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.64.514
+ definitions=2022-03-10_03,2022-03-09_01,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 phishscore=0
+ lowpriorityscore=0 suspectscore=0 bulkscore=0 clxscore=1015 adultscore=0
+ mlxscore=0 spamscore=0 mlxlogscore=999 priorityscore=1501 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2202240000
+ definitions=main-2203100065
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,87 +108,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "regressions@lists.linux.dev" <regressions@lists.linux.dev>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+ "atrajeev@linux.vnet.ibm.com" <atrajeev@linux.vnet.ibm.com>,
+ "maddy@linux.vnet.ibm.com" <maddy@linux.vnet.ibm.com>,
+ "rnsastry@linux.ibm.com" <rnsastry@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10.03.22 12:22, Christophe Leroy wrote:
-> Le 10/03/2022 à 11:39, Thorsten Leemhuis a écrit :
->> Hi, this is your Linux kernel regression tracker.
->>
->> I noticed a regression report in bugzilla.kernel.org that afaics nobody
->> acted upon since it was reported about a week ago, that's why I decided
->> to forward it to the lists and a few relevant people to the CC. To quote
->> from the ticket:
-> 
-> I already looked at it when the ticket was opened and that's a bit puzzling.
 
-Yeah, same here, but I decided I to pick it up, as that's what I'm here for.
 
-> With v5.16.12 and the config file in the bug report I have no such problem:
-> 
->    CC      arch/powerpc/mm/fault.o
->    CC      arch/powerpc/mm/mem.o
-> [...]
-
-Maybe it's one of those bugs related to the version of binutils?
-
-> The bug is puzzling because it says the problem is introduced by commit 
-> d51f86cfd8e3 ("powerpc/mm: Switch obsolete dssall to .long") whereas the 
-> purpose of that commit is exactly to fix the issue you are reporting.
->
-> And as far as I can see that commit is not in v5.16.12, so my feeling is 
-> that somethings wrong with the bug report.
-> 
-> By the way I think that cherry-picking that commit into v5.16.12 should 
-> fix it.
-
-Maybe that's what he had meant to be writing? Maybe your comment in the
-ticket will lead to some enlightenment.
-
-Thx for looking into this.
-
-Ciao, Thorsten
-
->>> 5.16.12 kernel build for my G4 DP on my Talos II fails with:
+On 3/10/22 17:41, Michael Ellerman wrote:
+> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+>> Le 27/01/2022 à 08:20, Kajol Jain a écrit :
+>>> From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 >>>
->>> [...]
->>>    CC      arch/powerpc/mm/init_32.o
->>>    CC      arch/powerpc/mm/pgtable_32.o
->>>    CC      arch/powerpc/mm/pgtable-frag.o
->>>    CC      arch/powerpc/mm/ioremap.o
->>>    CC      arch/powerpc/mm/ioremap_32.o
->>>    CC      arch/powerpc/mm/init-common.o
->>>    CC      arch/powerpc/mm/mmu_context.o
->>> {standard input}: Assembler messages:
->>> {standard input}:30: Error: unrecognized opcode: `dssall'
->>> make[2]: *** [scripts/Makefile.build:287: arch/powerpc/mm/mmu_context.o] Fehler 1
->>> make[1]: *** [scripts/Makefile.build:549: arch/powerpc/mm] Fehler 2
->>> make: *** [Makefile:1846: arch/powerpc] Error 2
+>>> The testcase uses event code "0x1340000001c040" to verify
+>>> the settings for different fields in Monitor Mode Control
+>>> Register 1 (MMCR1). The fields include PMCxSEL, PMCXCOMB
+>>> PMCxUNIT, cache. Checks if these fields are translated
+>>> correctly via perf interface to MMCR1
 >>>
->>> This seems to have been introduced by commit d51f86cfd8e378d4907958db77da3074f6dce3ba "powerpc/mm: Switch obsolete dssall to .long"
->>>
->>> Reverting this commit fixes the build for my G4.
+>>> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 >>
->> Could somebody take a look into this? Or was this discussed somewhere
->> else already? Or even fixed?
+>> I see the series has been accepted but this patch has been left over.
 >>
->> Anyway, to get this tracked:
->>
->> #regzbot introduced: d51f86cfd8e378d4907958db77da3074f6dce3ba
->> #regzbot from: Erhard F <erhard_f@mailbox.org>
->> #regzbot title:  arch/powerpc/mm/mmu_context.o Assembler messages:
->> Error: unrecognized opcode: `dssall' (PowerMac G4)
->> #regzbot link: https://bugzilla.kernel.org/show_bug.cgi?id=215658
->>
->> Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
->>
->> P.S.: As the Linux kernel's regression tracker I'm getting a lot of
->> reports on my table. I can only look briefly into most of them and lack
->> knowledge about most of the areas they concern. I thus unfortunately
->> will sometimes get things wrong or miss something important. I hope
->> that's not the case here; if you think it is, don't hesitate to tell me
->> in a public reply, it's in everyone's interest to set the public record
->> straight.
+>> Any reason ?
+> 
+> Yeah it's flakey. It counts cache loads but the workload it runs doesn't
+> necessarily cause any, so it sometimes fails. I've reported that
+> privately to Kajol.
+> 
+
+Hi Christophe,
+     As Michael mentioned, with the current workload we used in this
+patch, the testcase was failing sometimes as required cache load not
+happening everytime. We will send this patch separately with proper
+workload in next version.
+
+Thanks,
+Kajol Jain
+
+> cheers
