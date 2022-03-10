@@ -4,53 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75CFEC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Mar 2022 09:03:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17A48C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Mar 2022 09:22:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KDjlv5C4Zz3bb6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Mar 2022 20:03:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KDk9R0Y8Pz30Dr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Mar 2022 20:22:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KDjlS4Y5fz2xTp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2022 20:03:14 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KDjlN26zmz9sS0;
- Thu, 10 Mar 2022 10:03:12 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id L9Pqo92huods; Thu, 10 Mar 2022 10:03:12 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KDjlN1LLtz9sRr;
- Thu, 10 Mar 2022 10:03:12 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 18C9B8B780;
- Thu, 10 Mar 2022 10:03:12 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id mD1I_YrfZu-y; Thu, 10 Mar 2022 10:03:12 +0100 (CET)
-Received: from [192.168.202.40] (unknown [192.168.202.40])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C4DB98B763;
- Thu, 10 Mar 2022 10:03:11 +0100 (CET)
-Message-ID: <23fd8d03-965b-a252-020e-4185c2ef5681@csgroup.eu>
-Date: Thu, 10 Mar 2022 10:03:13 +0100
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
+ envelope-from=wangwensheng4@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KDk8z21TZz2xss
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Mar 2022 20:21:51 +1100 (AEDT)
+Received: from kwepemi500015.china.huawei.com (unknown [172.30.72.55])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4KDk7461J1zfYpp;
+ Thu, 10 Mar 2022 17:20:16 +0800 (CST)
+Received: from huawei.com (10.175.112.208) by kwepemi500015.china.huawei.com
+ (7.221.188.92) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.21; Thu, 10 Mar
+ 2022 17:21:39 +0800
+From: Wang Wensheng <wangwensheng4@huawei.com>
+To: <nicoleotsuka@gmail.com>, <Xiubo.Lee@gmail.com>, <festevam@gmail.com>,
+ <shengjiu.wang@gmail.com>, <lgirdwood@gmail.com>, <broonie@kernel.org>,
+ <perex@perex.cz>, <tiwai@suse.com>, <shawnguo@kernel.org>,
+ <s.hauer@pengutronix.de>, <kernel@pengutronix.de>, <linux-imx@nxp.com>,
+ <xobs@kosagi.com>, <alsa-devel@alsa-project.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-kernel@vger.kernel.org>
+Subject: [PATCH -next] ASoC: imx-es8328: Fix error return code in
+ imx_es8328_probe()
+Date: Thu, 10 Mar 2022 09:19:02 +0000
+Message-ID: <20220310091902.129299-1-wangwensheng4@huawei.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH] powerpc/powernv/pci: Drop VF MPS fixup
-Content-Language: fr-FR
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20200902035159.1762596-1-oohall@gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20200902035159.1762596-1-oohall@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.175.112.208]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ kwepemi500015.china.huawei.com (7.221.188.92)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,58 +54,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: xuqiang36@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Fix to return a negative error code from the error handling case instead
+of 0, as done elsewhere in this function.
 
+Fixes: 7e7292dba215 ("ASoC: fsl: add imx-es8328 machine driver")
+Signed-off-by: Wang Wensheng <wangwensheng4@huawei.com>
+---
+ sound/soc/fsl/imx-es8328.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Le 02/09/2020 à 05:51, Oliver O'Halloran a écrit :
-> The MPS field in the VF config space is marked as reserved in current
-> versions of the SR-IOV spec. In other words, this fixup doesn't do
-> anything.
-> 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+diff --git a/sound/soc/fsl/imx-es8328.c b/sound/soc/fsl/imx-es8328.c
+index 09c674ee79f1..168973035e35 100644
+--- a/sound/soc/fsl/imx-es8328.c
++++ b/sound/soc/fsl/imx-es8328.c
+@@ -87,6 +87,7 @@ static int imx_es8328_probe(struct platform_device *pdev)
+ 	if (int_port > MUX_PORT_MAX || int_port == 0) {
+ 		dev_err(dev, "mux-int-port: hardware only has %d mux ports\n",
+ 			MUX_PORT_MAX);
++		ret = -EINVAL;
+ 		goto fail;
+ 	}
+ 
+-- 
+2.17.1
 
-A lot of cleanup patches from Oliver were merged in Septembre 2020 but 
-not this one.
-
-Any reason ?
-
-Thanks
-Christophe
-
-
-> ---
->   arch/powerpc/platforms/powernv/eeh-powernv.c | 18 ------------------
->   1 file changed, 18 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> index 9af8c3b98853..0cabe4e632e3 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> @@ -1689,24 +1689,6 @@ static struct eeh_ops pnv_eeh_ops = {
->   	.notify_resume		= NULL
->   };
->   
-> -#ifdef CONFIG_PCI_IOV
-> -static void pnv_pci_fixup_vf_mps(struct pci_dev *pdev)
-> -{
-> -	struct pci_dn *pdn = pci_get_pdn(pdev);
-> -	int parent_mps;
-> -
-> -	if (!pdev->is_virtfn)
-> -		return;
-> -
-> -	/* Synchronize MPS for VF and PF */
-> -	parent_mps = pcie_get_mps(pdev->physfn);
-> -	if ((128 << pdev->pcie_mpss) >= parent_mps)
-> -		pcie_set_mps(pdev, parent_mps);
-> -	pdn->mps = pcie_get_mps(pdev);
-> -}
-> -DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_mps);
-> -#endif /* CONFIG_PCI_IOV */
-> -
->   /**
->    * eeh_powernv_init - Register platform dependent EEH operations
->    *
