@@ -4,54 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EBDDC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Mar 2022 01:00:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BCD5C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Mar 2022 01:00:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KF6zR5Cyxz3bhY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Mar 2022 12:00:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KF7055Ky4z3bb6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Mar 2022 12:00:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NVRGOLhm;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jYaUA3A0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com;
  envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=NVRGOLhm; dkim-atps=neutral
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ header.s=Intel header.b=jYaUA3A0; dkim-atps=neutral
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KF6y45Cp6z2y6K
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2022 11:58:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KF6y61M9Sz2y6K
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Mar 2022 11:58:54 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1646960332; x=1678496332;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=fROPMJ0aWjZeKi8CMmgQhx4a+oSgNaOrWlO2neoVxFA=;
- b=NVRGOLhmKQCVVsMVtM/xzP+QpodubghNyHDny8UB54xPMtQ1yPysWzGz
- vNpbzXTnGKjvwN8Sf3reQCyG+APxyofb9oGFrT8rtOCasbN3h7+sp+ztI
- wByrb9K0yFGUFxwqxmK2TeHi3Uwx/HnhfikWwqTXIGDQgxkB3a+1qxe7l
- 4GfFU6D5KYcrQL41xN+dTY9hJO8EmWgk8zPy0WesxSKTKZGGPvKnSG3LD
- CX7LaPBleqHElsfGMyyjSTVBHx3mahAvpyUzcG9bPwBWyayxOjvN43e9e
- wZGpvpi+5+Fldhi1+Cm5pssQcTqf9BO2gkcmWsPu3kS2eT/s467gwHIgm Q==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10282"; a="254284042"
-X-IronPort-AV: E=Sophos;i="5.90,172,1643702400"; d="scan'208";a="254284042"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Mar 2022 16:57:45 -0800
-X-IronPort-AV: E=Sophos;i="5.90,172,1643702400"; d="scan'208";a="579064522"
+ t=1646960334; x=1678496334;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=9siIY6FLOfYc5ocEKvjG/SmhAvdKrtM6lD3UINVbS4o=;
+ b=jYaUA3A0rRLiYS2AG4WxwSXUyYk96WWdI3W1UqB4O+eA4fehAK9VQ7Zw
+ P8q+MITQ1hMAweKubQQn681Qm6cTkt2Rzf6GC3skeyYNvRJbowoY6di7u
+ HPHeGb1KqZFRtnjL27hRTiFfi7R+J7TJXGUH65eKYvqWo9Xk67c0L/oS4
+ SC/8ralXTcNH/juTb21bQm2+e/Ym4O3TcRJ2kN5NpY0C9CRhpX9+yG/Uy
+ fcjFH20qpTJVFf/x5Tqrvd+cE5h5BagmG8RreOQzfHzDKUoTgOJ0RLhJL
+ Xb94C/75moTI3pc+jqexNaoikCuOY0lRr51b/xjwRvwfTKcOk68SIZl3v w==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10282"; a="341883872"
+X-IronPort-AV: E=Sophos;i="5.90,172,1643702400"; d="scan'208";a="341883872"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 10 Mar 2022 16:57:46 -0800
+X-IronPort-AV: E=Sophos;i="5.90,172,1643702400"; d="scan'208";a="554989174"
 Received: from gdavids1-mobl.amr.corp.intel.com (HELO localhost)
  ([10.212.65.108])
- by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Mar 2022 16:57:44 -0800
+ by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 10 Mar 2022 16:57:46 -0800
 From: ira.weiny@intel.com
 To: Dave Hansen <dave.hansen@linux.intel.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH 0/5] Pkey User clean up patches
-Date: Thu, 10 Mar 2022 16:57:37 -0800
-Message-Id: <20220311005742.1060992-1-ira.weiny@intel.com>
+Subject: [PATCH 2/5] x86/pkeys: Remove __arch_set_user_pkey_access()
+ declaration
+Date: Thu, 10 Mar 2022 16:57:39 -0800
+Message-Id: <20220311005742.1060992-3-ira.weiny@intel.com>
 X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220311005742.1060992-1-ira.weiny@intel.com>
+References: <20220311005742.1060992-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -74,32 +77,45 @@ Sender: "Linuxppc-dev"
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-I'm looking for acks that this is acceptable for official submission to the
-maintainers.  I believe the code to be better than RFC quality but I realize
-that the type changes may be more churn than is desired.
+In the x86 code __arch_set_user_pkey_access() is not used and is not
+defined.
 
-The following patches contain pkey cleanups and an attempt to standardize on
-the type used for pkeys.
+Remove the dead declaration.
 
-The PKS code is standardizing on u8 for the pkey type and for some of the call
-paths in the user space code this should work as well.
+To: Dave Hansen <dave.hansen@intel.com>
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 
-Ira Weiny (5):
-x86/pkeys: Clean up arch_set_user_pkey_access() declaration
-x86/pkeys: Remove __arch_set_user_pkey_access() declaration
-powerpc/pkeys: Properly type pkey in init_{i}amr()
-mm/pkeys: Make pkey unsigned in arch_set_user_pkey_access()
-x86/pkeys: Standardize on u8 for pkey type
+---
+Changes from V1:
+	Make this part of a series of pkey clean ups
+---
+ arch/x86/include/asm/pkeys.h | 6 ------
+ 1 file changed, 6 deletions(-)
 
-arch/powerpc/include/asm/pkeys.h | 4 ++--
-arch/powerpc/mm/book3s64/pkeys.c | 6 +++---
-arch/x86/include/asm/pgtable.h | 4 ++--
-arch/x86/include/asm/pkeys.h | 12 ++----------
-arch/x86/include/asm/pkru.h | 4 ++--
-arch/x86/kernel/fpu/xstate.c | 2 +-
-include/linux/pkeys.h | 2 +-
-7 files changed, 13 insertions(+), 21 deletions(-)
-
---
+diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
+index 9c530530b9a7..2e6c04d8a45b 100644
+--- a/arch/x86/include/asm/pkeys.h
++++ b/arch/x86/include/asm/pkeys.h
+@@ -41,9 +41,6 @@ static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
+ 	return __arch_override_mprotect_pkey(vma, prot, pkey);
+ }
+ 
+-extern int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+-		unsigned long init_val);
+-
+ #define ARCH_VM_PKEY_FLAGS (VM_PKEY_BIT0 | VM_PKEY_BIT1 | VM_PKEY_BIT2 | VM_PKEY_BIT3)
+ 
+ #define mm_pkey_allocation_map(mm)	(mm->context.pkey_allocation_map)
+@@ -118,9 +115,6 @@ int mm_pkey_free(struct mm_struct *mm, int pkey)
+ 	return 0;
+ }
+ 
+-extern int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+-		unsigned long init_val);
+-
+ static inline int vma_pkey(struct vm_area_struct *vma)
+ {
+ 	unsigned long vma_pkey_mask = VM_PKEY_BIT0 | VM_PKEY_BIT1 |
+-- 
 2.35.1
 
