@@ -4,32 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E7FEC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Mar 2022 10:33:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25989C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Mar 2022 10:33:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KFzf31KLpz3cgw
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Mar 2022 21:32:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KFzfS5w9bz3dN7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Mar 2022 21:33:20 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KFzbd1Z6mz30Cm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KFzbd1rDbz30D5
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Mar 2022 21:30:53 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4KFzbb1NRlz4xcl;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4KFzbb5Dq1z4xLX;
  Sat, 12 Mar 2022 21:30:51 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <3ed660a585df2080ea8412ec20fbf652f5bf013a.1646413435.git.christophe.leroy@csgroup.eu>
-References: <3ed660a585df2080ea8412ec20fbf652f5bf013a.1646413435.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v1 1/4] powerpc: Cleanup asm-prototypes.c
-Message-Id: <164708098372.827774.13045777419131446755.b4-ty@ellerman.id.au>
-Date: Sat, 12 Mar 2022 21:29:43 +1100
+To: benh@kernel.crashing.org, mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
+ wen.yang99@zte.com.cn, Hangyu Hua <hbh25y@gmail.com>, peng.hao2@zte.com.cn,
+ paulus@samba.org
+In-Reply-To: <20220223070223.26845-1-hbh25y@gmail.com>
+References: <20220223070223.26845-1-hbh25y@gmail.com>
+Subject: Re: [PATCH] powerpc: 8xx: fix a return value error in mpc8xx_pic_init
+Message-Id: <164708099004.827774.1268843120953006497.b4-ty@ellerman.id.au>
+Date: Sat, 12 Mar 2022 21:29:50 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -49,26 +49,16 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 4 Mar 2022 18:04:02 +0100, Christophe Leroy wrote:
-> Last call to sys_swapcontext() from ASM was removed by
-> commit fbcee2ebe8ed ("powerpc/32: Always save non volatile GPRs at
-> syscall entry")
+On Wed, 23 Feb 2022 15:02:23 +0800, Hangyu Hua wrote:
+> mpc8xx_pic_init() should return -ENOMEM instead of 0 when
+> irq_domain_add_linear() return NULL. This cause mpc8xx_pics_init to continue
+> executing even if mpc8xx_pic_host is NULL.
 > 
-> sys_debug_setcontext() prototype not needed anymore since
-> commit f3675644e172 ("powerpc/syscalls: signal_{32, 64} - switch
-> to SYSCALL_DEFINE")
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/4] powerpc: Cleanup asm-prototypes.c
-      https://git.kernel.org/powerpc/c/e86debbbb5f89c2575110cfdce89d1820577aa94
-[2/4] powerpc/smp: Declare current_set static
-      https://git.kernel.org/powerpc/c/e15c703be48edc3b2f96b66d4f548dc88b44266c
-[3/4] powerpc/kexec: Declare kexec_paca static
-      https://git.kernel.org/powerpc/c/a4abd55a2490fd6407ddb6810e41f64ebd66d3af
-[4/4] powerpc: Move C prototypes out of asm-prototypes.h
-      https://git.kernel.org/powerpc/c/76222808fc253cb9ea66c3e0e8d1946933f25b70
+[1/1] powerpc: 8xx: fix a return value error in mpc8xx_pic_init
+      https://git.kernel.org/powerpc/c/3fd46e551f67f4303c3276a0d6cd20baf2d192c4
 
 cheers
