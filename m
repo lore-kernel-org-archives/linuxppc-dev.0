@@ -4,33 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36CABC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Mar 2022 10:31:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABA53C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Mar 2022 10:31:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KFzcN41pCz3bkZ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Mar 2022 21:31:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KFzcp1DZJz3by9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Mar 2022 21:31:54 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KFzbb2WBsz2yxV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KFzbb3Zxfz2yxV
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Mar 2022 21:30:51 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4KFzbZ3swXz4xPt;
- Sat, 12 Mar 2022 21:30:50 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4KFzbV61prz4xLY;
+ Sat, 12 Mar 2022 21:30:46 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <adc9c9d6378f6b5008246ca717993d7870188efb.1644569473.git.christophe.leroy@csgroup.eu>
-References: <adc9c9d6378f6b5008246ca717993d7870188efb.1644569473.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/bitops: Force inlining of fls()
-Message-Id: <164708098783.827774.9289683232577719958.b4-ty@ellerman.id.au>
-Date: Sat, 12 Mar 2022 21:29:47 +1100
+To: jing yangyang <cgel.zte@gmail.com>, Geoff Levand <geoff@infradead.org>
+In-Reply-To: <01647102607ce9640c9f27786d976109a3c4ea7e.1629197153.git.jing.yangyang@zte.com.cn>
+References: <01647102607ce9640c9f27786d976109a3c4ea7e.1629197153.git.jing.yangyang@zte.com.cn>
+Subject: Re: [PATCH linux-next] ps3: remove unneeded semicolon
+Message-Id: <164708098933.827774.6685079426471019476.b4-ty@ellerman.id.au>
+Date: Sat, 12 Mar 2022 21:29:49 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,25 +43,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: jing yangyang <jing.yangyang@zte.com.cn>, Zeal Robot <zealci@zte.com.cn>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 11 Feb 2022 09:51:32 +0100, Christophe Leroy wrote:
-> Building a kernel with CONFIG_CC_OPTIMISE_FOR_SIZE leads to
-> the following functions being copied several times in vmlinux:
+On Thu, 19 Aug 2021 19:49:01 -0700, jing yangyang wrote:
+> Eliminate the following coccicheck warning:
 > 
-> 	31 times __ilog2_u32()
-> 	34 times fls()
+> ./arch/powerpc/platforms/ps3/system-bus.c:606:2-3: Unneeded semicolon
+> ./arch/powerpc/platforms/ps3/system-bus.c:765:2-3: Unneeded semicolon
 > 
-> Disassembly follows:
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/bitops: Force inlining of fls()
-      https://git.kernel.org/powerpc/c/0b0057cc4193c7cd9c0829a440e4901b29ce4ff8
+[1/1] ps3: remove unneeded semicolon
+      https://git.kernel.org/powerpc/c/9f5196065eeb96fee1a15f2eae31fe1fc7623ade
 
 cheers
