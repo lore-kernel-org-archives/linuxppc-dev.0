@@ -4,31 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C83E1C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Mar 2022 10:31:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36CABC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Mar 2022 10:31:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KFzby6Cdgz3bg0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Mar 2022 21:31:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KFzcN41pCz3bkZ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Mar 2022 21:31:32 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KFzbb2SVCz2yhC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KFzbb2WBsz2yxV
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Mar 2022 21:30:51 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4KFzbT4jY9z4xLX;
- Sat, 12 Mar 2022 21:30:45 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4KFzbZ3swXz4xPt;
+ Sat, 12 Mar 2022 21:30:50 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220309061822.168173-1-aik@ozlabs.ru>
-References: <20220309061822.168173-1-aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v4] powerpc/64: Add UADDR64 relocation support
-Message-Id: <164708099074.827774.7477119612590053363.b4-ty@ellerman.id.au>
-Date: Sat, 12 Mar 2022 21:29:50 +1100
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <adc9c9d6378f6b5008246ca717993d7870188efb.1644569473.git.christophe.leroy@csgroup.eu>
+References: <adc9c9d6378f6b5008246ca717993d7870188efb.1644569473.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/bitops: Force inlining of fls()
+Message-Id: <164708098783.827774.9289683232577719958.b4-ty@ellerman.id.au>
+Date: Sat, 12 Mar 2022 21:29:47 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,23 +45,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 9 Mar 2022 17:18:22 +1100, Alexey Kardashevskiy wrote:
-> When ld detects unaligned relocations, it emits R_PPC64_UADDR64
-> relocations instead of R_PPC64_RELATIVE. Currently R_PPC64_UADDR64 are
-> detected by arch/powerpc/tools/relocs_check.sh and expected not to work.
-> Below is a simple chunk to trigger this behaviour (this disables
-> optimization for the demonstration purposes only, this also happens with
-> -O1/-O2 when CONFIG_PRINTK_INDEX=y, for example):
+On Fri, 11 Feb 2022 09:51:32 +0100, Christophe Leroy wrote:
+> Building a kernel with CONFIG_CC_OPTIMISE_FOR_SIZE leads to
+> the following functions being copied several times in vmlinux:
+> 
+> 	31 times __ilog2_u32()
+> 	34 times fls()
+> 
+> Disassembly follows:
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64: Add UADDR64 relocation support
-      https://git.kernel.org/powerpc/c/d799769188529abc6cbf035a10087a51f7832b6b
+[1/1] powerpc/bitops: Force inlining of fls()
+      https://git.kernel.org/powerpc/c/0b0057cc4193c7cd9c0829a440e4901b29ce4ff8
 
 cheers
