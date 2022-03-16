@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78094C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Mar 2022 05:17:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8746C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Mar 2022 05:34:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KJJSC0TMsz30RH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Mar 2022 16:17:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KJJqR25Hsz3bTf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Mar 2022 16:34:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=molgen.mpg.de (client-ip=141.14.17.11; helo=mx1.molgen.mpg.de;
  envelope-from=pmenzel@molgen.mpg.de; receiver=<UNKNOWN>)
@@ -16,27 +16,28 @@ Received: from mx1.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KJJRh3jLQz3015
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2022 16:17:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KJJpz4VJ7z306d
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Mar 2022 16:33:47 +1100 (AEDT)
 Received: from [192.168.0.3] (ip5f5aef39.dynamic.kabel-deutschland.de
  [95.90.239.57])
  (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 2978861EA1928;
- Wed, 16 Mar 2022 06:16:53 +0100 (CET)
-Message-ID: <db796473-69cf-122e-ec40-de62659517b0@molgen.mpg.de>
-Date: Wed, 16 Mar 2022 06:16:52 +0100
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 55D1061EA1929;
+ Wed, 16 Mar 2022 06:33:44 +0100 (CET)
+Message-ID: <ade0ed87-be4f-e3c7-5e01-4bfdb78fae07@molgen.mpg.de>
+Date: Wed, 16 Mar 2022 06:33:44 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.7.0
 Subject: Re: bnx2x: ppc64le: Unable to set message level greater than 0x7fff
 Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
 To: Jakub Kicinski <kuba@kernel.org>, Michal Kubecek <mkubecek@suse.cz>
 References: <0497a560-8c7b-7cf8-84ee-bde1470ae360@molgen.mpg.de>
  <20220315183529.255f2795@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20220315183529.255f2795@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <db796473-69cf-122e-ec40-de62659517b0@molgen.mpg.de>
+In-Reply-To: <db796473-69cf-122e-ec40-de62659517b0@molgen.mpg.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -50,9 +51,9 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Ariel Elior <aelior@marvell.com>, Sudarsana Kalluru <skalluru@marvell.com>,
- Manish Chopra <manishc@marvell.com>
+Cc: Ariel Elior <aelior@marvell.com>, Manish Chopra <manishc@marvell.com>,
+ netdev@vger.kernel.org, it+netdev@molgen.mpg.de, linuxppc-dev@lists.ozlabs.org,
+ Sudarsana Kalluru <skalluru@marvell.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
@@ -60,75 +61,149 @@ Sender: "Linuxppc-dev"
 Dear Jakub,
 
 
-Am 16.03.22 um 02:35 schrieb Jakub Kicinski:
-> On Tue, 15 Mar 2022 22:58:57 +0100 Paul Menzel wrote:
->> On the POWER8 server IBM S822LC (ppc64le), I am unable to set the
->> message level for the network device to 0x0100000 but it fails.
+Sorry, one more addition.
+
+Am 16.03.22 um 06:16 schrieb Paul Menzel:
+
+> Am 16.03.22 um 02:35 schrieb Jakub Kicinski:
+>> On Tue, 15 Mar 2022 22:58:57 +0100 Paul Menzel wrote:
+>>> On the POWER8 server IBM S822LC (ppc64le), I am unable to set the
+>>> message level for the network device to 0x0100000 but it fails.
+>>>
+>>>       $ sudo ethtool -s enP1p1s0f2 msglvl 0x0100000
+>>>       netlink error: cannot modify bits past kernel bitset size (offset 56)
+>>>       netlink error: Invalid argument
+>>>
+>>> Below is more information. 0x7fff is the largest value I am able to set.
+>>>
+>>> ```
+>>> $ sudo ethtool -i enP1p1s0f2
+>>> driver: bnx2x
+>>> version: 5.17.0-rc7+
+>>> firmware-version: bc 7.10.4
+>>> expansion-rom-version:
+>>> bus-info: 0001:01:00.2
+>>> supports-statistics: yes
+>>> supports-test: yes
+>>> supports-eeprom-access: yes
+>>> supports-register-dump: yes
+>>> supports-priv-flags: yes
+>>> $ sudo ethtool -s enP1p1s0f2 msglvl 0x7fff
+>>> $ sudo ethtool enP1p1s0f2
+>>> Settings for enP1p1s0f2:
+>>>           Supported ports: [ TP ]
+>>>           Supported link modes:   10baseT/Half 10baseT/Full
+>>>                                   100baseT/Half 100baseT/Full
+>>>                                   1000baseT/Full
+>>>           Supported pause frame use: Symmetric Receive-only
+>>>           Supports auto-negotiation: Yes
+>>>           Supported FEC modes: Not reported
+>>>           Advertised link modes:  10baseT/Half 10baseT/Full
+>>>                                   100baseT/Half 100baseT/Full
+>>>                                   1000baseT/Full
+>>>           Advertised pause frame use: Symmetric Receive-only
+>>>           Advertised auto-negotiation: Yes
+>>>           Advertised FEC modes: Not reported
+>>>           Speed: Unknown!
+>>>           Duplex: Unknown! (255)
+>>>           Auto-negotiation: on
+>>>           Port: Twisted Pair
+>>>           PHYAD: 17
+>>>           Transceiver: internal
+>>>           MDI-X: Unknown
+>>>           Supports Wake-on: g
+>>>           Wake-on: d
+>>>           Current message level: 0x00007fff (32767)
+>>>                                  drv probe link timer ifdown ifup rx_err tx_err tx_queued intr tx_done rx_status pktdata hw wol
+>>>           Link detected: no
+>>> $ sudo ethtool -s enP1p1s0f2 msglvl 0x8000
+>>> netlink error: cannot modify bits past kernel bitset size (offset 56)
+>>> netlink error: Invalid argument
+>>> ```
 >>
->>       $ sudo ethtool -s enP1p1s0f2 msglvl 0x0100000
->>       netlink error: cannot modify bits past kernel bitset size (offset 56)
->>       netlink error: Invalid argument
+>> The new ethtool-over-netlink API limits the msg levels to the ones
+>> officially defined by the kernel (NETIF_MSG_CLASS_COUNT).
 >>
->> Below is more information. 0x7fff is the largest value I am able to set.
->>
->> ```
->> $ sudo ethtool -i enP1p1s0f2
->> driver: bnx2x
->> version: 5.17.0-rc7+
->> firmware-version: bc 7.10.4
->> expansion-rom-version:
->> bus-info: 0001:01:00.2
->> supports-statistics: yes
->> supports-test: yes
->> supports-eeprom-access: yes
->> supports-register-dump: yes
->> supports-priv-flags: yes
->> $ sudo ethtool -s enP1p1s0f2 msglvl 0x7fff
->> $ sudo ethtool enP1p1s0f2
->> Settings for enP1p1s0f2:
->>           Supported ports: [ TP ]
->>           Supported link modes:   10baseT/Half 10baseT/Full
->>                                   100baseT/Half 100baseT/Full
->>                                   1000baseT/Full
->>           Supported pause frame use: Symmetric Receive-only
->>           Supports auto-negotiation: Yes
->>           Supported FEC modes: Not reported
->>           Advertised link modes:  10baseT/Half 10baseT/Full
->>                                   100baseT/Half 100baseT/Full
->>                                   1000baseT/Full
->>           Advertised pause frame use: Symmetric Receive-only
->>           Advertised auto-negotiation: Yes
->>           Advertised FEC modes: Not reported
->>           Speed: Unknown!
->>           Duplex: Unknown! (255)
->>           Auto-negotiation: on
->>           Port: Twisted Pair
->>           PHYAD: 17
->>           Transceiver: internal
->>           MDI-X: Unknown
->>           Supports Wake-on: g
->>           Wake-on: d
->>           Current message level: 0x00007fff (32767)
->>                                  drv probe link timer ifdown ifup rx_err tx_err tx_queued intr tx_done rx_status pktdata hw wol
->>           Link detected: no
->> $ sudo ethtool -s enP1p1s0f2 msglvl 0x8000
->> netlink error: cannot modify bits past kernel bitset size (offset 56)
->> netlink error: Invalid argument
->> ```
+>> CC: Michal
 > 
-> The new ethtool-over-netlink API limits the msg levels to the ones
-> officially defined by the kernel (NETIF_MSG_CLASS_COUNT).
+> Thank you for the prompt reply. So, it’s unrelated to the architecture, 
+> and to the Linux kernel version, as it works on x86_64 with Linux 5.10.x.
 > 
-> CC: Michal
+> Michal, how do I turn on certain bnx2x messages?
+> 
+>      $ git grep BNX2X_MSG_SP drivers/net/ethernet/broadcom/bnx2x/bnx2x.h
+>      drivers/net/ethernet/broadcom/bnx2x/bnx2x.h:#define BNX2X_MSG_SP 
+>                       0x0100000 /* was: NETIF_MSG_INTR */
 
-Thank you for the prompt reply. So, it’s unrelated to the architecture, 
-and to the Linux kernel version, as it works on x86_64 with Linux 5.10.x.
+Testing this on the x86_64 Dell OptiPlex 5055 with a Broadcom NetXtreme 
+BCM5762 Gigabit Ethernet PCIe [14e4:1687], it still works.
 
-Michal, how do I turn on certain bnx2x messages?
-
-     $ git grep BNX2X_MSG_SP drivers/net/ethernet/broadcom/bnx2x/bnx2x.h
-     drivers/net/ethernet/broadcom/bnx2x/bnx2x.h:#define BNX2X_MSG_SP 
-                      0x0100000 /* was: NETIF_MSG_INTR */
+```
+$ uname -a
+Linux serotimor.molgen.mpg.de 5.17.0-rc5.mx64.428 #1 SMP PREEMPT Mon Feb 
+21 04:00:47 CET 2022 x86_64 GNU/Linux
+$ sudo ethtool -s net00 msglvl 0x0100000
+$ ethtool net00
+Settings for net00:
+	Supported ports: [ TP ]
+	Supported link modes:   10baseT/Half 10baseT/Full
+	                        100baseT/Half 100baseT/Full
+	                        1000baseT/Half 1000baseT/Full
+	Supported pause frame use: No
+	Supports auto-negotiation: Yes
+	Advertised link modes:  10baseT/Half 10baseT/Full
+	                        100baseT/Half 100baseT/Full
+	                        1000baseT/Half 1000baseT/Full
+	Advertised pause frame use: Symmetric
+	Advertised auto-negotiation: Yes
+	Link partner advertised link modes:  10baseT/Half 10baseT/Full
+	                                     100baseT/Half 100baseT/Full
+	                                     1000baseT/Full
+	Link partner advertised pause frame use: No
+	Link partner advertised auto-negotiation: Yes
+	Speed: 1000Mb/s
+	Duplex: Full
+	Port: Twisted Pair
+	PHYAD: 1
+	Transceiver: internal
+	Auto-negotiation: on
+	MDI-X: off
+Cannot get wake-on-lan settings: Operation not permitted
+	Current message level: 0x00100000 (1048576)
+			       0x100000
+	Link detected: yes
+$ sudo ethtool -s net00 msglvl 0xfffffff
+$ ethtool net00
+Settings for net00:
+	Supported ports: [ TP ]
+	Supported link modes:   10baseT/Half 10baseT/Full
+	                        100baseT/Half 100baseT/Full
+	                        1000baseT/Half 1000baseT/Full
+	Supported pause frame use: No
+	Supports auto-negotiation: Yes
+	Advertised link modes:  10baseT/Half 10baseT/Full
+	                        100baseT/Half 100baseT/Full
+	                        1000baseT/Half 1000baseT/Full
+	Advertised pause frame use: Symmetric
+	Advertised auto-negotiation: Yes
+	Link partner advertised link modes:  10baseT/Half 10baseT/Full
+	                                     100baseT/Half 100baseT/Full
+	                                     1000baseT/Full
+	Link partner advertised pause frame use: No
+	Link partner advertised auto-negotiation: Yes
+	Speed: 1000Mb/s
+	Duplex: Full
+	Port: Twisted Pair
+	PHYAD: 1
+	Transceiver: internal
+	Auto-negotiation: on
+	MDI-X: off
+Cannot get wake-on-lan settings: Operation not permitted
+	Current message level: 0x0fffffff (268435455)
+			       drv probe link timer ifdown ifup rx_err tx_err tx_queued intr 
+tx_done rx_status pktdata hw wol 0xfff8000
+	Link detected: yes
+```
 
 
 Kind regards,
