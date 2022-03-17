@@ -4,107 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC6E8C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Mar 2022 10:05:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 626A4C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Mar 2022 10:24:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KK2nh2fJdz3088
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Mar 2022 21:05:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KK3D461T1z3069
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Mar 2022 21:24:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RMMKCscr;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RMMKCscr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=j80jfjzD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=RMMKCscr; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=RMMKCscr; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
+ envelope-from=chao.gao@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=j80jfjzD; dkim-atps=neutral
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KK2ms14YHz2xtv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2022 21:04:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1647511463;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=MBNPObCUCYNtALaMx9Iaf80ooxBHklxdAF9RYy04dD0=;
- b=RMMKCscrOlXKZuztnOOW1WZCy+D7pbLNJo0axR/zFvOa7s1beHNskoh7xjHzwix201L3E9
- 4y4g9o+3XDL77JmJQyjZPl+MMBoLsCQ1y15+JCvnD7n13Q8fCEAtQR3c1fVQp3u3smhoXz
- C0GSEyeanGDNXoz/cJuEWZTZ8DYY9mA=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1647511463;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=MBNPObCUCYNtALaMx9Iaf80ooxBHklxdAF9RYy04dD0=;
- b=RMMKCscrOlXKZuztnOOW1WZCy+D7pbLNJo0axR/zFvOa7s1beHNskoh7xjHzwix201L3E9
- 4y4g9o+3XDL77JmJQyjZPl+MMBoLsCQ1y15+JCvnD7n13Q8fCEAtQR3c1fVQp3u3smhoXz
- C0GSEyeanGDNXoz/cJuEWZTZ8DYY9mA=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-383-DnkptYggO3qwEp6FcJ0Hxg-1; Thu, 17 Mar 2022 06:04:21 -0400
-X-MC-Unique: DnkptYggO3qwEp6FcJ0Hxg-1
-Received: by mail-wm1-f71.google.com with SMTP id
- a26-20020a7bc1da000000b003857205ec7cso1942955wmj.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2022 03:04:21 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:message-id:date:mime-version:user-agent
- :content-language:to:cc:references:from:organization:subject
- :in-reply-to:content-transfer-encoding;
- bh=MBNPObCUCYNtALaMx9Iaf80ooxBHklxdAF9RYy04dD0=;
- b=TDBKallwGn3Feua3pXJNCT3NOYVJNuJ4HqjA91XWL1mDuWWXq/8ojAvWoyVYF2sxmr
- mRjggBJWZ+mjxu3aK4KdizjaD6tNDoA9c2p2d40AULPNqfMn9SG9RnpEd/sIOobHw/Iu
- 0j9rwwYAYxbYk7nVjIiFJ9GLNCI9Jp2GjQTF9gQsljb9LFaDIVb/4DIOO8OQKtq0j4Pc
- FrbY2Rm8nDTQXFwaPGpL8r2LFxmbtrrVc/3rYjSD2x8vxM/xAXGpGvM/Tf5ZpE4nZtgx
- nKjHoOgwnblcuGywT5SH/eifWUl1Zmmnmfs/eeCJw7LJGoZck3CDAYX8mF97Q0mdloWk
- vXQA==
-X-Gm-Message-State: AOAM532ugcCFEb83J0xw4XLIXqlUn4Bq6yTqRwaIEETH+gIA1voEgJJY
- fIGzfy6UV/d54xueNikZPdUtP4/u8E7+un0frae60IcJbkZtj6gVPasZ6n290q2aLfMhifHclPj
- AaY3KfwRnaBh3oY26fOhBfJaDDw==
-X-Received: by 2002:a05:600c:a4a:b0:389:e8fd:54b4 with SMTP id
- c10-20020a05600c0a4a00b00389e8fd54b4mr3151308wmq.168.1647511460503; 
- Thu, 17 Mar 2022 03:04:20 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzqDnOUQ38GHBC7qxykUWE5EEPAwQFTum3x+dhkpMIFZaDI62UNmCzA1x1kIEv/0vMQ4ejNKg==
-X-Received: by 2002:a05:600c:a4a:b0:389:e8fd:54b4 with SMTP id
- c10-20020a05600c0a4a00b00389e8fd54b4mr3151270wmq.168.1647511460156; 
- Thu, 17 Mar 2022 03:04:20 -0700 (PDT)
-Received: from ?IPV6:2a09:80c0:192:0:20af:34be:985b:b6c8?
- ([2a09:80c0:192:0:20af:34be:985b:b6c8])
- by smtp.gmail.com with ESMTPSA id
- g13-20020a05600c4ecd00b0038a0165f2fbsm4412271wmq.17.2022.03.17.03.04.18
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 17 Mar 2022 03:04:19 -0700 (PDT)
-Message-ID: <c3d39666-52ae-42ba-eaa2-7a0ca489f766@redhat.com>
-Date: Thu, 17 Mar 2022 11:04:18 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KK1k6414Wz2xVq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2022 20:17:00 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1647508622; x=1679044622;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=AgYkRzO8ksOYyWWAS/gpvfK0lt7Rzm9dkVzVmq0l0/w=;
+ b=j80jfjzDnKaeZRHzhqXDl3+uE222vlVBy8KLJDlbiGZUX04wqJIZk17E
+ rT6Dvxl7x7tE6HjzqHPO5kA9xqSu9nX+i6gqhOhtIktuTu20NbKqs61cF
+ 5PuS2VIpn1Hy5xmPqVfaVFItnszhOPtEVAqNeBFEHO7ehyxfpIntiIwOE
+ 46tks25UR1MUSYUvFcBQX9Cs27msdRGUDHKwuQH1zjbU75I1lvI29dUHo
+ l48WbIuHN8DsQeeYf6rc9G1HYvFWrU9ExOEh6me4KYUFJRzMs4ZiboZ14
+ BCvu+/lXaC5cH5VKqY3AK2t2ULkcM9Hz/CNrJg1jSsQa6jkJ7M92DqRIQ w==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10288"; a="320033055"
+X-IronPort-AV: E=Sophos;i="5.90,188,1643702400"; d="scan'208";a="320033055"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 17 Mar 2022 02:15:57 -0700
+X-IronPort-AV: E=Sophos;i="5.90,188,1643702400"; d="scan'208";a="557852602"
+Received: from gao-cwp.sh.intel.com (HELO gao-cwp) ([10.239.159.23])
+ by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 17 Mar 2022 02:15:44 -0700
+Date: Thu, 17 Mar 2022 17:15:41 +0800
+From: Chao Gao <chao.gao@intel.com>
+To: seanjc@google.com, maz@kernel.org, kvm@vger.kernel.org,
+ pbonzini@redhat.com, kevin.tian@intel.com, tglx@linutronix.de
+Subject: Re: [PATCH v4 0/6] Improve KVM's interaction with CPU hotplug
+Message-ID: <20220317091539.GA7257@gao-cwp>
+References: <20220216031528.92558-1-chao.gao@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.6.2
-To: Catalin Marinas <catalin.marinas@arm.com>
-References: <20220315141837.137118-1-david@redhat.com>
- <20220315141837.137118-5-david@redhat.com> <YjIr9f9qaz4xITVd@arm.com>
-From: David Hildenbrand <david@redhat.com>
-Organization: Red Hat
-Subject: Re: [PATCH v1 4/7] arm64/pgtable: support
- __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-In-Reply-To: <YjIr9f9qaz4xITVd@arm.com>
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=david@redhat.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220216031528.92558-1-chao.gao@intel.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Mailman-Approved-At: Thu, 17 Mar 2022 21:24:01 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,79 +68,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Jan Kara <jack@suse.cz>, Yang Shi <shy828301@gmail.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Peter Xu <peterx@redhat.com>,
- Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
- Donald Dutile <ddutile@redhat.com>, Liang Zhang <zhangliang5@huawei.com>,
- Borislav Petkov <bp@alien8.de>, Alexander Gordeev <agordeev@linux.ibm.com>,
- Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>,
- Paul Mackerras <paulus@samba.org>, Andrea Arcangeli <aarcange@redhat.com>,
- linux-s390@vger.kernel.org, Vasily Gorbik <gor@linux.ibm.com>,
- Rik van Riel <riel@surriel.com>, Hugh Dickins <hughd@google.com>,
- Matthew Wilcox <willy@infradead.org>, Mike Rapoport <rppt@linux.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org,
- Jason Gunthorpe <jgg@nvidia.com>, David Rientjes <rientjes@google.com>,
- Pedro Gomes <pedrodemargomes@gmail.com>, Jann Horn <jannh@google.com>,
- John Hubbard <jhubbard@nvidia.com>, Heiko Carstens <hca@linux.ibm.com>,
- Shakeel Butt <shakeelb@google.com>, Oleg Nesterov <oleg@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
- Oded Gabbay <oded.gabbay@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Nadav Amit <namit@vmware.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, Roman Gushchin <guro@fb.com>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Thomas Richter <tmricht@linux.ibm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ David Hildenbrand <david@redhat.com>,
+ "Maciej S. Szmigiero" <maciej.szmigiero@oracle.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ linux-mips@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Wanpeng Li <wanpengli@tencent.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>,
+ kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org,
+ Jia He <justin.he@arm.com>, Janosch Frank <frankja@linux.ibm.com>,
+ Anup Patel <anup@brainfault.org>, Joerg Roedel <joro@8bytes.org>,
+ Huacai Chen <chenhuacai@kernel.org>, linux-riscv@lists.infradead.org,
+ Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>,
+ Ingo Molnar <mingo@redhat.com>, "Darrick J. Wong" <djwong@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Qi Liu <liuqi115@huawei.com>, Andrew Jones <drjones@redhat.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
+ Suzuki K Poulose <suzuki.poulose@arm.com>, Heiko Carstens <hca@linux.ibm.com>,
+ John Garry <john.garry@huawei.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Nathan Chancellor <nathan@kernel.org>, Eric Auger <eric.auger@redhat.com>,
+ Tom Zanussi <tom.zanussi@linux.intel.com>, Borislav Petkov <bp@alien8.de>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Atish Patra <atishp@atishpatra.org>,
+ Sumanth Korikkar <sumanthk@linux.ibm.com>,
+ Alexandru Elisei <alexandru.elisei@arm.com>,
+ linux-arm-kernel@lists.infradead.org, Jim Mattson <jmattson@google.com>,
+ Juergen Gross <jgross@suse.com>, Shaokun Zhang <zhangshaokun@hisilicon.com>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Hector Martin <marcan@marcan.st>, Nick Desaulniers <ndesaulniers@google.com>,
+ linux-kernel@vger.kernel.org, Bharata B Rao <bharata@linux.ibm.com>,
+ James Morse <james.morse@arm.com>, Sven Schnelle <svens@linux.ibm.com>,
+ kvm-riscv@lists.infradead.org, Vitaly Kuznetsov <vkuznets@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 16.03.22 19:27, Catalin Marinas wrote:
-> On Tue, Mar 15, 2022 at 03:18:34PM +0100, David Hildenbrand wrote:
->> diff --git a/arch/arm64/include/asm/pgtable-prot.h b/arch/arm64/include/asm/pgtable-prot.h
->> index b1e1b74d993c..62e0ebeed720 100644
->> --- a/arch/arm64/include/asm/pgtable-prot.h
->> +++ b/arch/arm64/include/asm/pgtable-prot.h
->> @@ -14,6 +14,7 @@
->>   * Software defined PTE bits definition.
->>   */
->>  #define PTE_WRITE		(PTE_DBM)		 /* same as DBM (51) */
->> +#define PTE_SWP_EXCLUSIVE	(_AT(pteval_t, 1) << 2)	 /* only for swp ptes */
-> 
-> I think we can use bit 1 here.
-> 
->> @@ -909,12 +925,13 @@ static inline pmd_t pmdp_establish(struct vm_area_struct *vma,
->>  /*
->>   * Encode and decode a swap entry:
->>   *	bits 0-1:	present (must be zero)
->> - *	bits 2-7:	swap type
->> + *	bits 2:		remember PG_anon_exclusive
->> + *	bits 3-7:	swap type
->>   *	bits 8-57:	swap offset
->>   *	bit  58:	PTE_PROT_NONE (must be zero)
-> 
-> I don't remember exactly why we reserved bits 0 and 1 when, from the
-> hardware perspective, it's sufficient for bit 0 to be 0 and the whole
-> pte becomes invalid. We use bit 1 as the 'table' bit (when 0 at pmd
-> level, it's a huge page) but we shouldn't check for this on a swap
-> entry.
+Ping. Anyone can help to review this series (particularly patch 3-5)?
 
-You mean
-
-arch/arm64/include/asm/pgtable-hwdef.h:#define PTE_TABLE_BIT            (_AT(pteval_t, 1) << 1)
-
-right?
-
-I wonder why it even exists, for arm64 I only spot:
-
-arch/arm64/include/asm/pgtable.h:#define pte_mkhuge(pte)                (__pte(pte_val(pte) & ~PTE_TABLE_BIT))
-
-I don't really see code that sets PTE_TABLE_BIT.
-
-Similarly, I don't see code that sets PMD_TABLE_BIT/PUD_TABLE_BIT/P4D_TABLE_BIT.
-Most probably setting code is not using the defines,  that's why I'm not finding it.
-
--- 
-Thanks,
-
-David / dhildenb
-
+FYI, Sean gave his Reviewed-by to patch 1,2,5 and 6.
