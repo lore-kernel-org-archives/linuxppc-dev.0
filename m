@@ -4,33 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 582E7C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Mar 2022 02:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE00BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Mar 2022 02:50:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KJs8D3wYjz3bZQ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Mar 2022 13:50:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=meizu.com (client-ip=112.91.151.210; helo=mail.meizu.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KJs8f0cxJz3bjD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Mar 2022 13:50:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=meizu.com (client-ip=14.29.68.187; helo=mail.meizu.com;
  envelope-from=baihaowen@meizu.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 64 seconds by postgrey-1.36 at boromir;
- Thu, 17 Mar 2022 13:31:36 AEDT
-Received: from mail.meizu.com (edge07.meizu.com [112.91.151.210])
+X-Greylist: delayed 66 seconds by postgrey-1.36 at boromir;
+ Thu, 17 Mar 2022 13:34:03 AEDT
+Received: from mail.meizu.com (unknown [14.29.68.187])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KJrkJ2bl4z2x9g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2022 13:31:36 +1100 (AEDT)
-Received: from IT-EXMB-1-125.meizu.com (172.16.1.125) by mz-mail11.meizu.com
- (172.16.1.15) with Microsoft SMTP Server (TLS) id 14.3.487.0; Thu, 17 Mar
- 2022 10:30:07 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KJrn75q2Bz2yK2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Mar 2022 13:34:02 +1100 (AEDT)
+Received: from IT-EXMB-1-125.meizu.com (172.16.1.125) by mz-mail04.meizu.com
+ (172.16.1.16) with Microsoft SMTP Server (TLS) id 14.3.487.0; Thu, 17 Mar
+ 2022 10:32:42 +0800
 Received: from meizu.meizu.com (172.16.137.70) by IT-EXMB-1-125.meizu.com
  (172.16.1.125) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Thu, 17 Mar
- 2022 10:30:04 +0800
+ 2022 10:32:40 +0800
 From: Haowen Bai <baihaowen@meizu.com>
 To: <benh@kernel.crashing.org>, <masahiroy@kernel.org>, <adobriyan@gmail.com>
-Subject: [PATCH] macintosh: macio-adb: Fix warning comparing pointer to 0
-Date: Thu, 17 Mar 2022 10:30:01 +0800
-Message-ID: <1647484201-11738-1-git-send-email-baihaowen@meizu.com>
+Subject: [PATCH] macintosh: windfarm_pm81: Fix warning comparing pointer to 0
+Date: Thu, 17 Mar 2022 10:32:39 +0800
+Message-ID: <1647484359-12402-1-git-send-email-baihaowen@meizu.com>
 X-Mailer: git-send-email 2.7.4
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -59,41 +60,31 @@ Avoid pointer type value compared with 0 to make code clear.
 
 Signed-off-by: Haowen Bai <baihaowen@meizu.com>
 ---
- drivers/macintosh/macio-adb.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/macintosh/windfarm_pm81.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/macintosh/macio-adb.c b/drivers/macintosh/macio-adb.c
-index dc634c2..51afa46 100644
---- a/drivers/macintosh/macio-adb.c
-+++ b/drivers/macintosh/macio-adb.c
-@@ -97,7 +97,7 @@ int macio_init(void)
- 	unsigned int irq;
+diff --git a/drivers/macintosh/windfarm_pm81.c b/drivers/macintosh/windfarm_pm81.c
+index 82c67a4..1dfced5 100644
+--- a/drivers/macintosh/windfarm_pm81.c
++++ b/drivers/macintosh/windfarm_pm81.c
+@@ -400,7 +400,7 @@ static void wf_smu_create_cpu_fans(void)
  
- 	adbs = of_find_compatible_node(NULL, "adb", "chrp,adb0");
--	if (adbs == 0)
-+	if (!adbs)
- 		return -ENXIO;
+ 	/* First, locate the PID params in SMU SBD */
+ 	hdr = smu_get_sdb_partition(SMU_SDB_CPUPIDDATA_ID, NULL);
+-	if (hdr == 0) {
++	if (!hdr) {
+ 		printk(KERN_WARNING "windfarm: CPU PID fan config not found "
+ 		       "max fan speed\n");
+ 		goto fail;
+@@ -704,7 +704,7 @@ static int wf_init_pm(void)
+ 	const struct smu_sdbp_header *hdr;
  
- 	if (of_address_to_resource(adbs, 0, &r)) {
-@@ -180,7 +180,7 @@ static int macio_send_request(struct adb_request *req, int sync)
- 	req->reply_len = 0;
- 
- 	spin_lock_irqsave(&macio_lock, flags);
--	if (current_req != 0) {
-+	if (current_req) {
- 		last_req->next = req;
- 		last_req = req;
- 	} else {
-@@ -210,7 +210,7 @@ static irqreturn_t macio_adb_interrupt(int irq, void *arg)
- 	spin_lock(&macio_lock);
- 	if (in_8(&adb->intr.r) & TAG) {
- 		handled = 1;
--		if ((req = current_req) != 0) {
-+		req = current_req;
-+		if (req) {
- 			/* put the current request in */
- 			for (i = 0; i < req->nbytes; ++i)
- 				out_8(&adb->data[i].r, req->data[i]);
+ 	hdr = smu_get_sdb_partition(SMU_SDB_SENSORTREE_ID, NULL);
+-	if (hdr != 0) {
++	if (hdr) {
+ 		struct smu_sdbp_sensortree *st =
+ 			(struct smu_sdbp_sensortree *)&hdr[1];
+ 		wf_smu_mach_model = st->model_id;
 -- 
 2.7.4
 
