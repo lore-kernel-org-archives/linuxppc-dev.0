@@ -4,31 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED21AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Mar 2022 05:07:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 877B7C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Mar 2022 05:08:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KMN0m3BV2z3by6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Mar 2022 16:07:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KMN1B17JCz3byL
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Mar 2022 16:08:14 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KMMzY6lPhz3081
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KMMzY73Yzz307B
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2022 16:06:49 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4KMMzV0D5Hz4xbs;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4KMMzV3mxVz4xc3;
  Mon, 21 Mar 2022 16:06:46 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220311024733.48926-1-npiggin@gmail.com>
-References: <20220311024733.48926-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/tm: Fix more userspace r13 corruption
-Message-Id: <164783915231.1783931.13421325090840249852.b4-ty@ellerman.id.au>
-Date: Mon, 21 Mar 2022 16:05:52 +1100
+To: linuxppc-dev@lists.ozlabs.org, Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20220313065936.4363-1-rdunlap@infradead.org>
+References: <20220313065936.4363-1-rdunlap@infradead.org>
+Subject: Re: [PATCH] powerpc/xive: fix return value of __setup handler
+Message-Id: <164783915138.1783931.6448430505105520152.b4-ty@ellerman.id.au>
+Date: Mon, 21 Mar 2022 16:05:51 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,29 +43,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Neuling <mikey@neuling.org>
+Cc: Paul Mackerras <paulus@samba.org>, patches@lists.linux.dev, Cédric Le Goater <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 11 Mar 2022 12:47:33 +1000, Nicholas Piggin wrote:
-> Commit cf13435b730a ("powerpc/tm: Fix userspace r13 corruption") fixes
-> a problem in treclaim where a SLB miss can occur on the
-> thread_struct->ckpt_regs while SCRATCH0 is live with the saved user r13
-> value, clobbering it with the kernel r13 and ultimately resulting in
-> kernel r13 being stored in ckpt_regs.
-> 
-> There is an equivalent problem in trechkpt where the user r13 value is
-> loaded into r13 from chkpt_regs to be recheckpointed, but a SLB miss
-> could occur on ckpt_regs accesses after that, which will result in r13
-> being clobbered with a kernel value and that will get recheckpointed and
-> then restored to user registers.
+On Sat, 12 Mar 2022 22:59:36 -0800, Randy Dunlap wrote:
+> __setup() handlers should return 1 to obsolete_checksetup() in
+> init/main.c to indicate that the boot option has been handled.
+> A return of 0 causes the boot option/value to be listed as an Unknown
+> kernel parameter and added to init's (limited) argument or environment
+> strings. Also, error return codes don't mean anything to
+> obsolete_checksetup() -- only non-zero (usually 1) or zero.
+> So return 1 from xive_off() and xive_store_eoi_cmdline().
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/tm: Fix more userspace r13 corruption
-      https://git.kernel.org/powerpc/c/9d71165d3934e607070c4e48458c0cf161b1baea
+[1/1] powerpc/xive: fix return value of __setup handler
+      https://git.kernel.org/powerpc/c/d64e3eab75a8e1e900c0fda2410a2df8893d8f85
 
 cheers
