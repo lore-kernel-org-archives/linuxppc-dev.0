@@ -4,32 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B41AC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Mar 2022 05:07:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED21AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Mar 2022 05:07:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KMN0L5Zvxz3blB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Mar 2022 16:07:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KMN0m3BV2z3by6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Mar 2022 16:07:52 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KMMzY5v6Nz306r
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KMMzY6lPhz3081
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Mar 2022 16:06:49 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4KMMzR5z0Xz4xPv;
- Mon, 21 Mar 2022 16:06:43 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4KMMzV0D5Hz4xbs;
+ Mon, 21 Mar 2022 16:06:46 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220318034219.1188008-1-mpe@ellerman.id.au>
-References: <20220318034219.1188008-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/pseries: Fix use after free in
- remove_phb_dynamic()
-Message-Id: <164783915556.1783931.7161083625338009804.b4-ty@ellerman.id.au>
-Date: Mon, 21 Mar 2022 16:05:55 +1100
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220311024733.48926-1-npiggin@gmail.com>
+References: <20220311024733.48926-1-npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/tm: Fix more userspace r13 corruption
+Message-Id: <164783915231.1783931.13421325090840249852.b4-ty@ellerman.id.au>
+Date: Mon, 21 Mar 2022 16:05:52 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -44,25 +43,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: zdai@linux.ibm.com, sachinp@linux.ibm.com
+Cc: Michael Neuling <mikey@neuling.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 18 Mar 2022 14:42:19 +1100, Michael Ellerman wrote:
-> In remove_phb_dynamic() we use &phb->io_resource, after we've called
-> device_unregister(&host_bridge->dev). But the unregister may have freed
-> phb, because pcibios_free_controller_deferred() is the release function
-> for the host_bridge.
+On Fri, 11 Mar 2022 12:47:33 +1000, Nicholas Piggin wrote:
+> Commit cf13435b730a ("powerpc/tm: Fix userspace r13 corruption") fixes
+> a problem in treclaim where a SLB miss can occur on the
+> thread_struct->ckpt_regs while SCRATCH0 is live with the saved user r13
+> value, clobbering it with the kernel r13 and ultimately resulting in
+> kernel r13 being stored in ckpt_regs.
 > 
-> If there are no outstanding references when we call device_unregister()
-> then phb will be freed out from under us.
+> There is an equivalent problem in trechkpt where the user r13 value is
+> loaded into r13 from chkpt_regs to be recheckpointed, but a SLB miss
+> could occur on ckpt_regs accesses after that, which will result in r13
+> being clobbered with a kernel value and that will get recheckpointed and
+> then restored to user registers.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries: Fix use after free in remove_phb_dynamic()
-      https://git.kernel.org/powerpc/c/fe2640bd7a62f1f7c3f55fbda31084085075bc30
+[1/1] powerpc/tm: Fix more userspace r13 corruption
+      https://git.kernel.org/powerpc/c/9d71165d3934e607070c4e48458c0cf161b1baea
 
 cheers
