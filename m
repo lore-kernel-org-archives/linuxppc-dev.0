@@ -4,66 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B0B3C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Mar 2022 18:03:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 186D2C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Mar 2022 19:07:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KNx6t4jtxz306d
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Mar 2022 05:03:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KNyXT2Frfz30Fs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Mar 2022 06:07:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=jv8WdjAt;
-	dkim=fail reason="signature verification failed" header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=SCqhS6nM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f87Yr9sg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
- (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
- envelope-from=mbenes@suse.cz; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256
- header.s=susede2_rsa header.b=jv8WdjAt; 
- dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=SCqhS6nM; 
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
+ helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=f87Yr9sg; 
  dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KNx663f92z2ypV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2022 05:02:53 +1100 (AEDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
- by smtp-out1.suse.de (Postfix) with ESMTP id A3E54210F4;
- Wed, 23 Mar 2022 18:02:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
- t=1648058569; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=PH6z87ZT6oLdaXVcqGtAs/3h7ivkY3xB/i0TfcTIX5U=;
- b=jv8WdjAtfSPahs8a0C++jvpJEJDKQ+fsP21x42FtoS69DQROpOhlReP14kr2DY2KhnF1N1
- YuFgd8cE7bKVNnyU1G8ysaULWhsAPs3Pfgl/GSbfDFQxdTfexeEVlDsPcgTlm9tnSBhYl4
- 2VLx6nxSj5oaDLJOqbG0uePwa3b22xM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
- s=susede2_ed25519; t=1648058569;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=PH6z87ZT6oLdaXVcqGtAs/3h7ivkY3xB/i0TfcTIX5U=;
- b=SCqhS6nM2K2a36VQe2YNroDZ/MzJFif/cIueWn7mxCBYA1ausDCAYM75kA6ZfJpu+hqce5
- 0kMTRuKSQQ+mHeCg==
-Received: from pobox.suse.cz (pobox.suse.cz [10.100.2.14])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by relay2.suse.de (Postfix) with ESMTPS id 12FEDA3B88;
- Wed, 23 Mar 2022 18:02:48 +0000 (UTC)
-Date: Wed, 23 Mar 2022 19:02:47 +0100 (CET)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Sathvika Vasireddy <sv@linux.ibm.com>
-Subject: Re: [RFC PATCH 1/3] objtool: Move common code to utils.c
-In-Reply-To: <20220318105140.43914-2-sv@linux.ibm.com>
-Message-ID: <alpine.LSU.2.21.2203231859420.10670@pobox.suse.cz>
-References: <20220318105140.43914-1-sv@linux.ibm.com>
- <20220318105140.43914-2-sv@linux.ibm.com>
-User-Agent: Alpine 2.21 (LSU 202 2017-01-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KNyWl5TFtz2xsd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Mar 2022 06:06:43 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id BDBFC614FC;
+ Wed, 23 Mar 2022 19:06:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E151C340E8;
+ Wed, 23 Mar 2022 19:06:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1648062399;
+ bh=JTywm6TBkPk9Sn2XVlScT+GDNPgFoMES3sgO/uLu1sU=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=f87Yr9sgcYpaiRt4fOOBg9OZElxAtXcrdoJCKtRWi4XUxlSmB7o0SVf4LPzUieoCh
+ jeQ9sGfp4Z/E9Qv2px2x/uW/GOzddxodJxdpuQbee1MwaV9o4nZsFKa2vUkhB/AwVB
+ CbQsAUzA2kKE0uAQb+kiCD47voGzPVNJmtTR4pJA18Hwpk3CDx28Pz3GPU7L199xW1
+ RXNVxB9pt46ehcobG6p8cK5jB78yvMxwR3S+hdCV0UXa7b1dBRg9PPIpHxP4o0mAIz
+ 8wJzf7VThlUfbSyLx09fkmQHY3aOBmg+2AEQBZQRPeKyz9uHhdDAHOEjqv8dNd/xRZ
+ 5JtwvHvcD3/Rw==
+Date: Wed, 23 Mar 2022 21:06:30 +0200
+From: Mike Rapoport <rppt@kernel.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: False positive kmemleak report for dtb properties names on powerpc
+Message-ID: <Yjtvtkn+CishCef6@kernel.org>
+References: <9dd08bb5-f39e-53d8-f88d-bec598a08c93@gmail.com>
+ <YjtXXlnbEp64eL0T@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <YjtXXlnbEp64eL0T@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,28 +65,132 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- aik@ozlabs.ru, jpoimboe@redhat.com, naveen.n.rao@linux.vnet.ibm.com,
+Cc: Ariel Marcovitch <arielmarcovitch@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, paulus@samba.org, akpm@linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> +#define sym_for_each_insn(file, sym, insn)                              \
-> +	for (insn = find_insn(file, sym->sec, sym->offset);             \
-> +	     insn && &insn->list != &file->insn_list &&                 \
-> +		insn->sec == sym->sec &&                                \
-> +		insn->offset < sym->offset + sym->len;                  \
-> +	     insn = list_next_entry(insn, list))
-> +
-> +#endif /* UTILS_H */
+Hi Catalin,
 
-Since you include <objtool/utils.h> in check.c, you can remove the 
-definition of sym_for_each_insn() macro from check.c as well.
+On Wed, Mar 23, 2022 at 05:22:38PM +0000, Catalin Marinas wrote:
+> Hi Ariel,
+> 
+> On Fri, Feb 18, 2022 at 09:45:51PM +0200, Ariel Marcovitch wrote:
+> > I was running a powerpc 32bit kernel (built using
+> > qemu_ppc_mpc8544ds_defconfig
+> > buildroot config, with enabling DEBUGFS+KMEMLEAK+HIGHMEM in the kernel
+> > config)
+> > on qemu and invoked the kmemleak scan (twice. for some reason the first time
+> > wasn't enough).
+> [...]
+> > I got 97 leak reports, all similar to the following:
+> [...]
+> > memblock_alloc lets kmemleak know about the allocated memory using
+> > kmemleak_alloc_phys (in mm/memblock.c:memblock_alloc_range_nid()).
+> > 
+> > The problem is with the following code (mm/kmemleak.c):
+> > 
+> > ```c
+> > 
+> > void __ref kmemleak_alloc_phys(phys_addr_t phys, size_t size, int min_count,
+> >                                gfp_t gfp)
+> > {
+> >         if (!IS_ENABLED(CONFIG_HIGHMEM) || PHYS_PFN(phys) < max_low_pfn)
+> >                 kmemleak_alloc(__va(phys), size, min_count, gfp);
+> > }
+> > 
+> > ```
+> > 
+> > When CONFIG_HIGHMEM is enabled, the pfn of the allocated memory is checked
+> > against max_low_pfn, to make sure it is not in the HIGHMEM zone.
+> > 
+> > However, when called through unflatten_device_tree(), max_low_pfn is not yet
+> > initialized in powerpc.
+> > 
+> > max_low_pfn is initialized (when NUMA is disabled) in
+> > arch/powerpc/mm/mem.c:mem_topology_setup() which is called only after
+> > unflatten_device_tree() is called in the same function (setup_arch()).
+> > 
+> > Because max_low_pfn is global it is 0 before initialization, so as far as
+> > kmemleak_alloc_phys() is concerned, every memory is HIGHMEM (: and the
+> > allocated memory is not tracked by kmemleak, causing references to objects
+> > allocated later with kmalloc() to be ignored and these objects are marked as
+> > leaked.
+> 
+> Thanks for digging into this. It looks like the logic doesn't work (not
+> sure whether it ever worked).
+> 
+> > I actually tried to find out whether this happen on other arches as well,
+> > and it seems like arm64 also have this problem when dtb is used instead of
+> > acpi, although I haven't had the chance to confirm this.
+> 
+> arm64 doesn't enable CONFIG_HIGHMEM, so it's not affected.
+> 
+> > I don't suppose I can just shuffle the calls in setup_arch() around, so I
+> > wanted to hear your opinions first
+> 
+> I think it's better if we change the logic than shuffling the calls.
+> IIUC MEMBLOCK_ALLOC_ACCESSIBLE means that __va() works on the phys
+> address return by memblock, so something like below (untested):
 
-I wonder if it would make sense to move all these helper functions to 
-utils.c and utils.h. Might be connected to what Josh wrote about his work 
-on objtool interface.
+MEMBLOCK_ALLOC_ACCESSIBLE means "anywhere", see commit e63075a3c937
+("memblock: Introduce default allocation limit and use it to replace
+explicit ones"), so it won't help to detect high memory.
 
-Regards
-Miroslav
+If I remember correctly, ppc initializes memblock *very* early, so setting
+max_low_pfn along with lowmem_end_addr in
+arch/powerpc/mm/init_32::MMU_init() makes sense to me.
+
+Maybe ppc folks have other ideas...
+I've added Christophe who works on ppc32 these days.
+ 
+> -------------8<----------------------
+> diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+> index 7580baa76af1..f3599e857c13 100644
+> --- a/mm/kmemleak.c
+> +++ b/mm/kmemleak.c
+> @@ -1127,8 +1127,7 @@ EXPORT_SYMBOL(kmemleak_no_scan);
+>  void __ref kmemleak_alloc_phys(phys_addr_t phys, size_t size, int min_count,
+>  			       gfp_t gfp)
+>  {
+> -	if (!IS_ENABLED(CONFIG_HIGHMEM) || PHYS_PFN(phys) < max_low_pfn)
+> -		kmemleak_alloc(__va(phys), size, min_count, gfp);
+> +	kmemleak_alloc(__va(phys), size, min_count, gfp);
+>  }
+>  EXPORT_SYMBOL(kmemleak_alloc_phys);
+>  
+> diff --git a/mm/memblock.c b/mm/memblock.c
+> index b12a364f2766..2515bd4331e8 100644
+> --- a/mm/memblock.c
+> +++ b/mm/memblock.c
+> @@ -1397,7 +1397,7 @@ phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
+>  	 * Skip kmemleak for those places like kasan_init() and
+>  	 * early_pgtable_alloc() due to high volume.
+>  	 */
+> -	if (end != MEMBLOCK_ALLOC_NOLEAKTRACE)
+> +	if (end == MEMBLOCK_ALLOC_ACCESSIBLE)
+
+This change would enable kmemleak for KASAN on arm and arm64 that AFAIR
+caused OOM in kmemleak and it also will limit tracking only to allocations
+that do not specify 'end' explicitly ;-) 
+
+>  		/*
+>  		 * The min_count is set to 0 so that memblock allocated
+>  		 * blocks are never reported as leaks. This is because many
+> -------------8<----------------------
+> 
+> But I'm not sure whether we'd now miss some genuine allocations where
+> the memblock limit is different from MEMBLOCK_ALLOC_ACCESSIBLE but still
+> within the lowmem limit. If the above works, we can probably get rid of
+> some other kmemleak callbacks in the kernel.
+> 
+> Adding Mike for any input on memblock.
+> 
+> -- 
+> Catalin
+
+-- 
+Sincerely yours,
+Mike.
