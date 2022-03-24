@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DFDDC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Mar 2022 14:35:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96D58C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Mar 2022 14:36:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KPSSb1DB6z3fDX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Mar 2022 01:35:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KPST21vgNz3fJq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Mar 2022 01:36:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,35 +16,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KPSNN6XNyz306m
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2022 01:32:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KPSNZ47Msz3bts
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2022 01:32:14 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KPSM9104mz9sTp;
- Thu, 24 Mar 2022 15:31:01 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4KPSMB0qj8z9sTq;
+ Thu, 24 Mar 2022 15:31:02 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qo1VWAWzjVoN; Thu, 24 Mar 2022 15:31:01 +0100 (CET)
+ with ESMTP id 4fwzZXCaaTDa; Thu, 24 Mar 2022 15:31:02 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KPSLy6lM4z9sTq;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KPSLy6mjrz9sTr;
  Thu, 24 Mar 2022 15:30:50 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D6DEF8B786;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D09408B781;
  Thu, 24 Mar 2022 15:30:50 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 8Dh_e7lJLxk7; Thu, 24 Mar 2022 15:30:50 +0100 (CET)
+ with ESMTP id 81EnaXSMAd2w; Thu, 24 Mar 2022 15:30:50 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.77])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0A2A78B7A9;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D876C8B799;
  Thu, 24 Mar 2022 15:30:49 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 22OEUhhm1811726
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 22OEUim51811746
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Thu, 24 Mar 2022 15:30:43 +0100
+ Thu, 24 Mar 2022 15:30:44 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 22OEUh0f1811725;
- Thu, 24 Mar 2022 15:30:43 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 22OEUiBn1811745;
+ Thu, 24 Mar 2022 15:30:44 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -52,18 +52,17 @@ To: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
  Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v1 12/22] powerpc/ftrace: Use BRANCH_SET_LINK instead of value
- 1
-Date: Thu, 24 Mar 2022 15:30:02 +0100
-Message-Id: <157272d7b716d52fcd05830fa46d24487c80040d.1648131740.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 17/22] powerpc/inst: Add __copy_inst_from_kernel_nofault()
+Date: Thu, 24 Mar 2022 15:30:07 +0100
+Message-Id: <3ff47a837d8dfb6305592f3d8caef6aa2d85fbc2.1648131740.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <cover.1648131740.git.christophe.leroy@csgroup.eu>
 References: <cover.1648131740.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1648132151; l=800; s=20211009;
- h=from:subject:message-id; bh=aC7ftZIPVyIcv1nQ2WxxsrICRFi5QRDPh2KvoWv6tO8=;
- b=PkwjP+WdBQqe9IxACA7Bld2W2plJPs305qntisF32BlHOnX+JQwq6azxMDtMQZpG9bSnOCPmV88/
- GZfYEkrzBziI0OVBEkHQdj8FFbroZKjQ3Jf6XsHVFr++g9C7GLYH
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1648132151; l=1534; s=20211009;
+ h=from:subject:message-id; bh=uNUWZzzzPfrKXF6jD9unCulUYAF0cNf3EZC4MAgTHXc=;
+ b=EGbvzHqpKG4FYz/NL7buG6q98rlXZaZujqm1KTTL7aeMlPD3bSu65ZmJjbUEWDyz+vsGtgM8KoCP
+ NtpwT7sZAbOEMmExdeDaXGk21cAHDplor+sHP/FAsTzMlQP+g2dZ
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -83,27 +82,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-To make it explicit, use BRANCH_SET_LINK instead of value 1
-when calling create_branch().
+On the same model as get_user() versus __get_user(),
+introduce __copy_inst_from_kernel_nofault() which doesn't
+check address.
+
+To be used by callers that have already checked that the adress
+is a kernel address.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/trace/ftrace.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/inst.h | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index b6c5223e26b2..fdc0412c1d8a 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -45,7 +45,7 @@ ftrace_call_replace(unsigned long ip, unsigned long addr, int link)
- 	addr = ppc_function_entry((void *)addr);
+diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
+index 80b6d74146c6..b49aae9f6f27 100644
+--- a/arch/powerpc/include/asm/inst.h
++++ b/arch/powerpc/include/asm/inst.h
+@@ -158,13 +158,10 @@ static inline char *__ppc_inst_as_str(char str[PPC_INST_STR_LEN], ppc_inst_t x)
+ 	__str;				\
+ })
  
- 	/* if (link) set op to 'bl' else 'b' */
--	create_branch(&op, (u32 *)ip, addr, link ? 1 : 0);
-+	create_branch(&op, (u32 *)ip, addr, link ? BRANCH_SET_LINK : 0);
+-static inline int copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
++static inline int __copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
+ {
+ 	unsigned int val, suffix;
  
- 	return op;
+-	if (unlikely(!is_kernel_addr((unsigned long)src)))
+-		return -ERANGE;
+-
+ /* See https://github.com/ClangBuiltLinux/linux/issues/1521 */
+ #if defined(CONFIG_CC_IS_CLANG) && CONFIG_CLANG_VERSION < 140000
+ 	val = suffix = 0;
+@@ -181,4 +178,12 @@ static inline int copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
+ 	return -EFAULT;
  }
+ 
++static inline int copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
++{
++	if (unlikely(!is_kernel_addr((unsigned long)src)))
++		return -ERANGE;
++
++	return __copy_inst_from_kernel_nofault(inst, src);
++}
++
+ #endif /* _ASM_POWERPC_INST_H */
 -- 
 2.35.1
 
