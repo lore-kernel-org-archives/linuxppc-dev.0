@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD58FC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Mar 2022 14:39:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77DFEC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Mar 2022 14:39:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KPSXR3Srbz3fdM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Mar 2022 01:39:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KPSXv1G7Tz3bfK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Mar 2022 01:39:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,35 +16,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KPSP72tpMz3c70
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2022 01:32:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KPSPC3g5Zz3c8t
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2022 01:32:47 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KPSMK2d9lz9sTt;
- Thu, 24 Mar 2022 15:31:09 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4KPSML1bSVz9sV0;
+ Thu, 24 Mar 2022 15:31:10 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id gkadQe_OGiUn; Thu, 24 Mar 2022 15:31:09 +0100 (CET)
+ with ESMTP id 1YKqJW-0bzco; Thu, 24 Mar 2022 15:31:10 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KPSLz0S8Gz9sV0;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KPSLz0qQcz9sV2;
  Thu, 24 Mar 2022 15:30:51 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EE3088B763;
- Thu, 24 Mar 2022 15:30:50 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 066018B786;
+ Thu, 24 Mar 2022 15:30:51 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id UUs8ZWDRuTvz; Thu, 24 Mar 2022 15:30:50 +0100 (CET)
+ with ESMTP id x9Ib-xYEu1Id; Thu, 24 Mar 2022 15:30:50 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.77])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F17998B7A0;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EA3418B79F;
  Thu, 24 Mar 2022 15:30:49 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 22OEUiXW1811756
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 22OEUgsx1811710
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Thu, 24 Mar 2022 15:30:44 +0100
+ Thu, 24 Mar 2022 15:30:42 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 22OEUixv1811753;
- Thu, 24 Mar 2022 15:30:44 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 22OEUgpB1811709;
+ Thu, 24 Mar 2022 15:30:42 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -52,17 +52,18 @@ To: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
  Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v1 19/22] powerpc/inst: Remove PPC_INST_BRANCH
-Date: Thu, 24 Mar 2022 15:30:09 +0100
-Message-Id: <43a4ee9fd77f774fa1e9b72a2fc674fc8f084fed.1648131740.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 08/22] powerpc/ftrace: Make __ftrace_make_{nop/call}()
+ common to PPC32 and PPC64
+Date: Thu, 24 Mar 2022 15:29:58 +0100
+Message-Id: <fb60b19f154db8132a00c2df7aca7db3e85603b5.1648131740.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <cover.1648131740.git.christophe.leroy@csgroup.eu>
 References: <cover.1648131740.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1648132152; l=1716; s=20211009;
- h=from:subject:message-id; bh=reTiO1OPvuqXdGLn3x7Xk8PpudfBNZlji7IfAzSFmik=;
- b=YizvpT7xNAy/R0PmHc8ZrS4TX2jZyTgAdWk4r5Ql5brRoG3FESq4bjF0VxUxMpSc/NVDa27igWuW
- Mp5vGL6pBfJR9k5SgxBFC+q5CYtI2FQHCg3ddj8iz/jxKKhkvt+J
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1648132151; l=5520; s=20211009;
+ h=from:subject:message-id; bh=fu95AZd5FCaJwPMbMGXXiOSwiaAzLnBguw3AN73/rHU=;
+ b=c57TYtigamK9L6iS+hoKb5BfbBfbpqatqfGhnG01f9CeAFCk5o9x63y1Mu3iq3supveTng05F8FX
+ RlFTPDGKAhSlbV4jOmHVIgYhvUeQtsr1Xyoy3KCpbPZgd0ExX1G8
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,50 +83,196 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Convert last users of PPC_INST_BRANCH to PPC_RAW_BRANCH()
+Since c93d4f6ecf4b ("powerpc/ftrace: Add module_trampoline_target()
+for PPC32"), __ftrace_make_nop() for PPC32 is very similar to the
+one for PPC64.
 
-And remove PPC_INST_BRANCH.
+Same for __ftrace_make_call().
+
+Make them common.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/ppc-opcode.h | 3 +--
- arch/powerpc/lib/feature-fixups.c     | 2 +-
- 2 files changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/trace/ftrace.c | 108 +++--------------------------
+ 1 file changed, 8 insertions(+), 100 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 281754aca0a3..ada8fe17b199 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -290,7 +290,6 @@
- #define PPC_INST_ADDIS			0x3c000000
- #define PPC_INST_ADD			0x7c000214
- #define PPC_INST_DIVD			0x7c0003d2
--#define PPC_INST_BRANCH			0x48000000
- #define PPC_INST_BL			0x48000001
- #define PPC_INST_BRANCH_COND		0x40800000
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+index 1b05d33f96c6..2c7e42e439bb 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -114,7 +114,6 @@ static unsigned long find_bl_target(unsigned long ip, ppc_inst_t op)
+ }
  
-@@ -573,7 +572,7 @@
- #define PPC_RAW_MTSPR(spr, d)		(0x7c0003a6 | ___PPC_RS(d) | __PPC_SPR(spr))
- #define PPC_RAW_EIEIO()			(0x7c0006ac)
+ #ifdef CONFIG_MODULES
+-#ifdef CONFIG_PPC64
+ static int
+ __ftrace_make_nop(struct module *mod,
+ 		  struct dyn_ftrace *rec, unsigned long addr)
+@@ -154,10 +153,11 @@ __ftrace_make_nop(struct module *mod,
+ 		return -EINVAL;
+ 	}
  
--#define PPC_RAW_BRANCH(addr)		(PPC_INST_BRANCH | ((addr) & 0x03fffffc))
-+#define PPC_RAW_BRANCH(offset)		(0x48000000 | ((offset) & PPC_INST_OFFSET24_MASK))
- #define PPC_RAW_BL(offset)		(0x48000001 | ((offset) & PPC_INST_OFFSET24_MASK))
+-#ifdef CONFIG_MPROFILE_KERNEL
+-	/* When using -mkernel_profile there is no load to jump over */
++	/* When using -mkernel_profile or PPC32 there is no load to jump over */
+ 	pop = ppc_inst(PPC_RAW_NOP());
  
- /* Deal with instructions that older assemblers aren't aware of */
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 343a78826035..993d3f31832a 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -451,7 +451,7 @@ static int __do_rfi_flush_fixups(void *data)
++#ifdef CONFIG_PPC64
++#ifdef CONFIG_MPROFILE_KERNEL
+ 	if (copy_inst_from_kernel_nofault(&op, (void *)(ip - 4))) {
+ 		pr_err("Fetching instruction at %lx failed.\n", ip - 4);
+ 		return -EFAULT;
+@@ -201,6 +201,7 @@ __ftrace_make_nop(struct module *mod,
+ 		return -EINVAL;
+ 	}
+ #endif /* CONFIG_MPROFILE_KERNEL */
++#endif /* PPC64 */
  
- 	if (types & L1D_FLUSH_FALLBACK)
- 		/* b .+16 to fallback flush */
--		instrs[0] = PPC_INST_BRANCH | 16;
-+		instrs[0] = PPC_RAW_BRANCH(16);
+ 	if (patch_instruction((u32 *)ip, pop)) {
+ 		pr_err("Patching NOP failed.\n");
+@@ -209,48 +210,6 @@ __ftrace_make_nop(struct module *mod,
  
- 	i = 0;
- 	if (types & L1D_FLUSH_ORI) {
+ 	return 0;
+ }
+-
+-#else /* !PPC64 */
+-static int
+-__ftrace_make_nop(struct module *mod,
+-		  struct dyn_ftrace *rec, unsigned long addr)
+-{
+-	ppc_inst_t op;
+-	unsigned long ip = rec->ip;
+-	unsigned long tramp, ptr;
+-
+-	if (copy_from_kernel_nofault(&op, (void *)ip, MCOUNT_INSN_SIZE))
+-		return -EFAULT;
+-
+-	/* Make sure that that this is still a 24bit jump */
+-	if (!is_bl_op(op)) {
+-		pr_err("Not expected bl: opcode is %s\n", ppc_inst_as_str(op));
+-		return -EINVAL;
+-	}
+-
+-	/* lets find where the pointer goes */
+-	tramp = find_bl_target(ip, op);
+-
+-	/* Find where the trampoline jumps to */
+-	if (module_trampoline_target(mod, tramp, &ptr)) {
+-		pr_err("Failed to get trampoline target\n");
+-		return -EFAULT;
+-	}
+-
+-	if (ptr != addr) {
+-		pr_err("Trampoline location %08lx does not match addr\n",
+-		       tramp);
+-		return -EINVAL;
+-	}
+-
+-	op = ppc_inst(PPC_RAW_NOP());
+-
+-	if (patch_instruction((u32 *)ip, op))
+-		return -EPERM;
+-
+-	return 0;
+-}
+-#endif /* PPC64 */
+ #endif /* CONFIG_MODULES */
+ 
+ static unsigned long find_ftrace_tramp(unsigned long ip)
+@@ -437,13 +396,12 @@ int ftrace_make_nop(struct module *mod,
+ }
+ 
+ #ifdef CONFIG_MODULES
+-#ifdef CONFIG_PPC64
+ /*
+  * Examine the existing instructions for __ftrace_make_call.
+  * They should effectively be a NOP, and follow formal constraints,
+  * depending on the ABI. Return false if they don't.
+  */
+-#ifndef CONFIG_MPROFILE_KERNEL
++#ifndef CONFIG_DYNAMIC_FTRACE_WITH_REGS
+ static int
+ expected_nop_sequence(void *ip, ppc_inst_t op0, ppc_inst_t op1)
+ {
+@@ -465,7 +423,7 @@ expected_nop_sequence(void *ip, ppc_inst_t op0, ppc_inst_t op1)
+ static int
+ expected_nop_sequence(void *ip, ppc_inst_t op0, ppc_inst_t op1)
+ {
+-	/* look for patched "NOP" on ppc64 with -mprofile-kernel */
++	/* look for patched "NOP" on ppc64 with -mprofile-kernel or ppc32 */
+ 	if (!ppc_inst_equal(op0, ppc_inst(PPC_RAW_NOP())))
+ 		return 0;
+ 	return 1;
+@@ -484,8 +442,10 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 	if (copy_inst_from_kernel_nofault(op, ip))
+ 		return -EFAULT;
+ 
++#ifndef CONFIG_DYNAMIC_FTRACE_WITH_REGS
+ 	if (copy_inst_from_kernel_nofault(op + 1, ip + 4))
+ 		return -EFAULT;
++#endif
+ 
+ 	if (!expected_nop_sequence(ip, op[0], op[1])) {
+ 		pr_err("Unexpected call sequence at %p: %s %s\n",
+@@ -531,58 +491,6 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 
+ 	return 0;
+ }
+-
+-#else  /* !CONFIG_PPC64: */
+-static int
+-__ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+-{
+-	int err;
+-	ppc_inst_t op;
+-	u32 *ip = (u32 *)rec->ip;
+-	struct module *mod = rec->arch.mod;
+-	unsigned long tramp;
+-
+-	/* read where this goes */
+-	if (copy_inst_from_kernel_nofault(&op, ip))
+-		return -EFAULT;
+-
+-	/* It should be pointing to a nop */
+-	if (!ppc_inst_equal(op,  ppc_inst(PPC_RAW_NOP()))) {
+-		pr_err("Expected NOP but have %s\n", ppc_inst_as_str(op));
+-		return -EINVAL;
+-	}
+-
+-	/* If we never set up a trampoline to ftrace_caller, then bail */
+-#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
+-	if (!mod->arch.tramp || !mod->arch.tramp_regs) {
+-#else
+-	if (!mod->arch.tramp) {
+-#endif
+-		pr_err("No ftrace trampoline\n");
+-		return -EINVAL;
+-	}
+-
+-#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
+-	if (rec->flags & FTRACE_FL_REGS)
+-		tramp = mod->arch.tramp_regs;
+-	else
+-#endif
+-		tramp = mod->arch.tramp;
+-	/* create the branch to the trampoline */
+-	err = create_branch(&op, ip, tramp, BRANCH_SET_LINK);
+-	if (err) {
+-		pr_err("REL24 out of range!\n");
+-		return -EINVAL;
+-	}
+-
+-	pr_devel("write to %lx\n", rec->ip);
+-
+-	if (patch_instruction(ip, op))
+-		return -EPERM;
+-
+-	return 0;
+-}
+-#endif /* CONFIG_PPC64 */
+ #endif /* CONFIG_MODULES */
+ 
+ static int __ftrace_make_call_kernel(struct dyn_ftrace *rec, unsigned long addr)
 -- 
 2.35.1
 
