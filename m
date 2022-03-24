@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3224BC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Mar 2022 14:40:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA78AC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Mar 2022 14:40:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KPSYn5SScz3fxv
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Mar 2022 01:40:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KPSZM39fLz3fjw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Mar 2022 01:40:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,54 +16,50 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KPSPM3dT0z3c85
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2022 01:32:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KPSX950zzz3fkP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2022 01:38:49 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KPSMN13tvz9sV6;
- Thu, 24 Mar 2022 15:31:12 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4KPSX62HjWz9sTc;
+ Thu, 24 Mar 2022 15:38:46 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id vgZREsIefgYc; Thu, 24 Mar 2022 15:31:12 +0100 (CET)
+ with ESMTP id lOd6mjyXr49c; Thu, 24 Mar 2022 15:38:46 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KPSLz21m6z9sTc;
- Thu, 24 Mar 2022 15:30:51 +0100 (CET)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KPSX558LRz9sTd;
+ Thu, 24 Mar 2022 15:38:45 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 326538B763;
- Thu, 24 Mar 2022 15:30:51 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 99F338B780;
+ Thu, 24 Mar 2022 15:38:45 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id fKmCTQZdkbZD; Thu, 24 Mar 2022 15:30:51 +0100 (CET)
+ with ESMTP id R1rS3cN8Kx5q; Thu, 24 Mar 2022 15:38:45 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.77])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B9DAC8B790;
- Thu, 24 Mar 2022 15:30:49 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6177B8B763;
+ Thu, 24 Mar 2022 15:38:45 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 22OEUfCV1811686
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 22OEcaV21812193
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Thu, 24 Mar 2022 15:30:41 +0100
+ Thu, 24 Mar 2022 15:38:36 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 22OEUfbb1811685;
- Thu, 24 Mar 2022 15:30:41 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 22OEcZLo1812192;
+ Thu, 24 Mar 2022 15:38:35 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v1 02/22] powerpc/ftrace: Remove redundant create_branch()
- calls
-Date: Thu, 24 Mar 2022 15:29:52 +0100
-Message-Id: <2d8e845d4329372c6204612bee70b4f36f27e35e.1648131740.git.christophe.leroy@csgroup.eu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
+Subject: [PATCH] MAINTAINERS: Add arch/powerpc/kernel/trace to TRACING
+Date: Thu, 24 Mar 2022 15:38:28 +0100
+Message-Id: <8e2f707e2efa1fc1d1ffd2f9f6758e8c4a82c83e.1648132613.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <cover.1648131740.git.christophe.leroy@csgroup.eu>
-References: <cover.1648131740.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1648132150; l=2368; s=20211009;
- h=from:subject:message-id; bh=92KxuX0pLpQCITr7vgjlWnrEBj5V6cm1CJL4gIXJC9A=;
- b=dUWsc4MtUmN0jjbntgP7dTOuC78Ry2hUoY+sxYUOFNKWEkp/VyAev3THZUiCvA9j7W8wCtFJfDnH
- 6fBDYJltDBQ5Gz+TgRvBDx+SqpV5rGrJEOzsIXqhk6uICYfpTg9+
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1648132705; l=702; s=20211009;
+ h=from:subject:message-id; bh=VEiHejukkD6EZJAo8+kChtTLQI9cl6qtorMrMMgbRi0=;
+ b=q6/wjhgxZixX3J8tO3a8TY6mz7jgRoalpOIdoOKiSnDOoAKScLU7RrrNca8BY4YVhvs3YugCV9s+
+ DVDflFk5CgCoqJSvyC87h115ECB/jS5eO0JrL4CKq4V7EOAiTAqO
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -83,77 +79,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since commit d5937db114e4 ("powerpc/code-patching: Fix patch_branch()
-return on out-of-range failure") patch_branch() fails with -ERANGE
-when trying to branch out of range.
-
-No need to perform the test twice. Remove redundant create_branch()
-calls.
+Most architectures have ftrace related stuff in arch/*/kernel/ftrace.c
+but powerpc has spread in multiple files located in
+arch/powerpc/kernel/trace/
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/trace/ftrace.c | 20 --------------------
- 1 file changed, 20 deletions(-)
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 7a266fd469b7..3ce3697e8a7c 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -301,7 +301,6 @@ static int setup_mcount_compiler_tramp(unsigned long tramp)
- 	int i;
- 	ppc_inst_t op;
- 	unsigned long ptr;
--	ppc_inst_t instr;
- 	static unsigned long ftrace_plt_tramps[NUM_FTRACE_TRAMPS];
- 
- 	/* Is this a known long jump tramp? */
-@@ -344,12 +343,6 @@ static int setup_mcount_compiler_tramp(unsigned long tramp)
- #else
- 	ptr = ppc_global_function_entry((void *)ftrace_caller);
- #endif
--	if (create_branch(&instr, (void *)tramp, ptr, 0)) {
--		pr_debug("%ps is not reachable from existing mcount tramp\n",
--				(void *)ptr);
--		return -1;
--	}
--
- 	if (patch_branch((u32 *)tramp, ptr, 0)) {
- 		pr_debug("REL24 out of range!\n");
- 		return -1;
-@@ -490,7 +483,6 @@ static int
- __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- {
- 	ppc_inst_t op[2];
--	ppc_inst_t instr;
- 	void *ip = (void *)rec->ip;
- 	unsigned long entry, ptr, tramp;
- 	struct module *mod = rec->arch.mod;
-@@ -539,12 +531,6 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 		return -EINVAL;
- 	}
- 
--	/* Ensure branch is within 24 bits */
--	if (create_branch(&instr, ip, tramp, BRANCH_SET_LINK)) {
--		pr_err("Branch out of range\n");
--		return -EINVAL;
--	}
--
- 	if (patch_branch(ip, tramp, BRANCH_SET_LINK)) {
- 		pr_err("REL24 out of range!\n");
- 		return -EINVAL;
-@@ -770,12 +756,6 @@ __ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
- 		return -EINVAL;
- 	}
- 
--	/* Ensure branch is within 24 bits */
--	if (create_branch(&op, (u32 *)ip, tramp, BRANCH_SET_LINK)) {
--		pr_err("Branch out of range\n");
--		return -EINVAL;
--	}
--
- 	if (patch_branch((u32 *)ip, tramp, BRANCH_SET_LINK)) {
- 		pr_err("REL24 out of range!\n");
- 		return -EINVAL;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e127c2fb08a7..3b5943f34568 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -19592,6 +19592,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-trace.git
+ F:	Documentation/trace/ftrace.rst
+ F:	arch/*/*/*/ftrace.h
+ F:	arch/*/kernel/ftrace.c
++F:	arch/powerpc/kernel/trace/
+ F:	fs/tracefs/
+ F:	include/*/ftrace.h
+ F:	include/linux/trace*.h
 -- 
 2.35.1
 
