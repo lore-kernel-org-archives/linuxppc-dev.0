@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33EE2C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Mar 2022 14:34:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E27A2C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Mar 2022 14:34:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KPSRH578hz3dyp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Mar 2022 01:34:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KPSRk3R25z3f3Z
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Mar 2022 01:34:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,35 +16,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KPSMr1J0Fz3bgX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2022 01:31:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KPSN04NMCz3bjQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Mar 2022 01:31:44 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KPSM62Rznz9sTl;
- Thu, 24 Mar 2022 15:30:58 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4KPSM72Rvlz9sTm;
+ Thu, 24 Mar 2022 15:30:59 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qAR13Swuuv32; Thu, 24 Mar 2022 15:30:58 +0100 (CET)
+ with ESMTP id 3y8FJrRGWf4I; Thu, 24 Mar 2022 15:30:59 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KPSLy5P8tz9sTm;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KPSLy6CFZz9sTn;
  Thu, 24 Mar 2022 15:30:50 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AECA58B763;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BF9DA8B780;
  Thu, 24 Mar 2022 15:30:50 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id iwBCbJ26OgYm; Thu, 24 Mar 2022 15:30:50 +0100 (CET)
+ with ESMTP id mDVJ1tvagV3h; Thu, 24 Mar 2022 15:30:50 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.77])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B34CA8B78D;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9C56E8B786;
  Thu, 24 Mar 2022 15:30:49 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 22OEUi5r1811764
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 22OEUfho1811682
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Thu, 24 Mar 2022 15:30:45 +0100
+ Thu, 24 Mar 2022 15:30:41 +0100
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 22OEUixg1811763;
- Thu, 24 Mar 2022 15:30:44 +0100
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 22OEUfZo1811681;
+ Thu, 24 Mar 2022 15:30:41 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -52,17 +52,17 @@ To: "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
  Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v1 21/22] powerpc/inst: Remove PPC_INST_BL
-Date: Thu, 24 Mar 2022 15:30:11 +0100
-Message-Id: <43f418a2d7377669f10738be374c3dd78f5d0351.1648131740.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 01/22] powerpc/ftrace: Refactor prepare_ftrace_return()
+Date: Thu, 24 Mar 2022 15:29:51 +0100
+Message-Id: <b634583ca92fc8144773079605215defdc2bd805.1648131740.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <cover.1648131740.git.christophe.leroy@csgroup.eu>
 References: <cover.1648131740.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1648132152; l=1328; s=20211009;
- h=from:subject:message-id; bh=d/0sxDLqKwCM/yFYRKIyBRndGeNibtd5T3dOKw3MQJc=;
- b=pyjWcSj8RzaW7zHcMj/KcQkTwTflEA/lc9eWqCI/EkBSbaY9M9sIUtfCB/hMaxx987RGOe7wok2G
- AR7kYOXiBjXQAP+/lWqsxERvSULzVE4hTSRq42R7y/v+cCLr383d
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1648132150; l=1899; s=20211009;
+ h=from:subject:message-id; bh=zXRjPYU7QaID1rculDvXRerDW2vtk7P4KyqgYPe84dw=;
+ b=U7z+n5XgLJWzFTAW/v6lPqNVyN1ZdZiFY9a6LocS3k9ki0kkEyeAvnc4mc1d92kD7P2MzYQ4A920
+ esG61C4xCFc0lBFD743p3cdDXxxPP7Ywj87/wEhkw5vQjZm75Iwz
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,41 +82,52 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Convert last users of PPC_INST_BL to PPC_RAW_BL()
+When we have CONFIG_DYNAMIC_FTRACE_WITH_ARGS,
+prepare_ftrace_return() is called by ftrace_graph_func()
+otherwise prepare_ftrace_return() is called from assembly.
 
-And remove PPC_INST_BL.
+Refactor prepare_ftrace_return() into a static
+__prepare_ftrace_return() that will be called by both
+prepare_ftrace_return() and ftrace_graph_func().
+
+It will allow GCC to fold __prepare_ftrace_return() inside
+ftrace_graph_func().
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/ppc-opcode.h | 1 -
- arch/powerpc/net/bpf_jit.h            | 2 +-
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/kernel/trace/ftrace.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index ada8fe17b199..810a28af9dce 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -290,7 +290,6 @@
- #define PPC_INST_ADDIS			0x3c000000
- #define PPC_INST_ADD			0x7c000214
- #define PPC_INST_DIVD			0x7c0003d2
--#define PPC_INST_BL			0x48000001
- #define PPC_INST_BRANCH_COND		0x40800000
- 
- #define PPC_INST_OFFSET24_MASK		0x03fffffc
-diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-index 979701d360da..c63324ff9f04 100644
---- a/arch/powerpc/net/bpf_jit.h
-+++ b/arch/powerpc/net/bpf_jit.h
-@@ -35,7 +35,7 @@
- 	} while (0)
- 
- /* bl (unconditional 'branch' with link) */
--#define PPC_BL(dest)	EMIT(PPC_INST_BL | (((dest) - (unsigned long)(image + ctx->idx)) & 0x03fffffc))
-+#define PPC_BL(dest)	EMIT(PPC_RAW_BL((dest) - (unsigned long)(image + ctx->idx)))
- 
- /* "cond" here covers BO:BI fields. */
- #define PPC_BCC_SHORT(cond, dest)					      \
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+index 4ee04aacf9f1..7a266fd469b7 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -939,8 +939,8 @@ int ftrace_disable_ftrace_graph_caller(void)
+  * Hook the return address and push it in the stack of return addrs
+  * in current thread info. Return the address we want to divert to.
+  */
+-unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip,
+-						unsigned long sp)
++static unsigned long
++__prepare_ftrace_return(unsigned long parent, unsigned long ip, unsigned long sp)
+ {
+ 	unsigned long return_hooker;
+ 	int bit;
+@@ -969,7 +969,13 @@ unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip,
+ void ftrace_graph_func(unsigned long ip, unsigned long parent_ip,
+ 		       struct ftrace_ops *op, struct ftrace_regs *fregs)
+ {
+-	fregs->regs.link = prepare_ftrace_return(parent_ip, ip, fregs->regs.gpr[1]);
++	fregs->regs.link = __prepare_ftrace_return(parent_ip, ip, fregs->regs.gpr[1]);
++}
++#else
++unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip,
++				    unsigned long sp)
++{
++	return __prepare_ftrace_return(parent, ip, sp);
+ }
+ #endif
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
 -- 
 2.35.1
 
