@@ -4,59 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4517DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Mar 2022 18:47:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66A8AC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Mar 2022 18:48:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KQnyD61QXz3f8p
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Mar 2022 05:47:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KQnym03QCz3fCq
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Mar 2022 05:48:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=stuerz.xyz header.i=@stuerz.xyz header.a=rsa-sha256 header.s=mail header.b=BP2O3dxh;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=stuerz.xyz header.i=@stuerz.xyz header.a=rsa-sha256 header.s=mail header.b=cKhwvy4q;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=stuerz.xyz header.i=@stuerz.xyz header.a=rsa-sha256 header.s=mail header.b=NzOHGekH;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=stuerz.xyz header.i=@stuerz.xyz header.a=rsa-sha256 header.s=mail header.b=yJm8jOOp;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=stuerz.xyz (client-ip=45.77.206.31; helo=stuerz.xyz;
- envelope-from=benni@stuerz.xyz; receiver=<UNKNOWN>)
+ smtp.mailfrom=stuerz.xyz (client-ip=2001:19f0:5:15da:5400:3ff:fecc:7379;
+ helo=stuerz.xyz; envelope-from=benni@stuerz.xyz; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=stuerz.xyz header.i=@stuerz.xyz header.a=rsa-sha256
- header.s=mail header.b=BP2O3dxh; 
+ header.s=mail header.b=NzOHGekH; 
  dkim=pass (2048-bit key) header.d=stuerz.xyz header.i=@stuerz.xyz
- header.a=rsa-sha256 header.s=mail header.b=cKhwvy4q; 
+ header.a=rsa-sha256 header.s=mail header.b=yJm8jOOp; 
  dkim-atps=neutral
-Received: from stuerz.xyz (unknown [45.77.206.31])
+Received: from stuerz.xyz (stuerz.xyz
+ [IPv6:2001:19f0:5:15da:5400:3ff:fecc:7379])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KQlm34cG0z30BL
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KQlm34rMzz30BN
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2022 04:08:35 +1100 (AEDT)
 Received: by stuerz.xyz (Postfix, from userid 114)
- id 2272DFB7D5; Sat, 26 Mar 2022 16:59:36 +0000 (UTC)
+ id 468F0FBB8D; Sat, 26 Mar 2022 16:59:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=stuerz.xyz; s=mail;
- t=1648313977; bh=2uH++cpt44frpysxfSOHHq51GioRGW69bGRAGT0KbXI=;
+ t=1648313990; bh=hqrYFkjwHXr5MkCmTzW0zUtSYcfIlAH4M2viTmK+ce0=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=BP2O3dxhqDHlQr32+1FSr374RJ0ZNHRseCZK9VEg7lMCeEvEnd5WcO+KANOF+wgNW
- 8chjrRd69BSPsjq5nAOXVzGGIkLuSKK28Fh+hzkGKu++vaxYnFmpap6qUywaz6ohcx
- uaJjrP0/fIqp3u3z+XDG7ti8SrXryBTN2McjY1X+wXOb1eX2PHmPUvUnUFqJdxP2NN
- Fwwl7qri9e0NB4cquGlb9lurP+D19uVv5UDzCvPWoVM3/98loprZqd3tU8vcwm6Yt/
- 9S6ewkrom6b9FWkFrcHCcYd4UMwkPZSiVEVMUGgmQzh1d7x1mkV1vcgywHcmc6dNid
- w34LAlt5oqnRQ==
+ b=NzOHGekHcRWuZ4H68rapfZbBmrqB6nsbrdOPjNSxt7h8WkRUT3D2lLjIJFRTIjfB3
+ UgMiATq5eTVCXaOy2UZ2vJ94sDqSpZePYoniDGtML1oJyKaOnSog2nTRNdmus4huu1
+ dNKNTHK/s44qXlrlWpPs4xe6WlRq0YWiRCCsHRsQRt+Dztdk6urqW44lP7OYdLe1nd
+ iApLmLF5sd4XynYeSD7WhPsr05da2DKHrbLaeFnaE6APUcbkLSfnhSQ4vENwGp/qDb
+ WIwfu6P9XdEyQtoiou9yk/fZ3gXOw5RrBCJBTphGCihX/Wg4bVDJOMPD5bWY31k1dT
+ anoDgWlgp+dAg==
 Received: from benni-fedora.. (unknown
  [IPv6:2a02:8109:a100:1a48:ff0:ef2f:d4da:17d8])
- by stuerz.xyz (Postfix) with ESMTPSA id 98AE0FB7D0;
- Sat, 26 Mar 2022 16:59:27 +0000 (UTC)
+ by stuerz.xyz (Postfix) with ESMTPSA id B4FD6FB7D4;
+ Sat, 26 Mar 2022 16:59:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=stuerz.xyz; s=mail;
- t=1648313973; bh=2uH++cpt44frpysxfSOHHq51GioRGW69bGRAGT0KbXI=;
+ t=1648313987; bh=hqrYFkjwHXr5MkCmTzW0zUtSYcfIlAH4M2viTmK+ce0=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=cKhwvy4qhsPuBxAq0Y52RSBW8Kxkl55mtNsTt7h2uutsE3Y6bGf2uI+3fV4gjubw8
- GpKwU9W3Gsv+wbbqaJHSG5dn04mPUxOLS6vQZPWYgqSkhFdKYlwRBwMnnmBwqY8C2y
- 6crdwbggZyh88T++mcaMq+N7QcoI6KJC9AH/jpS8zlcXylv3kJnUsJ9M6wHwPU2lhK
- 5Jy5mDsKEM89BIiyKY4oOsX95B3qpGLhw7sJvKQKpaYWFVH1Z5mqAILb9LQIa5uOep
- +T7X2leuj8NeWwv8be761msNoWYvaNI/CeR3TDGXvIT6mSEVcBf6YLCLmfISYd0yHC
- URoafektSpMIg==
+ b=yJm8jOOpo7o5bJ/jnyWMMwZCEz0cp1ONDyucFrcaUR3MF3mVAicBbi+RDh7CMUk6b
+ AyDPTwmRpd0XtTVVibZYv+GFO17TD/etO65ImQn1AFDB5Rst93WnLmQ26aVc+7IYzp
+ +7kCFMqaTfUdoa765GsRs1bJ96ZWZETiepQrT7wGEtCCoxWejua9HAQCyk7dJKJh5O
+ wuVo1XTIDTYs6bomi740IDuPOKzsYRmpgM59T/cdggq6jN4J+vjL83NtQNKgUJ1zre
+ LWEzOV5Of6i4tJhdHMgudanVzcnBxhgC4dyUDk7gJTZs+N6Hn6Ykq5e3pYup83HrRK
+ SBOFExwpFzDQA==
 From: =?UTF-8?q?Benjamin=20St=C3=BCrz?= <benni@stuerz.xyz>
 To: andrew@lunn.ch
-Subject: [PATCH 02/22] s3c: Replace comments with C99 initializers
-Date: Sat, 26 Mar 2022 17:58:49 +0100
-Message-Id: <20220326165909.506926-2-benni@stuerz.xyz>
+Subject: [PATCH 04/22] x86: Replace comments with C99 initializers
+Date: Sat, 26 Mar 2022 17:58:51 +0100
+Message-Id: <20220326165909.506926-4-benni@stuerz.xyz>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220326165909.506926-1-benni@stuerz.xyz>
 References: <20220326165909.506926-1-benni@stuerz.xyz>
@@ -106,52 +107,132 @@ initializers because the kernel supports them now.
 
 Signed-off-by: Benjamin Stürz <benni@stuerz.xyz>
 ---
- arch/arm/mach-s3c/bast-irq.c | 32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
+ arch/x86/include/asm/kgdb.h   | 80 +++++++++++++++++------------------
+ arch/x86/kernel/cpu/mtrr/if.c | 14 +++---
+ 2 files changed, 47 insertions(+), 47 deletions(-)
 
-diff --git a/arch/arm/mach-s3c/bast-irq.c b/arch/arm/mach-s3c/bast-irq.c
-index d299f124e6dc..bd5471f9973b 100644
---- a/arch/arm/mach-s3c/bast-irq.c
-+++ b/arch/arm/mach-s3c/bast-irq.c
-@@ -29,22 +29,22 @@
-  * the irq is not implemented
- */
- static const unsigned char bast_pc104_irqmasks[] = {
--	0,   /* 0 */
--	0,   /* 1 */
--	0,   /* 2 */
--	1,   /* 3 */
--	0,   /* 4 */
--	2,   /* 5 */
--	0,   /* 6 */
--	4,   /* 7 */
--	0,   /* 8 */
--	0,   /* 9 */
--	8,   /* 10 */
--	0,   /* 11 */
--	0,   /* 12 */
--	0,   /* 13 */
--	0,   /* 14 */
--	0,   /* 15 */
-+	[0]  = 0,
-+	[1]  = 0,
-+	[2]  = 0,
-+	[3]  = 1,
-+	[4]  = 0,
-+	[5]  = 2,
-+	[6]  = 0,
-+	[7]  = 4,
-+	[8]  = 0,
-+	[9]  = 0,
-+	[10] = 8,
-+	[11] = 0,
-+	[12] = 0,
-+	[13] = 0,
-+	[14] = 0,
-+	[15] = 0,
+diff --git a/arch/x86/include/asm/kgdb.h b/arch/x86/include/asm/kgdb.h
+index aacaf2502bd2..a9161e2f8b63 100644
+--- a/arch/x86/include/asm/kgdb.h
++++ b/arch/x86/include/asm/kgdb.h
+@@ -25,52 +25,52 @@
+  */
+ #ifdef CONFIG_X86_32
+ enum regnames {
+-	GDB_AX,			/* 0 */
+-	GDB_CX,			/* 1 */
+-	GDB_DX,			/* 2 */
+-	GDB_BX,			/* 3 */
+-	GDB_SP,			/* 4 */
+-	GDB_BP,			/* 5 */
+-	GDB_SI,			/* 6 */
+-	GDB_DI,			/* 7 */
+-	GDB_PC,			/* 8 also known as eip */
+-	GDB_PS,			/* 9 also known as eflags */
+-	GDB_CS,			/* 10 */
+-	GDB_SS,			/* 11 */
+-	GDB_DS,			/* 12 */
+-	GDB_ES,			/* 13 */
+-	GDB_FS,			/* 14 */
+-	GDB_GS,			/* 15 */
++	GDB_AX = 0,
++	GDB_CX = 1,
++	GDB_DX = 2,
++	GDB_BX = 3,
++	GDB_SP = 4,
++	GDB_BP = 5,
++	GDB_SI = 6,
++	GDB_DI = 7,
++	GDB_PC = 8,			/* also known as eip */
++	GDB_PS = 9,			/* also known as eflags */
++	GDB_CS = 10,
++	GDB_SS = 11,
++	GDB_DS = 12,
++	GDB_ES = 13,
++	GDB_FS = 14,
++	GDB_GS = 15,
+ };
+ #define GDB_ORIG_AX		41
+ #define DBG_MAX_REG_NUM		16
+ #define NUMREGBYTES		((GDB_GS+1)*4)
+ #else /* ! CONFIG_X86_32 */
+ enum regnames {
+-	GDB_AX,			/* 0 */
+-	GDB_BX,			/* 1 */
+-	GDB_CX,			/* 2 */
+-	GDB_DX,			/* 3 */
+-	GDB_SI,			/* 4 */
+-	GDB_DI,			/* 5 */
+-	GDB_BP,			/* 6 */
+-	GDB_SP,			/* 7 */
+-	GDB_R8,			/* 8 */
+-	GDB_R9,			/* 9 */
+-	GDB_R10,		/* 10 */
+-	GDB_R11,		/* 11 */
+-	GDB_R12,		/* 12 */
+-	GDB_R13,		/* 13 */
+-	GDB_R14,		/* 14 */
+-	GDB_R15,		/* 15 */
+-	GDB_PC,			/* 16 */
+-	GDB_PS,			/* 17 */
+-	GDB_CS,			/* 18 */
+-	GDB_SS,			/* 19 */
+-	GDB_DS,			/* 20 */
+-	GDB_ES,			/* 21 */
+-	GDB_FS,			/* 22 */
+-	GDB_GS,			/* 23 */
++	GDB_AX   =  0,
++	GDB_BX   =  1,
++	GDB_CX   =  2,
++	GDB_DX   =  3,
++	GDB_SI   =  4,
++	GDB_DI   =  5,
++	GDB_BP   =  6,
++	GDB_SP   =  7,
++	GDB_R8   =  8,
++	GDB_R9   =  9,
++	GDB_R10  = 10,
++	GDB_R11  = 11,
++	GDB_R12  = 12,
++	GDB_R13  = 13,
++	GDB_R14  = 14,
++	GDB_R15  = 15,
++	GDB_PC   = 16,			/* also known as eip */
++	GDB_PS   = 17,			/* also known as eflags */
++	GDB_CS   = 18,
++	GDB_SS   = 19,
++	GDB_DS   = 20,
++	GDB_ES   = 21,
++	GDB_FS   = 22,
++	GDB_GS   = 23,
+ };
+ #define GDB_ORIG_AX		57
+ #define DBG_MAX_REG_NUM		24
+diff --git a/arch/x86/kernel/cpu/mtrr/if.c b/arch/x86/kernel/cpu/mtrr/if.c
+index a5c506f6da7f..7664a672f414 100644
+--- a/arch/x86/kernel/cpu/mtrr/if.c
++++ b/arch/x86/kernel/cpu/mtrr/if.c
+@@ -18,13 +18,13 @@
+ 
+ static const char *const mtrr_strings[MTRR_NUM_TYPES] =
+ {
+-	"uncachable",		/* 0 */
+-	"write-combining",	/* 1 */
+-	"?",			/* 2 */
+-	"?",			/* 3 */
+-	"write-through",	/* 4 */
+-	"write-protect",	/* 5 */
+-	"write-back",		/* 6 */
++	[0] = "uncachable",
++	[1] = "write-combining",
++	[2] = "?",
++	[3] = "?",
++	[4] = "write-through",
++	[5] = "write-protect",
++	[6] = "write-back",
  };
  
- static const unsigned char bast_pc104_irqs[] = { 3, 5, 7, 10 };
+ const char *mtrr_attrib_to_str(int x)
 -- 
 2.35.1
 
