@@ -4,62 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86AA5C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Mar 2022 02:05:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7816C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Mar 2022 02:06:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KQzgp1ttlz3bdh
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Mar 2022 13:05:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KQzhV0dJtz30Hr
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Mar 2022 13:06:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.187; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KQrCQ12BRz2ynp
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2022 07:29:04 +1100 (AEDT)
-Received: from mail-lf1-f41.google.com ([209.85.167.41]) by
- mrelayeu.kundenserver.de (mreue010 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1MsI4Q-1oMKZd2SpG-00tjJx for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar
- 2022 21:28:59 +0100
-Received: by mail-lf1-f41.google.com with SMTP id d5so18688950lfj.9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Mar 2022 13:28:59 -0700 (PDT)
-X-Gm-Message-State: AOAM530Jgelks5j6QckBuDJsgKhzO0eMeSd9sPDfgjP/9CqX4kdFLthp
- shoHfqkHqaxQ+X+KqAu00MnwLXum3HiJBpBmvRg=
-X-Google-Smtp-Source: ABdhPJxx8NCR/u6qmXzG17FP9feBwegQPJsf9Aqi/l68ye4U4vfPlOZSED7ECKkFvKmT885cCFviGMxdRBsqoooKkLU=
-X-Received: by 2002:a5d:6505:0:b0:205:9a98:e184 with SMTP id
- x5-20020a5d6505000000b002059a98e184mr11258676wru.317.1648322627645; Sat, 26
- Mar 2022 12:23:47 -0700 (PDT)
-MIME-Version: 1.0
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DPisaLuR;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1;
+ helo=ams.source.kernel.org; envelope-from=mchehab@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=DPisaLuR; 
+ dkim-atps=neutral
+Received: from ams.source.kernel.org (ams.source.kernel.org
+ [IPv6:2604:1380:4601:e00::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KQs5L2bwKz2xF0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2022 08:08:54 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id 5ACFFB80B3B;
+ Sat, 26 Mar 2022 21:08:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 27841C340E8;
+ Sat, 26 Mar 2022 21:08:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1648328928;
+ bh=MP9nN3CNp6SiJyOp5HEvbQgmSEStPacOWmXaMA6T+VI=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=DPisaLuR2bg59S2ffL9OvvWP75Bz5dqezDQcQCh1wOp8lGducSetQuRb+dOXb/r5O
+ fEQsB1iM8rTGrXXedRfSuOyaXp11/BPbQeXNy9BV6AK+baU08FnQLF2z0r6ROS/k+5
+ 2PI1UEFN9lJL/vjVZ9dSqxf/iuV2Tt2Fyvh+UbJDkR9ZIxeJ4sAe/YVBxQHIgLVN2L
+ rCfZ3DyD8B28NsPeLOOUZAxFyqvboFdmS2FW1BoGi16P+ft2df3XqHLRYVcHB0Xn/S
+ lNmKbmqDuDeGqTHVpG1PVOAAEGxabe3gLKgZ7REYKsgdQaCaReoDRnMctvlp1Qa7II
+ vm6r+7nR0wwbA==
+Date: Sat, 26 Mar 2022 22:08:32 +0100
+From: Mauro Carvalho Chehab <mchehab@kernel.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: [PATCH 16/22] dvb-usb: Replace comments with C99 initializers
+Message-ID: <20220326220832.12b4e91b@coco.lan>
+In-Reply-To: <bc2d4f83-0674-ccae-71c8-14427de59f96@lwfinger.net>
 References: <20220326165909.506926-1-benni@stuerz.xyz>
-In-Reply-To: <20220326165909.506926-1-benni@stuerz.xyz>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Sat, 26 Mar 2022 20:23:31 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a1e57mNUQgronhwrsXsuQW9sZYxCktKij7NwsieBWiGmw@mail.gmail.com>
-Message-ID: <CAK8P3a1e57mNUQgronhwrsXsuQW9sZYxCktKij7NwsieBWiGmw@mail.gmail.com>
-Subject: Re: [PATCH 01/22] orion5x: Replace comments with C99 initializers
-To: =?UTF-8?Q?Benjamin_St=C3=BCrz?= <benni@stuerz.xyz>
-Content-Type: text/plain; charset="UTF-8"
+ <20220326165909.506926-16-benni@stuerz.xyz>
+ <20220326192454.14115baa@coco.lan>
+ <20220326192720.0fddd6dd@coco.lan>
+ <63a5e3143e904d1391490f27cc106be894b52ca2.camel@perches.com>
+ <bc2d4f83-0674-ccae-71c8-14427de59f96@lwfinger.net>
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.31; x86_64-redhat-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:F/Y26y5bAOzl7lj3bK5ZasFfkkjrxZ6e9+mJkGKfDKUMRBQ8dFY
- aFYxGQB3UMDpcKw836YpSCZWoKvnaYPCLOvpiZpELoxR/7z8uJGv+HRHVtojMsaRBUzCWV5
- +q3/MzrPJ4Shr2DezKiZWeIipfFYVbcTH58QbDzOKZhd92FmcSEtzIJZ+/dqXB8cq0Pjvxu
- Hvc1AVyIPFh7iH94DflLA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:1sUMZCjJb8g=:xXHru0d1zDjgUmh3SpT6Nu
- lxdFGiEQv5nVDb4H532Q/Agx1u0sR0FItnOebfsNiCHx3w7mxhjw/LScjMPcZJO3vs4GLWIym
- CGMgDDI00IQO8xI/+nP5cq8ykdZoe8NUO/gHmfKSSvMMTfTskluJb1S/LrFT5ut/qD0i97GEY
- aWOr/bfdi8rfb9HUder2YNVCjCrD747LoLLdp5RY4SJNRcpdsga44fjEnfXKpX79kzBlJQ0nL
- Pk330izvjHs5CdTJUKbjsy/XTOECX5anF8Qk0Du6feJqifKYXDA0f9NdTA//vY70GRzdYltzW
- LdsCqPpIpA+07RGoJhhv3+DKLo9nlHXiAftPxCvtrpYlDi8iG0c1odcEKfDPBMcT6DHFzRBrV
- RjzaEk0+YMtCcU3WoMAUooSiHG+iNqudCbDDVOAm93+hOONNb5sJ26r/bw9WYGZp2cXymVhdy
- P+JLgJ2nnqbnD9NTHC0iy/Q/SxRjX62W2XeIYmSbQ1/91ADl+htlq/SoBF98VTm27GRxBHLoj
- 0X3BJDiloClfcbSHJYmeKFe0YjY1Qq1bYpqvQSneF0MsdDd8d9as/oOmsVBtL1rZQjVaoZkmc
- L+TZkwzoTLknaDFLTHJgsoUgDn+pb7VLUmqzRITuRDD6h91oHQPD3SxAqTXlYrjTwA7VJpCm7
- lk/lmWTfKDSzCltNckwWfQqVYsmpfp/kOR4Ll0fA74QMATqxTHLRYoDWGpaeiabHiD2PvrsAi
- YFUMRLf9qQvTeCaT+TWrRuV2SWBz66RaQjFX5OSgoA07EIJlUpACgSl6e3NbedzCq4iIV0ImT
- S+w7Nkdt7LAnV4VS/JelDhRkNsv+gSE+N+RLPzdpH2GEWmtN4beoH5d+5Ax1xX7MmKOOQ42Gx
- HbnKusHwm78ejF9DTPCw==
 X-Mailman-Approved-At: Sun, 27 Mar 2022 13:03:21 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -72,63 +71,247 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux-atm-general@lists.sourceforge.net,
- linux-ia64@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- linux-pci <linux-pci@vger.kernel.org>, Robert Moore <robert.moore@intel.com>,
- Harald Welte <laforge@gnumonks.org>, Alim Akhtar <alim.akhtar@samsung.com>,
- "H. Peter Anvin" <hpa@zytor.com>, wcn36xx@lists.infradead.org,
- Pkshih <pkshih@realtek.com>,
- "moderated list:ARM/SAMSUNG EXYNOS ARM ARCHITECTURES"
- <linux-samsung-soc@vger.kernel.org>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
- linux-edac@vger.kernel.org, dennis.dalessandro@cornelisnetworks.com,
- linux-rdma <linux-rdma@vger.kernel.org>,
- Gregory CLEMENT <gregory.clement@bootlin.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Krzysztof Kozlowski <krzk@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Ingo Molnar <mingo@redhat.com>, Chas Williams <3chas3@gmail.com>,
- "open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
- Jakub Kicinski <kuba@kernel.org>, pabeni@redhat.com,
- Len Brown <lenb@kernel.org>, mike.marciniszyn@cornelisnetworks.com,
- Robert Richter <rric@kernel.org>, Andrew Donnellan <ajd@linux.ibm.com>,
- Arnd Bergmann <arnd@arndb.de>, kvalo@kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
- loic.poulain@linaro.org, Borislav Petkov <bp@alien8.de>,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Linux Media Mailing List <linux-media@vger.kernel.org>,
- Simtec Linux Team <linux@simtec.co.uk>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- "open list:ACPI COMPONENT ARCHITECTURE \(ACPICA\)" <devel@acpica.org>,
- Karsten Keil <isdn@linux-pingi.de>, Tony Luck <tony.luck@intel.com>,
- Nicolas Pitre <nico@fluxnic.net>, gregkh <gregkh@linuxfoundation.org>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- linux-wireless <linux-wireless@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- David Miller <davem@davemloft.net>, James Morse <james.morse@arm.com>,
- Networking <netdev@vger.kernel.org>, Frederic Barrat <fbarrat@linux.ibm.com>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>,
- Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: andrew@lunn.ch, linux-atm-general@lists.sourceforge.net,
+ linux-ia64@vger.kernel.org, linus.walleij@linaro.org,
+ dave.hansen@linux.intel.com, linux-pci@vger.kernel.org, robert.moore@intel.com,
+ laforge@gnumonks.org, alim.akhtar@samsung.com, hpa@zytor.com,
+ wcn36xx@lists.infradead.org, Benjamin =?UTF-8?B?U3TDvHJ6?= <benni@stuerz.xyz>,
+ pkshih@realtek.com, linux-samsung-soc@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org,
+ dennis.dalessandro@cornelisnetworks.com, linux-rdma@vger.kernel.org,
+ gregory.clement@bootlin.com, rafael.j.wysocki@intel.com, linux@armlinux.org.uk,
+ krzk@kernel.org, jgg@ziepe.ca, mingo@redhat.com, 3chas3@gmail.com,
+ linux-input@vger.kernel.org, kuba@kernel.org, pabeni@redhat.com,
+ lenb@kernel.org, mike.marciniszyn@cornelisnetworks.com, rric@kernel.org,
+ ajd@linux.ibm.com, arnd@arndb.de, kvalo@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.ibm.com, loic.poulain@linaro.org,
+ bp@alien8.de, bhelgaas@google.com, tglx@linutronix.de,
+ linux-media@vger.kernel.org, linux@simtec.co.uk,
+ linux-arm-kernel@lists.infradead.org, devel@acpica.org, isdn@linux-pingi.de,
+ tony.luck@intel.com, nico@fluxnic.net, gregkh@linuxfoundation.org,
+ linux-gpio@vger.kernel.org, dmitry.torokhov@gmail.com,
+ linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+ davem@davemloft.net, james.morse@arm.com, netdev@vger.kernel.org,
+ Joe Perches <joe@perches.com>, sebastian.hesselbarth@gmail.com,
+ pali@kernel.org, brgl@bgdev.pl
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Mar 26, 2022 at 5:58 PM Benjamin St=C3=BCrz <benni@stuerz.xyz> wrot=
-e:
->
-> This replaces comments with C99's designated
-> initializers because the kernel supports them now.
+Em Sat, 26 Mar 2022 15:11:46 -0500
+Larry Finger <Larry.Finger@lwfinger.net> escreveu:
 
-The change looks fine, but the comment looks misplaced, as enum initializer=
-s
-are not c99 feature. Also, the named array and struct intializers have been
-supported by gnu89 for a long time and widely used in the kernel, so it's
-not a recent change even for the others.
+> On 3/26/22 14:51, Joe Perches wrote:
+> > On Sat, 2022-03-26 at 19:27 +0100, Mauro Carvalho Chehab wrote: =20
+> >> Em Sat, 26 Mar 2022 19:24:54 +0100
+> >> Mauro Carvalho Chehab <mchehab@kernel.org> escreveu:
+> >> =20
+> >>> Em Sat, 26 Mar 2022 17:59:03 +0100
+> >>> Benjamin St=C3=BCrz <benni@stuerz.xyz> escreveu:
+> >>> =20
+> >>>> This replaces comments with C99's designated
+> >>>> initializers because the kernel supports them now.
+> >>>>
+> >>>> Signed-off-by: Benjamin St=C3=BCrz <benni@stuerz.xyz>
+> >>>> ---
+> >>>>   drivers/media/usb/dvb-usb/dibusb-mb.c | 62 +++++++++++++----------=
+----
+> >>>>   drivers/media/usb/dvb-usb/dibusb-mc.c | 34 +++++++--------
+> >>>>   2 files changed, 48 insertions(+), 48 deletions(-)
+> >>>>
+> >>>> diff --git a/drivers/media/usb/dvb-usb/dibusb-mb.c b/drivers/media/u=
+sb/dvb-usb/dibusb-mb.c
+> >>>> index e9dc27f73970..f188e07f518b 100644
+> >>>> --- a/drivers/media/usb/dvb-usb/dibusb-mb.c
+> >>>> +++ b/drivers/media/usb/dvb-usb/dibusb-mb.c
+> >>>> @@ -122,40 +122,40 @@ static int dibusb_probe(struct usb_interface *=
+intf,
+> >>>>  =20
+> >>>>   /* do not change the order of the ID table */
+> >>>>   static struct usb_device_id dibusb_dib3000mb_table [] =3D {
+> >>>> -/* 00 */	{ USB_DEVICE(USB_VID_WIDEVIEW,		USB_PID_AVERMEDIA_DVBT_USB=
+_COLD) },
+> >>>> -/* 01 */	{ USB_DEVICE(USB_VID_WIDEVIEW,		USB_PID_AVERMEDIA_DVBT_USB=
+_WARM) },
+> >>>> -/* 02 */	{ USB_DEVICE(USB_VID_COMPRO,		USB_PID_COMPRO_DVBU2000_COLD=
+) },
+> >>>> -/* 03 */	{ USB_DEVICE(USB_VID_COMPRO,		USB_PID_COMPRO_DVBU2000_WARM=
+) },
+> >>>> -/* 04 */	{ USB_DEVICE(USB_VID_COMPRO_UNK,	USB_PID_COMPRO_DVBU2000_U=
+NK_COLD) },
+> >>>> -/* 05 */	{ USB_DEVICE(USB_VID_DIBCOM,		USB_PID_DIBCOM_MOD3000_COLD)=
+ },
+> >>>> -/* 06 */	{ USB_DEVICE(USB_VID_DIBCOM,		USB_PID_DIBCOM_MOD3000_WARM)=
+ },
+> >>>> -/* 07 */	{ USB_DEVICE(USB_VID_EMPIA,		USB_PID_KWORLD_VSTREAM_COLD) =
+},
+> >>>> -/* 08 */	{ USB_DEVICE(USB_VID_EMPIA,		USB_PID_KWORLD_VSTREAM_WARM) =
+},
+> >>>> -/* 09 */	{ USB_DEVICE(USB_VID_GRANDTEC,		USB_PID_GRANDTEC_DVBT_USB_=
+COLD) },
+> >>>> -/* 10 */	{ USB_DEVICE(USB_VID_GRANDTEC,		USB_PID_GRANDTEC_DVBT_USB_=
+WARM) },
+> >>>> -/* 11 */	{ USB_DEVICE(USB_VID_GRANDTEC,		USB_PID_DIBCOM_MOD3000_COL=
+D) },
+> >>>> -/* 12 */	{ USB_DEVICE(USB_VID_GRANDTEC,		USB_PID_DIBCOM_MOD3000_WAR=
+M) },
+> >>>> -/* 13 */	{ USB_DEVICE(USB_VID_HYPER_PALTEK,	USB_PID_UNK_HYPER_PALTE=
+K_COLD) },
+> >>>> -/* 14 */	{ USB_DEVICE(USB_VID_HYPER_PALTEK,	USB_PID_UNK_HYPER_PALTE=
+K_WARM) },
+> >>>> -/* 15 */	{ USB_DEVICE(USB_VID_VISIONPLUS,	USB_PID_TWINHAN_VP7041_CO=
+LD) },
+> >>>> -/* 16 */	{ USB_DEVICE(USB_VID_VISIONPLUS,	USB_PID_TWINHAN_VP7041_WA=
+RM) },
+> >>>> -/* 17 */	{ USB_DEVICE(USB_VID_TWINHAN,		USB_PID_TWINHAN_VP7041_COLD=
+) },
+> >>>> -/* 18 */	{ USB_DEVICE(USB_VID_TWINHAN,		USB_PID_TWINHAN_VP7041_WARM=
+) },
+> >>>> -/* 19 */	{ USB_DEVICE(USB_VID_ULTIMA_ELECTRONIC,	USB_PID_ULTIMA_TVB=
+OX_COLD) },
+> >>>> -/* 20 */	{ USB_DEVICE(USB_VID_ULTIMA_ELECTRONIC,	USB_PID_ULTIMA_TVB=
+OX_WARM) },
+> >>>> -/* 21 */	{ USB_DEVICE(USB_VID_ULTIMA_ELECTRONIC,	USB_PID_ULTIMA_TVB=
+OX_AN2235_COLD) },
+> >>>> -/* 22 */	{ USB_DEVICE(USB_VID_ULTIMA_ELECTRONIC,	USB_PID_ULTIMA_TVB=
+OX_AN2235_WARM) },
+> >>>> -/* 23 */	{ USB_DEVICE(USB_VID_ADSTECH,		USB_PID_ADSTECH_USB2_COLD) =
+},
+> >>>> +[0]  =3D	{ USB_DEVICE(USB_VID_WIDEVIEW,		USB_PID_AVERMEDIA_DVBT_USB=
+_COLD) },
+> >>>> +[1]  =3D	{ USB_DEVICE(USB_VID_WIDEVIEW,		USB_PID_AVERMEDIA_DVBT_USB=
+_WARM) }, =20
+> >>>
+> >>> While here, please properly indent this table, and respect the 80-col=
+umns limit,
+> >>> e. g.:
+> >>>
+> >>> static struct usb_device_id dibusb_dib3000mb_table [] =3D {
+> >>> 	[0] =3D { USB_DEVICE(USB_VID_WIDEVIEW
+> >>> 			   USB_PID_AVERMEDIA_DVBT_USB_COLD)
+> >>> 	},
+> >>> 	[1]  =3D	{ USB_DEVICE(USB_VID_WIDEVIEW,
+> >>> 			     USB_PID_AVERMEDIA_DVBT_USB_WARM)
+> >>> 	},
+> >>> 	... =20
+> >>
+> >> Err.... something went wrong with my space bar and I ended hitting sen=
+d to
+> >> soon... I meant:
+> >>
+> >> static struct usb_device_id dibusb_dib3000mb_table [] =3D {
+> >>   	[0] =3D { USB_DEVICE(USB_VID_WIDEVIEW
+> >>   			   USB_PID_AVERMEDIA_DVBT_USB_COLD)
+> >>   	},
+> >>   	[1] =3D { USB_DEVICE(USB_VID_WIDEVIEW,
+> >>   			   USB_PID_AVERMEDIA_DVBT_USB_WARM)
+> >>   	},
+> >> 	...
+> >> }; =20
+> >=20
+> > maybe static const too
+> >=20
+> > and
+> >=20
+> > maybe
+> >=20
+> > #define DIB_DEVICE(vid, pid)	\
+> > 	{ USB_DEVICE(USB_VID_ ## vid, USB_PID_ ## pid) }
+> >=20
+> > so maybe
+> >=20
+> > static const struct usb_device_id dibusb_dib3000mb_table[] =3D {
+> > 	[0] =3D DIB_DEVICE(WIDEVIEW, AVERMEDIA_DVBT_USB_COLD),
+> > 	[1] =3D DIB_DEVICE(WIDEVIEW, AVERMEDIA_DVBT_USB_WARM),
+> > 	...
+> > };
+> >=20
+> > though I _really_ doubt the value of the specific indexing.
+> >=20
+> > I think this isn't really worth changing at all. =20
+>=20
+> I agree. For the drivers that I maintain, I try to keep the vendor and de=
+vice=20
+> ids in numerical order. As this table does not require a special order, a=
+dding a=20
+> new one in the middle would require redoing all of then after that point.=
+ That=20
+> would be pointless work!
 
-Also,
+Unfortunately, that's not the case for drivers that use the legacy dvb-usb
+core, as it has other tables that reference the device IDs from this table
+by number.
 
-      Arnd
+The best here would be to do something like:
+
+enum {
+	AVERMEDIA_DVBT_USB_COLD,
+	AVERMEDIA_DVBT_USB_WARM,
+	COMPRO_DVBU2000_COLD,
+	COMPRO_DVBU2000_WARM,
+	COMPRO_DVBU2000_UNK_COLD,
+	DIBCOM_MOD3000_COLD,
+	DIBCOM_MOD3000_WARM,
+	KWORLD_VSTREAM_COLD,
+	KWORLD_VSTREAM_WARM,
+	GRANDTEC_DVBT_USB_COLD,
+	GRANDTEC_DVBT_USB_WARM,
+	DIBCOM_MOD3000_COLD,
+	DIBCOM_MOD3000_WARM,
+	UNK_HYPER_PALTEK_COLD,
+	UNK_HYPER_PALTEK_WARM,
+	TWINHAN_VP7041_COLD,
+	TWINHAN_VP7041_WARM,
+	TWINHAN_VP7041_COLD,
+	TWINHAN_VP7041_WARM,
+	ULTIMA_TVBOX_COLD,
+	ULTIMA_TVBOX_WARM,
+	ULTIMA_TVBOX_AN2235_COLD,
+	ULTIMA_TVBOX_AN2235_WARM,
+	ADSTECH_USB2_COLD,
+	ADSTECH_USB2_WARM,
+	KYE_DVB_T_COLD,
+	KYE_DVB_T_WARM,
+	KWORLD_VSTREAM_COLD,
+	ULTIMA_TVBOX_USB2_COLD,
+	ULTIMA_TVBOX_USB2_WARM,
+	ULTIMA_TVBOX_ANCHOR_COLD,
+};
+
+Then define the table as:
+
+static const struct usb_device_id dibusb_dib3000mb_table[]=20
+{
+  	[AVERMEDIA_DVBT_USB_COLD] =3D { USB_DEVICE(USB_VID_WIDEVIEW,
+				      USB_PID_AVERMEDIA_DVBT_USB_COLD)
+  	},
+  	[AVERMEDIA_DVBT_USB_WARM] =3D { USB_DEVICE(USB_VID_WIDEVIEW,
+				      USB_PID_AVERMEDIA_DVBT_USB_WARM)
+  	},
+	...
+}
+
+(eventually, using some macro to help defining them)
+
+Finally, change the other static tables to also use the same name,
+e. g.:
+
+static const struct dvb_usb_device_properties dibusb1_1_properties =3D {
+	...
+	.num_device_descs =3D 9,
+	.devices =3D {
+		{	"AVerMedia AverTV DVBT USB1.1",
+			{ &dibusb_dib3000mb_table[AVERMEDIA_DVBT_USB_COLD],  NULL },
+			{ &dibusb_dib3000mb_table[AVERMEDIA_DVBT_USB_WARM],  NULL },
+		},
+
+	...
+};
+
+The same applies to other drivers inside drivers/media/usb/dvb-usb/.
+
+Alternatively, the drivers there should be ported to the newer DVB USB
+core (dvb-usb-v2).
+
+Thanks,
+Mauro
