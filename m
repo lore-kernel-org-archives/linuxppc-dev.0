@@ -4,56 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49B38C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Mar 2022 18:28:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E50DC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Mar 2022 18:40:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KQnX25m3Dz30KP
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Mar 2022 05:28:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KQnpd4zCMz30M3
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Mar 2022 05:40:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=faKaYvsq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=stuerz.xyz header.i=@stuerz.xyz header.a=rsa-sha256 header.s=mail header.b=eY1iX0wl;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=stuerz.xyz header.i=@stuerz.xyz header.a=rsa-sha256 header.s=mail header.b=M6I6oe9j;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org;
- envelope-from=mchehab@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=stuerz.xyz (client-ip=2001:19f0:5:15da:5400:3ff:fecc:7379;
+ helo=stuerz.xyz; envelope-from=benni@stuerz.xyz; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=faKaYvsq; 
+ unprotected) header.d=stuerz.xyz header.i=@stuerz.xyz header.a=rsa-sha256
+ header.s=mail header.b=eY1iX0wl; 
+ dkim=pass (2048-bit key) header.d=stuerz.xyz header.i=@stuerz.xyz
+ header.a=rsa-sha256 header.s=mail header.b=M6I6oe9j; 
  dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+X-Greylist: delayed 60 seconds by postgrey-1.36 at boromir;
+ Sun, 27 Mar 2022 04:00:38 AEDT
+Received: from stuerz.xyz (stuerz.xyz
+ [IPv6:2001:19f0:5:15da:5400:3ff:fecc:7379])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KQnWK262xz2yHc
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2022 05:27:41 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id BFD4DB80AEB;
- Sat, 26 Mar 2022 18:27:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D0903C340ED;
- Sat, 26 Mar 2022 18:27:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1648319255;
- bh=6A9geVN7hz7JjWyGpdDgRTCPZVGMU3xykfJX5UwPGRA=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=faKaYvsqHjsnHgOEciNLdiDiMhorx0X+bUTo59SGODwMlJddNYfplHnsXf0sU549w
- 4ANwwCKF51V/9DaY3tom5RG3qfXD0QmS81y/3TXn3mm08ex8+fEjeMjuoXBDMJqLl+
- 0AI3DuVVzhmkWCg6OlTolBQjOdL0oAMNlz0VfcIYweNEzhbTuRziQpSHSqJj+bIgYL
- R1s6AHzJAsNzqkQNMB+azLZqK4aVjRoZovlNyCbRaVd+mrLcguckEHmPkxU6NbLTv/
- 9ozRB76LLhEhA9uotDvzkuJtxWtMjiBvC8EJVK380hmOMVs4aHnXPQ75rK4aP5xD5n
- j+IsdIUf+nLBw==
-Date: Sat, 26 Mar 2022 19:27:20 +0100
-From: Mauro Carvalho Chehab <mchehab@kernel.org>
-To: Benjamin =?UTF-8?B?U3TDvHJ6?= <benni@stuerz.xyz>
-Subject: Re: [PATCH 16/22] dvb-usb: Replace comments with C99 initializers
-Message-ID: <20220326192720.0fddd6dd@coco.lan>
-In-Reply-To: <20220326192454.14115baa@coco.lan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KQlZt2z7Mz303H
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Mar 2022 04:00:38 +1100 (AEDT)
+Received: by stuerz.xyz (Postfix, from userid 114)
+ id 4F97BFBBE2; Sat, 26 Mar 2022 17:00:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=stuerz.xyz; s=mail;
+ t=1648314036; bh=yA14H5kSGXs8c9NCVOmgKRy/cJtHbkLoXQ2K5ISZu/k=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=eY1iX0wlkZRA78TwrFBdZG5S+wos6UWvMNaeR3ebSkGbpl4BzyM69Wnujm+MCNQSH
+ XbYHpCtunp+VYPd+8B4Z5YGwrYKyldxYneKwJEtMuoQi4VfjayP4248ZkrvYzPbvb7
+ tGC3cCNQMmjqLyVHL80IqUG9N6enWqcQ/eJAksuxRO0+t/nSWobYmI6E3gPDs1NmYL
+ ++FZTGyvor1q8BXZzeNj7KNTMHP2+jtmpdc0KeaKsrUDcsC7Efw6IdkQp5pRDFDxi5
+ ZHAUmnDb1nehnND3R9P08aARBVYF4iAixYWRlLVzHEAsYgL1pTWrWTNVmmmb1i34gg
+ o2AMI/9CsY+SQ==
+Received: from benni-fedora.. (unknown
+ [IPv6:2a02:8109:a100:1a48:ff0:ef2f:d4da:17d8])
+ by stuerz.xyz (Postfix) with ESMTPSA id E7EF6FB7D3;
+ Sat, 26 Mar 2022 17:00:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=stuerz.xyz; s=mail;
+ t=1648314033; bh=yA14H5kSGXs8c9NCVOmgKRy/cJtHbkLoXQ2K5ISZu/k=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=M6I6oe9jogZM/zVnBnLg0eaNUUV4jcB+jkMO9qefS3HmAz419f42DcLOvKYiY1LvT
+ ker3YtWSKtrbYWXcC4P4Q34z4I0kvS8nnURN2zDZp/1ciFgjp8H5+LMGc47dFCGwK3
+ ZPM4LcjH7WSaWHLXUgQ1uu7Se/TXMvIZ6a51YDM4XN9HQOfPjY/V51c3xkYKlQc9Ff
+ sw/spsdrAwyTcjFyMYk3HffZ0vEu3G6iY0fWhPwKxCUfoge6rziWcIxAyYMFWRia7f
+ wJwSd/xnAYJBhYpaStdDoJq2gMpeyL3UlSNNsSRrS5W5qX2Ex1kaIwSG6rdxXYA+KQ
+ WQdOdxe313yGg==
+From: =?UTF-8?q?Benjamin=20St=C3=BCrz?= <benni@stuerz.xyz>
+To: andrew@lunn.ch
+Subject: [PATCH 11/22] rdmavt: Replace comments with C99 initializers
+Date: Sat, 26 Mar 2022 17:58:58 +0100
+Message-Id: <20220326165909.506926-11-benni@stuerz.xyz>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220326165909.506926-1-benni@stuerz.xyz>
 References: <20220326165909.506926-1-benni@stuerz.xyz>
- <20220326165909.506926-16-benni@stuerz.xyz>
- <20220326192454.14115baa@coco.lan>
-X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.31; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Sun, 27 Mar 2022 05:40:34 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,11 +78,11 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: andrew@lunn.ch, linux-atm-general@lists.sourceforge.net,
- linux-ia64@vger.kernel.org, linus.walleij@linaro.org,
- dave.hansen@linux.intel.com, linux-pci@vger.kernel.org, robert.moore@intel.com,
- laforge@gnumonks.org, alim.akhtar@samsung.com, hpa@zytor.com,
- wcn36xx@lists.infradead.org, pkshih@realtek.com,
+Cc: linux-atm-general@lists.sourceforge.net, linux-ia64@vger.kernel.org,
+ linus.walleij@linaro.org, dave.hansen@linux.intel.com,
+ linux-pci@vger.kernel.org, robert.moore@intel.com, laforge@gnumonks.org,
+ alim.akhtar@samsung.com, hpa@zytor.com, wcn36xx@lists.infradead.org,
+ =?UTF-8?q?Benjamin=20St=C3=BCrz?= <benni@stuerz.xyz>, pkshih@realtek.com,
  linux-samsung-soc@vger.kernel.org, linux-acpi@vger.kernel.org,
  linux-edac@vger.kernel.org, dennis.dalessandro@cornelisnetworks.com,
  linux-rdma@vger.kernel.org, gregory.clement@bootlin.com,
@@ -79,112 +92,99 @@ Cc: andrew@lunn.ch, linux-atm-general@lists.sourceforge.net,
  mike.marciniszyn@cornelisnetworks.com, rric@kernel.org, ajd@linux.ibm.com,
  arnd@arndb.de, kvalo@kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-gpio@vger.kernel.org, loic.poulain@linaro.org, bp@alien8.de,
- bhelgaas@google.com, tglx@linutronix.de, linux-media@vger.kernel.org,
- linux@simtec.co.uk, linux-arm-kernel@lists.infradead.org, devel@acpica.org,
- isdn@linux-pingi.de, tony.luck@intel.com, nico@fluxnic.net,
- gregkh@linuxfoundation.org, dmitry.torokhov@gmail.com,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- davem@davemloft.net, james.morse@arm.com, netdev@vger.kernel.org,
- fbarrat@linux.ibm.com, sebastian.hesselbarth@gmail.com, pali@kernel.org,
- brgl@bgdev.pl
+ bhelgaas@google.com, tglx@linutronix.de, mchehab@kernel.org,
+ linux-media@vger.kernel.org, linux@simtec.co.uk,
+ linux-arm-kernel@lists.infradead.org, devel@acpica.org, isdn@linux-pingi.de,
+ tony.luck@intel.com, nico@fluxnic.net, gregkh@linuxfoundation.org,
+ dmitry.torokhov@gmail.com, linux-wireless@vger.kernel.org,
+ linux-kernel@vger.kernel.org, davem@davemloft.net, james.morse@arm.com,
+ netdev@vger.kernel.org, fbarrat@linux.ibm.com, sebastian.hesselbarth@gmail.com,
+ pali@kernel.org, brgl@bgdev.pl
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Sat, 26 Mar 2022 19:24:54 +0100
-Mauro Carvalho Chehab <mchehab@kernel.org> escreveu:
+This replaces comments with C99's designated
+initializers because the kernel supports them now.
 
-> Em Sat, 26 Mar 2022 17:59:03 +0100
-> Benjamin St=C3=BCrz <benni@stuerz.xyz> escreveu:
->=20
-> > This replaces comments with C99's designated
-> > initializers because the kernel supports them now.
-> >=20
-> > Signed-off-by: Benjamin St=C3=BCrz <benni@stuerz.xyz>
-> > ---
-> >  drivers/media/usb/dvb-usb/dibusb-mb.c | 62 +++++++++++++--------------
-> >  drivers/media/usb/dvb-usb/dibusb-mc.c | 34 +++++++--------
-> >  2 files changed, 48 insertions(+), 48 deletions(-)
-> >=20
-> > diff --git a/drivers/media/usb/dvb-usb/dibusb-mb.c b/drivers/media/usb/=
-dvb-usb/dibusb-mb.c
-> > index e9dc27f73970..f188e07f518b 100644
-> > --- a/drivers/media/usb/dvb-usb/dibusb-mb.c
-> > +++ b/drivers/media/usb/dvb-usb/dibusb-mb.c
-> > @@ -122,40 +122,40 @@ static int dibusb_probe(struct usb_interface *int=
-f,
-> > =20
-> >  /* do not change the order of the ID table */
-> >  static struct usb_device_id dibusb_dib3000mb_table [] =3D {
-> > -/* 00 */	{ USB_DEVICE(USB_VID_WIDEVIEW,		USB_PID_AVERMEDIA_DVBT_USB_CO=
-LD) },
-> > -/* 01 */	{ USB_DEVICE(USB_VID_WIDEVIEW,		USB_PID_AVERMEDIA_DVBT_USB_WA=
-RM) },
-> > -/* 02 */	{ USB_DEVICE(USB_VID_COMPRO,		USB_PID_COMPRO_DVBU2000_COLD) },
-> > -/* 03 */	{ USB_DEVICE(USB_VID_COMPRO,		USB_PID_COMPRO_DVBU2000_WARM) },
-> > -/* 04 */	{ USB_DEVICE(USB_VID_COMPRO_UNK,	USB_PID_COMPRO_DVBU2000_UNK_=
-COLD) },
-> > -/* 05 */	{ USB_DEVICE(USB_VID_DIBCOM,		USB_PID_DIBCOM_MOD3000_COLD) },
-> > -/* 06 */	{ USB_DEVICE(USB_VID_DIBCOM,		USB_PID_DIBCOM_MOD3000_WARM) },
-> > -/* 07 */	{ USB_DEVICE(USB_VID_EMPIA,		USB_PID_KWORLD_VSTREAM_COLD) },
-> > -/* 08 */	{ USB_DEVICE(USB_VID_EMPIA,		USB_PID_KWORLD_VSTREAM_WARM) },
-> > -/* 09 */	{ USB_DEVICE(USB_VID_GRANDTEC,		USB_PID_GRANDTEC_DVBT_USB_COL=
-D) },
-> > -/* 10 */	{ USB_DEVICE(USB_VID_GRANDTEC,		USB_PID_GRANDTEC_DVBT_USB_WAR=
-M) },
-> > -/* 11 */	{ USB_DEVICE(USB_VID_GRANDTEC,		USB_PID_DIBCOM_MOD3000_COLD) =
-},
-> > -/* 12 */	{ USB_DEVICE(USB_VID_GRANDTEC,		USB_PID_DIBCOM_MOD3000_WARM) =
-},
-> > -/* 13 */	{ USB_DEVICE(USB_VID_HYPER_PALTEK,	USB_PID_UNK_HYPER_PALTEK_C=
-OLD) },
-> > -/* 14 */	{ USB_DEVICE(USB_VID_HYPER_PALTEK,	USB_PID_UNK_HYPER_PALTEK_W=
-ARM) },
-> > -/* 15 */	{ USB_DEVICE(USB_VID_VISIONPLUS,	USB_PID_TWINHAN_VP7041_COLD)=
- },
-> > -/* 16 */	{ USB_DEVICE(USB_VID_VISIONPLUS,	USB_PID_TWINHAN_VP7041_WARM)=
- },
-> > -/* 17 */	{ USB_DEVICE(USB_VID_TWINHAN,		USB_PID_TWINHAN_VP7041_COLD) },
-> > -/* 18 */	{ USB_DEVICE(USB_VID_TWINHAN,		USB_PID_TWINHAN_VP7041_WARM) },
-> > -/* 19 */	{ USB_DEVICE(USB_VID_ULTIMA_ELECTRONIC,	USB_PID_ULTIMA_TVBOX_=
-COLD) },
-> > -/* 20 */	{ USB_DEVICE(USB_VID_ULTIMA_ELECTRONIC,	USB_PID_ULTIMA_TVBOX_=
-WARM) },
-> > -/* 21 */	{ USB_DEVICE(USB_VID_ULTIMA_ELECTRONIC,	USB_PID_ULTIMA_TVBOX_=
-AN2235_COLD) },
-> > -/* 22 */	{ USB_DEVICE(USB_VID_ULTIMA_ELECTRONIC,	USB_PID_ULTIMA_TVBOX_=
-AN2235_WARM) },
-> > -/* 23 */	{ USB_DEVICE(USB_VID_ADSTECH,		USB_PID_ADSTECH_USB2_COLD) },
-> > +[0]  =3D	{ USB_DEVICE(USB_VID_WIDEVIEW,		USB_PID_AVERMEDIA_DVBT_USB_CO=
-LD) },
-> > +[1]  =3D	{ USB_DEVICE(USB_VID_WIDEVIEW,		USB_PID_AVERMEDIA_DVBT_USB_WA=
-RM) }, =20
->=20
-> While here, please properly indent this table, and respect the 80-columns=
- limit,
-> e. g.:
->=20
-> static struct usb_device_id dibusb_dib3000mb_table [] =3D {
-> 	[0] =3D { USB_DEVICE(USB_VID_WIDEVIEW=20
-> 			   USB_PID_AVERMEDIA_DVBT_USB_COLD)=20
-> 	},
-> 	[1]  =3D	{ USB_DEVICE(USB_VID_WIDEVIEW,
-> 			     USB_PID_AVERMEDIA_DVBT_USB_WARM)
-> 	},
-> 	...
+Signed-off-by: Benjamin Stürz <benni@stuerz.xyz>
+---
+ drivers/infiniband/sw/rdmavt/rc.c | 62 +++++++++++++++----------------
+ 1 file changed, 31 insertions(+), 31 deletions(-)
 
-Err.... something went wrong with my space bar and I ended hitting send to
-soon... I meant:
+diff --git a/drivers/infiniband/sw/rdmavt/rc.c b/drivers/infiniband/sw/rdmavt/rc.c
+index 4e5d4a27633c..121b8a23ac07 100644
+--- a/drivers/infiniband/sw/rdmavt/rc.c
++++ b/drivers/infiniband/sw/rdmavt/rc.c
+@@ -10,37 +10,37 @@
+  * Convert the AETH credit code into the number of credits.
+  */
+ static const u16 credit_table[31] = {
+-	0,                      /* 0 */
+-	1,                      /* 1 */
+-	2,                      /* 2 */
+-	3,                      /* 3 */
+-	4,                      /* 4 */
+-	6,                      /* 5 */
+-	8,                      /* 6 */
+-	12,                     /* 7 */
+-	16,                     /* 8 */
+-	24,                     /* 9 */
+-	32,                     /* A */
+-	48,                     /* B */
+-	64,                     /* C */
+-	96,                     /* D */
+-	128,                    /* E */
+-	192,                    /* F */
+-	256,                    /* 10 */
+-	384,                    /* 11 */
+-	512,                    /* 12 */
+-	768,                    /* 13 */
+-	1024,                   /* 14 */
+-	1536,                   /* 15 */
+-	2048,                   /* 16 */
+-	3072,                   /* 17 */
+-	4096,                   /* 18 */
+-	6144,                   /* 19 */
+-	8192,                   /* 1A */
+-	12288,                  /* 1B */
+-	16384,                  /* 1C */
+-	24576,                  /* 1D */
+-	32768                   /* 1E */
++	[0x00] = 0,
++	[0x01] = 1,
++	[0x02] = 2,
++	[0x03] = 3,
++	[0x04] = 4,
++	[0x05] = 6,
++	[0x06] = 8,
++	[0x07] = 12,
++	[0x08] = 16,
++	[0x09] = 24,
++	[0x0A] = 32,
++	[0x0B] = 48,
++	[0x0C] = 64,
++	[0x0D] = 96,
++	[0x0E] = 128,
++	[0x0F] = 192,
++	[0x10] = 256,
++	[0x11] = 384,
++	[0x12] = 512,
++	[0x13] = 768,
++	[0x14] = 1024,
++	[0x15] = 1536,
++	[0x16] = 2048,
++	[0x17] = 3072,
++	[0x18] = 4096,
++	[0x19] = 6144,
++	[0x1A] = 8192,
++	[0x1B] = 12288,
++	[0x1C] = 16384,
++	[0x1D] = 24576,
++	[0x1E] = 32768
+ };
+ 
+ /**
+-- 
+2.35.1
 
-static struct usb_device_id dibusb_dib3000mb_table [] =3D {
- 	[0] =3D { USB_DEVICE(USB_VID_WIDEVIEW=20
- 			   USB_PID_AVERMEDIA_DVBT_USB_COLD)=20
- 	},
- 	[1] =3D { USB_DEVICE(USB_VID_WIDEVIEW,
- 			   USB_PID_AVERMEDIA_DVBT_USB_WARM)
- 	},
-	...
-};
-
-Thanks,
-Mauro
