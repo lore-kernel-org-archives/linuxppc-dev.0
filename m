@@ -4,100 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7664AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Mar 2022 20:00:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8ECEFC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Mar 2022 20:15:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KS3TD2HPkz3c4w
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Mar 2022 07:00:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KS3pq6L9nz3c68
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Mar 2022 07:15:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q4W5mxp8;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q4W5mxp8;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=h9J6gWtL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=170.10.133.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=jpoimboe@redhat.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=Q4W5mxp8; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q4W5mxp8; 
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=h9J6gWtL; 
  dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KS3SQ2R8Cz30CL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2022 06:59:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1648497566;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=rNlkcdDOnbEEqyaA/TedcvXNhWifU9B0NNWARWuI3n8=;
- b=Q4W5mxp8IzvQnXAFA4pXr4iq6DFjrZ3uAYshzd2RmqwmQCfufN9DG/sm0/uQbJh0ck7W8z
- YvmcNHOW6IY+7u8JXVg7aKdOc7xJ4qOsOimQp7dSRHgrafHDWVgaNJc1R9k9wjW4JJ0EhK
- kp2Nl2JvQRYFtW8W03tBLCLhIfmOyCA=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1648497566;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=rNlkcdDOnbEEqyaA/TedcvXNhWifU9B0NNWARWuI3n8=;
- b=Q4W5mxp8IzvQnXAFA4pXr4iq6DFjrZ3uAYshzd2RmqwmQCfufN9DG/sm0/uQbJh0ck7W8z
- YvmcNHOW6IY+7u8JXVg7aKdOc7xJ4qOsOimQp7dSRHgrafHDWVgaNJc1R9k9wjW4JJ0EhK
- kp2Nl2JvQRYFtW8W03tBLCLhIfmOyCA=
-Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com
- [209.85.219.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-608-tQSopsRcOWioCsQLqgTnTA-1; Mon, 28 Mar 2022 15:59:24 -0400
-X-MC-Unique: tQSopsRcOWioCsQLqgTnTA-1
-Received: by mail-qv1-f71.google.com with SMTP id
- cl19-20020a05621404f300b0044103143211so12136186qvb.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Mar 2022 12:59:24 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=rNlkcdDOnbEEqyaA/TedcvXNhWifU9B0NNWARWuI3n8=;
- b=EyC23pWkJBAPbUMSTSdaywHyS4VHLPPfWwfmtE753YRUvAdZJvB9Os2IFSIRSyTNOz
- ZZD9JcMn/Hf+9xbnT0j+tAttgtTdMDZUSXSK6oi3COJd/Ept2/zYdUlz8svLXecuYD5v
- 4p23Ckicw9JZjfefaGos1tzb/Mg7AhBx93isWvT9HRiMb9T1RN5Y9z6M3WE13PCCvaSk
- M61qjWFNKEkdmyiUYJB/YfaSYsS+3dvgN0aA24s8ZHcpWDwNoy/wwkwTaDz3qpoOoHw6
- DzdrvPAIwaORq1/8CGIQNmMILCPgl69jc0QgIrY+m/zM+IRAo3wUX+XXwZXqgIcWP8oY
- i35A==
-X-Gm-Message-State: AOAM533gec3h8dcI364jOcPxNtv/th7aCGpWa0nVsvRL6F786dvKmk/U
- Z5ask3pYBjynFSmsxDl9m/eb/IyNbdn0ynLVNW77cveM/wZrMU/4Aw5r2Ax/iP1DGXhbhuaNZmt
- z3zMS63zX3GWGK8s9C6kGKHxytg==
-X-Received: by 2002:ac8:5cc1:0:b0:2e1:bd05:1371 with SMTP id
- s1-20020ac85cc1000000b002e1bd051371mr23484910qta.573.1648497564275; 
- Mon, 28 Mar 2022 12:59:24 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJx9L8BI7elUtjtShDyTNCfyVyjEHPEC/OaWfgPxbM34Cf9QU+7w8TC2BCSK0jUFIPEMZj6Lpw==
-X-Received: by 2002:ac8:5cc1:0:b0:2e1:bd05:1371 with SMTP id
- s1-20020ac85cc1000000b002e1bd051371mr23484900qta.573.1648497564027; 
- Mon, 28 Mar 2022 12:59:24 -0700 (PDT)
-Received: from treble ([2600:1700:6e32:6c00::35])
- by smtp.gmail.com with ESMTPSA id
- z15-20020a05622a060f00b002e2070bf899sm12526007qta.90.2022.03.28.12.59.22
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 28 Mar 2022 12:59:23 -0700 (PDT)
-Date: Mon, 28 Mar 2022 12:59:20 -0700
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KS3p53lCnz3c00
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2022 07:14:52 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=ZitBryn1WWy4JC7Ax6HzXQemEGIW1dW2lNZC6FYpefM=; b=h9J6gWtLbizs6hZuyeiUFCZt9S
+ M7+uGk9gFt1AUqZ+rZr6C50cqtp71mwK1jLFnu/x/ZSRFilHkJ9F8Q+K2fTa0/wThEgGwa2zizyOn
+ n5uih2fP9/k0FZqcH3T1E/cQUMYidFqRAuaY/pfcwn8UMc544S7ODH108we8ti0HhGXm/nfkwnCnY
+ vZ5n9HPQV4tgSe4jTE6eC54JwuakFMJ6kNpDNJERz4/xAZhdrjmjEnxXTVEncoGCamVAjCgIf2cuc
+ tKHPR11SOnEK20xSqAsguvwtFqo9cvS9H5DqX7HdYDND/RgjFER3lVwGshCYP/GU64CKlhz9WrOyR
+ ocVsy/Gw==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+ id 1nYvlC-00HENY-2D; Mon, 28 Mar 2022 20:14:42 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 0997B3000E6;
+ Mon, 28 Mar 2022 22:14:38 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id CEBCE203E586A; Mon, 28 Mar 2022 22:14:38 +0200 (CEST)
+Date: Mon, 28 Mar 2022 22:14:38 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
 Subject: Re: [RFC PATCH 3/3] objtool/mcount: Add powerpc specific functions
-Message-ID: <20220328195920.dqlfra3lcardko6r@treble>
+Message-ID: <YkIXLnAxtPuSDcOW@hirez.programming.kicks-ass.net>
 References: <20220318105140.43914-1-sv@linux.ibm.com>
  <20220318105140.43914-4-sv@linux.ibm.com>
  <YjR6kHq4c/rjCTpr@hirez.programming.kicks-ass.net>
  <0b55f122-4760-c1ba-840a-0911cefec2ad@csgroup.eu>
+ <20220328195920.dqlfra3lcardko6r@treble>
 MIME-Version: 1.0
-In-Reply-To: <0b55f122-4760-c1ba-840a-0911cefec2ad@csgroup.eu>
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=jpoimboe@redhat.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20220328195920.dqlfra3lcardko6r@treble>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,9 +75,9 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
+Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rostedt@goodmis.org" <rostedt@goodmis.org>, "aik@ozlabs.ru" <aik@ozlabs.ru>,
+ "rostedt@goodmis.org" <rostedt@goodmis.org>,
  Sathvika Vasireddy <sv@linux.ibm.com>,
  "naveen.n.rao@linux.vnet.ibm.com" <naveen.n.rao@linux.vnet.ibm.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
@@ -119,48 +85,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Mar 27, 2022 at 09:09:20AM +0000, Christophe Leroy wrote:
-> Second point is the endianess and 32/64 selection, especially when 
-> crossbuilding. There is already some stuff regarding endianess based on 
-> bswap_if_needed() but that's based on constant selection at build time 
-> and I couldn't find an easy way to set it conditionaly based on the 
-> target being built.
->
-> Regarding 32/64 selection, there is almost nothing, it's based on using 
-> type 'long' which means that at the time being the target and the build 
-> platform must both be 32 bits or 64 bits.
-> 
-> For both cases (endianess and 32/64) I think the solution should 
-> probably be to start with the fileformat of the object file being 
-> reworked by objtool.
+On Mon, Mar 28, 2022 at 12:59:20PM -0700, Josh Poimboeuf wrote:
 
-Do we really need to detect the endianness/bitness at runtime?  Objtool
-is built with the kernel, why not just build-in the same target
-assumptions as the kernel itself?
+> I'm not making any major changes to the code, just shuffling things
+> around to make the interface more modular.  I hope to have something
+> soon (this week).  Peter recently added a big feature (Intel IBT) which
+> is already in -next.
 
-> What are current works in progress on objtool ? Should I wait Josh's 
-> changes before starting looking at all this ? Should I wait for anything 
-> else ?
+Hit Linus' tree yesterday :-)
 
-I'm not making any major changes to the code, just shuffling things
-around to make the interface more modular.  I hope to have something
-soon (this week).  Peter recently added a big feature (Intel IBT) which
-is already in -next.
+> Some years ago Kamalesh Babulal had a prototype of objtool for ppc64le
+> which did the full stack validation.  I'm not sure what ever became of
+> that.
 
-Contributions are welcome, with the understanding that you'll help
-maintain it ;-)
+I've also heard chatter about s390.
 
-Some years ago Kamalesh Babulal had a prototype of objtool for ppc64le
-which did the full stack validation.  I'm not sure what ever became of
-that.
+> FWIW, there have been some objtool patches for arm64 stack validation,
+> but the arm64 maintainers have been hesitant to get on board with
+> objtool, as it brings a certain maintenance burden.  Especially for the
+> full stack validation and ORC unwinder.  But if you only want inline
+> static calls and/or mcount then it'd probably be much easier to
+> maintain.
 
-FWIW, there have been some objtool patches for arm64 stack validation,
-but the arm64 maintainers have been hesitant to get on board with
-objtool, as it brings a certain maintenance burden.  Especially for the
-full stack validation and ORC unwinder.  But if you only want inline
-static calls and/or mcount then it'd probably be much easier to
-maintain.
+IIRC the major stumbling block for arm64 is the whole jump-table thing.
+Either they need to rely on compiler plugins to provide objtool that
+data (yuck, since we support at least 2 different compilers), disable
+jump-tables (yuck, for that limits code-gen just to please a tool) or
+use DWARF (yuck, because build times).
 
--- 
-Josh
-
+There was a little talk about an impromptu 'abi' to communicate
+jump-table details to objtool without going full on DWARF, but that
+seems to have hit a dead end again.
