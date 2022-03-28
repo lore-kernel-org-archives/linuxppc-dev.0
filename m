@@ -4,70 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFFEFC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Mar 2022 21:36:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53D79C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Mar 2022 21:59:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KS5cX37qTz3cFT
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Mar 2022 08:36:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KS66j6WM4z3c3L
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Mar 2022 08:59:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=quicinc.com header.i=@quicinc.com header.a=rsa-sha256 header.s=qcdkim header.b=bvQh4qsa;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YVlWymAf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=quicinc.com (client-ip=199.106.114.38;
- helo=alexa-out-sd-01.qualcomm.com; envelope-from=quic_jjohnson@quicinc.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=farosas@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=quicinc.com header.i=@quicinc.com header.a=rsa-sha256
- header.s=qcdkim header.b=bvQh4qsa; dkim-atps=neutral
-X-Greylist: delayed 123 seconds by postgrey-1.36 at boromir;
- Tue, 29 Mar 2022 03:19:51 AEDT
-Received: from alexa-out-sd-01.qualcomm.com (alexa-out-sd-01.qualcomm.com
- [199.106.114.38])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=YVlWymAf; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KRyZv6PKFz2xrc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2022 03:19:51 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=quicinc.com; i=@quicinc.com; q=dns/txt; s=qcdkim;
- t=1648484392; x=1680020392;
- h=message-id:date:mime-version:subject:to:cc:references:
- from:in-reply-to:content-transfer-encoding;
- bh=Eu7nJy5jkPS6ql5ANPoXUckpfZ6g40U1vF2Yo2ODg4c=;
- b=bvQh4qsa3p4A3F2OVvNWOE0NcHJhsJePyRuvh5EyLQXEAg+yyiMFHP6B
- nB5GEekBK1EN6jLgpVIRB0CvX9x1sFAuQ2KxGQvryueiuK/xz4SiJ3dny
- rkux80TJXnu10GPb9zVHwKLtwrxTmV4HSiMGzA6U4rjW7rJcyPXAnaLdU w=;
-Received: from unknown (HELO ironmsg05-sd.qualcomm.com) ([10.53.140.145])
- by alexa-out-sd-01.qualcomm.com with ESMTP; 28 Mar 2022 09:17:46 -0700
-X-QCInternal: smtphost
-Received: from nasanex01c.na.qualcomm.com ([10.47.97.222])
- by ironmsg05-sd.qualcomm.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Mar 2022 09:17:44 -0700
-Received: from nalasex01a.na.qualcomm.com (10.47.209.196) by
- nasanex01c.na.qualcomm.com (10.47.97.222) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.22; Mon, 28 Mar 2022 09:17:44 -0700
-Received: from [10.110.35.108] (10.80.80.8) by nalasex01a.na.qualcomm.com
- (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.22; Mon, 28 Mar
- 2022 09:17:41 -0700
-Message-ID: <f0ebc901-051a-c7fe-ca5a-bc798e7c31e7@quicinc.com>
-Date: Mon, 28 Mar 2022 09:17:40 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KS65x248vz2xXw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Mar 2022 08:58:44 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 22SLsOsB027195; 
+ Mon, 28 Mar 2022 21:58:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=UY86goFnF0Gj4iIqrrsYyWGWYsTERdVG0myVbGGPb4k=;
+ b=YVlWymAfSiRIvgYx4XsDlFvBWZAJ4n+4KaKyusghjTR1YTaofYsRTKnbWOEMZ9BvCYfu
+ 3B5omo/lUV6N4YaPm4YeaSz0omsP10zbYAzNJ1cmP0UW8z0hgq13SmWlyEGa3YtZohjK
+ PhUsi9MGGBEQRSsRTuuIEfAespvMmmeJo+coI47wD7rLJOZ3c9b3llIp1Z0PRosE62cQ
+ cek+7XgV1Lu6HejyvlBHTEFxrcZWorV0c/iZyfFIh8800n0GBBAZTAabLmnZ2QLZlMU3
+ /qpxTkPOTGwKUcBS7ZxZlZRmkL7pyZ0i9U7t0AxeYQHRRmY7WEdfkrwhW/VTiaCGGBpN 2Q== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3f3nbk81vu-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 28 Mar 2022 21:58:36 +0000
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 22SLveDd006019;
+ Mon, 28 Mar 2022 21:58:35 GMT
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3f3nbk81vp-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 28 Mar 2022 21:58:35 +0000
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 22SLhacC022831;
+ Mon, 28 Mar 2022 21:58:35 GMT
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26]) by ppma02wdc.us.ibm.com with ESMTP id 3f1tf983m8-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 28 Mar 2022 21:58:35 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 22SLwYsA7274822
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 28 Mar 2022 21:58:34 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AC18FAE066;
+ Mon, 28 Mar 2022 21:58:34 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7B345AE05C;
+ Mon, 28 Mar 2022 21:58:33 +0000 (GMT)
+Received: from li-4707e44c-227d-11b2-a85c-f336a85283d9.ibm.com.com (unknown
+ [9.160.110.254]) by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 28 Mar 2022 21:58:33 +0000 (GMT)
+From: Fabiano Rosas <farosas@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] KVM: PPC: Book3S HV: Fix vcore_blocked tracepoint
+Date: Mon, 28 Mar 2022 18:58:31 -0300
+Message-Id: <20220328215831.320409-1-farosas@linux.ibm.com>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.7.0
-Subject: Re: [PATCH 19/22] wnc36xx: Replace comments with C99 initializers
-Content-Language: en-US
-To: =?UTF-8?Q?Benjamin_St=c3=bcrz?= <benni@stuerz.xyz>, <andrew@lunn.ch>
-References: <20220326165909.506926-1-benni@stuerz.xyz>
- <20220326165909.506926-19-benni@stuerz.xyz>
-From: Jeff Johnson <quic_jjohnson@quicinc.com>
-In-Reply-To: <20220326165909.506926-19-benni@stuerz.xyz>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-Mailman-Approved-At: Tue, 29 Mar 2022 08:33:34 +1100
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: e3zgWKn2IGwM4h8epjkDe_AHKNgPfF_7
+X-Proofpoint-GUID: wN3pgk_2AuplFalMYCnl_2xmgG8W1uHO
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.850,Hydra:6.0.425,FMLib:17.11.64.514
+ definitions=2022-03-28_10,2022-03-28_01,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 mlxscore=0
+ phishscore=0 lowpriorityscore=0 clxscore=1015 priorityscore=1501
+ spamscore=0 mlxlogscore=999 suspectscore=0 impostorscore=0 adultscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2202240000 definitions=main-2203280116
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,182 +102,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-atm-general@lists.sourceforge.net, linux-ia64@vger.kernel.org,
- linus.walleij@linaro.org, dave.hansen@linux.intel.com,
- linux-pci@vger.kernel.org, robert.moore@intel.com, laforge@gnumonks.org,
- alim.akhtar@samsung.com, hpa@zytor.com, wcn36xx@lists.infradead.org,
- pkshih@realtek.com, linux-samsung-soc@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org,
- dennis.dalessandro@cornelisnetworks.com, linux-rdma@vger.kernel.org,
- gregory.clement@bootlin.com, rafael.j.wysocki@intel.com, linux@armlinux.org.uk,
- krzk@kernel.org, jgg@ziepe.ca, mingo@redhat.com, 3chas3@gmail.com,
- linux-input@vger.kernel.org, kuba@kernel.org, pabeni@redhat.com,
- lenb@kernel.org, mike.marciniszyn@cornelisnetworks.com, rric@kernel.org,
- ajd@linux.ibm.com, arnd@arndb.de, kvalo@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-gpio@vger.kernel.org,
- loic.poulain@linaro.org, bp@alien8.de, bhelgaas@google.com, tglx@linutronix.de,
- mchehab@kernel.org, linux-media@vger.kernel.org, linux@simtec.co.uk,
- linux-arm-kernel@lists.infradead.org, devel@acpica.org, isdn@linux-pingi.de,
- tony.luck@intel.com, nico@fluxnic.net, gregkh@linuxfoundation.org,
- dmitry.torokhov@gmail.com, linux-wireless@vger.kernel.org,
- linux-kernel@vger.kernel.org, davem@davemloft.net, james.morse@arm.com,
- netdev@vger.kernel.org, fbarrat@linux.ibm.com, sebastian.hesselbarth@gmail.com,
- pali@kernel.org, brgl@bgdev.pl
+Cc: npiggin@gmail.com, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/26/2022 9:59 AM, Benjamin Stürz wrote:
-> This replaces comments with C99's designated
-> initializers because the kernel supports them now.
-> 
-> Signed-off-by: Benjamin Stürz <benni@stuerz.xyz>
-> ---
->   drivers/net/wireless/ath/wcn36xx/main.c | 122 ++++++++++++------------
->   1 file changed, 61 insertions(+), 61 deletions(-)
-> 
-> diff --git a/drivers/net/wireless/ath/wcn36xx/main.c b/drivers/net/wireless/ath/wcn36xx/main.c
-> index 95ea7d040d8c..0fed64bd37b4 100644
-> --- a/drivers/net/wireless/ath/wcn36xx/main.c
-> +++ b/drivers/net/wireless/ath/wcn36xx/main.c
-> @@ -193,67 +193,67 @@ static inline u8 get_sta_index(struct ieee80211_vif *vif,
->   }
->   
->   static const char * const wcn36xx_caps_names[] = {
-> -	"MCC",				/* 0 */
-> -	"P2P",				/* 1 */
-> -	"DOT11AC",			/* 2 */
-> -	"SLM_SESSIONIZATION",		/* 3 */
-> -	"DOT11AC_OPMODE",		/* 4 */
-> -	"SAP32STA",			/* 5 */
-> -	"TDLS",				/* 6 */
-> -	"P2P_GO_NOA_DECOUPLE_INIT_SCAN",/* 7 */
-> -	"WLANACTIVE_OFFLOAD",		/* 8 */
-> -	"BEACON_OFFLOAD",		/* 9 */
-> -	"SCAN_OFFLOAD",			/* 10 */
-> -	"ROAM_OFFLOAD",			/* 11 */
-> -	"BCN_MISS_OFFLOAD",		/* 12 */
-> -	"STA_POWERSAVE",		/* 13 */
-> -	"STA_ADVANCED_PWRSAVE",		/* 14 */
-> -	"AP_UAPSD",			/* 15 */
-> -	"AP_DFS",			/* 16 */
-> -	"BLOCKACK",			/* 17 */
-> -	"PHY_ERR",			/* 18 */
-> -	"BCN_FILTER",			/* 19 */
-> -	"RTT",				/* 20 */
-> -	"RATECTRL",			/* 21 */
-> -	"WOW",				/* 22 */
-> -	"WLAN_ROAM_SCAN_OFFLOAD",	/* 23 */
-> -	"SPECULATIVE_PS_POLL",		/* 24 */
-> -	"SCAN_SCH",			/* 25 */
-> -	"IBSS_HEARTBEAT_OFFLOAD",	/* 26 */
-> -	"WLAN_SCAN_OFFLOAD",		/* 27 */
-> -	"WLAN_PERIODIC_TX_PTRN",	/* 28 */
-> -	"ADVANCE_TDLS",			/* 29 */
-> -	"BATCH_SCAN",			/* 30 */
-> -	"FW_IN_TX_PATH",		/* 31 */
-> -	"EXTENDED_NSOFFLOAD_SLOT",	/* 32 */
-> -	"CH_SWITCH_V1",			/* 33 */
-> -	"HT40_OBSS_SCAN",		/* 34 */
-> -	"UPDATE_CHANNEL_LIST",		/* 35 */
-> -	"WLAN_MCADDR_FLT",		/* 36 */
-> -	"WLAN_CH144",			/* 37 */
-> -	"NAN",				/* 38 */
-> -	"TDLS_SCAN_COEXISTENCE",	/* 39 */
-> -	"LINK_LAYER_STATS_MEAS",	/* 40 */
-> -	"MU_MIMO",			/* 41 */
-> -	"EXTENDED_SCAN",		/* 42 */
-> -	"DYNAMIC_WMM_PS",		/* 43 */
-> -	"MAC_SPOOFED_SCAN",		/* 44 */
-> -	"BMU_ERROR_GENERIC_RECOVERY",	/* 45 */
-> -	"DISA",				/* 46 */
-> -	"FW_STATS",			/* 47 */
-> -	"WPS_PRBRSP_TMPL",		/* 48 */
-> -	"BCN_IE_FLT_DELTA",		/* 49 */
-> -	"TDLS_OFF_CHANNEL",		/* 51 */
-> -	"RTT3",				/* 52 */
-> -	"MGMT_FRAME_LOGGING",		/* 53 */
-> -	"ENHANCED_TXBD_COMPLETION",	/* 54 */
-> -	"LOGGING_ENHANCEMENT",		/* 55 */
-> -	"EXT_SCAN_ENHANCED",		/* 56 */
-> -	"MEMORY_DUMP_SUPPORTED",	/* 57 */
-> -	"PER_PKT_STATS_SUPPORTED",	/* 58 */
-> -	"EXT_LL_STAT",			/* 60 */
-> -	"WIFI_CONFIG",			/* 61 */
-> -	"ANTENNA_DIVERSITY_SELECTION",	/* 62 */
-> +	[0]  = "MCC",
-> +	[1]  = "P2P",
-> +	[2]  = "DOT11AC",
-> +	[3]  = "SLM_SESSIONIZATION",
-> +	[4]  = "DOT11AC_OPMODE",
-> +	[5]  = "SAP32STA",
-> +	[6]  = "TDLS",
-> +	[7]  = "P2P_GO_NOA_DECOUPLE_INIT_SCAN",
-> +	[8]  = "WLANACTIVE_OFFLOAD",
-> +	[9]  = "BEACON_OFFLOAD",
-> +	[10] = "SCAN_OFFLOAD",
-> +	[11] = "ROAM_OFFLOAD",
-> +	[12] = "BCN_MISS_OFFLOAD",
-> +	[13] = "STA_POWERSAVE",
-> +	[14] = "STA_ADVANCED_PWRSAVE",
-> +	[15] = "AP_UAPSD",
-> +	[16] = "AP_DFS",
-> +	[17] = "BLOCKACK",
-> +	[18] = "PHY_ERR",
-> +	[19] = "BCN_FILTER",
-> +	[20] = "RTT",
-> +	[21] = "RATECTRL",
-> +	[22] = "WOW",
-> +	[23] = "WLAN_ROAM_SCAN_OFFLOAD",
-> +	[24] = "SPECULATIVE_PS_POLL",
-> +	[25] = "SCAN_SCH",
-> +	[26] = "IBSS_HEARTBEAT_OFFLOAD",
-> +	[27] = "WLAN_SCAN_OFFLOAD",
-> +	[28] = "WLAN_PERIODIC_TX_PTRN",
-> +	[29] = "ADVANCE_TDLS",
-> +	[30] = "BATCH_SCAN",
-> +	[31] = "FW_IN_TX_PATH",
-> +	[32] = "EXTENDED_NSOFFLOAD_SLOT",
-> +	[33] = "CH_SWITCH_V1",
-> +	[34] = "HT40_OBSS_SCAN",
-> +	[35] = "UPDATE_CHANNEL_LIST",
-> +	[36] = "WLAN_MCADDR_FLT",
-> +	[37] = "WLAN_CH144",
-> +	[38] = "NAN",
-> +	[39] = "TDLS_SCAN_COEXISTENCE",
-> +	[40] = "LINK_LAYER_STATS_MEAS",
-> +	[41] = "MU_MIMO",
-> +	[42] = "EXTENDED_SCAN",
-> +	[43] = "DYNAMIC_WMM_PS",
-> +	[44] = "MAC_SPOOFED_SCAN",
-> +	[45] = "BMU_ERROR_GENERIC_RECOVERY",
-> +	[46] = "DISA",
-> +	[47] = "FW_STATS",
-> +	[48] = "WPS_PRBRSP_TMPL",
-> +	[49] = "BCN_IE_FLT_DELTA",
-> +	[51] = "TDLS_OFF_CHANNEL",
-> +	[52] = "RTT3",
-> +	[53] = "MGMT_FRAME_LOGGING",
-> +	[54] = "ENHANCED_TXBD_COMPLETION",
-> +	[55] = "LOGGING_ENHANCEMENT",
-> +	[56] = "EXT_SCAN_ENHANCED",
-> +	[57] = "MEMORY_DUMP_SUPPORTED",
-> +	[58] = "PER_PKT_STATS_SUPPORTED",
-> +	[60] = "EXT_LL_STAT",
-> +	[61] = "WIFI_CONFIG",
-> +	[62] = "ANTENNA_DIVERSITY_SELECTION",
->   };
->   
->   static const char *wcn36xx_get_cap_name(enum place_holder_in_cap_bitmap x)
+We removed most of the vcore logic from the P9 path but there's still
+a tracepoint that tried to dereference vc->runner.
 
-I know there has been much discussion on this series. For this specific 
-patch this would be a great change if you use the actual enumerations 
-from enum place_holder_in_cap_bitmap as the index values,
-i.e.
-  [MCC] = "MCC",
-  etc.
+Fixes: ecb6a7207f92 ("KVM: PPC: Book3S HV P9: Remove most of the vcore logic")
+Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
+---
+ arch/powerpc/kvm/book3s_hv.c | 8 ++++----
+ arch/powerpc/kvm/trace_hv.h  | 8 ++++----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-So a v2 for this patch would be appreciated
-
-
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index c886557638a1..5f5b2d0dee8c 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -4218,13 +4218,13 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
+ 	start_wait = ktime_get();
+ 
+ 	vc->vcore_state = VCORE_SLEEPING;
+-	trace_kvmppc_vcore_blocked(vc, 0);
++	trace_kvmppc_vcore_blocked(vc->runner, 0);
+ 	spin_unlock(&vc->lock);
+ 	schedule();
+ 	finish_rcuwait(&vc->wait);
+ 	spin_lock(&vc->lock);
+ 	vc->vcore_state = VCORE_INACTIVE;
+-	trace_kvmppc_vcore_blocked(vc, 1);
++	trace_kvmppc_vcore_blocked(vc->runner, 1);
+ 	++vc->runner->stat.halt_successful_wait;
+ 
+ 	cur = ktime_get();
+@@ -4596,9 +4596,9 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+ 			if (kvmppc_vcpu_check_block(vcpu))
+ 				break;
+ 
+-			trace_kvmppc_vcore_blocked(vc, 0);
++			trace_kvmppc_vcore_blocked(vcpu, 0);
+ 			schedule();
+-			trace_kvmppc_vcore_blocked(vc, 1);
++			trace_kvmppc_vcore_blocked(vcpu, 1);
+ 		}
+ 		finish_rcuwait(wait);
+ 	}
+diff --git a/arch/powerpc/kvm/trace_hv.h b/arch/powerpc/kvm/trace_hv.h
+index 38cd0ed0a617..32e2cb5811cc 100644
+--- a/arch/powerpc/kvm/trace_hv.h
++++ b/arch/powerpc/kvm/trace_hv.h
+@@ -409,9 +409,9 @@ TRACE_EVENT(kvmppc_run_core,
+ );
+ 
+ TRACE_EVENT(kvmppc_vcore_blocked,
+-	TP_PROTO(struct kvmppc_vcore *vc, int where),
++	TP_PROTO(struct kvm_vcpu *vcpu, int where),
+ 
+-	TP_ARGS(vc, where),
++	TP_ARGS(vcpu, where),
+ 
+ 	TP_STRUCT__entry(
+ 		__field(int,	n_runnable)
+@@ -421,8 +421,8 @@ TRACE_EVENT(kvmppc_vcore_blocked,
+ 	),
+ 
+ 	TP_fast_assign(
+-		__entry->runner_vcpu = vc->runner->vcpu_id;
+-		__entry->n_runnable  = vc->n_runnable;
++		__entry->runner_vcpu = vcpu->vcpu_id;
++		__entry->n_runnable  = vcpu->arch.vcore->n_runnable;
+ 		__entry->where       = where;
+ 		__entry->tgid	     = current->tgid;
+ 	),
+-- 
+2.35.1
 
