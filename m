@@ -4,47 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0D9AC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Mar 2022 14:00:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 839FBC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Mar 2022 14:05:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KT7Nw3BLGz2ywF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Mar 2022 01:00:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KT7Vf4PD2z2ymf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Mar 2022 01:05:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=hDAroaOH;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ef6F+hrx;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=R4xgioPB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=suse.com (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
- envelope-from=mhocko@suse.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
+ envelope-from=osalvador@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=susede1 header.b=hDAroaOH; dkim-atps=neutral
+ unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
+ header.s=susede2_rsa header.b=ef6F+hrx; 
+ dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
+ header.s=susede2_ed25519 header.b=R4xgioPB; 
+ dkim-atps=neutral
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KT7NH0y7tz2xtJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2022 00:59:42 +1100 (AEDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
- by smtp-out1.suse.de (Postfix) with ESMTP id 2F74421610;
- Wed, 30 Mar 2022 13:59:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
- t=1648648777; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KT7Tx0swDz2xtJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Mar 2022 01:04:36 +1100 (AEDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+ (No client certificate requested)
+ by smtp-out1.suse.de (Postfix) with ESMTPS id 6769C21613;
+ Wed, 30 Mar 2022 14:04:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+ t=1648649074; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
  mime-version:mime-version:content-type:content-type:
  in-reply-to:in-reply-to:references:references;
- bh=FP+N6jUfe/Nhmh5h6A4hiD8oEZ6ImqyXs59pRC4gfmQ=;
- b=hDAroaOH3ebshWf2xsKHSI4wSQ91uXQdY47ZKaJM+9A7jT/JpFpeIPM5nqbqzesvPtbkxJ
- MXDlR6eg+CT3I6wjm5WEbPRsEX41Y5Opam+WxXdlZzi8kz+9eMgxVyMbJSVMKLFt4Zuu3i
- TiRXK0oA9KldNvZnKl7exG2zs0P91rI=
-Received: from suse.cz (unknown [10.100.201.86])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ bh=3HMcf6VpPdUtSHMVGDhdxTY9zIcILTXot1rIgQ5P1hw=;
+ b=ef6F+hrxT7jsNU5wyGaDpWxZI/bcW+2pKvn+iRcd8z7sWGdhsLkagx60oPooXJve1pi+Y9
+ FPnRPPjwFAghwQpOSMuNv4+areI5A0klDnvvC2Mqlz2k6gttuEgRDihl0sDgfC1IO224Vu
+ OdzOSjrvy29y0MNdWyihG3F6s/zHGcY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+ s=susede2_ed25519; t=1648649074;
+ h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=3HMcf6VpPdUtSHMVGDhdxTY9zIcILTXot1rIgQ5P1hw=;
+ b=R4xgioPBIA28fZdQiFSKgD2Pu95fR2in5TKCC19Wxsz5AkvxXc3d9MYefMe6NeZTcEqCeJ
+ zLS3RNxUBQRlRQDA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
  (No client certificate requested)
- by relay2.suse.de (Postfix) with ESMTPS id EA039A3B82;
- Wed, 30 Mar 2022 13:59:36 +0000 (UTC)
-Date: Wed, 30 Mar 2022 15:59:33 +0200
-From: Michal Hocko <mhocko@suse.com>
+ by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 09B9E13A60;
+ Wed, 30 Mar 2022 14:04:33 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+ by imap2.suse-dmz.suse.de with ESMTPSA id kboWO3FjRGJyagAAMHmgww
+ (envelope-from <osalvador@suse.de>); Wed, 30 Mar 2022 14:04:33 +0000
+Date: Wed, 30 Mar 2022 16:04:32 +0200
+From: Oscar Salvador <osalvador@suse.de>
 To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Subject: Re: [PATCH] powerpc/numa: Handle partially initialized numa nodes
-Message-ID: <YkRiRV7iwolJUwsm@dhcp22.suse.cz>
+Message-ID: <YkRjcF61+nbIZfvJ@localhost.localdomain>
 References: <20220330135123.1868197-1-srikar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -61,13 +81,14 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+Cc: Michal Hocko <mhocko@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>, linux-mm@kvack.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed 30-03-22 19:21:23, Srikar Dronamraju wrote:
+On Wed, Mar 30, 2022 at 07:21:23PM +0530, Srikar Dronamraju wrote:
 > With commit 09f49dca570a ("mm: handle uninitialized numa nodes
 > gracefully") NODE_DATA for even a memoryless/cpuless node is partially
 > initialized at boot time.
@@ -131,8 +152,9 @@ On Wed 30-03-22 19:21:23, Srikar Dronamraju wrote:
 > Reported-by: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>
 > Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 
-Acked-by: Michal Hocko <mhocko@suse.com>
-Thanks!
+Acked-by: Oscar Salvador <osalvador@suse.de>
+
+Thanks Srikar!
 
 > ---
 >  arch/powerpc/mm/numa.c | 2 +-
@@ -153,7 +175,9 @@ Thanks!
 >  		 * Need to ensure that NODE_DATA is initialized for a node from
 > -- 
 > 2.27.0
+> 
+> 
 
 -- 
-Michal Hocko
+Oscar Salvador
 SUSE Labs
