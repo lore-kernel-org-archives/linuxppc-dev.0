@@ -4,34 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B22A1C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Mar 2022 02:06:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1150BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Mar 2022 02:08:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KSqY11cPsz3c3h
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Mar 2022 13:06:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KSqb32Xnwz3c2M
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Mar 2022 13:07:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org;
  envelope-from=srs0=x/co=uj=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KSqXW71kqz2xt7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2022 13:05:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KSqZd4nBXz2xgY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2022 13:07:37 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 4FDE8613E2;
- Wed, 30 Mar 2022 02:05:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D11FC340ED;
- Wed, 30 Mar 2022 02:05:13 +0000 (UTC)
-Date: Tue, 29 Mar 2022 22:05:11 -0400
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 0093261372;
+ Wed, 30 Mar 2022 02:07:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBEAAC340ED;
+ Wed, 30 Mar 2022 02:07:34 +0000 (UTC)
+Date: Tue, 29 Mar 2022 22:07:33 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2] MAINTAINERS: Enlarge coverage of TRACING inside
- architectures
-Message-ID: <20220329220511.62977a6c@gandalf.local.home>
-In-Reply-To: <e8338c0ad0e73991cbd8f31c215b16ea4efe212d.1648189904.git.christophe.leroy@csgroup.eu>
-References: <e8338c0ad0e73991cbd8f31c215b16ea4efe212d.1648189904.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2] ftrace: Make ftrace_graph_is_dead() a static branch
+Message-ID: <20220329220733.682172ec@gandalf.local.home>
+In-Reply-To: <8628338322fa74287ca8d432d5c0c1964acd6f2a.1648195329.git.christophe.leroy@csgroup.eu>
+References: <8628338322fa74287ca8d432d5c0c1964acd6f2a.1648195329.git.christophe.leroy@csgroup.eu>
 X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -53,15 +52,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 25 Mar 2022 07:32:21 +0100
+On Fri, 25 Mar 2022 09:03:08 +0100
 Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
 
-> Most architectures have ftrace related stuff in arch/*/kernel/ftrace.c
-> but powerpc has it spread in multiple files located in
-> arch/powerpc/kernel/trace/
-> In several architectures, there are also additional files containing
-> 'ftrace' as part of the name but with some prefix or suffix.
+> --- a/kernel/trace/fgraph.c
+> +++ b/kernel/trace/fgraph.c
+> @@ -10,6 +10,7 @@
+>  #include <linux/suspend.h>
+>  #include <linux/ftrace.h>
+>  #include <linux/slab.h>
+> +#include <linux/jump_label.h>
+>  
 
-Acked-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+Small nit. Please order the includes in "upside-down x-mas tree" fashion:
+
+#include <linux/jump_label.h>
+#include <linux/suspend.h>
+#include <linux/ftrace.h>
+#include <linux/slab.h>
+
+Thanks,
 
 -- Steve
