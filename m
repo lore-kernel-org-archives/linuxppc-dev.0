@@ -4,70 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDC87C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Mar 2022 11:37:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECB18C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Mar 2022 11:40:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KT4Cr01gqz306m
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Mar 2022 22:37:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KT4HB3wTwz3c1D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Mar 2022 22:40:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=hiwZ/rnv;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=RFrnMZzz;
+	dkim=pass (1024-bit key; secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256 header.s=google header.b=GRUkFdzV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
- (client-ip=195.135.220.29; helo=smtp-out2.suse.de;
- envelope-from=msuchanek@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f2b;
+ helo=mail-qv1-xf2b.google.com; envelope-from=joel.stan@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
- header.s=susede2_rsa header.b=hiwZ/rnv; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=RFrnMZzz; 
- dkim-atps=neutral
-X-Greylist: delayed 528 seconds by postgrey-1.36 at boromir;
- Wed, 30 Mar 2022 22:36:30 AEDT
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+ secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256
+ header.s=google header.b=GRUkFdzV; dkim-atps=neutral
+Received: from mail-qv1-xf2b.google.com (mail-qv1-xf2b.google.com
+ [IPv6:2607:f8b0:4864:20::f2b])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KT4C24sC6z2x98
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2022 22:36:30 +1100 (AEDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
- by smtp-out2.suse.de (Postfix) with ESMTP id 9CD351F38C;
- Wed, 30 Mar 2022 11:27:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
- t=1648639657; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=SEh9q825X4XJd27vocQTJ0Ah1yjY4ISz2lUFtaIbslU=;
- b=hiwZ/rnvHAmRUVLDkeV0iDDn9/HCy6oQYGW6bL56T6trX/3UQvFHGHqqxoka2uz3zs8/wb
- r/VkjjjMzfK23RBhwMlEeTMfIK5G9jl5HjCp3aZG/XPLMdAn67JiQHUEtykG1MbG6miwNc
- zlLIXqKQeOTzFgoVXbrfWlURUsIiH6E=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
- s=susede2_ed25519; t=1648639657;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=SEh9q825X4XJd27vocQTJ0Ah1yjY4ISz2lUFtaIbslU=;
- b=RFrnMZzzPrRfgPVjY76VRPQm6Ut2g6BailUUqf2UDnkBtTaTTv7Da+SS6IBUe/XEfaINgD
- MGotLDXCyBbVx8DQ==
-Received: from kunlun.suse.cz (unknown [10.100.128.76])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by relay2.suse.de (Postfix) with ESMTPS id A5927A3B88;
- Wed, 30 Mar 2022 11:27:34 +0000 (UTC)
-Date: Wed, 30 Mar 2022 13:27:33 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.18-1 tag
-Message-ID: <20220330112733.GG163591@kunlun.suse.cz>
-References: <87zglefhxd.fsf@mpe.ellerman.id.au>
- <CAHk-=whk4jihDM+zkhZPYRyNO0-YA1_-K9_NyC3EDsX+gkxC-w@mail.gmail.com>
- <87wngefnsu.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KT4GV41Tcz2x9G
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2022 22:39:29 +1100 (AEDT)
+Received: by mail-qv1-xf2b.google.com with SMTP id ke15so16570861qvb.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Mar 2022 04:39:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jms.id.au; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc:content-transfer-encoding;
+ bh=eq2J9pQtwgy02hWJGhxGaP+OuwdM8/b6vdr0Ns2JSFM=;
+ b=GRUkFdzVqAZ4mlT/vLkKA8pBG2f4yzxqEgPEUTl0vXD3loOHXuNmAPwZLlytMnxXbA
+ fb7EYZZSZd0XUL1v1bwC5qMPtysCtmOyw9amuRMPKrr4xddyvWzgRiONEU+69QOlBIdS
+ Uhbpdi5iR4GUX0TGXJFYbV3HsMQ+1+Vym66To=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=eq2J9pQtwgy02hWJGhxGaP+OuwdM8/b6vdr0Ns2JSFM=;
+ b=hHvpwGGMHI2HtFHYCBq/+ZSTEkie2oFofR1CwWzUT/v2AHk5ojx4NSibRaMYuK1YF2
+ k0XMxVC2uh/2DXcjOoU4toAnpM/QNrGqaFcMqNyTSguHfWuoiRWi/UMLARWR2FQdK+hv
+ MAZ+5LVT6ngoGtTnyOzu5SXSAkhX9FnQMuyP39dQqD145RJ7+wdFjtgernABsetsv+Y/
+ ferN1Chg9HdJRzC+Whk9yEtZqQpyXtbDGlU2T2MvY2kWFUWBWuTCoFw3mi+Tr7JWWeV1
+ t5q7ZberGAJkZNJfLHOZrtA8PGF2Xe+mCkWDNnNHdTaYYEWkaG//KjYWNCqrV7B+g7jo
+ 6wXQ==
+X-Gm-Message-State: AOAM531sANTdfb82Gc3QaHmIyeBfeMswIl/1VklBTbsYyfL9RD+Z9EF9
+ ud4hOIn1JEJefUkXisr5PUMCM2vcm3o1zcA+uqQ=
+X-Google-Smtp-Source: ABdhPJz2soE2dViHagjwCy3HN90aF7S6RYKl0Rfwvu4i0Nh9zZLRoglgTFMbL68vWJK9jUL2fD85/ZN3Z4bXI2F5ReU=
+X-Received: by 2002:ad4:4593:0:b0:441:1485:3403 with SMTP id
+ x19-20020ad44593000000b0044114853403mr31147189qvu.107.1648640365924; Wed, 30
+ Mar 2022 04:39:25 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87wngefnsu.fsf@mpe.ellerman.id.au>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+References: <20220330112437.540214-1-joel@jms.id.au>
+ <e0776e34-7efa-f42c-c194-1fc3fc5cf445@csgroup.eu>
+In-Reply-To: <e0776e34-7efa-f42c-c194-1fc3fc5cf445@csgroup.eu>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 30 Mar 2022 11:39:13 +0000
+Message-ID: <CACPK8XdMiLFRpz7zAAVyGJzF4DiXrCK0WdKLxQ24e3KvFgdyow@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/boot: Build wrapper for an appropriate CPU
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,64 +74,128 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Menzel <pmenzel@molgen.mpg.de>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- jniethe5@gmail.com, ganeshgr@linux.ibm.com, wangborong@cdjrlc.com,
- bigunclemax@gmail.com, Miroslav Benes <mbenes@suse.cz>, hbh25y@gmail.com,
- mikey@neuling.org, Joe Lawrence <joe.lawrence@redhat.com>,
- Bhaskar Chowdhury <unixbhaskar@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Helge Deller <deller@gmx.de>,
- danielhb413@gmail.com, haren@linux.ibm.com, mamatha4@linux.vnet.ibm.com,
- Corentin Labbe <clabbe@baylibre.com>,
- Wedson Almeida Filho <wedsonaf@google.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Thierry Reding <treding@nvidia.com>, kernel.noureddine@gmail.com,
- nathanl@linux.ibm.com, Petr Mladek <pmladek@suse.com>,
- YueHaibing <yuehaibing@huawei.com>, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, guozhengkui@vivo.com, kjain@linux.ibm.com,
- chenjingwen6@huawei.com, Nick Piggin <npiggin@gmail.com>, oss@buserror.net,
- rmclure@linux.ibm.com, maddy@linux.ibm.com,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>, psampat@linux.ibm.com,
- sachinp@linux.ibm.com, Anders Roxell <anders.roxell@linaro.org>,
- ldufour@linux.ibm.com, hbathini@linux.ibm.com,
- Athira Jajeev <atrajeev@linux.vnet.ibm.com>, farosas@linux.ibm.com,
- Geoff Levand <geoff@infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Randy Dunlap <rdunlap@infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- sourabhjain@linux.ibm.com, Julia Lawall <Julia.Lawall@inria.fr>,
- Ritesh Harjani <riteshh@linux.ibm.com>, cgel.zte@gmail.com,
- Vaibhav Jain <vaibhav@linux.ibm.com>, tobias@waldekranz.com,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Jakob Koschel <jakobkoschel@gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 28, 2022 at 08:07:13PM +1100, Michael Ellerman wrote:
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
-> > On Fri, Mar 25, 2022 at 3:25 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> 
-> > That said:
+On Wed, 30 Mar 2022 at 11:33, Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
+>
+>
+>
+> Le 30/03/2022 =C3=A0 13:24, Joel Stanley a =C3=A9crit :
+> > Currently the boot wrapper lacks a -mcpu option, so it will be built fo=
+r
+> > the toolchain's default cpu. This is a problem if the toolchain default=
+s
+> > to a cpu with newer instructions.
 > >
-> >> There's a series of commits cleaning up function descriptor handling,
+> > We could wire in TARGET_CPU but instead use the oldest supported option
+> > so the wrapper runs anywhere.
 > >
-> > For some reason I also thought that powerpc had actually moved away
-> > from function descriptors, so I'm clearly not keeping up with the
-> > times.
-> 
-> No you're right, we have moved away from them, but not entirely.
-> 
-> Functions descriptors are still used for 64-bit big endian, but they're
-> not used for 64-bit little endian, or 32-bit.
+> > The GCC documentation stays that -mcpu=3Dpowerpc64le will give us a
+> > generic 64 bit powerpc machine:
+> >
+> >   -mcpu=3Dpowerpc, -mcpu=3Dpowerpc64, and -mcpu=3Dpowerpc64le specify p=
+ure
+> >   32-bit PowerPC (either endian), 64-bit big endian PowerPC and 64-bit
+> >   little endian PowerPC architecture machine types, with an appropriate=
+,
+> >   generic processor model assumed for scheduling purposes.
+> >
+> > So do that for each of the three machines.
+> >
+> > This bug was found when building the kernel with a toolchain that
+> > defaulted to powre10, resulting in a pcrel enabled wrapper which fails
+> > to link:
+> >
+> >   arch/powerpc/boot/wrapper.a(crt0.o): in function `p_base':
+> >   (.text+0x150): call to `platform_init' lacks nop, can't restore toc; =
+(toc save/adjust stub)
+> >   (.text+0x154): call to `start' lacks nop, can't restore toc; (toc sav=
+e/adjust stub)
+> >   powerpc64le-buildroot-linux-gnu-ld: final link failed: bad value
+> >
+> > Even with tha bug worked around the resulting kernel would crash on a
+> > power9 box:
+> >
+> >   $ qemu-system-ppc64 -nographic -nodefaults -M powernv9 -kernel arch/p=
+owerpc/boot/zImage.epapr -serial mon:stdio
+> >   [    7.069331356,5] INIT: Starting kernel at 0x20010020, fdt at 0x306=
+8c628 25694 bytes
+> >   [    7.130374661,3] ***********************************************
+> >   [    7.131072886,3] Fatal Exception 0xe40 at 00000000200101e4    MSR =
+9000000000000001
+> >   [    7.131290613,3] CFAR : 000000002001027c MSR  : 9000000000000001
+> >   [    7.131433759,3] SRR0 : 0000000020010050 SRR1 : 9000000000000001
+> >   [    7.131577775,3] HSRR0: 00000000200101e4 HSRR1: 9000000000000001
+> >   [    7.131733687,3] DSISR: 00000000         DAR  : 0000000000000000
+> >   [    7.131905162,3] LR   : 0000000020010280 CTR  : 0000000000000000
+> >   [    7.132068356,3] CR   : 44002004         XER  : 00000000
+> >
+> > Link: https://github.com/linuxppc/issues/issues/400
+> > Signed-off-by: Joel Stanley <joel@jms.id.au>
+> > ---
+> > Tested:
+> >
+> >   - ppc64le_defconfig
+> >   - pseries and powernv qemu, for power8, power9, power10 cpus
+> >   - buildroot compiler that defaults to -mcpu=3Dpower10 (gcc 10.3.0, ld=
+ 2.36.1)
+> >   -  RHEL9 cross compilers (gcc 11.2.1-1, ld 2.35.2-17.el9)
+> >
+> > All decompressed and made it into the kernel ok.
+> >
+> > ppc64_defconfig did not work, as we've got a regression when the wrappe=
+r
+> > is built for big endian. It hasn't worked for zImage.pseries for a long
+> > time (at least v4.14), and broke some time between v5.4 and v5.17 for
+> > zImage.epapr.
+> >
+> >   arch/powerpc/boot/Makefile | 8 ++++++--
+> >   1 file changed, 6 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> > index 9993c6256ad2..1f5cc401bfc0 100644
+> > --- a/arch/powerpc/boot/Makefile
+> > +++ b/arch/powerpc/boot/Makefile
+> > @@ -38,9 +38,13 @@ BOOTCFLAGS    :=3D -Wall -Wundef -Wstrict-prototypes=
+ -Wno-trigraphs \
+> >                $(LINUXINCLUDE)
+> >
+> >   ifdef CONFIG_PPC64_BOOT_WRAPPER
+> > -BOOTCFLAGS   +=3D -m64
+> > +ifdef CONFIG_CPU_LITTLE_ENDIAN
+> > +BOOTCFLAGS   +=3D -m64 -mcpu=3Dpowerpc64le
+> >   else
+> > -BOOTCFLAGS   +=3D -m32
+> > +BOOTCFLAGS   +=3D -m64 -mcpu=3Dpowerpc64
+> > +endif
+> > +else
+> > +BOOTCFLAGS   +=3D -m32 -mcpu=3Dpowerpc
+>
+> How does that interracts with the following lines ? Isn't it an issue to
+> have two -mcpu ?
+>
+> arch/powerpc/boot/Makefile:$(obj)/4xx.o: BOOTCFLAGS +=3D -mcpu=3D405
+> arch/powerpc/boot/Makefile:$(obj)/ebony.o: BOOTCFLAGS +=3D -mcpu=3D440
+> arch/powerpc/boot/Makefile:$(obj)/cuboot-hotfoot.o: BOOTCFLAGS +=3D -mcpu=
+=3D405
+> arch/powerpc/boot/Makefile:$(obj)/cuboot-taishan.o: BOOTCFLAGS +=3D -mcpu=
+=3D440
+> arch/powerpc/boot/Makefile:$(obj)/cuboot-katmai.o: BOOTCFLAGS +=3D -mcpu=
+=3D440
+> arch/powerpc/boot/Makefile:$(obj)/cuboot-acadia.o: BOOTCFLAGS +=3D -mcpu=
+=3D405
+> arch/powerpc/boot/Makefile:$(obj)/treeboot-iss4xx.o: BOOTCFLAGS +=3D -mcp=
+u=3D405
+> arch/powerpc/boot/Makefile:$(obj)/treeboot-currituck.o: BOOTCFLAGS +=3D
+> -mcpu=3D405
+> arch/powerpc/boot/Makefile:$(obj)/treeboot-akebono.o: BOOTCFLAGS +=3D
+> -mcpu=3D405
 
-There was a patch to use ABIv2 for ppc64 big endian. I suppose that
-would rid usof the gunction descriptors for good.
+Good point, I didn't test the other wrappers.
 
-Somehow the discussion of that change tralied off without any results.
-
-Maybe it's worth resurrecting?
-
-Thanks
-
-Michal
+Last one wins as far as -mcpu lines goes, from a quick test. But it
+might lead to less confusion if I dropped the -mcpu=3Dpowerpc change.
