@@ -4,54 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C37FC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Apr 2022 13:49:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7CB1C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Apr 2022 13:49:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KVz0X6D6Nz3cNM
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Apr 2022 00:49:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KVz1D4sZWz3dvb
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Apr 2022 00:49:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sTgKGicu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P5SNXXiZ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org;
+ smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org;
  envelope-from=guoren@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=sTgKGicu; 
+ header.s=k20201202 header.b=P5SNXXiZ; 
  dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KVyln4sSnz3cBt
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Apr 2022 00:37:57 +1100 (AEDT)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KVysB6QRhz3cMg
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Apr 2022 00:42:38 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 00A0F614DC;
- Sat,  2 Apr 2022 13:37:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E52EC340F3;
- Sat,  2 Apr 2022 13:37:49 +0000 (UTC)
+ by sin.source.kernel.org (Postfix) with ESMTPS id BE8E5CE0952
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Apr 2022 13:42:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BAEE5C34117
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Apr 2022 13:42:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1648906674;
- bh=qyoPYJlSA6NEig6jnwlt/QYfSWiYQ9maXb6WEkmPDVA=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=sTgKGicuDvKASrBBt+fEBB/DMwyPrGd4KoNoC98ie/3sOworx/DaU4a2gqzH5EzuC
- CZ8ykH2qBCi6HFYe+htFe7aPENEnBKWDVu1giurNSCgxFjOuLAVkqxcxZdjGpNC0VR
- NcOjqDnzuZ1r+uYBFb+zIH6kOaAtwD0q/ukQ5gcJnSLFSiEvBSh0ELR1e6A0v8R4DX
- 29rlnv+Y0CsjFv5swhIJWFCuvGnMh006xfRe/GwdzTm1Jp4SI8bsUxX360Ruf+BNcP
- pl784eI0Wev7qWgMCqjd56x55sCIh70Msnw8mEJhGYB+92sB4TvFdUdZ1FAE7RVtTC
- 9froC8nKTUJwA==
-From: guoren@kernel.org
-To: guoren@kernel.org, palmer@dabbelt.com, arnd@arndb.de,
- gregkh@linuxfoundation.org, hch@lst.de
-Subject: [PATCH V10 20/20] riscv: compat: Add COMPAT Kbuild skeletal support
-Date: Sat,  2 Apr 2022 21:35:44 +0800
-Message-Id: <20220402133544.2690231-21-guoren@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220402133544.2690231-1-guoren@kernel.org>
-References: <20220402133544.2690231-1-guoren@kernel.org>
+ s=k20201202; t=1648906954;
+ bh=Gu+xq607wcJLBd5767EU4rcp1lhQFK3gX5NsYIlfwpk=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=P5SNXXiZYJlwtDY9K7ILgja4Zc87hqaPdzZuA4XcIfQiCgWqgEAqauONat3Oymksi
+ 87Z+SmQtQCTWwkSUosNSjXfEN/6Jo7qguivEZVbHhPO+6f6ILrIyWD7+UlL+sR9eJi
+ vcVJx+BsnnC1yfzFNFurIc6kR9rmo9R49wRg7UcSyTRxRPxKcLrwpgVt+0sOVwfu6c
+ 4Rw1eHf9eLdaWDKUZgEDb0kGbGBBTkThcnsCarYvj8Dv8khaCb4nOXAguU3V3I6XGi
+ Mm/KhWYBr79E28kngvHTPnvvO3WVy6LkMMukedXIJwUV/9UhFvHbYbapjP7HcxRTx/
+ Tr0ioD8VxBNgA==
+Received: by mail-vs1-f49.google.com with SMTP id t123so5094115vst.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 Apr 2022 06:42:34 -0700 (PDT)
+X-Gm-Message-State: AOAM530ZV5QMA/JAbSUwYjFIFxo6yv6Dkp3U7gX7/w2r86o4tbUj0Pkz
+ kR7N/ZMWKalDKK0QLju1x9LSXdEg5pO8IDNB0dk=
+X-Google-Smtp-Source: ABdhPJzkOByPICbGCNWRRHvRte+HkSIGERCcxR6bEJaVQtPFOc687kt90hJEYHoJbA8dMpQCnDf3561ZC2qPkk8E2t0=
+X-Received: by 2002:a05:6102:1241:b0:325:6bfb:ab75 with SMTP id
+ p1-20020a056102124100b003256bfbab75mr22778557vsg.2.1648906953574; Sat, 02 Apr
+ 2022 06:42:33 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220402133544.2690231-1-guoren@kernel.org>
+ <20220402133544.2690231-5-guoren@kernel.org>
+ <CAK7LNAS8i2xe2zFQo7mcJeujymhWB7hyp36UWS4Rp9T9dMUu2g@mail.gmail.com>
+In-Reply-To: <CAK7LNAS8i2xe2zFQo7mcJeujymhWB7hyp36UWS4Rp9T9dMUu2g@mail.gmail.com>
+From: Guo Ren <guoren@kernel.org>
+Date: Sat, 2 Apr 2022 21:42:22 +0800
+X-Gmail-Original-Message-ID: <CAJF2gTQvDHFijfq+ekjZV4qj75Yyer84tY_eggsdxz3dL3SrYA@mail.gmail.com>
+Message-ID: <CAJF2gTQvDHFijfq+ekjZV4qj75Yyer84tY_eggsdxz3dL3SrYA@mail.gmail.com>
+Subject: Re: [PATCH V10 04/20] kconfig: Add SYSVIPC_COMPAT for all
+ architectures
+To: Masahiro Yamada <masahiroy@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,82 +73,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Guo Ren <guoren@linux.alibaba.com>, heiko@sntech.de,
- linux-parisc@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- linux-csky@vger.kernel.org, linux-mips@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Guo Ren <guoren@linux.alibaba.com>,
+ Parisc List <linux-parisc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, X86 ML <x86@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-csky@vger.kernel.org,
+ "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, sparclinux <sparclinux@vger.kernel.org>,
+ "open list:SIFIVE DRIVERS" <linux-riscv@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Guo Ren <guoren@linux.alibaba.com>
+On Sat, Apr 2, 2022 at 9:39 PM Masahiro Yamada <masahiroy@kernel.org> wrote:
+>
+> On Sat, Apr 2, 2022 at 10:36 PM <guoren@kernel.org> wrote:
+> >
+> > From: Guo Ren <guoren@linux.alibaba.com>
+> >
+> > The existing per-arch definitions are pretty much historic cruft.
+> > Move SYSVIPC_COMPAT into init/Kconfig.
+> >
+> > Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+> > Signed-off-by: Guo Ren <guoren@kernel.org>
+> > Acked-by: Arnd Bergmann <arnd@arndb.de>
+> > Reviewed-by: Christoph Hellwig <hch@lst.de>
+> > Tested-by: Heiko Stuebner <heiko@sntech.de>
+> > Cc: Palmer Dabbelt <palmer@dabbelt.com>
+> > ---
+>
+> Please use "arch:" or something for the commit subject.
+>
+> I want to see "kconfig:" for
+> changes under scripts/kconfig/.
+Okay
 
-Adds initial skeletal COMPAT Kbuild (Running 32bit U-mode on
-64bit S-mode) support.
- - Setup kconfig & dummy functions for compiling.
- - Implement compat_start_thread by the way.
+>
+>
+>
+> --
+> Best Regards
+> Masahiro Yamada
 
-Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-Signed-off-by: Guo Ren <guoren@kernel.org>
-Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-Tested-by: Heiko Stuebner <heiko@sntech.de>
-Cc: Palmer Dabbelt <palmer@dabbelt.com>
----
- arch/riscv/Kconfig | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 5adcbd9b5e88..6f11df8c189f 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -73,6 +73,7 @@ config RISCV
- 	select HAVE_ARCH_KGDB if !XIP_KERNEL
- 	select HAVE_ARCH_KGDB_QXFER_PKT
- 	select HAVE_ARCH_MMAP_RND_BITS if MMU
-+	select HAVE_ARCH_MMAP_RND_COMPAT_BITS if COMPAT
- 	select HAVE_ARCH_SECCOMP_FILTER
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_ARCH_TRANSPARENT_HUGEPAGE if 64BIT && MMU
-@@ -123,12 +124,18 @@ config ARCH_MMAP_RND_BITS_MIN
- 	default 18 if 64BIT
- 	default 8
- 
-+config ARCH_MMAP_RND_COMPAT_BITS_MIN
-+	default 8
-+
- # max bits determined by the following formula:
- #  VA_BITS - PAGE_SHIFT - 3
- config ARCH_MMAP_RND_BITS_MAX
- 	default 24 if 64BIT # SV39 based
- 	default 17
- 
-+config ARCH_MMAP_RND_COMPAT_BITS_MAX
-+	default 17
-+
- # set if we run in machine mode, cleared if we run in supervisor mode
- config RISCV_M_MODE
- 	bool
-@@ -406,6 +413,18 @@ config CRASH_DUMP
- 
- 	  For more details see Documentation/admin-guide/kdump/kdump.rst
- 
-+config COMPAT
-+	bool "Kernel support for 32-bit U-mode"
-+	default 64BIT
-+	depends on 64BIT && MMU
-+	help
-+	  This option enables support for a 32-bit U-mode running under a 64-bit
-+	  kernel at S-mode. riscv32-specific components such as system calls,
-+	  the user helper functions (vdso), signal rt_frame functions and the
-+	  ptrace interface are handled appropriately by the kernel.
-+
-+	  If you want to execute 32-bit userspace applications, say Y.
-+
- endmenu
- 
- menu "Boot options"
+
 -- 
-2.25.1
+Best Regards
+ Guo Ren
 
+ML: https://lore.kernel.org/linux-csky/
