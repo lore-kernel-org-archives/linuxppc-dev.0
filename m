@@ -4,53 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52CCEC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Apr 2022 10:11:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3A9FC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Apr 2022 10:16:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KX64W63RHz3dNv
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Apr 2022 20:11:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KX6BX35Htz3bWG
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Apr 2022 20:16:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=FypPdnh/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm2 header.b=AcjLg+WR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=FataNJlW;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=walle.cc (client-ip=2a01:4f8:151:8464::1:2;
- helo=ssl.serverraum.org; envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256
- header.s=mail2016061301 header.b=FypPdnh/; 
+ smtp.mailfrom=russell.cc (client-ip=66.111.4.25;
+ helo=out1-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256
+ header.s=fm2 header.b=AcjLg+WR; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm3 header.b=FataNJlW; 
  dkim-atps=neutral
-Received: from ssl.serverraum.org (ssl.serverraum.org
- [IPv6:2a01:4f8:151:8464::1:2])
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
+ [66.111.4.25])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KX5zF6Qk3z2y8P
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2022 20:06:49 +1000 (AEST)
-Received: from mwalle01.kontron.local. (unknown [213.135.10.150])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-384) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ssl.serverraum.org (Postfix) with ESMTPSA id D502822253;
- Mon,  4 Apr 2022 11:57:25 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc;
- s=mail2016061301; t=1649066246;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=v4ovPMtZKYrSYvnne++2NCiqISTem+2ORO/rEGf1fnU=;
- b=FypPdnh/aC2DXD/HlOitMRUQ3uYoaroPYDYv3JWgzbYoHd+HF3NaueOHbLAJx22YGkPSM6
- 8wAtBaM7n8kCMqx7O2YV2Wa5NmuGCJ8hnrzF+uGUEJVn6b7B4xhEsPGqKl1ywh9YbT6Vn2
- UQhM1uoD6iMuG+38xeZK/MADI5BhQfo=
-From: Michael Walle <michael@walle.cc>
-To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH RESEND v2 6/7] soc: fsl: guts: drop platform driver
-Date: Mon,  4 Apr 2022 11:56:08 +0200
-Message-Id: <20220404095609.3932782-7-michael@walle.cc>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20220404095609.3932782-1-michael@walle.cc>
-References: <20220404095609.3932782-1-michael@walle.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KX69p2Xlqz2xsP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2022 20:15:58 +1000 (AEST)
+Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
+ by mailout.nyi.internal (Postfix) with ESMTP id 74A205C00FF;
+ Mon,  4 Apr 2022 06:15:56 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute1.internal (MEProxy); Mon, 04 Apr 2022 06:15:56 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=cc
+ :cc:content-transfer-encoding:date:date:from:from:in-reply-to
+ :in-reply-to:message-id:mime-version:references:reply-to:sender
+ :subject:subject:to:to; s=fm2; bh=OpYjOK8qXNkeZoUyd5OhpdozVPoR9p
+ h6sxuzaI33x6Y=; b=AcjLg+WRJtfTC3RcxwlgmRT+4ijHgrTZsTPbG8NC/HO5Tq
+ Wuy/DD++EbAy7BViI9stqg/WrIzd3zXVagXsiIxAzjrFEUofEeAHqdclqYVQkgEN
+ 7HD9jkmzIk4sh+6pIkCMmExXYSBK1N0gxxgbi5zLzOczkNZZnY0iV2IoF6XzbgQY
+ VOTqNHQ7iyQCxRgAp+2xij0iTHjFOSbBYCy1VzvH6/0+VN7o6fYMZQl+XY5chNB4
+ df3YIMWHpa0UqsdkTk3aO77ueHz+wXVGBktBiFJVypRf+/WK1N4QP2XWSQA8r/1h
+ Iy94AHO87Q6b1p0PQMvqjxXYfZRkJqPVSYxuNT1A==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:cc:content-transfer-encoding:date:date
+ :from:from:in-reply-to:in-reply-to:message-id:mime-version
+ :references:reply-to:sender:subject:subject:to:to:x-me-proxy
+ :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; bh=OpYjOK
+ 8qXNkeZoUyd5OhpdozVPoR9ph6sxuzaI33x6Y=; b=FataNJlWAOA11BN+T/Pxi9
+ WudfIrEC9B0cbb7c+lxFRTkMW4k3kYvVmKw8vGsS2nzQlLakNgu563XvlJtk6/KZ
+ F8G3ShrkJvcU1ngRiYHFtvzPuHEcdWtuV/9xfuJjH4nkN5w/RKnLJSUdd7f03/xw
+ orY4m8QXW7QkaUx5zniBCwSafwxk1ZRCeO9IFUqztbWdEeLCl01E+uvbU+Dj8e1v
+ jevwWScbJ41Tnm4d7+IRKluNkbjwuKtmW8h0M8m/97819nXeNI/BDSKm3OjrYMTn
+ DIeyNm5BUVEH1slS1MeWsmBBa9H/tm6mChY907AuszznsARcACFf+6QViZiuHB0A
+ ==
+X-ME-Sender: <xms:XMVKYri0XrTy3GDHn7i1hYq0ACluyxKk3OpWXtCPHOIEhAgUtmcXKw>
+ <xme:XMVKYoBeRlT3tCRJ1gA93rKn_pTOSw8OoIaoQePnUnBJUWQWaPeDrCU4eu_NFXSFJ
+ 8nfpBRng797uFAZog>
+X-ME-Received: <xmr:XMVKYrGUPTA9GwP3V5U8pQi3D1bnQwI2LA05T2iBnnVecscqL_bc87owVpSDmct-LXMDbiuy3Q3uHwiOZ9DyQ4D2LUtYlAijGKKywyeAKn32uCILieBI9fVMFQ>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvvddrudejvddgvdefucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdludehmdenucfjughrpefhvf
+ fufffkofgjfhgggfestdekredtredttdenucfhrhhomheptfhushhsvghllhcuvehurhhr
+ vgihuceorhhushgtuhhrsehruhhsshgvlhhlrdgttgeqnecuggftrfgrthhtvghrnheple
+ ehudejieefveetuedtfeevvdfhgfekjeeuieevieellefhleduhfefvdduheegnecuvehl
+ uhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrse
+ hruhhsshgvlhhlrdgttg
+X-ME-Proxy: <xmx:XMVKYoTB3rOFGK6jajkcr91c2eWG79bkCqa2gWBPyHvbsfhxvd4yQA>
+ <xmx:XMVKYozBqNF1vhV_VqSD-V8JB3Zn-2qKaGUPCoyIYqJRu1H-kCmmHA>
+ <xmx:XMVKYu7MtDhroSqJtqKx7Cq-XW0-y_vHs6bCNJAiaecPHwA3VM0ZHg>
+ <xmx:XMVKYiu1U1uP-tV4kvhbkKngSJMXd1zJ5z13xTwDt2cDRHXl_2nsow>
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 4 Apr 2022 06:15:54 -0400 (EDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 2/2] powerpc/powernv: Get STF barrier requirements from
+ device-tree
+Date: Mon,  4 Apr 2022 20:15:36 +1000
+Message-Id: <20220404101536.104794-2-ruscur@russell.cc>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220404101536.104794-1-ruscur@russell.cc>
+References: <20220404101536.104794-1-ruscur@russell.cc>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -64,215 +98,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
- Li Yang <leoyang.li@nxp.com>, Michael Walle <michael@walle.cc>,
- Sudeep Holla <Sudeep.Holla@arm.com>, Shawn Guo <shawnguo@kernel.org>,
- Dan Carpenter <dan.carpenter@oracle.com>
+Cc: mopsfelder@gmail.com, joel@jms.id.au, npiggin@gmail.com,
+ Russell Currey <ruscur@russell.cc>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This driver cannot be unloaded and it will be needed very early in the
-boot process because other driver (weakly) depend on it (eg. for chip
-errata handling). Drop all the platform driver and devres stuff and
-simply make it a core_initcall.
+The device-tree property no-need-store-drain-on-priv-state-switch is
+equivalent to H_CPU_BEHAV_NO_STF_BARRIER from the
+H_CPU_GET_CHARACTERISTICS hcall on pseries.
 
-Signed-off-by: Michael Walle <michael@walle.cc>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+Since commit 84ed26fd00c5 ("powerpc/security: Add a security feature for
+STF barrier") powernv systems with this device-tree property have been
+enabling the STF barrier when they have no need for it.  This patch
+fixes this by clearing the STF barrier feature on those systems.
+
+Fixes: 84ed26fd00c5 ("powerpc/security: Add a security feature for STF barrier")
+Reported-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- drivers/soc/fsl/guts.c | 134 ++++++++++++++++++++++-------------------
- 1 file changed, 71 insertions(+), 63 deletions(-)
+ arch/powerpc/platforms/powernv/setup.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-index 585cbd9d8224..370be923aa0f 100644
---- a/drivers/soc/fsl/guts.c
-+++ b/drivers/soc/fsl/guts.c
-@@ -110,21 +110,59 @@ static const struct fsl_soc_die_attr *fsl_soc_die_match(
- 	return NULL;
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 378f7e5f18d2..824c3ad7a0fa 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -102,6 +102,9 @@ static void __init init_fw_feat_flags(struct device_node *np)
+ 
+ 	if (fw_feature_is("enabled", "no-need-l1d-flush-kernel-on-user-access", np))
+ 		security_ftr_clear(SEC_FTR_L1D_FLUSH_UACCESS);
++
++	if (fw_feature_is("enabled", "no-need-store-drain-on-priv-state-switch", np))
++		security_ftr_clear(SEC_FTR_STF_BARRIER);
  }
  
--static int fsl_guts_probe(struct platform_device *pdev)
-+/*
-+ * Table for matching compatible strings, for device tree
-+ * guts node, for Freescale QorIQ SOCs.
-+ */
-+static const struct of_device_id fsl_guts_of_match[] = {
-+	{ .compatible = "fsl,qoriq-device-config-1.0", },
-+	{ .compatible = "fsl,qoriq-device-config-2.0", },
-+	{ .compatible = "fsl,p1010-guts", },
-+	{ .compatible = "fsl,p1020-guts", },
-+	{ .compatible = "fsl,p1021-guts", },
-+	{ .compatible = "fsl,p1022-guts", },
-+	{ .compatible = "fsl,p1023-guts", },
-+	{ .compatible = "fsl,p2020-guts", },
-+	{ .compatible = "fsl,bsc9131-guts", },
-+	{ .compatible = "fsl,bsc9132-guts", },
-+	{ .compatible = "fsl,mpc8536-guts", },
-+	{ .compatible = "fsl,mpc8544-guts", },
-+	{ .compatible = "fsl,mpc8548-guts", },
-+	{ .compatible = "fsl,mpc8568-guts", },
-+	{ .compatible = "fsl,mpc8569-guts", },
-+	{ .compatible = "fsl,mpc8572-guts", },
-+	{ .compatible = "fsl,ls1021a-dcfg", },
-+	{ .compatible = "fsl,ls1043a-dcfg", },
-+	{ .compatible = "fsl,ls2080a-dcfg", },
-+	{ .compatible = "fsl,ls1088a-dcfg", },
-+	{ .compatible = "fsl,ls1012a-dcfg", },
-+	{ .compatible = "fsl,ls1046a-dcfg", },
-+	{ .compatible = "fsl,lx2160a-dcfg", },
-+	{ .compatible = "fsl,ls1028a-dcfg", },
-+	{}
-+};
-+
-+static int __init fsl_guts_init(void)
- {
--	struct device_node *np = pdev->dev.of_node;
- 	struct soc_device_attribute *soc_dev_attr;
- 	static struct soc_device *soc_dev;
--	struct device *dev = &pdev->dev;
- 	const struct fsl_soc_die_attr *soc_die;
- 	struct ccsr_guts __iomem *regs;
- 	const char *machine = NULL;
-+	struct device_node *np;
- 	bool little_endian;
- 	u32 svr;
-+	int ret;
-+
-+	np = of_find_matching_node_and_match(NULL, fsl_guts_of_match, NULL);
-+	if (!np)
-+		return 0;
- 
- 	regs = of_iomap(np, 0);
--	if (IS_ERR(regs))
-+	if (IS_ERR(regs)) {
-+		of_node_put(np);
- 		return PTR_ERR(regs);
-+	}
- 
- 	little_endian = of_property_read_bool(np, "little-endian");
- 	if (little_endian)
-@@ -132,92 +170,62 @@ static int fsl_guts_probe(struct platform_device *pdev)
- 	else
- 		svr = ioread32be(&regs->svr);
- 	iounmap(regs);
-+	of_node_put(np);
- 
- 	/* Register soc device */
--	soc_dev_attr = devm_kzalloc(dev, sizeof(*soc_dev_attr), GFP_KERNEL);
-+	soc_dev_attr = kzalloc(sizeof(*soc_dev_attr), GFP_KERNEL);
- 	if (!soc_dev_attr)
- 		return -ENOMEM;
- 
- 	if (of_property_read_string(of_root, "model", &machine))
- 		of_property_read_string_index(of_root, "compatible", 0, &machine);
- 	if (machine) {
--		soc_dev_attr->machine = devm_kstrdup(dev, machine, GFP_KERNEL);
-+		soc_dev_attr->machine = kstrdup(machine, GFP_KERNEL);
- 		if (!soc_dev_attr->machine)
--			return -ENOMEM;
-+			goto err_nomem;
- 	}
- 
- 	soc_die = fsl_soc_die_match(svr, fsl_soc_die);
- 	if (soc_die) {
--		soc_dev_attr->family = devm_kasprintf(dev, GFP_KERNEL,
--						      "QorIQ %s", soc_die->die);
-+		soc_dev_attr->family = kasprintf(GFP_KERNEL, "QorIQ %s",
-+						 soc_die->die);
- 	} else {
--		soc_dev_attr->family = devm_kasprintf(dev, GFP_KERNEL, "QorIQ");
-+		soc_dev_attr->family = kasprintf(GFP_KERNEL, "QorIQ");
- 	}
- 	if (!soc_dev_attr->family)
--		return -ENOMEM;
--	soc_dev_attr->soc_id = devm_kasprintf(dev, GFP_KERNEL,
--					      "svr:0x%08x", svr);
-+		goto err_nomem;
-+
-+	soc_dev_attr->soc_id = kasprintf(GFP_KERNEL, "svr:0x%08x", svr);
- 	if (!soc_dev_attr->soc_id)
--		return -ENOMEM;
--	soc_dev_attr->revision = devm_kasprintf(dev, GFP_KERNEL, "%d.%d",
--						(svr >>  4) & 0xf, svr & 0xf);
-+		goto err_nomem;
-+
-+	soc_dev_attr->revision = kasprintf(GFP_KERNEL, "%d.%d",
-+					   (svr >>  4) & 0xf, svr & 0xf);
- 	if (!soc_dev_attr->revision)
--		return -ENOMEM;
-+		goto err_nomem;
- 
- 	soc_dev = soc_device_register(soc_dev_attr);
--	if (IS_ERR(soc_dev))
--		return PTR_ERR(soc_dev);
-+	if (IS_ERR(soc_dev)) {
-+		ret = PTR_ERR(soc_dev);
-+		goto err;
-+	}
- 
- 	pr_info("Machine: %s\n", soc_dev_attr->machine);
- 	pr_info("SoC family: %s\n", soc_dev_attr->family);
- 	pr_info("SoC ID: %s, Revision: %s\n",
- 		soc_dev_attr->soc_id, soc_dev_attr->revision);
--	return 0;
--}
- 
--/*
-- * Table for matching compatible strings, for device tree
-- * guts node, for Freescale QorIQ SOCs.
-- */
--static const struct of_device_id fsl_guts_of_match[] = {
--	{ .compatible = "fsl,qoriq-device-config-1.0", },
--	{ .compatible = "fsl,qoriq-device-config-2.0", },
--	{ .compatible = "fsl,p1010-guts", },
--	{ .compatible = "fsl,p1020-guts", },
--	{ .compatible = "fsl,p1021-guts", },
--	{ .compatible = "fsl,p1022-guts", },
--	{ .compatible = "fsl,p1023-guts", },
--	{ .compatible = "fsl,p2020-guts", },
--	{ .compatible = "fsl,bsc9131-guts", },
--	{ .compatible = "fsl,bsc9132-guts", },
--	{ .compatible = "fsl,mpc8536-guts", },
--	{ .compatible = "fsl,mpc8544-guts", },
--	{ .compatible = "fsl,mpc8548-guts", },
--	{ .compatible = "fsl,mpc8568-guts", },
--	{ .compatible = "fsl,mpc8569-guts", },
--	{ .compatible = "fsl,mpc8572-guts", },
--	{ .compatible = "fsl,ls1021a-dcfg", },
--	{ .compatible = "fsl,ls1043a-dcfg", },
--	{ .compatible = "fsl,ls2080a-dcfg", },
--	{ .compatible = "fsl,ls1088a-dcfg", },
--	{ .compatible = "fsl,ls1012a-dcfg", },
--	{ .compatible = "fsl,ls1046a-dcfg", },
--	{ .compatible = "fsl,lx2160a-dcfg", },
--	{ .compatible = "fsl,ls1028a-dcfg", },
--	{}
--};
--MODULE_DEVICE_TABLE(of, fsl_guts_of_match);
-+	return 0;
- 
--static struct platform_driver fsl_guts_driver = {
--	.driver = {
--		.name = "fsl-guts",
--		.of_match_table = fsl_guts_of_match,
--	},
--	.probe = fsl_guts_probe,
--};
-+err_nomem:
-+	ret = -ENOMEM;
-+err:
-+	kfree(soc_dev_attr->machine);
-+	kfree(soc_dev_attr->family);
-+	kfree(soc_dev_attr->soc_id);
-+	kfree(soc_dev_attr->revision);
-+	kfree(soc_dev_attr);
- 
--static int __init fsl_guts_init(void)
--{
--	return platform_driver_register(&fsl_guts_driver);
-+	return ret;
- }
- core_initcall(fsl_guts_init);
+ static void __init pnv_setup_security_mitigations(void)
 -- 
-2.30.2
+2.35.1
 
