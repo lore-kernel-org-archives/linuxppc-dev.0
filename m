@@ -4,51 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10C80C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Apr 2022 10:10:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D2B0C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Apr 2022 10:10:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KX63B3rQHz3cK2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Apr 2022 20:10:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KX63r6Z3Nz3cgC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Apr 2022 20:10:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=dqX6rxz5;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=jrxnZimP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=walle.cc (client-ip=2a01:4f8:151:8464::1:2;
  helo=ssl.serverraum.org; envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256
- header.s=mail2016061301 header.b=dqX6rxz5; 
+ header.s=mail2016061301 header.b=jrxnZimP; 
  dkim-atps=neutral
 Received: from ssl.serverraum.org (ssl.serverraum.org
  [IPv6:2a01:4f8:151:8464::1:2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KX5zF6C3qz2xsP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KX5zF6PcJz2xtT
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2022 20:06:49 +1000 (AEST)
 Received: from mwalle01.kontron.local. (unknown [213.135.10.150])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-384) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by ssl.serverraum.org (Postfix) with ESMTPSA id 2D7E32224E;
- Mon,  4 Apr 2022 11:57:25 +0200 (CEST)
+ by ssl.serverraum.org (Postfix) with ESMTPSA id 2EEA222255;
+ Mon,  4 Apr 2022 11:57:26 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc;
- s=mail2016061301; t=1649066245;
+ s=mail2016061301; t=1649066246;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=6OyNeZS+QG1hA8GYAjcgVvsD0Y3gZ/R3mypb4i3MxqE=;
- b=dqX6rxz52L2kLkfD4q33e9A2jU23arfKYKfLcnfS1KnKRue1l/FWG9godj347kUe702IaX
- +eWNQPL2ChnQqET8pteLa1Q3WJtesB1oteA4SpwhzrM8zsXv0369buTj+LRlga3DVGSasC
- zcdL/4aNgMi3sL6UBTKUZCG3BDcrbSc=
+ bh=j904Obz7z0f9BMGRXiWX07Usnwp/ORQFPcf7fLFab5g=;
+ b=jrxnZimPuYcg7vhCzupFLMjC648tABQHXkZGvNzwa9loh5/w38AxSF79HG4Oc8Ogf6hU3U
+ dJtO2LIPEYkNJ1Nwb2tWOkFO3syJ+71ODjRcprZBHmb2kiA37cD2+gfK2XKWtsDeImW+Oy
+ vBx8aq5h60V3C9WpviDFdaEEDY4MBE4=
 From: Michael Walle <michael@walle.cc>
 To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH RESEND v2 4/7] soc: fsl: guts: allocate soc_dev_attr on the
- heap
-Date: Mon,  4 Apr 2022 11:56:06 +0200
-Message-Id: <20220404095609.3932782-5-michael@walle.cc>
+Subject: [PATCH RESEND v2 7/7] soc: fsl: guts: add serial_number support
+Date: Mon,  4 Apr 2022 11:56:09 +0200
+Message-Id: <20220404095609.3932782-8-michael@walle.cc>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20220404095609.3932782-1-michael@walle.cc>
 References: <20220404095609.3932782-1-michael@walle.cc>
@@ -73,101 +72,128 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is the last global static variable. Drop it and allocate the memory
-on the heap instead.
+Most layerscapes provide a security fuse processor where the vendor
+will store a unique id per part. Unfortunately, we cannot use the
+corresponding efuse driver because this driver needs to be ready
+early during the boot phase. To get the unique identifier, we just
+need to access two registers. Thus we just search the device tree
+for the corresponding device, map its memory to read the id and then
+unmap it again.
+
+Because it is likely that the offset within the fuses is dependent
+on the SoC, we need a per SoC data. Also, the compatible string is
+different among the SoCs. For now, this add support for the LS1028A
+SoC.
 
 Signed-off-by: Michael Walle <michael@walle.cc>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/soc/fsl/guts.c | 40 +++++++++++++++++++++-------------------
- 1 file changed, 21 insertions(+), 19 deletions(-)
+ drivers/soc/fsl/guts.c | 48 ++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 46 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-index 4e5675ab5f73..44e7a9bf6392 100644
+index 370be923aa0f..27035de062f8 100644
 --- a/drivers/soc/fsl/guts.c
 +++ b/drivers/soc/fsl/guts.c
-@@ -20,9 +20,6 @@ struct fsl_soc_die_attr {
+@@ -20,6 +20,11 @@ struct fsl_soc_die_attr {
  	u32	mask;
  };
  
--static struct soc_device_attribute soc_dev_attr;
--
--
++struct fsl_soc_data {
++	const char *sfp_compat;
++	u32 uid_offset;
++};
++
  /* SoC die attribute definition for QorIQ platform */
  static const struct fsl_soc_die_attr fsl_soc_die[] = {
  	/*
-@@ -116,6 +113,7 @@ static const struct fsl_soc_die_attr *fsl_soc_die_match(
- static int fsl_guts_probe(struct platform_device *pdev)
- {
- 	struct device_node *root, *np = pdev->dev.of_node;
-+	struct soc_device_attribute *soc_dev_attr;
- 	static struct soc_device *soc_dev;
- 	struct device *dev = &pdev->dev;
- 	const struct fsl_soc_die_attr *soc_die;
-@@ -136,12 +134,16 @@ static int fsl_guts_probe(struct platform_device *pdev)
- 	iounmap(regs);
- 
- 	/* Register soc device */
-+	soc_dev_attr = devm_kzalloc(dev, sizeof(*soc_dev_attr), GFP_KERNEL);
-+	if (!soc_dev_attr)
-+		return -ENOMEM;
-+
- 	root = of_find_node_by_path("/");
- 	if (of_property_read_string(root, "model", &machine))
- 		of_property_read_string_index(root, "compatible", 0, &machine);
- 	if (machine) {
--		soc_dev_attr.machine = devm_kstrdup(dev, machine, GFP_KERNEL);
--		if (!soc_dev_attr.machine) {
-+		soc_dev_attr->machine = devm_kstrdup(dev, machine, GFP_KERNEL);
-+		if (!soc_dev_attr->machine) {
- 			of_node_put(root);
- 			return -ENOMEM;
- 		}
-@@ -150,30 +152,30 @@ static int fsl_guts_probe(struct platform_device *pdev)
- 
- 	soc_die = fsl_soc_die_match(svr, fsl_soc_die);
- 	if (soc_die) {
--		soc_dev_attr.family = devm_kasprintf(dev, GFP_KERNEL,
--						     "QorIQ %s", soc_die->die);
-+		soc_dev_attr->family = devm_kasprintf(dev, GFP_KERNEL,
-+						      "QorIQ %s", soc_die->die);
- 	} else {
--		soc_dev_attr.family = devm_kasprintf(dev, GFP_KERNEL, "QorIQ");
-+		soc_dev_attr->family = devm_kasprintf(dev, GFP_KERNEL, "QorIQ");
- 	}
--	if (!soc_dev_attr.family)
-+	if (!soc_dev_attr->family)
- 		return -ENOMEM;
--	soc_dev_attr.soc_id = devm_kasprintf(dev, GFP_KERNEL,
--					     "svr:0x%08x", svr);
--	if (!soc_dev_attr.soc_id)
-+	soc_dev_attr->soc_id = devm_kasprintf(dev, GFP_KERNEL,
-+					      "svr:0x%08x", svr);
-+	if (!soc_dev_attr->soc_id)
- 		return -ENOMEM;
--	soc_dev_attr.revision = devm_kasprintf(dev, GFP_KERNEL, "%d.%d",
--					       (svr >>  4) & 0xf, svr & 0xf);
--	if (!soc_dev_attr.revision)
-+	soc_dev_attr->revision = devm_kasprintf(dev, GFP_KERNEL, "%d.%d",
-+						(svr >>  4) & 0xf, svr & 0xf);
-+	if (!soc_dev_attr->revision)
- 		return -ENOMEM;
- 
--	soc_dev = soc_device_register(&soc_dev_attr);
-+	soc_dev = soc_device_register(soc_dev_attr);
- 	if (IS_ERR(soc_dev))
- 		return PTR_ERR(soc_dev);
- 
--	pr_info("Machine: %s\n", soc_dev_attr.machine);
--	pr_info("SoC family: %s\n", soc_dev_attr.family);
-+	pr_info("Machine: %s\n", soc_dev_attr->machine);
-+	pr_info("SoC family: %s\n", soc_dev_attr->family);
- 	pr_info("SoC ID: %s, Revision: %s\n",
--		soc_dev_attr.soc_id, soc_dev_attr.revision);
-+		soc_dev_attr->soc_id, soc_dev_attr->revision);
- 	return 0;
+@@ -110,6 +115,33 @@ static const struct fsl_soc_die_attr *fsl_soc_die_match(
+ 	return NULL;
  }
  
++static u64 fsl_guts_get_soc_uid(const char *compat, unsigned int offset)
++{
++	struct device_node *np;
++	void __iomem *sfp_base;
++	u64 uid;
++
++	np = of_find_compatible_node(NULL, NULL, compat);
++	if (!np)
++		return 0;
++
++	sfp_base = of_iomap(np, 0);
++
++	uid = ioread32(sfp_base + offset);
++	uid <<= 32;
++	uid |= ioread32(sfp_base + offset + 4);
++
++	iounmap(sfp_base);
++	of_node_put(np);
++
++	return uid;
++}
++
++static const struct fsl_soc_data ls1028a_data = {
++	.sfp_compat = "fsl,ls1028a-sfp",
++	.uid_offset = 0x21c,
++};
++
+ /*
+  * Table for matching compatible strings, for device tree
+  * guts node, for Freescale QorIQ SOCs.
+@@ -138,7 +170,7 @@ static const struct of_device_id fsl_guts_of_match[] = {
+ 	{ .compatible = "fsl,ls1012a-dcfg", },
+ 	{ .compatible = "fsl,ls1046a-dcfg", },
+ 	{ .compatible = "fsl,lx2160a-dcfg", },
+-	{ .compatible = "fsl,ls1028a-dcfg", },
++	{ .compatible = "fsl,ls1028a-dcfg", .data = &ls1028a_data},
+ 	{}
+ };
+ 
+@@ -147,16 +179,20 @@ static int __init fsl_guts_init(void)
+ 	struct soc_device_attribute *soc_dev_attr;
+ 	static struct soc_device *soc_dev;
+ 	const struct fsl_soc_die_attr *soc_die;
++	const struct fsl_soc_data *soc_data;
++	const struct of_device_id *match;
+ 	struct ccsr_guts __iomem *regs;
+ 	const char *machine = NULL;
+ 	struct device_node *np;
+ 	bool little_endian;
++	u64 soc_uid = 0;
+ 	u32 svr;
+ 	int ret;
+ 
+-	np = of_find_matching_node_and_match(NULL, fsl_guts_of_match, NULL);
++	np = of_find_matching_node_and_match(NULL, fsl_guts_of_match, &match);
+ 	if (!np)
+ 		return 0;
++	soc_data = match->data;
+ 
+ 	regs = of_iomap(np, 0);
+ 	if (IS_ERR(regs)) {
+@@ -204,6 +240,13 @@ static int __init fsl_guts_init(void)
+ 	if (!soc_dev_attr->revision)
+ 		goto err_nomem;
+ 
++	if (soc_data)
++		soc_uid = fsl_guts_get_soc_uid(soc_data->sfp_compat,
++					       soc_data->uid_offset);
++	if (soc_uid)
++		soc_dev_attr->serial_number = kasprintf(GFP_KERNEL, "%016llX",
++							soc_uid);
++
+ 	soc_dev = soc_device_register(soc_dev_attr);
+ 	if (IS_ERR(soc_dev)) {
+ 		ret = PTR_ERR(soc_dev);
+@@ -224,6 +267,7 @@ static int __init fsl_guts_init(void)
+ 	kfree(soc_dev_attr->family);
+ 	kfree(soc_dev_attr->soc_id);
+ 	kfree(soc_dev_attr->revision);
++	kfree(soc_dev_attr->serial_number);
+ 	kfree(soc_dev_attr);
+ 
+ 	return ret;
 -- 
 2.30.2
 
