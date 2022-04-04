@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04FB1C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Apr 2022 05:12:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C098C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Apr 2022 05:12:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KWzR33TTtz3dQy
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Apr 2022 15:11:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KWzRr56N5z3drF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Apr 2022 15:12:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=VvTajNYx;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=wskLiSoD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -19,35 +19,35 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=bombadil.20210309 header.b=VvTajNYx; 
+ header.s=bombadil.20210309 header.b=wskLiSoD; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KWzK830Mdz3bZY
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2022 15:06:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KWzKJ1g0qz2yMS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Apr 2022 15:07:00 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=VlHGJyMm9vzjIewl+QL3o4DmXNPqBE0xLUE3ejLiJgA=; b=VvTajNYxlVH8VM8PJFY0XdrnDE
- PYMemX1VnGoK/6lMerwGvFWsXR63qtldaV9JNnljEtSNzVgnoja0hj0U4yTVPJciulZJmTsOI3InN
- 9hUlVc62KvnpHo9FcY7S2qTjaXiVY8On07Etkgs7y+Zf1tacU/1T/jDeLWMfoNw99mUlitJW6j7sp
- sR3bgvz3cSLVxwfkpBzV25UYIr9nlpUkxvMpGAkcr7rxsGfZ9bUZedEDez4l3//tIzUMxcmnj07eu
- vbRPdl2Gx79fwX5yqj6ntMFxO89PZnRv3tx/aIDni2kH+augWjt6yLz05Y4QJbSg/3+OhHwoek82/
- unMzf8FA==;
+ bh=cglDQ544TZBR8iIX+lAj25Nh7/wZoWF1SIJV8fBYJSc=; b=wskLiSoDsVLKEGZ1Sdhe2vLHxA
+ /LFmu+C4Ch41odlEGfE4k/6biHOMWLMavXZg1/FJ/PTrBuOvNRcttQrXGPQnQX2ejO7VQl+P5h4vJ
+ jjyTmth+NW0RQQNORsIdANiYQbpSIbwzbho7ETCWH+JQ1Eant6nnSsoOakf4a4SiDmtHa4gIQ2ewj
+ 1yuavxAdLwimQnkOJ+SrmcUXPc/FEsqsVhilArD7VqVLLg0TjTvuTMhiWfExtg0d+132+oAu/FSc+
+ NdnMGNgT/WfGxUS28PWBLTMrBmwyxygrBQmBlUWTFICH/VEeaVF9jSvk+mMKaW31WvbccHzGgWs+H
+ b2tNFv4A==;
 Received: from 089144211060.atnat0020.highway.a1.net ([89.144.211.60]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1nbEvG-00D95w-SQ; Mon, 04 Apr 2022 05:06:39 +0000
+ id 1nbEvO-00D9D7-LO; Mon, 04 Apr 2022 05:06:47 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: iommu@lists.linux-foundation.org
-Subject: [PATCH 08/15] x86: centralize setting SWIOTLB_FORCE when guest memory
- encryption is enabled
-Date: Mon,  4 Apr 2022 07:05:52 +0200
-Message-Id: <20220404050559.132378-9-hch@lst.de>
+Subject: [PATCH 10/15] swiotlb: add a SWIOTLB_ANY flag to lift the low memory
+ restriction
+Date: Mon,  4 Apr 2022 07:05:54 +0200
+Message-Id: <20220404050559.132378-11-hch@lst.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20220404050559.132378-1-hch@lst.de>
 References: <20220404050559.132378-1-hch@lst.de>
@@ -81,67 +81,161 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move enabling SWIOTLB_FORCE for guest memory encryption into common code.
+Power SVM wants to allocate a swiotlb buffer that is not restricted to
+low memory for the trusted hypervisor scheme.  Consolidate the support
+for this into the swiotlb_init interface by adding a new flag.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/x86/kernel/cpu/mshyperv.c | 8 --------
- arch/x86/kernel/pci-dma.c      | 8 ++++++++
- arch/x86/mm/mem_encrypt_amd.c  | 3 ---
- 3 files changed, 8 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/svm.h       |  4 ----
+ arch/powerpc/include/asm/swiotlb.h   |  1 +
+ arch/powerpc/kernel/dma-swiotlb.c    |  1 +
+ arch/powerpc/mm/mem.c                |  5 +----
+ arch/powerpc/platforms/pseries/svm.c | 26 +-------------------------
+ include/linux/swiotlb.h              |  1 +
+ kernel/dma/swiotlb.c                 | 11 +++++++++--
+ 7 files changed, 14 insertions(+), 35 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mshyperv.c b/arch/x86/kernel/cpu/mshyperv.c
-index 4b67094215bba..5b8f2c3571601 100644
---- a/arch/x86/kernel/cpu/mshyperv.c
-+++ b/arch/x86/kernel/cpu/mshyperv.c
-@@ -337,14 +337,6 @@ static void __init ms_hyperv_init_platform(void)
- 			swiotlb_unencrypted_base = ms_hyperv.shared_gpa_boundary;
- #endif
- 		}
--
--#ifdef CONFIG_SWIOTLB
--		/*
--		 * Enable swiotlb force mode in Isolation VM to
--		 * use swiotlb bounce buffer for dma transaction.
--		 */
--		swiotlb_force = SWIOTLB_FORCE;
--#endif
- 		/* Isolation VMs are unenlightened SEV-based VMs, thus this check: */
- 		if (IS_ENABLED(CONFIG_AMD_MEM_ENCRYPT)) {
- 			if (hv_get_isolation_type() != HV_ISOLATION_TYPE_NONE)
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index df96926421be0..04140e20ef1a3 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -53,6 +53,14 @@ static void __init pci_swiotlb_detect(void)
- 	if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT))
- 		x86_swiotlb_enable = true;
- 
-+	/*
-+	 * Guest with guest memory encryption currently perform all DMA through
-+	 * bounce buffers as the hypervisor can't access arbitrary VM memory
-+	 * that is not explicitly shared with it.
-+	 */
-+	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
-+		swiotlb_force = SWIOTLB_FORCE;
-+
- 	if (swiotlb_force == SWIOTLB_FORCE)
- 		x86_swiotlb_enable = true;
+diff --git a/arch/powerpc/include/asm/svm.h b/arch/powerpc/include/asm/svm.h
+index 7546402d796af..85580b30aba48 100644
+--- a/arch/powerpc/include/asm/svm.h
++++ b/arch/powerpc/include/asm/svm.h
+@@ -15,8 +15,6 @@ static inline bool is_secure_guest(void)
+ 	return mfmsr() & MSR_S;
  }
-diff --git a/arch/x86/mm/mem_encrypt_amd.c b/arch/x86/mm/mem_encrypt_amd.c
-index 6169053c28541..d732d727d3dee 100644
---- a/arch/x86/mm/mem_encrypt_amd.c
-+++ b/arch/x86/mm/mem_encrypt_amd.c
-@@ -432,9 +432,6 @@ void __init sme_early_init(void)
- 	for (i = 0; i < ARRAY_SIZE(protection_map); i++)
- 		protection_map[i] = pgprot_encrypted(protection_map[i]);
  
--	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
--		swiotlb_force = SWIOTLB_FORCE;
+-void __init svm_swiotlb_init(void);
 -
- 	x86_platform.guest.enc_status_change_prepare = amd_enc_status_change_prepare;
- 	x86_platform.guest.enc_status_change_finish  = amd_enc_status_change_finish;
- 	x86_platform.guest.enc_tlb_flush_required    = amd_enc_tlb_flush_required;
+ void dtl_cache_ctor(void *addr);
+ #define get_dtl_cache_ctor()	(is_secure_guest() ? dtl_cache_ctor : NULL)
+ 
+@@ -27,8 +25,6 @@ static inline bool is_secure_guest(void)
+ 	return false;
+ }
+ 
+-static inline void svm_swiotlb_init(void) {}
+-
+ #define get_dtl_cache_ctor() NULL
+ 
+ #endif /* CONFIG_PPC_SVM */
+diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
+index 3c1a1cd161286..4203b5e0a88ed 100644
+--- a/arch/powerpc/include/asm/swiotlb.h
++++ b/arch/powerpc/include/asm/swiotlb.h
+@@ -9,6 +9,7 @@
+ #include <linux/swiotlb.h>
+ 
+ extern unsigned int ppc_swiotlb_enable;
++extern unsigned int ppc_swiotlb_flags;
+ 
+ #ifdef CONFIG_SWIOTLB
+ void swiotlb_detect_4g(void);
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index fc7816126a401..ba256c37bcc0f 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -10,6 +10,7 @@
+ #include <asm/swiotlb.h>
+ 
+ unsigned int ppc_swiotlb_enable;
++unsigned int ppc_swiotlb_flags;
+ 
+ void __init swiotlb_detect_4g(void)
+ {
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index e1519e2edc656..a4d65418c30a9 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -249,10 +249,7 @@ void __init mem_init(void)
+ 	 * back to to-down.
+ 	 */
+ 	memblock_set_bottom_up(true);
+-	if (is_secure_guest())
+-		svm_swiotlb_init();
+-	else
+-		swiotlb_init(ppc_swiotlb_enable, 0);
++	swiotlb_init(ppc_swiotlb_enable, ppc_swiotlb_flags);
+ #endif
+ 
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+diff --git a/arch/powerpc/platforms/pseries/svm.c b/arch/powerpc/platforms/pseries/svm.c
+index c5228f4969eb2..3b4045d508ec8 100644
+--- a/arch/powerpc/platforms/pseries/svm.c
++++ b/arch/powerpc/platforms/pseries/svm.c
+@@ -28,7 +28,7 @@ static int __init init_svm(void)
+ 	 * need to use the SWIOTLB buffer for DMA even if dma_capable() says
+ 	 * otherwise.
+ 	 */
+-	swiotlb_force = SWIOTLB_FORCE;
++	ppc_swiotlb_flags |= SWIOTLB_ANY | SWIOTLB_FORCE;
+ 
+ 	/* Share the SWIOTLB buffer with the host. */
+ 	swiotlb_update_mem_attributes();
+@@ -37,30 +37,6 @@ static int __init init_svm(void)
+ }
+ machine_early_initcall(pseries, init_svm);
+ 
+-/*
+- * Initialize SWIOTLB. Essentially the same as swiotlb_init(), except that it
+- * can allocate the buffer anywhere in memory. Since the hypervisor doesn't have
+- * any addressing limitation, we don't need to allocate it in low addresses.
+- */
+-void __init svm_swiotlb_init(void)
+-{
+-	unsigned char *vstart;
+-	unsigned long bytes, io_tlb_nslabs;
+-
+-	io_tlb_nslabs = (swiotlb_size_or_default() >> IO_TLB_SHIFT);
+-	io_tlb_nslabs = ALIGN(io_tlb_nslabs, IO_TLB_SEGSIZE);
+-
+-	bytes = io_tlb_nslabs << IO_TLB_SHIFT;
+-
+-	vstart = memblock_alloc(PAGE_ALIGN(bytes), PAGE_SIZE);
+-	if (vstart && !swiotlb_init_with_tbl(vstart, io_tlb_nslabs, false))
+-		return;
+-
+-
+-	memblock_free(vstart, PAGE_ALIGN(io_tlb_nslabs << IO_TLB_SHIFT));
+-	panic("SVM: Cannot allocate SWIOTLB buffer");
+-}
+-
+ int set_memory_encrypted(unsigned long addr, int numpages)
+ {
+ 	if (!cc_platform_has(CC_ATTR_MEM_ENCRYPT))
+diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+index ae0407173e845..eabdd89987027 100644
+--- a/include/linux/swiotlb.h
++++ b/include/linux/swiotlb.h
+@@ -15,6 +15,7 @@ struct scatterlist;
+ 
+ #define SWIOTLB_VERBOSE	(1 << 0) /* verbose initialization */
+ #define SWIOTLB_FORCE	(1 << 1) /* force bounce buffering */
++#define SWIOTLB_ANY	(1 << 2) /* allow any memory for the buffer */
+ 
+ /*
+  * Maximum allowable number of contiguous slabs to map,
+diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+index 86e877a96b828..f6e091424af3d 100644
+--- a/kernel/dma/swiotlb.c
++++ b/kernel/dma/swiotlb.c
+@@ -266,8 +266,15 @@ void __init swiotlb_init(bool addressing_limit, unsigned int flags)
+ 	if (swiotlb_force_disable)
+ 		return;
+ 
+-	/* Get IO TLB memory from the low pages */
+-	tlb = memblock_alloc_low(bytes, PAGE_SIZE);
++	/*
++	 * By default allocate the bounce buffer memory from low memory, but
++	 * allow to pick a location everywhere for hypervisors with guest
++	 * memory encryption.
++	 */
++	if (flags & SWIOTLB_ANY)
++		tlb = memblock_alloc(bytes, PAGE_SIZE);
++	else
++		tlb = memblock_alloc_low(bytes, PAGE_SIZE);
+ 	if (!tlb)
+ 		goto fail;
+ 	if (swiotlb_init_with_tbl(tlb, default_nslabs, flags))
 -- 
 2.30.2
 
