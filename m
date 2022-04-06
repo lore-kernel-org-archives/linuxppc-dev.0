@@ -4,47 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C2E0C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Apr 2022 14:59:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54A84C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Apr 2022 15:00:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KYSMz5Yztz3bvd
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Apr 2022 00:59:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KYSNd6p63z3bVd
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Apr 2022 01:00:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=rcE2qxf3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PA3R5tg5;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KYSLk0cdSz2yZC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2022 00:58:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KYSLl07yMz2yZC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2022 00:58:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=rcE2qxf3; 
+ header.a=rsa-sha256 header.s=201909 header.b=PA3R5tg5; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4KYSLj6gT3z4xYM;
- Thu,  7 Apr 2022 00:58:21 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4KYSLk32Fmz4xbC;
+ Thu,  7 Apr 2022 00:58:22 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
  s=201909; t=1649257102;
- bh=kYnGT+rEo7osPCeMABd3VqTCciw3F0P7WmktdHS1b+k=;
+ bh=6XEBDAj4e/WE7XAjB4G1CeNuWz6ukSLT/WlDfI7i+/A=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=rcE2qxf349SRP6R2sGmeennX0K9bzO5/f1CsMh4A6TK402S7v0lnDTlDecJcIUrVS
- PkwnwBYDnRgtNuGWIy75cbDuNk0XnSWJqYzG3eJPT3Mr0T4UCQmMbtpXq48AxPN2PZ
- Imeg7XavLx/kISihn2XDhpFx/IVvKGlWELEzIkkuhXqdptWxLvGS7a8QAOVLYJMH0q
- JR/Mm/T6YslMPTZiy87B7HyqsDRQZmZupFpLLfs2+QylF28Q0eo00LmHwlj5T3Ub3B
- cbJgox4HSKL1AdY4s5g9FrlEnnJMJA7Xmxci1Dg3hKduA8ZeRTXlP3Lib57c2RsYlo
- a1yXjHZ1S7n8g==
+ b=PA3R5tg5hcJxghP9Voz1PDF741RKG+5JAvoPPls3pPZ38kdh0xwhWBxPcOTjbkZp4
+ 2LluKrYUKxqrhx+90PNhIHjcU6wcQiaBgCaWYsNRpXBaT7k0kPXN61CkcokM/utrpX
+ Nsm47Ky2QRo0lTTDroJG6o7dIvcA32hdWpS8itolZ0ROew62dlWNJWqXJ/SJ4rD4ES
+ 4wU9plkzZUOnDIBY2QDoVxHrpS/296YCuRZGrYHwKZwHeKznhv7GNowx4G5X134pG6
+ GJ65+QMEFaGZ/hiHWT4ngE0SNejdyThmL8M+tv1jzOr3leSH7Sg+66nmFauF2mfoI+
+ JFtaIR8ls2wPg==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 3/6] powerpc/85xx: Fix virt_to_phys() off-by-one in
- smp_85xx_start_cpu()
-Date: Thu,  7 Apr 2022 00:57:59 +1000
-Message-Id: <20220406145802.538416-3-mpe@ellerman.id.au>
+Subject: [PATCH 4/6] powerpc/vas: Fix __pa() handling in init_winctx_regs()
+Date: Thu,  7 Apr 2022 00:58:00 +1000
+Message-Id: <20220406145802.538416-4-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220406145802.538416-1-mpe@ellerman.id.au>
 References: <20220406145802.538416-1-mpe@ellerman.id.au>
@@ -66,36 +64,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In smp_85xx_start_cpu() we are passed an address but we're unsure if
-it's a real or virtual address, so there's a check to determine that.
+In init_winctx_regs() we call __pa() on winctx->rx_fifo, but some
+callers pass a real adress which causes errors with DEBUG_VIRTUAL
+enabled.
 
-The check has an off-by-one in that it tests if the address is greater
-than high_memory, but high_memory is the first address of high memory,
-so the check should be greater-or-equal.
-
-It seems this has never been a problem in practice, but it also triggers
-the DEBUG_VIRTUAL checks in __pa() which we would like to avoid. We can
-fix both issues by converting high_memory - 1 to a physical address and
-testing against that.
+So check first if we have a virtual address, and otherwise leave the
+address unchanged.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/85xx/smp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/vas-window.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index a1c6a7827c8f..9c43cf32f4c9 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -208,7 +208,7 @@ static int smp_85xx_start_cpu(int cpu)
- 	 * The bootpage and highmem can be accessed via ioremap(), but
- 	 * we need to directly access the spinloop if its in lowmem.
+diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
+index 0f8d39fbf2b2..25324390e292 100644
+--- a/arch/powerpc/platforms/powernv/vas-window.c
++++ b/arch/powerpc/platforms/powernv/vas-window.c
+@@ -404,7 +404,13 @@ static void init_winctx_regs(struct pnv_vas_window *window,
+ 	 *
+ 	 * See also: Design note in function header.
  	 */
--	ioremappable = *cpu_rel_addr > virt_to_phys(high_memory);
-+	ioremappable = *cpu_rel_addr > virt_to_phys(high_memory - 1);
+-	val = __pa(winctx->rx_fifo);
++
++	// Some callers pass virtual addresses, others pass real
++	if (virt_addr_valid(winctx->rx_fifo))
++		val = virt_to_phys(winctx->rx_fifo);
++	else
++		val = (u64)winctx->rx_fifo;
++
+ 	val = SET_FIELD(VAS_PAGE_MIGRATION_SELECT, val, 0);
+ 	write_hvwc_reg(window, VREG(LFIFO_BAR), val);
  
- 	/* Map the spin table */
- 	if (ioremappable)
 -- 
 2.34.1
 
