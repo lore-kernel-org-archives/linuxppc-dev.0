@@ -4,69 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 718BBC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Apr 2022 10:32:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F34FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Apr 2022 10:33:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KYyPz0dTlz3c80
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Apr 2022 20:32:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KYyQd51lrz3bw7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Apr 2022 20:33:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=KXwh36Ks;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=G3UZPome;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::631;
- helo=mail-ej1-x631.google.com; envelope-from=jakobkoschel@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::635;
+ helo=mail-ej1-x635.google.com; envelope-from=jakobkoschel@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=KXwh36Ks; dkim-atps=neutral
-Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com
- [IPv6:2a00:1450:4864:20::631])
+ header.s=20210112 header.b=G3UZPome; dkim-atps=neutral
+Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com
+ [IPv6:2a00:1450:4864:20::635])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KYyMw3XZXz2yXP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2022 20:31:06 +1000 (AEST)
-Received: by mail-ej1-x631.google.com with SMTP id bq8so9850998ejb.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Apr 2022 03:31:06 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KYyMw3c7zz2yXs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2022 20:31:07 +1000 (AEST)
+Received: by mail-ej1-x635.google.com with SMTP id l7so4472535ejn.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Apr 2022 03:31:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=bOp7/tC9bFhm53CLsSm24svzgwwfQBWtUDQnB+bIBuE=;
- b=KXwh36Kseg3CVGevbGAE8a3Ax24ainsjSrWTaHc30TLr2jSFkdYRDP0MaSryXI8M4v
- FBHfLFYpoaQGSX3GW2cn0FoJDmWZ1vY3c3fg+wtOnngvNO9fE1sDRwmM6BGgex1DwxnF
- r4oLScN+3qnwGdSh7+7vGPHJ1nZj0pdz8DUgZEw73PY1+09R25O6X9g0y/cs1VDWQ6pv
- zV/3gMcje94ykVaOdS1+CfDw6AGlQ9cM/Szvnq8SvH1mSJj6CZ77tt22yeMFUhscgNni
- QxdGGaxRWKPWZXYuyzF9XzYRAt78E0o4Df2jSqk1sXM15r8hDe8ygGJ3e6wiHffdLIaw
- Lrog==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=jhyzYWxSgWQ5UdJQbW741q+z9oGhpyCDqsCBhTcqlFE=;
+ b=G3UZPomec6PoLWQr0bjC3OjAkRdJzUbc8hdH4J8L5rIZWtj65qOF0I5tw+uanOORtq
+ M/QkTiV8pUSGlmzmp3/T/8gXv4ofkAQnbHHfbVNRR80ErhX14WWqa3zHwK6oMOxaABA8
+ CXvz7W5DwipofPsajlF9nWVUSWrZjvu2UGyC4GTd4GfBrnoV8i8WJqIrUnF91eME18Z/
+ li2jILa4O1yDRJp1q8IwWm+ClS9QJrbNBiMVn8sUaKRITd/xWXx5L1fpnf6pQ4bjpDdY
+ rP5sGgqicELTA+FXuNOs5iiAGlujjTdxO4aWIpC80IYh7qHhgKXFKn0qVqddkhh09Sn1
+ kTVw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=bOp7/tC9bFhm53CLsSm24svzgwwfQBWtUDQnB+bIBuE=;
- b=J8nKhTpNIIKvd/2AgRS7I1AQ8xr9oj/HPKaZlphszo/TRvJfbsCoH8gt2bS95waejM
- 9bTKWVQ0xyaR1/RA142tHa+3Ot69IUMOR49iTSLdg4ZnlDMz2kjWoXyhMY7FFy9oPmeD
- PooR9gF8E/B7vvLyt+PC5qd5pEcYCda6CgdCvf+j5dOuErtw10QQUXNUfbO+mizi+/G2
- TXNrrx3mpeNquDi6nS5sgrQTARY/On0l328X7SkxwSEd6qPfkmah2mQ+JNjGK5yZNwI1
- NmR70a1Z7dt47uPRu3kJrJunRcwPj7lK7D96mavBvnV69KGI/Dx5PzpObqHmEe0VMuMu
- cnCQ==
-X-Gm-Message-State: AOAM532RQhRp8KtT7jFA+qtej4difvDy/fCc1x7//YGrhQ69U7vxTvQC
- lB2LFqx24WOLdMyLQATpHhU=
-X-Google-Smtp-Source: ABdhPJwqHs9nH5lpOjXcb6/qKvV0pCQNXS3T+Kk1mOdvii1ND6yeM2aFqKeCAbxHGyh62D14O+e0lg==
-X-Received: by 2002:a17:907:8a19:b0:6e8:a7e:5f50 with SMTP id
- sc25-20020a1709078a1900b006e80a7e5f50mr12871020ejc.322.1649327461054; 
- Thu, 07 Apr 2022 03:31:01 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=jhyzYWxSgWQ5UdJQbW741q+z9oGhpyCDqsCBhTcqlFE=;
+ b=dwdr4C/xnBIHtDRRCw5J4+o2fWLp8RoSq5HIFo/mKBTuVOWI73aum37VreWFojGXcW
+ NIeLe9YY2A20PnDGAMvslI0C4BXg0zMyF2iQwO+556jE8C+8SZL7TFgBbocFOPLGRrY1
+ zE2GjyiVstXFT0KPNka1SklJdj6p9xB5pa7ki5W1a7ZBma1MUWtoEPGvARwmfFqBDmwd
+ eaXPtC9/t34iI52Eb3SUTKnMICKkn+k0bBqugcciqOoE1eDREokgv1vj4fVGl32HfI5c
+ CIyiyjc4VnNru3SwPkubezr+yrLrLm+ryId3ojYu5emFCnvjE4gtVvDWBnwgLsn2k+iW
+ IXQQ==
+X-Gm-Message-State: AOAM5339amWq3ta22KYNicydktxjBJH7d2dxTLOamcQ47z0vfx7lkvBt
+ jJTCaaZJBVxeYakO9f1FbcE=
+X-Google-Smtp-Source: ABdhPJyE7I0SFQsOWGAsoCOLM9ViYaVOBqxCDbFEkgAjLcx6OMRDiQC9PRBkCRmOmfperDK8wZQAYg==
+X-Received: by 2002:a17:906:8301:b0:6e4:896d:59b1 with SMTP id
+ j1-20020a170906830100b006e4896d59b1mr12370590ejx.396.1649327464586; 
+ Thu, 07 Apr 2022 03:31:04 -0700 (PDT)
 Received: from localhost.localdomain (i130160.upc-i.chello.nl.
  [62.195.130.160]) by smtp.googlemail.com with ESMTPSA id
- c5-20020a170906d18500b006ce371f09d4sm7413573ejz.57.2022.04.07.03.30.59
+ c5-20020a170906d18500b006ce371f09d4sm7413573ejz.57.2022.04.07.03.31.03
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 07 Apr 2022 03:31:00 -0700 (PDT)
+ Thu, 07 Apr 2022 03:31:04 -0700 (PDT)
 From: Jakob Koschel <jakobkoschel@gmail.com>
 To: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH net-next 00/15] net: Remove use of list iterator after loop
- body
-Date: Thu,  7 Apr 2022 12:28:45 +0200
-Message-Id: <20220407102900.3086255-1-jakobkoschel@gmail.com>
+Subject: [PATCH net-next 03/15] net: dsa: mv88e6xxx: Replace usage of found
+ with dedicated iterator
+Date: Thu,  7 Apr 2022 12:28:48 +0200
+Message-Id: <20220407102900.3086255-4-jakobkoschel@gmail.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220407102900.3086255-1-jakobkoschel@gmail.com>
+References: <20220407102900.3086255-1-jakobkoschel@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -102,36 +104,80 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the list iterator loop does not exit early the list iterator variable
-contains a type-confused pointer to a 'bogus' list element computed based
-on the head [1].
+To move the list iterator variable into the list_for_each_entry_*()
+macro in the future it should be avoided to use the list iterator
+variable after the loop body.
 
-Often a 'found' variable is used to ensure the list iterator
-variable is only accessed after the loop body if the loop did exit early
-(using a break or goto).
+To *never* use the list iterator variable after the loop it was
+concluded to use a separate iterator variable instead of a
+found boolean [1].
 
-In other cases that list iterator variable is used in
-combination to access the list member which reverses the invocation of
-container_of() and brings back a "safe" pointer to the head of the list.
+This removes the need to use a found variable and simply checking if
+the variable was set, can determine if the break/goto was hit.
 
-Since, due to this code patten, there were quite a few bugs discovered [2],
-Linus concluded that the rule should be to never use the list iterator
-after the loop and introduce a dedicated pointer for that [3].
+Link: https://lore.kernel.org/all/CAHk-=wgRr_D8CB-D9Kg-c=EHreAsk5SqXPwr9Y7k9sA6cWXJ6w@mail.gmail.com/ [1]
+Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
+---
+ drivers/net/dsa/mv88e6xxx/chip.c | 21 ++++++++++-----------
+ 1 file changed, 10 insertions(+), 11 deletions(-)
 
-With the new gnu11 standard, it will now be possible to limit the scope
-of the list iterator variable to the traversal loop itself by defining
-the variable within the for loop.
-This, however, requires to remove all uses of the list iterator after
-the loop.
-
-Based on input from Paolo Abeni [4], Vinicius Costa Gomes [5], and
-Jakub Kicinski [6], I've splitted all the net-next related changes into
-two patch sets, where this is part 1.
-
-Link: https://lwn.net/Articles/887097/ [1]
-Link: https://lore.kernel.org/linux-kernel/20220217184829.1991035-4-jakobkoschel@gmail.com/ [2]
-Link: https://lore.kernel.org/all/CAHk-=wgRr_D8CB-D9Kg-c=EHreAsk5SqXPwr9Y7k9sA6cWXJ6w@mail.gmail.com/ [3]
-Link: https://lore.kernel.org/linux-kernel/7393b673c626fd75f2b4f8509faa5459254fb87c.camel@redhat.com/ [4]
-Link: https://lore.kernel.org/linux-kernel/877d8a3sww.fsf@intel.com/ [5]
-Link: https://lore.kernel.org/linux-kernel/20220403205502.1b34415d@kernel.org/ [6]
+diff --git a/drivers/net/dsa/mv88e6xxx/chip.c b/drivers/net/dsa/mv88e6xxx/chip.c
+index 64f4fdd02902..f254f537c357 100644
+--- a/drivers/net/dsa/mv88e6xxx/chip.c
++++ b/drivers/net/dsa/mv88e6xxx/chip.c
+@@ -1381,28 +1381,27 @@ static int mv88e6xxx_set_mac_eee(struct dsa_switch *ds, int port,
+ /* Mask of the local ports allowed to receive frames from a given fabric port */
+ static u16 mv88e6xxx_port_vlan(struct mv88e6xxx_chip *chip, int dev, int port)
+ {
++	struct dsa_port *dp = NULL, *iter, *other_dp;
+ 	struct dsa_switch *ds = chip->ds;
+ 	struct dsa_switch_tree *dst = ds->dst;
+-	struct dsa_port *dp, *other_dp;
+-	bool found = false;
+ 	u16 pvlan;
+ 
+ 	/* dev is a physical switch */
+ 	if (dev <= dst->last_switch) {
+-		list_for_each_entry(dp, &dst->ports, list) {
+-			if (dp->ds->index == dev && dp->index == port) {
+-				/* dp might be a DSA link or a user port, so it
++		list_for_each_entry(iter, &dst->ports, list) {
++			if (iter->ds->index == dev && iter->index == port) {
++				/* iter might be a DSA link or a user port, so it
+ 				 * might or might not have a bridge.
+-				 * Use the "found" variable for both cases.
++				 * Set the "dp" variable for both cases.
+ 				 */
+-				found = true;
++				dp = iter;
+ 				break;
+ 			}
+ 		}
+ 	/* dev is a virtual bridge */
+ 	} else {
+-		list_for_each_entry(dp, &dst->ports, list) {
+-			unsigned int bridge_num = dsa_port_bridge_num_get(dp);
++		list_for_each_entry(iter, &dst->ports, list) {
++			unsigned int bridge_num = dsa_port_bridge_num_get(iter);
+ 
+ 			if (!bridge_num)
+ 				continue;
+@@ -1410,13 +1409,13 @@ static u16 mv88e6xxx_port_vlan(struct mv88e6xxx_chip *chip, int dev, int port)
+ 			if (bridge_num + dst->last_switch != dev)
+ 				continue;
+ 
+-			found = true;
++			dp = iter;
+ 			break;
+ 		}
+ 	}
+ 
+ 	/* Prevent frames from unknown switch or virtual bridge */
+-	if (!found)
++	if (!dp)
+ 		return 0;
+ 
+ 	/* Frames from DSA links and CPU ports can egress any local port */
+-- 
+2.25.1
 
