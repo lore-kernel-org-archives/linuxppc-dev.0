@@ -4,37 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D35AAC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Apr 2022 10:29:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FA71C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Apr 2022 10:29:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KZZHM03YCz3c7R
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Apr 2022 20:29:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KZZHm3Bgfz3cBV
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Apr 2022 20:29:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org;
- envelope-from=cmarinas@kernel.org; receiver=<UNKNOWN>)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KZZGs2ZQ8z2xCB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2022 20:28:53 +1000 (AEST)
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
+ helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org;
+ receiver=<UNKNOWN>)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KZZHH3Jnmz3bxn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2022 20:29:15 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id C409E61F1D;
- Fri,  8 Apr 2022 10:28:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00713C385A3;
- Fri,  8 Apr 2022 10:28:47 +0000 (UTC)
-Date: Fri, 8 Apr 2022 11:28:44 +0100
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 5F0CD61F0D;
+ Fri,  8 Apr 2022 10:29:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 38FF1C385A5;
+ Fri,  8 Apr 2022 10:29:11 +0000 (UTC)
+Date: Fri, 8 Apr 2022 11:29:07 +0100
 From: Catalin Marinas <catalin.marinas@arm.com>
 To: Anshuman Khandual <anshuman.khandual@arm.com>
-Subject: Re: [PATCH V4 6/7] mm/mmap: Drop arch_filter_pgprot()
-Message-ID: <YlAOXG9XbQW1xPaT@arm.com>
+Subject: Re: [PATCH V4 7/7] mm/mmap: Drop arch_vm_get_page_pgprot()
+Message-ID: <YlAOc4Vf2LVzXJDM@arm.com>
 References: <20220407103251.1209606-1-anshuman.khandual@arm.com>
- <20220407103251.1209606-7-anshuman.khandual@arm.com>
+ <20220407103251.1209606-8-anshuman.khandual@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220407103251.1209606-7-anshuman.khandual@arm.com>
+In-Reply-To: <20220407103251.1209606-8-anshuman.khandual@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,9 +56,9 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 07, 2022 at 04:02:50PM +0530, Anshuman Khandual wrote:
-> There are no platforms left which subscribe ARCH_HAS_FILTER_PGPROT. Hence
-> drop generic arch_filter_pgprot() and also config ARCH_HAS_FILTER_PGPROT.
+On Thu, Apr 07, 2022 at 04:02:51PM +0530, Anshuman Khandual wrote:
+> There are no platforms left which use arch_vm_get_page_prot(). Just drop
+> generic arch_vm_get_page_prot().
 > 
 > Cc: Andrew Morton <akpm@linux-foundation.org>
 > Cc: linux-mm@kvack.org
