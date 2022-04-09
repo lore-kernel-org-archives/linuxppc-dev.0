@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C23E1C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Apr 2022 17:21:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BFFFC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Apr 2022 17:21:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KbMN03QQdz3cBj
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Apr 2022 03:21:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KbMNR2WkLz3dtk
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Apr 2022 03:21:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,53 +16,53 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KbMKB41nsz3bbj
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Apr 2022 03:18:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KbMKG5KJYz3bqL
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Apr 2022 03:18:42 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KbMJq18KFz9sT3;
- Sat,  9 Apr 2022 19:18:19 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4KbMJr1P5Pz9sTW;
+ Sat,  9 Apr 2022 19:18:20 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id S02IfVex6DSb; Sat,  9 Apr 2022 19:18:19 +0200 (CEST)
+ with ESMTP id SulVZSzT-fbp; Sat,  9 Apr 2022 19:18:20 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KbMJl53WPz9sTW;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KbMJl5CWSz9sTX;
  Sat,  9 Apr 2022 19:18:15 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9A54D8B76D;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9CF368B79F;
  Sat,  9 Apr 2022 19:18:15 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id SFXpMaUsSCof; Sat,  9 Apr 2022 19:18:15 +0200 (CEST)
+ with ESMTP id 1FlVQE7tNnIr; Sat,  9 Apr 2022 19:18:15 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.53])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8EEDC8B76E;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id ACA208B7AB;
  Sat,  9 Apr 2022 19:18:14 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 239HI74Y833210
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 239HI8Gr833238
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sat, 9 Apr 2022 19:18:07 +0200
+ Sat, 9 Apr 2022 19:18:08 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 239HI7WO833209;
- Sat, 9 Apr 2022 19:18:07 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 239HI8lg833237;
+ Sat, 9 Apr 2022 19:18:08 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, akpm@linux-foundation.org
-Subject: [PATCH v10 04/13] mm: Add len and flags parameters to
- arch_get_mmap_end()
-Date: Sat,  9 Apr 2022 19:17:28 +0200
-Message-Id: <b556daabe7d2bdb2361c4d6130280da7c1ba2c14.1649523076.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v10 11/13] powerpc/mm: Enable full randomisation of memory
+ mappings
+Date: Sat,  9 Apr 2022 19:17:35 +0200
+Message-Id: <417fb10dde828534c73a03138b49621d74f4e5be.1649523076.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <cover.1649523076.git.christophe.leroy@csgroup.eu>
 References: <cover.1649523076.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1649524639; l=3998; s=20211009;
- h=from:subject:message-id; bh=3Bhxej7OCnv28c8lqtsHOrn0Gd/Xg0/Tq6nj5slIOu4=;
- b=3irWqdKhDGyXUJnpMBZ6Y7nCb5wEWgqEzKLo5XBVZgWsGQoKnjCy4wRFJsExnzyp2UD5OdpAQZQy
- Vp3JlPKNCyHmwButnVvAs0bC3g00uFCUb0/aX6wCHCJCarJuamD0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1649524639; l=4354; s=20211009;
+ h=from:subject:message-id; bh=1BY/B7ndaWoYrR9FdC7vk/xdt/SoueffBXNGnXIdLlM=;
+ b=4l3xkGKzNKcOljOX4n7As37CYVgs+L+aOdeQKcXfXKPfJQZd33V9toxmIp1r55aOfRNXfk6T6AYF
+ nuxt5ZNDBgNjsLgbfHY3XuFmNtv1ct+xK9A4QHDGAZjuKLwrBynB
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -77,111 +77,121 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Will Deacon <will@kernel.org>, Steve Capper <steve.capper@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Powerpc needs flags and len to make decision on arch_get_mmap_end().
+Do like most other architectures and provide randomisation also to
+"legacy" memory mappings, by adding the random factor to
+mm->mmap_base in arch_pick_mmap_layout().
 
-So add them as parameters to arch_get_mmap_end().
+See commit 8b8addf891de ("x86/mm/32: Enable full randomization on
+i386 and X86_32") for all explanations and benefits of that mmap
+randomisation.
+
+At the moment, slice_find_area_bottomup() doesn't use mm->mmap_base
+but uses the fixed TASK_UNMAPPED_BASE instead.
+slice_find_area_bottomup() being used as a fallback to
+slice_find_area_topdown(), it can't use mm->mmap_base
+directly.
+
+Instead of always using TASK_UNMAPPED_BASE as base address, leave
+it to the caller. When called from slice_find_area_topdown()
+TASK_UNMAPPED_BASE is used. Otherwise mm->mmap_base is used.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Steve Capper <steve.capper@arm.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-Acked-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- arch/arm64/include/asm/processor.h | 4 ++--
- fs/hugetlbfs/inode.c               | 6 +++---
- include/linux/sched/mm.h           | 2 +-
- mm/mmap.c                          | 4 ++--
- 4 files changed, 8 insertions(+), 8 deletions(-)
+ arch/powerpc/mm/book3s64/slice.c | 18 +++++++-----------
+ arch/powerpc/mm/mmap.c           |  2 +-
+ 2 files changed, 8 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm64/include/asm/processor.h b/arch/arm64/include/asm/processor.h
-index 73e38d9a540c..bd22d94e844d 100644
---- a/arch/arm64/include/asm/processor.h
-+++ b/arch/arm64/include/asm/processor.h
-@@ -92,8 +92,8 @@
- #endif /* CONFIG_COMPAT */
+diff --git a/arch/powerpc/mm/book3s64/slice.c b/arch/powerpc/mm/book3s64/slice.c
+index 03681042b807..c0b58afb9a47 100644
+--- a/arch/powerpc/mm/book3s64/slice.c
++++ b/arch/powerpc/mm/book3s64/slice.c
+@@ -276,20 +276,18 @@ static bool slice_scan_available(unsigned long addr,
+ }
  
- #ifndef CONFIG_ARM64_FORCE_52BIT
--#define arch_get_mmap_end(addr) ((addr > DEFAULT_MAP_WINDOW) ? TASK_SIZE :\
--				DEFAULT_MAP_WINDOW)
-+#define arch_get_mmap_end(addr, len, flags) \
-+		(((addr) > DEFAULT_MAP_WINDOW) ? TASK_SIZE : DEFAULT_MAP_WINDOW)
+ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
+-					      unsigned long len,
++					      unsigned long addr, unsigned long len,
+ 					      const struct slice_mask *available,
+ 					      int psize, unsigned long high_limit)
+ {
+ 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
+-	unsigned long addr, found, next_end;
++	unsigned long found, next_end;
+ 	struct vm_unmapped_area_info info;
  
- #define arch_get_mmap_base(addr, base) ((addr > DEFAULT_MAP_WINDOW) ? \
- 					base + TASK_SIZE - DEFAULT_MAP_WINDOW :\
-diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index ec611c7de9e3..6f863497bd69 100644
---- a/fs/hugetlbfs/inode.c
-+++ b/fs/hugetlbfs/inode.c
-@@ -205,7 +205,7 @@ hugetlb_get_unmapped_area_bottomup(struct file *file, unsigned long addr,
  	info.flags = 0;
  	info.length = len;
- 	info.low_limit = current->mm->mmap_base;
--	info.high_limit = arch_get_mmap_end(addr);
-+	info.high_limit = arch_get_mmap_end(addr, len, flags);
- 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
+ 	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
  	info.align_offset = 0;
- 	return vm_unmapped_area(&info);
-@@ -236,7 +236,7 @@ hugetlb_get_unmapped_area_topdown(struct file *file, unsigned long addr,
- 		VM_BUG_ON(addr != -ENOMEM);
- 		info.flags = 0;
- 		info.low_limit = current->mm->mmap_base;
--		info.high_limit = arch_get_mmap_end(addr);
-+		info.high_limit = arch_get_mmap_end(addr, len, flags);
- 		addr = vm_unmapped_area(&info);
- 	}
+-
+-	addr = TASK_UNMAPPED_BASE;
+ 	/*
+ 	 * Check till the allow max value for this mmap request
+ 	 */
+@@ -322,12 +320,12 @@ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
+ }
  
-@@ -251,7 +251,7 @@ generic_hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 	struct mm_struct *mm = current->mm;
- 	struct vm_area_struct *vma;
- 	struct hstate *h = hstate_file(file);
--	const unsigned long mmap_end = arch_get_mmap_end(addr);
-+	const unsigned long mmap_end = arch_get_mmap_end(addr, len, flags);
- 
- 	if (len & ~huge_page_mask(h))
- 		return -EINVAL;
-diff --git a/include/linux/sched/mm.h b/include/linux/sched/mm.h
-index da3a32d05b34..8cd975a8bfeb 100644
---- a/include/linux/sched/mm.h
-+++ b/include/linux/sched/mm.h
-@@ -137,7 +137,7 @@ static inline void mm_update_next_owner(struct mm_struct *mm)
- 
- #ifdef CONFIG_MMU
- #ifndef arch_get_mmap_end
--#define arch_get_mmap_end(addr)	(TASK_SIZE)
-+#define arch_get_mmap_end(addr, len, flags)	(TASK_SIZE)
- #endif
- 
- #ifndef arch_get_mmap_base
-diff --git a/mm/mmap.c b/mm/mmap.c
-index d2b6c3fbfb8c..e9b7d74e58bc 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -2136,7 +2136,7 @@ generic_get_unmapped_area(struct file *filp, unsigned long addr,
- 	struct mm_struct *mm = current->mm;
- 	struct vm_area_struct *vma, *prev;
+ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
+-					     unsigned long len,
++					     unsigned long addr, unsigned long len,
+ 					     const struct slice_mask *available,
+ 					     int psize, unsigned long high_limit)
+ {
+ 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
+-	unsigned long addr, found, prev;
++	unsigned long found, prev;
  	struct vm_unmapped_area_info info;
--	const unsigned long mmap_end = arch_get_mmap_end(addr);
-+	const unsigned long mmap_end = arch_get_mmap_end(addr, len, flags);
+ 	unsigned long min_addr = max(PAGE_SIZE, mmap_min_addr);
  
- 	if (len > mmap_end - mmap_min_addr)
- 		return -ENOMEM;
-@@ -2184,7 +2184,7 @@ generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
- 	struct vm_area_struct *vma, *prev;
- 	struct mm_struct *mm = current->mm;
- 	struct vm_unmapped_area_info info;
--	const unsigned long mmap_end = arch_get_mmap_end(addr);
-+	const unsigned long mmap_end = arch_get_mmap_end(addr, len, flags);
+@@ -335,8 +333,6 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
+ 	info.length = len;
+ 	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
+ 	info.align_offset = 0;
+-
+-	addr = mm->mmap_base;
+ 	/*
+ 	 * If we are trying to allocate above DEFAULT_MAP_WINDOW
+ 	 * Add the different to the mmap_base.
+@@ -377,7 +373,7 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
+ 	 * can happen with large stack limits and large mmap()
+ 	 * allocations.
+ 	 */
+-	return slice_find_area_bottomup(mm, len, available, psize, high_limit);
++	return slice_find_area_bottomup(mm, TASK_UNMAPPED_BASE, len, available, psize, high_limit);
+ }
  
- 	/* requested length too big for entire address space */
- 	if (len > mmap_end - mmap_min_addr)
+ 
+@@ -386,9 +382,9 @@ static unsigned long slice_find_area(struct mm_struct *mm, unsigned long len,
+ 				     int topdown, unsigned long high_limit)
+ {
+ 	if (topdown)
+-		return slice_find_area_topdown(mm, len, mask, psize, high_limit);
++		return slice_find_area_topdown(mm, mm->mmap_base, len, mask, psize, high_limit);
+ 	else
+-		return slice_find_area_bottomup(mm, len, mask, psize, high_limit);
++		return slice_find_area_bottomup(mm, mm->mmap_base, len, mask, psize, high_limit);
+ }
+ 
+ static inline void slice_copy_mask(struct slice_mask *dst,
+diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+index 5972d619d274..d9eae456558a 100644
+--- a/arch/powerpc/mm/mmap.c
++++ b/arch/powerpc/mm/mmap.c
+@@ -96,7 +96,7 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
+ 	 * bit is set, or if the expected stack growth is unlimited:
+ 	 */
+ 	if (mmap_is_legacy(rlim_stack)) {
+-		mm->mmap_base = TASK_UNMAPPED_BASE;
++		mm->mmap_base = TASK_UNMAPPED_BASE + random_factor;
+ 		mm->get_unmapped_area = arch_get_unmapped_area;
+ 	} else {
+ 		mm->mmap_base = mmap_base(random_factor, rlim_stack);
 -- 
 2.35.1
 
