@@ -4,67 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CE86C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Apr 2022 17:18:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE83EC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Apr 2022 17:19:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KbMKM4m2Wz3bpj
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Apr 2022 03:18:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KbMKy1cfmz3c9w
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Apr 2022 03:19:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VgF5U5Fj;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
+ helo=dfw.source.kernel.org; envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=VgF5U5Fj; 
+ dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KbMJt3znsz2ynF
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Apr 2022 03:18:19 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KbMJl35DMz9sTV;
- Sat,  9 Apr 2022 19:18:15 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id bwlwJaneBgAK; Sat,  9 Apr 2022 19:18:15 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KbMJl1rM1z9sT3;
- Sat,  9 Apr 2022 19:18:15 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 26BCB8B7B0;
- Sat,  9 Apr 2022 19:18:15 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id i3QvR5jOCzKU; Sat,  9 Apr 2022 19:18:15 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.53])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8BD5C8B765;
- Sat,  9 Apr 2022 19:18:14 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 239HI81h833218
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sat, 9 Apr 2022 19:18:08 +0200
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 239HI7bk833217;
- Sat, 9 Apr 2022 19:18:07 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, akpm@linux-foundation.org
-Subject: [PATCH v10 06/13] powerpc/mm: Make slice specific to book3s/64
-Date: Sat,  9 Apr 2022 19:17:30 +0200
-Message-Id: <4a0d74ef1966a5902b5fd4ac4b513a760a6d675a.1649523076.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <cover.1649523076.git.christophe.leroy@csgroup.eu>
-References: <cover.1649523076.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KbMJt7307z2ynF
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Apr 2022 03:18:22 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 478B760DE7;
+ Sat,  9 Apr 2022 17:18:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D644C385A0;
+ Sat,  9 Apr 2022 17:18:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1649524697;
+ bh=U3jHc9UqvdL0OI4026ZW/QrRbZLIojegGMh2u9v87rE=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=VgF5U5FjEyAQlfJ1rxZKa815KAiFoOPnF+WI8qDhFrWa2WC7XDhcoIAXwPJG1Zx26
+ hJoGd07p4baJpG+dOqtCqmukcgqQXq5bnbwqUoz+2/uz0qO8sWhY8g3sDOxvK+ELep
+ dJpHqxZ8G0xL0iptyCISOBOMwbaIL2boDtCuDcJEMuGlhkC3lZnv7UmF3LFbppEOd9
+ CqPM2gokNOjs8UcayPxAx6JMwWYMRe1i7lULZVHMQnvBFx3Ss0vsc6VPOrQJbUoBky
+ y5r5ug+QGtmoF2XzgPJQ7eVCUzxtSnbBLsz4BJcuCUx+aotpTEWDG8QIWqgoD/LHqw
+ 3oUN+QGPun3yw==
+Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
+ id CC4CF40407; Sat,  9 Apr 2022 14:18:13 -0300 (-03)
+Date: Sat, 9 Apr 2022 14:18:13 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 0/4] Fix perf bench numa, futex and epoll to work with
+ machines having #CPUs > 1K
+Message-ID: <YlG/1cegJ3Fh/zj/@kernel.org>
+References: <20220406175113.87881-1-atrajeev@linux.vnet.ibm.com>
+ <YlGmAd3LEh9He6Pg@kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1649524639; l=7647; s=20211009;
- h=from:subject:message-id; bh=j/j/xG7b+z/sfEpX5tyjExiFy1bhod9uj4UTTdJjUwk=;
- b=Ap8H4wrtMmIVzsTR2bz4mCNUuEn1AzQn8NLygFoytZK1bPVOn4cfEQ2vmm5E6nr5ybqT/upmHRdT
- 2BYzKcxRD5RxmEYIj0va0vXG/mU8yV3WowZ5tOQziHnG8oJiPc4o
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <YlGmAd3LEh9He6Pg@kernel.org>
+X-Url: http://acmel.wordpress.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,226 +68,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
+Cc: irogers@google.com, maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com,
+ rnsastry@linux.ibm.com, linux-kernel@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, jolsa@kernel.org, kjain@linux.ibm.com,
+ disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since commit 555904d07eef ("powerpc/8xx: MM_SLICE is not needed
-anymore") only book3s/64 selects CONFIG_PPC_MM_SLICES.
+Em Sat, Apr 09, 2022 at 12:28:01PM -0300, Arnaldo Carvalho de Melo escreveu:
+> Em Wed, Apr 06, 2022 at 11:21:09PM +0530, Athira Rajeev escreveu:
+> > The perf benchmark for collections: numa, futex and epoll
+> > hits failure in system configuration with CPU's more than 1024.
+> > These benchmarks uses "sched_getaffinity" and "sched_setaffinity"
+> > in the code to work with affinity.
+> 
+> Applied 1-3, 4 needs some reworking and can wait for v5.19, the first 3
+> are fixes, so can go now.
 
-Move slice.c into mm/book3s64/
+Now trying to fix this:
 
-Move necessary stuff in asm/book3s/64/slice.h and
-remove asm/slice.h
+  26     7.89 debian:9                      : FAIL gcc version 6.3.0 20170516 (Debian 6.3.0-18+deb9u1)
+    bench/numa.c: In function 'alloc_data':
+    bench/numa.c:359:6: error: 'orig_mask' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+      ret = sched_setaffinity(0, size, mask);
+      ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    bench/numa.c:409:13: note: 'orig_mask' was declared here
+      cpu_set_t *orig_mask;
+                 ^~~~~~~~~
+    cc1: all warnings being treated as errors
+    /git/perf-5.18.0-rc1/tools/build/Makefile.build:139: recipe for target 'bench' failed
+    make[3]: *** [bench] Error 2
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |  1 +
- arch/powerpc/include/asm/book3s/64/slice.h    | 18 ++++++++
- arch/powerpc/include/asm/page.h               |  1 -
- arch/powerpc/include/asm/slice.h              | 46 -------------------
- arch/powerpc/mm/Makefile                      |  1 -
- arch/powerpc/mm/book3s64/Makefile             |  1 +
- arch/powerpc/mm/{ => book3s64}/slice.c        |  2 -
- arch/powerpc/mm/nohash/mmu_context.c          |  9 ----
- arch/powerpc/mm/nohash/tlb.c                  |  4 --
- 9 files changed, 20 insertions(+), 63 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/slice.h
- rename arch/powerpc/mm/{ => book3s64}/slice.c (99%)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 21f780942911..1c4eebbc69c9 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -18,6 +18,7 @@
-  * complete pgtable.h but only a portion of it.
-  */
- #include <asm/book3s/64/pgtable.h>
-+#include <asm/book3s/64/slice.h>
- #include <asm/task_size_64.h>
- #include <asm/cpu_has_feature.h>
- 
-diff --git a/arch/powerpc/include/asm/book3s/64/slice.h b/arch/powerpc/include/asm/book3s/64/slice.h
-index f0d3194ba41b..5b0f7105bc8b 100644
---- a/arch/powerpc/include/asm/book3s/64/slice.h
-+++ b/arch/powerpc/include/asm/book3s/64/slice.h
-@@ -2,6 +2,8 @@
- #ifndef _ASM_POWERPC_BOOK3S_64_SLICE_H
- #define _ASM_POWERPC_BOOK3S_64_SLICE_H
- 
-+#ifndef __ASSEMBLY__
-+
- #define SLICE_LOW_SHIFT		28
- #define SLICE_LOW_TOP		(0x100000000ul)
- #define SLICE_NUM_LOW		(SLICE_LOW_TOP >> SLICE_LOW_SHIFT)
-@@ -13,4 +15,20 @@
- 
- #define SLB_ADDR_LIMIT_DEFAULT	DEFAULT_MAP_WINDOW_USER64
- 
-+struct mm_struct;
-+
-+unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
-+				      unsigned long flags, unsigned int psize,
-+				      int topdown);
-+
-+unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr);
-+
-+void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
-+			   unsigned long len, unsigned int psize);
-+
-+void slice_init_new_context_exec(struct mm_struct *mm);
-+void slice_setup_new_exec(void);
-+
-+#endif /* __ASSEMBLY__ */
-+
- #endif /* _ASM_POWERPC_BOOK3S_64_SLICE_H */
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 254687258f42..62e0c6f12869 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -329,6 +329,5 @@ static inline unsigned long kaslr_offset(void)
- 
- #include <asm-generic/memory_model.h>
- #endif /* __ASSEMBLY__ */
--#include <asm/slice.h>
- 
- #endif /* _ASM_POWERPC_PAGE_H */
-diff --git a/arch/powerpc/include/asm/slice.h b/arch/powerpc/include/asm/slice.h
-deleted file mode 100644
-index 0bdd9c62eca0..000000000000
---- a/arch/powerpc/include/asm/slice.h
-+++ /dev/null
-@@ -1,46 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--#ifndef _ASM_POWERPC_SLICE_H
--#define _ASM_POWERPC_SLICE_H
--
--#ifdef CONFIG_PPC_BOOK3S_64
--#include <asm/book3s/64/slice.h>
--#endif
--
--#ifndef __ASSEMBLY__
--
--struct mm_struct;
--
--#ifdef CONFIG_PPC_MM_SLICES
--
--#ifdef CONFIG_HUGETLB_PAGE
--#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
--#endif
--#define HAVE_ARCH_UNMAPPED_AREA
--#define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
--
--unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
--				      unsigned long flags, unsigned int psize,
--				      int topdown);
--
--unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr);
--
--void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
--			   unsigned long len, unsigned int psize);
--
--void slice_init_new_context_exec(struct mm_struct *mm);
--void slice_setup_new_exec(void);
--
--#else /* CONFIG_PPC_MM_SLICES */
--
--static inline void slice_init_new_context_exec(struct mm_struct *mm) {}
--
--static inline unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
--{
--	return 0;
--}
--
--#endif /* CONFIG_PPC_MM_SLICES */
--
--#endif /* __ASSEMBLY__ */
--
--#endif /* _ASM_POWERPC_SLICE_H */
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index df8172da2301..d4c20484dad9 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -14,7 +14,6 @@ obj-$(CONFIG_PPC_MMU_NOHASH)	+= nohash/
- obj-$(CONFIG_PPC_BOOK3S_32)	+= book3s32/
- obj-$(CONFIG_PPC_BOOK3S_64)	+= book3s64/
- obj-$(CONFIG_NUMA) += numa.o
--obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
- obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
- obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
- obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
-diff --git a/arch/powerpc/mm/book3s64/Makefile b/arch/powerpc/mm/book3s64/Makefile
-index 2d50cac499c5..af2f3e75d458 100644
---- a/arch/powerpc/mm/book3s64/Makefile
-+++ b/arch/powerpc/mm/book3s64/Makefile
-@@ -21,6 +21,7 @@ obj-$(CONFIG_PPC_RADIX_MMU)	+= radix_hugetlbpage.o
- endif
- obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= iommu_api.o
- obj-$(CONFIG_PPC_PKEY)	+= pkeys.o
-+obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
- 
- # Instrumenting the SLB fault path can lead to duplicate SLB entries
- KCOV_INSTRUMENT_slb.o := n
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/book3s64/slice.c
-similarity index 99%
-rename from arch/powerpc/mm/slice.c
-rename to arch/powerpc/mm/book3s64/slice.c
-index 8a3ac062b71e..e4382713746d 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/book3s64/slice.c
-@@ -692,7 +692,6 @@ void slice_init_new_context_exec(struct mm_struct *mm)
- 		bitmap_fill(mask->high_slices, SLICE_NUM_HIGH);
- }
- 
--#ifdef CONFIG_PPC_BOOK3S_64
- void slice_setup_new_exec(void)
- {
- 	struct mm_struct *mm = current->mm;
-@@ -704,7 +703,6 @@ void slice_setup_new_exec(void)
- 
- 	mm_ctx_set_slb_addr_limit(&mm->context, DEFAULT_MAP_WINDOW);
- }
--#endif
- 
- void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
- 			   unsigned long len, unsigned int psize)
-diff --git a/arch/powerpc/mm/nohash/mmu_context.c b/arch/powerpc/mm/nohash/mmu_context.c
-index 85b048f04c56..ccd5819b1bd9 100644
---- a/arch/powerpc/mm/nohash/mmu_context.c
-+++ b/arch/powerpc/mm/nohash/mmu_context.c
-@@ -317,15 +317,6 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
-  */
- int init_new_context(struct task_struct *t, struct mm_struct *mm)
- {
--	/*
--	 * We have MMU_NO_CONTEXT set to be ~0. Hence check
--	 * explicitly against context.id == 0. This ensures that we properly
--	 * initialize context slice details for newly allocated mm's (which will
--	 * have id == 0) and don't alter context slice inherited via fork (which
--	 * will have id != 0).
--	 */
--	if (mm->context.id == 0)
--		slice_init_new_context_exec(mm);
- 	mm->context.id = MMU_NO_CONTEXT;
- 	mm->context.active = 0;
- 	pte_frag_set(&mm->context, NULL);
-diff --git a/arch/powerpc/mm/nohash/tlb.c b/arch/powerpc/mm/nohash/tlb.c
-index fd2c77af5c55..7e1e7c3dc66a 100644
---- a/arch/powerpc/mm/nohash/tlb.c
-+++ b/arch/powerpc/mm/nohash/tlb.c
-@@ -773,9 +773,5 @@ void __init early_init_mmu(void)
- #ifdef CONFIG_PPC_47x
- 	early_init_mmu_47x();
- #endif
--
--#ifdef CONFIG_PPC_MM_SLICES
--	mm_ctx_set_slb_addr_limit(&init_mm.context, SLB_ADDR_LIMIT_DEFAULT);
--#endif
- }
- #endif /* CONFIG_PPC64 */
--- 
-2.35.1
+Happened in several distros.
 
+- Arnaldo
