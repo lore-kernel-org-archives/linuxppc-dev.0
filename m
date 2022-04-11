@@ -4,75 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 816B3C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Apr 2022 08:00:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80D9DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Apr 2022 08:17:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KcLrX5W3kz2yPY
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Apr 2022 18:00:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KcMDJ0MMjz3bhK
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Apr 2022 18:17:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=0s8B86pD;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Vx61I8In;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
- (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
- envelope-from=osalvador@suse.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
- header.s=susede2_rsa header.b=0s8B86pD; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=Vx61I8In; 
- dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.17.10; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KcLqr3rw8z2xF0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2022 18:00:08 +1000 (AEST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
- (No client certificate requested)
- by smtp-out1.suse.de (Postfix) with ESMTPS id CE4FF210DB;
- Mon, 11 Apr 2022 08:00:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
- t=1649664005; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=ygOJS1UJ2EQgy4NRQLgltFuCHUi3pcvpVa8hltpSQ5g=;
- b=0s8B86pDevOpcgWdBDtFGs1UaV0lMlc6eLuiiJz5Wdl0cFZF5J7Ii4B0zKzNLnFcgy61H6
- tOEVmU2UXsU/PsgHiRUQDRoB315VbmBtGfBNhe/xtCiz2DyXF0TkzNxzc+ZLm3XmxyIoGf
- 5cXASHouDL1HPYnNr1BCrrSOLvX5YOw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
- s=susede2_ed25519; t=1649664005;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=ygOJS1UJ2EQgy4NRQLgltFuCHUi3pcvpVa8hltpSQ5g=;
- b=Vx61I8InXmEAoP0vJS/oQ6KW+pKJSSTldCeOviOsGrD/O1qNP/iW8Ij7pORts7Rzy66a5s
- h36R4uo7KEoF8BAA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
- (No client certificate requested)
- by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 5156F13AB5;
- Mon, 11 Apr 2022 08:00:05 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
- by imap2.suse-dmz.suse.de with ESMTPSA id lQp7DwXgU2JvIwAAMHmgww
- (envelope-from <osalvador@suse.de>); Mon, 11 Apr 2022 08:00:05 +0000
-Date: Mon, 11 Apr 2022 10:00:03 +0200
-From: Oscar Salvador <osalvador@suse.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/numa: Handle partially initialized numa nodes
-Message-ID: <YlPgAxqTR9EkIkXX@localhost.localdomain>
-References: <20220330135123.1868197-1-srikar@linux.vnet.ibm.com>
- <Yk29dMa3H8bk0yST@localhost.localdomain>
- <20220408122537.GD568950@linux.vnet.ibm.com>
- <874k316uu1.fsf@mpe.ellerman.id.au>
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KcMCm3dSYz2xY1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2022 18:17:23 +1000 (AEST)
+Received: from mail-wm1-f53.google.com ([209.85.128.53]) by
+ mrelayeu.kundenserver.de (mreue106 [213.165.67.113]) with ESMTPSA (Nemesis)
+ id 1MQuPJ-1nI37w0xl9-00O0bJ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr
+ 2022 10:17:19 +0200
+Received: by mail-wm1-f53.google.com with SMTP id r64so9364453wmr.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2022 01:17:18 -0700 (PDT)
+X-Gm-Message-State: AOAM532867dxiFo/2Ay6HCoVVa9D+83gsEvEdz6UE5ouBjXCbIpY8R5S
+ gSKY+XxCeO/QpZLRPGDB7dS8yxKcZu1NNG7VQGs=
+X-Google-Smtp-Source: ABdhPJy8pZ33Oo4WMqzog99X6GEoaGOwT8j6RrqVFPFQMKNLVzUDT5uefzJG9yX4chyyPY6S/2CLyUh5Dj13t8S9ykA=
+X-Received: by 2002:a05:600c:4e11:b0:38c:bd19:e72c with SMTP id
+ b17-20020a05600c4e1100b0038cbd19e72cmr28194884wmq.174.1649665038229; Mon, 11
+ Apr 2022 01:17:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <874k316uu1.fsf@mpe.ellerman.id.au>
+References: <20220410161035.592-1-rdunlap@infradead.org>
+In-Reply-To: <20220410161035.592-1-rdunlap@infradead.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 11 Apr 2022 10:17:02 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a2FXx8MmqW=gdYVBHWa6yRUATPX442RmGi04tW7-jj_fw@mail.gmail.com>
+Message-ID: <CAK8P3a2FXx8MmqW=gdYVBHWa6yRUATPX442RmGi04tW7-jj_fw@mail.gmail.com>
+Subject: Re: [PATCH v2] macintosh: via-pmu and via-cuda need RTC_LIB
+To: Randy Dunlap <rdunlap@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:Xngrrg5M4P7G9BuHYbLoGUqbjO8hMi354iW2z0i7u2EhDiDL1Tc
+ O4E1l2Tt9BT8q1bGIpq2ff09MBoOhVizZ5LfF7e6d1wCedFed2L5HAuV3DDG8fT+TQSkL3e
+ OHnsgSAvvhUmka4nuPZOoCwh4ACSPfOe2fG3cyOTK7VecmmmS8QZP8KqVo1jZlEWFKk2m/K
+ cpyoyy7rPAUhcDPmFJHrg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:jJN00eh7vMI=:diQenXMc1zKdssGOZR0qz9
+ YtK/MOWNFfAWW4cmTs0ucOoYfzfgjsAAXAyfPW4Yxlq6L6CqiMVVIQbtBF4tXl+iQC5gC/1UU
+ n709OJ94OqGayglwCm93B+MGyodLHKwADEKea5Vj6hqFe9MNR79X2AGLNnUo82wPIsqIhM0gb
+ wz8BlgINigMaDAuatH2yqBdupm4JPvNlUwRBAK39ycfqjjf8SW/q5jirkZQtLJX/EsAHR8N3k
+ e9K0DS51Ht5GGZBGQJXtIygL7p5zf6+oYsOoP1gGHFn4oDNBuf02QWrW9koshIGk+cuTIvPyt
+ bHJabTS3y1y16OW3AkvNvp3gRbHOyyhJ2NjsvygWM2uKqmpY/N9TBE3UDPHP+x41elOz/+IEp
+ njZzuPn/M4887Emta4JeNCcUCqHRO4kUp9qkGAgpBdHopiJPRekvyusoVkuF83o7zkvwjOsRK
+ yK113LeteD8j7FHolCvoxN42LfkBQz+AV5HZ753lJqjmiH459ryGxCDpzeMbQfV/29WJ97Y4r
+ C7mfZo12ezquwHo6Y3EVQOPZhIqcx32Q6s3+mx7Bul7RTvE9YYoZLx4j3O+kVsEZ8s7MPmbIo
+ CC3mBnLW0pQSWU0ZUoujq25KJnMocVhMtXoAMFYrafsF6bnqWAlcIV3bK+Mu8g92Ab2cO/rXe
+ 5L+hCPKi8HPpTYfc09zWQwh9o4i2V622oZqCgQgeRIaEKkt0dJ6jdj7GY3gbfNZkadepSV7VM
+ TMach2ytLGKHL7JgGtzyVcMfiEW42cNflZmGAmNNhjL11UPhHlItJv2Y3Io/bHeGGw6+U7ler
+ z5OLFafqTk1TzWfrctYmopbQ6JJvnByot0xUjXo+oonelFBOxQ=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,29 +69,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
- Michal Hocko <mhocko@kernel.org>
+Cc: Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Nick Desaulniers <ndesaulniers@google.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Nathan Chancellor <nathan@kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Finn Thain <fthain@linux-m68k.org>, kernel test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Apr 10, 2022 at 09:28:38PM +1000, Michael Ellerman wrote:
-> Yeah agreed, thanks for getting to the root of the problem.
-> 
-> Can you resend as a standalone patch. Because you sent it as a reply it
-> won't be recognised by patchwork[1] which means it risks getting lost.
+On Sun, Apr 10, 2022 at 6:10 PM Randy Dunlap <rdunlap@infradead.org> wrote:
+>
+> Fix build when RTC_LIB is not set/enabled.
+> Eliminates these build errors:
+>
+> m68k-linux-ld: drivers/macintosh/via-pmu.o: in function `pmu_set_rtc_time':
+> drivers/macintosh/via-pmu.c:1769: undefined reference to `rtc_tm_to_time64'
+> m68k-linux-ld: drivers/macintosh/via-cuda.o: in function `cuda_set_rtc_time':
+> drivers/macintosh/via-cuda.c:797: undefined reference to `rtc_tm_to_time64'
+>
+> Fixes: 0792a2c8e0bb ("macintosh: Use common code to access RTC")
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Suggested-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Kees Cook <keescook@chromium.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Finn Thain <fthain@linux-m68k.org>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Nathan Chancellor <nathan@kernel.org>
+> Cc: Nick Desaulniers <ndesaulniers@google.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+> v2: use RTC_LIB instead of open-coding the call to rtc_tm_to_time64()
 
-Hi Michael,
+This sounds like a step in the right direction. Note that there is
+another open-coded rtc_tm_to_time64() in read_persistent_clock64(),
+it might be worth changing that one as well and just always including
+RTC_LIB, though that's a separate issue.
 
-It's done [1].
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-thanks!
+> --- a/drivers/macintosh/Kconfig
+> +++ b/drivers/macintosh/Kconfig
+> @@ -44,6 +44,7 @@ config ADB_IOP
+>  config ADB_CUDA
+>         bool "Support for Cuda/Egret based Macs and PowerMacs"
+>         depends on (ADB || PPC_PMAC) && !PPC_PMAC64
+> +       select RTC_LIB
+>         help
+>           This provides support for Cuda/Egret based Macintosh and
+>           Power Macintosh systems. This includes most m68k based Macs,
+> @@ -57,6 +58,7 @@ config ADB_CUDA
+>  config ADB_PMU
+>         bool "Support for PMU based PowerMacs and PowerBooks"
+>         depends on PPC_PMAC || MAC
+> +       select RTC_LIB
+>         help
+>           On PowerBooks, iBooks, and recent iMacs and Power Macintoshes, the
+>           PMU is an embedded microprocessor whose primary function is to
 
-[1] http://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220411074934.4632-1-osalvador@suse.de/
+I think ideally these would just become regular RTC drivers, rather than
+relying on the roundtrip through CONFIG_RTC_DRV_GENERIC.
 
- 
--- 
-Oscar Salvador
-SUSE Labs
+        Arnd
