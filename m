@@ -4,149 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0047C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Apr 2022 08:22:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60910C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Apr 2022 08:35:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KcMKh0NPQz3bd4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Apr 2022 18:22:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KcMd562vhz3bZf
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Apr 2022 18:35:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=h9qgN+Vy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XMUGZ+4W;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=ibm.com
- (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com;
- envelope-from=geetika.moolchandani1@ibm.com; receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.20; helo=mga02.intel.com;
+ envelope-from=ilpo.jarvinen@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=h9qgN+Vy; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=XMUGZ+4W; dkim-atps=neutral
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KcJr96rl2z2xnL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2022 16:30:16 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 23B5lJHo037176; 
- Mon, 11 Apr 2022 06:29:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : references : in-reply-to : content-type :
- mime-version; s=pp1; bh=fTBQfwzA/ajYQSe8NmLTG2fysUoiYkUW7Z/hnE7gtqw=;
- b=h9qgN+Vygi5mOUvjap96tg0jXutGonlZgpyjAbw3KY8NO30wmX//DSs+2vRki2AP5pOw
- 41t+/y/cQeYV/7LSOvKLKC+Ptv+WCOovV74mkQ9XH34mJIwMjKXo0zZBKB6B8I/i7aop
- 831r1kMRJ45A0C1lrl6YqS9S2IHAkBH2g97Wy7QYQWQmNN9aXrWtTHpDkvQNyOCn/Bpn
- hhFLwoPNsuCSsYWE+vNyNBhbxNWuSCMfG1fLhVDJLEP84JKdttFPKRJIN+lNa/MYYJ2t
- BNvG3FobdUBSa3wXaPITZotYaxXhwtuxLQANOSq2f2gOZ2pxUGKJeD0OzHTdog0b4YGe aA== 
-Received: from nam10-dm6-obe.outbound.protection.outlook.com
- (mail-dm6nam10lp2104.outbound.protection.outlook.com [104.47.58.104])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3fceg10p5u-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Apr 2022 06:29:57 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ZIsRAlMeEEiyhBILbyaqq+Ng2WW/7jRm85XOu04rYjC2njgIknbxfkbK2J5MScXXov8a8S96EeZ6aSZc+/Izi6t8OH2IRhvy3eZoShY9Gh2qsY9uDCvGV6FNsx19uIPrnSlzC4p8jjk+3yjeOToo5uOpq8ksYZGYdfmndiX4pCdCXLq5dO4gNUPHBl/aiAnY+ol6z7Quv/MkWIhjAZcoSveveMfWWoUAcKT4HPqNBhumo1fBe2UqiVJ+sxifmWuPE7wdsagISR6qj1QE8NN6Vy2StlWGkQXBXBqvmmBtGG65jXBNZBzx7S7LIrWApUs0fyhp3b71WLGpJbANBA6BIA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=fTBQfwzA/ajYQSe8NmLTG2fysUoiYkUW7Z/hnE7gtqw=;
- b=jLOKtzGkLmyj0JtPO7bX5zkxGSTh/ZMyuLEEJXoes32JwLhSfw2n5g9lMEy3rOC0MIZ4SiM0k+GDfFcZlB8v1XxNedVvwCURBm/+juNXMF5K73E9cEFBqxcLe4hTJ80XSRh2+saztGKLYqlwnP2W8EyiLfsfQQnCZQAWz5CxxaLTQFitdaniUZL9uPZ6FsGQx8bIlimksQPzBfyGRVpzKGdw09PKZsgzww/nLsY7Z6+ieQKtn0aoSsAIxmNRvP1Gy2y23YEy2mkvq93lgHax1szY1PcP5NKDkDDAC2k6JZ+AMtw359RFPWQOv5Krxrrq1SOzI0d+whTa6PWV5iiDOg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=ibm.com; dmarc=pass action=none header.from=ibm.com; dkim=pass
- header.d=ibm.com; arc=none
-Received: from SN6PR15MB2256.namprd15.prod.outlook.com (2603:10b6:805:1b::16)
- by BY3PR15MB4914.namprd15.prod.outlook.com (2603:10b6:a03:3c1::21)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5144.29; Mon, 11 Apr
- 2022 06:29:55 +0000
-Received: from SN6PR15MB2256.namprd15.prod.outlook.com
- ([fe80::47c:4296:b0db:8402]) by SN6PR15MB2256.namprd15.prod.outlook.com
- ([fe80::47c:4296:b0db:8402%5]) with mapi id 15.20.5144.029; Mon, 11 Apr 2022
- 06:29:55 +0000
-From: Geetika Moolchandani1 <Geetika.Moolchandani1@ibm.com>
-To: Oscar Salvador <osalvador@suse.de>, Srikar Dronamraju
- <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/numa: Handle partially initialized numa nodes
-Thread-Topic: [PATCH] powerpc/numa: Handle partially initialized numa nodes
-Thread-Index: AQHYS0PG74qVAW9xE0+kovP9oKDQG6zqQ4m2
-Date: Mon, 11 Apr 2022 06:29:55 +0000
-Message-ID: <SN6PR15MB2256778D6D0604601B8E05D5BBEA9@SN6PR15MB2256.namprd15.prod.outlook.com>
-References: <20220330135123.1868197-1-srikar@linux.vnet.ibm.com>
- <Yk29dMa3H8bk0yST@localhost.localdomain>
- <20220408122537.GD568950@linux.vnet.ibm.com>
-In-Reply-To: <20220408122537.GD568950@linux.vnet.ibm.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-msip_labels: 
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 9ddc91d3-c29a-40e6-68c0-08da1b84b17d
-x-ms-traffictypediagnostic: BY3PR15MB4914:EE_
-x-microsoft-antispam-prvs: <BY3PR15MB491489F7B1D8AB7E8985A83DBBEA9@BY3PR15MB4914.namprd15.prod.outlook.com>
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: ZYBsueP3/0nTUvNsP4ZkIDBUxKz/UJJmb0ypi+4rVOPK9LVLeMRXzRMVDsMdApmA7PISwBTzVLCbe3lymespQPH19pUMgKR/KbpkW9h+gTVrbAjrtci7h7dmNfJtISTuincKPvbg1icnjFEyGOSeQlw9YyKDsF+ggjkkZFf44DY8okXuWPQN38cHkiuHfSCTvb+Thftsr4Q3P7XPWrnzta+jzoOFheWUv4fawlEICWbzSLFUILvo/xTMsRWVlEgtTJ3bWhB0B80nYw8JOu+Z+UC5PBRd216CCqi3b8MoPgVmq9AfLWD316tJWLmgt/v00xFcZKFFw9fStE8iK/PRIJ8Qfr1zejCacqnEDOHtj3RbrMOufzbq+F6WCrQa5TRChHPNeuu6NMCfebrG/XEOyuffCWHcCAYPz4l0GNiKhRunIWWPJSoNbycCfGoaaARFSsh9CsT3caTLYgyTg97KiNQEa2Gqi4mIo3xrLyt+9hSbnqxwclsosgyMDDFgb/YyeaBNMpjsraqkC3lEif7ffEx9d6CCm2LV9zpTALam4tgEKqMMqatLno17rciOefQ3KYvacfHl0vWT60j44BAPXwNMGSVRuXrCRyX7GNNSt2KYbwVF77UPLQRAKHKZfQHBF4PFzJ8TVHNMO48hyWHW7pbHWeFgJsh5Lfx6zEdSP+V6KtgYRHBdaEQ/4IV7X+V46dOmayfegbkvfGKeGwfaMA==
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:SN6PR15MB2256.namprd15.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230001)(366004)(76116006)(66556008)(66946007)(71200400001)(8936002)(91956017)(5660300002)(66476007)(38100700002)(38070700005)(55016003)(19627405001)(9686003)(33656002)(7696005)(186003)(6506007)(53546011)(26005)(2906002)(508600001)(86362001)(54906003)(110136005)(83380400001)(122000001)(66446008)(64756008)(52536014)(8676002)(4326008)(316002);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?iso-8859-1?Q?RzXk11t15o+O2XiXCKxQgC4JLwNxJTzbbufB3MHKh+drWOhYKPPCdQxg4x?=
- =?iso-8859-1?Q?59ulAgOiin1KPVwJMJczBt8CQ8uCZ2SbimIL10oqIUUpNqJqJQTSuxgCbD?=
- =?iso-8859-1?Q?o64mNNdoDACduD2ThpnxYHcAbnnYlebUPB/9qM1fS30whRHaHGHQn+LUVG?=
- =?iso-8859-1?Q?1ZJotFaZ6J3YZoljWWN+3AXbFHJhV+/8F66m9fdchzSdW3yRiTVJrgZmXv?=
- =?iso-8859-1?Q?zIe1EngZenJdoQc/qvxCrrUu2XGoK6XRU2gLxfE3Wk947PS43uufVF1K+t?=
- =?iso-8859-1?Q?XjM/xkMXppwXznYev6WBI1zyZCCoqvHyTuGodZfd18TwL8pSfTbx0a81Ua?=
- =?iso-8859-1?Q?ptLeB/GlCJhbHHiF+OdeZ4V+UCfCRwhqaiLcZ0kHqeGKOSCisC2qqagVb8?=
- =?iso-8859-1?Q?qKLAgiEwhE5gQ5ZYqIEag0Cyg6DqZhErD81mblG+9uej+xq5kE+qYNNmql?=
- =?iso-8859-1?Q?LIVHtAK5q/4UacIkvOTQjjM1g4D5pqfyM0qfR3gsb7C8gAWBjPluZu+0Vp?=
- =?iso-8859-1?Q?tQR1W87dg8nmoYlK33pzfC26TsFYAB9/x4lK7xvpv77mORSMgMLFEcmAj3?=
- =?iso-8859-1?Q?ObN6ZfZXKmBDaVq48SKBjWdKSgzDTe2BBJP6XmOpsBXIXA+05Rd3XVtX2U?=
- =?iso-8859-1?Q?FzCmiGbNaO3AwKS6qwIPR9mGRIjwL356Q/krdQfE9m2tDh4obazj3PbeyM?=
- =?iso-8859-1?Q?gtDFKbhEUFO+R+dkzanvCjhGh4/Nu+sTKUJKr1IXWJm3hwOm0CKzSGciUz?=
- =?iso-8859-1?Q?/qFL1QLfXpWP6ppHWf0z9//5MjDmnP2VdicT86mm0/7iMuATdaL3LOoLsP?=
- =?iso-8859-1?Q?9BeJ0aBjCVua2jKxD9HpeiRFl8N0VH9aBv+2EQ40UbJLLFG1fhl1rm/MNk?=
- =?iso-8859-1?Q?IyoxvOfeWEvFuP6G5kl/DyCy0hTsjYHMDneLHkrQC6mnvUdV1bAPZNdmkB?=
- =?iso-8859-1?Q?04LJFoKEx5BthRu8avkMxeva9nFmeBNqz7wib77wijVOa8VxMSEUYBwT1p?=
- =?iso-8859-1?Q?Ge5BjrGMZTKEgKyFyQmVAnB5S7LVrVWsImFEWvZ/7jSrZxsP6um4IcMAyV?=
- =?iso-8859-1?Q?RokxZL4s2U8fBEZxPbUK3CpyubgqFQ+jDh5WZc08Rvw9rfzfx2SCAosznl?=
- =?iso-8859-1?Q?mUzu9kXcMeMVLKyoTEB1SLYw4crbwSPbpYj/2qzO1oW89n72BaJVoe74u3?=
- =?iso-8859-1?Q?sI5AKCjamYAs4YFUZ7Ry1kQBRWzHbKUtOZ4wr6vGfTUgt2Cb3sy4BAM+1F?=
- =?iso-8859-1?Q?rH6UN2nrOkE8+kxfy5P59qSaLf8nVD/NHxhAMClkzD+Mm+5HhpYmsxw5Ra?=
- =?iso-8859-1?Q?hjoDENO8zWtrDhUX/Rr9kPvVrP1he7av7RlqwR3zY9HqZ55ogBHVvyY5G/?=
- =?iso-8859-1?Q?Jjg7ppeJ8v1NQvUkkJ5OdAk0aXQ4YufOkK/4HxwX8Zfl98NIAEZsKz7pHt?=
- =?iso-8859-1?Q?3f/xQklUbYjG5OYg7Arzn5+Bo+ACVkX8jFK8rSlSbeSofQnP08xvqeoZRX?=
- =?iso-8859-1?Q?+0kz7JrNtKRfIJkuEZYxxbw+SqKhLeYbk80CyS+K46ehb0Abdh1rPLPbUg?=
- =?iso-8859-1?Q?AtE+dw8WUPewyxZZjGnX8U6lYg3iYviSa2humrMJNYL5O9MU4lt127rs91?=
- =?iso-8859-1?Q?jOtKPA8RZvNYkBUlKutF5TRiPk17j/bm9aRAc0r6gxQYSV/M0R6NfbnoXD?=
- =?iso-8859-1?Q?EQO+jc7EmCYKP5t0baVSTSp0tLPesh7gmdPo0Ka9I3VrIfQVW/WtJEonTK?=
- =?iso-8859-1?Q?sXSy9t4rY1OyYGvYXcRFJiwCPJqA50GZ3uqb8+p3CmosahAVyhTs/E1LxJ?=
- =?iso-8859-1?Q?Sq5t4JatubokVJNN6l5CIP2DwgzSvho=3D?=
-Content-Type: multipart/alternative;
- boundary="_000_SN6PR15MB2256778D6D0604601B8E05D5BBEA9SN6PR15MB2256namp_"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KcMcL2PLDz2xX6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2022 18:35:12 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1649666114; x=1681202114;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=MVWKXiT1Q7Q2D8LUfH+Cbq2ak2T/7xVkG/x16COPb2I=;
+ b=XMUGZ+4WxjaTO0Dk3LsJhJJ0YffmUb+846+++tYBK3fMvSmvUosAsQHH
+ TwfAzYZDHtF3iHl2NW+OadW+ZnlKke3vBrfGLuhLDhTy6JXfy7D3F9qCm
+ yGaTg2Mfe5bMAxjxcnnj1ss2dbCtK6qOh6bEqdIImVW46RDQc9gWiOiFW
+ MH5h5OXPydXHTjfGuYd5BgoHVgZf9sIL/541kULiz/Cy98RTEv838b/Yj
+ RzRPVY4KC8aWoL8kBDuNcMxk67jXAowy/ivZc348dJFICuy9cpi/YMKEv
+ Dmfa53AX5iI1JU1k3e/gQhYvHIyUKbZGnWV8mDhrqFKQwPYR8/VToIabn g==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10313"; a="249348436"
+X-IronPort-AV: E=Sophos;i="5.90,251,1643702400"; d="scan'208";a="249348436"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 Apr 2022 01:34:09 -0700
+X-IronPort-AV: E=Sophos;i="5.90,251,1643702400"; d="scan'208";a="572028736"
+Received: from azahoner-mobl1.ger.corp.intel.com (HELO
+ ijarvine-MOBL2.ger.corp.intel.com) ([10.249.44.232])
+ by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 Apr 2022 01:34:01 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To: linux-serial@vger.kernel.org, Greg KH <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jirislaby@kernel.org>, Lukas Wunner <lukas@wunner.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v3 07/12] serial: termbits: ADDRB to indicate 9th bit
+ addressing mode
+Date: Mon, 11 Apr 2022 11:33:16 +0300
+Message-Id: <20220411083321.9131-8-ilpo.jarvinen@linux.intel.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20220411083321.9131-1-ilpo.jarvinen@linux.intel.com>
+References: <20220411083321.9131-1-ilpo.jarvinen@linux.intel.com>
 MIME-Version: 1.0
-X-OriginatorOrg: ibm.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR15MB2256.namprd15.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9ddc91d3-c29a-40e6-68c0-08da1b84b17d
-X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Apr 2022 06:29:55.3140 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: fcf67057-50c9-4ad4-98f3-ffca64add9e9
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: qZYzQHP8Ra6extqnnHKSHZc+ecftTIOZu9zTBdOIrjwK06vVofMrdZo9YLZFQ3iOlcCnkxpWJ3UdZM3fT72FaYOFOI2Wm0Ke38R/IhAYuMQ=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY3PR15MB4914
-X-Proofpoint-ORIG-GUID: DNoJ4VkYVqgUTUGl-QY4V6IruN4Jzi9e
-X-Proofpoint-GUID: DNoJ4VkYVqgUTUGl-QY4V6IruN4Jzi9e
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.425,FMLib:17.11.64.514
- definitions=2022-04-11_01,2022-04-08_01,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- priorityscore=1501 suspectscore=0 clxscore=1011 impostorscore=0 mlxscore=0
- bulkscore=0 malwarescore=0 spamscore=0 mlxlogscore=999 adultscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2202240000 definitions=main-2204110034
-X-Mailman-Approved-At: Mon, 11 Apr 2022 18:21:48 +1000
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -158,669 +71,356 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, heiko@sntech.de,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ Matt Turner <mattst88@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ Johan Hovold <johan@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
+ linux-api@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-mips@vger.kernel.org, giulio.benetti@micronovasrl.com,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---_000_SN6PR15MB2256778D6D0604601B8E05D5BBEA9SN6PR15MB2256namp_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Add ADDRB to termbits to indicate 9th bit addressing mode.
+This change is necessary for supporting devices with RS485
+multipoint addressing [*]. A later patch in the patch series
+adds support for Synopsys Designware UART capable for 9th bit
+addressing mode. In this mode, 9th bit is used to indicate an
+address (byte) within the communication line. The 9th bit
+addressing mode is selected using ADDRB introduced by an earlier
+patch.
 
+[*] Technically, RS485 is just an electronic spec and does not
+itself specify the 9th bit addressing mode but 9th bit seems
+at least "semi-standard" way to do addressing with RS485.
 
+Cc: linux-api@vger.kernel.org
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matt Turner <mattst88@gmail.com>
+Cc: linux-alpha@vger.kernel.org
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: linux-mips@vger.kernel.org
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-parisc@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arch@vger.kernel.org
+Cc: linux-usb@vger.kernel.org
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+---
+ arch/alpha/include/uapi/asm/termbits.h   | 1 +
+ arch/mips/include/uapi/asm/termbits.h    | 1 +
+ arch/parisc/include/uapi/asm/termbits.h  | 1 +
+ arch/powerpc/include/uapi/asm/termbits.h | 1 +
+ arch/sparc/include/uapi/asm/termbits.h   | 1 +
+ drivers/char/pcmcia/synclink_cs.c        | 2 ++
+ drivers/ipack/devices/ipoctal.c          | 2 ++
+ drivers/mmc/core/sdio_uart.c             | 2 ++
+ drivers/net/usb/hso.c                    | 3 ++-
+ drivers/s390/char/tty3270.c              | 3 +++
+ drivers/staging/greybus/uart.c           | 2 ++
+ drivers/tty/amiserial.c                  | 6 +++++-
+ drivers/tty/moxa.c                       | 1 +
+ drivers/tty/mxser.c                      | 1 +
+ drivers/tty/serial/serial_core.c         | 2 ++
+ drivers/tty/synclink_gt.c                | 2 ++
+ drivers/tty/tty_ioctl.c                  | 2 ++
+ drivers/usb/class/cdc-acm.c              | 2 ++
+ drivers/usb/serial/usb-serial.c          | 6 ++++--
+ include/uapi/asm-generic/termbits.h      | 1 +
+ net/bluetooth/rfcomm/tty.c               | 2 ++
+ 21 files changed, 40 insertions(+), 4 deletions(-)
 
-________________________________
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Sent: Friday, April 8, 2022 5:55 PM
-To: Oscar Salvador <osalvador@suse.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>; linuxppc-dev <linuxppc-dev@lists=
-.ozlabs.org>; linux-mm@kvack.org <linux-mm@kvack.org>; Michal Hocko <mhocko=
-@kernel.org>; Geetika Moolchandani1 <Geetika.Moolchandani1@ibm.com>
-Subject: Re: [PATCH] powerpc/numa: Handle partially initialized numa nodes
+diff --git a/arch/alpha/include/uapi/asm/termbits.h b/arch/alpha/include/uapi/asm/termbits.h
+index 4575ba34a0ea..0c123e715486 100644
+--- a/arch/alpha/include/uapi/asm/termbits.h
++++ b/arch/alpha/include/uapi/asm/termbits.h
+@@ -180,6 +180,7 @@ struct ktermios {
+ #define HUPCL	00040000
+ 
+ #define CLOCAL	00100000
++#define ADDRB	004000000000		/* address bit */
+ #define CMSPAR	  010000000000		/* mark or space (stick) parity */
+ #define CRTSCTS	  020000000000		/* flow control */
+ 
+diff --git a/arch/mips/include/uapi/asm/termbits.h b/arch/mips/include/uapi/asm/termbits.h
+index dfeffba729b7..4732d31b0e4e 100644
+--- a/arch/mips/include/uapi/asm/termbits.h
++++ b/arch/mips/include/uapi/asm/termbits.h
+@@ -182,6 +182,7 @@ struct ktermios {
+ #define	 B3500000 0010016
+ #define	 B4000000 0010017
+ #define CIBAUD	  002003600000	/* input baud rate */
++#define ADDRB	  004000000000	/* address bit */
+ #define CMSPAR	  010000000000	/* mark or space (stick) parity */
+ #define CRTSCTS	  020000000000	/* flow control */
+ 
+diff --git a/arch/parisc/include/uapi/asm/termbits.h b/arch/parisc/include/uapi/asm/termbits.h
+index 40e920f8d683..d6bbd10d92ba 100644
+--- a/arch/parisc/include/uapi/asm/termbits.h
++++ b/arch/parisc/include/uapi/asm/termbits.h
+@@ -159,6 +159,7 @@ struct ktermios {
+ #define  B3500000 0010016
+ #define  B4000000 0010017
+ #define CIBAUD    002003600000		/* input baud rate */
++#define ADDRB	  004000000000		/* address bit */
+ #define CMSPAR    010000000000          /* mark or space (stick) parity */
+ #define CRTSCTS   020000000000          /* flow control */
+ 
+diff --git a/arch/powerpc/include/uapi/asm/termbits.h b/arch/powerpc/include/uapi/asm/termbits.h
+index ed18bc61f63d..c6a033732f39 100644
+--- a/arch/powerpc/include/uapi/asm/termbits.h
++++ b/arch/powerpc/include/uapi/asm/termbits.h
+@@ -171,6 +171,7 @@ struct ktermios {
+ #define HUPCL	00040000
+ 
+ #define CLOCAL	00100000
++#define ADDRB	004000000000		/* address bit */
+ #define CMSPAR	  010000000000		/* mark or space (stick) parity */
+ #define CRTSCTS	  020000000000		/* flow control */
+ 
+diff --git a/arch/sparc/include/uapi/asm/termbits.h b/arch/sparc/include/uapi/asm/termbits.h
+index ce5ad5d0f105..5eb1d547b5c4 100644
+--- a/arch/sparc/include/uapi/asm/termbits.h
++++ b/arch/sparc/include/uapi/asm/termbits.h
+@@ -201,6 +201,7 @@ struct ktermios {
+ #define B3500000  0x00001012
+ #define B4000000  0x00001013  */
+ #define CIBAUD	  0x100f0000  /* input baud rate (not used) */
++#define ADDRB	  0x20000000  /* address bit */
+ #define CMSPAR	  0x40000000  /* mark or space (stick) parity */
+ #define CRTSCTS	  0x80000000  /* flow control */
+ 
+diff --git a/drivers/char/pcmcia/synclink_cs.c b/drivers/char/pcmcia/synclink_cs.c
+index 78baba55a8b5..d179b9b57a25 100644
+--- a/drivers/char/pcmcia/synclink_cs.c
++++ b/drivers/char/pcmcia/synclink_cs.c
+@@ -2287,6 +2287,8 @@ static void mgslpc_set_termios(struct tty_struct *tty, struct ktermios *old_term
+ 		== RELEVANT_IFLAG(old_termios->c_iflag)))
+ 	  return;
+ 
++	tty->termios.c_cflag &= ~ADDRB;
++
+ 	mgslpc_change_params(info, tty);
+ 
+ 	/* Handle transition to B0 status */
+diff --git a/drivers/ipack/devices/ipoctal.c b/drivers/ipack/devices/ipoctal.c
+index 20d2b9ec1227..d66cc9683ebc 100644
+--- a/drivers/ipack/devices/ipoctal.c
++++ b/drivers/ipack/devices/ipoctal.c
+@@ -506,6 +506,8 @@ static void ipoctal_set_termios(struct tty_struct *tty,
+ 	struct ipoctal_channel *channel = tty->driver_data;
+ 	speed_t baud;
+ 
++	tty->termios.c_cflag &= ~ADDRB;
++
+ 	cflag = tty->termios.c_cflag;
+ 
+ 	/* Disable and reset everything before change the setup */
+diff --git a/drivers/mmc/core/sdio_uart.c b/drivers/mmc/core/sdio_uart.c
+index 04c0823e0359..7432b01379ef 100644
+--- a/drivers/mmc/core/sdio_uart.c
++++ b/drivers/mmc/core/sdio_uart.c
+@@ -880,6 +880,8 @@ static void sdio_uart_set_termios(struct tty_struct *tty,
+ 	if (sdio_uart_claim_func(port) != 0)
+ 		return;
+ 
++	tty->termios.c_cflag &= ~ADDRB;
++
+ 	sdio_uart_change_speed(port, &tty->termios, old_termios);
+ 
+ 	/* Handle transition to B0 status */
+diff --git a/drivers/net/usb/hso.c b/drivers/net/usb/hso.c
+index f97813a4e8d1..b687327bc7b1 100644
+--- a/drivers/net/usb/hso.c
++++ b/drivers/net/usb/hso.c
+@@ -1099,7 +1099,8 @@ static void _hso_serial_set_termios(struct tty_struct *tty)
+ 		~(CSIZE		/* no size */
+ 		| PARENB	/* disable parity bit */
+ 		| CBAUD		/* clear current baud rate */
+-		| CBAUDEX);	/* clear current buad rate */
++		| CBAUDEX	/* clear current baud rate */
++		| ADDRB);	/* disable 9th (addr) bit */
+ 
+ 	tty->termios.c_cflag |= CS8;	/* character size 8 bits */
+ 
+diff --git a/drivers/s390/char/tty3270.c b/drivers/s390/char/tty3270.c
+index 5c83f71c1d0e..253d2997a1d3 100644
+--- a/drivers/s390/char/tty3270.c
++++ b/drivers/s390/char/tty3270.c
+@@ -1768,6 +1768,9 @@ tty3270_set_termios(struct tty_struct *tty, struct ktermios *old)
+ 	tp = tty->driver_data;
+ 	if (!tp)
+ 		return;
++
++	tty->termios.c_cflag &= ~ADDRB;
++
+ 	spin_lock_bh(&tp->view.lock);
+ 	if (L_ICANON(tty)) {
+ 		new = L_ECHO(tty) ? TF_INPUT: TF_INPUTN;
+diff --git a/drivers/staging/greybus/uart.c b/drivers/staging/greybus/uart.c
+index dc4ed0ff1ae2..83e73aefde0f 100644
+--- a/drivers/staging/greybus/uart.c
++++ b/drivers/staging/greybus/uart.c
+@@ -487,6 +487,8 @@ static void gb_tty_set_termios(struct tty_struct *tty,
+ 	struct ktermios *termios = &tty->termios;
+ 	u8 newctrl = gb_tty->ctrlout;
+ 
++	termios->c_cflag &= ~ADDRB;
++
+ 	newline.rate = cpu_to_le32(tty_get_baud_rate(tty));
+ 	newline.format = termios->c_cflag & CSTOPB ?
+ 				GB_SERIAL_2_STOP_BITS : GB_SERIAL_1_STOP_BITS;
+diff --git a/drivers/tty/amiserial.c b/drivers/tty/amiserial.c
+index 533d02b38e02..3ca97007bd6e 100644
+--- a/drivers/tty/amiserial.c
++++ b/drivers/tty/amiserial.c
+@@ -1175,7 +1175,11 @@ static void rs_set_termios(struct tty_struct *tty, struct ktermios *old_termios)
+ {
+ 	struct serial_state *info = tty->driver_data;
+ 	unsigned long flags;
+-	unsigned int cflag = tty->termios.c_cflag;
++	unsigned int cflag;
++
++	tty->termios.c_cflag &= ~ADDRB;
++
++	cflag = tty->termios.c_cflag;
+ 
+ 	change_speed(tty, info, old_termios);
+ 
+diff --git a/drivers/tty/moxa.c b/drivers/tty/moxa.c
+index f3c72ab1476c..07cd88152d58 100644
+--- a/drivers/tty/moxa.c
++++ b/drivers/tty/moxa.c
+@@ -2050,6 +2050,7 @@ static int MoxaPortSetTermio(struct moxa_port *port, struct ktermios *termio,
+ 
+ 	ofsAddr = port->tableAddr;
+ 
++	termio->c_cflag &= ~ADDRB;
+ 	mode = termio->c_cflag & CSIZE;
+ 	if (mode == CS5)
+ 		mode = MX_CS5;
+diff --git a/drivers/tty/mxser.c b/drivers/tty/mxser.c
+index 836c9eca2946..220676363a07 100644
+--- a/drivers/tty/mxser.c
++++ b/drivers/tty/mxser.c
+@@ -577,6 +577,7 @@ static void mxser_change_speed(struct tty_struct *tty, struct ktermios *old_term
+ 	struct mxser_port *info = tty->driver_data;
+ 	unsigned cflag, cval;
+ 
++	tty->termios.c_cflag &= ~ADDRB;
+ 	cflag = tty->termios.c_cflag;
+ 
+ 	if (mxser_set_baud(tty, tty_get_baud_rate(tty))) {
+diff --git a/drivers/tty/serial/serial_core.c b/drivers/tty/serial/serial_core.c
+index c6ac91033e38..de198c2acefe 100644
+--- a/drivers/tty/serial/serial_core.c
++++ b/drivers/tty/serial/serial_core.c
+@@ -1493,6 +1493,8 @@ static void uart_set_termios(struct tty_struct *tty,
+ 		goto out;
+ 	}
+ 
++	tty->termios.c_cflag &= ~ADDRB;
++
+ 	uart_change_speed(tty, state, old_termios);
+ 	/* reload cflag from termios; port driver may have overridden flags */
+ 	cflag = tty->termios.c_cflag;
+diff --git a/drivers/tty/synclink_gt.c b/drivers/tty/synclink_gt.c
+index 25c558e65ece..ee767cea18ed 100644
+--- a/drivers/tty/synclink_gt.c
++++ b/drivers/tty/synclink_gt.c
+@@ -714,6 +714,8 @@ static void set_termios(struct tty_struct *tty, struct ktermios *old_termios)
+ 
+ 	DBGINFO(("%s set_termios\n", tty->driver->name));
+ 
++	tty->termios.c_cflag &= ~ADDRB;
++
+ 	change_params(info);
+ 
+ 	/* Handle transition to B0 status */
+diff --git a/drivers/tty/tty_ioctl.c b/drivers/tty/tty_ioctl.c
+index 63181925ec1a..934037d78868 100644
+--- a/drivers/tty/tty_ioctl.c
++++ b/drivers/tty/tty_ioctl.c
+@@ -319,6 +319,8 @@ unsigned char tty_get_frame_size(unsigned int cflag)
+ 		bits++;
+ 	if (cflag & PARENB)
+ 		bits++;
++	if (cflag & ADDRB)
++		bits++;
+ 
+ 	return bits;
+ }
+diff --git a/drivers/usb/class/cdc-acm.c b/drivers/usb/class/cdc-acm.c
+index 9b9aea24d58c..fd246ec70da8 100644
+--- a/drivers/usb/class/cdc-acm.c
++++ b/drivers/usb/class/cdc-acm.c
+@@ -1056,6 +1056,8 @@ static void acm_tty_set_termios(struct tty_struct *tty,
+ 	struct usb_cdc_line_coding newline;
+ 	int newctrl = acm->ctrlout;
+ 
++	termios->c_cflag &= ~ADDRB;
++
+ 	newline.dwDTERate = cpu_to_le32(tty_get_baud_rate(tty));
+ 	newline.bCharFormat = termios->c_cflag & CSTOPB ? 2 : 0;
+ 	newline.bParityType = termios->c_cflag & PARENB ?
+diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
+index 24101bd7fcad..8d1d170eb7e6 100644
+--- a/drivers/usb/serial/usb-serial.c
++++ b/drivers/usb/serial/usb-serial.c
+@@ -525,10 +525,12 @@ static void serial_set_termios(struct tty_struct *tty, struct ktermios *old)
+ 
+ 	dev_dbg(&port->dev, "%s\n", __func__);
+ 
+-	if (port->serial->type->set_termios)
++	if (port->serial->type->set_termios) {
++		tty->termios.c_cflag &= ~ADDRB;
+ 		port->serial->type->set_termios(tty, port, old);
+-	else
++	} else {
+ 		tty_termios_copy_hw(&tty->termios, old);
++	}
+ }
+ 
+ static int serial_break(struct tty_struct *tty, int break_state)
+diff --git a/include/uapi/asm-generic/termbits.h b/include/uapi/asm-generic/termbits.h
+index 2fbaf9ae89dd..e06eaa9cf8be 100644
+--- a/include/uapi/asm-generic/termbits.h
++++ b/include/uapi/asm-generic/termbits.h
+@@ -158,6 +158,7 @@ struct ktermios {
+ #define  B3500000 0010016
+ #define  B4000000 0010017
+ #define CIBAUD	  002003600000	/* input baud rate */
++#define ADDRB	  004000000000	/* address bit */
+ #define CMSPAR	  010000000000	/* mark or space (stick) parity */
+ #define CRTSCTS	  020000000000	/* flow control */
+ 
+diff --git a/net/bluetooth/rfcomm/tty.c b/net/bluetooth/rfcomm/tty.c
+index ebd78fdbd6e8..832e725f23ab 100644
+--- a/net/bluetooth/rfcomm/tty.c
++++ b/net/bluetooth/rfcomm/tty.c
+@@ -871,6 +871,8 @@ static void rfcomm_tty_set_termios(struct tty_struct *tty, struct ktermios *old)
+ 	if (!dev || !dev->dlc || !dev->dlc->session)
+ 		return;
+ 
++	new->c_cflag &= ~ADDRB;
++
+ 	/* Handle turning off CRTSCTS */
+ 	if ((old->c_cflag & CRTSCTS) && !(new->c_cflag & CRTSCTS))
+ 		BT_DBG("Turning off CRTSCTS unsupported");
+-- 
+2.30.2
 
-* Oscar Salvador <osalvador@suse.de> [2022-04-06 18:19:00]:
-
-> On Wed, Mar 30, 2022 at 07:21:23PM +0530, Srikar Dronamraju wrote:
-> >  arch/powerpc/mm/numa.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> > index b9b7fefbb64b..13022d734951 100644
-> > --- a/arch/powerpc/mm/numa.c
-> > +++ b/arch/powerpc/mm/numa.c
-> > @@ -1436,7 +1436,7 @@ int find_and_online_cpu_nid(int cpu)
-> >      if (new_nid < 0 || !node_possible(new_nid))
-> >              new_nid =3D first_online_node;
-> >
-> > -   if (NODE_DATA(new_nid) =3D=3D NULL) {
-> > +   if (!node_online(new_nid)) {
-> >  #ifdef CONFIG_MEMORY_HOTPLUG
-> >              /*
-> >               * Need to ensure that NODE_DATA is initialized for a node=
- from
->
-> Because of this fix, I wanted to check whether we might have any more fal=
-louts due
-> to ("mm: handle uninitialized numa nodes gracefully"), and it made me loo=
-k closer
-> as to why powerpc is the only platform that special cases try_online_node=
-(),
-> while all others rely on cpu_up()->try_online_node() to do the right thin=
-g.
->
-> So, I had a look.
-> Let us rewind a bit:
->
-> The commit that sets find_and_online_cpu_nid() in dlpar_online_cpu was
-> e67e02a544e9 ("powerpc/pseries: Fix cpu hotplug crash with memoryless nod=
-es").
->
-> In there, it says that we have the following picture:
->
-> partition_sched_domains
->  arch_update_cpu_topology
->   numa_update_cpu_topology
->    find_and_online_cpu_nid
->
-> and by the time find_and_online_cpu_nid() gets called to online the node,=
- it might be
-> too late as we might have referenced some NODE_DATA() fields.
-> Note that this happens at a much later stage in cpuhp.
->
-> Also note that at a much earlier stage, we do already have a try_online_n=
-ode() in cpu_up(),
-> which should allocate-and-online the node and prevent accessing garbage.
-> But the problem is that, on powerpc, all possible cpus have the same node=
- set at boot stage
-> (see arch/powerpc/mm/numa.c:mem_topology_setup),
-> so cpu_to_node() returns the same thing until it the mapping gets update =
-(which happens in
-> start_secondary()->set_numa_node()), and so, the try_online_node() from c=
-pu_up() does not
-> apply on the right node, because it still holds the not-up-to-date mappin=
-g node <-> cpu.
->
-> (e.g: in my test case, when onlining a CPU belongin to node1, cpu_up()->t=
-ry_online_node()
->  tries to online node0, or whatever old mapping numa<->cpu is there).
->
-> So, we have something like:
->
-> dlpar_online_cpu
->  device_online
->   dev->bus->online
->    cpu_subsys_online
->     cpu_device_up
->      cpu_up
->       try_online_node (old mapping nid <-> cpu )
->       ...
->       ...
->       cphp_callbacks
->        sched_cpu_activate
->         cpuset_update_active_cpus
->          schedule_work(&cpuset_hotplug_work)
->           cpuset_hotplug_work
->            partition_sched_domains
->             arch_update_cpu_topology
->              numa_update_cpu_topology
->               find_and_online_cpu_nid (online new_nid)
->
->
-> So, yeah, the real onlining in numa_update_cpu_topology()->find_and_onlin=
-e_cpu_nid()
-> happens too late, that is why adding find_and_online_cpu_nid() back in dl=
-par_online_cpu()
-> fixed the issue, but we should not need this special casing at all.
->
-> We do already know the numa<->cpu associativity in
-> dlpar_online_cpu()->find_and_online_cpu_nid(), so we should just be able =
-to
-> update the numa<->cpu mapping, and let the try_online_node() do the right=
- thing.
->
-> With this in mind, I came up with the following patch, where I carried ou=
-t a battery
-> of tests for CPU hotplug stuff and it worked as expected.
-> But I am not familiar with all powerpc pitfalls, e.g: dedicated vs shared=
- cpus etc, so
-> I would like to hear from more familiar people.
->
-> The patch is:
->
-> From: Oscar Salvador <osalvador@suse.de>
-> Date: Wed, 6 Apr 2022 14:39:15 +0200
-> Subject: [PATCH] powerpc/numa: Associate numa node to its cpu earlier
->
-> powerpc is the only platform that do not rely on
-> cpu_up()->try_online_node() to bring up a numa node,
-> and special cases it, instead, deep in its own machinery:
->
-> dlpar_online_cpu
->  find_and_online_cpu_nid
->   try_online_node
->
-> This should not be needed, but the thing is that the try_online_node()
-> from cpu_up() will not apply on the right node, because cpu_to_node()
-> will return the old mapping numa<->cpu that gets set on boot stage
-> for all possible cpus.
->
-> That can be seen easily if we try to print out the numa node passed
-> to try_online_node() in cpu_up().
->
-> The thing is that the numa<->cpu mapping does not get updated till a much
-> later stage in start_secondary:
->
-> start_secondary:
->  set_numa_node(numa_cpu_lookup_table[cpu])
->
-> But we do not really care, as we already now the
-> CPU <-> NUMA associativity back in find_and_online_cpu_nid(),
-> so let us make use of that and set the proper numa<->cpu mapping,
-> so cpu_to_node() in cpu_up() returns the right node and
-> try_online_node() can do its work.
->
-> Signed-off-by: Oscar Salvador <osalvador@suse.de>
-
-Looks good to me.
-
-Reviewed-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-
-
-> ---
->  arch/powerpc/include/asm/topology.h          |  8 ++-----
->  arch/powerpc/mm/numa.c                       | 31 +++++++---------------=
-------
->  arch/powerpc/platforms/pseries/hotplug-cpu.c |  2 +-
->  3 files changed, 11 insertions(+), 30 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/a=
-sm/topology.h
-> index 36fcafb1fd6d..6ae1b2dce83e 100644
-> --- a/arch/powerpc/include/asm/topology.h
-> +++ b/arch/powerpc/include/asm/topology.h
-> @@ -111,14 +111,10 @@ static inline void unmap_cpu_from_node(unsigned lon=
-g cpu) {}
->  #endif /* CONFIG_NUMA */
->
->  #if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
-> -extern int find_and_online_cpu_nid(int cpu);
-> +extern void find_and_update_cpu_nid(int cpu);
->  extern int cpu_to_coregroup_id(int cpu);
->  #else
-> -static inline int find_and_online_cpu_nid(int cpu)
-> -{
-> -     return 0;
-> -}
-> -
-> +static inline void find_and_update_cpu_nid(int cpu) {}
->  static inline int cpu_to_coregroup_id(int cpu)
->  {
->  #ifdef CONFIG_SMP
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index b9b7fefbb64b..b5bc8b1a833d 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -1423,43 +1423,28 @@ static long vphn_get_associativity(unsigned long =
-cpu,
->        return rc;
->  }
->
-> -int find_and_online_cpu_nid(int cpu)
-> +void find_and_update_cpu_nid(int cpu)
->  {
->        __be32 associativity[VPHN_ASSOC_BUFSIZE] =3D {0};
->        int new_nid;
->
->        /* Use associativity from first thread for all siblings */
->        if (vphn_get_associativity(cpu, associativity))
-> -             return cpu_to_node(cpu);
-> +             return;
->
-> +     /* Do not have previous associativity, so find it now. */
->        new_nid =3D associativity_to_nid(associativity);
-> +
->        if (new_nid < 0 || !node_possible(new_nid))
->                new_nid =3D first_online_node;
-> -
-> -     if (NODE_DATA(new_nid) =3D=3D NULL) {
-> -#ifdef CONFIG_MEMORY_HOTPLUG
-> -             /*
-> -              * Need to ensure that NODE_DATA is initialized for a node =
-from
-> -              * available memory (see memblock_alloc_try_nid). If unable=
- to
-> -              * init the node, then default to nearest node that has mem=
-ory
-> -              * installed. Skip onlining a node if the subsystems are no=
-t
-> -              * yet initialized.
-> -              */
-> -             if (!topology_inited || try_online_node(new_nid))
-> -                     new_nid =3D first_online_node;
-> -#else
-> -             /*
-> -              * Default to using the nearest node that has memory instal=
-led.
-> -              * Otherwise, it would be necessary to patch the kernel MM =
-code
-> -              * to deal with more memoryless-node error conditions.
-> +     else
-> +             /* Associate node <-> cpu, so cpu_up() calls
-> +              * try_online_node() on the right node.
->                 */
-> -             new_nid =3D first_online_node;
-> -#endif
-> -     }
-> +             set_cpu_numa_node(cpu, new_nid);
->
->        pr_debug("%s:%d cpu %d nid %d\n", __FUNCTION__, __LINE__,
->                cpu, new_nid);
-> -     return new_nid;
->  }
->
->  int cpu_to_coregroup_id(int cpu)
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/=
-platforms/pseries/hotplug-cpu.c
-> index b81fc846d99c..0f8cd8b06432 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -398,7 +398,7 @@ static int dlpar_online_cpu(struct device_node *dn)
->                        if (get_hard_smp_processor_id(cpu) !=3D thread)
->                                continue;
->                        cpu_maps_update_done();
-> -                     find_and_online_cpu_nid(cpu);
-> +                     find_and_update_cpu_nid(cpu);
->                        rc =3D device_online(get_cpu_device(cpu));
->                        if (rc) {
->                                dlpar_offline_cpu(dn);
-> --
-> 2.16.4
->
-> --
-> Oscar Salvador
-> SUSE Labs
-
-Tested-by: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>
-
---_000_SN6PR15MB2256778D6D0604601B8E05D5BBEA9SN6PR15MB2256namp_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
-1">
-<style type=3D"text/css" style=3D"display:none;"> P {margin-top:0;margin-bo=
-ttom:0;} </style>
-</head>
-<body dir=3D"ltr">
-<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
-: 12pt; color: rgb(0, 0, 0);">
-<br>
-</div>
-<div id=3D"appendonsend"></div>
-<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:12p=
-t; color:rgb(0,0,0)">
-<br>
-</div>
-<hr tabindex=3D"-1" style=3D"display:inline-block; width:98%">
-<div id=3D"divRplyFwdMsg" dir=3D"ltr"><font style=3D"font-size:11pt" face=
-=3D"Calibri, sans-serif" color=3D"#000000"><b>From:</b> Srikar Dronamraju &=
-lt;srikar@linux.vnet.ibm.com&gt;<br>
-<b>Sent:</b> Friday, April 8, 2022 5:55 PM<br>
-<b>To:</b> Oscar Salvador &lt;osalvador@suse.de&gt;<br>
-<b>Cc:</b> Michael Ellerman &lt;mpe@ellerman.id.au&gt;; linuxppc-dev &lt;li=
-nuxppc-dev@lists.ozlabs.org&gt;; linux-mm@kvack.org &lt;linux-mm@kvack.org&=
-gt;; Michal Hocko &lt;mhocko@kernel.org&gt;; Geetika Moolchandani1 &lt;Geet=
-ika.Moolchandani1@ibm.com&gt;<br>
-<b>Subject:</b> Re: [PATCH] powerpc/numa: Handle partially initialized numa=
- nodes</font>
-<div>&nbsp;</div>
-</div>
-<div class=3D"BodyFragment"><font size=3D"2"><span style=3D"font-size:11pt"=
->
-<div class=3D"PlainText">* Oscar Salvador &lt;osalvador@suse.de&gt; [2022-0=
-4-06 18:19:00]:<br>
-<br>
-&gt; On Wed, Mar 30, 2022 at 07:21:23PM +0530, Srikar Dronamraju wrote:<br>
-&gt; &gt;&nbsp; arch/powerpc/mm/numa.c | 2 +-<br>
-&gt; &gt;&nbsp; 1 file changed, 1 insertion(+), 1 deletion(-)<br>
-&gt; &gt; <br>
-&gt; &gt; diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c<br>
-&gt; &gt; index b9b7fefbb64b..13022d734951 100644<br>
-&gt; &gt; --- a/arch/powerpc/mm/numa.c<br>
-&gt; &gt; +++ b/arch/powerpc/mm/numa.c<br>
-&gt; &gt; @@ -1436,7 +1436,7 @@ int find_and_online_cpu_nid(int cpu)<br>
-&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (new_nid &lt; 0 || !node_possibl=
-e(new_nid))<br>
-&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp; new_nid =3D first_online_node;<br>
-&gt; &gt;&nbsp; <br>
-&gt; &gt; -&nbsp;&nbsp; if (NODE_DATA(new_nid) =3D=3D NULL) {<br>
-&gt; &gt; +&nbsp;&nbsp; if (!node_online(new_nid)) {<br>
-&gt; &gt;&nbsp; #ifdef CONFIG_MEMORY_HOTPLUG<br>
-&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp; /*<br>
-&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp; * Need to ensure that NODE_DATA is initialized for a nod=
-e from<br>
-&gt; <br>
-&gt; Because of this fix, I wanted to check whether we might have any more =
-fallouts due<br>
-&gt; to (&quot;mm: handle uninitialized numa nodes gracefully&quot;), and i=
-t made me look closer<br>
-&gt; as to why powerpc is the only platform that special cases try_online_n=
-ode(),<br>
-&gt; while all others rely on cpu_up()-&gt;try_online_node() to do the righ=
-t thing.<br>
-&gt; <br>
-&gt; So, I had a look.<br>
-&gt; Let us rewind a bit:<br>
-&gt; <br>
-&gt; The commit that sets find_and_online_cpu_nid() in dlpar_online_cpu was=
-<br>
-&gt; e67e02a544e9 (&quot;powerpc/pseries: Fix cpu hotplug crash with memory=
-less nodes&quot;).<br>
-&gt; <br>
-&gt; In there, it says that we have the following picture:<br>
-&gt; <br>
-&gt; partition_sched_domains<br>
-&gt;&nbsp; arch_update_cpu_topology<br>
-&gt;&nbsp;&nbsp; numa_update_cpu_topology<br>
-&gt;&nbsp;&nbsp;&nbsp; find_and_online_cpu_nid<br>
-&gt; <br>
-&gt; and by the time find_and_online_cpu_nid() gets called to online the no=
-de, it might be<br>
-&gt; too late as we might have referenced some NODE_DATA() fields.<br>
-&gt; Note that this happens at a much later stage in cpuhp.<br>
-&gt; <br>
-&gt; Also note that at a much earlier stage, we do already have a try_onlin=
-e_node() in cpu_up(),<br>
-&gt; which should allocate-and-online the node and prevent accessing garbag=
-e.<br>
-&gt; But the problem is that, on powerpc, all possible cpus have the same n=
-ode set at boot stage<br>
-&gt; (see arch/powerpc/mm/numa.c:mem_topology_setup),<br>
-&gt; so cpu_to_node() returns the same thing until it the mapping gets upda=
-te (which happens in<br>
-&gt; start_secondary()-&gt;set_numa_node()), and so, the try_online_node() =
-from cpu_up() does not<br>
-&gt; apply on the right node, because it still holds the not-up-to-date map=
-ping node &lt;-&gt; cpu.<br>
-&gt; <br>
-&gt; (e.g: in my test case, when onlining a CPU belongin to node1, cpu_up()=
--&gt;try_online_node()<br>
-&gt;&nbsp; tries to online node0, or whatever old mapping numa&lt;-&gt;cpu =
-is there).<br>
-&gt; <br>
-&gt; So, we have something like:<br>
-&gt; <br>
-&gt; dlpar_online_cpu<br>
-&gt;&nbsp; device_online<br>
-&gt;&nbsp;&nbsp; dev-&gt;bus-&gt;online<br>
-&gt;&nbsp;&nbsp;&nbsp; cpu_subsys_online<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp; cpu_device_up<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cpu_up<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try_online_node (old mapping nid &=
-lt;-&gt; cpu )<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cphp_callbacks<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sched_cpu_activate<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cpuset_update_active_c=
-pus<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; schedule_work(&a=
-mp;cpuset_hotplug_work)<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cpuset_hot=
-plug_work<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; part=
-ition_sched_domains<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-; arch_update_cpu_topology<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp; numa_update_cpu_topology<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp; find_and_online_cpu_nid (online new_nid)<br>
-&gt; <br>
-&gt; <br>
-&gt; So, yeah, the real onlining in numa_update_cpu_topology()-&gt;find_and=
-_online_cpu_nid()<br>
-&gt; happens too late, that is why adding find_and_online_cpu_nid() back in=
- dlpar_online_cpu()<br>
-&gt; fixed the issue, but we should not need this special casing at all.<br=
->
-&gt; <br>
-&gt; We do already know the numa&lt;-&gt;cpu associativity in<br>
-&gt; dlpar_online_cpu()-&gt;find_and_online_cpu_nid(), so we should just be=
- able to<br>
-&gt; update the numa&lt;-&gt;cpu mapping, and let the try_online_node() do =
-the right thing.<br>
-&gt; <br>
-&gt; With this in mind, I came up with the following patch, where I carried=
- out a battery<br>
-&gt; of tests for CPU hotplug stuff and it worked as expected.<br>
-&gt; But I am not familiar with all powerpc pitfalls, e.g: dedicated vs sha=
-red cpus etc, so<br>
-&gt; I would like to hear from more familiar people.<br>
-&gt; <br>
-&gt; The patch is:<br>
-&gt; <br>
-&gt; From: Oscar Salvador &lt;osalvador@suse.de&gt;<br>
-&gt; Date: Wed, 6 Apr 2022 14:39:15 +0200<br>
-&gt; Subject: [PATCH] powerpc/numa: Associate numa node to its cpu earlier<=
-br>
-&gt; <br>
-&gt; powerpc is the only platform that do not rely on<br>
-&gt; cpu_up()-&gt;try_online_node() to bring up a numa node,<br>
-&gt; and special cases it, instead, deep in its own machinery:<br>
-&gt; <br>
-&gt; dlpar_online_cpu<br>
-&gt;&nbsp; find_and_online_cpu_nid<br>
-&gt;&nbsp;&nbsp; try_online_node<br>
-&gt; <br>
-&gt; This should not be needed, but the thing is that the try_online_node()=
-<br>
-&gt; from cpu_up() will not apply on the right node, because cpu_to_node()<=
-br>
-&gt; will return the old mapping numa&lt;-&gt;cpu that gets set on boot sta=
-ge<br>
-&gt; for all possible cpus.<br>
-&gt; <br>
-&gt; That can be seen easily if we try to print out the numa node passed<br=
->
-&gt; to try_online_node() in cpu_up().<br>
-&gt; <br>
-&gt; The thing is that the numa&lt;-&gt;cpu mapping does not get updated ti=
-ll a much<br>
-&gt; later stage in start_secondary:<br>
-&gt; <br>
-&gt; start_secondary:<br>
-&gt;&nbsp; set_numa_node(numa_cpu_lookup_table[cpu])<br>
-&gt; <br>
-&gt; But we do not really care, as we already now the<br>
-&gt; CPU &lt;-&gt; NUMA associativity back in find_and_online_cpu_nid(),<br=
->
-&gt; so let us make use of that and set the proper numa&lt;-&gt;cpu mapping=
-,<br>
-&gt; so cpu_to_node() in cpu_up() returns the right node and<br>
-&gt; try_online_node() can do its work.<br>
-&gt; <br>
-&gt; Signed-off-by: Oscar Salvador &lt;osalvador@suse.de&gt;<br>
-<br>
-Looks good to me.<br>
-<br>
-Reviewed-by: Srikar Dronamraju &lt;srikar@linux.vnet.ibm.com&gt;<br>
-<br>
-<br>
-&gt; ---<br>
-&gt;&nbsp; arch/powerpc/include/asm/topology.h&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 8 ++-----<br>
-&gt;&nbsp; arch/powerpc/mm/numa.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp; | 31 +++++++---------------------<br>
-&gt;&nbsp; arch/powerpc/platforms/pseries/hotplug-cpu.c |&nbsp; 2 +-<br>
-&gt;&nbsp; 3 files changed, 11 insertions(+), 30 deletions(-)<br>
-&gt; <br>
-&gt; diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/includ=
-e/asm/topology.h<br>
-&gt; index 36fcafb1fd6d..6ae1b2dce83e 100644<br>
-&gt; --- a/arch/powerpc/include/asm/topology.h<br>
-&gt; +++ b/arch/powerpc/include/asm/topology.h<br>
-&gt; @@ -111,14 +111,10 @@ static inline void unmap_cpu_from_node(unsigned =
-long cpu) {}<br>
-&gt;&nbsp; #endif /* CONFIG_NUMA */<br>
-&gt; <br>
-&gt;&nbsp; #if defined(CONFIG_NUMA) &amp;&amp; defined(CONFIG_PPC_SPLPAR)<b=
-r>
-&gt; -extern int find_and_online_cpu_nid(int cpu);<br>
-&gt; +extern void find_and_update_cpu_nid(int cpu);<br>
-&gt;&nbsp; extern int cpu_to_coregroup_id(int cpu);<br>
-&gt;&nbsp; #else<br>
-&gt; -static inline int find_and_online_cpu_nid(int cpu)<br>
-&gt; -{<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp; return 0;<br>
-&gt; -}<br>
-&gt; -<br>
-&gt; +static inline void find_and_update_cpu_nid(int cpu) {}<br>
-&gt;&nbsp; static inline int cpu_to_coregroup_id(int cpu)<br>
-&gt;&nbsp; {<br>
-&gt;&nbsp; #ifdef CONFIG_SMP<br>
-&gt; diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c<br>
-&gt; index b9b7fefbb64b..b5bc8b1a833d 100644<br>
-&gt; --- a/arch/powerpc/mm/numa.c<br>
-&gt; +++ b/arch/powerpc/mm/numa.c<br>
-&gt; @@ -1423,43 +1423,28 @@ static long vphn_get_associativity(unsigned lo=
-ng cpu,<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return rc;<br>
-&gt;&nbsp; }<br>
-&gt; <br>
-&gt; -int find_and_online_cpu_nid(int cpu)<br>
-&gt; +void find_and_update_cpu_nid(int cpu)<br>
-&gt;&nbsp; {<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; __be32 associativity[VPHN_AS=
-SOC_BUFSIZE] =3D {0};<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int new_nid;<br>
-&gt; <br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Use associativity from fi=
-rst thread for all siblings */<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (vphn_get_associativity(c=
-pu, associativity))<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp; return cpu_to_node(cpu);<br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp; return;<br>
-&gt; <br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp; /* Do not have previous associativity, so fi=
-nd it now. */<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; new_nid =3D associativity_to=
-_nid(associativity);<br>
-&gt; +<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (new_nid &lt; 0 || !node_=
-possible(new_nid))<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp; new_nid =3D first_online_node;<br>
-&gt; -<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp; if (NODE_DATA(new_nid) =3D=3D NULL) {<br>
-&gt; -#ifdef CONFIG_MEMORY_HOTPLUG<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp; /*<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp; * Need to ensure that NODE_DATA is initialized for a node from<br=
->
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp; * available memory (see memblock_alloc_try_nid). If unable to<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp; * init the node, then default to nearest node that has memory<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp; * installed. Skip onlining a node if the subsystems are not<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp; * yet initialized.<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp; */<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp; if (!topology_inited || try_online_node(new_nid))<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; new_nid =3D first_onlin=
-e_node;<br>
-&gt; -#else<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp; /*<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp; * Default to using the nearest node that has memory installed.<br=
->
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp; * Otherwise, it would be necessary to patch the kernel MM code<br=
->
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp; * to deal with more memoryless-node error conditions.<br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp; else<br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp; /* Associate node &lt;-&gt; cpu, so cpu_up() calls<br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp; * try_online_node() on the right node.<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp; */<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp; new_nid =3D first_online_node;<br>
-&gt; -#endif<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp; set_cpu_numa_node(cpu, new_nid);<br>
-&gt; <br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pr_debug(&quot;%s:%d cpu %d =
-nid %d\n&quot;, __FUNCTION__, __LINE__,<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp; cpu, new_nid);<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp; return new_nid;<br>
-&gt;&nbsp; }<br>
-&gt; <br>
-&gt;&nbsp; int cpu_to_coregroup_id(int cpu)<br>
-&gt; diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/power=
-pc/platforms/pseries/hotplug-cpu.c<br>
-&gt; index b81fc846d99c..0f8cd8b06432 100644<br>
-&gt; --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c<br>
-&gt; +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c<br>
-&gt; @@ -398,7 +398,7 @@ static int dlpar_online_cpu(struct device_node *dn=
-)<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (get=
-_hard_smp_processor_id(cpu) !=3D thread)<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; continue;<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cpu_map=
-s_update_done();<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; find_and_online_cpu_nid=
-(cpu);<br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; find_and_update_cpu_nid=
-(cpu);<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rc =3D =
-device_online(get_cpu_device(cpu));<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (rc)=
- {<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dlpar_offline_cpu(dn);<br>
-&gt; --<br>
-&gt; 2.16.4<br>
-&gt; <br>
-&gt; -- <br>
-&gt; Oscar Salvador<br>
-&gt; SUSE Labs</div>
-<div class=3D"PlainText"><br>
-</div>
-<div class=3D"PlainText">Tested-by: Geetika Moolchandani &lt;Geetika.Moolch=
-andani1@ibm.com&gt;<br>
-</div>
-</span></font></div>
-</body>
-</html>
-
---_000_SN6PR15MB2256778D6D0604601B8E05D5BBEA9SN6PR15MB2256namp_--
