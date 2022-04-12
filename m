@@ -4,70 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E393C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Apr 2022 08:30:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5B80C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Apr 2022 10:59:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KczSr72wLz3bVH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Apr 2022 18:30:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kd2mK668dz3bqK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Apr 2022 20:59:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Bguj7Cwr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Dq5bCJRt;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635;
- helo=mail-pl1-x635.google.com; envelope-from=cgel.zte@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::636;
+ helo=mail-ej1-x636.google.com; envelope-from=jakobkoschel@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=Bguj7Cwr; dkim-atps=neutral
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com
- [IPv6:2607:f8b0:4864:20::635])
+ header.s=20210112 header.b=Dq5bCJRt; dkim-atps=neutral
+Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com
+ [IPv6:2a00:1450:4864:20::636])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KczS52gyPz2xsb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 18:30:12 +1000 (AEST)
-Received: by mail-pl1-x635.google.com with SMTP id 12so4366619pll.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 01:30:12 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kd2lm2DtTz2ygB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 20:58:58 +1000 (AEST)
+Received: by mail-ej1-x636.google.com with SMTP id u15so17893186ejf.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 03:58:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=m+EBqN3UPFUGLYVFLyAS2kc4ocqBW5MswCAjPd97TUw=;
- b=Bguj7CwrjTc+mzk+TmB7JVFoPyy0Zskev01NAMeOClCzjpw2E1k0tA1zrwPWhRhZYh
- 8MxY/6opBxkk5Cb81qAM+dgfsdS/yu/xmJntl8ipYL+X6CYZL5nZYM4ob0ElVhk/spAo
- w0KsetW8iDqNEbwwyi3/I/y+s+75Vel4sYcox7oKIuFBWC7xIB72GjJ2KVsMY9joDV74
- e5HGMB3Thh/AHmZmAeBUntojUpjX9wxCLnru9Wa56l1wzN7avN+EAlLlCCMfhA/kCzb1
- GAO4g8VZO+eFrbmYO4t/SMgdj1KfOVEThMrxSUjoR1GlAFTkOYlFrQkW8vHAO4qXlpct
- jdOw==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=cM7cNDbZdzDRR54XOLUdiPP1jrQ7jBG9dEAYVsbcNLE=;
+ b=Dq5bCJRtJE/e5zpt/g8uhjtXlNwlyc03WzbQtD9O5T08zaWWGjT/Ag4jl2RIuRXgby
+ Qwp1u9x/IB/Ce8Tr45SP1TAHER+/BcDWmUe1rY27Gvh6LjoodLltMn89thpgVkWeCzNg
+ rqa57oY9y6kks3VOOo5Bt/lyTCqXhUw7SHfUjEfDpc0MOnBo7ayHkNlFz/W0nSRwnPSM
+ CrrAOtLgT3H8lrbkk5yFPrIkAf058eIaUNe+Jx7oKA0AvzHA9Qvgw8EjkcuX4nXj1tRe
+ jVAH1HjMl1CSS9c8ic4HOkcYXj/hvp8Ub278a1c0JTZmcJDOxO79xPUVK1J8PTb2H7wl
+ 0mEA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=m+EBqN3UPFUGLYVFLyAS2kc4ocqBW5MswCAjPd97TUw=;
- b=4+6B/E9AeZ7TA5rckZdaTbJjph0DKDr4qd350zEoptGxipG/x9GqUGqMZkMIw2VMd3
- 4nqU9MC2UdN6dN1GCm3eAWdEf2zhWKxZroA+KRHCGLYQCChgfNRoryPjDddvZ0GNQuNO
- F9mJ7hkX38MgP6g5Bfle9mkibIS0if2wBzcphojhspYbi0DDB51WNzHeYhjEj2l/0TU5
- mJBubEzNPuIx2j9xHKvAspwggwPBa70rB3bl8HUjIAUE5rSAIfXH5SyvtG0dxJs6qvL4
- x0zB9F0SZRQTogbduCm/bEEoLZk4xG19Wqk8UgukUcxi4m1x4XNp4rDRJWc3Hvw+i/hO
- DDPA==
-X-Gm-Message-State: AOAM530ExqfcsRRII+0YAnkAFERi4/xBLVcs3r/65RDxHMdaVscpzZsx
- ndsn2cJBaReNcZQA2nZk81o=
-X-Google-Smtp-Source: ABdhPJwJPW0ts18fTByd2sl+p9939cGGiOvxLr5m0ZbLLv7Y4tadnT8ZE6+LYBT85nwWVa/BpG9kkg==
-X-Received: by 2002:a17:90b:3e8c:b0:1c7:3001:f359 with SMTP id
- rj12-20020a17090b3e8c00b001c73001f359mr3699846pjb.179.1649752208998; 
- Tue, 12 Apr 2022 01:30:08 -0700 (PDT)
-Received: from localhost.localdomain ([193.203.214.57])
- by smtp.gmail.com with ESMTPSA id
- m13-20020aa7900d000000b00505fa4c7ba6sm1654089pfo.35.2022.04.12.01.30.04
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=cM7cNDbZdzDRR54XOLUdiPP1jrQ7jBG9dEAYVsbcNLE=;
+ b=slrpv/Mw1Oxrs2OkQva+FbzvMptOL9dSVXHkPodJaZMMehwzusnWLt3Bko/rv8bIOD
+ oOHxCM6uAHQtzkfQv4f6NEe+lWsaMfwa4y1FRbr9MKD4Z/dfK8ssvbvGNpA+JPNOx04o
+ gPZ64wrRfFyeBBxPQAkN5Va6D8zIIgI/kBY3TsYoqGsxxmdpzYeDzZlbHd+jllgOifgZ
+ +c4+oHqLugrvwRs4/HfwGu4UGtKDrhrMHKIknSEMCTdufHD8NZc21chUDozHG5ldgdsa
+ ZY218/eML3nOE6oI5BHegn+7cdT/W+06Ij4xoFPY+w/hND0xBFCPIs51m/prrA2X+1mY
+ 5j9g==
+X-Gm-Message-State: AOAM530h6WYWMvMy7kYQCwTw/Lxq6yvR/CbkPpOtSAT8/w8fUwCkC3em
+ zYAUBiUrqsA8Oahr/zC7s/g=
+X-Google-Smtp-Source: ABdhPJz2dP0+jVOhmUNMBFBvhf2MPq5UcEvXEVs7zWdsz4lY7uM09/gGpZn4TgywcRiwfvine1dbHw==
+X-Received: by 2002:a17:907:3f86:b0:6df:ad43:583 with SMTP id
+ hr6-20020a1709073f8600b006dfad430583mr34406710ejc.535.1649761132855; 
+ Tue, 12 Apr 2022 03:58:52 -0700 (PDT)
+Received: from localhost.localdomain (i130160.upc-i.chello.nl.
+ [62.195.130.160]) by smtp.googlemail.com with ESMTPSA id
+ f1-20020a056402194100b00416b174987asm16986370edz.35.2022.04.12.03.58.51
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 12 Apr 2022 01:30:08 -0700 (PDT)
-From: cgel.zte@gmail.com
-X-Google-Original-From: chi.minghao@zte.com.cn
-To: shengjiu.wang@gmail.com
-Subject: [PATCH] ASoC: fsl: using pm_runtime_resume_and_get instead of
- pm_runtime_get_sync
-Date: Tue, 12 Apr 2022 08:30:00 +0000
-Message-Id: <20220412083000.2532711-1-chi.minghao@zte.com.cn>
+ Tue, 12 Apr 2022 03:58:52 -0700 (PDT)
+From: Jakob Koschel <jakobkoschel@gmail.com>
+To: "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH net-next v2 01/18] connector: Replace usage of found with
+ dedicated list iterator variable
+Date: Tue, 12 Apr 2022 12:58:13 +0200
+Message-Id: <20220412105830.3495846-2-jakobkoschel@gmail.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220412105830.3495846-1-jakobkoschel@gmail.com>
+References: <20220412105830.3495846-1-jakobkoschel@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -81,44 +82,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Xiubo.Lee@gmail.com,
- linuxppc-dev@lists.ozlabs.org, Zeal Robot <zealci@zte.com.cn>,
- lgirdwood@gmail.com, Minghao Chi <chi.minghao@zte.com.cn>,
- linux-kernel@vger.kernel.org, nicoleotsuka@gmail.com, broonie@kernel.org,
- festevam@gmail.com
+Cc: Andrew Lunn <andrew@lunn.ch>, Song Liu <songliubraving@fb.com>,
+ Alexei Starovoitov <ast@kernel.org>, Eric Dumazet <edumazet@google.com>,
+ Paul Mackerras <paulus@samba.org>, Ariel Elior <aelior@marvell.com>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Steen Hegelund <Steen.Hegelund@microchip.com>,
+ John Fastabend <john.fastabend@gmail.com>, Andrii Nakryiko <andrii@kernel.org>,
+ "Bos, H.J." <h.j.bos@vu.nl>, linux-arm-kernel@lists.infradead.org,
+ Martin Habets <habetsm.xilinx@gmail.com>, Paolo Abeni <pabeni@redhat.com>,
+ Vivien Didelot <vivien.didelot@gmail.com>, Jiri Pirko <jiri@resnulli.us>,
+ Arnd Bergmann <arnd@arndb.de>, KP Singh <kpsingh@kernel.org>,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ Jakob Koschel <jakobkoschel@gmail.com>, Jakub Kicinski <kuba@kernel.org>,
+ Brian Johannesmeyer <bjohannesmeyer@gmail.com>,
+ Lars Povlsen <lars.povlsen@microchip.com>,
+ Colin Ian King <colin.king@intel.com>, Manish Chopra <manishc@marvell.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ UNGLinuxDriver@microchip.com, Yonghong Song <yhs@fb.com>,
+ Edward Cree <ecree.xilinx@gmail.com>, Michael Walle <michael@walle.cc>,
+ Casper Andersson <casper.casan@gmail.com>, Xu Wang <vulab@iscas.ac.cn>,
+ Cristiano Giuffrida <c.giuffrida@vu.nl>, bpf@vger.kernel.org,
+ Vladimir Oltean <olteanv@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Martin KaFai Lau <kafai@fb.com>, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Minghao Chi <chi.minghao@zte.com.cn>
+To move the list iterator variable into the list_for_each_entry_*()
+macro in the future it should be avoided to use the list iterator
+variable after the loop body.
 
-Using pm_runtime_resume_and_get is more appropriate
-for simplifing code
+To *never* use the list iterator variable after the loop it was
+concluded to use a separate iterator variable instead of a
+found boolean [1].
 
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Minghao Chi <chi.minghao@zte.com.cn>
+This removes the need to use a found variable and simply checking if
+the variable was set, can determine if the break/goto was hit.
+
+Link: https://lore.kernel.org/all/CAHk-=wgRr_D8CB-D9Kg-c=EHreAsk5SqXPwr9Y7k9sA6cWXJ6w@mail.gmail.com/ [1]
+Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
 ---
- sound/soc/fsl/fsl_esai.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/connector/cn_queue.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-index ed444e8f1d6b..1a2bdf8e76f0 100644
---- a/sound/soc/fsl/fsl_esai.c
-+++ b/sound/soc/fsl/fsl_esai.c
-@@ -1050,11 +1050,9 @@ static int fsl_esai_probe(struct platform_device *pdev)
- 			goto err_pm_disable;
+diff --git a/drivers/connector/cn_queue.c b/drivers/connector/cn_queue.c
+index 996f025eb63c..ed77599b0b25 100644
+--- a/drivers/connector/cn_queue.c
++++ b/drivers/connector/cn_queue.c
+@@ -92,20 +92,19 @@ int cn_queue_add_callback(struct cn_queue_dev *dev, const char *name,
+ 
+ void cn_queue_del_callback(struct cn_queue_dev *dev, const struct cb_id *id)
+ {
+-	struct cn_callback_entry *cbq, *n;
+-	int found = 0;
++	struct cn_callback_entry *cbq = NULL, *iter, *n;
+ 
+ 	spin_lock_bh(&dev->queue_lock);
+-	list_for_each_entry_safe(cbq, n, &dev->queue_list, callback_entry) {
+-		if (cn_cb_equal(&cbq->id.id, id)) {
+-			list_del(&cbq->callback_entry);
+-			found = 1;
++	list_for_each_entry_safe(iter, n, &dev->queue_list, callback_entry) {
++		if (cn_cb_equal(&iter->id.id, id)) {
++			list_del(&iter->callback_entry);
++			cbq = iter;
+ 			break;
+ 		}
  	}
+ 	spin_unlock_bh(&dev->queue_lock);
  
--	ret = pm_runtime_get_sync(&pdev->dev);
--	if (ret < 0) {
--		pm_runtime_put_noidle(&pdev->dev);
-+	ret = pm_runtime_resume_and_get(&pdev->dev);
-+	if (ret < 0)
- 		goto err_pm_get_sync;
--	}
+-	if (found)
++	if (cbq)
+ 		cn_queue_release_callback(cbq);
+ }
  
- 	ret = fsl_esai_hw_init(esai_priv);
- 	if (ret)
 -- 
 2.25.1
 
