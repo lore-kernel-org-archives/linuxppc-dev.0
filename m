@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD23DC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Apr 2022 12:19:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75EF7C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Apr 2022 12:19:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kd4XV1m8wz3cMh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Apr 2022 22:19:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kd4Y96VSrz3bbS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Apr 2022 22:19:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Xl9KpFn6;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Ijr9vklL;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::534;
- helo=mail-ed1-x534.google.com; envelope-from=jakobkoschel@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::533;
+ helo=mail-ed1-x533.google.com; envelope-from=jakobkoschel@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=Xl9KpFn6; dkim-atps=neutral
-Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com
- [IPv6:2a00:1450:4864:20::534])
+ header.s=20210112 header.b=Ijr9vklL; dkim-atps=neutral
+Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com
+ [IPv6:2a00:1450:4864:20::533])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kd4TB5Zgzz2ym7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 22:16:28 +1000 (AEST)
-Received: by mail-ed1-x534.google.com with SMTP id d10so22173564edj.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 05:16:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kd4TD2wykz2ym7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 22:16:32 +1000 (AEST)
+Received: by mail-ed1-x533.google.com with SMTP id g20so22087612edw.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 05:16:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=ky3MoM/ZXCS0RcXaCsseb5+miwfvst1Flp3YDairGIg=;
- b=Xl9KpFn65ILeLpPDIRZBPb95ZmXjferRlNp6HPxpkd1j1QF8DXXvk9S3NSa3GyjL3b
- 5WjKzS+ISRKAlDXBdzjNJttH7hETKPz0YkMyOcMzfGb2+oS9tI/kKHVvK3y8deZ4tuaf
- NKB5ia1EYiiphdafJX10nkDwQnEM2tMZC9asN9FSqeO8zdCVu9xg72bjFDLiZ8sO2i3q
- zx81w9qKu4uPh2ca7EM6S+RMohZfp+0Q/x3EFJlX/fBppcdX896rQZOq9U7Aof5YfLGg
- 9vHJP3+076uELgNbmY9/87m4bTRNG14IU7JsKZ0pUSSiwfvcLlHAroQwS6vGKJ9OiPlA
- wIcg==
+ bh=3KCYsQY/y5IS+uLLSbczPyROpjTi5JnKwjdboy6JQyM=;
+ b=Ijr9vklL6LjkEtOCaT7sYYYQ1JtbZJC3Vy+rq3yG6nRRVMc9KwA9fVYAQM2QFTx3te
+ fA1fdxQAVJvrSYrECndrbRE75qFl+qYh4CO9rfv6QEvMfAf7QnFmHXNnBigOrqmZJFOj
+ 4YFuDyMa9pgKJlDwAQkTL5NHD33vXD2ad8/cyrUHQlsd5F4ff9rtdkpiSkpcKzyPAOSF
+ sRw6w9Klo7XF16I3sOPabF2X5GAPATD0n1zRQUytlwLqAGtEd6JESH2eQYsGbcMN9PhZ
+ UHZQf2fjN7DU1F9cL1t6h/PD8w2/WDFIIMq7ZuEcgxcoRWfNY7eMnrF1MAxkvIJVI6/y
+ eYkQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=ky3MoM/ZXCS0RcXaCsseb5+miwfvst1Flp3YDairGIg=;
- b=SqNbiL989GVq8gLOqUwUUrwqi8y3iOnYRxvmT64GOwCAmBRviF235FwYk8V0m5tH4L
- 6WWvgL0HnyoR21Oyi8q1KW6cjrtI/o/Aff7UuXCSarMI+ZzDVjSlmMrCxf+J2SvdRfyu
- cr8WDGXK4FysMLjjib01HWhpW48NKmCUJ0TDZnTmIlXk7XAizkSUNlZKHagSmIj/sX1N
- uHoLFI9Xen+xEa+zF/UPbC93WTkjojlAq2gTitrcWx/p6AZ7btLjNQBNXk7tanFxdXEw
- 278HfXIuEnNMkAUlBk74wZPlIwg3sWhvq8aGnrEqNWN1S83kCJ2EHYLtPY2mGkk4OLuJ
- 5yUg==
-X-Gm-Message-State: AOAM531WiOXMxNEaRnMOSROFBFXm0e+j67h0QNro7vjO1C88tfKr/v4o
- vd87uBZzx++LiUnQIPkl8B0=
-X-Google-Smtp-Source: ABdhPJwqiMKCloQu7lPo6bm5yONqwcUrI2WJNOkYvlBGU31dOESCjYQsFkAtckDbWpPnqOdkuMwE/Q==
-X-Received: by 2002:a05:6402:4487:b0:41d:9622:3292 with SMTP id
- er7-20020a056402448700b0041d96223292mr1925545edb.330.1649765785753; 
- Tue, 12 Apr 2022 05:16:25 -0700 (PDT)
+ bh=3KCYsQY/y5IS+uLLSbczPyROpjTi5JnKwjdboy6JQyM=;
+ b=Z3P9hHj17Phhuz+Dx9CLiLZaKEZLNoASteyWtHFaOTXXpiVfqFNn6eN7HSXe2lXoWP
+ D+v6i+Xs14YxihJuLxvp/rd+9M8+eRQ2vqd7px33blY0Xwn9LgGLuXqNlBzDcj203lIV
+ NoAHd2EC8Rr4CSCQlG/kXkLUvBQsCiZBvSTWT/FxvpzNOf4IOLvkSw2v9OFbTKsklqB1
+ c+zCCBwWrUqawtUVLxYH679MJifELvoDIwiwZBi5HSnJ6TytizYw4utJFfO2uH8uE8hy
+ 6GY1Ju4OR9x50S/6Oept78YjxmhNIAM56zoINmr7rpl1zAvqW4RlEwdMpfRujf9/W3iF
+ +lIQ==
+X-Gm-Message-State: AOAM532ZGVp74qg+uRKM38GHnIjSY4QzDOqKfo0/dMfJtmYjdgqfuMhq
+ 8IMjIKObxff+ZYOy/Iz6u0s=
+X-Google-Smtp-Source: ABdhPJyO6d0xiIlTTteAtNGMnPmGJvkkKfwwAvDDwF+Cb+4gNJBr9YV5I3Djws/hxiMNELH/5QJCbQ==
+X-Received: by 2002:aa7:cd18:0:b0:41d:8df8:86e5 with SMTP id
+ b24-20020aa7cd18000000b0041d8df886e5mr3998410edw.248.1649765788895; 
+ Tue, 12 Apr 2022 05:16:28 -0700 (PDT)
 Received: from localhost.localdomain (i130160.upc-i.chello.nl.
  [62.195.130.160]) by smtp.googlemail.com with ESMTPSA id
- b5-20020a17090630c500b006e8044fa76bsm8827900ejb.143.2022.04.12.05.16.24
+ b5-20020a17090630c500b006e8044fa76bsm8827900ejb.143.2022.04.12.05.16.27
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 12 Apr 2022 05:16:25 -0700 (PDT)
+ Tue, 12 Apr 2022 05:16:28 -0700 (PDT)
 From: Jakob Koschel <jakobkoschel@gmail.com>
 To: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH net-next v3 03/18] net: dsa: sja1105: reorder
- sja1105_first_entry_longer_than with memory allocation
-Date: Tue, 12 Apr 2022 14:15:42 +0200
-Message-Id: <20220412121557.3553555-4-jakobkoschel@gmail.com>
+Subject: [PATCH net-next v3 05/18] net: dsa: mv88e6xxx: remove redundant check
+ in mv88e6xxx_port_vlan()
+Date: Tue, 12 Apr 2022 14:15:44 +0200
+Message-Id: <20220412121557.3553555-6-jakobkoschel@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220412121557.3553555-1-jakobkoschel@gmail.com>
 References: <20220412121557.3553555-1-jakobkoschel@gmail.com>
@@ -114,60 +114,36 @@ Sender: "Linuxppc-dev"
 
 From: Vladimir Oltean <vladimir.oltean@nxp.com>
 
-sja1105_first_entry_longer_than() does not make use of the full struct
-sja1105_gate_entry *e, just of e->interval which is set from the passed
-entry_time.
+We know that "dev > dst->last_switch" in the "else" block.
+In other words, that "dev - dst->last_switch" is > 0.
 
-This means that if there is a gate conflict, we have allocated e for
-nothing, just to free it later. Reorder the memory allocation and the
-function call, to avoid that and simplify the error unwind path.
+dsa_port_bridge_num_get(dp) can be 0, but the check
+"if (bridge_num + dst->last_switch != dev) continue", rewritten as
+"if (bridge_num != dev - dst->last_switch) continue", aka
+"if (bridge_num != something which cannot be 0) continue",
+makes it redundant to have the extra "if (!bridge_num) continue" logic,
+since a bridge_num of zero would have been skipped anyway.
 
 Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
 Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
 ---
- drivers/net/dsa/sja1105/sja1105_vl.c | 17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+ drivers/net/dsa/mv88e6xxx/chip.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/net/dsa/sja1105/sja1105_vl.c b/drivers/net/dsa/sja1105/sja1105_vl.c
-index 369be2ac3587..e5ea8eb9ec4e 100644
---- a/drivers/net/dsa/sja1105/sja1105_vl.c
-+++ b/drivers/net/dsa/sja1105/sja1105_vl.c
-@@ -36,7 +36,11 @@ static int sja1105_insert_gate_entry(struct sja1105_gating_config *gating_cfg,
- {
- 	struct sja1105_gate_entry *e;
- 	struct list_head *pos;
--	int rc;
-+
-+	pos = sja1105_first_entry_longer_than(&gating_cfg->entries,
-+					      entry_time, extack);
-+	if (IS_ERR(pos))
-+		return PTR_ERR(pos);
+diff --git a/drivers/net/dsa/mv88e6xxx/chip.c b/drivers/net/dsa/mv88e6xxx/chip.c
+index 64f4fdd02902..b3aa0e5bc842 100644
+--- a/drivers/net/dsa/mv88e6xxx/chip.c
++++ b/drivers/net/dsa/mv88e6xxx/chip.c
+@@ -1404,9 +1404,6 @@ static u16 mv88e6xxx_port_vlan(struct mv88e6xxx_chip *chip, int dev, int port)
+ 		list_for_each_entry(dp, &dst->ports, list) {
+ 			unsigned int bridge_num = dsa_port_bridge_num_get(dp);
  
- 	e = kzalloc(sizeof(*e), GFP_KERNEL);
- 	if (!e)
-@@ -45,22 +49,11 @@ static int sja1105_insert_gate_entry(struct sja1105_gating_config *gating_cfg,
- 	e->rule = rule;
- 	e->gate_state = gate_state;
- 	e->interval = entry_time;
+-			if (!bridge_num)
+-				continue;
 -
--	pos = sja1105_first_entry_longer_than(&gating_cfg->entries,
--					      e->interval, extack);
--	if (IS_ERR(pos)) {
--		rc = PTR_ERR(pos);
--		goto err;
--	}
--
- 	list_add(&e->list, pos->prev);
+ 			if (bridge_num + dst->last_switch != dev)
+ 				continue;
  
- 	gating_cfg->num_entries++;
- 
- 	return 0;
--err:
--	kfree(e);
--	return rc;
- }
- 
- /* The gate entries contain absolute times in their e->interval field. Convert
 -- 
 2.25.1
 
