@@ -4,77 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AF86C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Apr 2022 11:38:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05A79C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Apr 2022 12:17:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kd3cl0zqGz3bdq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Apr 2022 21:37:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kd4Tl1ZZrz3bqw
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Apr 2022 22:16:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=N3/DiKCN;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=JGp/u8YO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62e;
- helo=mail-ej1-x62e.google.com; envelope-from=jakobkoschel@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::531;
+ helo=mail-ed1-x531.google.com; envelope-from=jakobkoschel@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=N3/DiKCN; dkim-atps=neutral
-Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com
- [IPv6:2a00:1450:4864:20::62e])
+ header.s=20210112 header.b=JGp/u8YO; dkim-atps=neutral
+Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com
+ [IPv6:2a00:1450:4864:20::531])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kd3c21nVRz2x9W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 21:37:21 +1000 (AEST)
-Received: by mail-ej1-x62e.google.com with SMTP id bg10so36756670ejb.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 04:37:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kd4TB5Mbtz2yjc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 22:16:29 +1000 (AEST)
+Received: by mail-ed1-x531.google.com with SMTP id c64so9949462edf.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 05:16:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=mime-version:subject:from:in-reply-to:date:cc
- :content-transfer-encoding:message-id:references:to;
- bh=Ireb+u2fz+HNDp7W/0u9tq1dE6EEB8pXAEENxA5hKe0=;
- b=N3/DiKCNwWEXj6baA/2A7S/u+N9x0cmIYnpFq5u882hKTkppGapWKjCAzu6HvUzdTb
- sYHXpr6qZJwnrsqJWLdgMv0sg/7fxY1FO0iUCbgAS/aWCtA+qdSsgSjdtQ3Vl3kikFaH
- Ity+WWj1mcX+25gbyeHsj2h2Yom8e5qNmDrIgfpEJ0jbVf13S1FtMLyYY+CamfhXm4Hh
- kByIIuYOH90KylSxKVeYQ7BkbiYp8IvlnQyKLDAbYLYocFfUF8J226MVMo374edYU8Wi
- iUcGMPq5CQsOFI0pyC/0IOSBJpjRAvS2afx8ubJTpSig8FABBB3LfG2S4Ep5WP5xXqft
- F3Ow==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=UiT3RVqcqw/2HXUfTd1U2cSmXIntDYXehGziaThTk/w=;
+ b=JGp/u8YOUoDMQ9pAhLEQ+0LMkcB5cI0GNQNFLXAOk4BGHADL07FszPBr5jGzRq8Tn0
+ slB2wZTGjbUgLYXJfWCTwYRsijMCC2I4oME+8AnMdSZ5bLyrxNqUjALgI/gCk/uyjsKQ
+ pcctSnVwr3XQefY2xtkgv6RvCt0K9TlCjvnqXpSlgMYnp611tNu6hmJCSZ3oLhcuLsWP
+ W0uFp//crFSEGAj02bMTUcJeIBv2pLqFJH6TeE2nZRY9ffeHW72lqboltt+IE7Dc+bqK
+ /TAVsU0AjGorOdL17dllOsWrJn1sJ/ovvtzz+Lp7xifmGMY5UHcGdTjhxtBzCW8IsN7N
+ W5BQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:subject:from:in-reply-to:date:cc
- :content-transfer-encoding:message-id:references:to;
- bh=Ireb+u2fz+HNDp7W/0u9tq1dE6EEB8pXAEENxA5hKe0=;
- b=2G2gw0410I23uuLoS7CNuHsDD/yzLnY+XIZmiLYDfJ78MSjWQbGeOpgqc4fmKjtFYC
- jE9oTx3Zfitc0dU0HRRXTak8dYBG6AfAnm+CuQgtd6LblWXmLUCD/Sre0fChLkt4jzry
- XLFpbOM4LtjvfHKr62YFkbBHjuYibbYdcMCbD+BP57QNem04kRMwXAzN0f4g5oORNvpD
- 0I9ogt6XJS5pJi/qj82XEavLrDzzqKdSdpEbVwy+eQ7okhze/0DPUIxNZR6byRxbRTNU
- yAzUlCiZgQxag4ad5HYwh0PnbugwmPDu9cgYffov1FSpWvZjHo8wvq1lv1k/4taaSjdw
- XHcw==
-X-Gm-Message-State: AOAM530mfA6yVF3V9Vu/rskUTXtb6oxBNL9omA2eLSJb4yjAY7gt/L0a
- SB6YUgJfKcbVPq09DgMsX/A=
-X-Google-Smtp-Source: ABdhPJyVdngo1HvueM2ZUMpF2ABzA9tTU6Hq/Z1IehvEZwx5+grwH5M0xobTdptT/tEuHm5m8cBuXw==
-X-Received: by 2002:a17:907:160b:b0:6e8:58c1:8850 with SMTP id
- hb11-20020a170907160b00b006e858c18850mr14414194ejc.284.1649763438997; 
- Tue, 12 Apr 2022 04:37:18 -0700 (PDT)
-Received: from smtpclient.apple (i130160.upc-i.chello.nl. [62.195.130.160])
- by smtp.gmail.com with ESMTPSA id
- fu13-20020a170907b00d00b006e8ae97f91asm947697ejc.64.2022.04.12.04.37.17
- (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 12 Apr 2022 04:37:18 -0700 (PDT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3696.80.82.1.1\))
-Subject: Re: [PATCH net-next v2 05/18] net: dsa: mv88e6xxx: remove redundant
- check in mv88e6xxx_port_vlan()
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=UiT3RVqcqw/2HXUfTd1U2cSmXIntDYXehGziaThTk/w=;
+ b=btdwRKCqX9zHNzyiFRpIQPcrP7KBtfQ4AJWeLSwsnuwrM5mfbjw8QzuHztA/cPxENw
+ NJ4G2MRQWWJNgYBSRnZFXv5pj/LI5ey1GSF9mwTxtprTXkw6scnHk1es5fUworIUyQs4
+ y7wrdTPBCadBUUe9Mb9fxNG4KeeCICvTqmwz8qmhSFgykne/jJMnw53fKDD9ZkPkA7XH
+ NYv/BnsbPT5xvrA5+dceRvHUpXJSagrW/y5DZCD0bEWEhHs6QvA+wP+KaKakUl3ncl/9
+ vCFBsg2m62nPWDmLlG3mK0hrEkNKW2wUzNH7lRRFwe5gpeDo2Hk6CruCVoUKoKREEN5t
+ tKjA==
+X-Gm-Message-State: AOAM533OD6Cg4EG2f+VcUi7UhaTDq2PP1Kcy5MuNgRG8nVdXbJBMNDEH
+ XGJLt0dETZ5dBJ3g/bihVV4=
+X-Google-Smtp-Source: ABdhPJzkxvCmO7JCJ6A9v7QvH5R/rXHxeTnPXkqBRtuhgJGSstAu1ZffptSNh7ksLjk7lMmqBnKyJg==
+X-Received: by 2002:a05:6402:11d0:b0:419:65c5:cde4 with SMTP id
+ j16-20020a05640211d000b0041965c5cde4mr38884523edw.73.1649765784091; 
+ Tue, 12 Apr 2022 05:16:24 -0700 (PDT)
+Received: from localhost.localdomain (i130160.upc-i.chello.nl.
+ [62.195.130.160]) by smtp.googlemail.com with ESMTPSA id
+ b5-20020a17090630c500b006e8044fa76bsm8827900ejb.143.2022.04.12.05.16.22
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 12 Apr 2022 05:16:23 -0700 (PDT)
 From: Jakob Koschel <jakobkoschel@gmail.com>
-In-Reply-To: <YlViPWWKhvoV2DLN@shell.armlinux.org.uk>
-Date: Tue, 12 Apr 2022 13:37:17 +0200
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <8BAFAAD1-D9AB-4339-BE81-18BE564F78F6@gmail.com>
-References: <20220412105830.3495846-1-jakobkoschel@gmail.com>
- <20220412105830.3495846-6-jakobkoschel@gmail.com>
- <YlViPWWKhvoV2DLN@shell.armlinux.org.uk>
-To: "Russell King (Oracle)" <linux@armlinux.org.uk>
-X-Mailer: Apple Mail (2.3696.80.82.1.1)
+To: "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH net-next v3 02/18] net: dsa: sja1105: remove use of iterator
+ after list_for_each_entry() loop
+Date: Tue, 12 Apr 2022 14:15:41 +0200
+Message-Id: <20220412121557.3553555-3-jakobkoschel@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220412121557.3553555-1-jakobkoschel@gmail.com>
+References: <20220412121557.3553555-1-jakobkoschel@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,18 +87,19 @@ Cc: Andrew Lunn <andrew@lunn.ch>, Song Liu <songliubraving@fb.com>,
  Paul Mackerras <paulus@samba.org>, Ariel Elior <aelior@marvell.com>,
  Florian Fainelli <f.fainelli@gmail.com>,
  Daniel Borkmann <daniel@iogearbox.net>,
- "David S. Miller" <davem@davemloft.net>,
  Steen Hegelund <Steen.Hegelund@microchip.com>,
  John Fastabend <john.fastabend@gmail.com>, Andrii Nakryiko <andrii@kernel.org>,
- "Bos, H.J." <h.j.bos@vu.nl>, linux-arm-kernel@lists.infradead.org,
+ "Bos, H.J." <h.j.bos@vu.nl>, Jason Gunthorpe <jgg@ziepe.ca>,
+ linux-arm-kernel@lists.infradead.org,
  Vladimir Oltean <vladimir.oltean@nxp.com>,
  Martin Habets <habetsm.xilinx@gmail.com>, Paolo Abeni <pabeni@redhat.com>,
- Vivien Didelot <vivien.didelot@gmail.com>, Jiri Pirko <jiri@resnulli.us>,
- Arnd Bergmann <arnd@arndb.de>, KP Singh <kpsingh@kernel.org>,
+ Vivien Didelot <vivien.didelot@gmail.com>,
+ Bjarni Jonasson <bjarni.jonasson@microchip.com>, Jiri Pirko <jiri@resnulli.us>,
+ Arnd Bergmann <arnd@arndb.de>, Brian Johannesmeyer <bjohannesmeyer@gmail.com>,
+ KP Singh <kpsingh@kernel.org>,
  Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
- Jakub Kicinski <kuba@kernel.org>,
- Brian Johannesmeyer <bjohannesmeyer@gmail.com>,
- Lars Povlsen <lars.povlsen@microchip.com>,
+ Jakob Koschel <jakobkoschel@gmail.com>, Jakub Kicinski <kuba@kernel.org>,
+ Di Zhu <zhudi21@huawei.com>, Lars Povlsen <lars.povlsen@microchip.com>,
  Colin Ian King <colin.king@intel.com>, Manish Chopra <manishc@marvell.com>,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  UNGLinuxDriver@microchip.com, Yonghong Song <yhs@fb.com>,
@@ -115,54 +112,108 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
 
+The link below explains that there is a desire to syntactically change
+list_for_each_entry() and list_for_each() such that it becomes
+impossible to use the iterator variable outside the scope of the loop.
 
-> On 12. Apr 2022, at 13:27, Russell King (Oracle) =
-<linux@armlinux.org.uk> wrote:
->=20
-> On Tue, Apr 12, 2022 at 12:58:17PM +0200, Jakob Koschel wrote:
->> We know that "dev > dst->last_switch" in the "else" block.
->> In other words, that "dev - dst->last_switch" is > 0.
->>=20
->> dsa_port_bridge_num_get(dp) can be 0, but the check
->> "if (bridge_num + dst->last_switch !=3D dev) continue", rewritten as
->> "if (bridge_num !=3D dev - dst->last_switch) continue", aka
->> "if (bridge_num !=3D something which cannot be 0) continue",
->> makes it redundant to have the extra "if (!bridge_num) continue" =
-logic,
->> since a bridge_num of zero would have been skipped anyway.
->>=20
->> Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
->> Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
->=20
-> Isn't this Vladimir's patch?
->=20
-> If so, it should be commited as Vladimir as the author, and Vladimir's
-> sign-off should appear before yours. When sending out such patches,
-> there should be a From: line for Vladimir as the first line in the =
-body
-> of the patch email.
+Although sja1105_insert_gate_entry() makes legitimate use of the
+iterator pointer when it breaks out, the pattern it uses may become
+illegal, so it needs to change.
 
-yes, you are right. I wasn't sure on how to send those commits, but
-I guess if I just set the commit author correctly it should be fine.
+It is deemed acceptable to use a copy of the loop iterator, and
+sja1105_insert_gate_entry() only needs to know the list_head element
+before which the list insertion should be made. So let's profit from the
+occasion and refactor the list iteration to a dedicated function.
 
-regarding the order: I thought I did it correctly doing bottom up but
-I confused the order, wasn't on purpose. Sorry about that.
+An additional benefit is given by the fact that with the helper function
+in place, we no longer need to special-case the empty list, since it is
+equivalent to not having found any gating entry larger than the
+specified interval in the list. We just need to insert at the tail of
+that list (list_add vs list_add_tail on an empty list does the same
+thing).
 
-I'll resend after verifying all the authors and sign-offs are correct.
+Link: https://patchwork.kernel.org/project/netdevbpf/patch/20220407102900.3086255-3-jakobkoschel@gmail.com/#24810127
+Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
+---
+ drivers/net/dsa/sja1105/sja1105_vl.c | 46 ++++++++++++++++++----------
+ 1 file changed, 29 insertions(+), 17 deletions(-)
 
->=20
-> The same goes for the next mv88e6xxx patch in this series - I think
-> both of these are the patches Vladimir sent in his email:
->=20
-> https://lore.kernel.org/r/20220408123101.p33jpynhqo67hebe@skbuf
->=20
-> Thanks.
->=20
-> --=20
-> RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-> FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
-
-Thanks for pointing it out!
-Jakob
+diff --git a/drivers/net/dsa/sja1105/sja1105_vl.c b/drivers/net/dsa/sja1105/sja1105_vl.c
+index b7e95d60a6e4..369be2ac3587 100644
+--- a/drivers/net/dsa/sja1105/sja1105_vl.c
++++ b/drivers/net/dsa/sja1105/sja1105_vl.c
+@@ -7,6 +7,27 @@
+ 
+ #define SJA1105_SIZE_VL_STATUS			8
+ 
++static struct list_head *
++sja1105_first_entry_longer_than(struct list_head *entries,
++				s64 interval,
++				struct netlink_ext_ack *extack)
++{
++	struct sja1105_gate_entry *p;
++
++	list_for_each_entry(p, entries, list) {
++		if (p->interval == interval) {
++			NL_SET_ERR_MSG_MOD(extack, "Gate conflict");
++			return ERR_PTR(-EBUSY);
++		}
++
++		if (interval < p->interval)
++			return &p->list;
++	}
++
++	/* Empty list, or specified interval is largest within the list */
++	return entries;
++}
++
+ /* Insert into the global gate list, sorted by gate action time. */
+ static int sja1105_insert_gate_entry(struct sja1105_gating_config *gating_cfg,
+ 				     struct sja1105_rule *rule,
+@@ -14,6 +35,7 @@ static int sja1105_insert_gate_entry(struct sja1105_gating_config *gating_cfg,
+ 				     struct netlink_ext_ack *extack)
+ {
+ 	struct sja1105_gate_entry *e;
++	struct list_head *pos;
+ 	int rc;
+ 
+ 	e = kzalloc(sizeof(*e), GFP_KERNEL);
+@@ -24,25 +46,15 @@ static int sja1105_insert_gate_entry(struct sja1105_gating_config *gating_cfg,
+ 	e->gate_state = gate_state;
+ 	e->interval = entry_time;
+ 
+-	if (list_empty(&gating_cfg->entries)) {
+-		list_add(&e->list, &gating_cfg->entries);
+-	} else {
+-		struct sja1105_gate_entry *p;
+-
+-		list_for_each_entry(p, &gating_cfg->entries, list) {
+-			if (p->interval == e->interval) {
+-				NL_SET_ERR_MSG_MOD(extack,
+-						   "Gate conflict");
+-				rc = -EBUSY;
+-				goto err;
+-			}
+-
+-			if (e->interval < p->interval)
+-				break;
+-		}
+-		list_add(&e->list, p->list.prev);
++	pos = sja1105_first_entry_longer_than(&gating_cfg->entries,
++					      e->interval, extack);
++	if (IS_ERR(pos)) {
++		rc = PTR_ERR(pos);
++		goto err;
+ 	}
+ 
++	list_add(&e->list, pos->prev);
++
+ 	gating_cfg->num_entries++;
+ 
+ 	return 0;
+-- 
+2.25.1
 
