@@ -4,77 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C13EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Apr 2022 05:12:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 811D4C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Apr 2022 15:20:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KdW1r3tBFz3bkv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Apr 2022 15:12:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=cqpW5WJq;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KdmWP5Ls4z3bc9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Apr 2022 01:20:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032;
- helo=mail-pj1-x1032.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.219.172;
+ helo=mail-yb1-f172.google.com; envelope-from=rjwysocki@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=cqpW5WJq; dkim-atps=neutral
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com
- [IPv6:2607:f8b0:4864:20::1032])
+Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com
+ [209.85.219.172])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KdW155DBKz2xts
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2022 15:12:07 +1000 (AEST)
-Received: by mail-pj1-x1032.google.com with SMTP id
- z6-20020a17090a398600b001cb9fca3210so978538pjb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 22:12:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=rg2lurYr3ruoQu8jYzT28vzciXuBIWQaGUdRPFYHa8Y=;
- b=cqpW5WJq2dxo9Xpl9AtxtfJpPdxf2XqiC0K0NveMKKkqavqky1FSiLJZYafjLeWjcB
- esN4rtETggEWXs9X5/1NdJvjls2G1Cl3YTI2dZ8bh88HL57ziOZikc02NKL3TJxu760Z
- hej+rFnf9SGUI7TFdh/OFEz/SlHHOFWonerQ9O87sUkxWHqlMXuTIWCPArHU1u0njF7R
- srqTFh7g3PqUxop7rUb6RGCABgD2aAAcXsEOosBBmM+YFZV3LTC1yjdobLLohsqTcIIS
- cpc2p3Qp3msmWNq0+wPdvmraF3XemUOqZId39+2nyM7pG6jI9qC3Ba2v8YZWtcPTnYJr
- i9qg==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KdmVz5YYRz2x9V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2022 01:20:25 +1000 (AEST)
+Received: by mail-yb1-f172.google.com with SMTP id g34so4403020ybj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2022 08:20:25 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=rg2lurYr3ruoQu8jYzT28vzciXuBIWQaGUdRPFYHa8Y=;
- b=Stqoob5xbod8fqr+CZb3vBbYTlyUQNFrSRRNyblhS5E4gGVcXwJmVJz0aYQRHp7yYK
- 4M6HxbQB9kwEpo8gtoUxUcMg8Mc36Goi8ke5z2AGieYCo16EYMf3gBuGRvYtukA78Ck9
- e0vxIClwojNcpQaX+nxgBTv1rb4KpjBRYiU/LEau/y2eP0CMT6rzn7lDrMoj7owtHhgz
- okRKGLVLitiG1fijdJG7ok64g5/O4+AvJzRFnSVDaZCGXa+oW9iAWYFVP3RkGJcTDHzr
- F0oD5VjMwXRpIBoZ2WT/CO7+tp0w/GeSO8uugAymcB/EME7xEiw0P4yYDduIcESHAwFL
- chpg==
-X-Gm-Message-State: AOAM531PGAfGTbUCXeGJ7gxYvnwuppIYbCK4Kki2Tlt8qbOYQyCDrJ/R
- Njcs85q/sZMoFOpPL5GdDIY=
-X-Google-Smtp-Source: ABdhPJzOQ6Inv+6gpLXSzaV644vqnglofSuRMAchIsFaKAm/W4uaXTh1v8ofvyh/oXkIinU/GdnbRA==
-X-Received: by 2002:a17:902:a712:b0:158:9e75:686c with SMTP id
- w18-20020a170902a71200b001589e75686cmr2409612plq.56.1649826723274; 
- Tue, 12 Apr 2022 22:12:03 -0700 (PDT)
-Received: from localhost (220-235-208-104.tpgi.com.au. [220.235.208.104])
- by smtp.gmail.com with ESMTPSA id
- d4-20020a17090ad3c400b001c65ba76911sm1268956pjw.3.2022.04.12.22.12.02
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 12 Apr 2022 22:12:02 -0700 (PDT)
-Date: Wed, 13 Apr 2022 15:11:57 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: 
-To: Michael Ellerman <mpe@ellerman.id.au>, paulmck@kernel.org, Zhouyi Zhou
- <zhouzhouyi@gmail.com>
-References: <CANiq72k+5Rdj7i3Df2dcE6_OPYPXK3z5EWLKnY56sSMz4G3OvA@mail.gmail.com>
- <CAABZP2z64aYWfVSdXHaQopWc+BAbJJUGqtrju2iWER3DDTDFWg@mail.gmail.com>
- <20220406170012.GO4285@paulmck-ThinkPad-P17-Gen-1>
- <87pmls6nt7.fsf@mpe.ellerman.id.au> <87k0bz7i1s.fsf@mpe.ellerman.id.au>
-In-Reply-To: <87k0bz7i1s.fsf@mpe.ellerman.id.au>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=w2Lgy0xxZ/kq35mN9jTEDe99/KAY+dTqIri9HO0ska8=;
+ b=wmcRmXjHt3exdVlOQN2HdVyrr4bQF3bCpZQfS/FDw4nQhFB3hD6NcIlxL+UrIJJc7c
+ 8AyUUcGZBhnGeTOQFRUrGlgw1GVFc+T+M/jDisnN3G235MoCG8AjerxKKUagVce4gzUr
+ 3por/PEI1om8AmfsPdKAiKQHHuLtJNGbCXh+iOzagz+FrWn5peIIFK17st5oFWz/eyvl
+ lsb3FlqxT6UCeYAMScDvacn2Lk+hOlJE/MbiyehzxW2VnYF2tQgWt6gtJ1MycZ13ZiOH
+ apHA1s2Tc0DkIhiJDmixbYcQeNdkcP2gsB+T/QzGw2OPu5CP0Fb37krC3L0kw9XTPZWw
+ cu/w==
+X-Gm-Message-State: AOAM533lbTezgudC/Udar7Fm+9nYCUVVHZrbdScpJp+mI1LXqR5BvPoo
+ OURgMQ5ZWA5SWytmzwxwU4AsBz0tLo3JZ+iieDY=
+X-Google-Smtp-Source: ABdhPJwOIpKOGRh6wLe+b2eqyMIagCZXSSwKkMG4Q0iaM3xYCmKqKl32u8IbpWSAjNHIgVdbn8Ltt5Bh6VA0YsVmI+o=
+X-Received: by 2002:a25:3cc3:0:b0:63e:6ee9:4840 with SMTP id
+ j186-20020a253cc3000000b0063e6ee94840mr22598626yba.153.1649863222281; Wed, 13
+ Apr 2022 08:20:22 -0700 (PDT)
 MIME-Version: 1.0
-Message-Id: <1649818529.j46672mh2p.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+References: <4cb0c4573cce165657ad1f7275c4b3852cbcd115.1648833416.git.christophe.leroy@csgroup.eu>
+ <20220404062710.m6bzpg5gsx4x7tm5@vireshk-i7>
+In-Reply-To: <20220404062710.m6bzpg5gsx4x7tm5@vireshk-i7>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 13 Apr 2022 17:20:11 +0200
+Message-ID: <CAJZ5v0itEsDDWPYPYJkY5xbs1t97uMx3P3pL1Qg_jrA63aXw_Q@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: Prepare cleanup of powerpc's asm/prom.h
+To: Viresh Kumar <viresh.kumar@linaro.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,140 +61,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org,
- rcu <rcu@vger.kernel.org>, Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-+Daniel, Thomas, Viresh
+On Mon, Apr 4, 2022 at 8:27 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> On 01-04-22, 19:24, Christophe Leroy wrote:
+> > powerpc's asm/prom.h brings some headers that it doesn't
+> > need itself.
+> >
+> > In order to clean it up, first add missing headers in
+> > users of asm/prom.h
+> >
+> > Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> > ---
+> >  drivers/cpufreq/pasemi-cpufreq.c      | 1 -
+> >  drivers/cpufreq/pmac32-cpufreq.c      | 2 +-
+> >  drivers/cpufreq/pmac64-cpufreq.c      | 2 +-
+> >  drivers/cpufreq/ppc_cbe_cpufreq.c     | 1 -
+> >  drivers/cpufreq/ppc_cbe_cpufreq_pmi.c | 2 +-
+> >  5 files changed, 3 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
+> > index 815645170c4d..039a66bbe1be 100644
+> > --- a/drivers/cpufreq/pasemi-cpufreq.c
+> > +++ b/drivers/cpufreq/pasemi-cpufreq.c
+> > @@ -18,7 +18,6 @@
+> >
+> >  #include <asm/hw_irq.h>
+> >  #include <asm/io.h>
+> > -#include <asm/prom.h>
+> >  #include <asm/time.h>
+> >  #include <asm/smp.h>
+> >
+> > diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
+> > index 4f20c6a9108d..20f64a8b0a35 100644
+> > --- a/drivers/cpufreq/pmac32-cpufreq.c
+> > +++ b/drivers/cpufreq/pmac32-cpufreq.c
+> > @@ -24,7 +24,7 @@
+> >  #include <linux/device.h>
+> >  #include <linux/hardirq.h>
+> >  #include <linux/of_device.h>
+> > -#include <asm/prom.h>
+> > +
+> >  #include <asm/machdep.h>
+> >  #include <asm/irq.h>
+> >  #include <asm/pmac_feature.h>
+> > diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+> > index d7542a106e6b..ba9c31d98bd6 100644
+> > --- a/drivers/cpufreq/pmac64-cpufreq.c
+> > +++ b/drivers/cpufreq/pmac64-cpufreq.c
+> > @@ -22,7 +22,7 @@
+> >  #include <linux/completion.h>
+> >  #include <linux/mutex.h>
+> >  #include <linux/of_device.h>
+> > -#include <asm/prom.h>
+> > +
+> >  #include <asm/machdep.h>
+> >  #include <asm/irq.h>
+> >  #include <asm/sections.h>
+> > diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
+> > index c58abb4cca3a..e3313ce63b38 100644
+> > --- a/drivers/cpufreq/ppc_cbe_cpufreq.c
+> > +++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
+> > @@ -12,7 +12,6 @@
+> >  #include <linux/of_platform.h>
+> >
+> >  #include <asm/machdep.h>
+> > -#include <asm/prom.h>
+> >  #include <asm/cell-regs.h>
+> >
+> >  #include "ppc_cbe_cpufreq.h"
+> > diff --git a/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
+> > index 037fe23bc6ed..4fba3637b115 100644
+> > --- a/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
+> > +++ b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
+> > @@ -13,9 +13,9 @@
+> >  #include <linux/init.h>
+> >  #include <linux/of_platform.h>
+> >  #include <linux/pm_qos.h>
+> > +#include <linux/slab.h>
+> >
+> >  #include <asm/processor.h>
+> > -#include <asm/prom.h>
+> >  #include <asm/pmi.h>
+> >  #include <asm/cell-regs.h>
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Subject: Re: rcu_sched self-detected stall on CPU
+Applied as 5.19 material.
 
-Excerpts from Michael Ellerman's message of April 9, 2022 12:42 am:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
->> "Paul E. McKenney" <paulmck@kernel.org> writes:
->>> On Wed, Apr 06, 2022 at 05:31:10PM +0800, Zhouyi Zhou wrote:
->>>> Hi
->>>>=20
->>>> I can reproduce it in a ppc virtual cloud server provided by Oregon
->>>> State University.  Following is what I do:
->>>> 1) curl -l https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/li=
-nux.git/snapshot/linux-5.18-rc1.tar.gz
->>>> -o linux-5.18-rc1.tar.gz
->>>> 2) tar zxf linux-5.18-rc1.tar.gz
->>>> 3) cp config linux-5.18-rc1/.config
->>>> 4) cd linux-5.18-rc1
->>>> 5) make vmlinux -j 8
->>>> 6) qemu-system-ppc64 -kernel vmlinux -nographic -vga none -no-reboot
->>>> -smp 2 (QEMU 4.2.1)
->>>> 7) after 12 rounds, the bug got reproduced:
->>>> (http://154.223.142.244/logs/20220406/qemu.log.txt)
->>>
->>> Just to make sure, are you both seeing the same thing?  Last I knew,
->>> Zhouyi was chasing an RCU-tasks issue that appears only in kernels
->>> built with CONFIG_PROVE_RCU=3Dy, which Miguel does not have set.  Or di=
-d
->>> I miss something?
->>>
->>> Miguel is instead seeing an RCU CPU stall warning where RCU's grace-per=
-iod
->>> kthread slept for three milliseconds, but did not wake up for more than
->>> 20 seconds.  This kthread would normally have awakened on CPU 1, but
->>> CPU 1 looks to me to be very unhealthy, as can be seen in your console
->>> output below (but maybe my idea of what is healthy for powerpc systems
->>> is outdated).  Please see also the inline annotations.
->>>
->>> Thoughts from the PPC guys?
->>
->> I haven't seen it in my testing. But using Miguel's config I can
->> reproduce it seemingly on every boot.
->>
->> For me it bisects to:
->>
->>   35de589cb879 ("powerpc/time: improve decrementer clockevent processing=
-")
->>
->> Which seems plausible.
->>
->> Reverting that on mainline makes the bug go away.
->>
->> I don't see an obvious bug in the diff, but I could be wrong, or the old
->> code was papering over an existing bug?
->>
->> I'll try and work out what it is about Miguel's config that exposes
->> this vs our defconfig, that might give us a clue.
->=20
-> It's CONFIG_HIGH_RES_TIMERS=3Dn which triggers the stall.
->=20
-> I can reproduce just with:
->=20
->   $ make ppc64le_guest_defconfig
->   $ ./scripts/config -d HIGH_RES_TIMERS
->=20
-> We have no defconfigs that disable HIGH_RES_TIMERS, I didn't even
-> realise you could disable it TBH :)
->=20
-> The Rust CI has it disabled because I copied that from the x86 defconfig
-> they were using back when I added the Rust support. I think that was
-> meant to be a stripped down fast config for CI, but the result is it's
-> just using a badly tested combination which is not helpful.
->=20
-> So I'll send a patch to turn HIGH_RES_TIMERS on for the Rust CI, and we
-> can debug this further without blocking them.
-
-So we traced the problem down to possibly a misunderstanding between=20
-decrementer clock event device and core code.
-
-The decrementer is only oneshot*ish*. It actually needs to either be=20
-reprogrammed or shut down otherwise it just continues to cause=20
-interrupts.
-
-Before commit 35de589cb879, it was sort of two-shot. The initial=20
-interrupt at the programmed time would set its internal next_tb variable=20
-to ~0 and call the ->event_handler(). If that did not set_next_event or=20
-stop the timer, the interrupt will fire again immediately, notice=20
-next_tb is ~0, and only then stop the decrementer interrupt.
-
-So that was already kind of ugly, this patch just turned it into a hang.
-
-The problem happens when the tick is stopped with an event still=20
-pending, then tick_nohz_handler() is called, but it bails out because=20
-tick_stopped =3D=3D 1 so the device never gets programmed again, and so it=20
-keeps firing.
-
-How to fix it? Before commit a7cba02deced, powerpc's decrementer was=20
-really oneshot, but we would like to avoid doing that because it requires=20
-additional programming of the hardware on each timer interrupt. We have=20
-the ONESHOT_STOPPED state which seems to be just about what we want.
-
-Did the ONESHOT_STOPPED patch just miss this case, or is there a reason=20
-we don't stop it here? This patch seems to fix the hang (not heavily
-tested though).
-=20
-Thanks,
-Nick
-
----
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 2d76c91b85de..7e13a55b6b71 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -1364,9 +1364,11 @@ static void tick_nohz_handler(struct clock_event_dev=
-ice *dev)
- 	tick_sched_do_timer(ts, now);
- 	tick_sched_handle(ts, regs);
-=20
--	/* No need to reprogram if we are running tickless  */
--	if (unlikely(ts->tick_stopped))
-+	if (unlikely(ts->tick_stopped)) {
-+		/* If we are tickless, change the clock event to stopped */
-+		tick_program_event(KTIME_MAX, 1);
- 		return;
-+	}
-=20
- 	hrtimer_forward(&ts->sched_timer, now, TICK_NSEC);
- 	tick_program_event(hrtimer_get_expires(&ts->sched_timer), 1);
+If the powerpc folks decide to take it, I can drop it, so please let me know.
