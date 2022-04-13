@@ -4,41 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3329C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Apr 2022 04:05:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4540C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Apr 2022 05:59:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KdTWn2bLmz3bph
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Apr 2022 14:05:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KdX3h0M38z3bpF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Apr 2022 15:59:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4KdTWL6R4Fz2x9B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2022 14:04:45 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2791A13D5;
- Tue, 12 Apr 2022 21:04:14 -0700 (PDT)
-Received: from [10.163.39.141] (unknown [10.163.39.141])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9FE6B3F73B;
- Tue, 12 Apr 2022 21:04:09 -0700 (PDT)
-Message-ID: <78d9bb56-19ae-ea00-cb66-8d1f4baf4f68@arm.com>
-Date: Wed, 13 Apr 2022 09:34:46 +0530
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Z5OL+yD1;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::435;
+ helo=mail-pf1-x435.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=Z5OL+yD1; dkim-atps=neutral
+Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com
+ [IPv6:2607:f8b0:4864:20::435])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KdX302rgXz2yPY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2022 15:58:51 +1000 (AEST)
+Received: by mail-pf1-x435.google.com with SMTP id f3so1099716pfe.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2022 22:58:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=xZ3d2a5P09M3dOrxfauC5k5b1cVbjgEZglnnGSUkfcg=;
+ b=Z5OL+yD11+Ta4Xvg4LYGdxnmW5y+sro2rhHTh4NDJftGOPsbzsPFvXF2QmA8oHWffZ
+ DH5e/uS1VhgHuXI4ntyRHsbDT+Nf9aa2f0tzlX3tJmY8827Dqqj1iN9/yQeRRNBsyFcM
+ 9WCQy/YP8CjiO62M1L0g60CEMQPw8a73dYC+Hqdhyf9ckCiuZz1sgkop7zS/w5UWtHsm
+ Ccm2UtFL6xtLoqidwIKYxYKPvi2CVjSIKo8TR8EGJrBLz1HJpRAOPnp4Nja9rfkDTlx0
+ i5cIICCpiK+nC2TCoBKEEd9YBE1h371NN6MNG5z3ZcmSfy474ja1NYPyGpBjTjH/zEtw
+ dUpA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=xZ3d2a5P09M3dOrxfauC5k5b1cVbjgEZglnnGSUkfcg=;
+ b=xj/xMRGVAqvj043DR6x8PzIk1Nrn0zK1EY/A1AhYPi8UOFnvT0WAf5F1n0C6Q7P83q
+ YWls4al+24hhxMfLHslp/GHmlpEPAq5hRp8DEx/Jd0Imb8Svr1awFG+pjBkYVw4fjHH7
+ K29KzBh7Px0xPIQrB2KgVgNCY9LOI0vuy/iB/o8+4taeSVBz1V/D94boa3dRLklp4yqj
+ vj6INs28gEaaZRzQuq0r7fyFRYuCukxfVjxEmM2hduIU6PaJOF8Bh/GajIBk8NBQX1M1
+ P6Q2s9TKI//lgAGQBOgIm8g7tylYG/N7kld0iSWutRV/8nEYu+3Pywy0OUv0Gj2TBa/v
+ MRyA==
+X-Gm-Message-State: AOAM533VCIZ9rsjL2pOoGORbfMnwd4kbEZEuRlu2wBk69AJ3ZXlrMTo1
+ YNBXszNHH9amUdXUKZmHzhQ=
+X-Google-Smtp-Source: ABdhPJwyaOUokqxAVLPb3QtBI5XMnJUphj49CSrELjT4Qbj7o1eMjOPcE+jG40Q+Fxdc9vojZMcbfw==
+X-Received: by 2002:a05:6a00:1c63:b0:505:cc7f:a21b with SMTP id
+ s35-20020a056a001c6300b00505cc7fa21bmr11834767pfw.9.1649829528283; 
+ Tue, 12 Apr 2022 22:58:48 -0700 (PDT)
+Received: from localhost (220-235-208-104.tpgi.com.au. [220.235.208.104])
+ by smtp.gmail.com with ESMTPSA id
+ k187-20020a636fc4000000b003983a01b896sm4645118pgc.90.2022.04.12.22.58.47
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 12 Apr 2022 22:58:47 -0700 (PDT)
+Date: Wed, 13 Apr 2022 15:58:42 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2] powerpc/rtas: Keep MSR[RI] set when calling RTAS
+To: Laurent Dufour <ldufour@linux.ibm.com>, mpe@ellerman.id.au
+References: <20220401140634.65726-1-ldufour@linux.ibm.com>
+In-Reply-To: <20220401140634.65726-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH V5 2/7] powerpc/mm: Enable ARCH_HAS_VM_GET_PAGE_PROT
-Content-Language: en-US
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-References: <20220412043848.80464-1-anshuman.khandual@arm.com>
- <20220412043848.80464-3-anshuman.khandual@arm.com>
- <bc1a9e40-7625-3d22-e72e-9100aca1a523@csgroup.eu>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-In-Reply-To: <bc1a9e40-7625-3d22-e72e-9100aca1a523@csgroup.eu>
+Message-Id: <1649829486.cvd3k2eimb.astroid@bobo.none>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,129 +81,237 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Christoph Hellwig <hch@infradead.org>, Paul Mackerras <paulus@samba.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Excerpts from Laurent Dufour's message of April 2, 2022 12:06 am:
+> RTAS runs in real mode (MSR[DR] and MSR[IR] unset) and in 32bits
+> mode (MSR[SF] unset).
+>=20
+> The change in MSR is done in enter_rtas() in a relatively complex way,
+> since the MSR value could be hardcoded.
+>=20
+> Furthermore, a panic has been reported when hitting the watchdog interrup=
+t
+> while running in RTAS, this leads to the following stack trace:
+>=20
+> [69244.027433][   C24] watchdog: CPU 24 Hard LOCKUP
+> [69244.027442][   C24] watchdog: CPU 24 TB:997512652051031, last heartbea=
+t TB:997504470175378 (15980ms ago)
+> [69244.027451][   C24] Modules linked in: chacha_generic(E) libchacha(E) =
+xxhash_generic(E) wp512(E) sha3_generic(E) rmd160(E) poly1305_generic(E) li=
+bpoly1305(E) michael_mic(E) md4(E) crc32_generic(E) cmac(E) ccm(E) algif_rn=
+g(E) twofish_generic(E) twofish_common(E) serpent_generic(E) fcrypt(E) des_=
+generic(E) libdes(E) cast6_generic(E) cast5_generic(E) cast_common(E) camel=
+lia_generic(E) blowfish_generic(E) blowfish_common(E) algif_skcipher(E) alg=
+if_hash(E) gcm(E) algif_aead(E) af_alg(E) tun(E) rpcsec_gss_krb5(E) auth_rp=
+cgss(E)
+> nfsv4(E) dns_resolver(E) rpadlpar_io(EX) rpaphp(EX) xsk_diag(E) tcp_diag(=
+E) udp_diag(E) raw_diag(E) inet_diag(E) unix_diag(E) af_packet_diag(E) netl=
+ink_diag(E) nfsv3(E) nfs_acl(E) nfs(E) lockd(E) grace(E) sunrpc(E) fscache(=
+E) netfs(E) af_packet(E) rfkill(E) bonding(E) tls(E) ibmveth(EX) crct10dif_=
+vpmsum(E) rtc_generic(E) drm(E) drm_panel_orientation_quirks(E) fuse(E) con=
+figfs(E) backlight(E) ip_tables(E) x_tables(E) dm_service_time(E) sd_mod(E)=
+ t10_pi(E)
+> [69244.027555][   C24]  ibmvfc(EX) scsi_transport_fc(E) vmx_crypto(E) gf1=
+28mul(E) btrfs(E) blake2b_generic(E) libcrc32c(E) crc32c_vpmsum(E) xor(E) r=
+aid6_pq(E) dm_mirror(E) dm_region_hash(E) dm_log(E) sg(E) dm_multipath(E) d=
+m_mod(E) scsi_dh_rdac(E) scsi_dh_emc(E) scsi_dh_alua(E) scsi_mod(E)
+> [69244.027587][   C24] Supported: No, Unreleased kernel
+> [69244.027600][   C24] CPU: 24 PID: 87504 Comm: drmgr Kdump: loaded Taint=
+ed: G            E  X    5.14.21-150400.71.1.bz196362_2-default #1 SLE15-SP=
+4 (unreleased) 0d821077ef4faa8dfaf370efb5fdca1fa35f4e2c
+> [69244.027609][   C24] NIP:  000000001fb41050 LR: 000000001fb4104c CTR: 0=
+000000000000000
+> [69244.027612][   C24] REGS: c00000000fc33d60 TRAP: 0100   Tainted: G    =
+        E  X     (5.14.21-150400.71.1.bz196362_2-default)
+> [69244.027615][   C24] MSR:  8000000002981000 <SF,VEC,VSX,ME>  CR: 488000=
+02  XER: 20040020
+> [69244.027625][   C24] CFAR: 000000000000011c IRQMASK: 1
+> [69244.027625][   C24] GPR00: 0000000000000003 ffffffffffffffff 000000000=
+0000001 00000000000050dc
+> [69244.027625][   C24] GPR04: 000000001ffb6100 0000000000000020 000000000=
+0000001 000000001fb09010
+> [69244.027625][   C24] GPR08: 0000000020000000 0000000000000000 000000000=
+0000000 0000000000000000
+> [69244.027625][   C24] GPR12: 80040000072a40a8 c00000000ff8b680 000000000=
+0000007 0000000000000034
+> [69244.027625][   C24] GPR16: 000000001fbf6e94 000000001fbf6d84 000000001=
+fbd1db0 000000001fb3f008
+> [69244.027625][   C24] GPR20: 000000001fb41018 ffffffffffffffff 000000000=
+000017f fffffffffffff68f
+> [69244.027625][   C24] GPR24: 000000001fb18fe8 000000001fb3e000 000000001=
+fb1adc0 000000001fb1cf40
+> [69244.027625][   C24] GPR28: 000000001fb26000 000000001fb460f0 000000001=
+fb17f18 000000001fb17000
+> [69244.027663][   C24] NIP [000000001fb41050] 0x1fb41050
+> [69244.027696][   C24] LR [000000001fb4104c] 0x1fb4104c
+> [69244.027699][   C24] Call Trace:
+> [69244.027701][   C24] Instruction dump:
+> [69244.027723][   C24] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXX=
+XXX XXXXXXXX XXXXXXXX
+> [69244.027728][   C24] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXX=
+XXX XXXXXXXX XXXXXXXX
+> [69244.027762][T87504] Oops: Unrecoverable System Reset, sig: 6 [#1]
+> [69244.028044][T87504] LE PAGE_SIZE=3D64K MMU=3DHash SMP NR_CPUS=3D2048 N=
+UMA pSeries
+> [69244.028089][T87504] Modules linked in: chacha_generic(E) libchacha(E) =
+xxhash_generic(E) wp512(E) sha3_generic(E) rmd160(E) poly1305_generic(E) li=
+bpoly1305(E) michael_mic(E) md4(E) crc32_generic(E) cmac(E) ccm(E) algif_rn=
+g(E) twofish_generic(E) twofish_common(E) serpent_generic(E) fcrypt(E) des_=
+generic(E) libdes(E) cast6_generic(E) cast5_generic(E) cast_common(E) camel=
+lia_generic(E) blowfish_generic(E) blowfish_common(E) algif_skcipher(E) alg=
+if_hash(E) gcm(E) algif_aead(E) af_alg(E) tun(E) rpcsec_gss_krb5(E) auth_rp=
+cgss(E)
+> nfsv4(E) dns_resolver(E) rpadlpar_io(EX) rpaphp(EX) xsk_diag(E) tcp_diag(=
+E) udp_diag(E) raw_diag(E) inet_diag(E) unix_diag(E) af_packet_diag(E) netl=
+ink_diag(E) nfsv3(E) nfs_acl(E) nfs(E) lockd(E) grace(E) sunrpc(E) fscache(=
+E) netfs(E) af_packet(E) rfkill(E) bonding(E) tls(E) ibmveth(EX) crct10dif_=
+vpmsum(E) rtc_generic(E) drm(E) drm_panel_orientation_quirks(E) fuse(E) con=
+figfs(E) backlight(E) ip_tables(E) x_tables(E) dm_service_time(E) sd_mod(E)=
+ t10_pi(E)
+> [69244.028171][T87504]  ibmvfc(EX) scsi_transport_fc(E) vmx_crypto(E) gf1=
+28mul(E) btrfs(E) blake2b_generic(E) libcrc32c(E) crc32c_vpmsum(E) xor(E) r=
+aid6_pq(E) dm_mirror(E) dm_region_hash(E) dm_log(E) sg(E) dm_multipath(E) d=
+m_mod(E) scsi_dh_rdac(E) scsi_dh_emc(E) scsi_dh_alua(E) scsi_mod(E)
+> [69244.028307][T87504] Supported: No, Unreleased kernel
+> [69244.028385][T87504] CPU: 24 PID: 87504 Comm: drmgr Kdump: loaded Taint=
+ed: G            E  X    5.14.21-150400.71.1.bz196362_2-default #1 SLE15-SP=
+4 (unreleased) 0d821077ef4faa8dfaf370efb5fdca1fa35f4e2c
+> [69244.028408][T87504] NIP:  000000001fb41050 LR: 000000001fb4104c CTR: 0=
+000000000000000
+> [69244.028418][T87504] REGS: c00000000fc33d60 TRAP: 0100   Tainted: G    =
+        E  X     (5.14.21-150400.71.1.bz196362_2-default)
+> [69244.028429][T87504] MSR:  8000000002981000 <SF,VEC,VSX,ME>  CR: 488000=
+02  XER: 20040020
+> [69244.028444][T87504] CFAR: 000000000000011c IRQMASK: 1
+> [69244.028444][T87504] GPR00: 0000000000000003 ffffffffffffffff 000000000=
+0000001 00000000000050dc
+> [69244.028444][T87504] GPR04: 000000001ffb6100 0000000000000020 000000000=
+0000001 000000001fb09010
+> [69244.028444][T87504] GPR08: 0000000020000000 0000000000000000 000000000=
+0000000 0000000000000000
+> [69244.028444][T87504] GPR12: 80040000072a40a8 c00000000ff8b680 000000000=
+0000007 0000000000000034
+> [69244.028444][T87504] GPR16: 000000001fbf6e94 000000001fbf6d84 000000001=
+fbd1db0 000000001fb3f008
+> [69244.028444][T87504] GPR20: 000000001fb41018 ffffffffffffffff 000000000=
+000017f fffffffffffff68f
+> [69244.028444][T87504] GPR24: 000000001fb18fe8 000000001fb3e000 000000001=
+fb1adc0 000000001fb1cf40
+> [69244.028444][T87504] GPR28: 000000001fb26000 000000001fb460f0 000000001=
+fb17f18 000000001fb17000
+> [69244.028534][T87504] NIP [000000001fb41050] 0x1fb41050
+> [69244.028543][T87504] LR [000000001fb4104c] 0x1fb4104c
+> [69244.028549][T87504] Call Trace:
+> [69244.028554][T87504] Instruction dump:
+> [69244.028561][T87504] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXX=
+XXX XXXXXXXX XXXXXXXX
+> [69244.028575][T87504] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXX=
+XXX XXXXXXXX XXXXXXXX
+> [69244.028607][T87504] ---[ end trace 3ddec07f638c34a2 ]---
+>=20
+> This happens because MSR[RI] is unset when entering RTAS but there is no
+> valid reason to not set it here.
+>=20
+> RTAS is expected to be called with MSR[RI] as specified in PAPR+ section
+> "7.2.1 Machine State":
+>=20
+>  R1=E2=80=937.2.1=E2=80=939. If called with MSR[RI] equal to 1, then RTAS=
+ must protect its
+>  own critical regions from recursion by setting the MSRRI bit to 0 when i=
+n
+>  the critical regions.
+>=20
+> Fixing this by reviewing the way MSR is compute before calling RTAS. Now =
+a
+> hardcoded value meaning real mode, 32 bits and Recoverable Interrupt is
+> loaded.
+>=20
+> In addition a check is added in do_enter_rtas() to detect calls made with
+> MSR[RI] unset, as we are forcing it on later.
+>=20
+> This patch has been tested on the following machines:
+> Power KVM Guest
+>   P8 S822L (host Ubuntu kernel 5.11.0-49-generic)
+> PowerVM LPAR
+>   P8 9119-MME (FW860.A1)
+>   p9 9008-22L (FW950.00)
+>   P10 9080-HEX (FW1010.00)
+>=20
+> Changes in V2:
+>  - Change comment in code to indicate NMI (Nick's comment)
+>  - Add reference to PAPR+ in the change log (Michael's comment)
+>=20
+> Cc: stable@vger.kernel.org
+> Suggested-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 
+Still looks good,
 
-On 4/12/22 17:57, Christophe Leroy wrote:
-> 
-> 
-> Le 12/04/2022 à 06:38, Anshuman Khandual a écrit :
->> This defines and exports a platform specific custom vm_get_page_prot() via
->> subscribing ARCH_HAS_VM_GET_PAGE_PROT. While here, this also localizes
->> arch_vm_get_page_prot() as __vm_get_page_prot() and moves it near
->> vm_get_page_prot().
->>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: linuxppc-dev@lists.ozlabs.org
->> Cc: linux-kernel@vger.kernel.org
->> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
->> ---
->>   arch/powerpc/Kconfig               |  1 +
->>   arch/powerpc/include/asm/mman.h    | 12 ------------
->>   arch/powerpc/mm/book3s64/pgtable.c | 20 ++++++++++++++++++++
->>   3 files changed, 21 insertions(+), 12 deletions(-)
->>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 174edabb74fa..69e44358a235 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -140,6 +140,7 @@ config PPC
->>   	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
->>   	select ARCH_HAS_UACCESS_FLUSHCACHE
->>   	select ARCH_HAS_UBSAN_SANITIZE_ALL
->> +	select ARCH_HAS_VM_GET_PAGE_PROT	if PPC_BOOK3S_64
->>   	select ARCH_HAVE_NMI_SAFE_CMPXCHG
->>   	select ARCH_KEEP_MEMBLOCK
->>   	select ARCH_MIGHT_HAVE_PC_PARPORT
->> diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
->> index 7cb6d18f5cd6..1b024e64c8ec 100644
->> --- a/arch/powerpc/include/asm/mman.h
->> +++ b/arch/powerpc/include/asm/mman.h
->> @@ -24,18 +24,6 @@ static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot,
->>   }
->>   #define arch_calc_vm_prot_bits(prot, pkey) arch_calc_vm_prot_bits(prot, pkey)
->>   
->> -static inline pgprot_t arch_vm_get_page_prot(unsigned long vm_flags)
->> -{
->> -#ifdef CONFIG_PPC_MEM_KEYS
->> -	return (vm_flags & VM_SAO) ?
->> -		__pgprot(_PAGE_SAO | vmflag_to_pte_pkey_bits(vm_flags)) :
->> -		__pgprot(0 | vmflag_to_pte_pkey_bits(vm_flags));
->> -#else
->> -	return (vm_flags & VM_SAO) ? __pgprot(_PAGE_SAO) : __pgprot(0);
->> -#endif
->> -}
->> -#define arch_vm_get_page_prot(vm_flags) arch_vm_get_page_prot(vm_flags)
->> -
->>   static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
->>   {
->>   	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
->> diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
->> index 052e6590f84f..d0319524e27f 100644
->> --- a/arch/powerpc/mm/book3s64/pgtable.c
->> +++ b/arch/powerpc/mm/book3s64/pgtable.c
->> @@ -7,6 +7,7 @@
->>   #include <linux/mm_types.h>
->>   #include <linux/memblock.h>
->>   #include <linux/memremap.h>
->> +#include <linux/pkeys.h>
->>   #include <linux/debugfs.h>
->>   #include <misc/cxl-base.h>
->>   
->> @@ -549,3 +550,22 @@ unsigned long memremap_compat_align(void)
->>   }
->>   EXPORT_SYMBOL_GPL(memremap_compat_align);
->>   #endif
->> +
->> +static pgprot_t __vm_get_page_prot(unsigned long vm_flags)
->> +{
->> +#ifdef CONFIG_PPC_MEM_KEYS
->> +	return (vm_flags & VM_SAO) ?
->> +		__pgprot(_PAGE_SAO | vmflag_to_pte_pkey_bits(vm_flags)) :
->> +		__pgprot(0 | vmflag_to_pte_pkey_bits(vm_flags));
->> +#else
->> +	return (vm_flags & VM_SAO) ? __pgprot(_PAGE_SAO) : __pgprot(0);
->> +#endif
->> +}
->> +
->> +pgprot_t vm_get_page_prot(unsigned long vm_flags)
->> +{
->> +	return __pgprot(pgprot_val(protection_map[vm_flags &
->> +			(VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)]) |
->> +			pgprot_val(__vm_get_page_prot(vm_flags)));
->> +}
->> +EXPORT_SYMBOL(vm_get_page_prot);
-> 
-> This looks functionnaly OK, but I think we could go in the same 
-> direction as ARM and try to integrate __vm_get_page_prot() inside 
-> vm_get_page_prot() to get something simpler and cleaner:
-> 
-> Something like below (untested):
-> 
-> pgprot_t vm_get_page_prot(unsigned long vm_flags)
-> {
-> 	unsigned long prot = pgprot_val(protection_map[vm_flags &
-> 				 (VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)]);
-> 
-> 	if (vm_flags & VM_SAO)
-> 		prot |= _PAGE_SAO
-> 
-> #ifdef CONFIG_PPC_MEM_KEYS
-> 	prot |= vmflag_to_pte_pkey_bits(vm_flags);
-> #endif
-> 
-> 	return __pgprot(prot);
-> }
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-Okay, will integrate these functions into vm_get_page_prot() as suggested.
+> ---
+>  arch/powerpc/kernel/entry_64.S | 20 ++++++++------------
+>  arch/powerpc/kernel/rtas.c     |  5 +++++
+>  2 files changed, 13 insertions(+), 12 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_6=
+4.S
+> index 9581906b5ee9..65cb14b56f8d 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -330,22 +330,18 @@ _GLOBAL(enter_rtas)
+>  	clrldi	r4,r4,2			/* convert to realmode address */
+>         	mtlr	r4
+> =20
+> -	li	r0,0
+> -	ori	r0,r0,MSR_EE|MSR_SE|MSR_BE|MSR_RI
+> -	andc	r0,r6,r0
+> -=09
+> -        li      r9,1
+> -        rldicr  r9,r9,MSR_SF_LG,(63-MSR_SF_LG)
+> -	ori	r9,r9,MSR_IR|MSR_DR|MSR_FE0|MSR_FE1|MSR_FP|MSR_RI|MSR_LE
+> -	andc	r6,r0,r9
+> -
+>  __enter_rtas:
+> -	sync				/* disable interrupts so SRR0/1 */
+> -	mtmsrd	r0			/* don't get trashed */
+> -
+>  	LOAD_REG_ADDR(r4, rtas)
+>  	ld	r5,RTASENTRY(r4)	/* get the rtas->entry value */
+>  	ld	r4,RTASBASE(r4)		/* get the rtas->base value */
+> +
+> +	/* RTAS runs in 32bits real mode but let MSR[]RI on as we may hit
+> +	 * NMI (SRESET or MCE). RTAS should disable RI in its critical
+> +	 * regions (as specified in PAPR+ section 7.2.1). */
+> +	LOAD_REG_IMMEDIATE(r6, MSR_ME|MSR_RI)
+> +
+> +	li      r0,0
+> +	mtmsrd  r0,1                    /* disable RI before using SRR0/1 */
+>  =09
+>  	mtspr	SPRN_SRR0,r5
+>  	mtspr	SPRN_SRR1,r6
+> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> index 1f42aabbbab3..d7775b8c8853 100644
+> --- a/arch/powerpc/kernel/rtas.c
+> +++ b/arch/powerpc/kernel/rtas.c
+> @@ -49,6 +49,11 @@ void enter_rtas(unsigned long);
+> =20
+>  static inline void do_enter_rtas(unsigned long args)
+>  {
+> +	unsigned long msr;
+> +
+> +	msr =3D mfmsr();
+> +	BUG_ON(!(msr & MSR_RI));
+> +
+>  	enter_rtas(args);
+> =20
+>  	srr_regs_clobbered(); /* rtas uses SRRs, invalidate */
+> --=20
+> 2.35.1
+>=20
+>=20
