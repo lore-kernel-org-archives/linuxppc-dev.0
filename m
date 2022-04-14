@@ -4,50 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DECE9C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Apr 2022 13:23:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CBD7C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Apr 2022 13:42:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KfKsF1G5Zz3bbL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Apr 2022 23:23:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KfLHj1kh5z3bcC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Apr 2022 23:42:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=q4qSmP1F;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=0T6GTAJn;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4601:e00::1;
- helo=ams.source.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217;
+ helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=q4qSmP1F; 
+ header.a=rsa-sha256 header.s=korg header.b=0T6GTAJn; 
  dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org
- [IPv6:2604:1380:4601:e00::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KfKrX4bt6z2xKW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2022 23:22:35 +1000 (AEST)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KfLGy0XxHz2yK2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2022 23:42:00 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id BDC73B82982;
- Thu, 14 Apr 2022 13:22:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D035FC385AA;
- Thu, 14 Apr 2022 13:22:29 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 683FC61D68;
+ Thu, 14 Apr 2022 13:41:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4ACB0C385A5;
+ Thu, 14 Apr 2022 13:41:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
- s=korg; t=1649942550;
+ s=korg; t=1649943717;
  bh=H3Dt4cJJwR/zpCWMq7h5pmwL4k+5EyFj/mhPC5rRNJU=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=q4qSmP1FMci4Z6Yqiped2KqndfuMI/xj4lxmQOnte7q43UKwbk4y0mub3fO5A8JMS
- 0aokbeoQRh0tcYbt88oAOXaartflKnJxkimmbAv41FAApUOaKxhdTD1aCdYRDpU4Eb
- 4L2zpzG9Wdlvv5sFMNH8dtwWGYHJkGw6L04KQm7U=
+ b=0T6GTAJn44Pb9xY9d1D/nldgd3/dzSjwhUtwuBEUqAsT830zdIOtsUutfA0Lwto3J
+ ZWO2EiMB/Q3iTmEBRSm+KMMmedyl77Jw46PyFafCXfGQK4bXgRiMuOTEnfTMklbGrx
+ nxrAIaY8wlx5m7Vn5P+g8lXO4CStxYKKgq/3pfAQ=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4.19 176/338] tty: hvc: fix return value of __setup handler
-Date: Thu, 14 Apr 2022 15:11:19 +0200
-Message-Id: <20220414110843.907710111@linuxfoundation.org>
+Subject: [PATCH 5.4 255/475] tty: hvc: fix return value of __setup handler
+Date: Thu, 14 Apr 2022 15:10:40 +0200
+Message-Id: <20220414110902.246799352@linuxfoundation.org>
 X-Mailer: git-send-email 2.35.2
-In-Reply-To: <20220414110838.883074566@linuxfoundation.org>
-References: <20220414110838.883074566@linuxfoundation.org>
+In-Reply-To: <20220414110855.141582785@linuxfoundation.org>
+References: <20220414110855.141582785@linuxfoundation.org>
 User-Agent: quilt/0.66
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
