@@ -4,68 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1D51C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Apr 2022 12:31:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA24AC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Apr 2022 12:32:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kfwgc1zl5z3c8C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Apr 2022 22:31:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KfwhJ3247z3bVd
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Apr 2022 22:32:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=RzDuK9kt;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=GuZnsylT;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62d;
- helo=mail-ej1-x62d.google.com; envelope-from=jakobkoschel@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::634;
+ helo=mail-ej1-x634.google.com; envelope-from=jakobkoschel@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=RzDuK9kt; dkim-atps=neutral
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com
- [IPv6:2a00:1450:4864:20::62d])
+ header.s=20210112 header.b=GuZnsylT; dkim-atps=neutral
+Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com
+ [IPv6:2a00:1450:4864:20::634])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KfwfM3w5Sz2yn1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KfwfM5RHDz2yn1
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2022 22:30:51 +1000 (AEST)
-Received: by mail-ej1-x62d.google.com with SMTP id r13so15151571ejd.5
+Received: by mail-ej1-x634.google.com with SMTP id s18so15235164ejr.0
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2022 05:30:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=+lM1IKIROI0118a8QEjx+0FHb0+kDze7UWxx8pEgal0=;
- b=RzDuK9ktprDk3VXuKJF6rwgVi6LlAURN3/cppgJyIK2bZHawZScqp2vgmeE1kU8xia
- mkvAAQXXSUMQNfcARoGLZDPoE0xY9A6ivmUIZbTFx+pBqHz3AJh8XUFNrEn+uraBXtuO
- FESiDtJ94rtYc67Xaf/S80W1CEd84L1UhNCLcEH09Z3gcZj5uepMlIK+GBbQfj13EQii
- BLRGOZ64yi2hoMSX593Z4YN0LWe7dX22mgVbgz+LWosxqfSV7QXXFGsGJNOYLdOIVCXf
- KAkH/VyqDKOlw3jqUfi156ha9gIC8nYUBxBOzU7qc2/dvdmnZYhSdlBv+WPDID6irS+Y
- 4BtA==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=UiT3RVqcqw/2HXUfTd1U2cSmXIntDYXehGziaThTk/w=;
+ b=GuZnsylT3pcSouW5ddrLgN/m/YCesZsnWJ/E2onIZFIgxUc1qQptGQ3sweZxexEYv1
+ vKlJMVgVRvAHa7/xdpFsMQ7uN3QSB6rhQkI5NwIS+W5EXVWFe0Bn0kjiOkXq0IBLCkuj
+ lclTi38+gNurzHOHabPerljHiV+bP8CqpHqv8YsEab7edLhwB/IWh/ItcQeZ8y+awFYY
+ R40H+T+SiaWZmaxtr/yh0dEt2Em33fUKgR21HmEKqqnYjBTxJgzmiwJG7e8Y8Wu0KHia
+ cxok0g1QeVV7AlcK2vRmUgq2jI19VWMbd6X2aIXlxOrQF1HXjHfs/YnAFJ3UmApH9h3/
+ 0f/Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=+lM1IKIROI0118a8QEjx+0FHb0+kDze7UWxx8pEgal0=;
- b=xUh7wHH+rriw+3Q4RhhLHEHg5EpQrrSrJMHTIAVUEf4bIjqUEHQwhqpXXRghCug3Kw
- 1YFt0n/9Tori7Ux3a2CVaYLajCIg1C+2swEoxldzedjGrvbxQPV8BHr7oMxTtuv/ygsU
- OJgomSfb3MQ3hqDX52rmZrffr16rDs6g8/dGncDBkFhdmMh+zw5bxe6PitTfDWB4H1W0
- f2ycW7VH021AraXHs022jywD6qP/t6GvMD991A74bnMZsYpssGZE8P3t4xohqaXAkgpc
- nNXgDnr+n9KxIW7HY1rVI3Vsi4mIHRIAgZdS1AiiTSOEumsHMlh40DGUQekwAIkO5I3N
- nQTQ==
-X-Gm-Message-State: AOAM531s7pPAZYDMsNcblNxKm0vo5TBamsFoqDN6SpYbzh3W189JHQ2Z
- +OlVSC9a7c/isR4Rh4J5eE4=
-X-Google-Smtp-Source: ABdhPJz9HmadBAqA0kGhbkZJKRjcfQ9rpU/V0P6lGyJoR1MyUkWKa+2emeN1szFhHpHZIVCct/6hyg==
-X-Received: by 2002:a17:907:629a:b0:6d7:b33e:43f4 with SMTP id
- nd26-20020a170907629a00b006d7b33e43f4mr6238897ejc.149.1650025844417; 
- Fri, 15 Apr 2022 05:30:44 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=UiT3RVqcqw/2HXUfTd1U2cSmXIntDYXehGziaThTk/w=;
+ b=SrG7QgFHWD7CJVJQL0XCjAm/pXxHPIyB6LLJSxK6UgKa3FMU9jPulD+Wf5/4mGh6gG
+ tcJDgUG1CrFH1m3xGrHhZKgoYHdu/oojNwt94ugMFTUAJoVIcAowMoVrLFsmj/JxE58b
+ NTMzqNRQmLkPRf/NaWw4YtNsrs0pDE1YA9Vsx2E+hr0VkBuY4kcx15/VGqus+e3yUU3J
+ l1JlJinIAQqTYjO+vJodcvXJZ5bMRz8v6QxcsPH7FWAPqe7LihyPWK5Wmk5kVUmAK8YO
+ +/cDrnxQyb1j34O6ZiIU+ovrCCu5xMNxHRs8VJg34ktZt9nR+Z8yaZlJhWvznA57vlBM
+ QOBQ==
+X-Gm-Message-State: AOAM533RjrcJHJqgOnvkChr+gIr/y99bQX/JEqNaBfMoKfkEVr+I1jg0
+ bmflzQvXuFVoSEp69nDYjI0=
+X-Google-Smtp-Source: ABdhPJxpgeSXdYhbvP5O8IUq9aUGmAkJDetH/MVX0ebgJq8cESmyiLB+RwgqipJncxMfJg4FKayNBg==
+X-Received: by 2002:a17:906:4d1a:b0:6e8:8860:8a72 with SMTP id
+ r26-20020a1709064d1a00b006e888608a72mr6334437eju.540.1650025847533; 
+ Fri, 15 Apr 2022 05:30:47 -0700 (PDT)
 Received: from localhost.localdomain (i130160.upc-i.chello.nl.
  [62.195.130.160]) by smtp.googlemail.com with ESMTPSA id
- bo14-20020a170906d04e00b006ce98d9c3e3sm1649533ejb.194.2022.04.15.05.30.42
+ bo14-20020a170906d04e00b006ce98d9c3e3sm1649533ejb.194.2022.04.15.05.30.46
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 15 Apr 2022 05:30:43 -0700 (PDT)
+ Fri, 15 Apr 2022 05:30:47 -0700 (PDT)
 From: Jakob Koschel <jakobkoschel@gmail.com>
 To: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH net-next v4 00/18] Remove use of list iterator after loop body
-Date: Fri, 15 Apr 2022 14:29:29 +0200
-Message-Id: <20220415122947.2754662-1-jakobkoschel@gmail.com>
+Subject: [PATCH net-next v4 02/18] net: dsa: sja1105: remove use of iterator
+ after list_for_each_entry() loop
+Date: Fri, 15 Apr 2022 14:29:31 +0200
+Message-Id: <20220415122947.2754662-3-jakobkoschel@gmail.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220415122947.2754662-1-jakobkoschel@gmail.com>
+References: <20220415122947.2754662-1-jakobkoschel@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -87,6 +90,7 @@ Cc: Andrew Lunn <andrew@lunn.ch>, Song Liu <songliubraving@fb.com>,
  Steen Hegelund <Steen.Hegelund@microchip.com>,
  John Fastabend <john.fastabend@gmail.com>, Andrii Nakryiko <andrii@kernel.org>,
  "Bos, H.J." <h.j.bos@vu.nl>, linux-arm-kernel@lists.infradead.org,
+ Vladimir Oltean <vladimir.oltean@nxp.com>,
  Martin Habets <habetsm.xilinx@gmail.com>, Paolo Abeni <pabeni@redhat.com>,
  Vivien Didelot <vivien.didelot@gmail.com>,
  Bjarni Jonasson <bjarni.jonasson@microchip.com>, Jiri Pirko <jiri@resnulli.us>,
@@ -107,58 +111,108 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the list iterator loop does not exit early the list iterator variable
-contains a type-confused pointer to a 'bogus' list element computed based
-on the head [1].
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
 
-Often a 'found' variable is used to ensure the list iterator
-variable is only accessed after the loop body if the loop did exit early
-(using a break or goto).
+The link below explains that there is a desire to syntactically change
+list_for_each_entry() and list_for_each() such that it becomes
+impossible to use the iterator variable outside the scope of the loop.
 
-In other cases that list iterator variable is used in
-combination to access the list member which reverses the invocation of
-container_of() and brings back a "safe" pointer to the head of the list.
+Although sja1105_insert_gate_entry() makes legitimate use of the
+iterator pointer when it breaks out, the pattern it uses may become
+illegal, so it needs to change.
 
-Since, due to this code patten, there were quite a few bugs discovered [2],
-Linus concluded that the rule should be to never use the list iterator
-after the loop and introduce a dedicated pointer for that [3].
+It is deemed acceptable to use a copy of the loop iterator, and
+sja1105_insert_gate_entry() only needs to know the list_head element
+before which the list insertion should be made. So let's profit from the
+occasion and refactor the list iteration to a dedicated function.
 
-With the new gnu11 standard, it will now be possible to limit the scope
-of the list iterator variable to the traversal loop itself by defining
-the variable within the for loop.
-This, however, requires to remove all uses of the list iterator after
-the loop.
+An additional benefit is given by the fact that with the helper function
+in place, we no longer need to special-case the empty list, since it is
+equivalent to not having found any gating entry larger than the
+specified interval in the list. We just need to insert at the tail of
+that list (list_add vs list_add_tail on an empty list does the same
+thing).
 
-Based on input from Paolo Abeni [4], Vinicius Costa Gomes [5], and
-Jakub Kicinski [6], I've splitted all the net-next related changes into
-two patch sets, where this is part 1.
+Link: https://patchwork.kernel.org/project/netdevbpf/patch/20220407102900.3086255-3-jakobkoschel@gmail.com/#24810127
+Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
+---
+ drivers/net/dsa/sja1105/sja1105_vl.c | 46 ++++++++++++++++++----------
+ 1 file changed, 29 insertions(+), 17 deletions(-)
 
-v3->v4:
-- fix build issue in efx_alloc_rss_context_entry() (Jakub Kicinski)
-
-v2->v3:
-- fix commit authors and signed-off order regarding Vladimir's patches
-  (Sorry about that, wasn't intentional.)
-
-v1->v2:
-- Fixed commit message for PATCH 14/18 and used dedicated variable
-  pointing to the position (Edward Cree)
-- Removed redundant check in mv88e6xxx_port_vlan() (Vladimir Oltean)
-- Refactor mv88e6xxx_port_vlan() using separate list iterator functions
-  (Vladimir Oltean)
-- Refactor sja1105_insert_gate_entry() to use separate list iterator
-  functions (Vladimir Oltean)
-- Allow early return in sja1105_insert_gate_entry() if
-  sja1105_first_entry_longer_than() didn't find any element
-  (Vladimir Oltean)
-- Use list_add_tail() instead of list_add() in sja1105_insert_gate_entry()
-  (Jakub Kicinski)
-- net: netcp: also use separate 'pos' variable instead of duplicating list_add()
-
-Link: https://lwn.net/Articles/887097/ [1]
-Link: https://lore.kernel.org/linux-kernel/20220217184829.1991035-4-jakobkoschel@gmail.com/ [2]
-Link: https://lore.kernel.org/all/CAHk-=wgRr_D8CB-D9Kg-c=EHreAsk5SqXPwr9Y7k9sA6cWXJ6w@mail.gmail.com/ [3]
-Link: https://lore.kernel.org/linux-kernel/7393b673c626fd75f2b4f8509faa5459254fb87c.camel@redhat.com/ [4]
-Link: https://lore.kernel.org/linux-kernel/877d8a3sww.fsf@intel.com/ [5]
-Link: https://lore.kernel.org/linux-kernel/20220403205502.1b34415d@kernel.org/ [6]
+diff --git a/drivers/net/dsa/sja1105/sja1105_vl.c b/drivers/net/dsa/sja1105/sja1105_vl.c
+index b7e95d60a6e4..369be2ac3587 100644
+--- a/drivers/net/dsa/sja1105/sja1105_vl.c
++++ b/drivers/net/dsa/sja1105/sja1105_vl.c
+@@ -7,6 +7,27 @@
+ 
+ #define SJA1105_SIZE_VL_STATUS			8
+ 
++static struct list_head *
++sja1105_first_entry_longer_than(struct list_head *entries,
++				s64 interval,
++				struct netlink_ext_ack *extack)
++{
++	struct sja1105_gate_entry *p;
++
++	list_for_each_entry(p, entries, list) {
++		if (p->interval == interval) {
++			NL_SET_ERR_MSG_MOD(extack, "Gate conflict");
++			return ERR_PTR(-EBUSY);
++		}
++
++		if (interval < p->interval)
++			return &p->list;
++	}
++
++	/* Empty list, or specified interval is largest within the list */
++	return entries;
++}
++
+ /* Insert into the global gate list, sorted by gate action time. */
+ static int sja1105_insert_gate_entry(struct sja1105_gating_config *gating_cfg,
+ 				     struct sja1105_rule *rule,
+@@ -14,6 +35,7 @@ static int sja1105_insert_gate_entry(struct sja1105_gating_config *gating_cfg,
+ 				     struct netlink_ext_ack *extack)
+ {
+ 	struct sja1105_gate_entry *e;
++	struct list_head *pos;
+ 	int rc;
+ 
+ 	e = kzalloc(sizeof(*e), GFP_KERNEL);
+@@ -24,25 +46,15 @@ static int sja1105_insert_gate_entry(struct sja1105_gating_config *gating_cfg,
+ 	e->gate_state = gate_state;
+ 	e->interval = entry_time;
+ 
+-	if (list_empty(&gating_cfg->entries)) {
+-		list_add(&e->list, &gating_cfg->entries);
+-	} else {
+-		struct sja1105_gate_entry *p;
+-
+-		list_for_each_entry(p, &gating_cfg->entries, list) {
+-			if (p->interval == e->interval) {
+-				NL_SET_ERR_MSG_MOD(extack,
+-						   "Gate conflict");
+-				rc = -EBUSY;
+-				goto err;
+-			}
+-
+-			if (e->interval < p->interval)
+-				break;
+-		}
+-		list_add(&e->list, p->list.prev);
++	pos = sja1105_first_entry_longer_than(&gating_cfg->entries,
++					      e->interval, extack);
++	if (IS_ERR(pos)) {
++		rc = PTR_ERR(pos);
++		goto err;
+ 	}
+ 
++	list_add(&e->list, pos->prev);
++
+ 	gating_cfg->num_entries++;
+ 
+ 	return 0;
+-- 
+2.25.1
 
