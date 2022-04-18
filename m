@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5353C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Apr 2022 13:36:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7ED67C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Apr 2022 13:37:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Khnz51pbwz3bjG
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Apr 2022 23:36:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Khnzt6SXbz3bw7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Apr 2022 23:37:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=windriver.com header.i=@windriver.com header.a=rsa-sha256 header.s=PPS06212021 header.b=Qo6H6/tr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=windriver.com header.i=@windriver.com header.a=rsa-sha256 header.s=PPS06212021 header.b=mmqtdAiS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=windriver.com (client-ip=205.220.166.238;
@@ -18,39 +18,41 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  envelope-from=prvs=1107a9ca43=zhe.he@windriver.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=windriver.com header.i=@windriver.com
- header.a=rsa-sha256 header.s=PPS06212021 header.b=Qo6H6/tr; 
+ header.a=rsa-sha256 header.s=PPS06212021 header.b=mmqtdAiS; 
  dkim-atps=neutral
+X-Greylist: delayed 748 seconds by postgrey-1.36 at boromir;
+ Mon, 18 Apr 2022 23:36:01 AEST
 Received: from mx0a-0064b401.pphosted.com (mx0a-0064b401.pphosted.com
  [205.220.166.238])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KhnyC3MLLz2yfZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2022 23:36:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Khny95pYZz2yXf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2022 23:36:00 +1000 (AEST)
 Received: from pps.filterd (m0250809.ppops.net [127.0.0.1])
- by mx0a-0064b401.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 23ICBnc3014635;
- Mon, 18 Apr 2022 06:22:58 -0700
+ by mx0a-0064b401.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 23IDCPFP019859;
+ Mon, 18 Apr 2022 06:22:40 -0700
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=windriver.com;
  h=from : to : cc :
- subject : date : message-id : in-reply-to : references :
- content-transfer-encoding : content-type : mime-version; s=PPS06212021;
- bh=nnChPSqJXpUTi6zekwIMRyrlocC10UkdDcqufEsb44w=;
- b=Qo6H6/trWCLSLXZKyBZa4d3WirD2S0Ch7QM+t6fWvy+EPbRdBmHwmK+H4GVTbJJQNKI3
- RD9oPh0uap2IfIe0robdfuKteUFc0B2M7ym2jmInh1UuV9fKqEPDuGCbRDxVF5hDOkuB
- cPK42OWTT49Pd2kvWgJNTDvT02HYZeFFYwwBUgJr5Vd6Hn3wmEM/IEPs4A1xuYEGwIYu
- X4Tke1UqsM6cUBzCPAA9dQ8U+umUuX068eW+uXmlb+WCkmqr2YrKppaOdAZ1DEdmX0ru
- 5+SYpzODssiSbehXNazKKNJnoMey78F7f9i37OkH9Kp0AyzxRy5n2zYx0xZ/aAp7wmWT bw== 
+ subject : date : message-id : content-transfer-encoding : content-type :
+ mime-version; s=PPS06212021;
+ bh=xcVf/tshGNvkkpxR7Pvh+P+nL3qZp/fr2Jfx7bsaVNA=;
+ b=mmqtdAiS/aPzpm6mYvwix/zk/yGaaerlq0kEXRchIz0yaPCNYy86FyoIopyLxdFmFzr6
+ dpZrT6FVLJqf35Q1gTqtw/51OWvPqIj3tG4euRQ+2BPQm6th/swCWFZHaxyWj8MKNsnV
+ poFgURMpHTC1n6dB43nHosX7AJTIkam+Iq37uxqzEfYlLpshhEimnf95QUpbannn3qXW
+ c3YtIkjViSd6UsU0ifVU7K0OzEWtjaWNrt8+e9pPMEhqNmx9Tm6hzdM+dXcurBlTV86e
+ v6TS8UsiH39N3Ozsxll/rsqSC2irALJHRoONdibHKcM4O+HkGr7WyzctyMr3M+WZMRGL Zg== 
 Received: from nam02-dm3-obe.outbound.protection.outlook.com
- (mail-dm3nam07lp2048.outbound.protection.outlook.com [104.47.56.48])
- by mx0a-0064b401.pphosted.com (PPS) with ESMTPS id 3ffwah150p-1
+ (mail-dm3nam07lp2043.outbound.protection.outlook.com [104.47.56.43])
+ by mx0a-0064b401.pphosted.com (PPS) with ESMTPS id 3ffwah150g-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 18 Apr 2022 06:22:58 -0700
+ Mon, 18 Apr 2022 06:22:40 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Pvk4wjTHAXItKiubxoVELZYLZus3YgY4kUPvMIKiNrW8IMuJDrOP2YPA5D+o9/XBsYfVdiSGV12Hd9MNvKenE9CeDXR5xMkB0fI2PsN08IPZ3Iuc41Wj5CHKu2bWTSquYn2mD8uezf2r6MeF/tuniROGpGaLEHYJjcprBognVV/+x4MkrBBqoDwxVtyDIY4VRjLZLmjeBz28OjJLHEn5qGJdrPHJfX8cRjy6QQ7jZsKKgRn7ena8XNONw9zwD8Mia3vLLevQa6NygtJeuqS4Rw6IkmySY3jDlc4ry6TMMzudN6q33AS6KJWxVVy4TNG+MZV9CA503F+dsIp9YbG6pg==
+ b=V5pHMDZmH6LL6tCOxu8Nm8PkISEGJDEfNk83iLPhU5UTaD4TeoGB9pRRpWP1GEcrYyIF0brJwU6rdCykAQL8QHu9g2QW2p6/2RQp0UKpd5ELZh76b/MUK4NNxtvzsPG6YutiGv1WE+Pk/TaWU9J9x4/JlFhT5OtQLgUa9qU4jZHvfUOr37lepzbGAN6/ux7pSBtV4+ligHTdRQ7po2FJHZO9VADXZidk9yeIeaDv25bVNEh4LwVyRa0LHAtHa0/iQvwLPSZivzmqPQf19uoxmRT0FfExnelsCbZAUAQkYqDn/qjMSeBwvh97Gd4y0DxuUsAlA45tMZ9vT453Mngr+w==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=nnChPSqJXpUTi6zekwIMRyrlocC10UkdDcqufEsb44w=;
- b=PEFsoz7kmPuHp/1Fe32FHNnLcNPGswiIl08gtrJNwaHLr77nYzuwevoKiuOWZFSJ3Q55Qdvx+BExyBf0EXGxB7LoYIWIoIuWKs2fVKPGOV8zkC2ZRGRJg2fFFQJGaf6U6bdu+kQscPwdN4rCx5hWAEuObWZd+OUDOlGK90TOhFlyz4jjHIH1EKCU800S4gHXYX5fBSa4D5NLtaWqxDprgTQX/+CaO4uxnRmVBFSpYKVPDzP+zqj1IKNucuiJquQ63jFo45w5nepwLWa7/iH+OnvOVlWwnNPOM0NWOgt4KtdlODWo0xhjTVD8JhaZZ+UfHKS7KlT5gY2Duk3AWnlwgw==
+ bh=xcVf/tshGNvkkpxR7Pvh+P+nL3qZp/fr2Jfx7bsaVNA=;
+ b=dWwFla4SV/XSHPDQChB4Ljx5SZXwg43Wu9nqjln0Ih3M3NmGcIuAa/J638uvWhZcOVwMQ11eyEnYv1/mc0O/x3JJ2ICpIzOuVUJZ36dRJfJpA258m8ph8ZqVu0nqa/3MIs+97lki7TtGUPgqofXtvNQ/COg8svJrbN78PmUPkgrS1QpBQik9JoNt8SBy3sz6ZgoJre7TCPr2pAj529ovJJcRuujWRMa3rriz4az3Jam7kNSSGZmXOzFu0RfKmZWnzn3gCdtsu0hnYj7T1DQIE72kaEQNZbmVfd32L5bHv5djVdCyEgEUEBubN5qx1OIziOTa3bnHuwj84UWqq6WjDA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=windriver.com; dmarc=pass action=none
  header.from=windriver.com; dkim=pass header.d=windriver.com; arc=none
@@ -58,11 +60,11 @@ Received: from MWHPR11MB1358.namprd11.prod.outlook.com (2603:10b6:300:23::8)
  by DM6PR11MB2857.namprd11.prod.outlook.com (2603:10b6:5:cb::18) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5164.20; Mon, 18 Apr
- 2022 13:22:56 +0000
+ 2022 13:22:36 +0000
 Received: from MWHPR11MB1358.namprd11.prod.outlook.com
  ([fe80::1cd4:125:344:9fc]) by MWHPR11MB1358.namprd11.prod.outlook.com
  ([fe80::1cd4:125:344:9fc%7]) with mapi id 15.20.5164.025; Mon, 18 Apr 2022
- 13:22:56 +0000
+ 13:22:36 +0000
 From: He Zhe <zhe.he@windriver.com>
 To: catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
  tglx@linutronix.de, bp@alien8.de, dave.hansen@linux.intel.com,
@@ -70,13 +72,10 @@ To: catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
  jolsa@kernel.org, namhyung@kernel.org, benh@kernel.crashing.org,
  paulus@samba.org, borntraeger@linux.ibm.com, svens@linux.ibm.com,
  hpa@zytor.com
-Subject: [PATCH RFC 4/8] powerpc: stacktrace: Make callbacks use new prototype
- with frame info
-Date: Mon, 18 Apr 2022 21:22:13 +0800
-Message-Id: <20220418132217.1573072-5-zhe.he@windriver.com>
+Subject: [PATCH RFC 0/8] hardened usercopy and stacktrace improvement
+Date: Mon, 18 Apr 2022 21:22:09 +0800
+Message-Id: <20220418132217.1573072-1-zhe.he@windriver.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220418132217.1573072-1-zhe.he@windriver.com>
-References: <20220418132217.1573072-1-zhe.he@windriver.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-ClientProxiedBy: HK2PR02CA0133.apcprd02.prod.outlook.com
@@ -84,66 +83,66 @@ X-ClientProxiedBy: HK2PR02CA0133.apcprd02.prod.outlook.com
  (2603:10b6:300:23::8)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 99599bfd-ae8b-48dd-c355-08da213e8d1b
+X-MS-Office365-Filtering-Correlation-Id: 8381d4bd-4e4b-4e7a-dbdc-08da213e80ef
 X-MS-TrafficTypeDiagnostic: DM6PR11MB2857:EE_
-X-Microsoft-Antispam-PRVS: <DM6PR11MB285705CF8C9F8C3C635184008FF39@DM6PR11MB2857.namprd11.prod.outlook.com>
+X-Microsoft-Antispam-PRVS: <DM6PR11MB2857B727AD3B43970BF5D48A8FF39@DM6PR11MB2857.namprd11.prod.outlook.com>
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: Tq3U57KdIFMlbl8ue0MywnQFRK/3rPd30+fZeCPH/iaxGXfAThGMFPg4bHWSIO9V4uk+KRtYZ126GDfac8blLbqjePWPJ4dCu2VX/Fbz+NcUHJXVNhjmiZGT22vgYT0aFnCcl3xNUhKIfMm72cea+sijm3osto7HCKmqbLD/1NihjeZuTPj4W1UQ1Ku/pHUDZf5xbl8WvlUt3BYlEWtQ3kErdKqq3jLDPelytKW3el/mKPA5sbCCTCDdHgJwHEfteNtSjFrp2MGVVlR6q+DpyXMugyr+Yl/7FelOEv8o0MGAnoTN71jD8Gs6WfSCnraHZkiOleTvDOlY0LK9AgvQnBwnjtWZoXx2Lm/XidTIwsa1zyReKSrD8KtC1vHbPcBGedGZzE9kTDjYTN1fIaDPaRi8h/RWgAeRMcKVLmEu9PnMwOkd2iBePvceESZzz+4PET0/8JsvaMioe4bzROBKlyVW5Mvt0xu1lzKu5KZqRzboygbMw2Xz6hfSn8FBArW3mGMc8M0Srk2thBBR9+duydOOE6m/gCaeiLAPIxwN59ytU303zUnkKRdVE53WB2fq/ds5dmr4pxOV9GTbOLMOYB+7QYUdpm3KfoUkQ1K5Focpt66eL3nyQfp3fEwjU6RI1b/60aSlq0hb6n0X6fyXGBtqdVtbO2F0fMGAH2cjNtw8O814URh0BkGuk6sCOq3OiKvXc1HDhItN1lguBHBM9ZvW6zq5csKyqvtK+v3f62E=
+X-Microsoft-Antispam-Message-Info: tt9RUO5obMpwN+Zd/EA/TZVNF/8xeaob7d3xary3RR2UT5VdkhsCjpY9B7lAWFuSTPju0p3551Ic7MMkB+jsaJYFRrPgB/eLfxd5Jd9ovIVWfPgTPjBtcfLb7vX9DF0L62ZfaAndarK5iE9TxKkMoQYInPcCbeg2CTfTDuCPTucwneIEiySr13m8iiAisy/ix+tpTIDgj12l54ykjau3D5AZ/xwTpAQLyvJh3+tpVb4ULyzHguVAbtE1MSkP+Khg2XNrzh8N197JyLo36wJFY7XYOCVbb5qKRyLLPS/tjv770ngH/yrInGm0uv9DkJcgciyVfXESQPBGaLcBMaAxVObDuIi1fZjtvRj7wy3RBd4mETtnjzARO2hvQ4o9IFfr40CeuaxrIcb3eXb8BSIz/9pb3vPBUkhGmcOtZaAjmMVegPtJiWX0lQI7H+E1L8B9Yw76afsj7wiiQHNzWs+XDIdyFxsWNMHrqsWAhGcHsBrW+qYoJ5/CGfsbfvJKJQk/MFfwinkztQKrvReOtqrYwOdpU80M99Iwjxbom1qYLnZHIutqV8rbTV6OEH4DV7o2CzSIbw0GM3H/e2u1kvMgCf3dHhstxro96De60vsCxCvEj+03duI2lCjeEQ1092L9KIDJ8M/eBxFkERACof6rBXN2FPV87bXE1VRWrWQfik82bTkO930223OR9tLc236CoFoaPWkfOtyW/yN82pLcAdOcybH8PmiGoHYXMEYHp2c=
 X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:MWHPR11MB1358.namprd11.prod.outlook.com; PTR:; CAT:NONE;
  SFS:(13230001)(4636009)(366004)(66556008)(2616005)(186003)(86362001)(83380400001)(1076003)(38100700002)(66946007)(316002)(66476007)(7416002)(107886003)(8936002)(2906002)(4326008)(6506007)(38350700002)(5660300002)(508600001)(36756003)(52116002)(8676002)(26005)(6486002)(921005)(6512007)(6666004);
  DIR:OUT; SFP:1101; 
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?EMneee429EMJNL1cg+AD+ytfgDz+cxg6LiqjTBkL4v4x45Zjc3T2tpvSR3tB?=
- =?us-ascii?Q?0snds8dQxaP/OpARzYUOSajoB1e6kf85kprsJl6AjI/XBOx/XJSUpkwDNpub?=
- =?us-ascii?Q?iZj/iAVnKxDkiYVtKyMpsezPpuETLRxwSFliADnm6UEttldHpBIC/psCqCg+?=
- =?us-ascii?Q?/rq57nDXJRro4XbFhjJaSY251a7sYCY7UodDZJc0NWtskm6woWdLaukzntTa?=
- =?us-ascii?Q?dVMV0ruqEg62QJk55tyfYmWdbracd6hkmvbQP9aYUk2Cwp5g6kDUM1Il9WBY?=
- =?us-ascii?Q?aWSDafMDvG4UOEVI9PQthmoPrT6go0mgEpCsqSjWVHseMHkSQ3oXZqr6Faqg?=
- =?us-ascii?Q?js6OtaxDEbKlbLAWnqHzyib9qpR5IqkSxzhDmKTn88qiIwg3+QUSe2MMQHBY?=
- =?us-ascii?Q?UpLm6do0eeQ741Ipyqbbh/FxL1tA0Uzd+Fyzb2FhEG6gxKueq8jq7anhuYqn?=
- =?us-ascii?Q?bMx5jlq4vLarEhauRfSHLwBdd4ROBeTqzc8Ho3TpSgi6HQo1G+xmpsZq5Z7N?=
- =?us-ascii?Q?Zd0xmmRrY1HKrD21SXHFi0OR4ZkZzYBtWLehTxOQ7v/5Ff8N3wfHFVjyyE+v?=
- =?us-ascii?Q?Rj51tjHHEk5Rp76aRrv4UX926EafqwgFsRpS5hrh41HbsEO7gXEU7GMMCL4n?=
- =?us-ascii?Q?6lU1S4QiNladvijpT8RPn1yWoyiOGOP358pdvlgQBPcX2BFFsLSkwqbcg4ju?=
- =?us-ascii?Q?L1zRoXlSLbNXbQJO4IUxyIQnfTLFDAwSveN4XLNXNQ92MNuQ/r9hLk90MMwf?=
- =?us-ascii?Q?wK/mmLbbBLQ5MR2TM2bV1wJDHFxaAofqJtvCD8WFe3bF/TrcS+irxoLeVEvW?=
- =?us-ascii?Q?M8FgtWzxcD1Z5X1UFkKl04avZBcsB73KDk2pr1eezyonUguShN4wqC6AHjfV?=
- =?us-ascii?Q?Bo7xOHKf2hJo94fuIj9cv44kfnJ4Oswabk1/s893i+qPGGoLLNZoZJuaHzpH?=
- =?us-ascii?Q?tvOOw0Vt7hjr6I5wcLBLsq4racLvlkUZRIk13wrD5jiC4w1DgPvt3zl+fJeg?=
- =?us-ascii?Q?e7mlufy3DDQckXallDGigP0CXQ88Dr4perj73MhAeEh/gbcr1/9bziyFFAsM?=
- =?us-ascii?Q?D3Xo1I5DgT79Iem9U2OF4mM4rxFIxZqP04P51mXQ4+fwqa5QXRt3YWSuwD2N?=
- =?us-ascii?Q?i0ceqXayJDdZHXqf2+ONtCfiC/WS0cO/7kDHIKxsDSUZvp1ec6KXirmxgW/+?=
- =?us-ascii?Q?/ATcW4U6fORUparBE44toxWT1CqeTTeTRUCwf/q1STzzbkaYazT+qJ1X2bDR?=
- =?us-ascii?Q?aDG4KHemS9o1ywIgGwqaG7bFXZo1oLVu2bRGM47qX4Y2ktBH8tFz7BmZxWUC?=
- =?us-ascii?Q?P/ly811ZQmQMLc1g6Jmb1DdqtPMT18JuNcGLzYOucjJifAjWi3Dw8pfsA/uw?=
- =?us-ascii?Q?78RbyEJXNWdmpOKVq3kiCThUydcIPFvq0RWckbTREH/DK86u5nmZ36j5E50E?=
- =?us-ascii?Q?CbeyY7qev21ek89Vsy5U+QCJDydRCSz/gb+C7NDck3Xy24oua5oExrQ3IdTr?=
- =?us-ascii?Q?E/NKSE0t9uWTArEVenXzAU9S+v9gICJrqzEf3R1GehmK/P7X/oj7HH/ElNl0?=
- =?us-ascii?Q?Wxa+66pYrqNRjA/lk6p/xk9Wr2V6x+4JouRmlnKifGE7phVLwQSl/35c7V2Y?=
- =?us-ascii?Q?lLZR6K0gHErTagwBXZupcjSn6l9h5yP11zuBbjyeVpGyXQmkCFPd70bQg02c?=
- =?us-ascii?Q?ubz73cU0U4ExLbAL06XJ66Th2XjC1mtDyCwvF75grVdTnCQdpnv1MKalxAhI?=
- =?us-ascii?Q?LTTXPe4QOw=3D=3D?=
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?i7+T7/VOuOhLWViCWrbM4Ro98WVFQpcDROo169zHxbH2NtsM+wD/MAOSZr6d?=
+ =?us-ascii?Q?HY8yJlH9N1kU45jkUVRq/XgUL30WGMpKUWebfe+RqQ5WbvNIp8amxIhkUvfr?=
+ =?us-ascii?Q?b8G1YwbMx5llKSPqu9PEzjgIaoQTOVugtMEVyEsZiWqWNS7MrfsXAZWYWcrO?=
+ =?us-ascii?Q?KQuGarMow6w2mKrYSww6uJqNkTmNbyP00L+1xJwVnlNMMh+J8P0No92GDGKT?=
+ =?us-ascii?Q?mn417eaR16fr0aL/t5g8lSJfZxyh83ud1T2Wr17XwgJQJ0BcZfg7wo52kbkB?=
+ =?us-ascii?Q?DNX69CTWlwrVY4qgGrL5/tO9DObK9L8RNDMILxilHC7oSTdN9ww7A7Zzv+O7?=
+ =?us-ascii?Q?iEGUrXJ9j7wlwMlX62LT6QXzX1YjrUnagssMXc4Ysk/oe0RQAeDTaU6Gem2r?=
+ =?us-ascii?Q?SSthr1WxR/o8Rb3a2OoaHbaYmmQXYdnV5YEtX/jla/BQHj7DurUSZ0CX+z+I?=
+ =?us-ascii?Q?oyThTnH29Nd4POQLlo1HQ+xMzrNmRX/mCuU/KW7vKzJLDi5TWFu3DsWfX/tY?=
+ =?us-ascii?Q?rsxoXGGCttOO/5ZIROIkqOfNExLEfpmR/SIPJ7cCoNAhob5kZ2PPkugB9WWz?=
+ =?us-ascii?Q?0OjsgJtcTltI3oIMesdAtbiy/6P0eedI6skYye+g1vQCH8UXCtPHgfXYzYpJ?=
+ =?us-ascii?Q?TdiEz5ImiiSW/4p2fdrze+31vHrwZSy0NcLk04nxYIV0aT00B38AfL1GE3dh?=
+ =?us-ascii?Q?qXFFsftt8RRTHExZr6pL90DDpquajZuwYEhlmHV+iYN7sPuMI7pyixUhK29y?=
+ =?us-ascii?Q?RfwN+U4U1Xx/GElkLt/Yy41HLZSCKsJIr41D74GGpwSU+bk8u2ffclicaTvA?=
+ =?us-ascii?Q?JHzvAHvaVTx5Sg/cR96FxALH1Z5DmEqdoG1KzthDrEJY6dSOpS/7UKvUCimd?=
+ =?us-ascii?Q?Cb2bB0UPrE9FqB/rIyQt8Idg1WfirYPtxXkv3479G7wORko2imDhR1WlOH0I?=
+ =?us-ascii?Q?lvtyVbYEh6LY+R4U6F3Dm4TlQoiNSEcYdEduyHQ3F4O6DASfMc/sd0NGSwjf?=
+ =?us-ascii?Q?yK1wi+TQ7WXpInM+1Dvc5R1E9LnVyoZzGx5ZAgqjq5QUDNNjl7sgp0E4I7e7?=
+ =?us-ascii?Q?Zl4ijD3WZ/l4CJLUoMcpzTxM3wt4FfKbFLldPWmwoMkZif9xZbTeNvplGybF?=
+ =?us-ascii?Q?x9sRIygRetsxk1XIQIp3T9nf6hT+EmqfOdsC8OzjolDM9DcKJqjvVp3+uw0y?=
+ =?us-ascii?Q?W9XhCOJ9OzP/b6w+NpGTC86dBcdh/oqVbnugWfR+LkKiunfLtgWl/bG/p2c4?=
+ =?us-ascii?Q?+vvIBsJEG54zOWcCO86ztYWwlZvL0/pK60SYJH3ts+S9iBZxq7UB2RD+yHTz?=
+ =?us-ascii?Q?v8PBx+Ci8DJOl46+g7ZTUZkN9fithfmKsXzAExt8GjWNauWc9oUdcB68PXIN?=
+ =?us-ascii?Q?+QAdITX9j4MIXil1iWZ0U3FLPnlUrmHV1KYPgNk4oH8b6bUYpLRKo+k5DbN7?=
+ =?us-ascii?Q?mrtU3V0Kqj3LPmbxsJ9sSgdbVv+SJCgth6GOxd9NuIB/eCh384LJMz+UHNYA?=
+ =?us-ascii?Q?Bn/ohkuHDZW23mjhgWrTgeR07HOsVCxfwx4HCwfUWxHJTO+O+x9nIKDlSwM8?=
+ =?us-ascii?Q?5k0YSoD2O6RwmuRVXMueMtzaYaesmIZgJ5gZwlLsBHufDGSESKoXQQNbTw+c?=
+ =?us-ascii?Q?ZoK8bx+yE7oFLkGApVTFqF0h3OgZ03sIaYuPMKx9Rcabcpvqk0/zbYD1ieez?=
+ =?us-ascii?Q?gLPlp/21vQYQYBX3didx9PdSrvEdTXQFW0ay798yfApwnP0L1k4qrZNB1Mz2?=
+ =?us-ascii?Q?kuqmYAyqbw=3D=3D?=
 X-OriginatorOrg: windriver.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 99599bfd-ae8b-48dd-c355-08da213e8d1b
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8381d4bd-4e4b-4e7a-dbdc-08da213e80ef
 X-MS-Exchange-CrossTenant-AuthSource: MWHPR11MB1358.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Apr 2022 13:22:56.7004 (UTC)
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Apr 2022 13:22:36.2488 (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 8ddb2873-a1ad-4a18-ae4e-4644631433be
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: SgqWfGxXAtBIAy+cVXXJZTRz4gwknKCsyPADuFg+VgxWRE4vD81EJUwYVCYvNaMMkfxRTDZBMXafQ9MT+y3JzA==
+X-MS-Exchange-CrossTenant-UserPrincipalName: GktaFGgGGENtFi7SkGbIJNO2WFbR1VKGaiqwn1422Tyq4lLANl6JbqoiJI3idJZ17ufb5IxrYQ/SFdQvSQg17w==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR11MB2857
-X-Proofpoint-ORIG-GUID: DPEj9QxHWeM-U3XqjFdxjg-BG26mSCZo
-X-Proofpoint-GUID: DPEj9QxHWeM-U3XqjFdxjg-BG26mSCZo
+X-Proofpoint-ORIG-GUID: L92afs33CCEvUXDtHwxOnx65_ITv67TP
+X-Proofpoint-GUID: L92afs33CCEvUXDtHwxOnx65_ITv67TP
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
  definitions=2022-04-18_02,2022-04-15_01,2022-02-23_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 mlxscore=0
- mlxlogscore=468 phishscore=0 lowpriorityscore=0 spamscore=0 suspectscore=0
+ clxscore=1011 mlxscore=0
+ mlxlogscore=471 phishscore=0 lowpriorityscore=0 spamscore=0 suspectscore=0
  priorityscore=1501 malwarescore=0 adultscore=0 impostorscore=0 bulkscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2202240000
  definitions=main-2204180078
@@ -166,75 +165,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-stack_trace_consume_fn has been changed to
-bool (*stack_trace_consume_fn)(void *cookie, struct frame_info *fi);
-to be able to pass more information.
+This series is to add copy-beyond-the-frame detection for hardened usercopy
+for arm64 by adding more arguments to callbacks of stackstrace and by the way
+more potential checks in the future can be done. This is done by:
 
-Turn to use pc in struct frame_info in arch_stack_walk callbacks without
-functinoal change.
+- Change stacktrace callback prototype to pass more information which currently
+  includes pc, current stack's fp and previous frame's fp, so copying beyond the
+  frame can be detected.
+- Add arch_within_stack_frames for arm64 based on existing x86 algorithm, but
+  via stacktrace.
+- Make other arch_stack_walk callbacks use the new prototype.
+- Tune lkdtm usercopy stack frame case. Currently the way to generate bad frame
+  use depends on stack layout of the architecture and compiler. It happens to
+  work with x86 but does not work for arm64 and it ruins the stack in
+  USERCOPY_STACK_FRAME_FROM and thus causes the call chain to return to NULL
+  address.
 
-Signed-off-by: He Zhe <zhe.he@windriver.com>
----
- arch/powerpc/kernel/stacktrace.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+He Zhe (8):
+  stacktrace: Change callback prototype to pass more information
+  arm64: stacktrace: Add arch_within_stack_frames
+  arm64: stacktrace: Make callbacks use new prototype with frame info
+  powerpc: stacktrace: Make callbacks use new prototype with frame info
+  riscv: stacktrace: Make callbacks use new prototype with frame info
+  s390: stacktrace: Make callbacks use new prototype with frame info
+  x86: stacktrace: Make callbacks use new prototype with frame info
+  lkdtm: usercopy: Make USERCOPY_STACK_FRAME_x able to work for all
+    archs
 
-diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-index a2443d61728e..8640e9acfa29 100644
---- a/arch/powerpc/kernel/stacktrace.c
-+++ b/arch/powerpc/kernel/stacktrace.c
-@@ -28,9 +28,13 @@ void __no_sanitize_address arch_stack_walk(stack_trace_consume_fn consume_entry,
- 					   struct task_struct *task, struct pt_regs *regs)
- {
- 	unsigned long sp;
-+	struct frame_info fi;
- 
--	if (regs && !consume_entry(cookie, regs->nip))
--		return;
-+	if (regs) {
-+		fi.pc = regs->nip;
-+		if (!consume_entry(cookie, &fi))
-+			return;
-+	}
- 
- 	if (regs)
- 		sp = regs->gpr[1];
-@@ -41,15 +45,15 @@ void __no_sanitize_address arch_stack_walk(stack_trace_consume_fn consume_entry,
- 
- 	for (;;) {
- 		unsigned long *stack = (unsigned long *) sp;
--		unsigned long newsp, ip;
-+		unsigned long newsp;
- 
- 		if (!validate_sp(sp, task, STACK_FRAME_OVERHEAD))
- 			return;
- 
- 		newsp = stack[0];
--		ip = stack[STACK_FRAME_LR_SAVE];
-+		fi.pc = stack[STACK_FRAME_LR_SAVE];
- 
--		if (!consume_entry(cookie, ip))
-+		if (!consume_entry(cookie, &fi))
- 			return;
- 
- 		sp = newsp;
-@@ -71,6 +75,7 @@ int __no_sanitize_address arch_stack_walk_reliable(stack_trace_consume_fn consum
- 	unsigned long stack_end;
- 	int graph_idx = 0;
- 	bool firstframe;
-+	struct frame_info fi;
- 
- 	stack_end = stack_page + THREAD_SIZE;
- 	if (!is_idle_task(task)) {
-@@ -159,7 +164,8 @@ int __no_sanitize_address arch_stack_walk_reliable(stack_trace_consume_fn consum
- 			return -EINVAL;
- #endif
- 
--		if (!consume_entry(cookie, ip))
-+		fi.pc = ip;
-+		if (!consume_entry(cookie, &fi))
- 			return -EINVAL;
- 	}
- 	return 0;
+ arch/arm64/Kconfig                   |  1 +
+ arch/arm64/include/asm/thread_info.h | 12 +++++
+ arch/arm64/kernel/perf_callchain.c   |  4 +-
+ arch/arm64/kernel/process.c          |  6 +--
+ arch/arm64/kernel/return_address.c   |  4 +-
+ arch/arm64/kernel/stacktrace.c       | 76 ++++++++++++++++++++++++++--
+ arch/arm64/kernel/time.c             |  6 +--
+ arch/powerpc/kernel/stacktrace.c     | 18 ++++---
+ arch/riscv/include/asm/stacktrace.h  |  2 +-
+ arch/riscv/kernel/perf_callchain.c   |  4 +-
+ arch/riscv/kernel/stacktrace.c       | 22 ++++----
+ arch/s390/kernel/stacktrace.c        | 14 ++---
+ arch/x86/kernel/stacktrace.c         | 28 ++++++----
+ drivers/misc/lkdtm/usercopy.c        | 24 +--------
+ include/linux/stacktrace.h           |  9 +++-
+ kernel/stacktrace.c                  | 10 ++--
+ 16 files changed, 161 insertions(+), 79 deletions(-)
+
 -- 
 2.25.1
 
