@@ -4,14 +4,14 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21617C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Apr 2022 10:05:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36F8DC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Apr 2022 10:06:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KjKDk4Drpz3bw6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Apr 2022 20:05:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KjKFQ4prdz3bq5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Apr 2022 20:06:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qIrGCpfv;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/4wHI6Ks;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=g8PLhNnH;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=BqbDfFer;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
@@ -19,60 +19,53 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256
- header.s=susede2_rsa header.b=qIrGCpfv; 
+ header.s=susede2_rsa header.b=g8PLhNnH; 
  dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=/4wHI6Ks; 
+ header.s=susede2_ed25519 header.b=BqbDfFer; 
  dkim-atps=neutral
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KjKCH2PZ2z2yXM
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KjKCH2sdxz2yZv
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2022 20:04:10 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
  (No client certificate requested)
- by smtp-out2.suse.de (Postfix) with ESMTPS id 211211F750;
- Tue, 19 Apr 2022 10:04:08 +0000 (UTC)
+ by smtp-out2.suse.de (Postfix) with ESMTPS id 6FDA91F38D;
+ Tue, 19 Apr 2022 10:04:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
- t=1650362648; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=72MSO73iE9m6d6QcQ+RYD7uJHq/qshdsujcD80AQRJM=;
- b=qIrGCpfvcmzkt/DJmyMjcpRiB83gp2InxeVfPQxpoOBm6yrImp+SHdPFycXCH+L0/Go4C8
- xqAqGL5VxrqzQ8aa4MNUd0sLpEmpNB6MP6LuKtPqr2E//clpNRxf++RzosaofnhnLUqHbU
- 3Dxm9PS5hp2XPEOYaUFqlmM+i2AR+hU=
+ t=1650362647; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version: content-transfer-encoding:content-transfer-encoding;
+ bh=N77V+jXr47F61PbQqDhlOrLIprGwDW/pOVFQmREbCJw=;
+ b=g8PLhNnHLI91ksistfZBNBf8MO59yBn8DthIgxoVv362YrvNc/gDCF2sCnTRZzT1lv6nQM
+ QeftLtHNAFQKA0Sq7wHlKQZP0aVId7Rhu6llhs9N7dtOkti6tTOHWYzP8UaUJuMbiQuHVQ
+ hWkbdfVEGyVUqq6BIOSXGFKnleaxmUM=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
- s=susede2_ed25519; t=1650362648;
+ s=susede2_ed25519; t=1650362647;
  h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=72MSO73iE9m6d6QcQ+RYD7uJHq/qshdsujcD80AQRJM=;
- b=/4wHI6KsrywOkyEaqa+m3SvpCyqaRqbDM4X9so+EOdCFjlb5vQ5NVNJPxQ67TxlWV70SER
- sNnW7IOHd/Os6oCg==
+ mime-version:mime-version: content-transfer-encoding:content-transfer-encoding;
+ bh=N77V+jXr47F61PbQqDhlOrLIprGwDW/pOVFQmREbCJw=;
+ b=BqbDfFerZPlucUA9awbpCZqaq+2h+kFM9Ueuo73fe9t6OsXpIbXciq3sj7eCXqZNuBhs8Y
+ MYCy+7MKq9/XZfCQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
  (No client certificate requested)
- by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C39F1132E7;
+ by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 2302B132E7;
  Tue, 19 Apr 2022 10:04:07 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
- by imap2.suse-dmz.suse.de with ESMTPSA id 6MLVLheJXmJzJQAAMHmgww
+ by imap2.suse-dmz.suse.de with ESMTPSA id jNSVBxeJXmJzJQAAMHmgww
  (envelope-from <tzimmermann@suse.de>); Tue, 19 Apr 2022 10:04:07 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: robh+dt@kernel.org, frowand.list@gmail.com, daniel@ffwll.ch, deller@gmx.de,
  sam@ravnborg.org, linux@roeck-us.net, mpe@ellerman.id.au,
  benh@kernel.crashing.org, paulus@samba.org, javierm@redhat.com
-Subject: [PATCH v2 2/2] fbdev: Warn in hot-unplug workaround for framebuffers
- without device
-Date: Tue, 19 Apr 2022 12:04:05 +0200
-Message-Id: <20220419100405.12600-3-tzimmermann@suse.de>
+Subject: [PATCH v2 0/2] of: Register platform device for each framebuffer
+Date: Tue, 19 Apr 2022 12:04:03 +0200
+Message-Id: <20220419100405.12600-1-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220419100405.12600-1-tzimmermann@suse.de>
-References: <20220419100405.12600-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -93,41 +86,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A workaround makes fbdev hot-unplugging work for framebuffers without
-device. The only user for this feature was offb. As each OF framebuffer
-now has an associated platform device, the workaround hould no longer
-be triggered. Update it with a warning and rewrite the comment. Fbdev
-drivers that trigger the hot-unplug workaround really need to be fixed.
+Move the detection of OF framebuffers from fbdev into of platform code
+and register a Linux platform device for each framebuffer. Allows for
+DRM-based OF drivers and real hot-unplugging of the framebuffer.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Suggested-by: Javier Martinez Canillas <javierm@redhat.com>
----
- drivers/video/fbdev/core/fbmem.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+This patchset has been tested with qemu's ppc64le emulation, which
+provides a framebuffer via OF display node. If someone has an older
+32-bit system with BootX available, please test.
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index bc6ed750e915..84427470367b 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1577,14 +1577,12 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
- 			 * allocate the memory range.
- 			 *
- 			 * If it's not a platform device, at least print a warning. A
--			 * fix would add code to remove the device from the system.
-+			 * fix would add code to remove the device from the system. For
-+			 * framebuffers without any Linux device, print a warning as
-+			 * well.
- 			 */
- 			if (!device) {
--				/* TODO: Represent each OF framebuffer as its own
--				 * device in the device hierarchy. For now, offb
--				 * doesn't have such a device, so unregister the
--				 * framebuffer as before without warning.
--				 */
-+				pr_warn("fb%d: no device set\n", i);
- 				do_unregister_framebuffer(registered_fb[i]);
- 			} else if (dev_is_platform(device)) {
- 				registered_fb[i]->forced_out = true;
+v2:
+	* integrate PPC code into generic platform setup (Rob)
+	* keep !device workaround with a warning (Javier, Daniel)
+
+Thomas Zimmermann (2):
+  of: Create platform devices for OF framebuffers
+  fbdev: Warn in hot-unplug workaround for framebuffers without device
+
+ drivers/of/platform.c            | 88 +++++++++++++++++++++-------
+ drivers/video/fbdev/core/fbmem.c | 10 ++--
+ drivers/video/fbdev/offb.c       | 98 +++++++++++++++++++++-----------
+ 3 files changed, 136 insertions(+), 60 deletions(-)
+
+
+base-commit: d97978df553d768e457cb68c637b2b0a6188b87c
+prerequisite-patch-id: c2b2f08f0eccc9f5df0c0da49fa1d36267deb11d
+prerequisite-patch-id: c67e5d886a47b7d0266d81100837557fda34cb24
+prerequisite-patch-id: 6e1032c6302461624f33194c8b8f37103a3fa6ef
+prerequisite-patch-id: 3f204510fcbf9530d6540bd8e6128cce598988b6
+prerequisite-patch-id: ab7611d28d07723ab1dd392dcf9a6345de3b1040
 -- 
 2.35.1
 
