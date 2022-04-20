@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A4ECC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 04:35:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28C21C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 04:36:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kjnsh5cCxz3bfq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 14:35:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kjnt74rhRz3cDK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 14:35:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com;
  envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KjlRQ2Rk2z2xCp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2022 12:46:10 +1000 (AEST)
-Received: from kwepemi100012.china.huawei.com (unknown [172.30.72.54])
- by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4KjlPs3cQ5zfYqj;
- Wed, 20 Apr 2022 10:44:49 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KjlRX22Bdz2x9V
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2022 12:46:16 +1000 (AEST)
+Received: from kwepemi500004.china.huawei.com (unknown [172.30.72.54])
+ by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4KjlQm1DFkzhXXK;
+ Wed, 20 Apr 2022 10:45:36 +0800 (CST)
 Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- kwepemi100012.china.huawei.com (7.221.188.202) with Microsoft SMTP Server
+ kwepemi500004.china.huawei.com (7.221.188.17) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 20 Apr 2022 10:45:34 +0800
+ 15.1.2375.24; Wed, 20 Apr 2022 10:45:41 +0800
 Received: from localhost.localdomain (10.175.112.125) by
  kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 20 Apr 2022 10:45:32 +0800
+ 15.1.2375.24; Wed, 20 Apr 2022 10:45:40 +0800
 From: Tong Tiangen <tongtiangen@huawei.com>
 To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
  Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
@@ -38,10 +38,9 @@ To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
  <x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -next v4 1/7] x86,
- powerpc: fix function define in copy_mc_to_user
-Date: Wed, 20 Apr 2022 03:04:12 +0000
-Message-ID: <20220420030418.3189040-2-tongtiangen@huawei.com>
+Subject: [PATCH -next v4 6/7] arm64: add {get, put}_user to machine check safe
+Date: Wed, 20 Apr 2022 03:04:17 +0000
+Message-ID: <20220420030418.3189040-7-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220420030418.3189040-1-tongtiangen@huawei.com>
 References: <20220420030418.3189040-1-tongtiangen@huawei.com>
@@ -72,55 +71,107 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-x86/powerpc has it's implementation of copy_mc_to_user but not use #define
-to declare.
+Add {get, put}_user() to machine check safe.
 
-This may cause problems, for example, if other architectures open
-CONFIG_ARCH_HAS_COPY_MC, but want to use copy_mc_to_user() outside the
-architecture, the code add to include/linux/uaddess.h is as follows:
+If get/put fail due to hardware memory error, only the relevant processes
+are affected, so killing the user process and isolate the user page with
+hardware memory errors is a more reasonable choice than kernel panic.
 
-    #ifndef copy_mc_to_user
-    static inline unsigned long __must_check
-    copy_mc_to_user(void *dst, const void *src, size_t cnt)
-    {
-	    ...
-    }
-    #endif
+Add new extable type EX_TYPE_UACCESS_MC_ERR_ZERO which can be used for
+uaccess that can be recovered from hardware memory errors. The difference
+from EX_TYPE_UACCESS_MC is that this type also sets additional two target
+register which save error code and value needs to be set zero.
 
-Then this definition will conflict with the implementation of x86/powerpc
-and cause compilation errors as follow:
-
-Fixes: ec6347bb4339 ("x86, powerpc: Rename memcpy_mcsafe() to copy_mc_to_{user, kernel}()")
 Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
 ---
- arch/powerpc/include/asm/uaccess.h | 1 +
- arch/x86/include/asm/uaccess.h     | 1 +
- 2 files changed, 2 insertions(+)
+ arch/arm64/include/asm/asm-extable.h | 14 ++++++++++++++
+ arch/arm64/include/asm/uaccess.h     |  4 ++--
+ arch/arm64/mm/extable.c              |  4 ++++
+ 3 files changed, 20 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 9b82b38ff867..58dbe8e2e318 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -358,6 +358,7 @@ copy_mc_to_user(void __user *to, const void *from, unsigned long n)
+diff --git a/arch/arm64/include/asm/asm-extable.h b/arch/arm64/include/asm/asm-extable.h
+index 75b2c00e9523..80410899a9ad 100644
+--- a/arch/arm64/include/asm/asm-extable.h
++++ b/arch/arm64/include/asm/asm-extable.h
+@@ -13,6 +13,7 @@
  
- 	return n;
- }
-+#define copy_mc_to_user copy_mc_to_user
- #endif
+ /* _MC indicates that can fixup from machine check errors */
+ #define EX_TYPE_UACCESS_MC		5
++#define EX_TYPE_UACCESS_MC_ERR_ZERO	6
  
- extern long __copy_from_user_flushcache(void *dst, const void __user *src,
-diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
-index f78e2b3501a1..e18c5f098025 100644
---- a/arch/x86/include/asm/uaccess.h
-+++ b/arch/x86/include/asm/uaccess.h
-@@ -415,6 +415,7 @@ copy_mc_to_kernel(void *to, const void *from, unsigned len);
+ #ifdef __ASSEMBLY__
  
- unsigned long __must_check
- copy_mc_to_user(void *to, const void *from, unsigned len);
-+#define copy_mc_to_user copy_mc_to_user
- #endif
+@@ -78,6 +79,15 @@
+ #define EX_DATA_REG(reg, gpr)						\
+ 	"((.L__gpr_num_" #gpr ") << " __stringify(EX_DATA_REG_##reg##_SHIFT) ")"
  
- /*
++#define _ASM_EXTABLE_UACCESS_MC_ERR_ZERO(insn, fixup, err, zero)		\
++	__DEFINE_ASM_GPR_NUMS							\
++	__ASM_EXTABLE_RAW(#insn, #fixup,					\
++			  __stringify(EX_TYPE_UACCESS_MC_ERR_ZERO),		\
++			  "("							\
++			    EX_DATA_REG(ERR, err) " | "				\
++			    EX_DATA_REG(ZERO, zero)				\
++			  ")")
++
+ #define _ASM_EXTABLE_UACCESS_ERR_ZERO(insn, fixup, err, zero)		\
+ 	__DEFINE_ASM_GPR_NUMS						\
+ 	__ASM_EXTABLE_RAW(#insn, #fixup, 				\
+@@ -90,6 +100,10 @@
+ #define _ASM_EXTABLE_UACCESS_ERR(insn, fixup, err)			\
+ 	_ASM_EXTABLE_UACCESS_ERR_ZERO(insn, fixup, err, wzr)
+ 
++
++#define _ASM_EXTABLE_UACCESS_MC_ERR(insn, fixup, err)			\
++	_ASM_EXTABLE_UACCESS_MC_ERR_ZERO(insn, fixup, err, wzr)
++
+ #define EX_DATA_REG_DATA_SHIFT	0
+ #define EX_DATA_REG_DATA	GENMASK(4, 0)
+ #define EX_DATA_REG_ADDR_SHIFT	5
+diff --git a/arch/arm64/include/asm/uaccess.h b/arch/arm64/include/asm/uaccess.h
+index e8dce0cc5eaa..e41b47df48b0 100644
+--- a/arch/arm64/include/asm/uaccess.h
++++ b/arch/arm64/include/asm/uaccess.h
+@@ -236,7 +236,7 @@ static inline void __user *__uaccess_mask_ptr(const void __user *ptr)
+ 	asm volatile(							\
+ 	"1:	" load "	" reg "1, [%2]\n"			\
+ 	"2:\n"								\
+-	_ASM_EXTABLE_UACCESS_ERR_ZERO(1b, 2b, %w0, %w1)			\
++	_ASM_EXTABLE_UACCESS_MC_ERR_ZERO(1b, 2b, %w0, %w1)		\
+ 	: "+r" (err), "=&r" (x)						\
+ 	: "r" (addr))
+ 
+@@ -325,7 +325,7 @@ do {									\
+ 	asm volatile(							\
+ 	"1:	" store "	" reg "1, [%2]\n"			\
+ 	"2:\n"								\
+-	_ASM_EXTABLE_UACCESS_ERR(1b, 2b, %w0)				\
++	_ASM_EXTABLE_UACCESS_MC_ERR(1b, 2b, %w0)			\
+ 	: "+r" (err)							\
+ 	: "r" (x), "r" (addr))
+ 
+diff --git a/arch/arm64/mm/extable.c b/arch/arm64/mm/extable.c
+index 525876c3ebf4..1023ccdb2f89 100644
+--- a/arch/arm64/mm/extable.c
++++ b/arch/arm64/mm/extable.c
+@@ -88,6 +88,7 @@ bool fixup_exception(struct pt_regs *regs)
+ 	case EX_TYPE_BPF:
+ 		return ex_handler_bpf(ex, regs);
+ 	case EX_TYPE_UACCESS_ERR_ZERO:
++	case EX_TYPE_UACCESS_MC_ERR_ZERO:
+ 		return ex_handler_uaccess_err_zero(ex, regs);
+ 	case EX_TYPE_LOAD_UNALIGNED_ZEROPAD:
+ 		return ex_handler_load_unaligned_zeropad(ex, regs);
+@@ -107,6 +108,9 @@ bool fixup_exception_mc(struct pt_regs *regs)
+ 	switch (ex->type) {
+ 	case EX_TYPE_UACCESS_MC:
+ 		return ex_handler_uaccess_type(ex, regs, FIXUP_TYPE_MC);
++	case EX_TYPE_UACCESS_MC_ERR_ZERO:
++		return ex_handler_uaccess_err_zero(ex, regs);
++
+ 	}
+ 
+ 	return false;
 -- 
 2.25.1
 
