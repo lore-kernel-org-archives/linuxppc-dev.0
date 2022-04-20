@@ -4,72 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AF16C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 03:04:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2625C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 04:35:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kjls06gsfz3bVN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 13:04:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Ts5wpZle;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KjnsG0Qmlz3bpm
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 14:35:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::735;
- helo=mail-qk1-x735.google.com; envelope-from=cgel.zte@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=Ts5wpZle; dkim-atps=neutral
-Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com
- [IPv6:2607:f8b0:4864:20::735])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KjlrG4YP2z2xtQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2022 13:04:13 +1000 (AEST)
-Received: by mail-qk1-x735.google.com with SMTP id j9so375152qkg.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2022 20:04:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=yqneS1sFpDsOyrIE2+1UdTS/4fNFnUPRBLnd3RmNOTc=;
- b=Ts5wpZlehNTldV56YalrJSp5dhybuu6s+42AgTPpMsMwjFt1Lis7Rt+xmK9FiGrio2
- HqLSB4P+IzJOw+6Bkz6PTrg+YcegYXzJGd4zlkOm30JZB+yWwqKV7qq9mHJMgm9uucUv
- /ylGtHPl592ncy1Ko3mPGdSmR3RmOr7Ar//h7ITZwPp/wsPT6/qocvoCupoZwIFDzDSf
- fYcOGN48iPY8aBPztkQacG0OHWYO35uCtj4BqSNdu25D3pTWUH0OjeCD8FbVBoa8L1Aj
- sDsFDbYDyfEySElrOHYUPcqUKXIq5uonPN1JW7eM9e1SOfRmSiKxCj5zvxMMKj7c6X/3
- FsnA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=yqneS1sFpDsOyrIE2+1UdTS/4fNFnUPRBLnd3RmNOTc=;
- b=LPYDzWvayG95uegbvBeptxdFgGAZlIAWcpMMa2ZfKQTzAxM8bzKp0ydrspS6/cunAL
- 9vUsMheuNV3gt+hzY3/vWrgRGKubq+t6/Ksm0yjCdkI2mE3yF/FywBXigwIWPxyrcWQV
- mDCU8vYVuvPvEDWdrBNMo6ImQdRVOy/6uw9pCDC1/IUrkPjnS5bUTFSbI9ELSfZRCya9
- nmlC50iPpQq4k9PT0zCHP71wbjYxutZRsZAL2fAtvj03WE5Jxlo97zi93Ab7CFvXfsDF
- J3EuQLBw4CrMmOnaUUn2wZtGtgJERk+0L+vAUto9p0erYELaKVwSTiltnCXtv42OWzbn
- zyRw==
-X-Gm-Message-State: AOAM532Ix5jst95Fx2lK4fj9/qUzrUsRIFiGn2T/hlta2d6NTopOMbmG
- 8sZ9OcL0b6OSIrUrP2Bjv7o=
-X-Google-Smtp-Source: ABdhPJx/s+b4syYfQni7rUQWx2AyU+UcLFCRd7P0jGC6d1QDovYVBI1ayiBLkCungiG7Xd4kM0xQww==
-X-Received: by 2002:a05:620a:16b3:b0:69e:bf77:778b with SMTP id
- s19-20020a05620a16b300b0069ebf77778bmr4284035qkj.642.1650423849002; 
- Tue, 19 Apr 2022 20:04:09 -0700 (PDT)
-Received: from localhost.localdomain ([193.203.214.57])
- by smtp.gmail.com with ESMTPSA id
- v23-20020ae9e317000000b0069ea555b54dsm901109qkf.128.2022.04.19.20.04.05
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 19 Apr 2022 20:04:08 -0700 (PDT)
-From: cgel.zte@gmail.com
-X-Google-Original-From: chi.minghao@zte.com.cn
-To: shengjiu.wang@gmail.com
-Subject: [PATCH] ASoC: fsl_asrc: using pm_runtime_resume_and_get to simplify
- the code
-Date: Wed, 20 Apr 2022 03:04:02 +0000
-Message-Id: <20220420030402.2575755-1-chi.minghao@zte.com.cn>
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
+ envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KjlQy2wtzz2xnJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2022 12:45:46 +1000 (AEST)
+Received: from kwepemi500005.china.huawei.com (unknown [172.30.72.55])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4KjlQh68FmzhXdN;
+ Wed, 20 Apr 2022 10:45:32 +0800 (CST)
+Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
+ kwepemi500005.china.huawei.com (7.221.188.179) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.24; Wed, 20 Apr 2022 10:45:40 +0800
+Received: from localhost.localdomain (10.175.112.125) by
+ kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.24; Wed, 20 Apr 2022 10:45:38 +0800
+From: Tong Tiangen <tongtiangen@huawei.com>
+To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
+ <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
+ <bp@alien8.de>, Robin Murphy <robin.murphy@arm.com>, Dave Hansen
+ <dave.hansen@linux.intel.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+ <x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH -next v4 5/7] arm64: mte: Clean up user tag accessors
+Date: Wed, 20 Apr 2022 03:04:16 +0000
+Message-ID: <20220420030418.3189040-6-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220420030418.3189040-1-tongtiangen@huawei.com>
+References: <20220420030418.3189040-1-tongtiangen@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.175.112.125]
+X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
+ kwepemm600017.china.huawei.com (7.193.23.234)
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Wed, 20 Apr 2022 14:34:53 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,46 +63,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Xiubo.Lee@gmail.com,
- linuxppc-dev@lists.ozlabs.org, Zeal Robot <zealci@zte.com.cn>,
- lgirdwood@gmail.com, Minghao Chi <chi.minghao@zte.com.cn>,
- linux-kernel@vger.kernel.org, nicoleotsuka@gmail.com, broonie@kernel.org,
- festevam@gmail.com
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Xie XiuQi <xiexiuqi@huawei.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Tong Tiangen <tongtiangen@huawei.com>, Guohanjun <guohanjun@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Minghao Chi <chi.minghao@zte.com.cn>
+From: Robin Murphy <robin.murphy@arm.com>
 
-Using pm_runtime_resume_and_get() to replace pm_runtime_get_sync and
-pm_runtime_put_noidle. This change is just to simplify the code, no
-actual functional changes.
+Invoking user_ldst to explicitly add a post-increment of 0 is silly.
+Just use a normal USER() annotation and save the redundant instruction.
 
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Minghao Chi <chi.minghao@zte.com.cn>
+Signed-off-by: Robin Murphy <robin.murphy@arm.com>
+Reviewed-by: Tong Tiangen <tongtiangen@huawei.com>
 ---
- sound/soc/fsl/fsl_asrc.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ arch/arm64/lib/mte.S | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index d7d1536a4f37..31a7f9aac6e3 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -1211,11 +1211,9 @@ static int fsl_asrc_probe(struct platform_device *pdev)
- 			goto err_pm_disable;
- 	}
- 
--	ret = pm_runtime_get_sync(&pdev->dev);
--	if (ret < 0) {
--		pm_runtime_put_noidle(&pdev->dev);
-+	ret = pm_runtime_resume_and_get(&pdev->dev);
-+	if (ret < 0)
- 		goto err_pm_get_sync;
--	}
- 
- 	ret = fsl_asrc_init(asrc);
- 	if (ret) {
+diff --git a/arch/arm64/lib/mte.S b/arch/arm64/lib/mte.S
+index 8590af3c98c0..eeb9e45bcce8 100644
+--- a/arch/arm64/lib/mte.S
++++ b/arch/arm64/lib/mte.S
+@@ -93,7 +93,7 @@ SYM_FUNC_START(mte_copy_tags_from_user)
+ 	mov	x3, x1
+ 	cbz	x2, 2f
+ 1:
+-	user_ldst 2f, ldtrb, w4, x1, 0
++USER(2f, ldtrb	w4, [x1])
+ 	lsl	x4, x4, #MTE_TAG_SHIFT
+ 	stg	x4, [x0], #MTE_GRANULE_SIZE
+ 	add	x1, x1, #1
+@@ -120,7 +120,7 @@ SYM_FUNC_START(mte_copy_tags_to_user)
+ 1:
+ 	ldg	x4, [x1]
+ 	ubfx	x4, x4, #MTE_TAG_SHIFT, #MTE_TAG_SIZE
+-	user_ldst 2f, sttrb, w4, x0, 0
++USER(2f, sttrb	w4, [x0])
+ 	add	x0, x0, #1
+ 	add	x1, x1, #MTE_GRANULE_SIZE
+ 	subs	x2, x2, #1
 -- 
 2.25.1
-
 
