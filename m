@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 201FEC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 04:37:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65A0FC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 04:37:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KjnvR5gcSz3dPb
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 14:37:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kjnvs6P8qz3dpj
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 14:37:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com;
  envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kjlt76Hrrz2yNF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kjlt74ddVz2yLg
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2022 13:05:51 +1000 (AEST)
-Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.56])
- by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4KjlPv36khz1J9nq;
- Wed, 20 Apr 2022 10:44:51 +0800 (CST)
+Received: from kwepemi100015.china.huawei.com (unknown [172.30.72.54])
+ by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4KjlPr2R1vz1J9nr;
+ Wed, 20 Apr 2022 10:44:48 +0800 (CST)
 Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- kwepemi500008.china.huawei.com (7.221.188.139) with Microsoft SMTP Server
+ kwepemi100015.china.huawei.com (7.221.188.125) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 20 Apr 2022 10:45:35 +0800
+ 15.1.2375.24; Wed, 20 Apr 2022 10:45:32 +0800
 Received: from localhost.localdomain (10.175.112.125) by
  kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 20 Apr 2022 10:45:34 +0800
+ 15.1.2375.24; Wed, 20 Apr 2022 10:45:31 +0800
 From: Tong Tiangen <tongtiangen@huawei.com>
 To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
  Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
@@ -38,12 +38,10 @@ To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
  <x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -next v4 2/7] arm64: fix types in copy_highpage()
-Date: Wed, 20 Apr 2022 03:04:13 +0000
-Message-ID: <20220420030418.3189040-3-tongtiangen@huawei.com>
+Subject: [PATCH -next v4 0/7]arm64: add machine check safe support
+Date: Wed, 20 Apr 2022 03:04:11 +0000
+Message-ID: <20220420030418.3189040-1-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220420030418.3189040-1-tongtiangen@huawei.com>
-References: <20220420030418.3189040-1-tongtiangen@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -71,41 +69,93 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In copy_highpage() the `kto` and `kfrom` local variables are pointers to
-struct page, but these are used to hold arbitrary pointers to kernel memory
-. Each call to page_address() returns a void pointer to memory associated
-with the relevant page, and copy_page() expects void pointers to this
-memory.
+With the increase of memory capacity and density, the probability of
+memory error increases. The increasing size and density of server RAM
+in the data center and cloud have shown increased uncorrectable memory
+errors.
 
-This inconsistency was introduced in commit 2563776b41c3 ("arm64: mte:
-Tags-aware copy_{user_,}highpage() implementations") and while this
-doesn't appear to be harmful in practice it is clearly wrong.
+Currently, the kernel has a mechanism to recover from hardware memory
+errors. This patchset provides an new recovery mechanism.
 
-Correct this by making `kto` and `kfrom` void pointers.
+For arm64, the hardware memory error handling is do_sea() which divided
+into two cases:
+ 1. The user state consumed the memory errors, the solution is kill the
+    user process and isolate the error page.
+ 2. The kernel state consumed the memory errors, the solution is panic.
 
-Fixes: 2563776b41c3 ("arm64: mte: Tags-aware copy_{user_,}highpage() implementations")
-Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
-Acked-by: Mark Rutland <mark.rutland@arm.com>
-Reviewed-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
- arch/arm64/mm/copypage.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+For case 2, Undifferentiated panic maybe not the optimal choice, it can be
+handled better, in some scenes, we can avoid panic, such as uaccess, if the
+uaccess fails due to memory error, only the user process will be affected,
+kill the user process and isolate the user page with hardware memory errors
+is a better choice.
 
-diff --git a/arch/arm64/mm/copypage.c b/arch/arm64/mm/copypage.c
-index b5447e53cd73..0dea80bf6de4 100644
---- a/arch/arm64/mm/copypage.c
-+++ b/arch/arm64/mm/copypage.c
-@@ -16,8 +16,8 @@
- 
- void copy_highpage(struct page *to, struct page *from)
- {
--	struct page *kto = page_address(to);
--	struct page *kfrom = page_address(from);
-+	void *kto = page_address(to);
-+	void *kfrom = page_address(from);
- 
- 	copy_page(kto, kfrom);
- 
+This patchset can be divided into three parts:
+ 1. Patch 0/1/4    - make some minor fixes to the associated code.
+ 2. Patch 3      - arm64 add support for machine check safe framework.
+ 3. Pathc 5/6/7  - arm64 add uaccess and cow to machine check safe.
+
+Since V4:
+ 1. According to Robin's suggestion, direct modify user_ldst and
+ user_ldp in asm-uaccess.h and modify mte.S.
+ 2. Add new macro USER_MC in asm-uaccess.h, used in copy_from_user.S
+ and copy_to_user.S.
+ 3. According to Robin's suggestion, using micro in copy_page_mc.S to
+ simplify code.
+ 4. According to KeFeng's suggestion, modify powerpc code in patch1.
+ 5. According to KeFeng's suggestion, modify mm/extable.c and some code
+ optimization.
+
+Since V3:
+ 1. According to Mark's suggestion, all uaccess can be recovered due to
+    memory error.
+ 2. Scenario pagecache reading is also supported as part of uaccess
+    (copy_to_user()) and duplication code problem is also solved. 
+    Thanks for Robin's suggestion.
+ 3. According Mark's suggestion, update commit message of patch 2/5.
+ 4. According Borisllav's suggestion, update commit message of patch 1/5.
+
+Since V2:
+ 1.Consistent with PPC/x86, Using CONFIG_ARCH_HAS_COPY_MC instead of
+   ARM64_UCE_KERNEL_RECOVERY.
+ 2.Add two new scenes, cow and pagecache reading.
+ 3.Fix two small bug(the first two patch).
+
+V1 in here:
+https://lore.kernel.org/lkml/20220323033705.3966643-1-tongtiangen@huawei.com/
+
+Robin Murphy (1):
+  arm64: mte: Clean up user tag accessors
+
+Tong Tiangen (6):
+  x86, powerpc: fix function define in copy_mc_to_user
+  arm64: fix types in copy_highpage()
+  arm64: add support for machine check error safe
+  arm64: add copy_{to, from}_user to machine check safe
+  arm64: add {get, put}_user to machine check safe
+  arm64: add cow to machine check safe
+
+ arch/arm64/Kconfig                   |  1 +
+ arch/arm64/include/asm/asm-extable.h | 33 +++++++++++
+ arch/arm64/include/asm/asm-uaccess.h | 15 +++--
+ arch/arm64/include/asm/extable.h     |  1 +
+ arch/arm64/include/asm/page.h        | 10 ++++
+ arch/arm64/include/asm/uaccess.h     |  4 +-
+ arch/arm64/lib/Makefile              |  2 +
+ arch/arm64/lib/copy_from_user.S      | 18 +++---
+ arch/arm64/lib/copy_page_mc.S        | 86 ++++++++++++++++++++++++++++
+ arch/arm64/lib/copy_to_user.S        | 18 +++---
+ arch/arm64/lib/mte.S                 |  4 +-
+ arch/arm64/mm/copypage.c             | 36 ++++++++++--
+ arch/arm64/mm/extable.c              | 33 +++++++++++
+ arch/arm64/mm/fault.c                | 27 ++++++++-
+ arch/powerpc/include/asm/uaccess.h   |  1 +
+ arch/x86/include/asm/uaccess.h       |  1 +
+ include/linux/highmem.h              |  8 +++
+ include/linux/uaccess.h              |  9 +++
+ mm/memory.c                          |  2 +-
+ 19 files changed, 278 insertions(+), 31 deletions(-)
+ create mode 100644 arch/arm64/lib/copy_page_mc.S
+
 -- 
 2.25.1
 
