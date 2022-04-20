@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2625C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 04:35:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A4ECC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 04:35:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KjnsG0Qmlz3bpm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 14:35:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kjnsh5cCxz3bfq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Apr 2022 14:35:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com;
  envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KjlQy2wtzz2xnJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2022 12:45:46 +1000 (AEST)
-Received: from kwepemi500005.china.huawei.com (unknown [172.30.72.55])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4KjlQh68FmzhXdN;
- Wed, 20 Apr 2022 10:45:32 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KjlRQ2Rk2z2xCp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2022 12:46:10 +1000 (AEST)
+Received: from kwepemi100012.china.huawei.com (unknown [172.30.72.54])
+ by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4KjlPs3cQ5zfYqj;
+ Wed, 20 Apr 2022 10:44:49 +0800 (CST)
 Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- kwepemi500005.china.huawei.com (7.221.188.179) with Microsoft SMTP Server
+ kwepemi100012.china.huawei.com (7.221.188.202) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 20 Apr 2022 10:45:40 +0800
+ 15.1.2375.24; Wed, 20 Apr 2022 10:45:34 +0800
 Received: from localhost.localdomain (10.175.112.125) by
  kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 20 Apr 2022 10:45:38 +0800
+ 15.1.2375.24; Wed, 20 Apr 2022 10:45:32 +0800
 From: Tong Tiangen <tongtiangen@huawei.com>
 To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
  Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
@@ -38,9 +38,10 @@ To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
  <x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -next v4 5/7] arm64: mte: Clean up user tag accessors
-Date: Wed, 20 Apr 2022 03:04:16 +0000
-Message-ID: <20220420030418.3189040-6-tongtiangen@huawei.com>
+Subject: [PATCH -next v4 1/7] x86,
+ powerpc: fix function define in copy_mc_to_user
+Date: Wed, 20 Apr 2022 03:04:12 +0000
+Message-ID: <20220420030418.3189040-2-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220420030418.3189040-1-tongtiangen@huawei.com>
 References: <20220420030418.3189040-1-tongtiangen@huawei.com>
@@ -71,39 +72,55 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Robin Murphy <robin.murphy@arm.com>
+x86/powerpc has it's implementation of copy_mc_to_user but not use #define
+to declare.
 
-Invoking user_ldst to explicitly add a post-increment of 0 is silly.
-Just use a normal USER() annotation and save the redundant instruction.
+This may cause problems, for example, if other architectures open
+CONFIG_ARCH_HAS_COPY_MC, but want to use copy_mc_to_user() outside the
+architecture, the code add to include/linux/uaddess.h is as follows:
 
-Signed-off-by: Robin Murphy <robin.murphy@arm.com>
-Reviewed-by: Tong Tiangen <tongtiangen@huawei.com>
+    #ifndef copy_mc_to_user
+    static inline unsigned long __must_check
+    copy_mc_to_user(void *dst, const void *src, size_t cnt)
+    {
+	    ...
+    }
+    #endif
+
+Then this definition will conflict with the implementation of x86/powerpc
+and cause compilation errors as follow:
+
+Fixes: ec6347bb4339 ("x86, powerpc: Rename memcpy_mcsafe() to copy_mc_to_{user, kernel}()")
+Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
 ---
- arch/arm64/lib/mte.S | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/uaccess.h | 1 +
+ arch/x86/include/asm/uaccess.h     | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/arch/arm64/lib/mte.S b/arch/arm64/lib/mte.S
-index 8590af3c98c0..eeb9e45bcce8 100644
---- a/arch/arm64/lib/mte.S
-+++ b/arch/arm64/lib/mte.S
-@@ -93,7 +93,7 @@ SYM_FUNC_START(mte_copy_tags_from_user)
- 	mov	x3, x1
- 	cbz	x2, 2f
- 1:
--	user_ldst 2f, ldtrb, w4, x1, 0
-+USER(2f, ldtrb	w4, [x1])
- 	lsl	x4, x4, #MTE_TAG_SHIFT
- 	stg	x4, [x0], #MTE_GRANULE_SIZE
- 	add	x1, x1, #1
-@@ -120,7 +120,7 @@ SYM_FUNC_START(mte_copy_tags_to_user)
- 1:
- 	ldg	x4, [x1]
- 	ubfx	x4, x4, #MTE_TAG_SHIFT, #MTE_TAG_SIZE
--	user_ldst 2f, sttrb, w4, x0, 0
-+USER(2f, sttrb	w4, [x0])
- 	add	x0, x0, #1
- 	add	x1, x1, #MTE_GRANULE_SIZE
- 	subs	x2, x2, #1
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 9b82b38ff867..58dbe8e2e318 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -358,6 +358,7 @@ copy_mc_to_user(void __user *to, const void *from, unsigned long n)
+ 
+ 	return n;
+ }
++#define copy_mc_to_user copy_mc_to_user
+ #endif
+ 
+ extern long __copy_from_user_flushcache(void *dst, const void __user *src,
+diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
+index f78e2b3501a1..e18c5f098025 100644
+--- a/arch/x86/include/asm/uaccess.h
++++ b/arch/x86/include/asm/uaccess.h
+@@ -415,6 +415,7 @@ copy_mc_to_kernel(void *to, const void *from, unsigned len);
+ 
+ unsigned long __must_check
+ copy_mc_to_user(void *to, const void *from, unsigned len);
++#define copy_mc_to_user copy_mc_to_user
+ #endif
+ 
+ /*
 -- 
 2.25.1
 
