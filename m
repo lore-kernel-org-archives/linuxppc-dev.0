@@ -4,56 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7920C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Apr 2022 21:27:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2495DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Apr 2022 01:17:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Km4BM1vqHz3br0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Apr 2022 07:27:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=mxw3tXP3;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Km9Gr2CZgz3bfR
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Apr 2022 11:17:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org;
- envelope-from=srs0=n99z=vb=zx2c4.com=jason@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256
- header.s=20210105 header.b=mxw3tXP3; dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Km49Z74dxz2yHp
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Apr 2022 07:27:14 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id CA982B80DAB;
- Sat, 23 Apr 2022 21:27:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 655E8C385A5;
- Sat, 23 Apr 2022 21:27:04 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
- dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com
- header.b="mxw3tXP3"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105; 
- t=1650749222;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=pY3GCFkvaKbYFxDCcKwSdJ8N9nXdG8OE4PjRxZGLbwE=;
- b=mxw3tXP3rv19uw0WGrfNZ5vKeN9vdScLNhpiHdV1D7EpFAVPuUI2t27mnVwIz+EPXhdc0N
- DxsrccWIpl1bhZSnO0NPOVu65nNxex7ViVlm3T1mRaL18DWAN+oQeZyXO+p1apZw+pyUO5
- OdzcbE/GPAE1xJDfBMeAuCkH5KtnstM=
-Received: by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 5c3eede4
- (TLSv1.3:AEAD-AES256-GCM-SHA384:256:NO); 
- Sat, 23 Apr 2022 21:27:02 +0000 (UTC)
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
- tglx@linutronix.de, arnd@arndb.de
-Subject: [PATCH v6 00/17] archs/random: fallback to best raw ktime when no
- cycle counter
-Date: Sat, 23 Apr 2022 23:26:06 +0200
-Message-Id: <20220423212623.1957011-1-Jason@zx2c4.com>
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com;
+ envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Km9GK4pcpz2yN4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Apr 2022 11:16:41 +1000 (AEST)
+Received: from kwepemi500001.china.huawei.com (unknown [172.30.72.55])
+ by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4Km9Dj5x1XzfZWc;
+ Sun, 24 Apr 2022 09:15:17 +0800 (CST)
+Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
+ kwepemi500001.china.huawei.com (7.221.188.114) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.24; Sun, 24 Apr 2022 09:16:07 +0800
+Received: from [10.174.179.234] (10.174.179.234) by
+ kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.24; Sun, 24 Apr 2022 09:16:06 +0800
+Message-ID: <4ee686bc-38d4-7709-30a9-0c807919672a@huawei.com>
+Date: Sun, 24 Apr 2022 09:16:05 +0800
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.0
+Subject: Re: [PATCH -next v4 1/7] x86, powerpc: fix function define in
+ copy_mc_to_user
+To: Michael Ellerman <mpe@ellerman.id.au>, Mark Rutland
+ <mark.rutland@arm.com>, James Morse <james.morse@arm.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, "Ingo
+ Molnar" <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Robin Murphy
+ <robin.murphy@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, "Catalin
+ Marinas" <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, "Alexander
+ Viro" <viro@zeniv.linux.org.uk>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+ <x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
+References: <20220420030418.3189040-1-tongtiangen@huawei.com>
+ <20220420030418.3189040-2-tongtiangen@huawei.com>
+ <87r15p8n9g.fsf@mpe.ellerman.id.au>
+From: Tong Tiangen <tongtiangen@huawei.com>
+In-Reply-To: <87r15p8n9g.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.174.179.234]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+ kwepemm600017.china.huawei.com (7.193.23.234)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,218 +66,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>, linux-ia64@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
- "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>,
- linux-riscv@lists.infradead.org,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org,
- Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>,
- x86@kernel.org, Russell King <linux@armlinux.org.uk>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Matt Turner <mattst88@gmail.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>,
- Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
- linux-um@lists.infradead.org,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org,
- Borislav Petkov <bp@alien8.de>, Paul Walmsley <paul.walmsley@sifive.com>,
- Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>, Chris Zankel <chris@zankel.net>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Theodore Ts'o <tytso@mit.edu>,
- linux-parisc@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>,
- linux-mips@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Xie XiuQi <xiexiuqi@huawei.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Guohanjun <guohanjun@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[Preface for v6: if you're an arch maintainer, a simple Acked-by would
- be appreciated if this looks okay.]
 
-Hi folks,
 
-The RNG uses a function called random_get_entropy() basically anytime
-that it needs to timestamp an event. For example, an interrupt comes in,
-and we mix a random_get_entropy() into the entropy pool somehow.
-Somebody mashes their keyboard or moves their mouse around? We mix a
-random_get_entropy() into the entropy pool. It's one of the main
-varieties of input.
+在 2022/4/22 17:45, Michael Ellerman 写道:
+> Tong Tiangen <tongtiangen@huawei.com> writes:
+>> x86/powerpc has it's implementation of copy_mc_to_user but not use #define
+>> to declare.
+>>
+>> This may cause problems, for example, if other architectures open
+>> CONFIG_ARCH_HAS_COPY_MC, but want to use copy_mc_to_user() outside the
+>> architecture, the code add to include/linux/uaddess.h is as follows:
+>>
+>>      #ifndef copy_mc_to_user
+>>      static inline unsigned long __must_check
+>>      copy_mc_to_user(void *dst, const void *src, size_t cnt)
+>>      {
+>> 	    ...
+>>      }
+>>      #endif
+>       
+> The above doesn't exist yet, you add it in patch 3, which is a little
+> confusing for a reader of this commit in isolation.
+> 
+> I think you could safely move that into this patch, and then this patch
+> would be ~= "Add generic fallback version of copy_mc_to_user()".
+> 
+> It's probably not worth doing a whole new version of the series just for
+> that, but if you need to do a new version for some other reason I think
+> it would be cleaner to introduce the fallback in this commit.
+> 
 
-Unfortunately, it's always 0 on a few platforms. The RNG has accumulated
-various hacks to deal with this, but in general it's not great. Surely
-we can do better than 0. In fact, *anything* that's not the same exact
-value all the time would be better than 0. Even a counter that
-increments once per hour would be better than 0! I think you get the
-idea.
-
-On most platforms, random_get_entropy() is aliased to get_cycles(),
-which makes sense for platforms where get_cycles() is defined. RDTSC,
-for example, has all the characteristics we care about for this
-function: it's fast to acquire (i.e. acceptable in an irq handler),
-pretty high precision, available, forms a 2-monotone distribution, etc.
-But for platforms without that, what is the next best thing?
-
-Sometimes the next best thing is architecture-defined. For example,
-really old MIPS has the C0 random register, which isn't quite a cycle
-counter, but is at least something. However, some platforms don't even
-have an architecture-defined fallback.
-
-Fortunately, the timekeeping subsystem has already solved this problem
-of trying to determine what the least bad clock is on constrained
-systems, falling back to jiffies in the worst case. By exporting the raw
-clock, we can get a decent fallback function for when there's no cycle
-counter or architecture-specific function.
-
-This series makes the RNG more useful on: m68k, RISC-V, MIPS, ARM32,
-NIOS II, SPARC32, Xtensa, OpenRISC, and Usermode Linux. Previously these
-platforms would, in certain circumstances, but out of luck with regards to
-having any type of event timestamping source in the RNG.
-
-Finally, note that this series isn't about "jitter entropy" or other
-ways of initializing the RNG. That's a different topic for a different
-thread. Please don't let this discussion veer off into that. Here, I'm
-just trying to find a good fallback counter/timer for platforms without
-get_cycles(), a question with limited scope.
-
-If this (or a future revision) looks good to you all and receives the
-requisite acks, my plan was to take these through the random.git tree
-for 5.19, so that I can then build on top of it.
+Agreed, will do in next version.
 
 Thanks,
-Jason
+Tong.
 
-Changes v5->v6:
-- Use cpu_feature_enabled() instead of boot_cpu_has() on x86.
-- OpenRISC support.
-- Define missing `#define get_cycles get_cycles` on various platforms.
-
-Changes v4->v5:
-- Do not prototype symbol with 'extern', according to style guide.
-- On MIPS, combine random_get_entropy_fallback() with the c0 random
-  register in a way that matches the format of the c0 random value, so
-  that we get the best of a high precision cycle counter and of larger
-  period timer, joined together. As a result, Thomas Bogendoerfer's
-  ack on v4 of patch 4 has been dropped, since this is a substantial
-  change.
-
-Changes v3->v4:
-- Use EXPORT_SYMBOL_GPL instead of EXPORT_SYMBOL.
-
-Changes v2->v3:
-- Name the fallback function random_get_entropy_fallback(), so that it
-  can be changed out as needed.
-- Include header with prototype in timekeeping.c to avoid compiler
-  warning.
-- Export fallback function symbol.
-
-Changes v1->v2:
-- Use ktime_read_raw_clock() instead of sched_clock(), per Thomas'
-  suggestion.
-- Drop arm64 change.
-- Cleanup header inclusion ordering problem.
-
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Theodore Ts'o <tytso@mit.edu>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: Russell King <linux@armlinux.org.uk>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: Paul Walmsley <paul.walmsley@sifive.com>
-Cc: Palmer Dabbelt <palmer@dabbelt.com>
-Cc: Albert Ou <aou@eecs.berkeley.edu>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Richard Weinberger <richard@nod.at>
-Cc: Anton Ivanov <anton.ivanov@cambridgegreys.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Chris Zankel <chris@zankel.net>
-Cc: Max Filippov <jcmvbkbc@gmail.com>
-Cc: Stephen Boyd <sboyd@kernel.org>
-Cc: Dinh Nguyen <dinguyen@kernel.org>
-Cc: Jonas Bonn <jonas@southpole.se>
-Cc: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Cc: Stafford Horne <shorne@gmail.com>
-Cc: Heiko Carstens <hca@linux.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Alexander Gordeev <agordeev@linux.ibm.com>
-Cc: Christian Borntraeger <borntraeger@linux.ibm.com>
-Cc: Sven Schnelle <svens@linux.ibm.com>
-Cc: Helge Deller <deller@gmx.de>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Matt Turner <mattst88@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-m68k@lists.linux-m68k.org
-Cc: linux-mips@vger.kernel.org
-Cc: linux-riscv@lists.infradead.org
-Cc: sparclinux@vger.kernel.org
-Cc: linux-um@lists.infradead.org
-Cc: x86@kernel.org
-Cc: linux-xtensa@linux-xtensa.org
-Cc: openrisc@lists.librecores.org
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-s390@vger.kernel.org
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-
-Jason A. Donenfeld (17):
-  ia64: define get_cycles macro for arch-override
-  s390: define get_cycles macro for arch-override
-  parisc: define get_cycles macro for arch-override
-  alpha: define get_cycles macro for arch-override
-  powerpc: define get_cycles macro for arch-override
-  timekeeping: add raw clock fallback for random_get_entropy()
-  m68k: use fallback for random_get_entropy() instead of zero
-  riscv: use fallback for random_get_entropy() instead of zero
-  mips: use fallback for random_get_entropy() instead of just c0 random
-  arm: use fallback for random_get_entropy() instead of zero
-  openrisc: use fallback for random_get_entropy() instead of zero
-  nios2: use fallback for random_get_entropy() instead of zero
-  x86: use fallback for random_get_entropy() instead of zero
-  um: use fallback for random_get_entropy() instead of zero
-  sparc: use fallback for random_get_entropy() instead of zero
-  xtensa: use fallback for random_get_entropy() instead of zero
-  random: insist on random_get_entropy() existing in order to simplify
-
- arch/alpha/include/asm/timex.h    |  1 +
- arch/arm/include/asm/timex.h      |  1 +
- arch/ia64/include/asm/timex.h     |  1 +
- arch/m68k/include/asm/timex.h     |  2 +-
- arch/mips/include/asm/timex.h     | 17 +++---
- arch/nios2/include/asm/timex.h    |  3 ++
- arch/openrisc/include/asm/timex.h |  3 ++
- arch/parisc/include/asm/timex.h   |  3 +-
- arch/powerpc/include/asm/timex.h  |  1 +
- arch/riscv/include/asm/timex.h    |  2 +-
- arch/s390/include/asm/timex.h     |  1 +
- arch/sparc/include/asm/timex_32.h |  4 +-
- arch/um/include/asm/timex.h       |  9 +---
- arch/x86/include/asm/timex.h      | 10 ++++
- arch/x86/include/asm/tsc.h        |  4 +-
- arch/xtensa/include/asm/timex.h   |  6 +--
- drivers/char/random.c             | 89 ++++++++++---------------------
- include/linux/timex.h             |  8 +++
- kernel/time/timekeeping.c         | 10 ++++
- 19 files changed, 87 insertions(+), 88 deletions(-)
-
--- 
-2.35.1
-
+>> Then this definition will conflict with the implementation of x86/powerpc
+>> and cause compilation errors as follow:
+>>
+>> Fixes: ec6347bb4339 ("x86, powerpc: Rename memcpy_mcsafe() to copy_mc_to_{user, kernel}()")
+>> Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
+>> ---
+>>   arch/powerpc/include/asm/uaccess.h | 1 +
+> 
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+> 
+> cheers
+> .
