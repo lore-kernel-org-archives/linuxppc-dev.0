@@ -4,32 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D31E3C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Apr 2022 12:16:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EF37C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Apr 2022 12:17:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KmRw32tr8z3cBS
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Apr 2022 22:16:51 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KmRwT0gX3z3cJs
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Apr 2022 22:17:13 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KmRvC6j8pz2yQK
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KmRvC6mY5z2yY7
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Apr 2022 22:16:07 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4KmRv76MwSz4ySS;
- Sun, 24 Apr 2022 22:16:03 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4KmRv86fN0z4yST;
+ Sun, 24 Apr 2022 22:16:04 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <20220419114828.89843-1-atrajeev@linux.vnet.ibm.com>
-References: <20220419114828.89843-1-atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 1/2] powerpc/perf: Fix the power9 event alternatives
- array to have correct sort order
-Message-Id: <165080252225.1540533.7252624381403538783.b4-ty@ellerman.id.au>
-Date: Sun, 24 Apr 2022 22:15:22 +1000
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20220420141657.771442-1-mpe@ellerman.id.au>
+References: <20220420141657.771442-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/time: Always set decrementer in timer_interrupt()
+Message-Id: <165080251887.1540533.9539225847343635534.b4-ty@ellerman.id.au>
+Date: Sun, 24 Apr 2022 22:15:18 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -44,28 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kjain@linux.ibm.com, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: miguel.ojeda.sandonis@gmail.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 19 Apr 2022 17:18:27 +0530, Athira Rajeev wrote:
-> When scheduling a group of events, there are constraint checks
-> done to make sure all events can go in a group. Example, one of
-> the criteria is that events in a group cannot use same PMC.
-> But platform specific PMU supports alternative event for some
-> of the event codes. During perf_event_open, if any event
-> group doesn't match constraint check criteria, further lookup
-> is done to find alternative event.
+On Thu, 21 Apr 2022 00:16:57 +1000, Michael Ellerman wrote:
+> This is a partial revert of commit 0faf20a1ad16 ("powerpc/64s/interrupt:
+> Don't enable MSR[EE] in irq handlers unless perf is in use").
+> 
+> Prior to that commit, we always set the decrementer in
+> timer_interrupt(), to clear the timer interrupt. Otherwise we could end
+> up continuously taking timer interrupts.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/2] powerpc/perf: Fix the power9 event alternatives array to have correct sort order
-      https://git.kernel.org/powerpc/c/0dcad700bb2776e3886fe0a645a4bf13b1e747cd
-[2/2] powerpc/perf: Fix the power10 event alternatives array to have correct sort order
-      https://git.kernel.org/powerpc/c/c6cc9a852f123301d5271f1484df8e961b2b64f1
+[1/1] powerpc/time: Always set decrementer in timer_interrupt()
+      https://git.kernel.org/powerpc/c/d2b9be1f4af5cabed1ee5bb341f887f64b1c1669
 
 cheers
