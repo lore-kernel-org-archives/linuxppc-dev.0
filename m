@@ -4,54 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8AA5C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 09:10:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EAD3C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 09:37:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KpCd40ll1z3bwQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 19:10:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com;
- envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KpCcX2Nj6z2xtQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2022 19:09:31 +1000 (AEST)
-Received: from kwepemi100023.china.huawei.com (unknown [172.30.72.54])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4KpCbz5DxlzgYkt;
- Wed, 27 Apr 2022 17:09:03 +0800 (CST)
-Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- kwepemi100023.china.huawei.com (7.221.188.59) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 27 Apr 2022 17:09:21 +0800
-Received: from [10.174.179.234] (10.174.179.234) by
- kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 27 Apr 2022 17:09:20 +0800
-Message-ID: <6b18fed1-f802-b15c-95d9-718a48edbbfc@huawei.com>
-Date: Wed, 27 Apr 2022 17:09:19 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
-Subject: Re: [PATCH -next v4 0/7]arm64: add machine check safe support
-To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
- Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
- <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
- <bp@alien8.de>, Robin Murphy <robin.murphy@arm.com>, Dave Hansen
- <dave.hansen@linux.intel.com>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- <x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
-References: <20220420030418.3189040-1-tongtiangen@huawei.com>
-From: Tong Tiangen <tongtiangen@huawei.com>
-In-Reply-To: <20220420030418.3189040-1-tongtiangen@huawei.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KpDDk6Fvqz3bqb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 19:37:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PdD90UxR;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=PdD90UxR; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KpDCv6QCxz2ynk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2022 19:36:43 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 23R9VF8F005799;
+ Wed, 27 Apr 2022 09:36:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : content-transfer-encoding
+ : mime-version; s=pp1; bh=lQUmU302y0ZV4pqPfG/ZoKUT7BO6PhToVDMpojVcdFg=;
+ b=PdD90UxRQlKrfEvELJlaiSO1dgLRUpdopSj+jpb/3j9vQ4+uHBIZ9fohqv5eGEMPuT0q
+ 3ckpGO8YCDwpj1/+Di2g2aEZ4dZG7svSnKoRkexD8cfPQj78jKpDf9AU/72TB1gKp1tc
+ bYq5Lx+8m713Xqsr3cX28oilH96374ZUJLBQV1WT/OxSL+GYPf0XKPAt4FrC1X/X0Btp
+ BwdnkgrbVbfmwZo2uFNDRNSjDB5E6tTqVmmu/xPlcZWYCNHp7klSBVty2HwvuepXQdKD
+ uxBWaPISfxec6Pc5g6mey97z3TbotO4iW8sb17ejKMrqTmkgfegHQMVm/0PTqybX7dGa Kg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3fprrpju7g-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 27 Apr 2022 09:36:34 +0000
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+ by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 23R8cLJD003924;
+ Wed, 27 Apr 2022 09:36:34 GMT
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3fprrpju64-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 27 Apr 2022 09:36:33 +0000
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 23R9T8io002453;
+ Wed, 27 Apr 2022 09:36:30 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma06fra.de.ibm.com with ESMTP id 3fm8qhmg3c-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 27 Apr 2022 09:36:30 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 23R9aS1T7864612
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 27 Apr 2022 09:36:28 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 271F74C040;
+ Wed, 27 Apr 2022 09:36:28 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8070E4C044;
+ Wed, 27 Apr 2022 09:36:25 +0000 (GMT)
+Received: from li-NotSettable.ibm.com.com (unknown [9.43.116.196])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 27 Apr 2022 09:36:25 +0000 (GMT)
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH 2/2] recordmcount: Handle sections with no non-weak symbols
+Date: Wed, 27 Apr 2022 15:01:22 +0530
+Message-Id: <1b9566f0e7185fb8fd8ef2535add7a081501ccc8.1651047542.git.naveen.n.rao@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <cover.1651047542.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1651047542.git.naveen.n.rao@linux.vnet.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: KHAVq4zAWf7_bn3DJWOnC-5y1JfmZRR9
+X-Proofpoint-ORIG-GUID: qElIFTVJgarvhMuQW1C1y3As75N8hl1f
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.174.179.234]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- kwepemm600017.china.huawei.com (7.193.23.234)
-X-CFilter-Loop: Reflected
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
+ definitions=2022-04-27_03,2022-04-26_02,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 mlxlogscore=944
+ impostorscore=0 priorityscore=1501 malwarescore=0 lowpriorityscore=0
+ mlxscore=0 adultscore=0 spamscore=0 phishscore=0 bulkscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2202240000 definitions=main-2204270063
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,103 +106,225 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Xie XiuQi <xiexiuqi@huawei.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Guohanjun <guohanjun@huawei.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: Nathan Chancellor <nathan@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ llvm@lists.linux.dev, Nick Desaulniers <ndesaulniers@google.com>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Mark, James, Robin, kindly ping...
+Kernel builds on powerpc are failing with the below error [1]:
+      CC      kernel/kexec_file.o
+    Cannot find symbol for section 9: .text.unlikely.
+    kernel/kexec_file.o: failed
 
-Thanks.
+Since commit d1bcae833b32f1 ("ELF: Don't generate unused section
+symbols") [2], binutils started dropping section symbols that it thought
+were unused.  This isn't an issue in general, but with kexec_file.c, gcc
+is placing kexec_arch_apply_relocations[_add] into a separate
+.text.unlikely section and the section symbol ".text.unlikely" is being
+dropped. Due to this, recordmcount is unable to find a non-weak symbol
+in .text.unlikely to generate a relocation record against.
 
-在 2022/4/20 11:04, Tong Tiangen 写道:
-> With the increase of memory capacity and density, the probability of
-> memory error increases. The increasing size and density of server RAM
-> in the data center and cloud have shown increased uncorrectable memory
-> errors.
-> 
-> Currently, the kernel has a mechanism to recover from hardware memory
-> errors. This patchset provides an new recovery mechanism.
-> 
-> For arm64, the hardware memory error handling is do_sea() which divided
-> into two cases:
->   1. The user state consumed the memory errors, the solution is kill the
->      user process and isolate the error page.
->   2. The kernel state consumed the memory errors, the solution is panic.
-> 
-> For case 2, Undifferentiated panic maybe not the optimal choice, it can be
-> handled better, in some scenes, we can avoid panic, such as uaccess, if the
-> uaccess fails due to memory error, only the user process will be affected,
-> kill the user process and isolate the user page with hardware memory errors
-> is a better choice.
-> 
-> This patchset can be divided into three parts:
->   1. Patch 0/1/4    - make some minor fixes to the associated code.
->   2. Patch 3      - arm64 add support for machine check safe framework.
->   3. Pathc 5/6/7  - arm64 add uaccess and cow to machine check safe.
-> 
-> Since V4:
->   1. According to Robin's suggestion, direct modify user_ldst and
->   user_ldp in asm-uaccess.h and modify mte.S.
->   2. Add new macro USER_MC in asm-uaccess.h, used in copy_from_user.S
->   and copy_to_user.S.
->   3. According to Robin's suggestion, using micro in copy_page_mc.S to
->   simplify code.
->   4. According to KeFeng's suggestion, modify powerpc code in patch1.
->   5. According to KeFeng's suggestion, modify mm/extable.c and some code
->   optimization.
-> 
-> Since V3:
->   1. According to Mark's suggestion, all uaccess can be recovered due to
->      memory error.
->   2. Scenario pagecache reading is also supported as part of uaccess
->      (copy_to_user()) and duplication code problem is also solved.
->      Thanks for Robin's suggestion.
->   3. According Mark's suggestion, update commit message of patch 2/5.
->   4. According Borisllav's suggestion, update commit message of patch 1/5.
-> 
-> Since V2:
->   1.Consistent with PPC/x86, Using CONFIG_ARCH_HAS_COPY_MC instead of
->     ARM64_UCE_KERNEL_RECOVERY.
->   2.Add two new scenes, cow and pagecache reading.
->   3.Fix two small bug(the first two patch).
-> 
-> V1 in here:
-> https://lore.kernel.org/lkml/20220323033705.3966643-1-tongtiangen@huawei.com/
-> 
-> Robin Murphy (1):
->    arm64: mte: Clean up user tag accessors
-> 
-> Tong Tiangen (6):
->    x86, powerpc: fix function define in copy_mc_to_user
->    arm64: fix types in copy_highpage()
->    arm64: add support for machine check error safe
->    arm64: add copy_{to, from}_user to machine check safe
->    arm64: add {get, put}_user to machine check safe
->    arm64: add cow to machine check safe
-> 
->   arch/arm64/Kconfig                   |  1 +
->   arch/arm64/include/asm/asm-extable.h | 33 +++++++++++
->   arch/arm64/include/asm/asm-uaccess.h | 15 +++--
->   arch/arm64/include/asm/extable.h     |  1 +
->   arch/arm64/include/asm/page.h        | 10 ++++
->   arch/arm64/include/asm/uaccess.h     |  4 +-
->   arch/arm64/lib/Makefile              |  2 +
->   arch/arm64/lib/copy_from_user.S      | 18 +++---
->   arch/arm64/lib/copy_page_mc.S        | 86 ++++++++++++++++++++++++++++
->   arch/arm64/lib/copy_to_user.S        | 18 +++---
->   arch/arm64/lib/mte.S                 |  4 +-
->   arch/arm64/mm/copypage.c             | 36 ++++++++++--
->   arch/arm64/mm/extable.c              | 33 +++++++++++
->   arch/arm64/mm/fault.c                | 27 ++++++++-
->   arch/powerpc/include/asm/uaccess.h   |  1 +
->   arch/x86/include/asm/uaccess.h       |  1 +
->   include/linux/highmem.h              |  8 +++
->   include/linux/uaccess.h              |  9 +++
->   mm/memory.c                          |  2 +-
->   19 files changed, 278 insertions(+), 31 deletions(-)
->   create mode 100644 arch/arm64/lib/copy_page_mc.S
-> 
+Handle this by falling back to a weak symbol, similar to what objtool
+does in commit 44f6a7c0755d8d ("objtool: Fix seg fault with Clang
+non-section symbols"). Note that this approach can result in duplicate
+addresses in the final vmlinux mcount location table. A previous commit
+updated ftrace to skip such duplicate entries.
+
+After this commit, relocation records for __mcount_loc for kexec_file.o
+now include two entries with the weak functions
+arch_kexec_apply_relocations() and arch_kexec_apply_relocation_add() as
+the relocation bases:
+
+  ...
+  0000000000000080 R_PPC64_ADDR64    .text+0x0000000000001d34
+  0000000000000088 R_PPC64_ADDR64    .text+0x0000000000001fec
+  0000000000000090 R_PPC64_ADDR64    arch_kexec_apply_relocations_add+0x000000000000000c
+  0000000000000098 R_PPC64_ADDR64    arch_kexec_apply_relocations+0x000000000000000c
+
+Powerpc does not override these functions today, so these get converted
+to correct offsets in the mcount location table in vmlinux.
+
+If one or both of these weak functions are overridden in future, in the
+final vmlinux mcount table, references to these will change over to the
+non-weak variant which has its own mcount location entry. As such, there
+will now be two entries for these functions, both pointing to the same
+non-weak location. We don't need the non-weak locations since they will
+never be executed. Ftrace skips the duplicate entries due to a previous
+commit.
+
+[1] https://github.com/linuxppc/issues/issues/388
+[2] https://sourceware.org/git/?p=binutils-gdb.git;a=commit;h=d1bcae833b32f1
+
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ scripts/recordmcount.h | 86 +++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 73 insertions(+), 13 deletions(-)
+
+diff --git a/scripts/recordmcount.h b/scripts/recordmcount.h
+index 1e9baa5c4fc6ef..0c79a2d2b47493 100644
+--- a/scripts/recordmcount.h
++++ b/scripts/recordmcount.h
+@@ -25,6 +25,7 @@
+ #undef sift_rel_mcount
+ #undef nop_mcount
+ #undef find_secsym_ndx
++#undef find_sym_ndx
+ #undef __has_rel_mcount
+ #undef has_rel_mcount
+ #undef tot_relsize
+@@ -60,6 +61,7 @@
+ # define sift_rel_mcount	sift64_rel_mcount
+ # define nop_mcount		nop_mcount_64
+ # define find_secsym_ndx	find64_secsym_ndx
++# define find_sym_ndx		find64_sym_ndx
+ # define __has_rel_mcount	__has64_rel_mcount
+ # define has_rel_mcount		has64_rel_mcount
+ # define tot_relsize		tot64_relsize
+@@ -98,6 +100,7 @@
+ # define sift_rel_mcount	sift32_rel_mcount
+ # define nop_mcount		nop_mcount_32
+ # define find_secsym_ndx	find32_secsym_ndx
++# define find_sym_ndx		find32_sym_ndx
+ # define __has_rel_mcount	__has32_rel_mcount
+ # define has_rel_mcount		has32_rel_mcount
+ # define tot_relsize		tot32_relsize
+@@ -392,6 +395,51 @@ static void get_sym_str_and_relp(Elf_Shdr const *const relhdr,
+ 	*relp = rel0;
+ }
+ 
++/*
++ * Find a symbol in the given section containing the instruction offset passed
++ * in r_offset, to be used in generating the relocation record for the mcount
++ * location. This is used if there were no local/global symbols in the given
++ * section to be used as the base. Weak symbols are ok, and are expected to
++ * result in duplicate mcount locations which get dropped by ftrace.
++ */
++static int find_sym_ndx(unsigned const txtndx,
++			 char const *const txtname,
++			 uint_t *const recvalp,
++			 unsigned int *sym_index,
++			 Elf_Shdr const *const symhdr,
++			 Elf32_Word const *symtab,
++			 Elf32_Word const *symtab_shndx,
++			 unsigned const r_offset,
++			 Elf_Ehdr const *const ehdr)
++{
++	Elf_Sym const *const sym0 = (Elf_Sym const *)(_w(symhdr->sh_offset)
++		+ (void *)ehdr);
++	unsigned const nsym = _w(symhdr->sh_size) / _w(symhdr->sh_entsize);
++	Elf_Sym const *symp;
++	unsigned t;
++
++	for (symp = sym0, t = nsym; t; --t, ++symp) {
++		if (txtndx == get_symindex(symp, symtab, symtab_shndx)) {
++			/* function symbols on ARM have quirks, avoid them */
++			if (w2(ehdr->e_machine) == EM_ARM &&
++			    ELF_ST_TYPE(symp->st_info) == STT_FUNC)
++				continue;
++
++			if (r_offset >= _w(symp->st_value) &&
++			    r_offset < _w(symp->st_value) + _w(symp->st_size)) {
++				*recvalp = _w(symp->st_value);
++				*sym_index = symp - sym0;
++				return 0;
++			}
++		}
++	}
++
++	fprintf(stderr, "Cannot find symbol containing offset %u for section %u: %s.\n",
++		r_offset, txtndx, txtname);
++
++	return -1;
++}
++
+ /*
+  * Look at the relocations in order to find the calls to mcount.
+  * Accumulate the section offsets that are found, and their relocation info,
+@@ -402,9 +450,14 @@ static uint_t *sift_rel_mcount(uint_t *mlocp,
+ 			       Elf_Rel **const mrelpp,
+ 			       Elf_Shdr const *const relhdr,
+ 			       Elf_Ehdr const *const ehdr,
+-			       unsigned const recsym,
+-			       uint_t const recval,
+-			       unsigned const reltype)
++			       unsigned recsym,
++			       uint_t recval,
++			       unsigned const reltype,
++			       unsigned int no_secsym,
++			       char const *const txtname,
++			       Elf_Shdr const *const shdr0,
++			       Elf32_Word const *symtab,
++			       Elf32_Word const *symtab_shndx)
+ {
+ 	uint_t *const mloc0 = mlocp;
+ 	Elf_Rel *mrelp = *mrelpp;
+@@ -415,6 +468,7 @@ static uint_t *sift_rel_mcount(uint_t *mlocp,
+ 	unsigned const nrel = _w(relhdr->sh_size) / rel_entsize;
+ 	unsigned mcountsym = 0;
+ 	unsigned t;
++	uint_t addend;
+ 
+ 	get_sym_str_and_relp(relhdr, ehdr, &sym0, &str0, &relp);
+ 
+@@ -424,8 +478,13 @@ static uint_t *sift_rel_mcount(uint_t *mlocp,
+ 
+ 		if (mcountsym && mcountsym == Elf_r_sym(relp) &&
+ 				!is_fake_mcount(relp)) {
+-			uint_t const addend =
+-				_w(_w(relp->r_offset) - recval + mcount_adjust);
++			if (no_secsym && find_sym_ndx(w(relhdr->sh_info),
++						      txtname, &recval, &recsym,
++						      &shdr0[w(relhdr->sh_link)],
++						      symtab, symtab_shndx,
++						      _w(relp->r_offset), ehdr))
++				return 0;
++			addend = _w(_w(relp->r_offset) - recval + mcount_adjust);
+ 			mrelp->r_offset = _w(offbase
+ 				+ ((void *)mlocp - (void *)mloc0));
+ 			Elf_r_info(mrelp, recsym, reltype);
+@@ -544,8 +603,6 @@ static int find_secsym_ndx(unsigned const txtndx,
+ 			return 0;
+ 		}
+ 	}
+-	fprintf(stderr, "Cannot find symbol for section %u: %s.\n",
+-		txtndx, txtname);
+ 	return -1;
+ }
+ 
+@@ -660,22 +717,25 @@ static int do_func(Elf_Ehdr *const ehdr, char const *const fname,
+ 			goto out; /* Nothing to be done; don't append! */
+ 		}
+ 		if (txtname && is_mcounted_section_name(txtname)) {
+-			unsigned int recsym;
++			unsigned int recsym = 0, no_secsym = 0;
+ 			uint_t recval = 0;
+ 
+ 			symsec_sh_link = w(relhdr->sh_link);
+-			result = find_secsym_ndx(w(relhdr->sh_info), txtname,
++			if (find_secsym_ndx(w(relhdr->sh_info), txtname,
+ 						&recval, &recsym,
+ 						&shdr0[symsec_sh_link],
+ 						symtab, symtab_shndx,
+-						ehdr);
+-			if (result)
+-				goto out;
++						ehdr))
++				no_secsym = 1;
+ 
+ 			rel_entsize = _w(relhdr->sh_entsize);
+ 			mlocp = sift_rel_mcount(mlocp,
+ 				(void *)mlocp - (void *)mloc0, &mrelp,
+-				relhdr, ehdr, recsym, recval, reltype);
++				relhdr, ehdr, recsym, recval, reltype,
++				no_secsym, txtname, shdr0, symtab,
++				symtab_shndx);
++			if (!mlocp)
++				goto out;
+ 		} else if (txtname && (warn_on_notrace_sect || make_nop)) {
+ 			/*
+ 			 * This section is ignored by ftrace, but still
+-- 
+2.35.1
+
