@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC782C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 07:55:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50A86C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 07:55:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kp9yc4FX4z3bfC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 17:55:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kp9zF5wgjz3bvs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 17:55:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=uO9TCJkv;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=B1q+Beee;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=walle.cc (client-ip=176.9.125.105; helo=ssl.serverraum.org;
- envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
+ smtp.mailfrom=walle.cc (client-ip=2a01:4f8:151:8464::1:2;
+ helo=ssl.serverraum.org; envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256
- header.s=mail2016061301 header.b=uO9TCJkv; 
+ header.s=mail2016061301 header.b=B1q+Beee; 
  dkim-atps=neutral
-Received: from ssl.serverraum.org (ssl.serverraum.org [176.9.125.105])
+Received: from ssl.serverraum.org (ssl.serverraum.org
+ [IPv6:2a01:4f8:151:8464::1:2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kp9xD0d0Xz2xnC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2022 17:53:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kp9xD3LZKz2xtQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2022 17:53:52 +1000 (AEST)
 Received: from mwalle01.kontron.local. (unknown [213.135.10.150])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-384) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by ssl.serverraum.org (Postfix) with ESMTPSA id E55DB2224D;
+ by ssl.serverraum.org (Postfix) with ESMTPSA id 7468922249;
  Wed, 27 Apr 2022 09:53:45 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc;
- s=mail2016061301; t=1651046026;
+ s=mail2016061301; t=1651046025;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=c8md0w7nTqGQ2WYhNmFqixpQ0s9YgN3QXjIFu39VBh0=;
- b=uO9TCJkvgR02p9dHf+IqBSj/GTs0FSB18noOSS5R5pUmXa9F/CkDd1wtBqpVwk4uuBq0EM
- /qPRAVeQwT86SD7HzkgVp+bcv3Kz07zr/lFy/WYLcUB5Cj7GtSfAKmkxnM2LEum0wG+nkm
- ef4VyieYBshjzDGdfwn1A7zS7fLdUEE=
+ bh=gcuTyEAl8fBHDAyAKfO+ZMUc6CSNaKRTQvrLjq6mLNE=;
+ b=B1q+Beee7HfLZkfm6FkYoks+RrPjBNjysiTOwYe6lQdWX3aoG/8Jw4NZjrNbBHHSgEAAHm
+ 3o0ChWtJiZeuSYBgvgcfSjRPcjs2wXQgZ8Ky1BRGMBRcQCYSXTgO6UAEFs0o/ZwNbNT9y2
+ PnNBTGv0efFpFqMcrEQNgob1T1PDimo=
 From: Michael Walle <michael@walle.cc>
 To: Rob Herring <robh+dt@kernel.org>,
  Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-Subject: [PATCH v3 3/4] dt-bindings: interrupt-controller: fsl,
- ls-extirq: convert to YAML
-Date: Wed, 27 Apr 2022 09:53:37 +0200
-Message-Id: <20220427075338.1156449-4-michael@walle.cc>
+Subject: [PATCH v3 2/4] arm64: dts: freescale: reduce the interrup-map-mask
+Date: Wed, 27 Apr 2022 09:53:36 +0200
+Message-Id: <20220427075338.1156449-3-michael@walle.cc>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20220427075338.1156449-1-michael@walle.cc>
 References: <20220427075338.1156449-1-michael@walle.cc>
@@ -73,220 +73,83 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Convert the fsl,ls-extirq binding to the new YAML format.
-
-In contrast to the original binding documentation, there are three
-compatibles which are used in their corresponding device trees which
-have a specific compatible and the (already documented) fallback
-compatible:
- - "fsl,ls1046a-extirq", "fsl,ls1043a-extirq"
- - "fsl,ls2080a-extirq", "fsl,ls1088a-extirq"
- - "fsl,lx2160a-extirq", "fsl,ls1088a-extirq"
-
-Depending on the number of the number of the external IRQs which is
-usually 12 except for the LS1021A where there are only 6, the
-interrupt-map-mask was reduced from 0xffffffff to 0xf and 0x7
-respectively and the number of interrupt-map entries have to
-match.
+Reduce the interrupt-map-mask of the external interrupt controller to
+0xf to align with the devicetree schema.
 
 Signed-off-by: Michael Walle <michael@walle.cc>
 ---
-changes since v2:
- - drop $ref to interrupt-controller.yaml
- - use a more strict interrupt-map-mask and make it conditional on SoC
+ arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi | 2 +-
+ arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi | 2 +-
+ arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi | 2 +-
+ arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi | 2 +-
+ arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
 
-changes since v1:
- - new patch
-
- .../interrupt-controller/fsl,ls-extirq.txt    |  53 --------
- .../interrupt-controller/fsl,ls-extirq.yaml   | 118 ++++++++++++++++++
- 2 files changed, 118 insertions(+), 53 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/interrupt-controller/fsl,ls-extirq.txt
- create mode 100644 Documentation/devicetree/bindings/interrupt-controller/fsl,ls-extirq.yaml
-
-diff --git a/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-extirq.txt b/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-extirq.txt
-deleted file mode 100644
-index 4d47df1a5c91..000000000000
---- a/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-extirq.txt
-+++ /dev/null
-@@ -1,53 +0,0 @@
--* Freescale Layerscape external IRQs
--
--Some Layerscape SOCs (LS1021A, LS1043A, LS1046A
--LS1088A, LS208xA, LX216xA) support inverting
--the polarity of certain external interrupt lines.
--
--The device node must be a child of the node representing the
--Supplemental Configuration Unit (SCFG).
--
--Required properties:
--- compatible: should be "fsl,<soc-name>-extirq", e.g. "fsl,ls1021a-extirq".
--  "fsl,ls1043a-extirq": for LS1043A, LS1046A.
--  "fsl,ls1088a-extirq": for LS1088A, LS208xA, LX216xA.
--- #interrupt-cells: Must be 2. The first element is the index of the
--  external interrupt line. The second element is the trigger type.
--- #address-cells: Must be 0.
--- interrupt-controller: Identifies the node as an interrupt controller
--- reg: Specifies the Interrupt Polarity Control Register (INTPCR) in
--  the SCFG or the External Interrupt Control Register (IRQCR) in
--  the ISC.
--- interrupt-map: Specifies the mapping from external interrupts to GIC
--  interrupts.
--- interrupt-map-mask: Must be <0xffffffff 0>.
--
--Example:
--	scfg: scfg@1570000 {
--		compatible = "fsl,ls1021a-scfg", "syscon";
--		reg = <0x0 0x1570000 0x0 0x10000>;
--		big-endian;
--		#address-cells = <1>;
--		#size-cells = <1>;
--		ranges = <0x0 0x0 0x1570000 0x10000>;
--
--		extirq: interrupt-controller@1ac {
--			compatible = "fsl,ls1021a-extirq";
--			#interrupt-cells = <2>;
--			#address-cells = <0>;
--			interrupt-controller;
--			reg = <0x1ac 4>;
--			interrupt-map =
--				<0 0 &gic GIC_SPI 163 IRQ_TYPE_LEVEL_HIGH>,
--				<1 0 &gic GIC_SPI 164 IRQ_TYPE_LEVEL_HIGH>,
--				<2 0 &gic GIC_SPI 165 IRQ_TYPE_LEVEL_HIGH>,
--				<3 0 &gic GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH>,
--				<4 0 &gic GIC_SPI 168 IRQ_TYPE_LEVEL_HIGH>,
--				<5 0 &gic GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH>;
--			interrupt-map-mask = <0xffffffff 0x0>;
--		};
--	};
--
--
--	interrupts-extended = <&gic GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>,
--			      <&extirq 1 IRQ_TYPE_LEVEL_LOW>;
-diff --git a/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-extirq.yaml b/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-extirq.yaml
-new file mode 100644
-index 000000000000..887e565b9573
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-extirq.yaml
-@@ -0,0 +1,118 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/interrupt-controller/fsl,ls-extirq.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Freescale Layerscape External Interrupt Controller
-+
-+maintainers:
-+  - Shawn Guo <shawnguo@kernel.org>
-+  - Li Yang <leoyang.li@nxp.com>
-+
-+description: |
-+  Some Layerscape SOCs (LS1021A, LS1043A, LS1046A LS1088A, LS208xA,
-+  LX216xA) support inverting the polarity of certain external interrupt
-+  lines.
-+
-+properties:
-+  compatible:
-+    oneOf:
-+      - enum:
-+          - fsl,ls1021a-extirq
-+          - fsl,ls1043a-extirq
-+          - fsl,ls1088a-extirq
-+      - items:
-+          - enum:
-+              - fsl,ls1046a-extirq
-+          - const: fsl,ls1043a-extirq
-+      - items:
-+          - enum:
-+              - fsl,ls2080a-extirq
-+              - fsl,lx2160a-extirq
-+          - const: fsl,ls1088a-extirq
-+
-+  '#interrupt-cells':
-+    const: 2
-+
-+  '#address-cells':
-+    const: 0
-+
-+  interrupt-controller: true
-+
-+  reg:
-+    maxItems: 1
-+    description:
-+      Specifies the Interrupt Polarity Control Register (INTPCR) in the
-+      SCFG or the External Interrupt Control Register (IRQCR) in the ISC.
-+
-+  interrupt-map:
-+    description: Specifies the mapping from external interrupts to GIC interrupts.
-+
-+  interrupt-map-mask: true
-+
-+required:
-+  - compatible
-+  - '#interrupt-cells'
-+  - '#address-cells'
-+  - interrupt-controller
-+  - reg
-+  - interrupt-map
-+  - interrupt-map-mask
-+
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - fsl,ls1021a-extirq
-+    then:
-+      properties:
-+        interrupt-map:
-+          minItems: 6
-+          maxItems: 6
-+        interrupt-map-mask:
-+          items:
-+            - const: 0x7
-+            - const: 0
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - fsl,ls1043a-extirq
-+              - fsl,ls1046a-extirq
-+              - fsl,ls1088a-extirq
-+              - fsl,ls2080a-extirq
-+              - fsl,lx2160a-extirq
-+    then:
-+      properties:
-+        interrupt-map:
-+          minItems: 12
-+          maxItems: 12
-+        interrupt-map-mask:
-+          items:
-+            - const: 0xf
-+            - const: 0
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    interrupt-controller@1ac {
-+            compatible = "fsl,ls1021a-extirq";
-+            #interrupt-cells = <2>;
-+            #address-cells = <0>;
-+            interrupt-controller;
-+            reg = <0x1ac 4>;
-+            interrupt-map =
-+                    <0 0 &gic GIC_SPI 163 IRQ_TYPE_LEVEL_HIGH>,
-+                    <1 0 &gic GIC_SPI 164 IRQ_TYPE_LEVEL_HIGH>,
-+                    <2 0 &gic GIC_SPI 165 IRQ_TYPE_LEVEL_HIGH>,
-+                    <3 0 &gic GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH>,
-+                    <4 0 &gic GIC_SPI 168 IRQ_TYPE_LEVEL_HIGH>,
-+                    <5 0 &gic GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH>;
-+            interrupt-map-mask = <0x7 0x0>;
-+    };
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
+index 35d1939e690b..46cc8d45ca65 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
+@@ -335,7 +335,7 @@ extirq: interrupt-controller@1ac {
+ 					<9 0 &gic GIC_SPI 149 IRQ_TYPE_LEVEL_HIGH>,
+ 					<10 0 &gic GIC_SPI 150 IRQ_TYPE_LEVEL_HIGH>,
+ 					<11 0 &gic GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>;
+-				interrupt-map-mask = <0xffffffff 0x0>;
++				interrupt-map-mask = <0xf 0x0>;
+ 			};
+ 		};
+ 
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+index 4e7bd04d9798..3e8def8fe1b4 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+@@ -341,7 +341,7 @@ extirq: interrupt-controller@1ac {
+ 					<9 0 &gic GIC_SPI 149 IRQ_TYPE_LEVEL_HIGH>,
+ 					<10 0 &gic GIC_SPI 150 IRQ_TYPE_LEVEL_HIGH>,
+ 					<11 0 &gic GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>;
+-				interrupt-map-mask = <0xffffffff 0x0>;
++				interrupt-map-mask = <0xf 0x0>;
+ 			};
+ 		};
+ 
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+index 18e529118476..33c5ad1b9b96 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+@@ -265,7 +265,7 @@ extirq: interrupt-controller@14 {
+ 					<9 0 &gic GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>,
+ 					<10 0 &gic GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>,
+ 					<11 0 &gic GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
+-				interrupt-map-mask = <0xffffffff 0x0>;
++				interrupt-map-mask = <0xf 0x0>;
+ 			};
+ 		};
+ 
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
+index 1282b61da8a5..3f767994b02d 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
+@@ -305,7 +305,7 @@ extirq: interrupt-controller@14 {
+ 					<9 0 &gic GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>,
+ 					<10 0 &gic GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>,
+ 					<11 0 &gic GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
+-				interrupt-map-mask = <0xffffffff 0x0>;
++				interrupt-map-mask = <0xf 0x0>;
+ 			};
+ 		};
+ 
+diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi b/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+index 82bd8c0f318b..47ea854720ce 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+@@ -698,7 +698,7 @@ extirq: interrupt-controller@14 {
+ 					<9 0 &gic GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>,
+ 					<10 0 &gic GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>,
+ 					<11 0 &gic GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
+-				interrupt-map-mask = <0xffffffff 0x0>;
++				interrupt-map-mask = <0xf 0x0>;
+ 			};
+ 		};
+ 
 -- 
 2.30.2
 
