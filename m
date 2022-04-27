@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A672C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 01:51:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D124C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 01:51:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KpdrG5yCFz3f9P
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 11:51:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kpdrx5TLPz3fw1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 11:51:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=XhhicIla;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=IRi7rvSS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=igalia.com (client-ip=178.60.130.6; helo=fanzine2.igalia.com;
  envelope-from=gpiccoli@igalia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256
- header.s=20170329 header.b=XhhicIla; dkim-atps=neutral
+ header.s=20170329 header.b=IRi7rvSS; dkim-atps=neutral
 Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KpZbD63fcz3bcj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2022 09:24:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KpZbh1lRqz2xrs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2022 09:25:04 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com; 
  s=20170329;
  h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:
@@ -31,23 +31,23 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
  Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
  :Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
  List-Post:List-Owner:List-Archive;
- bh=r/T7YOY0VHwWAfHSEqxJa3Wt3qfvSExYRCUKLKE/qpM=; b=XhhicIlaxPAENQgGkNSZu/8JWa
- MoKMtLET2WEey/cUMjdoOeeZp/qIHF9AnIAQ1U9UG9ceTx5YsNvbqlEug3W8sTqjMADP3kqZkWGXE
- 81ePHhsZB9/Fl6O5VwXVIzqdUd2GxbFqpTJI3oISOjep5UHhEIJ1gEAyfbzeKWGz11qqm1H8SqNmy
- PIXViapEJaVN3g1qVA0ll8xOHoXY2Fth5HpQAgahG3Orvdyx32C20SUgZY0+6ymNqW2eIcskQ9hv0
- PnRYqaVu+GNdXU/wxDKHHXg22u4+P2b/VN7O5/RK6RnCNvbziWOBIpkgY1JIKXd1EMfFHtVMCWu3y
- LPmztM1w==;
+ bh=5Wppui/4+4q1PWThaAiWQx32MHyg/obGwoGJE8vkLrA=; b=IRi7rvSSPrrOoy0S56lz2UJRtC
+ W1l3fBj8xVxgLD6KW8zqEI0EfCOiXJW5ZsYXn2WVzqXNxfRkE81Vja/726PNP5gfd+ffe5+sSmine
+ oDSQIDYY0LQtz/eUpNO/O3flF5w2323kd1e2RLGfs/+wuvi6OZjtA/cAWJ8y4DX82MWtYSxfkdu78
+ HNn3Scwjr+UIudJHWW8i9wi/BmFAgD6nNrsW4GexdH6x6p4zIq9laE/2q1VZR7YM8s/7fvEfIhVyD
+ gNu+c9943row/xgSKe8GkhslCs6aT6+524Fp09jB/vhA283Kkt9uCVO689z6MyVp8qdL3zZfdmmrO
+ nvvrYfqw==;
 Received: from [179.113.53.197] (helo=localhost)
  by fanzine2.igalia.com with esmtpsa 
  (Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
- id 1njqTt-0001xj-VW; Thu, 28 Apr 2022 00:49:58 +0200
+ id 1njqVG-00023b-GJ; Thu, 28 Apr 2022 00:51:23 +0200
 From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
 To: akpm@linux-foundation.org, bhe@redhat.com, pmladek@suse.com,
  kexec@lists.infradead.org
-Subject: [PATCH 01/30] x86/crash,
- reboot: Avoid re-disabling VMX in all CPUs on crash/restart
-Date: Wed, 27 Apr 2022 19:48:55 -0300
-Message-Id: <20220427224924.592546-2-gpiccoli@igalia.com>
+Subject: [PATCH 06/30] soc: bcm: brcmstb: Document panic notifier action and
+ remove useless header
+Date: Wed, 27 Apr 2022 19:49:00 -0300
+Message-Id: <20220427224924.592546-7-gpiccoli@igalia.com>
 X-Mailer: git-send-email 2.36.0
 In-Reply-To: <20220427224924.592546-1-gpiccoli@igalia.com>
 References: <20220427224924.592546-1-gpiccoli@igalia.com>
@@ -66,148 +66,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
- gregkh@linuxfoundation.org, peterz@infradead.org,
- alejandro.j.jimenez@oracle.com, linux-remoteproc@vger.kernel.org,
- feng.tang@intel.com, linux-mips@vger.kernel.org, hidehiro.kawai.ez@hitachi.com,
- sparclinux@vger.kernel.org, will@kernel.org, tglx@linutronix.de,
- linux-leds@vger.kernel.org, linux-s390@vger.kernel.org, mikelley@microsoft.com,
- john.ogness@linutronix.de, corbet@lwn.net, paulmck@kernel.org,
- fabiomirmar@gmail.com, x86@kernel.org, "David P . Reed" <dpreed@deepplum.com>,
- mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com,
- xen-devel@lists.xenproject.org, dyoung@redhat.com, vgoyal@redhat.com,
- linux-xtensa@linux-xtensa.org, dave.hansen@linux.intel.com,
- keescook@chromium.org, arnd@arndb.de, linux-pm@vger.kernel.org,
- coresight@lists.linaro.org, Sean Christopherson <seanjc@google.com>,
+ Markus Mayer <mmayer@broadcom.com>, gregkh@linuxfoundation.org,
+ peterz@infradead.org, alejandro.j.jimenez@oracle.com,
+ linux-remoteproc@vger.kernel.org, feng.tang@intel.com,
+ linux-mips@vger.kernel.org, hidehiro.kawai.ez@hitachi.com,
+ Justin Chen <justinpopo6@gmail.com>, sparclinux@vger.kernel.org,
+ will@kernel.org, tglx@linutronix.de, linux-leds@vger.kernel.org,
+ linux-s390@vger.kernel.org, Doug Berger <opendmb@gmail.com>,
+ mikelley@microsoft.com, john.ogness@linutronix.de, corbet@lwn.net,
+ paulmck@kernel.org, fabiomirmar@gmail.com, x86@kernel.org, mingo@redhat.com,
+ bcm-kernel-feedback-list@broadcom.com, xen-devel@lists.xenproject.org,
+ dyoung@redhat.com, vgoyal@redhat.com, linux-xtensa@linux-xtensa.org,
+ dave.hansen@linux.intel.com, keescook@chromium.org, arnd@arndb.de,
+ linux-pm@vger.kernel.org, coresight@lists.linaro.org,
  linux-um@lists.infradead.org, rostedt@goodmis.org, rcu@vger.kernel.org,
- bp@alien8.de, luto@kernel.org, linux-tegra@vger.kernel.org,
- openipmi-developer@lists.sourceforge.net, andriy.shevchenko@linux.intel.com,
- senozhatsky@chromium.org, linux-arm-kernel@lists.infradead.org,
- linux-edac@vger.kernel.org, jgross@suse.com, linux-parisc@vger.kernel.org,
- netdev@vger.kernel.org, kernel@gpiccoli.net, linux-kernel@vger.kernel.org,
- stern@rowland.harvard.edu, gpiccoli@igalia.com, d.hatayama@jp.fujitsu.com,
- mhiramat@kernel.org, kernel-dev@igalia.com, linux-alpha@vger.kernel.org,
- Paolo Bonzini <pbonzini@redhat.com>, vkuznets@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+ Florian Fainelli <f.fainelli@gmail.com>, bp@alien8.de, luto@kernel.org,
+ linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+ andriy.shevchenko@linux.intel.com, senozhatsky@chromium.org,
+ linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
+ jgross@suse.com, Lee Jones <lee.jones@linaro.org>,
+ linux-parisc@vger.kernel.org, netdev@vger.kernel.org, kernel@gpiccoli.net,
+ linux-kernel@vger.kernel.org, stern@rowland.harvard.edu, gpiccoli@igalia.com,
+ d.hatayama@jp.fujitsu.com, mhiramat@kernel.org, kernel-dev@igalia.com,
+ linux-alpha@vger.kernel.org, vkuznets@redhat.com,
+ Brian Norris <computersforpeace@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In the panic path we have a list of functions to be called, the panic
-notifiers - such callbacks perform various actions in the machine's
-last breath, and sometimes users want them to run before kdump. We
-have the parameter "crash_kexec_post_notifiers" for that. When such
-parameter is used, the function "crash_smp_send_stop()" is executed
-to poweroff all secondary CPUs through the NMI-shootdown mechanism;
-part of this process involves disabling virtualization features in
-all CPUs (except the main one).
+The panic notifier of this driver is very simple code-wise, just a memory
+write to a special position with some numeric code. But this is not clear
+from the semantic point-of-view, and there is no public documentation
+about that either.
 
-Now, in the emergency restart procedure we have also a way of
-disabling VMX in all CPUs, using the same NMI-shootdown mechanism;
-what happens though is that in case we already NMI-disabled all CPUs,
-the emergency restart fails due to a second addition of the same items
-in the NMI list, as per the following log output:
+After discussing this in the mailing-lists [0] and having Florian explained
+it very well, this patch just document that in the code for the future
+generations asking the same questions. Also, it removes a useless header.
 
-sysrq: Trigger a crash
-Kernel panic - not syncing: sysrq triggered crash
-[...]
-Rebooting in 2 seconds..
-list_add double add: new=<addr1>, prev=<addr2>, next=<addr1>.
-------------[ cut here ]------------
-kernel BUG at lib/list_debug.c:29!
-invalid opcode: 0000 [#1] PREEMPT SMP PTI
+[0] https://lore.kernel.org/lkml/781cafb0-8d06-8b56-907a-5175c2da196a@gmail.com
 
-In order to reproduce the problem, users just need to set the kernel
-parameter "crash_kexec_post_notifiers" *without* kdump set in any
-system with the VMX feature present.
-
-Since there is no benefit in re-disabling VMX in all CPUs in case
-it was already done, this patch prevents that by guarding the restart
-routine against doubly issuing NMIs unnecessarily. Notice we still
-need to disable VMX locally in the emergency restart.
-
-Fixes: ed72736183c4 ("x86/reboot: Force all cpus to exit VMX root if VMX is supported)
-Fixes: 0ee59413c967 ("x86/panic: replace smp_send_stop() with kdump friendly version in panic path")
-Cc: David P. Reed <dpreed@deepplum.com>
-Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>
-Cc: Sean Christopherson <seanjc@google.com>
+Fixes: 0b741b8234c8 ("soc: bcm: brcmstb: Add support for S2/S3/S5 suspend states (ARM)")
+Cc: Brian Norris <computersforpeace@gmail.com>
+Cc: Doug Berger <opendmb@gmail.com>
+Cc: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Justin Chen <justinpopo6@gmail.com>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Markus Mayer <mmayer@broadcom.com>
 Signed-off-by: Guilherme G. Piccoli <gpiccoli@igalia.com>
 ---
- arch/x86/include/asm/cpu.h |  1 +
- arch/x86/kernel/crash.c    |  8 ++++----
- arch/x86/kernel/reboot.c   | 14 ++++++++++++--
- 3 files changed, 17 insertions(+), 6 deletions(-)
+ drivers/soc/bcm/brcmstb/pm/pm-arm.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
-index 86e5e4e26fcb..b6a9062d387f 100644
---- a/arch/x86/include/asm/cpu.h
-+++ b/arch/x86/include/asm/cpu.h
-@@ -36,6 +36,7 @@ extern int _debug_hotplug_cpu(int cpu, int action);
- #endif
- #endif
+diff --git a/drivers/soc/bcm/brcmstb/pm/pm-arm.c b/drivers/soc/bcm/brcmstb/pm/pm-arm.c
+index 3cbb165d6e30..870686ae042b 100644
+--- a/drivers/soc/bcm/brcmstb/pm/pm-arm.c
++++ b/drivers/soc/bcm/brcmstb/pm/pm-arm.c
+@@ -25,7 +25,6 @@
+ #include <linux/kernel.h>
+ #include <linux/memblock.h>
+ #include <linux/module.h>
+-#include <linux/notifier.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/panic_notifier.h>
+@@ -664,7 +663,20 @@ static void __iomem *brcmstb_ioremap_match(const struct of_device_id *matches,
  
-+extern bool crash_cpus_stopped;
- int mwait_usable(const struct cpuinfo_x86 *);
- 
- unsigned int x86_family(unsigned int sig);
-diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index e8326a8d1c5d..71dd1a990e8d 100644
---- a/arch/x86/kernel/crash.c
-+++ b/arch/x86/kernel/crash.c
-@@ -42,6 +42,8 @@
- #include <asm/crash.h>
- #include <asm/cmdline.h>
- 
-+bool crash_cpus_stopped;
-+
- /* Used while preparing memory map entries for second kernel */
- struct crash_memmap_data {
- 	struct boot_params *params;
-@@ -108,9 +110,7 @@ void kdump_nmi_shootdown_cpus(void)
- /* Override the weak function in kernel/panic.c */
- void crash_smp_send_stop(void)
- {
--	static int cpus_stopped;
--
--	if (cpus_stopped)
-+	if (crash_cpus_stopped)
- 		return;
- 
- 	if (smp_ops.crash_stop_other_cpus)
-@@ -118,7 +118,7 @@ void crash_smp_send_stop(void)
- 	else
- 		smp_send_stop();
- 
--	cpus_stopped = 1;
-+	crash_cpus_stopped = true;
+ 	return of_io_request_and_map(dn, index, dn->full_name);
  }
- 
- #else
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index fa700b46588e..2fc42b8402ac 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -589,8 +589,18 @@ static void native_machine_emergency_restart(void)
- 	int orig_reboot_type = reboot_type;
- 	unsigned short mode;
- 
--	if (reboot_emergency)
--		emergency_vmx_disable_all();
-+	/*
-+	 * We can reach this point in the end of panic path, having
-+	 * NMI-disabled all secondary CPUs. This process involves
-+	 * disabling the CPU virtualization technologies, so if that
-+	 * is the case, we only miss disabling the local CPU VMX...
-+	 */
-+	if (reboot_emergency) {
-+		if (!crash_cpus_stopped)
-+			emergency_vmx_disable_all();
-+		else
-+			cpu_emergency_vmxoff();
-+	}
- 
- 	tboot_shutdown(TB_SHUTDOWN_REBOOT);
- 
+-
++/*
++ * The AON is a small domain in the SoC that can retain its state across
++ * various system wide sleep states and specific reset conditions; the
++ * AON DATA RAM is a small RAM of a few words (< 1KB) which can store
++ * persistent information across such events.
++ *
++ * The purpose of the below panic notifier is to help with notifying
++ * the bootloader that a panic occurred and so that it should try its
++ * best to preserve the DRAM contents holding that buffer for recovery
++ * by the kernel as opposed to wiping out DRAM clean again.
++ *
++ * Reference: comment from Florian Fainelli, at
++ * https://lore.kernel.org/lkml/781cafb0-8d06-8b56-907a-5175c2da196a@gmail.com
++ */
+ static int brcmstb_pm_panic_notify(struct notifier_block *nb,
+ 		unsigned long action, void *data)
+ {
 -- 
 2.36.0
 
