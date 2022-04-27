@@ -4,97 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB0FBC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 09:07:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00271C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 13:47:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KpCZ574Wmz3bqm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 19:07:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=bNqnOxFg;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=KMneS4G1;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KpKnK1bplz3bpw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 23:47:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1;
  helo=ams.source.kernel.org;
- envelope-from=srs0=/bup=vf=zx2c4.com=jason@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256
- header.s=20210105 header.b=bNqnOxFg; 
- dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com
- header.a=rsa-sha256 header.s=20210105 header.b=KMneS4G1; 
- dkim-atps=neutral
+ envelope-from=srs0=av7o=vf=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
 Received: from ams.source.kernel.org (ams.source.kernel.org
  [IPv6:2604:1380:4601:e00::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KpCYG2P9bz2xtQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2022 19:06:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KpKmq0X2cz2xlF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2022 23:47:06 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id 57E1BB82574
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2022 09:06:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2F64C385A7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2022 09:06:35 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
- dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com
- header.b="bNqnOxFg"; 
- dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com
- header.b="KMneS4G1"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105; 
- t=1651050393;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:resent-to:
- resent-from:resent-message-id:in-reply-to:in-reply-to:
- references:references:list-id:list-unsubscribe:list-subscribe;
- bh=pUHHdLwvu8D+pM4yd5YOrXXNyRmGequZRfMy8dGDcBI=;
- b=bNqnOxFgoZoA1WvebUvvMecBVsBttBje7F8U3IM27TF+RyJiHwweJ+C4Hfab9UXmpmAv77
- puoSrYRfuOXLxTK5TzJtcFHbk3/7VXFSqE2xshAHoorJNroGu2XajT6rNuVs005vospYPH
- LWwpNPINvz6nL1Yyn82GBbKnhMfDtOo=
-Received: by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 8b6d9f05
- (TLSv1.3:AEAD-AES256-GCM-SHA384:256:NO)
- for <linuxppc-dev@lists.ozlabs.org>;
- Wed, 27 Apr 2022 09:06:32 +0000 (UTC)
-Resent-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-Resent-Date: Wed, 27 Apr 2022 11:06:31 +0200
-Resent-Message-ID: <YmkHl/7yQeWnGyj3@zx2c4.com>
-Resent-To: linuxppc-dev@lists.ozlabs.org
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org
- [10.30.226.201])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8D493227
- for <patches@lists.linux.dev>; Sat, 23 Apr 2022 21:27:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E61D3C385A0;
- Sat, 23 Apr 2022 21:27:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105; 
- t=1650749237;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=pUHHdLwvu8D+pM4yd5YOrXXNyRmGequZRfMy8dGDcBI=;
- b=KMneS4G1fGRHyicCbeubvxDqbeOqFGghuQWW6dymlLTI/13i6ORVrgHXsoIOeAGB3onwXy
- H4fmDoQNvbHpQe+EoWk30cu2unbWqSyIQMlJJrnLsAKdNlkF81gXXYlLJHvhoUOMxmB/3l
- p6j6atC4/e153rf+RRaz8DTANcgrnLg=
-Received: by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 25517095
- (TLSv1.3:AEAD-AES256-GCM-SHA384:256:NO); 
- Sat, 23 Apr 2022 21:27:16 +0000 (UTC)
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
- tglx@linutronix.de, arnd@arndb.de
-Subject: [PATCH v6 05/17] powerpc: define get_cycles macro for arch-override
-Date: Sat, 23 Apr 2022 23:26:11 +0200
-Message-Id: <20220423212623.1957011-6-Jason@zx2c4.com>
-In-Reply-To: <20220423212623.1957011-1-Jason@zx2c4.com>
-References: <20220423212623.1957011-1-Jason@zx2c4.com>
-Precedence: bulk
-X-Mailing-List: patches@lists.linux.dev
+ by ams.source.kernel.org (Postfix) with ESMTPS id 5EB3BB82766;
+ Wed, 27 Apr 2022 13:47:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 714F6C385A9;
+ Wed, 27 Apr 2022 13:47:00 +0000 (UTC)
+Date: Wed, 27 Apr 2022 09:46:58 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] ftrace: Drop duplicate mcount locations
+Message-ID: <20220427094658.502fcaee@gandalf.local.home>
+In-Reply-To: <9b1b816cff1f479c8de0e9baa5a6ac680b84e17e.1651047542.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1651047542.git.naveen.n.rao@linux.vnet.ibm.com>
+ <9b1b816cff1f479c8de0e9baa5a6ac680b84e17e.1651047542.git.naveen.n.rao@linux.vnet.ibm.com>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
+Precedence: list
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -103,37 +49,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>, Paul Mackerras <paulus@samba.org>
+Cc: llvm@lists.linux.dev, Nick Desaulniers <ndesaulniers@google.com>,
+ linux-kernel@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PowerPC defines a get_cycles() function, but it forgot to do the usual
-`#define get_cycles get_cycles` dance, making it impossible for generic
-code to see if an arch-specific function was defined.
+On Wed, 27 Apr 2022 15:01:21 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
----
- arch/powerpc/include/asm/timex.h | 1 +
- 1 file changed, 1 insertion(+)
+> In the absence of section symbols [1], objtool (today) and recordmcount
+> (with a subsequent patch) generate __mcount_loc relocation records with
+> weak symbols as the base. This works fine as long as those weak symbols
+> are not overridden, but if they are, these can result in duplicate
+> entries in the final vmlinux mcount location table. This will cause
+> ftrace to fail when trying to patch the same location twice. Fix this by
+> dropping duplicate locations during ftrace init.
+> 
+> [1] https://sourceware.org/git/?p=binutils-gdb.git;a=commit;h=d1bcae833b32f1
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  kernel/trace/ftrace.c | 13 ++++++++++++-
+>  1 file changed, 12 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 4f1d2f5e726341..8bc4f282bb3ff4 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -6496,7 +6496,7 @@ static int ftrace_process_locs(struct module *mod,
+>  	struct dyn_ftrace *rec;
+>  	unsigned long count;
+>  	unsigned long *p;
+> -	unsigned long addr;
+> +	unsigned long addr, prev_addr = 0;
+>  	unsigned long flags = 0; /* Shut up gcc */
+>  	int ret = -ENOMEM;
+>  
+> @@ -6550,6 +6550,16 @@ static int ftrace_process_locs(struct module *mod,
+>  	while (p < end) {
+>  		unsigned long end_offset;
+>  		addr = ftrace_call_adjust(*p++);
+> +
+> +		/*
+> +		 * Drop duplicate entries, which can happen when weak
+> +		 * functions are overridden, and __mcount_loc relocation
+> +		 * records were generated against function names due to
+> +		 * absence of non-weak section symbols
+> +		 */
+> +		if (addr == prev_addr)
+> +			addr = 0;
 
-diff --git a/arch/powerpc/include/asm/timex.h b/arch/powerpc/include/asm/timex.h
-index fa2e76e4093a..14b4489de52c 100644
---- a/arch/powerpc/include/asm/timex.h
-+++ b/arch/powerpc/include/asm/timex.h
-@@ -19,6 +19,7 @@ static inline cycles_t get_cycles(void)
- {
- 	return mftb();
- }
-+#define get_cycles get_cycles
- 
- #endif	/* __KERNEL__ */
- #endif	/* _ASM_POWERPC_TIMEX_H */
--- 
-2.35.1
+Please don't use the side effect of addr == 0 causing the loop to continue
+for this logic. The two are not related. Simply call continue.
+
+		if (addr == prev_addr)
+			continue;
+
+
+-- Steve
+
+
+> +
+>  		/*
+>  		 * Some architecture linkers will pad between
+>  		 * the different mcount_loc sections of different
+> @@ -6569,6 +6579,7 @@ static int ftrace_process_locs(struct module *mod,
+>  
+>  		rec = &pg->records[pg->index++];
+>  		rec->ip = addr;
+> +		prev_addr = addr;
+>  	}
+>  
+>  	/* We should have used all pages */
 
