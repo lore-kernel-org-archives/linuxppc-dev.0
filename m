@@ -4,57 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 130EDC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 00:29:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A063C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 01:34:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kpc2Q0h51z3bvd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 10:29:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KpdT26L8mz3byZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 11:34:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=GN1/nse5;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=C3WoMDzH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=igalia.com (client-ip=178.60.130.6; helo=fanzine2.igalia.com;
+ envelope-from=gpiccoli@igalia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=GN1/nse5; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256
+ header.s=20170329 header.b=C3WoMDzH; dkim-atps=neutral
+X-Greylist: delayed 71 seconds by postgrey-1.36 at boromir;
+ Thu, 28 Apr 2022 08:51:50 AEST
+Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kpc1f71SPz2x9V
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2022 10:29:05 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
- In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
- :Reply-To:Content-ID:Content-Description;
- bh=oTHdXx/bNqvs0tUKZg1jX0QKDhKts3seYpf9QVBefoo=; b=GN1/nse5iki/WFV8HZE7gnZx8M
- eJUoKq0F73m9M9r3NgIBqsY0+vw93A0bLY3hZk7W2z6ntNRxf9y3czUAh8lb6xtyiL6iRkCGoMbr3
- 13t311Tat608CEGCcNXVW95sxa2A683FvRnnoYsLI49dqQLiYKn/y05pL/vMxI0Bf3XOAu94o11W+
- nn9qk8zdTyrvuFjTnWtZ6o7af2OgOBH9Lb3syZMjRdfGkSipXa4zeUfKnDbho+LORacM3SyNN4LMV
- DjLIUchKFzC9+E73n2pj1o853yXO/ZfWMQcrLme864qTb5ygY07AwvTErV57FcFGuv7kOYC61ZuBl
- QQvKsP1Q==;
-Received: from [2601:1c0:6280:3f0::aa0b]
- by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1njs1D-00B2Sy-UA; Thu, 28 Apr 2022 00:28:28 +0000
-Message-ID: <4fe85e9c-4e96-e9d5-9fd8-f062bafcda4f@infradead.org>
-Date: Wed, 27 Apr 2022 17:28:11 -0700
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.1
-Subject: Re: [PATCH 24/30] panic: Refactor the panic path
-Content-Language: en-US
-To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>, akpm@linux-foundation.org,
- bhe@redhat.com, pmladek@suse.com, kexec@lists.infradead.org
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KpYsL4n4vz2xt0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2022 08:51:50 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com; 
+ s=20170329;
+ h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:
+ Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+ Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+ :Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+ List-Post:List-Owner:List-Archive;
+ bh=sBnzQEgOETevrWvoFDe4UXYaoyJvnokumNTnFd8nYd4=; b=C3WoMDzHemUiz3TJonrj4OLB2r
+ FSxQF+F2lHHptNuVBTghKMJZClefE6Imxei6ehl090Dy2iIiwWYXrKfz8k6+wORL9DMg3LEbLg3HV
+ Yy5IDocQKz78CwwV1x1BjunLLiApngptGwnQE+MM0c5kIHbxgr5QD1BtqzYPoELgJZUScA99Ow0T5
+ DgoMAXPJxcpvr2MM73b5S2P6pfeIYXcyYWBlbiqaBO38Mb9qP/Auq8X4+iMlX3NAoRdIHY9DVHKc8
+ OvjiTLZuxC2PHt1XEzIKelV5l8TbSCfHnuQVB2KdJOLt6lDAQzFhqrTn+CsXTsATCFcE2SPeUMfAC
+ eC7wzCXg==;
+Received: from [179.113.53.197] (helo=localhost)
+ by fanzine2.igalia.com with esmtpsa 
+ (Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
+ id 1njqVW-000250-IT; Thu, 28 Apr 2022 00:51:39 +0200
+From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+To: akpm@linux-foundation.org, bhe@redhat.com, pmladek@suse.com,
+ kexec@lists.infradead.org
+Subject: [PATCH 07/30] mips: ip22: Reword PANICED to PANICKED and remove
+ useless header
+Date: Wed, 27 Apr 2022 19:49:01 -0300
+Message-Id: <20220427224924.592546-8-gpiccoli@igalia.com>
+X-Mailer: git-send-email 2.36.0
+In-Reply-To: <20220427224924.592546-1-gpiccoli@igalia.com>
 References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-25-gpiccoli@igalia.com>
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20220427224924.592546-25-gpiccoli@igalia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 28 Apr 2022 11:34:03 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,28 +82,77 @@ Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
  linux-um@lists.infradead.org, rostedt@goodmis.org, rcu@vger.kernel.org,
  bp@alien8.de, luto@kernel.org, linux-tegra@vger.kernel.org,
  openipmi-developer@lists.sourceforge.net, andriy.shevchenko@linux.intel.com,
- linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
- jgross@suse.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
- kernel@gpiccoli.net, linux-kernel@vger.kernel.org, stern@rowland.harvard.edu,
- senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
- kernel-dev@igalia.com, linux-alpha@vger.kernel.org, vkuznets@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+ senozhatsky@chromium.org, linux-arm-kernel@lists.infradead.org,
+ linux-edac@vger.kernel.org, jgross@suse.com,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
+ netdev@vger.kernel.org, kernel@gpiccoli.net, linux-kernel@vger.kernel.org,
+ stern@rowland.harvard.edu, gpiccoli@igalia.com, d.hatayama@jp.fujitsu.com,
+ mhiramat@kernel.org, kernel-dev@igalia.com, linux-alpha@vger.kernel.org,
+ vkuznets@redhat.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Many other place in the kernel prefer the latter, so let's keep
+it consistent in MIPS code as well. Also, removes a useless header.
 
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@igalia.com>
+---
+ arch/mips/sgi-ip22/ip22-reset.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-On 4/27/22 15:49, Guilherme G. Piccoli wrote:
-> +	crash_kexec_post_notifiers
-> +			This was DEPRECATED - users should always prefer the
-
-			This is DEPRECATED - users should always prefer the
-
-> +			parameter "panic_notifiers_level" - check its entry
-> +			in this documentation for details on how it works.
-> +			Setting this parameter is exactly the same as setting
-> +			"panic_notifiers_level=4".
-
+diff --git a/arch/mips/sgi-ip22/ip22-reset.c b/arch/mips/sgi-ip22/ip22-reset.c
+index 9028dbbb45dd..8f0861c58080 100644
+--- a/arch/mips/sgi-ip22/ip22-reset.c
++++ b/arch/mips/sgi-ip22/ip22-reset.c
+@@ -11,7 +11,6 @@
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/sched/signal.h>
+-#include <linux/notifier.h>
+ #include <linux/panic_notifier.h>
+ #include <linux/pm.h>
+ #include <linux/timer.h>
+@@ -41,7 +40,7 @@
+ static struct timer_list power_timer, blink_timer, debounce_timer;
+ static unsigned long blink_timer_timeout;
+ 
+-#define MACHINE_PANICED		1
++#define MACHINE_PANICKED		1
+ #define MACHINE_SHUTTING_DOWN	2
+ 
+ static int machine_state;
+@@ -112,7 +111,7 @@ static void debounce(struct timer_list *unused)
+ 		return;
+ 	}
+ 
+-	if (machine_state & MACHINE_PANICED)
++	if (machine_state & MACHINE_PANICKED)
+ 		sgimc->cpuctrl0 |= SGIMC_CCTRL0_SYSINIT;
+ 
+ 	enable_irq(SGI_PANEL_IRQ);
+@@ -120,7 +119,7 @@ static void debounce(struct timer_list *unused)
+ 
+ static inline void power_button(void)
+ {
+-	if (machine_state & MACHINE_PANICED)
++	if (machine_state & MACHINE_PANICKED)
+ 		return;
+ 
+ 	if ((machine_state & MACHINE_SHUTTING_DOWN) ||
+@@ -167,9 +166,9 @@ static irqreturn_t panel_int(int irq, void *dev_id)
+ static int panic_event(struct notifier_block *this, unsigned long event,
+ 		      void *ptr)
+ {
+-	if (machine_state & MACHINE_PANICED)
++	if (machine_state & MACHINE_PANICKED)
+ 		return NOTIFY_DONE;
+-	machine_state |= MACHINE_PANICED;
++	machine_state |= MACHINE_PANICKED;
+ 
+ 	blink_timer_timeout = PANIC_FREQ;
+ 	blink_timeout(&blink_timer);
 -- 
-~Randy
+2.36.0
+
