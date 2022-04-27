@@ -4,52 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85A61C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 01:52:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 063D0C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 01:53:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KpdtJ0WF6z3fDs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 11:52:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kpdv054f9z3g6P
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 11:53:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=reO22ihK;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Je1aB/fz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=igalia.com (client-ip=178.60.130.6; helo=fanzine2.igalia.com;
- envelope-from=gpiccoli@igalia.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org;
+ envelope-from=srs0=gcur=vf=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256
- header.s=20170329 header.b=reO22ihK; dkim-atps=neutral
-Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KpZfD6cFwz3bcp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2022 09:27:16 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com; 
- s=20170329;
- h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:
- Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:
- Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
- In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
- List-Post:List-Owner:List-Archive;
- bh=bd3LEemhVeb7HF/IIMNoiSMnSaTUMrH2fhcorDNVPOw=; b=reO22ihKOd/dWO6JG74IZyl/Fc
- ZRgGILhVwwQGIlc0vj0pe06pAIL0f1YnsjmZwa63b3ABCQ9Dxtfk7lOpgjSlBlW3mvUPOXpeDqCPF
- Rai8aA64fPaaS3uA4lyDgYZD5XuD0ZsHxLRl7fSfIQRGLMJx5CN6hSSRnLDC2sMLyPhnDWIKyd1uN
- dkM7kUYrK18mk3Ol/CnE0I+ZYy1cZnsseboaTczRU6buuvnTvUyLu0/yD31d9xZSykLYiRZ87DJrn
- 1QwYj7LfEwisoBpfk6PfijWzaR37ghlKX+i9oyA2xcheBwMVt8x9sPCGngmKdbeGAFrivKg5AfP0H
- 0Qh1iRoA==;
-Received: from [179.113.53.197] (helo=localhost)
- by fanzine2.igalia.com with esmtpsa 
- (Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
- id 1njqTd-0001ws-8P; Thu, 28 Apr 2022 00:49:41 +0200
-From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-To: akpm@linux-foundation.org, bhe@redhat.com, pmladek@suse.com,
- kexec@lists.infradead.org
-Subject: [PATCH 00/30] The panic notifiers refactor
-Date: Wed, 27 Apr 2022 19:48:54 -0300
-Message-Id: <20220427224924.592546-1-gpiccoli@igalia.com>
-X-Mailer: git-send-email 2.36.0
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=Je1aB/fz; 
+ dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kpb8R32D1z2xBF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2022 09:49:59 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id DB40461EF7;
+ Wed, 27 Apr 2022 23:49:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 16778C385A9;
+ Wed, 27 Apr 2022 23:49:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1651103395;
+ bh=fUZjHYw9wwKZPDJTueMs+O0QpaDcmLmJGnfVK2U9fDA=;
+ h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
+ b=Je1aB/fze7iTbiS9iJu+ljdypRVlpSNOY2ApvQuQXPIJMcX561LCqFU5KD8NuzITn
+ axVegyGDng/no5zGX+N0XJaBX3eCl1u+MBfsPPSUCnAku/LeQQoNnLn0h3GPux3yBk
+ VOvYDvtIfUvjSSlCqhYbS9JVxA2AV5YZM/HgUioKVWSI+XcWSCErb9jz9UvrxK1pys
+ vStoYHEo4wQDcrF+2d88fEDoby5J66HLtUmYbV1qTrDo2OoFmaqWJaLLn5LoRnwbLY
+ cyOzSoD9WN0tR37CmdZFeQgXzlz5t3Jm6TM/uEaGXtF/lFjZIjpGv2bt25uLPFk53d
+ hyeP1plId9baA==
+Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
+ id AA5975C0B07; Wed, 27 Apr 2022 16:49:54 -0700 (PDT)
+Date: Wed, 27 Apr 2022 16:49:54 -0700
+From: "Paul E. McKenney" <paulmck@kernel.org>
+To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+Subject: Re: [PATCH 20/30] panic: Add the panic informational notifier list
+Message-ID: <20220427234954.GA3204792@paulmck-ThinkPad-P17-Gen-1>
+References: <20220427224924.592546-1-gpiccoli@igalia.com>
+ <20220427224924.592546-21-gpiccoli@igalia.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220427224924.592546-21-gpiccoli@igalia.com>
 X-Mailman-Approved-At: Thu, 28 Apr 2022 11:34:03 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -62,261 +67,313 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, Justin Chen <justinpopo6@gmail.com>,
- Pavel Machek <pavel@ucw.cz>, Alexander Gordeev <agordeev@linux.ibm.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, fabiomirmar@gmail.com,
- stern@rowland.harvard.edu, Catalin Marinas <catalin.marinas@arm.com>,
- xen-devel@lists.xenproject.org, Matt Turner <mattst88@gmail.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>, linux-pm@vger.kernel.org,
- linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>,
- luto@kernel.org, Mihai Carabas <mihai.carabas@oracle.com>, tglx@linutronix.de,
- Xiaoming Ni <nixiaoming@huawei.com>, Richard Henderson <rth@twiddle.net>,
- Alex Elder <elder@kernel.org>, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, senozhatsky@chromium.org,
- d.hatayama@jp.fujitsu.com, mhiramat@kernel.org, linux-hyperv@vger.kernel.org,
- dave.hansen@linux.intel.com,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Thierry Reding <thierry.reding@gmail.com>,
- Neeraj Upadhyay <quic_neeraju@quicinc.com>, linux-s390@vger.kernel.org,
- Stefano Stabellini <sstabellini@kernel.org>,
- Stephen Hemminger <sthemmin@microsoft.com>, Corey Minyard <minyard@acm.org>,
- Tianyu Lan <Tianyu.Lan@microsoft.com>, Helge Deller <deller@gmx.de>,
- Suzuki K Poulose <suzuki.poulose@arm.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Frederic Weisbecker <frederic@kernel.org>, vgoyal@redhat.com,
- Sven Schnelle <svens@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- linux-xtensa@linux-xtensa.org, john.ogness@linutronix.de,
- Scott Branden <scott.branden@broadcom.com>, coresight@lists.linaro.org,
- Florian Fainelli <f.fainelli@gmail.com>, Markus Mayer <mmayer@broadcom.com>,
- hidehiro.kawai.ez@hitachi.com, Cong Wang <xiyou.wangcong@gmail.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Arjan van de Ven <arjan@linux.intel.com>, linux-arm-kernel@lists.infradead.org,
- Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
- Mathieu Poirier <mathieu.poirier@linaro.org>,
- Wang ShaoBo <bobo.shaobowang@huawei.com>, gpiccoli@igalia.com,
- James Morse <james.morse@arm.com>, kernel-dev@igalia.com, halves@canonical.com,
- alejandro.j.jimenez@oracle.com, Lai Jiangshan <jiangshanlai@gmail.com>,
- feng.tang@intel.com, Stephen Brennan <stephen.s.brennan@oracle.com>,
- zhenwei pi <pizhenwei@bytedance.com>, Joel Fernandes <joel@joelfernandes.org>,
- will@kernel.org, Doug Berger <opendmb@gmail.com>, corbet@lwn.net,
- Dexuan Cui <decui@microsoft.com>, Evan Green <evgreen@chromium.org>,
- bcm-kernel-feedback-list@broadcom.com, Mikko Perttunen <mperttunen@nvidia.com>,
- keescook@chromium.org, arnd@arndb.de, Haiyang Zhang <haiyangz@microsoft.com>,
- Josh Triplett <josh@joshtriplett.org>, rostedt@goodmis.org,
- rcu@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- openipmi-developer@lists.sourceforge.net,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
- Sebastian Reichel <sre@kernel.org>, linux-alpha@vger.kernel.org,
- Brian Norris <computersforpeace@gmail.com>,
- "David S. Miller" <davem@davemloft.net>, peterz@infradead.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- linux-remoteproc@vger.kernel.org, mikelley@microsoft.com,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Robert Richter <rric@kernel.org>, Lee Jones <lee.jones@linaro.org>,
- Ard Biesheuvel <ardb@kernel.org>, linux-leds@vger.kernel.org,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>, Marc Zyngier <maz@kernel.org>,
- x86@kernel.org, Russell King <linux@armlinux.org.uk>, mingo@redhat.com,
- dyoung@redhat.com, Valentin Schneider <valentin.schneider@arm.com>,
- Mike Leach <mike.leach@linaro.org>, paulmck@kernel.org,
- Heiko Carstens <hca@linux.ibm.com>,
- Shile Zhang <shile.zhang@linux.alibaba.com>,
- Richard Weinberger <richard@nod.at>,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
- David Gow <davidgow@google.com>, Julius Werner <jwerner@chromium.org>,
- linux-tegra@vger.kernel.org, andriy.shevchenko@linux.intel.com,
- Johannes Berg <johannes@sipsolutions.net>,
- Hari Bathini <hbathini@linux.ibm.com>, linux-edac@vger.kernel.org,
- jgross@suse.com, netdev@vger.kernel.org, kernel@gpiccoli.net,
- linux-mips@vger.kernel.org, Leo Yan <leo.yan@linaro.org>, bp@alien8.de,
- vkuznets@redhat.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: paulmck@kernel.org
+Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
+ linux-xtensa@linux-xtensa.org, peterz@infradead.org,
+ alejandro.j.jimenez@oracle.com, linux-remoteproc@vger.kernel.org,
+ feng.tang@intel.com, Joel Fernandes <joel@joelfernandes.org>,
+ linux-mips@vger.kernel.org, hidehiro.kawai.ez@hitachi.com,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, will@kernel.org,
+ tglx@linutronix.de, linux-leds@vger.kernel.org, linux-s390@vger.kernel.org,
+ Florian Fainelli <f.fainelli@gmail.com>, mikelley@microsoft.com,
+ john.ogness@linutronix.de, bhe@redhat.com, corbet@lwn.net,
+ fabiomirmar@gmail.com, x86@kernel.org, Jonathan Hunter <jonathanh@nvidia.com>,
+ mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com,
+ Hari Bathini <hbathini@linux.ibm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, xen-devel@lists.xenproject.org,
+ dyoung@redhat.com, Frederic Weisbecker <frederic@kernel.org>,
+ vgoyal@redhat.com, Mike Leach <mike.leach@linaro.org>, pmladek@suse.com,
+ Neeraj Upadhyay <quic_neeraju@quicinc.com>, dave.hansen@linux.intel.com,
+ Mikko Perttunen <mperttunen@nvidia.com>, keescook@chromium.org, arnd@arndb.de,
+ linux-pm@vger.kernel.org, Lai Jiangshan <jiangshanlai@gmail.com>,
+ coresight@lists.linaro.org, Leo Yan <leo.yan@linaro.org>,
+ linux-um@lists.infradead.org, Josh Triplett <josh@joshtriplett.org>,
+ rostedt@goodmis.org, rcu@vger.kernel.org, gregkh@linuxfoundation.org,
+ bp@alien8.de, Nicholas Piggin <npiggin@gmail.com>, luto@kernel.org,
+ linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+ andriy.shevchenko@linux.intel.com, vkuznets@redhat.com,
+ linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
+ jgross@suse.com, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Mathieu Poirier <mathieu.poirier@linaro.org>, linux-parisc@vger.kernel.org,
+ netdev@vger.kernel.org, kernel@gpiccoli.net, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, stern@rowland.harvard.edu,
+ senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
+ kernel-dev@igalia.com, linux-alpha@vger.kernel.org,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, Suzuki K Poulose <suzuki.poulose@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hey folks, this is an attempt to improve/refactor the dated panic notifiers
-infrastructure. This is strongly based in a suggestion made by Pter Mladek [0]
-some time ago, and it's finally ready. Below I'll detail the patch ordering,
-testing made, etc.
-First, a bit about the reason behind this.
+On Wed, Apr 27, 2022 at 07:49:14PM -0300, Guilherme G. Piccoli wrote:
+> The goal of this new panic notifier is to allow its users to
+> register callbacks to run earlier in the panic path than they
+> currently do. This aims at informational mechanisms, like dumping
+> kernel offsets and showing device error data (in case it's simple
+> registers reading, for example) as well as mechanisms to disable
+> log flooding (like hung_task detector / RCU warnings) and the
+> tracing dump_on_oops (when enabled).
+> 
+> Any (non-invasive) information that should be provided before
+> kmsg_dump() as well as log flooding preventing code should fit
+> here, as long it offers relatively low risk for kdump.
+> 
+> For now, the patch is almost a no-op, although it changes a bit
+> the ordering in which some panic notifiers are executed - specially
+> affected by this are the notifiers responsible for disabling the
+> hung_task detector / RCU warnings, which now run first. In a
+> subsequent patch, the panic path will be refactored, then the
+> panic informational notifiers will effectively run earlier,
+> before ksmg_dump() (and usually before kdump as well).
+> 
+> We also defer documenting it all properly in the subsequent
+> refactor patch. Finally, while at it, we removed some useless
+> header inclusions too.
+> 
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Florian Fainelli <f.fainelli@gmail.com>
+> Cc: Frederic Weisbecker <frederic@kernel.org>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: Hari Bathini <hbathini@linux.ibm.com>
+> Cc: Joel Fernandes <joel@joelfernandes.org>
+> Cc: Jonathan Hunter <jonathanh@nvidia.com>
+> Cc: Josh Triplett <josh@joshtriplett.org>
+> Cc: Lai Jiangshan <jiangshanlai@gmail.com>
+> Cc: Leo Yan <leo.yan@linaro.org>
+> Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+> Cc: Mathieu Poirier <mathieu.poirier@linaro.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Mike Leach <mike.leach@linaro.org>
+> Cc: Mikko Perttunen <mperttunen@nvidia.com>
+> Cc: Neeraj Upadhyay <quic_neeraju@quicinc.com>
+> Cc: Nicholas Piggin <npiggin@gmail.com>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Suzuki K Poulose <suzuki.poulose@arm.com>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@igalia.com>
 
-The panic notifiers list is an infrastructure that allows callbacks to execute
-during panic time. Happens that anybody can add functions there, no ordering
-is enforced (by default) and the decision to execute or not such notifiers
-before kdump may lead to high risk of failure in crash scenarios - default is
-not to execute any of them. There is a parameter acting as a switch for that.
-But some architectures require some notifiers, so..it's messy.
+From an RCU perspective:
 
-The suggestion from Petr came after a patch submission to add a notifiers
-filter, allowing the notifiers selection by function name, which was welcomed
-by some people, but not by Petr, which claimed the code should indeed have a
-refactor - and it made a lot of sense, his suggestion makes code more clear
-and reliable.
+Acked-by: Paul E. McKenney <paulmck@kernel.org>
 
-So, this series might be split in 3 portions:
-
-Part 1: the first 18 patches are mostly fixes (one or two might be considered
-improvements), mostly replacing spinlocks/mutexes with safer alternatives for
-atomic contexts, like spin_trylock, etc. We also focused on commenting
-everything that is possible and clean-up code.
-
-Part 2, the core: patches 19-25 are the main refactor, which splits the panic
-notifiers list in three, introduce the concept of panic notifier level and
-clean-up and highly comment the code, effectively leading to a more reliable
-and clear, yet highly customizable panic path.
-
-Part 3: The remaining 5 patches are fixes that _require the main refactor_
-patches, they don't make sense without the core changes - but again, these are
-small fixes and not part of the main goal of refactoring the panic code.
-
-I've tried my best to make the patches the more "bisectable" as possible, so
-they tend to be self-contained and easy to backport (specially patches from
-part 1). Notice that the series is *based on 5.18-rc4* - usually a refactor
-like this would be based on linux-next, but since we have many fixes in the
-series, I kept it based on mainline tree. Of course I could change that in a
-subsequent iteration, if desired.
-
-Since this touches multiple architectures and drivers, it's very difficult to
-test it really (by executing all touched code). So, my tests split in two
-approaches: build tests and real tests, that involves panic triggering with
-and without kdump, changing panic notifiers level, etc.
-
-Build tests (using cross-compilers): alpha, arm, arm64, mips (sgi 22 and 32),
-parisc, s390, sparc, um, x86_64 (couldn't get a functional xtensa cross
-compiler).
-
-Real/full tests: x86_64 (Hyper-V and QEMU guests) + PowerPC (pseries guest).
-
-Here is the link with the .config files used: https://people.igalia.com/gpiccoli/panic_notifiers_configs/
-(tried my best to build all the affected code).
-
-Finally, a bit about my CCing strategy: I've included everybody present in the
-original thread [0] plus some maintainers and other interested parties as CC
-in the full series. But the patches have individual CC lists, for people that
-are definitely related to them but might not care much for the whole series;
-nevertheless, _everybody_ mentioned at least once in some patch is CCed in this
-cover-letter. Hopefully I didn't forget to include anybody - all the mailing
-lists were CCed in the whole series. Apologies in advance if (a) you received
-emails you didn't want to or, (b) I forgot to include you but it was something
-considered interesting by you.
-
-Thanks in advance for reviews / comments / suggestions!
-Cheers,
-
-Guilherme
-
-[0] https://lore.kernel.org/lkml/YfPxvzSzDLjO5ldp@alley/
-
-Guilherme G. Piccoli (30):
-  x86/crash,reboot: Avoid re-disabling VMX in all CPUs on crash/restart
-  ARM: kexec: Disable IRQs/FIQs also on crash CPUs shutdown path
-  notifier: Add panic notifiers info and purge trailing whitespaces
-  firmware: google: Convert regular spinlock into trylock on panic path
-  misc/pvpanic: Convert regular spinlock into trylock on panic path
-  soc: bcm: brcmstb: Document panic notifier action and remove useless header
-  mips: ip22: Reword PANICED to PANICKED and remove useless header
-  powerpc/setup: Refactor/untangle panic notifiers
-  coresight: cpu-debug: Replace mutex with mutex_trylock on panic notifier
-  alpha: Clean-up the panic notifier code
-  um: Improve panic notifiers consistency and ordering
-  parisc: Replace regular spinlock with spin_trylock on panic path
-  s390/consoles: Improve panic notifiers reliability
-  panic: Properly identify the panic event to the notifiers' callbacks
-  bus: brcmstb_gisb: Clean-up panic/die notifiers
-  drivers/hv/vmbus, video/hyperv_fb: Untangle and refactor Hyper-V panic notifiers
-  tracing: Improve panic/die notifiers
-  notifier: Show function names on notifier routines if DEBUG_NOTIFIERS is set
-  panic: Add the panic hypervisor notifier list
-  panic: Add the panic informational notifier list
-  panic: Introduce the panic pre-reboot notifier list
-  panic: Introduce the panic post-reboot notifier list
-  printk: kmsg_dump: Introduce helper to inform number of dumpers
-  panic: Refactor the panic path
-  panic, printk: Add console flush parameter and convert panic_print to a notifier
-  Drivers: hv: Do not force all panic notifiers to execute before kdump
-  powerpc: Do not force all panic notifiers to execute before kdump
-  panic: Unexport crash_kexec_post_notifiers
-  powerpc: ps3, pseries: Avoid duplicate call to kmsg_dump() on panic
-  um: Avoid duplicate call to kmsg_dump()
-
- .../admin-guide/kernel-parameters.txt         |  54 ++-
- Documentation/admin-guide/sysctl/kernel.rst   |   5 +-
- arch/alpha/kernel/setup.c                     |  40 +--
- arch/arm/kernel/machine_kexec.c               |   3 +
- arch/arm64/kernel/setup.c                     |   2 +-
- arch/mips/kernel/relocate.c                   |   2 +-
- arch/mips/sgi-ip22/ip22-reset.c               |  13 +-
- arch/mips/sgi-ip32/ip32-reset.c               |   3 +-
- arch/parisc/include/asm/pdc.h                 |   1 +
- arch/parisc/kernel/firmware.c                 |  27 +-
- arch/parisc/kernel/pdc_chassis.c              |   3 +-
- arch/powerpc/include/asm/bug.h                |   2 +-
- arch/powerpc/kernel/fadump.c                  |   8 -
- arch/powerpc/kernel/setup-common.c            |  76 ++--
- arch/powerpc/kernel/traps.c                   |   6 +-
- arch/powerpc/platforms/powernv/opal.c         |   2 +-
- arch/powerpc/platforms/ps3/setup.c            |   2 +-
- arch/powerpc/platforms/pseries/setup.c        |   2 +-
- arch/s390/kernel/ipl.c                        |   4 +-
- arch/s390/kernel/setup.c                      |  19 +-
- arch/sparc/kernel/setup_32.c                  |  27 +-
- arch/sparc/kernel/setup_64.c                  |  29 +-
- arch/sparc/kernel/sstate.c                    |   3 +-
- arch/um/drivers/mconsole_kern.c               |  10 +-
- arch/um/kernel/um_arch.c                      |  11 +-
- arch/x86/include/asm/cpu.h                    |   1 +
- arch/x86/kernel/crash.c                       |   8 +-
- arch/x86/kernel/reboot.c                      |  14 +-
- arch/x86/kernel/setup.c                       |   2 +-
- arch/x86/xen/enlighten.c                      |   2 +-
- arch/xtensa/platforms/iss/setup.c             |   4 +-
- drivers/bus/brcmstb_gisb.c                    |  28 +-
- drivers/char/ipmi/ipmi_msghandler.c           |  12 +-
- drivers/edac/altera_edac.c                    |   3 +-
- drivers/firmware/google/gsmi.c                |  10 +-
- drivers/hv/hv_common.c                        |  12 -
- drivers/hv/vmbus_drv.c                        | 113 +++---
- .../hwtracing/coresight/coresight-cpu-debug.c |  11 +-
- drivers/leds/trigger/ledtrig-activity.c       |   4 +-
- drivers/leds/trigger/ledtrig-heartbeat.c      |   4 +-
- drivers/leds/trigger/ledtrig-panic.c          |   3 +-
- drivers/misc/bcm-vk/bcm_vk_dev.c              |   6 +-
- drivers/misc/ibmasm/heartbeat.c               |  16 +-
- drivers/misc/pvpanic/pvpanic.c                |  14 +-
- drivers/net/ipa/ipa_smp2p.c                   |   5 +-
- drivers/parisc/power.c                        |  21 +-
- drivers/power/reset/ltc2952-poweroff.c        |   4 +-
- drivers/remoteproc/remoteproc_core.c          |   6 +-
- drivers/s390/char/con3215.c                   |  38 +-
- drivers/s390/char/con3270.c                   |  36 +-
- drivers/s390/char/raw3270.c                   |  18 +
- drivers/s390/char/raw3270.h                   |   1 +
- drivers/s390/char/sclp_con.c                  |  30 +-
- drivers/s390/char/sclp_vt220.c                |  44 +--
- drivers/s390/char/zcore.c                     |   5 +-
- drivers/soc/bcm/brcmstb/pm/pm-arm.c           |  18 +-
- drivers/soc/tegra/ari-tegra186.c              |   3 +-
- drivers/staging/olpc_dcon/olpc_dcon.c         |   6 +-
- drivers/video/fbdev/hyperv_fb.c               |  12 +-
- include/linux/console.h                       |   2 +
- include/linux/kmsg_dump.h                     |   7 +
- include/linux/notifier.h                      |   8 +-
- include/linux/panic.h                         |   3 -
- include/linux/panic_notifier.h                |  12 +-
- include/linux/printk.h                        |   1 +
- kernel/hung_task.c                            |   3 +-
- kernel/kexec_core.c                           |   8 +-
- kernel/notifier.c                             |  48 ++-
- kernel/panic.c                                | 335 +++++++++++-------
- kernel/printk/printk.c                        |  76 ++++
- kernel/rcu/tree.c                             |   1 -
- kernel/rcu/tree_stall.h                       |   3 +-
- kernel/trace/trace.c                          |  59 +--
- .../selftests/pstore/pstore_crash_test        |   5 +-
- 74 files changed, 953 insertions(+), 486 deletions(-)
-
--- 
-2.36.0
-
+> ---
+>  arch/arm64/kernel/setup.c                         | 2 +-
+>  arch/mips/kernel/relocate.c                       | 2 +-
+>  arch/powerpc/kernel/setup-common.c                | 2 +-
+>  arch/x86/kernel/setup.c                           | 2 +-
+>  drivers/bus/brcmstb_gisb.c                        | 2 +-
+>  drivers/hwtracing/coresight/coresight-cpu-debug.c | 4 ++--
+>  drivers/soc/tegra/ari-tegra186.c                  | 3 ++-
+>  include/linux/panic_notifier.h                    | 1 +
+>  kernel/hung_task.c                                | 3 ++-
+>  kernel/panic.c                                    | 4 ++++
+>  kernel/rcu/tree.c                                 | 1 -
+>  kernel/rcu/tree_stall.h                           | 3 ++-
+>  kernel/trace/trace.c                              | 2 +-
+>  13 files changed, 19 insertions(+), 12 deletions(-)
+> 
+> diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
+> index 3505789cf4bd..ac2c7e8c9c6a 100644
+> --- a/arch/arm64/kernel/setup.c
+> +++ b/arch/arm64/kernel/setup.c
+> @@ -444,7 +444,7 @@ static struct notifier_block arm64_panic_block = {
+>  
+>  static int __init register_arm64_panic_block(void)
+>  {
+> -	atomic_notifier_chain_register(&panic_notifier_list,
+> +	atomic_notifier_chain_register(&panic_info_list,
+>  				       &arm64_panic_block);
+>  	return 0;
+>  }
+> diff --git a/arch/mips/kernel/relocate.c b/arch/mips/kernel/relocate.c
+> index 56b51de2dc51..650811f2436a 100644
+> --- a/arch/mips/kernel/relocate.c
+> +++ b/arch/mips/kernel/relocate.c
+> @@ -459,7 +459,7 @@ static struct notifier_block kernel_location_notifier = {
+>  
+>  static int __init register_kernel_offset_dumper(void)
+>  {
+> -	atomic_notifier_chain_register(&panic_notifier_list,
+> +	atomic_notifier_chain_register(&panic_info_list,
+>  				       &kernel_location_notifier);
+>  	return 0;
+>  }
+> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+> index 1468c3937bf4..d04b8bf8dbc7 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -757,7 +757,7 @@ void __init setup_panic(void)
+>  				       &ppc_fadump_block);
+>  
+>  	if (IS_ENABLED(CONFIG_RANDOMIZE_BASE) && kaslr_offset() > 0)
+> -		atomic_notifier_chain_register(&panic_notifier_list,
+> +		atomic_notifier_chain_register(&panic_info_list,
+>  					       &kernel_offset_notifier);
+>  
+>  	/* Low-level platform-specific routines that should run on panic */
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index c95b9ac5a457..599b25346964 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -1266,7 +1266,7 @@ static struct notifier_block kernel_offset_notifier = {
+>  
+>  static int __init register_kernel_offset_dumper(void)
+>  {
+> -	atomic_notifier_chain_register(&panic_notifier_list,
+> +	atomic_notifier_chain_register(&panic_info_list,
+>  					&kernel_offset_notifier);
+>  	return 0;
+>  }
+> diff --git a/drivers/bus/brcmstb_gisb.c b/drivers/bus/brcmstb_gisb.c
+> index 1ea7b015e225..c64e087fba7a 100644
+> --- a/drivers/bus/brcmstb_gisb.c
+> +++ b/drivers/bus/brcmstb_gisb.c
+> @@ -486,7 +486,7 @@ static int __init brcmstb_gisb_arb_probe(struct platform_device *pdev)
+>  
+>  	if (list_is_singular(&brcmstb_gisb_arb_device_list)) {
+>  		register_die_notifier(&gisb_die_notifier);
+> -		atomic_notifier_chain_register(&panic_notifier_list,
+> +		atomic_notifier_chain_register(&panic_info_list,
+>  					       &gisb_panic_notifier);
+>  	}
+>  
+> diff --git a/drivers/hwtracing/coresight/coresight-cpu-debug.c b/drivers/hwtracing/coresight/coresight-cpu-debug.c
+> index 1874df7c6a73..7b1012454525 100644
+> --- a/drivers/hwtracing/coresight/coresight-cpu-debug.c
+> +++ b/drivers/hwtracing/coresight/coresight-cpu-debug.c
+> @@ -535,7 +535,7 @@ static int debug_func_init(void)
+>  			    &debug_func_knob_fops);
+>  
+>  	/* Register function to be called for panic */
+> -	ret = atomic_notifier_chain_register(&panic_notifier_list,
+> +	ret = atomic_notifier_chain_register(&panic_info_list,
+>  					     &debug_notifier);
+>  	if (ret) {
+>  		pr_err("%s: unable to register notifier: %d\n",
+> @@ -552,7 +552,7 @@ static int debug_func_init(void)
+>  
+>  static void debug_func_exit(void)
+>  {
+> -	atomic_notifier_chain_unregister(&panic_notifier_list,
+> +	atomic_notifier_chain_unregister(&panic_info_list,
+>  					 &debug_notifier);
+>  	debugfs_remove_recursive(debug_debugfs_dir);
+>  }
+> diff --git a/drivers/soc/tegra/ari-tegra186.c b/drivers/soc/tegra/ari-tegra186.c
+> index 02577853ec49..4ef05ebed739 100644
+> --- a/drivers/soc/tegra/ari-tegra186.c
+> +++ b/drivers/soc/tegra/ari-tegra186.c
+> @@ -73,7 +73,8 @@ static struct notifier_block tegra186_ari_panic_nb = {
+>  static int __init tegra186_ari_init(void)
+>  {
+>  	if (of_machine_is_compatible("nvidia,tegra186"))
+> -		atomic_notifier_chain_register(&panic_notifier_list, &tegra186_ari_panic_nb);
+> +		atomic_notifier_chain_register(&panic_info_list,
+> +					       &tegra186_ari_panic_nb);
+>  
+>  	return 0;
+>  }
+> diff --git a/include/linux/panic_notifier.h b/include/linux/panic_notifier.h
+> index 0bb9dc0dea04..7364a346bcb0 100644
+> --- a/include/linux/panic_notifier.h
+> +++ b/include/linux/panic_notifier.h
+> @@ -7,6 +7,7 @@
+>  
+>  extern struct atomic_notifier_head panic_notifier_list;
+>  extern struct atomic_notifier_head panic_hypervisor_list;
+> +extern struct atomic_notifier_head panic_info_list;
+>  
+>  extern bool crash_kexec_post_notifiers;
+>  
+> diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+> index 52501e5f7655..1b2d7111d5ac 100644
+> --- a/kernel/hung_task.c
+> +++ b/kernel/hung_task.c
+> @@ -85,6 +85,7 @@ hung_task_panic(struct notifier_block *this, unsigned long event, void *ptr)
+>  
+>  static struct notifier_block panic_block = {
+>  	.notifier_call = hung_task_panic,
+> +	.priority = INT_MAX, /* run early to prevent potential log flood */
+>  };
+>  
+>  static void check_hung_task(struct task_struct *t, unsigned long timeout)
+> @@ -378,7 +379,7 @@ static int watchdog(void *dummy)
+>  
+>  static int __init hung_task_init(void)
+>  {
+> -	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
+> +	atomic_notifier_chain_register(&panic_info_list, &panic_block);
+>  
+>  	/* Disable hung task detector on suspend */
+>  	pm_notifier(hungtask_pm_notify, 0);
+> diff --git a/kernel/panic.c b/kernel/panic.c
+> index ef76f3f9c44d..73ca1bc44e30 100644
+> --- a/kernel/panic.c
+> +++ b/kernel/panic.c
+> @@ -76,6 +76,9 @@ EXPORT_SYMBOL(panic_notifier_list);
+>  ATOMIC_NOTIFIER_HEAD(panic_hypervisor_list);
+>  EXPORT_SYMBOL(panic_hypervisor_list);
+>  
+> +ATOMIC_NOTIFIER_HEAD(panic_info_list);
+> +EXPORT_SYMBOL(panic_info_list);
+> +
+>  static long no_blink(int state)
+>  {
+>  	return 0;
+> @@ -291,6 +294,7 @@ void panic(const char *fmt, ...)
+>  	 * add information to the kmsg dump output.
+>  	 */
+>  	atomic_notifier_call_chain(&panic_hypervisor_list, PANIC_NOTIFIER, buf);
+> +	atomic_notifier_call_chain(&panic_info_list, PANIC_NOTIFIER, buf);
+>  	atomic_notifier_call_chain(&panic_notifier_list, PANIC_NOTIFIER, buf);
+>  
+>  	panic_print_sys_info(false);
+> diff --git a/kernel/rcu/tree.c b/kernel/rcu/tree.c
+> index a4b8189455d5..d5a2674ae81c 100644
+> --- a/kernel/rcu/tree.c
+> +++ b/kernel/rcu/tree.c
+> @@ -35,7 +35,6 @@
+>  #include <linux/panic.h>
+>  #include <linux/panic_notifier.h>
+>  #include <linux/percpu.h>
+> -#include <linux/notifier.h>
+>  #include <linux/cpu.h>
+>  #include <linux/mutex.h>
+>  #include <linux/time.h>
+> diff --git a/kernel/rcu/tree_stall.h b/kernel/rcu/tree_stall.h
+> index 0c5d8516516a..d8a5840aad5d 100644
+> --- a/kernel/rcu/tree_stall.h
+> +++ b/kernel/rcu/tree_stall.h
+> @@ -97,11 +97,12 @@ static int rcu_panic(struct notifier_block *this, unsigned long ev, void *ptr)
+>  
+>  static struct notifier_block rcu_panic_block = {
+>  	.notifier_call = rcu_panic,
+> +	.priority = INT_MAX, /* run early to prevent potential log flood */
+>  };
+>  
+>  static int __init check_cpu_stall_init(void)
+>  {
+> -	atomic_notifier_chain_register(&panic_notifier_list, &rcu_panic_block);
+> +	atomic_notifier_chain_register(&panic_info_list, &rcu_panic_block);
+>  	return 0;
+>  }
+>  early_initcall(check_cpu_stall_init);
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index c1d8a3622ccc..7d02f7a66bb1 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -10138,7 +10138,7 @@ __init static int tracer_alloc_buffers(void)
+>  	/* All seems OK, enable tracing */
+>  	tracing_disabled = 0;
+>  
+> -	atomic_notifier_chain_register(&panic_notifier_list,
+> +	atomic_notifier_chain_register(&panic_info_list,
+>  				       &trace_panic_notifier);
+>  
+>  	register_die_notifier(&trace_die_notifier);
+> -- 
+> 2.36.0
+> 
