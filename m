@@ -4,50 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C384C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 12:43:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A0AAC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 13:53:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KpwKB0gflz3bkb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 22:43:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KpxsP44rKz3bpH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 23:53:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=phxVTDZ1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eAQ2tkW+;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KpwHD14Y8z2xsP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2022 22:42:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
+ helo=dfw.source.kernel.org; envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=phxVTDZ1; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=eAQ2tkW+; 
  dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4KpwH71V9Bz4x7Y;
- Thu, 28 Apr 2022 22:41:55 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1651149715;
- bh=angbs4k+nefnWKYYA4PyhQF8HIwJeqJDKwFomJisFV8=;
- h=From:To:Cc:Subject:Date:From;
- b=phxVTDZ11wzTf6qMuKjvp9ReQ3nrmVkIgNz4g6KTDOvzKsl1Ng4XdxT0WLwUpUw8L
- MZwHIjhtFzkb1QIUyvhMIxJqx4r+ywfxh8NAAbhd7zbu3jsJqaZRVNhQ4eQ+fnl7aK
- 7+LDrI0M+lxmdG7+7R2AIA365RPc3EXayKsyIZhqub8AuzBzdfB7XZM3oAoliZhkY9
- hqylqptCg+8O5tBRXrUQ4PisGzUbeMzQqnJSUnFcPyj95ig1mnHJA570Pc1InTvug/
- RYGxr3ExpStbkH5v55NtMOmxPaaTWYypmnb9tYyuZQJCedzp7shzQD7FpyN+eCvwRf
- TZGU8SkZF8OKg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <stable@vger.kernel.org>,
-	<gregkh@linuxfoundation.org>
-Subject: [PATCH v4.19 0/2] Custom backports for powerpc SLB issues
-Date: Thu, 28 Apr 2022 22:41:48 +1000
-Message-Id: <20220428124150.375623-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.35.1
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kpxrh1dxTz2yZd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2022 23:52:36 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 1B22C61C9A;
+ Thu, 28 Apr 2022 13:52:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5544CC385A9;
+ Thu, 28 Apr 2022 13:52:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1651153951;
+ bh=ODsMq+Ft6dlX/IlXg4fQJ5/+B9MFbJhJJW4Q4ktgLxw=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=eAQ2tkW+noTloQZoa3bawPAwbQnElGK0hQb/COxBVytIy6TX2Ejj95XwXO+nGKI4V
+ a35LPeQNI3AIi+uz4Y2X02zHmwACwr/q+20eHNrLBfNE34fNxJ2KeHgsln3ygah9pt
+ vhlJAX11NIXY1yVt0UyfYUE9G4vJ9G1RSxC1sCkzDZuGtWCJji9+r52pOdC0Mijy9S
+ dzOH2OrF9bf3tm5tZARzRxaFs1rhiUgKa5f2T/po64gaLVpRdYVu+nYCGECuapIQbR
+ M8KBuFnmaSCBXBMpURObGEofM5FOAzBsH3evsgzBAR7rnlFndWKvQOtFKy9+0mykuQ
+ Lq6lRBWsKXJFA==
+Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
+ id D0F09400B1; Thu, 28 Apr 2022 10:52:28 -0300 (-03)
+Date: Thu, 28 Apr 2022 10:52:28 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ian Rogers <irogers@google.com>
+Subject: Re: [PATCH 0/3] perf tools: Tidy up symbol end fixup (v3)
+Message-ID: <YmqcHFtVTfvCCbTW@kernel.org>
+References: <20220416004048.1514900-1-namhyung@kernel.org>
+ <CAP-5=fUUeqimTKoO9PQbm4yDWXZtTqxWm9ZAsNt1=K5N1Rq_Lg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAP-5=fUUeqimTKoO9PQbm4yDWXZtTqxWm9ZAsNt1=K5N1Rq_Lg@mail.gmail.com>
+X-Url: http://acmel.wordpress.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,29 +67,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-s390@vger.kernel.org,
+ Song Liu <songliubraving@fb.com>, linuxppc-dev@lists.ozlabs.org,
+ Mathieu Poirier <mathieu.poirier@linaro.org>,
+ Michael Petlan <mpetlan@redhat.com>, Will Deacon <will@kernel.org>,
+ Heiko Carstens <hca@linux.ibm.com>, John Garry <john.garry@huawei.com>,
+ LKML <linux-kernel@vger.kernel.org>, linux-perf-users@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, Leo Yan <leo.yan@linaro.org>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+ Namhyung Kim <namhyung@kernel.org>, Jiri Olsa <jolsa@redhat.com>,
+ Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Greg,
+Em Mon, Apr 25, 2022 at 01:59:03PM -0700, Ian Rogers escreveu:
+> On Fri, Apr 15, 2022 at 5:40 PM Namhyung Kim <namhyung@kernel.org> wrote:
+> >
+> > Hello,
+> >
+> > This work is a follow-up of Ian's previous one at
+> >   https://lore.kernel.org/all/20220412154817.2728324-1-irogers@google.com/
+> >
+> > Fixing up more symbol ends as introduced in:
+> >   https://lore.kernel.org/lkml/20220317135536.805-1-mpetlan@redhat.com/
+> >
+> > it caused perf annotate to run into memory limits - every symbol holds
+> > all the disassembled code in the annotation, and so making symbols
+> > ends further away dramatically increased memory usage (40MB to >1GB).
+> >
+> > Modify the symbol end fixup logic so that special kernel cases aren't
+> > applied in the common case.
+> >
+> > v3 changes)
+> >  * rename is_kernel to is_kallsyms
+> >  * move the logic to generic function
+> >  * remove arch-specific functions
+> >
+> > Thanks,
+> > Namhyung
+> 
+> Thanks Namhyung! The series:
+> 
+> Acked-by: Ian Rogers <irogers@google.com>
 
-Here are two custom backports to v4.19 for some powerpc issues we've discovered.
-Both were fixed upstream as part of a large non-backportable rewrite. Other stable
-kernel versions are not affected.
+Thanks, applied to perf/urgent.
 
-cheers
+- Arnaldo
 
-Michael Ellerman (1):
-  powerpc/64s: Unmerge EX_LR and EX_DAR
-
-Nicholas Piggin (1):
-  powerpc/64/interrupt: Temporarily save PPR on stack to fix register
-    corruption due to SLB miss
-
- arch/powerpc/include/asm/exception-64s.h | 37 ++++++++++++++----------
- 1 file changed, 22 insertions(+), 15 deletions(-)
+ 
+> > Namhyung Kim (3):
+> >   perf symbol: Pass is_kallsyms to symbols__fixup_end()
+> >   perf symbol: Update symbols__fixup_end()
+> >   perf symbol: Remove arch__symbols__fixup_end()
+> >
+> >  tools/perf/arch/arm64/util/machine.c   | 21 ---------------
+> >  tools/perf/arch/powerpc/util/Build     |  1 -
+> >  tools/perf/arch/powerpc/util/machine.c | 25 -----------------
+> >  tools/perf/arch/s390/util/machine.c    | 16 -----------
+> >  tools/perf/util/symbol-elf.c           |  2 +-
+> >  tools/perf/util/symbol.c               | 37 +++++++++++++++++++-------
+> >  tools/perf/util/symbol.h               |  3 +--
+> >  7 files changed, 29 insertions(+), 76 deletions(-)
+> >  delete mode 100644 tools/perf/arch/powerpc/util/machine.c
+> >
+> >
+> > base-commit: 41204da4c16071be9090940b18f566832d46becc
+> > --
+> > 2.36.0.rc0.470.gd361397f0d-goog
+> >
 
 -- 
-2.35.1
 
+- Arnaldo
