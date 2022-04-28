@@ -4,51 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27ED2C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Apr 2022 21:58:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 130EDC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 00:29:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KpXgJ2T9Cz3bs4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 07:58:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kpc2Q0h51z3bvd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Apr 2022 10:29:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=cPgytBH9;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=GN1/nse5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org;
- envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
-Received: from desiato.infradead.org (desiato.infradead.org
- [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+ (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
+ envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=GN1/nse5; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KpXfT3T5Qz2xlF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2022 07:57:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kpc1f71SPz2x9V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2022 10:29:05 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
- :In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:
- Sender:Reply-To:Content-ID:Content-Description;
- bh=eCju4//7j32RLgojrAV7AzFnehTLEosjViFNjaYFxJA=; b=cPgytBH93sOtCvDS65FEwRabXb
- YRCUB5+xPwYsnIFrKUcZxNHdKOnIp96JMLalu58M2rDhumq5ZJdsIRemIAlPGejUDhq2P6CFHwyNh
- YW3G4iEgwfK/SqgjU0ByPaVl7rwSerqsChFLlaB0ILGMMK3jJt9ZtpZoto7tJrVztgerUPqaHnaur
- 91Tzbf5BX6zDwHajm2qMuYIu5F79+IVLde7+EPb3NxifJjh67RDnI3BGiKn6TTWVPGhFju4araZ2B
- kqTy4AFNeNaz0MzlvBWWpJSjR63lOYebgSZev81eXtD1xZ2frmzZKgnDT9ruSgfr7WTWgkchU6+m0
- rLkso31A==;
-Received: from [2602:306:c5a2:a380:b27b:25ff:fe2c:51a8]
- by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
- id 1njpeX-009AoX-E8; Wed, 27 Apr 2022 21:56:53 +0000
-Message-ID: <5892767a-bbab-097b-2776-e4cd35abf289@infradead.org>
-Date: Wed, 27 Apr 2022 14:56:46 -0700
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+ In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
+ :Reply-To:Content-ID:Content-Description;
+ bh=oTHdXx/bNqvs0tUKZg1jX0QKDhKts3seYpf9QVBefoo=; b=GN1/nse5iki/WFV8HZE7gnZx8M
+ eJUoKq0F73m9M9r3NgIBqsY0+vw93A0bLY3hZk7W2z6ntNRxf9y3czUAh8lb6xtyiL6iRkCGoMbr3
+ 13t311Tat608CEGCcNXVW95sxa2A683FvRnnoYsLI49dqQLiYKn/y05pL/vMxI0Bf3XOAu94o11W+
+ nn9qk8zdTyrvuFjTnWtZ6o7af2OgOBH9Lb3syZMjRdfGkSipXa4zeUfKnDbho+LORacM3SyNN4LMV
+ DjLIUchKFzC9+E73n2pj1o853yXO/ZfWMQcrLme864qTb5ygY07AwvTErV57FcFGuv7kOYC61ZuBl
+ QQvKsP1Q==;
+Received: from [2601:1c0:6280:3f0::aa0b]
+ by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+ id 1njs1D-00B2Sy-UA; Thu, 28 Apr 2022 00:28:28 +0000
+Message-ID: <4fe85e9c-4e96-e9d5-9fd8-f062bafcda4f@infradead.org>
+Date: Wed, 27 Apr 2022 17:28:11 -0700
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH net-next 13/14] eth: spider: remove a copy of the
- NAPI_POLL_WEIGHT define
+ Thunderbird/91.8.1
+Subject: Re: [PATCH 24/30] panic: Refactor the panic path
 Content-Language: en-US
-To: Jakub Kicinski <kuba@kernel.org>, davem@davemloft.net, pabeni@redhat.com
-References: <20220427154111.529975-1-kuba@kernel.org>
- <20220427154111.529975-14-kuba@kernel.org>
-From: Geoff Levand <geoff@infradead.org>
-In-Reply-To: <20220427154111.529975-14-kuba@kernel.org>
+To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>, akpm@linux-foundation.org,
+ bhe@redhat.com, pmladek@suse.com, kexec@lists.infradead.org
+References: <20220427224924.592546-1-gpiccoli@igalia.com>
+ <20220427224924.592546-25-gpiccoli@igalia.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20220427224924.592546-25-gpiccoli@igalia.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -62,25 +66,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
+ gregkh@linuxfoundation.org, peterz@infradead.org,
+ alejandro.j.jimenez@oracle.com, linux-remoteproc@vger.kernel.org,
+ feng.tang@intel.com, linux-mips@vger.kernel.org, hidehiro.kawai.ez@hitachi.com,
+ sparclinux@vger.kernel.org, will@kernel.org, tglx@linutronix.de,
+ linux-leds@vger.kernel.org, linux-s390@vger.kernel.org, mikelley@microsoft.com,
+ john.ogness@linutronix.de, corbet@lwn.net, paulmck@kernel.org,
+ fabiomirmar@gmail.com, x86@kernel.org, mingo@redhat.com,
+ bcm-kernel-feedback-list@broadcom.com, xen-devel@lists.xenproject.org,
+ dyoung@redhat.com, vgoyal@redhat.com, linux-xtensa@linux-xtensa.org,
+ dave.hansen@linux.intel.com, keescook@chromium.org, arnd@arndb.de,
+ linux-pm@vger.kernel.org, coresight@lists.linaro.org,
+ linux-um@lists.infradead.org, rostedt@goodmis.org, rcu@vger.kernel.org,
+ bp@alien8.de, luto@kernel.org, linux-tegra@vger.kernel.org,
+ openipmi-developer@lists.sourceforge.net, andriy.shevchenko@linux.intel.com,
+ linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
+ jgross@suse.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
+ kernel@gpiccoli.net, linux-kernel@vger.kernel.org, stern@rowland.harvard.edu,
+ senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
+ kernel-dev@igalia.com, linux-alpha@vger.kernel.org, vkuznets@redhat.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Jakub,
 
-On 4/27/22 08:41, Jakub Kicinski wrote:
-> Defining local versions of NAPI_POLL_WEIGHT with the same
-> values in the drivers just makes refactoring harder.
 
-> --- a/drivers/net/ethernet/toshiba/spider_net.c
-> +++ b/drivers/net/ethernet/toshiba/spider_net.c
->  
->  	netif_napi_add(netdev, &card->napi,
-> -		       spider_net_poll, SPIDER_NET_NAPI_WEIGHT);
-> +		       spider_net_poll, NAPI_POLL_WEIGHT);
+On 4/27/22 15:49, Guilherme G. Piccoli wrote:
+> +	crash_kexec_post_notifiers
+> +			This was DEPRECATED - users should always prefer the
 
-This seems fine. Both SPIDER_NET_NAPI_WEIGHT and NAPI_POLL_WEIGHT
-are defined as 64.  Thanks for your contribution.
+			This is DEPRECATED - users should always prefer the
 
-Acked-by: Geoff Levand <geoff@infradead.org>
+> +			parameter "panic_notifiers_level" - check its entry
+> +			in this documentation for details on how it works.
+> +			Setting this parameter is exactly the same as setting
+> +			"panic_notifiers_level=4".
+
+-- 
+~Randy
