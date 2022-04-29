@@ -4,71 +4,101 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C461FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Apr 2022 16:26:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DD64C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Apr 2022 17:40:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KqdCv0dKBz3bqy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Apr 2022 02:26:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kqfs16gTXz3brK
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Apr 2022 03:40:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CVIs8Sdx;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bh6pzVLD;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KqdC73s5Gz2yHB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2022 02:25:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=CVIs8Sdx; 
- dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
- by gandalf.ozlabs.org (Postfix) with ESMTP id 4KqdC51sk8z4xXk
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2022 02:25:53 +1000 (AEST)
-Received: by gandalf.ozlabs.org (Postfix)
- id 4KqdC51P8Jz4ySs; Sat, 30 Apr 2022 02:25:53 +1000 (AEST)
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
- helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org;
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: gandalf.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=CVIs8Sdx; 
- dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=bh6pzVLD; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by gandalf.ozlabs.org (Postfix) with ESMTPS id 4KqdC45qVzz4xXk
- for <linuxppc-dev@ozlabs.org>; Sat, 30 Apr 2022 02:25:52 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 805C962241;
- Fri, 29 Apr 2022 16:25:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90F6CC385A4;
- Fri, 29 Apr 2022 16:25:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1651249548;
- bh=BWS82VVFyGkq8byIrn9E10Tw1cwiTndaAE5gu1B1OmQ=;
- h=Date:From:To:Cc:Subject:In-Reply-To:From;
- b=CVIs8SdxCsEVj5dUFPoP75L/KJ26GD43iGVck/aZNGhK1aezz7ZZb06FSUfWiMU00
- TXb+1854FvHtiQPJaNkNykibUp1cgY1oD2iObIkRxs2MoTYcJb63woOZPMZR+SDGcU
- 3HNVtaNPwoV85OfwP4/4RrLNA8cIYKZ8K7ZEC1wEKqUE7zEsAtpg+Sc7WIPoW36o3E
- l4BqKcJyvXW/5tH7ZOLJG6rEOYNvav4eMgUMApp2OOvJvYo/J+DJZ4ArXiMOT84Bha
- LcuibEvm3xCMlzVtrEPQulC95eJG+GMWrxVeoahXaCXso46F+NgWRtTC/XTK12qu/A
- mlhrBbOUrkG0g==
-Date: Fri, 29 Apr 2022 11:25:45 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Nathan Lynch <nathanl@linux.ibm.com>
-Subject: Re: [PATCH v6] PCI hotplug: rpaphp: Error out on busy status from
- get-sensor-state
-Message-ID: <20220429162545.GA79541@bhelgaas>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KqfrG1H3lz3bZX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2022 03:39:41 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 23TGw0cJ011947;
+ Fri, 29 Apr 2022 17:39:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : subject :
+ to : cc : references : in-reply-to : mime-version : message-id :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=YoHa0fLQEkgm+3Igrqs1u82fd0eKrL3cNPKS8q/AGcs=;
+ b=bh6pzVLD+JALzZUxG9/IYtCYv8tb0e7wZUDHzxVGH637nt81PrchE5i2K3rY6nqvuNE3
+ vxfMkDFLMqdtShueEkai+pgunIfMy+c6T3QBRJB3hjmQ/xC0kzYtXu7NiHU3Rrk+ObKb
+ Z1CoxBLs0LxC/mVa4dQVos5kCs3S8WAI4+fVBIjWLMvomjbtHWvUnVC1cEmd/Vhjllxk
+ 50Tv3C/tVS5ayUgm2iTM+DiKYpmMftBTCrbkDKbVdokiYn7MfxsvnELk+DF9CyWGbFhI
+ cvAy5SE/Evzpd15aVS0eNLFjqhqEpYPrtHxKlTdphWUYgryupNAkhtElIMm/3nvYCLXi iw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3fqt9efudn-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 29 Apr 2022 17:39:26 +0000
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+ by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 23THVGSR002413;
+ Fri, 29 Apr 2022 17:39:26 GMT
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.108])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3fqt9efucs-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 29 Apr 2022 17:39:26 +0000
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+ by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 23THbqX0031260;
+ Fri, 29 Apr 2022 17:39:23 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma05fra.de.ibm.com with ESMTP id 3fm938ygfe-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 29 Apr 2022 17:39:23 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 23THdLdl48365836
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 29 Apr 2022 17:39:21 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4078511C04C;
+ Fri, 29 Apr 2022 17:39:21 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C675B11C04A;
+ Fri, 29 Apr 2022 17:39:20 +0000 (GMT)
+Received: from localhost (unknown [9.43.18.217])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 29 Apr 2022 17:39:20 +0000 (GMT)
+Date: Fri, 29 Apr 2022 23:09:19 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/2] ftrace: recordmcount: Handle sections with no
+ non-weak symbols
+To: Steven Rostedt <rostedt@goodmis.org>
+References: <cover.1651166001.git.naveen.n.rao@linux.vnet.ibm.com>
+ <126aca34935cf1c7168e17970c706e36577094e7.1651166001.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20220428184212.18fbf438@gandalf.local.home>
+In-Reply-To: <20220428184212.18fbf438@gandalf.local.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87k0b8q1px.fsf@linux.ibm.com>
+User-Agent: astroid/4d6b06ad (https://github.com/astroidmail/astroid)
+Message-Id: <1651252324.js9790ngjg.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: XjwigIEeW3HSn-VRBEuRqpTuXxv62pyz
+X-Proofpoint-ORIG-GUID: ed5zTfg3vACJAC1QySK7bIsb5o0AfjqR
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
+ definitions=2022-04-29_08,2022-04-28_01,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 phishscore=0
+ mlxscore=0 suspectscore=0 priorityscore=1501 spamscore=0 mlxlogscore=783
+ adultscore=0 lowpriorityscore=0 impostorscore=0 clxscore=1015 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2202240000
+ definitions=main-2204290088
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,100 +110,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>,
- linux-pci <linux-pci@vger.kernel.org>,
- Mahesh Salgaonkar <mahesh@linux.ibm.com>,
- Linux Kernel <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Oliver O'Halloran <oohall@gmail.com>,
- Bjorn Helgaas <bhelgaas@google.com>
+Cc: llvm@lists.linux.dev, Nick Desaulniers <ndesaulniers@google.com>,
+ linux-kernel@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 28, 2022 at 05:31:38PM -0500, Nathan Lynch wrote:
-> Bjorn Helgaas <helgaas@kernel.org> writes:
-> > On Tue, Apr 26, 2022 at 11:07:39PM +0530, Mahesh Salgaonkar wrote:
-> >> +/*
-> >> + * RTAS call get-sensor-state(DR_ENTITY_SENSE) return values as per PAPR:
-> >> + *    -1: Hardware Error
-> >> + *    -2: RTAS_BUSY
-> >> + *    -3: Invalid sensor. RTAS Parameter Error.
-> >> + * -9000: Need DR entity to be powered up and unisolated before RTAS call
-> >> + * -9001: Need DR entity to be powered up, but not unisolated, before RTAS call
-> >> + * -9002: DR entity unusable
-> >> + *  990x: Extended delay - where x is a number in the range of 0-5
-> >> + */
-> >> +#define RTAS_HARDWARE_ERROR	(-1)
-> >> +#define RTAS_INVALID_SENSOR	(-3)
-> >> +#define SLOT_UNISOLATED		(-9000)
-> >> +#define SLOT_NOT_UNISOLATED	(-9001)
+Steven Rostedt wrote:
+> On Thu, 28 Apr 2022 22:49:52 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+>=20
+>> But, with ppc64 elf abi v1 which only supports the old -pg flag, mcount
+>> location can differ between the weak and non-weak variants of a
+>> function. In such scenarios, one of the two mcount entries will be
+>> invalid. Such architectures need to validate mcount locations by
+>> ensuring that the instruction(s) at those locations are as expected. On
+>> powerpc, this can be a simple check to ensure that the instruction is a
+>> 'bl'. This check can be further tightened as necessary.
+>=20
+> I was thinking about this more, and I was thinking that we could create
+> another section; Perhaps __mcount_loc_weak. And place these in that
+> section. That way, we could check if these symbols to see if there's
+> already a symbol for it, and if there is, then drop it.
 
-> >> +static int rtas_to_errno(int rtas_rc)
-> >> +{
-> >> +	int rc;
-> >> +
-> >> +	switch (rtas_rc) {
-> >> +	case RTAS_HARDWARE_ERROR:
-> >> +		rc = -EIO;
-> >> +		break;
-> >> +	case RTAS_INVALID_SENSOR:
-> >> +		rc = -EINVAL;
-> >> +		break;
-> >> +	case SLOT_UNISOLATED:
-> >> +	case SLOT_NOT_UNISOLATED:
-> >> +		rc = -EFAULT;
-> >> +		break;
-> >> +	case SLOT_NOT_USABLE:
-> >> +		rc = -ENODEV;
-> >> +		break;
-> >> +	case RTAS_BUSY:
-> >> +	case RTAS_EXTENDED_DELAY_MIN...RTAS_EXTENDED_DELAY_MAX:
-> >> +		rc = -EBUSY;
-> >> +		break;
-> >> +	default:
-> >> +		err("%s: unexpected RTAS error %d\n", __func__, rtas_rc);
-> >> +		rc = -ERANGE;
-> >> +		break;
-> >> +	}
-> >> +	return rc;
-> >
-> > This basically duplicates rtas_error_rc().  Why do we need two copies?
-> 
-> It treats RTAS_BUSY, RTAS_EXTENDED_DELAY_MIN...RTAS_EXTENDED_DELAY_MAX
-> differently, which is part of the point of this change.
+If I'm understanding your suggestion right:
+- we now create a new section in each object file: __mcount_loc_weak,=20
+  and capture such relocations using weak symbols there.
+- we then ask the linker to put these separately between, say,=20
+  __start_mcount_loc_weak and __stop_mcount_loc_weak
+- on ftrace init, we go through entries in this range, but discard those=20
+  that belong to functions that also have an entry between=20
+  __start_mcount_loc and __stop_mcount loc.
 
-I think it would reduce confusion overall to:
+The primary issue I see here is that the mcount locations within the new=20
+weak section will end up being offsets from a different function in=20
+vmlinux, since the linker does not create a symbol for the weak=20
+functions that were over-ridden.
 
-  - add RTAS_HARDWARE_ERROR, RTAS_INVALID_SENSOR to rtas.h
+As an example, in the issue described in this patch set, if powerpc=20
+starts over-riding kexec_arch_apply_relocations(), then the current weak=20
+implementation in kexec_file.o gets carried over to the final vmlinux,=20
+but the instructions will instead appear under the previous function in=20
+kexec_file.o: crash_prepare_elf64_headers(). This function may or may=20
+not be traced to begin with, so we won't be able to figure out if this=20
+is valid or not.
 
-  - rename and move SLOT_UNISOLATED, etc to rtas.h; they look
-    analogous to function-specific things like RTAS_SUSPEND_ABORTED
 
-  - change rtas_error_rc() to use the RTAS_HARDWARE_ERROR, etc
-    constants
-
-  - use the constants (SLOT_NOT_USABLE) instead of "9902" in the
-    commit log and code comments
-
-> Aside: rtas_error_rc() (from powerpc's rtas.c) is badly named. Its
-> conversions make sense for only a handful of RTAS calls. RTAS error
-> codes have function-specific interpretations.
-
-Maybe there's a case for factoring out the generic error codes and
-have rtas_to_errno() (which sounds like maybe it should be renamed as
-well) handle the function-specific part and fall back to the generic
-one otherwise:
-
-  int rtas_to_errno(int rtas_rc)
-  {
-    switch (rtas_rc) {
-    case SLOT_UNISOLATED:
-    case SLOT_NOT_UNISOLATED:
-      return -EINVAL;
-    case SLOT_NOT_USABLE:
-      return -ENODEV;
-    ...
-    default:
-      return rtas_error_rc(rtas_rc);
-    }
-  }
+- Naveen
