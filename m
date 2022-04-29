@@ -4,59 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F27EC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Apr 2022 16:05:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C461FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Apr 2022 16:26:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kqclc6JQwz3bc4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Apr 2022 02:05:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KqdCv0dKBz3bqy
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Apr 2022 02:26:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=dYOwdCYz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CVIs8Sdx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=igalia.com (client-ip=178.60.130.6; helo=fanzine2.igalia.com;
- envelope-from=gpiccoli@igalia.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256
- header.s=20170329 header.b=dYOwdCYz; dkim-atps=neutral
-Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kqckx1bTYz2yHB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2022 02:04:52 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com; 
- s=20170329;
- h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
- References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
- Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
- Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
- List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=QQI5zmi1djYWNz2i53I6KuQGatDa49BWqjEk2Pav1i4=; b=dYOwdCYz8mfW6uRaErWUoCqmdx
- 5T0+vzZBt6UK85jUK/bYBffPO6pHVBukVXgw40Mng8+hfEFyxsYupbDv17vw0eY73RVtJNUJhZeIk
- wjL2oPNMg0UJQkop2tznLUBtpwTgs2tJTFrh96RXyi3iI9oJ7Xg0HjOO5wFLxxatzCt/a1kjKIm+q
- GG90XSMTUteF9uAfx+0HJjQF0T7y90PJaZRFs3aM6M51tA02d53awi4I7n5GpC6cVQif5RrGFpU1r
- QhiVEfyVqroi50IPYPzYRbjvCqabrqPiHclqX4UZkfFE4tLq7njetpvB7ea+qAjYTdFscbWw6lpa8
- 5AxSRVRQ==;
-Received: from [179.113.53.197] (helo=[192.168.1.60])
- by fanzine2.igalia.com with esmtpsa 
- (Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
- id 1nkT6a-0001BR-MS; Fri, 29 Apr 2022 18:04:28 +0200
-Message-ID: <7518924e-5bb4-e6e9-0e3e-3f5cb03bf946@igalia.com>
-Date: Fri, 29 Apr 2022 13:04:01 -0300
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KqdC73s5Gz2yHB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2022 02:25:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=CVIs8Sdx; 
+ dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+ by gandalf.ozlabs.org (Postfix) with ESMTP id 4KqdC51sk8z4xXk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2022 02:25:53 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+ id 4KqdC51P8Jz4ySs; Sat, 30 Apr 2022 02:25:53 +1000 (AEST)
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
+ helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: gandalf.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=CVIs8Sdx; 
+ dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by gandalf.ozlabs.org (Postfix) with ESMTPS id 4KqdC45qVzz4xXk
+ for <linuxppc-dev@ozlabs.org>; Sat, 30 Apr 2022 02:25:52 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 805C962241;
+ Fri, 29 Apr 2022 16:25:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90F6CC385A4;
+ Fri, 29 Apr 2022 16:25:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1651249548;
+ bh=BWS82VVFyGkq8byIrn9E10Tw1cwiTndaAE5gu1B1OmQ=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:From;
+ b=CVIs8SdxCsEVj5dUFPoP75L/KJ26GD43iGVck/aZNGhK1aezz7ZZb06FSUfWiMU00
+ TXb+1854FvHtiQPJaNkNykibUp1cgY1oD2iObIkRxs2MoTYcJb63woOZPMZR+SDGcU
+ 3HNVtaNPwoV85OfwP4/4RrLNA8cIYKZ8K7ZEC1wEKqUE7zEsAtpg+Sc7WIPoW36o3E
+ l4BqKcJyvXW/5tH7ZOLJG6rEOYNvav4eMgUMApp2OOvJvYo/J+DJZ4ArXiMOT84Bha
+ LcuibEvm3xCMlzVtrEPQulC95eJG+GMWrxVeoahXaCXso46F+NgWRtTC/XTK12qu/A
+ mlhrBbOUrkG0g==
+Date: Fri, 29 Apr 2022 11:25:45 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Nathan Lynch <nathanl@linux.ibm.com>
+Subject: Re: [PATCH v6] PCI hotplug: rpaphp: Error out on busy status from
+ get-sensor-state
+Message-ID: <20220429162545.GA79541@bhelgaas>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
-Subject: Re: [PATCH 24/30] panic: Refactor the panic path
-Content-Language: en-US
-To: Randy Dunlap <rdunlap@infradead.org>, akpm@linux-foundation.org,
- bhe@redhat.com, pmladek@suse.com, kexec@lists.infradead.org
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-25-gpiccoli@igalia.com>
- <4fe85e9c-4e96-e9d5-9fd8-f062bafcda4f@infradead.org>
-From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-In-Reply-To: <4fe85e9c-4e96-e9d5-9fd8-f062bafcda4f@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87k0b8q1px.fsf@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,51 +80,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
- gregkh@linuxfoundation.org, peterz@infradead.org,
- alejandro.j.jimenez@oracle.com, linux-remoteproc@vger.kernel.org,
- feng.tang@intel.com, linux-mips@vger.kernel.org, hidehiro.kawai.ez@hitachi.com,
- sparclinux@vger.kernel.org, will@kernel.org, tglx@linutronix.de,
- linux-leds@vger.kernel.org, linux-s390@vger.kernel.org, mikelley@microsoft.com,
- john.ogness@linutronix.de, corbet@lwn.net, paulmck@kernel.org,
- fabiomirmar@gmail.com, x86@kernel.org, mingo@redhat.com,
- bcm-kernel-feedback-list@broadcom.com, xen-devel@lists.xenproject.org,
- dyoung@redhat.com, vgoyal@redhat.com, linux-xtensa@linux-xtensa.org,
- dave.hansen@linux.intel.com, keescook@chromium.org, arnd@arndb.de,
- linux-pm@vger.kernel.org, coresight@lists.linaro.org,
- linux-um@lists.infradead.org, rostedt@goodmis.org, rcu@vger.kernel.org,
- bp@alien8.de, luto@kernel.org, linux-tegra@vger.kernel.org,
- openipmi-developer@lists.sourceforge.net, andriy.shevchenko@linux.intel.com,
- linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
- jgross@suse.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
- kernel@gpiccoli.net, linux-kernel@vger.kernel.org, stern@rowland.harvard.edu,
- senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
- kernel-dev@igalia.com, linux-alpha@vger.kernel.org, vkuznets@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>,
+ linux-pci <linux-pci@vger.kernel.org>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+ Linux Kernel <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Oliver O'Halloran <oohall@gmail.com>,
+ Bjorn Helgaas <bhelgaas@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 27/04/2022 21:28, Randy Dunlap wrote:
-> 
-> 
-> On 4/27/22 15:49, Guilherme G. Piccoli wrote:
->> +	crash_kexec_post_notifiers
->> +			This was DEPRECATED - users should always prefer the
-> 
-> 			This is DEPRECATED - users should always prefer the
-> 
->> +			parameter "panic_notifiers_level" - check its entry
->> +			in this documentation for details on how it works.
->> +			Setting this parameter is exactly the same as setting
->> +			"panic_notifiers_level=4".
-> 
+On Thu, Apr 28, 2022 at 05:31:38PM -0500, Nathan Lynch wrote:
+> Bjorn Helgaas <helgaas@kernel.org> writes:
+> > On Tue, Apr 26, 2022 at 11:07:39PM +0530, Mahesh Salgaonkar wrote:
+> >> +/*
+> >> + * RTAS call get-sensor-state(DR_ENTITY_SENSE) return values as per PAPR:
+> >> + *    -1: Hardware Error
+> >> + *    -2: RTAS_BUSY
+> >> + *    -3: Invalid sensor. RTAS Parameter Error.
+> >> + * -9000: Need DR entity to be powered up and unisolated before RTAS call
+> >> + * -9001: Need DR entity to be powered up, but not unisolated, before RTAS call
+> >> + * -9002: DR entity unusable
+> >> + *  990x: Extended delay - where x is a number in the range of 0-5
+> >> + */
+> >> +#define RTAS_HARDWARE_ERROR	(-1)
+> >> +#define RTAS_INVALID_SENSOR	(-3)
+> >> +#define SLOT_UNISOLATED		(-9000)
+> >> +#define SLOT_NOT_UNISOLATED	(-9001)
 
-Thanks Randy, for your suggestion - but I confess I couldn't understand
-it properly. It's related to spaces/tabs, right? What you suggest me to
-change in this formatting? Just by looking the email I can't parse.
+> >> +static int rtas_to_errno(int rtas_rc)
+> >> +{
+> >> +	int rc;
+> >> +
+> >> +	switch (rtas_rc) {
+> >> +	case RTAS_HARDWARE_ERROR:
+> >> +		rc = -EIO;
+> >> +		break;
+> >> +	case RTAS_INVALID_SENSOR:
+> >> +		rc = -EINVAL;
+> >> +		break;
+> >> +	case SLOT_UNISOLATED:
+> >> +	case SLOT_NOT_UNISOLATED:
+> >> +		rc = -EFAULT;
+> >> +		break;
+> >> +	case SLOT_NOT_USABLE:
+> >> +		rc = -ENODEV;
+> >> +		break;
+> >> +	case RTAS_BUSY:
+> >> +	case RTAS_EXTENDED_DELAY_MIN...RTAS_EXTENDED_DELAY_MAX:
+> >> +		rc = -EBUSY;
+> >> +		break;
+> >> +	default:
+> >> +		err("%s: unexpected RTAS error %d\n", __func__, rtas_rc);
+> >> +		rc = -ERANGE;
+> >> +		break;
+> >> +	}
+> >> +	return rc;
+> >
+> > This basically duplicates rtas_error_rc().  Why do we need two copies?
+> 
+> It treats RTAS_BUSY, RTAS_EXTENDED_DELAY_MIN...RTAS_EXTENDED_DELAY_MAX
+> differently, which is part of the point of this change.
 
-Cheers,
+I think it would reduce confusion overall to:
 
+  - add RTAS_HARDWARE_ERROR, RTAS_INVALID_SENSOR to rtas.h
 
-Guilherme
+  - rename and move SLOT_UNISOLATED, etc to rtas.h; they look
+    analogous to function-specific things like RTAS_SUSPEND_ABORTED
+
+  - change rtas_error_rc() to use the RTAS_HARDWARE_ERROR, etc
+    constants
+
+  - use the constants (SLOT_NOT_USABLE) instead of "9902" in the
+    commit log and code comments
+
+> Aside: rtas_error_rc() (from powerpc's rtas.c) is badly named. Its
+> conversions make sense for only a handful of RTAS calls. RTAS error
+> codes have function-specific interpretations.
+
+Maybe there's a case for factoring out the generic error codes and
+have rtas_to_errno() (which sounds like maybe it should be renamed as
+well) handle the function-specific part and fall back to the generic
+one otherwise:
+
+  int rtas_to_errno(int rtas_rc)
+  {
+    switch (rtas_rc) {
+    case SLOT_UNISOLATED:
+    case SLOT_NOT_UNISOLATED:
+      return -EINVAL;
+    case SLOT_NOT_USABLE:
+      return -ENODEV;
+    ...
+    default:
+      return rtas_error_rc(rtas_rc);
+    }
+  }
