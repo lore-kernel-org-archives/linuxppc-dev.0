@@ -4,66 +4,138 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B6D2C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Apr 2022 17:46:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF8C9C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Apr 2022 17:47:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kqg0c4r1sz3c8r
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Apr 2022 03:46:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kqg1R25tqz3cdJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Apr 2022 03:47:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=NQuHjq75;
+	dkim=pass (1024-bit key; unprotected) header.d=microsoft.com header.i=@microsoft.com header.a=rsa-sha256 header.s=selector2 header.b=d+Tijt2e;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::230;
- helo=mail-oi1-x230.google.com; envelope-from=jcmvbkbc@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=NQuHjq75; dkim-atps=neutral
-Received: from mail-oi1-x230.google.com (mail-oi1-x230.google.com
- [IPv6:2607:f8b0:4864:20::230])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=microsoft.com (client-ip=2a01:111:f400:7e88::72f;
+ helo=nam10-dm6-obe.outbound.protection.outlook.com;
+ envelope-from=mikelley@microsoft.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=microsoft.com header.i=@microsoft.com
+ header.a=rsa-sha256 header.s=selector2 header.b=d+Tijt2e; 
+ dkim-atps=neutral
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com
+ (mail-dm6nam10on2072f.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:7e88::72f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kqckv0n0xz2yHB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2022 02:04:53 +1000 (AEST)
-Received: by mail-oi1-x230.google.com with SMTP id 12so8934222oix.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2022 09:04:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=MQcZ21ZXrJjtfh7JWVyd82OFreqrUf57vyzG9uXB95s=;
- b=NQuHjq75yTcETqoe5MFxchlZ/6p7R23s4Uh/eK6M8cjCLKjgK4aZLK94enM9k42z9z
- 9olN5ZP+vAQmeXTs3TpSIt0NzvMdqABegG4qz96TEt/HS/xzZxrOdtT3s38HXa8rxQCC
- //y1nGWR49pl0bI4BXJikvhyEOuRN9x7yyhQG6wmlGrFanhXAWznrpMOX2TZU06+jYUn
- nIWU94QXvKkXMgCPv2tcj5gD6bKy2psqRCjrFUOKa8Bl/tDHLN4JOX0rshY1mFgS6Dj8
- yb9QNW2JBzYk707yzx4X/QadG8x7UesXEXLRQ21ibqXwVr/gFDYqh338pCxNErks0fTt
- i5PQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=MQcZ21ZXrJjtfh7JWVyd82OFreqrUf57vyzG9uXB95s=;
- b=C1v7B9jfBWyJyYt7wcwO0QNWW2TisoF5ZH8qqO7dpf+Yre/Zor0J5Bccp6RDBEOyGo
- 34HlW7A0iDblmgLm80WYIBlFUHHtzsYWSV1eDcbaktbXwBrs5WuJOA3moBqGHI04F6U6
- eHcv0d/bkkp+NF8YvOlpu4HVsDJxD5z7V5kesiJSnEJv7xOVoaM6JGJrPa2nDiZSEPAe
- BB7YIaeFnawWZqRvWrBXLGdtBfniPp7hzV1TvKUjj0inSeUkkzUDm2JNUAIm6MXLY24o
- ZJ9608UqMkQPA3VLQ/AJYZ9ocMJ+cxmI/m99qBMW5gF8H8pHnd06r23OWruf2RaYwUXL
- lTAQ==
-X-Gm-Message-State: AOAM532JRePQO1aJ+xavv6rE+jnEVvW3EsL4wElIsG73UNP19y3/4YKL
- KlG4aWN9fjA+oT7fy/Y4Rvhve10F+ZyBjYhbw8E=
-X-Google-Smtp-Source: ABdhPJysHLlZfOKGv6xFakU0zwsYHpphdLaC+QwvkTPAsD1DKrMZHBdjgWt7xXjXQ23jsIbpf+qT2AhQ4uRAgVD8DGA=
-X-Received: by 2002:a05:6808:1202:b0:2f9:c7b4:fd56 with SMTP id
- a2-20020a056808120200b002f9c7b4fd56mr15139oil.55.1651248290317; Fri, 29 Apr
- 2022 09:04:50 -0700 (PDT)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KqdCx2Wk1z2ybB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2022 02:26:35 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=TnYPKv6cHHooKkxX4CyAInmQOVJL+OziIpN/GllKamJdLXKN9pgc0JLdxdyG5o4Udhig25LbpjMkGVtiJr3BpTywkbrXXha1jvswAm+XYWeYOXi2gjn2dH2uAgTMtLT2jbOTqtuSqOTs6HSmhzLD+7iFYQFUMSmQ2HhcdRz0tckq7wSnmWoEnae03PlAp81C/6Y7A5elDA7JXOm/ubJjoq+tF7vHcRy9sLmepWaqrALujROI2plEhRBl02SgmI6ETipuH8J6Xub66Nv/IDNQ0T1gxK8T1a1OaaPRk9S8MH5BuCJwTRspF9IdY2rGjJfLqh3Y9lm3CV0zLYpvT+I6Ig==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=zTfneMsIYF8YteyonKPHoonZYmHV8hcH1Ru2q+6fv+0=;
+ b=a8eu4ttDG+sEYNKvY+Uwg1P3RBiTiU+aBz6zRlC/6rvyoDzx60kk6vFEe/s42qfutMsEoCQXf26saUU5449UKwK24BAbhL91IpoY51JezhYp+GEiVnxQbqE/iZ+SOACRPpdsYFcOSEYUXdTrLeAFwJtGMnzA7bO3UfPp3ObxWmkMQaJkQa4bt+JR5CbdrtRreISsi/oI8XylYkH3pby6kSXQe+vmLXgJq9WyZhPChMkc4r6YxiCxevLqMJpaBn5Kytf9c8vT5PNtVTGx+ODEAb1aYyH/lQREUWAzeu7eEEE5pR4fiwrhZcFwzS5Xz3T5pA8yf4n50TM4AZeFGPKBZA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=microsoft.com; dmarc=pass action=none
+ header.from=microsoft.com; dkim=pass header.d=microsoft.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=zTfneMsIYF8YteyonKPHoonZYmHV8hcH1Ru2q+6fv+0=;
+ b=d+Tijt2euluzrQi71IhaI2QKQVJzCEGzhvDpVQFylauvgmvb+PUHN72mLRXMSu63F1AMA4wWXKpgR7C192SolLu8YaJCvcwzHALT2WPLFSkGE8ihloRhKEhReubWrxbSHp5AZDEZSpJUcCoV3iPIyf5/QVdRfkXrHI+cydNTodI=
+Received: from PH0PR21MB3025.namprd21.prod.outlook.com (2603:10b6:510:d2::21)
+ by CH2PR21MB1525.namprd21.prod.outlook.com (2603:10b6:610:5f::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5227.6; Fri, 29 Apr
+ 2022 16:26:02 +0000
+Received: from PH0PR21MB3025.namprd21.prod.outlook.com
+ ([fe80::dd77:2d4d:329e:87df]) by PH0PR21MB3025.namprd21.prod.outlook.com
+ ([fe80::dd77:2d4d:329e:87df%6]) with mapi id 15.20.5227.006; Fri, 29 Apr 2022
+ 16:26:02 +0000
+From: "Michael Kelley (LINUX)" <mikelley@microsoft.com>
+To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>, "akpm@linux-foundation.org"
+ <akpm@linux-foundation.org>, "bhe@redhat.com" <bhe@redhat.com>,
+ "pmladek@suse.com" <pmladek@suse.com>, "kexec@lists.infradead.org"
+ <kexec@lists.infradead.org>
+Subject: RE: [PATCH 02/30] ARM: kexec: Disable IRQs/FIQs also on crash CPUs
+ shutdown path
+Thread-Topic: [PATCH 02/30] ARM: kexec: Disable IRQs/FIQs also on crash CPUs
+ shutdown path
+Thread-Index: AQHYWolciKXO2fn1XUueFH8wz+psXK0HFf6Q
+Date: Fri, 29 Apr 2022 16:26:02 +0000
+Message-ID: <PH0PR21MB3025F5AADF3CCEF714585912D7FC9@PH0PR21MB3025.namprd21.prod.outlook.com>
 References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-22-gpiccoli@igalia.com>
-In-Reply-To: <20220427224924.592546-22-gpiccoli@igalia.com>
-From: Max Filippov <jcmvbkbc@gmail.com>
-Date: Fri, 29 Apr 2022 09:04:39 -0700
-Message-ID: <CAMo8BfKzA+oy-Qun9-aO3xCr4Jy_rfdjYqMX=W9xONCSX8O51Q@mail.gmail.com>
-Subject: Re: [PATCH 21/30] panic: Introduce the panic pre-reboot notifier list
-To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-Content-Type: text/plain; charset="UTF-8"
+ <20220427224924.592546-3-gpiccoli@igalia.com>
+In-Reply-To: <20220427224924.592546-3-gpiccoli@igalia.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+msip_labels: MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_ActionId=da7688d4-abf9-471b-8371-b8d1f4f7a276;
+ MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_ContentBits=0;
+ MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Enabled=true;
+ MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Method=Standard;
+ MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Name=Internal;
+ MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_SetDate=2022-04-29T16:24:00Z;
+ MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_SiteId=72f988bf-86f1-41af-91ab-2d7cd011db47;
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=microsoft.com;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 12d2e652-94f5-4275-caf3-08da29fcf3a3
+x-ms-traffictypediagnostic: CH2PR21MB1525:EE_
+x-ld-processed: 72f988bf-86f1-41af-91ab-2d7cd011db47,ExtAddr
+x-microsoft-antispam-prvs: <CH2PR21MB1525A56096F29DA35274DF06D7FC9@CH2PR21MB1525.namprd21.prod.outlook.com>
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: wB8XZ1/NZe0RxqPcMyP9Fl0jn5spPmxDwsu1zSlW6C0kyE5ykFkLFABY5ragQHHt4qFaO6+geen2Ziig93fScW0al/m8IHVYIsiAab4ANv6Po4YsCkZ+eD2CMdpIZqo2H3/NBWooxmu7ohtHxciOfGYLHiAcHjO3yTaMe7NkhERBhAkla1wJ3WTY5b4GnGVMBKdmBhXs038s3YC8KBQBChzYwORF2w+j5eypjrRxQ/hungUzeBkm8NgF/SZVuGFgPKlpagUj8AV9O2n+y203gTS7Q3axk1bs9Vry0snJOw5dIZgOSmNF8sXtOqCxX7t5Qff59Qv6eS2ETSnQZ+Jn14GG0hX7Lb5Dw8hgyHu8i92nY0GH1DLFB/fe1WIZES0JyYvE8jFKYN5sViiLIo4ZyC1IH7IFNC+G+jdTIv/2zffnpmRdJ5s8QmGQL93vWotrzk+UzVXQU+nJ3aMUrmYQrApWY5L6BH9NeHgXmtgEfoKGjdt+LDt7m/ONjF5umDYj8PCEzxX7jwKXP1ukzcjGKglLSE5LkvERS+PCB5fOAaBFqdNfctPErxc5ftlkdrgmBhbZMIGVCzZJVdgajqAdVm5Gh4a5z41n0pvweuQjq0ptieR5IivpdIn8d3MA3WAmwPD8MZ8xQvNINpM5HJa9vMtpk/PGHSsNyIUjUY9RSpRgYogXTnaPjfU33i+sSXmpGaGlMdirdlcwIYQ88kqcCkhtwOlnm8I4QvjnWfjwhmSsqf7DJ13MfqHMkBe2YAC2
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:PH0PR21MB3025.namprd21.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230001)(4636009)(366004)(451199009)(10290500003)(86362001)(26005)(54906003)(2906002)(83380400001)(186003)(316002)(38100700002)(38070700005)(33656002)(8936002)(55016003)(5660300002)(110136005)(8990500004)(64756008)(4326008)(52536014)(8676002)(82960400001)(82950400001)(122000001)(7406005)(6506007)(508600001)(7696005)(76116006)(9686003)(66446008)(7366002)(7416002)(66946007)(66556008)(66476007)(71200400001);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?HOVOBMjGnBhzww+fSAuwt5Y26ag/vTm7WJsA/0I+lrHqOX4Kij7UXrUK9ioi?=
+ =?us-ascii?Q?Apfoi6F26pG/5LFLJ6/sVCcXGpmG8Szt0yI2g6I87VtbMuNFixlFmlAts5Kp?=
+ =?us-ascii?Q?juzfxPQr8QSJsvRkR1FCEBWX7zDFGljJEmkOuhvWZA5iu95GzHEl9smQupkQ?=
+ =?us-ascii?Q?uA1vkvhMWl3SN2UtN8Re01sF69mYEyvKEoq5OeH3RYS/9dAMLsbAoCG64hkr?=
+ =?us-ascii?Q?yWa1lBi9LU2n+8TPjAIiu/xsEMXrZL92OmZnVWGPEUBkziTcpTCTVmPJHuDH?=
+ =?us-ascii?Q?trWdGcvtEnuDI2OqJqEsTUfBBaYMcW+NTMhpaG+I+y0koUVV5JEoRh4J4SVc?=
+ =?us-ascii?Q?4gJ5Tb6edzw7Aww0E9SBwOx0OIJzqZ3T0zdt211/2sSx2hG+vGGna5Ep/fZx?=
+ =?us-ascii?Q?FzmXpK2rWabCCg1tSzk87qixyQjNHWTDrzoZPsfu4aCUZIRQsst+gOimR9FM?=
+ =?us-ascii?Q?7x+ffC3s93rLaKZdUqKPMMnb6PmqoG/hcxmoMAT7j8YoUyHenRzCc1Vv7Q3i?=
+ =?us-ascii?Q?SQNSOyH7lw8R3ZlHVbQcqk/BkpNfJunTf6v1V+4/yoXhMGLVdP0NEqoGmSkW?=
+ =?us-ascii?Q?oiBKZ1I/ksmYecWTsu5aI4ZMylDc7mPHzOSNypIyncccCthwKLfgL5zE2pmc?=
+ =?us-ascii?Q?Bsqfdovl3XaYF9zRCZWFnwiN5FUUsKuWQOtW/SxKtHxipD85E7gTtdEjp0hB?=
+ =?us-ascii?Q?eezovK8Dqv02f72andbcnbhslU6/CIaDGkpdF+rxxO0t9FLkmx0HzdrCQ6m9?=
+ =?us-ascii?Q?PYM4UMY5gCzR72PVLPooj7dZQ9ORhxxarnRAsqkPx+OoZlJxdpZLm5Xlnn8h?=
+ =?us-ascii?Q?ejv/fRH9oYEB0YT3wVYMufGEdETBE6lIuS4e1CQn8btX6+N6lqNr/sDwrzoK?=
+ =?us-ascii?Q?yG/kNL/WyW+pWnmlD73aGxBm3oTlfy92yh7mFiGx3XoP1H67xibXilHvjHeq?=
+ =?us-ascii?Q?CIQ9jSr1Yml4yr9Ze4AZSarYeEkA51U+ZYqM2WsPJxtslTIjdOn9VrMmfC+c?=
+ =?us-ascii?Q?Un9f8WuFOi4FrffZLKk7eV56OScnFML7IH1frQOE/TVLYyY4S+zsEAoxutET?=
+ =?us-ascii?Q?7vtA97Tev2KRlXwu7g8i9dpLRscID48LCT9WdFTpdrDcrQCA9X+4U3HLVaEy?=
+ =?us-ascii?Q?bvDwUxLjCXV5E7MX6B0iIdxqMeLZJHDcLIsE3BkMSFZ0eRBw9tqvixK5ITek?=
+ =?us-ascii?Q?KEcQ9L/MHgkugZs/5SXapjVC2M+tW6029NxUWMMRr6cYdz5WJJN/xL4fuXGr?=
+ =?us-ascii?Q?reNb1So3iGx9/B4i2r6GbXK8QiV1VdL+cmrYuXNzspThAeIVevwZsZixA5wp?=
+ =?us-ascii?Q?5Qj8MYvb7BUV6ie9V0iec61TynvQ/w3V5kg9Wsfj4s2rlxFsuP5c5E/LfdKm?=
+ =?us-ascii?Q?AGMRFARkVLGBAuACPa4Z+rEwWjWn9eO0FnNg6W+yjyG1tZ/2FU5PwKw96fo3?=
+ =?us-ascii?Q?zhJKN9CaUFHYrMwnYpS6v1LQEhx9OJ49Z8LplX4t/xvLeOETvjp07zOztXY8?=
+ =?us-ascii?Q?yWTDOzSQv2FjyFjGVPzqtRHm7xg9uDRC3DzC+aWpNFiEh6KvdQZ1v5OwR3m0?=
+ =?us-ascii?Q?OnN8mIndbJhD97RCmboNmOMpBSpaI1JPK7DI4PB/6oonTzc1omct6SDMFM4p?=
+ =?us-ascii?Q?/tVAjdpQ1ctoAmWKB8CBMjVxEofkH9ri48pnp4FraSGWIwUp4jQPX3POvr72?=
+ =?us-ascii?Q?BRZcCEMDdJWPVsq3pJZvDpAhyaHOx0b45Z7m1cE9VAHlAi5dc/L8k9VGYwOF?=
+ =?us-ascii?Q?l3tv1fE1Q8ybciN7k3D85UcPN2nclxk=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-OriginatorOrg: microsoft.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR21MB3025.namprd21.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 12d2e652-94f5-4275-caf3-08da29fcf3a3
+X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Apr 2022 16:26:02.2141 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: iO+PqzIAdZZfIpEhplUNNDiJF+yGhuHwl3BsWuuQSH2Wxe1HA34Es/xn0LzDD3atpaDnvY9htz4Fd+iXjEy5lQqxIugHEad6MWW3aMA9kUE=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH2PR21MB1525
 X-Mailman-Approved-At: Sat, 30 Apr 2022 03:44:36 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -76,90 +148,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
- stern@rowland.harvard.edu, xen-devel@lists.xenproject.org,
- Matt Turner <mattst88@gmail.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Petr Mladek <pmladek@suse.com>, linux-pm@vger.kernel.org,
- linux-um@lists.infradead.org, Andrew Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Richard Henderson <rth@twiddle.net>,
- Alex Elder <elder@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>,
- Sergey Senozhatsky <senozhatsky@chromium.org>, d.hatayama@jp.fujitsu.com,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, linux-hyperv@vger.kernel.org,
- Dave Hansen <dave.hansen@linux.intel.com>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Stefano Stabellini <sstabellini@kernel.org>,
- Stephen Hemminger <sthemmin@microsoft.com>, Corey Minyard <minyard@acm.org>,
- Helge Deller <deller@gmx.de>, vgoyal@redhat.com,
- Sven Schnelle <svens@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- "open list:TENSILICA XTENSA PORT \(xtensa\)" <linux-xtensa@linux-xtensa.org>,
- john.ogness@linutronix.de, coresight@lists.linaro.org,
- hidehiro.kawai.ez@hitachi.com, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Tony Luck <tony.luck@intel.com>, Mathieu Poirier <mathieu.poirier@linaro.org>,
- James Morse <james.morse@arm.com>, kernel-dev@igalia.com,
- fabiomirmar@gmail.com, halves@canonical.com, alejandro.j.jimenez@oracle.com,
- feng.tang@intel.com, Will Deacon <will@kernel.org>, bhe@redhat.com,
- Jonathan Corbet <corbet@lwn.net>, Dexuan Cui <decui@microsoft.com>,
- bcm-kernel-feedback-list@broadcom.com, Robert Richter <rric@kernel.org>,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- Haiyang Zhang <haiyangz@microsoft.com>, Steven Rostedt <rostedt@goodmis.org>,
- rcu@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
- openipmi-developer@lists.sourceforge.net,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- "open list:PARISC ARCHITECTURE" <linux-parisc@vger.kernel.org>,
- "open list:ALPHA PORT" <linux-alpha@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, linux-remoteproc@vger.kernel.org,
- mikelley@microsoft.com, "H. Peter Anvin" <hpa@zytor.com>,
- "open list:SPARC + UltraSPAR..." <sparclinux@vger.kernel.org>,
- linux-leds@vger.kernel.org, Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Richard Weinberger <richard@nod.at>,
- "maintainer:X86 ARCHITECTURE..." <x86@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, dyoung@redhat.com, paulmck@kernel.org,
- Heiko Carstens <hca@linux.ibm.com>, linux-tegra@vger.kernel.org,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Johannes Berg <johannes@sipsolutions.net>, linux-edac@vger.kernel.org,
- jgross@suse.com, netdev <netdev@vger.kernel.org>, kernel@gpiccoli.net,
- kexec@lists.infradead.org, linux-mips@vger.kernel.org,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, vkuznets@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
+ "halves@canonical.com" <halves@canonical.com>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "peterz@infradead.org" <peterz@infradead.org>,
+ "alejandro.j.jimenez@oracle.com" <alejandro.j.jimenez@oracle.com>,
+ "linux-remoteproc@vger.kernel.org" <linux-remoteproc@vger.kernel.org>,
+ "feng.tang@intel.com" <feng.tang@intel.com>,
+ "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
+ "hidehiro.kawai.ez@hitachi.com" <hidehiro.kawai.ez@hitachi.com>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ "will@kernel.org" <will@kernel.org>, "tglx@linutronix.de" <tglx@linutronix.de>,
+ "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Marc Zyngier <maz@kernel.org>,
+ "john.ogness@linutronix.de" <john.ogness@linutronix.de>,
+ "corbet@lwn.net" <corbet@lwn.net>, "paulmck@kernel.org" <paulmck@kernel.org>,
+ "fabiomirmar@gmail.com" <fabiomirmar@gmail.com>,
+ "x86@kernel.org" <x86@kernel.org>, Russell King <linux@armlinux.org.uk>,
+ "mingo@redhat.com" <mingo@redhat.com>,
+ "bcm-kernel-feedback-list@broadcom.com"
+ <bcm-kernel-feedback-list@broadcom.com>,
+ "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+ "dyoung@redhat.com" <dyoung@redhat.com>,
+ "vgoyal@redhat.com" <vgoyal@redhat.com>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
+ "keescook@chromium.org" <keescook@chromium.org>,
+ "arnd@arndb.de" <arnd@arndb.de>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "coresight@lists.linaro.org" <coresight@lists.linaro.org>,
+ "linux-um@lists.infradead.org" <linux-um@lists.infradead.org>,
+ "rostedt@goodmis.org" <rostedt@goodmis.org>,
+ "rcu@vger.kernel.org" <rcu@vger.kernel.org>, "bp@alien8.de" <bp@alien8.de>,
+ "luto@kernel.org" <luto@kernel.org>,
+ "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
+ "openipmi-developer@lists.sourceforge.net"
+ <openipmi-developer@lists.sourceforge.net>,
+ "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
+ "jgross@suse.com" <jgross@suse.com>,
+ "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "kernel@gpiccoli.net" <kernel@gpiccoli.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>,
+ "senozhatsky@chromium.org" <senozhatsky@chromium.org>,
+ "d.hatayama@jp.fujitsu.com" <d.hatayama@jp.fujitsu.com>,
+ "mhiramat@kernel.org" <mhiramat@kernel.org>,
+ "kernel-dev@igalia.com" <kernel-dev@igalia.com>,
+ "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
+ vkuznets <vkuznets@redhat.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 27, 2022 at 3:55 PM Guilherme G. Piccoli
-<gpiccoli@igalia.com> wrote:
->
-> This patch renames the panic_notifier_list to panic_pre_reboot_list;
-> the idea is that a subsequent patch will refactor the panic path
-> in order to better split the notifiers, running some of them very
-> early, some of them not so early [but still before kmsg_dump()] and
-> finally, the rest should execute late, after kdump. The latter ones
-> are now in the panic pre-reboot list - the name comes from the idea
-> that these notifiers execute before panic() attempts rebooting the
-> machine (if that option is set).
->
-> We also took the opportunity to clean-up useless header inclusions,
-> improve some notifier block declarations (e.g. in ibmasm/heartbeat.c)
-> and more important, change some priorities - we hereby set 2 notifiers
-> to run late in the list [iss_panic_event() and the IPMI panic_event()]
-> due to the risks they offer (may not return, for example).
-> Proper documentation is going to be provided in a subsequent patch,
-> that effectively refactors the panic path.
+From: Guilherme G. Piccoli <gpiccoli@igalia.com> Sent: Wednesday, April 27,=
+ 2022 3:49 PM
+>=20
+> Currently the regular CPU shutdown path for ARM disables IRQs/FIQs
+> in the secondary CPUs - smp_send_stop() calls ipi_cpu_stop(), which
+> is responsible for that. This makes sense, since we're turning off
+> such CPUs, putting them in an endless busy-wait loop.
+>=20
+> Problem is that there is an alternative path for disabling CPUs,
+> in the form of function crash_smp_send_stop(), used for kexec/panic
+> paths. This functions relies in a SMP call that also triggers a
 
-[...]
+s/functions relies in/function relies on/
 
->  arch/xtensa/platforms/iss/setup.c     |  4 ++--For xtensa:
+> busy-wait loop [at machine_crash_nonpanic_core()], but *without*
+> disabling interrupts. This might lead to odd scenarios, like early
+> interrupts in the boot of kexec'd kernel or even interrupts in
+> other CPUs while the main one still works in the panic path and
+> assumes all secondary CPUs are (really!) off.
+>=20
+> This patch mimics the ipi_cpu_stop() interrupt disable mechanism
+> in the crash CPU shutdown path, hence disabling IRQs/FIQs in all
+> secondary CPUs in the kexec/panic path as well.
+>=20
+> Cc: Marc Zyngier <maz@kernel.org>
+> Cc: Russell King <linux@armlinux.org.uk>
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@igalia.com>
+> ---
+>  arch/arm/kernel/machine_kexec.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>=20
+> diff --git a/arch/arm/kernel/machine_kexec.c b/arch/arm/kernel/machine_ke=
+xec.c
+> index f567032a09c0..ef788ee00519 100644
+> --- a/arch/arm/kernel/machine_kexec.c
+> +++ b/arch/arm/kernel/machine_kexec.c
+> @@ -86,6 +86,9 @@ void machine_crash_nonpanic_core(void *unused)
+>  	set_cpu_online(smp_processor_id(), false);
+>  	atomic_dec(&waiting_for_crash_ipi);
+>=20
+> +	local_fiq_disable();
+> +	local_irq_disable();
+> +
+>  	while (1) {
+>  		cpu_relax();
+>  		wfe();
+> --
+> 2.36.0
 
-For xtensa:
-Acked-by: Max Filippov <jcmvbkbc@gmail.com>
-
--- 
-Thanks.
--- Max
