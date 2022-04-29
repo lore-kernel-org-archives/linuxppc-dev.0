@@ -4,65 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8711C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Apr 2022 14:46:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F27EC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Apr 2022 16:05:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kqb0k3dtWz3c8F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Apr 2022 00:46:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kqclc6JQwz3bc4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Apr 2022 02:05:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=sg76t27J;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=dYOwdCYz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::b33;
- helo=mail-yb1-xb33.google.com; envelope-from=naresh.kamboju@linaro.org;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=igalia.com (client-ip=178.60.130.6; helo=fanzine2.igalia.com;
+ envelope-from=gpiccoli@igalia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=sg76t27J; dkim-atps=neutral
-Received: from mail-yb1-xb33.google.com (mail-yb1-xb33.google.com
- [IPv6:2607:f8b0:4864:20::b33])
+ unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256
+ header.s=20170329 header.b=dYOwdCYz; dkim-atps=neutral
+Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KqZzt4gwvz3bpH
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2022 00:46:01 +1000 (AEST)
-Received: by mail-yb1-xb33.google.com with SMTP id i38so14819721ybj.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2022 07:46:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=mime-version:from:date:message-id:subject:to:cc;
- bh=f0pLuqeZXYz1sWaSkPXGqX7Ka9Gz3+f93gXtOcRk6zE=;
- b=sg76t27J/gyCTdgIN57AbjYzistMTapWVkGILL67jpyduU/WbdWJXIc4VGLnSttIYn
- hNGApEWtHCSwnxDURtP54N2ZLF60H9UgJq02rR82FSv1GK177WNDXPhjQGkfWKZsALnL
- BmTKKyP0ssXeCKBfT55o9dekWFj17VSC7Z+fZvkO4rUIi/TQIE37u157A4RlwbL9o8BJ
- 8RPwQ9k21QlkIiL3BQAC/2XeJfKe5extkSGRU8EvUGSWXP+Mmq/r3ovudUR5WaUoUrnG
- ulovb0ucLpqI44pMZrrDg9fhHVxXVA0NjBgZVUFZKNHAcZS/GzYvSiogD0SPCrTy2dLM
- TkYQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
- bh=f0pLuqeZXYz1sWaSkPXGqX7Ka9Gz3+f93gXtOcRk6zE=;
- b=wTZQZsCF0n8TtU3gBAa+AdibQtn6GUWImgGeI/JyXZnjBrr/EFgCXq2Np6Z5QGIjko
- v+FV7Pc8ZMBaJxZUk7bplYilkY923M/AMozf45wLTGFucgS6q6vP+k6RIlcen0DtXrs5
- U3VOrkHZn5l6xNy8fCRdYTaDfOlY+olTgOds23mO21mCWLqc+m3nb5dLyahW7g51SD5w
- 4MioVNmY6Rt7YmltL5RRDPmGKneRPf37FbGTLXPpeq3rxD/EzgmQcycSIeOreYTS7iAK
- VByCX9/KHEvWVjxi763pdHBYU6Isb4/Ya2ihGd5xtAMpvKVWTOJMEnUmef2+DIm1Jaa3
- CN/w==
-X-Gm-Message-State: AOAM5323q7sznP79SPlvtNQQGVNWTq0hIL/Xo/yfa7EMKNjrz7Tb+EQG
- EfXtyruqi5C7EqApdz1K1de34Q1kKdpMQW2TBX9HHw==
-X-Google-Smtp-Source: ABdhPJwebZPW8eNXr7R6EmFQmtAGmoO8i+DbeZ/yF9SoTg6ttJi1GAZwMgxz8AT0N8FkWFM0f6Rztj4uwwWpuIStN6k=
-X-Received: by 2002:a25:20d4:0:b0:645:d55b:f0df with SMTP id
- g203-20020a2520d4000000b00645d55bf0dfmr32821553ybg.537.1651243558063; Fri, 29
- Apr 2022 07:45:58 -0700 (PDT)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kqckx1bTYz2yHB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2022 02:04:52 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com; 
+ s=20170329;
+ h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
+ References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
+ Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+ Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+ List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=QQI5zmi1djYWNz2i53I6KuQGatDa49BWqjEk2Pav1i4=; b=dYOwdCYz8mfW6uRaErWUoCqmdx
+ 5T0+vzZBt6UK85jUK/bYBffPO6pHVBukVXgw40Mng8+hfEFyxsYupbDv17vw0eY73RVtJNUJhZeIk
+ wjL2oPNMg0UJQkop2tznLUBtpwTgs2tJTFrh96RXyi3iI9oJ7Xg0HjOO5wFLxxatzCt/a1kjKIm+q
+ GG90XSMTUteF9uAfx+0HJjQF0T7y90PJaZRFs3aM6M51tA02d53awi4I7n5GpC6cVQif5RrGFpU1r
+ QhiVEfyVqroi50IPYPzYRbjvCqabrqPiHclqX4UZkfFE4tLq7njetpvB7ea+qAjYTdFscbWw6lpa8
+ 5AxSRVRQ==;
+Received: from [179.113.53.197] (helo=[192.168.1.60])
+ by fanzine2.igalia.com with esmtpsa 
+ (Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
+ id 1nkT6a-0001BR-MS; Fri, 29 Apr 2022 18:04:28 +0200
+Message-ID: <7518924e-5bb4-e6e9-0e3e-3f5cb03bf946@igalia.com>
+Date: Fri, 29 Apr 2022 13:04:01 -0300
 MIME-Version: 1.0
-From: Naresh Kamboju <naresh.kamboju@linaro.org>
-Date: Fri, 29 Apr 2022 20:15:47 +0530
-Message-ID: <CA+G9fYvSqtsOMEiL7_kffPKnnO-Snhe2cup6g3qRngiwRO+RfA@mail.gmail.com>
-Subject: [next] powerpc: multiple definition of `____cacheline_aligned';
- sound/core/oss/pcm_oss.o:(.bss+0x40): first defined here
-To: Linux-Next Mailing List <linux-next@vger.kernel.org>,
- open list <linux-kernel@vger.kernel.org>, 
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, lkft-triage@lists.linaro.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.0
+Subject: Re: [PATCH 24/30] panic: Refactor the panic path
+Content-Language: en-US
+To: Randy Dunlap <rdunlap@infradead.org>, akpm@linux-foundation.org,
+ bhe@redhat.com, pmladek@suse.com, kexec@lists.infradead.org
+References: <20220427224924.592546-1-gpiccoli@igalia.com>
+ <20220427224924.592546-25-gpiccoli@igalia.com>
+ <4fe85e9c-4e96-e9d5-9fd8-f062bafcda4f@infradead.org>
+From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+In-Reply-To: <4fe85e9c-4e96-e9d5-9fd8-f062bafcda4f@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,81 +68,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Baoquan He <bhe@redhat.com>,
- Heiko Carstens <hca@linux.ibm.com>, Matthew Wilcox <willy@infradead.org>,
- aul Mackerras <paulus@samba.org>, Christoph Hellwig <hch@lst.de>
+Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
+ gregkh@linuxfoundation.org, peterz@infradead.org,
+ alejandro.j.jimenez@oracle.com, linux-remoteproc@vger.kernel.org,
+ feng.tang@intel.com, linux-mips@vger.kernel.org, hidehiro.kawai.ez@hitachi.com,
+ sparclinux@vger.kernel.org, will@kernel.org, tglx@linutronix.de,
+ linux-leds@vger.kernel.org, linux-s390@vger.kernel.org, mikelley@microsoft.com,
+ john.ogness@linutronix.de, corbet@lwn.net, paulmck@kernel.org,
+ fabiomirmar@gmail.com, x86@kernel.org, mingo@redhat.com,
+ bcm-kernel-feedback-list@broadcom.com, xen-devel@lists.xenproject.org,
+ dyoung@redhat.com, vgoyal@redhat.com, linux-xtensa@linux-xtensa.org,
+ dave.hansen@linux.intel.com, keescook@chromium.org, arnd@arndb.de,
+ linux-pm@vger.kernel.org, coresight@lists.linaro.org,
+ linux-um@lists.infradead.org, rostedt@goodmis.org, rcu@vger.kernel.org,
+ bp@alien8.de, luto@kernel.org, linux-tegra@vger.kernel.org,
+ openipmi-developer@lists.sourceforge.net, andriy.shevchenko@linux.intel.com,
+ linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
+ jgross@suse.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
+ kernel@gpiccoli.net, linux-kernel@vger.kernel.org, stern@rowland.harvard.edu,
+ senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
+ kernel-dev@igalia.com, linux-alpha@vger.kernel.org, vkuznets@redhat.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Following powerpc builds failed on Linux next-20220428 and next-20220429.
+On 27/04/2022 21:28, Randy Dunlap wrote:
+> 
+> 
+> On 4/27/22 15:49, Guilherme G. Piccoli wrote:
+>> +	crash_kexec_post_notifiers
+>> +			This was DEPRECATED - users should always prefer the
+> 
+> 			This is DEPRECATED - users should always prefer the
+> 
+>> +			parameter "panic_notifiers_level" - check its entry
+>> +			in this documentation for details on how it works.
+>> +			Setting this parameter is exactly the same as setting
+>> +			"panic_notifiers_level=4".
+> 
 
-Regressions found on powerpc:
-   - gcc-11-ppc64e_defconfig
-   - gcc-10-ppc64e_defconfig
-   - gcc-9-ppc64e_defconfig
-   - gcc-8-ppc64e_defconfig
-   - clang-14-ppc64e_defconfig
-   - clang-nightly-ppc64e_defconfig
-   - clang-13-ppc64e_defconfig
+Thanks Randy, for your suggestion - but I confess I couldn't understand
+it properly. It's related to spaces/tabs, right? What you suggest me to
+change in this formatting? Just by looking the email I can't parse.
 
-
-Build error:
--------------
-Error: Section .bss not empty in prom_init.c
-make[3]: *** [arch/powerpc/kernel/Makefile:191:
-arch/powerpc/kernel/prom_init_check] Error 1
-make[3]: Target '__build' not remade because of errors.
-make[2]: *** [scripts/Makefile.build:595: arch/powerpc/kernel] Error 2
-make[2]: Target '__build' not remade because of errors.
-make[1]: *** [Makefile:1996: arch/powerpc] Error 2
-powerpc64le-linux-gnu-ld: sound/core/oss/pcm_plugin.o:(.bss+0x0):
-multiple definition of `____cacheline_aligned';
-sound/core/oss/pcm_oss.o:(.bss+0x40): first defined here
-make[4]: *** [scripts/Makefile.build:530: sound/core/oss/snd-pcm-oss.o] Error 1
-make[4]: Target '__build' not remade because of errors.
-make[3]: *** [scripts/Makefile.build:595: sound/core/oss] Error 2
-powerpc64le-linux-gnu-ld: sound/core/seq/seq_clientmgr.o:(.bss+0x900):
-multiple definition of `____cacheline_aligned';
-sound/core/seq/seq_lock.o:(.bss+0x0): first defined here
-powerpc64le-linux-gnu-ld: sound/core/seq/seq_memory.o:(.bss+0x0):
-multiple definition of `____cacheline_aligned';
-sound/core/seq/seq_lock.o:(.bss+0x0): first defined here
-powerpc64le-linux-gnu-ld: sound/core/seq/seq_queue.o:(.bss+0x140):
-multiple definition of `____cacheline_aligned';
-sound/core/seq/seq_lock.o:(.bss+0x0): first defined here
-powerpc64le-linux-gnu-ld: sound/core/seq/seq_fifo.o:(.bss+0x0):
-multiple definition of `____cacheline_aligned';
-sound/core/seq/seq_lock.o:(.bss+0x0): first defined here
-powerpc64le-linux-gnu-ld: sound/core/seq/seq_timer.o:(.bss+0x0):
-multiple definition of `____cacheline_aligned';
-sound/core/seq/seq_lock.o:(.bss+0x0): first defined here
-powerpc64le-linux-gnu-ld: sound/core/seq/seq_system.o:(.bss+0x0):
-multiple definition of `____cacheline_aligned';
-sound/core/seq/seq_lock.o:(.bss+0x0): first defined here
-powerpc64le-linux-gnu-ld: sound/core/seq/seq_ports.o:(.bss+0x0):
-multiple definition of `____cacheline_aligned';
-sound/core/seq/seq_lock.o:(.bss+0x0): first defined here
-powerpc64le-linux-gnu-ld: sound/core/seq/seq_info.o:(.bss+0x40):
-multiple definition of `____cacheline_aligned';
-sound/core/seq/seq_lock.o:(.bss+0x0): first defined here
-make[4]: *** [scripts/Makefile.build:530: sound/core/seq/snd-seq.o] Error 1
-make[4]: Target '__build' not remade because of errors.
+Cheers,
 
 
-Reported-by: Linux Kernel Functional Testing <lkft@linaro.org>
-
-
-steps to reproduce:
--------------------
-# To install tuxmake on your system globally:
-# sudo pip3 install -U tuxmake
-
-tuxmake --runtime podman --target-arch powerpc --toolchain gcc-11
---kconfig ppc64e_defconfig
-
---
-Linaro LKFT
-https://lkft.linaro.org
-
-[1] https://builds.tuxbuild.com/28Sn15hB2la1PweieGMLrUdbFMQ/
+Guilherme
