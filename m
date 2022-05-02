@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82C8BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 May 2022 23:06:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C677C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 May 2022 23:06:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KsdxX2hqDz3bbw
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 May 2022 09:06:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KsdyD6Xngz3c7l
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 May 2022 09:06:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=PUlHwSHS;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=dVIeZHCN;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1;
@@ -18,30 +18,30 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=PUlHwSHS; 
+ header.a=rsa-sha256 header.s=korg header.b=dVIeZHCN; 
  dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org
  [IPv6:2604:1380:4641:c500::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ksdwt0v8yz2x9M
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2022 09:05:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ksdwy42gCz3bYy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2022 09:05:38 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id D2515612DC;
- Mon,  2 May 2022 23:05:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2977AC385A4;
- Mon,  2 May 2022 23:05:28 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id C53D3612CB;
+ Mon,  2 May 2022 23:05:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F063C385AC;
+ Mon,  2 May 2022 23:05:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
- s=korg; t=1651532728;
- bh=XuBfxjhIde6H+rjaTVAca5E7Q0XKufuv6WP/1VcPNBQ=;
+ s=korg; t=1651532736;
+ bh=P7aIvQOXwzO1kpIQVY3JrF1R9v3CFv6dIQEiKlDkj1A=;
  h=Subject:To:Cc:From:Date:From;
- b=PUlHwSHSZ0D2ornEPasaRUECo338xUfUm53840zIduZlMKlqYOcHTj3GYawEahTsL
- r81dqtbRxl8x5luBM09XkdruvwXf9T3SzeF7uTO9xg9zv0FG55P6WJExirkNGQNT36
- +sA/1KTlZP9z+ngWHPKmYa9SM/7axnw65B5M7Us0=
+ b=dVIeZHCN+8SIAqgQ6+eB4tkXMak0nrju3+mcfhnUrcuNXnMh31ZjRHsCRPKLLh6JD
+ 0eb6+iRwUlyiQnTEjVTrNGvSw2ENBY1NBNnwof+FPppPec0eQbwl29miHSyvcq2msj
+ doGuJTUQmJVc8Tg1H6xdFY0Ld1C9FtT3FRWbVWJQ=
 Subject: Patch "perf symbol: Pass is_kallsyms to symbols__fixup_end()" has
- been added to the 5.10-stable tree
+ been added to the 5.15-stable tree
 To: acme@redhat.com, gregkh@linuxfoundation.org, hca@linux.ibm.com,
  irogers@google.com, john.garry@huawei.com, jolsa@kernel.org,
  leo.yan@linaro.org, linuxppc-dev@lists.ozlabs.org, mark.rutland@arm.com,
@@ -49,8 +49,8 @@ To: acme@redhat.com, gregkh@linuxfoundation.org, hca@linux.ibm.com,
  mpe@ellerman.id.au, mpetlan@redhat.com, namhyung@kernel.org,
  peterz@infradead.org, songliubraving@fb.com, will@kernel.org
 From: <gregkh@linuxfoundation.org>
-Date: Tue, 03 May 2022 01:05:27 +0200
-Message-ID: <16515327271118@kroah.com>
+Date: Tue, 03 May 2022 01:05:33 +0200
+Message-ID: <16515327336239@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -77,12 +77,12 @@ This is a note to let you know that I've just added the patch titled
 
     perf symbol: Pass is_kallsyms to symbols__fixup_end()
 
-to the 5.10-stable tree which can be found at:
+to the 5.15-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
      perf-symbol-pass-is_kallsyms-to-symbols__fixup_end.patch
-and it can be found in the queue-5.10 subdirectory.
+and it can be found in the queue-5.15 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
 please let <stable@vger.kernel.org> know about it.
@@ -137,7 +137,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/tools/perf/util/symbol-elf.c
 +++ b/tools/perf/util/symbol-elf.c
-@@ -1245,7 +1245,7 @@ int dso__load_sym(struct dso *dso, struc
+@@ -1290,7 +1290,7 @@ dso__load_sym_internal(struct dso *dso,
  	 * For misannotated, zeroed, ASM function sizes.
  	 */
  	if (nr > 0) {
@@ -167,7 +167,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  	symbols__fixup_duplicate(&dso->symbols);
  
  	if (dso->kernel == DSO_SPACE__KERNEL_GUEST)
-@@ -1651,7 +1652,7 @@ int dso__load_bfd_symbols(struct dso *ds
+@@ -1648,7 +1649,7 @@ int dso__load_bfd_symbols(struct dso *ds
  #undef bfd_asymbol_section
  #endif
  
@@ -191,5 +191,6 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 Patches currently in stable-queue which might be from namhyung@kernel.org are
 
-queue-5.10/perf-symbol-update-symbols__fixup_end.patch
-queue-5.10/perf-symbol-pass-is_kallsyms-to-symbols__fixup_end.patch
+queue-5.15/perf-arm-spe-fix-addresses-of-synthesized-spe-events.patch
+queue-5.15/perf-symbol-update-symbols__fixup_end.patch
+queue-5.15/perf-symbol-pass-is_kallsyms-to-symbols__fixup_end.patch
