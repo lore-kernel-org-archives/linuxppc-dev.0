@@ -4,57 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4ED4C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 May 2022 23:09:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05568C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 May 2022 23:53:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ksf1m40Mbz3cjT
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 May 2022 09:09:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Kzv/8m+0;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ksg053spyz3brY
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 May 2022 09:53:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=145.40.68.75;
- helo=ams.source.kernel.org; envelope-from=gregkh@linuxfoundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=Kzv/8m+0; 
- dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KsdxG60slz3bcn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2022 09:05:54 +1000 (AEST)
+ smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org;
+ envelope-from=srs0=eo3p=vk=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ksfzd4WY5z2yK6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2022 09:53:01 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id 79D03B81A69;
- Mon,  2 May 2022 23:05:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 25983C385A4;
- Mon,  2 May 2022 23:05:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
- s=korg; t=1651532751;
- bh=7o05ie/pt1GarALID1Rl6iNavzbHU7ow1XBBiRvyfHs=;
- h=Subject:To:Cc:From:Date:From;
- b=Kzv/8m+02pCt8wnQYbSL0PoyRp5WflMauFtJEK2Wa2MzSe6C4RqsUAFgNqstUjIqr
- +nPZJdrY4smBNfWxRcCsTWDJYs6+nw/MyX+op8x+O7nsWF3IhIQfSi+/0iBUj/6Eyv
- m5+lMHULjH1bRWOjZ0dUKCmx4WX/imlEYA6NzcB0=
-Subject: Patch "perf symbol: Update symbols__fixup_end()" has been added to
- the 5.17-stable tree
-To: acme@redhat.com, gregkh@linuxfoundation.org, hca@linux.ibm.com,
- irogers@google.com, john.garry@huawei.com, jolsa@kernel.org,
- leo.yan@linaro.org, linuxppc-dev@lists.ozlabs.org, mark.rutland@arm.com,
- mathieu.poirier@linaro.org, mhiramat@kernel.org, mingo@kernel.org,
- mpe@ellerman.id.au, mpetlan@redhat.com, namhyung@kernel.org,
- peterz@infradead.org, songliubraving@fb.com, will@kernel.org
-From: <gregkh@linuxfoundation.org>
-Date: Tue, 03 May 2022 01:05:41 +0200
-Message-ID: <165153274118382@kroah.com>
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 7075461245;
+ Mon,  2 May 2022 23:52:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6AC4FC385AC;
+ Mon,  2 May 2022 23:52:58 +0000 (UTC)
+Date: Mon, 2 May 2022 19:52:51 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 2/2] recordmcount: Handle sections with no non-weak symbols
+Message-ID: <20220502195251.5d862365@rorschach.local.home>
+In-Reply-To: <819939e3-285b-2a65-9c4c-85640d2a3a02@csgroup.eu>
+References: <cover.1651047542.git.naveen.n.rao@linux.vnet.ibm.com>
+ <1b9566f0e7185fb8fd8ef2535add7a081501ccc8.1651047542.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20220427095415.594e5120@gandalf.local.home>
+ <1651129169.fpixr00hgx.naveen@linux.ibm.com>
+ <20220428100602.7b215e52@gandalf.local.home>
+ <819939e3-285b-2a65-9c4c-85640d2a3a02@csgroup.eu>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: 8bit
-X-stable: commit
-X-Patchwork-Hint: ignore 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,117 +51,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: stable-commits@vger.kernel.org
+Cc: "llvm@lists.linux.dev" <llvm@lists.linux.dev>,
+ Nick Desaulniers <ndesaulniers@google.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Nathan Chancellor <nathan@kernel.org>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, 2 May 2022 14:44:56 +0000
+Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
 
-This is a note to let you know that I've just added the patch titled
+> If we do that after the linking, won't it be a nightmare with the 
+> trampolines installed by the linker when the destination is over the 24 
+> bits limit ?
 
-    perf symbol: Update symbols__fixup_end()
+Not sure what you mean. The locations I'm talking about is the full
+address saved in the __mcount_loc table (data section).
 
-to the 5.17-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-
-The filename of the patch is:
-     perf-symbol-update-symbols__fixup_end.patch
-and it can be found in the queue-5.17 subdirectory.
-
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
-
-
-From 8799ebce84d672aae1dc3170510f6a3e66f96b11 Mon Sep 17 00:00:00 2001
-From: Namhyung Kim <namhyung@kernel.org>
-Date: Fri, 15 Apr 2022 17:40:47 -0700
-Subject: perf symbol: Update symbols__fixup_end()
-
-From: Namhyung Kim <namhyung@kernel.org>
-
-commit 8799ebce84d672aae1dc3170510f6a3e66f96b11 upstream.
-
-Now arch-specific functions all do the same thing.  When it fixes the
-symbol address it needs to check the boundary between the kernel image
-and modules.  For the last symbol in the previous region, it cannot
-know the exact size as it's discarded already.  Thus it just uses a
-small page size (4096) and rounds it up like the last symbol.
-
-Fixes: 3cf6a32f3f2a4594 ("perf symbols: Fix symbol size calculation condition")
-Signed-off-by: Namhyung Kim <namhyung@kernel.org>
-Acked-by: Ian Rogers <irogers@google.com>
-Cc: Heiko Carstens <hca@linux.ibm.com>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Jiri Olsa <jolsa@kernel.org>
-Cc: John Garry <john.garry@huawei.com>
-Cc: Leo Yan <leo.yan@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Mathieu Poirier <mathieu.poirier@linaro.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michael Petlan <mpetlan@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Song Liu <songliubraving@fb.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: linux-s390@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: https://lore.kernel.org/r/20220416004048.1514900-3-namhyung@kernel.org
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- tools/perf/util/symbol.c |   29 +++++++++++++++++++++++++----
- 1 file changed, 25 insertions(+), 4 deletions(-)
-
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -217,8 +217,8 @@ again:
- 	}
- }
- 
--void symbols__fixup_end(struct rb_root_cached *symbols,
--			bool is_kallsyms __maybe_unused)
-+/* Update zero-sized symbols using the address of the next symbol */
-+void symbols__fixup_end(struct rb_root_cached *symbols, bool is_kallsyms)
- {
- 	struct rb_node *nd, *prevnd = rb_first_cached(symbols);
- 	struct symbol *curr, *prev;
-@@ -232,8 +232,29 @@ void symbols__fixup_end(struct rb_root_c
- 		prev = curr;
- 		curr = rb_entry(nd, struct symbol, rb_node);
- 
--		if (prev->end == prev->start || prev->end != curr->start)
--			arch__symbols__fixup_end(prev, curr);
-+		/*
-+		 * On some architecture kernel text segment start is located at
-+		 * some low memory address, while modules are located at high
-+		 * memory addresses (or vice versa).  The gap between end of
-+		 * kernel text segment and beginning of first module's text
-+		 * segment is very big.  Therefore do not fill this gap and do
-+		 * not assign it to the kernel dso map (kallsyms).
-+		 *
-+		 * In kallsyms, it determines module symbols using '[' character
-+		 * like in:
-+		 *   ffffffffc1937000 T hdmi_driver_init  [snd_hda_codec_hdmi]
-+		 */
-+		if (prev->end == prev->start) {
-+			/* Last kernel/module symbol mapped to end of page */
-+			if (is_kallsyms && (!strchr(prev->name, '[') !=
-+					    !strchr(curr->name, '[')))
-+				prev->end = roundup(prev->end + 4096, 4096);
-+			else
-+				prev->end = curr->start;
-+
-+			pr_debug4("%s sym:%s end:%#" PRIx64 "\n",
-+				  __func__, prev->name, prev->end);
-+		}
- 	}
- 
- 	/* Last entry */
-
-
-Patches currently in stable-queue which might be from namhyung@kernel.org are
-
-queue-5.17/perf-symbol-remove-arch__symbols__fixup_end.patch
-queue-5.17/perf-arm-spe-fix-addresses-of-synthesized-spe-events.patch
-queue-5.17/perf-symbol-update-symbols__fixup_end.patch
-queue-5.17/perf-symbol-pass-is_kallsyms-to-symbols__fixup_end.patch
+-- Steve
