@@ -4,90 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1194C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 May 2022 14:11:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A1DDC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 May 2022 14:22:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kt22Z0Fx5z3brc
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 May 2022 00:11:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kt2H90LHmz3bcn
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 May 2022 00:22:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kroah.com header.i=@kroah.com header.a=rsa-sha256 header.s=fm1 header.b=JS9/m4h3;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=Jgq2ay0m;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=LyZu7+wD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kroah.com (client-ip=64.147.123.21;
- helo=wout5-smtp.messagingengine.com; envelope-from=greg@kroah.com;
+ smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4601:e00::1;
+ helo=ams.source.kernel.org; envelope-from=gregkh@linuxfoundation.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kroah.com header.i=@kroah.com header.a=rsa-sha256
- header.s=fm1 header.b=JS9/m4h3; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm1 header.b=Jgq2ay0m; 
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
+ header.a=rsa-sha256 header.s=korg header.b=LyZu7+wD; 
  dkim-atps=neutral
-X-Greylist: delayed 1506 seconds by postgrey-1.36 at boromir;
- Wed, 04 May 2022 00:11:08 AEST
-Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com
- [64.147.123.21])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Received: from ams.source.kernel.org (ams.source.kernel.org
+ [IPv6:2604:1380:4601:e00::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kt21m481Vz308G
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2022 00:11:08 +1000 (AEST)
-Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
- by mailout.west.internal (Postfix) with ESMTP id ED7563200A6C;
- Tue,  3 May 2022 09:45:54 -0400 (EDT)
-Received: from mailfrontend1 ([10.202.2.162])
- by compute4.internal (MEProxy); Tue, 03 May 2022 09:45:58 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=cc
- :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
- :message-id:mime-version:references:reply-to:sender:subject
- :subject:to:to; s=fm1; t=1651585554; x=1651671954; bh=GgYcomwsds
- RrYxxul1oPdKhHbYJJh/adytBDmH6b6r8=; b=JS9/m4h3R1GYfScDhMAw/fjb8N
- evLe5K1ZVWBrDOLjnFibwjSn1w+4rkVkV97FngyaYV9Qohf1l9CvNkHH+RvdfOW8
- p9ExhEmiCc0tlV4RZibMnfmpPxqRQWdrhnuWUyncvBN9Dr2M0x0aojRPJJRfJd8b
- 2j5MDoR/34VF1d9abBXaXpcAkXUsGOq+QBSBqBwBSyggbk6R2I6XCZ4VFFycTAgY
- G6H/FwJREeXnu3Gdt60LM9ZOL0qy8t6Jo5lShjOoUpbgy9IoXyJG7rQUZS/n+xaR
- FNst6EtYrfcJSc0Kht3H8sOSG9UHDwGi3TuOFYoPO8fOaxJyAPCuOkar4o5w==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:cc:content-type:date:date:from:from
- :in-reply-to:in-reply-to:message-id:mime-version:references
- :reply-to:sender:subject:subject:to:to:x-me-proxy:x-me-proxy
- :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1651585554; x=
- 1651671954; bh=GgYcomwsdsRrYxxul1oPdKhHbYJJh/adytBDmH6b6r8=; b=J
- gq2ay0mVAHxRw5NXHg30eRU9ODiujH3CtnYmYNgAcJjuxy+2frsppmqm2PV+pN6E
- 5efnwAOT1nsYabx7RHlTSjIhLom843UQ7JAE7YP7FDe9rxYRd0nQmDy6YZGzKiHH
- l7sHhj5d8lvkDCwr7jfq7KAwjRG+JTIXKfGR0y8eX0O58tHOwQ1oVzKKPq6jbJZa
- 62Y4uTU7I0N/jvJL5MGm9hXYUi2HSEETROtBoy9JBka31dYhiCxapSqScTQyWcSL
- uDxVhCW3z5sWaLpGYXlQhltIsRdmm8StubaX4qJkYl7XNhtgGPjNxylyeuK/wMfc
- 9jlbRcdvjv15WBLy02XAQ==
-X-ME-Sender: <xms:ETJxYutCNK7enlPNtDmjLXka__V9_Kgt019cpYWc7I5SPhIR7qCL1w>
- <xme:ETJxYje8-eKatvcXSlhq1nbMGQ_JOGDyc2fD-mqHO2JzKYeebnw9AcxDjl7kIAQ6G
- V41gdWZ6Loztw>
-X-ME-Received: <xmr:ETJxYpzlgi8qmdTqjqCC5gBwcblv_rrOCqGYRBr4BV_4swWQt_-8p5S9M9i4BQqpXK1-9s46aXOridyxaEAsUVbdMssI>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrvdejgdeilecutefuodetggdotefrodftvf
- curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
- uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
- fjughrpeffhffvvefukfhfgggtuggjsehttdertddttddvnecuhfhrohhmpefirhgvghcu
- mffjuceoghhrvghgsehkrhhorghhrdgtohhmqeenucggtffrrghtthgvrhhnpeegheeuhe
- fgtdeluddtleekfeegjeetgeeikeehfeduieffvddufeefleevtddtvdenucffohhmrghi
- nhepkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpe
- hmrghilhhfrhhomhepghhrvghgsehkrhhorghhrdgtohhm
-X-ME-Proxy: <xmx:ETJxYpNXuQ3T7Pec7i58mlCZcl9DXHo6BhPgcwXC8zYL7F8rYeGsNQ>
- <xmx:ETJxYu8fYM4dpN7td1VUCvhlK2HZ-bbizbMR3NlQr4Bw78yr91pAFg>
- <xmx:ETJxYhXv2G74jC9blTWurMBvB65n1qMgxgSB_wr586xeFGkeXQ9hdA>
- <xmx:EjJxYs8o2pl9535C46LXdfb4oiKj4oeNIRdUjliQ98xIZWJHodN4Iw>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 3 May 2022 09:45:53 -0400 (EDT)
-Date: Tue, 3 May 2022 15:45:52 +0200
-From: Greg KH <greg@kroah.com>
-To: Namhyung Kim <namhyung@kernel.org>
-Subject: Re: [PATCH for v5.15] perf symbol: Remove arch__symbols__fixup_end()
-Message-ID: <YnEyEN7B1lBtECMg@kroah.com>
-References: <20220503003736.711789-1-namhyung@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kt2GT2qXmz308G
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2022 00:22:08 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id 15C4DB81ECE;
+ Tue,  3 May 2022 14:22:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2FC0C385A4;
+ Tue,  3 May 2022 14:22:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+ s=korg; t=1651587721;
+ bh=eXqxbocnJ5j1ByQPTMUnN6fZvh5o5A3xDYX1HD23EjY=;
+ h=Subject:To:Cc:From:Date:From;
+ b=LyZu7+wD2aSfXTxGJEFyffy0pUurbsYHWR9Sfg5kKb5cHytvPPWRBix3VdRY6XdMq
+ 18cxwi+5yn/tWv3P7RznHs3hGlEI/frJeeawrOB2TRpgLZ6nehfXXBm7lZ98osN4+b
+ 4XVKHqimEowoRF6ZakY+kvm0neFtxY1frCfgF3ek=
+Subject: Patch "perf symbol: Remove arch__symbols__fixup_end()" has been added
+ to the 5.10-stable tree
+To: acme@redhat.com, gregkh@linuxfoundation.org, hca@linux.ibm.com,
+ irogers@google.com, john.garry@huawei.com, jolsa@kernel.org,
+ leo.yan@linaro.org, linuxppc-dev@lists.ozlabs.org, mark.rutland@arm.com,
+ mathieu.poirier@linaro.org, mhiramat@kernel.org, mingo@kernel.org,
+ mpe@ellerman.id.au, mpetlan@redhat.com, namhyung@kernel.org,
+ peterz@infradead.org, songliubraving@fb.com, will@kernel.org
+From: <gregkh@linuxfoundation.org>
+Date: Tue, 03 May 2022 16:22:00 +0200
+Message-ID: <165158772017195@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220503003736.711789-1-namhyung@kernel.org>
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: 8bit
+X-stable: commit
+X-Patchwork-Hint: ignore 
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,45 +67,157 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Ian Rogers <irogers@google.com>,
- Song Liu <songliubraving@fb.com>, Mathieu Poirier <mathieu.poirier@linaro.org>,
- linux-s390@vger.kernel.org, Michael Petlan <mpetlan@redhat.com>,
- Heiko Carstens <hca@linux.ibm.com>, John Garry <john.garry@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>, Masami Hiramatsu <mhiramat@kernel.org>,
- Jiri Olsa <jolsa@kernel.org>, Leo Yan <leo.yan@linaro.org>,
- Will Deacon <will@kernel.org>, Ingo Molnar <mingo@kernel.org>
+Cc: stable-commits@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 02, 2022 at 05:37:36PM -0700, Namhyung Kim wrote:
-> Now the generic code can handle kallsyms fixup properly so no need to
-> keep the arch-functions anymore.
-> 
-> Signed-off-by: Namhyung Kim <namhyung@kernel.org>
-> Acked-by: Ian Rogers <irogers@google.com>
-> Cc: Heiko Carstens <hca@linux.ibm.com>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Cc: Jiri Olsa <jolsa@kernel.org>
-> Cc: John Garry <john.garry@huawei.com>
-> Cc: Leo Yan <leo.yan@linaro.org>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Masami Hiramatsu <mhiramat@kernel.org>
-> Cc: Mathieu Poirier <mathieu.poirier@linaro.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Michael Petlan <mpetlan@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Song Liu <songliubraving@fb.com>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: linux-s390@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Link: https://lore.kernel.org/r/20220416004048.1514900-4-namhyung@kernel.org
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> ---
-> The original commit id is a5d20d42a2f2dc2b2f9e9361912062732414090d
 
-Both now queued up, thanks.
+This is a note to let you know that I've just added the patch titled
 
-greg k-h
+    perf symbol: Remove arch__symbols__fixup_end()
+
+to the 5.10-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+The filename of the patch is:
+     perf-symbol-remove-arch__symbols__fixup_end.patch
+and it can be found in the queue-5.10 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+From a5d20d42a2f2dc2b2f9e9361912062732414090d Mon Sep 17 00:00:00 2001
+From: Namhyung Kim <namhyung@kernel.org>
+Date: Fri, 15 Apr 2022 17:40:48 -0700
+Subject: perf symbol: Remove arch__symbols__fixup_end()
+
+From: Namhyung Kim <namhyung@kernel.org>
+
+commit a5d20d42a2f2dc2b2f9e9361912062732414090d upstream.
+
+Now the generic code can handle kallsyms fixup properly so no need to
+keep the arch-functions anymore.
+
+Fixes: 3cf6a32f3f2a4594 ("perf symbols: Fix symbol size calculation condition")
+Signed-off-by: Namhyung Kim <namhyung@kernel.org>
+Acked-by: Ian Rogers <irogers@google.com>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Jiri Olsa <jolsa@kernel.org>
+Cc: John Garry <john.garry@huawei.com>
+Cc: Leo Yan <leo.yan@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Mathieu Poirier <mathieu.poirier@linaro.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Michael Petlan <mpetlan@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Song Liu <songliubraving@fb.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: linux-s390@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: https://lore.kernel.org/r/20220416004048.1514900-4-namhyung@kernel.org
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ tools/perf/arch/arm64/util/Build     |    1 -
+ tools/perf/arch/arm64/util/machine.c |   27 ---------------------------
+ tools/perf/arch/s390/util/machine.c  |   16 ----------------
+ tools/perf/util/symbol.c             |    5 -----
+ tools/perf/util/symbol.h             |    1 -
+ 5 files changed, 50 deletions(-)
+ delete mode 100644 tools/perf/arch/powerpc/util/machine.c
+
+--- a/tools/perf/arch/arm64/util/Build
++++ b/tools/perf/arch/arm64/util/Build
+@@ -1,5 +1,4 @@
+ perf-y += header.o
+-perf-y += machine.o
+ perf-y += perf_regs.o
+ perf-y += tsc.o
+ perf-$(CONFIG_DWARF)     += dwarf-regs.o
+--- a/tools/perf/arch/arm64/util/machine.c
++++ /dev/null
+@@ -1,27 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0
+-
+-#include <stdio.h>
+-#include <string.h>
+-#include "debug.h"
+-#include "symbol.h"
+-
+-/* On arm64, kernel text segment start at high memory address,
+- * for example 0xffff 0000 8xxx xxxx. Modules start at a low memory
+- * address, like 0xffff 0000 00ax xxxx. When only samll amount of
+- * memory is used by modules, gap between end of module's text segment
+- * and start of kernel text segment may be reach 2G.
+- * Therefore do not fill this gap and do not assign it to the kernel dso map.
+- */
+-
+-#define SYMBOL_LIMIT (1 << 12) /* 4K */
+-
+-void arch__symbols__fixup_end(struct symbol *p, struct symbol *c)
+-{
+-	if ((strchr(p->name, '[') && strchr(c->name, '[') == NULL) ||
+-			(strchr(p->name, '[') == NULL && strchr(c->name, '[')))
+-		/* Limit range of last symbol in module and kernel */
+-		p->end += SYMBOL_LIMIT;
+-	else
+-		p->end = c->start;
+-	pr_debug4("%s sym:%s end:%#lx\n", __func__, p->name, p->end);
+-}
+--- a/tools/perf/arch/s390/util/machine.c
++++ b/tools/perf/arch/s390/util/machine.c
+@@ -34,19 +34,3 @@ int arch__fix_module_text_start(u64 *sta
+ 
+ 	return 0;
+ }
+-
+-/* On s390 kernel text segment start is located at very low memory addresses,
+- * for example 0x10000. Modules are located at very high memory addresses,
+- * for example 0x3ff xxxx xxxx. The gap between end of kernel text segment
+- * and beginning of first module's text segment is very big.
+- * Therefore do not fill this gap and do not assign it to the kernel dso map.
+- */
+-void arch__symbols__fixup_end(struct symbol *p, struct symbol *c)
+-{
+-	if (strchr(p->name, '[') == NULL && strchr(c->name, '['))
+-		/* Last kernel symbol mapped to end of page */
+-		p->end = roundup(p->end, page_size);
+-	else
+-		p->end = c->start;
+-	pr_debug4("%s sym:%s end:%#lx\n", __func__, p->name, p->end);
+-}
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -101,11 +101,6 @@ static int prefix_underscores_count(cons
+ 	return tail - str;
+ }
+ 
+-void __weak arch__symbols__fixup_end(struct symbol *p, struct symbol *c)
+-{
+-	p->end = c->start;
+-}
+-
+ const char * __weak arch__normalize_symbol_name(const char *name)
+ {
+ 	return name;
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -230,7 +230,6 @@ const char *arch__normalize_symbol_name(
+ #define SYMBOL_A 0
+ #define SYMBOL_B 1
+ 
+-void arch__symbols__fixup_end(struct symbol *p, struct symbol *c);
+ int arch__compare_symbol_names(const char *namea, const char *nameb);
+ int arch__compare_symbol_names_n(const char *namea, const char *nameb,
+ 				 unsigned int n);
+
+
+Patches currently in stable-queue which might be from namhyung@kernel.org are
+
+queue-5.10/perf-symbol-remove-arch__symbols__fixup_end.patch
+queue-5.10/perf-symbol-update-symbols__fixup_end.patch
+queue-5.10/perf-symbol-pass-is_kallsyms-to-symbols__fixup_end.patch
