@@ -4,37 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC5C1C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 May 2022 21:22:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21C6AC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 May 2022 21:28:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KtqXy0j9jz3by6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 07:22:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ktqgg2Sy1z3byT
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 07:28:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=VzNshjcW;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=elvis.franken.de (client-ip=193.175.24.41; helo=elvis.franken.de;
- envelope-from=tsbogend@alpha.franken.de; receiver=<UNKNOWN>)
-X-Greylist: delayed 2930 seconds by postgrey-1.36 at boromir;
- Thu, 05 May 2022 07:21:58 AEST
-Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
- by lists.ozlabs.org (Postfix) with ESMTP id 4KtqXQ3CLFz3bZB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 07:21:58 +1000 (AEST)
-Received: from uucp (helo=alpha)
- by elvis.franken.de with local-bsmtp (Exim 3.36 #1)
- id 1nmLg4-0003MI-01; Wed, 04 May 2022 22:32:52 +0200
-Received: by alpha.franken.de (Postfix, from userid 1000)
- id B9C09C01D0; Wed,  4 May 2022 22:32:24 +0200 (CEST)
-Date: Wed, 4 May 2022 22:32:24 +0200
-From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+ smtp.mailfrom=igalia.com (client-ip=178.60.130.6; helo=fanzine2.igalia.com;
+ envelope-from=gpiccoli@igalia.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256
+ header.s=20170329 header.b=VzNshjcW; dkim-atps=neutral
+Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ktqfw205gz2yQ9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 07:27:34 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com; 
+ s=20170329;
+ h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
+ References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
+ Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+ Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+ List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=dpN78FnXP8xKsKthCe3ePYGrznnidWC78ijJKGIis+s=; b=VzNshjcWDWgTdIjmwACWbnjJ/H
+ mQcB13lNG3fglzHQC/FUqdo2dvwKWsRAKNIc/TJuBa97Z8kYuf2lpVRvpBu62ga3ovDrsi08aDNiE
+ OlqogXHjD4qsmKbgS2LbXN2AOGnhdCvdtCVo6IDt0imworVavUuV/zNlIT6mNaTQhnLm07TNtoK4m
+ Ihl3ULKYuFP6cuYPQF485CZFlEA6oPcsLGDcH0IfHz/dstflDSmqrZB+ksN5MQ7uiQlVVpBT+K7Ib
+ 0RM9kXieFgdNepPjq9LySneGSuViPcHimXjyBUf5+knfLf159kvuFYr1c8xkwmLdvzZ/p8/HjZAHo
+ dOADxIVQ==;
+Received: from [179.113.53.197] (helo=[192.168.1.60])
+ by fanzine2.igalia.com with esmtpsa 
+ (Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
+ id 1nmMWW-0004FF-4B; Wed, 04 May 2022 23:27:04 +0200
+Message-ID: <976c2d62-09e7-9f8d-d978-12749a2f70e6@igalia.com>
+Date: Wed, 4 May 2022 18:26:28 -0300
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.1
 Subject: Re: [PATCH 07/30] mips: ip22: Reword PANICED to PANICKED and remove
  useless header
-Message-ID: <20220504203224.GA23475@alpha.franken.de>
+Content-Language: en-US
+To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 References: <20220427224924.592546-1-gpiccoli@igalia.com>
  <20220427224924.592546-8-gpiccoli@igalia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220427224924.592546-8-gpiccoli@igalia.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ <20220504203224.GA23475@alpha.franken.de>
+From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+In-Reply-To: <20220504203224.GA23475@alpha.franken.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,35 +79,26 @@ Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
  bcm-kernel-feedback-list@broadcom.com, xen-devel@lists.xenproject.org,
  dyoung@redhat.com, vgoyal@redhat.com, pmladek@suse.com,
  dave.hansen@linux.intel.com, keescook@chromium.org, arnd@arndb.de,
- linux-pm@vger.kernel.org, coresight@lists.linaro.org,
- linux-um@lists.infradead.org, rostedt@goodmis.org, rcu@vger.kernel.org,
- gregkh@linuxfoundation.org, bp@alien8.de, luto@kernel.org,
+ linux-pm@vger.kernel.org, linux-um@lists.infradead.org, rostedt@goodmis.org,
+ rcu@vger.kernel.org, gregkh@linuxfoundation.org, bp@alien8.de, luto@kernel.org,
  linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
  andriy.shevchenko@linux.intel.com, vkuznets@redhat.com,
- linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
- jgross@suse.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
- kernel@gpiccoli.net, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- stern@rowland.harvard.edu, senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com,
- mhiramat@kernel.org, kernel-dev@igalia.com, linux-alpha@vger.kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+ linux-edac@vger.kernel.org, jgross@suse.com, linux-parisc@vger.kernel.org,
+ netdev@vger.kernel.org, kernel@gpiccoli.net, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, stern@rowland.harvard.edu,
+ senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
+ kernel-dev@igalia.com, linux-alpha@vger.kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 27, 2022 at 07:49:01PM -0300, Guilherme G. Piccoli wrote:
-> Many other place in the kernel prefer the latter, so let's keep
-> it consistent in MIPS code as well. Also, removes a useless header.
+On 04/05/2022 17:32, Thomas Bogendoerfer wrote:
+> [...]
 > 
-> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-> Signed-off-by: Guilherme G. Piccoli <gpiccoli@igalia.com>
-> ---
->  arch/mips/sgi-ip22/ip22-reset.c | 11 +++++------
->  1 file changed, 5 insertions(+), 6 deletions(-)
+> applied to mips-next.
+> 
+> Thomas.
+> 
 
-applied to mips-next.
-
-Thomas.
-
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
-good idea.                                                [ RFC1925, 2.3 ]
+Thanks a bunch Thomas =)
