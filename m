@@ -4,77 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 822D1C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 May 2022 20:12:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5B73C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 May 2022 20:18:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ktnzk6LB2z3c7P
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 06:12:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ktp7H32t8z3brL
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 06:18:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=k0nauOa1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=KDrxDW8M;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org;
- envelope-from=wsa@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=igalia.com (client-ip=178.60.130.6; helo=fanzine2.igalia.com;
+ envelope-from=gpiccoli@igalia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=k0nauOa1; 
- dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ktnz168b9z2ymf
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 06:11:25 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id 8399CB828A5;
- Wed,  4 May 2022 20:11:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A07CC385A4;
- Wed,  4 May 2022 20:11:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1651695081;
- bh=Qg91tBcD1wN6wCVZbNcaVdgDsBFAx4BdW5qUv0clohE=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=k0nauOa1Bj1fH+nV/tCxgCm53/f50EqRFFbXX4UmFurst9ceXSnSwFo6MIkAxragh
- 5yQYzhmG8wkpd+8XsxO/UnET+q5d4bTEcRmHdIzQnV26/rAu3E5EzlLpm68LJwnnRo
- lYxNg9htFSZF5EpfdzVr99/HpOlGOq06xKt5uFJDchy2D3xpOLl+wqOOc/4n45ledU
- xv75a9RbRrPehvAAge7KNeOz0uOBKXeIYEMszDQ6nfZ/qjRuG0Lcm+U+vwdtnpNmLy
- 0IR3U+IyFWaJ3IHq89KI2T09mhKcBa8U25/bKRyHdLTTLQhIpR50bnUIqRKtrl0ax3
- ACIXPXPsjTiDA==
-Date: Wed, 4 May 2022 22:11:18 +0200
-From: Wolfram Sang <wsa@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v1 2/4] powerpc/mpc5xxx: Switch
- mpc5xxx_get_bus_frequency() to use fwnode
-Message-ID: <YnLd5lvmlgv6LmuU@kunai>
-Mail-Followup-To: Wolfram Sang <wsa@kernel.org>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Sergey Shtylyov <s.shtylyov@omp.ru>,
- Damien Le Moal <damien.lemoal@opensource.wdc.com>,
- Chris Packham <chris.packham@alliedtelesis.co.nz>,
- Marc Kleine-Budde <mkl@pengutronix.de>,
- "David S. Miller" <davem@davemloft.net>,
- Jakub Kicinski <kuba@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jirislaby@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
- linux-i2c@vger.kernel.org, linux-can@vger.kernel.org,
- netdev@vger.kernel.org, linux-spi@vger.kernel.org,
- linux-serial@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Anatolij Gustschin <agust@denx.de>,
- Wolfgang Grandegger <wg@grandegger.com>,
- Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
- Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- Mark Brown <broonie@kernel.org>
-References: <20220504134449.64473-1-andriy.shevchenko@linux.intel.com>
- <20220504134449.64473-2-andriy.shevchenko@linux.intel.com>
+ unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256
+ header.s=20170329 header.b=KDrxDW8M; dkim-atps=neutral
+Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Ktc5q3rMlz3bWM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2022 22:46:37 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com; 
+ s=20170329;
+ h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
+ References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
+ Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+ Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+ List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=UDxTzr/LbFPHIhZF1U36kLmGFtpbBGYhm6tD7CfQBjM=; b=KDrxDW8Mnr1qToRh0yGaDv25Fu
+ TWpgQRScRF3dRjjU3pakegMZLqUHmycIdjATA6DbY60uPfya2zQOAwJ0e5erFJc5BJn7o3eV3sQ41
+ Tox4yunn4/jA8a3IjyUJT/sI3KcoYtb2p2FNUwcMM3f1g/ex9W0DrY0odKixjZjudGtrtbA3G1JPw
+ m7Nny7DVsQFLh+HpvU/q7Yc8/k1hRGwJeSWIAUBYmqnc5ZdThCMVxiKgVNOsyAMWZdrNHmIgXn40c
+ w6AF2HzVr+D+OvvIusg4XzuOUWHoF2AYp44ZOOo2CAb1BDljEp1qf8qc23J8WoJ9sqhtbxFJxmFVB
+ 8aeUFBag==;
+Received: from [179.113.53.197] (helo=[192.168.1.60])
+ by fanzine2.igalia.com with esmtpsa 
+ (Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
+ id 1nmEOH-0003Ke-Oi; Wed, 04 May 2022 14:46:02 +0200
+Message-ID: <9581851d-6c61-a2ef-a3c4-6e2ce05eab12@igalia.com>
+Date: Wed, 4 May 2022 09:45:31 -0300
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="5kYQ0ef1AFwxM1LW"
-Content-Disposition: inline
-In-Reply-To: <20220504134449.64473-2-andriy.shevchenko@linux.intel.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.0
+Subject: Re: [PATCH 04/30] firmware: google: Convert regular spinlock into
+ trylock on panic path
+Content-Language: en-US
+To: Evan Green <evgreen@chromium.org>
+References: <20220427224924.592546-1-gpiccoli@igalia.com>
+ <20220427224924.592546-5-gpiccoli@igalia.com>
+ <CAE=gft5Pq25L4KFoPWbftkPF-JN1ex2yws77mMJ4GQnn9W0L2g@mail.gmail.com>
+ <adcf6d0e-c37c-6ede-479e-29959d03d8c0@igalia.com>
+ <CAE=gft623NxqetRssrZnaRmJLSP4BT5=-sVVwtYoHuspO_gULQ@mail.gmail.com>
+From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+In-Reply-To: <CAE=gft623NxqetRssrZnaRmJLSP4BT5=-sVVwtYoHuspO_gULQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Thu, 05 May 2022 06:17:57 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,57 +71,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ide@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
- Paul Mackerras <paulus@samba.org>, linux-i2c@vger.kernel.org,
- Paolo Abeni <pabeni@redhat.com>, Jiri Slaby <jirislaby@kernel.org>,
- Damien Le Moal <damien.lemoal@opensource.wdc.com>,
- linux-serial@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
- Anatolij Gustschin <agust@denx.de>, Wolfgang Grandegger <wg@grandegger.com>,
- linux-can@vger.kernel.org, Chris Packham <chris.packham@alliedtelesis.co.nz>,
- Marc Kleine-Budde <mkl@pengutronix.de>, Sergey Shtylyov <s.shtylyov@omp.ru>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- linux-spi@vger.kernel.org, Mark Brown <broonie@kernel.org>,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
+ David Gow <davidgow@google.com>, linux-xtensa@linux-xtensa.org,
+ peterz@infradead.org, alejandro.j.jimenez@oracle.com,
+ linux-remoteproc@vger.kernel.org, feng.tang@intel.com,
+ linux-mips@vger.kernel.org, hidehiro.kawai.ez@hitachi.com,
+ sparclinux@vger.kernel.org, Will Deacon <will@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-leds@vger.kernel.org,
+ linux-s390@vger.kernel.org, mikelley@microsoft.com, john.ogness@linutronix.de,
+ bhe@redhat.com, Jonathan Corbet <corbet@lwn.net>, paulmck@kernel.org,
+ fabiomirmar@gmail.com, x86@kernel.org, Ard Biesheuvel <ardb@kernel.org>,
+ mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com,
+ xen-devel@lists.xenproject.org, dyoung@redhat.com, vgoyal@redhat.com,
+ pmladek@suse.com, dave.hansen@linux.intel.com,
+ Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Linux PM <linux-pm@vger.kernel.org>, linux-um@lists.infradead.org,
+ rostedt@goodmis.org, rcu@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Borislav Petkov <bp@alien8.de>, luto@kernel.org, linux-tegra@vger.kernel.org,
+ openipmi-developer@lists.sourceforge.net,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, vkuznets@redhat.com,
+ linux-edac@vger.kernel.org, jgross@suse.com, linux-parisc@vger.kernel.org,
+ netdev@vger.kernel.org, kernel@gpiccoli.net, kexec@lists.infradead.org,
+ LKML <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
+ senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
+ kernel-dev@igalia.com, linux-alpha@vger.kernel.org,
+ Julius Werner <jwerner@chromium.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 03/05/2022 18:56, Evan Green wrote:
+> Hi Guilherme,
+> [...] 
+>> Do you agree with that, or prefer really a parameter in
+>> gsmi_shutdown_reason() ? I'll follow your choice =)
+> 
+> I'm fine with either, thanks for the link. Mostly I want to make sure
+> other paths to gsmi_shutdown_reason() aren't also converted to a try.
 
---5kYQ0ef1AFwxM1LW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Evan, thanks for the prompt response! So, I'll proceed like I did in
+s390, for consistency.
 
-On Wed, May 04, 2022 at 04:44:47PM +0300, Andy Shevchenko wrote:
-> Switch mpc5xxx_get_bus_frequency() to use fwnode in order to help
-> cleaning up other parts of the kernel from OF specific code.
->=20
-> No functional change intended.
->=20
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> [...]
+>> Reasoning: the problem with your example is that, by default, secondary
+>> CPUs are disabled in the panic path, through an IPI mechanism. IPIs take
+>> precedence and interrupt the work in these CPUs, effectively
+>> interrupting the "polite work" with the lock held heh
+> 
+> The IPI can only interrupt a CPU with irqs disabled if the IPI is an
+> NMI. I haven't looked before to see if we use NMI IPIs to corral the
+> other CPUs on panic. On x86, I grepped my way down to
+> native_stop_other_cpus(), which looks like it does a normal IPI, waits
+> 1 second, then does an NMI IPI. So, if a secondary CPU has the lock
+> held, on x86 it has roughly 1s to finish what it's doing and re-enable
+> interrupts before smp_send_stop() brings the NMI hammer down. I think
+> this should be more than enough time for the secondary CPU to get out
+> and release the lock.
+> 
+> So then it makes sense to me that you're fixing cases where we
+> panicked with the lock held, or hung with the lock held. Given the 1
+> second grace period x86 gives us, I'm on board, as that helps mitigate
+> the risk that we bailed out early with the try and should have spun a
+> bit longer instead. Thanks.
+> 
+> -Evan
 
-Acked-by: Wolfram Sang <wsa@kernel.org> # for the I2C part
+Well, in the old path without "crash_kexec_post_notifiers", we indeed
+end-up relying on native_stop_other_cpus() for x86 as you said, and the
+"1s rule" makes sense. But after this series (or even before, if the
+kernel parameter "crash_kexec_post_notifiers" was used) the function
+used to stop CPUs in the panic path is crash_smp_send_stop(), and the
+call chain is like:
+
+Main CPU:
+crash_smp_send_stop()
+--kdump_nmi_shootdown_cpus()
+----nmi_shootdown_cpus()
+
+Then, in each CPU (except the main one, running panic() path),
+we execute kdump_nmi_callback() in NMI context.
+
+So, we seem to indeed interrupt any context (even with IRQs disabled),
+increasing the likelihood of the potential lockups due to stopped CPUs
+holding the locks heheh
+
+Thanks again for the good discussion, let me know if anything I'm saying
+doesn't make sense - this crash path is a bit convoluted, specially in
+x86, I might have understood something wrongly =)
+Cheers,
 
 
---5kYQ0ef1AFwxM1LW
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAmJy3eUACgkQFA3kzBSg
-KbZC2Q/9HAv5wUkTBzMP5daIIk3LyMvlDsqR6gGOTpeHvdPasQpBF8ncPQZ8Hxjv
-co5o3/oPS/t/Shwsks9LfPG1YkbqBjE6ETFyJEHeRaw4I9kxoGkkBZWLlB5DTSm+
-Ms19PVmw9n4YtbryC4f9hp9oJORb581zX6PCbjHtt3JmJwc/xZZRx5rHvHLFMdRP
-OiQIzpvpSPLC918gyiRWBJ2dTxoJ4C583qKzMtYm7bNHq+2Rh+aQ6tAwuKSfGOe/
-804ae0+AH9V6GH+xr0cXfNULvOW3K8YWYWeGWBJoLfsqWOQWW18bIqJibJEyfu8u
-1JNQDJHLzjozQpQmIktz+a00eabM3KLGRM3Yotg105GYl8iFhJ7OvCL03jdTTlVV
-87lzkfi3vO0IrbG2GdUsHoE8XcoXa5HbnCMhoWppczIFaxvFlNDmO8cyu78O0u11
-fDA7SVtfnYpTyZS4LvC5PNXxNrN2NVyGyLklQopXHzz0FXslFidsjALTmWvpUYbg
-xZAS+y42lmIaBMzfeqehu5vSL1VGwExjfSPPLdQfuB0zxdjboUEsop6SgKN6nBro
-bEsVptHCUWgF6d/zGaF5LaO6ydAPHwzqmfAJeEy3fDTDBrcRDciXZNf5FtYi5eP9
-jDdX2vtBqp7uwKC4fEEuIwWQoz7cmyjxI4pHaxYi4oqiDGYNp8Y=
-=F8ka
------END PGP SIGNATURE-----
-
---5kYQ0ef1AFwxM1LW--
+Guilherme
