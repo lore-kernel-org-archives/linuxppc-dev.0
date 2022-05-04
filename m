@@ -4,61 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5B73C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 May 2022 20:18:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2831FC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 May 2022 20:19:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ktp7H32t8z3brL
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 06:18:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ktp7y59glz3brj
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 06:19:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=KDrxDW8M;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=c6C+7W6X;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=igalia.com (client-ip=178.60.130.6; helo=fanzine2.igalia.com;
- envelope-from=gpiccoli@igalia.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::240;
+ helo=mslow1.mail.gandi.net; envelope-from=clement.leger@bootlin.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256
- header.s=20170329 header.b=KDrxDW8M; dkim-atps=neutral
-Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Ktc5q3rMlz3bWM
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2022 22:46:37 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com; 
- s=20170329;
- h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
- References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
- Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
- Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
- List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=UDxTzr/LbFPHIhZF1U36kLmGFtpbBGYhm6tD7CfQBjM=; b=KDrxDW8Mnr1qToRh0yGaDv25Fu
- TWpgQRScRF3dRjjU3pakegMZLqUHmycIdjATA6DbY60uPfya2zQOAwJ0e5erFJc5BJn7o3eV3sQ41
- Tox4yunn4/jA8a3IjyUJT/sI3KcoYtb2p2FNUwcMM3f1g/ex9W0DrY0odKixjZjudGtrtbA3G1JPw
- m7Nny7DVsQFLh+HpvU/q7Yc8/k1hRGwJeSWIAUBYmqnc5ZdThCMVxiKgVNOsyAMWZdrNHmIgXn40c
- w6AF2HzVr+D+OvvIusg4XzuOUWHoF2AYp44ZOOo2CAb1BDljEp1qf8qc23J8WoJ9sqhtbxFJxmFVB
- 8aeUFBag==;
-Received: from [179.113.53.197] (helo=[192.168.1.60])
- by fanzine2.igalia.com with esmtpsa 
- (Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
- id 1nmEOH-0003Ke-Oi; Wed, 04 May 2022 14:46:02 +0200
-Message-ID: <9581851d-6c61-a2ef-a3c4-6e2ce05eab12@igalia.com>
-Date: Wed, 4 May 2022 09:45:31 -0300
+ unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256
+ header.s=gm1 header.b=c6C+7W6X; dkim-atps=neutral
+Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net
+ [IPv6:2001:4b98:dc4:8::240])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KthBG5VkLz3bd7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 01:50:46 +1000 (AEST)
+Received: from relay2-d.mail.gandi.net (unknown [217.70.183.194])
+ by mslow1.mail.gandi.net (Postfix) with ESMTP id BBD4AC9662
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2022 15:42:13 +0000 (UTC)
+Received: (Authenticated sender: clement.leger@bootlin.com)
+ by mail.gandi.net (Postfix) with ESMTPSA id 092EC40003;
+ Wed,  4 May 2022 15:42:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+ t=1651678926;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=syVh6bmaMn5ntdtGN7GpyAnxiKbIllExQJN9dKGkNJ0=;
+ b=c6C+7W6XFAo/WW8FtCv6SSTsY/cs+sDCqpqwwTuow7Lz0ga7x4bSWSHJOLdnPyiHyfHhDI
+ vOeXRsUNeXFEJTswTiSC+HliR3Y0CF/L6v0eqC1vT9WlWO61Vq2+4T4xvK4oUaRhrgysqw
+ nrO/ooCzJJvXJzZr+/vF3Dpwfa9cUmTeJWqLBL1ydy6/qNM8u6IqQPyEAeDkk7LQvKfF5I
+ wX9BNb9qbwfUSDvBpVg+S90rtW5Y2N75WrIsr4fF0wKBGYlfxNJqzbgL0HLZdM9CtB5RSA
+ PuclVajdpob5X8Yg/J/Wc+M3clTTtw/WpRde9qzfG9MDLG1Dm4m82/0hNrPI7g==
+From: =?UTF-8?q?Cl=C3=A9ment=20L=C3=A9ger?= <clement.leger@bootlin.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Nathan Lynch <nathanl@linux.ibm.com>,
+ Laurent Dufour <ldufour@linux.ibm.com>,
+ Daniel Henrique Barboza <danielhb413@gmail.com>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@redhat.com>,
+ Ohhoon Kwon <ohoono.kwon@samsung.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ YueHaibing <yuehaibing@huawei.com>
+Subject: [PATCH 3/3] powerpc/pseries: use of_property_*() and of_node_*()
+ functions
+Date: Wed,  4 May 2022 17:40:33 +0200
+Message-Id: <20220504154033.750511-4-clement.leger@bootlin.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220504154033.750511-1-clement.leger@bootlin.com>
+References: <20220504154033.750511-1-clement.leger@bootlin.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
-Subject: Re: [PATCH 04/30] firmware: google: Convert regular spinlock into
- trylock on panic path
-Content-Language: en-US
-To: Evan Green <evgreen@chromium.org>
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-5-gpiccoli@igalia.com>
- <CAE=gft5Pq25L4KFoPWbftkPF-JN1ex2yws77mMJ4GQnn9W0L2g@mail.gmail.com>
- <adcf6d0e-c37c-6ede-479e-29959d03d8c0@igalia.com>
- <CAE=gft623NxqetRssrZnaRmJLSP4BT5=-sVVwtYoHuspO_gULQ@mail.gmail.com>
-From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-In-Reply-To: <CAE=gft623NxqetRssrZnaRmJLSP4BT5=-sVVwtYoHuspO_gULQ@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Thu, 05 May 2022 06:17:57 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -71,96 +79,232 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
- David Gow <davidgow@google.com>, linux-xtensa@linux-xtensa.org,
- peterz@infradead.org, alejandro.j.jimenez@oracle.com,
- linux-remoteproc@vger.kernel.org, feng.tang@intel.com,
- linux-mips@vger.kernel.org, hidehiro.kawai.ez@hitachi.com,
- sparclinux@vger.kernel.org, Will Deacon <will@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-leds@vger.kernel.org,
- linux-s390@vger.kernel.org, mikelley@microsoft.com, john.ogness@linutronix.de,
- bhe@redhat.com, Jonathan Corbet <corbet@lwn.net>, paulmck@kernel.org,
- fabiomirmar@gmail.com, x86@kernel.org, Ard Biesheuvel <ardb@kernel.org>,
- mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com,
- xen-devel@lists.xenproject.org, dyoung@redhat.com, vgoyal@redhat.com,
- pmladek@suse.com, dave.hansen@linux.intel.com,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- Linux PM <linux-pm@vger.kernel.org>, linux-um@lists.infradead.org,
- rostedt@goodmis.org, rcu@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Borislav Petkov <bp@alien8.de>, luto@kernel.org, linux-tegra@vger.kernel.org,
- openipmi-developer@lists.sourceforge.net,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, vkuznets@redhat.com,
- linux-edac@vger.kernel.org, jgross@suse.com, linux-parisc@vger.kernel.org,
- netdev@vger.kernel.org, kernel@gpiccoli.net, kexec@lists.infradead.org,
- LKML <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
- senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
- kernel-dev@igalia.com, linux-alpha@vger.kernel.org,
- Julius Werner <jwerner@chromium.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org,
+ =?UTF-8?q?Cl=C3=A9ment=20L=C3=A9ger?= <clement.leger@bootlin.com>,
+ Steen Hegelund <steen.hegelund@microchip.com>, linux-kernel@vger.kernel.org,
+ Allan Nielsen <allan.nielsen@microchip.com>,
+ Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org,
+ Horatiu Vultur <horatiu.vultur@microchip.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 03/05/2022 18:56, Evan Green wrote:
-> Hi Guilherme,
-> [...] 
->> Do you agree with that, or prefer really a parameter in
->> gsmi_shutdown_reason() ? I'll follow your choice =)
-> 
-> I'm fine with either, thanks for the link. Mostly I want to make sure
-> other paths to gsmi_shutdown_reason() aren't also converted to a try.
+Use of_property_alloc/free() and of_node_alloc/free() to create and free
+device-tree nodes and properties.
 
-Hi Evan, thanks for the prompt response! So, I'll proceed like I did in
-s390, for consistency.
+Signed-off-by: Clément Léger <clement.leger@bootlin.com>
+---
+ arch/powerpc/platforms/pseries/dlpar.c        | 51 +++----------------
+ .../platforms/pseries/hotplug-memory.c        | 27 +---------
+ arch/powerpc/platforms/pseries/reconfig.c     | 44 ++++------------
+ 3 files changed, 20 insertions(+), 102 deletions(-)
 
-> [...]
->> Reasoning: the problem with your example is that, by default, secondary
->> CPUs are disabled in the panic path, through an IPI mechanism. IPIs take
->> precedence and interrupt the work in these CPUs, effectively
->> interrupting the "polite work" with the lock held heh
-> 
-> The IPI can only interrupt a CPU with irqs disabled if the IPI is an
-> NMI. I haven't looked before to see if we use NMI IPIs to corral the
-> other CPUs on panic. On x86, I grepped my way down to
-> native_stop_other_cpus(), which looks like it does a normal IPI, waits
-> 1 second, then does an NMI IPI. So, if a secondary CPU has the lock
-> held, on x86 it has roughly 1s to finish what it's doing and re-enable
-> interrupts before smp_send_stop() brings the NMI hammer down. I think
-> this should be more than enough time for the secondary CPU to get out
-> and release the lock.
-> 
-> So then it makes sense to me that you're fixing cases where we
-> panicked with the lock held, or hung with the lock held. Given the 1
-> second grace period x86 gives us, I'm on board, as that helps mitigate
-> the risk that we bailed out early with the try and should have spun a
-> bit longer instead. Thanks.
-> 
-> -Evan
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index b1f01ac0c29e..ebecde6c7256 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -39,61 +39,25 @@ struct cc_workarea {
+ 	__be32	prop_offset;
+ };
+ 
+-void dlpar_free_cc_property(struct property *prop)
+-{
+-	kfree(prop->name);
+-	kfree(prop->value);
+-	kfree(prop);
+-}
+-
+ static struct property *dlpar_parse_cc_property(struct cc_workarea *ccwa)
+ {
+-	struct property *prop;
+-	char *name;
+-	char *value;
+-
+-	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
+-	if (!prop)
+-		return NULL;
++	int length;
++	char *name, *value;
+ 
+ 	name = (char *)ccwa + be32_to_cpu(ccwa->name_offset);
+-	prop->name = kstrdup(name, GFP_KERNEL);
+-	if (!prop->name) {
+-		dlpar_free_cc_property(prop);
+-		return NULL;
+-	}
+-
+-	prop->length = be32_to_cpu(ccwa->prop_length);
++	length = be32_to_cpu(ccwa->prop_length);
+ 	value = (char *)ccwa + be32_to_cpu(ccwa->prop_offset);
+-	prop->value = kmemdup(value, prop->length, GFP_KERNEL);
+-	if (!prop->value) {
+-		dlpar_free_cc_property(prop);
+-		return NULL;
+-	}
+ 
+-	return prop;
++	return of_property_alloc(name, value, length, length, GFP_KERNEL);
+ }
+ 
+ static struct device_node *dlpar_parse_cc_node(struct cc_workarea *ccwa)
+ {
+-	struct device_node *dn;
+ 	const char *name;
+ 
+-	dn = kzalloc(sizeof(*dn), GFP_KERNEL);
+-	if (!dn)
+-		return NULL;
+-
+ 	name = (const char *)ccwa + be32_to_cpu(ccwa->name_offset);
+-	dn->full_name = kstrdup(name, GFP_KERNEL);
+-	if (!dn->full_name) {
+-		kfree(dn);
+-		return NULL;
+-	}
+-
+-	of_node_set_flag(dn, OF_DYNAMIC);
+-	of_node_init(dn);
+ 
+-	return dn;
++	return of_node_alloc(name, GFP_KERNEL);
+ }
+ 
+ static void dlpar_free_one_cc_node(struct device_node *dn)
+@@ -103,11 +67,10 @@ static void dlpar_free_one_cc_node(struct device_node *dn)
+ 	while (dn->properties) {
+ 		prop = dn->properties;
+ 		dn->properties = prop->next;
+-		dlpar_free_cc_property(prop);
++		of_property_free(prop);
+ 	}
+ 
+-	kfree(dn->full_name);
+-	kfree(dn);
++	of_node_free(dn);
+ }
+ 
+ void dlpar_free_cc_nodes(struct device_node *dn)
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 91cf23495ccb..591727b05f36 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -70,34 +70,11 @@ unsigned long pseries_memory_block_size(void)
+ 	return memblock_size;
+ }
+ 
+-static void dlpar_free_property(struct property *prop)
+-{
+-	kfree(prop->name);
+-	kfree(prop->value);
+-	kfree(prop);
+-}
+-
+ static struct property *dlpar_clone_property(struct property *prop,
+ 					     u32 prop_size)
+ {
+-	struct property *new_prop;
+-
+-	new_prop = kzalloc(sizeof(*new_prop), GFP_KERNEL);
+-	if (!new_prop)
+-		return NULL;
+-
+-	new_prop->name = kstrdup(prop->name, GFP_KERNEL);
+-	new_prop->value = kzalloc(prop_size, GFP_KERNEL);
+-	if (!new_prop->name || !new_prop->value) {
+-		dlpar_free_property(new_prop);
+-		return NULL;
+-	}
+-
+-	memcpy(new_prop->value, prop->value, prop->length);
+-	new_prop->length = prop_size;
+-
+-	of_property_set_flag(new_prop, OF_DYNAMIC);
+-	return new_prop;
++	return of_property_alloc(prop->name, prop->value, prop->length,
++				 prop_size, GFP_KERNEL);
+ }
+ 
+ static bool find_aa_index(struct device_node *dr_node,
+diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+index 7f7369fec46b..08c2f9088537 100644
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -25,17 +25,9 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
+ 	struct device_node *np;
+ 	int err = -ENOMEM;
+ 
+-	np = kzalloc(sizeof(*np), GFP_KERNEL);
++	np = of_node_alloc(kbasename(path), GFP_KERNEL);
+ 	if (!np)
+-		goto out_err;
+-
+-	np->full_name = kstrdup(kbasename(path), GFP_KERNEL);
+-	if (!np->full_name)
+-		goto out_err;
+-
+-	np->properties = proplist;
+-	of_node_set_flag(np, OF_DYNAMIC);
+-	of_node_init(np);
++		return -ENOMEM;
+ 
+ 	np->parent = pseries_of_derive_parent(path);
+ 	if (IS_ERR(np->parent)) {
+@@ -56,8 +48,7 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
+ out_err:
+ 	if (np) {
+ 		of_node_put(np->parent);
+-		kfree(np->full_name);
+-		kfree(np);
++		of_node_free(np);
+ 	}
+ 	return err;
+ }
+@@ -92,9 +83,7 @@ static void release_prop_list(const struct property *prop)
+ 	struct property *next;
+ 	for (; prop; prop = next) {
+ 		next = prop->next;
+-		kfree(prop->name);
+-		kfree(prop->value);
+-		kfree(prop);
++		of_property_free(prop);
+ 	}
+ 
+ }
+@@ -168,27 +157,16 @@ static char * parse_next_property(char *buf, char *end, char **name, int *length
+ static struct property *new_property(const char *name, const int length,
+ 				     const unsigned char *value, struct property *last)
+ {
+-	struct property *new = kzalloc(sizeof(*new), GFP_KERNEL);
++	struct property *prop;
+ 
+-	if (!new)
++	prop = of_property_alloc(name, value, length, length + 1, GFP_KERNEL);
++	if (!prop)
+ 		return NULL;
+ 
+-	if (!(new->name = kstrdup(name, GFP_KERNEL)))
+-		goto cleanup;
+-	if (!(new->value = kmalloc(length + 1, GFP_KERNEL)))
+-		goto cleanup;
+-
+-	memcpy(new->value, value, length);
+-	*(((char *)new->value) + length) = 0;
+-	new->length = length;
+-	new->next = last;
+-	return new;
+-
+-cleanup:
+-	kfree(new->name);
+-	kfree(new->value);
+-	kfree(new);
+-	return NULL;
++	*(((char *)prop->value) + length) = 0;
++	prop->next = last;
++
++	return prop;
+ }
+ 
+ static int do_add_node(char *buf, size_t bufsize)
+-- 
+2.34.1
 
-Well, in the old path without "crash_kexec_post_notifiers", we indeed
-end-up relying on native_stop_other_cpus() for x86 as you said, and the
-"1s rule" makes sense. But after this series (or even before, if the
-kernel parameter "crash_kexec_post_notifiers" was used) the function
-used to stop CPUs in the panic path is crash_smp_send_stop(), and the
-call chain is like:
-
-Main CPU:
-crash_smp_send_stop()
---kdump_nmi_shootdown_cpus()
-----nmi_shootdown_cpus()
-
-Then, in each CPU (except the main one, running panic() path),
-we execute kdump_nmi_callback() in NMI context.
-
-So, we seem to indeed interrupt any context (even with IRQs disabled),
-increasing the likelihood of the potential lockups due to stopped CPUs
-holding the locks heheh
-
-Thanks again for the good discussion, let me know if anything I'm saying
-doesn't make sense - this crash path is a bit convoluted, specially in
-x86, I might have understood something wrongly =)
-Cheers,
-
-
-Guilherme
