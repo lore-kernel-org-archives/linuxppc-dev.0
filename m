@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66850C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 07:31:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7885EC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 07:32:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kv5484PmDz3f48
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 17:31:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kv54y6HD2z3f6g
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 17:32:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=LKb9i/3w;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=Ghx0K94J;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
@@ -19,34 +19,34 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=LKb9i/3w; 
+ header.s=dec2015msa header.b=Ghx0K94J; 
  dkim-atps=neutral
 Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kv4wh2Zm1z3bx5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 17:25:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kv4wj4Rb6z3bxr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 17:25:25 +1000 (AEST)
 Received: from grover.sesame (133-32-177-133.west.xps.vectant.ne.jp
  [133.32.177.133]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id 2457Nenr019426;
- Thu, 5 May 2022 16:23:51 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 2457Nenr019426
+ by conuserg-12.nifty.com with ESMTP id 2457Nenu019426;
+ Thu, 5 May 2022 16:23:54 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 2457Nenu019426
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1651735431;
- bh=deMcQZf2rwvxgyQGD7in8mESLk5fxT6vorLWV4tne3Q=;
+ s=dec2015msa; t=1651735435;
+ bh=CQEwGlTyJHJvfSf0T31INOBqtnHuEcYXjFZZEa+K6Lg=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=LKb9i/3w3DMPwJnPsDAMOVrR3B4nWnHCP4Q+MopZawSX+Pqf9Z0IrBFntQK3VY0pp
- Q2Ox7zrUwfuy1014KZ3va76bqdF5NaW/cH7FMjqnHAb0fAix6gIQ4Ot2Pcw5iYqdCb
- QWYxu2YEB4XQWqVXbtClu24aO3PfD8QdAAXWAHHzhhcqctb8UCokNfXctDjqu+tzsj
- iJoZuodvftvxTF8yqaChLNLetQI2bd/q/GF1zkPponfWMO+efH0cQquLVaWe5yzpSk
- tKgueNamU2uL+ywETFYsFkY3I/S8OYCKuICOBbGhc9Iq2vOpogFWeLOisVRDWTHmGD
- OSl58DDKUjcgA==
+ b=Ghx0K94J/DL64wDGih7KSnS/4k03Qt4Kbxin/Vl55xhF9KLMNF5bx8nBvKcSP36Dn
+ eoPEefSJUjqOAF87Fxw85pdJTrQO8gS4wdTR62AJg2BfxctFyX2s36HrMenLo4Rhms
+ NI9dtfYloIa2j06X9VBQw9phyaczgOPoDkt+++60haCrD0WoHHHkztEUZTl0LnD8u1
+ 6OkVIDm8awnVEZ3ADerVv9w4gQOQCGsZ11ZwH9kgX1h9EmuTdfNDE0JEch/yaTKEXe
+ hnJyW7ZerFxMvI4N0HGzrEnWfS6nEmT8RdTPAI79pqhZClIlq+8OGJfj15yXU+KFKE
+ 3n9iE4NPCuAMA==
 X-Nifty-SrcIP: [133.32.177.133]
 From: Masahiro Yamada <masahiroy@kernel.org>
 To: linux-kbuild@vger.kernel.org
-Subject: [PATCH v3 09/15] kbuild: stop merging *.symversions
-Date: Thu,  5 May 2022 16:22:38 +0900
-Message-Id: <20220505072244.1155033-10-masahiroy@kernel.org>
+Subject: [PATCH v3 12/15] modpost: simplify the ->is_static initialization
+Date: Thu,  5 May 2022 16:22:41 +0900
+Message-Id: <20220505072244.1155033-13-masahiroy@kernel.org>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20220505072244.1155033-1-masahiroy@kernel.org>
 References: <20220505072244.1155033-1-masahiroy@kernel.org>
@@ -75,105 +75,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now modpost reads symbol versions from .*.cmd files.
+->is_static is set to true at allocation, then to false if the symbol
+comes from the dump file.
 
-These merged *.symversions are not used any more.
+It is simpler to use !mod->from_dump as the init value.
 
 Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 ---
 
-(no changes since v1)
+(no changes since v2)
 
- scripts/Makefile.build  | 21 ++-------------------
- scripts/link-vmlinux.sh | 15 ---------------
- 2 files changed, 2 insertions(+), 34 deletions(-)
+Changes in v2:
+  - New patch
 
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index ddd9080fc028..dff9220135c4 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -390,17 +390,6 @@ $(obj)/%.asn1.c $(obj)/%.asn1.h: $(src)/%.asn1 $(objtree)/scripts/asn1_compiler
- $(subdir-builtin): $(obj)/%/built-in.a: $(obj)/% ;
- $(subdir-modorder): $(obj)/%/modules.order: $(obj)/% ;
+ scripts/mod/modpost.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index e07542a90fc6..4edd5b223f49 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -242,7 +242,7 @@ static struct symbol *alloc_symbol(const char *name)
  
--# combine symversions for later processing
--ifeq ($(CONFIG_LTO_CLANG) $(CONFIG_MODVERSIONS),y y)
--      cmd_update_lto_symversions =					\
--	rm -f $@.symversions						\
--	$(foreach n, $(filter-out FORCE,$^),				\
--		$(if $(shell test -s $(n).symversions && echo y),	\
--			; cat $(n).symversions >> $@.symversions))
--else
--      cmd_update_lto_symversions = echo >/dev/null
--endif
--
- #
- # Rule to compile a set of .o files into one .a file (without symbol table)
- #
-@@ -408,11 +397,8 @@ endif
- quiet_cmd_ar_builtin = AR      $@
-       cmd_ar_builtin = rm -f $@; $(AR) cDPrST $@ $(real-prereqs)
- 
--quiet_cmd_ar_and_symver = AR      $@
--      cmd_ar_and_symver = $(cmd_update_lto_symversions); $(cmd_ar_builtin)
--
- $(obj)/built-in.a: $(real-obj-y) FORCE
--	$(call if_changed,ar_and_symver)
-+	$(call if_changed,ar_builtin)
- 
- #
- # Rule to create modules.order file
-@@ -432,16 +418,13 @@ $(obj)/modules.order: $(obj-m) FORCE
- #
- # Rule to compile a set of .o files into one .a file (with symbol table)
- #
--quiet_cmd_ar_lib = AR      $@
--      cmd_ar_lib = $(cmd_update_lto_symversions); $(cmd_ar)
- 
- $(obj)/lib.a: $(lib-y) FORCE
--	$(call if_changed,ar_lib)
-+	$(call if_changed,ar)
- 
- ifneq ($(CONFIG_LTO_CLANG)$(CONFIG_X86_KERNEL_IBT),)
- quiet_cmd_link_multi-m = AR [M]  $@
- cmd_link_multi-m =						\
--	$(cmd_update_lto_symversions);				\
- 	rm -f $@; 						\
- 	$(AR) cDPrsT $@ @$(patsubst %.o,%.mod,$@)
- else
-diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
-index 2742b7dd089a..07333181938b 100755
---- a/scripts/link-vmlinux.sh
-+++ b/scripts/link-vmlinux.sh
-@@ -56,20 +56,6 @@ gen_initcalls()
- 		> .tmp_initcalls.lds
+ 	memset(s, 0, sizeof(*s));
+ 	strcpy(s->name, name);
+-	s->is_static = true;
++
+ 	return s;
  }
  
--# If CONFIG_LTO_CLANG is selected, collect generated symbol versions into
--# .tmp_symversions.lds
--gen_symversions()
--{
--	info GEN .tmp_symversions.lds
--	rm -f .tmp_symversions.lds
--
--	for o in ${KBUILD_VMLINUX_OBJS} ${KBUILD_VMLINUX_LIBS}; do
--		if [ -f ${o}.symversions ]; then
--			cat ${o}.symversions >> .tmp_symversions.lds
--		fi
--	done
--}
--
- # Link of vmlinux.o used for section mismatch analysis
- # ${1} output file
- modpost_link()
-@@ -299,7 +285,6 @@ cleanup()
- 	rm -f .btf.*
- 	rm -f .tmp_System.map
- 	rm -f .tmp_initcalls.lds
--	rm -f .tmp_symversions.lds
- 	rm -f .tmp_vmlinux*
- 	rm -f System.map
- 	rm -f vmlinux
+@@ -376,6 +376,7 @@ static struct symbol *sym_add_exported(const char *name, struct module *mod,
+ 
+ 	s = alloc_symbol(name);
+ 	s->module = mod;
++	s->is_static = !mod->from_dump;
+ 	s->is_gpl_only = gpl_only;
+ 	list_add_tail(&s->list, &mod->exported_symbols);
+ 	hash_add_symbol(s);
+@@ -2523,7 +2524,6 @@ static void read_dump(const char *fname)
+ 			mod->from_dump = true;
+ 		}
+ 		s = sym_add_exported(symname, mod, gpl_only);
+-		s->is_static = false;
+ 		sym_set_crc(s, crc);
+ 		sym_update_namespace(symname, namespace);
+ 	}
 -- 
 2.32.0
 
