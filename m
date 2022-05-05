@@ -4,55 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCAC4C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 19:54:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70D74C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 20:33:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KvPY05dnbz3c9V
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 05:54:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KvQQ270lpz3brf
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 06:33:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f2fc5oHe;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=GcsLNO3y;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1;
- helo=ams.source.kernel.org; envelope-from=helgaas@kernel.org;
+ smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::12d;
+ helo=mail-lf1-x12d.google.com; envelope-from=ndesaulniers@google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=f2fc5oHe; 
- dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org
- [IPv6:2604:1380:4601:e00::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20210112 header.b=GcsLNO3y; dkim-atps=neutral
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com
+ [IPv6:2a00:1450:4864:20::12d])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KvPXK6Dr5z3bqt
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 05:53:53 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id 6D166B82FCE;
- Thu,  5 May 2022 19:53:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C68AFC385A4;
- Thu,  5 May 2022 19:53:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1651780425;
- bh=fYxm3dr57owbquhz9mi2JlUgAayGWIYeuWXgYwjDgu0=;
- h=Date:From:To:Cc:Subject:In-Reply-To:From;
- b=f2fc5oHeuzoxyJfE63Gjq/EPrO6txRg9hsHH/1s9bcAA7MB9R89IPW2XirzVZc74o
- JfbdqHGn2i9se2injqakFs9sJs55qbPwsXCW7U2z6292nsC5wpjZYOXUad+0rDxqWU
- dBktPS+QUeX5KA0qTdRvD/Jeg8g/VinXCSA1zNxox/sHlz0Qu+HDVGZRGj50as/vwO
- ee4WTtCWIAPTOcKicttAnfNz1to9P/EIAiFFNcHwyePB8PVEBnOd6hroIfxl+9c3Y0
- w8Ysllpp8ZwOIQgubSRRm20/01Cu9xOLyCR6eQMh+KyVf58T4+rzmnxImHp1ouw8wP
- UdmeA6sO/pypA==
-Date: Thu, 5 May 2022 14:53:42 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Arnd Bergmann <arnd@kernel.org>
-Subject: Re: [RFC v2 01/39] Kconfig: introduce HAS_IOPORT option and select
- it as necessary
-Message-ID: <20220505195342.GA509942@bhelgaas>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KvQMY5YgGz3byT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 06:31:20 +1000 (AEST)
+Received: by mail-lf1-x12d.google.com with SMTP id x17so9323867lfa.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 May 2022 13:31:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20210112;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=KzJXnZ7chU1+5zJp4Dgvp3VaPPi5u4rVhagYP/eqQQE=;
+ b=GcsLNO3ybt8b4qYioRwjRsGo24/f0OAD/JE388Gc5emmRyTIhlyYUbKzIgZyv53hb1
+ xhiVCmKW0WOkPCvBf1e4g28vMmUQUkmrVh+o51YOtKO8cBVzloYHCXntPyZO/l8A9u4M
+ 5CxbT9nvJ8k+TaFHNOPLcGCSi7HogLmrn63TqdbSnLG4WHsAsFmI3EppXVPekhAxB05a
+ NEbtgx7QVCxIiRy2eSQmkdwO62yYlPePGIiYe39mbWzh5zAEXFGIG2orgZSXN6r69srE
+ z8JRd8pqir9+V0J5tZrITxsJOR+WTOS0fPBTlN8HA0KMIdLI2QtAq3P5nFh0k988K2Jw
+ qG+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=KzJXnZ7chU1+5zJp4Dgvp3VaPPi5u4rVhagYP/eqQQE=;
+ b=tyyUEFmDz9CYLnWCNUorcHrs+Th94ug2Awlu53yeVCGhQEmffkNsFSHDzsmL7nULKm
+ dLKEtoJuJmKqX9JtRDjVtdMq2IqOOcCStPWmmY0SNTye4e5PqszsbInpibsTO3XyEBFC
+ VFKqybSFUyC5l1xZlhQv3Maln/rjDgVq1uV7iCWyy4slXttaadaKa92MhvVIyTM+EM0d
+ /Y4FuyCzL7IivJ5OT/SV/f6r0IBV/MEqLEsNrVxZB8SyJkngpv8aLoybZ7JJxPvoAlYA
+ aozAQWrJfOsnCi+cjt9E6RrFLp4xlF8tZc6LNGWcKB1INItZB2lo67YZtIVTwMm8Qp52
+ NYGw==
+X-Gm-Message-State: AOAM533zXUhlB3C7wmXcus+uTdKM9mPC+T1iWezwiL74+T7HGE7yox/n
+ eVRM9VMKxfPcby5HHK65SVZ+A/I2iJXsmayNa9ulcQ==
+X-Google-Smtp-Source: ABdhPJwbhs3kr3NEQrD1kb2FM5lFdKjT3Fw4s9E6Bf+BV+NG8NhQY5rDLxGeb5Ices7vG2JpejLiHgrpcihMdzG04I8=
+X-Received: by 2002:ac2:5e86:0:b0:473:d044:60f5 with SMTP id
+ b6-20020ac25e86000000b00473d04460f5mr49308lfq.87.1651782674718; Thu, 05 May
+ 2022 13:31:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAK8P3a3fmPExr70+fVb564hZdGAuPtYa-QxgMMe5KLpnY_sTrQ@mail.gmail.com>
+References: <20220505072244.1155033-1-masahiroy@kernel.org>
+ <20220505072244.1155033-15-masahiroy@kernel.org>
+In-Reply-To: <20220505072244.1155033-15-masahiroy@kernel.org>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Date: Thu, 5 May 2022 13:31:03 -0700
+Message-ID: <CAKwvOdkTOv1VZti3KH9zxXT1xceogUPxdCV1JqoYbTKtdUy0qw@mail.gmail.com>
+Subject: Re: [PATCH v3 14/15] kbuild: make built-in.a rule robust against too
+ long argument error
+To: Masahiro Yamada <masahiroy@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,77 +76,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>,
- "open list:IA64 \(Itanium\) PLATFORM" <linux-ia64@vger.kernel.org>,
- "open list:SUPERH" <linux-sh@vger.kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- "open list:MIPS" <linux-mips@vger.kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- "open list:SPARC + UltraSPARC \(sparc/sparc64\)" <sparclinux@vger.kernel.org>,
- "open list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>,
- Will Deacon <will@kernel.org>, linux-arch <linux-arch@vger.kernel.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>,
- "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- linux-pci <linux-pci@vger.kernel.org>, Matt Turner <mattst88@gmail.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Arnd Bergmann <arnd@arndb.de>,
- Niklas Schnelle <schnelle@linux.ibm.com>,
- "open list:M68K ARCHITECTURE" <linux-m68k@lists.linux-m68k.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
- "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>,
- Richard Henderson <rth@twiddle.net>, Michal Simek <monstr@monstr.eu>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "open list:PARISC ARCHITECTURE" <linux-parisc@vger.kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>,
- "open list:ALPHA PORT" <linux-alpha@vger.kernel.org>,
- Borislav Petkov <bp@alien8.de>,
- "open list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
- <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
+Cc: linux-s390@vger.kernel.org, Nicolas Schier a <nicolas@fjasle.eu>,
+ linux-kbuild@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ linux-um@lists.infradead.org, linux-kernel@vger.kernel.org,
+ clang-built-linux@googlegroups.com, Luis Chamberlain <mcgrof@kernel.org>,
+ Sami Tolvanen <samitolvanen@google.com>, linuxppc-dev@lists.ozlabs.org,
+ Ard Biesheuvel <ardb@kernel.org>, Kees Cook <keescook@chromium.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 05, 2022 at 07:39:42PM +0200, Arnd Bergmann wrote:
-> On Thu, May 5, 2022 at 6:10 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > On Wed, May 04, 2022 at 11:31:28PM +0200, Arnd Bergmann wrote:
-> > >
-> > > The main goal is to avoid c), which is what happens on s390, but
-> > > can also happen elsewhere. Catching b) would be nice as well,
-> > > but is much harder to do from generic code as you'd need an
-> > > architecture specific inline asm statement to insert a ex_table
-> > > fixup, or a runtime conditional on each access.
-> >
-> > Or s390 could implement its own inb().
-> >
-> > I'm hearing that generic powerpc kernels have to run both on machines
-> > that have I/O port space and those that don't.  That makes me think
-> > s390 could do something similar.
-> 
-> No, this is actually the current situation, and it makes absolutely no
-> sense. s390 has no way of implementing inb()/outb() because there
-> are no instructions for it and it cannot tunnel them through a virtual
-> address mapping like on most of the other architectures. (it has special
-> instructions for accessing memory space, which is not the same as
-> a pointer dereference here).
-> 
-> The existing implementation gets flagged as a NULL pointer dereference
-> by a compiler warning because it effectively is.
+On Thu, May 5, 2022 at 12:25 AM Masahiro Yamada <masahiroy@kernel.org> wrote:
+>
+> Kbuild runs at the top of objtree instead of changing the working
+> directory to subdirectories. I think this design is nice overall but
+> some commands have a scapability issue.
 
-I think s390 currently uses the inb() in asm-generic/io.h, i.e.,
-"__raw_readb(PCI_IOBASE + addr)".  I understand that's a NULL pointer
-dereference because the default PCI_IOBASE is 0.
+s/scapability/scalability/
 
-I mooted a s390 inb() implementation like "return ~0" because that's
-what happens on most arches when there's no device to respond to the
-inb().
 
-The HAS_IOPORT dependencies are fairly ugly IMHO, and they clutter
-drivers that use I/O ports in some cases but not others.  But maybe
-it's the most practical way.
-
-Bjorn
+-- 
+Thanks,
+~Nick Desaulniers
