@@ -4,94 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6018AC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 10:01:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E939C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 10:19:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kv8P36FVqz3bx8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 20:01:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kv8nn4sj4z3c88
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 20:19:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RukT1W+v;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VzBYkvNB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kv8mz1jyHz3bmV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 20:18:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=RukT1W+v; dkim-atps=neutral
+ header.s=pp1 header.b=VzBYkvNB; dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
+ by gandalf.ozlabs.org (Postfix) with ESMTP id 4Kv8ms4LD2z4x7Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 20:18:53 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+ id 4Kv8ms4H0Yz4xTX; Thu,  5 May 2022 20:18:53 +1000 (AEST)
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: gandalf.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=VzBYkvNB; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kv8ND2Rwbz3bff
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 20:00:59 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2458h2lN029794;
- Thu, 5 May 2022 10:00:53 GMT
+ by gandalf.ozlabs.org (Postfix) with ESMTPS id 4Kv8ms22Nfz4x7Y
+ for <linuxppc-dev@ozlabs.org>; Thu,  5 May 2022 20:18:52 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2459LZeD022475
+ for <linuxppc-dev@ozlabs.org>; Thu, 5 May 2022 10:18:51 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=O7FlpIdpvunb8H7LG2tuO8W6EjYlxJN7Ehrrlf6Np6o=;
- b=RukT1W+vx/A2l1d9CLA/zxzUmE6kWWFeMi7EG9ysN8mKIqxcpuNtNrF76brbKdOOYTi+
- k9UDwIA2SZszWCFk/yOt4zPP5AHl74D3Vyi0jpYqEN8qMs8jXsGDQL7hde3tCzIEts+A
- oz/xNXvVYQFjYSyjlbyrFCnXG17D5ZZMiAjCEbgujIPSrr0wVyn8e/RwGnYFeMAv1sU4
- ai5HddpQoYjMeN6H7XeS9gVtArUD4V57HN+t66JiwBVUkXtGzUGpgfQt8WYNQD00Ym7X
- UpBIEbtytjBHQd0PADFJY63Px0IBT4bTcW2g5dT3K9KXZHbfqtXnAp4pop9G8HU8TxK0 lw== 
+ bh=c8eWsYEsaT9PLl4vm3XUA+HrfPqyzJvWVsuxFeiNmjY=;
+ b=VzBYkvNBw0F+vB3fN/R5FjmLXwFgJ8XPbcWUlPR84JO2+PEK2g+Kkdn3Kd5KHZMBDt8A
+ GGGL6U68+upxdoQ2KtyKSTbW1f3zDYRY2F8MrWJBvYYQRCN2SDN8lItnGliV0hEjlrFH
+ uCt2nAUu8av2MWHy+NPOULjd9SkZq5ENajemQKBfJPH+RjeqAk3awqZNPuNSiZyLSGUT
+ wJBVXcaJ98pegwpANbwDeKaSG/mEUGBHhRNXOLg59seT0oXVAHFsbBaJhf47gF74MlHR
+ 51cBMMht2Iu9ghxflkmgnNM5kodPyNGp/XNRBobRucYdKh9GBABZjEXzr3Y/zDeuyz8T mA== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3fvbabhbax-1
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3fvbvq8x0f-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 05 May 2022 10:18:50 +0000
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+ by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 245AIoRc006762
+ for <linuxppc-dev@ozlabs.org>; Thu, 5 May 2022 10:18:50 GMT
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3fvbvq8x00-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 05 May 2022 10:00:53 +0000
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2459sVFn028359;
- Thu, 5 May 2022 10:00:53 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3fvbabhb9y-1
+ Thu, 05 May 2022 10:18:50 +0000
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 245ACQYW009761;
+ Thu, 5 May 2022 10:18:47 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma03fra.de.ibm.com with ESMTP id 3fscdk51ft-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 05 May 2022 10:00:52 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2459wUkI028161;
- Thu, 5 May 2022 10:00:50 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma04ams.nl.ibm.com with ESMTP id 3frvr8y0jy-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 05 May 2022 10:00:50 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 245A0lG452822338
+ Thu, 05 May 2022 10:18:47 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 245A5NQg43450778
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 5 May 2022 10:00:47 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 34511A4051;
- Thu,  5 May 2022 10:00:47 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 95CBBA4053;
- Thu,  5 May 2022 10:00:42 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.211.80.15])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  5 May 2022 10:00:42 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, disgoel@linux.vnet.ibm.com
-Subject: [PATCH] tools/perf/tests: Skip perf BPF test if clang is not present
-Date: Thu,  5 May 2022 15:30:39 +0530
-Message-Id: <20220505100039.58287-1-atrajeev@linux.vnet.ibm.com>
+ Thu, 5 May 2022 10:05:23 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 438FE11C050;
+ Thu,  5 May 2022 10:18:45 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8ED6E11C04A;
+ Thu,  5 May 2022 10:18:43 +0000 (GMT)
+Received: from sjain014.ibmuc.com (unknown [9.43.97.174])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu,  5 May 2022 10:18:43 +0000 (GMT)
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+To: linuxppc-dev@ozlabs.org, crash-utility@redhat.com
+Subject: [PATCH] ppc64: update the NR_CPUS to 8192
+Date: Thu,  5 May 2022 15:48:42 +0530
+Message-Id: <20220505101842.49149-1-sourabhjain@linux.ibm.com>
 X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: CbjrL_Np5JLEUx6eEM6dBQNSMyBToXb5
-X-Proofpoint-GUID: MIo7SbTwgpzbUbHupbyJNRlmvbxepMNF
+X-Proofpoint-ORIG-GUID: QuMCzVyhjPTuxYFNf7eJFPDaikmR5P87
+X-Proofpoint-GUID: z5eSF_3fd04ZiHqoqlTveq5rtnDSf3rN
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
  definitions=2022-05-05_04,2022-05-05_01,2022-02-23_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0
- spamscore=0 bulkscore=0 priorityscore=1501 adultscore=0 mlxscore=0
- mlxlogscore=999 malwarescore=0 phishscore=0 lowpriorityscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2202240000 definitions=main-2205050067
+ impostorscore=0
+ lowpriorityscore=0 priorityscore=1501 malwarescore=0 bulkscore=0
+ spamscore=0 mlxlogscore=924 adultscore=0 clxscore=1015 suspectscore=0
+ phishscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2202240000 definitions=main-2205050071
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,100 +119,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: irogers@google.com, maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com,
- linux-perf-users@vger.kernel.org, kjain@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: mahesh@linux.vnet.ibm.com, hbathini@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Perf BPF filter test fails in environment where "clang"
-is not installed.
+The NR_CPUS on Linux kernel ranges from 1-8192. So let's match
+NR_CPUS with max NR_CPUS count on Linux kernel.
 
-Test failure logs:
-
-<<>>
- 42: BPF filter                    :
- 42.1: Basic BPF filtering         : Skip
- 42.2: BPF pinning                 : FAILED!
- 42.3: BPF prologue generation     : FAILED!
-<<>>
-
-Enabling verbose option provided debug logs which says
-clang/llvm needs to be installed. Snippet of verbose logs:
-
-<<>>
- 42.2: BPF pinning                  :
- --- start ---
-test child forked, pid 61423
-ERROR:	unable to find clang.
-Hint:	Try to install latest clang/llvm to support BPF.
-        Check your $PATH
-
-<<logs_here>>
-
-Failed to compile test case: 'Basic BPF llvm compile'
-Unable to get BPF object, fix kbuild first
-test child finished with -1
- ---- end ----
-BPF filter subtest 2: FAILED!
-<<>>
-
-Here subtests, "BPF pinning" and "BPF prologue generation"
-failed and logs shows clang/llvm is needed. After installing
-clang, testcase passes.
-
-Reason on why subtest failure happens though logs has proper
-debug information:
-Main function __test__bpf calls test_llvm__fetch_bpf_obj by
-passing 4th argument as true ( 4th arguments maps to parameter
-"force" in test_llvm__fetch_bpf_obj ). But this will cause
-test_llvm__fetch_bpf_obj to skip the check for clang/llvm.
-
-Snippet of code part which checks for clang based on
-parameter "force" in test_llvm__fetch_bpf_obj:
-
-<<>>
-if (!force && (!llvm_param.user_set_param &&
-<<>>
-
-Since force is set to "false", test won't get skipped and
-fails to compile test case. The BPF code compilation needs
-clang, So pass the fourth argument as "false" and also skip
-the test if reason for return is "TEST_SKIP"
-
-After the patch:
-
-<<>>
- 42: BPF filter                    :
- 42.1: Basic BPF filtering         : Skip
- 42.2: BPF pinning                 : Skip
- 42.3: BPF prologue generation     : Skip
-<<>>
-
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 ---
- tools/perf/tests/bpf.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ defs.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/tools/perf/tests/bpf.c b/tools/perf/tests/bpf.c
-index 57b9591f7cbb..ae62f01239e3 100644
---- a/tools/perf/tests/bpf.c
-+++ b/tools/perf/tests/bpf.c
-@@ -222,11 +222,11 @@ static int __test__bpf(int idx)
- 
- 	ret = test_llvm__fetch_bpf_obj(&obj_buf, &obj_buf_sz,
- 				       bpf_testcase_table[idx].prog_id,
--				       true, NULL);
-+				       false, NULL);
- 	if (ret != TEST_OK || !obj_buf || !obj_buf_sz) {
- 		pr_debug("Unable to get BPF object, %s\n",
- 			 bpf_testcase_table[idx].msg_compile_fail);
--		if (idx == 0)
-+		if ((idx == 0) || (ret == TEST_SKIP))
- 			return TEST_SKIP;
- 		else
- 			return TEST_FAIL;
+diff --git a/defs.h b/defs.h
+index 1e8360d..a6735d0 100644
+--- a/defs.h
++++ b/defs.h
+@@ -136,7 +136,7 @@
+ #define NR_CPUS  (4096)
+ #endif
+ #ifdef PPC64
+-#define NR_CPUS  (2048)
++#define NR_CPUS  (8192)
+ #endif
+ #ifdef S390
+ #define NR_CPUS  (512)
 -- 
 2.35.1
 
