@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A3FDC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 07:33:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D623C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 07:34:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kv56L6zybz3fH7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 17:33:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kv5716qGDz3fLb
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 17:34:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=s8CzChdZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=FuOivWkX;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
@@ -19,34 +19,34 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=s8CzChdZ; 
+ header.s=dec2015msa header.b=FuOivWkX; 
  dkim-atps=neutral
 Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kv4wn4w4Zz3c7J
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kv4wn53whz3c7f
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 17:25:29 +1000 (AEST)
 Received: from grover.sesame (133-32-177-133.west.xps.vectant.ne.jp
  [133.32.177.133]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id 2457Neno019426;
- Thu, 5 May 2022 16:23:47 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 2457Neno019426
+ by conuserg-12.nifty.com with ESMTP id 2457Nens019426;
+ Thu, 5 May 2022 16:23:52 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 2457Nens019426
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1651735428;
- bh=jiny9e/0ekLHfzDMPj/sTAYkp3K4e6Ir8SZeJf0qunI=;
+ s=dec2015msa; t=1651735433;
+ bh=XjVFBOl1B/4tI+LO5abcsoDvV/xc8vPdA32BcnzLDtI=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=s8CzChdZOXXECM2SJqlUNY/RhAyMMyUj53jsSphu1U+2MxbScJI/0J74sbJu8dUVP
- FvXOIHejc8zclit4u9J9UEq+wuFT42/BAOI+9YhBebmsgWrNKPRJCOpl66DmR5cNXU
- AAH4LfUbUt2jr9/+WwldUA50jaKLwfgV0Vt6Mbglmro41BirayumolaEHice+urhim
- YzIGOo5QiBzUFigZRKwD/Preqo125kSiD66lcLlMhrgPG6RwtPJnldGl+gdQq18juZ
- bwQo7ErSMekWvQHB8+6TXyXu2TCug/4pBJ48orLidkmwiG2uk+hE57AmtmKzRpxIYW
- UldyhAx1qO4aA==
+ b=FuOivWkXLFBO79zThz1AyrMc1rrNFxbTQheE0PfMbKnd0CiVRmb8H6EJ7y64Xfy9W
+ p61wWdzZsY8kP+28V0RqRhiSpOt+9xVWyp8sB45Vbwpse8rAAwUM419qpnaDdJjgPE
+ XL+N+AWMJ3N5N1UpUtxT8osKrUtURA5/INQIHhfqhj6SXmdwnf1B21n8AGnGolhUGK
+ fh9yI8kG5qHT5PnTEJXbWyqVvvu7USPdLVo3oiFql696uGICtEB/fQpWnloZmyLE5j
+ pcKdKqKfUUYgSjC9Nn8blZHedemhjilyxwtC07iu4s9lXBcAWtNwnmV5ISctWy6eeh
+ rj+sXEOluxtPg==
 X-Nifty-SrcIP: [133.32.177.133]
 From: Masahiro Yamada <masahiroy@kernel.org>
 To: linux-kbuild@vger.kernel.org
-Subject: [PATCH v3 06/15] kbuild: record symbol versions in *.cmd files
-Date: Thu,  5 May 2022 16:22:35 +0900
-Message-Id: <20220505072244.1155033-7-masahiroy@kernel.org>
+Subject: [PATCH v3 10/15] genksyms: adjust the output format to modpost
+Date: Thu,  5 May 2022 16:22:39 +0900
+Message-Id: <20220505072244.1155033-11-masahiroy@kernel.org>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20220505072244.1155033-1-masahiroy@kernel.org>
 References: <20220505072244.1155033-1-masahiroy@kernel.org>
@@ -75,72 +75,61 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When CONFIG_MODVERSIONS=y, the output from genksyms is saved in
-separate *.symversions files, and will be used much later when
-CONFIG_LTO_CLANG=y because it is impossible to update LLVM bit code
-here.
+Make genksyms output symbol versions in the format modpost expects,
+so the 'sed' is unneeded.
 
-This approach is not robust because:
+This commit makes *.symversions completely unneeded.
 
- - *.symversions may or may not exist. If *.symversions does not
-   exist, we never know if it is missing for legitimate reason
-   (i.e. no EXPORT_SYMBOL) or something bad has happened (for
-   example, the user accidentally deleted it). Once it occurs,
-   it is not self-healing because *.symversions is generated
-   as a side effect.
-
- - stale (i.e. invalid) *.symversions might be picked up if an
-   object is generated in a non-ordinary way, and corresponding
-   *.symversions (, which was generated by old builds) just happen
-   to exist.
-
-A more robust approach is to save symbol versions in *.cmd files
-because:
-
- - *.cmd always exists (if the object is generated by if_changed
-   rule or friends). Even if the user accidentally deletes it,
-   it will be regenerated in the next build.
-
- - *.cmd is always re-generated when the object is updated. This
-   avoid stale version information being picked up.
-
-I will remove *.symversions later.
+I will keep *.symversions in .gitignore and 'make clean' for a while.
+Otherwise, some people might be upset with 'git status'.
 
 Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-Tested-by: Nicolas Schier <nicolas@fjasle.eu>
-Reviewed-by: Nicolas Schier <nicolas@fjasle.eu>
 ---
 
 (no changes since v2)
 
 Changes in v2:
-  - Fix CONFIG_MODULE_REL_CRCS=y case
+  - New patch
 
- scripts/Makefile.build | 7 +++++++
- 1 file changed, 7 insertions(+)
+ scripts/Makefile.build      | 6 ------
+ scripts/genksyms/genksyms.c | 3 +--
+ 2 files changed, 1 insertion(+), 8 deletions(-)
 
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index f6a506318795..a1023868775f 100644
+index dff9220135c4..461998a2ad2b 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -171,10 +171,17 @@ ifdef CONFIG_MODVERSIONS
+@@ -165,16 +165,10 @@ ifdef CONFIG_MODVERSIONS
+ # o modpost will extract versions from that file and create *.c files that will
+ #   be compiled and linked to the kernel and/or modules.
  
- # Generate .o.symversions files for each .o with exported symbols, and link these
- # to the kernel and/or modules at the end.
-+
-+genksyms_format_rel_crc := [^_]*__crc_\([^ ]*\) = \.; LONG(\([^)]*\)).*
-+genksyms_format_normal := __crc_\(.*\) = \(.*\);
-+genksyms_format := $(if $(CONFIG_MODULE_REL_CRCS),$(genksyms_format_rel_crc),$(genksyms_format_normal))
-+
+-genksyms_format := __crc_\(.*\) = \(.*\);
+-
  gen_symversions =								\
  	if $(NM) $@ 2>/dev/null | grep -q __ksymtab; then			\
  		$(call cmd_gensymtypes_$(1),$(KBUILD_SYMTYPES),$(@:.o=.symtypes)) \
- 		    > $@.symversions;						\
-+		sed -n 's/$(genksyms_format)/$(pound)SYMVER \1 \2/p' $@.symversions \
-+			>> $(dot-target).cmd;					\
- 	else									\
- 		rm -f $@.symversions;						\
+-		    > $@.symversions;						\
+-		sed -n 's/$(genksyms_format)/$(pound)SYMVER \1 \2/p' $@.symversions \
+ 			>> $(dot-target).cmd;					\
+-	else									\
+-		rm -f $@.symversions;						\
  	fi
+ 
+ cmd_gen_symversions_c =	$(call gen_symversions,c)
+diff --git a/scripts/genksyms/genksyms.c b/scripts/genksyms/genksyms.c
+index 6e6933ae7911..f5dfdb9d80e9 100644
+--- a/scripts/genksyms/genksyms.c
++++ b/scripts/genksyms/genksyms.c
+@@ -680,8 +680,7 @@ void export_symbol(const char *name)
+ 		if (flag_dump_defs)
+ 			fputs(">\n", debugfile);
+ 
+-		/* Used as a linker script. */
+-		printf("__crc_%s = 0x%08lx;\n", name, crc);
++		printf("#SYMVER %s 0x%08lx\n", name, crc);
+ 	}
+ }
+ 
 -- 
 2.32.0
 
