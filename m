@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D623C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 07:34:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39363C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 07:34:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kv5716qGDz3fLb
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 17:34:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kv57h5hHMz3fQV
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 17:34:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=FuOivWkX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=B+r/E+5a;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
@@ -19,34 +19,35 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=FuOivWkX; 
+ header.s=dec2015msa header.b=B+r/E+5a; 
  dkim-atps=neutral
 Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kv4wn53whz3c7f
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 17:25:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kv4wp4YjRz3c7f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 17:25:30 +1000 (AEST)
 Received: from grover.sesame (133-32-177-133.west.xps.vectant.ne.jp
  [133.32.177.133]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id 2457Nens019426;
- Thu, 5 May 2022 16:23:52 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 2457Nens019426
+ by conuserg-12.nifty.com with ESMTP id 2457Nenw019426;
+ Thu, 5 May 2022 16:23:56 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com 2457Nenw019426
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1651735433;
- bh=XjVFBOl1B/4tI+LO5abcsoDvV/xc8vPdA32BcnzLDtI=;
+ s=dec2015msa; t=1651735437;
+ bh=xE0zb58nWCbd4r50BnRJTvTiW15HyULrsFF3iZrvMeU=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=FuOivWkXLFBO79zThz1AyrMc1rrNFxbTQheE0PfMbKnd0CiVRmb8H6EJ7y64Xfy9W
- p61wWdzZsY8kP+28V0RqRhiSpOt+9xVWyp8sB45Vbwpse8rAAwUM419qpnaDdJjgPE
- XL+N+AWMJ3N5N1UpUtxT8osKrUtURA5/INQIHhfqhj6SXmdwnf1B21n8AGnGolhUGK
- fh9yI8kG5qHT5PnTEJXbWyqVvvu7USPdLVo3oiFql696uGICtEB/fQpWnloZmyLE5j
- pcKdKqKfUUYgSjC9Nn8blZHedemhjilyxwtC07iu4s9lXBcAWtNwnmV5ISctWy6eeh
- rj+sXEOluxtPg==
+ b=B+r/E+5aY2J1v1nIavEEf+kQi0g3HQwxBGWI1Y8L7Ku513rz2PBE0V88DpxH4ZH0i
+ yBjE/9UE+sG2EQQ+f4CZzTQjHAuIRFEzd59wKFq4+LiwTFnCQu4d7aRkVMSVlHYQAZ
+ QKazYDJHYXPO7cLgb1OHgCsOSs1EQHS1NEj4oJ1o6IasaqaHw9+3pQPWAsQlyTbSwP
+ nDIMVpBvqyZdDv+yU7B0oMa6rqJtrPvygvC3tNzMmw0ozxeRSwvcOawdFFbV0sqpG3
+ GBwSrJxJdu7o+jVAWrYYwEjayv+5CkO+qddYY5SPiDmXl6JBgee4tRIRQb+oHfiIa4
+ hfajBXYt5RAqw==
 X-Nifty-SrcIP: [133.32.177.133]
 From: Masahiro Yamada <masahiroy@kernel.org>
 To: linux-kbuild@vger.kernel.org
-Subject: [PATCH v3 10/15] genksyms: adjust the output format to modpost
-Date: Thu,  5 May 2022 16:22:39 +0900
-Message-Id: <20220505072244.1155033-11-masahiroy@kernel.org>
+Subject: [PATCH v3 14/15] kbuild: make built-in.a rule robust against too long
+ argument error
+Date: Thu,  5 May 2022 16:22:43 +0900
+Message-Id: <20220505072244.1155033-15-masahiroy@kernel.org>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20220505072244.1155033-1-masahiroy@kernel.org>
 References: <20220505072244.1155033-1-masahiroy@kernel.org>
@@ -75,13 +76,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Make genksyms output symbol versions in the format modpost expects,
-so the 'sed' is unneeded.
+Kbuild runs at the top of objtree instead of changing the working
+directory to subdirectories. I think this design is nice overall but
+some commands have a scapability issue.
 
-This commit makes *.symversions completely unneeded.
+The build command of built-in.a is one of them whose length scales with:
 
-I will keep *.symversions in .gitignore and 'make clean' for a while.
-Otherwise, some people might be upset with 'git status'.
+    O(D * N)
+
+Here, D is the length of the directory path (i.e. $(obj)/ prefix),
+N is the number of objects in the Makefile, O() is the big O notation.
+
+The deeper directory the Makefile directory is located, the more easily
+it will hit the too long argument error.
+
+We can make it better. Trim the $(obj)/ by Make's builtin function, and
+restore it by a shell command (sed).
+
+With this, the command length scales with:
+
+    O(D + N)
+
+In-tree modules still have some room to the limit (ARG_MAX=2097152),
+but this is more future-proof for big modules in a deep directory.
+
+For example, you can build i915 as builtin (CONFIG_DRM_I915=y) and
+compare drivers/gpu/drm/i915/.built-in.a.cmd with/without this commit.
 
 Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 ---
@@ -91,45 +111,25 @@ Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 Changes in v2:
   - New patch
 
- scripts/Makefile.build      | 6 ------
- scripts/genksyms/genksyms.c | 3 +--
- 2 files changed, 1 insertion(+), 8 deletions(-)
+ scripts/Makefile.build | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index dff9220135c4..461998a2ad2b 100644
+index 0436ff94800e..cea48762299c 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
-@@ -165,16 +165,10 @@ ifdef CONFIG_MODVERSIONS
- # o modpost will extract versions from that file and create *.c files that will
- #   be compiled and linked to the kernel and/or modules.
+@@ -370,7 +370,10 @@ $(subdir-modorder): $(obj)/%/modules.order: $(obj)/% ;
+ #
  
--genksyms_format := __crc_\(.*\) = \(.*\);
--
- gen_symversions =								\
- 	if $(NM) $@ 2>/dev/null | grep -q __ksymtab; then			\
- 		$(call cmd_gensymtypes_$(1),$(KBUILD_SYMTYPES),$(@:.o=.symtypes)) \
--		    > $@.symversions;						\
--		sed -n 's/$(genksyms_format)/$(pound)SYMVER \1 \2/p' $@.symversions \
- 			>> $(dot-target).cmd;					\
--	else									\
--		rm -f $@.symversions;						\
- 	fi
+ quiet_cmd_ar_builtin = AR      $@
+-      cmd_ar_builtin = rm -f $@; $(AR) cDPrST $@ $(real-prereqs)
++      cmd_ar_builtin = rm -f $@; \
++		echo $(patsubst $(obj)/%,%,$(real-prereqs)) | \
++		sed -E 's:([^ ]+):$(obj)/\1:g' | \
++		xargs $(AR) cDPrST $@
  
- cmd_gen_symversions_c =	$(call gen_symversions,c)
-diff --git a/scripts/genksyms/genksyms.c b/scripts/genksyms/genksyms.c
-index 6e6933ae7911..f5dfdb9d80e9 100644
---- a/scripts/genksyms/genksyms.c
-+++ b/scripts/genksyms/genksyms.c
-@@ -680,8 +680,7 @@ void export_symbol(const char *name)
- 		if (flag_dump_defs)
- 			fputs(">\n", debugfile);
- 
--		/* Used as a linker script. */
--		printf("__crc_%s = 0x%08lx;\n", name, crc);
-+		printf("#SYMVER %s 0x%08lx\n", name, crc);
- 	}
- }
- 
+ $(obj)/built-in.a: $(real-obj-y) FORCE
+ 	$(call if_changed,ar_builtin)
 -- 
 2.32.0
 
