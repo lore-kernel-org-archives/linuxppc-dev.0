@@ -4,64 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB738C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 21:54:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB0D8C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 21:55:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KvSCt2xVBz3c9g
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 07:54:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KvSDY2734z3cHD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 07:55:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=fjasle.eu header.i=@fjasle.eu header.a=rsa-sha256 header.s=mail header.b=PwCfqkix;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=fjasle.eu header.i=@fjasle.eu header.a=rsa-sha256 header.s=mail header.b=BA/UrMfy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=fjasle.eu (client-ip=212.227.17.10; helo=mout.kundenserver.de;
+ smtp.mailfrom=fjasle.eu (client-ip=212.227.17.24; helo=mout.kundenserver.de;
  envelope-from=nicolas@fjasle.eu; receiver=<UNKNOWN>)
-X-Greylist: delayed 569 seconds by postgrey-1.36 at boromir;
- Fri, 06 May 2022 05:42:47 AEST
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=fjasle.eu header.i=@fjasle.eu header.a=rsa-sha256
+ header.s=mail header.b=BA/UrMfy; dkim-atps=neutral
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KvPHW6qsZz3bft
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 05:42:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KvPZD5b8vz3bpP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 05:55:21 +1000 (AEST)
 Received: from leknes.fjasle.eu ([46.142.98.182]) by mrelayeu.kundenserver.de
  (mreue106 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MiIhU-1oH5uO3YH8-00fPtT; Thu, 05 May 2022 21:25:22 +0200
+ 1N3K9E-1nwDkz0qKw-010OY9; Thu, 05 May 2022 21:53:59 +0200
 Received: by leknes.fjasle.eu (Postfix, from userid 1000)
- id 38E543C088; Thu,  5 May 2022 21:25:20 +0200 (CEST)
+ id 156A33C088; Thu,  5 May 2022 21:53:57 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=fjasle.eu; s=mail;
- t=1651778720; bh=Cwl4zkdeQcVXSxZ/RPcnVgB7zM8oGINbzVc8Y2VMFBk=;
+ t=1651780437; bh=dBGPpUTd6f50KRn9utFIdPZJncpaOpFQeh/8wziuA/A=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=PwCfqkixa12sjKmUlkGN0KNMba5H+CtsWqxRGlVdXRptb7TBIoy0BO7Sc1zRukI0i
- EvUm1lkuiTNGLNT1bpJs98zozgIt6sLhIAOebglqQmNOD+itcraoJUvz+J1M7FySUT
- 6hRW+SHN7GBvySLN/CpZb48xBVsXn+jeS7J2nWak=
-Date: Thu, 5 May 2022 21:25:20 +0200
+ b=BA/UrMfyunASKGi7EkzUpzPsPi2aei9LQHExoWZtA5QFmz+nF8ch9crJVNxlyXlAo
+ 9/Na54bbnRtHOJVT/Cu1rd++ItUCRwJYL1sK4BZ0RkHyXPHaNQRVN2803zQ7qVDZ9q
+ IFpDp5e19gxb+cnRkH0vRcmlOzVJGX4BOzBrpews=
+Date: Thu, 5 May 2022 21:53:56 +0200
 From: Nicolas Schier <nicolas@fjasle.eu>
 To: Masahiro Yamada <masahiroy@kernel.org>
-Subject: Re: [PATCH v3 01/15] modpost: mitigate false-negatives for static
- EXPORT_SYMBOL checks
-Message-ID: <YnQkoFahOeUVpZhj@fjasle.eu>
+Subject: Re: [PATCH v3 02/15] modpost: change the license of EXPORT_SYMBOL to
+ bool type
+Message-ID: <YnQrVI1r+Unp2vn+@fjasle.eu>
 References: <20220505072244.1155033-1-masahiroy@kernel.org>
- <20220505072244.1155033-2-masahiroy@kernel.org>
+ <20220505072244.1155033-3-masahiroy@kernel.org>
+ <CAK7LNAREQt5rPGK8zsti_UA-dGFKfqHsVWbSgMLw-yLoeNkJeA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20220505072244.1155033-2-masahiroy@kernel.org>
-X-Provags-ID: V03:K1:453ge2nHJXg6JLo5cZeMgSEFhVvVa0swhzjR0uQKtW94gAuyPQc
- MTjdF1f5pbFygWaA0SosWLKNmyUdXwFK1CUqAPSkq2SKzmSgl51MwQo6xoMn3Z2qWshs+mq
- zUww0m+Vg1VGGeeohNre8BVjxjh7qSjrYTbvLGMl0VUFNN4UdaEPPhevVoj5lG7DWNaJkaT
- +cWvR/fsod9psxrnhT2vQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:1I7YRGCbifg=:wiHGGZsjWiVsWflzSdZlf1
- rnxSHlzLZbMlXQME6NsR23TczHKf6OFgpjIJRweoZDOt+P1A1+Y5ynWZFi1DUzWJOz1sKX0TM
- LRwVI4ERpbHQcSO0gDL6tU6ksEw87Zm+bAHq0WXCrwZsZa6+Y5mRLCIcxUmo329FGyjYNyhdS
- eG7aZnZWvzTXCARfGy1WslzyAgC8o6GEeHvAWVHxXESeqY8upGZMHXEI+uKbObPJTg0fEl3E7
- NAoM9kJuatC3ZzJYV0EFKws1gCXTvip2bVKO/76Y3MvV0BFw8JDmr4hEJVRfSCNsQwoxvETEm
- byFT8g0yFtZ76OUQrjgzr2+eiPV/xAeMTNluTgPdpr4zrzFMZs4/+ugUQNJ15EYFAC0sBYW1W
- Pz3BGAUMOGllW0YjUQYhaqkW9sVp+UOPPJVZCClWZkiUGHSSLpgzeOhEorkO9iKmPcbeis2Hb
- MUJjhwu8LEveg9G2hunBn0D3ktK0vBt0TVPu6g1sSL68SLfVws0jRqa39KUc8HOJ41b06YlIy
- wFd3T3RT5uNwEXWYXjbev/LJZ0jLeMtsZkSbZ9rBnEFgQ/7s0XV+eQAmN0+BWqCDM3dzUO+Ym
- xMlRbF8rqGdgTzXPN8gNZpFvlIHgugQ82P+/XzVVZr46f8pl/L9tlr6VPnEKmAGrgxWPn3PFH
- f73++dR3OrYy55UT1C6nPNpG8/BjWlgNb3gzr+kTvM0/e/n3pIQ1OTs5w4FzgufxvWzg=
+In-Reply-To: <CAK7LNAREQt5rPGK8zsti_UA-dGFKfqHsVWbSgMLw-yLoeNkJeA@mail.gmail.com>
+X-Provags-ID: V03:K1:eVIKbsZAbmzWlKtPrBj9Mb+vBbXXzsRynicJaMbmbzeysZP9arT
+ xtUnuIVyv55qPraP+CQORaltSCsWVTcv/yBmJe397a5RhE4lqPF/7NTAdPbhqJt+3Gh8g92
+ ZoO+xpkipSHT4m8eoWenn52JjlnfRIYuJaTzy/dfT9T33OOig4RA8icWKQqDbDJT1r+AETo
+ wW4IQZEr5rVf+AzQyOwXw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:O1718LcMWqY=:suNSu7o6nKuRoYHjwHkK7V
+ I5JxHIqIanjGfPigUPLhylAYRpIOBsQUko5BnQ6W4am6/4Rk1hQN6SjvKN5TJ+Ie4NSKLKRUU
+ /rCUpt8uxsEkDWvgPp2uG0z6DNKPTzqh8GOV+zc/pZy4BIyyREB8aD/ArpRnIaRaYTcqnn56q
+ XUSx9OWW0FgRVVjXnPgkQwU3vCboB03AivsI9pjAaunR2mMKkgjkV9UgoLuBEtCr1gGEQLY5q
+ z4gY0BE70xMtqT8byLS8fXfYh0Cd9tmtCdH1UvMI0eN9ObwTzYhaRtzGMaFmzNcYu/HJGpADG
+ S8KLRMdZq3HDg9PtUi/8323eqrhjuEFIx9AcoFTVjHgQkAUqar0NTGwnCGXtlJ6By8bb1mW1N
+ dlSRIjRe39kgHYAcF4eWrvXUorPWsok/1vGuGljWIdqmDlUxyf6IaxJH9iEdRJZi4QMOYsrru
+ GwTY6TZBAAM7xXkzedF/IBOT6zwIoooV1swVFW6ldMo75vnpOkJ7OtLQBARHpTDtcdpjFN9oA
+ tonNUBC+ZHeQ8bmR1CcgL4nvBkdAa5mIRaypRTPGCOtPxEvwMhuyASvdQkdxOCbWJbK9uZa9l
+ h7U5WP0/B6y9l/upnfY5B/pSb4v9X4o2Cxgjvspp3ACwnhKVDVDlZ1Sgugg3sGpeXE/AU4xsl
+ 9YYc4OOhpf0rxjgHtRHcZ4fJ+MpGjD+n2/wd9yTekkkDcgbJ19y5X+rdO48X0t3Q0g0c=
 X-Mailman-Approved-At: Fri, 06 May 2022 07:52:56 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -74,132 +75,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Kees Cook <keescook@chromium.org>,
- linux-kbuild@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+Cc: linux-s390 <linux-s390@vger.kernel.org>, Kees Cook <keescook@chromium.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
  Nick Desaulniers <ndesaulniers@google.com>, linux-um@lists.infradead.org,
- linux-kernel@vger.kernel.org, clang-built-linux@googlegroups.com,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ clang-built-linux <clang-built-linux@googlegroups.com>,
  Luis Chamberlain <mcgrof@kernel.org>, Sami Tolvanen <samitolvanen@google.com>,
- linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ard Biesheuvel <ardb@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 05, 2022 at 04:22:30PM +0900 Masahiro Yamada wrote:
-> The 'static' specifier and EXPORT_SYMBOL() are an odd combination.
+On Thu, May 05, 2022 at 10:48:55PM +0900 Masahiro Yamada wrote:
+> On Thu, May 5, 2022 at 4:24 PM Masahiro Yamada <masahiroy@kernel.org> wrote:
+> >
+> > Currently, enum export is tristate, but export_unknown does not make
+> > sense in any way.
+> >
+> > If the symbol name starts with "__ksymtab_", but the section name
+> > does not start with "___ksymtab+" or "___ksymtab_gpl+", it is not
+> > an exported symbol. The variable name just happens to start with
+> > "__ksymtab_". Do not call sym_add_exported() in this case.
+> >
+> > __ksymtab_* is internally by EXPORT_SYMBOL(_GPL) but somebody may
 > 
-> Since commit 15bfc2348d54 ("modpost: check for static EXPORT_SYMBOL*
-> functions"), modpost tries to detect it, but there are false negatives.
-> 
-> Here is the sample code.
-> 
-> [Sample 1]
-> 
->   Makefile:
-> 
->     obj-m += mymod1.o mymod2.o
-> 
->   mymod1.c:
-> 
->     #include <linux/export.h>
->     #include <linux/module.h>
->     static void foo(void) {}
->     EXPORT_SYMBOL(foo);
->     MODULE_LICENSE("GPL");
-> 
->   mymod2.c:
-> 
->     #include <linux/module.h>
->     void foo(void) {}
->     MODULE_LICENSE("GPL");
-> 
-> mymod1 exports the static symbol 'foo', but modpost cannot catch it
-> because it is fooled by the same name symbol in another module, mymod2.
-> (Without mymod2, modpost can detect the error in mymod1)
-> 
-> find_symbol() returns the first symbol found in the hash table with the
-> given name. This hash table is global, so it may return a symbol from
-> an unrelated module. So, a global symbol in a module may unset the
-> 'is_static' flag of another module.
-> 
-> To mitigate this issue, add sym_find_with_module(), which receives the
-> module pointer as the second argument. If non-NULL pointer is passed, it
-> returns the symbol in the specified module. If NULL is passed, it is
-> equivalent to find_module().
-> 
-> Please note there are still false positives in the composite module,
-> like below (or when both are built-in). I have no idea how to do this
-> correctly.
-> 
-> [Sample 2]  (not fixed by this commit)
-> 
->   Makefile:
->     obj-m += mymod.o
->     mymod-objs := mymod1.o mymod2.o
-> 
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-> ---
+> I mean
+> "... is internally used by ..."
 
-I like the detailed commit description!
+Looks good to me; a nice cleanup.
 
 Reviewed-by: Nicolas Schier <nicolas@fjasle.eu>
-
-> 
-> (no changes since v2)
-> 
-> Changes in v2:
->   - Rename the new func to sym_find_with_module()
-> 
->  scripts/mod/modpost.c | 14 ++++++++++----
->  1 file changed, 10 insertions(+), 4 deletions(-)
-> 
-> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-> index b605f4a58759..a55fa2b88a9a 100644
-> --- a/scripts/mod/modpost.c
-> +++ b/scripts/mod/modpost.c
-> @@ -272,7 +272,7 @@ static void sym_add_unresolved(const char *name, struct module *mod, bool weak)
->  	list_add_tail(&sym->list, &mod->unresolved_symbols);
->  }
->  
-> -static struct symbol *find_symbol(const char *name)
-> +static struct symbol *sym_find_with_module(const char *name, struct module *mod)
->  {
->  	struct symbol *s;
->  
-> @@ -281,12 +281,17 @@ static struct symbol *find_symbol(const char *name)
->  		name++;
->  
->  	for (s = symbolhash[tdb_hash(name) % SYMBOL_HASH_SIZE]; s; s = s->next) {
-> -		if (strcmp(s->name, name) == 0)
-> +		if (strcmp(s->name, name) == 0 && (!mod || s->module == mod))
->  			return s;
->  	}
->  	return NULL;
->  }
->  
-> +static struct symbol *find_symbol(const char *name)
-> +{
-> +	return sym_find_with_module(name, NULL);
-> +}
-> +
->  struct namespace_list {
->  	struct list_head list;
->  	char namespace[];
-> @@ -2063,8 +2068,9 @@ static void read_symbols(const char *modname)
->  
->  		if (bind == STB_GLOBAL || bind == STB_WEAK) {
->  			struct symbol *s =
-> -				find_symbol(remove_dot(info.strtab +
-> -						       sym->st_name));
-> +				sym_find_with_module(remove_dot(info.strtab +
-> +								sym->st_name),
-> +						     mod);
->  
->  			if (s)
->  				s->is_static = false;
-> -- 
-> 2.32.0
-
--- 
-epost|xmpp: nicolas@fjasle.eu          irc://oftc.net/nsc
-↳ gpg: 18ed 52db e34f 860e e9fb  c82b 7d97 0932 55a0 ce7f
-     -- frykten for herren er opphav til kunnskap --
