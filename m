@@ -4,55 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27B80C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 11:05:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0E2CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 11:25:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kv9pZ6HRQz3c8h
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 21:05:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KvBG02Pscz3byW
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 21:25:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=o+hvXakt;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=epmifsoy;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kv9nt6yXnz2y7K
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 21:04:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.100; helo=mga07.intel.com;
+ envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=o+hvXakt; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Kv9ns6ZkQz4x7Y;
- Thu,  5 May 2022 21:04:48 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1651748690;
- bh=wpq71xW68NewGZlAJT/Mbe5vMSkm9s//K8e12ge0EYI=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=o+hvXaktSQYQNY6d4vmVftc5smUDpiHsCf4l46fYHB9D49gKHnDgKA7utxYttTEiE
- EtUizr6u1/768tK1D3sNzvorNgMPOl3TCDFIWn490jz22di/QrSu1JDi5F6DYoXB7p
- wsqM3d21+ckUsTg8yOJ6dvgJRSF3pprG9gdOYckctiIjOrKu7B1b0lZqYL9KqAOrZz
- fAJib2sHtE0sGlHib2pkz+dTQM9V4r8vupBCaD7VL0Uqdtm7++8mRKE7m6s223EkSj
- duRqXfjwrOjV7PGzdm5P17vEnHvKZFv+NBcwl0qmlN9vocynPwrvyU8hfy/B8okXsh
- 7mBlTpEO/Pr+A==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=epmifsoy; dkim-atps=neutral
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KvBFG3Hcwz2x9W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2022 21:25:05 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1651749906; x=1683285906;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=L6Ngp94hHGWsNcgFnS5I3Kj6GypsoRDxbkj/M+UXs1s=;
+ b=epmifsoyGrZaWJsfxuFnJ+dw82mzlgLixRrqR2Qrmm+m2XqvYgeoLsZm
+ 648L+EhEDJV0/kXpC3BDKlceWgIlIx0aVJe4/7D36w20sgYMmVkFALOlh
+ jrtwGzSewHbtWjP6VPQ6gLjfy3/UD3oU5+RsJY3FDxPOWRJzjfkWx5fB3
+ jsFWqBXU04c7myYw3xvNjGJawKNvUq7B4pW0FIpGSBPfhMGkoiQHGnlzx
+ ZmbmxUnlFouyJ2UeOMeccGlI7H0xrVPEI05b0cK+y/YdxekBL5Y6pglXe
+ +6r4E7Qc60tEXifcruromH/ozt9z4vcsuoqPdJlBviP3d2fXwZwlm5LP3 w==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10337"; a="331065363"
+X-IronPort-AV: E=Sophos;i="5.91,201,1647327600"; d="scan'208";a="331065363"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 May 2022 04:23:59 -0700
+X-IronPort-AV: E=Sophos;i="5.91,201,1647327600"; d="scan'208";a="600004091"
+Received: from smile.fi.intel.com ([10.237.72.54])
+ by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 May 2022 04:23:57 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.95)
+ (envelope-from <andriy.shevchenko@linux.intel.com>)
+ id 1nmZaL-00CG2M-Lf; Thu, 05 May 2022 14:23:53 +0300
+Date: Thu, 5 May 2022 14:23:53 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
 Subject: Re: [PATCH v1 1/1] powerpc/83xx/mpc8349emitx: Get rid of of_node
  assignment
-In-Reply-To: <YnKDaTVDoqgFeQHz@smile.fi.intel.com>
+Message-ID: <YnOzyTMKUIOB4My2@smile.fi.intel.com>
 References: <20220323174342.56187-1-andriy.shevchenko@linux.intel.com>
  <CACRpkdbUWE8knM=9uUVLTX792Y8_J1aPj4KtFh=yJxaKi+ZqRw@mail.gmail.com>
  <Yk2PE7+oEEtGri95@smile.fi.intel.com>
  <CACRpkdbqfNiWQG6ayqMXACby4xkW0pY6JhdYE-x+pWkSxJU5TQ@mail.gmail.com>
- <87fsm7fkbt.fsf@mpe.ellerman.id.au> <YnKDaTVDoqgFeQHz@smile.fi.intel.com>
-Date: Thu, 05 May 2022 21:04:46 +1000
-Message-ID: <87wnf0tf3l.fsf@mpe.ellerman.id.au>
+ <87fsm7fkbt.fsf@mpe.ellerman.id.au>
+ <YnKDaTVDoqgFeQHz@smile.fi.intel.com>
+ <87wnf0tf3l.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87wnf0tf3l.fsf@mpe.ellerman.id.au>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,38 +84,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
-> On Thu, Apr 21, 2022 at 08:42:30AM +1000, Michael Ellerman wrote:
->> Linus Walleij <linus.walleij@linaro.org> writes:
->> > On Wed, Apr 6, 2022 at 3:02 PM Andy Shevchenko
->> > <andriy.shevchenko@linux.intel.com> wrote:
->> >> On Mon, Mar 28, 2022 at 03:16:08PM +0200, Linus Walleij wrote:
->> >> > On Wed, Mar 23, 2022 at 6:43 PM Andy Shevchenko
->> >> > <andriy.shevchenko@linux.intel.com> wrote:
->> >> >
->> >> > > Let GPIO library to assign of_node from the parent device.
->> >> > > This allows to move GPIO library and drivers to use fwnode
->> >> > > APIs instead of being stuck with OF-only interfaces.
->> >> > >
->> >> > > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
->> >> >
->> >> > That's a nice patch.
->> >> > Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
->> >>
->> >> Thanks!
->> >>
->> >> Can we have this applied now?
->> >
->> > I think Michael Ellerman could help with this?
->> >
->> > Michael?
->> 
->> Yep, I'll pick it up when I start putting things into next.
->> 
->> That's usually the week after rc2, but I had a break for Easter.
->
-> Any new on this? I haven't seen it yet in Linux Next.
+On Thu, May 05, 2022 at 09:04:46PM +1000, Michael Ellerman wrote:
+> Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
+> > On Thu, Apr 21, 2022 at 08:42:30AM +1000, Michael Ellerman wrote:
 
-It's in today's next (next-20220505).
+...
 
-cheers
+> > Any new on this? I haven't seen it yet in Linux Next.
+> 
+> It's in today's next (next-20220505).
+
+Got it, thank you!
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
