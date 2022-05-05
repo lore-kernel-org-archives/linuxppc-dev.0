@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1CA9C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 21:59:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90E2AC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 May 2022 22:00:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KvSKb2xLzz3dP9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 07:59:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KvSLH0yvYz3f5S
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 08:00:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=fjasle.eu header.i=@fjasle.eu header.a=rsa-sha256 header.s=mail header.b=p5gWrt/A;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=fjasle.eu header.i=@fjasle.eu header.a=rsa-sha256 header.s=mail header.b=zqmv8cX5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=fjasle.eu (client-ip=217.72.192.73; helo=mout.kundenserver.de;
  envelope-from=nicolas@fjasle.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=fjasle.eu header.i=@fjasle.eu header.a=rsa-sha256
- header.s=mail header.b=p5gWrt/A; dkim-atps=neutral
+ header.s=mail header.b=zqmv8cX5; dkim-atps=neutral
 Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KvQM33VS7z3bxr
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 06:30:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KvQP80fbxz3c7p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 06:32:36 +1000 (AEST)
 Received: from leknes.fjasle.eu ([46.142.98.182]) by mrelayeu.kundenserver.de
- (mreue108 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1N63JO-1ntTNL2HRw-016TAG; Thu, 05 May 2022 22:29:31 +0200
+ (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
+ 1MzQTm-1o06Fv05JY-00vQbk; Thu, 05 May 2022 22:31:31 +0200
 Received: by leknes.fjasle.eu (Postfix, from userid 1000)
- id 71CFD3C088; Thu,  5 May 2022 22:29:23 +0200 (CEST)
+ id 146A93C0A0; Thu,  5 May 2022 22:31:29 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=fjasle.eu; s=mail;
- t=1651782563; bh=wVmgLLHKta8PUSVIgVtK/1NnMmbzgztoT/WwL6D71Rs=;
+ t=1651782689; bh=9wlFO3MLyBOpHZvAd84sW/pY49tJqU65GeK3vStuX2I=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=p5gWrt/AhpbEjf/JeLl3pOYQGqIkCIEmpciAUncAWUB0EtaDHQuMAzikXCpLS4Ccp
- +yMBf56zg2EUXDLFMzlvawEbbxLcBVdnOFYlf1kDYa0vYG8cMaPq69u9pGenvvliSJ
- 9tHzoS/o4jQSB8XRbFhYuJDj6YbPfuM5SvjoU06Q=
-Date: Thu, 5 May 2022 22:29:23 +0200
+ b=zqmv8cX5aeN75BpS8wlPq/mhxNbMeyV64uEMViipkFTMdKvtNiGWbceJ+6Bh+JWwv
+ D/4yHrbTFXWvkyqseXRLrnqsE2YvCZeKLiZHpYNAAZY931HxmxHvb1eVrhZqtPEcHZ
+ N+olq3LtWu+5k3HoEQ7JcVJEIpPj6kokDR5VBw80=
+Date: Thu, 5 May 2022 22:31:28 +0200
 From: Nicolas Schier <nicolas@fjasle.eu>
 To: Masahiro Yamada <masahiroy@kernel.org>
-Subject: Re: [PATCH v3 14/15] kbuild: make built-in.a rule robust against too
- long argument error
-Message-ID: <YnQzox0FyZuGmRQ0@fjasle.eu>
+Subject: Re: [PATCH v3 15/15] kbuild: make *.mod rule robust against too long
+ argument error
+Message-ID: <YnQ0IHNnQTIsxOxq@fjasle.eu>
 References: <20220505072244.1155033-1-masahiroy@kernel.org>
- <20220505072244.1155033-15-masahiroy@kernel.org>
+ <20220505072244.1155033-16-masahiroy@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220505072244.1155033-15-masahiroy@kernel.org>
-X-Provags-ID: V03:K1:g7/GEkNdzZQcHIJUtCmuKgFMiYguYvVDH+d7WyytcfLFvAyhgrE
- 5sNn8CrlM3fsZq6LKQytxDubyW6P7Q3FYIzsZp1qwE1V6/OA+NZgqQKbz3DZXaLlagXkvlb
- yapZ1jiodr0qTdSvbPs5M5ciqINjQTHyt5/w5En0gHi9YA8RyUsbitDfT0QwC+goW8RPyW2
- rY+hBNh9hgOUj6XoX40Hw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:Qmh5ea6yBWw=:7D0YyBIUbelpCfX/ybbplC
- 02KrkJog2HFhcv2/zIJKx3LPytiUxwOh/5Y2yjqTLGMe37hsQ52pKrLaN4dHHpDqdcr4NQwE6
- QrVjL3gSwdHgsA6T/z3Dbsen8ftOD3G5JN8TwXvty5s15SeZsprEzkN5CoMukx9gK4noS7doH
- MrqBSTit7soJJFUL4XuXdYqXrdfXU5ynZrg3yhIBIM/rk/FhsGXyqCv0CyAqkhQDtA03smYvH
- 3g5D0Qp8k7M0uMVSiIs3dG6/zEKMRj0oyGIfGaGvmAJguh173xPREnma3wnnZFZT12bGiyFAO
- +WEBvsl0ocx5cJ6KHg7pOQKAekSgDdQxZ9Yb5X1kb2RF7/J9AcFc0EXt1OBNtlBGrSH2W27LR
- IA7qHL7u5x/mrVaLxhSRuB/8XnG3rMsmEh0a5kLCYb5YveRKABCxO9/XddpP995NK3BvqM5Vb
- hZOvBTQ7wIFxGSb+WFEAIzP1qFYYiPuxI/kEBS02W7Sete3OOGCq4zwqNq0Aa+5Bf5hIDa/wc
- +PQ5dUq3CVSfOt6VE+qDclwYTdXD3f15Dj6ZLdnXA36LHFi6xa+o67KPBYoKpQp4uovGSNTRI
- qQMzTi1/VnxA9wtEC5xEWIGf/ofRjgf89/taY12Kari8DNYkX8PS/XfkHgCpGpSFgxK3YWBLm
- 1h8/3xpprDh/Cjvcyy5Lcb9tK9UDEwYXLyuACyYLLJ1h6zm06gLpuByX5X+CsD6zzxrU=
+In-Reply-To: <20220505072244.1155033-16-masahiroy@kernel.org>
+X-Provags-ID: V03:K1:ATjjPZxZrxSYHnT3weErv12Bh2cwK2wHc1xFqX4u3bAi/heFx7b
+ 6P8k3j2vwjJcl03Stj1aUwkOTwe+JjMDsmGjUfomIoBMI9IRoUX5GVrziiH2c+621UgNyjj
+ 7HP/rVyptQpb5aIpXw+GYaWos4XrsiPnY5/fS3Irm+rP1103LXqYJA/yTGnAqsrsNPONEwQ
+ NeGAeBdHijOVBbfFKB66A==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:3fCxWeqq8qM=:x1Ie/460/d/tEUDvNpS5so
+ ZwdXQMrhPFvIJ76JTZeI+3qvibQAZPa2auCxPlZTG7HNMVM/Ms+8tNxK7cnRWJmNC9JIBZN/R
+ jycDf23YR9x2XM9wzD1tN8PGq+LjWFIPCF8qmIqOyIha1G3AWnrgXWzwDGEibaxL2w5T/1EGr
+ VqdhS/NIQfdRHAy7LGo/2NhPMQmwJQVe+a8M7pkW0dziMW+DHdW2+lg6fBBLy5TYw24PL29gl
+ U93VQx9JaiUFA9cyU9Usr/8LyjFbQsGFB+PQtrdkbwkzPvrz7znMPYxv2L7XNiwALtVMvG4Gn
+ fdf8wN96hr3DCYvbP4x/T7onJRAzycE4Jw6lz1XTcwPD+fJKBDkT/nUIbOk15r2iZtygf0TjP
+ nVxNOfpCfrMMZ128G64u1yLf7w7GzFe7u6eemCFcwt0NRfxPVft4ztjqmqX2aRsFsPrk2rycd
+ a8TsEqJJzaOa+LaiSD7y9ZZVGDIMMehf/y0FekjgYQAvLzu3TUdSopZEg81CfWoC4eNm3pBF2
+ MxETWqUKr8mXT81Jenk7nkwaxeCGcppdPTUhrBGx1BAIK116Nafgxuui84Afn8DnXDPbS/Goe
+ /P8PI+yxECdIA20Co2ZCIy8edFdmMDD978LiMpQaMAJ39knPCG7IP7+iax8Ii4DNrQf624Lic
+ KXu7v/rcBu7F8ihMgC7W3ntYhMzzC6MpRxG3u4dZRM9qis/tTKFcIbUiLm+5R1hkoJQo=
 X-Mailman-Approved-At: Fri, 06 May 2022 07:52:56 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -84,33 +84,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 05, 2022 at 04:22:43PM +0900 Masahiro Yamada wrote:
-> Kbuild runs at the top of objtree instead of changing the working
-> directory to subdirectories. I think this design is nice overall but
-> some commands have a scapability issue.
+On Thu, May 05, 2022 at 04:22:44PM +0900 Masahiro Yamada wrote:
+> Like built-in.a, the command length of the *.mod rule scales with
+> the depth of the directory times the number of objects in the Makefile.
 > 
-> The build command of built-in.a is one of them whose length scales with:
-> 
->     O(D * N)
-> 
-> Here, D is the length of the directory path (i.e. $(obj)/ prefix),
-> N is the number of objects in the Makefile, O() is the big O notation.
-> 
-> The deeper directory the Makefile directory is located, the more easily
-> it will hit the too long argument error.
-> 
-> We can make it better. Trim the $(obj)/ by Make's builtin function, and
-> restore it by a shell command (sed).
-> 
-> With this, the command length scales with:
-> 
->     O(D + N)
+> Add $(obj)/ by the shell command (awk) instead of by Make's builtin
+> function.
 > 
 > In-tree modules still have some room to the limit (ARG_MAX=2097152),
 > but this is more future-proof for big modules in a deep directory.
 > 
-> For example, you can build i915 as builtin (CONFIG_DRM_I915=y) and
-> compare drivers/gpu/drm/i915/.built-in.a.cmd with/without this commit.
+> For example, you can build i915 as a module (CONFIG_DRM_I915=m) and
+> compare drivers/gpu/drm/i915/.i915.mod.cmd with/without this commit.
+> 
+> The issue is more critical for external modules because the M= path
+> can be very long as Jeff Johnson reported before [1].
+> 
+> [1] https://lore.kernel.org/linux-kbuild/4c02050c4e95e4cb8cc04282695f8404@codeaurora.org/
 > 
 > Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 > ---
@@ -120,26 +110,27 @@ On Thu, May 05, 2022 at 04:22:43PM +0900 Masahiro Yamada wrote:
 > Changes in v2:
 >   - New patch
 > 
->  scripts/Makefile.build | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+>  scripts/Makefile.build | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
 > diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-> index 0436ff94800e..cea48762299c 100644
+> index cea48762299c..e7b3f329d443 100644
 > --- a/scripts/Makefile.build
 > +++ b/scripts/Makefile.build
-> @@ -370,7 +370,10 @@ $(subdir-modorder): $(obj)/%/modules.order: $(obj)/% ;
->  #
+> @@ -266,8 +266,8 @@ $(obj)/%.o: $(src)/%.c $(recordmcount_source) FORCE
+>  	$(call if_changed_rule,cc_o_c)
+>  	$(call cmd,force_checksrc)
 >  
->  quiet_cmd_ar_builtin = AR      $@
-> -      cmd_ar_builtin = rm -f $@; $(AR) cDPrST $@ $(real-prereqs)
-> +      cmd_ar_builtin = rm -f $@; \
-> +		echo $(patsubst $(obj)/%,%,$(real-prereqs)) | \
-> +		sed -E 's:([^ ]+):$(obj)/\1:g' | \
-> +		xargs $(AR) cDPrST $@
+> -cmd_mod = echo $(addprefix $(obj)/, $(call real-search, $*.o, .o, -objs -y -m)) | \
+> -	$(AWK) -v RS='( |\n)' '!x[$$0]++' > $@
+> +cmd_mod = echo $(call real-search, $*.o, .o, -objs -y -m) | \
+> +	$(AWK) -v RS='( |\n)' '!x[$$0]++ { print("$(obj)/"$$0) }' > $@
 >  
->  $(obj)/built-in.a: $(real-obj-y) FORCE
->  	$(call if_changed,ar_builtin)
+>  $(obj)/%.mod: FORCE
+>  	$(call if_changed,mod)
 > -- 
 > 2.32.0
+
+Thanks!  At work, some colleagues of mine stumbled over that problem, too.
 
 Reviewed-by: Nicolas Schier <nicolas@fjasle.eu>
