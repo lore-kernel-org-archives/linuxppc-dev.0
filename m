@@ -4,65 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFF97C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 09:15:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D6D7C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 09:19:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KvlKM2Mzhz3f7p
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 19:15:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KvlPQ58BDz3fFd
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 19:19:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=L1yeUp3x;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=svens@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=L1yeUp3x; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KvlJb3jw0z3drG
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 19:14:55 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KvlJR5Y1Yz9sTl;
- Fri,  6 May 2022 11:14:47 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id oAB7MkILClr2; Fri,  6 May 2022 11:14:47 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KvlJP6RGgz9sTp;
- Fri,  6 May 2022 11:14:45 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CF53F8B792;
- Fri,  6 May 2022 11:14:45 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id kqZOMMeIw0YN; Fri,  6 May 2022 11:14:45 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.81])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7FF028B763;
- Fri,  6 May 2022 11:14:45 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2469EWOK1217948
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Fri, 6 May 2022 11:14:32 +0200
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2469ETd61217947;
- Fri, 6 May 2022 11:14:29 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v1 1/2] powerpc: Include asm/firmware.h in all users of
- firmware_has_feature()
-Date: Fri,  6 May 2022 11:14:24 +0200
-Message-Id: <11956ec181a034b51a881ac9c059eea72c679a73.1651828453.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.35.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KvlNf0n0qz3bqw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 19:18:25 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2467DF17007169;
+ Fri, 6 May 2022 09:17:44 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : references : date : in-reply-to : message-id : mime-version :
+ content-type; s=pp1; bh=3mutIDwAoMDYppKvXj+Kh3Lz7GBDin/nQObbZDAncxw=;
+ b=L1yeUp3xv84wxceE4LqZbb6r/vCK7SyqM8/NifRc8RG+IWkiJt6J9D4wqtJSSNEB1mFe
+ rA0C6Ltu6Z/5kahIg5rBv24Ga0d2Ti/46VHxLcOX/Q672acGYV7gdgpcqhzXe+LRhzoV
+ ct70vVFfcof8Ka2bO9/tS+nTwTbufy8MZMfyQziuVzR1e17pxHHbsI8BAZtztm6ozGN5
+ 38K3rKtZbuV3ZY2WdeHLjJPaPesIOQqPGqnG0fWZa9oYqX2YOtoGsk962GaDtk5lM3w8
+ pt1NSaJzZfAf2NiDAWjQUP3kyZ9HGxqaqFv+IKIa1ojcbvOsDFQTeR6egxd1MNe2+33h rg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3fvy3btd3r-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 06 May 2022 09:17:43 +0000
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+ by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2468e2Bl013355;
+ Fri, 6 May 2022 09:17:43 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3fvy3btd2v-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 06 May 2022 09:17:43 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2469D1uF009644;
+ Fri, 6 May 2022 09:17:41 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma06ams.nl.ibm.com with ESMTP id 3fvg6112ck-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 06 May 2022 09:17:40 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 2469HTr830998854
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 6 May 2022 09:17:29 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C18314C046;
+ Fri,  6 May 2022 09:17:36 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 173AB4C040;
+ Fri,  6 May 2022 09:17:36 +0000 (GMT)
+Received: from tuxmaker.linux.ibm.com (unknown [9.152.85.9])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Fri,  6 May 2022 09:17:36 +0000 (GMT)
+From: Sven Schnelle <svens@linux.ibm.com>
+To: Josh Poimboeuf <jpoimboe@kernel.org>
+Subject: Re: [PATCH] bug: Use normal relative pointers in 'struct bug_entry'
+References: <afddb4548e93f6458ec1d9ec185a834c348eda33.1651798983.git.jpoimboe@kernel.org>
+Date: Fri, 06 May 2022 11:17:35 +0200
+In-Reply-To: <afddb4548e93f6458ec1d9ec185a834c348eda33.1651798983.git.jpoimboe@kernel.org>
+ (Josh Poimboeuf's message of "Thu, 5 May 2022 18:09:45 -0700")
+Message-ID: <yt9d35hnj9zk.fsf@linux.ibm.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/28.0.50 (gnu/linux)
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1651828460; l=7162; s=20211009;
- h=from:subject:message-id; bh=Juipd5i26iTjgx0fV6t7bfYlUfVYpwpgpz5hm9D866I=;
- b=/JOb3L3ilxHpKZnjoags2IiXCbk0CCaDwmlemCYMVKEzSmWtenzkiASVNS7ZWc8IticgfRkglN7o
- JrAKRBtAC0Cnqu0q2SjASm8hKmAeXwVprqo5jbCk6PwbpX3O0/1b
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 4n8HqNW6ohwXkIgOJyGIpHi0JkINuDC6
+X-Proofpoint-ORIG-GUID: S6dXLhewdUPDA_P7LfTbFsG0u0fKL_4S
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
+ definitions=2022-05-06_03,2022-05-05_01,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 clxscore=1011
+ suspectscore=0 adultscore=0 mlxlogscore=999 bulkscore=0 lowpriorityscore=0
+ phishscore=0 mlxscore=0 spamscore=0 malwarescore=0 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2202240000
+ definitions=main-2205060049
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,209 +106,178 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Palmer Dabbelt <palmer@dabbelt.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Trying to remove asm/ppc_asm.h from all places that don't need it
-leads to several failures linked to firmware_has_feature().
+Josh Poimboeuf <jpoimboe@kernel.org> writes:
 
-To fix it, include asm/firmware.h in all files using
-firmware_has_feature()
+> With CONFIG_GENERIC_BUG_RELATIVE_POINTERS, the addr/file relative
+> pointers are calculated weirdly: based on the beginning of the bug_entry
+> struct address, rather than their respective pointer addresses.
+>
+> Make the relative pointers less surprising to both humans and tools by
+> calculating them the normal way.
+>
+> Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
 
-All users found with:
-
-	git grep -L "firmware\.h" ` git grep -l "firmware_has_feature("`
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/book3s/64/hugetlb.h              | 3 +++
- arch/powerpc/include/asm/cputime.h                        | 1 +
- arch/powerpc/include/asm/interrupt.h                      | 1 +
- arch/powerpc/include/asm/mman.h                           | 1 +
- arch/powerpc/include/asm/prom.h                           | 1 +
- arch/powerpc/kernel/dawr.c                                | 1 +
- arch/powerpc/kexec/core.c                                 | 1 +
- arch/powerpc/kvm/book3s_64_mmu_radix.c                    | 1 +
- arch/powerpc/kvm/book3s_hv_nested.c                       | 1 +
- arch/powerpc/mm/book3s64/hash_pgtable.c                   | 1 +
- arch/powerpc/mm/book3s64/pkeys.c                          | 1 +
- arch/powerpc/mm/hugetlbpage.c                             | 1 +
- arch/powerpc/platforms/pseries/papr_platform_attributes.c | 1 +
- arch/powerpc/platforms/pseries/vas.c                      | 1 +
- 14 files changed, 16 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index 12e150e615b7..1c42a0786290 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -1,6 +1,9 @@
- /* SPDX-License-Identifier: GPL-2.0 */
- #ifndef _ASM_POWERPC_BOOK3S_64_HUGETLB_H
- #define _ASM_POWERPC_BOOK3S_64_HUGETLB_H
-+
-+#include <asm/firmware.h>
-+
- /*
-  * For radix we want generic code to handle hugetlb. But then if we want
-  * both hash and radix to be enabled together we need to workaround the
-diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
-index 504f7fe6711a..6d2b27997492 100644
---- a/arch/powerpc/include/asm/cputime.h
-+++ b/arch/powerpc/include/asm/cputime.h
-@@ -19,6 +19,7 @@
- #include <asm/div64.h>
- #include <asm/time.h>
- #include <asm/param.h>
-+#include <asm/firmware.h>
- 
- typedef u64 __nocast cputime_t;
- typedef u64 __nocast cputime64_t;
-diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-index f964ef5c57d8..e8f6fd6b1cce 100644
---- a/arch/powerpc/include/asm/interrupt.h
-+++ b/arch/powerpc/include/asm/interrupt.h
-@@ -69,6 +69,7 @@
- #include <linux/context_tracking.h>
- #include <linux/hardirq.h>
- #include <asm/cputime.h>
-+#include <asm/firmware.h>
- #include <asm/ftrace.h>
- #include <asm/kprobes.h>
- #include <asm/runlatch.h>
-diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
-index 7cb6d18f5cd6..699b3c5e144c 100644
---- a/arch/powerpc/include/asm/mman.h
-+++ b/arch/powerpc/include/asm/mman.h
-@@ -12,6 +12,7 @@
- #include <linux/mm.h>
- #include <linux/pkeys.h>
- #include <asm/cpu_has_feature.h>
-+#include <asm/firmware.h>
- 
- static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot,
- 		unsigned long pkey)
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index 5c80152e8f18..6f109b5cb84e 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -14,6 +14,7 @@
- #include <linux/types.h>
- #include <asm/irq.h>
- #include <linux/atomic.h>
-+#include <asm/firmware.h>
- 
- /* These includes should be removed once implicit includes are cleaned up. */
- #include <linux/of.h>
-diff --git a/arch/powerpc/kernel/dawr.c b/arch/powerpc/kernel/dawr.c
-index 64e423d2fe0f..bb818ae85785 100644
---- a/arch/powerpc/kernel/dawr.c
-+++ b/arch/powerpc/kernel/dawr.c
-@@ -11,6 +11,7 @@
- #include <linux/debugfs.h>
- #include <asm/machdep.h>
- #include <asm/hvcall.h>
-+#include <asm/firmware.h>
- 
- bool dawr_force_enable;
- EXPORT_SYMBOL_GPL(dawr_force_enable);
-diff --git a/arch/powerpc/kexec/core.c b/arch/powerpc/kexec/core.c
-index abf5897ae88c..f0774ff3296f 100644
---- a/arch/powerpc/kexec/core.c
-+++ b/arch/powerpc/kexec/core.c
-@@ -20,6 +20,7 @@
- #include <asm/pgalloc.h>
- #include <asm/prom.h>
- #include <asm/sections.h>
-+#include <asm/firmware.h>
- 
- void machine_kexec_mask_interrupts(void) {
- 	unsigned int i;
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index 42851c32ff3b..9d4b3feda3b6 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -22,6 +22,7 @@
- #include <asm/ultravisor.h>
- #include <asm/kvm_book3s_uvmem.h>
- #include <asm/plpar_wrappers.h>
-+#include <asm/firmware.h>
- 
- /*
-  * Supported radix tree geometry.
-diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
-index c943a051c6e7..fae06f4fbce1 100644
---- a/arch/powerpc/kvm/book3s_hv_nested.c
-+++ b/arch/powerpc/kvm/book3s_hv_nested.c
-@@ -20,6 +20,7 @@
- #include <asm/pte-walk.h>
- #include <asm/reg.h>
- #include <asm/plpar_wrappers.h>
-+#include <asm/firmware.h>
- 
- static struct patb_entry *pseries_partition_tb;
- 
-diff --git a/arch/powerpc/mm/book3s64/hash_pgtable.c b/arch/powerpc/mm/book3s64/hash_pgtable.c
-index 7ce8914992e3..f1cadf771b40 100644
---- a/arch/powerpc/mm/book3s64/hash_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/hash_pgtable.c
-@@ -13,6 +13,7 @@
- #include <asm/sections.h>
- #include <asm/mmu.h>
- #include <asm/tlb.h>
-+#include <asm/firmware.h>
- 
- #include <mm/mmu_decl.h>
- 
-diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
-index 753e62ba67af..1d2675ab6711 100644
---- a/arch/powerpc/mm/book3s64/pkeys.c
-+++ b/arch/powerpc/mm/book3s64/pkeys.c
-@@ -10,6 +10,7 @@
- #include <asm/mmu.h>
- #include <asm/setup.h>
- #include <asm/smp.h>
-+#include <asm/firmware.h>
- 
- #include <linux/pkeys.h>
- #include <linux/of_fdt.h>
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index b642a5a8668f..73d91c499bd3 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -24,6 +24,7 @@
- #include <asm/setup.h>
- #include <asm/hugetlb.h>
- #include <asm/pte-walk.h>
-+#include <asm/firmware.h>
- 
- bool hugetlb_disabled = false;
- 
-diff --git a/arch/powerpc/platforms/pseries/papr_platform_attributes.c b/arch/powerpc/platforms/pseries/papr_platform_attributes.c
-index 515150417bb3..526c621b098b 100644
---- a/arch/powerpc/platforms/pseries/papr_platform_attributes.c
-+++ b/arch/powerpc/platforms/pseries/papr_platform_attributes.c
-@@ -22,6 +22,7 @@
- 
- #include <asm/hvcall.h>
- #include <asm/machdep.h>
-+#include <asm/firmware.h>
- 
- #include "pseries.h"
- 
-diff --git a/arch/powerpc/platforms/pseries/vas.c b/arch/powerpc/platforms/pseries/vas.c
-index 1f59d78c77a1..f510220918b1 100644
---- a/arch/powerpc/platforms/pseries/vas.c
-+++ b/arch/powerpc/platforms/pseries/vas.c
-@@ -16,6 +16,7 @@
- #include <asm/machdep.h>
- #include <asm/hvcall.h>
- #include <asm/plpar_wrappers.h>
-+#include <asm/firmware.h>
- #include <asm/vas.h>
- #include "vas.h"
- 
--- 
-2.35.1
-
+Acked-by: Sven Schnelle <svens@linux.ibm.com> # s390
+> ---
+>  arch/arm64/include/asm/asm-bug.h |  4 ++--
+>  arch/powerpc/include/asm/bug.h   |  5 +++--
+>  arch/riscv/include/asm/bug.h     |  4 ++--
+>  arch/s390/include/asm/bug.h      |  5 +++--
+>  arch/x86/include/asm/bug.h       |  2 +-
+>  lib/bug.c                        | 15 +++++++--------
+>  6 files changed, 18 insertions(+), 17 deletions(-)
+>
+> diff --git a/arch/arm64/include/asm/asm-bug.h b/arch/arm64/include/asm/asm-bug.h
+> index 03f52f84a4f3..c762038ba400 100644
+> --- a/arch/arm64/include/asm/asm-bug.h
+> +++ b/arch/arm64/include/asm/asm-bug.h
+> @@ -14,7 +14,7 @@
+>  	14472:	.string file;					\
+>  		.popsection;					\
+>  								\
+> -		.long 14472b - 14470b;				\
+> +		.long 14472b - .;				\
+>  		.short line;
+>  #else
+>  #define _BUGVERBOSE_LOCATION(file, line)
+> @@ -25,7 +25,7 @@
+>  #define __BUG_ENTRY(flags) 				\
+>  		.pushsection __bug_table,"aw";		\
+>  		.align 2;				\
+> -	14470:	.long 14471f - 14470b;			\
+> +	14470:	.long 14471f - .;			\
+>  _BUGVERBOSE_LOCATION(__FILE__, __LINE__)		\
+>  		.short flags; 				\
+>  		.popsection;				\
+> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+> index ecbae1832de3..76252576d889 100644
+> --- a/arch/powerpc/include/asm/bug.h
+> +++ b/arch/powerpc/include/asm/bug.h
+> @@ -13,7 +13,8 @@
+>  #ifdef CONFIG_DEBUG_BUGVERBOSE
+>  .macro __EMIT_BUG_ENTRY addr,file,line,flags
+>  	 .section __bug_table,"aw"
+> -5001:	 .4byte \addr - 5001b, 5002f - 5001b
+> +5001:	 .4byte \addr - .
+> +	 .4byte 5002f - .
+>  	 .short \line, \flags
+>  	 .org 5001b+BUG_ENTRY_SIZE
+>  	 .previous
+> @@ -24,7 +25,7 @@
+>  #else
+>  .macro __EMIT_BUG_ENTRY addr,file,line,flags
+>  	 .section __bug_table,"aw"
+> -5001:	 .4byte \addr - 5001b
+> +5001:	 .4byte \addr - .
+>  	 .short \flags
+>  	 .org 5001b+BUG_ENTRY_SIZE
+>  	 .previous
+> diff --git a/arch/riscv/include/asm/bug.h b/arch/riscv/include/asm/bug.h
+> index d3804a2f9aad..1aaea81fb141 100644
+> --- a/arch/riscv/include/asm/bug.h
+> +++ b/arch/riscv/include/asm/bug.h
+> @@ -30,8 +30,8 @@
+>  typedef u32 bug_insn_t;
+>  
+>  #ifdef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+> -#define __BUG_ENTRY_ADDR	RISCV_INT " 1b - 2b"
+> -#define __BUG_ENTRY_FILE	RISCV_INT " %0 - 2b"
+> +#define __BUG_ENTRY_ADDR	RISCV_INT " 1b - ."
+> +#define __BUG_ENTRY_FILE	RISCV_INT " %0 - ."
+>  #else
+>  #define __BUG_ENTRY_ADDR	RISCV_PTR " 1b"
+>  #define __BUG_ENTRY_FILE	RISCV_PTR " %0"
+> diff --git a/arch/s390/include/asm/bug.h b/arch/s390/include/asm/bug.h
+> index 0b25f28351ed..aebe1e22c7be 100644
+> --- a/arch/s390/include/asm/bug.h
+> +++ b/arch/s390/include/asm/bug.h
+> @@ -15,7 +15,8 @@
+>  		"1:	.asciz	\""__FILE__"\"\n"		\
+>  		".previous\n"					\
+>  		".section __bug_table,\"awM\",@progbits,%2\n"	\
+> -		"2:	.long	0b-2b,1b-2b\n"			\
+> +		"2:	.long	0b-.\n"				\
+> +		"	.long	1b-.\n"				\
+>  		"	.short	%0,%1\n"			\
+>  		"	.org	2b+%2\n"			\
+>  		".previous\n"					\
+> @@ -30,7 +31,7 @@
+>  	asm_inline volatile(					\
+>  		"0:	mc	0,0\n"				\
+>  		".section __bug_table,\"awM\",@progbits,%1\n"	\
+> -		"1:	.long	0b-1b\n"			\
+> +		"1:	.long	0b-.\n"				\
+>  		"	.short	%0\n"				\
+>  		"	.org	1b+%1\n"			\
+>  		".previous\n"					\
+> diff --git a/arch/x86/include/asm/bug.h b/arch/x86/include/asm/bug.h
+> index aaf0cb0db4ae..a3ec87d198ac 100644
+> --- a/arch/x86/include/asm/bug.h
+> +++ b/arch/x86/include/asm/bug.h
+> @@ -18,7 +18,7 @@
+>  #ifdef CONFIG_X86_32
+>  # define __BUG_REL(val)	".long " __stringify(val)
+>  #else
+> -# define __BUG_REL(val)	".long " __stringify(val) " - 2b"
+> +# define __BUG_REL(val)	".long " __stringify(val) " - ."
+>  #endif
+>  
+>  #ifdef CONFIG_DEBUG_BUGVERBOSE
+> diff --git a/lib/bug.c b/lib/bug.c
+> index 45a0584f6541..c223a2575b72 100644
+> --- a/lib/bug.c
+> +++ b/lib/bug.c
+> @@ -6,8 +6,7 @@
+>  
+>    CONFIG_BUG - emit BUG traps.  Nothing happens without this.
+>    CONFIG_GENERIC_BUG - enable this code.
+> -  CONFIG_GENERIC_BUG_RELATIVE_POINTERS - use 32-bit pointers relative to
+> -	the containing struct bug_entry for bug_addr and file.
+> +  CONFIG_GENERIC_BUG_RELATIVE_POINTERS - use 32-bit relative pointers for bug_addr and file
+>    CONFIG_DEBUG_BUGVERBOSE - emit full file+line information for each BUG
+>  
+>    CONFIG_BUG and CONFIG_DEBUG_BUGVERBOSE are potentially user-settable
+> @@ -53,10 +52,10 @@ extern struct bug_entry __start___bug_table[], __stop___bug_table[];
+>  
+>  static inline unsigned long bug_addr(const struct bug_entry *bug)
+>  {
+> -#ifndef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+> -	return bug->bug_addr;
+> +#ifdef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+> +	return (unsigned long)&bug->bug_addr_disp + bug->bug_addr_disp;
+>  #else
+> -	return (unsigned long)bug + bug->bug_addr_disp;
+> +	return bug->bug_addr;
+>  #endif
+>  }
+>  
+> @@ -131,10 +130,10 @@ void bug_get_file_line(struct bug_entry *bug, const char **file,
+>  		       unsigned int *line)
+>  {
+>  #ifdef CONFIG_DEBUG_BUGVERBOSE
+> -#ifndef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+> -	*file = bug->file;
+> +#ifdef CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+> +	*file = (const char *)&bug->file_disp + bug->file_disp;
+>  #else
+> -	*file = (const char *)bug + bug->file_disp;
+> +	*file = bug->file;
+>  #endif
+>  	*line = bug->line;
+>  #else
