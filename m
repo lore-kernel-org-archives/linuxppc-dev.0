@@ -4,14 +4,14 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95ABFC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 21:27:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EBD6C43219
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 21:32:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kw3YK61hlz3cB9
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 07:27:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kw3gm5Yxwz3c9S
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 07:32:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=TDgZZgVD;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=WcZEnao8;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=A49620i7;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=3yzJVIl7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
@@ -19,45 +19,45 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=TDgZZgVD; 
+ header.s=2020 header.b=A49620i7; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=WcZEnao8; 
+ header.a=ed25519-sha256 header.s=2020e header.b=3yzJVIl7; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kw3Xf2lrDz3byG
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 07:26:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kw3g3730Nz3byZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 07:31:59 +1000 (AEST)
 From: Thomas Gleixner <tglx@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1651872383;
+ s=2020; t=1651872716;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  in-reply-to:in-reply-to:references:references;
- bh=dnFvEUjYaXkrUWbb6k6bH4W0I42U5bcK4xwKGB/iA1Q=;
- b=TDgZZgVD6IKft2KB8Wjp08EzKo+lWC4nCxQY6ojpI4H1hUj4ZvLjNxRSX0cZajHu50JwKv
- S6eyooGuo8RTT0twSIFJzJRx+0XWf4p4QZoC70idfNUEQKDd4JKeiB38aUfRUgTRSl4Ytx
- J9UOxaYgiNIc/l5TkYWQ0UPuIB3Flgj/r61E4f3wH/jBRPrNNloFPy5HHlEW4paO7xvr6z
- ucwcH/2OmkHFNT49SvK4W47lcG3kv+jtISDCrBMBmB1LotCwdfAjUujREzm87wctSczMFW
- nZOJjp1eDlE3hKYW9r1ilgjBXgjXQm0A1xqVryDZVytZbeicQgcQW+OFBPPMhA==
+ bh=5YNXQOpOKXFVRz3iHvR1oAhEwQUbYYWJsKq1pUtVwd8=;
+ b=A49620i7PRera+mhe1BweZ6Vv1Q3trFfvTBAN/4Kjrnu3jQc1o9ibi6TM3bHEk90av0atW
+ t9hqMpAcGdW4SbUyZKmSOSd+YlbwGKNdD6WfYWTyEzICdgkDD0w9sM4vLp4oY9i0+I5D/s
+ dNOmLMo8e7yKP2U1yZBOHkPKvDaLhKvj9DxFUsSN8bABxScYUK6yIdXlqeFsbRDt+wk7c4
+ kvHyI7hjY2t5z2YVBVNHsqYSKqGW+DG2/TPqmSbklG7oUZCmxm5l3r7wnnk6rIfkS8A7Va
+ sguCM4GL4nhWAwPbS2G9vdH00Fudh92BSslQrn7pJwyRBDGSW9Q3cY47KyfFoA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1651872383;
+ s=2020e; t=1651872716;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  in-reply-to:in-reply-to:references:references;
- bh=dnFvEUjYaXkrUWbb6k6bH4W0I42U5bcK4xwKGB/iA1Q=;
- b=WcZEnao8xTtQZ0w7qAuY+S/Xb9SfBJExBnOLNsmkdy8OV6SGqwMvfpax3q411PgaPTVg7X
- ZEuh2NASqTIUK4Dw==
+ bh=5YNXQOpOKXFVRz3iHvR1oAhEwQUbYYWJsKq1pUtVwd8=;
+ b=3yzJVIl7aCbWJSTq+FwrDzYos2+d1FJ1UOnv4pyL8gSCEpD/WyUdjoYCOlOsOeDopNjtU5
+ 7RCkeX440NM7qOAg==
 To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>, x86@kernel.org
-Subject: Re: [PATCH v6 12/29] iommu/amd: Enable NMIPass when allocating an
- NMI irq
-In-Reply-To: <20220506000008.30892-13-ricardo.neri-calderon@linux.intel.com>
+Subject: Re: [PATCH v6 13/29] iommu/amd: Compose MSI messages for NMI irqs
+ in non-IR format
+In-Reply-To: <20220506000008.30892-14-ricardo.neri-calderon@linux.intel.com>
 References: <20220506000008.30892-1-ricardo.neri-calderon@linux.intel.com>
- <20220506000008.30892-13-ricardo.neri-calderon@linux.intel.com>
-Date: Fri, 06 May 2022 23:26:22 +0200
-Message-ID: <87tua2fj41.ffs@tglx>
+ <20220506000008.30892-14-ricardo.neri-calderon@linux.intel.com>
+Date: Fri, 06 May 2022 23:31:56 +0200
+Message-ID: <87r156fiur.ffs@tglx>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -86,11 +86,14 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On Thu, May 05 2022 at 16:59, Ricardo Neri wrote:
->  
-> +	if (info->flags & X86_IRQ_ALLOC_AS_NMI) {
-> +		/* Only one IRQ per NMI */
-> +		if (nr_irqs != 1)
-> +			return -EINVAL;
+> +	 *
+> +	 * Also, NMIs do not have an associated vector. No need for cleanup.
 
-See previous reply.
+They have a vector and what the heck is this cleanup comment for here?
+There is nothing cleanup alike anywhere near.
 
+Adding confusing comments is worse than adding no comments at all.
+
+Thanks,
+
+        tglx
