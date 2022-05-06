@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3AFEC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 09:06:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60D92C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 09:07:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kvl6f3bRMz3f1P
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 19:06:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kvl7R0FpCz3frL
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 19:06:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GBaiTwcs;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LnassnH1;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
@@ -18,68 +18,68 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=GBaiTwcs; dkim-atps=neutral
+ header.s=pp1 header.b=LnassnH1; dkim-atps=neutral
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kvkj12L23z3cBp
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 18:47:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kvkj40LM8z3cD7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 18:47:35 +1000 (AEST)
 Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2467P8Bf021431;
- Fri, 6 May 2022 08:47:28 GMT
+ by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2467P5lo021391;
+ Fri, 6 May 2022 08:47:31 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=VKvLFsIba7YgLrF8d2QMMNSYZjziBwPBq7K7/EB1AiM=;
- b=GBaiTwcsZL31B/lsmF9CVbQR+nnf6MgSw6ZXazuemEYEDOZ0T70kNIqgyMTPY/Rj0JUZ
- puCOjt/5OPWOf9B9IUnWxRFnKr3gnsEd07tHY5SNooZ8crU0KespybF2Sk2ClhbHy54y
- aKJ7HmV5xY4xbVvl0BkaKKpo57Okx276EbuL0k/7ocpdJDtbFIWdFBQN4VdpRy/Dl8rE
- bhJC+kCs67y8VzTvB/EPdtXvh6zahibLMbCm/0/Z11toOUCihXlNieJWG/n60KIsV9L2
- lqkzjQTn66dK9hh4gKZovOSAhMMiitg9y0kbTW3ib86DeP/YdbPdLUzLAc4IYh6W++KK zw== 
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3fvy929fga-1
+ bh=aM2dcd5R+bj4ez+iaQcYKAJsU2ckAkOMIX/Apru/N48=;
+ b=LnassnH1AsCqyAv+Os4EDgU2P4HMbeIbnJznSJsEKlqYdioNtBYp+PgsFSfLJzXjxEa5
+ 7XxNdOplGjRS5ex3iQnqutK1xXKA2W6baULs8F2ES6uvbSq6/zo8KbxACWiYOlaG2Vu6
+ zIuxRfu0oF8j+HCR4vCzO30oGfQCtvjbAS6Yf1pCCGxmkk5FfNjMA+QfXkvLvInwe7xa
+ dx0RqsU+QBdP8d9nzJjpt+8EZkOwJE6SEFKRDNhIbTE947oLYjuXe4VOTfwEIHrfXBTQ
+ CR5C/znyy8Hf2ReLxCUkAF/Zk9uodoaUb1RlGMJcK4wIvZb67Ualp/FwW7S4BvbLxqrR cg== 
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.108])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3fvy929fhw-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 06 May 2022 08:47:27 +0000
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2468hhuK012022;
- Fri, 6 May 2022 08:46:54 GMT
+ Fri, 06 May 2022 08:47:31 +0000
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+ by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2468gkNS014010;
+ Fri, 6 May 2022 08:47:29 GMT
 Received: from b06cxnps4074.portsmouth.uk.ibm.com
  (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma02fra.de.ibm.com with ESMTP id 3fuyn79te1-1
+ by ppma05fra.de.ibm.com with ESMTP id 3frvr8ppvd-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 06 May 2022 08:46:54 +0000
+ Fri, 06 May 2022 08:47:29 +0000
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
  by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 2468kpI838338852
+ 2468lQP923003646
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 6 May 2022 08:46:51 GMT
+ Fri, 6 May 2022 08:47:26 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8545E4C046;
- Fri,  6 May 2022 08:46:51 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 180E74C04A;
+ Fri,  6 May 2022 08:47:26 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2DE054C040;
- Fri,  6 May 2022 08:46:49 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id A41084C040;
+ Fri,  6 May 2022 08:47:23 +0000 (GMT)
 Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com.com (unknown
  [9.43.19.224]) by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri,  6 May 2022 08:46:48 +0000 (GMT)
+ Fri,  6 May 2022 08:47:23 +0000 (GMT)
 From: Kajol Jain <kjain@linux.ibm.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 21/35] selftest/powerpc/pmu: Add selftest for group constraint
- for MMCRA Sampling Mode field
-Date: Fri,  6 May 2022 14:15:30 +0530
-Message-Id: <20220506084544.56527-22-kjain@linux.ibm.com>
+Subject: [PATCH 33/35] selftest/powerpc/pmu: Add selftest for group constraint
+ check for MMCRA thresh_ctl field
+Date: Fri,  6 May 2022 14:15:42 +0530
+Message-Id: <20220506084544.56527-34-kjain@linux.ibm.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20220506084544.56527-1-kjain@linux.ibm.com>
 References: <20220506084544.56527-1-kjain@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: SXR7Lo0hVZMUwjWF7nYnvC4fNTsrP4UN
-X-Proofpoint-GUID: SXR7Lo0hVZMUwjWF7nYnvC4fNTsrP4UN
+X-Proofpoint-ORIG-GUID: qDKFCZy3CqmB7bgUFLFlZLnQvIcSW8ps
+X-Proofpoint-GUID: qDKFCZy3CqmB7bgUFLFlZLnQvIcSW8ps
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
  definitions=2022-05-06_03,2022-05-05_01,2022-02-23_01
@@ -106,119 +106,104 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Thresh control bits in the event code is used to program thresh_ctl
+field in Monitor Mode Control Register A (MMCRA: 48-55). When scheduling
+events as a group, all events in that group should match value in these
+bits. Otherwise event open for the sibling events will fail.
 
-Testcase for reserved bits in Monitor Mode Control
-Register A (MMCRA) Random Sampling Mode (SM) value.
-As per Instruction Set Architecture (ISA), the values
-0x5, 0x9, 0xD, 0x19, 0x1D, 0x1A, 0x1E are reserved
-for sampling mode field. Test that having these reserved
-bit values should cause event_open to fail. Input event
-code in testcases uses these sampling bits along with
-401e0 (PM_MRK_INST_CMPL).
+Testcase uses event code PM_MRK_INST_CMPL (0x401e0) as leader and
+another event PM_THRESH_MET (101ec) as sibling event, and checks if
+group constraint checks for thresh_ctl field added correctly via perf interface.
 
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
 ---
  .../powerpc/pmu/event_code_tests/Makefile     |  2 +-
- ...eserved_bits_mmcra_sample_elig_mode_test.c | 77 +++++++++++++++++++
- 2 files changed, 78 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/pmu/event_code_tests/reserved_bits_mmcra_sample_elig_mode_test.c
+ .../group_constraint_thresh_ctl_test.c        | 64 +++++++++++++++++++
+ 2 files changed, 65 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_ctl_test.c
 
 diff --git a/tools/testing/selftests/powerpc/pmu/event_code_tests/Makefile b/tools/testing/selftests/powerpc/pmu/event_code_tests/Makefile
-index 5b61fb0b9fd6..5dd482843572 100644
+index f72c73b5b79a..16cbb2e52865 100644
 --- a/tools/testing/selftests/powerpc/pmu/event_code_tests/Makefile
 +++ b/tools/testing/selftests/powerpc/pmu/event_code_tests/Makefile
-@@ -2,7 +2,7 @@
- CFLAGS += -m64
- 
- TEST_GEN_PROGS := group_constraint_pmc56_test group_pmc56_exclude_constraints_test group_constraint_pmc_count_test \
--	group_constraint_repeat_test group_constraint_radix_scope_qual_test
-+	group_constraint_repeat_test group_constraint_radix_scope_qual_test reserved_bits_mmcra_sample_elig_mode_test
+@@ -6,7 +6,7 @@ TEST_GEN_PROGS := group_constraint_pmc56_test group_pmc56_exclude_constraints_te
+ 	group_constraint_mmcra_sample_test invalid_event_code_test reserved_bits_mmcra_thresh_ctl_test \
+ 	blacklisted_events_test event_alternatives_tests_p9 event_alternatives_tests_p10 generic_events_valid_test \
+ 	group_constraint_l2l3_sel_test group_constraint_cache_test group_constraint_thresh_cmp_test \
+-	group_constraint_unit_test
++	group_constraint_unit_test group_constraint_thresh_ctl_test
  
  top_srcdir = ../../../../../..
  include ../../../lib.mk
-diff --git a/tools/testing/selftests/powerpc/pmu/event_code_tests/reserved_bits_mmcra_sample_elig_mode_test.c b/tools/testing/selftests/powerpc/pmu/event_code_tests/reserved_bits_mmcra_sample_elig_mode_test.c
+diff --git a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_ctl_test.c b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_ctl_test.c
 new file mode 100644
-index 000000000000..4c119c821b99
+index 000000000000..e0852ebc1671
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/event_code_tests/reserved_bits_mmcra_sample_elig_mode_test.c
-@@ -0,0 +1,77 @@
++++ b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_ctl_test.c
+@@ -0,0 +1,64 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
-+ * Copyright 2022, Athira Rajeev, IBM Corp.
++ * Copyright 2022, Kajol Jain, IBM Corp.
 + */
 +
 +#include <stdio.h>
++#include <stdlib.h>
++
 +#include "../event.h"
++#include "utils.h"
 +#include "../sampling_tests/misc.h"
 +
 +/*
-+ * Testcase for reserved bits in Monitor Mode Control
-+ * Register A (MMCRA) Random Sampling Mode (SM) value.
-+ * As per Instruction Set Architecture (ISA), the values
-+ * 0x5, 0x9, 0xD, 0x19, 0x1D, 0x1A, 0x1E are reserved
-+ * for sampling mode field. Test that having these reserved
-+ * bit values should cause event_open to fail.
-+ * Input event code uses these sampling bits along with
-+ * 401e0 (PM_MRK_INST_CMPL).
++ * Primary PMU events used here are PM_MRK_INST_CMPL (0x401e0) and
++ * PM_THRESH_MET (0x101ec).
++ * Threshold event selection used is issue to complete and issue to
++ * finished for cycles
++ * Sampling criteria is Load or Store only sampling
 + */
++#define EventCode_1 0x35340401e0
++#define EventCode_2 0x34340101ec
++#define EventCode_3 0x35340101ec
 +
-+static int reserved_bits_mmcra_sample_elig_mode(void)
++/*
++ * Testcase for group constraint check of thresh_ctl bits which is
++ * used to program thresh compare field in Monitor Mode Control Register A
++ * (MMCR0: 48-55).
++ * All events in the group should match thresh ctl bits otherwise
++ * event_open for the group will fail.
++ */
++static int group_constraint_thresh_ctl(void)
 +{
-+	struct event event;
++	struct event event, leader;
 +
 +	/* Check for platform support for the test */
 +	SKIP_IF(platform_check_for_tests());
 +
-+	/* Skip for Generic compat PMU */
-+	SKIP_IF(check_for_generic_compat_pmu());
++	/* Init the events for the group contraint thresh control test */
++	event_init(&leader, EventCode_1);
++	FAIL_IF(event_open(&leader));
 +
-+	/*
-+	 * MMCRA Random Sampling Mode (SM) values: 0x5
-+	 * 0x9, 0xD, 0x19, 0x1D, 0x1A, 0x1E is reserved.
-+	 * Expected to fail when using these reserved values.
-+	 */
-+	event_init(&event, 0x50401e0);
-+	FAIL_IF(!event_open(&event));
++	event_init(&event, EventCode_2);
 +
-+	event_init(&event, 0x90401e0);
-+	FAIL_IF(!event_open(&event));
++	/* Expected to fail as sibling and leader event request different thresh_ctl bits */
++	FAIL_IF(!event_open_with_group(&event, leader.fd));
 +
-+	event_init(&event, 0xD0401e0);
-+	FAIL_IF(!event_open(&event));
++	event_close(&event);
 +
-+	event_init(&event, 0x190401e0);
-+	FAIL_IF(!event_open(&event));
++	/* Init the event for the group contraint thresh control test */
++	event_init(&event, EventCode_3);
 +
-+	event_init(&event, 0x1D0401e0);
-+	FAIL_IF(!event_open(&event));
++	 /* Expected to succeed as sibling and leader event request same thresh_ctl bits */
++	FAIL_IF(event_open_with_group(&event, leader.fd));
 +
-+	event_init(&event, 0x1A0401e0);
-+	FAIL_IF(!event_open(&event));
-+
-+	event_init(&event, 0x1E0401e0);
-+	FAIL_IF(!event_open(&event));
-+
-+	/*
-+	 * MMCRA Random Sampling Mode (SM) value 0x10
-+	 * is reserved in power10 and 0xC is reserved in
-+	 * power9.
-+	 */
-+	if (PVR_VER(mfspr(SPRN_PVR)) == POWER10) {
-+		event_init(&event, 0x100401e0);
-+		FAIL_IF(!event_open(&event));
-+	} else if (PVR_VER(mfspr(SPRN_PVR)) == POWER9) {
-+		event_init(&event, 0xC0401e0);
-+		FAIL_IF(!event_open(&event));
-+	}
++	event_close(&leader);
++	event_close(&event);
 +
 +	return 0;
 +}
 +
 +int main(void)
 +{
-+	return test_harness(reserved_bits_mmcra_sample_elig_mode,
-+			    "reserved_bits_mmcra_sample_elig_mode");
++	return test_harness(group_constraint_thresh_ctl, "group_constraint_thresh_ctl");
 +}
 -- 
 2.31.1
