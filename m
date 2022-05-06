@@ -4,53 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8839AC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 11:23:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F41BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 11:34:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kvp9L4bGLz3c7Q
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 21:23:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KvpPN4v3Kz3byG
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 21:34:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WWSZiZ6A;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=185.176.79.56;
- helo=frasgout.his.huawei.com; envelope-from=john.garry@huawei.com;
- receiver=<UNKNOWN>)
-X-Greylist: delayed 947 seconds by postgrey-1.36 at boromir;
- Fri, 06 May 2022 21:23:25 AEST
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com
- [185.176.79.56])
+ smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org;
+ envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=WWSZiZ6A; 
+ dkim-atps=neutral
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kvp8s3ZPZz2xnR
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 21:23:25 +1000 (AEST)
-Received: from fraeml735-chm.china.huawei.com (unknown [172.18.147.207])
- by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Kvnkp1P18z67DYv;
- Fri,  6 May 2022 19:04:18 +0800 (CST)
-Received: from lhreml724-chm.china.huawei.com (10.201.108.75) by
- fraeml735-chm.china.huawei.com (10.206.15.216) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Fri, 6 May 2022 13:07:29 +0200
-Received: from [10.47.86.119] (10.47.86.119) by lhreml724-chm.china.huawei.com
- (10.201.108.75) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Fri, 6 May
- 2022 12:07:27 +0100
-Message-ID: <7b8d7c1a-58c3-4ba9-a4f0-d0e051f3ffdc@huawei.com>
-Date: Fri, 6 May 2022 12:07:26 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KvpNc22dgz3bbk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 21:33:36 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id AD1FCB83591
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 11:33:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C453C385B1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 11:33:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1651836810;
+ bh=mPb8Q8Ok2oNk7WAjedaRk8DoRYKS47EIw5ypxOHVuLY=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=WWSZiZ6Av+Csqa/4o5LVEuZFS3DJz7bi5gem/5b+fSqMF/bztOWB7Uv0UN6PKf1iR
+ bIkeemtz1+eEPJSsxwshNfqV0neFGBEsrkdriS1XVQTfHCon4dlnzVssO79rvne83V
+ WEsdFGEqAfFTTia1860HjAAZDFTA2MG5xtW85SdHUVN4/302qVZ7mV7/1f5rOoeLF7
+ 3Ib23+tQfIklwvq/B0nmy0PEdT9DYV74TS5IrYAW2P7K9UHk4o/CsMa0XoA2T/Z/sM
+ FFRO2q3aPyOcC9hEPgHvpgVc8ahqS97LC9PLDio9DDKV6tmaNDNbmA/BFYZm1jQ8cK
+ dteb9336iWplA==
+Received: by mail-yb1-f172.google.com with SMTP id y2so12318755ybi.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 May 2022 04:33:30 -0700 (PDT)
+X-Gm-Message-State: AOAM531+1rzq+DJWfQMqnkfhBX97usIGJDbJ8+VR9A8rdvp08cniGSuV
+ 44aViIGG4ZJN5CU5YUsSaHcm7QeDJ9Icz50lyh0=
+X-Google-Smtp-Source: ABdhPJy5Vv8YTgA/+Yk25Xv8xMKQhcEw8LiqaQy/3bb0wg6KVBd/5y4hLeqVF7Zu5FslZtdBqz1tOtNTiterOIoDfDE=
+X-Received: by 2002:a25:d3c2:0:b0:645:74df:f43d with SMTP id
+ e185-20020a25d3c2000000b0064574dff43dmr1886331ybf.394.1651836798896; Fri, 06
+ May 2022 04:33:18 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.6.1
+References: <CAK8P3a0sJgMSpZB_Butx2gO0hapYZy-Dm_QH-hG5rOaq_ZgsXg@mail.gmail.com>
+ <20220505161028.GA492600@bhelgaas>
+ <CAK8P3a3fmPExr70+fVb564hZdGAuPtYa-QxgMMe5KLpnY_sTrQ@mail.gmail.com>
+ <alpine.DEB.2.21.2205061058540.52331@angie.orcam.me.uk>
+In-Reply-To: <alpine.DEB.2.21.2205061058540.52331@angie.orcam.me.uk>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Fri, 6 May 2022 13:33:02 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a0NzG=3tDLCdPj2=A__2r_+xiiUTW=WJCBNp29x_A63Og@mail.gmail.com>
+Message-ID: <CAK8P3a0NzG=3tDLCdPj2=A__2r_+xiiUTW=WJCBNp29x_A63Og@mail.gmail.com>
 Subject: Re: [RFC v2 01/39] Kconfig: introduce HAS_IOPORT option and select it
  as necessary
-To: Niklas Schnelle <schnelle@linux.ibm.com>, Bjorn Helgaas
- <helgaas@kernel.org>, Arnd Bergmann <arnd@kernel.org>
-References: <20220505195342.GA509942@bhelgaas>
- <157602011a72061dd31f92bd699e8c1f9a81c988.camel@linux.ibm.com>
-From: John Garry <john.garry@huawei.com>
-In-Reply-To: <157602011a72061dd31f92bd699e8c1f9a81c988.camel@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.47.86.119]
-X-ClientProxiedBy: lhreml726-chm.china.huawei.com (10.201.108.77) To
- lhreml724-chm.china.huawei.com (10.201.108.75)
-X-CFilter-Loop: Reflected
+To: "Maciej W. Rozycki" <macro@orcam.me.uk>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,59 +88,59 @@ Cc: Rich Felker <dalias@libc.org>,
  "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
  Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
  Geert Uytterhoeven <geert@linux-m68k.org>,
- linux-pci <linux-pci@vger.kernel.org>, Matt Turner <mattst88@gmail.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Arnd Bergmann <arnd@arndb.de>,
+ linux-pci <linux-pci@vger.kernel.org>, Bjorn Helgaas <helgaas@kernel.org>,
+ Matt Turner <mattst88@gmail.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Arnd Bergmann <arnd@arndb.de>, Niklas Schnelle <schnelle@linux.ibm.com>,
  "open list:M68K ARCHITECTURE" <linux-m68k@lists.linux-m68k.org>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Paul Walmsley <paul.walmsley@sifive.com>, Thomas
- Gleixner <tglx@linutronix.de>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
  "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>,
  Richard Henderson <rth@twiddle.net>, Michal Simek <monstr@monstr.eu>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
  "open list:PARISC ARCHITECTURE" <linux-parisc@vger.kernel.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, "open
- list:ALPHA PORT" <linux-alpha@vger.kernel.org>, Borislav
- Petkov <bp@alien8.de>, "open list:LINUX FOR POWERPC \(32-BIT AND
- 64-BIT\)" <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+ Palmer Dabbelt <palmer@dabbelt.com>,
+ "open list:ALPHA PORT" <linux-alpha@vger.kernel.org>,
+ Borislav Petkov <bp@alien8.de>,
+ "open list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 06/05/2022 10:38, Niklas Schnelle wrote:
-> Another argument I see is that as shown by POWER9 we might start to see
-> more platforms that just can't do I/O port access. E.g. I would also be
-> surprised if Apple's M1 has I/O port access. Sooner or later I expect
-> distributions on some platforms to only support such systems. For
-> example on ppc a server distribution might only support IBM POWER
-> without I/O port support before too long. Then having HAS_IOPORT allows
-> to get rid of drivers that won't work anyway.
-> 
-> There are also reports of probing a driver with I/O ports causing a
-> system crash on systems without I/O port support. For example in this
-> answer by John Garry (added so he may supply more information):
-> 
-> https://lore.kernel.org/lkml/db043b76-880d-5fad-69cf-96abcd9cd34f@huawei.com/
-> 
-> .
+On Fri, May 6, 2022 at 12:20 PM Maciej W. Rozycki <macro@orcam.me.uk> wrote:
+> On Thu, 5 May 2022, Arnd Bergmann wrote:
+>  I think I'm missing something here.  IIUC we're talking about a PCI/PCIe
+> bus used with s390 hardware, right?
+>
+>  (It has to be PCI/PCIe, because other than x86/IA-64 host buses there are
+> only PCI/PCIe and EISA/ISA buses out there that define I/O access cycles
+> and EISA/ISA have long been obsoleted except perhaps from some niche use.)
+>
+>  If this is PCI/PCIe indeed, then an I/O access is just a different bit
+> pattern put on the bus/in the TLP in the address phase.  So what is there
+> inherent to the s390 architecture that prevents that different bit pattern
+> from being used?
 
-That issue is that drivers like hwmon f71805f use inb/outb accessors 
-with hardcoded IO port addresses to probe the driver. On archs like 
-arm64 or powerpc - which do not natively support inb et al - this may 
-crash the system when no PCI IO space is mapped [0]. Indeed, when PCI IO 
-space is mapped, it is preferable these those drivers still would not 
-access these ports.
+The hardware design for PCI on s390 is very different from any other
+architecture, and more abstract. Rather than implementing MMIO register
+access as pointer dereference, this is a separate CPU instruction that
+takes a device/bar plus offset as arguments rather than a pointer, and
+Linux encodes this back into a fake __iomem token.
 
-So this series from Niklas could be used as a basis to solve that 
-problem, in that we could also introduce something like HARDCODED_IOPORT 
-[1] to stop those drivers being built at all for arm64.
+>  If anything, I could imagine the same limitation as with current POWER9
+> implementations, that is whatever glue is used to wire PCI/PCIe to the
+> rest of the system does not implement a way to use said bit pattern (which
+> has nothing to do with the POWER9 processor instruction set).
+>
+>  But that has nothing to do with the presence or absence of any specific
+> processor instructions.  It's just a limitation of bus glue.  So I guess
+> it's just that all PCI/PCIe glue logic implementations for s390 have such
+> a limitation, right?
 
-[0] 
-https://lore.kernel.org/linux-input/20210112055129.7840-1-song.bao.hua@hisilicon.com/T/#mf86445470160c44ac110e9d200b09245169dc5b6
-[1] 
-https://lore.kernel.org/lkml/CAK8P3a3HHeP+Gw_k2P7Qtig0OmErf0HN30G22+qHic_uZTh11Q@mail.gmail.com/
+There are separate instructions for PCI memory and config space, but
+no instructions for I/O space, or for non-PCI MMIO that it could be mapped
+into.
 
-Thanks,
-John
+       Arnd
