@@ -4,103 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02B6CC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 12:45:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B394C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 12:55:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kvqzv10TVz3cDL
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 22:45:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KvrBX6Rdbz3cDp
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 22:55:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=a+27yxjQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=maE6/GoV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=schnelle@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
+ helo=dfw.source.kernel.org; envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=a+27yxjQ; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=maE6/GoV; 
+ dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kvqz22Hdrz3bpy
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 22:45:01 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 246CMvCJ017710;
- Fri, 6 May 2022 12:43:06 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=message-id : subject :
- from : to : cc : date : in-reply-to : references : content-type :
- mime-version : content-transfer-encoding; s=pp1;
- bh=J7I3iBXxV8Z1vr0f0ee5d83OYFPlyGPJ3t86KJAK5og=;
- b=a+27yxjQlIlvY+o7rUFP54VO5tTHsDGp8dwAiXZ56/zPPArGGAJBRVhaoNpZHmJTYGCT
- 6o52YBfjV/6zZRmbR5my/gYLeeritzodIh1DLipssx8c6i6eFhYS3JKQD2EpPcy9rSjx
- 0QgSTdjX1qGn9nUNpkTs/C+rgb0ILKyerdVO9aofpxXsz5WH1mw1ghH6I01WNTuxKw3y
- fWGDgstZwQ8AOEB876CgShDaiMpBwNNbKFAETz4TWaiGXeCfsmvVf+viXrj+w2R+uOkV
- z6/V3+P7uT5o6M+bwnFe7JjDAXVhPXD/H/NDwqoqsOyLzCZSsYegNs/hWwH13yOGWgkH oA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3fw3mprd4c-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 06 May 2022 12:43:06 +0000
-Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
- by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 246CgdYg005869;
- Fri, 6 May 2022 12:43:05 GMT
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3fw3mprd3s-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 06 May 2022 12:43:05 +0000
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 246CblB5028764;
- Fri, 6 May 2022 12:43:03 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma02fra.de.ibm.com with ESMTP id 3fuyn7a1ck-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 06 May 2022 12:43:03 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 246Ch1jP49873194
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 6 May 2022 12:43:01 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DBA31A4053;
- Fri,  6 May 2022 12:43:00 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 14F5CA4040;
- Fri,  6 May 2022 12:42:59 +0000 (GMT)
-Received: from sig-9-145-46-59.uk.ibm.com (unknown [9.145.46.59])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri,  6 May 2022 12:42:59 +0000 (GMT)
-Message-ID: <48b81eb280d949e9321eb304d0ee36abb0075709.camel@linux.ibm.com>
-Subject: Re: [RFC v2 01/39] Kconfig: introduce HAS_IOPORT option and select
- it as necessary
-From: Niklas Schnelle <schnelle@linux.ibm.com>
-To: Arnd Bergmann <arnd@kernel.org>, "Maciej W. Rozycki" <macro@orcam.me.uk>
-Date: Fri, 06 May 2022 14:42:58 +0200
-In-Reply-To: <CAK8P3a0NzG=3tDLCdPj2=A__2r_+xiiUTW=WJCBNp29x_A63Og@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kvr9p63Hnz2xgY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 22:54:22 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 6030762039
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 12:54:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F8C9C385B3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2022 12:54:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1651841658;
+ bh=YEsptMS5NZ5sU5R8sBoFFmT8HhhJmSMOqqqMD1wS+1Y=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=maE6/GoVFXRZNf7dfZPTVoMAWc6wGTVVX44qiwcwuwtsWpQr1FqM/jmMrvvkc1w0m
+ /fdrsFTDKxwRvNHNK/1DjgM5J06h70STrSIQAvZkM2OfQAHM0wNC1NP2CMvk75VZVN
+ fLTHzZWHgk6Ekdl8uTqjvomjFVgaGddUTcd5lXXPSGhuZCW4nb8nI7JlnC3De74LHw
+ WbtQuRK6IFfQaU8R1z+FNZAwJdGy2thD1f0VJD8T7C7xV2945L8kQS1Sga76wR3MHB
+ DhKSaRYVUK6746o5RiRAERN5HNbHvcEPu7PKSGLVz3w/nrBuDtObHLXaQUIxo+NIPv
+ Ke+TQ+7Lj2NdQ==
+Received: by mail-ot1-f48.google.com with SMTP id
+ i25-20020a9d6259000000b00605df9afea7so4861087otk.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 May 2022 05:54:18 -0700 (PDT)
+X-Gm-Message-State: AOAM530mDZLjWrx2+GYn2SWDdjRRi8/hXYraTHMivPBK+k7WJtTB5/6z
+ LfBLqLoN8chKGZWpG3ti6UsGbxQ8x/vg6OkwiTI=
+X-Google-Smtp-Source: ABdhPJxL4gNLQQDFM+BNVTidCF+FJnD2lH7XZl8gBNCvdOYlAoSJ9hsbhzdM2mtB2NzLIM7z6wH6YyxJ1/r4G1eT6xU=
+X-Received: by 2002:a81:9213:0:b0:2f6:eaae:d22f with SMTP id
+ j19-20020a819213000000b002f6eaaed22fmr2535695ywg.249.1651841647017; Fri, 06
+ May 2022 05:54:07 -0700 (PDT)
+MIME-Version: 1.0
 References: <CAK8P3a0sJgMSpZB_Butx2gO0hapYZy-Dm_QH-hG5rOaq_ZgsXg@mail.gmail.com>
  <20220505161028.GA492600@bhelgaas>
  <CAK8P3a3fmPExr70+fVb564hZdGAuPtYa-QxgMMe5KLpnY_sTrQ@mail.gmail.com>
  <alpine.DEB.2.21.2205061058540.52331@angie.orcam.me.uk>
  <CAK8P3a0NzG=3tDLCdPj2=A__2r_+xiiUTW=WJCBNp29x_A63Og@mail.gmail.com>
+ <alpine.DEB.2.21.2205061314110.52331@angie.orcam.me.uk>
+In-Reply-To: <alpine.DEB.2.21.2205061314110.52331@angie.orcam.me.uk>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Fri, 6 May 2022 14:53:49 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a0EMK0gHOmb-jvtfVLb1dun72kYUMKpb11T_GgXiuR9Mw@mail.gmail.com>
+Message-ID: <CAK8P3a0EMK0gHOmb-jvtfVLb1dun72kYUMKpb11T_GgXiuR9Mw@mail.gmail.com>
+Subject: Re: [RFC v2 01/39] Kconfig: introduce HAS_IOPORT option and select it
+ as necessary
+To: "Maciej W. Rozycki" <macro@orcam.me.uk>
 Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5 (3.28.5-18.el8) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: gOwZPZ2fjiFdDkZpJhuCBJIjnnIu-PuZ
-X-Proofpoint-ORIG-GUID: iES7GOmcIZaSIEyxg01Yx8qsHLACB5lz
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
- definitions=2022-05-06_04,2022-05-06_01,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- spamscore=0 bulkscore=0 clxscore=1015 phishscore=0 mlxlogscore=999
- impostorscore=0 mlxscore=0 suspectscore=0 adultscore=0 malwarescore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2202240000 definitions=main-2205060070
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -128,7 +94,7 @@ Cc: Rich Felker <dalias@libc.org>,
  Geert Uytterhoeven <geert@linux-m68k.org>,
  linux-pci <linux-pci@vger.kernel.org>, Bjorn Helgaas <helgaas@kernel.org>,
  Matt Turner <mattst88@gmail.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Arnd Bergmann <arnd@arndb.de>,
+ Arnd Bergmann <arnd@arndb.de>, Niklas Schnelle <schnelle@linux.ibm.com>,
  "open list:M68K ARCHITECTURE" <linux-m68k@lists.linux-m68k.org>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
  Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
@@ -138,75 +104,41 @@ Cc: Rich Felker <dalias@libc.org>,
  "open list:PARISC ARCHITECTURE" <linux-parisc@vger.kernel.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, "open
- list:ALPHA PORT" <linux-alpha@vger.kernel.org>, Borislav Petkov <bp@alien8.de>,
- "open list:LINUX FOR POWERPC \(32-BIT AND
- 64-BIT\)" <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+ Palmer Dabbelt <palmer@dabbelt.com>,
+ "open list:ALPHA PORT" <linux-alpha@vger.kernel.org>,
+ Borislav Petkov <bp@alien8.de>,
+ "open list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2022-05-06 at 13:33 +0200, Arnd Bergmann wrote:
-> On Fri, May 6, 2022 at 12:20 PM Maciej W. Rozycki <macro@orcam.me.uk> wrote:
-> > On Thu, 5 May 2022, Arnd Bergmann wrote:
-> >  I think I'm missing something here.  IIUC we're talking about a PCI/PCIe
-> > bus used with s390 hardware, right?
-> > 
-> >  (It has to be PCI/PCIe, because other than x86/IA-64 host buses there are
-> > only PCI/PCIe and EISA/ISA buses out there that define I/O access cycles
-> > and EISA/ISA have long been obsoleted except perhaps from some niche use.)
-> > 
-> >  If this is PCI/PCIe indeed, then an I/O access is just a different bit
-> > pattern put on the bus/in the TLP in the address phase.  So what is there
-> > inherent to the s390 architecture that prevents that different bit pattern
-> > from being used?
-> 
-> The hardware design for PCI on s390 is very different from any other
-> architecture, and more abstract. Rather than implementing MMIO register
-> access as pointer dereference, this is a separate CPU instruction that
-> takes a device/bar plus offset as arguments rather than a pointer, and
-> Linux encodes this back into a fake __iomem token.
+On Fri, May 6, 2022 at 2:27 PM Maciej W. Rozycki <macro@orcam.me.uk> wrote:
+>
+> On Fri, 6 May 2022, Arnd Bergmann wrote:
+>
+> > >  If this is PCI/PCIe indeed, then an I/O access is just a different bit
+> > > pattern put on the bus/in the TLP in the address phase.  So what is there
+> > > inherent to the s390 architecture that prevents that different bit pattern
+> > > from being used?
+> >
+> > The hardware design for PCI on s390 is very different from any other
+> > architecture, and more abstract. Rather than implementing MMIO register
+> > access as pointer dereference, this is a separate CPU instruction that
+> > takes a device/bar plus offset as arguments rather than a pointer, and
+> > Linux encodes this back into a fake __iomem token.
+>
+>  OK, that seems to me like a reasonable and quite a clean design (on the
+> hardware side).
+>
+>  So what happens if the instruction is given an I/O rather than memory BAR
+> as the relevant argument?  Is the address space indicator bit (bit #0)
+> simply ignored or what?
 
-Correct, we have since gained new PCI load/store instructions that
-actually do take a virtual address that gets address translated to a
-"physical address" for the PCI BARs. The "physical address" we get from
-the platform (again via special instructions). I put "physical address"
-in quotes because while they are conceptually physical addresses and
-they are translated to by MMU translation tables, accessing their
-virtual mapping with any instruction other then the special PCI
-load/store instructions will cause addressing exceptions. So we still
-don't have real MMIO but something that looks a lot more like MMIO than
-we used to.
+Not sure. My best guess is that it would actually work as you'd expect,
+but is deliberately left out of the architecture specification so they don't
+have to to validate the correctness.  Note that only a small number of
+PCIe cards are actually supported by IBM, and I think the firmware
+only passes devices to the OS if they are whitelisted.
 
-> 
-> >  If anything, I could imagine the same limitation as with current POWER9
-> > implementations, that is whatever glue is used to wire PCI/PCIe to the
-> > rest of the system does not implement a way to use said bit pattern (which
-> > has nothing to do with the POWER9 processor instruction set).
-> > 
-> >  But that has nothing to do with the presence or absence of any specific
-> > processor instructions.  It's just a limitation of bus glue.  So I guess
-> > it's just that all PCI/PCIe glue logic implementations for s390 have such
-> > a limitation, right?
-> 
-> There are separate instructions for PCI memory and config space, but
-> no instructions for I/O space, or for non-PCI MMIO that it could be mapped
-> into.
-> 
->        Arnd
-
-The config space is still accessed with the old style PCI load/store
-instructions via a special extra BAR.
-
-But yes overall on s390x we can only access PCI(e) devices via special
-instructions not via real MMIO and also the OS has no direct access to
-the registers of the PHB which are only accessible to firmware. 
-
-Maybe as a bit of further background it's also important to note that
-on s390x all Operating Systems run inside a hypervisor. On the lowest
-level any OS can run this is a non-paging machine level hypervisor. For
-PCI that means that we always have a kind of pass-through access though
-without paging and hardware support for the memory partitioning this is
-of course relatively simple.
-
+        Arnd
