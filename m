@@ -4,60 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB488C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 21:41:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F993C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 May 2022 21:52:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kw3tT29wqz3c9p
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 07:41:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kw46q6hVJz3c88
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 07:52:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=0gf5bTX4;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=EPFGmOCZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=igj0qkwu;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=JhebiFX5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
+ smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
  helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=0gf5bTX4; 
+ header.s=2020 header.b=igj0qkwu; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=EPFGmOCZ; 
+ header.a=ed25519-sha256 header.s=2020e header.b=JhebiFX5; 
  dkim-atps=neutral
-Received: from galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
+X-Greylist: delayed 2369 seconds by postgrey-1.36 at boromir;
+ Sat, 07 May 2022 07:51:56 AEST
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kw3sn1nk3z3byG
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 07:41:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kw4643grqz3bkb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 07:51:56 +1000 (AEST)
 From: Thomas Gleixner <tglx@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1651873274;
+ s=2020; t=1651873913;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  in-reply-to:in-reply-to:references:references;
- bh=WEBD3i+RCMCV6ItWgJTNpoS5Qp50+5gg+1MUzDbcFWU=;
- b=0gf5bTX4NIQykq3iPPRZunSuSvrZWoWSo2b1NIiTagpKSMaW3qdtrw7UmeRdrKArDQE/+S
- Zy8ijWhMlujrmAIZPJRjxCHh90monbTV12KDhye6vQM/3CAQqw8JRQAdzQBwiG/t4sAVLj
- VGlEJ6vxHVjRXIiYcdNdyHl9i3CHV9mgzff5fRJV7Md00WfSlsUarMqfVzZqx0g0/sFCEG
- xHPKgvCjYezzLHm0ZxrVkOJkWlQ9+ITm9Ner24gSmKr1U37+vm+cp040VQJzXjfoPeTXFE
- 2Z1+E0/StooqcZKBaNaiZO9gcjhFy0aSijMrtLORg57UfwyNDwEREhdL85JJhg==
+ bh=kJ3McpVzRFsgMBX23wgT/+qwHu2rZPiW0v6oIUJCIkI=;
+ b=igj0qkwuwc7TJty88qJFZzgeFNtRFh7UFPJIoYtA35jxy2m3y6o5O4BdduJ2eTQP9yoEOj
+ Y/Pma7uZ5nWvIQhbGPHLJmY6SG3i1CJVChRqzHb1xg1wCqo9z7wxEHAXtt5f9+bWp12aKl
+ yxCDDHDVcTytIFMWLuivfqlaAY9rBazDQQyIjF1A+y1F0wqODasPHnEJyRNpLJt15J6YsH
+ E5X1+fUKoagpdADMaiiKzhZbUA2CMwr6sDFvgkwLGqIpuqPfaj+XgnRcnoX0GKhhe7+t9y
+ p/OQVpvdQapJpV5hYP5MRwR5/f2imVDr8Suxn6wvt2CDlZBIK6rpU9RNXp1y6w==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1651873274;
+ s=2020e; t=1651873913;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  in-reply-to:in-reply-to:references:references;
- bh=WEBD3i+RCMCV6ItWgJTNpoS5Qp50+5gg+1MUzDbcFWU=;
- b=EPFGmOCZQqvpMfXX+kTEn3pMBEYvOWTDsHxx4zzYwsn3Efr3jSRiPe+y2939MMnRZZC56U
- K4PVioMmImoIJ3Dw==
+ bh=kJ3McpVzRFsgMBX23wgT/+qwHu2rZPiW0v6oIUJCIkI=;
+ b=JhebiFX5xqgDI1pfgNQ3AdRq6c3Eu2eESoBA4srTY5Ncp8q55tWwCzdaaNdIoRN0NdxHUo
+ pfYq18JFAjczX9Dg==
 To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>, x86@kernel.org
 Subject: Re: [PATCH v6 15/29] x86/hpet: Add helper function
  hpet_set_comparator_periodic()
-In-Reply-To: <20220506000008.30892-16-ricardo.neri-calderon@linux.intel.com>
+In-Reply-To: <87mtfufifa.ffs@tglx>
 References: <20220506000008.30892-1-ricardo.neri-calderon@linux.intel.com>
  <20220506000008.30892-16-ricardo.neri-calderon@linux.intel.com>
-Date: Fri, 06 May 2022 23:41:13 +0200
-Message-ID: <87mtfufifa.ffs@tglx>
+ <87mtfufifa.ffs@tglx>
+Date: Fri, 06 May 2022 23:51:52 +0200
+Message-ID: <87ilqifhxj.ffs@tglx>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -85,25 +87,38 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 05 2022 at 16:59, Ricardo Neri wrote:
-> Programming an HPET channel as periodic requires setting the
-> HPET_TN_SETVAL bit in the channel configuration. Plus, the comparator
-> register must be written twice (once for the comparator value and once for
-> the periodic value). Since this programming might be needed in several
-> places (e.g., the HPET clocksource and the HPET-based hardlockup detector),
-> add a helper function for this purpose.
+On Fri, May 06 2022 at 23:41, Thomas Gleixner wrote:
+> On Thu, May 05 2022 at 16:59, Ricardo Neri wrote:
+>> Programming an HPET channel as periodic requires setting the
+>> HPET_TN_SETVAL bit in the channel configuration. Plus, the comparator
+>> register must be written twice (once for the comparator value and once for
+>> the periodic value). Since this programming might be needed in several
+>> places (e.g., the HPET clocksource and the HPET-based hardlockup detector),
+>> add a helper function for this purpose.
+>>
+>> A helper function hpet_set_comparator_oneshot() could also be implemented.
+>> However, such function would only program the comparator register and the
+>> function would be quite small. Hence, it is better to not bloat the code
+>> with such an obvious function.
 >
-> A helper function hpet_set_comparator_oneshot() could also be implemented.
-> However, such function would only program the comparator register and the
-> function would be quite small. Hence, it is better to not bloat the code
-> with such an obvious function.
+> This word salad above does not provide a single reason why the periodic
+> programming function is required and better suited for the NMI watchdog
+> case and then goes on and blurbs about why a function which is not
+> required is not implemented. The argument about not bloating the code
+> with an "obvious???" function which is quite small is slightly beyond my
+> comprehension level.
 
-This word salad above does not provide a single reason why the periodic
-programming function is required and better suited for the NMI watchdog
-case and then goes on and blurbs about why a function which is not
-required is not implemented. The argument about not bloating the code
-with an "obvious???" function which is quite small is slightly beyond my
-comprehension level.
+What's even more uncomprehensible is that the patch which actually sets
+up that NMI watchdog cruft has:
+
+> +       if (hc->boot_cfg & HPET_TN_PERIODIC_CAP)
+> +               hld_data->has_periodic = true;
+
+So how the heck does that work with a HPET which does not support
+periodic mode?
+
+That watchdog muck will still happily invoke that set periodic function
+in the hope that it works by chance?
 
 Thanks,
 
