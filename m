@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 805E1C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:49:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DFB2C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:50:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ2W0Vq6z3f53
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:49:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ2x68Fcz3f8V
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:50:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,53 +16,52 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KwHzs4252z3cDM
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:47:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KwHzw6DyVz3cF6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:47:24 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KwHzL0v0Rz9sVV;
- Sat,  7 May 2022 08:46:54 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4KwHzM1fS7z9sW1;
+ Sat,  7 May 2022 08:46:55 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Bgk36uhs50r9; Sat,  7 May 2022 08:46:54 +0200 (CEST)
+ with ESMTP id 3eZ30I4hs7Sl; Sat,  7 May 2022 08:46:55 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzD5XtCz9sW1;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzD604Zz9sW3;
  Sat,  7 May 2022 08:46:48 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A6A908B763;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B57EE8B76E;
  Sat,  7 May 2022 08:46:48 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id oKzJqNiptHk8; Sat,  7 May 2022 08:46:48 +0200 (CEST)
+ with ESMTP id xp8lsz4OR5vd; Sat,  7 May 2022 08:46:48 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 009618B794;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F3A488B792;
  Sat,  7 May 2022 08:46:47 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476keLe1320522
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476kdw91320489
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sat, 7 May 2022 08:46:40 +0200
+ Sat, 7 May 2022 08:46:39 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476ke1S1320521;
- Sat, 7 May 2022 08:46:40 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476kd181320488;
+ Sat, 7 May 2022 08:46:39 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH v2 13/25] powerpc/ftrace: Use CONFIG_FUNCTION_TRACER instead
- of CONFIG_DYNAMIC_FTRACE
-Date: Sat,  7 May 2022 08:46:15 +0200
-Message-Id: <628d357503eb90b4a034f99b7df516caaff4d279.1651905939.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 05/25] powerpc/code-patching: Inline create_branch()
+Date: Sat,  7 May 2022 08:46:07 +0200
+Message-Id: <69851cc9a7bf8f03d025e6d29e165f2d0bd3bb6e.1651905939.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 References: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905981; l=2342; s=20211009;
- h=from:subject:message-id; bh=bji15qs2JPAG4suNrV+7J234iPVSFPzCbSxwzfrHc3k=;
- b=wwXFZK6JU/PU5HdoeS+/J0tlHxOnGflJSjYRwm5Xf9ftonfTUVpJjajiu8bIGigt4fk8DE76Hky2
- EyjLKbDGA90iTTh+t/GGhVWk+6mDVeJ4CkFUbmBmFRf0EhVpN06T
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905980; l=2728; s=20211009;
+ h=from:subject:message-id; bh=d2swIJrMmUDKV+uH13vJ0j/DNa2ajgVmApWQwP8siB0=;
+ b=cAVkegxnUg/vbrAo4viSfRjnGlY+RVxxca1/1xW777/8jULdJni865HTnQyzLxFuNcPJcNmSIR86
+ KqsTTcVCDILOQo4X1iOnzGNULprSZT9DKKeo9zqEO06BKCvS4AuL
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,67 +81,86 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since commit 0c0c52306f47 ("powerpc: Only support DYNAMIC_FTRACE not
-static"), CONFIG_DYNAMIC_FTRACE is always selected when
-CONFIG_FUNCTION_TRACER is selected.
+create_branch() is a good candidate for inlining because:
+- Flags can be folded in.
+- Range tests are likely to be already done.
 
-To avoid confusion and have the reader wonder what's happen when
-CONFIG_FUNCTION_TRACER is selected and CONFIG_DYNAMIC_FTRACE is not,
-use CONFIG_FUNCTION_TRACER in ifdefs instead of CONFIG_DYNAMIC_FTRACE.
+Hence reducing the create_branch() to only a set of instructions.
 
-As CONFIG_FUNCTION_GRAPH_TRACER depends on CONFIG_FUNCTION_TRACER,
-ftrace.o doesn't need to appear for both symbols in Makefile.
+So inline it.
 
-Then as ftrace.o is built only when CONFIG_FUNCTION_TRACER is selected
-ifdef CONFIG_FUNCTION_TRACER is not needed in ftrace.c, and since it
-implies CONFIG_DYNAMIC_FTRACE, CONFIG_DYNAMIC_FTRACE is not needed
-in ftrace.c
+It improves ftrace activation by 10%.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v2: Limit the change to the content of arch/powerpc/kernel/trace as suggested by Naveen.
----
- arch/powerpc/kernel/trace/Makefile | 4 +---
- arch/powerpc/kernel/trace/ftrace.c | 4 ----
- 2 files changed, 1 insertion(+), 7 deletions(-)
+ arch/powerpc/include/asm/code-patching.h | 22 ++++++++++++++++++++--
+ arch/powerpc/lib/code-patching.c         | 20 --------------------
+ 2 files changed, 20 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/kernel/trace/Makefile b/arch/powerpc/kernel/trace/Makefile
-index fc32ec30b297..af8527538fe4 100644
---- a/arch/powerpc/kernel/trace/Makefile
-+++ b/arch/powerpc/kernel/trace/Makefile
-@@ -14,9 +14,7 @@ obj64-$(CONFIG_FUNCTION_TRACER)		+= ftrace_mprofile.o
- else
- obj64-$(CONFIG_FUNCTION_TRACER)		+= ftrace_64_pg.o
- endif
--obj-$(CONFIG_FUNCTION_TRACER)		+= ftrace_low.o
--obj-$(CONFIG_DYNAMIC_FTRACE)		+= ftrace.o
--obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
-+obj-$(CONFIG_FUNCTION_TRACER)		+= ftrace_low.o ftrace.o
- obj-$(CONFIG_TRACING)			+= trace_clock.o
- 
- obj-$(CONFIG_PPC64)			+= $(obj64-y)
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 531da4d93c58..f89bcaa5f0fc 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -28,9 +28,6 @@
- #include <asm/syscall.h>
- #include <asm/inst.h>
- 
--
--#ifdef CONFIG_DYNAMIC_FTRACE
--
- /*
-  * We generally only have a single long_branch tramp and at most 2 or 3 plt
-  * tramps generated. But, we don't use the plt tramps currently. We also allot
-@@ -783,7 +780,6 @@ int __init ftrace_dyn_arch_init(void)
- 	return 0;
+diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+index e7c5df50cb4e..4260e89f62b1 100644
+--- a/arch/powerpc/include/asm/code-patching.h
++++ b/arch/powerpc/include/asm/code-patching.h
+@@ -49,8 +49,26 @@ static inline bool is_offset_in_cond_branch_range(long offset)
+ 	return offset >= -0x8000 && offset <= 0x7fff && !(offset & 0x3);
  }
- #endif
--#endif /* CONFIG_DYNAMIC_FTRACE */
  
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+-int create_branch(ppc_inst_t *instr, const u32 *addr,
+-		  unsigned long target, int flags);
++static inline int create_branch(ppc_inst_t *instr, const u32 *addr,
++				unsigned long target, int flags)
++{
++	long offset;
++
++	*instr = ppc_inst(0);
++	offset = target;
++	if (! (flags & BRANCH_ABSOLUTE))
++		offset = offset - (unsigned long)addr;
++
++	/* Check we can represent the target in the instruction format */
++	if (!is_offset_in_branch_range(offset))
++		return 1;
++
++	/* Mask out the flags and target, so they don't step on each other. */
++	*instr = ppc_inst(0x48000000 | (flags & 0x3) | (offset & 0x03FFFFFC));
++
++	return 0;
++}
++
+ int create_cond_branch(ppc_inst_t *instr, const u32 *addr,
+ 		       unsigned long target, int flags);
+ int patch_branch(u32 *addr, unsigned long target, int flags);
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 58262c7e447c..7adbdb05fee7 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -230,26 +230,6 @@ bool is_conditional_branch(ppc_inst_t instr)
+ }
+ NOKPROBE_SYMBOL(is_conditional_branch);
  
+-int create_branch(ppc_inst_t *instr, const u32 *addr,
+-		  unsigned long target, int flags)
+-{
+-	long offset;
+-
+-	*instr = ppc_inst(0);
+-	offset = target;
+-	if (! (flags & BRANCH_ABSOLUTE))
+-		offset = offset - (unsigned long)addr;
+-
+-	/* Check we can represent the target in the instruction format */
+-	if (!is_offset_in_branch_range(offset))
+-		return 1;
+-
+-	/* Mask out the flags and target, so they don't step on each other. */
+-	*instr = ppc_inst(0x48000000 | (flags & 0x3) | (offset & 0x03FFFFFC));
+-
+-	return 0;
+-}
+-
+ int create_cond_branch(ppc_inst_t *instr, const u32 *addr,
+ 		       unsigned long target, int flags)
+ {
 -- 
 2.35.1
 
