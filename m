@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B817C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:49:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 805E1C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:49:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ245MZVz3f0t
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:49:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ2W0Vq6z3f53
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:49:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,51 +16,53 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KwHzm62vNz3cJC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:47:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KwHzs4252z3cDM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:47:21 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KwHzK0ckqz9sVq;
- Sat,  7 May 2022 08:46:53 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4KwHzL0v0Rz9sVV;
+ Sat,  7 May 2022 08:46:54 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id kQCu1Il80dM8; Sat,  7 May 2022 08:46:53 +0200 (CEST)
+ with ESMTP id Bgk36uhs50r9; Sat,  7 May 2022 08:46:54 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzD5hp5z9sVV;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzD5XtCz9sW1;
  Sat,  7 May 2022 08:46:48 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A977B8B770;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A6A908B763;
  Sat,  7 May 2022 08:46:48 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id HMc5DPu-VFf8; Sat,  7 May 2022 08:46:48 +0200 (CEST)
+ with ESMTP id oKzJqNiptHk8; Sat,  7 May 2022 08:46:48 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E789B8B76E;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 009618B794;
  Sat,  7 May 2022 08:46:47 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476kc2W1320469
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476keLe1320522
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sat, 7 May 2022 08:46:38 +0200
+ Sat, 7 May 2022 08:46:40 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476kZLE1320456;
- Sat, 7 May 2022 08:46:35 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476ke1S1320521;
+ Sat, 7 May 2022 08:46:40 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH v2 00/25] powerpc: ftrace optimisation and cleanup and more
- [v2]
-Date: Sat,  7 May 2022 08:46:02 +0200
-Message-Id: <cover.1651905939.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 13/25] powerpc/ftrace: Use CONFIG_FUNCTION_TRACER instead
+ of CONFIG_DYNAMIC_FTRACE
+Date: Sat,  7 May 2022 08:46:15 +0200
+Message-Id: <628d357503eb90b4a034f99b7df516caaff4d279.1651905939.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
+In-Reply-To: <cover.1651905939.git.christophe.leroy@csgroup.eu>
+References: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905980; l=3734; s=20211009;
- h=from:subject:message-id; bh=sB47Li5cspS+Q/H8GVp437MSeqxST6ZTmmFQ7liQjVo=;
- b=+VMsngPikIwGNNaEsxH4AQJ2KbgCYHnSNkKjWOcg2MTB3VZJmKdqbiSAlgpgxIkiqekEeM3t8G/g
- LnafOpzMA8g2jyJO1UZvDZx4OgECooe7zv4fVgGMmRqBONaUVHWg
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905981; l=2342; s=20211009;
+ h=from:subject:message-id; bh=bji15qs2JPAG4suNrV+7J234iPVSFPzCbSxwzfrHc3k=;
+ b=wwXFZK6JU/PU5HdoeS+/J0tlHxOnGflJSjYRwm5Xf9ftonfTUVpJjajiu8bIGigt4fk8DE76Hky2
+ EyjLKbDGA90iTTh+t/GGhVWk+6mDVeJ4CkFUbmBmFRf0EhVpN06T
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -80,81 +82,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series provides optimisation and cleanup of ftrace on powerpc.
+Since commit 0c0c52306f47 ("powerpc: Only support DYNAMIC_FTRACE not
+static"), CONFIG_DYNAMIC_FTRACE is always selected when
+CONFIG_FUNCTION_TRACER is selected.
 
-With this series ftrace activation is about 20% faster on an 8xx.
+To avoid confusion and have the reader wonder what's happen when
+CONFIG_FUNCTION_TRACER is selected and CONFIG_DYNAMIC_FTRACE is not,
+use CONFIG_FUNCTION_TRACER in ifdefs instead of CONFIG_DYNAMIC_FTRACE.
 
-At the end of the series come additional cleanups around ppc-opcode,
-that would likely conflict with this series if posted separately.
+As CONFIG_FUNCTION_GRAPH_TRACER depends on CONFIG_FUNCTION_TRACER,
+ftrace.o doesn't need to appear for both symbols in Makefile.
 
-Main changes since v1 (details in after each individual patch description):
-- Added 3 patches (8, 9, 10) that convert PPC64_ELF_ABI_v{1/2} macros by CONFIG_PPC64_ELF_ABI_V{1/2}
-- Taken comments from Naveen
+Then as ftrace.o is built only when CONFIG_FUNCTION_TRACER is selected
+ifdef CONFIG_FUNCTION_TRACER is not needed in ftrace.c, and since it
+implies CONFIG_DYNAMIC_FTRACE, CONFIG_DYNAMIC_FTRACE is not needed
+in ftrace.c
 
-Christophe Leroy (25):
-  powerpc/ftrace: Refactor prepare_ftrace_return()
-  powerpc/ftrace: Remove redundant create_branch() calls
-  powerpc/code-patching: Inline is_offset_in_{cond}_branch_range()
-  powerpc/ftrace: Use is_offset_in_branch_range()
-  powerpc/code-patching: Inline create_branch()
-  powerpc/ftrace: Inline ftrace_modify_code()
-  powerpc/ftrace: Use patch_instruction() return directly
-  powerpc: Add CONFIG_PPC64_ELF_ABI_V1 and CONFIG_PPC64_ELF_ABI_V2
-  powerpc: Replace PPC64_ELF_ABI_v{1/2} by CONFIG_PPC64_ELF_ABI_V{1/2}
-  powerpc: Finalise cleanup around ABI use
-  powerpc/ftrace: Make __ftrace_make_{nop/call}() common to PPC32 and
-    PPC64
-  powerpc/ftrace: Don't include ftrace.o for CONFIG_FTRACE_SYSCALLS
-  powerpc/ftrace: Use CONFIG_FUNCTION_TRACER instead of
-    CONFIG_DYNAMIC_FTRACE
-  powerpc/ftrace: Remove ftrace_plt_tramps[]
-  powerpc/ftrace: Use BRANCH_SET_LINK instead of value 1
-  powerpc/ftrace: Use PPC_RAW_xxx() macros instead of opencoding.
-  powerpc/ftrace: Use size macro instead of opencoding
-  powerpc/ftrace: Simplify expected_nop_sequence()
-  powerpc/ftrace: Minimise number of #ifdefs
-  powerpc/inst: Add __copy_inst_from_kernel_nofault()
-  powerpc/ftrace: Don't use copy_from_kernel_nofault() in
-    module_trampoline_target()
-  powerpc/inst: Remove PPC_INST_BRANCH
-  powerpc/modules: Use PPC_LI macros instead of opencoding
-  powerpc/inst: Remove PPC_INST_BL
-  powerpc/opcodes: Remove unused PPC_INST_XXX macros
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v2: Limit the change to the content of arch/powerpc/kernel/trace as suggested by Naveen.
+---
+ arch/powerpc/kernel/trace/Makefile | 4 +---
+ arch/powerpc/kernel/trace/ftrace.c | 4 ----
+ 2 files changed, 1 insertion(+), 7 deletions(-)
 
- arch/powerpc/Kconfig                     |   2 +-
- arch/powerpc/Makefile                    |  12 +-
- arch/powerpc/boot/Makefile               |   2 +
- arch/powerpc/include/asm/code-patching.h |  65 +++-
- arch/powerpc/include/asm/ftrace.h        |   4 +-
- arch/powerpc/include/asm/inst.h          |  13 +-
- arch/powerpc/include/asm/linkage.h       |   2 +-
- arch/powerpc/include/asm/module.h        |   2 -
- arch/powerpc/include/asm/ppc-opcode.h    |  22 +-
- arch/powerpc/include/asm/ppc_asm.h       |   4 +-
- arch/powerpc/include/asm/ptrace.h        |   2 +-
- arch/powerpc/include/asm/sections.h      |  24 +-
- arch/powerpc/include/asm/types.h         |   8 -
- arch/powerpc/kernel/fadump.c             |  13 +-
- arch/powerpc/kernel/head_64.S            |   2 +-
- arch/powerpc/kernel/interrupt_64.S       |   2 +-
- arch/powerpc/kernel/kprobes.c            |   6 +-
- arch/powerpc/kernel/misc_64.S            |   2 +-
- arch/powerpc/kernel/module.c             |   4 +-
- arch/powerpc/kernel/module_32.c          |  23 +-
- arch/powerpc/kernel/module_64.c          |   7 +-
- arch/powerpc/kernel/ptrace/ptrace.c      |   6 -
- arch/powerpc/kernel/trace/Makefile       |   5 +-
- arch/powerpc/kernel/trace/ftrace.c       | 375 +++++++----------------
- arch/powerpc/kvm/book3s_interrupts.S     |   2 +-
- arch/powerpc/kvm/book3s_rmhandlers.S     |   2 +-
- arch/powerpc/lib/code-patching.c         |  49 +--
- arch/powerpc/lib/feature-fixups.c        |   2 +-
- arch/powerpc/net/bpf_jit.h               |   4 +-
- arch/powerpc/net/bpf_jit_comp.c          |   2 +-
- arch/powerpc/net/bpf_jit_comp64.c        |   4 +-
- arch/powerpc/platforms/Kconfig.cputype   |   6 +
- 32 files changed, 262 insertions(+), 416 deletions(-)
-
+diff --git a/arch/powerpc/kernel/trace/Makefile b/arch/powerpc/kernel/trace/Makefile
+index fc32ec30b297..af8527538fe4 100644
+--- a/arch/powerpc/kernel/trace/Makefile
++++ b/arch/powerpc/kernel/trace/Makefile
+@@ -14,9 +14,7 @@ obj64-$(CONFIG_FUNCTION_TRACER)		+= ftrace_mprofile.o
+ else
+ obj64-$(CONFIG_FUNCTION_TRACER)		+= ftrace_64_pg.o
+ endif
+-obj-$(CONFIG_FUNCTION_TRACER)		+= ftrace_low.o
+-obj-$(CONFIG_DYNAMIC_FTRACE)		+= ftrace.o
+-obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
++obj-$(CONFIG_FUNCTION_TRACER)		+= ftrace_low.o ftrace.o
+ obj-$(CONFIG_TRACING)			+= trace_clock.o
+ 
+ obj-$(CONFIG_PPC64)			+= $(obj64-y)
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+index 531da4d93c58..f89bcaa5f0fc 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -28,9 +28,6 @@
+ #include <asm/syscall.h>
+ #include <asm/inst.h>
+ 
+-
+-#ifdef CONFIG_DYNAMIC_FTRACE
+-
+ /*
+  * We generally only have a single long_branch tramp and at most 2 or 3 plt
+  * tramps generated. But, we don't use the plt tramps currently. We also allot
+@@ -783,7 +780,6 @@ int __init ftrace_dyn_arch_init(void)
+ 	return 0;
+ }
+ #endif
+-#endif /* CONFIG_DYNAMIC_FTRACE */
+ 
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ 
 -- 
 2.35.1
 
