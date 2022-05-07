@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AE8FC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:50:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC793C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:51:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ3p57GZz3dQS
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:50:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ4M4y5Dz3dq3
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:51:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,53 +16,52 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KwJ044J8cz3cNM
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:47:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KwJ086SJ2z3cFJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:47:36 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KwHzP20Vtz9sW5;
- Sat,  7 May 2022 08:46:57 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4KwHzQ1Sf8z9sVs;
+ Sat,  7 May 2022 08:46:58 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id fOPuSW0Jco_f; Sat,  7 May 2022 08:46:57 +0200 (CEST)
+ with ESMTP id 28xk8Fkog8Us; Sat,  7 May 2022 08:46:58 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzD6RKFz9sW7;
- Sat,  7 May 2022 08:46:48 +0200 (CEST)
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzF1kh7z9sW9;
+ Sat,  7 May 2022 08:46:49 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CE3C98B76D;
- Sat,  7 May 2022 08:46:48 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2865F8B763;
+ Sat,  7 May 2022 08:46:49 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id q68h33jFhUiN; Sat,  7 May 2022 08:46:48 +0200 (CEST)
+ with ESMTP id N_8jhIo7yLyx; Sat,  7 May 2022 08:46:49 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 15C098B79C;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 14A868B799;
  Sat,  7 May 2022 08:46:47 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476keP71320518
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476kfaT1320559
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sat, 7 May 2022 08:46:40 +0200
+ Sat, 7 May 2022 08:46:41 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476keXj1320517;
- Sat, 7 May 2022 08:46:40 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476kfrU1320558;
+ Sat, 7 May 2022 08:46:41 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH v2 12/25] powerpc/ftrace: Don't include ftrace.o for
- CONFIG_FTRACE_SYSCALLS
-Date: Sat,  7 May 2022 08:46:14 +0200
-Message-Id: <275932a5d61543b825ff9a64f61abed6da5d4a2a.1651905939.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 22/25] powerpc/inst: Remove PPC_INST_BRANCH
+Date: Sat,  7 May 2022 08:46:24 +0200
+Message-Id: <e39dfa3ae4be810c6d7824059451490e0f1fb4b4.1651905939.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 References: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905981; l=797; s=20211009;
- h=from:subject:message-id; bh=dBT+4KIjHuCkAQQu4k+Tl2VRVeqnuyJrNn++RX40GAM=;
- b=V0nRnWKWRzWf8bkuIIOKslFzjt64f/SBJRUlBtNc+4I2V9naL67P8qwSpn7DoMMwCcr0LPdnoQlt
- hjsVejdUCCgDanHUvyBFDRH+GeRhFF1+njCKFUXPIk88bcuLSNp0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905982; l=1674; s=20211009;
+ h=from:subject:message-id; bh=GoqVFmJgvgqJKNrjF8mpSAEOdUFe9GmQ2Bf3fRLVT0E=;
+ b=M8Rle/RdnAHVyxXaodFp9yAR+CrzuUeVmjYXe8NPiqngu4a4BTJRQzLUAwA47MrCmrvxE1YF1LxI
+ 6CTZ8bcNADyhj85Th+oF4H9c+yLcv7QPi26lQ49fM13m4p2gLpaW
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,26 +81,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since commit 7bea7ac0ca01 ("powerpc/syscalls: Fix syscall tracing")
-ftrace.o is not needed anymore for CONFIG_FTRACE_SYSCALLS.
+Convert last users of PPC_INST_BRANCH to PPC_RAW_BRANCH()
+
+And remove PPC_INST_BRANCH.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/trace/Makefile | 1 -
- 1 file changed, 1 deletion(-)
+ arch/powerpc/include/asm/ppc-opcode.h | 3 +--
+ arch/powerpc/lib/feature-fixups.c     | 2 +-
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/trace/Makefile b/arch/powerpc/kernel/trace/Makefile
-index 542aa7a8b2b4..fc32ec30b297 100644
---- a/arch/powerpc/kernel/trace/Makefile
-+++ b/arch/powerpc/kernel/trace/Makefile
-@@ -17,7 +17,6 @@ endif
- obj-$(CONFIG_FUNCTION_TRACER)		+= ftrace_low.o
- obj-$(CONFIG_DYNAMIC_FTRACE)		+= ftrace.o
- obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
--obj-$(CONFIG_FTRACE_SYSCALLS)		+= ftrace.o
- obj-$(CONFIG_TRACING)			+= trace_clock.o
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 3e9aa96ae74b..1871a86c5436 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -290,7 +290,6 @@
+ #define PPC_INST_ADDIS			0x3c000000
+ #define PPC_INST_ADD			0x7c000214
+ #define PPC_INST_DIVD			0x7c0003d2
+-#define PPC_INST_BRANCH			0x48000000
+ #define PPC_INST_BL			0x48000001
+ #define PPC_INST_BRANCH_COND		0x40800000
  
- obj-$(CONFIG_PPC64)			+= $(obj64-y)
+@@ -575,7 +574,7 @@
+ #define PPC_RAW_MTSPR(spr, d)		(0x7c0003a6 | ___PPC_RS(d) | __PPC_SPR(spr))
+ #define PPC_RAW_EIEIO()			(0x7c0006ac)
+ 
+-#define PPC_RAW_BRANCH(addr)		(PPC_INST_BRANCH | ((addr) & 0x03fffffc))
++#define PPC_RAW_BRANCH(offset)		(0x48000000 | PPC_LI(offset))
+ #define PPC_RAW_BL(offset)		(0x48000001 | PPC_LI(offset))
+ 
+ /* Deal with instructions that older assemblers aren't aware of */
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index 343a78826035..993d3f31832a 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -451,7 +451,7 @@ static int __do_rfi_flush_fixups(void *data)
+ 
+ 	if (types & L1D_FLUSH_FALLBACK)
+ 		/* b .+16 to fallback flush */
+-		instrs[0] = PPC_INST_BRANCH | 16;
++		instrs[0] = PPC_RAW_BRANCH(16);
+ 
+ 	i = 0;
+ 	if (types & L1D_FLUSH_ORI) {
 -- 
 2.35.1
 
