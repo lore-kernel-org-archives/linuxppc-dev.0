@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 612B2C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:56:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58799C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:56:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ9s6xLzz3gDr
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:56:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJBK0jzRz3cgJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:56:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,53 +16,53 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KwJ180lQGz3dsD
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:48:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KwJ1C5kMZz3cK7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:48:31 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KwHzh1LsSz9sWL;
- Sat,  7 May 2022 08:47:12 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4KwHzj2jbkz9sWM;
+ Sat,  7 May 2022 08:47:13 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id CDYpqlOeHOPS; Sat,  7 May 2022 08:47:12 +0200 (CEST)
+ with ESMTP id 2qybHAlaFMfU; Sat,  7 May 2022 08:47:13 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzF3Nv9z9sWP;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzF3VYSz9sWQ;
  Sat,  7 May 2022 08:46:49 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 684BD8B770;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6E6D78B773;
  Sat,  7 May 2022 08:46:49 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id zrMZarL3zrno; Sat,  7 May 2022 08:46:49 +0200 (CEST)
+ with ESMTP id U5I4ztUvGsGE; Sat,  7 May 2022 08:46:49 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 36E238B7AA;
- Sat,  7 May 2022 08:46:47 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6B0BD8B7B5;
+ Sat,  7 May 2022 08:46:48 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476kdgK1320502
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476kf3L1320563
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sat, 7 May 2022 08:46:39 +0200
+ Sat, 7 May 2022 08:46:41 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476kdNR1320501;
- Sat, 7 May 2022 08:46:39 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476kfXN1320562;
+ Sat, 7 May 2022 08:46:41 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH v2 08/25] powerpc: Add CONFIG_PPC64_ELF_ABI_V1 and
- CONFIG_PPC64_ELF_ABI_V2
-Date: Sat,  7 May 2022 08:46:10 +0200
-Message-Id: <1eca1addbc550167da9841c7340a010d0c4b2200.1651905939.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 23/25] powerpc/modules: Use PPC_LI macros instead of
+ opencoding
+Date: Sat,  7 May 2022 08:46:25 +0200
+Message-Id: <8707ff3d73f14d534c07621d57f04c10d7b4eb45.1651905939.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 References: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905980; l=2625; s=20211009;
- h=from:subject:message-id; bh=NBoBcjsTO1tovFFuP2hBDk2AHE9R2iPK5NfoSRq7M98=;
- b=DZh2pV1ifDmBcrlI497pyoU09c1q7aHPs55ChkN7kxFO9dRv2OnanUGY9WjjPKtidXyiEmCGvUFt
- +fmiHcW+BaJSMm8dLwBOcMHRFSVAnIv6Uv2302eSyw42uPeousfg
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905982; l=2088; s=20211009;
+ h=from:subject:message-id; bh=b+9gYi7tejfbtzfkoRBlVUh9NKkvVQ9ywgf6dGMQ4kg=;
+ b=FCYsijztuOveTRvPDvEyu/ciR6ffv6TDzL6ijQ/c+lwkfWXyr9QnydV2Cor9h3qsAgaxJGaT+CmR
+ UWLD8BBvC+PUTqhjnIy6HvoFctc3HnDeY/Y36vUrLD3OXU7V7qM7
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,79 +82,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At the time being, we use CONFIG_CPU_LITTLE_ENDIAN and
-CONFIG_CPU_BIG_ENDIAN to pass -mabi=elfv1 or elfv2 to
-compiler, then define a PPC64_ELF_ABI_v1 or PPC64_ELF_ABI_v2
-macro in asm/types.h based on _CALL_ELF define set by the compiler.
-
-Make it more straight forward with a CONFIG option that
-is directly usable.
+Use PPC_LI_MASK and PPC_LI() instead of opencoding.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/Makefile                  | 10 +++++-----
- arch/powerpc/boot/Makefile             |  2 ++
- arch/powerpc/platforms/Kconfig.cputype |  6 ++++++
- 3 files changed, 13 insertions(+), 5 deletions(-)
+v2: Utilisation de PPC_LI() et PPC_LI_MASK
+---
+ arch/powerpc/kernel/module_32.c | 11 ++++-------
+ arch/powerpc/kernel/module_64.c |  3 +--
+ 2 files changed, 5 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index eb541e730d3c..1ba98be84101 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -89,10 +89,10 @@ endif
+diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
+index 1b129d728e83..77e071acb684 100644
+--- a/arch/powerpc/kernel/module_32.c
++++ b/arch/powerpc/kernel/module_32.c
+@@ -256,9 +256,8 @@ int apply_relocate_add(Elf32_Shdr *sechdrs,
+ 			       value, (uint32_t)location);
+ 			pr_debug("Location before: %08X.\n",
+ 			       *(uint32_t *)location);
+-			value = (*(uint32_t *)location & ~0x03fffffc)
+-				| ((value - (uint32_t)location)
+-				   & 0x03fffffc);
++			value = (*(uint32_t *)location & ~PPC_LI_MASK) |
++				PPC_LI(value - (uint32_t)location);
  
- ifdef CONFIG_PPC64
- ifndef CONFIG_CC_IS_CLANG
--cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
--cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mcall-aixdesc)
--aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
--aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mabi=elfv2
-+cflags-$(CONFIG_PPC64_ELF_ABI_V1)	+= $(call cc-option,-mabi=elfv1)
-+cflags-$(CONFIG_PPC64_ELF_ABI_V1)	+= $(call cc-option,-mcall-aixdesc)
-+aflags-$(CONFIG_PPC64_ELF_ABI_V1)	+= $(call cc-option,-mabi=elfv1)
-+aflags-$(CONFIG_PPC64_ELF_ABI_V2)	+= -mabi=elfv2
- endif
- endif
+ 			if (patch_instruction(location, ppc_inst(value)))
+ 				return -EFAULT;
+@@ -266,10 +265,8 @@ int apply_relocate_add(Elf32_Shdr *sechdrs,
+ 			pr_debug("Location after: %08X.\n",
+ 			       *(uint32_t *)location);
+ 			pr_debug("ie. jump to %08X+%08X = %08X\n",
+-			       *(uint32_t *)location & 0x03fffffc,
+-			       (uint32_t)location,
+-			       (*(uint32_t *)location & 0x03fffffc)
+-			       + (uint32_t)location);
++				 *(uint32_t *)PPC_LI((uint32_t)location), (uint32_t)location,
++				 (*(uint32_t *)PPC_LI((uint32_t)location)) + (uint32_t)location);
+ 			break;
  
-@@ -141,7 +141,7 @@ endif
+ 		case R_PPC_REL32:
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index c1d87937b962..4c844198185e 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -653,8 +653,7 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 			}
  
- CFLAGS-$(CONFIG_PPC64)	:= $(call cc-option,-mtraceback=no)
- ifndef CONFIG_CC_IS_CLANG
--ifdef CONFIG_CPU_LITTLE_ENDIAN
-+ifdef CONFIG_PPC64_ELF_ABI_V2
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2,$(call cc-option,-mcall-aixdesc))
- AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2)
- else
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 4b4827c475c6..b6d4fe04c594 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -49,6 +49,8 @@ ifdef CONFIG_CPU_BIG_ENDIAN
- BOOTCFLAGS	+= -mbig-endian
- else
- BOOTCFLAGS	+= -mlittle-endian
-+endif
-+ifdef CONFIG_PPC64_ELF_ABI_V2
- BOOTCFLAGS	+= $(call cc-option,-mabi=elfv2)
- endif
+ 			/* Only replace bits 2 through 26 */
+-			value = (*(uint32_t *)location & ~0x03fffffc)
+-				| (value & 0x03fffffc);
++			value = (*(uint32_t *)location & ~PPC_LI_MASK) | PPC_LI(value);
  
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index e2e1fec91c6e..9bfcf972d21d 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -556,6 +556,12 @@ config CPU_LITTLE_ENDIAN
- 
- endchoice
- 
-+config PPC64_ELF_ABI_V1
-+	def_bool PPC64 && CPU_BIG_ENDIAN
-+
-+config PPC64_ELF_ABI_V2
-+	def_bool PPC64 && CPU_LITTLE_ENDIAN
-+
- config PPC64_BOOT_WRAPPER
- 	def_bool n
- 	depends on CPU_LITTLE_ENDIAN
+ 			if (patch_instruction((u32 *)location, ppc_inst(value)))
+ 				return -EFAULT;
 -- 
 2.35.1
 
