@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DFB2C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:50:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C083C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:50:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ2x68Fcz3f8V
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:50:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ3M725Jz3fDj
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:50:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,52 +16,52 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KwHzw6DyVz3cF6
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:47:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KwJ005yNnz3cNR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:47:28 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KwHzM1fS7z9sW1;
- Sat,  7 May 2022 08:46:55 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4KwHzN12gPz9sW3;
+ Sat,  7 May 2022 08:46:56 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 3eZ30I4hs7Sl; Sat,  7 May 2022 08:46:55 +0200 (CEST)
+ with ESMTP id QBB-2eQMafJ9; Sat,  7 May 2022 08:46:56 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzD604Zz9sW3;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzD6KXJz9sW5;
  Sat,  7 May 2022 08:46:48 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B57EE8B76E;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C71528B76C;
  Sat,  7 May 2022 08:46:48 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id xp8lsz4OR5vd; Sat,  7 May 2022 08:46:48 +0200 (CEST)
+ with ESMTP id FxYAWW5LnbVz; Sat,  7 May 2022 08:46:48 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F3A488B792;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 16E7A8B79E;
  Sat,  7 May 2022 08:46:47 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476kdw91320489
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476kfJS1320551
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sat, 7 May 2022 08:46:39 +0200
+ Sat, 7 May 2022 08:46:41 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476kd181320488;
- Sat, 7 May 2022 08:46:39 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476kfxl1320550;
+ Sat, 7 May 2022 08:46:41 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH v2 05/25] powerpc/code-patching: Inline create_branch()
-Date: Sat,  7 May 2022 08:46:07 +0200
-Message-Id: <69851cc9a7bf8f03d025e6d29e165f2d0bd3bb6e.1651905939.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 20/25] powerpc/inst: Add __copy_inst_from_kernel_nofault()
+Date: Sat,  7 May 2022 08:46:22 +0200
+Message-Id: <1f3702890d6dbd64702b61834753bcc96851c18c.1651905939.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 References: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905980; l=2728; s=20211009;
- h=from:subject:message-id; bh=d2swIJrMmUDKV+uH13vJ0j/DNa2ajgVmApWQwP8siB0=;
- b=cAVkegxnUg/vbrAo4viSfRjnGlY+RVxxca1/1xW777/8jULdJni865HTnQyzLxFuNcPJcNmSIR86
- KqsTTcVCDILOQo4X1iOnzGNULprSZT9DKKeo9zqEO06BKCvS4AuL
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905981; l=1534; s=20211009;
+ h=from:subject:message-id; bh=uNUWZzzzPfrKXF6jD9unCulUYAF0cNf3EZC4MAgTHXc=;
+ b=L0lpde8ZDnb7npFNMSNTj9Dt8qe//otr8UF+WlQS+vNmnDP1f7F02Jm0Ukb3eSNHUyjmH9WqrQDU
+ tb15LRfeDNLLuWwY1aeNJvByhys0MQlPvwWTXo45bOlP+PdWGVeA
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -81,86 +81,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-create_branch() is a good candidate for inlining because:
-- Flags can be folded in.
-- Range tests are likely to be already done.
+On the same model as get_user() versus __get_user(),
+introduce __copy_inst_from_kernel_nofault() which doesn't
+check address.
 
-Hence reducing the create_branch() to only a set of instructions.
-
-So inline it.
-
-It improves ftrace activation by 10%.
+To be used by callers that have already checked that the adress
+is a kernel address.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/code-patching.h | 22 ++++++++++++++++++++--
- arch/powerpc/lib/code-patching.c         | 20 --------------------
- 2 files changed, 20 insertions(+), 22 deletions(-)
+ arch/powerpc/include/asm/inst.h | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-index e7c5df50cb4e..4260e89f62b1 100644
---- a/arch/powerpc/include/asm/code-patching.h
-+++ b/arch/powerpc/include/asm/code-patching.h
-@@ -49,8 +49,26 @@ static inline bool is_offset_in_cond_branch_range(long offset)
- 	return offset >= -0x8000 && offset <= 0x7fff && !(offset & 0x3);
+diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
+index 80b6d74146c6..b49aae9f6f27 100644
+--- a/arch/powerpc/include/asm/inst.h
++++ b/arch/powerpc/include/asm/inst.h
+@@ -158,13 +158,10 @@ static inline char *__ppc_inst_as_str(char str[PPC_INST_STR_LEN], ppc_inst_t x)
+ 	__str;				\
+ })
+ 
+-static inline int copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
++static inline int __copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
+ {
+ 	unsigned int val, suffix;
+ 
+-	if (unlikely(!is_kernel_addr((unsigned long)src)))
+-		return -ERANGE;
+-
+ /* See https://github.com/ClangBuiltLinux/linux/issues/1521 */
+ #if defined(CONFIG_CC_IS_CLANG) && CONFIG_CLANG_VERSION < 140000
+ 	val = suffix = 0;
+@@ -181,4 +178,12 @@ static inline int copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
+ 	return -EFAULT;
  }
  
--int create_branch(ppc_inst_t *instr, const u32 *addr,
--		  unsigned long target, int flags);
-+static inline int create_branch(ppc_inst_t *instr, const u32 *addr,
-+				unsigned long target, int flags)
++static inline int copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
 +{
-+	long offset;
++	if (unlikely(!is_kernel_addr((unsigned long)src)))
++		return -ERANGE;
 +
-+	*instr = ppc_inst(0);
-+	offset = target;
-+	if (! (flags & BRANCH_ABSOLUTE))
-+		offset = offset - (unsigned long)addr;
-+
-+	/* Check we can represent the target in the instruction format */
-+	if (!is_offset_in_branch_range(offset))
-+		return 1;
-+
-+	/* Mask out the flags and target, so they don't step on each other. */
-+	*instr = ppc_inst(0x48000000 | (flags & 0x3) | (offset & 0x03FFFFFC));
-+
-+	return 0;
++	return __copy_inst_from_kernel_nofault(inst, src);
 +}
 +
- int create_cond_branch(ppc_inst_t *instr, const u32 *addr,
- 		       unsigned long target, int flags);
- int patch_branch(u32 *addr, unsigned long target, int flags);
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 58262c7e447c..7adbdb05fee7 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -230,26 +230,6 @@ bool is_conditional_branch(ppc_inst_t instr)
- }
- NOKPROBE_SYMBOL(is_conditional_branch);
- 
--int create_branch(ppc_inst_t *instr, const u32 *addr,
--		  unsigned long target, int flags)
--{
--	long offset;
--
--	*instr = ppc_inst(0);
--	offset = target;
--	if (! (flags & BRANCH_ABSOLUTE))
--		offset = offset - (unsigned long)addr;
--
--	/* Check we can represent the target in the instruction format */
--	if (!is_offset_in_branch_range(offset))
--		return 1;
--
--	/* Mask out the flags and target, so they don't step on each other. */
--	*instr = ppc_inst(0x48000000 | (flags & 0x3) | (offset & 0x03FFFFFC));
--
--	return 0;
--}
--
- int create_cond_branch(ppc_inst_t *instr, const u32 *addr,
- 		       unsigned long target, int flags)
- {
+ #endif /* _ASM_POWERPC_INST_H */
 -- 
 2.35.1
 
