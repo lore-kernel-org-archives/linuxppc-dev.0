@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8727CC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:52:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16BBFC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:52:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ5h0wsxz3fbP
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:52:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ6654WWz3bpb
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:52:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,53 +16,52 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KwJ0P4Xf9z3cgw
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:47:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KwJ0V43CGz3chh
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:47:54 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KwHzV2pVXz9sWB;
- Sat,  7 May 2022 08:47:02 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4KwHzW4wtfz9sWC;
+ Sat,  7 May 2022 08:47:03 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id HfwkjaOhb1En; Sat,  7 May 2022 08:47:02 +0200 (CEST)
+ with ESMTP id VbtUZhoeKJ5y; Sat,  7 May 2022 08:47:03 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzF2LD9z9sWD;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzF2Q4Xz9sWF;
  Sat,  7 May 2022 08:46:49 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 422208B763;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 446118B76E;
  Sat,  7 May 2022 08:46:49 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id gcHOFu2iQEzA; Sat,  7 May 2022 08:46:49 +0200 (CEST)
+ with ESMTP id 6A-jBhsNUua2; Sat,  7 May 2022 08:46:49 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 549528B7B0;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5CAF98B7B2;
  Sat,  7 May 2022 08:46:48 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476keNI1320530
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476kd9B1320485
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sat, 7 May 2022 08:46:40 +0200
+ Sat, 7 May 2022 08:46:39 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476keVh1320529;
- Sat, 7 May 2022 08:46:40 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476kdLT1320484;
+ Sat, 7 May 2022 08:46:39 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH v2 15/25] powerpc/ftrace: Use BRANCH_SET_LINK instead of value
- 1
-Date: Sat,  7 May 2022 08:46:17 +0200
-Message-Id: <d57847063ac93660a5af620d4df1847f10edf61a.1651905939.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 04/25] powerpc/ftrace: Use is_offset_in_branch_range()
+Date: Sat,  7 May 2022 08:46:06 +0200
+Message-Id: <912ae51782f5a53c44e435497c8c3fb5cc632387.1651905939.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 References: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905981; l=800; s=20211009;
- h=from:subject:message-id; bh=TOQSyZvep4NfIRkmNhrEBlHApgQPEvl5weZnlGVA3L0=;
- b=3MBRtAPk7A8+zHbIPgSBs8BS5PCrKMFDoLmYkqvPs8WqWaxtTb6xZxAeQu8rq3k9jBI48a8HWQ7T
- WYNIcZMhDXvuYHeRdS0qiwUAVjzbRMPaVKi0EFdNXK+ICMLxaMDn
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905980; l=1631; s=20211009;
+ h=from:subject:message-id; bh=OWDdhcCtR60EJOCWc6cwIHh4xDhD5orD3drnjJOkPJg=;
+ b=DTrJMFszzSiGLpG5XWwH6BJTQVMOEhWIt6cjGoxn5W6rjmv+I8LfDi5DWR3JXWL7Qy5RbaCXnSGG
+ zqQ8vJQ+C58YQoEao++1bMuuWbKAoHbAHKiyB/BLAinnMw29DDfs
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,27 +81,52 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-To make it explicit, use BRANCH_SET_LINK instead of value 1
-when calling create_branch().
+Use is_offset_in_branch_range() instead of create_branch()
+to check if a target is within branch range.
+
+This patch together with the previous one improves
+ftrace activation time by 7%
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/trace/ftrace.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/trace/ftrace.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 010a8c7ff4ac..c4a68340a351 100644
+index 3ce3697e8a7c..41c45b9c7f39 100644
 --- a/arch/powerpc/kernel/trace/ftrace.c
 +++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -45,7 +45,7 @@ ftrace_call_replace(unsigned long ip, unsigned long addr, int link)
+@@ -89,11 +89,9 @@ ftrace_modify_code(unsigned long ip, ppc_inst_t old, ppc_inst_t new)
+  */
+ static int test_24bit_addr(unsigned long ip, unsigned long addr)
+ {
+-	ppc_inst_t op;
  	addr = ppc_function_entry((void *)addr);
  
- 	/* if (link) set op to 'bl' else 'b' */
--	create_branch(&op, (u32 *)ip, addr, link ? 1 : 0);
-+	create_branch(&op, (u32 *)ip, addr, link ? BRANCH_SET_LINK : 0);
- 
- 	return op;
+-	/* use the create_branch to verify that this offset can be branched */
+-	return create_branch(&op, (u32 *)ip, addr, 0) == 0;
++	return is_offset_in_branch_range(addr - ip);
  }
+ 
+ static int is_bl_op(ppc_inst_t op)
+@@ -261,7 +259,6 @@ __ftrace_make_nop(struct module *mod,
+ static unsigned long find_ftrace_tramp(unsigned long ip)
+ {
+ 	int i;
+-	ppc_inst_t instr;
+ 
+ 	/*
+ 	 * We have the compiler generated long_branch tramps at the end
+@@ -270,8 +267,7 @@ static unsigned long find_ftrace_tramp(unsigned long ip)
+ 	for (i = NUM_FTRACE_TRAMPS - 1; i >= 0; i--)
+ 		if (!ftrace_tramps[i])
+ 			continue;
+-		else if (create_branch(&instr, (void *)ip,
+-				       ftrace_tramps[i], 0) == 0)
++		else if (is_offset_in_branch_range(ftrace_tramps[i] - ip))
+ 			return ftrace_tramps[i];
+ 
+ 	return 0;
 -- 
 2.35.1
 
