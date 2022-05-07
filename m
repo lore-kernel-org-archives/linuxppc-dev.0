@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6ECD9C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:48:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B817C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 06:49:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ1V6qH0z3cF9
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:48:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KwJ245MZVz3f0t
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 May 2022 16:49:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,52 +16,51 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KwHzj1GQqz3cCy
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:47:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KwHzm62vNz3cJC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2022 16:47:16 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KwHzJ6mHqz9sVl;
- Sat,  7 May 2022 08:46:52 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4KwHzK0ckqz9sVq;
+ Sat,  7 May 2022 08:46:53 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id nV-xq3crS7jX; Sat,  7 May 2022 08:46:52 +0200 (CEST)
+ with ESMTP id kQCu1Il80dM8; Sat,  7 May 2022 08:46:53 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzD5B9bz9sVq;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KwHzD5hp5z9sVV;
  Sat,  7 May 2022 08:46:48 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8B1058B76C;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A977B8B770;
  Sat,  7 May 2022 08:46:48 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id us1uqfBldFX1; Sat,  7 May 2022 08:46:48 +0200 (CEST)
+ with ESMTP id HMc5DPu-VFf8; Sat,  7 May 2022 08:46:48 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.101])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DEC888B763;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E789B8B76E;
  Sat,  7 May 2022 08:46:47 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476kemG1320510
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2476kc2W1320469
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Sat, 7 May 2022 08:46:40 +0200
+ Sat, 7 May 2022 08:46:38 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476keOU1320509;
- Sat, 7 May 2022 08:46:40 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2476kZLE1320456;
+ Sat, 7 May 2022 08:46:35 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH v2 10/25] powerpc: Finalise cleanup around ABI use
-Date: Sat,  7 May 2022 08:46:12 +0200
-Message-Id: <709d9d69523c14c8a9fba4486395dca0f2d675b1.1651905939.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 00/25] powerpc: ftrace optimisation and cleanup and more
+ [v2]
+Date: Sat,  7 May 2022 08:46:02 +0200
+Message-Id: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <cover.1651905939.git.christophe.leroy@csgroup.eu>
-References: <cover.1651905939.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905981; l=4161; s=20211009;
- h=from:subject:message-id; bh=WxVopPaHaxL4NhbA6gDzSbUKU21wfZC2s9FczOO6P/8=;
- b=dIOduIFC0bsk391EAMe1Idp9xQab/x/86Dca6hXexc8dcTPr/jSLt3HGPtHgOMhgBpi+uwRvS0Nj
- 2PzdCWX/DlTBD657r6e2rsoqVPUCsKTw4yFfBFpXDdA9WkFf/+P3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1651905980; l=3734; s=20211009;
+ h=from:subject:message-id; bh=sB47Li5cspS+Q/H8GVp437MSeqxST6ZTmmFQ7liQjVo=;
+ b=+VMsngPikIwGNNaEsxH4AQJ2KbgCYHnSNkKjWOcg2MTB3VZJmKdqbiSAlgpgxIkiqekEeM3t8G/g
+ LnafOpzMA8g2jyJO1UZvDZx4OgECooe7zv4fVgGMmRqBONaUVHWg
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -81,125 +80,81 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that we have CONFIG_PPC64_ELF_ABI_V1 and CONFIG_PPC64_ELF_ABI_V2,
-get rid of all indirect detection of ABI version.
+This series provides optimisation and cleanup of ftrace on powerpc.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/Kconfig                |  2 +-
- arch/powerpc/Makefile               |  2 +-
- arch/powerpc/include/asm/types.h    |  8 --------
- arch/powerpc/kernel/fadump.c        | 13 ++++++++-----
- arch/powerpc/kernel/ptrace/ptrace.c |  6 ------
- arch/powerpc/net/bpf_jit_comp64.c   |  4 ++--
- 6 files changed, 12 insertions(+), 23 deletions(-)
+With this series ftrace activation is about 20% faster on an 8xx.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 174edabb74fa..5514fed3f072 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -208,7 +208,7 @@ config PPC
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS	if !(CPU_LITTLE_ENDIAN && POWER7_CPU)
- 	select HAVE_FAST_GUP
- 	select HAVE_FTRACE_MCOUNT_RECORD
--	select HAVE_FUNCTION_DESCRIPTORS	if PPC64 && !CPU_LITTLE_ENDIAN
-+	select HAVE_FUNCTION_DESCRIPTORS	if PPC64_ELF_ABI_V1
- 	select HAVE_FUNCTION_ERROR_INJECTION
- 	select HAVE_FUNCTION_GRAPH_TRACER
- 	select HAVE_FUNCTION_TRACER
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 1ba98be84101..8bd3b631f094 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -213,7 +213,7 @@ CHECKFLAGS	+= -m$(BITS) -D__powerpc__ -D__powerpc$(BITS)__
- ifdef CONFIG_CPU_BIG_ENDIAN
- CHECKFLAGS	+= -D__BIG_ENDIAN__
- else
--CHECKFLAGS	+= -D__LITTLE_ENDIAN__ -D_CALL_ELF=2
-+CHECKFLAGS	+= -D__LITTLE_ENDIAN__
- endif
- 
- ifdef CONFIG_476FPE_ERR46
-diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
-index 84078c28c1a2..93157a661dcc 100644
---- a/arch/powerpc/include/asm/types.h
-+++ b/arch/powerpc/include/asm/types.h
-@@ -11,14 +11,6 @@
- 
- #include <uapi/asm/types.h>
- 
--#ifdef __powerpc64__
--#if defined(_CALL_ELF) && _CALL_ELF == 2
--#define PPC64_ELF_ABI_v2 1
--#else
--#define PPC64_ELF_ABI_v1 1
--#endif
--#endif /* __powerpc64__ */
--
- #ifndef __ASSEMBLY__
- 
- typedef __vector128 vector128;
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 65562c4a0a69..5f7224d66586 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -968,11 +968,14 @@ static int fadump_init_elfcore_header(char *bufp)
- 	elf->e_entry = 0;
- 	elf->e_phoff = sizeof(struct elfhdr);
- 	elf->e_shoff = 0;
--#if defined(_CALL_ELF)
--	elf->e_flags = _CALL_ELF;
--#else
--	elf->e_flags = 0;
--#endif
-+
-+	if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V2))
-+		elf->e_flags = 2;
-+	else if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V1))
-+		elf->e_flags = 1;
-+	else
-+		elf->e_flags = 0;
-+
- 	elf->e_ehsize = sizeof(struct elfhdr);
- 	elf->e_phentsize = sizeof(struct elf_phdr);
- 	elf->e_phnum = 0;
-diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
-index 9fbe155a9bd0..4d2dc22d4a2d 100644
---- a/arch/powerpc/kernel/ptrace/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace.c
-@@ -444,10 +444,4 @@ void __init pt_regs_check(void)
- 	 * real registers.
- 	 */
- 	BUILD_BUG_ON(PT_DSCR < sizeof(struct user_pt_regs) / sizeof(unsigned long));
--
--#ifdef CONFIG_PPC64_ELF_ABI_V1
--	BUILD_BUG_ON(!IS_ENABLED(CONFIG_HAVE_FUNCTION_DESCRIPTORS));
--#else
--	BUILD_BUG_ON(IS_ENABLED(CONFIG_HAVE_FUNCTION_DESCRIPTORS));
--#endif
- }
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index d7b42f45669e..594c54931e20 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -126,7 +126,7 @@ void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
- {
- 	int i;
- 
--	if (__is_defined(CONFIG_PPC64_ELF_ABI_V2))
-+	if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V2))
- 		EMIT(PPC_RAW_LD(_R2, _R13, offsetof(struct paca_struct, kernel_toc)));
- 
- 	/*
-@@ -266,7 +266,7 @@ static int bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32 o
- 	int b2p_index = bpf_to_ppc(BPF_REG_3);
- 	int bpf_tailcall_prologue_size = 8;
- 
--	if (__is_defined(CONFIG_PPC64_ELF_ABI_V2))
-+	if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V2))
- 		bpf_tailcall_prologue_size += 4; /* skip past the toc load */
- 
- 	/*
+At the end of the series come additional cleanups around ppc-opcode,
+that would likely conflict with this series if posted separately.
+
+Main changes since v1 (details in after each individual patch description):
+- Added 3 patches (8, 9, 10) that convert PPC64_ELF_ABI_v{1/2} macros by CONFIG_PPC64_ELF_ABI_V{1/2}
+- Taken comments from Naveen
+
+Christophe Leroy (25):
+  powerpc/ftrace: Refactor prepare_ftrace_return()
+  powerpc/ftrace: Remove redundant create_branch() calls
+  powerpc/code-patching: Inline is_offset_in_{cond}_branch_range()
+  powerpc/ftrace: Use is_offset_in_branch_range()
+  powerpc/code-patching: Inline create_branch()
+  powerpc/ftrace: Inline ftrace_modify_code()
+  powerpc/ftrace: Use patch_instruction() return directly
+  powerpc: Add CONFIG_PPC64_ELF_ABI_V1 and CONFIG_PPC64_ELF_ABI_V2
+  powerpc: Replace PPC64_ELF_ABI_v{1/2} by CONFIG_PPC64_ELF_ABI_V{1/2}
+  powerpc: Finalise cleanup around ABI use
+  powerpc/ftrace: Make __ftrace_make_{nop/call}() common to PPC32 and
+    PPC64
+  powerpc/ftrace: Don't include ftrace.o for CONFIG_FTRACE_SYSCALLS
+  powerpc/ftrace: Use CONFIG_FUNCTION_TRACER instead of
+    CONFIG_DYNAMIC_FTRACE
+  powerpc/ftrace: Remove ftrace_plt_tramps[]
+  powerpc/ftrace: Use BRANCH_SET_LINK instead of value 1
+  powerpc/ftrace: Use PPC_RAW_xxx() macros instead of opencoding.
+  powerpc/ftrace: Use size macro instead of opencoding
+  powerpc/ftrace: Simplify expected_nop_sequence()
+  powerpc/ftrace: Minimise number of #ifdefs
+  powerpc/inst: Add __copy_inst_from_kernel_nofault()
+  powerpc/ftrace: Don't use copy_from_kernel_nofault() in
+    module_trampoline_target()
+  powerpc/inst: Remove PPC_INST_BRANCH
+  powerpc/modules: Use PPC_LI macros instead of opencoding
+  powerpc/inst: Remove PPC_INST_BL
+  powerpc/opcodes: Remove unused PPC_INST_XXX macros
+
+ arch/powerpc/Kconfig                     |   2 +-
+ arch/powerpc/Makefile                    |  12 +-
+ arch/powerpc/boot/Makefile               |   2 +
+ arch/powerpc/include/asm/code-patching.h |  65 +++-
+ arch/powerpc/include/asm/ftrace.h        |   4 +-
+ arch/powerpc/include/asm/inst.h          |  13 +-
+ arch/powerpc/include/asm/linkage.h       |   2 +-
+ arch/powerpc/include/asm/module.h        |   2 -
+ arch/powerpc/include/asm/ppc-opcode.h    |  22 +-
+ arch/powerpc/include/asm/ppc_asm.h       |   4 +-
+ arch/powerpc/include/asm/ptrace.h        |   2 +-
+ arch/powerpc/include/asm/sections.h      |  24 +-
+ arch/powerpc/include/asm/types.h         |   8 -
+ arch/powerpc/kernel/fadump.c             |  13 +-
+ arch/powerpc/kernel/head_64.S            |   2 +-
+ arch/powerpc/kernel/interrupt_64.S       |   2 +-
+ arch/powerpc/kernel/kprobes.c            |   6 +-
+ arch/powerpc/kernel/misc_64.S            |   2 +-
+ arch/powerpc/kernel/module.c             |   4 +-
+ arch/powerpc/kernel/module_32.c          |  23 +-
+ arch/powerpc/kernel/module_64.c          |   7 +-
+ arch/powerpc/kernel/ptrace/ptrace.c      |   6 -
+ arch/powerpc/kernel/trace/Makefile       |   5 +-
+ arch/powerpc/kernel/trace/ftrace.c       | 375 +++++++----------------
+ arch/powerpc/kvm/book3s_interrupts.S     |   2 +-
+ arch/powerpc/kvm/book3s_rmhandlers.S     |   2 +-
+ arch/powerpc/lib/code-patching.c         |  49 +--
+ arch/powerpc/lib/feature-fixups.c        |   2 +-
+ arch/powerpc/net/bpf_jit.h               |   4 +-
+ arch/powerpc/net/bpf_jit_comp.c          |   2 +-
+ arch/powerpc/net/bpf_jit_comp64.c        |   4 +-
+ arch/powerpc/platforms/Kconfig.cputype   |   6 +
+ 32 files changed, 262 insertions(+), 416 deletions(-)
+
 -- 
 2.35.1
 
