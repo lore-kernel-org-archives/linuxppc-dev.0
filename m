@@ -4,62 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 332E7C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 May 2022 18:41:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28C96C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 May 2022 19:10:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KxCnf4pYgz3cC4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 04:41:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KxDR13V7Jz3cCX
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 05:10:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=E1FHHU/9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=IxQXJhKD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org;
- envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kernel.org (client-ip=210.131.2.76;
+ helo=conuserg-09.nifty.com; envelope-from=masahiroy@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=E1FHHU/9; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
+ header.s=dec2015msa header.b=IxQXJhKD; 
  dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KxCmw1zvrz3bpj
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2022 04:41:04 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+Received: from conuserg-09.nifty.com (conuserg-09.nifty.com [210.131.2.76])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 390D7612B2;
- Sun,  8 May 2022 18:41:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 30E45C385B9;
- Sun,  8 May 2022 18:41:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1652035260;
- bh=tI/7YqOwq0YX55A8Vahq+uQYnIz5RkTDhnJtoS3l0DY=;
- h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
- b=E1FHHU/9O8s4pgNVlYvKdDe0ujbHvEaMBPgFDKtVD4gcsObgpphL5uJnZKOJuENDG
- ET69fZuap+PA9JyiTCg/aMJebzYPU+2tedcAmbM/khmcQnYtItSQrYvjxCsSfpyE/A
- ehCOtORmNptAvXyhLTJmfo5oHbR6yp8BqDbplXLZ4sumpoSLkpRgDcIZoxoyOgz6vR
- L//OC+VbqD8YtVOivOepUXviUIWEu4Pkf0+EW8GNsSiMtYpdiBV0b3ybVH1y4I5zh8
- zAT69NINorfsnMNX2lDkzCrGhtikW24EusVAzlm0NuYl1snajJ0stF/uTw7LB5bd5y
- OFvj9UOz80Mjw==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org
- (localhost.localdomain [127.0.0.1])
- by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id
- 1A330E8DBDA; Sun,  8 May 2022 18:41:00 +0000 (UTC)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.18-4 tag
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <87fslkte79.fsf@mpe.ellerman.id.au>
-References: <87fslkte79.fsf@mpe.ellerman.id.au>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <87fslkte79.fsf@mpe.ellerman.id.au>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
- tags/powerpc-5.18-4
-X-PR-Tracked-Commit-Id: 348c71344111d7a48892e3e52264ff11956fc196
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: e3de3a1cda5fdc3ac42cb0d45321fb254500595f
-Message-Id: <165203526009.974.8487583887311129305.pr-tracker-bot@kernel.org>
-Date: Sun, 08 May 2022 18:41:00 +0000
-To: Michael Ellerman <mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KxDQR2d9Wz3bqg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2022 05:10:06 +1000 (AEST)
+Received: from grover.sesame (133-32-177-133.west.xps.vectant.ne.jp
+ [133.32.177.133]) (authenticated)
+ by conuserg-09.nifty.com with ESMTP id 248J8qSR030019;
+ Mon, 9 May 2022 04:08:57 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com 248J8qSR030019
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1652036938;
+ bh=fTWufSGLPIAfiy+llcmQSSOszMnmVGeqEYG5OUh4Gao=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=IxQXJhKDS8X8Fsd44zY4pkmn3cOxr3A9N3bFK6Y49wQNuLZ+9WS7ZDQ/g+hNUo9kh
+ BfYIrtdQIkpIfoQ1HXXT4fiR0FJ+hAyWHaNHjV6Leqy0NkCt24bhs6VazRcz8MCBT8
+ ucy5n8tNqoIAPkAz1oN/vyb16Cfod/A1SkZyA2wLpEZz2HN1O4/wFs4k5EtWUXjNLz
+ oHT0+VsMvpoQqx+ipAVBqCt2M/9YJagiYqzBEgBU1YR6P6MD7P0UExrDvJwDfNujrN
+ W5DnekjBkKRUHoj4pPTA6E26syJUR4JOonvqa3MUDfu+kMuwpENMqYwXhknnf51Ygz
+ oEUCfzjIkzsNw==
+X-Nifty-SrcIP: [133.32.177.133]
+From: Masahiro Yamada <masahiroy@kernel.org>
+To: linux-kbuild@vger.kernel.org
+Subject: [PATCH v4 04/14] modpost: add sym_find_with_module() helper
+Date: Mon,  9 May 2022 04:06:21 +0900
+Message-Id: <20220508190631.2386038-5-masahiroy@kernel.org>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20220508190631.2386038-1-masahiroy@kernel.org>
+References: <20220508190631.2386038-1-masahiroy@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,22 +63,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: haren@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
- kjain@linux.ibm.com
+Cc: linux-s390@vger.kernel.org, Nicolas Schier <nicolas@fjasle.eu>,
+ Peter Zijlstra <peterz@infradead.org>, Masahiro Yamada <masahiroy@kernel.org>,
+ Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
+ Nathan Chancellor <nathan@kernel.org>, clang-built-linux@googlegroups.com,
+ Sami Tolvanen <samitolvanen@google.com>, linuxppc-dev@lists.ozlabs.org,
+ Ard Biesheuvel <ardb@kernel.org>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pull request you sent on Sun, 08 May 2022 22:13:14 +1000:
+find_symbol() returns the first symbol found in the hash table. This
+table is global, so it may return a symbol from an unexpected module.
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.18-4
+There is a case where we want to search for a symbol with a given name
+in a specified module.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/e3de3a1cda5fdc3ac42cb0d45321fb254500595f
+Add sym_find_with_module(), which receives the module pointer as the
+second argument. It is equivalent to find_module() if NULL is passed
+as the module pointer.
 
-Thank you!
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+Reviewed-by: Nicolas Schier <nicolas@fjasle.eu>
+Tested-by: Nathan Chancellor <nathan@kernel.org>
+---
 
+Changes in v4:
+  - Only takes the new helper from
+    https://patchwork.kernel.org/project/linux-kbuild/patch/20220505072244.1155033-2-masahiroy@kernel.org/
+
+Changes in v2:
+  - Rename the new func to sym_find_with_module()
+
+ scripts/mod/modpost.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index e7e2c70a98f5..fc5db1f73cf1 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -266,7 +266,7 @@ static void sym_add_unresolved(const char *name, struct module *mod, bool weak)
+ 	list_add_tail(&sym->list, &mod->unresolved_symbols);
+ }
+ 
+-static struct symbol *find_symbol(const char *name)
++static struct symbol *sym_find_with_module(const char *name, struct module *mod)
+ {
+ 	struct symbol *s;
+ 
+@@ -275,12 +275,17 @@ static struct symbol *find_symbol(const char *name)
+ 		name++;
+ 
+ 	for (s = symbolhash[tdb_hash(name) % SYMBOL_HASH_SIZE]; s; s = s->next) {
+-		if (strcmp(s->name, name) == 0)
++		if (strcmp(s->name, name) == 0 && (!mod || s->module == mod))
+ 			return s;
+ 	}
+ 	return NULL;
+ }
+ 
++static struct symbol *find_symbol(const char *name)
++{
++	return sym_find_with_module(name, NULL);
++}
++
+ struct namespace_list {
+ 	struct list_head list;
+ 	char namespace[];
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.32.0
+
