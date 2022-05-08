@@ -4,31 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7133DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 May 2022 11:12:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6BB0C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 May 2022 11:12:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kx1q70s2gz3cgQ
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 May 2022 21:12:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kx1qX3wvRz3cBX
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 May 2022 21:12:40 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kx1pL46W9z3c8l
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kx1pL49j4z3c8m
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 May 2022 21:11:38 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Kx1pH5Mg2z4yT6;
- Sun,  8 May 2022 21:11:35 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Kx1pF4Cwdz4xXk;
+ Sun,  8 May 2022 21:11:33 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220502125010.1319370-1-mpe@ellerman.id.au>
-References: <20220502125010.1319370-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/vdso: Fix incorrect CFI in gettimeofday.S
-Message-Id: <165200827500.2672957.3801145559467507501.b4-ty@ellerman.id.au>
-Date: Sun, 08 May 2022 21:11:15 +1000
+To: nathanl@linux.ibm.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ npiggin@gmail.com, Haren Myneni <haren@linux.ibm.com>
+In-Reply-To: <76d156f8af1e03cc09369d68e0bfad0c40031bcc.camel@linux.ibm.com>
+References: <76d156f8af1e03cc09369d68e0bfad0c40031bcc.camel@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/pseries/vas: Use QoS credits from the userspace
+Message-Id: <165200827416.2672957.5309405825160744751.b4-ty@ellerman.id.au>
+Date: Sun, 08 May 2022 21:11:14 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,25 +44,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: amodra@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2 May 2022 22:50:10 +1000, Michael Ellerman wrote:
-> As reported by Alan, the CFI (Call Frame Information) in the VDSO time
-> routines is incorrect since commit ce7d8056e38b ("powerpc/vdso: Prepare
-> for switching VDSO to generic C implementation.").
-> 
-> In particular the changes to the frame address register (r1) are not
-> properly described, which prevents gdb from being able to generate a
-> backtrace from inside VDSO functions, eg:
+On Sat, 19 Mar 2022 02:28:09 -0700, Haren Myneni wrote:
+> The user can change the QoS credits dynamically with the
+> management console interface which notifies OS with sysfs. After
+> returning from the OS interface successfully, the management
+> console updates the hypervisor. Since the VAS capabilities in
+> the hypervisor is not updated when the OS gets the update,
+> the kernel is using the old total credits value from the
+> hypervisor. Fix this issue by using the new QoS credits
+> from the userspace instead of depending on VAS capabilities
+> from the hypervisor.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/vdso: Fix incorrect CFI in gettimeofday.S
-      https://git.kernel.org/powerpc/c/6d65028eb67dbb7627651adfc460d64196d38bd8
+[1/1] powerpc/pseries/vas: Use QoS credits from the userspace
+      https://git.kernel.org/powerpc/c/57831bfb5e78777dc399e351ed68ef77c3aee385
 
 cheers
