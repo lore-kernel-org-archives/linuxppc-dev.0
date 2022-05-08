@@ -4,13 +4,13 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28C96C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 May 2022 19:10:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE3B1C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 May 2022 19:11:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KxDR13V7Jz3cCX
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 05:10:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KxDRg3hySz3cfJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 05:11:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=IxQXJhKD;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=PTC5AciD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
@@ -19,34 +19,34 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=IxQXJhKD; 
+ header.s=dec2015msa header.b=PTC5AciD; 
  dkim-atps=neutral
 Received: from conuserg-09.nifty.com (conuserg-09.nifty.com [210.131.2.76])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KxDQR2d9Wz3bqg
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KxDQR2ZFSz3bpj
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2022 05:10:06 +1000 (AEST)
 Received: from grover.sesame (133-32-177-133.west.xps.vectant.ne.jp
  [133.32.177.133]) (authenticated)
- by conuserg-09.nifty.com with ESMTP id 248J8qSR030019;
- Mon, 9 May 2022 04:08:57 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com 248J8qSR030019
+ by conuserg-09.nifty.com with ESMTP id 248J8qSO030019;
+ Mon, 9 May 2022 04:08:54 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com 248J8qSO030019
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1652036938;
- bh=fTWufSGLPIAfiy+llcmQSSOszMnmVGeqEYG5OUh4Gao=;
+ s=dec2015msa; t=1652036934;
+ bh=EBR85XaMbeh0T44CkrvtpS6BU3Sm5SGyK1Gdmfon54A=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=IxQXJhKDS8X8Fsd44zY4pkmn3cOxr3A9N3bFK6Y49wQNuLZ+9WS7ZDQ/g+hNUo9kh
- BfYIrtdQIkpIfoQ1HXXT4fiR0FJ+hAyWHaNHjV6Leqy0NkCt24bhs6VazRcz8MCBT8
- ucy5n8tNqoIAPkAz1oN/vyb16Cfod/A1SkZyA2wLpEZz2HN1O4/wFs4k5EtWUXjNLz
- oHT0+VsMvpoQqx+ipAVBqCt2M/9YJagiYqzBEgBU1YR6P6MD7P0UExrDvJwDfNujrN
- W5DnekjBkKRUHoj4pPTA6E26syJUR4JOonvqa3MUDfu+kMuwpENMqYwXhknnf51Ygz
- oEUCfzjIkzsNw==
+ b=PTC5AciDMODiNXRU2PTnmk/Nwzp1l6EM7aBTzt78lmVSYpuq8SdjA4xBxBzEkxcdO
+ 8WrNcZpTU18ZLSLe5RFUcBbBPM7kyxEZTH/zOWHL8C4wQ2mjaQXDATd+mLzL/WqRvK
+ nB4F9ntC1xAYdFhznHMTS0b7bHzOqc3VrFk8oarmJfY/M0jRNN482Y+jU2uoA3GbMz
+ jjfZU1+e+qCno/glVueakLSuyqIXsW/RhI6oS3mmuadLcm0zDhY5JVRFPlQPrPxgad
+ uCN4On5jSUifzzZ+HwqT6LOFaIPIKmmo+qhlwFRv9QWb+wVX8f0y3r59ljMhUa0dSA
+ vyUu9oISFXdpQ==
 X-Nifty-SrcIP: [133.32.177.133]
 From: Masahiro Yamada <masahiroy@kernel.org>
 To: linux-kbuild@vger.kernel.org
-Subject: [PATCH v4 04/14] modpost: add sym_find_with_module() helper
-Date: Mon,  9 May 2022 04:06:21 +0900
-Message-Id: <20220508190631.2386038-5-masahiroy@kernel.org>
+Subject: [PATCH v4 01/14] modpost: remove left-over cross_compile declaration
+Date: Mon,  9 May 2022 04:06:18 +0900
+Message-Id: <20220508190631.2386038-2-masahiroy@kernel.org>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20220508190631.2386038-1-masahiroy@kernel.org>
 References: <20220508190631.2386038-1-masahiroy@kernel.org>
@@ -73,63 +73,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-find_symbol() returns the first symbol found in the hash table. This
-table is global, so it may return a symbol from an unexpected module.
-
-There is a case where we want to search for a symbol with a given name
-in a specified module.
-
-Add sym_find_with_module(), which receives the module pointer as the
-second argument. It is equivalent to find_module() if NULL is passed
-as the module pointer.
+This is a remnant of commit 6543becf26ff ("mod/file2alias: make
+modalias generation safe for cross compiling").
 
 Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-Reviewed-by: Nicolas Schier <nicolas@fjasle.eu>
-Tested-by: Nathan Chancellor <nathan@kernel.org>
 ---
 
 Changes in v4:
-  - Only takes the new helper from
-    https://patchwork.kernel.org/project/linux-kbuild/patch/20220505072244.1155033-2-masahiroy@kernel.org/
+  - New patch
 
-Changes in v2:
-  - Rename the new func to sym_find_with_module()
+ scripts/mod/modpost.h | 1 -
+ 1 file changed, 1 deletion(-)
 
- scripts/mod/modpost.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index e7e2c70a98f5..fc5db1f73cf1 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -266,7 +266,7 @@ static void sym_add_unresolved(const char *name, struct module *mod, bool weak)
- 	list_add_tail(&sym->list, &mod->unresolved_symbols);
+diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
+index cfa127d2bb8f..d9daeff07b83 100644
+--- a/scripts/mod/modpost.h
++++ b/scripts/mod/modpost.h
+@@ -174,7 +174,6 @@ static inline unsigned int get_secindex(const struct elf_info *info,
  }
  
--static struct symbol *find_symbol(const char *name)
-+static struct symbol *sym_find_with_module(const char *name, struct module *mod)
- {
- 	struct symbol *s;
- 
-@@ -275,12 +275,17 @@ static struct symbol *find_symbol(const char *name)
- 		name++;
- 
- 	for (s = symbolhash[tdb_hash(name) % SYMBOL_HASH_SIZE]; s; s = s->next) {
--		if (strcmp(s->name, name) == 0)
-+		if (strcmp(s->name, name) == 0 && (!mod || s->module == mod))
- 			return s;
- 	}
- 	return NULL;
- }
- 
-+static struct symbol *find_symbol(const char *name)
-+{
-+	return sym_find_with_module(name, NULL);
-+}
-+
- struct namespace_list {
- 	struct list_head list;
- 	char namespace[];
+ /* file2alias.c */
+-extern unsigned int cross_build;
+ void handle_moddevtable(struct module *mod, struct elf_info *info,
+ 			Elf_Sym *sym, const char *symname);
+ void add_moddevtable(struct buffer *buf, struct module *mod);
 -- 
 2.32.0
 
