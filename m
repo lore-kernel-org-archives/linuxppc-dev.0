@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE28EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 05:40:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A366C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 05:41:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KxVQ746qnz3fJF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 15:40:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KxVQZ0G3dz3fMw
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 15:41:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,52 +16,51 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KxVL74fhBz3cDT
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2022 15:37:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KxVLC5rTjz3cdJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2022 15:37:23 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KxVKQ0ljwz9sTj;
- Mon,  9 May 2022 07:36:42 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4KxVKR1HpYz9sVj;
+ Mon,  9 May 2022 07:36:43 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zQX5uZIXMjlY; Mon,  9 May 2022 07:36:42 +0200 (CEST)
+ with ESMTP id o9_dxTuXoPLn; Mon,  9 May 2022 07:36:43 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KxVKF5lZdz9sVj;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KxVKF5dFVz9sVd;
  Mon,  9 May 2022 07:36:33 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AF53D8B770;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id ACA588B76E;
  Mon,  9 May 2022 07:36:33 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id iMMbcD48-7Aj; Mon,  9 May 2022 07:36:33 +0200 (CEST)
+ with ESMTP id bU37uZxVXqHF; Mon,  9 May 2022 07:36:33 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5DC918B77A;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 51AA28B776;
  Mon,  9 May 2022 07:36:33 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2495aVM41591279
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2495aR9w1591206
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 9 May 2022 07:36:31 +0200
+ Mon, 9 May 2022 07:36:27 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2495aVeI1591278;
- Mon, 9 May 2022 07:36:31 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2495aQXb1591205;
+ Mon, 9 May 2022 07:36:26 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH v3 18/25] powerpc/ftrace: Simplify expected_nop_sequence()
-Date: Mon,  9 May 2022 07:36:16 +0200
-Message-Id: <305d22472f1f92127fba09692df6bb5d079a8cd0.1652074503.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 00/25] powerpc: ftrace optimisation and cleanup and more
+ [v3]
+Date: Mon,  9 May 2022 07:35:58 +0200
+Message-Id: <cover.1652074503.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <cover.1652074503.git.christophe.leroy@csgroup.eu>
-References: <cover.1652074503.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1652074582; l=1521; s=20211009;
- h=from:subject:message-id; bh=4BswpVslfmWCofUljaPxo8plPyhnTwi3LkFniY9lZ38=;
- b=ifRvh8SNQExUvpvzJCaMJ/av7HVnvA3GRiAwu93w7a92OhGYkGDDEAxPy9qJCsZW811LXP/TR9VE
- SauAAWqKCGDYLV9srrglNiA68jExZsDJVQk52GOwizdOK0BYavRn
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1652074581; l=3842; s=20211009;
+ h=from:subject:message-id; bh=51wV9eNRVhtkrENuM3ARQMOo9s4nz33TjB7nd9UuZ9k=;
+ b=5cHXoeQUSw6/s49i9T83aDQblwQx/bkwWim71GkTXPcdJAmIQN1FULV+fhrAMAr9boUqwdTVRCC7
+ ADMcx+S4C56WgZ2JRzvaAMU49HONnidpXa8Utb0gYagb40pokvnE
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -81,50 +80,84 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Avoid ifdefs around expected_nop_sequence().
+This series provides optimisation and cleanup of ftrace on powerpc.
 
-While at it make it a bool.
+With this series ftrace activation is about 20% faster on an 8xx.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/kernel/trace/ftrace.c | 22 ++++++----------------
- 1 file changed, 6 insertions(+), 16 deletions(-)
+At the end of the series come additional cleanups around ppc-opcode,
+that would likely conflict with this series if posted separately.
 
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 346b5485e7ef..c34cb394f8a8 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -390,24 +390,14 @@ int ftrace_make_nop(struct module *mod,
-  * They should effectively be a NOP, and follow formal constraints,
-  * depending on the ABI. Return false if they don't.
-  */
--#ifdef CONFIG_PPC64_ELF_ABI_V1
--static int
--expected_nop_sequence(void *ip, ppc_inst_t op0, ppc_inst_t op1)
--{
--	if (!ppc_inst_equal(op0, ppc_inst(PPC_RAW_BRANCH(8))) ||
--	    !ppc_inst_equal(op1, ppc_inst(PPC_INST_LD_TOC)))
--		return 0;
--	return 1;
--}
--#else
--static int
--expected_nop_sequence(void *ip, ppc_inst_t op0, ppc_inst_t op1)
-+static bool expected_nop_sequence(void *ip, ppc_inst_t op0, ppc_inst_t op1)
- {
--	if (!ppc_inst_equal(op0, ppc_inst(PPC_RAW_NOP())))
--		return 0;
--	return 1;
-+	if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V1))
-+		return ppc_inst_equal(op0, ppc_inst(PPC_RAW_BRANCH(8))) &&
-+		       ppc_inst_equal(op1, ppc_inst(PPC_INST_LD_TOC));
-+	else
-+		return ppc_inst_equal(op0, ppc_inst(PPC_RAW_NOP()));
- }
--#endif
- 
- static int
- __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+Change since v2:
+- The only change in v3 is in patch 21, to fix sparse problems reported by the Robot.
+
+Main changes since v1 (details in after each individual patch description):
+- Added 3 patches (8, 9, 10) that convert PPC64_ELF_ABI_v{1/2} macros by CONFIG_PPC64_ELF_ABI_V{1/2}
+- Taken comments from Naveen
+
+Christophe Leroy (25):
+  powerpc/ftrace: Refactor prepare_ftrace_return()
+  powerpc/ftrace: Remove redundant create_branch() calls
+  powerpc/code-patching: Inline is_offset_in_{cond}_branch_range()
+  powerpc/ftrace: Use is_offset_in_branch_range()
+  powerpc/code-patching: Inline create_branch()
+  powerpc/ftrace: Inline ftrace_modify_code()
+  powerpc/ftrace: Use patch_instruction() return directly
+  powerpc: Add CONFIG_PPC64_ELF_ABI_V1 and CONFIG_PPC64_ELF_ABI_V2
+  powerpc: Replace PPC64_ELF_ABI_v{1/2} by CONFIG_PPC64_ELF_ABI_V{1/2}
+  powerpc: Finalise cleanup around ABI use
+  powerpc/ftrace: Make __ftrace_make_{nop/call}() common to PPC32 and
+    PPC64
+  powerpc/ftrace: Don't include ftrace.o for CONFIG_FTRACE_SYSCALLS
+  powerpc/ftrace: Use CONFIG_FUNCTION_TRACER instead of
+    CONFIG_DYNAMIC_FTRACE
+  powerpc/ftrace: Remove ftrace_plt_tramps[]
+  powerpc/ftrace: Use BRANCH_SET_LINK instead of value 1
+  powerpc/ftrace: Use PPC_RAW_xxx() macros instead of opencoding.
+  powerpc/ftrace: Use size macro instead of opencoding
+  powerpc/ftrace: Simplify expected_nop_sequence()
+  powerpc/ftrace: Minimise number of #ifdefs
+  powerpc/inst: Add __copy_inst_from_kernel_nofault()
+  powerpc/ftrace: Don't use copy_from_kernel_nofault() in
+    module_trampoline_target()
+  powerpc/inst: Remove PPC_INST_BRANCH
+  powerpc/modules: Use PPC_LI macros instead of opencoding
+  powerpc/inst: Remove PPC_INST_BL
+  powerpc/opcodes: Remove unused PPC_INST_XXX macros
+
+ arch/powerpc/Kconfig                     |   2 +-
+ arch/powerpc/Makefile                    |  12 +-
+ arch/powerpc/boot/Makefile               |   2 +
+ arch/powerpc/include/asm/code-patching.h |  65 +++-
+ arch/powerpc/include/asm/ftrace.h        |   4 +-
+ arch/powerpc/include/asm/inst.h          |  13 +-
+ arch/powerpc/include/asm/linkage.h       |   2 +-
+ arch/powerpc/include/asm/module.h        |   2 -
+ arch/powerpc/include/asm/ppc-opcode.h    |  22 +-
+ arch/powerpc/include/asm/ppc_asm.h       |   4 +-
+ arch/powerpc/include/asm/ptrace.h        |   2 +-
+ arch/powerpc/include/asm/sections.h      |  24 +-
+ arch/powerpc/include/asm/types.h         |   8 -
+ arch/powerpc/kernel/fadump.c             |  13 +-
+ arch/powerpc/kernel/head_64.S            |   2 +-
+ arch/powerpc/kernel/interrupt_64.S       |   2 +-
+ arch/powerpc/kernel/kprobes.c            |   6 +-
+ arch/powerpc/kernel/misc_64.S            |   2 +-
+ arch/powerpc/kernel/module.c             |   4 +-
+ arch/powerpc/kernel/module_32.c          |  38 ++-
+ arch/powerpc/kernel/module_64.c          |   7 +-
+ arch/powerpc/kernel/ptrace/ptrace.c      |   6 -
+ arch/powerpc/kernel/trace/Makefile       |   5 +-
+ arch/powerpc/kernel/trace/ftrace.c       | 375 +++++++----------------
+ arch/powerpc/kvm/book3s_interrupts.S     |   2 +-
+ arch/powerpc/kvm/book3s_rmhandlers.S     |   2 +-
+ arch/powerpc/lib/code-patching.c         |  49 +--
+ arch/powerpc/lib/feature-fixups.c        |   2 +-
+ arch/powerpc/net/bpf_jit.h               |   4 +-
+ arch/powerpc/net/bpf_jit_comp.c          |   2 +-
+ arch/powerpc/net/bpf_jit_comp64.c        |   4 +-
+ arch/powerpc/platforms/Kconfig.cputype   |   6 +
+ 32 files changed, 271 insertions(+), 422 deletions(-)
+
 -- 
 2.35.1
 
