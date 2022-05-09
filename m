@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B646C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 05:41:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E109C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 05:41:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KxVR14bXNz3cMS
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 15:41:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KxVRS5s7bz3bxH
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 15:41:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,52 +16,52 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KxVLJ5K7bz3cf8
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2022 15:37:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KxVLP2zz4z3cg2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2022 15:37:33 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KxVKS0gHfz9sVd;
- Mon,  9 May 2022 07:36:44 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4KxVKV0CjBz9sVm;
+ Mon,  9 May 2022 07:36:46 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id OgspKrjzC2SQ; Mon,  9 May 2022 07:36:44 +0200 (CEST)
+ with ESMTP id 4cy8k89s_P-V; Mon,  9 May 2022 07:36:45 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KxVKF5mp6z9sVm;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KxVKF5zBtz9sW3;
  Mon,  9 May 2022 07:36:33 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BDBF98B776;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B4F798B775;
  Mon,  9 May 2022 07:36:33 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 1PkpxPF2XuRO; Mon,  9 May 2022 07:36:33 +0200 (CEST)
+ with ESMTP id 1KfzM8C6YGTb; Mon,  9 May 2022 07:36:33 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 565958B778;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 661938B77C;
  Mon,  9 May 2022 07:36:33 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2495aTv31591231
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2495aUHZ1591263
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 9 May 2022 07:36:29 +0200
+ Mon, 9 May 2022 07:36:30 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2495aTVr1591230;
- Mon, 9 May 2022 07:36:29 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2495aUVf1591262;
+ Mon, 9 May 2022 07:36:30 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH v3 06/25] powerpc/ftrace: Inline ftrace_modify_code()
-Date: Mon,  9 May 2022 07:36:04 +0200
-Message-Id: <1597a06d57cfc80e6853838c4066e799bf6c7977.1652074503.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 14/25] powerpc/ftrace: Remove ftrace_plt_tramps[]
+Date: Mon,  9 May 2022 07:36:12 +0200
+Message-Id: <daeeb618a6619e3a7e3f82f1bd83ca7c25af6330.1652074503.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <cover.1652074503.git.christophe.leroy@csgroup.eu>
 References: <cover.1652074503.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1652074581; l=1024; s=20211009;
- h=from:subject:message-id; bh=gUl26aWBapldceuYTq45qkCOSgpcMCNP7bN7cPhPsTs=;
- b=GlvWJyB70cjLYKrxKqYkNh2CJ9793ojD+nKBhyXJzI1kF2uEvqki+zAHGXFZZ/GnSCLJ/Xb5PBVp
- egGtikEEBk/2KTFk2EAxKDvnN9ainbqnkoOt8NCSrc4W8cfvmeJS
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1652074582; l=1209; s=20211009;
+ h=from:subject:message-id; bh=qYxT4k4CRUJ3Sg3spsrdpRhV7EICOLHjYkSCFSOK6Q8=;
+ b=oIqJjn97eI7VsuU5wJcMjjbaMsuQ381dV81mMSe29UXlSpAoV04rk364OQQYFWnNN/l+nVKDEprI
+ uBwoIyaUBYVEnsWrl6KRkhq8mMfPVxkz5OPi1PfEY4bR+1OEyPxY
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -81,35 +81,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Inlining ftrace_modify_code(), it increases a bit the
-size of ftrace code but brings 5% improvment on ftrace
-activation.
+ftrace_plt_tramps table is never filled so it is useless.
 
-Usually in C files we let gcc decide what to do but here
-it really help to 'help' gcc to decide to inline, thought
-we don't want to force it with an __always_inline that
-would be too much for CONFIG_CC_OPTIMIZE_FOR_SIZE.
+Remove it.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v2: More explanation in commit message
----
- arch/powerpc/kernel/trace/ftrace.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/trace/ftrace.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
 diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 41c45b9c7f39..98e82fa4980f 100644
+index f89bcaa5f0fc..010a8c7ff4ac 100644
 --- a/arch/powerpc/kernel/trace/ftrace.c
 +++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -53,7 +53,7 @@ ftrace_call_replace(unsigned long ip, unsigned long addr, int link)
- 	return op;
- }
+@@ -250,7 +250,6 @@ static int setup_mcount_compiler_tramp(unsigned long tramp)
+ 	int i;
+ 	ppc_inst_t op;
+ 	unsigned long ptr;
+-	static unsigned long ftrace_plt_tramps[NUM_FTRACE_TRAMPS];
  
--static int
-+static inline int
- ftrace_modify_code(unsigned long ip, ppc_inst_t old, ppc_inst_t new)
- {
- 	ppc_inst_t replaced;
+ 	/* Is this a known long jump tramp? */
+ 	for (i = 0; i < NUM_FTRACE_TRAMPS; i++)
+@@ -259,13 +258,6 @@ static int setup_mcount_compiler_tramp(unsigned long tramp)
+ 		else if (ftrace_tramps[i] == tramp)
+ 			return 0;
+ 
+-	/* Is this a known plt tramp? */
+-	for (i = 0; i < NUM_FTRACE_TRAMPS; i++)
+-		if (!ftrace_plt_tramps[i])
+-			break;
+-		else if (ftrace_plt_tramps[i] == tramp)
+-			return -1;
+-
+ 	/* New trampoline -- read where this goes */
+ 	if (copy_inst_from_kernel_nofault(&op, (void *)tramp)) {
+ 		pr_debug("Fetching opcode failed.\n");
 -- 
 2.35.1
 
