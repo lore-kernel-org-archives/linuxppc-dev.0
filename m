@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4955FC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 05:44:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88FAAC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 05:45:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KxVVq6988z3g1P
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 15:44:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KxVWG0vpYz3cDq
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 May 2022 15:45:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,53 +16,52 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KxVLx35hwz3dpV
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2022 15:38:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KxVM1251fz3dpX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2022 15:38:05 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4KxVKg02ygz9sWB;
- Mon,  9 May 2022 07:36:55 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4KxVKh15P4z9sWM;
+ Mon,  9 May 2022 07:36:56 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zE4kndyPflGx; Mon,  9 May 2022 07:36:54 +0200 (CEST)
+ with ESMTP id 868ZzAbfAgVE; Mon,  9 May 2022 07:36:56 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4KxVKF6VjKz9sWC;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4KxVKF6WrXz9sWD;
  Mon,  9 May 2022 07:36:33 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CFEAD8B770;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D431C8B778;
  Mon,  9 May 2022 07:36:33 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 4WhdA-dXHa5n; Mon,  9 May 2022 07:36:33 +0200 (CEST)
+ with ESMTP id zfxjU5nf4LtZ; Mon,  9 May 2022 07:36:33 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6CC058B77D;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8742A8B798;
  Mon,  9 May 2022 07:36:33 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2495aStl1591219
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2495aTJX1591227
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Mon, 9 May 2022 07:36:28 +0200
+ Mon, 9 May 2022 07:36:29 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2495aSbV1591218;
- Mon, 9 May 2022 07:36:28 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2495aTln1591226;
+ Mon, 9 May 2022 07:36:29 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH v3 03/25] powerpc/code-patching: Inline
- is_offset_in_{cond}_branch_range()
-Date: Mon,  9 May 2022 07:36:01 +0200
-Message-Id: <a05be0ccb7373e6a9789a1988fcd0c810f5f9269.1652074503.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 05/25] powerpc/code-patching: Inline create_branch()
+Date: Mon,  9 May 2022 07:36:03 +0200
+Message-Id: <69851cc9a7bf8f03d025e6d29e165f2d0bd3bb6e.1652074503.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <cover.1652074503.git.christophe.leroy@csgroup.eu>
 References: <cover.1652074503.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1652074581; l=3156; s=20211009;
- h=from:subject:message-id; bh=gLaYW1av0GijX4+cqYkHFoJkNFVZ0gQqCQkmFifsN0M=;
- b=dLAEd9s8YLV02PIcm3kAxAn6Kt0HmYzrrV229Yma06yk5t9Ksmh51HQdmnH+QG6iLpgYnaTc/Mq3
- W/2d9x/RBI8JS+PPSnvYbfP2xrKvpa1wy5+nenAyDUx0lWI0sik2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1652074581; l=2728; s=20211009;
+ h=from:subject:message-id; bh=d2swIJrMmUDKV+uH13vJ0j/DNa2ajgVmApWQwP8siB0=;
+ b=Z5Jll7/9z25GY0FND2b02eHhlHnW3KCgNNePBgJIm27iAC4z/tdn0RU4s56Ml0Tu0+G6PBjGjNYp
+ sjHBTg4CB3PosHQT2R6Hp/G0eH/TdF+9+VaWvMTt2hRRjqOr6ma0
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -82,93 +81,86 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Test in is_offset_in_branch_range() and is_offset_in_cond_branch_range()
-are simple tests that are worth inlining.
+create_branch() is a good candidate for inlining because:
+- Flags can be folded in.
+- Range tests are likely to be already done.
+
+Hence reducing the create_branch() to only a set of instructions.
+
+So inline it.
+
+It improves ftrace activation by 10%.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/code-patching.h | 29 ++++++++++++++++++++++--
- arch/powerpc/lib/code-patching.c         | 27 ----------------------
- 2 files changed, 27 insertions(+), 29 deletions(-)
+ arch/powerpc/include/asm/code-patching.h | 22 ++++++++++++++++++++--
+ arch/powerpc/lib/code-patching.c         | 20 --------------------
+ 2 files changed, 20 insertions(+), 22 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-index 409483b2d0ce..e7c5df50cb4e 100644
+index e7c5df50cb4e..4260e89f62b1 100644
 --- a/arch/powerpc/include/asm/code-patching.h
 +++ b/arch/powerpc/include/asm/code-patching.h
-@@ -22,8 +22,33 @@
- #define BRANCH_SET_LINK	0x1
- #define BRANCH_ABSOLUTE	0x2
- 
--bool is_offset_in_branch_range(long offset);
--bool is_offset_in_cond_branch_range(long offset);
-+/*
-+ * Powerpc branch instruction is :
-+ *
-+ *  0         6                 30   31
-+ *  +---------+----------------+---+---+
-+ *  | opcode  |     LI         |AA |LK |
-+ *  +---------+----------------+---+---+
-+ *  Where AA = 0 and LK = 0
-+ *
-+ * LI is a signed 24 bits integer. The real branch offset is computed
-+ * by: imm32 = SignExtend(LI:'0b00', 32);
-+ *
-+ * So the maximum forward branch should be:
-+ *   (0x007fffff << 2) = 0x01fffffc =  0x1fffffc
-+ * The maximum backward branch should be:
-+ *   (0xff800000 << 2) = 0xfe000000 = -0x2000000
-+ */
-+static inline bool is_offset_in_branch_range(long offset)
-+{
-+	return (offset >= -0x2000000 && offset <= 0x1fffffc && !(offset & 0x3));
-+}
-+
-+static inline bool is_offset_in_cond_branch_range(long offset)
-+{
-+	return offset >= -0x8000 && offset <= 0x7fff && !(offset & 0x3);
-+}
-+
- int create_branch(ppc_inst_t *instr, const u32 *addr,
- 		  unsigned long target, int flags);
- int create_cond_branch(ppc_inst_t *instr, const u32 *addr,
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 00c68e7fb11e..58262c7e447c 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -208,33 +208,6 @@ int patch_branch(u32 *addr, unsigned long target, int flags)
- 	return patch_instruction(addr, instr);
+@@ -49,8 +49,26 @@ static inline bool is_offset_in_cond_branch_range(long offset)
+ 	return offset >= -0x8000 && offset <= 0x7fff && !(offset & 0x3);
  }
  
--bool is_offset_in_branch_range(long offset)
+-int create_branch(ppc_inst_t *instr, const u32 *addr,
+-		  unsigned long target, int flags);
++static inline int create_branch(ppc_inst_t *instr, const u32 *addr,
++				unsigned long target, int flags)
++{
++	long offset;
++
++	*instr = ppc_inst(0);
++	offset = target;
++	if (! (flags & BRANCH_ABSOLUTE))
++		offset = offset - (unsigned long)addr;
++
++	/* Check we can represent the target in the instruction format */
++	if (!is_offset_in_branch_range(offset))
++		return 1;
++
++	/* Mask out the flags and target, so they don't step on each other. */
++	*instr = ppc_inst(0x48000000 | (flags & 0x3) | (offset & 0x03FFFFFC));
++
++	return 0;
++}
++
+ int create_cond_branch(ppc_inst_t *instr, const u32 *addr,
+ 		       unsigned long target, int flags);
+ int patch_branch(u32 *addr, unsigned long target, int flags);
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 58262c7e447c..7adbdb05fee7 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -230,26 +230,6 @@ bool is_conditional_branch(ppc_inst_t instr)
+ }
+ NOKPROBE_SYMBOL(is_conditional_branch);
+ 
+-int create_branch(ppc_inst_t *instr, const u32 *addr,
+-		  unsigned long target, int flags)
 -{
--	/*
--	 * Powerpc branch instruction is :
--	 *
--	 *  0         6                 30   31
--	 *  +---------+----------------+---+---+
--	 *  | opcode  |     LI         |AA |LK |
--	 *  +---------+----------------+---+---+
--	 *  Where AA = 0 and LK = 0
--	 *
--	 * LI is a signed 24 bits integer. The real branch offset is computed
--	 * by: imm32 = SignExtend(LI:'0b00', 32);
--	 *
--	 * So the maximum forward branch should be:
--	 *   (0x007fffff << 2) = 0x01fffffc =  0x1fffffc
--	 * The maximum backward branch should be:
--	 *   (0xff800000 << 2) = 0xfe000000 = -0x2000000
--	 */
--	return (offset >= -0x2000000 && offset <= 0x1fffffc && !(offset & 0x3));
+-	long offset;
+-
+-	*instr = ppc_inst(0);
+-	offset = target;
+-	if (! (flags & BRANCH_ABSOLUTE))
+-		offset = offset - (unsigned long)addr;
+-
+-	/* Check we can represent the target in the instruction format */
+-	if (!is_offset_in_branch_range(offset))
+-		return 1;
+-
+-	/* Mask out the flags and target, so they don't step on each other. */
+-	*instr = ppc_inst(0x48000000 | (flags & 0x3) | (offset & 0x03FFFFFC));
+-
+-	return 0;
 -}
 -
--bool is_offset_in_cond_branch_range(long offset)
--{
--	return offset >= -0x8000 && offset <= 0x7fff && !(offset & 0x3);
--}
--
- /*
-  * Helper to check if a given instruction is a conditional branch
-  * Derived from the conditional checks in analyse_instr()
+ int create_cond_branch(ppc_inst_t *instr, const u32 *addr,
+ 		       unsigned long target, int flags)
+ {
 -- 
 2.35.1
 
