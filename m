@@ -4,57 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 488E4C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 11:52:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03808C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 12:09:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KyGch6h9gz3cZp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 21:52:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KyH083K4Kz3cMg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 22:09:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=ux1OKlKP;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=suse.com (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
- envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=susede1 header.b=ux1OKlKP; dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KyGJl0YWHz30Dp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2022 21:38:45 +1000 (AEST)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
- by smtp-out1.suse.de (Postfix) with ESMTP id E799F21C06;
- Tue, 10 May 2022 11:38:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
- t=1652182721; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=QjxQbnD6WUcAB5XSGPbhgiXq5Z1nB8h07eo4ZkZ4QC8=;
- b=ux1OKlKPpQAZrqb3VSx/+cdnKv+z0GMrb7Vrl4wT7av9mwtdsYHmGTFl15YLILBNoNipDu
- zhzvyNUQ0tVf4I8bosAIddNvm3hk9CLYxTFt2W7RQIuTrmM1G9742/mw3JpxDF9W//N0xh
- 4YsR4kO61TX2TGUrgE/V7TAnZzSnJsg=
-Received: from suse.cz (unknown [10.100.208.146])
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by relay2.suse.de (Postfix) with ESMTPS id F0AB42C141;
- Tue, 10 May 2022 11:38:39 +0000 (UTC)
-Date: Tue, 10 May 2022 13:38:39 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-Subject: Re: [PATCH 04/30] firmware: google: Convert regular spinlock into
- trylock on panic path
-Message-ID: <YnpOv4hAPV4b+6v4@alley>
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-5-gpiccoli@igalia.com>
- <CAE=gft5Pq25L4KFoPWbftkPF-JN1ex2yws77mMJ4GQnn9W0L2g@mail.gmail.com>
- <adcf6d0e-c37c-6ede-479e-29959d03d8c0@igalia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adcf6d0e-c37c-6ede-479e-29959d03d8c0@igalia.com>
-X-Mailman-Approved-At: Tue, 10 May 2022 21:51:20 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KyGzd1KLmz2xfP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2022 22:08:59 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 615831A005D;
+ Tue, 10 May 2022 14:08:56 +0200 (CEST)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com
+ (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id CE76B1A0056;
+ Tue, 10 May 2022 14:08:55 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 99A48180031E;
+ Tue, 10 May 2022 20:08:54 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
+ shengjiu.wang@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
+ perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org
+Subject: [PATCH] ASoC: fsl_ssi: Add support multi fifo script
+Date: Tue, 10 May 2022 19:56:48 +0800
+Message-Id: <1652183808-3745-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,114 +49,134 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
- David Gow <davidgow@google.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, peterz@infradead.org,
- alejandro.j.jimenez@oracle.com, linux-remoteproc@vger.kernel.org,
- feng.tang@intel.com, linux-mips@vger.kernel.org, hidehiro.kawai.ez@hitachi.com,
- sparclinux@vger.kernel.org, Will Deacon <will@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-leds@vger.kernel.org,
- linux-s390@vger.kernel.org, mikelley@microsoft.com, john.ogness@linutronix.de,
- bhe@redhat.com, Jonathan Corbet <corbet@lwn.net>, paulmck@kernel.org,
- fabiomirmar@gmail.com, x86@kernel.org, Evan Green <evgreen@chromium.org>,
- Ard Biesheuvel <ardb@kernel.org>, mingo@redhat.com,
- bcm-kernel-feedback-list@broadcom.com, xen-devel@lists.xenproject.org,
- dyoung@redhat.com, vgoyal@redhat.com, linux-xtensa@linux-xtensa.org,
- dave.hansen@linux.intel.com, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, Linux PM <linux-pm@vger.kernel.org>,
- linux-um@lists.infradead.org, rostedt@goodmis.org, rcu@vger.kernel.org,
- Borislav Petkov <bp@alien8.de>, luto@kernel.org, linux-tegra@vger.kernel.org,
- openipmi-developer@lists.sourceforge.net,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, vkuznets@redhat.com,
- linux-edac@vger.kernel.org, jgross@suse.com, linux-parisc@vger.kernel.org,
- netdev@vger.kernel.org, kernel@gpiccoli.net, kexec@lists.infradead.org,
- LKML <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
- senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
- kernel-dev@igalia.com, linux-alpha@vger.kernel.org,
- Julius Werner <jwerner@chromium.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue 2022-05-03 16:12:09, Guilherme G. Piccoli wrote:
-> On 03/05/2022 15:03, Evan Green wrote:
-> > [...]
-> > gsmi_shutdown_reason() is a common function called in other scenarios
-> > as well, like reboot and thermal trip, where it may still make sense
-> > to wait to acquire a spinlock. Maybe we should add a parameter to
-> > gsmi_shutdown_reason() so that you can get your change on panic, but
-> > we don't convert other callbacks into try-fail scenarios causing us to
-> > miss logs.
-> > 
-> 
-> Hi Evan, thanks for your feedback, much appreciated!
-> What I've done in other cases like this was to have a helper checking
-> the spinlock in the panic notifier - if we can acquire that, go ahead
-> but if not, bail out. For a proper example of an implementation, check
-> patch 13 of the series:
-> https://lore.kernel.org/lkml/20220427224924.592546-14-gpiccoli@igalia.com/ .
-> 
-> Do you agree with that, or prefer really a parameter in
-> gsmi_shutdown_reason() ? I'll follow your choice =)
+With dual fifo enabled, the case that recording mono sound
+in the background, playback mono sound twice in parallal,
+at second time playback sound may distort, the possible
+reason is using dual fifo to playback mono sound is not
+recommended.
 
-I see two more alternative solutions:
+This patch is to provide a option to use multi fifo script,
+which can be dynamically configured as one fifo or two fifo
+mode.
 
-1st variant is a trick already used in console write() callbacks.
-They do trylock() when oops_in_progress is set. They remember
-the result to prevent double unlock when printing Oops messages and
-the system will try to continue working. For example:
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ sound/soc/fsl/fsl_ssi.c | 34 ++++++++++++++++++++++++++++++++--
+ 1 file changed, 32 insertions(+), 2 deletions(-)
 
-pl011_console_write(struct console *co, const char *s, unsigned int count)
-{
-[...]
-	int locked = 1;
-[...]
-	if (uap->port.sysrq)
-		locked = 0;
-	else if (oops_in_progress)
-		locked = spin_trylock(&uap->port.lock);
-	else
-		spin_lock(&uap->port.lock);
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index ca30a4ede076..84cb36d9dfea 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -40,6 +40,7 @@
+ #include <linux/of_address.h>
+ #include <linux/of_irq.h>
+ #include <linux/of_platform.h>
++#include <linux/dma/imx-dma.h>
+ 
+ #include <sound/core.h>
+ #include <sound/pcm.h>
+@@ -214,6 +215,7 @@ struct fsl_ssi_soc_data {
+  * @synchronous: Use synchronous mode - both of TX and RX use STCK and SFCK
+  * @use_dma: DMA is used or FIQ with stream filter
+  * @use_dual_fifo: DMA with support for dual FIFO mode
++ * @use_dyna_fifo: DMA with support for multi FIFO script
+  * @has_ipg_clk_name: If "ipg" is in the clock name list of device tree
+  * @fifo_depth: Depth of the SSI FIFOs
+  * @slot_width: Width of each DAI slot
+@@ -243,6 +245,7 @@ struct fsl_ssi_soc_data {
+  * @dma_maxburst: Max number of words to transfer in one go. So far,
+  *                this is always the same as fifo_watermark.
+  * @ac97_reg_lock: Mutex lock to serialize AC97 register access operations
++ * @audio_config: configure for dma multi fifo script
+  */
+ struct fsl_ssi {
+ 	struct regmap *regs;
+@@ -255,6 +258,7 @@ struct fsl_ssi {
+ 	bool synchronous;
+ 	bool use_dma;
+ 	bool use_dual_fifo;
++	bool use_dyna_fifo;
+ 	bool has_ipg_clk_name;
+ 	unsigned int fifo_depth;
+ 	unsigned int slot_width;
+@@ -287,6 +291,7 @@ struct fsl_ssi {
+ 	u32 dma_maxburst;
+ 
+ 	struct mutex ac97_reg_lock;
++	struct sdma_peripheral_config audio_config[2];
+ };
+ 
+ /*
+@@ -643,7 +648,7 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
+ 	 * task from fifo0, fifo1 would be neglected at the end of each
+ 	 * period. But SSI would still access fifo1 with an invalid data.
+ 	 */
+-	if (ssi->use_dual_fifo)
++	if (ssi->use_dual_fifo || ssi->use_dyna_fifo)
+ 		snd_pcm_hw_constraint_step(substream->runtime, 0,
+ 					   SNDRV_PCM_HW_PARAM_PERIOD_SIZE, 2);
+ 
+@@ -802,6 +807,7 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ {
+ 	bool tx2, tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
+ 	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
++	struct fsl_ssi_regvals *vals = ssi->regvals;
+ 	struct regmap *regs = ssi->regs;
+ 	unsigned int channels = params_channels(hw_params);
+ 	unsigned int sample_size = params_width(hw_params);
+@@ -856,6 +862,28 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
+ 	tx2 = tx || ssi->synchronous;
+ 	regmap_update_bits(regs, REG_SSI_SxCCR(tx2), SSI_SxCCR_WL_MASK, wl);
+ 
++	if (ssi->use_dyna_fifo) {
++		if (channels == 1) {
++			ssi->audio_config[0].n_fifos_dst = 1;
++			ssi->audio_config[1].n_fifos_src = 1;
++			vals[RX].srcr &= ~SSI_SRCR_RFEN1;
++			vals[TX].stcr &= ~SSI_STCR_TFEN1;
++			vals[RX].scr  &= ~SSI_SCR_TCH_EN;
++			vals[TX].scr  &= ~SSI_SCR_TCH_EN;
++		} else {
++			ssi->audio_config[0].n_fifos_dst = 2;
++			ssi->audio_config[1].n_fifos_src = 2;
++			vals[RX].srcr |= SSI_SRCR_RFEN1;
++			vals[TX].stcr |= SSI_STCR_TFEN1;
++			vals[RX].scr  |= SSI_SCR_TCH_EN;
++			vals[TX].scr  |= SSI_SCR_TCH_EN;
++		}
++		ssi->dma_params_tx.peripheral_config = &ssi->audio_config[0];
++		ssi->dma_params_tx.peripheral_size = sizeof(ssi->audio_config[0]);
++		ssi->dma_params_rx.peripheral_config = &ssi->audio_config[1];
++		ssi->dma_params_rx.peripheral_size = sizeof(ssi->audio_config[1]);
++	}
++
+ 	return 0;
+ }
+ 
+@@ -1353,7 +1381,7 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 	ssi->dma_params_rx.addr = ssi->ssi_phys + REG_SSI_SRX0;
+ 
+ 	/* Use even numbers to avoid channel swap due to SDMA script design */
+-	if (ssi->use_dual_fifo) {
++	if (ssi->use_dual_fifo || ssi->use_dyna_fifo) {
+ 		ssi->dma_params_tx.maxburst &= ~0x1;
+ 		ssi->dma_params_rx.maxburst &= ~0x1;
+ 	}
+@@ -1446,6 +1474,8 @@ static int fsl_ssi_probe_from_dt(struct fsl_ssi *ssi)
+ 	if (ssi->use_dma && !ret && dmas[2] == IMX_DMATYPE_SSI_DUAL)
+ 		ssi->use_dual_fifo = true;
+ 
++	if (ssi->use_dma && !ret && dmas[2] == IMX_DMATYPE_MULTI_SAI)
++		ssi->use_dyna_fifo = true;
+ 	/*
+ 	 * Backward compatible for older bindings by manually triggering the
+ 	 * machine driver's probe(). Use /compatible property, including the
+-- 
+2.17.1
 
-[...]
-
-	if (locked)
-		spin_unlock(&uap->port.lock);
-}
-
-
-2nd variant is to check panic_cpu variable. It is used in printk.c.
-We might move the function to panic.h:
-
-static bool panic_in_progress(void)
-{
-	return unlikely(atomic_read(&panic_cpu) != PANIC_CPU_INVALID);
-}
-
-and then do:
-
-	if (panic_in_progress()) {
-		...
-
-
-> > Though thinking more about it, is this really a Good Change (TM)? The
-> > spinlock itself already disables interrupts, meaning the only case
-> > where this change makes a difference is if the panic happens from
-> > within the function that grabbed the spinlock (in which case the
-> > callback is also likely to panic), or in an NMI that panics within
-> > that window.
-
-As already mentioned in the other reply, panic() sometimes stops
-the other CPUs using NMI, for example, see kdump_nmi_shootdown_cpus().
-
-Another situation is when the CPU using the lock ends in some
-infinite loop because something went wrong. The system is in
-an unpredictable state during panic().
-
-I am not sure if this is possible with the code under gsmi_dev.lock
-but such things really happen during panic() in other subsystems.
-Using trylock in the panic() code path is a good practice.
-
-Best Regards,
-Petr
