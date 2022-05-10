@@ -4,68 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2D1FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 11:37:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 490BBC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 11:44:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KyGGl3v5hz3cJ7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 21:37:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KyGRh68psz3cJ2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 21:44:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=VoJKpqMf;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=iiIyquw+;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=wrd2WsMh;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d30;
- helo=mail-io1-xd30.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com;
+ smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
+ helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=VoJKpqMf; dkim-atps=neutral
-Received: from mail-io1-xd30.google.com (mail-io1-xd30.google.com
- [IPv6:2607:f8b0:4864:20::d30])
+ secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
+ header.s=2020 header.b=iiIyquw+; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=wrd2WsMh; 
+ dkim-atps=neutral
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KyGG26kqvz30Dp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2022 21:36:26 +1000 (AEST)
-Received: by mail-io1-xd30.google.com with SMTP id z18so18196685iob.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2022 04:36:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=4EZpR3qbj2OiB8Rs7HNB/ykkYoIogT5opUzlrLNV8YI=;
- b=VoJKpqMfxxTPHvVta4VrHB92nXtrqsdoFMCKO72GGQiiTNlssKn+AXRFv2R0zA/qJl
- ctxf5yvCTzchX0hBX89nV/pbn8AMQXcZyobufzGfOBQSZx6nhMaYwA+R8ZttLsdM8Xl+
- rpydufKYD/6bVeUkxjjhLcjOQR0qGg0c2UaMnbMITS+RV4LBbE8poluGb/ji6ozV4ggX
- 2ZOwstsWV1YYyBdttQncwLva3BWyKTcGbQP+6PrGtjhkepSKztq/WSV1uGa3OR1zPmHp
- fWEbAq+8c6Bu4dtUV2ivF9jPrKCiNZQT0HzmRt0DR1EBUHs6Rmtmvgahn+B8mMcFvjaB
- CbRg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=4EZpR3qbj2OiB8Rs7HNB/ykkYoIogT5opUzlrLNV8YI=;
- b=4lDEc3LxTrq+YGG0lRXPucECT3iRpW7kP7TMyQn/xYDobWnsJhjj3ckvexbe7qV8mp
- YV43EBcchCfSWYWBtlZW28p0bQyYPV0HFbiBMauaGvYd4/HjqXy9bGuqcKZxsfVHZ+T4
- bnX8iWyPRzWH6YHOATm9l1jWqKy+DAStuwgBfNrlwK+BN+XkLQw/aP8+3mGGro6DoGUY
- EUgsKh/R8jcGRVFIJPa5WzVRJnJpDbcP7hn6QYkCSTLTXt+uAhxU0mVd0AKhaLS9JlvD
- V13+v3aVTBm6ua6lDbDzlKa3ifGLmYoBClZP83ArM7YpZ6yRqR7q8K+F82K96kb5lAuy
- PBCg==
-X-Gm-Message-State: AOAM533BOVjdw2dXzMkJnbCRXxBtlnOmP/jSe28LdimR8MYN2MCnC5Ak
- oIJUwItsR6JX3sd+4vButfJJRRFECVGPRPaKj2E=
-X-Google-Smtp-Source: ABdhPJxse48OZESZFthVDv8nUynrMkvM0JCiuRjG7/tN4zNaiseDCEGjt9o4QzkyV4Z20WHbORCpQublLG3V37jZ2Dg=
-X-Received: by 2002:a02:8624:0:b0:32b:397d:eeb1 with SMTP id
- e33-20020a028624000000b0032b397deeb1mr9940559jai.264.1652182582955; Tue, 10
- May 2022 04:36:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KyGQy4dxdz3bXg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2022 21:44:10 +1000 (AEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020; t=1652183045;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=Js8RDp7iMnj24JVY5ETKpHQgMOnO+QR2UvUOw/t3NVI=;
+ b=iiIyquw+8QYZcovxorjqRFjfwhtMfLsHJEqe7bb762UGT/v/l/uDU2MlyH5t4U6gak6twB
+ cCyHPEaUDEHU0enPu0J4DBw0J15rjARHL269aYiMpCupYu3BwyjP2tKIEcoTzzuFT76fSs
+ Z0yC68PLfuFj70wdQZ68UUH/P13qMaOf9EUpMqUg6EgaWEupFN2HWfhg6OWSZyr0hg/ZGt
+ Qzi4v4cd/H7wytmGiF+HHWJ9XcNU3cDxrdhX3LKr8Dq8hqBErcTwz/b/6JL8w7xTiMyZdu
+ TWiYR1JW/491ynSImOymZIIK8iEtjvf2oz1jdx2qz/HmDYNZXQ9LjnzhjQSgpg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020e; t=1652183045;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=Js8RDp7iMnj24JVY5ETKpHQgMOnO+QR2UvUOw/t3NVI=;
+ b=wrd2WsMhhsrFIarhn4h+pO3O6mNNt4p+QTgQfzqOJMhou7WWpPXvvVvQJWm3tmm+PLi6JN
+ 3qRFd4zzo70zIfDQ==
+To: Nicholas Piggin <npiggin@gmail.com>, Ricardo Neri
+ <ricardo.neri-calderon@linux.intel.com>, x86@kernel.org
+Subject: Re: [PATCH v6 28/29] x86/tsc: Restart NMI watchdog after refining
+ tsc_khz
+In-Reply-To: <1652180070.1r874kr0tg.astroid@bobo.none>
+References: <20220506000008.30892-1-ricardo.neri-calderon@linux.intel.com>
+ <20220506000008.30892-29-ricardo.neri-calderon@linux.intel.com>
+ <1652180070.1r874kr0tg.astroid@bobo.none>
+Date: Tue, 10 May 2022 13:44:05 +0200
+Message-ID: <87ilqdpq7u.ffs@tglx>
 MIME-Version: 1.0
-References: <20220507052451.12890-1-ojeda@kernel.org>
- <CABVgOSm5S2=QYnHJ+B0JbYtFYKBDRZiOhE5YMKKUKZU56d17HQ@mail.gmail.com>
- <CANiq72=0ft6+QLbdwWD6cLm4FhWfv53GSg6HKEwxQ-q2N-UkOw@mail.gmail.com>
- <CABVgOSkrvfvA7Ay4GC5wg64S1gibvm5_U5VGBog3sw4_UFo8Cg@mail.gmail.com>
-In-Reply-To: <CABVgOSkrvfvA7Ay4GC5wg64S1gibvm5_U5VGBog3sw4_UFo8Cg@mail.gmail.com>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Tue, 10 May 2022 13:36:11 +0200
-Message-ID: <CANiq72mcvKDW6qO=1PzYR_U0tAwVLyCWFZjFVLL81znWDSYq7A@mail.gmail.com>
-Subject: Re: [PATCH v6 00/23] Rust support
-To: David Gow <davidgow@google.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,78 +72,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- rust-for-linux <rust-for-linux@vger.kernel.org>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-perf-users@vger.kernel.org,
- "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
- Jarkko Sakkinen <jarkko@kernel.org>,
- "open list:KERNEL SELFTEST FRAMEWORK" <linux-kselftest@vger.kernel.org>,
- Miguel Ojeda <ojeda@kernel.org>, live-patching@vger.kernel.org,
- linux-riscv <linux-riscv@lists.infradead.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- KUnit Development <kunit-dev@googlegroups.com>
+Cc: "Ravi V.
+ Shankar" <ravi.v.shankar@intel.com>, Andi Kleen <ak@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, Joerg Roedel <joro@8bytes.org>,
+ linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
+ Ricardo Neri <ricardo.neri@intel.com>, iommu@lists.linux-foundation.org,
+ Tony Luck <tony.luck@intel.com>,
+ Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Woodhouse <dwmw2@infradead.org>, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi David,
-
-On Tue, May 10, 2022 at 6:45 AM David Gow <davidgow@google.com> wrote:
+On Tue, May 10 2022 at 21:16, Nicholas Piggin wrote:
+> Excerpts from Ricardo Neri's message of May 6, 2022 10:00 am:
+>> +	/*
+>> +	 * If in use, the HPET hardlockup detector relies on tsc_khz.
+>> +	 * Reconfigure it to make use of the refined tsc_khz.
+>> +	 */
+>> +	lockup_detector_reconfigure();
 >
-> I've just sent out a pull request to get this working under UML as
-> well, which would simplify running these further:
-> https://github.com/Rust-for-Linux/linux/pull/766
-
-Thanks a lot!
-
-> Yeah, these are all fair points: particularly for small doctests.
+> I don't know if the API is conceptually good.
 >
-> Maybe having an optional name, which more significant tests could use
-> to override the file:line names? That could be useful for a few of the
-> larger, more often referenced tests.
-
-Sounds reasonable. I can add support for that.
-
-> Ugh: it's a bit ugly either way. I suspect that file:line is still
-> probably better, if only because we need some way of looking up the
-> test in the code if it fails. I'd hate for people to be randomly
-> hashing bits of just to find out what test is failing.
-
-One redeeming quality is that the assertion prints the line/file
-number in the generated file, so it would still be possible to check
-where it came from:
-
-    [13:13:43] # rust_kernel_doctest_str_rs_somehash: ASSERTION FAILED
-at rust/doctests_kernel_generated.rs:2209
-    [13:13:43] Expected 2 > 3 to be true, but is false
-    [13:13:43] not ok 43 - rust_kernel_doctest_str_rs_somehash
-    [13:13:43] [FAILED] rust_kernel_doctest_str_rs_somehash
-
-Another alternative is to keep the file:line information around
-without embedding it into the test name, e.g. in a TAP comment or a
-mapping file (which `kunit.py` could read).
-
-But, yeah, before doing hashes or things like that, I would just go
-for simplicity and keep things as they are unless some use case really
-needs doctests to be stable.
-
-> Oops: I missed that (one of the issues with testing this on a
-> different machine which had a rust toolchain). Looks good to me.
+> You change something that the lockup detector is currently using, 
+> *while* the detector is running asynchronously, and then reconfigure
+> it. What happens in the window? If this code is only used for small
+> adjustments maybe it does not really matter but in principle it's
+> a bad API to export.
 >
-> Ah: I didn't realise the plan was always to have crate-specific
-> suites, and possibly to split things up.
+> lockup_detector_reconfigure as an internal API is okay because it
+> reconfigures things while the watchdog is stopped [actually that
+> looks untrue for soft dog which uses watchdog_thresh in
+> is_softlockup(), but that should be fixed].
 >
-> The KTAP output specification does actually support arbitrary nesting
-> (though KUnit itself doesn't at the moment), which would potentially
-> be an option if (e.g.) providing the complete module nesting made
-> sense. I'm not convinced that'd make things easier to read, though.
+> You're the arch so you're allowed to stop the watchdog and configure
+> it, e.g., hardlockup_detector_perf_stop() is called in arch/.
+>
+> So you want to disable HPET watchdog if it was enabled, then update
+> wherever you're using tsc_khz, then re-enable.
 
-That is useful to know in case we need it, thanks!
+The real question is whether making this refined tsc_khz value
+immediately effective matters at all. IMO, it does not because up to
+that point the watchdog was happily using the coarse calibrated value
+and the whole use TSC to assess whether the HPET fired mechanism is just
+a guestimate anyway. So what's the point of trying to guess 'more
+correct'.
 
-Cheers,
-Miguel
+Thanks,
+
+        tglx
+
