@@ -4,75 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EFAEC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 10:47:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81E2FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 11:16:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KyF9V5HqLz2yJ5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 20:47:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KyFqP5GVQz3brl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 21:16:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=h0kkPCMH;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iGRfjeSG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42a;
- helo=mail-pf1-x42a.google.com; envelope-from=npiggin@gmail.com;
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20210112 header.b=h0kkPCMH; dkim-atps=neutral
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com
- [IPv6:2607:f8b0:4864:20::42a])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=iGRfjeSG; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KyF8p3rrjz2xY0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2022 20:46:49 +1000 (AEST)
-Received: by mail-pf1-x42a.google.com with SMTP id c14so14612462pfn.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2022 03:46:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=ywkCd0VQclbYtbuLcC/2MBQIqOITw9zVVBZNkCemTOo=;
- b=h0kkPCMH6mPJCfovcbuIStuogjg+GSSyZfKyGX6j68msx5w4YZi0zrfa/0Dshwr3GN
- 7RQ1KxIeG1PXDsecsjvmgUcAmrozA5BpQNdXi0GekocXEFlkce+AZEZUg2hxd74t7Q6b
- Gio+Nbtf97oPkaBTUiVEboPYAb85Lj3wwgK1nuRGqbKHKIb7Q1DrfNyYOXBo7RhiuBXk
- BRJbvO0Ri7yOfaOl8eZugNE1EkGkOuWjEy+ngDm4a4V57QfGr3D6FPMoIVpEbsEY4LDc
- vPdwCEsRw6QssvT0owD6Vo+zMVVeU/EruhI3A9lq3SKarrhL+NRBQqOw8YqKP16UoKKY
- qcUg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=ywkCd0VQclbYtbuLcC/2MBQIqOITw9zVVBZNkCemTOo=;
- b=gkQJ7C3FVV8Q2YyxFFsypLCK13AsnsN1LVLalSiftpSSyfQX2mbl5zn3ZZcTj8GKfP
- C5/wlhO2YvVZGtS0oHgUj3s9qjfw5GQgNrX54s80/VNm38VxHzNsoC40UeKFCabEGauA
- uoaarCIXtHWfwi3l56etrHK9cBBxbWib82qqX6rY71qK1mwneWttrWpQNiNCgytnAidj
- X9e6fpqELFTufikPiVN0YFlGmjIGAmSvBKOZ5nDvhmLBtSvouXjOS4kkK658AOBTXRRQ
- jsz+7Ye1PxTW3XDhL+Rco5leVD/vXtpIwICtC3cs/yhK5YjHZaA+qoToRhHX8jXFDFNp
- 8S0A==
-X-Gm-Message-State: AOAM533LX54W/KeRp8bqaOIZiD0ko3/7sklVJM+haF8Hpt0K38AeGkmZ
- WWkjqahzDs68jXy867ooXbV6Fi6wkzA=
-X-Google-Smtp-Source: ABdhPJzMrukhfzR4yG2wWMevWm9IkJ0FdxD4csfom41LNkkZtiJ1+e5zsn4K6SEBEKiso2xXU+F2/Q==
-X-Received: by 2002:a63:cd41:0:b0:3c5:1242:3a0d with SMTP id
- a1-20020a63cd41000000b003c512423a0dmr16424233pgj.266.1652179607275; 
- Tue, 10 May 2022 03:46:47 -0700 (PDT)
-Received: from localhost (193-116-127-232.tpgi.com.au. [193.116.127.232])
- by smtp.gmail.com with ESMTPSA id
- m24-20020a170902bb9800b0015e8d4eb1ecsm1791916pls.54.2022.05.10.03.46.45
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 10 May 2022 03:46:46 -0700 (PDT)
-Date: Tue, 10 May 2022 20:46:41 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v6 24/29] watchdog/hardlockup: Use parse_option_str() to
- handle "nmi_watchdog"
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>, Thomas Gleixner
- <tglx@linutronix.de>, x86@kernel.org
-References: <20220506000008.30892-1-ricardo.neri-calderon@linux.intel.com>
- <20220506000008.30892-25-ricardo.neri-calderon@linux.intel.com>
-In-Reply-To: <20220506000008.30892-25-ricardo.neri-calderon@linux.intel.com>
-MIME-Version: 1.0
-Message-Id: <1652179333.fnu2fjiffn.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KyFpX5Kmlz2yXP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2022 21:16:04 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24A9rgDP020336;
+ Tue, 10 May 2022 11:15:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=content-type :
+ mime-version : subject : from : in-reply-to : date : cc :
+ content-transfer-encoding : message-id : references : to; s=pp1;
+ bh=6y+S2gFMxOTPgNBnnU9ALJ/Y/bo+wkwoPamZwjTr6pU=;
+ b=iGRfjeSGeBlIXMFj6h/CTelL2AtYvMTqP699lKhAPZ8h5MAyFwOHUJJ52+riwT+VY+ff
+ i/3uvuSwnfGuI6CaWkA93Df52TBxT1zXYk+c1Ks0jAKRqI7ZlJWvCDSc9rwsjHVznCLo
+ c03w5FnxZZ65E6ck0CYptxuMSSKwhLOQH1v1Kgcq/3sGURiBrffsDckmjd+9VUAazBaP
+ w/vx9dAMD3sD9vMo5N+pytNozQBFsGJqPggimzaCdF6Tgt2/8G+vG/JInkQpvSK7mz4H
+ E6/Si7i9+u6yoMHJq/lXAegf0+Loaouf14LLrRRc/tAVRDr6idEBF8Sv0DQ4Mzz/IPdr /A== 
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3fyntr1fyu-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 10 May 2022 11:15:57 +0000
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24AB8On6007457;
+ Tue, 10 May 2022 11:15:55 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma03fra.de.ibm.com with ESMTP id 3fwgd8u2jk-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 10 May 2022 11:15:55 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 24ABFpoX54919584
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 10 May 2022 11:15:51 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CDC39AE045;
+ Tue, 10 May 2022 11:15:51 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BB148AE055;
+ Tue, 10 May 2022 11:15:49 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.163.24.192])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Tue, 10 May 2022 11:15:49 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 14.0 \(3654.120.0.1.13\))
+Subject: Re: [PATCH] powerpc/perf: Add support for caps under sysfs in powerpc
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+In-Reply-To: <87leveu722.fsf@mpe.ellerman.id.au>
+Date: Tue, 10 May 2022 16:45:45 +0530
 Content-Transfer-Encoding: quoted-printable
+Message-Id: <6819C055-F74A-4659-A110-5F8D6091D340@linux.vnet.ibm.com>
+References: <20220428054937.28006-1-atrajeev@linux.vnet.ibm.com>
+ <87leveu722.fsf@mpe.ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+X-Mailer: Apple Mail (2.3654.120.0.1.13)
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: ksgnrO0-ehtbgCo2jbOCDhOyZO9Xfpg-
+X-Proofpoint-GUID: ksgnrO0-ehtbgCo2jbOCDhOyZO9Xfpg-
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
+ definitions=2022-05-10_01,2022-05-10_01,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=999
+ malwarescore=0 lowpriorityscore=0 priorityscore=1501 suspectscore=0
+ bulkscore=0 adultscore=0 mlxscore=0 spamscore=0 phishscore=0
+ impostorscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2202240000 definitions=main-2205100050
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,90 +102,183 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
- Andi Kleen <ak@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- Joerg Roedel <joro@8bytes.org>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, Ricardo Neri <ricardo.neri@intel.com>,
- iommu@lists.linux-foundation.org, Tony Luck <tony.luck@intel.com>,
- Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Woodhouse <dwmw2@infradead.org>, Lu Baolu <baolu.lu@linux.intel.com>
+Cc: Kajol Jain <kjain@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Ricardo Neri's message of May 6, 2022 10:00 am:
-> Prepare hardlockup_panic_setup() to handle a comma-separated list of
-> options. Thus, it can continue parsing its own command-line options while
-> ignoring parameters that are relevant only to specific implementations of
-> the hardlockup detector. Such implementations may use an early_param to
-> parse their own options.
 
-It can't really handle comma separated list though, until the next
-patch. nmi_watchdog=3Dpanic,0 does not make sense, so you lost error
-handling of that.
 
-And is it kosher to double handle options like this? I'm sure it
-happens but it's ugly.
+> On 06-May-2022, at 6:55 PM, Michael Ellerman <mpe@ellerman.id.au> =
+wrote:
+>=20
+> Hi Athira,
+>=20
+> Some comments below :)
+>=20
+> Athira Rajeev <atrajeev@linux.vnet.ibm.com> writes:
+>> Add caps support under "/sys/bus/event_source/devices/<pmu>/"
+>> for powerpc. This directory can be used to expose some of the
+>> specific features that powerpc PMU supports to the user.
+>> Example: pmu_name. The name of PMU registered will depend on
+>> platform, say power9 or power10 or it could be Generic Compat
+>> PMU.
+>=20
+> Is there precedent for adding a "caps" directory? ie. do other PMUs on
+> other architectures already do that?
+Hi Michael,
 
-Would you consider just add a new option for x86 and avoid changing
-this? Less code and patches.
+Thanks for the review comments.
 
-Thanks,
-Nick
+Yes, There are other PMU=E2=80=99s on other architectures already having =
+=E2=80=9Ccaps=E2=80=9D support.
+I will add them in changelog for reference in V2.
+>=20
+> Is there precedent for adding "pmu_name"?
+>=20
+> I don't see any mention of them in Documentation/ABI anywhere.
+>=20
+> If we're the first to do that we should add it to the documentation.
+>=20
+> As this would set a precedent for other PMUs, please Cc the perf
+> maintainers on v2.
+>=20
+>> Currently the only way to know which is the registered
+>> PMU is from the dmesg logs. But clearing the dmesg will make it
+>> difficult to know exact PMU backend used. And even extracting
+>> from dmesg will be complicated, as we need  to parse the dmesg
+>> logs and add filters for pmu name. Whereas by exposing it via
+>> caps will make it easy as we just need to directly read it from
+>> the sysfs.
+>>=20
+>> Add a caps directory to /sys/bus/event_source/devices/cpu/
+>> for power8, power9, power10 and generic compat PMU.
+>>=20
+>> The information exposed currently:
+>> - pmu_name : Underlying PMU name from the driver
+>>=20
+>> Example result with power9 pmu:
+>>=20
+>> # ls /sys/bus/event_source/devices/cpu/caps
+>> pmu_name
+>>=20
+>> # cat /sys/bus/event_source/devices/cpu/caps/pmu_name
+>> power9
+>>=20
+>> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+>> Reviewed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+>> ---
+>> arch/powerpc/perf/generic-compat-pmu.c | 20 ++++++++++++++++++++
+>> arch/powerpc/perf/power10-pmu.c        | 20 ++++++++++++++++++++
+>> arch/powerpc/perf/power8-pmu.c         | 20 ++++++++++++++++++++
+>> arch/powerpc/perf/power9-pmu.c         | 20 ++++++++++++++++++++
+>> 4 files changed, 80 insertions(+)
+>>=20
+>> diff --git a/arch/powerpc/perf/generic-compat-pmu.c =
+b/arch/powerpc/perf/generic-compat-pmu.c
+>> index f3db88aee4dd..7b5fe2d89007 100644
+>> --- a/arch/powerpc/perf/generic-compat-pmu.c
+>> +++ b/arch/powerpc/perf/generic-compat-pmu.c
+>> @@ -151,9 +151,29 @@ static const struct attribute_group =
+generic_compat_pmu_format_group =3D {
+>> 	.attrs =3D generic_compat_pmu_format_attr,
+>> };
+>>=20
+>> +static ssize_t pmu_name_show(struct device *cdev,
+>> +		struct device_attribute *attr,
+>> +		char *buf)
+>> +{
+>> +	return snprintf(buf, PAGE_SIZE, "generic_compat_pmu");
+>> +}
+>=20
+> That's not a great name, now that it's exposed to userspace.
+>=20
+> For starters it's only generic on Book3S, and if you look at
+> init_generic_compat_pmu() it's really a "ISA >=3D v3.0 fallback PMU" - =
+or
+> something like that.
+>=20
+>> +static DEVICE_ATTR_RO(pmu_name);
+>> +
+>> +static struct attribute *generic_compat_pmu_caps_attrs[] =3D {
+>> +	&dev_attr_pmu_name.attr,
+>> +	NULL
+>> +};
+>> +
+>> +static struct attribute_group generic_compat_pmu_caps_group =3D {
+>> +	.name  =3D "caps",
+>> +	.attrs =3D generic_compat_pmu_caps_attrs,
+>> +};
+>> +
+>> static const struct attribute_group *generic_compat_pmu_attr_groups[] =
+=3D {
+>> 	&generic_compat_pmu_format_group,
+>> 	&generic_compat_pmu_events_group,
+>> +	&generic_compat_pmu_caps_group,
+>> 	NULL,
+>> };
+>>=20
+>> diff --git a/arch/powerpc/perf/power10-pmu.c =
+b/arch/powerpc/perf/power10-pmu.c
+>> index d3398100a60f..a622ff783719 100644
+>> --- a/arch/powerpc/perf/power10-pmu.c
+>> +++ b/arch/powerpc/perf/power10-pmu.c
+>> @@ -258,6 +258,25 @@ static const struct attribute_group =
+power10_pmu_format_group =3D {
+>> 	.attrs =3D power10_pmu_format_attr,
+>> };
+>>=20
+>> +static ssize_t pmu_name_show(struct device *cdev,
+>> +		struct device_attribute *attr,
+>> +		char *buf)
+>> +{
+>> +	return snprintf(buf, PAGE_SIZE, "power10");
+>=20
+> I believe that should use sysfs_emit().
 
+Sure will change this.
 >=20
-> Cc: Andi Kleen <ak@linux.intel.com>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Stephane Eranian <eranian@google.com>
-> Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
-> Cc: iommu@lists.linux-foundation.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: x86@kernel.org
-> Reviewed-by: Tony Luck <tony.luck@intel.com>
-> Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-> ---
-> Changes since v5:
->  * Corrected typo in commit message. (Tony)
+>> +}
+>> +
+>> +static DEVICE_ATTR_RO(pmu_name);
+>> +
+>> +static struct attribute *power10_pmu_caps_attrs[] =3D {
+>> +	&dev_attr_pmu_name.attr,
+>> +	NULL
+>> +};
+>> +
+>> +static struct attribute_group power10_pmu_caps_group =3D {
+>> +	.name  =3D "caps",
+>> +	.attrs =3D power10_pmu_caps_attrs,
+>> +};
+>> +
+>> static const struct attribute_group *power10_pmu_attr_groups_dd1[] =3D =
+{
+>> 	&power10_pmu_format_group,
+>> 	&power10_pmu_events_group_dd1,
+>> @@ -267,6 +286,7 @@ static const struct attribute_group =
+*power10_pmu_attr_groups_dd1[] =3D {
+>> static const struct attribute_group *power10_pmu_attr_groups[] =3D {
+>> 	&power10_pmu_format_group,
+>> 	&power10_pmu_events_group,
+>> +	&power10_pmu_caps_group,
+>> 	NULL,
+>> };
 >=20
-> Changes since v4:
->  * None
+> There's a lot of boiler plate repeated for each PMU.
 >=20
-> Changes since v3:
->  * None
+> We already have power_pmu->name, can we use that and make the show
+> function generic at least in core-book3s.c ?
+
+Sure, I will rework on V2 to make the show function generic in =
+core-book3s.
+For the Generic Compat PMU, now that I am going to use show function =
+from core-book3s, the
+name exposed will be that of power_pmu->name
+
+Thanks
+Athira=20
 >=20
-> Changes since v2:
->  * Introduced this patch.
->=20
-> Changes since v1:
->  * None
-> ---
->  kernel/watchdog.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->=20
-> diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-> index 9166220457bc..6443841a755f 100644
-> --- a/kernel/watchdog.c
-> +++ b/kernel/watchdog.c
-> @@ -73,13 +73,13 @@ void __init hardlockup_detector_disable(void)
-> =20
->  static int __init hardlockup_panic_setup(char *str)
->  {
-> -	if (!strncmp(str, "panic", 5))
-> +	if (parse_option_str(str, "panic"))
->  		hardlockup_panic =3D 1;
-> -	else if (!strncmp(str, "nopanic", 7))
-> +	else if (parse_option_str(str, "nopanic"))
->  		hardlockup_panic =3D 0;
-> -	else if (!strncmp(str, "0", 1))
-> +	else if (parse_option_str(str, "0"))
->  		nmi_watchdog_user_enabled =3D 0;
-> -	else if (!strncmp(str, "1", 1))
-> +	else if (parse_option_str(str, "1"))
->  		nmi_watchdog_user_enabled =3D 1;
->  	return 1;
->  }
-> --=20
-> 2.17.1
->=20
->=20
+> cheers
+
