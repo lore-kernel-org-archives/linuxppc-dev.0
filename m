@@ -4,42 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5999C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 22:42:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA25AC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 May 2022 22:43:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KyY2h1MRrz3dpG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 08:42:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KyY3M4WY0z3cKm
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 08:43:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=s9qpTYE/;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vLCouTuS;
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1;
- helo=ams.source.kernel.org;
- envelope-from=srs0=uvqw=vs=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
-Received: from ams.source.kernel.org (ams.source.kernel.org
- [IPv6:2604:1380:4601:e00::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
+ helo=galois.linutronix.de; envelope-from=john.ogness@linutronix.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
+ header.s=2020 header.b=s9qpTYE/; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=vLCouTuS; 
+ dkim-atps=neutral
+X-Greylist: delayed 534 seconds by postgrey-1.36 at boromir;
+ Wed, 11 May 2022 05:49:43 AEST
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KyQ5W0nBlz3bd4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2022 03:29:34 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id 7D1D5B81E8F;
- Tue, 10 May 2022 17:29:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E2BFC385C2;
- Tue, 10 May 2022 17:29:23 +0000 (UTC)
-Date: Tue, 10 May 2022 13:29:22 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Xiaoming Ni <nixiaoming@huawei.com>
-Subject: Re: [PATCH 18/30] notifier: Show function names on notifier
- routines if DEBUG_NOTIFIERS is set
-Message-ID: <20220510132922.61883db0@gandalf.local.home>
-In-Reply-To: <9f44aae6-ec00-7ede-ec19-6e67ceb74510@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KyTCC2YCwz3bhF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2022 05:49:43 +1000 (AEST)
+From: John Ogness <john.ogness@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020; t=1652211640;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=OEDxfxfGB0zzvmyrmmb19QrPenmgyOx+wB7aMTpPY14=;
+ b=s9qpTYE/3WJU4N3KJVSOdyb7xWHt1vkR4fCuQ5J8Zkt0v0hhGnmBmJdDRvMzx7U23g78AD
+ 5x0GWGYOK6up5rJgLjlqAJ0oKWgxSuZArLqIZD7/93+m719asCNv2npDv0K4E3pzaf0TU1
+ QT3fxi7rAkTN0NzY7sIU3W6vHFJAKmFF1D5WFGFp25IVzQ1U2GLRWaAA15JzW4DMVMPiln
+ C4PlGutDHid0b5MW+yz4Oad3VH/9G9wKQ7qYFzrw5pmS2R8UQ108RRuRC1xOe7QqhudZaN
+ toooF05flVTdgRJ8Mw90Ti/8UtTs7R3lmx6LjRAd0TtWQNVsyqtk/eFe4jDJKA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020e; t=1652211640;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=OEDxfxfGB0zzvmyrmmb19QrPenmgyOx+wB7aMTpPY14=;
+ b=vLCouTuSreEprlIyaHBdxRuhj0utQMxldxJLsrUVX2CbalgS135YGbpGNA0WSY+j9euZdD
+ GTFEAV97omDLmGAg==
+To: Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>
+Subject: Re: [PATCH 04/30] firmware: google: Convert regular spinlock into
+ trylock on panic path
+In-Reply-To: <20220510132015.38923cb2@gandalf.local.home>
 References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-19-gpiccoli@igalia.com>
- <9f44aae6-ec00-7ede-ec19-6e67ceb74510@huawei.com>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+ <20220427224924.592546-5-gpiccoli@igalia.com>
+ <CAE=gft5Pq25L4KFoPWbftkPF-JN1ex2yws77mMJ4GQnn9W0L2g@mail.gmail.com>
+ <adcf6d0e-c37c-6ede-479e-29959d03d8c0@igalia.com> <YnpOv4hAPV4b+6v4@alley>
+ <20220510132015.38923cb2@gandalf.local.home>
+Date: Tue, 10 May 2022 21:46:38 +0206
+Message-ID: <87h75xkwg9.fsf@jogness.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-Mailman-Approved-At: Wed, 11 May 2022 08:37:45 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -53,63 +78,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
- linux-xtensa@linux-xtensa.org, peterz@infradead.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ David Gow <davidgow@google.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, peterz@infradead.org,
  alejandro.j.jimenez@oracle.com, linux-remoteproc@vger.kernel.org,
  feng.tang@intel.com, linux-mips@vger.kernel.org, hidehiro.kawai.ez@hitachi.com,
- sparclinux@vger.kernel.org, will@kernel.org, tglx@linutronix.de,
- linux-leds@vger.kernel.org, linux-s390@vger.kernel.org, mikelley@microsoft.com,
- john.ogness@linutronix.de, bhe@redhat.com, corbet@lwn.net, paulmck@kernel.org,
- fabiomirmar@gmail.com, x86@kernel.org, mingo@redhat.com,
+ sparclinux@vger.kernel.org, Will Deacon <will@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-leds@vger.kernel.org,
+ linux-s390@vger.kernel.org, mikelley@microsoft.com, paulmck@kernel.org,
+ bhe@redhat.com, Jonathan Corbet <corbet@lwn.net>, fabiomirmar@gmail.com,
+ x86@kernel.org, Evan Green <evgreen@chromium.org>,
+ Ard Biesheuvel <ardb@kernel.org>, mingo@redhat.com,
  bcm-kernel-feedback-list@broadcom.com, xen-devel@lists.xenproject.org,
- dyoung@redhat.com, Valentin Schneider <valentin.schneider@arm.com>,
- vgoyal@redhat.com, pmladek@suse.com, dave.hansen@linux.intel.com,
- keescook@chromium.org, arnd@arndb.de, linux-pm@vger.kernel.org,
- coresight@lists.linaro.org, linux-um@lists.infradead.org, rcu@vger.kernel.org,
- gregkh@linuxfoundation.org, bp@alien8.de, luto@kernel.org,
- linux-tegra@vger.kernel.org, Cong Wang <xiyou.wangcong@gmail.com>,
- openipmi-developer@lists.sourceforge.net, andriy.shevchenko@linux.intel.com,
- senozhatsky@chromium.org, vkuznets@redhat.com,
- linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
- jgross@suse.com, Arjan van de Ven <arjan@linux.intel.com>,
+ dyoung@redhat.com, vgoyal@redhat.com, linux-xtensa@linux-xtensa.org,
+ dave.hansen@linux.intel.com, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>, Linux PM <linux-pm@vger.kernel.org>,
+ linux-um@lists.infradead.org, rcu@vger.kernel.org,
+ Borislav Petkov <bp@alien8.de>, luto@kernel.org, linux-tegra@vger.kernel.org,
+ openipmi-developer@lists.sourceforge.net,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, senozhatsky@chromium.org,
+ vkuznets@redhat.com, linux-edac@vger.kernel.org, jgross@suse.com,
  linux-parisc@vger.kernel.org, netdev@vger.kernel.org, kernel@gpiccoli.net,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- stern@rowland.harvard.edu, "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
- d.hatayama@jp.fujitsu.com, mhiramat@kernel.org, kernel-dev@igalia.com,
- linux-alpha@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ kexec@lists.infradead.org, LKML <linux-kernel@vger.kernel.org>,
+ Alan Stern <stern@rowland.harvard.edu>,
+ "Guilherme G. Piccoli" <gpiccoli@igalia.com>, d.hatayama@jp.fujitsu.com,
+ mhiramat@kernel.org, kernel-dev@igalia.com, linux-alpha@vger.kernel.org,
+ Julius Werner <jwerner@chromium.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 28 Apr 2022 09:01:13 +0800
-Xiaoming Ni <nixiaoming@huawei.com> wrote:
+On 2022-05-10, Steven Rostedt <rostedt@goodmis.org> wrote:
+>> As already mentioned in the other reply, panic() sometimes stops the
+>> other CPUs using NMI, for example, see kdump_nmi_shootdown_cpus().
+>> 
+>> Another situation is when the CPU using the lock ends in some
+>> infinite loop because something went wrong. The system is in
+>> an unpredictable state during panic().
+>> 
+>> I am not sure if this is possible with the code under gsmi_dev.lock
+>> but such things really happen during panic() in other subsystems.
+>> Using trylock in the panic() code path is a good practice.
+>
+> I believe that Peter Zijlstra had a special spin lock for NMIs or
+> early printk, where it would not block if the lock was held on the
+> same CPU. That is, if an NMI happened and paniced while this lock was
+> held on the same CPU, it would not deadlock. But it would block if the
+> lock was held on another CPU.
 
-> > +#ifdef CONFIG_DEBUG_NOTIFIERS
-> > +	{
-> > +		char sym_name[KSYM_NAME_LEN];
-> > +
-> > +		pr_info("notifiers: registered %s()\n",
-> > +			notifier_name(n, sym_name));
-> > +	}  
-> 
-> Duplicate Code.
-> 
-> Is it better to use __func__ and %pS?
-> 
-> pr_info("%s: %pS\n", __func__, n->notifier_call);
-> 
-> 
-> > +#endif
+Yes. And starting with 5.19 it will be carrying the name that _you_ came
+up with (cpu_sync):
 
-Also, don't sprinkle #ifdef in C code. Instead:
+printk_cpu_sync_get_irqsave()
+printk_cpu_sync_put_irqrestore()
 
-	if (IS_ENABLED(CONFIG_DEBUG_NOTIFIERS))
-		pr_info("notifers: regsiter %ps()\n",
-			n->notifer_call);
-
-
-Or define a print macro at the start of the C file that is a nop if it is
-not defined, and use the macro.
-
--- Steve
+John
