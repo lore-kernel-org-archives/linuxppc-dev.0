@@ -4,93 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0087C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 07:18:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2C53C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 07:29:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4KymTd1z1hz3cBf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 17:18:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KymkR1VqQz3cMN
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 17:29:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HkbTMFAB;
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=tbKoqj43;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=HkbTMFAB; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KymSr6gqWz3bwQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2022 17:17:32 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24B6Ipx2025620;
- Wed, 11 May 2022 07:17:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=IU3EI/xXf5NBSD2wBiMf5LVrVawcJX6mTGUba7Oc0Wg=;
- b=HkbTMFABIA+db4XcMjAnKT+aTRlENV3+QEPEI9pgKNGoQM5QCe/F6dgTc2s1YQ6Nx69j
- YQfvkh+/xd2PjYNvvFCAUvSBMOBplzeaPP82cWlI/akicKFNK/X2RGV6Qi4B0e1tNzQk
- nbVfFzpACSwlxV5H2vp6fNWlU6AcB/HJWal7pg51K88UdjrBQtDRDLAHTQt+Y9DsUvas
- FqP61QbND9PJQ9avgWUGkrJQKUsHnGs90/EYUYK1CtolyiHVMW6ZguoQQDWhLcOLnZgw
- NQ1IVj549ynKP440VqANxo1mrZSBlZeGXHnQna/s1aVHHFtl3xYfnIKnCdshc5xS0fNs lQ== 
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3g07s1ryqh-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 May 2022 07:17:11 +0000
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24B781AZ001490;
- Wed, 11 May 2022 07:17:09 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma03fra.de.ibm.com with ESMTP id 3fwgd8uxuk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 May 2022 07:17:09 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 24B7H6fl47055356
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 11 May 2022 07:17:06 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5780F4C04A;
- Wed, 11 May 2022 07:17:06 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F40F04C040;
- Wed, 11 May 2022 07:17:02 +0000 (GMT)
-Received: from vajain21.in.ibm.com (unknown [9.43.12.38])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Wed, 11 May 2022 07:17:02 +0000 (GMT)
-Received: by vajain21.in.ibm.com (sSMTP sendmail emulation);
- Wed, 11 May 2022 12:47:01 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, nvdimm@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, Kajol Jain <kjain@linux.ibm.com>, Michael
- Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/papr_scm: Fix leaking nvdimm_events_map elements
-In-Reply-To: <87k0athokh.fsf@linux.ibm.com>
-References: <20220509060629.179282-1-vaibhav@linux.ibm.com>
- <87k0athokh.fsf@linux.ibm.com>
-Date: Wed, 11 May 2022 12:47:01 +0530
-Message-ID: <87zgjotu6q.fsf@vajain21.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kymjn1D4Kz3bqC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2022 17:28:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
+ header.s=201707 header.b=tbKoqj43; dkim-atps=neutral
+Received: by gandalf.ozlabs.org (Postfix)
+ id 4Kymjn0tL0z4xR7; Wed, 11 May 2022 17:28:45 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix, from userid 1003)
+ id 4Kymjn0nXhz4xXS; Wed, 11 May 2022 17:28:45 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
+ s=201707; t=1652254125;
+ bh=v7UTPPJVguw8YKtY6A0Dpw0NspyzUp9jtjt3v+Jo7+c=;
+ h=Date:From:To:Subject:References:In-Reply-To:From;
+ b=tbKoqj43n+pXyBdSxZ8BGlIxsJeYh5S7cSgFl3QhdnXM+5FqwQuswapPZU1IziFvx
+ C94+w0kvnv1YTedmWYuxfbcinf0mPN/YhwwelUOAtHxp3YadA0PKgiAkTfDl4WQw//
+ Wx+J6zSIlICYXbP8FKBvhGzCa81jB3O19N0dgQXSe1I0K6axEmEYlhW72pCfBQ3ecx
+ mCVdLAKK+tcynw5BAZlfA/YCTnHD/VnTBHa5GDHA3x+O5QbsgfinnGSo6mq2B/cRwr
+ 2zdModI/ItlODBtMZzdMbQmqwMuMtLMCyOU6ft3LxBTXgpYWyxfHXLNZlU5D1fJ7B+
+ hQbDDbBNzTV/g==
+Date: Wed, 11 May 2022 17:26:30 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/3] kasan: Document support on 32-bit powerpc
+Message-ID: <YntlJmKGkibTZW2l@cleo>
+References: <Yntk7oERGce44+Sd@cleo>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: YE-KCorUel361YGtoqTGgsM_7I17GbSS
-X-Proofpoint-ORIG-GUID: YE-KCorUel361YGtoqTGgsM_7I17GbSS
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
- definitions=2022-05-11_02,2022-05-10_01,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 bulkscore=0
- clxscore=1015 mlxscore=0 lowpriorityscore=0 adultscore=0
- priorityscore=1501 impostorscore=0 spamscore=0 malwarescore=0
- suspectscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2202240000 definitions=main-2205110031
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Yntk7oERGce44+Sd@cleo>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,146 +56,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dan Williams <dan.j.williams@intel.com>,
- Shivaprasad G Bhat <sbhat@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Daniel Axtens <dja@axtens.net>
 
-Thanks for reviewing this patch Aneesh,
+KASAN is supported on 32-bit powerpc and the docs should reflect this.
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+Suggested-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ Documentation/dev-tools/kasan.rst |  8 ++++++--
+ Documentation/powerpc/kasan.txt   | 12 ++++++++++++
+ 2 files changed, 18 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/powerpc/kasan.txt
 
-> Vaibhav Jain <vaibhav@linux.ibm.com> writes:
->
->> Right now 'char *' elements allocated individual 'stat_id' in
->> 'papr_scm_priv.nvdimm_events_map' during papr_scm_pmu_check_events() leak in
->> papr_scm_remove() and papr_scm_pmu_register(), papr_scm_pmu_check_events() error
->> paths.
->>
->> Also individual 'stat_id' arent NULL terminated 'char *' instead they are fixed
->> 8-byte sized identifiers. However papr_scm_pmu_register() assumes it to be a
->> NULL terminated 'char *' and at other places it assumes it to be a
->> 'papr_scm_perf_stat.stat_id' sized string which is 8-byes in size.
->>
->> Fix this by allocating the memory for papr_scm_priv.nvdimm_events_map to also
->> include space for 'stat_id' entries. This is possible since number of available
->> events/stat_ids are known upfront. This saves some memory and one extra level of
->> indirection from 'nvdimm_events_map' to 'stat_id'. Also rest of the code
->> can continue to call 'kfree(papr_scm_priv.nvdimm_events_map)' without needing to
->> iterate over the array and free up individual elements.
->>
->> Also introduce a new typedef called 'state_id_t' thats a 'u8[8]' and can be used
->> across papr_scm to deal with stat_ids.
->>
->> Fixes: 4c08d4bbc089 ("powerpc/papr_scm: Add perf interface support")
->> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
->> ---
->>  arch/powerpc/platforms/pseries/papr_scm.c | 48 +++++++++++------------
->>  1 file changed, 22 insertions(+), 26 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
->> index 39962c905542..f33a865ad5fb 100644
->> --- a/arch/powerpc/platforms/pseries/papr_scm.c
->> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
->> @@ -70,8 +70,10 @@
->>  #define PAPR_SCM_PERF_STATS_VERSION 0x1
->>  
->>  /* Struct holding a single performance metric */
->> +typedef u8 stat_id_t[8];
->> +
->>  struct papr_scm_perf_stat {
->> -	u8 stat_id[8];
->> +	stat_id_t stat_id;
->>  	__be64 stat_val;
->>  } __packed;
->
-> Can we do this as two patch? One that fix the leak and other that adds
-> new type?
->
-Yeah, sure that would be a simple change. I will send a v2 across that
-only removes the leak and then a subsequent patch that changes the usage
-of stat_id within papr_scm to the new typedef
-
->>  
->> @@ -126,7 +128,7 @@ struct papr_scm_priv {
->>  	u64 health_bitmap_inject_mask;
->>  
->>  	 /* array to have event_code and stat_id mappings */
->> -	char **nvdimm_events_map;
->> +	stat_id_t *nvdimm_events_map;
->>  };
->>  
->>  static int papr_scm_pmem_flush(struct nd_region *nd_region,
->> @@ -462,7 +464,7 @@ static int papr_scm_pmu_check_events(struct papr_scm_priv *p, struct nvdimm_pmu
->>  {
->>  	struct papr_scm_perf_stat *stat;
->>  	struct papr_scm_perf_stats *stats;
->> -	int index, rc, count;
->> +	int index, rc = 0;
->>  	u32 available_events;
->>  
->>  	if (!p->stat_buffer_len)
->> @@ -478,35 +480,29 @@ static int papr_scm_pmu_check_events(struct papr_scm_priv *p, struct nvdimm_pmu
->>  		return rc;
->>  	}
->>  
->> -	/* Allocate memory to nvdimm_event_map */
->> -	p->nvdimm_events_map = kcalloc(available_events, sizeof(char *), GFP_KERNEL);
->> -	if (!p->nvdimm_events_map) {
->> -		rc = -ENOMEM;
->> -		goto out_stats;
->> -	}
->> -
->>  	/* Called to get list of events supported */
->>  	rc = drc_pmem_query_stats(p, stats, 0);
->>  	if (rc)
->> -		goto out_nvdimm_events_map;
->> -
->> -	for (index = 0, stat = stats->scm_statistic, count = 0;
->> -		     index < available_events; index++, ++stat) {
->> -		p->nvdimm_events_map[count] = kmemdup_nul(stat->stat_id, 8, GFP_KERNEL);
->> -		if (!p->nvdimm_events_map[count]) {
->> -			rc = -ENOMEM;
->> -			goto out_nvdimm_events_map;
->> -		}
->> +		goto out;
->>  
->> -		count++;
->> +	/*
->> +	 * Allocate memory and populate nvdimm_event_map.
->> +	 * Allocate an extra element for NULL entry
->> +	 */
->> +	p->nvdimm_events_map = kcalloc(available_events + 1,
->> +				       sizeof(stat_id_t), GFP_KERNEL);
->> +	if (!p->nvdimm_events_map) {
->> +		rc = -ENOMEM;
->> +		goto out;
->>  	}
->> -	p->nvdimm_events_map[count] = NULL;
->> -	kfree(stats);
->> -	return 0;
->>  
->> -out_nvdimm_events_map:
->> -	kfree(p->nvdimm_events_map);
->> -out_stats:
->> +	/* Copy all stat_ids to event map */
->> +	for (index = 0, stat = stats->scm_statistic;
->> +	     index < available_events; index++, ++stat) {
->> +		memcpy(&p->nvdimm_events_map[index], &stat->stat_id,
->> +		       sizeof(stat_id_t));
->> +	}
->> +out:
->>  	kfree(stats);
->>  	return rc;
->>  }
->>
->> base-commit: 348c71344111d7a48892e3e52264ff11956fc196
->> -- 
->> 2.35.1
->
-
+diff --git a/Documentation/dev-tools/kasan.rst b/Documentation/dev-tools/kasan.rst
+index 8089c559d339..8e5cd26d59cb 100644
+--- a/Documentation/dev-tools/kasan.rst
++++ b/Documentation/dev-tools/kasan.rst
+@@ -36,7 +36,8 @@ Both software KASAN modes work with SLUB and SLAB memory allocators,
+ while the hardware tag-based KASAN currently only supports SLUB.
+ 
+ Currently, generic KASAN is supported for the x86_64, arm, arm64, xtensa, s390,
+-and riscv architectures, and tag-based KASAN modes are supported only for arm64.
++and riscv architectures. It is also supported on 32-bit powerpc kernels.
++Tag-based KASAN modes are supported only for arm64.
+ 
+ Usage
+ -----
+@@ -349,7 +350,10 @@ CONFIG_KASAN_VMALLOC
+ 
+ With ``CONFIG_KASAN_VMALLOC``, KASAN can cover vmalloc space at the
+ cost of greater memory usage. Currently, this is supported on x86,
+-riscv, s390, and powerpc.
++riscv, s390, and 32-bit powerpc.
++
++It is optional, except on 32-bit powerpc kernels with module support,
++where it is required.
+ 
+ This works by hooking into vmalloc and vmap and dynamically
+ allocating real shadow memory to back the mappings.
+diff --git a/Documentation/powerpc/kasan.txt b/Documentation/powerpc/kasan.txt
+new file mode 100644
+index 000000000000..26bb0e8bb18c
+--- /dev/null
++++ b/Documentation/powerpc/kasan.txt
+@@ -0,0 +1,12 @@
++KASAN is supported on powerpc on 32-bit only.
++
++32 bit support
++==============
++
++KASAN is supported on both hash and nohash MMUs on 32-bit.
++
++The shadow area sits at the top of the kernel virtual memory space above the
++fixmap area and occupies one eighth of the total kernel virtual memory space.
++
++Instrumentation of the vmalloc area is optional, unless built with modules,
++in which case it is required.
 -- 
-Cheers
-~ Vaibhav
+2.35.3
+
