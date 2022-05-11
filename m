@@ -4,61 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE825C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 12:38:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E029BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 14:08:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kyvbf0v9Xz3cK5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 22:38:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4KyxbS2Qr3z3c9w
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 May 2022 00:08:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=PzdYpVjD;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mpfwWa1g;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=suse.com (client-ip=195.135.220.29; helo=smtp-out2.suse.de;
- envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=susede1 header.b=PzdYpVjD; dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kysj31qQFz2yb6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2022 21:13:26 +1000 (AEST)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
- by smtp-out2.suse.de (Postfix) with ESMTP id 9864A1F37E;
- Wed, 11 May 2022 11:13:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
- t=1652267602; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=FC1sflG6Id2SKeEdl4FJxU/B3titx078hgJ9iLge96M=;
- b=PzdYpVjDm9GZjow/EUq37H7ookCOkOdew3j+O3sWtMh70hNVOnxtZzKqOPpZDQnacwtKh8
- hTKee3j+Sl0MntfBuf4Onekv+PULsWjOAIitLyhS1jfqtNLxp3KL+emXCY3ZW29THEdaU3
- +LT7bZxhID8yMwqQ2reWXTGMidRsh/s=
-Received: from suse.cz (pathway.suse.cz [10.100.12.24])
+ smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org;
+ envelope-from=bugzilla-daemon@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=mpfwWa1g; 
+ dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KyxZf2xTNz3bf9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2022 00:08:10 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by relay2.suse.de (Postfix) with ESMTPS id BC7822C141;
- Wed, 11 May 2022 11:13:20 +0000 (UTC)
-Date: Wed, 11 May 2022 13:13:20 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: John Ogness <john.ogness@linutronix.de>
-Subject: Re: [PATCH 04/30] firmware: google: Convert regular spinlock into
- trylock on panic path
-Message-ID: <20220511111320.GB26047@pathway.suse.cz>
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-5-gpiccoli@igalia.com>
- <CAE=gft5Pq25L4KFoPWbftkPF-JN1ex2yws77mMJ4GQnn9W0L2g@mail.gmail.com>
- <adcf6d0e-c37c-6ede-479e-29959d03d8c0@igalia.com>
- <YnpOv4hAPV4b+6v4@alley>
- <20220510132015.38923cb2@gandalf.local.home>
- <87h75xkwg9.fsf@jogness.linutronix.de>
+ by dfw.source.kernel.org (Postfix) with ESMTPS id B805461D18
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2022 14:08:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 29A43C34114
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2022 14:08:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1652278087;
+ bh=loFO38aGKNW5ZEIPyPtBpvpmw/LDghXQzue7omFBfw8=;
+ h=From:To:Subject:Date:In-Reply-To:References:From;
+ b=mpfwWa1gPlBRuBzzOM+Z2U5kCJSfhvx2hG1AHYXPenwgiUDXMWDHPVpi+MBE1zo+2
+ 3fFw+2POzUPd+oyib1wMvmjbEDuY3CdVs+SVTBd4r/CIH2hxg+Oh4YdMmPF3tZ5WtV
+ gYPKwmk07itZOdJ+bhl1MaY01hRQiXyywfghuXrv1dpNOMsODrSHuqBhjzmBK8eP1X
+ bsFGhDlkM8w3zosi66NNYEhrThv63qoKeo9/mBFRBXkszMK3wFUt1bCZsKlURR+oqw
+ nMJTM4ZroUVrvQllfyTi6ZpXsz5CqQG1ljLAtI3RUyDbZ77Mp9Ak79kKJ0JnZqWQsD
+ 36VoGWN4H5dyg==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix,
+ from userid 48) id 1589CC05FF5; Wed, 11 May 2022 14:08:07 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 215389] pagealloc: memory corruption at building glibc-2.33 and
+ running its' testsuite
+Date: Wed, 11 May 2022 14:08:06 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-32
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-215389-206035-TaY0Cz6X4w@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-215389-206035@https.bugzilla.kernel.org/>
+References: <bug-215389-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87h75xkwg9.fsf@jogness.linutronix.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Mailman-Approved-At: Wed, 11 May 2022 22:38:20 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,73 +82,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
- David Gow <davidgow@google.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, peterz@infradead.org,
- alejandro.j.jimenez@oracle.com, linux-remoteproc@vger.kernel.org,
- feng.tang@intel.com, linux-mips@vger.kernel.org, hidehiro.kawai.ez@hitachi.com,
- sparclinux@vger.kernel.org, Will Deacon <will@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-leds@vger.kernel.org,
- linux-s390@vger.kernel.org, mikelley@microsoft.com, paulmck@kernel.org,
- bhe@redhat.com, Jonathan Corbet <corbet@lwn.net>, fabiomirmar@gmail.com,
- x86@kernel.org, Evan Green <evgreen@chromium.org>,
- Ard Biesheuvel <ardb@kernel.org>, mingo@redhat.com,
- bcm-kernel-feedback-list@broadcom.com, xen-devel@lists.xenproject.org,
- dyoung@redhat.com, vgoyal@redhat.com, linux-xtensa@linux-xtensa.org,
- dave.hansen@linux.intel.com, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, Linux PM <linux-pm@vger.kernel.org>,
- linux-um@lists.infradead.org, Steven Rostedt <rostedt@goodmis.org>,
- rcu@vger.kernel.org, Borislav Petkov <bp@alien8.de>, luto@kernel.org,
- linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, senozhatsky@chromium.org,
- vkuznets@redhat.com, linux-edac@vger.kernel.org, jgross@suse.com,
- linux-parisc@vger.kernel.org, netdev@vger.kernel.org, kernel@gpiccoli.net,
- kexec@lists.infradead.org, LKML <linux-kernel@vger.kernel.org>,
- Alan Stern <stern@rowland.harvard.edu>,
- "Guilherme G. Piccoli" <gpiccoli@igalia.com>, d.hatayama@jp.fujitsu.com,
- mhiramat@kernel.org, kernel-dev@igalia.com, linux-alpha@vger.kernel.org,
- Julius Werner <jwerner@chromium.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue 2022-05-10 21:46:38, John Ogness wrote:
-> On 2022-05-10, Steven Rostedt <rostedt@goodmis.org> wrote:
-> >> As already mentioned in the other reply, panic() sometimes stops the
-> >> other CPUs using NMI, for example, see kdump_nmi_shootdown_cpus().
-> >> 
-> >> Another situation is when the CPU using the lock ends in some
-> >> infinite loop because something went wrong. The system is in
-> >> an unpredictable state during panic().
-> >> 
-> >> I am not sure if this is possible with the code under gsmi_dev.lock
-> >> but such things really happen during panic() in other subsystems.
-> >> Using trylock in the panic() code path is a good practice.
-> >
-> > I believe that Peter Zijlstra had a special spin lock for NMIs or
-> > early printk, where it would not block if the lock was held on the
-> > same CPU. That is, if an NMI happened and paniced while this lock was
-> > held on the same CPU, it would not deadlock. But it would block if the
-> > lock was held on another CPU.
-> 
-> Yes. And starting with 5.19 it will be carrying the name that _you_ came
-> up with (cpu_sync):
-> 
-> printk_cpu_sync_get_irqsave()
-> printk_cpu_sync_put_irqrestore()
+https://bugzilla.kernel.org/show_bug.cgi?id=3D215389
 
-There is a risk that this lock might become a big kernel lock.
+--- Comment #18 from Erhard F. (erhard_f@mailbox.org) ---
+Ok, and another problem during building via distcc on the G4, still
+LOWMEM_SIZE=3D0x28000000 (kernel v5.17.6).
 
-This special lock would need to be used even during normal
-system operation. It does not make sense to suddenly start using
-another lock during panic.
+[...]
+Oops: Kernel stack overflow, sig: 11 [#1]
+BE PAGE_SIZE=3D4K MMU=3DHash SMP NR_CPUS=3D2 PowerMac
+Modules linked in: auth_rpcgss nfsv4 dns_resolver nfs lockd grace sunrpc
+ghash_generic gf128mul gcm ccm algif_aead des_generic libdes ctr cbc ecb
+algif_skcipher aes_generic libaes cmac sha512_generic sha1_generic sha1_pow=
+erpc
+md5 md5_ppc md4 hid_generic b43legacy usbhid mac80211 hid libarc4 cfg80211
+snd_aoa_codec_tas rfkill snd_aoa_fabric_layout snd_aoa evdev mac_hid
+therm_windtunnel firewire_ohci firewire_core crc_itu_t sr_mod cdrom ohci_pci
+8250_pci radeon snd_aoa_i2sbus ohci_hcd snd_aoa_soundbus ssb snd_pcm ehci_p=
+ci
+snd_timer pcmcia snd soundcore pcmcia_core hwmon 8250 ehci_hcd i2c_algo_bit
+8250_base drm_ttm_helper serial_mctrl_gpio ttm drm_kms_helper usbcore
+syscopyarea sysfillrect sysimgblt usb_common fb_sys_fops pkcs8_key_parser f=
+use
+drm drm_panel_orientation_quirks configfs
+CPU: 0 PID: 24122 Comm: sh Not tainted 5.17.6-gentoo-PMacG4 #1
+NIP:  c0018614 LR: 00000000 CTR: c103cbe0
+REGS: e7fe9f50 TRAP: 0000   Not tainted  (5.17.6-gentoo-PMacG4)
+MSR:  00001030 <ME,IR,DR>  CR: 00000001  XER: c000e234
 
-So I think that we should think twice before using it.
-I would prefer using trylock of the original lock when
-possible during panic.
+GPR00: a78bfe90 80002288 00000000 d6a5e1a0 e991de60 0068c6c4 a7a3ff98 c1099=
+000=20
+GPR08: 00000000 e991dec0 d6a5e1a0 80002288 005900d0 0068fff4 00000000 00000=
+007=20
+GPR16: 00000029 00000007 00bc44b0 a7ddafe8 a78bfe90 fffff000 00000000 00000=
+000=20
+GPR24: 005900d0 0068c6c4 c0dcc7a0 c1402b48 caa899c0 c103cbe0 c4ce9400 c08fe=
+234=20
+NIP [c0018614] interrupt_return+0x17c/0x190
+LR [00000000] 0x0
+Call Trace:
+Instruction dump:
+40860018 7ccff120 80c10028 80010010 80210014 4c000064 7ccff120 7d3043a6=20
+392100c0 80c10028 80010010 80210014 <91210000> 7d3042a6 4c000064 7c000828=20
+---[ end trace 0000000000000000 ]---
 
-It is possible that I miss something.
 
-Best Regards,
-Petr
+@Christophe: Would it be helpful for these issues to try a KASAN build?
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are watching the assignee of the bug.=
