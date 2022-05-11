@@ -4,95 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 361FEC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 11:55:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75AA8C4321E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 12:05:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kytdt4kHRz3cCy
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 21:55:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JjL7RbQU;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=JjL7RbQU; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Kytrj4g2Kz3cBy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 May 2022 22:05:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.131;
+ helo=out30-131.freemail.mail.aliyun.com;
+ envelope-from=baolin.wang@linux.alibaba.com; receiver=<UNKNOWN>)
+Received: from out30-131.freemail.mail.aliyun.com
+ (out30-131.freemail.mail.aliyun.com [115.124.30.131])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kytd553ttz3bw4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2022 21:55:05 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24BAWeUn000900;
- Wed, 11 May 2022 11:54:54 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=OiqG13vW+36US08Un+Ci8ZfFPyPy+VaCDI4KenlxvcU=;
- b=JjL7RbQUt4G59UaORaLcg7g8JcZezjsa2JOpw4tU4JS9NTkFP38el8/sTh+2TzavFESb
- /vNiHNKcsIX3WmWV4muLYX02GG9C4pJnvIGoJE84iEheuH4lKsradJ41FuKuDrX1ho4B
- mTOTHmFa4pHIPfUq/KxsDQoCb/PKO74UmwJ+AhdppxUBJJshlA8yPVx6mr9PySMNjmgu
- xPsXC2PDWQlZEVaZUsH/OP6drbDymiuWyEG9xWYuBCMLxUyRLRO88jf5ci2dehIF79F4
- /0lrdAOOpTTQaswlVQU4n2I/MjSb50cDSEe+BN21P+b8uEB63QKPnMaY6oRgDw9jp6bq kw== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3g054jqx5u-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 May 2022 11:54:53 +0000
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
- by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 24BB6aO9026975;
- Wed, 11 May 2022 11:54:53 GMT
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3g054jqx5f-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 May 2022 11:54:53 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24BBrbuW021715;
- Wed, 11 May 2022 11:54:50 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma06ams.nl.ibm.com with ESMTP id 3fyrkk1ae4-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 May 2022 11:54:50 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 24BBsl3H21823802
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 11 May 2022 11:54:47 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 959B711C04C;
- Wed, 11 May 2022 11:54:47 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BCB4211C04A;
- Wed, 11 May 2022 11:54:40 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.211.43.135])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 11 May 2022 11:54:40 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org
-Subject: [PATCH V2] tools/perf/tests: Skip perf BPF test if clang is not
- present
-Date: Wed, 11 May 2022 17:24:38 +0530
-Message-Id: <20220511115438.84032-1-atrajeev@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.35.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: ZE_Lcvm19bOmqMU684MYWXxNVJYbbBxa
-X-Proofpoint-GUID: _auU4c1WDTaACS6TElFdDkeZVyFz1COE
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
- definitions=2022-05-11_03,2022-05-11_01,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 malwarescore=0
- bulkscore=0 clxscore=1015 mlxscore=0 lowpriorityscore=0 priorityscore=1501
- adultscore=0 spamscore=0 mlxlogscore=999 suspectscore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2202240000
- definitions=main-2205110053
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4KytrH1KBVz3brf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2022 22:04:46 +1000 (AEST)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R111e4; CH=green; DM=||false|;
+ DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04394;
+ MF=baolin.wang@linux.alibaba.com; NM=1; PH=DS; RN=32; SR=0;
+ TI=SMTPD_---0VCwISV4_1652270676; 
+Received: from localhost(mailfrom:baolin.wang@linux.alibaba.com
+ fp:SMTPD_---0VCwISV4_1652270676) by smtp.aliyun-inc.com(127.0.0.1);
+ Wed, 11 May 2022 20:04:37 +0800
+From: Baolin Wang <baolin.wang@linux.alibaba.com>
+To: akpm@linux-foundation.org,
+	mike.kravetz@oracle.com
+Subject: [PATCH v4 3/3] mm: rmap: Fix CONT-PTE/PMD size hugetlb issue when
+ unmapping
+Date: Wed, 11 May 2022 20:04:19 +0800
+Message-Id: <0a2e547238cad5bc153a85c3e9658cb9d55f9cac.1652270205.git.baolin.wang@linux.alibaba.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <cover.1652270205.git.baolin.wang@linux.alibaba.com>
+References: <cover.1652270205.git.baolin.wang@linux.alibaba.com>
+In-Reply-To: <cover.1652270205.git.baolin.wang@linux.alibaba.com>
+References: <cover.1652270205.git.baolin.wang@linux.alibaba.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,119 +50,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: irogers@google.com, maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com,
- linux-perf-users@vger.kernel.org, kjain@linux.ibm.com,
- disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-mips@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+ linux-mm@kvack.org, paulus@samba.org, sparclinux@vger.kernel.org,
+ agordeev@linux.ibm.com, will@kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, arnd@arndb.de, ysato@users.sourceforge.jp,
+ deller@gmx.de, catalin.marinas@arm.com, borntraeger@linux.ibm.com,
+ gor@linux.ibm.com, hca@linux.ibm.com, baolin.wang@linux.alibaba.com,
+ songmuchun@bytedance.com, linux-arm-kernel@lists.infradead.org,
+ tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, svens@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Perf BPF filter test fails in environment where "clang"
-is not installed.
+On some architectures (like ARM64), it can support CONT-PTE/PMD size
+hugetlb, which means it can support not only PMD/PUD size hugetlb:
+2M and 1G, but also CONT-PTE/PMD size: 64K and 32M if a 4K page
+size specified.
 
-Test failure logs:
+When unmapping a hugetlb page, we will get the relevant page table
+entry by huge_pte_offset() only once to nuke it. This is correct
+for PMD or PUD size hugetlb, since they always contain only one
+pmd entry or pud entry in the page table.
 
-<<>>
- 42: BPF filter                    :
- 42.1: Basic BPF filtering         : Skip
- 42.2: BPF pinning                 : FAILED!
- 42.3: BPF prologue generation     : FAILED!
-<<>>
+However this is incorrect for CONT-PTE and CONT-PMD size hugetlb,
+since they can contain several continuous pte or pmd entry with
+same page table attributes, so we will nuke only one pte or pmd
+entry for this CONT-PTE/PMD size hugetlb page.
 
-Enabling verbose option provided debug logs which says
-clang/llvm needs to be installed. Snippet of verbose logs:
+And now try_to_unmap() is only passed a hugetlb page in the case
+where the hugetlb page is poisoned. Which means now we will unmap
+only one pte entry for a CONT-PTE or CONT-PMD size poisoned hugetlb
+page, and we can still access other subpages of a CONT-PTE or CONT-PMD
+size poisoned hugetlb page, which will cause serious issues possibly.
 
-<<>>
- 42.2: BPF pinning                  :
- --- start ---
-test child forked, pid 61423
-ERROR:	unable to find clang.
-Hint:	Try to install latest clang/llvm to support BPF.
-        Check your $PATH
+So we should change to use huge_ptep_clear_flush() to nuke the
+hugetlb page table to fix this issue, which already considered
+CONT-PTE and CONT-PMD size hugetlb.
 
-<<logs_here>>
+We've already used set_huge_swap_pte_at() to set a poisoned
+swap entry for a poisoned hugetlb page. Meanwhile adding a VM_BUG_ON()
+to make sure the passed hugetlb page is poisoned in try_to_unmap().
 
-Failed to compile test case: 'Basic BPF llvm compile'
-Unable to get BPF object, fix kbuild first
-test child finished with -1
- ---- end ----
-BPF filter subtest 2: FAILED!
-<<>>
-
-Here subtests, "BPF pinning" and "BPF prologue generation"
-failed and logs shows clang/llvm is needed. After installing
-clang, testcase passes.
-
-Reason on why subtest failure happens though logs has proper
-debug information:
-Main function __test__bpf calls test_llvm__fetch_bpf_obj by
-passing 4th argument as true ( 4th arguments maps to parameter
-"force" in test_llvm__fetch_bpf_obj ). But this will cause
-test_llvm__fetch_bpf_obj to skip the check for clang/llvm.
-
-Snippet of code part which checks for clang based on
-parameter "force" in test_llvm__fetch_bpf_obj:
-
-<<>>
-if (!force && (!llvm_param.user_set_param &&
-<<>>
-
-Since force is set to "false", test won't get skipped and
-fails to compile test case. The BPF code compilation needs
-clang, So pass the fourth argument as "false" and also skip
-the test if reason for return is "TEST_SKIP"
-
-After the patch:
-
-<<>>
- 42: BPF filter                    :
- 42.1: Basic BPF filtering         : Skip
- 42.2: BPF pinning                 : Skip
- 42.3: BPF prologue generation     : Skip
-<<>>
-
-Fixes: ba1fae431e74 ("perf test: Add 'perf test BPF'")
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Signed-off-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Reviewed-by: Muchun Song <songmuchun@bytedance.com>
+Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
 ---
-Changelog:
- Addressed review comments from Arnaldo by adding
- reason for skipping of testcase.
+ mm/rmap.c | 39 ++++++++++++++++++++++-----------------
+ 1 file changed, 22 insertions(+), 17 deletions(-)
 
- tools/perf/tests/bpf.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/tools/perf/tests/bpf.c b/tools/perf/tests/bpf.c
-index 57b9591f7cbb..17c023823713 100644
---- a/tools/perf/tests/bpf.c
-+++ b/tools/perf/tests/bpf.c
-@@ -222,11 +222,11 @@ static int __test__bpf(int idx)
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 4e96daf..219e287 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -1528,6 +1528,11 @@ static bool try_to_unmap_one(struct folio *folio, struct vm_area_struct *vma,
  
- 	ret = test_llvm__fetch_bpf_obj(&obj_buf, &obj_buf_sz,
- 				       bpf_testcase_table[idx].prog_id,
--				       true, NULL);
-+				       false, NULL);
- 	if (ret != TEST_OK || !obj_buf || !obj_buf_sz) {
- 		pr_debug("Unable to get BPF object, %s\n",
- 			 bpf_testcase_table[idx].msg_compile_fail);
--		if (idx == 0)
-+		if ((idx == 0) || (ret == TEST_SKIP))
- 			return TEST_SKIP;
- 		else
- 			return TEST_FAIL;
-@@ -364,9 +364,11 @@ static int test__bpf_prologue_test(struct test_suite *test __maybe_unused,
- static struct test_case bpf_tests[] = {
- #ifdef HAVE_LIBBPF_SUPPORT
- 	TEST_CASE("Basic BPF filtering", basic_bpf_test),
--	TEST_CASE("BPF pinning", bpf_pinning),
-+	TEST_CASE_REASON("BPF pinning", bpf_pinning,
-+			"clang isn't installed or environment missing BPF support"),
- #ifdef HAVE_BPF_PROLOGUE
--	TEST_CASE("BPF prologue generation", bpf_prologue_test),
-+	TEST_CASE_REASON("BPF prologue generation", bpf_prologue_test,
-+			"clang isn't installed or environment missing BPF support"),
- #else
- 	TEST_CASE_REASON("BPF prologue generation", bpf_prologue_test, "not compiled in"),
- #endif
+ 		if (folio_test_hugetlb(folio)) {
+ 			/*
++			 * The try_to_unmap() is only passed a hugetlb page
++			 * in the case where the hugetlb page is poisoned.
++			 */
++			VM_BUG_ON_PAGE(!PageHWPoison(subpage), subpage);
++			/*
+ 			 * huge_pmd_unshare may unmap an entire PMD page.
+ 			 * There is no way of knowing exactly which PMDs may
+ 			 * be cached for this mm, so we must flush them all.
+@@ -1562,28 +1567,28 @@ static bool try_to_unmap_one(struct folio *folio, struct vm_area_struct *vma,
+ 					break;
+ 				}
+ 			}
++			pteval = huge_ptep_clear_flush(vma, address, pvmw.pte);
+ 		} else {
+ 			flush_cache_page(vma, address, pte_pfn(*pvmw.pte));
+-		}
+-
+-		/*
+-		 * Nuke the page table entry. When having to clear
+-		 * PageAnonExclusive(), we always have to flush.
+-		 */
+-		if (should_defer_flush(mm, flags) && !anon_exclusive) {
+ 			/*
+-			 * We clear the PTE but do not flush so potentially
+-			 * a remote CPU could still be writing to the folio.
+-			 * If the entry was previously clean then the
+-			 * architecture must guarantee that a clear->dirty
+-			 * transition on a cached TLB entry is written through
+-			 * and traps if the PTE is unmapped.
++			 * Nuke the page table entry. When having to clear
++			 * PageAnonExclusive(), we always have to flush.
+ 			 */
+-			pteval = ptep_get_and_clear(mm, address, pvmw.pte);
++			if (should_defer_flush(mm, flags) && !anon_exclusive) {
++				/*
++				 * We clear the PTE but do not flush so potentially
++				 * a remote CPU could still be writing to the folio.
++				 * If the entry was previously clean then the
++				 * architecture must guarantee that a clear->dirty
++				 * transition on a cached TLB entry is written through
++				 * and traps if the PTE is unmapped.
++				 */
++				pteval = ptep_get_and_clear(mm, address, pvmw.pte);
+ 
+-			set_tlb_ubc_flush_pending(mm, pte_dirty(pteval));
+-		} else {
+-			pteval = ptep_clear_flush(vma, address, pvmw.pte);
++				set_tlb_ubc_flush_pending(mm, pte_dirty(pteval));
++			} else {
++				pteval = ptep_clear_flush(vma, address, pvmw.pte);
++			}
+ 		}
+ 
+ 		/*
 -- 
-2.31.1
+1.8.3.1
 
