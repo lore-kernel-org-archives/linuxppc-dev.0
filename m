@@ -4,129 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C828EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 May 2022 06:59:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2150C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 May 2022 07:35:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Kzzyt6SMgz3cK8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 May 2022 16:59:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::60b;
- helo=fra01-mr2-obe.outbound.protection.outlook.com;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from FRA01-MR2-obe.outbound.protection.outlook.com
- (mail-mr2fra01on060b.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:7e19::60b])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L00mk1P9Sz3cJ7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 May 2022 17:35:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FIP9JuP8;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=disgoel@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=FIP9JuP8; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4KzzyN2Gqzz3bdN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 May 2022 16:58:51 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=kXSlOK1LuBthGJ8Uiw9mFN0TEdv7KvHJrYmxiftiA7ucU+saauu1W2vjkRILcYmG28po8rkHph4y88/GWqdozd8CA/qWWu2m3oOll2MN6bUdksi7ur5y7/ye4XWMQDr2/68p+q7eWRw7ZQKicPO3Me3Pn8RwgW+Zdy3mqyq5dmF1KG30ZiRqYLjLbCL1ZWFfsWEyHl2/U1C1ShYId7SewyF9Yg9kQyllLlGVryS2Yp0YuAKujiYEjsQ51qJua6hagtrMFZ+EoptyEdcCbPnpxYiyrDoT9z45HwFObgiCc3b1hRzr/bexJ6J5dPTChUTQlM7vQ6JLvj7SUnlIk6WRKQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=rz72kLOrl7Z/s8Zv0a4PsJfrc/xm5MEbhqZ8lDyX6X0=;
- b=JS3dHH8oSIeFbjdwslE9BYFuJwbK8dpmK77D9XYKGKIAAxjMeHCocrXG4OQsXVK1/pcfVnZjXUtAbxgweZ456XHrPK736k29/LNKkphGBRj0emH0qA+AJ4sTzQr8ErVPFzEeZXy28Iem60MohUgaLkhTDZbhn6MaifQUcTqxt7NZWPWJSt2+8V70jUkVGQhvTQbLXp7FvL/VuDo6MP/Az1mCgO5uOkQXXoyWuDwwvGABsi1c8/4LyGdSnZJozSCbxcTcs0rfN3IXDfcHx3zEEDUcwweo9mY9+0CZ2Q+7wkTJxYBPfmxe4MFUKBH43DCydmkY9Kt68TuRei7eD17Tyw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
- dkim=pass header.d=csgroup.eu; arc=none
-Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
- by PR1P264MB2111.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:1b2::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5250.13; Fri, 13 May
- 2022 06:58:28 +0000
-Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
- ([fe80::ad4e:c157:e9ac:385d]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
- ([fe80::ad4e:c157:e9ac:385d%6]) with mapi id 15.20.5250.015; Fri, 13 May 2022
- 06:58:28 +0000
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Hari Bathini <hbathini@linux.ibm.com>, "bpf@vger.kernel.org"
- <bpf@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 4/5] bpf ppc32: add support for BPF_ATOMIC bitwise
- operations
-Thread-Topic: [PATCH 4/5] bpf ppc32: add support for BPF_ATOMIC bitwise
- operations
-Thread-Index: AQHYZdRrIu81WxSiFkilXOKuzUjZdK0cYgiA
-Date: Fri, 13 May 2022 06:58:28 +0000
-Message-ID: <54d45d24-2514-4b4a-8483-4f662c371322@csgroup.eu>
-References: <20220512074546.231616-1-hbathini@linux.ibm.com>
- <20220512074546.231616-5-hbathini@linux.ibm.com>
-In-Reply-To: <20220512074546.231616-5-hbathini@linux.ibm.com>
-Accept-Language: fr-FR, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=csgroup.eu;
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 4cb65add-8ecc-4831-2112-08da34adfbe9
-x-ms-traffictypediagnostic: PR1P264MB2111:EE_
-x-microsoft-antispam-prvs: <PR1P264MB2111E2AF3286505371A0B694EDCA9@PR1P264MB2111.FRAP264.PROD.OUTLOOK.COM>
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: sPuVIbhD1dw4ZM2PNfkCUnQBvaSvt010wEL15q9VmQsnQcywSWxdIVt8a4qsb1iIsDzna5fb6jltz95rWVHlcntwptTTxlG9rIXVJ6Pt162s27QCs/JLjkc+sGCYSYzPpugVWcDDf4W6G9KQNEVjmqUvFzfMx2sAmALK+TfWLrfvZCfHSHcP/8m+88mNLaIT6cb1Sja9mr1FGhFNTvI4MCFWCLoiFj1jcMh3LQDvKeNiTQxu2J0suF7J1oQjNngZl4MwL3cLW64UgDwbg1ttaIrRGGczmo2suBEDARPY9VUceyWlEToix5BzWgICm99xEPbJWX80lXMqcAL5oE2nES0uUWd56zaDYDsLoKIysG8cJG0bxplw/RK85qVGl3VKTlog1tVDbPUuDOKnXPUdJhP33N9tqFHjBvD3MPHu1S+HCcB5hckNt+oSr5Pdg02ozYeioqUtk69pKJXoIf72Ks4OWpY6E/b3e525/sCMDvJoh766jgKIYOQRREqbXUU0Zbdg5QKrakACys1gB29G05HRfvvkUThbeBkLb35lpTnx7tQvdLFWnNMRTqPE7pD8jF5oOkBRgg89y04s4tB+bOreGzuq7OLjCxRThzxD6y23wSAzXrluTtYlOdUrukjgv4mbSnnfbLYKwMP/w/IJVWRQGRrvp0CnnVWLu/leOdv/RqblatahFcoIaaKTCZeNyyv8ENrW0IQE13+2b6w2gx5WIEDYvxqjxq2V0RJ2cN8gMOXzEHFmjROGmLE9/oNhGiaTsm9vVLbf85bx8XgJHQ==
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
- SFS:(13230001)(4636009)(366004)(5660300002)(110136005)(7416002)(54906003)(8936002)(83380400001)(71200400001)(186003)(31686004)(6506007)(6512007)(36756003)(26005)(2616005)(66574015)(316002)(38070700005)(38100700002)(122000001)(86362001)(6486002)(31696002)(2906002)(508600001)(44832011)(66476007)(66556008)(66446008)(64756008)(8676002)(76116006)(91956017)(66946007)(4326008)(43740500002)(45980500001);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?UWMxUldsQ3k0c0JCOVJVblRRcHRza2NpaTVKN04vSU53bDFuYTlTR0pEZWlv?=
- =?utf-8?B?V05ydHBqUXVMcE1RbXRlM1FVcDhzTzU5bmtxSklaWFdyN2oyMndjOFZNRnBW?=
- =?utf-8?B?Ukw1T3UvSy9KQythR2lKTWlGZEJ6cmZFd1lFZHJaLzhZM3pVczBXWThpcUlB?=
- =?utf-8?B?SGpTOFBJNHhzbzdXTkR1d3ZHYmFuVkFPOFdpRlR0cnFXK3NLa0VocC9UZDVX?=
- =?utf-8?B?cUxSUlRrS3ZORUxUaE9rL1RQdkdUU1VYN29JUFFsNXplMkFLSWw5cjNWcExl?=
- =?utf-8?B?aVprRWNNNVZvNjRZbjEvMHljSlh4eTZ5NlFTRGFqSmZwSWQrellRb0pzeU1P?=
- =?utf-8?B?MGp0b2hDNk1PbVNPVHNhNFhHT29IVWdMRXZNYnNyQVJLcSthdXoyR2FMT1Yw?=
- =?utf-8?B?TUlEdmlsdUxnWkVCZmhmai9wU1NqcE5oMG9mOFFCa09MUjY1am1WUGhEdlY1?=
- =?utf-8?B?d2pnbm55RWJBQ1E0YzlzZWlYQ2VNeFVueU1wNzl1cTN5TGpPek15TmtuTTdR?=
- =?utf-8?B?S3Bza3VkQTFLQzdSRTEzTzRLK2NaRThRVHpHWElBM3RtUEgxODNPOWQzbUJT?=
- =?utf-8?B?UllZSHBlYzhQaTJHL1UvdEtQL0JYK0d2MFFQT0RHbndiajEvVFJSNWZQb1Bi?=
- =?utf-8?B?LzI5SlllcnR3MU5TQVBJY2hCd0I4UmUwQnkvNmpFSW5MUmxqVTZGYmIwUmFC?=
- =?utf-8?B?aGxOV0NHM1psOENBaDM5eU9XLy85OHU5YzJWejY3NDFCeURmb3FxKzAxdDZC?=
- =?utf-8?B?UkhnVzBEdEtOUmtJL1RrWVhPWkJjNGhoMFZjQWs3T3YxRkVvSTg0SWhlZXYz?=
- =?utf-8?B?NXIvQUZ4UnNNMXVwTWVIMnFqR1JNYzJzYXVpNXF2WEM0TEI2cE5IWDk2OFhZ?=
- =?utf-8?B?WjgrZXdNeDNEZkY3MlU0UTJhYXpJN05BeEZtSHl0dG9DbGZ5b2NQVEhLdVh1?=
- =?utf-8?B?WVVLV1pReGNSYjRuYzE4dkwxd2NUNHl5cGtDNkxaYXVaYW8yKzJZV1J0ci8y?=
- =?utf-8?B?K3V3UGpvRnBQMFRKSGRRcHYvbHM4cGNhYWd2ZElkRncxK1o3QVBZaDVKaUp4?=
- =?utf-8?B?bEhiMUR4c3lSeHFWekt1TDU1Vmh4dUtGb053Z0NZR1QvY1ZUelFOTE82Sm42?=
- =?utf-8?B?M3J3REk4bWpLdytnWDlBSUNLSVZnNExGLzMzTG5LMmNoN01icEQ5WnJ4aklO?=
- =?utf-8?B?Y2ZZckpTbGxzVUw2cG5ZUUtRUmFMRVp2Y0JLQlQwY1NtdlJhYXBMV3pwTFlL?=
- =?utf-8?B?MS9SWk9OOEVoNTFiUjdhRjR2U1ZpNklTQmJ2WmxDMVVqT3B6SVdJRzBnTFpo?=
- =?utf-8?B?aU9pQ2MrYnRaTmg5SWVqQjRTNkErcUFKdm9lUENWb1RRbkhZRUpNeGROWWlF?=
- =?utf-8?B?YzZCaDR1TU40bkJkNzRrbmZ6SjQwVEdPRmlDU0hpUzhRWFA4aVRqQXoxN2JQ?=
- =?utf-8?B?RHhUOHBqTndtU0tMTlY5aEFvUE54THJZN0w5eW5UZUQ4ZmtjRmczaDlITm4w?=
- =?utf-8?B?dHRLYjN5UUk0V2ZnVFJDUzlTd01GZ3Q3WTErUGNzbGhoZjZ3ajNheTN3SU15?=
- =?utf-8?B?N2pRaWhjYzU1TVh2UlAwb25TcDIvTUIzelIzQ0hYZjUxMjJZMTlteWxaT3lu?=
- =?utf-8?B?blpQOFYzWG5BOEdSNVk4UkIzUTdCSFFYR2d6MUpubGlPaURoZWRYNE5mZG1V?=
- =?utf-8?B?cWlKN0JBWjAwZ1VXZVllQXl4TS8wV1BweFZpSmRqcUVzdjhqVkRSN0NrR0FF?=
- =?utf-8?B?a29CRUZpczNRSjRvb2RIN3NPMFJ5T0I3dSswUFFFcjBFaEFlQkZBSVh2YzRT?=
- =?utf-8?B?UUNWRmlOWHJ3elZCaEFNZVNNZE1wbnFPSXpLdHBBYTdhdEFhVzA1aEdZQVFH?=
- =?utf-8?B?ejQ3TjNTbE9iNUZSbXQ2UTVxWmgrblR1MmdOemp4Rmk0aXJ2RHVNaFVQKy9I?=
- =?utf-8?B?VkZlTFVvUENtbUh1L3JjbkY0MU5XcWpJdlJMcU1aN2Z5cFVUL0hvZ2NFSFQ3?=
- =?utf-8?B?NXY4VkFnaXBjdFhCdWhUSldGYU83SzdSTmxUTkZVRGttVm9lUm1TS3lKb2N6?=
- =?utf-8?B?a1dzYWJTbDNDeUJiSEdrV1FxK3FkZTcrQzNQSEhnb3R5RStHTnU0SXZ3OGRE?=
- =?utf-8?B?T3M0TW1nYytIQnU0QUtDU0NiUUVKV0s5Tk1rVHNHTm4yY0xBSFcrWHpBTzZI?=
- =?utf-8?B?NE9SSjRLbkpsTkMzQTAyU0VkeW9ya2Z3YnJpaHVBSGJUazZCT1lsWXFiSW1M?=
- =?utf-8?B?TXBSSnRTZDNiM0xsL0hsaFN0MDVtQlFGOFdLK2IvL3VlVHlWVkpWQTMvNzRL?=
- =?utf-8?B?YU1ERFlvNlpMN2RnTC82ZmV4YjFDWWVDZ1RGdU9VZyt4ZmJQaUk5RkFkdUt3?=
- =?utf-8?Q?0p0ZkvrEELfcOIq1l0UrckoQE2dC7dJnVaT7j?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <7E07A36F398EE245845AFC57D7D9B241@FRAP264.PROD.OUTLOOK.COM>
-Content-Transfer-Encoding: base64
-MIME-Version: 1.0
-X-OriginatorOrg: csgroup.eu
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4cb65add-8ecc-4831-2112-08da34adfbe9
-X-MS-Exchange-CrossTenant-originalarrivaltime: 13 May 2022 06:58:28.6536 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: NB5Ux5/vTOHaLjDg2OLjkynsYjwQOChJjtnBGVP3+K7Ya0Vkub+CdSAQ2U3EDffEwI2YfzbSA9TdIV2BFnEYzi8CqqNqivtYdlzsb06OEX8=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR1P264MB2111
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Kzz2547f3z3bcl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 May 2022 16:17:00 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24D5sx32015574;
+ Fri, 13 May 2022 06:16:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ mime-version; s=pp1; bh=6+yXdS6eVcyJGbCiP5+kjgbSd9XRmFUTLOwTAtemUz0=;
+ b=FIP9JuP8wR3gHr6ggNfeD3lMAnJqbh80iFfLOoHaC9czVYPNFtdJuf9JWkLyx2JApvdc
+ y6oflayP88NG7yecHAstGh4AnWdev0ltx72kEyXr8e4+fxDMUyHkbjJ1XJDhMNeYdDIN
+ 2rccWPSMPgsOfmhD5XxZwUXmJyWMlMPYwWrJmz/eFN5gaSuScTQlmOT5bQ+hJxPVUiQ1
+ 0z5+/5TDZNveBkGUXyf0SQvm2qRUVL6ANJ6+RaB4Q3OtnGUPUeAcNB4kLYOxg9dXAKu5
+ D7Je3x1r9FDEyPWQu+dA7C0jh/dwM+OA8MV28tB4msdKvfFowIL8esvJvnySyM/WJSIP IA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3g1hkkga66-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 13 May 2022 06:16:49 +0000
+Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
+ by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 24D6Gm0j030358;
+ Fri, 13 May 2022 06:16:49 GMT
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.71])
+ by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3g1hkkga5p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 13 May 2022 06:16:48 +0000
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+ by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24D6Cnx0029418;
+ Fri, 13 May 2022 06:16:47 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma02fra.de.ibm.com with ESMTP id 3fwgd8xaf1-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 13 May 2022 06:16:47 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 24D6GhhV46858554
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 13 May 2022 06:16:43 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6D52A5204F;
+ Fri, 13 May 2022 06:16:43 +0000 (GMT)
+Received: from disgoel-ibm-com (unknown [9.43.101.217])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 7AE7852052;
+ Fri, 13 May 2022 06:16:38 +0000 (GMT)
+Message-ID: <be9726bc462d3b00243bd2161fb8e153b919db1e.camel@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2] tools/perf/tests: Skip perf BPF test if clang is not
+ present
+From: Disha Goel <disgoel@linux.vnet.ibm.com>
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, acme@kernel.org,
+ jolsa@kernel.org
+Date: Fri, 13 May 2022 11:46:35 +0530
+In-Reply-To: <20220511115438.84032-1-atrajeev@linux.vnet.ibm.com>
+References: <20220511115438.84032-1-atrajeev@linux.vnet.ibm.com>
+Content-Type: multipart/alternative; boundary="=-3ZFZPBxqyflu7pwIdHPI"
+X-Mailer: Evolution 3.28.5 (3.28.5-18.el8) 
+Mime-Version: 1.0
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: eup-Zb6diYrZY1AROC0CUjUlzl9qyKar
+X-Proofpoint-GUID: wejpQphAMq20DqqwPXmZ4hvyuqkg3HEr
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
+ definitions=2022-05-13_02,2022-05-12_01,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 clxscore=1011
+ mlxscore=0 suspectscore=0 spamscore=0 lowpriorityscore=0
+ priorityscore=1501 bulkscore=0 mlxlogscore=999 phishscore=0
+ impostorscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2202240000 definitions=main-2205130026
+X-Mailman-Approved-At: Fri, 13 May 2022 17:34:55 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -138,72 +105,186 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>,
- John Fastabend <john.fastabend@gmail.com>, Alexei Starovoitov <ast@kernel.org>,
- Andrii Nakryiko <andrii@kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Yonghong Song <yhs@fb.com>,
- KP Singh <kpsingh@kernel.org>, Jordan Niethe <jniethe5@gmail.com>,
- Martin KaFai Lau <kafai@fb.com>
+Cc: irogers@google.com, maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com,
+ linux-perf-users@vger.kernel.org, kjain@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-DQoNCkxlIDEyLzA1LzIwMjIgw6AgMDk6NDUsIEhhcmkgQmF0aGluaSBhIMOpY3JpdMKgOg0KPiBB
-ZGRpbmcgaW5zdHJ1Y3Rpb25zIGZvciBwcGMzMiBmb3INCj4gDQo+IGF0b21pY19hbmQNCj4gYXRv
-bWljX29yDQo+IGF0b21pY194b3INCj4gYXRvbWljX2ZldGNoX2FkZA0KPiBhdG9taWNfZmV0Y2hf
-YW5kDQo+IGF0b21pY19mZXRjaF9vcg0KPiBhdG9taWNfZmV0Y2hfeG9yDQo+IA0KPiBTaWduZWQt
-b2ZmLWJ5OiBIYXJpIEJhdGhpbmkgPGhiYXRoaW5pQGxpbnV4LmlibS5jb20+DQo+IC0tLQ0KPiAg
-IGFyY2gvcG93ZXJwYy9uZXQvYnBmX2ppdF9jb21wMzIuYyB8IDQ1ICsrKysrKysrKysrKysrKysr
-KysrKy0tLS0tLS0tLS0NCj4gICAxIGZpbGUgY2hhbmdlZCwgMzEgaW5zZXJ0aW9ucygrKSwgMTQg
-ZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL25ldC9icGZfaml0
-X2NvbXAzMi5jIGIvYXJjaC9wb3dlcnBjL25ldC9icGZfaml0X2NvbXAzMi5jDQo+IGluZGV4IGU0
-NmVkMWU4YzZjYS4uNTYwNGFlMWI2MGFiIDEwMDY0NA0KPiAtLS0gYS9hcmNoL3Bvd2VycGMvbmV0
-L2JwZl9qaXRfY29tcDMyLmMNCj4gKysrIGIvYXJjaC9wb3dlcnBjL25ldC9icGZfaml0X2NvbXAz
-Mi5jDQo+IEBAIC03OTgsMjUgKzc5OCw0MiBAQCBpbnQgYnBmX2ppdF9idWlsZF9ib2R5KHN0cnVj
-dCBicGZfcHJvZyAqZnAsIHUzMiAqaW1hZ2UsIHN0cnVjdCBjb2RlZ2VuX2NvbnRleHQgKg0KPiAg
-IAkJICogQlBGX1NUWCBBVE9NSUMgKGF0b21pYyBvcHMpDQo+ICAgCQkgKi8NCj4gICAJCWNhc2Ug
-QlBGX1NUWCB8IEJQRl9BVE9NSUMgfCBCUEZfVzoNCj4gLQkJCWlmIChpbW0gIT0gQlBGX0FERCkg
-ew0KPiAtCQkJCXByX2Vycl9yYXRlbGltaXRlZCgiZUJQRiBmaWx0ZXIgYXRvbWljIG9wIGNvZGUg
-JTAyeCAoQCVkKSB1bnN1cHBvcnRlZFxuIiwNCj4gLQkJCQkJCSAgIGNvZGUsIGkpOw0KPiAtCQkJ
-CXJldHVybiAtRU5PVFNVUFA7DQo+IC0JCQl9DQo+IC0NCj4gLQkJCS8qICoodTMyICopKGRzdCAr
-IG9mZikgKz0gc3JjICovDQo+IC0NCj4gICAJCQlicGZfc2V0X3NlZW5fcmVnaXN0ZXIoY3R4LCB0
-bXBfcmVnKTsNCj4gICAJCQkvKiBHZXQgb2Zmc2V0IGludG8gVE1QX1JFRyAqLw0KPiAgIAkJCUVN
-SVQoUFBDX1JBV19MSSh0bXBfcmVnLCBvZmYpKTsNCj4gKwkJCXRtcF9pZHggPSBjdHgtPmlkeCAq
-IDQ7DQo+ICAgCQkJLyogbG9hZCB2YWx1ZSBmcm9tIG1lbW9yeSBpbnRvIHIwICovDQo+ICAgCQkJ
-RU1JVChQUENfUkFXX0xXQVJYKF9SMCwgdG1wX3JlZywgZHN0X3JlZywgMCkpOw0KPiAtCQkJLyog
-YWRkIHZhbHVlIGZyb20gc3JjX3JlZyBpbnRvIHRoaXMgKi8NCj4gLQkJCUVNSVQoUFBDX1JBV19B
-REQoX1IwLCBfUjAsIHNyY19yZWcpKTsNCj4gLQkJCS8qIHN0b3JlIHJlc3VsdCBiYWNrICovDQo+
-IC0JCQlFTUlUKFBQQ19SQVdfU1RXQ1goX1IwLCB0bXBfcmVnLCBkc3RfcmVnKSk7DQo+IC0JCQkv
-KiB3ZSdyZSBkb25lIGlmIHRoaXMgc3VjY2VlZGVkICovDQo+IC0JCQlQUENfQkNDX1NIT1JUKENP
-TkRfTkUsIChjdHgtPmlkeCAtIDMpICogNCk7DQo+ICsJCQlzd2l0Y2ggKGltbSkgew0KPiArCQkJ
-Y2FzZSBCUEZfQUREOg0KPiArCQkJY2FzZSBCUEZfQUREIHwgQlBGX0ZFVENIOg0KPiArCQkJCUVN
-SVQoUFBDX1JBV19BREQoX1IwLCBfUjAsIHNyY19yZWcpKTsNCj4gKwkJCQlnb3RvIGF0b21pY19v
-cHM7DQo+ICsJCQljYXNlIEJQRl9BTkQ6DQo+ICsJCQljYXNlIEJQRl9BTkQgfCBCUEZfRkVUQ0g6
-DQo+ICsJCQkJRU1JVChQUENfUkFXX0FORChfUjAsIF9SMCwgc3JjX3JlZykpOw0KPiArCQkJCWdv
-dG8gYXRvbWljX29wczsNCj4gKwkJCWNhc2UgQlBGX09SOg0KPiArCQkJY2FzZSBCUEZfT1IgfCBC
-UEZfRkVUQ0g6DQo+ICsJCQkJRU1JVChQUENfUkFXX09SKF9SMCwgX1IwLCBzcmNfcmVnKSk7DQo+
-ICsJCQkJZ290byBhdG9taWNfb3BzOw0KPiArCQkJY2FzZSBCUEZfWE9SOg0KPiArCQkJY2FzZSBC
-UEZfWE9SIHwgQlBGX0ZFVENIOg0KPiArCQkJCUVNSVQoUFBDX1JBV19YT1IoX1IwLCBfUjAsIHNy
-Y19yZWcpKTsNCj4gK2F0b21pY19vcHM6DQoNClRoaXMgbG9va3MgbGlrZSBhbiBvZGQgY29uc3Ry
-dWN0Lg0KDQpUaGUgZGVmYXVsdCBjYXNlIGRvZXNuJ3QgZmFsbCB0aHJvdWdoLCBzbyB0aGUgYmVs
-b3cgcGFydCBjb3VsZCBnbyBhZnRlciANCnRoZSBzd2l0Y2ggYW5kIGFsbCBjYXNlcyBjb3VsZCBq
-dXN0IGJyZWFrIGluc3RlYWQgb2YgZ290byBhdG9taWNfb3BzLg0KDQo+ICsJCQkJLyogRm9yIHRo
-ZSBCUEZfRkVUQ0ggdmFyaWFudCwgZ2V0IG9sZCBkYXRhIGludG8gc3JjX3JlZyAqLw0KPiArCQkJ
-CWlmIChpbW0gJiBCUEZfRkVUQ0gpDQo+ICsJCQkJCUVNSVQoUFBDX1JBV19MV0FSWChzcmNfcmVn
-LCB0bXBfcmVnLCBkc3RfcmVnLCAwKSk7DQoNCkkgdGhpbmsgdGhpcyBpcyB3cm9uZy4gQnkgZG9p
-bmcgYSBuZXcgTFdBUlggeW91IGtpbGwgdGhlIHJlc2VydmF0aW9uIA0KZG9uZSBieSB0aGUgcHJl
-dmlvdXMgb25lLiBJZiB0aGUgZGF0YSBoYXMgY2hhbmdlZCBiZXR3ZWVuIHRoZSBmaXJzdCANCkxX
-QVJYIGFuZCBub3csIGl0IHdpbGwgZ28gdW5kZXRlY3RlZC4NCg0KSXQgc2hvdWxkIGJlIGEgTFda
-WCBJIGJlbGlldmUuDQoNCkJ1dCB0aGVyZSBpcyBhbm90aGVyIHByb2JsZW06IHlvdSBjbG9iYmVy
-IHNyY19yZWcsIHRoZW4gd2hhdCBoYXBwZW5zIGlmIA0KU1RXQ1ggZmFpbHMgYW5kIGl0IGxvb3Bz
-IGJhY2sgdG8gdG1wX2lkeCA/DQoNCj4gKwkJCQkvKiBzdG9yZSByZXN1bHQgYmFjayAqLw0KPiAr
-CQkJCUVNSVQoUFBDX1JBV19TVFdDWChfUjAsIHRtcF9yZWcsIGRzdF9yZWcpKTsNCj4gKwkJCQkv
-KiB3ZSdyZSBkb25lIGlmIHRoaXMgc3VjY2VlZGVkICovDQo+ICsJCQkJUFBDX0JDQ19TSE9SVChD
-T05EX05FLCB0bXBfaWR4KTsNCj4gKwkJCQlicmVhazsNCj4gKwkJCWRlZmF1bHQ6DQo+ICsJCQkJ
-cHJfZXJyX3JhdGVsaW1pdGVkKCJlQlBGIGZpbHRlciBhdG9taWMgb3AgY29kZSAlMDJ4IChAJWQp
-IHVuc3VwcG9ydGVkXG4iLA0KPiArCQkJCQkJICAgY29kZSwgaSk7DQo+ICsJCQkJcmV0dXJuIC1F
-T1BOT1RTVVBQOw0KPiArCQkJfQ0KPiAgIAkJCWJyZWFrOw0KPiAgIA0KPiAgIAkJY2FzZSBCUEZf
-U1RYIHwgQlBGX0FUT01JQyB8IEJQRl9EVzogLyogKih1NjQgKikoZHN0ICsgb2ZmKSArPSBzcmMg
-Ki8=
+
+--=-3ZFZPBxqyflu7pwIdHPI
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+
+
+-----Original Message-----
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org
+Cc: mpe@ellerman.id.au, linux-perf-users@vger.kernel.org, 
+linuxppc-dev@lists.ozlabs.org, maddy@linux.vnet.ibm.com, 
+rnsastry@linux.ibm.com, kjain@linux.ibm.com, disgoel@linux.vnet.ibm.com
+, irogers@google.com
+Subject: [PATCH V2] tools/perf/tests: Skip perf BPF test if clang is
+not present
+Date: Wed, 11 May 2022 17:24:38 +0530
+
+Perf BPF filter test fails in environment where "clang"is not
+installed.
+Test failure logs:
+<<>> 42: BPF filter                    : 42.1: Basic BPF
+filtering         : Skip 42.2: BPF pinning                 : FAILED!
+42.3: BPF prologue generation     : FAILED!<<>>
+Enabling verbose option provided debug logs which saysclang/llvm needs
+to be installed. Snippet of verbose logs:
+<<>> 42.2: BPF pinning                  : --- start ---test child
+forked, pid 61423ERROR:	unable to find clang.Hint:	Try to install
+latest clang/llvm to support BPF.        Check your $PATH
+<<logs_here>>
+Failed to compile test case: 'Basic BPF llvm compile'Unable to get BPF
+object, fix kbuild firsttest child finished with -1 ---- end ----BPF
+filter subtest 2: FAILED!<<>>
+Here subtests, "BPF pinning" and "BPF prologue generation"failed and
+logs shows clang/llvm is needed. After installingclang, testcase
+passes.
+Reason on why subtest failure happens though logs has properdebug
+information:Main function __test__bpf calls test_llvm__fetch_bpf_obj
+bypassing 4th argument as true ( 4th arguments maps to parameter"force"
+in test_llvm__fetch_bpf_obj ). But this will
+causetest_llvm__fetch_bpf_obj to skip the check for clang/llvm.
+Snippet of code part which checks for clang based onparameter "force"
+in test_llvm__fetch_bpf_obj:
+<<>>if (!force && (!llvm_param.user_set_param &&<<>>
+Since force is set to "false", test won't get skipped andfails to
+compile test case. The BPF code compilation needsclang, So pass the
+fourth argument as "false" and also skipthe test if reason for return
+is "TEST_SKIP"
+After the patch:
+<<>> 42: BPF filter                    : 42.1: Basic BPF
+filtering         : Skip 42.2: BPF pinning                 : Skip 42.3:
+BPF prologue generation     : Skip<<>>
+Fixes: ba1fae431e74 ("perf test: Add 'perf test BPF'")Signed-off-by:
+Athira Rajeev <atrajeev@linux.vnet.ibm.com>---Changelog: Addressed
+review comments from Arnaldo by adding reason for skipping of testcase.
+ tools/perf/tests/bpf.c | 10 ++++++---- 1 file changed, 6
+insertions(+), 4 deletions(-)
+Tested the patch on powerpc and powernv, perf BPF test works fine with
+the patch.Tested-by: Disha Goel <disgoel@linux.vnet.ibm.com>
+diff --git a/tools/perf/tests/bpf.c b/tools/perf/tests/bpf.cindex
+57b9591f7cbb..17c023823713 100644--- a/tools/perf/tests/bpf.c+++
+b/tools/perf/tests/bpf.c@@ -222,11 +222,11 @@ static int
+__test__bpf(int idx)
+ 	ret = test_llvm__fetch_bpf_obj(&obj_buf, &obj_buf_sz, 		
+		       bpf_testcase_table[idx].prog_id,-		
+		       true, NULL);+				       
+false, NULL); 	if (ret != TEST_OK || !obj_buf || !obj_buf_sz) { 	
+	pr_debug("Unable to get BPF object, %s\n", 			
+ bpf_testcase_table[idx].msg_compile_fail);-		if (idx == 0)+	
+	if ((idx == 0) || (ret == TEST_SKIP)) 			return
+TEST_SKIP; 		else 			return TEST_FAIL;@@
+-364,9 +364,11 @@ static int test__bpf_prologue_test(struct test_suite
+*test __maybe_unused, static struct test_case bpf_tests[] = { #ifdef
+HAVE_LIBBPF_SUPPORT 	TEST_CASE("Basic BPF filtering",
+basic_bpf_test),-	TEST_CASE("BPF pinning", bpf_pinning),+	TEST_CA
+SE_REASON("BPF pinning", bpf_pinning,+			"clang isn't
+installed or environment missing BPF support"), #ifdef
+HAVE_BPF_PROLOGUE-	TEST_CASE("BPF prologue generation",
+bpf_prologue_test),+	TEST_CASE_REASON("BPF prologue generation",
+bpf_prologue_test,+			"clang isn't installed or
+environment missing BPF support"), #else 	TEST_CASE_REASON("BPF
+prologue generation", bpf_prologue_test, "not compiled in"), #endif
+
+--=-3ZFZPBxqyflu7pwIdHPI
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+<html dir=3D"ltr"><head></head><body style=3D"text-align:left; direction:lt=
+r;"><div><br></div><div><br></div><div>-----Original Message-----</div><div=
+><b>From</b>: Athira Rajeev &lt;<a href=3D"mailto:Athira%20Rajeev%20%3catra=
+jeev@linux.vnet.ibm.com%3e">atrajeev@linux.vnet.ibm.com</a>&gt;</div><div><=
+b>To</b>: <a href=3D"mailto:acme@kernel.org">acme@kernel.org</a>, <a href=
+=3D"mailto:jolsa@kernel.org">jolsa@kernel.org</a></div><div><b>Cc</b>: <a h=
+ref=3D"mailto:mpe@ellerman.id.au">mpe@ellerman.id.au</a>, <a href=3D"mailto=
+:linux-perf-users@vger.kernel.org">linux-perf-users@vger.kernel.org</a>, <a=
+ href=3D"mailto:linuxppc-dev@lists.ozlabs.org">linuxppc-dev@lists.ozlabs.or=
+g</a>, <a href=3D"mailto:maddy@linux.vnet.ibm.com">maddy@linux.vnet.ibm.com=
+</a>, <a href=3D"mailto:rnsastry@linux.ibm.com">rnsastry@linux.ibm.com</a>,=
+ <a href=3D"mailto:kjain@linux.ibm.com">kjain@linux.ibm.com</a>, <a href=3D=
+"mailto:disgoel@linux.vnet.ibm.com">disgoel@linux.vnet.ibm.com</a>, <a href=
+=3D"mailto:irogers@google.com">irogers@google.com</a></div><div><b>Subject<=
+/b>: [PATCH V2] tools/perf/tests: Skip perf BPF test if clang is not presen=
+t</div><div><b>Date</b>: Wed, 11 May 2022 17:24:38 +0530</div><div><br></di=
+v><pre>Perf BPF filter test fails in environment where "clang"</pre><pre>is=
+ not installed.</pre><pre><br></pre><pre>Test failure logs:</pre><pre><br><=
+/pre><pre>&lt;&lt;&gt;&gt;</pre><pre> 42: BPF filter                    :</=
+pre><pre> 42.1: Basic BPF filtering         : Skip</pre><pre> 42.2: BPF pin=
+ning                 : FAILED!</pre><pre> 42.3: BPF prologue generation    =
+ : FAILED!</pre><pre>&lt;&lt;&gt;&gt;</pre><pre><br></pre><pre>Enabling ver=
+bose option provided debug logs which says</pre><pre>clang/llvm needs to be=
+ installed. Snippet of verbose logs:</pre><pre><br></pre><pre>&lt;&lt;&gt;&=
+gt;</pre><pre> 42.2: BPF pinning                  :</pre><pre> --- start --=
+-</pre><pre>test child forked, pid 61423</pre><pre>ERROR:	unable to find cl=
+ang.</pre><pre>Hint:	Try to install latest clang/llvm to support BPF.</pre>=
+<pre>        Check your $PATH</pre><pre><br></pre><pre>&lt;&lt;logs_here&gt=
+;&gt;</pre><pre><br></pre><pre>Failed to compile test case: 'Basic BPF llvm=
+ compile'</pre><pre>Unable to get BPF object, fix kbuild first</pre><pre>te=
+st child finished with -1</pre><pre> ---- end ----</pre><pre>BPF filter sub=
+test 2: FAILED!</pre><pre>&lt;&lt;&gt;&gt;</pre><pre><br></pre><pre>Here su=
+btests, "BPF pinning" and "BPF prologue generation"</pre><pre>failed and lo=
+gs shows clang/llvm is needed. After installing</pre><pre>clang, testcase p=
+asses.</pre><pre><br></pre><pre>Reason on why subtest failure happens thoug=
+h logs has proper</pre><pre>debug information:</pre><pre>Main function __te=
+st__bpf calls test_llvm__fetch_bpf_obj by</pre><pre>passing 4th argument as=
+ true ( 4th arguments maps to parameter</pre><pre>"force" in test_llvm__fet=
+ch_bpf_obj ). But this will cause</pre><pre>test_llvm__fetch_bpf_obj to ski=
+p the check for clang/llvm.</pre><pre><br></pre><pre>Snippet of code part w=
+hich checks for clang based on</pre><pre>parameter "force" in test_llvm__fe=
+tch_bpf_obj:</pre><pre><br></pre><pre>&lt;&lt;&gt;&gt;</pre><pre>if (!force=
+ &amp;&amp; (!llvm_param.user_set_param &amp;&amp;</pre><pre>&lt;&lt;&gt;&g=
+t;</pre><pre><br></pre><pre>Since force is set to "false", test won't get s=
+kipped and</pre><pre>fails to compile test case. The BPF code compilation n=
+eeds</pre><pre>clang, So pass the fourth argument as "false" and also skip<=
+/pre><pre>the test if reason for return is "TEST_SKIP"</pre><pre><br></pre>=
+<pre>After the patch:</pre><pre><br></pre><pre>&lt;&lt;&gt;&gt;</pre><pre> =
+42: BPF filter                    :</pre><pre> 42.1: Basic BPF filtering   =
+      : Skip</pre><pre> 42.2: BPF pinning                 : Skip</pre><pre>=
+ 42.3: BPF prologue generation     : Skip</pre><pre>&lt;&lt;&gt;&gt;</pre><=
+pre><br></pre><pre>Fixes: ba1fae431e74 ("perf test: Add 'perf test BPF'")</=
+pre><pre>Signed-off-by: Athira Rajeev &lt;</pre><a href=3D"mailto:atrajeev@=
+linux.vnet.ibm.com"><pre>atrajeev@linux.vnet.ibm.com</pre></a><pre>&gt;</pr=
+e><pre>---</pre><pre>Changelog:</pre><pre> Addressed review comments from A=
+rnaldo by adding</pre><pre> reason for skipping of testcase.</pre><pre><br>=
+</pre><pre> tools/perf/tests/bpf.c | 10 ++++++----</pre><pre> 1 file change=
+d, 6 insertions(+), 4 deletions(-)</pre><pre><br></pre><pre style=3D"caret-=
+color: rgb(0, 0, 0); color: rgb(0, 0, 0);">Tested the patch on powerpc and =
+powernv, perf BPF test works fine with the patch.</pre><pre style=3D"caret-=
+color: rgb(0, 0, 0); color: rgb(0, 0, 0);">Tested-by: Disha Goel &lt;<a hre=
+f=3D"mailto:disgoel@linux.vnet.ibm.com"></a><a href=3D"mailto:disgoel@linux=
+.vnet.ibm.com">disgoel@linux.vnet.ibm.com</a>&gt;</pre><pre><br></pre><pre>=
+diff --git a/tools/perf/tests/bpf.c b/tools/perf/tests/bpf.c</pre><pre>inde=
+x 57b9591f7cbb..17c023823713 100644</pre><pre>--- a/tools/perf/tests/bpf.c<=
+/pre><pre>+++ b/tools/perf/tests/bpf.c</pre><pre>@@ -222,11 +222,11 @@ stat=
+ic int __test__bpf(int idx)</pre><pre><br></pre><pre> 	ret =3D test_llvm__f=
+etch_bpf_obj(&amp;obj_buf, &amp;obj_buf_sz,</pre><pre> 				       bpf_testc=
+ase_table[idx].prog_id,</pre><pre>-				       true, NULL);</pre><pre>+				 =
+      false, NULL);</pre><pre> 	if (ret !=3D TEST_OK || !obj_buf || !obj_bu=
+f_sz) {</pre><pre> 		pr_debug("Unable to get BPF object, %s\n",</pre><pre> =
+			 bpf_testcase_table[idx].msg_compile_fail);</pre><pre>-		if (idx =3D=3D =
+0)</pre><pre>+		if ((idx =3D=3D 0) || (ret =3D=3D TEST_SKIP))</pre><pre> 		=
+	return TEST_SKIP;</pre><pre> 		else</pre><pre> 			return TEST_FAIL;</pre><=
+pre>@@ -364,9 +364,11 @@ static int test__bpf_prologue_test(struct test_sui=
+te *test __maybe_unused,</pre><pre> static struct test_case bpf_tests[] =3D=
+ {</pre><pre> #ifdef HAVE_LIBBPF_SUPPORT</pre><pre> 	TEST_CASE("Basic BPF f=
+iltering", basic_bpf_test),</pre><pre>-	TEST_CASE("BPF pinning", bpf_pinnin=
+g),</pre><pre>+	TEST_CASE_REASON("BPF pinning", bpf_pinning,</pre><pre>+			=
+"clang isn't installed or environment missing BPF support"),</pre><pre> #if=
+def HAVE_BPF_PROLOGUE</pre><pre>-	TEST_CASE("BPF prologue generation", bpf_=
+prologue_test),</pre><pre>+	TEST_CASE_REASON("BPF prologue generation", bpf=
+_prologue_test,</pre><pre>+			"clang isn't installed or environment missing=
+ BPF support"),</pre><pre> #else</pre><pre> 	TEST_CASE_REASON("BPF prologue=
+ generation", bpf_prologue_test, "not compiled in"),</pre><pre> #endif</pre=
+></body></html>
+
+--=-3ZFZPBxqyflu7pwIdHPI--
+
