@@ -4,99 +4,127 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55DFEC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 May 2022 07:36:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC28EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 May 2022 07:50:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L00nW4mshz3cdB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 May 2022 17:36:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PgNNHrKN;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=disgoel@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=PgNNHrKN; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L016M3QXdz3c8V
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 May 2022 17:50:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::60f;
+ helo=fra01-mr2-obe.outbound.protection.outlook.com;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from FRA01-MR2-obe.outbound.protection.outlook.com
+ (mail-mr2fra01on060f.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:7e19::60f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Kzz3L2zKtz3bWx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 May 2022 16:18:06 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24D4gUCQ002969;
- Fri, 13 May 2022 06:17:59 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=message-id : subject :
- from : to : cc : date : in-reply-to : references : content-type :
- mime-version; s=pp1; bh=AnFQIBVkSDQR5qv1SW1Mywff5wzy1eA0RqorbjTDN3I=;
- b=PgNNHrKN5cOcT7EaSXAMwrKDPSY7wy7cmw2NW7hKoul/2IAEKpQy3DVzmiegguFZ4bQa
- RUlBwRgA8TNw/HYI7mFMOXoUCCoAqALqkDi3WjpVXkHIPFkupuuGqbObpQo+2fdpBXRw
- v5Yqf6eSbDjx6q6UfRLpcS37zPYVtdbrN0XBRUxZQ4vrDGB6LOXuASY4cOJYYzQanbWo
- NR4aELB1H17AEVJCQweCkoKPVH2idsjAwvsgkqEM5EverzqRw181z37xvUmORCi+5j4v
- 31J2+JPxpi7SnAyN/dSXUt6c2ELvEPx4b5o1Q/zTr+v0NbFPF0lbE/OwBZuXrEaQqsoH 4Q== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3g1ghh9hfb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 13 May 2022 06:17:59 +0000
-Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
- by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 24D66HZN007044;
- Fri, 13 May 2022 06:17:59 GMT
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3g1ghh9hef-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 13 May 2022 06:17:58 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24D6DlkU026346;
- Fri, 13 May 2022 06:17:56 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma06ams.nl.ibm.com with ESMTP id 3fyrkk3y7e-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 13 May 2022 06:17:56 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 24D64DIL17826200
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 13 May 2022 06:04:13 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1E013A404D;
- Fri, 13 May 2022 06:17:53 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2CAAEA4040;
- Fri, 13 May 2022 06:17:48 +0000 (GMT)
-Received: from disgoel-ibm-com (unknown [9.43.101.217])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 13 May 2022 06:17:47 +0000 (GMT)
-Message-ID: <151b1538daf92259702242dbf734230aea3199fe.camel@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2] tools/perf/tests: Fix session topology test to skip
- the test in guest environment
-From: Disha Goel <disgoel@linux.vnet.ibm.com>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, acme@kernel.org,
- jolsa@kernel.org
-Date: Fri, 13 May 2022 11:47:40 +0530
-In-Reply-To: <20220511114959.84002-1-atrajeev@linux.vnet.ibm.com>
-References: <20220511114959.84002-1-atrajeev@linux.vnet.ibm.com>
-Content-Type: multipart/alternative; boundary="=-PBMcJGwZeFXngpPcygBd"
-X-Mailer: Evolution 3.28.5 (3.28.5-18.el8) 
-Mime-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: THJRjP3VpUS0PzMbja87XpsyHS6KtF7G
-X-Proofpoint-GUID: JoivnUHvjhBsj2JliCMamtGMPCEYMmiG
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
- definitions=2022-05-13_02,2022-05-12_01,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0
- lowpriorityscore=0 suspectscore=0 mlxlogscore=999 spamscore=0 mlxscore=0
- impostorscore=0 adultscore=0 phishscore=0 malwarescore=0 clxscore=1015
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2202240000 definitions=main-2205130026
-X-Mailman-Approved-At: Fri, 13 May 2022 17:34:55 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L015q3Nxmz3bfq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 May 2022 17:50:22 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=BYN6+3ZlFZpm1WE8BFlPJIaviEI7kpVlgdqQtfBHFZ6yUjwZmCu6k4nADhZWrxZuUuQFEU5dMokExfMsJMsLAfTBNPYWvo34dUHytfI8f628mIZ69NaYO1F9YjhgkoAPamqD1DFJpRAa4VQHNUAW5hLj1Wt18eXUSUVd+eCQPwizBNkP7yNRfjM7T+CcjFxkGBp8ze+kOxT050C3NPsslat5UUZz9YQc8PZr+lIXv8q4yNC64SpDrDeFmcOtGpoTyGrOLrFq2wx7vPgpQDSLcLinZjSjpyOzm2RTlvXaMTbi89kjVsfmlYcO/9o0xbmp37g2QBfS1tYSTpwNvHJQtg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=XQo8fAgwrnHsHkpMXBaXL6Ng8iYev3/4tJxYzHxDHAA=;
+ b=lxrmuDydv7ptvqrcglPrF1j8415dJfQ60jT9mW0wuOOLpWcRcyl2WDwig86pLUDbyy6WKFhPB4N4Em2xCjmW/12bENPki8cXVxnKhmaLVsluXtiRrTxoDHbnw9tUMCeXaJfhhq5nzD/JVEz+bDjVBX+jbsmVyeO6SlalRQMCyatNv8XjNu8Hq4W+cbcH/DslZ+4wgretXE5ivlgfncZmJslEbKvjrlPaV5sBdMk/v2TiYjTtL3lHOPuP8Aji3gE2eBQgTu8eupPBeRUXvnGnzTMAmEfZMMJ1XT0cTF5cf6engLOdCoIcjiZEV80YmWd9yGUDr6gjB8TnMhLNh+YGbw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
+ by PR1P264MB1904.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:193::24) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5250.14; Fri, 13 May
+ 2022 07:50:01 +0000
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::ad4e:c157:e9ac:385d]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::ad4e:c157:e9ac:385d%6]) with mapi id 15.20.5250.015; Fri, 13 May 2022
+ 07:50:01 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Hari Bathini <hbathini@linux.ibm.com>, "bpf@vger.kernel.org"
+ <bpf@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 5/5] bpf ppc32: Add instructions for atomic_[cmp]xchg
+Thread-Topic: [PATCH 5/5] bpf ppc32: Add instructions for atomic_[cmp]xchg
+Thread-Index: AQHYZdRx9aF2Tal9R0y7FgKMrFNStq0ccG2A
+Date: Fri, 13 May 2022 07:50:01 +0000
+Message-ID: <025e9a60-46d9-bc3d-224e-1d92bc05f857@csgroup.eu>
+References: <20220512074546.231616-1-hbathini@linux.ibm.com>
+ <20220512074546.231616-6-hbathini@linux.ibm.com>
+In-Reply-To: <20220512074546.231616-6-hbathini@linux.ibm.com>
+Accept-Language: fr-FR, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 88197431-e37c-45c8-03ca-08da34b52f45
+x-ms-traffictypediagnostic: PR1P264MB1904:EE_
+x-microsoft-antispam-prvs: <PR1P264MB190402568783980E879A8C12EDCA9@PR1P264MB1904.FRAP264.PROD.OUTLOOK.COM>
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: oSvaZ+0sO081iTF9ClQCCe+W+/4IdCl6GAA845NDRbfm4MSG4DJ6ngPyxAR3Odb9yUGYNaPCZnRVGntE+jNu17ESFxa5e6jJowxy4mY0bvQVRDY1Z8DJXPTiIPZWtxCAUIdWxCstmfMfRn8IoSguFDS+03LrzeeMO6dl7GOY0w+EHTKytSbQHxGJreqlhhEPwYFBQdhXo7E7nXGTxjQ/o8ayycfwkOfw64JTj7O3GoOt4IDiBhg9tvAAMOcRtXWkd+pSupmoqzjgab0qMvIbFr512ngI/UEkiDwt56FbfCi0nfHKOJ9h85bLLkz6T1WtvluZ1ZUmej5HPNkkVIkGdEcwnkjXZsxugSyBzRjVaz05QoTcnqC3wJEFDjxVcRVpJQbsbzLXP84Lke3JhulnmyAAWu5W2kRyLtKHdkm31RDg1FIVYS3xJCuE04oZL/KVTZ9oWpjqz+s2COyGwOtwnaQBd5ryd5YJKo9LCFGEzMV9qUM+824pyRIhHehKfmEthHA9TiKK3fODPOhIVkD26tMZ1g8aHg9vz0jr69cNYfTkn6mJgEzoot6CCSGRxz8lsv4BWDbWt4eFqegIozxy+WrPuYqO0C4vQ6nq8V5Lvu/MIbBceYu4CW4RcsGxlC3J98ZBtYkkClvL9pfM8IEV+wEMN8OAtoAaer2bEK2/LwfyPBXlCdThDl0PayBUGYSlsnv2ubIt0qeK/tpkc4uIrkNYHbwKkO4wxKbOzbnXS8+71UlgEabwYdZDkQ/WnAt8EU2uP5t2uRHN0hRSmv7qiQ==
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
+ SFS:(13230001)(4636009)(366004)(66946007)(76116006)(64756008)(66446008)(66476007)(66556008)(8676002)(31696002)(4326008)(91956017)(86362001)(54906003)(110136005)(122000001)(316002)(38100700002)(38070700005)(6512007)(26005)(6506007)(186003)(71200400001)(2616005)(83380400001)(508600001)(6486002)(2906002)(5660300002)(7416002)(44832011)(8936002)(36756003)(31686004)(43740500002)(45980500001);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?WjRheWxvSkNrWHQ1MDBCSTBieTFyaUlUaURJaTdWOUltRzR0TTRiM0JueFdu?=
+ =?utf-8?B?TE1qTmpiZ3NwMzlEdHNQUkZ0UUt3L3JxTTd4d2pPWXlDS0ZVT2J2QjVVbDll?=
+ =?utf-8?B?ZGcvVWVmekVjaitlK2R3Zjl5dEh0SjhIeHhielM4MUdEZVpFeFF1L3RqNHZp?=
+ =?utf-8?B?SVhwUlNnclBmVjlwT0NRNjNnQXZUaUJvN3JhYUVHSXBLL09malNZVVlQNmJw?=
+ =?utf-8?B?Umd6OVBBTGZYNDdKNkRoSWY1M3ZqRE4xVE5mcktubDQrZ0w0N2N3ZVlYY1Zi?=
+ =?utf-8?B?aVRzcURHM3JkaE0zWVpoN25LNldvMmpDWkNNdTJTeEFTYjVMa0dDam5MTCtQ?=
+ =?utf-8?B?dzc1VEV6bUNYUCtJUHVKQ3lBZHRHcXgvais0YXBDL002ZFZJdk5CWjVERUpL?=
+ =?utf-8?B?Vm0xTU9qTGtrSmFpNlViRG1OSnBGZm84aTlUeGJHS29lNWsvUWpPek1lVlA2?=
+ =?utf-8?B?M0tHWlo0MHNDN05EaHYxVEwzaHV0VjRZcUVMSXAyN21IMHZTMGtUTnl5MmJx?=
+ =?utf-8?B?bVV0RjRVTEdCM0RsZFlxaGlDNWVPOFp5OE1XdkJWcWo3MFNmOXJ5UnJXdkZ1?=
+ =?utf-8?B?d3l1cnRqREFVN3U0TTZabHQ5TksvQXg1VWYrS1gxOVdyT0FkWHFnLzJEUUNR?=
+ =?utf-8?B?djZQU0ZVZWo0YitYK2RBbmdDa1FJaXFwaGF3aEVjODZkdGw3aTdEUlJEeXlp?=
+ =?utf-8?B?Y1BzMjRpYXZuOHVYSFBpVjFUV3pTVGdoS2hETHVWVUY5elR3K3YyZXJqTi9U?=
+ =?utf-8?B?R0llRUxGZGJzQmJZTEVzbkU3UWZJb3NpWTdlckFWRy9yOG5PZ080VTBVYitT?=
+ =?utf-8?B?WXhveTVMa3RBUlNDSTNDbEIzQnZFNlhDL3JyZEM4WXlIay9ZS3c2SUJWdFB4?=
+ =?utf-8?B?U1hkbzdmUUpEcDRjYWRMZ0xYUS9ZMkF2bHRhcEZUUjd0TFNJczdWc25UcTMy?=
+ =?utf-8?B?cndTRDNDbUY1dHc4RXMrMTcvczdDK1JrRExTWkduZk1Sb0hCZytuOFd5ZkFI?=
+ =?utf-8?B?NERaQWw2Y0tiMlhlYWNObmRSb1I0dkpaQTFwVFQ4TU9Da3p2OUczTTk2VCsz?=
+ =?utf-8?B?Sk1mZUJxcUd4am1aeWlUMEZZR2ZvQzR2MnE3R2owSm8xbHhYUGEyUFdWMGtI?=
+ =?utf-8?B?Vjl4QnU5eFhmWENzaGNQNm9pUE9hQnNhQklCazk4Ukx2Y3RpTHJQRHpTOXRK?=
+ =?utf-8?B?OFR5clFmazdJV1RKQk9CemhzRlhwYi9zZitycWlhMmE1SUVGYjhOb2xxM1FM?=
+ =?utf-8?B?b0NVMHlOOFdrNGFaeW11RWM2Q1NlU0JzQ055Z0ZpYlNSdWkvSGRlWUo3WTNo?=
+ =?utf-8?B?QnNrMWJ1dTdiVUw1QTdSaVF1Nm1UMG83ZW1VTkQ1NEUxRGJxS3ZlajFNNS9x?=
+ =?utf-8?B?bmx5cGxFaC9hMmU2dU5tNlJiU0tUelhTZTB6N3JZaTNMVkRnZXNSSmtqYnFu?=
+ =?utf-8?B?ZkVZOXprcHRia2FFUXRsODY5b3JKOCswWjBMWXcrRkNPUTJxWUpSQ1QzTHF2?=
+ =?utf-8?B?M0VoQ1dsNlNCSWxwWmN0S3ZDQlNmdFV5QzhPL0VvWDM1cVlPcVAyQng4Nzlu?=
+ =?utf-8?B?YmdOT3pWdWEvZUVwbE9URDVNdDBuSTVzOVlOUGVlWWdNdjJWVWxaOTVDNjVP?=
+ =?utf-8?B?Y0dybzRESC9UR2J4S0pseXEvcEpQQkNHZkVhN1c2RkpzbEZkVHlCWHR2OEJS?=
+ =?utf-8?B?TUIySnRrN1pCTTBtQ0QyOERuYm16d1Zxam05aXBlaXlEczQwUkQxb3Bhd1FP?=
+ =?utf-8?B?QjVBZlkxRVZhaFNxZG1YZy9xRld2TllTa2VqWG0zZFBUYnB5UG5KWm96SC8v?=
+ =?utf-8?B?Rmoyd0d4dWcyeUhCNHZvUDVMMzlLWXZWUzIzTHdkcmtRWW9nTEd0OGQzcG0v?=
+ =?utf-8?B?VG9aREpnVTIxRDRrOGc3M3FSaFRid3g5TkhpQVo0Wkw2R2Z1VmtXb041R2hJ?=
+ =?utf-8?B?RDBZRkRIQzVxYWsvQWNVQk1WRmlvdm9zMzhzd3p2T3AxZ1p6NUIyNEtlUmtp?=
+ =?utf-8?B?QUk5THNWZ256aWlwZEN2VURUQWMwUy9pd1llUVQrc2lsVXlVUGxQYVdnVE9H?=
+ =?utf-8?B?c2xTb21BTGhXd21IT3pXMmhmOFE0bk1ubXRva1hlbGZRODhxMk1tTVVpMzUr?=
+ =?utf-8?B?a3pXOXE5Y3VMRnlmTDVLWWdHd0lyODFRUGdFeUFmZWFnS2Vqdkx0d2h0aEVJ?=
+ =?utf-8?B?T0lVUkttNDVVZmJ0Ky8raXVITTZpV0N2aUd6OXA0cENBNXp0bm05Si9aRGVx?=
+ =?utf-8?B?MTB5WVprcVFQdVd4Y1R3Y2J4R2NIVkdmKzhwUkExRWY4MlE2R3JOekJabldV?=
+ =?utf-8?B?alZUVnQ2WWhDcHNuQ040cDIzZFNJRUdUelBhZFlldnNIUmhUdXRrTzlRUzdi?=
+ =?utf-8?Q?bMYXQowW40h+eAiqjC/KIN8i17VlgdmTYQ+29?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <679746C24E293145934AEB137DCB228E@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: 88197431-e37c-45c8-03ca-08da34b52f45
+X-MS-Exchange-CrossTenant-originalarrivaltime: 13 May 2022 07:50:01.1717 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 0Y/2nVxcMtyx8hUMkaGHWiUgXLa+0jWej/wVz7PyVkZocWPt9IlKLbm4DuRB2cxj3cmAMkM6Zj3/BrZvhcYeZAgeXr83Ugj5MlE1joYP2JY=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR1P264MB1904
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,129 +136,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: irogers@google.com, maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com,
- linux-perf-users@vger.kernel.org, kjain@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>,
+ John Fastabend <john.fastabend@gmail.com>, Alexei Starovoitov <ast@kernel.org>,
+ Andrii Nakryiko <andrii@kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Yonghong Song <yhs@fb.com>,
+ KP Singh <kpsingh@kernel.org>, Jordan Niethe <jniethe5@gmail.com>,
+ Martin KaFai Lau <kafai@fb.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
---=-PBMcJGwZeFXngpPcygBd
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-
-
-
------Original Message-----
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org
-Cc: mpe@ellerman.id.au, linux-perf-users@vger.kernel.org, 
-linuxppc-dev@lists.ozlabs.org, maddy@linux.vnet.ibm.com, 
-rnsastry@linux.ibm.com, kjain@linux.ibm.com, disgoel@linux.vnet.ibm.com
-, irogers@google.com
-Subject: [PATCH V2] tools/perf/tests: Fix session topology test to skip
-the test in guest environment
-Date: Wed, 11 May 2022 17:19:59 +0530
-
-The session topology test fails in powerpc pSeries platform.Test
-logs:<<>>Session topology : FAILED!<<>>
-This testcases tests cpu topology by checking the core_id andsocket_id
-stored in perf_env from perf session. The data fromperf session is
-compared with the cpu topology informationfrom
-"/sys/devices/system/cpu/cpuX/topology" like
-core_id,physical_package_id. In case of virtual environment, detaillike
-physical_package_id is restricted to be exposed.
-Hencephysical_package_id is set to -1. The testcase fails on
-suchplatforms since socket_id can't be fetched from topology info.
-Skip the testcase in powerpc if physical_package_id returns -1
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>---
-Changelog:v1 -> v2: Addressed review comments from Arnaldo and Michael
-Ellerman. skip the test in powerpc when physical_package_id is set to
--1. Dropped patch 1 from V1 since current change doesn't use info from
-/proc/cpuinfo and rather uses physical_package_id value.
- tools/perf/tests/topology.c | 11 +++++++++++ 1 file changed, 11
-insertions(+)
-Tested the patch on powerpc and powernv, session topology test works
-fine with the patch.Tested-by: Disha Goel <disgoel@linux.vnet.ibm.com>
-diff --git a/tools/perf/tests/topology.c
-b/tools/perf/tests/topology.cindex ee1e3dcbc0bd..d23a9e322ff5 100644---
-a/tools/perf/tests/topology.c+++ b/tools/perf/tests/topology.c@@ -109,6
-+109,17 @@ static int check_cpu_topology(char *path, struct
-perf_cpu_map *map) 			&& strncmp(session-
->header.env.arch, "aarch64", 7)) 		return TEST_SKIP;
-+	/*+	 * In powerpc pSeries platform, not all the topology
-information+	 * are exposed via sysfs. Due to restriction, detail
-like+	 * physical_package_id will be set to -1. Hence skip this+	
- * test if physical_package_id returns -1 for cpu from perf_cpu_map.+	
- */+	if (strncmp(session->header.env.arch, "powerpc", 7)) {+		
-if (cpu__get_socket_id(perf_cpu_map__cpu(map, 0)) == -1)+		
-	return TEST_SKIP;+	}+ 	TEST_ASSERT_VAL("Session header
-CPU map not set", session->header.env.cpu);
- 	for (i = 0; i < session->header.env.nr_cpus_avail; i++) {
-
---=-PBMcJGwZeFXngpPcygBd
-Content-Type: text/html; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-
-<html dir=3D"ltr"><head></head><body style=3D"text-align:left; direction:lt=
-r;"><div><br></div><div><br></div><div>-----Original Message-----</div><div=
-><b>From</b>: Athira Rajeev &lt;<a href=3D"mailto:Athira%20Rajeev%20%3catra=
-jeev@linux.vnet.ibm.com%3e">atrajeev@linux.vnet.ibm.com</a>&gt;</div><div><=
-b>To</b>: <a href=3D"mailto:acme@kernel.org">acme@kernel.org</a>, <a href=
-=3D"mailto:jolsa@kernel.org">jolsa@kernel.org</a></div><div><b>Cc</b>: <a h=
-ref=3D"mailto:mpe@ellerman.id.au">mpe@ellerman.id.au</a>, <a href=3D"mailto=
-:linux-perf-users@vger.kernel.org">linux-perf-users@vger.kernel.org</a>, <a=
- href=3D"mailto:linuxppc-dev@lists.ozlabs.org">linuxppc-dev@lists.ozlabs.or=
-g</a>, <a href=3D"mailto:maddy@linux.vnet.ibm.com">maddy@linux.vnet.ibm.com=
-</a>, <a href=3D"mailto:rnsastry@linux.ibm.com">rnsastry@linux.ibm.com</a>,=
- <a href=3D"mailto:kjain@linux.ibm.com">kjain@linux.ibm.com</a>, <a href=3D=
-"mailto:disgoel@linux.vnet.ibm.com">disgoel@linux.vnet.ibm.com</a>, <a href=
-=3D"mailto:irogers@google.com">irogers@google.com</a></div><div><b>Subject<=
-/b>: [PATCH V2] tools/perf/tests: Fix session topology test to skip the tes=
-t in guest environment</div><div><b>Date</b>: Wed, 11 May 2022 17:19:59 +05=
-30</div><div><br></div><pre>The session topology test fails in powerpc pSer=
-ies platform.</pre><pre>Test logs:</pre><pre>&lt;&lt;&gt;&gt;</pre><pre>Ses=
-sion topology : FAILED!</pre><pre>&lt;&lt;&gt;&gt;</pre><pre><br></pre><pre=
->This testcases tests cpu topology by checking the core_id and</pre><pre>so=
-cket_id stored in perf_env from perf session. The data from</pre><pre>perf =
-session is compared with the cpu topology information</pre><pre>from "/sys/=
-devices/system/cpu/cpuX/topology" like core_id,</pre><pre>physical_package_=
-id. In case of virtual environment, detail</pre><pre>like physical_package_=
-id is restricted to be exposed. Hence</pre><pre>physical_package_id is set =
-to -1. The testcase fails on such</pre><pre>platforms since socket_id can't=
- be fetched from topology info.</pre><pre><br></pre><pre>Skip the testcase =
-in powerpc if physical_package_id returns -1</pre><pre><br></pre><pre>Signe=
-d-off-by: Athira Rajeev &lt;</pre><a href=3D"mailto:atrajeev@linux.vnet.ibm=
-.com"><pre>atrajeev@linux.vnet.ibm.com</pre></a><pre>&gt;</pre><pre>---</pr=
-e><pre>Changelog:</pre><pre>v1 -&gt; v2:</pre><pre> Addressed review commen=
-ts from Arnaldo and Michael Ellerman.</pre><pre> skip the test in powerpc w=
-hen physical_package_id is set to</pre><pre> -1.</pre><pre> Dropped patch 1=
- from V1 since current change doesn't use info</pre><pre> from /proc/cpuinf=
-o and rather uses physical_package_id value.</pre><pre><br></pre><pre> tool=
-s/perf/tests/topology.c | 11 +++++++++++</pre><pre> 1 file changed, 11 inse=
-rtions(+)</pre><pre><br></pre><pre><pre style=3D"caret-color: rgb(0, 0, 0);=
- color: rgb(0, 0, 0);">Tested the patch on powerpc and powernv, session top=
-ology test works fine with the patch.</pre><pre style=3D"caret-color: rgb(0=
-, 0, 0); color: rgb(0, 0, 0);">Tested-by: Disha Goel &lt;<a href=3D"mailto:=
-disgoel@linux.vnet.ibm.com"></a><a href=3D"mailto:disgoel@linux.vnet.ibm.co=
-m">disgoel@linux.vnet.ibm.com</a>&gt;</pre><div><br></div></pre><pre>diff -=
--git a/tools/perf/tests/topology.c b/tools/perf/tests/topology.c</pre><pre>=
-index ee1e3dcbc0bd..d23a9e322ff5 100644</pre><pre>--- a/tools/perf/tests/to=
-pology.c</pre><pre>+++ b/tools/perf/tests/topology.c</pre><pre>@@ -109,6 +1=
-09,17 @@ static int check_cpu_topology(char *path, struct perf_cpu_map *map=
-)</pre><pre> 			&amp;&amp; strncmp(session-&gt;header.env.arch, "aarch64", =
-7))</pre><pre> 		return TEST_SKIP;</pre><pre><br></pre><pre>+	/*</pre><pre>=
-+	 * In powerpc pSeries platform, not all the topology information</pre><pr=
-e>+	 * are exposed via sysfs. Due to restriction, detail like</pre><pre>+	 =
-* physical_package_id will be set to -1. Hence skip this</pre><pre>+	 * tes=
-t if physical_package_id returns -1 for cpu from perf_cpu_map.</pre><pre>+	=
- */</pre><pre>+	if (strncmp(session-&gt;header.env.arch, "powerpc", 7)) {</=
-pre><pre>+		if (cpu__get_socket_id(perf_cpu_map__cpu(map, 0)) =3D=3D -1)</p=
-re><pre>+			return TEST_SKIP;</pre><pre>+	}</pre><pre>+</pre><pre> 	TEST_AS=
-SERT_VAL("Session header CPU map not set", session-&gt;header.env.cpu);</pr=
-e><pre><br></pre><pre> 	for (i =3D 0; i &lt; session-&gt;header.env.nr_cpus=
-_avail; i++) {</pre></body></html>
-
---=-PBMcJGwZeFXngpPcygBd--
-
+DQoNCkxlIDEyLzA1LzIwMjIgw6AgMDk6NDUsIEhhcmkgQmF0aGluaSBhIMOpY3JpdMKgOg0KPiBU
+aGlzIGFkZHMgdHdvIGF0b21pYyBvcGNvZGVzIEJQRl9YQ0hHIGFuZCBCUEZfQ01QWENIRyBvbiBw
+cGMzMiwgYm90aA0KPiBvZiB3aGljaCBpbmNsdWRlIHRoZSBCUEZfRkVUQ0ggZmxhZy4gIFRoZSBr
+ZXJuZWwncyBhdG9taWNfY21weGNoZw0KPiBvcGVyYXRpb24gZnVuZGFtZW50YWxseSBoYXMgMyBv
+cGVyYW5kcywgYnV0IHdlIG9ubHkgaGF2ZSB0d28gcmVnaXN0ZXINCj4gZmllbGRzLiBUaGVyZWZv
+cmUgdGhlIG9wZXJhbmQgd2UgY29tcGFyZSBhZ2FpbnN0ICh0aGUga2VybmVsJ3MgQVBJDQo+IGNh
+bGxzIGl0ICdvbGQnKSBpcyBoYXJkLWNvZGVkIHRvIGJlIEJQRl9SRUdfUjAuIEFsc28sIGtlcm5l
+bCdzDQo+IGF0b21pY19jbXB4Y2hnIHJldHVybnMgdGhlIHByZXZpb3VzIHZhbHVlIGF0IGRzdF9y
+ZWcgKyBvZmYuIEpJVCB0aGUNCj4gc2FtZSBmb3IgQlBGIHRvbyB3aXRoIHJldHVybiB2YWx1ZSBw
+dXQgaW4gQlBGX1JFR18wLg0KPiANCj4gICAgQlBGX1JFR19SMCA9IGF0b21pY19jbXB4Y2hnKGRz
+dF9yZWcgKyBvZmYsIEJQRl9SRUdfUjAsIHNyY19yZWcpOw0KDQoNCkFoLCBub3cgd2UgbWl4IHRo
+ZSB4Y2hnJ3Mgd2l0aCB0aGUgYml0d2lzZSBvcGVyYXRpb25zLiBPayBJIHVuZGVyc3RhbmQgDQpi
+ZXR0ZXIgdGhhdCBnb3RvIGF0b21pY19vcHMgaW4gdGhlIHByZXZpb3VzIHBhdGNoIHRoZW4uIEJ1
+dCBpdCBub3cgDQpiZWNvbWVzIHVuZWFzeSB0byByZWFkIGFuZCBmb2xsb3cuDQoNCkkgdGhpbmsg
+aXQgd291bGQgYmUgY2xlYW5lciB0byBzZXBhcmF0ZSBjb21wbGV0ZWx5IHRoZSBiaXR3aXNlIA0K
+b3BlcmF0aW9ucyBhbmQgdGhpcywgZXZlbiBpZiBpdCBkdXBsaWNhdGVzIGhhbGYgYSBkb3plbiBv
+ZiBsaW5lcy4NCg0KPiANCj4gU2lnbmVkLW9mZi1ieTogSGFyaSBCYXRoaW5pIDxoYmF0aGluaUBs
+aW51eC5pYm0uY29tPg0KPiAtLS0NCj4gICBhcmNoL3Bvd2VycGMvbmV0L2JwZl9qaXRfY29tcDMy
+LmMgfCAxNyArKysrKysrKysrKysrKysrKw0KPiAgIDEgZmlsZSBjaGFuZ2VkLCAxNyBpbnNlcnRp
+b25zKCspDQo+IA0KPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL25ldC9icGZfaml0X2NvbXAz
+Mi5jIGIvYXJjaC9wb3dlcnBjL25ldC9icGZfaml0X2NvbXAzMi5jDQo+IGluZGV4IDU2MDRhZTFi
+NjBhYi4uNDY5MGZkNmU5ZTUyIDEwMDY0NA0KPiAtLS0gYS9hcmNoL3Bvd2VycGMvbmV0L2JwZl9q
+aXRfY29tcDMyLmMNCj4gKysrIGIvYXJjaC9wb3dlcnBjL25ldC9icGZfaml0X2NvbXAzMi5jDQo+
+IEBAIC04MjksNiArODI5LDIzIEBAIGludCBicGZfaml0X2J1aWxkX2JvZHkoc3RydWN0IGJwZl9w
+cm9nICpmcCwgdTMyICppbWFnZSwgc3RydWN0IGNvZGVnZW5fY29udGV4dCAqDQo+ICAgCQkJCS8q
+IHdlJ3JlIGRvbmUgaWYgdGhpcyBzdWNjZWVkZWQgKi8NCj4gICAJCQkJUFBDX0JDQ19TSE9SVChD
+T05EX05FLCB0bXBfaWR4KTsNCj4gICAJCQkJYnJlYWs7DQo+ICsJCQljYXNlIEJQRl9DTVBYQ0hH
+Og0KPiArCQkJCS8qIENvbXBhcmUgd2l0aCBvbGQgdmFsdWUgaW4gQlBGX1JFR18wICovDQo+ICsJ
+CQkJRU1JVChQUENfUkFXX0NNUFcoYnBmX3RvX3BwYyhCUEZfUkVHXzApLCBfUjApKTsNCj4gKwkJ
+CQkvKiBEb24ndCBzZXQgaWYgZGlmZmVyZW50IGZyb20gb2xkIHZhbHVlICovDQo+ICsJCQkJUFBD
+X0JDQ19TSE9SVChDT05EX05FLCAoY3R4LT5pZHggKyAzKSAqIDQpOw0KPiArCQkJCWZhbGx0aHJv
+dWdoOw0KPiArCQkJY2FzZSBCUEZfWENIRzoNCj4gKwkJCQkvKiBzdG9yZSBuZXcgdmFsdWUgKi8N
+Cj4gKwkJCQlFTUlUKFBQQ19SQVdfU1RXQ1goc3JjX3JlZywgdG1wX3JlZywgZHN0X3JlZykpOw0K
+PiArCQkJCVBQQ19CQ0NfU0hPUlQoQ09ORF9ORSwgdG1wX2lkeCk7DQo+ICsJCQkJLyoNCj4gKwkJ
+CQkgKiBSZXR1cm4gb2xkIHZhbHVlIGluIHNyY19yZWcgZm9yIEJQRl9YQ0hHICYNCj4gKwkJCQkg
+KiBCUEZfUkVHXzAgZm9yIEJQRl9DTVBYQ0hHLg0KPiArCQkJCSAqLw0KPiArCQkJCUVNSVQoUFBD
+X1JBV19NUihpbW0gPT0gQlBGX1hDSEcgPyBzcmNfcmVnIDogYnBmX3RvX3BwYyhCUEZfUkVHXzAp
+LA0KPiArCQkJCQkJX1IwKSk7DQoNCklmIHRoZSBsaW5lIHNwcmVhZHMgaW50byB0d28gbGluZXMs
+IGNvbXBhY3QgZm9ybSBpcyBwcm9iYWJseSBub3Qgd29ydGggDQppdC4gV291bGQgYmUgbW9yZSBy
+ZWFkYWJsZSBhcw0KDQoJaWYgKGltbSA9PSBCUEZfWENIRykNCgkJRU1JVF9QUENfUkFXX01SKHNy
+Y19yZWcsIF9SMCkpOw0KCWVsc2UNCgkJRU1JVF9QUENfUkFXX01SKHNyY19yZWcsIGJwZl90b19w
+cGMoQlBGX1JFR18wKSkpOw0KDQoNCkF0IHRoZSBlbmQsIGl0J3MgcHJvYmFibHkgZXZlbiBtb3Jl
+IHJlYWRhYmxlIGlmIHlvdSBzZXBhcmF0ZSBib3RoIGNhc2VzIA0KY29tcGxldGVseToNCg0KCWNh
+c2UgQlBGX0NNUFhDSEc6DQoJCS8qIENvbXBhcmUgd2l0aCBvbGQgdmFsdWUgaW4gQlBGX1JFR18w
+ICovDQoJCUVNSVQoUFBDX1JBV19DTVBXKGJwZl90b19wcGMoQlBGX1JFR18wKSwgX1IwKSk7DQoJ
+CS8qIERvbid0IHNldCBpZiBkaWZmZXJlbnQgZnJvbSBvbGQgdmFsdWUgKi8NCgkJUFBDX0JDQ19T
+SE9SVChDT05EX05FLCAoY3R4LT5pZHggKyAzKSAqIDQpOw0KCQkvKiBzdG9yZSBuZXcgdmFsdWUg
+Ki8NCgkJRU1JVChQUENfUkFXX1NUV0NYKHNyY19yZWcsIHRtcF9yZWcsIGRzdF9yZWcpKTsNCgkJ
+UFBDX0JDQ19TSE9SVChDT05EX05FLCB0bXBfaWR4KTsNCgkJLyogUmV0dXJuIG9sZCB2YWx1ZSBp
+biBCUEZfUkVHXzAgKi8NCgkJRU1JVF9QUENfUkFXX01SKHNyY19yZWcsIGJwZl90b19wcGMoQlBG
+X1JFR18wKSkpOw0KCQlicmVhazsNCgljYXNlIEJQRl9YQ0hHOg0KCQkvKiBzdG9yZSBuZXcgdmFs
+dWUgKi8NCgkJRU1JVChQUENfUkFXX1NUV0NYKHNyY19yZWcsIHRtcF9yZWcsIGRzdF9yZWcpKTsN
+CgkJUFBDX0JDQ19TSE9SVChDT05EX05FLCB0bXBfaWR4KTsNCgkJLyogUmV0dXJuIG9sZCB2YWx1
+ZSBpbiBzcmNfcmVnICovDQoJCUVNSVRfUFBDX1JBV19NUihzcmNfcmVnLCBfUjApKTsNCgkJYnJl
+YWs7DQoNCg0KPiArCQkJCWJyZWFrOw0KPiAgIAkJCWRlZmF1bHQ6DQo+ICAgCQkJCXByX2Vycl9y
+YXRlbGltaXRlZCgiZUJQRiBmaWx0ZXIgYXRvbWljIG9wIGNvZGUgJTAyeCAoQCVkKSB1bnN1cHBv
+cnRlZFxuIiwNCj4gICAJCQkJCQkgICBjb2RlLCBpKTs=
