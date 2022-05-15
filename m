@@ -4,31 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D8D3C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:16:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8660EC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:16:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JF93Nqgz3dvh
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:16:13 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JFb0w2Sz3f1Y
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:16:35 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JC84KCXz3bpJ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:14:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JC925KHz3bpJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:14:29 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+ id 4L1JC91zCPz4xZ2; Sun, 15 May 2022 20:14:29 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JC82lTcz4xZ0;
- Sun, 15 May 2022 20:14:28 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JC90v4Rz4xVP;
+ Sun, 15 May 2022 20:14:29 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Hari Bathini <hbathini@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-In-Reply-To: <20220406093839.206608-1-hbathini@linux.ibm.com>
-References: <20220406093839.206608-1-hbathini@linux.ibm.com>
-Subject: Re: [PATCH 0/3] powerpc/fadump: fadump fixes and improvements
-Message-Id: <165260954350.1040779.17651676068924566416.b4-ty@ellerman.id.au>
-Date: Sun, 15 May 2022 20:12:23 +1000
+ Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <161902744901.86147.14719228311655123526.stgit@hbathini>
+References: <161902744901.86147.14719228311655123526.stgit@hbathini>
+Subject: Re: [PATCH] opal/fadump: fix fadump to work with a different endian
+ capture kernel
+Message-Id: <165260953888.1040779.7421811299379551606.b4-ty@ellerman.id.au>
+Date: Sun, 15 May 2022 20:12:18 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,33 +47,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 6 Apr 2022 15:08:36 +0530, Hari Bathini wrote:
-> This series fixes a couple of issues in fadump and improves logging.
-> The first patch fixes a bug that is observed when memory reserved for
-> fadump is not adjacent to boot memory area. The second patch ensures
-> mmap read succeeds for all memory regions in the vmcore. The third
-> patch improves the data that is printed for fadump.
-> 
-> Hari Bathini (3):
->   powerpc/fadump: fix PT_LOAD segment for boot memory area
->   powerpc/fadump: align destination address to pagesize
->   powerpc/fadump: print start of preserved area
+On Wed, 21 Apr 2021 23:20:52 +0530, Hari Bathini wrote:
+> Dump capture would fail if capture kernel is not of the endianess as
+> the production kernel, because the in-memory data structure (struct
+> opal_fadump_mem_struct) shared across production kernel and capture
+> kernel assumes the same endianess for both the kernels, which doesn't
+> have to be true always. Fix it by having a well-defined endianess for
+> struct opal_fadump_mem_struct.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/3] powerpc/fadump: fix PT_LOAD segment for boot memory area
-      https://git.kernel.org/powerpc/c/15eb77f873255cf9f4d703b63cfbd23c46579654
-[2/3] powerpc/fadump: align destination address to pagesize
-      https://git.kernel.org/powerpc/c/9cf3b3a33a36ef4a988be0a770edd3555297f2a9
-[3/3] powerpc/fadump: print start of preserved area
-      https://git.kernel.org/powerpc/c/a3ceb5882edf6696ebc6aeb8043ddec548a93052
+[1/1] opal/fadump: fix fadump to work with a different endian capture kernel
+      https://git.kernel.org/powerpc/c/b74196af372f7cb4902179009265fe63ac81824f
 
 cheers
