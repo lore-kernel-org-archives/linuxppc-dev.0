@@ -4,32 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92EC0C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:33:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AE8BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:33:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L1Jcl2Jsbz3cC4
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:33:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L1Jd90tXYz3fFP
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:33:33 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZK2SZxz3ccl
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZL0J7jz3cdX
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:06 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZK1VHPz4xZ2;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZK6NHLz4xZ3;
  Sun, 15 May 2022 20:31:05 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <a4ca63dd4c4b09e1906d08fb814af5a41d0f3fcb.1644651363.git.christophe.leroy@csgroup.eu>
-References: <a4ca63dd4c4b09e1906d08fb814af5a41d0f3fcb.1644651363.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Reduce csum_add() complexity for PPC64
-Message-Id: <165261052038.1047019.18164887384692464073.b4-ty@ellerman.id.au>
-Date: Sun, 15 May 2022 20:28:40 +1000
+In-Reply-To: <794337eff7bb803d2c4e67d9eee635390c4c48fe.1646812553.git.christophe.leroy@csgroup.eu>
+References: <794337eff7bb803d2c4e67d9eee635390c4c48fe.1646812553.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: Use rol32() instead of opencoding in csum_fold()
+Message-Id: <165261052845.1047019.11511069349714102008.b4-ty@ellerman.id.au>
+Date: Sun, 15 May 2022 20:28:48 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -49,19 +49,16 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 12 Feb 2022 08:36:17 +0100, Christophe Leroy wrote:
-> PPC64 does everything in C, gcc is able to skip calculation
-> when one of the operands in zero.
+On Wed, 9 Mar 2022 08:56:14 +0100, Christophe Leroy wrote:
+> rol32(x, 16) will do the rotate using rlwinm.
 > 
-> Move the constant folding in PPC32 part.
+> No need to open code using inline assembly.
 > 
-> This helps GCC and reduces ppc64_defconfig by 170 bytes.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Reduce csum_add() complexity for PPC64
-      https://git.kernel.org/powerpc/c/f206fdd9d41bf7deb96219b8ca3499a5abd79b83
+[1/1] powerpc: Use rol32() instead of opencoding in csum_fold()
+      https://git.kernel.org/powerpc/c/a1ae431705410fc7092790977bffd1b00c63c229
 
 cheers
