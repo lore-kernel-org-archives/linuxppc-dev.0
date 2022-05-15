@@ -4,31 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3814DC43217
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:31:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C815DC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:31:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JZZ5FGqz3dPT
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:31:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JZz2Qwdz3ds6
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:31:39 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZD5JNXz2xgN
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZF2vSZz2xgN
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:01 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZB3KJxz4xXS;
- Sun, 15 May 2022 20:30:58 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZF1TVkz4xY4;
+ Sun, 15 May 2022 20:31:01 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, llvm@lists.linux.dev
-In-Reply-To: <20220406070038.3704604-1-aik@ozlabs.ru>
-References: <20220406070038.3704604-1-aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v3] powerpc/boot: Stop using RELACOUNT
-Message-Id: <165261051395.1047019.1825598688195889072.b4-ty@ellerman.id.au>
-Date: Sun, 15 May 2022 20:28:33 +1000
+To: Andrew Donnellan <ajd@linux.ibm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>,
+ Frederic Barrat <fbarrat@linux.ibm.com>
+In-Reply-To: <a2bae89b280e7a7cb87889635d9911d6a245e780.1648833388.git.christophe.leroy@csgroup.eu>
+References: <a2bae89b280e7a7cb87889635d9911d6a245e780.1648833388.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] cxl/ocxl: Prepare cleanup of powerpc's asm/prom.h
+Message-Id: <165261053892.1047019.3920240317648654638.b4-ty@ellerman.id.au>
+Date: Sun, 15 May 2022 20:28:58 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,27 +46,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Chancellor <nathan@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Nick Desaulniers <ndesaulniers@google.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 6 Apr 2022 17:00:38 +1000, Alexey Kardashevskiy wrote:
-> So far the RELACOUNT tag from the ELF header was containing the exact
-> number of R_PPC_RELATIVE/R_PPC64_RELATIVE relocations. However the LLVM's
-> recent change [1] make it equal-or-less than the actual number which
-> makes it useless.
+On Sat, 2 Apr 2022 11:52:33 +0200, Christophe Leroy wrote:
+> powerpc's asm/prom.h brings some headers that it doesn't
+> need itself.
 > 
-> This replaces RELACOUNT in zImage loader with a pair of RELASZ and RELAENT.
-> The vmlinux relocation code is fixed in commit d79976918852
-> ("powerpc/64: Add UADDR64 relocation support").
+> In order to clean it up, first add missing headers in
+> users of asm/prom.h
+> 
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/boot: Stop using RELACOUNT
-      https://git.kernel.org/powerpc/c/c14d31bae372e050b053f2511fb3f0f90c27e4f9
+[1/1] cxl/ocxl: Prepare cleanup of powerpc's asm/prom.h
+      https://git.kernel.org/powerpc/c/d8d2af70b98109418bb16ff6638d7c1c4336f7fe
 
 cheers
