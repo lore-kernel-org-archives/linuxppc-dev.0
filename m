@@ -4,33 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53A5BC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:32:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92EC0C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:33:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JcC08zwz3ccq
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:32:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L1Jcl2Jsbz3cC4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:33:11 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZJ4mzpz3cKW
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZK2SZxz3ccl
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:05 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZJ3y9dz4xZ0;
- Sun, 15 May 2022 20:31:04 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZK1VHPz4xZ2;
+ Sun, 15 May 2022 20:31:05 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <6bb118fb2ee89fa3c1f9cf90ed19f88220002cb0.1647877467.git.christophe.leroy@csgroup.eu>
-References: <6bb118fb2ee89fa3c1f9cf90ed19f88220002cb0.1647877467.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: align address to page boundary in
- change_page_attr()
-Message-Id: <165261053145.1047019.10970993413033058326.b4-ty@ellerman.id.au>
-Date: Sun, 15 May 2022 20:28:51 +1000
+In-Reply-To: <a4ca63dd4c4b09e1906d08fb814af5a41d0f3fcb.1644651363.git.christophe.leroy@csgroup.eu>
+References: <a4ca63dd4c4b09e1906d08fb814af5a41d0f3fcb.1644651363.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: Reduce csum_add() complexity for PPC64
+Message-Id: <165261052038.1047019.18164887384692464073.b4-ty@ellerman.id.au>
+Date: Sun, 15 May 2022 20:28:40 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -50,25 +49,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 21 Mar 2022 16:44:45 +0100, Christophe Leroy wrote:
-> Aligning address to page boundary allows flush_tlb_kernel_range()
-> to know it's a single page flush and use tlbie instead of tlbia.
+On Sat, 12 Feb 2022 08:36:17 +0100, Christophe Leroy wrote:
+> PPC64 does everything in C, gcc is able to skip calculation
+> when one of the operands in zero.
 > 
-> On 603 we now have the following code in first leg of
-> change_page_attr():
+> Move the constant folding in PPC32 part.
 > 
-> 	  2c:	55 29 00 3c 	rlwinm  r9,r9,0,0,30
-> 	  30:	91 23 00 00 	stw     r9,0(r3)
-> 	  34:	7c 00 22 64 	tlbie   r4,r0
-> 	  38:	7c 00 04 ac 	hwsync
-> 	  3c:	38 60 00 00 	li      r3,0
-> 	  40:	4e 80 00 20 	blr
+> This helps GCC and reduces ppc64_defconfig by 170 bytes.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: align address to page boundary in change_page_attr()
-      https://git.kernel.org/powerpc/c/65883b78bc9f49ac891bb202c59fcb76b9cfc611
+[1/1] powerpc: Reduce csum_add() complexity for PPC64
+      https://git.kernel.org/powerpc/c/f206fdd9d41bf7deb96219b8ca3499a5abd79b83
 
 cheers
