@@ -4,31 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A824C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:18:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B8ECC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:18:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JHl24mBz3fMx
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:18:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JJ82JK8z3fRn
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:18:48 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JG70lM6z3cdk
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:17:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JG82q7fz3f74
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:17:04 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JG706Gdz4xYY;
- Sun, 15 May 2022 20:17:02 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JG74Qn5z4xZ3;
+ Sun, 15 May 2022 20:17:03 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220317143925.1030447-1-mpe@ellerman.id.au>
-References: <20220317143925.1030447-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] selftests/powerpc: Add a test of 4PB SLB handling
-Message-Id: <165260954686.1040779.12235146628010310791.b4-ty@ellerman.id.au>
-Date: Sun, 15 May 2022 20:12:26 +1000
+To: linuxppc-dev@lists.ozlabs.org, Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20220502192941.20955-1-rdunlap@infradead.org>
+References: <20220502192941.20955-1-rdunlap@infradead.org>
+Subject: Re: [PATCH v2] powerpc/4xx: cpm: fix return value of __setup handler
+Message-Id: <165260954881.1040779.12442892668598459407.b4-ty@ellerman.id.au>
+Date: Sun, 15 May 2022 20:12:28 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,20 +43,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: patches@lists.linux.dev, Paul Mackerras <paulus@samba.org>,
+ Igor Zhbanov <izh1979@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 18 Mar 2022 01:39:25 +1100, Michael Ellerman wrote:
-> Add a test for a bug we had in the 4PB address space SLB handling. It
-> was fixed in commit 4c2de74cc869 ("powerpc/64: Interrupts save PPR on
-> stack rather than thread_struct").
+On Mon, 2 May 2022 12:29:41 -0700, Randy Dunlap wrote:
+> __setup() handlers should return 1 to obsolete_checksetup() in
+> init/main.c to indicate that the boot option has been handled.
+> A return of 0 causes the boot option/value to be listed as an Unknown
+> kernel parameter and added to init's (limited) argument or environment
+> strings. Also, error return codes don't mean anything to
+> obsolete_checksetup() -- only non-zero (usually 1) or zero.
+> So return 1 from cpm_powersave_off().
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] selftests/powerpc: Add a test of 4PB SLB handling
-      https://git.kernel.org/powerpc/c/e96a76ee5283d509f2bf45133d147e77f73a1b15
+[1/1] powerpc/4xx: cpm: fix return value of __setup handler
+      https://git.kernel.org/powerpc/c/5bb99fd4090fe1acfdb90a97993fcda7f8f5a3d6
 
 cheers
