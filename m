@@ -4,33 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C231C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:34:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 698E8C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:34:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L1Jf057Zyz3fNr
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:34:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JfQ0qQZz3fRv
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:34:38 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZM6PG2z3cfC
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZN6Htpz3cfZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:08 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZM5ZdNz4xZq;
- Sun, 15 May 2022 20:31:07 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZN5Dpdz4xXS;
+ Sun, 15 May 2022 20:31:08 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <cover.1647962456.git.christophe.leroy@csgroup.eu>
-References: <cover.1647962456.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v1 0/4] Kill the time spent in patch_instruction()
-Message-Id: <165261053687.1047019.4165741740473209888.b4-ty@ellerman.id.au>
-Date: Sun, 15 May 2022 20:28:56 +1000
+In-Reply-To: <3c88286b55413730d7784133993a46ef4a3607ce.1646767214.git.christophe.leroy@csgroup.eu>
+References: <3c88286b55413730d7784133993a46ef4a3607ce.1646767214.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v1 1/6] powerpc/64: Move pci_device_from_OF_node() out of
+ asm/pci-bridge.h
+Message-Id: <165261052726.1047019.3527577954247343677.b4-ty@ellerman.id.au>
+Date: Sun, 15 May 2022 20:28:47 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -50,26 +51,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 22 Mar 2022 16:40:17 +0100, Christophe Leroy wrote:
-> This series reduces by 70% the time required to activate
-> ftrace on an 8xx with CONFIG_STRICT_KERNEL_RWX.
+On Tue, 8 Mar 2022 20:20:20 +0100, Christophe Leroy wrote:
+> Move pci_device_from_OF_node() in pci64.c because it needs definition
+> of struct device_node and is not worth inlining.
 > 
-> Measure is performed in function ftrace_replace_code() using mftb()
-> around the loop.
+> ppc32.c already has it in pci32.c.
 > 
-> With the series,
-> - Without CONFIG_STRICT_KERNEL_RWX, 416000 TB ticks are measured.
-> - With CONFIG_STRICT_KERNEL_RWX, 546000 TB ticks are measured.
+> That way pci-bridge.h doesn't need linux/of.h (Brought by asm/prom.h
+> via asm/pci.h)
 > 
 > [...]
 
-Patches 1, 3 and 4 applied to powerpc/next.
+Applied to powerpc/next.
 
-[1/4] powerpc/code-patching: Don't call is_vmalloc_or_module_addr() without CONFIG_MODULES
-      https://git.kernel.org/powerpc/c/cb3ac45214c03852430979a43180371a44b74596
-[3/4] powerpc/code-patching: Use jump_label for testing freed initmem
-      https://git.kernel.org/powerpc/c/b033767848c4115e486b1a51946de3bee2ac0fa6
-[4/4] powerpc/code-patching: Use jump_label to check if poking_init() is done
-      https://git.kernel.org/powerpc/c/1751289268ef959db68b0b6f798d904d6403309a
+[1/6] powerpc/64: Move pci_device_from_OF_node() out of asm/pci-bridge.h
+      https://git.kernel.org/powerpc/c/0aa297e73bba35bedadbd2d452c62d643dfd4a32
+[2/6] powerpc: Don't include asm/prom.h in asm/parport.h
+      https://git.kernel.org/powerpc/c/07071346bb76f4fbc2c1ca8894ec3d3ad2f22577
+[3/6] powerpc: Include asm/reg.h in asm/svm.h
+      https://git.kernel.org/powerpc/c/eb4713c40a619046af99586743d48b9b4435d371
+[4/6] powerpc: Add missing declaration in asm/drmem.h
+      https://git.kernel.org/powerpc/c/669df99c957561dddf580ec269fb4255c41dabc1
+[5/6] powerpc: Remove asm/prom.h from all files that don't need it
+      https://git.kernel.org/powerpc/c/86c38fec69a461846d84f250f281e8cfbe54b25a
+[6/6] powerpc: Add missing headers
+      https://git.kernel.org/powerpc/c/e6f6390ab7b9d649c13de2c8a591bce61a10ec3b
 
 cheers
