@@ -4,34 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94F6EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:15:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D8D3C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:16:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JDm0yWjz3cBg
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:15:52 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JF93Nqgz3dvh
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:16:13 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JC76P1wz3bpJ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:14:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JC84KCXz3bpJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:14:28 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JC75MJ5z4xYX;
- Sun, 15 May 2022 20:14:27 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JC82lTcz4xZ0;
+ Sun, 15 May 2022 20:14:28 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: frowand.list@gmail.com, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20220424184014.968274-1-frowand.list@gmail.com>
-References: <20220424184014.968274-1-frowand.list@gmail.com>
-Subject: Re: [PATCH 1/1] powerpc/boot: remove unused function
- find_node_by_linuxphandle()
-Message-Id: <165260953673.1040779.7258073916648499773.b4-ty@ellerman.id.au>
-Date: Sun, 15 May 2022 20:12:16 +1000
+To: Hari Bathini <hbathini@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20220406093839.206608-1-hbathini@linux.ibm.com>
+References: <20220406093839.206608-1-hbathini@linux.ibm.com>
+Subject: Re: [PATCH 0/3] powerpc/fadump: fadump fixes and improvements
+Message-Id: <165260954350.1040779.17651676068924566416.b4-ty@ellerman.id.au>
+Date: Sun, 15 May 2022 20:12:23 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -46,25 +43,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Sourabh Jain <sourabhjain@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 24 Apr 2022 13:40:14 -0500, frowand.list@gmail.com wrote:
-> From: Frank Rowand <frank.rowand@sony.com>
+On Wed, 6 Apr 2022 15:08:36 +0530, Hari Bathini wrote:
+> This series fixes a couple of issues in fadump and improves logging.
+> The first patch fixes a bug that is observed when memory reserved for
+> fadump is not adjacent to boot memory area. The second patch ensures
+> mmap read succeeds for all memory regions in the vmcore. The third
+> patch improves the data that is printed for fadump.
 > 
-> The last user of find_node_by_linuxphandle() was removed in v4.18-rc1
-> by commit 30f4bbe0472a ("powerpc/boot: Remove support for Marvell MPSC serial controller")
-> four years ago.  This function is no longer needed.
-> 
+> Hari Bathini (3):
+>   powerpc/fadump: fix PT_LOAD segment for boot memory area
+>   powerpc/fadump: align destination address to pagesize
+>   powerpc/fadump: print start of preserved area
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/boot: remove unused function find_node_by_linuxphandle()
-      https://git.kernel.org/powerpc/c/2fb70d1d36e2f8482a78bb8aae688ae1416af889
+[1/3] powerpc/fadump: fix PT_LOAD segment for boot memory area
+      https://git.kernel.org/powerpc/c/15eb77f873255cf9f4d703b63cfbd23c46579654
+[2/3] powerpc/fadump: align destination address to pagesize
+      https://git.kernel.org/powerpc/c/9cf3b3a33a36ef4a988be0a770edd3555297f2a9
+[3/3] powerpc/fadump: print start of preserved area
+      https://git.kernel.org/powerpc/c/a3ceb5882edf6696ebc6aeb8043ddec548a93052
 
 cheers
