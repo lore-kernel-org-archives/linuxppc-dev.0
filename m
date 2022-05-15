@@ -4,34 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 698E8C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:34:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 430BCC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:35:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JfQ0qQZz3fRv
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:34:38 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L1Jfq5ppGz3dQr
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:34:59 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZN6Htpz3cfZ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZP4HZpz3cF8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:09 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZN5Dpdz4xXS;
- Sun, 15 May 2022 20:31:08 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZP3RnJz4xbN;
+ Sun, 15 May 2022 20:31:09 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <3c88286b55413730d7784133993a46ef4a3607ce.1646767214.git.christophe.leroy@csgroup.eu>
-References: <3c88286b55413730d7784133993a46ef4a3607ce.1646767214.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v1 1/6] powerpc/64: Move pci_device_from_OF_node() out of
- asm/pci-bridge.h
-Message-Id: <165261052726.1047019.3527577954247343677.b4-ty@ellerman.id.au>
-Date: Sun, 15 May 2022 20:28:47 +1000
+In-Reply-To: <afb92085f930651d8b1063e4d4bf0396c80ebc7d.1647002274.git.christophe.leroy@csgroup.eu>
+References: <afb92085f930651d8b1063e4d4bf0396c80ebc7d.1647002274.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v1] powerpc: Use static call for get_irq()
+Message-Id: <165261052949.1047019.3804884242995162781.b4-ty@ellerman.id.au>
+Date: Sun, 15 May 2022 20:28:49 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,30 +49,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 8 Mar 2022 20:20:20 +0100, Christophe Leroy wrote:
-> Move pci_device_from_OF_node() in pci64.c because it needs definition
-> of struct device_node and is not worth inlining.
+On Fri, 11 Mar 2022 13:38:04 +0100, Christophe Leroy wrote:
+> __do_irq() inconditionnaly calls ppc_md.get_irq()
 > 
-> ppc32.c already has it in pci32.c.
+> That's definitely a hot path.
 > 
-> That way pci-bridge.h doesn't need linux/of.h (Brought by asm/prom.h
-> via asm/pci.h)
+> At the time being ppc_md.get_irq address is read every time
+> from ppc_md structure.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/6] powerpc/64: Move pci_device_from_OF_node() out of asm/pci-bridge.h
-      https://git.kernel.org/powerpc/c/0aa297e73bba35bedadbd2d452c62d643dfd4a32
-[2/6] powerpc: Don't include asm/prom.h in asm/parport.h
-      https://git.kernel.org/powerpc/c/07071346bb76f4fbc2c1ca8894ec3d3ad2f22577
-[3/6] powerpc: Include asm/reg.h in asm/svm.h
-      https://git.kernel.org/powerpc/c/eb4713c40a619046af99586743d48b9b4435d371
-[4/6] powerpc: Add missing declaration in asm/drmem.h
-      https://git.kernel.org/powerpc/c/669df99c957561dddf580ec269fb4255c41dabc1
-[5/6] powerpc: Remove asm/prom.h from all files that don't need it
-      https://git.kernel.org/powerpc/c/86c38fec69a461846d84f250f281e8cfbe54b25a
-[6/6] powerpc: Add missing headers
-      https://git.kernel.org/powerpc/c/e6f6390ab7b9d649c13de2c8a591bce61a10ec3b
+[1/1] powerpc: Use static call for get_irq()
+      https://git.kernel.org/powerpc/c/e59596a2d6a75ea3deb60698b95942aaf03681f5
 
 cheers
