@@ -4,31 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0BE8C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:14:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D396C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:15:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JCW6x8mz3c9B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:14:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JCx4Q7Kz3cfw
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:15:09 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JC6647nz2xvL
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:14:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JC71FvWz2xvL
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:14:27 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JC40xgxz4xVP;
- Sun, 15 May 2022 20:14:24 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JC656JHz4xYY;
+ Sun, 15 May 2022 20:14:26 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>
-In-Reply-To: <20200622021832.15870-1-alistair@popple.id.au>
-References: <20200622021832.15870-1-alistair@popple.id.au>
-Subject: Re: [PATCH] selftests/powerpc: Add matrix multiply assist (MMA) test
-Message-Id: <165260954563.1040779.17406899232283112980.b4-ty@ellerman.id.au>
-Date: Sun, 15 May 2022 20:12:25 +1000
+To: Michael Ellerman <mpe@ellerman.id.au>, Shuah Khan <shuah@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Haowen Bai <baihaowen@meizu.com>
+In-Reply-To: <1650788802-14402-1-git-send-email-baihaowen@meizu.com>
+References: <1650788802-14402-1-git-send-email-baihaowen@meizu.com>
+Subject: Re: [PATCH] selftests/powerpc/pmu: Fix unsigned function returning
+ negative constant
+Message-Id: <165260953752.1040779.16790511150750388387.b4-ty@ellerman.id.au>
+Date: Sun, 15 May 2022 20:12:17 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,20 +46,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-kselftest@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 22 Jun 2020 12:18:32 +1000, Alistair Popple wrote:
-> Adds a simple test of some basic matrix multiply assist (MMA)
-> instructions.
+On Sun, 24 Apr 2022 16:26:41 +0800, Haowen Bai wrote:
+> The function __perf_reg_mask has an unsigned return type, but returns a
+> negative constant to indicate an error condition. So we change unsigned
+> to int.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] selftests/powerpc: Add matrix multiply assist (MMA) test
-      https://git.kernel.org/powerpc/c/3527e1ab9a7990530dfb0137ddcfa64bed2915be
+[1/1] selftests/powerpc/pmu: Fix unsigned function returning negative constant
+      https://git.kernel.org/powerpc/c/a84ca704d8306a949578d36c028c8e1bab3dcf0b
 
 cheers
