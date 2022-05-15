@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8337C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:32:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E99D9C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:32:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JbN3lBLz3bmW
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:32:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L1Jbn4VqRz3f1q
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:32:21 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZH2QGzz3c9K
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZJ06mFz3cFx
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:04 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZF6h2sz4xYX;
- Sun, 15 May 2022 20:31:01 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZH6CDzz4xYY;
+ Sun, 15 May 2022 20:31:03 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Colin Leroy <colin@colino.net>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <04961364547fe4556e30cb302b0e20a939b83426.1648833027.git.christophe.leroy@csgroup.eu>
-References: <04961364547fe4556e30cb302b0e20a939b83426.1648833027.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] macintosh: Prepare cleanup of powerpc's asm/prom.h
-Message-Id: <165261053789.1047019.16084017881231482289.b4-ty@ellerman.id.au>
-Date: Sun, 15 May 2022 20:28:57 +1000
+In-Reply-To: <d2610043419ce3e0e53a85386baf2c3625af5cfb.1647877442.git.christophe.leroy@csgroup.eu>
+References: <d2610043419ce3e0e53a85386baf2c3625af5cfb.1647877442.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/8xx: Simplify flush_tlb_kernel_range()
+Message-Id: <165261053042.1047019.17331367437728392692.b4-ty@ellerman.id.au>
+Date: Sun, 15 May 2022 20:28:50 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -50,19 +50,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 1 Apr 2022 19:15:53 +0200, Christophe Leroy wrote:
-> powerpc's asm/prom.h brings some headers that it doesn't
-> need itself.
+On Mon, 21 Mar 2022 16:44:18 +0100, Christophe Leroy wrote:
+> In the same spirit as commit 63f501e07a85 ("powerpc/8xx: Simplify TLB
+> handling"), simplify flush_tlb_kernel_range() for 8xx.
 > 
-> In order to clean it up, first add missing headers in
-> users of asm/prom.h
+> 8xx cannot be SMP, and has 'tlbie' and 'tlbia' instructions, so
+> an inline version of flush_tlb_kernel_range() for 8xx is worth it.
 > 
+> With this page, first leg of change_page_attr() is:
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] macintosh: Prepare cleanup of powerpc's asm/prom.h
-      https://git.kernel.org/powerpc/c/a486e512d1f3fb93b0406ab125f35777d22b47ba
+[1/1] powerpc/8xx: Simplify flush_tlb_kernel_range()
+      https://git.kernel.org/powerpc/c/9290c379d19774d8de6e2b895d756004dbad9ce5
 
 cheers
