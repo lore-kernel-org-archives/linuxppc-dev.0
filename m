@@ -4,34 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C815DC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:31:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8337C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 10:32:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JZz2Qwdz3ds6
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:31:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L1JbN3lBLz3bmW
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 May 2022 20:32:00 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZF2vSZz2xgN
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L1JZH2QGzz3c9K
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 May 2022 20:31:03 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZF1TVkz4xY4;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L1JZF6h2sz4xYX;
  Sun, 15 May 2022 20:31:01 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Andrew Donnellan <ajd@linux.ibm.com>,
+To: Colin Leroy <colin@colino.net>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>,
- Frederic Barrat <fbarrat@linux.ibm.com>
-In-Reply-To: <a2bae89b280e7a7cb87889635d9911d6a245e780.1648833388.git.christophe.leroy@csgroup.eu>
-References: <a2bae89b280e7a7cb87889635d9911d6a245e780.1648833388.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] cxl/ocxl: Prepare cleanup of powerpc's asm/prom.h
-Message-Id: <165261053892.1047019.3920240317648654638.b4-ty@ellerman.id.au>
-Date: Sun, 15 May 2022 20:28:58 +1000
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <04961364547fe4556e30cb302b0e20a939b83426.1648833027.git.christophe.leroy@csgroup.eu>
+References: <04961364547fe4556e30cb302b0e20a939b83426.1648833027.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] macintosh: Prepare cleanup of powerpc's asm/prom.h
+Message-Id: <165261053789.1047019.16084017881231482289.b4-ty@ellerman.id.au>
+Date: Sun, 15 May 2022 20:28:57 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -51,7 +50,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2 Apr 2022 11:52:33 +0200, Christophe Leroy wrote:
+On Fri, 1 Apr 2022 19:15:53 +0200, Christophe Leroy wrote:
 > powerpc's asm/prom.h brings some headers that it doesn't
 > need itself.
 > 
@@ -63,7 +62,7 @@ On Sat, 2 Apr 2022 11:52:33 +0200, Christophe Leroy wrote:
 
 Applied to powerpc/next.
 
-[1/1] cxl/ocxl: Prepare cleanup of powerpc's asm/prom.h
-      https://git.kernel.org/powerpc/c/d8d2af70b98109418bb16ff6638d7c1c4336f7fe
+[1/1] macintosh: Prepare cleanup of powerpc's asm/prom.h
+      https://git.kernel.org/powerpc/c/a486e512d1f3fb93b0406ab125f35777d22b47ba
 
 cheers
