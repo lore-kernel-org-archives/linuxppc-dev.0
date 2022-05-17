@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D1B7C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 May 2022 16:00:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C2F0C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 May 2022 16:14:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L2gn75vkjz3cFv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 02:00:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SRokXpDe;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L2h5l3xrRz3brS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 02:14:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
- helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org;
+ smtp.mailfrom=xmission.com (client-ip=166.70.13.233;
+ helo=out03.mta.xmission.com; envelope-from=ebiederm@xmission.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=SRokXpDe; 
- dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L2gmR3WVRz2y0B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 01:59:35 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 3FB1760DDA;
- Tue, 17 May 2022 15:59:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7B8DC385B8;
- Tue, 17 May 2022 15:59:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1652803173;
- bh=OlVi754PWvWretVqYxq67E2aohcBH4s2889TUQW3KBc=;
- h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
- b=SRokXpDeyHlG4seZRgvsGnwQlKy8eOt11cPXln8wZv2UIaGJgcR6ekll9EQstUEeb
- aLxDEjnAqmAQ1iAx2ouiihP3HYyaiZ7ETAlgNC7LopQXApYa6J1ImPQlUDYRnA+Zy9
- hT2r6uicnQT374PyC9MgNNjkq0J6Gv8VfithKaRVpycV2N/U6Gyjgao80quytTSkyB
- firecNHb1hRY4rWS35hbkrkwtitEtUAUKm7zi77MqRXqPruM7yEgKSdrqV7yFyE3Ab
- bvM9YAYIna3x/CtjtlC+thpagYCsT00omA1/PLZ3bIKLNaCVozZCPaMYW8mwbm18aV
- nOq6f0IoGLX9Q==
-From: Mark Brown <broonie@kernel.org>
-To: tiwai@suse.com, festevam@gmail.com, shengjiu.wang@nxp.com,
- Xiubo.Lee@gmail.com, alsa-devel@alsa-project.org, lgirdwood@gmail.com,
- shengjiu.wang@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com
-In-Reply-To: <1652688372-10274-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1652688372-10274-1-git-send-email-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH 0/3] ASoC: fsl_sai: Add support for i.MX8MM, MP, ULP
-Message-Id: <165280317067.1635268.8779077482848386414.b4-ty@kernel.org>
-Date: Tue, 17 May 2022 16:59:30 +0100
+X-Greylist: delayed 2428 seconds by postgrey-1.36 at boromir;
+ Wed, 18 May 2022 02:14:06 AEST
+Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L2h5B1BJkz2xh0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 02:14:05 +1000 (AEST)
+Received: from in01.mta.xmission.com ([166.70.13.51]:56996)
+ by out03.mta.xmission.com with esmtps (TLS1.3) tls
+ TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1nqzCV-008zaP-Nq; Tue, 17 May 2022 09:33:31 -0600
+Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:38502
+ helo=email.froward.int.ebiederm.org.xmission.com)
+ by in01.mta.xmission.com with esmtpsa (TLS1.3) tls
+ TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.93)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1nqzCU-00CBh4-Iq; Tue, 17 May 2022 09:33:31 -0600
+From: "Eric W. Biederman" <ebiederm@xmission.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+References: <20220425174128.11455-1-naveen.n.rao@linux.vnet.ibm.com>
+ <YoNqJ/MOSIVwKP/o@MiWiFi-R3L-srv>
+ <1652782155.56t7mah8ib.naveen@linux.ibm.com>
+Date: Tue, 17 May 2022 10:32:18 -0500
+In-Reply-To: <1652782155.56t7mah8ib.naveen@linux.ibm.com> (Naveen N. Rao's
+ message of "Tue, 17 May 2022 15:49:41 +0530")
+Message-ID: <8735h8b2f1.fsf@email.froward.int.ebiederm.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-XM-SPF: eid=1nqzCU-00CBh4-Iq; ; ;
+ mid=<8735h8b2f1.fsf@email.froward.int.ebiederm.org>; ; ;
+ hst=in01.mta.xmission.com; ; ; ip=68.227.174.4; ; ; frm=ebiederm@xmission.com;
+ ; ; spf=softfail
+X-XM-AID: U2FsdGVkX1+Rsm9jiHl7RP207+UxFb0FJ9BaNggLsNY=
+X-SA-Exim-Connect-IP: 68.227.174.4
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH] kexec_file: Drop pr_err in weak implementations of
+ arch_kexec_apply_relocations[_add]
+X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,49 +66,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Baoquan He <bhe@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 16 May 2022 16:06:09 +0800, Shengjiu Wang wrote:
-> ASoC: fsl_sai: Add support for i.MX8MM, MP, ULP platforms
-> 
-> Shengjiu Wang (3):
->   ASoC: fsl_sai: Add support for i.MX8MM
->   ASoC: fsl_sai: Add support for i.MX8M Plus
->   ASoC: fsl_sai: Add support for i.MX8ULP
-> 
-> [...]
 
-Applied to
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+Looking at this the pr_err is absolutely needed.  If an unsupported case
+winds up in the purgatory blob and the code can't handle it things
+will fail silently much worse later.  So the proposed patch is
+unfortunately the wrong direction.
 
-Thanks!
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-[1/3] ASoC: fsl_sai: Add support for i.MX8MM
-      commit: 9e71bc33ae0d402b1579dc7a7afb3916dd35cb17
-[2/3] ASoC: fsl_sai: Add support for i.MX8M Plus
-      commit: 2530c5e875eab853125265b4f24a69e042d9580b
-[3/3] ASoC: fsl_sai: Add support for i.MX8ULP
-      commit: af0bd3c0ffae8c11790ab0108787c03767869a9a
+> Baoquan He wrote:
+>> On 04/25/22 at 11:11pm, Naveen N. Rao wrote:
+>>> kexec_load_purgatory() can fail for many reasons - there is no need to
+>>> print an error when encountering unsupported relocations.
+>>> This solves a build issue on powerpc with binutils v2.36 and newer [1].
+>>> Since commit d1bcae833b32f1 ("ELF: Don't generate unused section
+>>> symbols") [2], binutils started dropping section symbols that it thought
+>> I am not familiar with binutils, while wondering if this exists in other
+>> ARCHes except of ppc. Arm64 doesn't have the ARCH override either, do we
+>> have problem with it?
+>
+> I'm not aware of this specific file causing a problem on other architectures -
+> perhaps the config options differ enough. There are however more reports of
+> similar issues affecting other architectures with the llvm integrated assembler:
+> https://github.com/ClangBuiltLinux/linux/issues/981
+>
+>> 
+>>> were unused.  This isn't an issue in general, but with kexec_file.c, gcc
+>>> is placing kexec_arch_apply_relocations[_add] into a separate
+>>> .text.unlikely section and the section symbol ".text.unlikely" is being
+>>> dropped. Due to this, recordmcount is unable to find a non-weak symbol
+>> But arch_kexec_apply_relocations_add is weak symbol on ppc.
+>
+> Yes. Note that it is just the section symbol that gets dropped. The section is
+> still present and will continue to hold the symbols for the functions
+> themselves.
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+So we have a case where binutils thinks it is doing something useful
+and our kernel specific tool gets tripped up by it.
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+Reading the recordmcount code it looks like it is finding any symbol
+within a section but ignoring weak symbols.  So I suspect the only
+remaining symbol in the section is __weak and that confuses
+recordmcount.
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
+Does removing the __weak annotation on those functions fix the build
+error?  If so we can restructure the kexec code to simply not use __weak
+symbols.
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+Otherwise the fix needs to be in recordmcount or binutils, and we should
+loop whoever maintains recordmcount in to see what they can do.
 
-Thanks,
-Mark
+Eric
