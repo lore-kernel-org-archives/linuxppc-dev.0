@@ -4,53 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DE6DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 May 2022 22:29:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E7D1C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 May 2022 22:29:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L2rPn4mXTz3cFN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 08:29:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L2rQS2H6Pz3cNL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 08:29:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=asov2CXA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IyMMjg5h;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=ftp.linux.org.uk (client-ip=2607:5300:60:148a::1;
- helo=zeniv-ca.linux.org.uk; envelope-from=viro@ftp.linux.org.uk;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1;
+ helo=ams.source.kernel.org; envelope-from=helgaas@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256
- header.s=zeniv-20220401 header.b=asov2CXA; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=IyMMjg5h; 
  dkim-atps=neutral
-X-Greylist: delayed 1351 seconds by postgrey-1.36 at boromir;
- Wed, 18 May 2022 08:28:26 AEST
-Received: from zeniv-ca.linux.org.uk (zeniv-ca.linux.org.uk
- [IPv6:2607:5300:60:148a::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from ams.source.kernel.org (ams.source.kernel.org
+ [IPv6:2604:1380:4601:e00::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L2rP63g2Nz3bbQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 08:28:26 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=linux.org.uk; s=zeniv-20220401; h=Sender:In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=AqOwTe1WYDilo14XAd3xKHqdHGS/uTUyPBKfuE4y0GU=; b=asov2CXAoWleBDgblXMHkwDM03
- 6tOIBvwyZ+ZOgZIst9Q7xbqMXazNnGiVmRD09yZK4GTD5dG2ZcxrJfQpiI0hqm2zuaZM8tSMslFE5
- mL+lLmYFvbfmXveMiaE4KPPVuGRZjFqUDnWv56JLkZT3Pk2GkhjwhcVBW3cTDgyxqsbVm9i9eOELH
- OUrs/PysJYtH+uotJPxbqcQ8UZRJDxohiwogO2OdfDYZcFRycs7ECvqN0+3sj1u6gatpn1+2spiyg
- Na7YqttJXM0vMI0s8gXqTvt29ycbf7pDLT/39REMfEU7xt5GFV8fyjPKZRjrErpFkTUWFngwBhYnf
- xZ4yI5ow==;
-Received: from viro by zeniv-ca.linux.org.uk with local (Exim 4.94.2 #2 (Red
- Hat Linux)) id 1nr5K2-00Fqdf-FW; Tue, 17 May 2022 22:05:42 +0000
-Date: Tue, 17 May 2022 22:05:42 +0000
-From: Al Viro <viro@zeniv.linux.org.uk>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] net: unexport csum_and_copy_{from,to}_user
-Message-ID: <YoQcNkB6R/E3vf51@zeniv-ca.linux.org.uk>
-References: <20220421070440.1282704-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L2rPj4mXcz3cG7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 08:28:57 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id 2A27CB81D0D;
+ Tue, 17 May 2022 22:28:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2C17C385B8;
+ Tue, 17 May 2022 22:28:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1652826532;
+ bh=qVAlvmeQlhu1YZJFufPFz1VtxpX4m7jT2Rh3w53ctKU=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:From;
+ b=IyMMjg5hPEBP2Jmo+GjF51uM92OIvbH6Q3C8C91C6uQuRiuebTZ7WiIBZBKVYyvfg
+ U5SlB1hNbffYdgVFgO9Yue4sAiylnTd7T6fNGfB/d2iKwGusrRmgQ9NkimEJHp9R5X
+ lOjX7AoREotjGFTZEsOwnN05E0m6U+IDEsNJ7uYnY/2mIW9P3z1zhEeZ/7fibNHqK/
+ CHVrNKMenpSFpUJJBntAoRyu/wZRowkRJJxf1gBDutpnsMRu48g0DZpqxlSp8jnWSw
+ IHVrJJaASVQMd5itvpL+8DNI2gVI6VGyQ869CXfl1mrRuyBZGBFfiVxUD9x/TYoVZ8
+ 67L+/jmOqpDCg==
+Date: Tue, 17 May 2022 17:28:49 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: Re: [PATCH v3] PCI/AER: Handle Multi UnCorrectable/Correctable
+ errors properly
+Message-ID: <20220517222849.GA1113887@bhelgaas>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220421070440.1282704-1-hch@lst.de>
+In-Reply-To: <54ab824c-44a9-239a-9380-2f051f26a079@linux.intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,20 +64,116 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-alpha@vger.kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Oliver OHalloran <oohall@gmail.com>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 21, 2022 at 09:04:40AM +0200, Christoph Hellwig wrote:
-> csum_and_copy_from_user and csum_and_copy_to_user are exported by
-> a few architectures, but not actually used in modular code.  Drop
-> the exports.
+On Wed, May 11, 2022 at 05:29:45PM -0700, Sathyanarayanan Kuppuswamy wrote:
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> 
+> On 5/11/22 4:40 PM, Bjorn Helgaas wrote:
+> > On Mon, Apr 18, 2022 at 03:02:37PM +0000, Kuppuswamy Sathyanarayanan wrote:
+> > > Currently the aer_irq() handler returns IRQ_NONE for cases without bits
+> > > PCI_ERR_ROOT_UNCOR_RCV or PCI_ERR_ROOT_COR_RCV are set. But this
+> > > assumption is incorrect.
+> > > 
+> > > Consider a scenario where aer_irq() is triggered for a correctable
+> > > error, and while we process the error and before we clear the error
+> > > status in "Root Error Status" register, if the same kind of error
+> > > is triggered again, since aer_irq() only clears events it saw, the
+> > > multi-bit error is left in tact. This will cause the interrupt to fire
+> > > again, resulting in entering aer_irq() with just the multi-bit error
+> > > logged in the "Root Error Status" register.
+> > > 
+> > > Repeated AER recovery test has revealed this condition does happen
+> > > and this prevents any new interrupt from being triggered. Allow to
+> > > process interrupt even if only multi-correctable (BIT 1) or
+> > > multi-uncorrectable bit (BIT 3) is set.
+> > > 
+> > > Also note that, for cases with only multi-bit error is set, since this
+> > > is not the first occurrence of the error, PCI_ERR_ROOT_ERR_SRC may have
+> > > zero or some junk value. So we cannot cleanly process this error
+> > > information using aer_isr_one_error(). All we are attempting with this
+> > > fix is to make sure error interrupt processing can continue in this
+> > > scenario.
+> > > 
+> > > This error can be reproduced by making following changes to the
+> > > aer_irq() function and by executing the given test commands.
+> > > 
+> > >   static irqreturn_t aer_irq(int irq, void *context)
+> > >           struct aer_err_source e_src = {};
+> > > 
+> > >           pci_read_config_dword(rp, aer + PCI_ERR_ROOT_STATUS,
+> > > 				&e_src.status);
+> > >   +       pci_dbg(pdev->port, "Root Error Status: %04x\n",
+> > >   +		e_src.status);
+> > >           if (!(e_src.status & AER_ERR_STATUS_MASK))
+> > 
+> > Do you mean
+> > 
+> >    if (!(e_src.status & (PCI_ERR_ROOT_UNCOR_RCV|PCI_ERR_ROOT_COR_RCV)))
+> > 
+> > here?  AER_ERR_STATUS_MASK would be after this fix.
+> 
+> Yes. You are correct. Do you want me to update it and Fixes tag
+> and send next version?
 
-Acked-by: Al Viro <viro@zeniv.linux.org.uk>
+I moved the repro details to a bugzilla, updated the commit log as
+below, and applied to pci/error for v5.19, thanks!
 
-Not sure which tree should it go through - Arnd's, perhaps?
+
+commit 203926da2bff ("PCI/AER: Clear MULTI_ERR_COR/UNCOR_RCV bits")
+Author: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Date:   Mon Apr 18 15:02:37 2022 +0000
+
+    PCI/AER: Clear MULTI_ERR_COR/UNCOR_RCV bits
+    
+    When a Root Port or Root Complex Event Collector receives an error Message
+    e.g., ERR_COR, it sets PCI_ERR_ROOT_COR_RCV in the Root Error Status
+    register and logs the Requester ID in the Error Source Identification
+    register.  If it receives a second ERR_COR Message before software clears
+    PCI_ERR_ROOT_COR_RCV, hardware sets PCI_ERR_ROOT_MULTI_COR_RCV and the
+    Requester ID is lost.
+    
+    In the following scenario, PCI_ERR_ROOT_MULTI_COR_RCV was never cleared:
+    
+      - hardware receives ERR_COR message
+      - hardware sets PCI_ERR_ROOT_COR_RCV
+      - aer_irq() entered
+      - aer_irq(): status = pci_read_config_dword(PCI_ERR_ROOT_STATUS)
+      - aer_irq(): now status == PCI_ERR_ROOT_COR_RCV
+      - hardware receives second ERR_COR message
+      - hardware sets PCI_ERR_ROOT_MULTI_COR_RCV
+      - aer_irq(): pci_write_config_dword(PCI_ERR_ROOT_STATUS, status)
+      - PCI_ERR_ROOT_COR_RCV is cleared; PCI_ERR_ROOT_MULTI_COR_RCV is set
+      - aer_irq() entered again
+      - aer_irq(): status = pci_read_config_dword(PCI_ERR_ROOT_STATUS)
+      - aer_irq(): now status == PCI_ERR_ROOT_MULTI_COR_RCV
+      - aer_irq() exits because PCI_ERR_ROOT_COR_RCV not set
+      - PCI_ERR_ROOT_MULTI_COR_RCV is still set
+    
+    The same problem occurred with ERR_NONFATAL/ERR_FATAL Messages and
+    PCI_ERR_ROOT_UNCOR_RCV and PCI_ERR_ROOT_MULTI_UNCOR_RCV.
+    
+    Fix the problem by queueing an AER event and clearing the Root Error Status
+    bits when any of these bits are set:
+    
+      PCI_ERR_ROOT_COR_RCV
+      PCI_ERR_ROOT_UNCOR_RCV
+      PCI_ERR_ROOT_MULTI_COR_RCV
+      PCI_ERR_ROOT_MULTI_UNCOR_RCV
+    
+    See the bugzilla link for details from Eric about how to reproduce this
+    problem.
+    
+    [bhelgaas: commit log, move repro details to bugzilla]
+    Fixes: e167bfcaa4cd ("PCI: aerdrv: remove magical ROOT_ERR_STATUS_MASKS")
+    Link: https://bugzilla.kernel.org/show_bug.cgi?id=215992
+    Link: https://lore.kernel.org/r/20220418150237.1021519-1-sathyanarayanan.kuppuswamy@linux.intel.com
+    Reported-by: Eric Badger <ebadger@purestorage.com>
+    Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+    Reviewed-by: Ashok Raj <ashok.raj@intel.com>
