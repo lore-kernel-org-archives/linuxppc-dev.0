@@ -4,59 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34E24C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 May 2022 20:28:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAABFC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 May 2022 22:05:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L2nl457Ldz3cGP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 06:28:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L2qtJ3Rmtz3cGk
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 08:05:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gRIU/P4K;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Szi7Gy5e;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.126; helo=mga18.intel.com;
+ envelope-from=ricardo.neri-calderon@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=gRIU/P4K; dkim-atps=neutral
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+ header.s=Intel header.b=Szi7Gy5e; dkim-atps=neutral
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L2nkK4F1Cz3bxh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 06:28:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L2qsZ75NGz2yY7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 08:04:33 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1652819289; x=1684355289;
- h=date:from:to:cc:subject:message-id:mime-version;
- bh=VW5xQ9qTTYjQwND3euvBbD0acujiIM1e4Z7pmUl06lk=;
- b=gRIU/P4K+oheNlz863ezYDk/6fFHGoUB11O2kcHOg7r3x3799TmGObUf
- KD0gLJQXLf0Q5SH8Srv0BF9FUHpU/57cwYFM5fOTCDvIQ9bJDVcl+29h+
- 2PSf2dSsmrSP2sq3+1nCEz3Jnb9jZ1a2IjgHGuHsWKhevV5AiqyySN9go
- yoiEzbnUBPS8PcpQcq8wC/DWtSF+dVfVwiFVxyo0cdMymzI3xJkmCNYX4
- cfi+VGq287SNG5g8WZm0/ihCW29Tu5FbTpdrt4o5L/fdmGXDyZ9H90AxW
- HMZZNuHItiYqjxHuvBPnYl5YINb7RLdlJquZST7OiB2jSllQugy4M+lkI g==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10350"; a="331936614"
-X-IronPort-AV: E=Sophos;i="5.91,233,1647327600"; d="scan'208";a="331936614"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 May 2022 13:27:58 -0700
+ t=1652825075; x=1684361075;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=DYnEdSppO39yh6uNPMT5k/kcPnrUIqJqd4/BSKdNERc=;
+ b=Szi7Gy5eNvLBAJpOY1sD/TSi5bzax7pfq5jzaPxJMLS/7KbuKiy2hul8
+ ORY4nmp23H+ggmwp2Jj4FEVIPgAlj7m2PuQpcYRbegGTm0oG8Ami1uisA
+ pmSMJd2d2woBsBi5yUKkfmCilpT4wFVTPJdp+ax5b8r3f90Pp/k/C6EXp
+ UFECy8L5qzlSTe2itDcTep/bCsgEqIMJlQJP45GSbou5IiWIV65s4Vnsa
+ SFMin9BmdnR7kjMP8QeokuomMsVFxExCZ6oyrHDIcX9tS2jxMt/pH5zzW
+ 9GtBw9S4fwpDWFJVJlqgyNaef5HCQBT8EMdQZHj3WcKdSedUn3wM9vaQH g==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10350"; a="253399767"
+X-IronPort-AV: E=Sophos;i="5.91,233,1647327600"; d="scan'208";a="253399767"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 17 May 2022 15:04:28 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.91,233,1647327600"; d="scan'208";a="605530219"
-Received: from lkp-server02.sh.intel.com (HELO 242b25809ac7) ([10.239.97.151])
- by orsmga001.jf.intel.com with ESMTP; 17 May 2022 13:27:57 -0700
-Received: from kbuild by 242b25809ac7 with local (Exim 4.95)
- (envelope-from <lkp@intel.com>) id 1nr3nQ-0001Mx-Ie;
- Tue, 17 May 2022 20:27:56 +0000
-Date: Wed, 18 May 2022 04:27:08 +0800
-From: kernel test robot <lkp@intel.com>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [powerpc:next-test 139/145]
- arch/powerpc/sysdev/mpc5xxx_clocks.c:26:2: error: call to undeclared
- function 'fwnode_for_each_parent_node'; ISO C99 and later do not support
- implicit function declarations
-Message-ID: <202205180443.Cfi2jikJ-lkp@intel.com>
+X-IronPort-AV: E=Sophos;i="5.91,233,1647327600"; d="scan'208";a="673075036"
+Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
+ by fmsmga002.fm.intel.com with ESMTP; 17 May 2022 15:04:27 -0700
+Date: Tue, 17 May 2022 15:08:10 -0700
+From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v6 28/29] x86/tsc: Restart NMI watchdog after refining
+ tsc_khz
+Message-ID: <20220517220810.GB6711@ranerica-svr.sc.intel.com>
+References: <20220506000008.30892-1-ricardo.neri-calderon@linux.intel.com>
+ <20220506000008.30892-29-ricardo.neri-calderon@linux.intel.com>
+ <1652180070.1r874kr0tg.astroid@bobo.none>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1652180070.1r874kr0tg.astroid@bobo.none>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,67 +70,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev,
- kbuild-all@lists.01.org
+Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
+ Andi Kleen <ak@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, Ricardo Neri <ricardo.neri@intel.com>,
+ iommu@lists.linux-foundation.org, Tony Luck <tony.luck@intel.com>,
+ Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>,
+ Thomas Gleixner <tglx@linutronix.de>, David Woodhouse <dwmw2@infradead.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-head:   2e4a9942261f89ad204a8189634029a4b1f0efb6
-commit: f9724684ea2198caaab132514ca104175ed2f15f [139/145] powerpc/mpc5xxx: Switch mpc5xxx_get_bus_frequency() to use fwnode
-config: powerpc-mpc512x_defconfig (https://download.01.org/0day-ci/archive/20220518/202205180443.Cfi2jikJ-lkp@intel.com/config)
-compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project 853fa8ee225edf2d0de94b0dcbd31bea916e825e)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # install powerpc cross compiling tool for clang build
-        # apt-get install binutils-powerpc-linux-gnu
-        # https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?id=f9724684ea2198caaab132514ca104175ed2f15f
-        git remote add powerpc https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
-        git fetch --no-tags powerpc next-test
-        git checkout f9724684ea2198caaab132514ca104175ed2f15f
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=powerpc SHELL=/bin/bash
+On Tue, May 10, 2022 at 09:16:21PM +1000, Nicholas Piggin wrote:
+> Excerpts from Ricardo Neri's message of May 6, 2022 10:00 am:
+> > The HPET hardlockup detector relies on tsc_khz to estimate the value of
+> > that the TSC will have when its HPET channel fires. A refined tsc_khz
+> > helps to estimate better the expected TSC value.
+> > 
+> > Using the early value of tsc_khz may lead to a large error in the expected
+> > TSC value. Restarting the NMI watchdog detector has the effect of kicking
+> > its HPET channel and make use of the refined tsc_khz.
+> > 
+> > When the HPET hardlockup is not in use, restarting the NMI watchdog is
+> > a noop.
+> > 
+> > Cc: Andi Kleen <ak@linux.intel.com>
+> > Cc: Stephane Eranian <eranian@google.com>
+> > Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
+> > Cc: iommu@lists.linux-foundation.org
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Cc: x86@kernel.org
+> > Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+> > ---
+> > Changes since v5:
+> >  * Introduced this patch
+> > 
+> > Changes since v4
+> >  * N/A
+> > 
+> > Changes since v3
+> >  * N/A
+> > 
+> > Changes since v2:
+> >  * N/A
+> > 
+> > Changes since v1:
+> >  * N/A
+> > ---
+> >  arch/x86/kernel/tsc.c | 6 ++++++
+> >  1 file changed, 6 insertions(+)
+> > 
+> > diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> > index cafacb2e58cc..cc1843044d88 100644
+> > --- a/arch/x86/kernel/tsc.c
+> > +++ b/arch/x86/kernel/tsc.c
+> > @@ -1386,6 +1386,12 @@ static void tsc_refine_calibration_work(struct work_struct *work)
+> >  	/* Inform the TSC deadline clockevent devices about the recalibration */
+> >  	lapic_update_tsc_freq();
+> >  
+> > +	/*
+> > +	 * If in use, the HPET hardlockup detector relies on tsc_khz.
+> > +	 * Reconfigure it to make use of the refined tsc_khz.
+> > +	 */
+> > +	lockup_detector_reconfigure();
+> 
+> I don't know if the API is conceptually good.
+> 
+> You change something that the lockup detector is currently using, 
+> *while* the detector is running asynchronously, and then reconfigure
+> it. 
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+Yes, this is what happens.
 
-All errors (new ones prefixed by >>):
+> What happens in the window? If this code is only used for small
+> adjustments maybe it does not really matter
 
->> arch/powerpc/sysdev/mpc5xxx_clocks.c:26:2: error: call to undeclared function 'fwnode_for_each_parent_node'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-           fwnode_for_each_parent_node(fwnode, parent) {
-           ^
->> arch/powerpc/sysdev/mpc5xxx_clocks.c:26:45: error: expected ';' after expression
-           fwnode_for_each_parent_node(fwnode, parent) {
-                                                      ^
-                                                      ;
-   2 errors generated.
+Please see my comment
 
+> but in principle it's a bad API to export.
+> 
+> lockup_detector_reconfigure as an internal API is okay because it
+> reconfigures things while the watchdog is stopped
 
-vim +/fwnode_for_each_parent_node +26 arch/powerpc/sysdev/mpc5xxx_clocks.c
+I see.
 
-     8	
-     9	/**
-    10	 * mpc5xxx_fwnode_get_bus_frequency - Find the bus frequency for a firmware node
-    11	 * @fwnode:	firmware node
-    12	 *
-    13	 * Returns bus frequency (IPS on MPC512x, IPB on MPC52xx),
-    14	 * or 0 if the bus frequency cannot be found.
-    15	 */
-    16	unsigned long mpc5xxx_fwnode_get_bus_frequency(struct fwnode_handle *fwnode)
-    17	{
-    18		struct fwnode_handle *parent;
-    19		u32 bus_freq;
-    20		int ret;
-    21	
-    22		ret = fwnode_property_read_u32(fwnode, "bus-frequency", &bus_freq);
-    23		if (!ret)
-    24			return bus_freq;
-    25	
-  > 26		fwnode_for_each_parent_node(fwnode, parent) {
+> [actually that  looks untrue for soft dog which uses watchdog_thresh in
+> is_softlockup(), but that should be fixed].
 
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+Perhaps there should be a watchdog_thresh_user. When the user updates it,
+the detector is stopped, watchdog_thresh is updated, and then the detector
+is resumed.
+
+> 
+> You're the arch so you're allowed to stop the watchdog and configure
+> it, e.g., hardlockup_detector_perf_stop() is called in arch/.
+
+I had it like this but it did not look right to me. You are right, however,
+I can stop/restart the watchdog when needed.
+
+Thanks and BR,
+Ricardo
