@@ -4,48 +4,129 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D92BDC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 10:12:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FB4FC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 10:13:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L381S3QF7z3cgX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 20:12:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=inYI7Y9J;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L38251Jfnz3f4p
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 20:13:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::602;
+ helo=fra01-mr2-obe.outbound.protection.outlook.com;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from FRA01-MR2-obe.outbound.protection.outlook.com
+ (mail-mr2fra01on0602.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:7e19::602])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L37wv1rLpz3bwr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 20:08:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=inYI7Y9J; dkim-atps=neutral
-Received: by gandalf.ozlabs.org (Postfix)
- id 4L37ws3tt9z4xcN; Wed, 18 May 2022 20:08:29 +1000 (AEST)
-Received: by gandalf.ozlabs.org (Postfix, from userid 1003)
- id 4L37ws3jsJz4xc4; Wed, 18 May 2022 20:08:29 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
- s=201707; t=1652868509;
- bh=LPyUj7mw6pKe86exxwQIQ4dC9ooRTDm3Ukd5pSfem0U=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=inYI7Y9JE+X+yr2glo03uddC30MLE/eH6R1Q7xX57XQKRzh8l6rU4cOzbm366vt4m
- SI7mLYxeiqw7Lw3IHCNu13JxjKcQIgrfW2PxYEaryOdFwML1leeEHQXLC91VTHre1X
- HWHhDSdbSKqleufYhSE1HV5gDDsoMYVT/8qSNNMKHpzaoC9uJQHaXzwztT/YJ9OKvS
- rbfEwa0PxOoE8F53QSCsnNMwQICwNwS91SpGt8IKfqqKT4g0W8aCyiXjeiaKKg2gJM
- Flx32jdoDFkz+l8YgR2oHXOj9T3l0sR6D2ae3WvaGfr/6qCAqVmI0lCDEQpnKYgXX1
- 92tiWaTr7b+0Q==
-Date: Wed, 18 May 2022 20:05:31 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 3/6] powerpc: Book3S 64-bit outline-only KASAN support
-Message-ID: <YoTE69OQwiG7z+Gu@cleo>
-References: <YoTEb2BaH3MDkH+2@cleo>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L37xf3PlTz3bwH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 20:09:09 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=FAvMiVkpo+KdfPYgQYFeNJ0+QKiNr+pDPH0ggtAz2bsh73j5pgQGs6EQFOVQ05uohUuuQQmiAyTiRz87NzT7hQ0k6Nnfbo2+MVO38ywrByDVyA+HYBpHC9R8fHMiF6j1NGqkhJqnIk9C8rV/zABpQ0tPjqseCGbh+UBbf38IZv8iYTgpLnHZ3eVeDZrgBDMJj7a1RuyDN7szOYN/9cOwgNOQBp8g96iv/C+pqedBnHSVCjfC+QE4SBOzOUPB4Vcc66cvpcWLotrIRpE1FQ01nyyu0+FoTafY8xjQvKwJjABbsnh2Bv7g12jGc1FeqSPcGVDh38B1J4HHaZyf4AlLvw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Cf8ZgY679IFflPEDF8slUL/28XDtuykA1bSKLRnCdBE=;
+ b=kMDjRJ3A6Caf7Thl/N95NAP5avbKQAW2ZCvWYUTOU8SfHKHgSnr/qbEBboxvdsX2zVCkX/KvsA+YZ2kj6GmjHP+qC38uWQrlzPza5reOAaM352dxJdNJw29ZiqF1MUDvk8WcipyJGqBo81gwDvOLWZxuO83vgM1r4W7QEv6eB7Js4sR2jo5642L5FYh+mLqCoWJpLU8JG2HXkF0dgWRa7CPAoVc2aLC1sG9kuQzAXPRiO8bmZDKCLzExkjC/B98KeeTTtmgfZwixveGj/ENiT730mhUJ3jAReetNS2+8vNxnctHw2yHu00cmO/uifajRMU3G0qGUIyOPSqhgErSU1A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
+ by PR0P264MB2807.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:1d2::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5250.14; Wed, 18 May
+ 2022 10:08:48 +0000
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::ad4e:c157:e9ac:385d]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::ad4e:c157:e9ac:385d%8]) with mapi id 15.20.5273.015; Wed, 18 May 2022
+ 10:08:48 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, Paul
+ Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v3 19/25] powerpc/ftrace: Minimise number of #ifdefs
+Thread-Topic: [PATCH v3 19/25] powerpc/ftrace: Minimise number of #ifdefs
+Thread-Index: AQHYY2bDo7452AR5CUeMZrEOJfuwwK0kcUMAgAAGdwA=
+Date: Wed, 18 May 2022 10:08:48 +0000
+Message-ID: <75b4b16c-ef1b-dc68-d683-7fb2de0b9c0e@csgroup.eu>
+References: <cover.1652074503.git.christophe.leroy@csgroup.eu>
+ <18ce6708d6f8c71d87436f9c6019f04df4125128.1652074503.git.christophe.leroy@csgroup.eu>
+ <1652866821.cdcfe8bs78.naveen@linux.ibm.com>
+In-Reply-To: <1652866821.cdcfe8bs78.naveen@linux.ibm.com>
+Accept-Language: fr-FR, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 5d80bfce-f55c-48ea-9942-08da38b666b1
+x-ms-traffictypediagnostic: PR0P264MB2807:EE_
+x-microsoft-antispam-prvs: <PR0P264MB2807DEC1CC4B67FD9B8CC320EDD19@PR0P264MB2807.FRAP264.PROD.OUTLOOK.COM>
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: wxjKgwilVoPTMnojElttU7Ap43I8WxKUdmvM7EHrh+ZGkUXratViMcclzrnK5ll/+xQ7XuXx0o2F4LHbg94PRobi/PaEL965bGH/s+zLX0iuAHunQB8N9vi5FZU4t20ZERPBZw9vqL4kwqBjVZuKhlGIK6+Sy0pxrCe6fHCrTom49yLimrGuM9b7dp/Fx/BVFdTwp9l0qBjJdAH2i1M8Ss+/pBHC4CZTiMM0u7JIlmrlSD41xkgWXreENwxuHzKLVePSzXoay+8ojk66u67Fta/lZnvz1Hbhy0antbEYzF0ky3GZdnZGZNBXFwYsoNK0T6sguvC7H7VyEgPqxsHTp9EQt2ksLODkiSJplJ6XC2vwckkvRgGuD1kddJeQlpsk4VV0qAAwerhIgQnKyV9NBTSj7aYtvrXJQ88t8mC5wSKuaCUBYO5rSt2QYGSnB5wcsQg0iIIb7pn93r1Ga0s+uetx2Q6Hgr+M22fqQ4l8S3YzHna3r2kJT/WSlDB2NTXou4osWJY0Mb8i/Qvzv5sMHEELtunqj3DvfLe8RHwVZ1x3uhPdEHTe6m9Gcw0733RinXKkOVdbCbly7jV0mSGFt2n5irf5QkFUUQ+k7L4vq2Re7xct3l7CDrFXEmzLdvFAQxq2fECnTYus10Td4CNAj6q3huMgo35HfDz4c94OTXKqS147V7sb8OfKDDINU8BPVTdhFYKfakok1nwo5RZfYJelWg9eJN6jXeQnbbpwStWIJXusfaA5t8iQivaNsYQM2681nC+Uxhx9nWYx04XpnRvqFEhHNq0mUDb6DJFWUuEJQlYZN8YrCWPStBLbFeo0V/9k2rxt2yEK6y22U7OLhAKg2w660BIQs8riS/nYWAg=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
+ SFS:(13230001)(4636009)(366004)(5660300002)(110136005)(31696002)(83380400001)(66476007)(86362001)(64756008)(66946007)(8676002)(186003)(38100700002)(122000001)(2616005)(6486002)(66574015)(2906002)(38070700005)(71200400001)(508600001)(966005)(66556008)(8936002)(54906003)(66446008)(44832011)(31686004)(6506007)(316002)(26005)(76116006)(6512007)(91956017)(36756003)(4326008)(43740500002)(45980500001);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?eitjeXVTZ2R6MFVzdm9PZGUrbnhRY1BzczVwRGVUalFROVZvelYwNnZYekVu?=
+ =?utf-8?B?L1ZtTzNwakRrZkhCVy9pMit4M3FRZ1phWHdqYTdTc3NtcThvOGozdHg3VEI4?=
+ =?utf-8?B?Qy9hNWI4dGovemFBYXl5M3RyZFY5NjVUQWV0aHI1SUVOeEhDdnBxNEkyVG5a?=
+ =?utf-8?B?MzQ3YytQa090dDlhSE1QWnpocy9rNGpqbEVRSHczNVVsNzQ4RW51SUUra2lq?=
+ =?utf-8?B?OEVSMWNtWTdyMmk5YnZtNTJlMXkwWmY5aUNNVnFYeUQrcTc0dGIzZ1AzeEg5?=
+ =?utf-8?B?ZkRkODNTSFFsSDE5Zk9VYzV4TFpYM2ZhekVuUWx4Y3FTd1gzeG14NVRJNnBE?=
+ =?utf-8?B?RzJJTHE2WGRPbzQxRG5zdnBPbHE4NU5LalR0Yk5zbk00OUlCLzJzaktZSjdh?=
+ =?utf-8?B?SytYT1k5MlpTeVNGeW52VU5UanU1UTd2aHpxdzduQlJkb05yTzREUGtjOFFn?=
+ =?utf-8?B?K3pQSFJhOU5sbzRiZFhTYVM3bWJoS2dWZHp2UVQwTG9qVkRkVU14ekNseit4?=
+ =?utf-8?B?OCtWNG5NWkNGLzV5L3NhSlMvbG82TnZHdVErWWc5ZkVIK3VLSHoxTlR2REFD?=
+ =?utf-8?B?ZGZFUWlqcDkrandSYXpObVU3dlZVcmdqcHpZbFZDejlYMzgzeHB6YSsrMnZz?=
+ =?utf-8?B?Z21nOE1JdkI3NzFhR0ZKZU1HT0hPdDlpbzI3Sm9tWXlCTDY0TUhyc1FvYWhW?=
+ =?utf-8?B?WWNCVmpMSStQak9VaHkzTWxOMzAwdU9HRUxuR3FWcjdzOERtRVJubUNNdFd1?=
+ =?utf-8?B?TmhhVStlOGo4MFZKckY4dXVOR2FLQzh4RTcrNUExZnFhczBtd290RGN2MDVM?=
+ =?utf-8?B?TjViZ1krY2dXcFNaZGdQWm9qM25JQ1Z0ZGdzelQzQlVpRFRzbkRVTXVyenlz?=
+ =?utf-8?B?ckJ6OTlZVC9lQ0pUZjJKQmVHV3BTdStuTDBYS3FJdWxpSDh2VUtRYWpWZ2JJ?=
+ =?utf-8?B?Qy85TjJmaDU5bThKeWthMkxuYlJwL3FRNU1VdHlhbEJydjY4Tkh2aGtidmFZ?=
+ =?utf-8?B?NGpoWkwvbUpCUHRFQWp5T0haeThEQnBkdlJRZVFLMW1YUHhnWk14cEZvenZ1?=
+ =?utf-8?B?MFhBdFFoYjBMNlo3NE5DOU10U2czalRLMGZTbUtIRU91QXFlLzVhRnc4NmtV?=
+ =?utf-8?B?d1JBUnZ4aFY2NEQyM2tNaHJjZFBGeS9WOFFRWFE1OGxWU0NHQlpPbGttZjEv?=
+ =?utf-8?B?UmJNYjZqQjd1SHV4TENDR0xLcDFNdG9UbXdFM0pZZzVmcXE2WUlSVk94T2kw?=
+ =?utf-8?B?ZkMxdUp3UzFhTnhqdUllTlYxUTlzWjNFdzZ3cW9EN2xkRmRNRjN3NUJBY2h2?=
+ =?utf-8?B?Z2gxV3k2NHorbHJQMDE0aGJSSXBrRXRxMml3cm02TE5LR3JuSUYvZTZkNTRR?=
+ =?utf-8?B?dnBUOGtlZDlMb0NpK1NnK1RHRk16YlhVYUlZK0xYS0I4RGp3bU9WT1RSTFdw?=
+ =?utf-8?B?cFZuZHJOb0VWTGlZU3luZmxjMWNBSmZGV25vQ2dWTnc5V3BBeitkMS9SbE5L?=
+ =?utf-8?B?RVZudFdLeUlMSGdCVFd3MkRMMW5YR2JGY1pVQ3BRY3RONzZST1hxMFFZN1h4?=
+ =?utf-8?B?T3IxL3BnMUVOc2Fwa25jcE95QXR3ZHJ3dWplYXhaRFpLa2k5UHcyMlF1U1h1?=
+ =?utf-8?B?UWVvc2NHSnNIV1o4SFVleHVsVWhJaUVCSUpLUjZnRHYvaXViOFZLZWdSb3BV?=
+ =?utf-8?B?NXNnTHlwSXJHYzcxNHo1a0hLNVlTSmNXeDBCMUlUb3ZVcFRTVnl2RXdMWVNa?=
+ =?utf-8?B?L1ZaVHMxYVF0OXl3K3Z2R1NZWmhyVXk0dHhaY0J1d0xMQnpQblZ2b2w2TGV6?=
+ =?utf-8?B?M1o5OTE5M3IxN1RwQno0ZWVsNCtmZmRGajdtNVptUTkrYmI3RFF6Q3ZTN1pT?=
+ =?utf-8?B?N0wrcmVxOVJGTFdRZG9nZ2F2SFVpazZKcEdmL3RsQkJDQXFPVDFYdVl6UFph?=
+ =?utf-8?B?TENDcUxsUU9weEZpMUJOQVNzM3hOVFhleURIdlFiaG5Bc2xzTXAzWE9EYyty?=
+ =?utf-8?B?ZjhqRms2Nmt2T2l4cUw2U0ZYZkdFRDdwRlFZdUJ0cWlsUy82MXg2K1hSclNP?=
+ =?utf-8?B?NVplQ0xvTmZ6QjltWGNHRU81eFY0M0FCTDdJMnEzSklmaHlRMTUyc3hVVmdJ?=
+ =?utf-8?B?NmZ6bDFxTVBVRG5PRzhlQkNTbUMvdGRFYWhLUm5seDd0c1hlOWRKSTFpWW9s?=
+ =?utf-8?B?eEVHQlpoTWFBcTNSTDhxY0EyZ3BYUHZYWHZ6akVsNG5Sei8vVkhvSXBnamlX?=
+ =?utf-8?B?UEJnVmd4VTU5RFpFSlJVTUJ6SEI4VG5DUjNxUjE2TFVVMnhhckE4aUpmdE96?=
+ =?utf-8?B?VXhWZWNDVHZOYWQ2bWlzVFlsNVNycWd0ejUyM1dSUTUrS1NtYlA4UjJGeCt3?=
+ =?utf-8?Q?JTCWS/riy78ez8UVrRt6C4J1w4UzyS198huKZ?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <AA12DE68874E064ABDB61390B8B981B8@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YoTEb2BaH3MDkH+2@cleo>
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5d80bfce-f55c-48ea-9942-08da38b666b1
+X-MS-Exchange-CrossTenant-originalarrivaltime: 18 May 2022 10:08:48.4152 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 28SVlp1fQnQbPfBk9M57w0kVZP2iSkj1QttKLAjYpkQ3NGxFfuHng+972801Vi9Alisuseyef/0Ztb9ZZIK2QC4PPIeUK8dXew/W6UqmwrA=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR0P264MB2807
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,538 +138,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Axtens <dja@axtens.net>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Daniel Axtens <dja@axtens.net>
-
-Implement a limited form of KASAN for Book3S 64-bit machines running under
-the Radix MMU, supporting only outline mode.
-
- - Enable the compiler instrumentation to check addresses and maintain the
-   shadow region. (This is the guts of KASAN which we can easily reuse.)
-
- - Require kasan-vmalloc support to handle modules and anything else in
-   vmalloc space.
-
- - KASAN needs to be able to validate all pointer accesses, but we can't
-   instrument all kernel addresses - only linear map and vmalloc. On boot,
-   set up a single page of read-only shadow that marks all iomap and
-   vmemmap accesses as valid.
-
- - Document KASAN in powerpc docs.
-
-Background
-----------
-
-KASAN support on Book3S is a bit tricky to get right:
-
- - It would be good to support inline instrumentation so as to be able to
-   catch stack issues that cannot be caught with outline mode.
-
- - Inline instrumentation requires a fixed offset.
-
- - Book3S runs code with translations off ("real mode") during boot,
-   including a lot of generic device-tree parsing code which is used to
-   determine MMU features.
-
-    [ppc64 mm note: The kernel installs a linear mapping at effective
-    address c000...-c008.... This is a one-to-one mapping with physical
-    memory from 0000... onward. Because of how memory accesses work on
-    powerpc 64-bit Book3S, a kernel pointer in the linear map accesses the
-    same memory both with translations on (accessing as an 'effective
-    address'), and with translations off (accessing as a 'real
-    address'). This works in both guests and the hypervisor. For more
-    details, see s5.7 of Book III of version 3 of the ISA, in particular
-    the Storage Control Overview, s5.7.3, and s5.7.5 - noting that this
-    KASAN implementation currently only supports Radix.]
-
- - Some code - most notably a lot of KVM code - also runs with translations
-   off after boot.
-
- - Therefore any offset has to point to memory that is valid with
-   translations on or off.
-
-One approach is just to give up on inline instrumentation. This way
-boot-time checks can be delayed until after the MMU is set is up, and we
-can just not instrument any code that runs with translations off after
-booting. Take this approach for now and require outline instrumentation.
-
-Previous attempts allowed inline instrumentation. However, they came with
-some unfortunate restrictions: only physically contiguous memory could be
-used and it had to be specified at compile time. Maybe we can do better in
-the future.
-
-[paulus@ozlabs.org - Rebased onto 5.17.  Note that a kernel with
- CONFIG_KASAN=y will crash during boot on a machine using HPT
- translation because not all the entry points to the generic
- KASAN code are protected with a call to kasan_arch_is_ready().]
-
-Originally-by: Balbir Singh <bsingharora@gmail.com> # ppc64 out-of-line radix version
-Signed-off-by: Daniel Axtens <dja@axtens.net>
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- Documentation/powerpc/kasan.txt              |  48 ++++++++-
- arch/powerpc/Kconfig                         |   5 +-
- arch/powerpc/Kconfig.debug                   |   3 +-
- arch/powerpc/include/asm/book3s/64/hash.h    |   4 +
- arch/powerpc/include/asm/book3s/64/pgtable.h |   3 +
- arch/powerpc/include/asm/book3s/64/radix.h   |  12 ++-
- arch/powerpc/include/asm/kasan.h             |  22 ++++
- arch/powerpc/kernel/Makefile                 |  11 ++
- arch/powerpc/kvm/Makefile                    |   5 +
- arch/powerpc/mm/book3s64/Makefile            |   9 ++
- arch/powerpc/mm/kasan/Makefile               |   1 +
- arch/powerpc/mm/kasan/init_book3s_64.c       | 103 +++++++++++++++++++
- arch/powerpc/mm/ptdump/ptdump.c              |   3 +-
- arch/powerpc/platforms/Kconfig.cputype       |   1 +
- arch/powerpc/platforms/powernv/Makefile      |   8 ++
- arch/powerpc/platforms/pseries/Makefile      |   3 +
- 16 files changed, 234 insertions(+), 7 deletions(-)
- create mode 100644 arch/powerpc/mm/kasan/init_book3s_64.c
-
-diff --git a/Documentation/powerpc/kasan.txt b/Documentation/powerpc/kasan.txt
-index 26bb0e8bb18c..f032b4eaf205 100644
---- a/Documentation/powerpc/kasan.txt
-+++ b/Documentation/powerpc/kasan.txt
-@@ -1,4 +1,4 @@
--KASAN is supported on powerpc on 32-bit only.
-+KASAN is supported on powerpc on 32-bit and Radix 64-bit only.
- 
- 32 bit support
- ==============
-@@ -10,3 +10,49 @@ fixmap area and occupies one eighth of the total kernel virtual memory space.
- 
- Instrumentation of the vmalloc area is optional, unless built with modules,
- in which case it is required.
-+
-+64 bit support
-+==============
-+
-+Currently, only the radix MMU is supported. There have been versions for hash
-+and Book3E processors floating around on the mailing list, but nothing has been
-+merged.
-+
-+KASAN support on Book3S is a bit tricky to get right:
-+
-+ - It would be good to support inline instrumentation so as to be able to catch
-+   stack issues that cannot be caught with outline mode.
-+
-+ - Inline instrumentation requires a fixed offset.
-+
-+ - Book3S runs code with translations off ("real mode") during boot, including a
-+   lot of generic device-tree parsing code which is used to determine MMU
-+   features.
-+
-+ - Some code - most notably a lot of KVM code - also runs with translations off
-+   after boot.
-+
-+ - Therefore any offset has to point to memory that is valid with
-+   translations on or off.
-+
-+One approach is just to give up on inline instrumentation. This way boot-time
-+checks can be delayed until after the MMU is set is up, and we can just not
-+instrument any code that runs with translations off after booting. This is the
-+current approach.
-+
-+To avoid this limitiation, the KASAN shadow would have to be placed inside the
-+linear mapping, using the same high-bits trick we use for the rest of the linear
-+mapping. This is tricky:
-+
-+ - We'd like to place it near the start of physical memory. In theory we can do
-+   this at run-time based on how much physical memory we have, but this requires
-+   being able to arbitrarily relocate the kernel, which is basically the tricky
-+   part of KASLR. Not being game to implement both tricky things at once, this
-+   is hopefully something we can revisit once we get KASLR for Book3S.
-+
-+ - Alternatively, we can place the shadow at the _end_ of memory, but this
-+   requires knowing how much contiguous physical memory a system has _at compile
-+   time_. This is a big hammer, and has some unfortunate consequences: inablity
-+   to handle discontiguous physical memory, total failure to boot on machines
-+   with less memory than specified, and that machines with more memory than
-+   specified can't use it. This was deemed unacceptable.
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b779603978e1..0bf76e40c9c2 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -105,6 +105,7 @@ config PPC
- 	# Please keep this list sorted alphabetically.
- 	#
- 	select ARCH_32BIT_OFF_T if PPC32
-+	select ARCH_DISABLE_KASAN_INLINE	if PPC_RADIX_MMU
- 	select ARCH_ENABLE_MEMORY_HOTPLUG
- 	select ARCH_ENABLE_MEMORY_HOTREMOVE
- 	select ARCH_HAS_COPY_MC			if PPC64
-@@ -152,6 +153,7 @@ config PPC
- 	select ARCH_WANT_IPC_PARSE_VERSION
- 	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
- 	select ARCH_WANT_LD_ORPHAN_WARN
-+	select ARCH_WANTS_NO_INSTR
- 	select ARCH_WEAK_RELEASE_ACQUIRE
- 	select BINFMT_ELF
- 	select BUILDTIME_TABLE_SORT
-@@ -183,7 +185,8 @@ config PPC
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_ARCH_JUMP_LABEL_RELATIVE
- 	select HAVE_ARCH_KASAN			if PPC32 && PPC_PAGE_SHIFT <= 14
--	select HAVE_ARCH_KASAN_VMALLOC		if PPC32 && PPC_PAGE_SHIFT <= 14
-+	select HAVE_ARCH_KASAN			if PPC_RADIX_MMU
-+	select HAVE_ARCH_KASAN_VMALLOC		if HAVE_ARCH_KASAN
- 	select HAVE_ARCH_KFENCE			if PPC_BOOK3S_32 || PPC_8xx || 40x
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_MMAP_RND_BITS
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 192f0ed0097f..9f363c143d86 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -374,4 +374,5 @@ config PPC_FAST_ENDIAN_SWITCH
- config KASAN_SHADOW_OFFSET
- 	hex
- 	depends on KASAN
--	default 0xe0000000
-+	default 0xe0000000 if PPC32
-+	default 0xa80e000000000000 if PPC64
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index a7a0572f3846..17e7a778c856 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -18,6 +18,10 @@
- #include <asm/book3s/64/hash-4k.h>
- #endif
- 
-+#define H_PTRS_PER_PTE		(1 << H_PTE_INDEX_SIZE)
-+#define H_PTRS_PER_PMD		(1 << H_PMD_INDEX_SIZE)
-+#define H_PTRS_PER_PUD		(1 << H_PUD_INDEX_SIZE)
-+
- /* Bits to set in a PMD/PUD/PGD entry valid bit*/
- #define HASH_PMD_VAL_BITS		(0x8000000000000000UL)
- #define HASH_PUD_VAL_BITS		(0x8000000000000000UL)
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 875730d5af40..010eb373fcb3 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -232,6 +232,9 @@ extern unsigned long __pmd_frag_size_shift;
- #define PTRS_PER_PUD	(1 << PUD_INDEX_SIZE)
- #define PTRS_PER_PGD	(1 << PGD_INDEX_SIZE)
- 
-+#define MAX_PTRS_PER_PTE ((H_PTRS_PER_PTE > R_PTRS_PER_PTE) ? H_PTRS_PER_PTE : R_PTRS_PER_PTE)
-+#define MAX_PTRS_PER_PMD ((H_PTRS_PER_PMD > R_PTRS_PER_PMD) ? H_PTRS_PER_PMD : R_PTRS_PER_PMD)
-+#define MAX_PTRS_PER_PUD ((H_PTRS_PER_PUD > R_PTRS_PER_PUD) ? H_PTRS_PER_PUD : R_PTRS_PER_PUD)
- #define MAX_PTRS_PER_PGD	(1 << (H_PGD_INDEX_SIZE > RADIX_PGD_INDEX_SIZE ? \
- 				       H_PGD_INDEX_SIZE : RADIX_PGD_INDEX_SIZE))
- 
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index d090d9612348..686001eda936 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -35,6 +35,11 @@
- #define RADIX_PMD_SHIFT		(PAGE_SHIFT + RADIX_PTE_INDEX_SIZE)
- #define RADIX_PUD_SHIFT		(RADIX_PMD_SHIFT + RADIX_PMD_INDEX_SIZE)
- #define RADIX_PGD_SHIFT		(RADIX_PUD_SHIFT + RADIX_PUD_INDEX_SIZE)
-+
-+#define R_PTRS_PER_PTE		(1 << RADIX_PTE_INDEX_SIZE)
-+#define R_PTRS_PER_PMD		(1 << RADIX_PMD_INDEX_SIZE)
-+#define R_PTRS_PER_PUD		(1 << RADIX_PUD_INDEX_SIZE)
-+
- /*
-  * Size of EA range mapped by our pagetables.
-  */
-@@ -68,11 +73,11 @@
-  *
-  *
-  * 3rd quadrant expanded:
-- * +------------------------------+
-- * |                              |
-+ * +------------------------------+  Highest address (0xc010000000000000)
-+ * +------------------------------+  KASAN shadow end (0xc00fc00000000000)
-  * |                              |
-  * |                              |
-- * +------------------------------+  Kernel vmemmap end (0xc010000000000000)
-+ * +------------------------------+  Kernel vmemmap end/shadow start (0xc00e000000000000)
-  * |                              |
-  * |           512TB		  |
-  * |                              |
-@@ -91,6 +96,7 @@
-  * +------------------------------+  Kernel linear (0xc.....)
-  */
- 
-+/* For the sizes of the shadow area, see kasan.h */
- 
- /*
-  * If we store section details in page->flags we can't increase the MAX_PHYSMEM_BITS
-diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-index 3c478e5ef24c..a6be4025cba2 100644
---- a/arch/powerpc/include/asm/kasan.h
-+++ b/arch/powerpc/include/asm/kasan.h
-@@ -30,9 +30,31 @@
- 
- #define KASAN_SHADOW_OFFSET	ASM_CONST(CONFIG_KASAN_SHADOW_OFFSET)
- 
-+#ifdef CONFIG_PPC32
- #define KASAN_SHADOW_END	(-(-KASAN_SHADOW_START >> KASAN_SHADOW_SCALE_SHIFT))
-+#elif defined(CONFIG_PPC_BOOK3S_64)
-+/*
-+ * The shadow ends before the highest accessible address
-+ * because we don't need a shadow for the shadow. Instead:
-+ * c00e000000000000 << 3 + a80e000000000000 = c00fc00000000000
-+ */
-+#define KASAN_SHADOW_END 0xc00fc00000000000UL
-+#endif
- 
- #ifdef CONFIG_KASAN
-+#ifdef CONFIG_PPC_BOOK3S_64
-+DECLARE_STATIC_KEY_FALSE(powerpc_kasan_enabled_key);
-+
-+static __always_inline bool kasan_arch_is_ready(void)
-+{
-+	if (static_branch_likely(&powerpc_kasan_enabled_key))
-+		return true;
-+	return false;
-+}
-+
-+#define kasan_arch_is_ready kasan_arch_is_ready
-+#endif
-+
- void kasan_early_init(void);
- void kasan_mmu_init(void);
- void kasan_init(void);
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 4d7829399570..e46335da7f72 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -33,6 +33,17 @@ KASAN_SANITIZE_early_32.o := n
- KASAN_SANITIZE_cputable.o := n
- KASAN_SANITIZE_prom_init.o := n
- KASAN_SANITIZE_btext.o := n
-+KASAN_SANITIZE_paca.o := n
-+KASAN_SANITIZE_setup_64.o := n
-+KASAN_SANITIZE_mce.o := n
-+KASAN_SANITIZE_mce_power.o := n
-+
-+# we have to be particularly careful in ppc64 to exclude code that
-+# runs with translations off, as we cannot access the shadow with
-+# translations off. However, ppc32 can sanitize this.
-+ifdef CONFIG_PPC64
-+KASAN_SANITIZE_traps.o := n
-+endif
- 
- ifdef CONFIG_KASAN
- CFLAGS_early_32.o += -DDISABLE_BRANCH_PROFILING
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index 9bdfc8b50899..ed0569b2a3d4 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -134,3 +134,8 @@ obj-$(CONFIG_KVM_BOOK3S_64_PR) += kvm-pr.o
- obj-$(CONFIG_KVM_BOOK3S_64_HV) += kvm-hv.o
- 
- obj-y += $(kvm-book3s_64-builtin-objs-y)
-+
-+# KVM does a lot in real-mode, and 64-bit Book3S KASAN doesn't support that
-+ifdef CONFIG_PPC_BOOK3S_64
-+KASAN_SANITIZE := n
-+endif
-diff --git a/arch/powerpc/mm/book3s64/Makefile b/arch/powerpc/mm/book3s64/Makefile
-index 2d50cac499c5..3150159e5121 100644
---- a/arch/powerpc/mm/book3s64/Makefile
-+++ b/arch/powerpc/mm/book3s64/Makefile
-@@ -24,3 +24,12 @@ obj-$(CONFIG_PPC_PKEY)	+= pkeys.o
- 
- # Instrumenting the SLB fault path can lead to duplicate SLB entries
- KCOV_INSTRUMENT_slb.o := n
-+
-+# Parts of these can run in real mode and therefore are
-+# not safe with the current outline KASAN implementation
-+KASAN_SANITIZE_mmu_context.o := n
-+KASAN_SANITIZE_pgtable.o := n
-+KASAN_SANITIZE_radix_pgtable.o := n
-+KASAN_SANITIZE_radix_tlb.o := n
-+KASAN_SANITIZE_slb.o := n
-+KASAN_SANITIZE_pkeys.o := n
-diff --git a/arch/powerpc/mm/kasan/Makefile b/arch/powerpc/mm/kasan/Makefile
-index bcbfd6f2eca3..4999aadb1867 100644
---- a/arch/powerpc/mm/kasan/Makefile
-+++ b/arch/powerpc/mm/kasan/Makefile
-@@ -5,3 +5,4 @@ KASAN_SANITIZE := n
- obj-$(CONFIG_PPC32)		+= init_32.o
- obj-$(CONFIG_PPC_8xx)		+= 8xx.o
- obj-$(CONFIG_PPC_BOOK3S_32)	+= book3s_32.o
-+obj-$(CONFIG_PPC_BOOK3S_64)	+= init_book3s_64.o
-diff --git a/arch/powerpc/mm/kasan/init_book3s_64.c b/arch/powerpc/mm/kasan/init_book3s_64.c
-new file mode 100644
-index 000000000000..afe551b03db9
---- /dev/null
-+++ b/arch/powerpc/mm/kasan/init_book3s_64.c
-@@ -0,0 +1,103 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * KASAN for 64-bit Book3S powerpc
-+ *
-+ * Copyright (C) 2019-2020 IBM Corporation
-+ * Author: Daniel Axtens <dja@axtens.net>
-+ */
-+
-+/*
-+# ppc64 turns on virtual memory late in boot, after calling into generic code
-+# like the device-tree parser, so it uses this in conjunction with a hook in
-+# outline mode to avoid invalid access early in boot.
-+*/
-+
-+#define DISABLE_BRANCH_PROFILING
-+
-+#include <linux/kasan.h>
-+#include <linux/printk.h>
-+#include <linux/sched/task.h>
-+#include <linux/memblock.h>
-+#include <asm/pgalloc.h>
-+
-+DEFINE_STATIC_KEY_FALSE(powerpc_kasan_enabled_key);
-+
-+static void __init kasan_init_phys_region(void *start, void *end)
-+{
-+	unsigned long k_start, k_end, k_cur;
-+	void *va;
-+
-+	if (start >= end)
-+		return;
-+
-+	k_start = ALIGN_DOWN((unsigned long)kasan_mem_to_shadow(start), PAGE_SIZE);
-+	k_end = ALIGN((unsigned long)kasan_mem_to_shadow(end), PAGE_SIZE);
-+
-+	va = memblock_alloc(k_end - k_start, PAGE_SIZE);
-+	for (k_cur = k_start; k_cur < k_end; k_cur += PAGE_SIZE, va += PAGE_SIZE)
-+		map_kernel_page(k_cur, __pa(va), PAGE_KERNEL);
-+}
-+
-+void __init kasan_init(void)
-+{
-+	/*
-+	 * We want to do the following things:
-+	 *  1) Map real memory into the shadow for all physical memblocks
-+	 *     This takes us from c000... to c008...
-+	 *  2) Leave a hole over the shadow of vmalloc space. KASAN_VMALLOC
-+	 *     will manage this for us.
-+	 *     This takes us from c008... to c00a...
-+	 *  3) Map the 'early shadow'/zero page over iomap and vmemmap space.
-+	 *     This takes us up to where we start at c00e...
-+	 */
-+
-+	void *k_start = kasan_mem_to_shadow((void *)RADIX_VMALLOC_END);
-+	void *k_end = kasan_mem_to_shadow((void *)RADIX_VMEMMAP_END);
-+	phys_addr_t start, end;
-+	u64 i;
-+	pte_t zero_pte = pfn_pte(virt_to_pfn(kasan_early_shadow_page), PAGE_KERNEL);
-+
-+	if (!early_radix_enabled()) {
-+		pr_warn("KASAN not enabled as it requires radix!");
-+		return;
-+	}
-+
-+	for_each_mem_range(i, &start, &end)
-+		kasan_init_phys_region((void *)start, (void *)end);
-+
-+	for (i = 0; i < PTRS_PER_PTE; i++)
-+		__set_pte_at(&init_mm, (unsigned long)kasan_early_shadow_page,
-+			     &kasan_early_shadow_pte[i], zero_pte, 0);
-+
-+	for (i = 0; i < PTRS_PER_PMD; i++)
-+		pmd_populate_kernel(&init_mm, &kasan_early_shadow_pmd[i],
-+				    kasan_early_shadow_pte);
-+
-+	for (i = 0; i < PTRS_PER_PUD; i++)
-+		pud_populate(&init_mm, &kasan_early_shadow_pud[i],
-+			     kasan_early_shadow_pmd);
-+
-+	/* map the early shadow over the iomap and vmemmap space */
-+	kasan_populate_early_shadow(k_start, k_end);
-+
-+	/* mark early shadow region as RO and wipe it */
-+	zero_pte = pfn_pte(virt_to_pfn(kasan_early_shadow_page), PAGE_KERNEL_RO);
-+	for (i = 0; i < PTRS_PER_PTE; i++)
-+		__set_pte_at(&init_mm, (unsigned long)kasan_early_shadow_page,
-+			     &kasan_early_shadow_pte[i], zero_pte, 0);
-+
-+	/*
-+	 * clear_page relies on some cache info that hasn't been set up yet.
-+	 * It ends up looping ~forever and blows up other data.
-+	 * Use memset instead.
-+	 */
-+	memset(kasan_early_shadow_page, 0, PAGE_SIZE);
-+
-+	static_branch_inc(&powerpc_kasan_enabled_key);
-+
-+	/* Enable error messages */
-+	init_task.kasan_depth = 0;
-+	pr_info("KASAN init done\n");
-+}
-+
-+void __init kasan_late_init(void) { }
-diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
-index 8c846982766f..2313053fe679 100644
---- a/arch/powerpc/mm/ptdump/ptdump.c
-+++ b/arch/powerpc/mm/ptdump/ptdump.c
-@@ -21,6 +21,7 @@
- #include <linux/seq_file.h>
- #include <asm/fixmap.h>
- #include <linux/const.h>
-+#include <linux/kasan.h>
- #include <asm/page.h>
- #include <asm/hugetlb.h>
- 
-@@ -289,11 +290,11 @@ static void populate_markers(void)
- #endif
- 	address_markers[i++].start_address = FIXADDR_START;
- 	address_markers[i++].start_address = FIXADDR_TOP;
-+#endif /* CONFIG_PPC64 */
- #ifdef CONFIG_KASAN
- 	address_markers[i++].start_address = KASAN_SHADOW_START;
- 	address_markers[i++].start_address = KASAN_SHADOW_END;
- #endif
--#endif /* CONFIG_PPC64 */
- }
- 
- static int ptdump_show(struct seq_file *m, void *v)
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 87bc1929ee5a..b6562d39b9c4 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -104,6 +104,7 @@ config PPC_BOOK3S_64
- 	select HAVE_MOVE_PUD
- 	select IRQ_WORK
- 	select PPC_64S_HASH_MMU if !PPC_RADIX_MMU
-+	select KASAN_VMALLOC if KASAN
- 
- config PPC_BOOK3E_64
- 	bool "Embedded processors"
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index dc7b37c23b60..6488b3842199 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -1,4 +1,12 @@
- # SPDX-License-Identifier: GPL-2.0
-+
-+# nothing that deals with real mode is safe to KASAN
-+# in particular, idle code runs a bunch of things in real mode
-+KASAN_SANITIZE_idle.o := n
-+KASAN_SANITIZE_pci-ioda.o := n
-+# pnv_machine_check_early
-+KASAN_SANITIZE_setup.o := n
-+
- obj-y			+= setup.o opal-call.o opal-wrappers.o opal.o opal-async.o
- obj-y			+= idle.o opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
- obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index ee60b59024b4..b407fdeb6e78 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -32,3 +32,6 @@ obj-$(CONFIG_SUSPEND)		+= suspend.o
- obj-$(CONFIG_PPC_VAS)		+= vas.o
- 
- obj-$(CONFIG_ARCH_HAS_CC_PLATFORM)	+= cc_platform.o
-+
-+# nothing that operates in real mode is safe for KASAN
-+KASAN_SANITIZE_ras.o := n
--- 
-2.35.3
-
+DQoNCkxlIDE4LzA1LzIwMjIgw6AgMTE6NDUsIE5hdmVlbiBOLiBSYW8gYSDDqWNyaXTCoDoNCj4g
+Q2hyaXN0b3BoZSBMZXJveSB3cm90ZToNCj4+IEEgbG90IG9mICNpZmRlZnMgY2FuIGJlIHJlcGxh
+Y2VkIGJ5IElTX0VOQUJMRUQoKQ0KPj4NCj4+IERvIHNvLg0KPj4NCj4+IFRoaXMgcmVxdWlyZXMg
+dG8gaGF2ZSBrZXJuZWxfdG9jX2FkZHIoKSBkZWZpbmVkIGF0IGFsbCB0aW1lDQo+PiBhcyB3ZWxs
+IGFzIFBQQ19JTlNUX0xEX1RPQyBhbmQgUFBDX0lOU1RfU1REX0xSLg0KPj4NCj4+IFNpZ25lZC1v
+ZmYtYnk6IENocmlzdG9waGUgTGVyb3kgPGNocmlzdG9waGUubGVyb3lAY3Nncm91cC5ldT4NCj4+
+IC0tLQ0KPj4gdjI6IE1vdmVkIHRoZSBzZXR1cCBvZiBwb3Agb3V0c2lkZSBvZiB0aGUgYmlnIGlm
+KCkvZWxzZSgpIGluIA0KPj4gX19mdHJhY2VfbWFrZV9ub3AoKQ0KPj4gLS0tDQo+PiDCoGFyY2gv
+cG93ZXJwYy9pbmNsdWRlL2FzbS9jb2RlLXBhdGNoaW5nLmggfMKgwqAgMiAtDQo+PiDCoGFyY2gv
+cG93ZXJwYy9pbmNsdWRlL2FzbS9tb2R1bGUuaMKgwqDCoMKgwqDCoMKgIHzCoMKgIDIgLQ0KPj4g
+wqBhcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vc2VjdGlvbnMuaMKgwqDCoMKgwqAgfMKgIDI0ICst
+LQ0KPj4gwqBhcmNoL3Bvd2VycGMva2VybmVsL3RyYWNlL2Z0cmFjZS5jwqDCoMKgwqDCoMKgIHwg
+MTgyICsrKysrKysrKysrLS0tLS0tLS0tLS0tDQo+PiDCoDQgZmlsZXMgY2hhbmdlZCwgMTAzIGlu
+c2VydGlvbnMoKyksIDEwNyBkZWxldGlvbnMoLSkNCj4+DQo+IA0KPiA8c25pcD4NCj4gDQo+PiBA
+QCAtNzEwLDYgKzcwNyw5IEBAIHZvaWQgYXJjaF9mdHJhY2VfdXBkYXRlX2NvZGUoaW50IGNvbW1h
+bmQpDQo+Pg0KPj4gwqAjaWZkZWYgQ09ORklHX1BQQzY0DQo+PiDCoCNkZWZpbmUgUEFDQVRPQyBv
+ZmZzZXRvZihzdHJ1Y3QgcGFjYV9zdHJ1Y3QsIGtlcm5lbF90b2MpDQo+PiArI2Vsc2UNCj4+ICsj
+ZGVmaW5lIFBBQ0FUT0MgMA0KPj4gKyNlbmRpZg0KPiANCj4gVGhpcyBjb25mbGljdHMgd2l0aCBt
+eSBmaXggZm9yIHRoZSBmdHJhY2UgaW5pdCB0cmFtcDoNCj4gaHR0cHM6Ly9wYXRjaHdvcmsub3ps
+YWJzLm9yZy9wcm9qZWN0L2xpbnV4cHBjLWRldi9wYXRjaC8yMDIyMDUxNjA3MTQyMi40NjM3Mzgt
+MS1uYXZlZW4ubi5yYW9AbGludXgudm5ldC5pYm0uY29tLyANCj4gDQo+IA0KPiBJdCBwcm9iYWJs
+eSBtYWtlcyBzZW5zZSB0byByZXRhaW4gI2lmZGVmIENPTkZJR19QUEM2NCwgc28gdGhhdCB3ZSBj
+YW4gDQo+IGdldCByaWQgb2YgdGhlIFBBQ0FUT0MuIEhlcmUgaXMgYW4gaW5jcmVtZW50YWwgZGlm
+ZjoNCg0KQWggeWVzLCBpdCBtYWtlcyBzZW5zZS4NCg0KSW5pdGlhbCBwdXJwb3NlIHdhcyB0byBk
+ZS1kdXBsaWNhdGUgZnRyYWNlX2R5bl9hcmNoX2luaXQoKSwgYnV0IGFzIA0KZnRyYWNlX2R5bl9h
+cmNoX2luaXQoKSBpcyBkZWZpbmVkIGFzIGEgd2VhayBub3AgZnVuY3Rpb24gaW4gDQprZXJuZWwv
+dHJhY2UvZnRyYWNlLmMgd2UgZG9uJ3QgbmVlZCBpdCBmb3IgUFBDMzIgYXQgYWxsLg0KDQpBbmQg
+dGhlbiBrZXJuZWxfdG9jX2FkZHIoKSBjb3VsZCByZW1haW4gaW5zaWRlICNpZmRlZiBDT05GSUdf
+UFBDNjQgaW4gDQphc20vc2VjdGlvbi5oDQoNCj4gDQo+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2Vy
+cGMva2VybmVsL3RyYWNlL2Z0cmFjZS5jIA0KPiBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvdHJhY2Uv
+ZnRyYWNlLmMNCj4gaW5kZXggZGExYTJmOGViYjcyZjMuLjI4MTY5YTFjY2M3Mzc3IDEwMDY0NA0K
+PiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVsL3RyYWNlL2Z0cmFjZS5jDQo+ICsrKyBiL2FyY2gv
+cG93ZXJwYy9rZXJuZWwvdHJhY2UvZnRyYWNlLmMNCj4gQEAgLTcwMSwxMSArNzAxLDYgQEAgdm9p
+ZCBhcmNoX2Z0cmFjZV91cGRhdGVfY29kZShpbnQgY29tbWFuZCkNCj4gfQ0KPiANCj4gI2lmZGVm
+IENPTkZJR19QUEM2NA0KPiAtI2RlZmluZSBQQUNBVE9DIG9mZnNldG9mKHN0cnVjdCBwYWNhX3N0
+cnVjdCwga2VybmVsX3RvYykNCj4gLSNlbHNlDQo+IC0jZGVmaW5lIFBBQ0FUT0MgMA0KPiAtI2Vu
+ZGlmDQo+IC0NCj4gZXh0ZXJuIHVuc2lnbmVkIGludCBmdHJhY2VfdHJhbXBfdGV4dFtdLCBmdHJh
+Y2VfdHJhbXBfaW5pdFtdOw0KPiANCj4gdm9pZCBmdHJhY2VfZnJlZV9pbml0X3RyYW1wKHZvaWQp
+DQo+IEBAIC03MjQsNyArNzE5LDcgQEAgaW50IF9faW5pdCBmdHJhY2VfZHluX2FyY2hfaW5pdCh2
+b2lkKQ0KPiAgwqDCoMKgwqBpbnQgaTsNCj4gIMKgwqDCoMKgdW5zaWduZWQgaW50ICp0cmFtcFtd
+ID0geyBmdHJhY2VfdHJhbXBfdGV4dCwgZnRyYWNlX3RyYW1wX2luaXQgfTsNCj4gIMKgwqDCoMKg
+dTMyIHN0dWJfaW5zbnNbXSA9IHsNCj4gLcKgwqDCoMKgwqDCoMKgIFBQQ19SQVdfTEQoX1IxMiwg
+X1IxMywgUEFDQVRPQyksDQo+ICvCoMKgwqDCoMKgwqDCoCBQUENfUkFXX0xEKF9SMTIsIF9SMTMs
+IG9mZnNldG9mKHN0cnVjdCBwYWNhX3N0cnVjdCwga2VybmVsX3RvYykpLA0KPiAgwqDCoMKgwqDC
+oMKgwqAgUFBDX1JBV19BRERJUyhfUjEyLCBfUjEyLCAwKSwNCj4gIMKgwqDCoMKgwqDCoMKgIFBQ
+Q19SQVdfQURESShfUjEyLCBfUjEyLCAwKSwNCj4gIMKgwqDCoMKgwqDCoMKgIFBQQ19SQVdfTVRD
+VFIoX1IxMiksDQo+IEBAIC03MzMsOSArNzI4LDYgQEAgaW50IF9faW5pdCBmdHJhY2VfZHluX2Fy
+Y2hfaW5pdCh2b2lkKQ0KPiAgwqDCoMKgwqB1bnNpZ25lZCBsb25nIGFkZHI7DQo+ICDCoMKgwqDC
+oGxvbmcgcmVsYWRkcjsNCj4gDQo+IC3CoMKgwqAgaWYgKElTX0VOQUJMRUQoQ09ORklHX1BQQzMy
+KSkNCj4gLcKgwqDCoMKgwqDCoMKgIHJldHVybiAwOw0KPiAtDQo+ICDCoMKgwqDCoGFkZHIgPSBw
+cGNfZ2xvYmFsX2Z1bmN0aW9uX2VudHJ5KCh2b2lkICopRlRSQUNFX1JFR1NfQUREUik7DQo+ICDC
+oMKgwqDCoHJlbGFkZHIgPSBhZGRyIC0ga2VybmVsX3RvY19hZGRyKCk7DQo+IA0KPiBAQCAtNzU0
+LDYgKzc0Niw3IEBAIGludCBfX2luaXQgZnRyYWNlX2R5bl9hcmNoX2luaXQodm9pZCkNCj4gDQo+
+ICDCoMKgwqDCoHJldHVybiAwOw0KPiB9DQo+ICsjZW5kaWYNCj4gDQo+ICNpZmRlZiBDT05GSUdf
+RlVOQ1RJT05fR1JBUEhfVFJBQ0VSDQo+IA0KPiANCj4gLSBOYXZlZW4=
