@@ -4,57 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4157C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 11:08:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05728C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 11:19:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L39Fc41Y4z3cCm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 21:08:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L39W83313z3c8k
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 21:19:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=T0gGp12c;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=kc6++Pc9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=suse.com (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
- envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=susede1 header.b=T0gGp12c; dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L352n3TzKz3bbQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 17:58:24 +1000 (AEST)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
- by smtp-out1.suse.de (Postfix) with ESMTP id 1B35021B9A;
- Wed, 18 May 2022 07:58:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
- t=1652860701; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=QH8rZRpDaB1rKzYBSvbHTkuJfXIZgq5PPOEyov0S61g=;
- b=T0gGp12c0pU5b8b1i3GTuIGm3SeP3EhRpXPECQNn/enftlsKdapz4VZkfCcS2uIPqM17q+
- /PBA3AVHUNLBKEckN04LlFAw1RfXD18Ad2wMfhhColdg9InPjS0Cl4zZnO5bfZL0Ln9Soj
- 5NqvLRJqL5BZI+4DmlPHTXzoYIVJS4o=
-Received: from suse.cz (unknown [10.100.201.202])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by relay2.suse.de (Postfix) with ESMTPS id 0683D2C142;
- Wed, 18 May 2022 07:58:19 +0000 (UTC)
-Date: Wed, 18 May 2022 09:58:18 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-Subject: Re: [PATCH 19/30] panic: Add the panic hypervisor notifier list
-Message-ID: <YoSnGmBJ3kYs5WMf@alley>
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-20-gpiccoli@igalia.com>
- <YoJZVZl/MH0KiE/J@alley>
- <ad082ce7-db50-13bb-3dbb-9b595dfa78be@igalia.com>
- <YoOpyW1+q+Z5as78@alley>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L39VS031Hz3bb0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 21:19:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=kc6++Pc9; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L39VN1yvhz4xVP;
+ Wed, 18 May 2022 21:19:08 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+ s=201909; t=1652872748;
+ bh=INuX9O1IpEtUTzC6kCGyh8Jm7VeQJzuBU2ZaIDDAs2k=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=kc6++Pc9tP7sM3sl1kuk5x93XTnxicRThAJ3MYfhJjEWMWVLUZFDyk+OP6WEc7kx4
+ QD6A5s6ZYg6SoMxfgCUqkWqrXocW8WENiso45OYN8wRfMQPubEDIhxE5MRRyKVmnS7
+ +fdUQzjR0U50KVu6Y2HPcvBt3/bGhNyLOdzas6wRM4BwFGTJIfdCU2blUo4SWLOTZu
+ 4rcQ1Jv664j0G2aFXMdhBCJET5jTH8UbFYQbbE8ghpSYg1taxZFt9o3Um6H4EDYyLT
+ DclLaYMy9K08TAMbIM+lFMqzYnFSLGx5Hc8YzEH7fhGmJbCXzrRjKZm7gItKDun6Of
+ ZOZ8HWVbNX+dQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Christophe Leroy
+ <christophe.leroy@csgroup.eu>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v3 19/25] powerpc/ftrace: Minimise number of #ifdefs
+In-Reply-To: <1652866821.cdcfe8bs78.naveen@linux.ibm.com>
+References: <cover.1652074503.git.christophe.leroy@csgroup.eu>
+ <18ce6708d6f8c71d87436f9c6019f04df4125128.1652074503.git.christophe.leroy@csgroup.eu>
+ <1652866821.cdcfe8bs78.naveen@linux.ibm.com>
+Date: Wed, 18 May 2022 21:19:06 +1000
+Message-ID: <87leuznl5h.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YoOpyW1+q+Z5as78@alley>
-X-Mailman-Approved-At: Wed, 18 May 2022 21:06:24 +1000
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,94 +63,95 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, Justin Chen <justinpopo6@gmail.com>,
- Pavel Machek <pavel@ucw.cz>, Alexander Gordeev <agordeev@linux.ibm.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
- stern@rowland.harvard.edu, xen-devel@lists.xenproject.org,
- Christian Borntraeger <borntraeger@linux.ibm.com>, linux-pm@vger.kernel.org,
- linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>,
- luto@kernel.org, Mihai Carabas <mihai.carabas@oracle.com>, tglx@linutronix.de,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
- akpm@linux-foundation.org, linux-hyperv@vger.kernel.org,
- dave.hansen@linux.intel.com, linux-s390@vger.kernel.org,
- Stephen Hemminger <sthemmin@microsoft.com>, Vasily Gorbik <gor@linux.ibm.com>,
- vgoyal@redhat.com, Sven Schnelle <svens@linux.ibm.com>,
- Andrea Parri <parri.andrea@gmail.com>, linux-xtensa@linux-xtensa.org,
- john.ogness@linutronix.de, Scott Branden <scott.branden@broadcom.com>,
- Doug Berger <opendmb@gmail.com>, Markus Mayer <mmayer@broadcom.com>,
- hidehiro.kawai.ez@hitachi.com, linux-arm-kernel@lists.infradead.org,
- kernel-dev@igalia.com, fabiomirmar@gmail.com, halves@canonical.com,
- alejandro.j.jimenez@oracle.com, feng.tang@intel.com,
- zhenwei pi <pizhenwei@bytedance.com>, will@kernel.org,
- Florian Fainelli <f.fainelli@gmail.com>, bhe@redhat.com, corbet@lwn.net,
- Dexuan Cui <decui@microsoft.com>, Evan Green <evgreen@chromium.org>,
- bcm-kernel-feedback-list@broadcom.com, Tianyu Lan <Tianyu.Lan@microsoft.com>,
- keescook@chromium.org, arnd@arndb.de, Haiyang Zhang <haiyangz@microsoft.com>,
- rostedt@goodmis.org, rcu@vger.kernel.org, bp@alien8.de,
- openipmi-developer@lists.sourceforge.net,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
- Sebastian Reichel <sre@kernel.org>, linux-alpha@vger.kernel.org,
- Brian Norris <computersforpeace@gmail.com>,
- "David S. Miller" <davem@davemloft.net>, peterz@infradead.org,
- linux-remoteproc@vger.kernel.org, mikelley@microsoft.com,
- sparclinux@vger.kernel.org, Lee Jones <lee.jones@linaro.org>,
- Ard Biesheuvel <ardb@kernel.org>, linux-leds@vger.kernel.org, x86@kernel.org,
- mingo@redhat.com, dyoung@redhat.com, paulmck@kernel.org,
- Heiko Carstens <hca@linux.ibm.com>,
- Shile Zhang <shile.zhang@linux.alibaba.com>,
- Wang ShaoBo <bobo.shaobowang@huawei.com>,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
- David Gow <davidgow@google.com>, linux-tegra@vger.kernel.org,
- andriy.shevchenko@linux.intel.com, Hari Bathini <hbathini@linux.ibm.com>,
- linux-edac@vger.kernel.org, jgross@suse.com, netdev@vger.kernel.org,
- kernel@gpiccoli.net, kexec@lists.infradead.org, linux-mips@vger.kernel.org,
- Julius Werner <jwerner@chromium.org>, vkuznets@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue 2022-05-17 15:57:34, Petr Mladek wrote:
-> On Mon 2022-05-16 12:06:17, Guilherme G. Piccoli wrote:
-> > >> --- a/drivers/soc/bcm/brcmstb/pm/pm-arm.c
-> > >> +++ b/drivers/soc/bcm/brcmstb/pm/pm-arm.c
-> > >> @@ -814,7 +814,7 @@ static int brcmstb_pm_probe(struct platform_device *pdev)
-> > >>  		goto out;
-> > >>  	}
-> > >>  
-> > >> -	atomic_notifier_chain_register(&panic_notifier_list,
-> > >> +	atomic_notifier_chain_register(&panic_hypervisor_list,
-> > >>  				       &brcmstb_pm_panic_nb);
-> > > 
-> > > I am not sure about this one. It instruct some HW to preserve DRAM.
-> > > IMHO, it better fits into pre_reboot category but I do not have
-> > > strong opinion.
-> > 
-> > Disagree here, I'm CCing Florian for information.
-> > 
-> > This notifier preserves RAM so it's *very interesting* if we have
-> > kmsg_dump() for example, but maybe might be also relevant in case kdump
-> > kernel is configured to store something in a persistent RAM (then,
-> > without this notifier, after kdump reboots the system data would be lost).
-> 
-> I see. It is actually similar problem as with
-> drivers/firmware/google/gsmi.c.
-
-As discussed in the other other reply, it seems that both affected
-notifiers do not store kernel logs and should stay in the "hypervisor".
-
-> I does similar things like kmsg_dump() so it should be called in
-> the same location (after info notifier list and before kdump).
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> Christophe Leroy wrote:
+>> A lot of #ifdefs can be replaced by IS_ENABLED()
+>> 
+>> Do so.
+>> 
+>> This requires to have kernel_toc_addr() defined at all time
+>> as well as PPC_INST_LD_TOC and PPC_INST_STD_LR.
+>> 
+>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>> ---
+>> v2: Moved the setup of pop outside of the big if()/else() in __ftrace_make_nop()
+>> ---
+>>  arch/powerpc/include/asm/code-patching.h |   2 -
+>>  arch/powerpc/include/asm/module.h        |   2 -
+>>  arch/powerpc/include/asm/sections.h      |  24 +--
+>>  arch/powerpc/kernel/trace/ftrace.c       | 182 +++++++++++------------
+>>  4 files changed, 103 insertions(+), 107 deletions(-)
+>> 
 >
-> A solution might be to put it at these notifiers at the very
-> end of the "info" list or make extra "dump" notifier list.
+> <snip>
+>
+>> @@ -710,6 +707,9 @@ void arch_ftrace_update_code(int command)
+>> 
+>>  #ifdef CONFIG_PPC64
+>>  #define PACATOC offsetof(struct paca_struct, kernel_toc)
+>> +#else
+>> +#define PACATOC 0
+>> +#endif
+>
+> This conflicts with my fix for the ftrace init tramp:
+> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220516071422.463738-1-naveen.n.rao@linux.vnet.ibm.com/
+>
+> It probably makes sense to retain #ifdef CONFIG_PPC64, so that we can 
+> get rid of the PACATOC. Here is an incremental diff:
 
-I just want to point out that the above idea has problems.
-Notifiers storing kernel log need to be treated as kmsg_dump().
-In particular, we would  need to know if there are any.
-We do not need to call "info" notifier list before kdump
-when there is no kernel log dumper registered.
+Where is the incremental diff meant to apply?
 
-Best Regards,
-Petr
+It doesn't apply on top of patch 19, or at the end of the series.
+
+cheers
+
+> diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+> index da1a2f8ebb72f3..28169a1ccc7377 100644
+> --- a/arch/powerpc/kernel/trace/ftrace.c
+> +++ b/arch/powerpc/kernel/trace/ftrace.c
+> @@ -701,11 +701,6 @@ void arch_ftrace_update_code(int command)
+>  }
+>  
+>  #ifdef CONFIG_PPC64
+> -#define PACATOC offsetof(struct paca_struct, kernel_toc)
+> -#else
+> -#define PACATOC 0
+> -#endif
+> -
+>  extern unsigned int ftrace_tramp_text[], ftrace_tramp_init[];
+>  
+>  void ftrace_free_init_tramp(void)
+> @@ -724,7 +719,7 @@ int __init ftrace_dyn_arch_init(void)
+>  	int i;
+>  	unsigned int *tramp[] = { ftrace_tramp_text, ftrace_tramp_init };
+>  	u32 stub_insns[] = {
+> -		PPC_RAW_LD(_R12, _R13, PACATOC),
+> +		PPC_RAW_LD(_R12, _R13, offsetof(struct paca_struct, kernel_toc)),
+>  		PPC_RAW_ADDIS(_R12, _R12, 0),
+>  		PPC_RAW_ADDI(_R12, _R12, 0),
+>  		PPC_RAW_MTCTR(_R12),
+> @@ -733,9 +728,6 @@ int __init ftrace_dyn_arch_init(void)
+>  	unsigned long addr;
+>  	long reladdr;
+>  
+> -	if (IS_ENABLED(CONFIG_PPC32))
+> -		return 0;
+> -
+>  	addr = ppc_global_function_entry((void *)FTRACE_REGS_ADDR);
+>  	reladdr = addr - kernel_toc_addr();
+>  
+> @@ -754,6 +746,7 @@ int __init ftrace_dyn_arch_init(void)
+>  
+>  	return 0;
+>  }
+> +#endif
+>  
+>  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+>  
+>
+> - Naveen
