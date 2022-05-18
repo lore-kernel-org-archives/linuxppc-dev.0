@@ -4,100 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1231C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 10:01:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B160C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 10:09:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L37mT3wlJz3cJ2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 20:01:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L37xW5FzZz3c9b
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 20:09:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MoSszXE8;
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=F8xKRNm5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=MoSszXE8; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L37lh3dX1z3bpT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 20:00:32 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24I9sns0013962;
- Wed, 18 May 2022 10:00:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : subject :
- to : cc : references : in-reply-to : mime-version : message-id :
- content-type : content-transfer-encoding; s=pp1;
- bh=1pIKyQD/tRADRieOKwg2VV4jlIouzLS23FBWvwKrF1c=;
- b=MoSszXE84TC+G/oNL46QRnbIjUnLigoiyoEF90dNhx6jaZDXshVzV3JoQ36U2ItM1Us3
- rOFM8he27WF0ncXmIolt+ZRpsJyNA+3Hjf5nPsyZP6VOazn5VznhGs9IJE2oyl10WOIQ
- rRA/fEdBQYe8aqGsklt8tq0PGHP7jSNrUsEZN4ecipbQXtDNAiOnPJ6E2JiGqwJLdct2
- QNd35VVmVvc/ZDitrww4TMH1h+mXwEBZj/bx9R+Qa+UBaSkDWispS7CNiZtKg6VKgmqj
- /nFClJwXLkIcMes1aQl6vTkfYyn/WpwggUNsaHSq1pteyNEXJwoSPSNmnhc1qvam7YRp rg== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3g4xk4047v-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 18 May 2022 10:00:26 +0000
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 24I9uo49026936;
- Wed, 18 May 2022 10:00:25 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3g4xk40463-2
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 18 May 2022 10:00:25 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24I9XqEM009669;
- Wed, 18 May 2022 09:38:31 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04ams.nl.ibm.com with ESMTP id 3g2429dfrs-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 18 May 2022 09:38:31 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 24I9Oaci46661984
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 18 May 2022 09:24:36 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BCA80AE053;
- Wed, 18 May 2022 09:38:28 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 50AEDAE04D;
- Wed, 18 May 2022 09:38:28 +0000 (GMT)
-Received: from localhost (unknown [9.43.19.36])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 18 May 2022 09:38:28 +0000 (GMT)
-Date: Wed, 18 May 2022 15:08:26 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/vdso: Fix incorrect CFI in gettimeofday.S
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-References: <20220502125010.1319370-1-mpe@ellerman.id.au>
- <1652772528.r6qrwbbda5.naveen@linux.ibm.com>
- <877d6kpcfq.fsf@mpe.ellerman.id.au>
-In-Reply-To: <877d6kpcfq.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L37ws6R11z3bwG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 20:08:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
+ header.s=201707 header.b=F8xKRNm5; dkim-atps=neutral
+Received: by gandalf.ozlabs.org (Postfix)
+ id 4L37ws40Myz4xcS; Wed, 18 May 2022 20:08:29 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix, from userid 1003)
+ id 4L37ws3t5sz4xc1; Wed, 18 May 2022 20:08:29 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
+ s=201707; t=1652868509;
+ bh=NhK1oG9u5aYKNFg2ALFmuW24Q+F5e+LtCRozxg4AXAU=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=F8xKRNm5iABVt3Q2wZa3/C6b9mYzZ5McCpMGPMA3xpWcOKMJFMdqhXKRXWYTvJSWt
+ hp1APhSjXLJmTmvDY8NwXGhNqRjzE+xHDZ66aKzPnZHhC5vv+eL05BlNWW3+HSDSnY
+ nVhdp38CJiTOgaQtZX20iEY41P+s5tGHQ+bbMf9ViagOrFwCdJ4PM+9PChaIUQjzTW
+ 0QQaLYjzoouve/UJ3Ba5lY1egxH3QgcxxybaAglVie+a9T6+sl3iMlKhBsqgox+Bj2
+ 1b9tiAkYAZld7R2voplGHVPOxM6hGCFRxORekFtPOt17W9PiV3JnkmcV6KuwSuIgop
+ CaXwNpjQ4tlng==
+Date: Wed, 18 May 2022 20:07:05 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2 5/6] powerpc/kasan: Disable address sanitization in kexec
+ paths
+Message-ID: <YoTFSQ2TUSEaDdVC@cleo>
+References: <YoTEb2BaH3MDkH+2@cleo>
 MIME-Version: 1.0
-User-Agent: astroid/4d6b06ad (https://github.com/astroidmail/astroid)
-Message-Id: <1652865530.upfk0dsdui.naveen@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: OIcX4jYeW48fIsMDJnE0F5pwUeA80rjB
-X-Proofpoint-GUID: nZhvcOUbS4ebo8q0GcaM24_wIoB2bT34
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.486,FMLib:17.11.64.514
- definitions=2022-05-18_03,2022-05-17_02,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 priorityscore=1501
- impostorscore=0 spamscore=0 adultscore=0 clxscore=1015 lowpriorityscore=0
- phishscore=0 mlxlogscore=934 bulkscore=0 malwarescore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2202240000
- definitions=main-2205180052
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <YoTEb2BaH3MDkH+2@cleo>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,60 +57,95 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: amodra@gmail.com
+Cc: Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael Ellerman wrote:
-> "Naveen N. Rao" <naveen.n.rao@linux.ibm.com> writes:
->> Michael Ellerman wrote:
->>>
->>> diff --git a/arch/powerpc/kernel/vdso/gettimeofday.S b/arch/powerpc/ker=
-nel/vdso/gettimeofday.S
->>> index eb9c81e1c218..0aee255e9cbb 100644
->>> --- a/arch/powerpc/kernel/vdso/gettimeofday.S
->>> +++ b/arch/powerpc/kernel/vdso/gettimeofday.S
->>> @@ -22,12 +22,15 @@
->>>  .macro cvdso_call funct call_time=3D0
->>>    .cfi_startproc
->>>  	PPC_STLU	r1, -PPC_MIN_STKFRM(r1)
->>> +  .cfi_adjust_cfa_offset PPC_MIN_STKFRM
->>>  	mflr		r0
->>> -  .cfi_register lr, r0
->>>  	PPC_STLU	r1, -PPC_MIN_STKFRM(r1)
->>> +  .cfi_adjust_cfa_offset PPC_MIN_STKFRM
->>>  	PPC_STL		r0, PPC_MIN_STKFRM + PPC_LR_STKOFF(r1)
->>
->> <snip>
->>
->>> @@ -46,6 +50,7 @@
->>>  	mtlr		r0
->>>    .cfi_restore lr
->>>  	addi		r1, r1, 2 * PPC_MIN_STKFRM
->>> +  .cfi_def_cfa_offset 0
->>
->> Should this be .cfi_adjust_cfa_offset, given that we used that at the
->> start of the function?
-> =20
-> AIUI "adjust x" is offset +=3D x, whereas "def x" is offset =3D x.
->=20
-> So we could use adjust here, but we'd need to adjust by -(2 * PPC_MIN_STK=
-FRM).
->=20
-> It seemed clearer to just set the offset back to 0, which is what it is
-> at the start of the function.
+From: Daniel Axtens <dja@axtens.net>
 
-I read the first .cfi_adjust_cfa_offset directive (rather than the=20
-.cfi_def_cfa_offset directive) in this macro to be intentionally=20
-retaining the offset to what it was before the VDSO. If that is=20
-desirable, then setting it to 0 here will change it, I _think_.
+The kexec code paths involve code that necessarily run in real mode,
+as CPUs are disabled and control is transferred to the new kernel.
+Disable address sanitization for the kexec code and the functions
+called in real mode on CPUs being disabled.
 
->=20
-> But I'm not a CFI expert at all, so I'll defer to anyone else who has an
-> opinion :)
+[paulus@ozlabs.org: combined a few work-in-progress commits of
+ Daniel's and wrote the commit message.]
 
-Oh, the above is just my hypothesis. Would be good to get confirmation.
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ arch/powerpc/kexec/Makefile             | 2 ++
+ arch/powerpc/platforms/pseries/Makefile | 3 +++
+ arch/powerpc/sysdev/xics/xics-common.c  | 4 ++--
+ arch/powerpc/sysdev/xive/common.c       | 4 ++--
+ 4 files changed, 9 insertions(+), 4 deletions(-)
 
+diff --git a/arch/powerpc/kexec/Makefile b/arch/powerpc/kexec/Makefile
+index b6c52608cb49..0c2abe7f9908 100644
+--- a/arch/powerpc/kexec/Makefile
++++ b/arch/powerpc/kexec/Makefile
+@@ -13,3 +13,5 @@ obj-$(CONFIG_KEXEC_FILE)	+= file_load.o ranges.o file_load_$(BITS).o elf_$(BITS)
+ GCOV_PROFILE_core_$(BITS).o := n
+ KCOV_INSTRUMENT_core_$(BITS).o := n
+ UBSAN_SANITIZE_core_$(BITS).o := n
++KASAN_SANITIZE_core.o := n
++KASAN_SANITIZE_core_$(BITS) := n
+diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
+index b407fdeb6e78..98e878c32a21 100644
+--- a/arch/powerpc/platforms/pseries/Makefile
++++ b/arch/powerpc/platforms/pseries/Makefile
+@@ -35,3 +35,6 @@ obj-$(CONFIG_ARCH_HAS_CC_PLATFORM)	+= cc_platform.o
+ 
+ # nothing that operates in real mode is safe for KASAN
+ KASAN_SANITIZE_ras.o := n
++KASAN_SANITIZE_kexec.o := n
++#machine_kexec
++KASAN_SANITIZE_setup.o := n
+diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
+index f3fb2a12124c..322b2b8bd467 100644
+--- a/arch/powerpc/sysdev/xics/xics-common.c
++++ b/arch/powerpc/sysdev/xics/xics-common.c
+@@ -146,7 +146,7 @@ void __init xics_smp_probe(void)
+ 
+ #endif /* CONFIG_SMP */
+ 
+-void xics_teardown_cpu(void)
++noinstr void xics_teardown_cpu(void)
+ {
+ 	struct xics_cppr *os_cppr = this_cpu_ptr(&xics_cppr);
+ 
+@@ -159,7 +159,7 @@ void xics_teardown_cpu(void)
+ 	icp_ops->teardown_cpu();
+ }
+ 
+-void xics_kexec_teardown_cpu(int secondary)
++noinstr void xics_kexec_teardown_cpu(int secondary)
+ {
+ 	xics_teardown_cpu();
+ 
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index 1ca5564bda9d..87b825b7401d 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1241,7 +1241,7 @@ static int xive_setup_cpu_ipi(unsigned int cpu)
+ 	return 0;
+ }
+ 
+-static void xive_cleanup_cpu_ipi(unsigned int cpu, struct xive_cpu *xc)
++noinstr static void xive_cleanup_cpu_ipi(unsigned int cpu, struct xive_cpu *xc)
+ {
+ 	unsigned int xive_ipi_irq = xive_ipi_cpu_to_irq(cpu);
+ 
+@@ -1634,7 +1634,7 @@ void xive_flush_interrupt(void)
+ 
+ #endif /* CONFIG_SMP */
+ 
+-void xive_teardown_cpu(void)
++noinstr void xive_teardown_cpu(void)
+ {
+ 	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
+ 	unsigned int cpu = smp_processor_id();
+-- 
+2.35.3
 
-- Naveen
