@@ -4,42 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 115B4C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 10:10:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF76EC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 10:11:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L37zS3MQ4z3c9N
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 20:10:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L38072vKdz3dt0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 20:11:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=Vzb0X3AS;
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=X0Vrfbvc;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L37wt2GN3z3bwr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 20:08:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L37wv0bR8z3bwr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 20:08:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=Vzb0X3AS; dkim-atps=neutral
+ header.s=201707 header.b=X0Vrfbvc; dkim-atps=neutral
 Received: by gandalf.ozlabs.org (Postfix)
- id 4L37ws3W8Tz4xbP; Wed, 18 May 2022 20:08:29 +1000 (AEST)
+ id 4L37ws446Dz4xcW; Wed, 18 May 2022 20:08:29 +1000 (AEST)
 Received: by gandalf.ozlabs.org (Postfix, from userid 1003)
- id 4L37ws3QT8z4xVP; Wed, 18 May 2022 20:08:29 +1000 (AEST)
+ id 4L37ws3zfFz4xcF; Wed, 18 May 2022 20:08:29 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
  s=201707; t=1652868509;
- bh=0y/CsNgHYNPNSLEUxoH5VBFJEOQxxlCgSaFEdcA0DjQ=;
+ bh=7nOOI4BmXxVxLN8GT4zTeDAFRVLIazOvu9FPd2iLR80=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Vzb0X3ASEW2/VkUMbHcdMvePK+RhmBpgMGaYb7hekeNJ/hJCRkBnOEvpnBF5Y7IEQ
- C9e20MPwfLNUFQ7X4tnyW7Zhwb7XLvK7oH2vzoILPqEpNEbOHgVD+k6PxG60UGL+nR
- hE7WRUFaaOcCtWk5rsLGPOmlRp9Drfm4AvetEqfCcBk08tle8X8ak+XyN0uKEUFn5d
- Ym0NGGD++Cih9QwwHuncVlwYVQDU3eWc+yQbIOD83TssEW+vhbHcjAvWUyumOMrFpJ
- +pk37sAxmn0gBk1orAKf9bMDJ6w3Engi/KqlJsVG++DZZM+0EoS0zIJeHn6NCjLD5X
- 7Gi8em9FYuBSw==
-Date: Wed, 18 May 2022 20:07:46 +1000
+ b=X0VrfbvcukRIiRNVu8yf1zAg16xzIRpjESw5kgQZcTtYQAl2wx6iZ2HS4LW4uQoLN
+ 2J0GEs5+I1aAY6851efzMwNsvgbqX2l8OGkxIMFy6UKU/jkTyWWF92IQj9Su+SS4ym
+ Hd4pJ+w91RIDq5hG269d4FGL1PLN0y63CFpVLXN5cSXiprL4FJpxAmLi7OBYFXZmfU
+ GYrS6A9Gz5poLkBdObNVekIQE019zDbuTDRDQiYjHsj4eloYg9h4dGfUi5Q5MbQnGD
+ tCqiUd2YwPPjGHUMg8+EF7j+2p6cb7Gm0sZIo+bzUls+9uDWmMIKeONkH0NO2gzT+G
+ Z8/PiwL5Sn1Nw==
+Date: Wed, 18 May 2022 20:04:58 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 6/6] Documentation/kasan: Update details of KASAN on powerpc
-Message-ID: <YoTFctxWJIkI9yGy@cleo>
+Subject: [PATCH v2 2/6] powerpc/mm/kasan: rename kasan_init_32.c to init_32.c
+Message-ID: <YoTEyoi+xu9brJYe@cleo>
 References: <YoTEb2BaH3MDkH+2@cleo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -63,36 +64,34 @@ Sender: "Linuxppc-dev"
 
 From: Daniel Axtens <dja@axtens.net>
 
+kasan is already implied by the directory name, we don't need to
+repeat it.
+
+Suggested-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Daniel Axtens <dja@axtens.net>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- Documentation/dev-tools/kasan.rst | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/kasan/Makefile                       | 2 +-
+ arch/powerpc/mm/kasan/{kasan_init_32.c => init_32.c} | 0
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ rename arch/powerpc/mm/kasan/{kasan_init_32.c => init_32.c} (100%)
 
-diff --git a/Documentation/dev-tools/kasan.rst b/Documentation/dev-tools/kasan.rst
-index 8089c559d339..448995c11bee 100644
---- a/Documentation/dev-tools/kasan.rst
-+++ b/Documentation/dev-tools/kasan.rst
-@@ -36,7 +36,9 @@ Both software KASAN modes work with SLUB and SLAB memory allocators,
- while the hardware tag-based KASAN currently only supports SLUB.
+diff --git a/arch/powerpc/mm/kasan/Makefile b/arch/powerpc/mm/kasan/Makefile
+index bb1a5408b86b..bcbfd6f2eca3 100644
+--- a/arch/powerpc/mm/kasan/Makefile
++++ b/arch/powerpc/mm/kasan/Makefile
+@@ -2,6 +2,6 @@
  
- Currently, generic KASAN is supported for the x86_64, arm, arm64, xtensa, s390,
--and riscv architectures, and tag-based KASAN modes are supported only for arm64.
-+and riscv architectures. It is also supported on powerpc for 32-bit kernels and
-+for 64-bit kernels running under the Radix MMU. Tag-based KASAN modes are
-+supported only for arm64.
+ KASAN_SANITIZE := n
  
- Usage
- -----
-@@ -351,6 +353,9 @@ With ``CONFIG_KASAN_VMALLOC``, KASAN can cover vmalloc space at the
- cost of greater memory usage. Currently, this is supported on x86,
- riscv, s390, and powerpc.
- 
-+It is optional, except on 64-bit powerpc kernels, and on 32-bit
-+powerpc kernels with module support, where it is required.
-+
- This works by hooking into vmalloc and vmap and dynamically
- allocating real shadow memory to back the mappings.
- 
+-obj-$(CONFIG_PPC32)           += kasan_init_32.o
++obj-$(CONFIG_PPC32)		+= init_32.o
+ obj-$(CONFIG_PPC_8xx)		+= 8xx.o
+ obj-$(CONFIG_PPC_BOOK3S_32)	+= book3s_32.o
+diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/init_32.c
+similarity index 100%
+rename from arch/powerpc/mm/kasan/kasan_init_32.c
+rename to arch/powerpc/mm/kasan/init_32.c
 -- 
 2.35.3
 
