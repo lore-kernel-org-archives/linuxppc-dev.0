@@ -4,81 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28372C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 10:13:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D439EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 11:06:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L382t5wTNz3dp6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 20:13:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L39DG4Y8rz3byH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 May 2022 21:06:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FiFA70hB;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IGrp0s5L;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=apiSUoAw;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=170.10.133.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=suse.com (client-ip=195.135.220.29; helo=smtp-out2.suse.de;
+ envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=FiFA70hB; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=IGrp0s5L; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
+ header.s=susede1 header.b=apiSUoAw; dkim-atps=neutral
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L34Vn1S8Zz3bZP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 17:34:07 +1000 (AEST)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+ by smtp-out2.suse.de (Postfix) with ESMTP id 8990E1F9A4;
+ Wed, 18 May 2022 07:34:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+ t=1652859243; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=YR5rOhmSURb4d/IKXy5VZg8z1ImD01Us4xBpVFtyoqU=;
+ b=apiSUoAwUbqeAccPNQ19K+RPeAfjpiC+Kw09kP9gYD08Bjqn9sy6l8W4iwyq6IQeI6Aplp
+ +YIfJeRJqbcdQptzveOcUb8Q0R7nuJcbMiyUrGxQWxZdDf/W1Ubmr612J8Zmj7lPwrkx5l
+ wG1cTFsW35nAwzkY9hs+1GgrMVmINpw=
+Received: from suse.cz (unknown [10.100.201.202])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L380q17JFz3dx6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2022 20:11:53 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1652868709;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=nTmAGYeo/KWqrKBReXCJ9t3d+BdhVvSDQVlxQc2ZGz4=;
- b=FiFA70hBn3hM1fEokQtKMAefQ0fT5x0hvNyXXyoYBSWF6xl/Af8Rh9TEnaI3jFDzYzkPc5
- qyV1F8a3ouXQ56FUTz7O331VsaNj8p/sE722P8tfT8XAaB6aWiYh3r24VRKyK1NldiQPdk
- Hf7NUUpfq6/Na2sg4oorizHFRxrVvPc=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1652868710;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=nTmAGYeo/KWqrKBReXCJ9t3d+BdhVvSDQVlxQc2ZGz4=;
- b=IGrp0s5Ln1C7fd1SXcCZH1195J19UK2Np5gxnQfRT6TgZi2/TyCpMBaujWuul6Q/kO2YcU
- rY+D+X+lnJwcJFNFUIkkmSl/mDS2VaaAccYKWACHItMWKELekZ1TEkxEmLmFp/CZ23cti2
- STzt9DHPUcIm8HkPpFgAWRBBNElG1XM=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-410--n_Ee2GzPv6Nx4IpeWbu0g-1; Wed, 18 May 2022 06:11:46 -0400
-X-MC-Unique: -n_Ee2GzPv6Nx4IpeWbu0g-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com
- [10.11.54.7])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id BBC7780B712;
- Wed, 18 May 2022 10:11:45 +0000 (UTC)
-Received: from localhost (ovpn-13-59.pek2.redhat.com [10.72.13.59])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id CC81E1410DD5;
- Wed, 18 May 2022 10:11:44 +0000 (UTC)
-Date: Wed, 18 May 2022 18:11:41 +0800
-From: Baoquan He <bhe@redhat.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH] kexec_file: Drop pr_err in weak implementations of
- arch_kexec_apply_relocations[_add]
-Message-ID: <YoTGXQvQutAR5PZY@MiWiFi-R3L-srv>
-References: <20220425174128.11455-1-naveen.n.rao@linux.vnet.ibm.com>
- <YoNqJ/MOSIVwKP/o@MiWiFi-R3L-srv>
- <1652782155.56t7mah8ib.naveen@linux.ibm.com>
- <8735h8b2f1.fsf@email.froward.int.ebiederm.org>
- <87v8u3o9tk.fsf@mpe.ellerman.id.au>
- <YoSk+jRjNQtUL50d@MiWiFi-R3L-srv>
- <1652864763.xpq371r1wx.naveen@linux.ibm.com>
+ by relay2.suse.de (Postfix) with ESMTPS id AA6042C142;
+ Wed, 18 May 2022 07:33:59 +0000 (UTC)
+Date: Wed, 18 May 2022 09:33:57 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+Subject: Re: [PATCH 19/30] panic: Add the panic hypervisor notifier list
+Message-ID: <YoShZVYNAdvvjb7z@alley>
+References: <20220427224924.592546-1-gpiccoli@igalia.com>
+ <20220427224924.592546-20-gpiccoli@igalia.com>
+ <YoJZVZl/MH0KiE/J@alley>
+ <ad082ce7-db50-13bb-3dbb-9b595dfa78be@igalia.com>
+ <CAE=gft7ds+dHfEkRz8rnSH1EbTpGTpKbi5Wxj9DW0Jr5mX_j4w@mail.gmail.com>
+ <YoOi9PFK/JnNwH+D@alley>
+ <b9ec2fc8-216f-f261-8417-77b6dd95e25c@igalia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1652864763.xpq371r1wx.naveen@linux.ibm.com>
-X-Scanned-By: MIMEDefang 2.85 on 10.11.54.7
+In-Reply-To: <b9ec2fc8-216f-f261-8417-77b6dd95e25c@igalia.com>
+X-Mailman-Approved-At: Wed, 18 May 2022 21:06:24 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,46 +68,153 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org
+Cc: Paul Mackerras <paulus@samba.org>, Justin Chen <justinpopo6@gmail.com>,
+ Pavel Machek <pavel@ucw.cz>, Alexander Gordeev <agordeev@linux.ibm.com>,
+ "K. Y. Srinivasan" <kys@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+ Alan Stern <stern@rowland.harvard.edu>, xen-devel@lists.xenproject.org,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Linux PM <linux-pm@vger.kernel.org>, linux-um@lists.infradead.org,
+ Nicholas Piggin <npiggin@gmail.com>, Stephen Boyd <swboyd@chromium.org>,
+ luto@kernel.org, Mihai Carabas <mihai.carabas@oracle.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, senozhatsky@chromium.org,
+ d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linux-hyperv@vger.kernel.org,
+ dave.hansen@linux.intel.com, linux-s390@vger.kernel.org,
+ Stephen Hemminger <sthemmin@microsoft.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ vgoyal@redhat.com, Sven Schnelle <svens@linux.ibm.com>,
+ Andrea Parri <parri.andrea@gmail.com>, linux-xtensa@linux-xtensa.org,
+ john.ogness@linutronix.de, Scott Branden <scott.branden@broadcom.com>,
+ Doug Berger <opendmb@gmail.com>, Markus Mayer <mmayer@broadcom.com>,
+ hidehiro.kawai.ez@hitachi.com,
+ linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
+ kernel-dev@igalia.com, fabiomirmar@gmail.com, halves@canonical.com,
+ alejandro.j.jimenez@oracle.com, feng.tang@intel.com,
+ zhenwei pi <pizhenwei@bytedance.com>, Will Deacon <will@kernel.org>,
+ Florian Fainelli <f.fainelli@gmail.com>, bhe@redhat.com,
+ Jonathan Corbet <corbet@lwn.net>, Dexuan Cui <decui@microsoft.com>,
+ Evan Green <evgreen@chromium.org>, bcm-kernel-feedback-list@broadcom.com,
+ Tianyu Lan <Tianyu.Lan@microsoft.com>, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>, Haiyang Zhang <haiyangz@microsoft.com>,
+ rostedt@goodmis.org, rcu@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
+ openipmi-developer@lists.sourceforge.net,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
+ Sebastian Reichel <sre@kernel.org>, linux-alpha@vger.kernel.org,
+ Brian Norris <computersforpeace@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>, peterz@infradead.org,
+ linux-remoteproc@vger.kernel.org, mikelley@microsoft.com,
+ sparclinux@vger.kernel.org, Lee Jones <lee.jones@linaro.org>,
+ Ard Biesheuvel <ardb@kernel.org>, linux-leds@vger.kernel.org, x86@kernel.org,
+ mingo@redhat.com, dyoung@redhat.com, paulmck@kernel.org,
+ Heiko Carstens <hca@linux.ibm.com>,
+ Shile Zhang <shile.zhang@linux.alibaba.com>,
+ Wang ShaoBo <bobo.shaobowang@huawei.com>,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ David Gow <davidgow@google.com>, linux-tegra@vger.kernel.org,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Hari Bathini <hbathini@linux.ibm.com>, linux-edac@vger.kernel.org,
+ jgross@suse.com, netdev@vger.kernel.org, kernel@gpiccoli.net,
+ kexec@lists.infradead.org, linux-mips@vger.kernel.org,
+ Julius Werner <jwerner@chromium.org>, vkuznets@redhat.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 05/18/22 at 02:48pm, Naveen N. Rao wrote:
-> Baoquan He wrote:
-> > On 05/18/22 at 12:26pm, Michael Ellerman wrote:
-> > > 
-> > > It seems that recordmcount is not really maintained anymore now that x86
-> > > uses objtool?
-> > > 
-> > > There've been several threads about fixing recordmcount, but none of
-> > > them seem to have lead to a solution.
-> > > 
-> > > These weak symbol vs recordmcount problems have been worked around going
-> > > back as far as 2020:
+On Tue 2022-05-17 13:37:58, Guilherme G. Piccoli wrote:
+> On 17/05/2022 10:28, Petr Mladek wrote:
+> > [...]
+> >>> Disagree here. I'm looping Google maintainers, so they can comment.
+> >>> (CCed Evan, David, Julius)
+> >>>
+> >>> This notifier is clearly a hypervisor notification mechanism. I've fixed
+> >>> a locking stuff there (in previous patch), I feel it's low-risk but even
+> >>> if it's mid-risk, the class of such callback remains a perfect fit with
+> >>> the hypervisor list IMHO.
+> >>
+> >> This logs a panic to our "eventlog", a tiny logging area in SPI flash
+> >> for critical and power-related events. In some cases this ends up
+ > >> being the only clue we get in a Chromebook feedback report that a
+> >> panic occurred, so from my perspective moving it to the front of the
+> >> line seems like a good idea.
 > > 
-> > It gives me feeling that llvm or recordmcount should make adjustment,
-> > but not innocent kernel code, if there are a lot of places reported.
-> > I am curious how llvm or recordmcount dev respond to this.
+> > IMHO, this would really better fit into the pre-reboot notifier list:
+> > 
+> >    + the callback stores the log so it is similar to kmsg_dump()
+> >      or console_flush_on_panic()
+> > 
+> >    + the callback should be proceed after "info" notifiers
+> >      that might add some other useful information.
+> > 
+> > Honestly, I am not sure what exactly hypervisor callbacks do. But I
+> > think that they do not try to extract the kernel log because they
+> > would need to handle the internal format.
+> > 
 > 
-> As Michael stated, this is not just llvm - binutils has also adopted the
-> same and "unused" section symbols are being dropped.
+> I guess the main point in your response is : "I am not sure what exactly
+> hypervisor callbacks do". We need to be sure about the semantics of such
+> list, and agree on that.
 > 
-> For recordmcount, there were a few threads and approaches that have been
-> tried:
-> - https://patchwork.ozlabs.org/project/linuxppc-dev/patch/cd0f6bdfdf1ee096fb2c07e7b38940921b8e9118.1637764848.git.christophe.leroy@csgroup.eu/
-> - https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=297434&state=*
+> So, my opinion about this first list, that we call "hypervisor list",
+> is: it contains callbacks that
 > 
-> Objtool has picked up a more appropriate fix for this recently, and
-> long-term, we would like to move to using objtool for ftrace purposes:
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/tools/objtool/elf.c?id=4abff6d48dbcea8200c7ea35ba70c242d128ebf3
+> (1) should run early, preferably before kdump (or even if kdump isn't
+> set, should run ASAP);
 > 
-> While that is being pursued, we want to unbreak some of the CI and users who
-> are hitting this.
+> (2) these callbacks perform some communication with an abstraction that
+> runs "below" the kernel, like a firmware or hypervisor. Classic example:
+> pvpanic, that communicates with VMM (usually qemu) and allow such VMM to
+> snapshot the full guest memory, for example.
+> 
+> (3) Should be low-risk. What defines risk is the level of reliability of
+> subsequent operations - if the callback have 50% of chance of "bricking"
+> the system totally and prevent kdump / kmsg_dump() / reboot , this is
+> high risk one for example.
+> 
+> Some good fits IMO: pvpanic, sstate_panic_event() [sparc], fadump in
+> powerpc, etc.
+> 
+> So, this is a good case for the Google notifier as well - it's not
+> collecting data like the dmesg (hence your second bullet seems to not
+> apply here, info notifiers won't add info to be collected by gsmi). It
+> is a firmware/hypervisor/whatever-gsmi-is notification mechanism, that
+> tells such "lower" abstraction a panic occurred. It seems low risk and
+> we want it to run ASAP, if possible.
 
-I see, thanks for the details. I would persue fix in recordmcount if
-possible, while has no objection to fix it in kernel with justification
-if have to. Given my limited linking knowledge, leave this to other
-expert to decide.
+" 
+> >> This logs a panic to our "eventlog", a tiny logging area in SPI flash
+> >> for critical and power-related events. In some cases this ends up
 
+I see. I somehow assumed that it was about the kernel log because
+Evans wrote:
+
+  "This logs a panic to our "eventlog", a tiny logging area in SPI flash
+   for critical and power-related events. In some cases this ends up"
+
+
+Anyway, I would distinguish it the following way.
+
+  + If the notifier is preserving kernel log then it should be ideally
+    treated as kmsg_dump().
+
+  + It the notifier is saving another debugging data then it better
+    fits into the "hypervisor" notifier list.
+
+
+Regarding the reliability. From my POV, any panic notifier enabled
+in a generic kernel should be reliable with more than 99,9%.
+Otherwise, they should not be in the notifier list at all.
+
+An exception would be a platform-specific notifier that is
+called only on some specific platform and developers maintaining
+this platform agree on this.
+
+The value "99,9%" is arbitrary. I am not sure if it is realistic
+even in the other code, for example, console_flush_on_panic()
+or emergency_restart(). I just want to point out that the border
+should be rather high. Otherwise we would back in the situation
+where people would want to disable particular notifiers.
+
+Best Regards,
+Petr
