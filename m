@@ -4,50 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C96CEC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 May 2022 12:23:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8407C43219
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 May 2022 12:39:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L3ptC3cwLz3bmT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 May 2022 22:23:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L3qDS72j8z2yny
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 May 2022 22:39:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Jn2Q7bqu;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ixEjEQjW;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L3prw32m4z2xTb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2022 22:22:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L3qCm3h32z2yV6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2022 22:38:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=Jn2Q7bqu; 
+ header.a=rsa-sha256 header.s=201909 header.b=ixEjEQjW; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L3prn4Djmz4xDh;
- Thu, 19 May 2022 22:22:17 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L3qCk1prqz4xD8;
+ Thu, 19 May 2022 22:38:41 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
- s=201909; t=1652962937;
- bh=0sTjmmDYbg+JcQI984bMigqe+S+bv3jBDvIQk1H4sFk=;
- h=From:To:Subject:Date:From;
- b=Jn2Q7bquNSkmB4PKOslnicJUi3EgWr2ux7S0Vybs12tGn4acSSbKMLoM7IrVTcosz
- OOGYOqfAuHJaI28Af8cRBptCuCWs9hceFmg4skVMPEhcLKte6359VeOFQ53oSmGIZ3
- cmyvcrUdpidlIh3lK7BuuWtYrDnfVYNEKQ/5qycm7D3HQWnoA+UXGQoS8Ck6uF7vYW
- uw1Z4Bac6lo/3r5PwUQovNS2Lynj1X5rkKV16Q3bpjxm3T2mEuPhP+5+qRpmmh4Yhi
- vMDswJpMH+xD9zLfCqGe2pVW4l3ilUPIZ4k2WWbbid+ynT3T9FGJ4uD6C2o/WGvjyA
- JXYazf5ZjNZwg==
+ s=201909; t=1652963922;
+ bh=0TLro0SA/18NlSBFMn34S0cBax5+uzY+PqBTBfpLaa8=;
+ h=From:To:Subject:In-Reply-To:References:Date:From;
+ b=ixEjEQjW69Mx2eWMN4fzDXSXawcYVEirqaPxB7v9sgT6QIHXCbcjAdsivobDJaLJK
+ UMzbL6sTifdgbTHOOU6oKJVvTm0q04bc7PJM2wS/IWMAjcMjnIeXOZQpqLtYU92GFX
+ SrXMtaKo/xULjAoQGw5uO6Is+G13WPNSOWVP3ID7nn3udbbjz6e8cpPnPBBE8JpuVL
+ cpgiui4vGw9cjSf1tHpfU7DUQrV7bG4FZ+xAYAwqIdXpMH2pnwc/ij+5+YbHvh86Er
+ OZQikVMlCJGVfunRptq97E9fGMR1sPk5PwxVo7qhrfZqYCvOBD3sPbStq7Nj55e1GY
+ HLeMXjObQxQUw==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2] powerpc/64s: Add CPU_FTRS_POWER9_DD2_2 to CPU_FTRS_ALWAYS
- mask
-Date: Thu, 19 May 2022 22:22:04 +1000
-Message-Id: <20220519122205.746276-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.35.3
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Oliver O'Halloran
+ <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/powernv/pci: Drop VF MPS fixup
+In-Reply-To: <23fd8d03-965b-a252-020e-4185c2ef5681@csgroup.eu>
+References: <20200902035159.1762596-1-oohall@gmail.com>
+ <23fd8d03-965b-a252-020e-4185c2ef5681@csgroup.eu>
+Date: Thu, 19 May 2022 22:38:40 +1000
+Message-ID: <871qwpofxr.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,43 +65,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-CPU_FTRS_POWER9_DD2_2 is missing from CPU_FTRS_ALWAYS.
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> Le 02/09/2020 =C3=A0 05:51, Oliver O'Halloran a =C3=A9crit=C2=A0:
+>> The MPS field in the VF config space is marked as reserved in current
+>> versions of the SR-IOV spec. In other words, this fixup doesn't do
+>> anything.
+>>=20
+>> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+>
+> A lot of cleanup patches from Oliver were merged in Septembre 2020 but=20
+> not this one.
+>
+> Any reason ?
 
-That doesn't cause any bug, because CPU_FTRS_POWER9_DD2_2 adds new bits
-that don't appear in other values, so when anded with the other masks
-the result is the same.
+It wasn't clear to me that it's safe to remove. The commit that added it
+seemed to think it was important.
 
-But for consistency we should have all values in the CPU_FTRS_ALWAYS
-mask, so that the logic is robust against the values being changed in
-future.
+The fact that it's out-of-spec doesn't mean we don't have some hardware
+somewhere that relies on that.
 
-Fixes: b5af4f279323 ("powerpc: Add CPU feature bits for TM bug workarounds on POWER9 v2.2")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/cputable.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index e85c849214a2..4457052d7450 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -541,14 +541,14 @@ enum {
- #define CPU_FTRS_ALWAYS \
- 	    (CPU_FTRS_POSSIBLE & ~CPU_FTR_HVMODE & CPU_FTRS_POWER7 & \
- 	     CPU_FTRS_POWER8E & CPU_FTRS_POWER8 & CPU_FTRS_POWER9 & \
--	     CPU_FTRS_POWER9_DD2_1 & CPU_FTRS_DT_CPU_BASE)
-+	     CPU_FTRS_POWER9_DD2_1 & CPU_FTRS_POWER9_DD2_2 & CPU_FTRS_DT_CPU_BASE)
- #else
- #define CPU_FTRS_ALWAYS		\
- 	    (CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & \
- 	     CPU_FTRS_POWER6 & CPU_FTRS_POWER7 & CPU_FTRS_CELL & \
- 	     CPU_FTRS_PA6T & CPU_FTRS_POWER8 & CPU_FTRS_POWER8E & \
- 	     ~CPU_FTR_HVMODE & CPU_FTRS_POSSIBLE & CPU_FTRS_POWER9 & \
--	     CPU_FTRS_POWER9_DD2_1 & CPU_FTRS_DT_CPU_BASE)
-+	     CPU_FTRS_POWER9_DD2_1 & CPU_FTRS_POWER9_DD2_2 & CPU_FTRS_DT_CPU_BASE)
- #endif /* CONFIG_CPU_LITTLE_ENDIAN */
- #endif
- #else
--- 
-2.35.3
-
+cheers
