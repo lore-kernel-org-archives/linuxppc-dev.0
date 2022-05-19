@@ -4,40 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B75CC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 May 2022 12:49:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E31A2C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 May 2022 12:58:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L3qSd4x7gz3bml
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 May 2022 22:49:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L3qf31yhNz3bkm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 May 2022 22:58:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Dg034D09;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e;
+ helo=mail-pj1-x102e.google.com; envelope-from=joel.stan@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=Dg034D09; dkim-atps=neutral
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com
+ [IPv6:2607:f8b0:4864:20::102e])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L3qS75Jjzz2xKq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2022 22:49:26 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 01A6D1A0B77;
- Thu, 19 May 2022 14:49:23 +0200 (CEST)
-Received: from aprdc01srsp001v.ap-rdc01.nxp.com
- (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id AA4A71A0B82;
- Thu, 19 May 2022 14:49:22 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id DF5CC180031E;
- Thu, 19 May 2022 20:49:20 +0800 (+08)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
- shengjiu.wang@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
- perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org
-Subject: [PATCH] ASoC: fsl_sai: Enable MCTL_MCLK_EN bit for master mode
-Date: Thu, 19 May 2022 20:36:48 +0800
-Message-Id: <1652963808-14515-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L3qdJ4VyYz2yh9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2022 22:57:24 +1000 (AEST)
+Received: by mail-pj1-x102e.google.com with SMTP id
+ t11-20020a17090a6a0b00b001df6f318a8bso8711562pjj.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2022 05:57:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=sender:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=fmLcmCjg9h5Oz3JC7MKiNxmWuvxrT6emqkVBUzSF+XA=;
+ b=Dg034D092Vgvh75Dd5pqYSARxnef9XbBotLOx5fDvi561o0OkVWYWYTv86+ATwAdnF
+ 818Nb2gmztPEFNcfdB9HrGiGUlU2LMG+yFoaQVRzFWfUPjubqHEpNEO6IQtbuvy4O0Kb
+ xDpHjsT0GElVihZzP4aeRF8eDFMDP5aEGZVDtwF6KK/A4DqRk/UrU1Yjcf0lVn3P+yXM
+ t2jBotQbcaTDt2zR3FVajblT6XmV8BiquiFVfoQhC0Q/DK501Avcoj26BuozzkNvtAaf
+ V6YpptSYfmCtiz6Q5c7wbZ4NJuZrgC8cxloZ+1LrhUH/Ymj5MVkqbOd9cBquPR4DSOFZ
+ 7TvA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=fmLcmCjg9h5Oz3JC7MKiNxmWuvxrT6emqkVBUzSF+XA=;
+ b=D2j9kILyl0oUeEQQKUNqKNuJgq5vupU3zJqc2aJh/VRUmPeukjBTZlZzLX6HUZpBWV
+ XKsM6CmvMkPsPZJUo2EcjMrF0aNXCSDfSkbStzUnYgt/lJv+BNLiA8ohFj7oQZ11BsI1
+ a3T7YR9z2Y2SgL8RixPiNwzE0aonUmOXsB2IXeWF15b7n9Os9b4bM0HET1RiLEO3RSHO
+ CGluY1cH7ygLvSYsnMg5whSSx/CW/YnB145ZdXEa0nA//LbEPOOBs8/tw01WTQTcT1jh
+ q1zBCiM0OiT6tlWbxVH5+/690dEYax+28lgoxxkB5yErUrODTIriEyEy4nPk7z0YAVSk
+ yqlQ==
+X-Gm-Message-State: AOAM533jKnJGfU24NzhH2hXTxX/JY1E2/b7kZ4C1fhA53VJQNuzE4ykU
+ j0O4gqYXuaffCLz2QxE4cdA=
+X-Google-Smtp-Source: ABdhPJxtWQMwZ6AC/266T8UscsQLwwoBQGSF9Ff4nfzhDUgUdUu47jYo+rYWCnu0Af9ffPQ3qVwV1Q==
+X-Received: by 2002:a17:90a:64c5:b0:1df:d3d6:8921 with SMTP id
+ i5-20020a17090a64c500b001dfd3d68921mr3866226pjm.87.1652965039940; 
+ Thu, 19 May 2022 05:57:19 -0700 (PDT)
+Received: from localhost.localdomain ([45.124.203.18])
+ by smtp.gmail.com with ESMTPSA id
+ n20-20020a170902969400b0015e8d4eb1f6sm3678596plp.64.2022.05.19.05.57.17
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 19 May 2022 05:57:19 -0700 (PDT)
+From: Joel Stanley <joel@jms.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/microwatt: Add mmu bits to device tree
+Date: Thu, 19 May 2022 22:27:06 +0930
+Message-Id: <20220519125706.593532-1-joel@jms.id.au>
+X-Mailer: git-send-email 2.35.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,38 +81,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On i.MX8MM, the MCTL_MCLK_EN bit it is not only the gate
-for MCLK output to PAD, but also the gate bit between
-root clock and SAI module, So it is need to be enabled
-for master mode, otherwise there is no bclk generated.
+In commit 5402e239d09f ("powerpc/64s: Get LPID bit width from device
+tree") the kernel tried to determine the pid and lpid bits from the
+device tree. If they are not found, there is a fallback, but Microwatt
+wasn't covered as has the unusual configuration of being both !HV and bare
+metal.
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Set the values in the device tree to avoid having to add a special case.
+The lpid value is the only one required, but add both for completeness.
+
+Fixes: 5402e239d09f ("powerpc/64s: Get LPID bit width from device tree")
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- sound/soc/fsl/fsl_sai.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/powerpc/boot/dts/microwatt.dts | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index fa950dde5310..dae16a14f177 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -437,6 +437,12 @@ static int fsl_sai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
- 				   FSL_SAI_CR2_DIV_MASK | FSL_SAI_CR2_BYP,
- 				   savediv / 2 - 1);
- 
-+	if (sai->soc_data->max_register >= FSL_SAI_MCTL) {
-+		/* SAI is in master mode at this point, so enable MCLK */
-+		regmap_update_bits(sai->regmap, FSL_SAI_MCTL,
-+				   FSL_SAI_MCTL_MCLK_EN, FSL_SAI_MCTL_MCLK_EN);
-+	}
-+
- 	return 0;
- }
+diff --git a/arch/powerpc/boot/dts/microwatt.dts b/arch/powerpc/boot/dts/microwatt.dts
+index 65b270a90f94..b69db1d275cd 100644
+--- a/arch/powerpc/boot/dts/microwatt.dts
++++ b/arch/powerpc/boot/dts/microwatt.dts
+@@ -90,6 +90,8 @@ PowerPC,Microwatt@0 {
+ 			64-bit;
+ 			d-cache-size = <0x1000>;
+ 			ibm,chip-id = <0>;
++			ibm,mmu-lpid-bits = <12>;
++			ibm,mmu-pid-bits = <20>;
+ 		};
+ 	};
  
 -- 
-2.17.1
+2.35.1
 
