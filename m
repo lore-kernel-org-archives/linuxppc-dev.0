@@ -4,86 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7582BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 May 2022 13:56:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9A18C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 May 2022 14:26:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L4Sty6sxDz3cgr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 May 2022 23:56:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L4TYd0Trcz3blD
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 May 2022 00:26:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=EhQvCQip;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bW66nGQ/;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bW66nGQ/;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=canonical.com (client-ip=185.125.188.122;
- helo=smtp-relay-internal-0.canonical.com;
- envelope-from=juerg.haefliger@canonical.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20210705 header.b=EhQvCQip; 
+ smtp.mailfrom=redhat.com (client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=bW66nGQ/; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=bW66nGQ/; 
  dkim-atps=neutral
-Received: from smtp-relay-internal-0.canonical.com
- (smtp-relay-internal-0.canonical.com [185.125.188.122])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L4QBQ2qF0z2yjC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2022 21:54:38 +1000 (AEST)
-Received: from mail-ej1-f72.google.com (mail-ej1-f72.google.com
- [209.85.218.72])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L4TXx3lshz2ypf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2022 00:25:51 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1653056748;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=cyh9GNwkSeiWX8VVWJet6cmrStrv1Y1BhHYKMAKCy08=;
+ b=bW66nGQ/ay30wcSAa8NBt3GpZGifVJUkbBs+NV8PO5Fr68XNHsaoYwrfeDK1IPdNFaj5xz
+ jtnwJDXz0Gd4zOmlWp5w4hIUviN0AzGVbxrmkzxBOkUPAKbjJfli//WglNb4X4qyA07fCN
+ F3t2Ubo76v5Oa/+PmLG+dKMTdinWRDo=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1653056748;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=cyh9GNwkSeiWX8VVWJet6cmrStrv1Y1BhHYKMAKCy08=;
+ b=bW66nGQ/ay30wcSAa8NBt3GpZGifVJUkbBs+NV8PO5Fr68XNHsaoYwrfeDK1IPdNFaj5xz
+ jtnwJDXz0Gd4zOmlWp5w4hIUviN0AzGVbxrmkzxBOkUPAKbjJfli//WglNb4X4qyA07fCN
+ F3t2Ubo76v5Oa/+PmLG+dKMTdinWRDo=
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-391-0PtWeGl-PVeo4WJC3z5LJQ-1; Fri, 20 May 2022 10:25:45 -0400
+X-MC-Unique: 0PtWeGl-PVeo4WJC3z5LJQ-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.8])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id F37593F1EE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2022 11:54:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
- s=20210705; t=1653047675;
- bh=deCcyVhVyKD2/JPpSzZpMIDpYKyl3Ap6BwhEK9M4/s8=;
- h=From:To:Cc:Subject:Date:Message-Id:MIME-Version;
- b=EhQvCQipQs6C679f5wbHaAWgWebqcJCgNVKPIWvN4tDLnhQrE3nKVBhmtHf4rEI/t
- 2khAFnTHV8sJVgPswo7DBOl/WevCVJsN25jxjcf1hry5QyQCYipLDqnUQppAEuUbHS
- txnz9bMik8H2inBqBBt1zj2oCHXyB4VfHj+GsyhhJ0D88uIKFW0YdyG3crFxqPElCh
- 7QLMQYbxtN2wif0RwYBjBL/oy6k28jU3RrMJB3TzNE95cGIfeAoY4gi2bnH4ViXFmj
- nvk/fAjoDt+hKI7HEncBbUuWVk8FgpzVgSI7zLzO1L/aC8wHfw+9sxK2OfidkuZyPB
- tjG2eHZK4lZ3w==
-Received: by mail-ej1-f72.google.com with SMTP id
- sd38-20020a1709076e2600b006f3e54b1dbcso3905285ejc.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2022 04:54:34 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=deCcyVhVyKD2/JPpSzZpMIDpYKyl3Ap6BwhEK9M4/s8=;
- b=E2n5xgD/ff0e4A42+gL9PFq/gHObOg1EYInQJ0prFBSGi/lBIOaRmakqG21S69nqP8
- xZKXndgWDnhbpfg0LSlujhExsMUW404w0W9/BvMc16Y8RDec5szp8J7DbzL15byPLBnK
- /mGPEUg6x7Yw2WiMR5ZsIZ9Ydd3pjVkR50T8VCFhPFpiIyVjQTb2XhUj6KtQtJ4BUOza
- H96l76jleVCbEkIzXh6cdzsHerHMXu2ZiLfvGstGVSCKrTIgW18XIire0p8D98ZD3Zn3
- 9lOqvtP3Ii51aPLYSr7+3Fd1h2tp83GMWYh7YSbOzr1bKhSKLDtKnsCbx8V32YiFVCA8
- dDgA==
-X-Gm-Message-State: AOAM531tXeQCdYTgleFf7ZoG5c798Vc86CBULsufUrs7rLQynKZM+7dx
- 3TjmxMT4DhXj2zP7V2iaUES/L9Zn7xuqBxa14mpM2PQ74z9L4ruk3CaFBY9Fud+mkvofEdDUZ2j
- ID28AG0fDK3FZwpV84jQaucMYisiE+92FinQLo1Bi5Gk=
-X-Received: by 2002:a17:907:3daa:b0:6fe:88ab:fe8c with SMTP id
- he42-20020a1709073daa00b006fe88abfe8cmr8136294ejc.575.1653047674687; 
- Fri, 20 May 2022 04:54:34 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzGYb7iuTm8Rlzr8a4NeJlgaXcvtLbYBbdOK1XLz9DVlSPQcOFRtd66KjcfayizB1DjW9FI2A==
-X-Received: by 2002:a17:907:3daa:b0:6fe:88ab:fe8c with SMTP id
- he42-20020a1709073daa00b006fe88abfe8cmr8136282ejc.575.1653047674537; 
- Fri, 20 May 2022 04:54:34 -0700 (PDT)
-Received: from gollum.fritz.box ([194.191.244.86])
- by smtp.gmail.com with ESMTPSA id
- a12-20020aa7c80c000000b0042617ba637esm4231156edt.8.2022.05.20.04.54.33
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 20 May 2022 04:54:34 -0700 (PDT)
-From: Juerg Haefliger <juerg.haefliger@canonical.com>
-X-Google-Original-From: Juerg Haefliger <juergh@canonical.com>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] KVM: PPC: Kconfig: Fix indentation
-Date: Fri, 20 May 2022 13:54:31 +0200
-Message-Id: <20220520115431.147593-1-juergh@canonical.com>
-X-Mailer: git-send-email 2.32.0
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 535763C1E323;
+ Fri, 20 May 2022 14:25:44 +0000 (UTC)
+Received: from virtlab701.virt.lab.eng.bos.redhat.com
+ (virtlab701.virt.lab.eng.bos.redhat.com [10.19.152.228])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 09E38C50941;
+ Fri, 20 May 2022 14:25:43 +0000 (UTC)
+From: Paolo Bonzini <pbonzini@redhat.com>
+To: Bagas Sanjaya <bagasdotme@gmail.com>
+Subject: Re: [PATCH RESEND] KVM: powerpc: remove extraneous asterisk from
+ rm_host_ipi_action comment
+Date: Fri, 20 May 2022 10:25:41 -0400
+Message-Id: <20220520142541.3331516-1-pbonzini@redhat.com>
+In-Reply-To: <20220506070747.16309-1-bagasdotme@gmail.com>
+References: 
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 20 May 2022 23:55:13 +1000
+X-Scanned-By: MIMEDefang 2.85 on 10.11.54.8
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,33 +86,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juerg Haefliger <juergh@canonical.com>, linux-kernel@vger.kernel.org
+Cc: Anders Roxell <anders.roxell@linaro.org>, kernel test robot <lkp@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>, linux-doc@vger.kernel.org,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Fabiano Rosas <farosas@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ stable@vger.kernel.org, kvm@vger.kernel.org,
+ Suresh Warrier <warrier@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The convention for indentation seems to be a single tab. Help text is
-further indented by an additional two whitespaces. Fix the lines that
-violate these rules.
+Queued, thanks.
 
-Signed-off-by: Juerg Haefliger <juergh@canonical.com>
----
- arch/powerpc/kvm/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Paolo
 
-diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index ddd88179110a..fe84628bda64 100644
---- a/arch/powerpc/kvm/Kconfig
-+++ b/arch/powerpc/kvm/Kconfig
-@@ -149,7 +149,7 @@ config KVM_BOOK3S_HV_NESTED_PMU_WORKAROUND
- 	  Old nested HV capable Linux guests have a bug where they don't
- 	  reflect the PMU in-use status of their L2 guest to the L0 host
- 	  while the L2 PMU registers are live. This can result in loss
--          of L2 PMU register state, causing perf to not work correctly in
-+	  of L2 PMU register state, causing perf to not work correctly in
- 	  L2 guests.
- 
- 	  Selecting this option for the L0 host implements a workaround for
--- 
-2.32.0
 
