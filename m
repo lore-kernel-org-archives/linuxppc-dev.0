@@ -4,64 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 562F6C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 May 2022 12:36:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47A19C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 May 2022 12:37:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L4R7968FNz3cdK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 May 2022 22:36:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L4R856XSxz3bpQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 May 2022 22:37:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=217.72.192.74; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-X-Greylist: delayed 308 seconds by postgrey-1.36 at boromir;
- Fri, 20 May 2022 22:36:25 AEST
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=T6IF6o4t;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62b;
+ helo=mail-pl1-x62b.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=T6IF6o4t; dkim-atps=neutral
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com
+ [IPv6:2607:f8b0:4864:20::62b])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L4R6d5kslz2yK2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2022 22:36:25 +1000 (AEST)
-Received: from mail-yb1-f174.google.com ([209.85.219.174]) by
- mrelayeu.kundenserver.de (mreue109 [213.165.67.113]) with ESMTPSA (Nemesis)
- id 1M3lgL-1nrCZQ1Bit-000ukx for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May
- 2022 14:31:11 +0200
-Received: by mail-yb1-f174.google.com with SMTP id p139so13905237ybc.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2022 05:31:10 -0700 (PDT)
-X-Gm-Message-State: AOAM531KNPcgMWBDO5OU2eecDETMwuAJkiWosh8+qh0o949d5ExvdNRl
- jWuth0ku/UDztaAOUhSq+hH+WnSrzzV8ZBsN38w=
-X-Google-Smtp-Source: ABdhPJzM0/g+q1PRwguziGorhB8SDUsN9iEFZbR/3vnqE9X6zeZuqHYx8uEJ7JXjS9vB4zG423aFir2s+dxjeU1ONqo=
-X-Received: by 2002:a25:31c2:0:b0:641:660f:230f with SMTP id
- x185-20020a2531c2000000b00641660f230fmr9208955ybx.472.1653049869839; Fri, 20
- May 2022 05:31:09 -0700 (PDT)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L4R7K2rhfz2yLJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2022 22:37:00 +1000 (AEST)
+Received: by mail-pl1-x62b.google.com with SMTP id d22so7232883plr.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2022 05:37:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=pfgqFsTOUgXBDu5bDyAL2tx0ss8x2jsp1L7XsD88tdw=;
+ b=T6IF6o4tHH9Gu44hBxaf50ZZBcUeVwAOcwZn1o9+d4JOAdCw1TySJ3sedAAMCHVdXc
+ pctQeAF9JuDVdoxC5ojbPehyvDk9iusmY5boq7J05Dk8lyYwxwmfnVsZ3UwAKNEdcb5O
+ xEvuc1sKes50BR49j32RbuzonkzaAFS8Q7Hdq//EJ/vLehSFA1UEnqTpLrqvk8MSE9UC
+ QM9i2fMCQh5GieDAAbxtWvqY+QXF/gUOC8Odr0/8be3QX2eAfko3FtyMnjk7TUJt1ZP7
+ 1jF7yrjL3eSQWTRDgj1LpRsVwduCkzT+VTWg2DvvLDE1WWGQIE5Pb2NL5CN24QMPYlPS
+ qdRA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=pfgqFsTOUgXBDu5bDyAL2tx0ss8x2jsp1L7XsD88tdw=;
+ b=BhEhDu1zHUP8Plxfh0fniXACeWULRWwfTAiqEJsK94ZL5GsyL3gldwaYu890uo7Nib
+ mHZzIgep82pjCTUKKEXlatzTUaa22QpqQlkNSfm6Z5CIwlJT3HnqWffir/7cs9nFKRdy
+ XnMkt2bjxmJ+R5mEnBqMX7AcX+X2oYfIf9dxKNyYntvysh1m7lu6dgLjVdR4HG0OuQUg
+ UvicnVXeP5ctAGCwOLMzJNKUIYs/8jdqwbQ7TzhnVebzS4iF48BP8+H6fiMYEUIre6PQ
+ mGNn3DJ7Yu7BqJ2C/cUi441QorvGPe09H2wCUGWTTHt3z1Pq3G9hmhkOBin+YaPLsulP
+ oPuw==
+X-Gm-Message-State: AOAM532sp05t7n1pdasX2nVKuIOuKKiZTaVJD+HAAtS8YjZf+6/iHkdE
+ VED6ZM7c9GCr2fUAm7RFpU87j9GosxM=
+X-Google-Smtp-Source: ABdhPJwOrk85B4xlVMD7ZMQqUD8vN+Ccy8JoFvpsOAxxWPiUGY86r4TeBO8vKWfqTvJbEMb7d89HOA==
+X-Received: by 2002:a17:90a:6308:b0:1de:fb6c:5944 with SMTP id
+ e8-20020a17090a630800b001defb6c5944mr10804569pjj.60.1653050217426; 
+ Fri, 20 May 2022 05:36:57 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com (124-171-74-249.tpgi.com.au.
+ [124.171.74.249]) by smtp.gmail.com with ESMTPSA id
+ y21-20020aa78555000000b0050dc76281fbsm1656211pfn.213.2022.05.20.05.36.55
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 20 May 2022 05:36:57 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/vdso: Fix __kernel_sync_dicache sequence with
+ coherent icache
+Date: Fri, 20 May 2022 22:36:49 +1000
+Message-Id: <20220520123649.258440-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-References: <20220519031345.2134401-1-kuba@kernel.org>
-In-Reply-To: <20220519031345.2134401-1-kuba@kernel.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 20 May 2022 13:30:50 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a3_4fNQV51V0-QUnuTr4dK0-S_ffeFzfA8vG1uGh8vyhg@mail.gmail.com>
-Message-ID: <CAK8P3a3_4fNQV51V0-QUnuTr4dK0-S_ffeFzfA8vG1uGh8vyhg@mail.gmail.com>
-Subject: Re: [PATCH net-next] eth: de4x5: remove support for Generic DECchip &
- DIGITAL EtherWORKS PCI/EISA
-To: Jakub Kicinski <kuba@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:4DNiUpEaC+69SL5KQkB95/4DmjZDb5zG8tN3FFoD9Rww+rlO6rW
- Q9mdL1jaJMOG5sIkd1HluvJZ1FZ877yVvVZZTm6ZPekug2d7gK4nxwgi8G3cZcFU7vCClhH
- LqjkU0ZFbocxzuuTpO7Gn0kYT0d/3gDHjScaqu7U+bT8sxXWIicFi64ZmkAn/MSCcmlIaC1
- Bz0N2b64xP9d3Sa8v8KRQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:ZUB5bkq4gTM=:naH8uxo6tlnXfHAsabs/Pr
- X6PWReRh6Uopty1u8yc9LZsYhXAd3sp3LJBsF57sE9pTgv2o6UZ2hQ/Kse8qErOq7kd+XDmlX
- F/42aLj/bE8IYyx898Z+4hlYjjqZWvXvMXzxzCp2quhhgtLIWPPvkVamK7gVq9pCr6pHGLkrD
- Lw290rrgwLO3vxhbNpfthd+yT2ReZhNO9SorB9aU8jcG5Uw2SX0/wAr3HNUTZY7gXZm9DDFDG
- Yrph5ZnpAlTAQoBtfuJIiF8Xdke9ljeDmTUxDRhjxcz/FbHelAvcUH2q7AY0WcG+rQ3Ng+baG
- 45rS9r1zymVjRNl0Dz1QJmjkbi04yJ20VO2xt0R2x4D/G+KhG1BK82BudcAOyvlJyZrTUp3LW
- JPinZLil5VjAhZDAzhqWwHtHa/uOGphaficfakX2KkfFbXIsgQOt9gXwGMeYSVgggSuwgsvqT
- UWEOYTNcjl181VMXiG4BgOelxqsJl9LmFrW6OA+/T16ueVR1RJ/iGnpd3lDS+iyWFq/UIyRr+
- Rfu+8qZ0LMSypWf1vKFXsU3Zo29OSisr4/91VzCCiPDxj7g0X1lRPLRn+PWstl2Y3lZrLSP0O
- 8+M9VPQRePT6RAiyMa+9lUjZLwCubNf7w6eky0gZWifaByUZJbhGyd5If4CThARa8pClkntOT
- skVcU9QBTFSW8c0oGxkPiDKe9suTtoMrrqxJNlHEAHDA9jAzeVEgmOoDKWYaquxk/fJVk2m3E
- y+0OjKd38+caoLjpUB7JN5e8aAgO2Bg1jyWZQ3ZfPPE+o2B3IuqwwavpPfUyekuGFtBADa8sp
- AFdd8an9nynbwSwiTf7Zrb4mGIEK6XDp4a2DPNcTat1rtwwuuTCCOTsjSsvLblRaeoCRkVeOW
- 4ou+Ut4MXDI8nAH925Iw==
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,58 +80,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, arnd@arndb.de,
- corbet@lwn.net, netdev@vger.kernel.org, sburla@marvell.com,
- linux-doc@vger.kernel.org, linux-mips@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, edumazet@google.com, paulus@samba.org,
- vburru@marvell.com, zhangyue1@kylinos.cn, pabeni@redhat.com,
- aayarekar@marvell.com, davem@davemloft.net
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 19, 2022 at 4:13 AM Jakub Kicinski <kuba@kernel.org> wrote:
->
-> Looks like almost all changes to this driver had been tree-wide
-> refactoring since git era begun. There is one commit from Al
-> 15 years ago which could potentially be fixing a real bug.
->
-> The driver is using virt_to_bus() and is a real magnet for pointless
-> cleanups. It seems unlikely to have real users. Let's try to shed
-> this maintenance burden.
->
-> Signed-off-by: Jakub Kicinski <kuba@kernel.org>
-> ---
-> CC: corbet@lwn.net
-> CC: tsbogend@alpha.franken.de
-> CC: mpe@ellerman.id.au
-> CC: benh@kernel.crashing.org
-> CC: paulus@samba.org
-> CC: sburla@marvell.com
-> CC: vburru@marvell.com
-> CC: aayarekar@marvell.com
-> CC: arnd@arndb.de
+Processors with coherent icache require the sequence sync ; icbi ; isync
+to entire store->execute coherency. icbi (to any address) must be
+executed to ensure isync flushes the pipeline. See "POWER9 Processor
+User's Manual, 4.6.2.2 Instruction Cache Block Invalidate (icbi)" for
+details.
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+__kernel_sync_dicache is missing icbi for the coherent icache path.
+Add it.
 
-> ---
->  .../device_drivers/ethernet/dec/de4x5.rst     |  189 -
->  .../device_drivers/ethernet/index.rst         |    1 -
->  arch/mips/configs/mtx1_defconfig              |    1 -
->  arch/powerpc/configs/chrp32_defconfig         |    1 -
->  arch/powerpc/configs/ppc6xx_defconfig         |    1 -
->  drivers/net/ethernet/dec/tulip/Kconfig        |   15 -
->  drivers/net/ethernet/dec/tulip/Makefile       |    1 -
->  drivers/net/ethernet/dec/tulip/de4x5.c        | 5591 -----------------
->  drivers/net/ethernet/dec/tulip/de4x5.h        | 1017 ---
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/vdso/cacheflush.S | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/arch/powerpc/kernel/vdso/cacheflush.S b/arch/powerpc/kernel/vdso/cacheflush.S
+index d4e43ab2d5df..0085ae464dac 100644
+--- a/arch/powerpc/kernel/vdso/cacheflush.S
++++ b/arch/powerpc/kernel/vdso/cacheflush.S
+@@ -91,6 +91,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
+ 3:
+ 	crclr	cr0*4+so
+ 	sync
++	icbi	0,r1
+ 	isync
+ 	li	r3,0
+ 	blr
+-- 
+2.35.1
 
-I checked the defconfig files to make sure we are not removing the
-last ethernet driver from
-one of them. mtx1 has built-in networking and no PCI slot, so this is
-definitely fine.
-the ppc32 configs are for machines with PCI slots and also enable
-multiple drivers but I saw
-nothing specifically needing this card.
-
-       Arnd
