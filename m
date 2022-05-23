@@ -4,54 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 485E4C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 17:32:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4701FC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 17:57:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6PYJ4mYgz3bnM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 03:32:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6Q575tjHz3bsg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 03:56:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=e7/mj6uB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VYAEjSu8;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1;
- helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=e7/mj6uB; 
- dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=VYAEjSu8; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6PXc5JX0z2yjS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 03:32:16 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id E4AB961117;
- Mon, 23 May 2022 17:32:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ACD88C385A9;
- Mon, 23 May 2022 17:32:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
- s=korg; t=1653327134;
- bh=hpOjpmyQvfaALi4mtyz1e6kIE+O99SXN5GXatvJOfqY=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=e7/mj6uBhViSHW8MHpakrHrW3qWOSSlB6jIYAeJIHi3kq3TgIsHT1ya+23VHvTKiq
- eyzZU+ypL4DXJcNV1D+EF1+pqCSfw76PfX5lJoIKkcysJvTPMdA8MuBifDRM6iCUfb
- 2/eKJstLpAZ9hxZDB948sjb53E201F5mwt+jil5Q=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 5.17 132/158] perf test bpf: Skip test if clang is not present
-Date: Mon, 23 May 2022 19:04:49 +0200
-Message-Id: <20220523165852.300414915@linuxfoundation.org>
-X-Mailer: git-send-email 2.36.1
-In-Reply-To: <20220523165830.581652127@linuxfoundation.org>
-References: <20220523165830.581652127@linuxfoundation.org>
-User-Agent: quilt/0.66
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6Q4N2zPgz3bcW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 03:56:19 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24NHSoR5011312;
+ Mon, 23 May 2022 17:56:10 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=hiK/gTSAe9vJ+0XObkVQlmijgj5clBKRz6adl2t2/qw=;
+ b=VYAEjSu8KwzRdy9IzIXlbTSQQsay9BcrdK1+IEIEfFgUU+ZQS9cyMlrZiuy8zgIHgxeG
+ BabzYCwC0dp1XWKtz3fVOlL6CWUv6+PqPWA2Qnqp+A84y0WvbevRNpEsIzOM0iczk7qn
+ SvrYGOB+sRvIAavndvo+H8FOV57ZcBzDmNp6ThxP68iUS+dTNUjcvbvxPczEloqI6Q6y
+ Et4fYKANHrhc1NYFFTr6q/STlwHPapPJHxOJqB3UemMEIY0m4zng1b6xZP9RcGWAz3SP
+ GJAKRpJN8piFye+4ahqJh1O1NWYRKeF1Mq2ExgQfNhh8pOqUosN975QUS5P8Vd2Kr0YW qA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3g8eq0retv-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 23 May 2022 17:56:10 +0000
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+ by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 24NHTNWv016791;
+ Mon, 23 May 2022 17:56:09 GMT
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3g8eq0retd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 23 May 2022 17:56:09 +0000
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24NHiN3D032732;
+ Mon, 23 May 2022 17:56:08 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma03fra.de.ibm.com with ESMTP id 3g6qq9anjd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 23 May 2022 17:56:07 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 24NHu5uO48300410
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 23 May 2022 17:56:05 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9B39F5204E;
+ Mon, 23 May 2022 17:56:05 +0000 (GMT)
+Received: from li-c3569c4c-1ef8-11b2-a85c-ee139cda3133.ibm.com.com (unknown
+ [9.43.16.198])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id B2BEE52051;
+ Mon, 23 May 2022 17:56:02 +0000 (GMT)
+From: Sathvika Vasireddy <sv@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 2/4] objtool: Enable objtool to run only on files with
+ ftrace enabled
+Date: Mon, 23 May 2022 23:25:46 +0530
+Message-Id: <20220523175548.922671-3-sv@linux.ibm.com>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20220523175548.922671-1-sv@linux.ibm.com>
+References: <20220523175548.922671-1-sv@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: zGqR_cdO5w9EzBEebYwZ_Glhya1ShdP7
+X-Proofpoint-GUID: bnWaIZ7VLab2xF1nO8dP-ejF7KjP8ACq
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.486,FMLib:17.11.64.514
+ definitions=2022-05-23_07,2022-05-23_01,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 clxscore=1015
+ suspectscore=0 mlxlogscore=721 spamscore=0 priorityscore=1501 adultscore=0
+ phishscore=0 bulkscore=0 lowpriorityscore=0 mlxscore=0 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2202240000
+ definitions=main-2205230099
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,139 +105,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Ian Rogers <irogers@google.com>,
- Athira Jajeev <atrajeev@linux.vnet.ibm.com>,
- Nageswara R Sastry <rnsastry@linux.ibm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, Jiri Olsa <jolsa@kernel.org>,
- Kajol Jain <kjain@linux.ibm.com>, Wang Nan <wangnan0@huawei.com>,
- Disha Goel <disgoel@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, aik@ozlabs.ru,
+ sv@linux.ibm.com, rostedt@goodmis.org, jpoimboe@redhat.com,
+ naveen.n.rao@linux.vnet.ibm.com, mbenes@suse.cz
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+This patch makes sure objtool runs only on the object files
+that have ftrace enabled, instead of running on all the object
+files.
 
-[ Upstream commit 8994e97be3eb3c3a7b59d6223018ffab8c272e2d ]
-
-Perf BPF filter test fails in environment where "clang" is not
-installed.
-
-Test failure logs:
-
-<<>>
- 42: BPF filter                    :
- 42.1: Basic BPF filtering         : Skip
- 42.2: BPF pinning                 : FAILED!
- 42.3: BPF prologue generation     : FAILED!
-<<>>
-
-Enabling verbose option provided debug logs which says clang/llvm needs
-to be installed. Snippet of verbose logs:
-
-<<>>
- 42.2: BPF pinning                  :
- --- start ---
-test child forked, pid 61423
-ERROR:	unable to find clang.
-Hint:	Try to install latest clang/llvm to support BPF.
-        Check your $PATH
-
-<<logs_here>>
-
-Failed to compile test case: 'Basic BPF llvm compile'
-Unable to get BPF object, fix kbuild first
-test child finished with -1
- ---- end ----
-BPF filter subtest 2: FAILED!
-<<>>
-
-Here subtests, "BPF pinning" and "BPF prologue generation" failed and
-logs shows clang/llvm is needed. After installing clang, testcase
-passes.
-
-Reason on why subtest failure happens though logs has proper debug
-information:
-
-Main function __test__bpf calls test_llvm__fetch_bpf_obj by
-passing 4th argument as true ( 4th arguments maps to parameter
-"force" in test_llvm__fetch_bpf_obj ). But this will cause
-test_llvm__fetch_bpf_obj to skip the check for clang/llvm.
-
-Snippet of code part which checks for clang based on
-parameter "force" in test_llvm__fetch_bpf_obj:
-
-<<>>
-if (!force && (!llvm_param.user_set_param &&
-<<>>
-
-Since force is set to "false", test won't get skipped and fails to
-compile test case. The BPF code compilation needs clang, So pass the
-fourth argument as "false" and also skip the test if reason for return
-is "TEST_SKIP"
-
-After the patch:
-
-<<>>
- 42: BPF filter                    :
- 42.1: Basic BPF filtering         : Skip
- 42.2: BPF pinning                 : Skip
- 42.3: BPF prologue generation     : Skip
-<<>>
-
-Fixes: ba1fae431e74bb42 ("perf test: Add 'perf test BPF'")
-Reviewed-by: Kajol Jain <kjain@linux.ibm.com>
-Signed-off-by: Athira Jajeev <atrajeev@linux.vnet.ibm.com>
-Acked-by: Ian Rogers <irogers@google.com>
-Cc: Disha Goel <disgoel@linux.vnet.ibm.com>
-Cc: Jiri Olsa <jolsa@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nageswara R Sastry <rnsastry@linux.ibm.com>
-Cc: Wang Nan <wangnan0@huawei.com>
-Link: https://lore.kernel.org/r/20220511115438.84032-1-atrajeev@linux.vnet.ibm.com
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
 ---
- tools/perf/tests/bpf.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ scripts/Makefile.build | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/tools/perf/tests/bpf.c b/tools/perf/tests/bpf.c
-index 573490530194..592ab02d5ba3 100644
---- a/tools/perf/tests/bpf.c
-+++ b/tools/perf/tests/bpf.c
-@@ -222,11 +222,11 @@ static int __test__bpf(int idx)
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 2e0c3f9c1459..06ceffd92921 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -258,8 +258,8 @@ else
+ # 'OBJECT_FILES_NON_STANDARD_foo.o := 'y': skip objtool checking for a file
+ # 'OBJECT_FILES_NON_STANDARD_foo.o := 'n': override directory skip for a file
  
- 	ret = test_llvm__fetch_bpf_obj(&obj_buf, &obj_buf_sz,
- 				       bpf_testcase_table[idx].prog_id,
--				       true, NULL);
-+				       false, NULL);
- 	if (ret != TEST_OK || !obj_buf || !obj_buf_sz) {
- 		pr_debug("Unable to get BPF object, %s\n",
- 			 bpf_testcase_table[idx].msg_compile_fail);
--		if (idx == 0)
-+		if ((idx == 0) || (ret == TEST_SKIP))
- 			return TEST_SKIP;
- 		else
- 			return TEST_FAIL;
-@@ -370,9 +370,11 @@ static int test__bpf_prologue_test(struct test_suite *test __maybe_unused,
- static struct test_case bpf_tests[] = {
- #ifdef HAVE_LIBBPF_SUPPORT
- 	TEST_CASE("Basic BPF filtering", basic_bpf_test),
--	TEST_CASE("BPF pinning", bpf_pinning),
-+	TEST_CASE_REASON("BPF pinning", bpf_pinning,
-+			"clang isn't installed or environment missing BPF support"),
- #ifdef HAVE_BPF_PROLOGUE
--	TEST_CASE("BPF prologue generation", bpf_prologue_test),
-+	TEST_CASE_REASON("BPF prologue generation", bpf_prologue_test,
-+			"clang isn't installed or environment missing BPF support"),
- #else
- 	TEST_CASE_REASON("BPF prologue generation", bpf_prologue_test, "not compiled in"),
- #endif
+-$(obj)/%.o: objtool-enabled = $(if $(filter-out y%, \
+-	$(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n),y)
++$(obj)/%.o: objtool-enabled = $(and $(if $(filter-out y%, $(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n),y),        \
++        $(if $(findstring $(strip $(CC_FLAGS_FTRACE)),$(_c_flags)),y),y)
+ 
+ endif
+ 
 -- 
-2.35.1
-
-
+2.25.1
 
