@@ -4,56 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BDEBC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 17:26:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1995C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 17:30:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6PQ40Y4xz3bbQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 03:26:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6PW56pP1z3bxY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 03:30:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SNB/lAD3;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=OxnMitZ6;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
- helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org;
+ smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1;
+ helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=SNB/lAD3; 
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
+ header.a=rsa-sha256 header.s=korg header.b=OxnMitZ6; 
  dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org
  [IPv6:2604:1380:4641:c500::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6PPN23k9z2ynL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 03:26:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6PVM725mz2yph
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 03:30:19 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id A3395611D1;
- Mon, 23 May 2022 17:25:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D7D2C34116;
- Mon, 23 May 2022 17:25:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=k20201202; t=1653326756;
- bh=dh+fAnKS8WI2flC692OoPZ+G9PyKzBI6qdryJjOK4yQ=;
- h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
- b=SNB/lAD3U3bfcbSAR6YCwn69/9c7U6PhIVPDgyDiIAomqxgdDZGAYA56IR3NfTHAp
- yV/d4aKVwc/vf6shLn0B4YQNS34p4LRUoNosg7+m38wgYO2RIxHBkc1e6KUUui6Xlx
- eXCwXGyaAZrC8pu9HCIJnzId3g+TG+blUKS2akJCBWwG9OsfW5U6Vc8QLJZnr50ymh
- UKNFnOwuPsv3oivbZ53kX6e+Emhih1XL5sKKjTi9zuyXX7mB6yiuzzQddjKQ5vKpSq
- NsRN9J7/WUPxrZDY4jqXgg5+XtqsPC31S6DiTTNvacHFJWujiH9yQk+d5zDwEewg8b
- BmGPTe+Yg7SNw==
-From: Mark Brown <broonie@kernel.org>
-To: festevam@gmail.com, alsa-devel@alsa-project.org, lgirdwood@gmail.com,
- nicoleotsuka@gmail.com, perex@perex.cz, shengjiu.wang@gmail.com,
- Xiubo.Lee@gmail.com, tiwai@suse.com, shengjiu.wang@nxp.com
-In-Reply-To: <1653284661-18964-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1653284661-18964-1-git-send-email-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Fix FSL_SAI_xDR/xFR definition
-Message-Id: <165332675410.2124944.12107532437710717569.b4-ty@kernel.org>
-Date: Mon, 23 May 2022 18:25:54 +0100
+ by dfw.source.kernel.org (Postfix) with ESMTPS id CF14D6126E;
+ Mon, 23 May 2022 17:30:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 187A6C385A9;
+ Mon, 23 May 2022 17:30:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+ s=korg; t=1653327017;
+ bh=lxYW3mkhaz99pmAtcNmmuE12bsbVyXiI8wvqBE9mi0U=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=OxnMitZ6uuHXzztfzENz5EFFIhds1P1OPAsEjb+zICWMGbvBuXWVCMsH9oXQrFzIt
+ PXGQ+CqUPKMRR7LyhHPIvLhHl8m1UGTPm6IVNDVbJBetHEPr6xft32gW9NcEnSxi/k
+ FIPzwP0A0TcL/7L2zhN4QQxGy4ggSd9xz+09nH6Q=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 5.17 129/158] perf test: Fix "all PMU test" to skip
+ hv_24x7/hv_gpci tests on powerpc
+Date: Mon, 23 May 2022 19:04:46 +0200
+Message-Id: <20220523165851.912540965@linuxfoundation.org>
+X-Mailer: git-send-email 2.36.1
+In-Reply-To: <20220523165830.581652127@linuxfoundation.org>
+References: <20220523165830.581652127@linuxfoundation.org>
+User-Agent: quilt/0.66
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -66,42 +64,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, Ian Rogers <irogers@google.com>,
+ Athira Jajeev <atrajeev@linux.vnet.ibm.com>,
+ Nageswara R Sastry <rnsastry@linux.ibm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, Jiri Olsa <jolsa@kernel.org>,
+ Kajol Jain <kjain@linux.ibm.com>, Disha Goel <disgoel@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 23 May 2022 13:44:21 +0800, Shengjiu Wang wrote:
-> There are multiple xDR and xFR registers, the index is
-> from 0 to 7. FSL_SAI_xDR and FSL_SAI_xFR is abandoned,
-> replace them with FSL_SAI_xDR0 and FSL_SAI_xFR0.
-> 
-> 
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 
-Applied to
+[ Upstream commit 451ed8058c69a3fee29fa9e2967a4e22a221fe75 ]
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+"perf all PMU test" picks the input events from "perf list --raw-dump
+pmu" list and runs "perf stat -e" for each of the event in the list. In
+case of powerpc, the PowerVM environment supports events from hv_24x7
+and hv_gpci PMU which is of example format like below:
 
-Thanks!
+- hv_24x7/CPM_ADJUNCT_INST,domain=?,core=?/
+- hv_gpci/event,partition_id=?/
 
-[1/1] ASoC: fsl_sai: Fix FSL_SAI_xDR/xFR definition
-      commit: e4dd748dc87cf431af7b3954963be0d9f6150217
+The value for "?" needs to be filled in depending on system and
+respective event. CPM_ADJUNCT_INST needs have core value and domain
+value. hv_gpci event needs partition_id.  Similarly, there are other
+events for hv_24x7 and hv_gpci having "?" in event format. Hence skip
+these events on powerpc platform since values like partition_id, domain
+is specific to system and event.
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+Fixes: 3d5ac9effcc640d5 ("perf test: Workload test of all PMUs")
+Signed-off-by: Athira Jajeev <atrajeev@linux.vnet.ibm.com>
+Acked-by: Ian Rogers <irogers@google.com>
+Cc: Disha Goel <disgoel@linux.vnet.ibm.com>
+Cc: Jiri Olsa <jolsa@kernel.org>
+Cc: Kajol Jain <kjain@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nageswara R Sastry <rnsastry@linux.ibm.com>
+Link: https://lore.kernel.org/r/20220520101236.17249-1-atrajeev@linux.vnet.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ tools/perf/tests/shell/stat_all_pmu.sh | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+diff --git a/tools/perf/tests/shell/stat_all_pmu.sh b/tools/perf/tests/shell/stat_all_pmu.sh
+index b30dba455f36..9c9ef33e0b3c 100755
+--- a/tools/perf/tests/shell/stat_all_pmu.sh
++++ b/tools/perf/tests/shell/stat_all_pmu.sh
+@@ -5,6 +5,16 @@
+ set -e
+ 
+ for p in $(perf list --raw-dump pmu); do
++  # In powerpc, skip the events for hv_24x7 and hv_gpci.
++  # These events needs input values to be filled in for
++  # core, chip, partition id based on system.
++  # Example: hv_24x7/CPM_ADJUNCT_INST,domain=?,core=?/
++  # hv_gpci/event,partition_id=?/
++  # Hence skip these events for ppc.
++  if echo "$p" |grep -Eq 'hv_24x7|hv_gpci' ; then
++    echo "Skipping: Event '$p' in powerpc"
++    continue
++  fi
+   echo "Testing $p"
+   result=$(perf stat -e "$p" true 2>&1)
+   if ! echo "$result" | grep -q "$p" && ! echo "$result" | grep -q "<not supported>" ; then
+-- 
+2.35.1
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
 
-Thanks,
-Mark
