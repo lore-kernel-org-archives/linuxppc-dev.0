@@ -4,97 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03C22C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 16:45:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BDEBC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 17:26:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6NVb3kcjz3bnV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 02:45:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6PQ40Y4xz3bbQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 03:26:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g1CFD6qb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SNB/lAD3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com;
+ smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1;
+ helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=g1CFD6qb; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=SNB/lAD3; 
+ dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6NTg655Mz3brd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 02:44:39 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24NG1QkF018111;
- Mon, 23 May 2022 16:44:30 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=VJJEq7h+sMoHr6vU3hHM16ka9zwPWnb0qVoPNv2p87k=;
- b=g1CFD6qb9tgYrYwYu9Ge4hw3g/iVtLgIuetc0jpjF/hxOf5QTGiGq6SL1J6JP1OrYFXK
- sqi+FnGjlTO9DBAyiNGn+qy0Mf/m+hZz5gtKNpM9mijnRCMJ2sELo113lOfSR4mP4zUe
- bIv+rJ1g3v2AKsfX1sD1xIOd11Q+PiwJzUz0XErZlLUlkxmllHSfjHRrnTgiWhZBnuHM
- e7ar2vpXt3Ndab7gDpXTcqWeauMB/+bC/d8/5mvseTpXXdO59mD8H5sUNKgxVPRjoNjO
- VWoWKh6Nt9j0PbEot0F7R2PPhoFmdyQhsQSnlGA9Xkt9asDpfeCqHqitlZqVlFpO1peD LQ== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3g8de50yk9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 23 May 2022 16:44:30 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24NGgI2U003829;
- Mon, 23 May 2022 16:44:28 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma04ams.nl.ibm.com with ESMTP id 3g6qq9b4ks-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 23 May 2022 16:44:28 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 24NGiQQu56885600
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 23 May 2022 16:44:26 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E5B9F52050;
- Mon, 23 May 2022 16:44:25 +0000 (GMT)
-Received: from [9.101.4.33] (unknown [9.101.4.33])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 92D9D5204E;
- Mon, 23 May 2022 16:44:25 +0000 (GMT)
-Message-ID: <d33ac27a-ac7f-4ffb-c22c-08ff9a29bbd5@linux.ibm.com>
-Date: Mon, 23 May 2022 18:44:25 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6PPN23k9z2ynL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 03:26:00 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id A3395611D1;
+ Mon, 23 May 2022 17:25:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D7D2C34116;
+ Mon, 23 May 2022 17:25:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=k20201202; t=1653326756;
+ bh=dh+fAnKS8WI2flC692OoPZ+G9PyKzBI6qdryJjOK4yQ=;
+ h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+ b=SNB/lAD3U3bfcbSAR6YCwn69/9c7U6PhIVPDgyDiIAomqxgdDZGAYA56IR3NfTHAp
+ yV/d4aKVwc/vf6shLn0B4YQNS34p4LRUoNosg7+m38wgYO2RIxHBkc1e6KUUui6Xlx
+ eXCwXGyaAZrC8pu9HCIJnzId3g+TG+blUKS2akJCBWwG9OsfW5U6Vc8QLJZnr50ymh
+ UKNFnOwuPsv3oivbZ53kX6e+Emhih1XL5sKKjTi9zuyXX7mB6yiuzzQddjKQ5vKpSq
+ NsRN9J7/WUPxrZDY4jqXgg5+XtqsPC31S6DiTTNvacHFJWujiH9yQk+d5zDwEewg8b
+ BmGPTe+Yg7SNw==
+From: Mark Brown <broonie@kernel.org>
+To: festevam@gmail.com, alsa-devel@alsa-project.org, lgirdwood@gmail.com,
+ nicoleotsuka@gmail.com, perex@perex.cz, shengjiu.wang@gmail.com,
+ Xiubo.Lee@gmail.com, tiwai@suse.com, shengjiu.wang@nxp.com
+In-Reply-To: <1653284661-18964-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1653284661-18964-1-git-send-email-shengjiu.wang@nxp.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Fix FSL_SAI_xDR/xFR definition
+Message-Id: <165332675410.2124944.12107532437710717569.b4-ty@kernel.org>
+Date: Mon, 23 May 2022 18:25:54 +0100
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
- Gecko/20100101 Thunderbird/91.9.0
-Subject: Re: [PATCH v10 10/13] powerpc/mm: Move get_unmapped_area functions to
- slice.c
-Content-Language: en-US
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-References: <cover.1649523076.git.christophe.leroy@csgroup.eu>
- <b5d9c124e82889e0cb115c150915a0c0d84eb960.1649523076.git.christophe.leroy@csgroup.eu>
- <72ed4b46-866f-4468-d1de-e9d316bf47f4@linux.ibm.com>
- <78b3a7f4-56e2-e11f-005c-2a1dd563b5b3@csgroup.eu>
-From: Laurent Dufour <ldufour@linux.ibm.com>
-In-Reply-To: <78b3a7f4-56e2-e11f-005c-2a1dd563b5b3@csgroup.eu>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: zh9SylZnRLV5Y4TXfWxmuTq8IeaQ6ySr
-X-Proofpoint-GUID: zh9SylZnRLV5Y4TXfWxmuTq8IeaQ6ySr
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.486,FMLib:17.11.64.514
- definitions=2022-05-23_07,2022-05-23_01,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 bulkscore=0
- adultscore=0 suspectscore=0 mlxscore=0 spamscore=0 impostorscore=0
- mlxlogscore=999 phishscore=0 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2202240000 definitions=main-2205230093
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,263 +66,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 23/05/2022, 17:18:10, Christophe Leroy wrote:
+On Mon, 23 May 2022 13:44:21 +0800, Shengjiu Wang wrote:
+> There are multiple xDR and xFR registers, the index is
+> from 0 to 7. FSL_SAI_xDR and FSL_SAI_xFR is abandoned,
+> replace them with FSL_SAI_xDR0 and FSL_SAI_xFR0.
 > 
 > 
-> Le 23/05/2022 à 14:27, Laurent Dufour a écrit :
->> On 09/04/2022, 19:17:34, Christophe Leroy wrote:
->>> hugetlb_get_unmapped_area() is now identical to the
->>> generic version if only RADIX is enabled, so move it
->>> to slice.c and let it fallback on the generic one
->>> when HASH MMU is not compiled in.
->>>
->>> Do the same with arch_get_unmapped_area() and
->>> arch_get_unmapped_area_topdown().
->>
->> This breaks the build when CONFIG_PPC_64S_HASH_MMU is not set.
->>
->> The root cause is that arch/powerpc/mm/book3s64/slice.c is not built if
->> !CONFIG_PPC_64S_HASH_MMU.
->> The commit f693d38d9468 (powerpc/mm: Remove CONFIG_PPC_MM_SLICES,
->> 2022-04-09) builds slice.c only if CONFIG_PPC_64S_HASH_MMU.
-> 
-> I think the root cause is slice.h is being included allthough 
-> !CONFIG_PPC_64S_HASH_MMU, which leads to HAVE_ARCH_UNMAPPED_AREA and 
-> HAVE_ARCH_UNMAPPED_AREA_TOPDOWN being defined while they shouldn't
-> 
-> Wondering why I didn't see that before.
-> 
-> slice.h gets included via asm/book3s/64/mmu-hash.h
-> 
-> I was able to build microwatt_defconfig with the following changes:
 
-That works for me too.
+Applied to
 
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/slice.h 
-> b/arch/powerpc/include/asm/book3s/64/slice.h
-> index b8eb4ad271b9..5fbe18544cbd 100644
-> --- a/arch/powerpc/include/asm/book3s/64/slice.h
-> +++ b/arch/powerpc/include/asm/book3s/64/slice.h
-> @@ -4,11 +4,13 @@
-> 
->   #ifndef __ASSEMBLY__
-> 
-> +#ifdef CONFIG_PPC_64S_HASH_MMU
->   #ifdef CONFIG_HUGETLB_PAGE
->   #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
->   #endif
->   #define HAVE_ARCH_UNMAPPED_AREA
->   #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
-> +#endif
-> 
->   #define SLICE_LOW_SHIFT		28
->   #define SLICE_LOW_TOP		(0x100000000ul)
-> diff --git a/arch/powerpc/sysdev/xics/ics-native.c 
-> b/arch/powerpc/sysdev/xics/ics-native.c
-> index e33b77da861e..112c8a1e8159 100644
-> --- a/arch/powerpc/sysdev/xics/ics-native.c
-> +++ b/arch/powerpc/sysdev/xics/ics-native.c
-> @@ -15,6 +15,7 @@
->   #include <linux/init.h>
->   #include <linux/cpu.h>
->   #include <linux/of.h>
-> +#include <linux/of_address.h>
->   #include <linux/spinlock.h>
->   #include <linux/msi.h>
->   #include <linux/list.h>
-> 
-> 
->>
->> I'm wondering if these functions have to be moved in slice.c
->>
->> Attached is the config file I used.
->>
->>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->>> ---
->>>   arch/powerpc/include/asm/book3s/64/mmu.h   |  6 ----
->>>   arch/powerpc/include/asm/book3s/64/slice.h |  6 ++++
->>>   arch/powerpc/mm/book3s64/slice.c           | 42 ++++++++++++++++++++++
->>>   arch/powerpc/mm/hugetlbpage.c              | 21 -----------
->>>   arch/powerpc/mm/mmap.c                     | 36 -------------------
->>>   5 files changed, 48 insertions(+), 63 deletions(-)
->>>
->>> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
->>> index 006cbec70ffe..570a4960cf17 100644
->>> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
->>> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
->>> @@ -4,12 +4,6 @@
->>>   
->>>   #include <asm/page.h>
->>>   
->>> -#ifdef CONFIG_HUGETLB_PAGE
->>> -#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
->>> -#endif
->>> -#define HAVE_ARCH_UNMAPPED_AREA
->>> -#define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
->>> -
->>>   #ifndef __ASSEMBLY__
->>>   /*
->>>    * Page size definition
->>> diff --git a/arch/powerpc/include/asm/book3s/64/slice.h b/arch/powerpc/include/asm/book3s/64/slice.h
->>> index 5b0f7105bc8b..b8eb4ad271b9 100644
->>> --- a/arch/powerpc/include/asm/book3s/64/slice.h
->>> +++ b/arch/powerpc/include/asm/book3s/64/slice.h
->>> @@ -4,6 +4,12 @@
->>>   
->>>   #ifndef __ASSEMBLY__
->>>   
->>> +#ifdef CONFIG_HUGETLB_PAGE
->>> +#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
->>> +#endif
->>> +#define HAVE_ARCH_UNMAPPED_AREA
->>> +#define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
->>> +
->>>   #define SLICE_LOW_SHIFT		28
->>>   #define SLICE_LOW_TOP		(0x100000000ul)
->>>   #define SLICE_NUM_LOW		(SLICE_LOW_TOP >> SLICE_LOW_SHIFT)
->>> diff --git a/arch/powerpc/mm/book3s64/slice.c b/arch/powerpc/mm/book3s64/slice.c
->>> index e4382713746d..03681042b807 100644
->>> --- a/arch/powerpc/mm/book3s64/slice.c
->>> +++ b/arch/powerpc/mm/book3s64/slice.c
->>> @@ -639,6 +639,32 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
->>>   }
->>>   EXPORT_SYMBOL_GPL(slice_get_unmapped_area);
->>>   
->>> +unsigned long arch_get_unmapped_area(struct file *filp,
->>> +				     unsigned long addr,
->>> +				     unsigned long len,
->>> +				     unsigned long pgoff,
->>> +				     unsigned long flags)
->>> +{
->>> +	if (radix_enabled())
->>> +		return generic_get_unmapped_area(filp, addr, len, pgoff, flags);
->>> +
->>> +	return slice_get_unmapped_area(addr, len, flags,
->>> +				       mm_ctx_user_psize(&current->mm->context), 0);
->>> +}
->>> +
->>> +unsigned long arch_get_unmapped_area_topdown(struct file *filp,
->>> +					     const unsigned long addr0,
->>> +					     const unsigned long len,
->>> +					     const unsigned long pgoff,
->>> +					     const unsigned long flags)
->>> +{
->>> +	if (radix_enabled())
->>> +		return generic_get_unmapped_area_topdown(filp, addr0, len, pgoff, flags);
->>> +
->>> +	return slice_get_unmapped_area(addr0, len, flags,
->>> +				       mm_ctx_user_psize(&current->mm->context), 1);
->>> +}
->>> +
->>>   unsigned int notrace get_slice_psize(struct mm_struct *mm, unsigned long addr)
->>>   {
->>>   	unsigned char *psizes;
->>> @@ -766,4 +792,20 @@ unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
->>>   
->>>   	return 1UL << mmu_psize_to_shift(get_slice_psize(vma->vm_mm, vma->vm_start));
->>>   }
->>> +
->>> +static int file_to_psize(struct file *file)
->>> +{
->>> +	struct hstate *hstate = hstate_file(file);
->>> +	return shift_to_mmu_psize(huge_page_shift(hstate));
->>> +}
->>> +
->>> +unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
->>> +					unsigned long len, unsigned long pgoff,
->>> +					unsigned long flags)
->>> +{
->>> +	if (radix_enabled())
->>> +		return generic_hugetlb_get_unmapped_area(file, addr, len, pgoff, flags);
->>> +
->>> +	return slice_get_unmapped_area(addr, len, flags, file_to_psize(file), 1);
->>> +}
->>>   #endif
->>> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
->>> index a87c886042e9..b282af39fcf6 100644
->>> --- a/arch/powerpc/mm/hugetlbpage.c
->>> +++ b/arch/powerpc/mm/hugetlbpage.c
->>> @@ -542,27 +542,6 @@ struct page *follow_huge_pd(struct vm_area_struct *vma,
->>>   	return page;
->>>   }
->>>   
->>> -#ifdef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
->>> -static inline int file_to_psize(struct file *file)
->>> -{
->>> -	struct hstate *hstate = hstate_file(file);
->>> -	return shift_to_mmu_psize(huge_page_shift(hstate));
->>> -}
->>> -
->>> -unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
->>> -					unsigned long len, unsigned long pgoff,
->>> -					unsigned long flags)
->>> -{
->>> -	if (radix_enabled())
->>> -		return generic_hugetlb_get_unmapped_area(file, addr, len,
->>> -						       pgoff, flags);
->>> -#ifdef CONFIG_PPC_64S_HASH_MMU
->>> -	return slice_get_unmapped_area(addr, len, flags, file_to_psize(file), 1);
->>> -#endif
->>> -	BUG();
->>> -}
->>> -#endif
->>> -
->>>   bool __init arch_hugetlb_valid_size(unsigned long size)
->>>   {
->>>   	int shift = __ffs(size);
->>> diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
->>> index 46781d0103d1..5972d619d274 100644
->>> --- a/arch/powerpc/mm/mmap.c
->>> +++ b/arch/powerpc/mm/mmap.c
->>> @@ -80,42 +80,6 @@ static inline unsigned long mmap_base(unsigned long rnd,
->>>   	return PAGE_ALIGN(DEFAULT_MAP_WINDOW - gap - rnd);
->>>   }
->>>   
->>> -#ifdef HAVE_ARCH_UNMAPPED_AREA
->>> -unsigned long arch_get_unmapped_area(struct file *filp,
->>> -				     unsigned long addr,
->>> -				     unsigned long len,
->>> -				     unsigned long pgoff,
->>> -				     unsigned long flags)
->>> -{
->>> -	if (radix_enabled())
->>> -		return generic_get_unmapped_area(filp, addr, len, pgoff, flags);
->>> -
->>> -#ifdef CONFIG_PPC_64S_HASH_MMU
->>> -	return slice_get_unmapped_area(addr, len, flags,
->>> -				       mm_ctx_user_psize(&current->mm->context), 0);
->>> -#else
->>> -	BUG();
->>> -#endif
->>> -}
->>> -
->>> -unsigned long arch_get_unmapped_area_topdown(struct file *filp,
->>> -					     const unsigned long addr0,
->>> -					     const unsigned long len,
->>> -					     const unsigned long pgoff,
->>> -					     const unsigned long flags)
->>> -{
->>> -	if (radix_enabled())
->>> -		return generic_get_unmapped_area_topdown(filp, addr0, len, pgoff, flags);
->>> -
->>> -#ifdef CONFIG_PPC_64S_HASH_MMU
->>> -	return slice_get_unmapped_area(addr0, len, flags,
->>> -				       mm_ctx_user_psize(&current->mm->context), 1);
->>> -#else
->>> -	BUG();
->>> -#endif
->>> -}
->>> -#endif /* HAVE_ARCH_UNMAPPED_AREA */
->>> -
->>>   /*
->>>    * This function, called very early during the creation of a new
->>>    * process VM image, sets up which VM layout function to use:
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
+Thanks!
+
+[1/1] ASoC: fsl_sai: Fix FSL_SAI_xDR/xFR definition
+      commit: e4dd748dc87cf431af7b3954963be0d9f6150217
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
