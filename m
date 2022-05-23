@@ -4,107 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C112CC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 05:41:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78879C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 05:46:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L65mZ2Sr0z305D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 15:41:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L65tP0JHHz3brF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 15:46:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XIPnWqkZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=bXwOmwvp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::34;
+ helo=mail-oa1-x34.google.com; envelope-from=groeck7@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=XIPnWqkZ; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=bXwOmwvp; dkim-atps=neutral
+Received: from mail-oa1-x34.google.com (mail-oa1-x34.google.com
+ [IPv6:2001:4860:4864:20::34])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L65ll2TJjz2xKf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2022 15:40:51 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24N52Wd4003765;
- Mon, 23 May 2022 05:39:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : subject :
- to : cc : references : in-reply-to : mime-version : message-id :
- content-type : content-transfer-encoding; s=pp1;
- bh=PFNuXZrAekHBAO/x4Z8zgaZi4fTp/DEHoG+j4VQcKoM=;
- b=XIPnWqkZhtO606ZAOOQ7Zto74Hiy76aIiAMCNnlvW6kzaDSGgJoW/NFPrzTCm1IyLx3n
- lUTrEIcaogdAc3UMOD7IEZAhJwRcRUoiVcK6UyfiHecfYQBNzxQbWFAQv/Lb/uI2dcYy
- yiQD9iLYJoL8T6fffvadnrRYjl3h95jr0Sf9afUvoe6krOxxq33CGlgHuBE7czgiYW5d
- yW4dvFbxE6I/mygQImciD94m1JyCx2V1crNDNMmtEvnjkb6F55VqbhIJqBV1lZgtCmOS
- vKL4Aitvgy5jI6bA+/ENmKZwl1KQ6t8Zgq9JDYMLsryfdoza8X1ROOxFjbjbwdFOhWdU YA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3g79vrc7vu-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 23 May 2022 05:39:27 +0000
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 24N5WCwG005307;
- Mon, 23 May 2022 05:39:26 GMT
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3g79vrc7v5-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 23 May 2022 05:39:26 +0000
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24N5GOxB032557;
- Mon, 23 May 2022 05:39:23 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma04fra.de.ibm.com with ESMTP id 3g6qq99uts-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 23 May 2022 05:39:23 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 24N5cZBL32833982
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 23 May 2022 05:38:35 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7094CA4051;
- Mon, 23 May 2022 05:39:21 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 01F26A404D;
- Mon, 23 May 2022 05:39:21 +0000 (GMT)
-Received: from localhost (unknown [9.43.111.79])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 23 May 2022 05:39:20 +0000 (GMT)
-Date: Mon, 23 May 2022 11:09:19 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 3/3] objtool/mcount: Add powerpc specific functions
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Peter Zijlstra
- <peterz@infradead.org>, Sathvika Vasireddy <sv@linux.ibm.com>
-References: <20220318105140.43914-1-sv@linux.ibm.com>
- <20220318105140.43914-4-sv@linux.ibm.com>
- <YjR6kHq4c/rjCTpr@hirez.programming.kicks-ass.net>
- <0b55f122-4760-c1ba-840a-0911cefec2ad@csgroup.eu>
- <20220328195920.dqlfra3lcardko6r@treble>
- <b8fac6e2-c117-86cf-2901-5ae0852ca403@csgroup.eu>
- <20220512151206.dphxz5jyeshwc4jb@treble>
- <bedd240b-d5b1-72f9-156d-96d160f180d4@csgroup.eu>
- <20220521105704.GE2578@worktop.programming.kicks-ass.net>
-In-Reply-To: <20220521105704.GE2578@worktop.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L65sd2GQMz2ynh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2022 15:45:57 +1000 (AEST)
+Received: by mail-oa1-x34.google.com with SMTP id
+ 586e51a60fabf-f18e6ff0f6so17128821fac.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 May 2022 22:45:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=sender:date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=kK4Ka04kceqN8VVd9w6tDOmbYPZ+nJZTIe88jIZoSJk=;
+ b=bXwOmwvptXUzVEf8w+LjU8kE7nkSzHrjDVPCC77O/zHZxaE7Um57oJfNSQvms127Vg
+ 6bVR+SErg44S1V80Z6bc4GM2Z2FO9T4mQLwDIRDmL9hD/pvQuLzwjq9zNUFcrGLEc8LO
+ 7OaccycPlYwewUEVPyM7GtavDiuB1e14X2NVHnRB5BLlpGtpNAEQNzd+Izih4uBvXhks
+ xd+08qJAhqvzotdJ7BMPNOIk/G/7GfyOHXvm0qGrS7Z3LC9XSTseYoj102Y7IlTZc6Sq
+ jKMw76OUOdxUurNA+tEjR3JNslzHLKtGCM+hn+4PYsPkOcm7T068yqc7PbOcaEZEsIQT
+ XThQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+ :references:mime-version:content-disposition:in-reply-to;
+ bh=kK4Ka04kceqN8VVd9w6tDOmbYPZ+nJZTIe88jIZoSJk=;
+ b=YFyjyzm5ld7mST7g25Na699fHHnriWKxvZpTI2V/ce4DL1Mycn1EE2vK4eK4YQ9uwH
+ /uETO0tCSt7JMGYT3hG0Wfx2IMciv9axFlDRtJ0KFFvsfMOxaBUMATaW2VAnIGxgLF6Y
+ 2p8667Nzalk7Do4fFVfiJxdf4z0c5H3ifQ3/tH5V0WUMQhkhyvhRgHMnqEIkcORJjlbw
+ YTHsEKa9DDjPBy2Oz3uBIsOvEY38Z3h3U7aNHCzxfvmzTpU7K/iGOYYXgGoH0D+p4GXl
+ i5PGxy0F6rYfXoRUhPlx8WfPtOXuDXRcVrx3gO8BCwNy0NAsYWKhJqLF+WpomDwnafm8
+ 8yeA==
+X-Gm-Message-State: AOAM532H9DAIX8E+Y3Vdd01eA6Gg/4cRo/H3K8FpZbgUJErWEGraKT7n
+ M32o+TGMFYewGnrSG5Xmfjg=
+X-Google-Smtp-Source: ABdhPJzFVeM2nlljQKtG8croc7W21cxaI0vylQicrB+nyqNUTxI9l8dpKFNg37Q+twl0LUnv80NpPQ==
+X-Received: by 2002:a05:6871:283:b0:f1:a2cb:1371 with SMTP id
+ i3-20020a056871028300b000f1a2cb1371mr10792141oae.147.1653284752356; 
+ Sun, 22 May 2022 22:45:52 -0700 (PDT)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+ by smtp.gmail.com with ESMTPSA id
+ 106-20020a9d0bf3000000b0060603221276sm3660850oth.70.2022.05.22.22.45.51
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 22 May 2022 22:45:51 -0700 (PDT)
+Date: Sun, 22 May 2022 22:45:50 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: guoren@kernel.org
+Subject: Re: [PATCH V9 20/20] riscv: compat: Add COMPAT Kbuild skeletal support
+Message-ID: <20220523054550.GA1511899@roeck-us.net>
+References: <20220322144003.2357128-1-guoren@kernel.org>
+ <20220322144003.2357128-21-guoren@kernel.org>
 MIME-Version: 1.0
-User-Agent: astroid/4d6b06ad (https://github.com/astroidmail/astroid)
-Message-Id: <1653283961.ozxe2866nt.naveen@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: Q4XrUBLp1vLNiLkxKy3NPUZ3a81A8eAR
-X-Proofpoint-GUID: TBiGA9AsHHO1NnovwnJFeyyoVBWOPvd6
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.486,FMLib:17.11.64.514
- definitions=2022-05-23_01,2022-05-20_02,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 mlxscore=0
- malwarescore=0 spamscore=0 clxscore=1011 priorityscore=1501
- impostorscore=0 suspectscore=0 lowpriorityscore=0 bulkscore=0 phishscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2202240000 definitions=main-2205230034
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220322144003.2357128-21-guoren@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,91 +83,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rostedt@goodmis.org" <rostedt@goodmis.org>,
- Josh Poimboeuf <jpoimboe@redhat.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Josh Poimboeuf <jpoimboe@kernel.org>
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Guo Ren <guoren@linux.alibaba.com>, linux-parisc@vger.kernel.org,
+ arnd@arndb.de, gregkh@linuxfoundation.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
+ linux-mips@vger.kernel.org, palmer@dabbelt.com, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, hch@lst.de,
+ linux-arm-kernel@lists.infradead.org, heiko@sntech.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Peter Zijlstra wrote:
-> On Sat, May 21, 2022 at 09:38:35AM +0000, Christophe Leroy wrote:
->=20
->> I gave it a try this morning, I selected HAVE_OBJTOOL and=20
->> HAVE_OBJTOOL_MCOUNT from arch/powerpc/Kconfig
->>=20
->>=20
->> Seems like there are still some x86 arch specific stuff in common common=
-=20
->> code and I get the following errors.
->=20
-> I'm assuming there's a metric ton of x86 specific stuff in there.
-> That'll take a while to clean out.
->=20
-> Mostly Josh's rewrite was centered around splitting out the runtime
-> options, but objtool is still always build with all options included,
-> even the ones you're not using for your arch, which is what's triggering
-> the problems you see here, I suppose...
->=20
->> Also, is it normal to get those functions built allthough I have not=20
->> selected HAVE_STACK_VALIDATION ?
->>=20
->>    CC      /home/chleroy/linux-powerpc/tools/objtool/check.o
->> check.c: In function 'has_valid_stack_frame':
->> check.c:2369:30: error: 'CFI_BP' undeclared (first use in this=20
->> function); did you mean 'CFI_SP'?
->>   2369 |         if (cfi->cfa.base =3D=3D CFI_BP &&
->>        |                              ^~~~~~
->>        |                              CFI_SP
->> check.c:2369:30: note: each undeclared identifier is reported only once=20
->> for each function it appears in
->> check.c:2371:44: error: 'CFI_RA' undeclared (first use in this=20
->> function); did you mean 'CFI_R3'?
->>   2371 |             check_reg_frame_pos(&cfi->regs[CFI_RA],=20
->> -cfi->cfa.offset + 8))
->>        |                                            ^~~~~~
->>        |                                            CFI_R3
->> check.c: In function 'update_cfi_state':
->> check.c:2499:70: error: 'CFI_BP' undeclared (first use in this=20
->> function); did you mean 'CFI_SP'?
->>   2499 |                         if (op->src.reg =3D=3D CFI_SP &&=20
->> op->dest.reg =3D=3D CFI_BP &&
->>        |=20
->>        ^~~~~~
->>        |=20
->>        CFI_SP
->> make[3]: *** [/home/chleroy/linux-powerpc/tools/build/Makefile.build:97:=
-=20
->> /home/chleroy/linux-powerpc/tools/objtool/check.o] Error 1
->> make[2]: *** [Makefile:54:=20
->> /home/chleroy/linux-powerpc/tools/objtool/objtool-in.o] Error 2
->> make[1]: *** [Makefile:69: objtool] Error 2
->> make: *** [Makefile:1337: tools/objtool] Error 2
->>=20
->>=20
->> What would be the best approach to fix that ?
->=20
-> Define CFI_BP to your frame register (r2, afaict) I suppose. If you're
-> only using OBJTOOL_MCOUNT this code will never run, so all you have to
-> ensure is that it compiles, not that it makes sense (-:
+On Tue, Mar 22, 2022 at 10:40:03PM +0800, guoren@kernel.org wrote:
+> From: Guo Ren <guoren@linux.alibaba.com>
+> 
+> Adds initial skeletal COMPAT Kbuild (Running 32bit U-mode on
+> 64bit S-mode) support.
+>  - Setup kconfig & dummy functions for compiling.
+>  - Implement compat_start_thread by the way.
+> 
+> Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+> Signed-off-by: Guo Ren <guoren@kernel.org>
+> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+> Tested-by: Heiko Stuebner <heiko@sntech.de>
+> Cc: Palmer Dabbelt <palmer@dabbelt.com>
 
-Sathvika has been looking into this.
+With this patch in linux-next, all my riscv64 emulations crash.
 
->=20
-> The very long and complicated way would be to propagate the various
-> CONFIG_HAVE_* build time things to the objtool build and librally
-> sprinkle a lot of #ifdef around.
+[   11.600082] Run /sbin/init as init process
+[   11.628561] init[1]: unhandled signal 11 code 0x1 at 0x0000000000000000 in libc.so[ffffff8ad39000+a4000]
+[   11.629398] CPU: 0 PID: 1 Comm: init Not tainted 5.18.0-rc7-next-20220520 #1
+[   11.629462] Hardware name: riscv-virtio,qemu (DT)
+[   11.629546] epc : 00ffffff8ada1100 ra : 00ffffff8ada13c8 sp : 00ffffffc58199f0
+[   11.629586]  gp : 00ffffff8ad39000 tp : 00ffffff8ade0998 t0 : ffffffffffffffff
+[   11.629598]  t1 : 00ffffffc5819fd0 t2 : 0000000000000000 s0 : 00ffffff8ade0cc0
+[   11.629610]  s1 : 00ffffff8ade0cc0 a0 : 0000000000000000 a1 : 00ffffffc5819a00
+[   11.629622]  a2 : 0000000000000001 a3 : 000000000000001e a4 : 00ffffffc5819b00
+[   11.629634]  a5 : 00ffffffc5819b00 a6 : 0000000000000000 a7 : 0000000000000000
+[   11.629645]  s2 : 00ffffff8ade0ac8 s3 : 00ffffff8ade0ec8 s4 : 00ffffff8ade0728
+[   11.629656]  s5 : 00ffffff8ade0a90 s6 : 0000000000000000 s7 : 00ffffffc5819e40
+[   11.629667]  s8 : 00ffffff8ade0ca0 s9 : 00ffffff8addba50 s10: 0000000000000000
+[   11.629678]  s11: 0000000000000000 t3 : 0000000000000002 t4 : 0000000000000001
+[   11.629688]  t5 : 0000000000020000 t6 : ffffffffffffffff
+[   11.629699] status: 0000000000004020 badaddr: 0000000000000000 cause: 000000000000000d
+[   11.633421] Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
+[   11.633664] CPU: 0 PID: 1 Comm: init Not tainted 5.18.0-rc7-next-20220520 #1
+[   11.633784] Hardware name: riscv-virtio,qemu (DT)
+[   11.633881] Call Trace:
+[   11.633960] [<ffffffff80005e72>] dump_backtrace+0x1c/0x24
+[   11.634162] [<ffffffff809aa9ec>] show_stack+0x2c/0x38
+[   11.634274] [<ffffffff809b8482>] dump_stack_lvl+0x60/0x8e
+[   11.634386] [<ffffffff809b84c4>] dump_stack+0x14/0x1c
+[   11.634491] [<ffffffff809aaca0>] panic+0x116/0x2e2
+[   11.634596] [<ffffffff80015540>] do_exit+0x7ce/0x7d4
+[   11.634707] [<ffffffff80015666>] do_group_exit+0x24/0x7c
+[   11.634817] [<ffffffff80022294>] get_signal+0x7ee/0x830
+[   11.634924] [<ffffffff800051c0>] do_notify_resume+0x6c/0x41c
+[   11.635037] [<ffffffff80003ad4>] ret_from_exception+0x0/0x10
 
-I think there were just a couple of unrelated checks/warnings that were=20
-causing problems on powerpc. So, we likely won't need too many #ifdefs,=20
-at least for mcount purposes.
+Guenter
 
-Sathvika,
-Can you post what you have?
-
-
-- Naveen
-
+---
+# bad: [18ecd30af1a8402c162cca1bd58771c0e5be7815] Add linux-next specific files for 20220520
+# good: [42226c989789d8da4af1de0c31070c96726d990c] Linux 5.18-rc7
+git bisect start 'HEAD' 'v5.18-rc7'
+# bad: [f9b63740b666dd9887eb0282d21b5f65bb0cadd0] Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/herbert/cryptodev-2.6.git
+git bisect bad f9b63740b666dd9887eb0282d21b5f65bb0cadd0
+# bad: [7db97132097c5973ff77466d0ee681650af653de] Merge branch 'for-next' of git://git.kernel.org/pub/scm/linux/kernel/git/cel/linux
+git bisect bad 7db97132097c5973ff77466d0ee681650af653de
+# good: [2b7d17d4b7c1ff40f58b0d32be40fc0bb6c582fb] soc: document merges
+git bisect good 2b7d17d4b7c1ff40f58b0d32be40fc0bb6c582fb
+# good: [69c9668f853fdd409bb8abbb37d615785510b29a] Merge branch 'clk-next' of git://git.kernel.org/pub/scm/linux/kernel/git/clk/linux.git
+git bisect good 69c9668f853fdd409bb8abbb37d615785510b29a
+# bad: [1577f290aa0d4c5b29c03c46ef52e4952a21bfbb] Merge branch 'for-next' of git://git.kernel.org/pub/scm/linux/kernel/git/s390/linux.git
+git bisect bad 1577f290aa0d4c5b29c03c46ef52e4952a21bfbb
+# good: [34f0971f8ca73d7e5502b4cf299788a9402120f7] powerpc/powernv/flash: Check OPAL flash calls exist before using
+git bisect good 34f0971f8ca73d7e5502b4cf299788a9402120f7
+# good: [0349d7dfc70a26b3facd8ca97de34980d4b60954] Merge branch 'mips-next' of git://git.kernel.org/pub/scm/linux/kernel/git/mips/linux.git
+git bisect good 0349d7dfc70a26b3facd8ca97de34980d4b60954
+# bad: [20bfb54d3b121699674c17a854c5ebc7a8f97d81] Merge branch 'for-next' of git://git.kernel.org/pub/scm/linux/kernel/git/riscv/linux.git
+git bisect bad 20bfb54d3b121699674c17a854c5ebc7a8f97d81
+# bad: [9be8459298eadb39b9fe9974b890239e9c123107] riscv: compat: Add COMPAT Kbuild skeletal support
+git bisect bad 9be8459298eadb39b9fe9974b890239e9c123107
+# good: [01abdfeac81b5f56062d0a78f2cdc805db937a75] riscv: compat: Support TASK_SIZE for compat mode
+git bisect good 01abdfeac81b5f56062d0a78f2cdc805db937a75
+# good: [f4b395e6f1a588ed6c9a30474e58cf6b27b65783] riscv: compat: Add hw capability check for elf
+git bisect good f4b395e6f1a588ed6c9a30474e58cf6b27b65783
+# good: [3092eb45637573c5e435fbf5eaf9516316e5f9c6] riscv: compat: vdso: Add setup additional pages implementation
+git bisect good 3092eb45637573c5e435fbf5eaf9516316e5f9c6
+# good: [4608c159594fb40a5101357d4f614fdde9ce1fdb] riscv: compat: ptrace: Add compat_arch_ptrace implement
+git bisect good 4608c159594fb40a5101357d4f614fdde9ce1fdb
+# first bad commit: [9be8459298eadb39b9fe9974b890239e9c123107] riscv: compat: Add COMPAT Kbuild skeletal support
