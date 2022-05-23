@@ -4,59 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA139C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 20:41:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D879C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 23:01:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6TlS5TbNz3bc8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 06:41:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6XrQ1Xbvz3c8R
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 09:01:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=fPCMiuZn;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=nGUkzijZ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=igalia.com (client-ip=178.60.130.6; helo=fanzine2.igalia.com;
- envelope-from=gpiccoli@igalia.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::35;
+ helo=mail-oa1-x35.google.com; envelope-from=groeck7@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256
- header.s=20170329 header.b=fPCMiuZn; dkim-atps=neutral
-Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=nGUkzijZ; dkim-atps=neutral
+Received: from mail-oa1-x35.google.com (mail-oa1-x35.google.com
+ [IPv6:2001:4860:4864:20::35])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6Tkk1D0Kz308w
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 06:41:14 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com; 
- s=20170329;
- h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
- References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
- Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
- Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
- List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=LG2HkLvcft3PZ/5y+RaNtcoQpztQykGkc8EQp8pxJfI=; b=fPCMiuZns16FgBzoGF9Je3OLkO
- LL4L2QHAG/wGtiXgEhS21zRsWqE1LMzGwwDxe6f9KpfZaY9eV7CGD4vwhcqTRNInSSR1HDaLnpPpS
- miMpU8/+9j0GmfawjCEu88Tqk7uAI9V6UbtlRLQsT2Paj7KpRr9Eexx/1nt9uyC0/PRdqZ6qso//5
- 331flFwFw5rYDxq1lD4s7YGntuImz8x8p2XDCS463SY8sQhksTBKudAp4pKnME8DpTbZ4fGAvbQxT
- wafY442u8mSqR6x/cwniP7CEUq4fd8W+eVImWzP4xrptC52doj1jXiLwbdsJQSnWbw0nF1P7Xd8f/
- wPYC4mSw==;
-Received: from 200-161-159-120.dsl.telesp.net.br ([200.161.159.120]
- helo=[192.168.1.60]) by fanzine2.igalia.com with esmtpsa 
- (Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
- id 1ntEr0-00Gje9-7b; Mon, 23 May 2022 22:40:38 +0200
-Message-ID: <0dda86c0-3a54-8c70-d1e7-18bbb4d41bab@igalia.com>
-Date: Mon, 23 May 2022 17:40:07 -0300
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6Xqd6KX1z308V
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 09:00:44 +1000 (AEST)
+Received: by mail-oa1-x35.google.com with SMTP id
+ 586e51a60fabf-f16a3e0529so20326246fac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2022 16:00:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20210112;
+ h=sender:date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:content-transfer-encoding:in-reply-to;
+ bh=/hOaZULQrF9LX4munHpY3wVXOQ9nYFe0ZRAvQXZ3vbE=;
+ b=nGUkzijZu5ZFwvP8H84AwlAD1vdzdwA1fp5JhNnOjdcRC+ZxUoP+QYS9XM6GLQeWyk
+ phuU243eWaA6M+lCDpQB8vQdh7UdO47A0ZJYAgW4Um8l1Je80E/ADeEln0UO4XBU06uk
+ on8Kx0QGQnjxiqYAC4W9JuuCImAujkCxhohJ9HwGnvDEXHmXOp51TTJpBA0kMEvDsd2n
+ XjWGc1x9K9Uo2HMgqryiDUOsGi2dZjT+EyH+RDMx5s3Jhl2IKdM5ql4zNVw3Tn+xZBSM
+ iAI+2SAS0zaoEjNKFKND7vIAfWufy9XiIMFFVGaGrZQ9xEsjaYicgVQ/L7iaon8uSMaO
+ GZaA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+ :references:mime-version:content-disposition
+ :content-transfer-encoding:in-reply-to;
+ bh=/hOaZULQrF9LX4munHpY3wVXOQ9nYFe0ZRAvQXZ3vbE=;
+ b=EEb8jmhfe2Jrnt51LkHDinDJBTaa+OkfxWIc7tBiuDVctbYjP0LZHhN/aUP2wAQ6Qh
+ gZpo1ymS2akTZ9bqKjD1S15p85gJHAp230cWdYBFvbj2Rk/EIt/ruKSmm0Z6MHGbqO5c
+ m6l3UsZPb/Byoa1svy/Xzeii8FZ9Jap/AFg2NteI2s2mSD3UFpwsv82fXbsv8vZbUK8j
+ uBS04F4Lcrv91IYoRREDBdQYXnaKUZOClNWkLnG9BxnhaGFW1LnSvUylPzsaZ2htsd0o
+ KHfAdShW6xaMFRhDzQk4T5GPzg2cvIz5FajuBgadxrpz8jZysFauE1Q7m9s0asAHCFkL
+ mWQg==
+X-Gm-Message-State: AOAM533bS5uG1M5ulmIAC84tZnKE0eVLA121uFyFLR4Axj51+ErceUy7
+ XqtfPSV5DU5AOGwsVzRsWDY=
+X-Google-Smtp-Source: ABdhPJwFYvmU9t0f1/cxvvqr52oJVOx3ly87DqZ/EmOOoCe4wzWaAPc48YIP+GgJ2Vc9YQqj1/y/lw==
+X-Received: by 2002:a05:6870:15cc:b0:ee:456f:c1e5 with SMTP id
+ k12-20020a05687015cc00b000ee456fc1e5mr788661oad.46.1653346841457; 
+ Mon, 23 May 2022 16:00:41 -0700 (PDT)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+ by smtp.gmail.com with ESMTPSA id
+ t5-20020a056871054500b000e686d1386asm4315531oal.4.2022.05.23.16.00.40
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 23 May 2022 16:00:40 -0700 (PDT)
+Date: Mon, 23 May 2022 16:00:39 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH V9 20/20] riscv: compat: Add COMPAT Kbuild skeletal support
+Message-ID: <20220523230039.GA238308@roeck-us.net>
+References: <20220322144003.2357128-1-guoren@kernel.org>
+ <CAJF2gTSCcYif4DEpvrJ6d02no3CU_viyE+OkhhjCV3VsGmcT5Q@mail.gmail.com>
+ <0ecdb673-b9a8-40af-7dee-2ba7fe739e5f@roeck-us.net>
+ <44686961.fMDQidcC6G@diego>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Subject: Re: [PATCH 12/30] parisc: Replace regular spinlock with spin_trylock
- on panic path
-Content-Language: en-US
-To: Helge Deller <deller@gmx.de>
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-13-gpiccoli@igalia.com>
- <6a7c924a-54a9-c5ea-8a9d-3ea92987b436@gmx.de>
-From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-In-Reply-To: <6a7c924a-54a9-c5ea-8a9d-3ea92987b436@gmx.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <44686961.fMDQidcC6G@diego>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,44 +87,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
- linux-xtensa@linux-xtensa.org, peterz@infradead.org,
- alejandro.j.jimenez@oracle.com, linux-remoteproc@vger.kernel.org,
- feng.tang@intel.com, linux-mips@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- hidehiro.kawai.ez@hitachi.com, sparclinux@vger.kernel.org, will@kernel.org,
- tglx@linutronix.de, linux-leds@vger.kernel.org, linux-s390@vger.kernel.org,
- mikelley@microsoft.com, john.ogness@linutronix.de, bhe@redhat.com,
- corbet@lwn.net, paulmck@kernel.org, fabiomirmar@gmail.com, x86@kernel.org,
- mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com,
- xen-devel@lists.xenproject.org, dyoung@redhat.com, vgoyal@redhat.com,
- pmladek@suse.com, dave.hansen@linux.intel.com, keescook@chromium.org,
- arnd@arndb.de, linux-pm@vger.kernel.org, linux-um@lists.infradead.org,
- rostedt@goodmis.org, rcu@vger.kernel.org, gregkh@linuxfoundation.org,
- bp@alien8.de, luto@kernel.org, linux-tegra@vger.kernel.org,
- openipmi-developer@lists.sourceforge.net, andriy.shevchenko@linux.intel.com,
- vkuznets@redhat.com, linux-edac@vger.kernel.org, jgross@suse.com,
- linux-parisc@vger.kernel.org, netdev@vger.kernel.org, kernel@gpiccoli.net,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- stern@rowland.harvard.edu, senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com,
- mhiramat@kernel.org, kernel-dev@igalia.com, linux-alpha@vger.kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Guo Ren <guoren@linux.alibaba.com>,
+ Parisc List <linux-parisc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-csky@vger.kernel.org,
+ "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, sparclinux <sparclinux@vger.kernel.org>,
+ Guo Ren <guoren@kernel.org>, linux-riscv <linux-riscv@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 28/04/2022 13:55, Helge Deller wrote:
-> [...]
-> You may add:
-> Acked-by: Helge Deller <deller@gmx.de> # parisc
+On Tue, May 24, 2022 at 12:40:06AM +0200, Heiko Stübner wrote:
+> Hi Guenter,
 > 
-> Helge
+> Am Montag, 23. Mai 2022, 18:18:47 CEST schrieb Guenter Roeck:
+> > On 5/23/22 08:18, Guo Ren wrote:
+> > > I tested Palmer's branch, it's okay:
+> > > 8810d7feee5a (HEAD -> for-next, palmer/for-next) riscv: Don't output a
+> > > bogus mmu-type on a no MMU kernel
+> > > 
+> > > I also tested linux-next, it's okay:
+> > > 
+> > > rv64_rootfs:
+> > > # uname -a
+> > > Linux buildroot 5.18.0-next-20220523 #7 SMP Mon May 23 11:15:17 EDT
+> > > 2022 riscv64 GNU/Linux
+> > > #
+> > 
+> > That is is ok with one setup doesn't mean it is ok with
+> > all setups. It is not ok with my root file system (from
+> > https://github.com/groeck/linux-build-test/tree/master/rootfs/riscv64),
+> > with qemu v6.2.
+> 
+> That is very true that it shouldn't fail on any existing (qemu-)platform,
+> but as I remember also testing Guo's series on both riscv32 and riscv64
+> qemu platforms in the past, I guess it would be really helpful to get more
+> information about the failing platform you're experiencing so that we can
+> find the source of the issue.
+> 
+> As it looks like you both tested the same kernel source, I guess the only
+> differences could be in the qemu-version, kernel config and rootfs.
+> Is your rootfs something you can share or that can be rebuilt easily?
+> 
+I provided a link to my root file system above. The link points to two
+root file systems, for initrd (cpio archive) and for ext2.
+I also mentioned above that I used qemu v6.2. And below I said
 
-Hi Helge, do you think would be possible to still pick this one for
-v5.19 or do you prefer to hold for the next release?
+> My root file system uses musl.
 
-I'm working on V2, so if it's merged for 5.19 I won't send it again.
-Thanks,
+I attached the buildroot configuration below. The buildroot version,
+if I remember correctly, was 2021.02.
 
+Kernel configuration is basically defconfig. However, I do see one
+detail that is possibly special in my configuration.
 
-Guilherme
+    # The latest kernel assumes SBI version 0.3, but that doesn't match qemu
+    # at least up to version 6.2 and results in hangup/crashes during reboot
+    # with sifive_u emulations.
+    enable_config "${defconfig}" CONFIG_RISCV_SBI_V01
+
+Hope that helps,
+
+Guenter
+
+---
+BR2_riscv=y
+BR2_TOOLCHAIN_BUILDROOT_MUSL=y
+BR2_KERNEL_HEADERS_4_19=y
+BR2_BINUTILS_VERSION_2_32_X=y
+BR2_TARGET_RUN_TESTSCRIPT=y
+BR2_SHUTDOWN_COMMAND_POWEROFF=y
+BR2_SYSTEM_DHCP="eth0"
+BR2_PACKAGE_BUSYBOX_SHOW_OTHERS=y
+BR2_PACKAGE_STRACE=y
+BR2_PACKAGE_I2C_TOOLS=y
+BR2_PACKAGE_PCIUTILS=y
+BR2_PACKAGE_DTC=y
+BR2_PACKAGE_DTC_PROGRAMS=y
+BR2_PACKAGE_IPROUTE2=y
+BR2_TARGET_ROOTFS_BTRFS=y
+BR2_TARGET_ROOTFS_CPIO=y
+BR2_TARGET_ROOTFS_CPIO_GZIP=y
+BR2_TARGET_ROOTFS_EXT2=y
+BR2_TARGET_ROOTFS_EXT2_SIZE="16M"
+BR2_TARGET_ROOTFS_EXT2_GZIP=y
+BR2_TARGET_ROOTFS_ISO_GZIP=y
+BR2_TARGET_ROOTFS_SQUASHFS=y
+# BR2_TARGET_ROOTFS_TAR is not set
+
