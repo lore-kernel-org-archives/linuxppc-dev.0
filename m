@@ -4,102 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64337C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 14:20:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9AAAC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 May 2022 15:16:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6KHW4DhHz3bw4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 00:20:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6LWt6XqFz3bnS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 01:16:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MR4Rn/6i;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=UQslza7y;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=murphyp@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=MR4Rn/6i; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ smtp.mailfrom=suse.com (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
+ envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
+ header.s=susede1 header.b=UQslza7y; dkim-atps=neutral
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6LW760Nlz3bYG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 01:15:46 +1000 (AEST)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+ by smtp-out1.suse.de (Postfix) with ESMTP id E345821B40;
+ Mon, 23 May 2022 15:15:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+ t=1653318942; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=Li9Eq39Zca7A7Yd+2+8FiQZmQCwkSJCjj6oLOBXVCTQ=;
+ b=UQslza7yiL1x8r4CTlcvmyaEzDceraNNRn4y2gdNRFA021qH++lF1uuahK9zlB0ChD1z2W
+ opw6Z1MGw6aJi0cxM3BmTltSvfrdGBSoVU5Z/bvw/OtqPHl40yNd4DDS8TmMABzOjvjpWm
+ jBE7cmrpVE3jk5YKQjCOBilTHWohuHc=
+Received: from suse.cz (unknown [10.100.208.146])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6KGh6xbdz2yMj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 00:19:56 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24NEDjnV002727;
- Mon, 23 May 2022 14:19:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=qBmsxwi4lCespPhYuPLAJWW5ORIDnogvPNtq63ieWjs=;
- b=MR4Rn/6ifwjhYZ8bj6mNkJSs8P87N89AM7kOS5wnoqC+7jydVeS3oOoqltejdDsDbcjB
- IJLBbjfTN1UPDLOI61NWLRfP9v7GI3AClftLy2nTk9Dcyde7VwEkRT5iFJVAKkmynb+k
- oprRdxJGNnw8FPQROGRtWC3aMXLU/s50PYQYGDV8t5JVCf7H5FSCFqIK3h5W3S00Kov/
- PfIBg1+m+dOWEWW6DLlMtEQN0gY6HlSXrdpOZ6EQ+ksGiv7UcDoE7wYOPLcjQqRmxUzy
- oDu5McdHomlA0CntyQY4kT7vwwmbwLmKMoLz9/EjJfZDMkSb48XWet3MDUohAG/mKOeT ZA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3g8buc049q-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 23 May 2022 14:19:50 +0000
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 24NEIRgw022590;
- Mon, 23 May 2022 14:19:50 GMT
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3g8buc049j-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 23 May 2022 14:19:50 +0000
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24NEIpIN022605;
- Mon, 23 May 2022 14:19:49 GMT
-Received: from b03cxnp07027.gho.boulder.ibm.com
- (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
- by ppma02dal.us.ibm.com with ESMTP id 3g6qq9crek-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 23 May 2022 14:19:49 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 24NEJmN428901768
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 23 May 2022 14:19:48 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8BCECBE051;
- Mon, 23 May 2022 14:19:48 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 05005BE056;
- Mon, 23 May 2022 14:19:48 +0000 (GMT)
-Received: from [9.160.107.32] (unknown [9.160.107.32])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 23 May 2022 14:19:47 +0000 (GMT)
-Message-ID: <27e05114-fd3a-b7cc-1bdd-05d8eaf0b483@linux.ibm.com>
-Date: Mon, 23 May 2022 09:19:47 -0500
+ by relay2.suse.de (Postfix) with ESMTPS id DC5A02C141;
+ Mon, 23 May 2022 15:15:40 +0000 (UTC)
+Date: Mon, 23 May 2022 17:15:37 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] livepatch: Remove klp_arch_set_pc() and asm/livepatch.h
+Message-ID: <YoulGX1p82IoEzST@alley>
+References: <e029c7cfde436f6bbf99148ab14dc2da99add503.1648447981.git.christophe.leroy@csgroup.eu>
+ <YkLsEUgxJkYbLZ7Z@alley>
+ <e1840187-6032-9f75-d7a8-b2b2fc5cbb58@csgroup.eu>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Subject: Re: [RFC Linux patch] powerpc: add documentation for HWCAPs
-Content-Language: en-US
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20220520051528.98097-1-npiggin@gmail.com>
- <c1f6c6c9-4cc7-0dcb-360d-9ae0df6378b4@linux.ibm.com>
- <1653091346.1a5h1ae3pd.astroid@bobo.none>
-From: Paul E Murphy <murphyp@linux.ibm.com>
-In-Reply-To: <1653091346.1a5h1ae3pd.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: iwiQ7e3rQkxS3vx6qxmaMpdUasbj9GXf
-X-Proofpoint-GUID: v1u-EZaBbZFjIMDskUdp7D2rBgkdccIa
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.486,FMLib:17.11.64.514
- definitions=2022-05-23_06,2022-05-23_01,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 malwarescore=0
- clxscore=1015 priorityscore=1501 suspectscore=0 adultscore=0
- impostorscore=0 mlxscore=0 bulkscore=0 phishscore=0 lowpriorityscore=0
- mlxlogscore=975 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2202240000 definitions=main-2205230079
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e1840187-6032-9f75-d7a8-b2b2fc5cbb58@csgroup.eu>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,60 +65,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gcc@gcc.gnu.org, libc-alpha@sourceware.org
+Cc: Dave Hansen <dave.hansen@linux.intel.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ "live-patching@vger.kernel.org" <live-patching@vger.kernel.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>, Miroslav Benes <mbenes@suse.cz>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Joe Lawrence <joe.lawrence@redhat.com>, "x86@kernel.org" <x86@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
+ Jiri Kosina <jikos@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Sven Schnelle <svens@linux.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 5/20/22 7:11 PM, Nicholas Piggin wrote:
-> Excerpts from Paul E Murphy's message of May 21, 2022 12:21 am:
->>
->>
->> On 5/20/22 12:15 AM, Nicholas Piggin via Gcc wrote:
->>> +PPC_FEATURE2_TAR
->>> +    VSX facility is available.
->>
->> Was manipulating the tar spr was once a privileged instruction, is this
->> a hint userspace can use the related instructions?
+On Mon 2022-05-23 06:51:47, Christophe Leroy wrote:
 > 
-> It can be disabled with facility control, and I guess there was
-> some consideration for how it might be used, e.g., "system software"
-> could use it for its own purpose then clear the bit for the application.
 > 
-> In practice I don't really know what makes use of this or whether
-> anything sanely can, it's marked reserved in the ABI. Would be
-> interesting to know whether there is much benefit to use it in the
-> compiler. The kernel could actually use it for something nifty if we
-> were able to prevent userspace from accessing it entirely...
-
-It might be useful as a scratch register for indirect branches in some 
-odd cases, such as golang's preemptive userspace threading.  Though, it 
-seems more trouble than its worth for a very limited benefit.
-
+> Le 29/03/2022 à 13:22, Petr Mladek a écrit :
+> > On Mon 2022-03-28 08:26:48, Christophe Leroy wrote:
+> >> All three versions of klp_arch_set_pc() do exactly the same: they
+> >> call ftrace_instruction_pointer_set().
+> >>
+> >> Call ftrace_instruction_pointer_set() directly and remove
+> >> klp_arch_set_pc().
+> >>
+> >> As klp_arch_set_pc() was the only thing remaining in asm/livepatch.h
+> >> on x86 and s390, remove asm/livepatch.h
+> >>
+> >> livepatch.h remains on powerpc but its content is exclusively used
+> >> by powerpc specific code.
+> >>
+> >> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> > 
+> > Acked-by: Petr Mladek <pmladek@suse.com>
+> > 
+> > I am going to take it via livepatch/livepatch.git for 5.19. We are
+> > already in the middle of the merge window and this is not critical.
+> > 
 > 
->>> +
->>> +PPC_FEATURE2_HAS_IEEE128
->>> +    IEEE 128 is available? What instructions/data?
->>
->> Maybe something like "IEEE 128 binary floating point instructions are
->> supported.  Individual instruction availability is dependent on the
->> reported architecture version."?
+> I haven't seen it in linux-next.
 > 
-> Right, I just didn't know what architectural class of instructions
-> those are. Is it just VSX in general or are there some specific
-> things we can name?
+> Do you still plan to take it for 5.19 ?
 
-I think ISA 3.1 buckets this into an OpenPOWER Linux Optional Feature 
-for "Quad-precision floating-point (QFP)".  I guess ISA 3.0 predates 
-those categorizations.
+Thanks a lot for pointing this out. I have completely forgot about
+this patch /o\
 
+I have just pushed it into livepatching/livepatching.git,
+branch for-5.19/cleanup.
 
->>> +PPC_FEATURE2_MMA
->>> +    MMA facility is available.
->>
->> Maybe another note that specific instruction availability may depend on
->> the reported architecture version?
-Yep. I wonder if it would help to note how these align (or don't) with 
-the various OpenPOWER features.
+I am going to create pull request for 5.19 by the end of this week
+after it gets a spin in linux-next.
+
+Best Regards,
+Petr
