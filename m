@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D752C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:26:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5528CC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:26:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sMZ5jBBz3fJZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:26:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sN00B6Jz3fJH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:26:24 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7w38h6z3cgj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7x0fHnz3cgx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:57 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7w0qdqz4xYX;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7x01MJz4yTN;
  Tue, 24 May 2022 21:15:56 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Oscar Salvador <osalvador@suse.de>
-In-Reply-To: <20220411074934.4632-1-osalvador@suse.de>
-References: <20220411074934.4632-1-osalvador@suse.de>
-Subject: Re: [PATCH] powerpc/numa: Associate numa node to its cpu earlier
-Message-Id: <165339058296.1718562.9706325672681890967.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:09:42 +1000
+To: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>, Pali Rohár <pali@kernel.org>
+In-Reply-To: <20220506203621.26314-1-pali@kernel.org>
+References: <20220506203621.26314-1-pali@kernel.org>
+Subject: Re: [PATCH] powerpc/85xx: P2020: Add fsl,mpc8548-pmc node
+Message-Id: <165339056016.1718562.7051892610899050151.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:09:20 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,27 +42,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
- Michal Hocko <mhocko@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-mm@kvack.org
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 11 Apr 2022 09:49:34 +0200, Oscar Salvador wrote:
-> powerpc is the only platform that do not rely on
-> cpu_up()->try_online_node() to bring up a numa node,
-> and special cases it, instead, deep in its own machinery:
+On Fri, 6 May 2022 22:36:21 +0200, Pali Rohár wrote:
+> P2020 also contains Power Management Controller and their registers at
+> offset 0xe0070 compatible with mpc8548. So add PMC node into DTS include
+> file fsl/p2020si-post.dtsi
 > 
-> dlpar_online_cpu
->  find_and_online_cpu_nid
->   try_online_node
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/numa: Associate numa node to its cpu earlier
-      https://git.kernel.org/powerpc/c/48b63961c84671df4c4a4451c40057e34b26df1a
+[1/1] powerpc/85xx: P2020: Add fsl,mpc8548-pmc node
+      https://git.kernel.org/powerpc/c/294299b3d39e8b4ae10c12ef1ed71405ef7b1e43
 
 cheers
