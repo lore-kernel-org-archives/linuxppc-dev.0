@@ -4,32 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BC84C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:27:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2C2EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:27:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sPD6gTBz3h6p
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:27:28 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sPf3T5Gz3hCH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:27:50 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7z3K7dz3chn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s800Psrz3cDk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:16:00 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7z2gW5z4yTP;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7z6qnFz4yTQ;
  Tue, 24 May 2022 21:15:59 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20210608064809.199116-1-ruscur@russell.cc>
-References: <20210608064809.199116-1-ruscur@russell.cc>
-Subject: Re: [PATCH] selftests/powerpc: Handle more misreporting cases in
- spectre_v2
-Message-Id: <165339056364.1718562.11909614040294117880.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:09:23 +1000
+In-Reply-To: <20220404101536.104794-1-ruscur@russell.cc>
+References: <20220404101536.104794-1-ruscur@russell.cc>
+Subject: Re: [PATCH v2 1/2] powerpc/powernv: Get L1D flush requirements from
+ device-tree
+Message-Id: <165339056252.1718562.14599568205155142624.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:09:22 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -44,29 +43,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: cascardo@canonical.com
+Cc: mopsfelder@gmail.com, joel@jms.id.au, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 8 Jun 2021 16:48:09 +1000, Russell Currey wrote:
-> In commit f3054ffd71b5 ("selftests/powerpc: Return skip code for
-> spectre_v2"), the spectre_v2 selftest is updated to be aware of cases
-> where the vulnerability status reported in sysfs is incorrect, skipping
-> the test instead.
+On Mon, 4 Apr 2022 20:15:35 +1000, Russell Currey wrote:
+> The device-tree properties no-need-l1d-flush-msr-pr-1-to-0 and
+> no-need-l1d-flush-kernel-on-user-access are the equivalents of
+> H_CPU_BEHAV_NO_L1D_FLUSH_ENTRY and H_CPU_BEHAV_NO_L1D_FLUSH_UACCESS
+> from the H_GET_CPU_CHARACTERISTICS hcall on pseries respectively.
 > 
-> This happens because qemu can misrepresent the mitigation status of the
-> host to the guest.  If the count cache is disabled in the host, and this
-> is correctly reported to the guest, then the guest won't apply
-> mitigations.  If the guest is then migrated to a new host where
-> mitigations are necessary, it is now vulnerable because it has not
-> applied mitigations.
+> In commit d02fa40d759f ("powerpc/powernv: Remove POWER9 PVR version
+> check for entry and uaccess flushes") the condition for disabling the
+> L1D flush on kernel entry and user access was changed from any non-P9
+> CPU to only checking P7 and P8.  Without the appropriate device-tree
+> checks for newer processors on powernv, these flushes are unnecessarily
+> enabled on those systems.  This patch corrects this.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] selftests/powerpc: Handle more misreporting cases in spectre_v2
-      https://git.kernel.org/powerpc/c/48482f4dd3432e5e62873bf0f2e254cfb8ce2ac2
+[1/2] powerpc/powernv: Get L1D flush requirements from device-tree
+      https://git.kernel.org/powerpc/c/2efee6adb56159288bce9d1ab51fc9056d7007d4
+[2/2] powerpc/powernv: Get STF barrier requirements from device-tree
+      https://git.kernel.org/powerpc/c/d2a3c131981d4498571908df95c3c9393a00adf5
 
 cheers
