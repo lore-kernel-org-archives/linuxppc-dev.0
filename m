@@ -4,57 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18072C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 08:01:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A84BC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 08:18:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6mr33qV1z3c7r
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 18:01:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6nBr5GJtz3bqR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 18:18:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=PgXddxLS;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rX/X6cHA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=suse.com (client-ip=195.135.220.28; helo=smtp-out1.suse.de;
- envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=susede1 header.b=PgXddxLS; dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6mqL73ndz2y0B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 18:01:17 +1000 (AEST)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
- by smtp-out1.suse.de (Postfix) with ESMTP id 15D07219F1;
- Tue, 24 May 2022 08:01:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
- t=1653379274; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=YfQDkbqSOT+1qjQjuAj/jCMAhUotd54M/3ml94s/xOo=;
- b=PgXddxLSPksORjL/S6Twz65MXnqRLkhNWsZMkeMCJl5txCWJEZdmdegZfTAX/9coTEEbNM
- 8MuciDtA/meSONuDDeUgJuaMT6sJm3SP6OoP4PPs2H8u+yjTfPOAegS/VmQ3g6ca5OFCQB
- kRtlLyoJ6CAvfuEa9KvE4DbHA1Jh8JI=
-Received: from suse.cz (unknown [10.100.201.202])
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=rX/X6cHA; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by relay2.suse.de (Postfix) with ESMTPS id 8ADCF2C141;
- Tue, 24 May 2022 08:01:12 +0000 (UTC)
-Date: Tue, 24 May 2022 10:01:12 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-Subject: Re: [PATCH 24/30] panic: Refactor the panic path
-Message-ID: <YoyQyHHfhIIXSX0U@alley>
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-25-gpiccoli@igalia.com>
- <Yn0TnsWVxCcdB2yO@alley>
- <d313eec2-96b6-04e3-35cd-981f103d010e@igalia.com>
- <20220519234502.GA194232@MiWiFi-R3L-srv>
- <ded31ec0-076b-2c5b-0fe6-0c274954821f@igalia.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6nB16mB9z2yYd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 18:17:29 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24O7OBup011291;
+ Tue, 24 May 2022 08:17:20 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=LhRVKKB0DusQKiHLqperXZcxbEcQnxElZXIcFrsIBvM=;
+ b=rX/X6cHAs46I7VxQcdX2PSe0W4fpZpGmDJVrTVZV/YbN4BDVLVTX9VP3JYqI+X4bng6x
+ f2o7S78xA4zQjC/sy3ExlwfdMZBPD7DEipAxP8YeIGSu+DK2E6SnvLNVV4sqf24ndFI4
+ 1KxdI1p2uMFRb+hFMjPUWBU62Q72J9sQDzJyqnfjIxXuyUkK2iPE12yG8LNX0GrLLFn9
+ nIgv2Tz5H6ANfWIKg2SsT3DB9vSWimlgB2YpUMYsaC6LCp+2fRuXAvjjOTuH54JzEAxc
+ 4n36PFGX/2d5ZrGEcUiNBPzDHTIOrwbOW2ZJ2/DqZIxd3WDDH0rfXxBeoXitXJ9iZBER qg== 
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.108])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3g8r4g4du8-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 24 May 2022 08:17:19 +0000
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+ by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24O7wtSw025309;
+ Tue, 24 May 2022 08:17:17 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma05fra.de.ibm.com with ESMTP id 3g6qq8ubd7-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 24 May 2022 08:17:17 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 24O8GQD522741464
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 24 May 2022 08:16:26 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AD518A405C;
+ Tue, 24 May 2022 08:17:14 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 68B0EA4054;
+ Tue, 24 May 2022 08:17:14 +0000 (GMT)
+Received: from [9.101.4.33] (unknown [9.101.4.33])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 24 May 2022 08:17:14 +0000 (GMT)
+Message-ID: <3ed0804d-dbcd-f83b-f806-cb979a6a9dfa@linux.ibm.com>
+Date: Tue, 24 May 2022 10:17:14 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ded31ec0-076b-2c5b-0fe6-0c274954821f@igalia.com>
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
+ Gecko/20100101 Thunderbird/91.9.0
+Subject: Re: [PATCH] powerpc/64s: Only set HAVE_ARCH_UNMAPPED_AREA when
+ CONFIG_PPC_64S_HASH_MMU is set
+Content-Language: en-US
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <e438c6cc09f94085e56733ed2d6e84333c35292a.1653370913.git.christophe.leroy@csgroup.eu>
+From: Laurent Dufour <ldufour@linux.ibm.com>
+In-Reply-To: <e438c6cc09f94085e56733ed2d6e84333c35292a.1653370913.git.christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: lBdtqxVQfAZSxcdk_J8UISZlh7-BsUMJ
+X-Proofpoint-ORIG-GUID: lBdtqxVQfAZSxcdk_J8UISZlh7-BsUMJ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.486,FMLib:17.11.64.514
+ definitions=2022-05-24_05,2022-05-23_01,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 adultscore=0
+ priorityscore=1501 spamscore=0 malwarescore=0 lowpriorityscore=0
+ mlxlogscore=999 mlxscore=0 clxscore=1015 impostorscore=0 phishscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2202240000 definitions=main-2205240044
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,106 +105,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, halves@canonical.com,
- gregkh@linuxfoundation.org, peterz@infradead.org,
- alejandro.j.jimenez@oracle.com, linux-remoteproc@vger.kernel.org,
- feng.tang@intel.com, "michael Kelley \(LINUX\)" <mikelley@microsoft.com>,
- hidehiro.kawai.ez@hitachi.com, sparclinux@vger.kernel.org, will@kernel.org,
- tglx@linutronix.de, linux-leds@vger.kernel.org, linux-s390@vger.kernel.org,
- john.ogness@linutronix.de, Baoquan He <bhe@redhat.com>, corbet@lwn.net,
- paulmck@kernel.org, fabiomirmar@gmail.com, x86@kernel.org, mingo@redhat.com,
- bcm-kernel-feedback-list@broadcom.com, xen-devel@lists.xenproject.org,
- linux-mips@vger.kernel.org, Dave Young <dyoung@redhat.com>, vgoyal@redhat.com,
- linux-xtensa@linux-xtensa.org, dave.hansen@linux.intel.com,
- keescook@chromium.org, arnd@arndb.de, linux-pm@vger.kernel.org,
- linux-um@lists.infradead.org, rostedt@goodmis.org, rcu@vger.kernel.org,
- bp@alien8.de, luto@kernel.org, linux-tegra@vger.kernel.org,
- openipmi-developer@lists.sourceforge.net, andriy.shevchenko@linux.intel.com,
- vkuznets@redhat.com, linux-arm-kernel@lists.infradead.org,
- linux-edac@vger.kernel.org, jgross@suse.com, linux-parisc@vger.kernel.org,
- netdev@vger.kernel.org, kernel@gpiccoli.net, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, stern@rowland.harvard.edu,
- senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
- kernel-dev@igalia.com, linux-alpha@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri 2022-05-20 08:23:33, Guilherme G. Piccoli wrote:
-> On 19/05/2022 20:45, Baoquan He wrote:
-> > [...]
-> >> I really appreciate the summary skill you have, to convert complex
-> >> problems in very clear and concise ideas. Thanks for that, very useful!
-> >> I agree with what was summarized above.
-> > 
-> > I want to say the similar words to Petr's reviewing comment when I went
-> > through the patches and traced each reviewing sub-thread to try to
-> > catch up. Petr has reivewed this series so carefully and given many
-> > comments I want to ack immediately.
-> > 
-> > I agree with most of the suggestions from Petr to this patch, except of
-> > one tiny concern, please see below inline comment.
+On 24/05/2022, 07:42:05, Christophe Leroy wrote:
+> When CONFIG_PPC_64S_HASH_MMU is not set, slice.c is not built and
+> arch_get_unmapped_area() and arch_get_unmapped_area_topdown() are
+> not provided because RADIX uses the generic ones.
 > 
-> Hi Baoquan, thanks! I'm glad you're also reviewing that =)
+> Therefore, neither set HAVE_ARCH_UNMAPPED_AREA nor
+> HAVE_ARCH_UNMAPPED_AREA_TOPDOWN.
 > 
+> Reported-by: Laurent Dufour <ldufour@linux.ibm.com>
+> Fixes: ab57bd7570d4 ("powerpc/mm: Move get_unmapped_area functions to slice.c")
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 > 
-> > [...]
-> > 
-> > I like the proposed skeleton of panic() and code style suggested by
-> > Petr very much. About panic_prefer_crash_dump which might need be added,
-> > I hope it has a default value true. This makes crash_dump execute at
-> > first by default just as before, unless people specify
-> > panic_prefer_crash_dump=0|n|off to disable it. Otherwise we need add
-> > panic_prefer_crash_dump=1 in kernel and in our distros to enable kdump,
-> > this is inconsistent with the old behaviour.
+
+FWIW,
+Tested-by: Laurent Dufour <ldufour@linux.ibm.com>
+
+---
+>  arch/powerpc/include/asm/book3s/64/slice.h | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> I'd like to understand better why the crash_kexec() must always be the
-> first thing in your use case. If we keep that behavior, we'll see all
-> sorts of workarounds - see the last patches of this series, Hyper-V and
-> PowerPC folks hardcoded "crash_kexec_post_notifiers" in order to force
-> execution of their relevant notifiers (like the vmbus disconnect,
-> specially in arm64 that has no custom machine_crash_shutdown, or the
-> fadump case in ppc). This led to more risk in kdump.
-> 
-> The thing is: with the notifiers' split, we tried to keep only the most
-> relevant/necessary stuff in this first list, things that ultimately
-> should improve kdump reliability or if not, at least not break it. My
-> feeling is that, with this series, we should change the idea/concept
-> that kdump must run first nevertheless, not matter what. We're here
-> trying to accommodate the antagonistic goals of hypervisors that need
-> some clean-up (even for kdump to work) VS. kdump users, that wish a
-> "pristine" system reboot ASAP after the crash.
+> diff --git a/arch/powerpc/include/asm/book3s/64/slice.h b/arch/powerpc/include/asm/book3s/64/slice.h
+> index b8eb4ad271b9..5fbe18544cbd 100644
+> --- a/arch/powerpc/include/asm/book3s/64/slice.h
+> +++ b/arch/powerpc/include/asm/book3s/64/slice.h
+> @@ -4,11 +4,13 @@
+>  
+>  #ifndef __ASSEMBLY__
+>  
+> +#ifdef CONFIG_PPC_64S_HASH_MMU
+>  #ifdef CONFIG_HUGETLB_PAGE
+>  #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+>  #endif
+>  #define HAVE_ARCH_UNMAPPED_AREA
+>  #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
+> +#endif
+>  
+>  #define SLICE_LOW_SHIFT		28
+>  #define SLICE_LOW_TOP		(0x100000000ul)
 
-Good question. I wonder if Baoquan knows about problems caused by the
-particular notifiers that will end up in the hypervisor list. Note
-that there will be some shuffles and the list will be slightly
-different in V2.
-
-Anyway, I see four possible solutions:
-
-  1. The most conservative approach is to keep the current behavior
-     and call kdump first by default.
-
-  2. A medium conservative approach to change the default default
-     behavior and call hypervisor and eventually the info notifiers
-     before kdump. There still would be the possibility to call kdump
-     first by the command line parameter.
-
-  3. Remove the possibility to call kdump first completely. It would
-     assume that all the notifiers in the info list are super safe
-     or that they make kdump actually more safe.
-
-  4. Create one more notifier list for operations that always should
-     be called before crash_dump.
-
-Regarding the extra notifier list (4th solution). It is not clear to
-me whether it would be always called even before hypervisor list or
-when kdump is not enabled. We must not over-engineer it.
-
-2nd proposal looks like a good compromise. But maybe we could do
-this change few releases later. The notifiers split is a big
-change on its own.
-
-Best Regards,
-Petr
