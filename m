@@ -4,32 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D94BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:29:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA1A0C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:29:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sR25ht8z3hQQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:29:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sRS3DMDz3hVZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:29:24 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s841ldxz3c7F
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s846Hgbz3cgP
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:16:04 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s8412j8z4yTR;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s845DZdz4yTV;
  Tue, 24 May 2022 21:16:04 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: paulus@samba.org, benh@kernel.crashing.org,
- YueHaibing <yuehaibing@huawei.com>, christophe.leroy@csgroup.eu,
- mpe@ellerman.id.au
-In-Reply-To: <20220517094830.27560-1-yuehaibing@huawei.com>
-References: <20220517094830.27560-1-yuehaibing@huawei.com>
-Subject: Re: [PATCH -next] powerpc/book3e: Fix build error
-Message-Id: <165339057319.1718562.17208569105645113277.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:09:33 +1000
+To: paulus@samba.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ YueHaibing <yuehaibing@huawei.com>
+In-Reply-To: <20220517094900.14900-1-yuehaibing@huawei.com>
+References: <20220517094900.14900-1-yuehaibing@huawei.com>
+Subject: Re: [PATCH -next] powerpc/kaslr_booke: Fix build error
+Message-Id: <165339057419.1718562.13519076380982149999.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:09:34 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -49,19 +48,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 17 May 2022 17:48:30 +0800, YueHaibing wrote:
-> arch/powerpc/mm/nohash/fsl_book3e.c: In function ‘relocate_init’:
-> arch/powerpc/mm/nohash/fsl_book3e.c:348:2: error: implicit declaration of function ‘early_get_first_memblock_info’ [-Werror=implicit-function-declaration]
->   early_get_first_memblock_info(__va(dt_ptr), &size);
->   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> 
-> Add missing include file linux/of_fdt.h to fix this.
+On Tue, 17 May 2022 17:49:00 +0800, YueHaibing wrote:
+> arch/powerpc/mm/nohash/kaslr_booke.c: In function ‘kaslr_get_cmdline’:
+> arch/powerpc/mm/nohash/kaslr_booke.c:46:2: error: implicit declaration of function ‘early_init_dt_scan_chosen’; did you mean ‘early_init_mmu_secondary’? [-Werror=implicit-function-declaration]
+>   early_init_dt_scan_chosen(boot_command_line);
+>   ^~~~~~~~~~~~~~~~~~~~~~~~~
+>   early_init_mmu_secondary
+> arch/powerpc/mm/nohash/kaslr_booke.c: In function ‘get_initrd_range’:
+> arch/powerpc/mm/nohash/kaslr_booke.c:210:10: error: implicit declaration of function ‘of_read_number’; did you mean ‘seq_read_iter’? [-Werror=implicit-function-declaration]
+>   start = of_read_number(prop, len / 4);
+>           ^~~~~~~~~~~~~~
+>           seq_read_iter
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/book3e: Fix build error
-      https://git.kernel.org/powerpc/c/7574dd080ee0a1e8a9c6312dc7c8fe97f73415ff
+[1/1] powerpc/kaslr_booke: Fix build error
+      https://git.kernel.org/powerpc/c/cdf87d2bd12cf3ea760a1fa35907a31e5177f425
 
 cheers
