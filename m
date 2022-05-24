@@ -4,30 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 202C4C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:15:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8241DC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:16:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6s7k5G0Wz3cCN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:15:46 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6s835v35z3cjC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:16:03 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7N2ZQDz2yh9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7P1vx8z2yh9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:29 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7L1HTPz4xYX;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7L641vz4xZ5;
  Tue, 24 May 2022 21:15:26 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Reza Arbab <arbab@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220503170152.23412-1-arbab@linux.ibm.com>
-References: <20220503170152.23412-1-arbab@linux.ibm.com>
-Subject: Re: [PATCH] powerpc: Enable the DAWR on POWER9 DD2.3 and above
-Message-Id: <165339059263.1718562.6276025985187883167.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:09:52 +1000
+To: tyreld@linux.ibm.com, Haowen Bai <baihaowen@meizu.com>
+In-Reply-To: <1652232476-9696-1-git-send-email-baihaowen@meizu.com>
+References: <08d9470c-20db-52b8-7015-84f0ed29ad0c@linux.ibm.com>
+ <1652232476-9696-1-git-send-email-baihaowen@meizu.com>
+Subject: Re: [PATCH V2] powerpc/eeh: Drop redundant spinlock initialization
+Message-Id: <165339058873.1718562.5563457249542011872.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:09:48 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,27 +44,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Neuling <mikey@neuling.org>
+Cc: linux-kernel@vger.kernel.org, oohall@gmail.com, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 3 May 2022 12:01:52 -0500, Reza Arbab wrote:
-> The hardware bug in POWER9 preventing use of the DAWR was fixed in
-> DD2.3. Set the CPU_FTR_DAWR feature bit on these newer systems to start
-> using it again, and update the documentation accordingly.
+On Wed, 11 May 2022 09:27:56 +0800, Haowen Bai wrote:
+> slot_errbuf_lock has declared and initialized by DEFINE_SPINLOCK,
+> so we don't need to spin_lock_init again, drop it.
 > 
-> The CPU features for DD2.3 are currently determined by "DD2.2 or later"
-> logic. In adding DD2.3 as a discrete case for the first time here, I'm
-> carrying the quirks of DD2.2 forward to keep all behavior outside of
-> this DAWR change the same. This leaves the assessment and potential
-> removal of those quirks on DD2.3 for later.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Enable the DAWR on POWER9 DD2.3 and above
-      https://git.kernel.org/powerpc/c/26b78c81e84c5133b299fb11bf17ec1a3d2ad217
+[1/1] powerpc/eeh: Drop redundant spinlock initialization
+      https://git.kernel.org/powerpc/c/3def164a5cedad9117859dd4610cae2cc59cb6d2
 
 cheers
