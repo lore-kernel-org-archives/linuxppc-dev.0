@@ -4,31 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5EA0AC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:27:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BC84C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:27:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sNq0sFjz3h2l
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:27:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sPD6gTBz3h6p
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:27:28 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7y6Bhbz3cf1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7z3K7dz3chn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:59 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7y2dSXz4yTG;
- Tue, 24 May 2022 21:15:58 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7z2gW5z4yTP;
+ Tue, 24 May 2022 21:15:59 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20220410161035.592-1-rdunlap@infradead.org>
-References: <20220410161035.592-1-rdunlap@infradead.org>
-Subject: Re: [PATCH v2] macintosh: via-pmu and via-cuda need RTC_LIB
-Message-Id: <165339058207.1718562.17348886954707647471.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:09:42 +1000
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20210608064809.199116-1-ruscur@russell.cc>
+References: <20210608064809.199116-1-ruscur@russell.cc>
+Subject: Re: [PATCH] selftests/powerpc: Handle more misreporting cases in
+ spectre_v2
+Message-Id: <165339056364.1718562.11909614040294117880.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:09:23 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,29 +44,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel test robot <lkp@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Nick Desaulniers <ndesaulniers@google.com>,
- Nathan Chancellor <nathan@kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
- Finn Thain <fthain@linux-m68k.org>, Kees Cook <keescook@chromium.org>
+Cc: cascardo@canonical.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 10 Apr 2022 09:10:35 -0700, Randy Dunlap wrote:
-> Fix build when RTC_LIB is not set/enabled.
-> Eliminates these build errors:
+On Tue, 8 Jun 2021 16:48:09 +1000, Russell Currey wrote:
+> In commit f3054ffd71b5 ("selftests/powerpc: Return skip code for
+> spectre_v2"), the spectre_v2 selftest is updated to be aware of cases
+> where the vulnerability status reported in sysfs is incorrect, skipping
+> the test instead.
 > 
-> m68k-linux-ld: drivers/macintosh/via-pmu.o: in function `pmu_set_rtc_time':
-> drivers/macintosh/via-pmu.c:1769: undefined reference to `rtc_tm_to_time64'
-> m68k-linux-ld: drivers/macintosh/via-cuda.o: in function `cuda_set_rtc_time':
-> drivers/macintosh/via-cuda.c:797: undefined reference to `rtc_tm_to_time64'
+> This happens because qemu can misrepresent the mitigation status of the
+> host to the guest.  If the count cache is disabled in the host, and this
+> is correctly reported to the guest, then the guest won't apply
+> mitigations.  If the guest is then migrated to a new host where
+> mitigations are necessary, it is now vulnerable because it has not
+> applied mitigations.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] macintosh: via-pmu and via-cuda need RTC_LIB
-      https://git.kernel.org/powerpc/c/9a9c5ff5fff87eb1a43db0d899473554e408fd7b
+[1/1] selftests/powerpc: Handle more misreporting cases in spectre_v2
+      https://git.kernel.org/powerpc/c/48482f4dd3432e5e62873bf0f2e254cfb8ce2ac2
 
 cheers
