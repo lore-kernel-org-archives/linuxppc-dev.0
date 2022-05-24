@@ -4,31 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBC5AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 10:54:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6449FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 10:54:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6rfv2k2yz3cKm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 20:54:15 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6rgJ13FMz3bks
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 20:54:36 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6rfW6f00z308C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 20:53:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6rfY2kgkz308C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 20:53:57 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6rfW54fHz4xbd;
- Tue, 24 May 2022 20:53:55 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6rfV6LYqz4xZv;
+ Tue, 24 May 2022 20:53:54 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220506053755.3820702-1-aik@ozlabs.ru>
-References: <20220506053755.3820702-1-aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v2] KVM: PPC: Book3s: Retire H_PUT_TCE/etc real
- mode handlers
-Message-Id: <165338951112.1711920.752815379112806107.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 20:51:51 +1000
+In-Reply-To: <20220509071150.181250-1-aik@ozlabs.ru>
+References: <20220509071150.181250-1-aik@ozlabs.ru>
+Subject: Re: [PATCH kernel] KVM: PPC: Book3s: Remove real mode interrupt
+ controller hcalls handlers
+Message-Id: <165338951343.1711920.16474509167223655967.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 20:51:53 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,30 +44,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Frederic Barrat <fbarrat@linux.ibm.com>, kvm-ppc@vger.kernel.org,
- Fabiano Rosas <farosas@linux.ibm.com>
+Cc: kvm-ppc@vger.kernel.org, Cédric Le Goater <clg@kaod.org>, Nicholas Piggin <npiggin@gmail.com>, Fabiano Rosas <farosas@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 6 May 2022 15:37:55 +1000, Alexey Kardashevskiy wrote:
-> LoPAPR defines guest visible IOMMU with hypercalls to use it -
-> H_PUT_TCE/etc. Implemented first on POWER7 where hypercalls would trap
-> in the KVM in the real mode (with MMU off). The problem with the real mode
-> is some memory is not available and some API usage crashed the host but
-> enabling MMU was an expensive operation.
+On Mon, 9 May 2022 17:11:50 +1000, Alexey Kardashevskiy wrote:
+> Currently we have 2 sets of interrupt controller hypercalls handlers
+> for real and virtual modes, this is from POWER8 times when switching
+> MMU on was considered an expensive operation.
 > 
-> The problems with the real mode handlers are:
-> 1. Occasionally these cannot complete the request so the code is
-> copied+modified to work in the virtual mode, very little is shared;
-> 2. The real mode handlers have to be linked into vmlinux to work;
-> 3. An exception in real mode immediately reboots the machine.
+> POWER9 however does not have dependent threads and MMU is enabled for
+> handling hcalls so the XIVE native or XICS-on-XIVE real mode handlers
+> never execute on real P9 and later CPUs.
 > 
 > [...]
 
 Applied to powerpc/topic/ppc-kvm.
 
-[1/1] KVM: PPC: Book3s: Retire H_PUT_TCE/etc real mode handlers
-      https://git.kernel.org/powerpc/c/cad32d9d42e8e6a659786f8a730b221a9fbee227
+[1/1] KVM: PPC: Book3s: Remove real mode interrupt controller hcalls handlers
+      https://git.kernel.org/powerpc/c/b22af9041927075b82bcaf4b6c7a354688198d47
 
 cheers
