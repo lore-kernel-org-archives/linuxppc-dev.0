@@ -4,30 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D59DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 10:56:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10C49C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 10:56:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6rhx2VY1z3cKm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 20:56:01 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6rjL4WzVz3f8F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 20:56:22 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org
+ [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6rfb3GJnz3bkx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 20:53:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6rfc6t0Bz3bq7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 20:54:00 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6rfb2N5Jz4ySg;
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6rfb6pcwz4ySl;
  Tue, 24 May 2022 20:53:59 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Fabiano Rosas <farosas@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220425142151.1495142-1-farosas@linux.ibm.com>
-References: <20220425142151.1495142-1-farosas@linux.ibm.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Initialize AMOR in nested entry
-Message-Id: <165338950975.1711920.1719547905413421851.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 20:51:49 +1000
+To: mpe@ellerman.id.au, paulus@samba.org, benh@kernel.crashing.org,
+ Bo Liu <liubo03@inspur.com>
+In-Reply-To: <20220401065252.36472-1-liubo03@inspur.com>
+References: <20220401065252.36472-1-liubo03@inspur.com>
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: fix the return value of
+ kvm_age_rmapp()
+Message-Id: <165338950884.1711920.1652922231071058504.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 20:51:48 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,20 +45,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm-ppc@vger.kernel.org, npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 25 Apr 2022 11:21:51 -0300, Fabiano Rosas wrote:
-> The hypervisor always sets AMOR to ~0, but let's ensure we're not
-> passing stale values around.
+On Fri, 1 Apr 2022 02:52:52 -0400, Bo Liu wrote:
+> The return value type defined in the function kvm_age_rmapp() is
+> "bool", but the return value type defined in the implementation of the
+> function kvm_age_rmapp() is "int".
+> 
+> Change the return value type to "bool".
 > 
 > 
+> [...]
 
 Applied to powerpc/topic/ppc-kvm.
 
-[1/1] KVM: PPC: Book3S HV: Initialize AMOR in nested entry
-      https://git.kernel.org/powerpc/c/1d1cd0f12a3ab5d7f79ae6cca28e7d23dd351ce3
+[1/1] KVM: PPC: Book3S HV: fix the return value of kvm_age_rmapp()
+      https://git.kernel.org/powerpc/c/15eb1b6afc3c73bcd44b5d265d43db666950b5af
 
 cheers
