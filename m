@@ -4,31 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26A89C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:25:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D752C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:26:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sM85x9Qz3gkg
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:25:40 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sMZ5jBBz3fJZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:26:02 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7v4CFpz3bv8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7w38h6z3cgj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:56 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7v2zVCz4yT7;
- Tue, 24 May 2022 21:15:55 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7w0qdqz4xYX;
+ Tue, 24 May 2022 21:15:56 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Oliver O'Halloran <oohall@gmail.com>
-In-Reply-To: <20200902035159.1762596-1-oohall@gmail.com>
-References: <20200902035159.1762596-1-oohall@gmail.com>
-Subject: Re: [PATCH] powerpc/powernv/pci: Drop VF MPS fixup
-Message-Id: <165339060015.1718562.12454776819703349689.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:10:00 +1000
+To: Michael Ellerman <mpe@ellerman.id.au>, Oscar Salvador <osalvador@suse.de>
+In-Reply-To: <20220411074934.4632-1-osalvador@suse.de>
+References: <20220411074934.4632-1-osalvador@suse.de>
+Subject: Re: [PATCH] powerpc/numa: Associate numa node to its cpu earlier
+Message-Id: <165339058296.1718562.9706325672681890967.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:09:42 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,20 +42,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Geetika Moolchandani <Geetika.Moolchandani1@ibm.com>,
+ Michal Hocko <mhocko@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-mm@kvack.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2 Sep 2020 13:51:59 +1000, Oliver O'Halloran wrote:
-> The MPS field in the VF config space is marked as reserved in current
-> versions of the SR-IOV spec. In other words, this fixup doesn't do
-> anything.
+On Mon, 11 Apr 2022 09:49:34 +0200, Oscar Salvador wrote:
+> powerpc is the only platform that do not rely on
+> cpu_up()->try_online_node() to bring up a numa node,
+> and special cases it, instead, deep in its own machinery:
 > 
+> dlpar_online_cpu
+>  find_and_online_cpu_nid
+>   try_online_node
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/powernv/pci: Drop VF MPS fixup
-      https://git.kernel.org/powerpc/c/a5d28039ecb288f4788ae98c8291e092961e8742
+[1/1] powerpc/numa: Associate numa node to its cpu earlier
+      https://git.kernel.org/powerpc/c/48b63961c84671df4c4a4451c40057e34b26df1a
 
 cheers
