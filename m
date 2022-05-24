@@ -4,62 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EBF2C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 12:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D220C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 13:18:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6tkv4nD1z3c7F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 22:27:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=cmANZ9ka;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6vsZ1qSBz3brV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 23:18:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=suse.com (client-ip=195.135.220.29; helo=smtp-out2.suse.de;
- envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
- header.s=susede1 header.b=cmANZ9ka; dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6mvW2kXlz2yLg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 18:04:55 +1000 (AEST)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
- by smtp-out2.suse.de (Postfix) with ESMTP id C6A001F8B8;
- Tue, 24 May 2022 08:04:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
- t=1653379492; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=+HrTVIvXJDgrzNQFl8Mhx0wGW/HWHO1IHY/NT0Ch0wc=;
- b=cmANZ9kaIvAGzRMHaeCxB0LLBkrlXozlKGlr2MQNHSGuBkVg9GZ4ULppK80AYEMbn3sHQ3
- SRCkpAxtJlotC4dIBTUf4LWabWRfn+CV2iXTLVzyyBDKp8B9onijAa8QBBUxy4R2DAxIkT
- C3aqZP5pWFL7HdTOLlEm50sKDepVyxc=
-Received: from suse.cz (unknown [10.100.201.202])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by relay2.suse.de (Postfix) with ESMTPS id A47272C141;
- Tue, 24 May 2022 08:04:51 +0000 (UTC)
-Date: Tue, 24 May 2022 10:04:51 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-Subject: Re: [PATCH 19/30] panic: Add the panic hypervisor notifier list
-Message-ID: <YoyRo6gJrr4lsFpD@alley>
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-20-gpiccoli@igalia.com>
- <YoJZVZl/MH0KiE/J@alley>
- <ad082ce7-db50-13bb-3dbb-9b595dfa78be@igalia.com>
- <YoOpyW1+q+Z5as78@alley>
- <d72b9aab-675c-ac89-b73a-b1de4a0b722d@igalia.com>
- <81878a67-21f1-fee8-1add-f381bc8b05df@broadcom.com>
- <edbaa4fa-561c-6f5e-f2ab-43ae68acaede@igalia.com>
- <d1cc0bee-2a98-0c2e-8796-6fb7fae6b803@broadcom.com>
- <0fac8c71-6f18-d15c-23f5-075dbc45f3f9@igalia.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6vs45Mm5z2xDY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 23:18:13 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+ by localhost (Postfix) with ESMTP id 4L6vry0CQcz9t9k;
+ Tue, 24 May 2022 15:18:10 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+ by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 8gwBock1Xdtc; Tue, 24 May 2022 15:18:09 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4L6vrx6XBjz9t9W;
+ Tue, 24 May 2022 15:18:09 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CE3278B77D;
+ Tue, 24 May 2022 15:18:09 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 9I-MCx3T8Oam; Tue, 24 May 2022 15:18:09 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.153])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1D5AF8B775;
+ Tue, 24 May 2022 15:18:09 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 24ODI0vw4109098
+ (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+ Tue, 24 May 2022 15:18:00 +0200
+Received: (from chleroy@localhost)
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 24ODI0wu4109097;
+ Tue, 24 May 2022 15:18:00 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
+ christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, peterz@infradead.org,
+ aik@ozlabs.ru, sv@linux.ibm.com, rostedt@goodmis.org,
+ jpoimboe@redhat.com, naveen.n.rao@linux.vnet.ibm.com, mbenes@suse.cz
+Subject: [RFC PATCH v2 5/7] objtool: Enable objtool to run only on files with
+ ftrace enabled
+Date: Tue, 24 May 2022 15:17:45 +0200
+Message-Id: <cf3013dfad89ad5ac7d16d56dced72d7c138a20e.1653398233.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.35.3
+In-Reply-To: <cover.1653398233.git.christophe.leroy@csgroup.eu>
+References: <cover.1653398233.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0fac8c71-6f18-d15c-23f5-075dbc45f3f9@igalia.com>
-X-Mailman-Approved-At: Tue, 24 May 2022 22:27:19 +1000
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1653398265; l=1144;
+ i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id;
+ bh=4ak3imJrKRJE57Md7N5q2CLhsaKTcV3PIH/MESED9zQ=;
+ b=SlkKfXVLYvLavYcNv4sPXhd6H4ZbQapa4sTVG52/RVMDqSDvwB1kAygOuPTjF1V2D2eN9PbMpnpf
+ hf4EMgMaCb8UKStIzfmyxCnSAB6SkAsMPLX1swE8wJ5KYArv1wO7
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
+ pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,90 +80,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, Justin Chen <justinpopo6@gmail.com>,
- Pavel Machek <pavel@ucw.cz>, Alexander Gordeev <agordeev@linux.ibm.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
- stern@rowland.harvard.edu, xen-devel@lists.xenproject.org,
- Christian Borntraeger <borntraeger@linux.ibm.com>, linux-pm@vger.kernel.org,
- linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>,
- luto@kernel.org, Mihai Carabas <mihai.carabas@oracle.com>, tglx@linutronix.de,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, mhiramat@kernel.org,
- akpm@linux-foundation.org, linux-hyperv@vger.kernel.org,
- dave.hansen@linux.intel.com, linux-s390@vger.kernel.org,
- Stephen Hemminger <sthemmin@microsoft.com>, Vasily Gorbik <gor@linux.ibm.com>,
- vgoyal@redhat.com, Sven Schnelle <svens@linux.ibm.com>,
- Andrea Parri <parri.andrea@gmail.com>, linux-xtensa@linux-xtensa.org,
- john.ogness@linutronix.de, Scott Branden <scott.branden@broadcom.com>,
- Doug Berger <opendmb@gmail.com>, Markus Mayer <mmayer@broadcom.com>,
- hidehiro.kawai.ez@hitachi.com, linux-arm-kernel@lists.infradead.org,
- kernel-dev@igalia.com, fabiomirmar@gmail.com, halves@canonical.com,
- alejandro.j.jimenez@oracle.com, feng.tang@intel.com,
- zhenwei pi <pizhenwei@bytedance.com>, will@kernel.org,
- Florian Fainelli <f.fainelli@gmail.com>, bhe@redhat.com, corbet@lwn.net,
- Dexuan Cui <decui@microsoft.com>, Evan Green <evgreen@chromium.org>,
- bcm-kernel-feedback-list@broadcom.com, Tianyu Lan <Tianyu.Lan@microsoft.com>,
- keescook@chromium.org, arnd@arndb.de, Haiyang Zhang <haiyangz@microsoft.com>,
- rostedt@goodmis.org, rcu@vger.kernel.org, bp@alien8.de,
- openipmi-developer@lists.sourceforge.net,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
- Sebastian Reichel <sre@kernel.org>, linux-alpha@vger.kernel.org,
- Brian Norris <computersforpeace@gmail.com>,
- "David S. Miller" <davem@davemloft.net>, peterz@infradead.org,
- linux-remoteproc@vger.kernel.org, mikelley@microsoft.com,
- sparclinux@vger.kernel.org, Lee Jones <lee.jones@linaro.org>,
- Ard Biesheuvel <ardb@kernel.org>, linux-leds@vger.kernel.org, x86@kernel.org,
- mingo@redhat.com, Desmond yan <desmond.yan@broadcom.com>, dyoung@redhat.com,
- paulmck@kernel.org, Heiko Carstens <hca@linux.ibm.com>,
- Shile Zhang <shile.zhang@linux.alibaba.com>,
- Wang ShaoBo <bobo.shaobowang@huawei.com>,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
- David Gow <davidgow@google.com>, linux-tegra@vger.kernel.org,
- andriy.shevchenko@linux.intel.com, Hari Bathini <hbathini@linux.ibm.com>,
- linux-edac@vger.kernel.org, jgross@suse.com, netdev@vger.kernel.org,
- kernel@gpiccoli.net, kexec@lists.infradead.org, linux-mips@vger.kernel.org,
- Julius Werner <jwerner@chromium.org>, vkuznets@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon 2022-05-23 11:56:12, Guilherme G. Piccoli wrote:
-> On 19/05/2022 16:20, Scott Branden wrote:
-> > [...] 
-> >> Hi Scott / Desmond, thanks for the detailed answer! Is this adapter
-> >> designed to run in x86 only or you have other architectures' use cases?
-> > The adapter may be used in any PCIe design that supports DMA.
-> > So it may be possible to run in arm64 servers.
-> >>
-> >> [...]
-> >> With that said, and given this is a lightweight notifier that ideally
-> >> should run ASAP, I'd keep this one in the hypervisor list. We can
-> >> "adjust" the semantic of this list to include lightweight notifiers that
-> >> reset adapters.
-> > Sounds the best to keep system operating as tested today.
-> >>
-> >> With that said, Petr has a point - not always such list is going to be
-> >> called before kdump. So, that makes me think in another idea: what if we
-> >> have another list, but not on panic path, but instead in the custom
-> >> crash_shutdown()? Drivers could add callbacks there that must execute
-> >> before kexec/kdump, no matter what.
-> > It may be beneficial for some other drivers but for our use we would 
-> > then need to register for the panic path and the crash_shutdown path. 
-> > We notify the VK card for 2 purposes: one to stop DMA so memory stop 
-> > changing during a kdump.  And also to get the card into a good state so 
-> > resets happen cleanly.
-> 
-> Thanks Scott! With that, I guess it's really better to keep this
-> notifier in this hypervisor/early list - I'm planning to do that for V2.
-> Unless Petr or somebody has strong feelings against that, of course.
+From: Sathvika Vasireddy <sv@linux.ibm.com>
 
-I am fine with it because we do not have a better solution at the
-moment.
+This patch makes sure objtool runs only on the object files
+that have ftrace enabled, instead of running on all the object
+files.
 
-It might be a good candidate for the 5th notifier list mentioned
-in the thread https://lore.kernel.org/r/YoyQyHHfhIIXSX0U@alley .
-But I am not sure if the 5th list is worth the complexity.
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ scripts/Makefile.build | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Best Regards,
-Petr
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 2e0c3f9c1459..06ceffd92921 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -258,8 +258,8 @@ else
+ # 'OBJECT_FILES_NON_STANDARD_foo.o := 'y': skip objtool checking for a file
+ # 'OBJECT_FILES_NON_STANDARD_foo.o := 'n': override directory skip for a file
+ 
+-$(obj)/%.o: objtool-enabled = $(if $(filter-out y%, \
+-	$(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n),y)
++$(obj)/%.o: objtool-enabled = $(and $(if $(filter-out y%, $(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n),y),        \
++        $(if $(findstring $(strip $(CC_FLAGS_FTRACE)),$(_c_flags)),y),y)
+ 
+ endif
+ 
+-- 
+2.35.3
+
