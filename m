@@ -4,31 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA1A0C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:29:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BEDC9C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:29:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sRS3DMDz3hVZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:29:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sRt1tF0z3cF8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:29:46 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s846Hgbz3cgP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:16:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s853dvHz3dPY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:16:05 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s845DZdz4yTV;
- Tue, 24 May 2022 21:16:04 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s852x09z4yTX;
+ Tue, 24 May 2022 21:16:05 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: paulus@samba.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
- YueHaibing <yuehaibing@huawei.com>
-In-Reply-To: <20220517094900.14900-1-yuehaibing@huawei.com>
-References: <20220517094900.14900-1-yuehaibing@huawei.com>
-Subject: Re: [PATCH -next] powerpc/kaslr_booke: Fix build error
-Message-Id: <165339057419.1718562.13519076380982149999.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:09:34 +1000
+To: paulus@samba.org, npiggin@gmail.com, linux-kernel@vger.kernel.org,
+ gregkh@linuxfoundation.org, benh@kernel.crashing.org, haren@linux.ibm.com,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ Zheng Bin <zhengbin13@huawei.com>
+In-Reply-To: <20220511033507.2745992-1-zhengbin13@huawei.com>
+References: <20220511033507.2745992-1-zhengbin13@huawei.com>
+Subject: Re: [PATCH -next] powerpc/pseries/vas: Call misc_deregister if sysfs
+ init fails
+Message-Id: <165339058660.1718562.17170565423375451543.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:09:46 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,28 +46,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: gaochao49@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 17 May 2022 17:49:00 +0800, YueHaibing wrote:
-> arch/powerpc/mm/nohash/kaslr_booke.c: In function ‘kaslr_get_cmdline’:
-> arch/powerpc/mm/nohash/kaslr_booke.c:46:2: error: implicit declaration of function ‘early_init_dt_scan_chosen’; did you mean ‘early_init_mmu_secondary’? [-Werror=implicit-function-declaration]
->   early_init_dt_scan_chosen(boot_command_line);
->   ^~~~~~~~~~~~~~~~~~~~~~~~~
->   early_init_mmu_secondary
-> arch/powerpc/mm/nohash/kaslr_booke.c: In function ‘get_initrd_range’:
-> arch/powerpc/mm/nohash/kaslr_booke.c:210:10: error: implicit declaration of function ‘of_read_number’; did you mean ‘seq_read_iter’? [-Werror=implicit-function-declaration]
->   start = of_read_number(prop, len / 4);
->           ^~~~~~~~~~~~~~
->           seq_read_iter
+On Wed, 11 May 2022 11:35:07 +0800, Zheng Bin wrote:
+> Undo effects of misc_register if sysfs init fails after
+> misc_register.
 > 
-> [...]
+> 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/kaslr_booke: Fix build error
-      https://git.kernel.org/powerpc/c/cdf87d2bd12cf3ea760a1fa35907a31e5177f425
+[1/1] powerpc/pseries/vas: Call misc_deregister if sysfs init fails
+      https://git.kernel.org/powerpc/c/426e5805226358dbe9af233347c5bf3c81f2125c
 
 cheers
