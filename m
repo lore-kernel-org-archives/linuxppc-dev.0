@@ -4,33 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B064C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:24:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FD6FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:25:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sKx0wg8z3gVn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:24:37 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sLL57vNz3fBb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:24:58 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7s3PS4z3cf1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7t1RgZz3cdG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:54 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7s2lKpz4yTF;
- Tue, 24 May 2022 21:15:53 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7t0Xlvz4yTH;
+ Tue, 24 May 2022 21:15:54 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <20220516071422.463738-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20220516071422.463738-1-naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc/ftrace: Remove ftrace init tramp once kernel
- init is complete
-Message-Id: <165339056569.1718562.5469057552925659494.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:09:25 +1000
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220308135047.478297-1-npiggin@gmail.com>
+References: <20220308135047.478297-1-npiggin@gmail.com>
+Subject: Re: [PATCH 00/14] powerpc/rtas: various cleanups and improvements
+Message-Id: <165339052753.1718562.588956115697522458.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:08:47 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,20 +42,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Laurent Dufour <ldufour@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 16 May 2022 12:44:22 +0530, Naveen N. Rao wrote:
-> Stop using the ftrace trampoline for init section once kernel init is
-> complete.
+On Tue, 8 Mar 2022 23:50:33 +1000, Nicholas Piggin wrote:
+> I had a bunch of random little fixes and cleanups around and
+> was prompted to put them together and make a change to call
+> RTAS with MSR[RI] enabled because of a report of the hard
+> lockup watchdog NMI IPI hitting in an rtas call which then
+> crashed because it's unrecoverable.
 > 
+> Could possibly move patch 9 earlier if it would help with
+> backporting.
 > 
+> [...]
 
-Applied to powerpc/next.
+Patches 1-4, 7, 9 & 13 applied to powerpc/next.
 
-[1/1] powerpc/ftrace: Remove ftrace init tramp once kernel init is complete
-      https://git.kernel.org/powerpc/c/84ade0a6655bee803d176525ef457175cbf4df22
+[01/14] powerpc/rtas: Move rtas entry assembly into its own file
+        https://git.kernel.org/powerpc/c/838ee286ecc9a3c76e6bd8f5aaad0c8c5c66b9ca
+[02/14] powerpc/rtas: Make enter_rtas a nokprobe symbol on 64-bit
+        https://git.kernel.org/powerpc/c/07940b4b61cf0cbcfb9e4226c07318f737157c42
+[03/14] powerpc/rtas: Fix whitespace in rtas_entry.S
+        https://git.kernel.org/powerpc/c/4e949faae2bd42783a2b2b732b7bf17557d94cfb
+[04/14] powerpc/rtas: Call enter_rtas with MSR[EE] disabled
+        https://git.kernel.org/powerpc/c/c5a65e0a420d50655bf692fc7386813683c0cd81
+[07/14] powerpc/rtas: PACA can be restored directly from SPRG
+        https://git.kernel.org/powerpc/c/5c86bd02b3c3ef68a109fa7e690ad62d3091f6d4
+[09/14] powerpc/rtas: Leave MSR[RI] enabled over RTAS call
+        https://git.kernel.org/powerpc/c/014b2e896cc8445fcc04636e69bf5f9e24281daa
+[13/14] powerpc/rtas: enture rtas_call is called with MMU enabled
+        https://git.kernel.org/powerpc/c/804c0a166ffea628eb7ef72b9fd710883cb1fa8f
 
 cheers
