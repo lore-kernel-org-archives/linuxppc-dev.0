@@ -4,11 +4,11 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 128C0C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 13:21:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99C48C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 13:21:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6vwL4psmz3f6S
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 23:21:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6vww1LZpz3fB6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 23:21:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -16,35 +16,35 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6vsf00j6z3cCh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 23:18:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6vsl2G5xz3cdr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 23:18:51 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4L6vs41HFrz9t9n;
- Tue, 24 May 2022 15:18:16 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4L6vs51cS6z9t9W;
+ Tue, 24 May 2022 15:18:17 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id CIunwuKFB17Z; Tue, 24 May 2022 15:18:16 +0200 (CEST)
+ with ESMTP id LFxhgSLmpAIM; Tue, 24 May 2022 15:18:17 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4L6vry0QjVz9t9W;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4L6vry0jcJz9t9r;
  Tue, 24 May 2022 15:18:10 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F15B18B778;
- Tue, 24 May 2022 15:18:09 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0658C8B779;
+ Tue, 24 May 2022 15:18:10 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id KIp5PBRbYtej; Tue, 24 May 2022 15:18:09 +0200 (CEST)
+ with ESMTP id k5I6z2G6WV_Z; Tue, 24 May 2022 15:18:09 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.153])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2C62B8B77B;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 254C88B776;
  Tue, 24 May 2022 15:18:09 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 24ODI0at4109102
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 24ODHx3K4109086
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 24 May 2022 15:18:00 +0200
+ Tue, 24 May 2022 15:17:59 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 24ODI0oa4109101;
- Tue, 24 May 2022 15:18:00 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 24ODHx454109085;
+ Tue, 24 May 2022 15:17:59 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -53,18 +53,18 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>, peterz@infradead.org,
  aik@ozlabs.ru, sv@linux.ibm.com, rostedt@goodmis.org,
  jpoimboe@redhat.com, naveen.n.rao@linux.vnet.ibm.com, mbenes@suse.cz
-Subject: [RFC PATCH v2 6/7] objtool/powerpc: Enable objtool to be built on ppc
-Date: Tue, 24 May 2022 15:17:46 +0200
-Message-Id: <47170405b7cae14af1ef3594a3b782725c303757.1653398233.git.christophe.leroy@csgroup.eu>
+Subject: [RFC PATCH v2 2/7] objtool: Use target file endianness instead of a
+ compiled constant
+Date: Tue, 24 May 2022 15:17:42 +0200
+Message-Id: <3bfeb8ed2f77ac47ff9584d2e68a319a4b468228.1653398233.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.3
 In-Reply-To: <cover.1653398233.git.christophe.leroy@csgroup.eu>
 References: <cover.1653398233.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1653398265; l=5921;
- i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id;
- bh=xZIMIYav+wWhXy1SVW1QArFdeyexe099RXplsCZIIZU=;
- b=JpPSO4Se2095AgwUU4aoI8UGG9DyhM2PRqkL2XAKi01ibf+ZU0Shc9nhknParIbuQPE3z57yG+Aq
- R1hq992BAeCOFXl23dt68QtKqXZ+Ql+8dsDj/i5Q7/Yy1ltJeQxs
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1653398264; l=6053; s=20211009;
+ h=from:subject:message-id; bh=vrJjX00xFfQBCHJhATW2ODphbJWhXLoDp74msldAT/c=;
+ b=BnmHH0glQWQzzHLztdyovLdYh+gFiYGyF/C5XlVnb7M1+mhlc4D8ieXNh8pzVmQtVhCI2YRlNybG
+ b8LrOoROCwwk4lUqqsgG0/eI+yhFLugOzcR4orczCBCTBkDb7jch
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -84,212 +84,171 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Sathvika Vasireddy <sv@linux.ibm.com>
+Some architectures like powerpc support both endianness, it's
+therefore not possible to fix the endianness via arch/endianness.h
+because there is no easy way to get the target endianness at
+build time.
 
-This patch adds [stub] implementations for required
-functions, inorder to enable objtool build on powerpc.
+Use the endianness recorded in the file objtool is working on.
 
-Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/Kconfig                          |  1 +
- tools/objtool/arch/powerpc/Build              |  2 +
- tools/objtool/arch/powerpc/decode.c           | 74 +++++++++++++++++++
- .../arch/powerpc/include/arch/cfi_regs.h      | 11 +++
- tools/objtool/arch/powerpc/include/arch/elf.h |  8 ++
- .../arch/powerpc/include/arch/special.h       | 21 ++++++
- tools/objtool/arch/powerpc/special.c          | 19 +++++
- 7 files changed, 136 insertions(+)
- create mode 100644 tools/objtool/arch/powerpc/Build
- create mode 100644 tools/objtool/arch/powerpc/decode.c
- create mode 100644 tools/objtool/arch/powerpc/include/arch/cfi_regs.h
- create mode 100644 tools/objtool/arch/powerpc/include/arch/elf.h
- create mode 100644 tools/objtool/arch/powerpc/include/arch/special.h
- create mode 100644 tools/objtool/arch/powerpc/special.c
+ .../arch/x86/include/arch/endianness.h        |  9 ------
+ tools/objtool/check.c                         |  2 +-
+ tools/objtool/include/objtool/endianness.h    | 29 +++++++++----------
+ tools/objtool/orc_dump.c                      | 11 +++++--
+ tools/objtool/orc_gen.c                       |  4 +--
+ tools/objtool/special.c                       |  3 +-
+ 6 files changed, 27 insertions(+), 31 deletions(-)
+ delete mode 100644 tools/objtool/arch/x86/include/arch/endianness.h
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 174edabb74fa..7c01229dd2e3 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -232,6 +232,7 @@ config PPC
- 	select HAVE_MOD_ARCH_SPECIFIC
- 	select HAVE_NMI				if PERF_EVENTS || (PPC64 && PPC_BOOK3S)
- 	select HAVE_OPTPROBES
-+	select HAVE_OBJTOOL
- 	select HAVE_PERF_EVENTS
- 	select HAVE_PERF_EVENTS_NMI		if PPC64
- 	select HAVE_PERF_REGS
-diff --git a/tools/objtool/arch/powerpc/Build b/tools/objtool/arch/powerpc/Build
-new file mode 100644
-index 000000000000..d24d5636a5b8
---- /dev/null
-+++ b/tools/objtool/arch/powerpc/Build
-@@ -0,0 +1,2 @@
-+objtool-y += decode.o
-+objtool-y += special.o
-diff --git a/tools/objtool/arch/powerpc/decode.c b/tools/objtool/arch/powerpc/decode.c
-new file mode 100644
-index 000000000000..eb1542d155fe
---- /dev/null
-+++ b/tools/objtool/arch/powerpc/decode.c
-@@ -0,0 +1,74 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <objtool/check.h>
+diff --git a/tools/objtool/arch/x86/include/arch/endianness.h b/tools/objtool/arch/x86/include/arch/endianness.h
+deleted file mode 100644
+index 7c362527da20..000000000000
+--- a/tools/objtool/arch/x86/include/arch/endianness.h
++++ /dev/null
+@@ -1,9 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
+-#ifndef _ARCH_ENDIANNESS_H
+-#define _ARCH_ENDIANNESS_H
+-
+-#include <endian.h>
+-
+-#define __TARGET_BYTE_ORDER __LITTLE_ENDIAN
+-
+-#endif /* _ARCH_ENDIANNESS_H */
+diff --git a/tools/objtool/check.c b/tools/objtool/check.c
+index 6cb07e151588..cef1dd54d505 100644
+--- a/tools/objtool/check.c
++++ b/tools/objtool/check.c
+@@ -1971,7 +1971,7 @@ static int read_unwind_hints(struct objtool_file *file)
+ 			return -1;
+ 		}
+ 
+-		cfi.cfa.offset = bswap_if_needed(hint->sp_offset);
++		cfi.cfa.offset = bswap_if_needed(file->elf, hint->sp_offset);
+ 		cfi.type = hint->type;
+ 		cfi.end = hint->end;
+ 
+diff --git a/tools/objtool/include/objtool/endianness.h b/tools/objtool/include/objtool/endianness.h
+index 10241341eff3..ab0515ba0538 100644
+--- a/tools/objtool/include/objtool/endianness.h
++++ b/tools/objtool/include/objtool/endianness.h
+@@ -2,33 +2,30 @@
+ #ifndef _OBJTOOL_ENDIANNESS_H
+ #define _OBJTOOL_ENDIANNESS_H
+ 
+-#include <arch/endianness.h>
+ #include <linux/kernel.h>
+ #include <endian.h>
+-
+-#ifndef __TARGET_BYTE_ORDER
+-#error undefined arch __TARGET_BYTE_ORDER
+-#endif
+-
+-#if __BYTE_ORDER != __TARGET_BYTE_ORDER
+-#define __NEED_BSWAP 1
+-#else
+-#define __NEED_BSWAP 0
+-#endif
 +#include <objtool/elf.h>
-+#include <objtool/arch.h>
-+#include <objtool/warn.h>
-+#include <objtool/builtin.h>
-+#include <objtool/endianness.h>
-+
-+unsigned long arch_dest_reloc_offset(int addend)
+ 
+ /*
+- * Does a byte swap if target endianness doesn't match the host, i.e. cross
++ * Does a byte swap if target file endianness doesn't match the host, i.e. cross
+  * compilation for little endian on big endian and vice versa.
+  * To be used for multi-byte values conversion, which are read from / about
+  * to be written to a target native endianness ELF file.
+  */
+-#define bswap_if_needed(val)						\
++static inline bool need_bswap(struct elf *elf)
 +{
-+	return addend;
++	return (__BYTE_ORDER == __LITTLE_ENDIAN) ^
++	       (elf->ehdr.e_ident[EI_DATA] == ELFDATA2LSB);
 +}
 +
-+bool arch_callee_saved_reg(unsigned char reg)
-+{
-+	return false;
-+}
-+
-+int arch_decode_hint_reg(u8 sp_reg, int *base)
-+{
-+	return 0;
-+}
-+
-+const char *arch_nop_insn(int len)
-+{
-+	return NULL;
-+}
-+
-+const char *arch_ret_insn(int len)
-+{
-+	return NULL;
-+}
-+
-+int arch_decode_instruction(struct objtool_file *file, const struct section *sec,
-+			    unsigned long offset, unsigned int maxlen,
-+			    unsigned int *len, enum insn_type *type,
-+			    unsigned long *immediate,
-+			    struct list_head *ops_list)
-+{
-+	u32 insn;
-+
-+	*immediate = 0;
-+	insn = bswap_if_needed(file->elf, *(u32 *)(sec->data->d_buf + offset));
-+	*len = 4;
-+	*type = INSN_OTHER;
-+
-+	return 0;
-+}
-+
-+unsigned long arch_jump_destination(struct instruction *insn)
-+{
-+	return insn->offset +  insn->immediate;
-+}
-+
-+void arch_initial_func_cfi_state(struct cfi_init_state *state)
-+{
-+	int i;
-+
-+	for (i = 0; i < CFI_NUM_REGS; i++) {
-+		state->regs[i].base = CFI_UNDEFINED;
-+		state->regs[i].offset = 0;
++#define bswap_if_needed(elf, val)					\
+ ({									\
+ 	__typeof__(val) __ret;						\
++	bool __need_bswap = need_bswap(elf);				\
+ 	switch (sizeof(val)) {						\
+-	case 8: __ret = __NEED_BSWAP ? bswap_64(val) : (val); break;	\
+-	case 4: __ret = __NEED_BSWAP ? bswap_32(val) : (val); break;	\
+-	case 2: __ret = __NEED_BSWAP ? bswap_16(val) : (val); break;	\
++	case 8: __ret = __need_bswap ? bswap_64(val) : (val); break;	\
++	case 4: __ret = __need_bswap ? bswap_32(val) : (val); break;	\
++	case 2: __ret = __need_bswap ? bswap_16(val) : (val); break;	\
+ 	default:							\
+ 		BUILD_BUG(); break;					\
+ 	}								\
+diff --git a/tools/objtool/orc_dump.c b/tools/objtool/orc_dump.c
+index f5a8508c42d6..4f1211fec82c 100644
+--- a/tools/objtool/orc_dump.c
++++ b/tools/objtool/orc_dump.c
+@@ -76,6 +76,7 @@ int orc_dump(const char *_objname)
+ 	GElf_Rela rela;
+ 	GElf_Sym sym;
+ 	Elf_Data *data, *symtab = NULL, *rela_orc_ip = NULL;
++	struct elf dummy_elf = {};
+ 
+ 
+ 	objname = _objname;
+@@ -94,6 +95,12 @@ int orc_dump(const char *_objname)
+ 		return -1;
+ 	}
+ 
++	if (!elf64_getehdr(elf)) {
++		WARN_ELF("elf64_getehdr");
++		return -1;
 +	}
++	memcpy(&dummy_elf.ehdr, elf64_getehdr(elf), sizeof(dummy_elf.ehdr));
 +
-+	/* initial CFA (call frame address) */
-+	state->cfa.base = CFI_SP;
-+	state->cfa.offset = 0;
-+
-+	/* initial LR (return address) */
-+	state->regs[CFI_RA].base = CFI_CFA;
-+	state->regs[CFI_RA].offset = 0;
-+}
-diff --git a/tools/objtool/arch/powerpc/include/arch/cfi_regs.h b/tools/objtool/arch/powerpc/include/arch/cfi_regs.h
-new file mode 100644
-index 000000000000..59638ebeafc8
---- /dev/null
-+++ b/tools/objtool/arch/powerpc/include/arch/cfi_regs.h
-@@ -0,0 +1,11 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+
-+#ifndef _OBJTOOL_CFI_REGS_H
-+#define _OBJTOOL_CFI_REGS_H
-+
-+#define CFI_BP 1
-+#define CFI_SP CFI_BP
-+#define CFI_RA 32
-+#define CFI_NUM_REGS 33
-+
-+#endif
-diff --git a/tools/objtool/arch/powerpc/include/arch/elf.h b/tools/objtool/arch/powerpc/include/arch/elf.h
-new file mode 100644
-index 000000000000..3c8ebb7d2a6b
---- /dev/null
-+++ b/tools/objtool/arch/powerpc/include/arch/elf.h
-@@ -0,0 +1,8 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+
-+#ifndef _OBJTOOL_ARCH_ELF
-+#define _OBJTOOL_ARCH_ELF
-+
-+#define R_NONE R_PPC_NONE
-+
-+#endif /* _OBJTOOL_ARCH_ELF */
-diff --git a/tools/objtool/arch/powerpc/include/arch/special.h b/tools/objtool/arch/powerpc/include/arch/special.h
-new file mode 100644
-index 000000000000..ffef9ada7133
---- /dev/null
-+++ b/tools/objtool/arch/powerpc/include/arch/special.h
-@@ -0,0 +1,21 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+#ifndef _PPC_ARCH_SPECIAL_H
-+#define _PPC_ARCH_SPECIAL_H
-+
-+#define EX_ENTRY_SIZE 8
-+#define EX_ORIG_OFFSET 0
-+#define EX_NEW_OFFSET 4
-+
-+#define JUMP_ENTRY_SIZE 16
-+#define JUMP_ORIG_OFFSET 0
-+#define JUMP_NEW_OFFSET 4
-+#define JUMP_KEY_OFFSET 8
-+
-+#define ALT_ENTRY_SIZE 12
-+#define ALT_ORIG_OFFSET 0
-+#define ALT_NEW_OFFSET 4
-+#define ALT_FEATURE_OFFSET 8
-+#define ALT_ORIG_LEN_OFFSET 10
-+#define ALT_NEW_LEN_OFFSET 11
-+
-+#endif /* _PPC_ARCH_SPECIAL_H */
-diff --git a/tools/objtool/arch/powerpc/special.c b/tools/objtool/arch/powerpc/special.c
-new file mode 100644
-index 000000000000..e3e75cbab858
---- /dev/null
-+++ b/tools/objtool/arch/powerpc/special.c
-@@ -0,0 +1,19 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+#include <string.h>
-+
-+#include <objtool/special.h>
-+#include <objtool/builtin.h>
-+
-+
-+bool arch_support_alt_relocation(struct special_alt *special_alt,
-+				 struct instruction *insn,
-+				 struct reloc *reloc)
-+{
-+	return false;
-+}
-+
-+struct reloc *arch_find_switch_table(struct objtool_file *file,
-+				    struct instruction *insn)
-+{
-+	return NULL;
-+}
+ 	if (elf_getshdrnum(elf, &nr_sections)) {
+ 		WARN_ELF("elf_getshdrnum");
+ 		return -1;
+@@ -198,11 +205,11 @@ int orc_dump(const char *_objname)
+ 
+ 		printf(" sp:");
+ 
+-		print_reg(orc[i].sp_reg, bswap_if_needed(orc[i].sp_offset));
++		print_reg(orc[i].sp_reg, bswap_if_needed(&dummy_elf, orc[i].sp_offset));
+ 
+ 		printf(" bp:");
+ 
+-		print_reg(orc[i].bp_reg, bswap_if_needed(orc[i].bp_offset));
++		print_reg(orc[i].bp_reg, bswap_if_needed(&dummy_elf, orc[i].bp_offset));
+ 
+ 		printf(" type:%s end:%d\n",
+ 		       orc_type_name(orc[i].type), orc[i].end);
+diff --git a/tools/objtool/orc_gen.c b/tools/objtool/orc_gen.c
+index dd3c64af9db2..1f22b7ebae58 100644
+--- a/tools/objtool/orc_gen.c
++++ b/tools/objtool/orc_gen.c
+@@ -97,8 +97,8 @@ static int write_orc_entry(struct elf *elf, struct section *orc_sec,
+ 	/* populate ORC data */
+ 	orc = (struct orc_entry *)orc_sec->data->d_buf + idx;
+ 	memcpy(orc, o, sizeof(*orc));
+-	orc->sp_offset = bswap_if_needed(orc->sp_offset);
+-	orc->bp_offset = bswap_if_needed(orc->bp_offset);
++	orc->sp_offset = bswap_if_needed(elf, orc->sp_offset);
++	orc->bp_offset = bswap_if_needed(elf, orc->bp_offset);
+ 
+ 	/* populate reloc for ip */
+ 	if (elf_add_reloc_to_insn(elf, ip_sec, idx * sizeof(int), R_X86_64_PC32,
+diff --git a/tools/objtool/special.c b/tools/objtool/special.c
+index e2223dd91c37..9c8d827f69af 100644
+--- a/tools/objtool/special.c
++++ b/tools/objtool/special.c
+@@ -87,7 +87,8 @@ static int get_alt_entry(struct elf *elf, struct special_entry *entry,
+ 	if (entry->feature) {
+ 		unsigned short feature;
+ 
+-		feature = bswap_if_needed(*(unsigned short *)(sec->data->d_buf +
++		feature = bswap_if_needed(elf,
++					  *(unsigned short *)(sec->data->d_buf +
+ 							      offset +
+ 							      entry->feature));
+ 		arch_handle_alternative(feature, alt);
 -- 
 2.35.3
 
