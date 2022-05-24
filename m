@@ -4,47 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D220C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 13:18:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87C53C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 13:19:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6vsZ1qSBz3brV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 23:18:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6vsz6R6xz3cdZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 23:19:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6vs45Mm5z2xDY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 23:18:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6vsB4NnMz3blH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 23:18:22 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4L6vry0CQcz9t9k;
- Tue, 24 May 2022 15:18:10 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4L6vrz1djXz9t9t;
+ Tue, 24 May 2022 15:18:11 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
  by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 8gwBock1Xdtc; Tue, 24 May 2022 15:18:09 +0200 (CEST)
+ with ESMTP id Kj799F3hr108; Tue, 24 May 2022 15:18:11 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4L6vrx6XBjz9t9W;
+ by pegase2.c-s.fr (Postfix) with ESMTP id 4L6vrx6rdCz9t9c;
  Tue, 24 May 2022 15:18:09 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CE3278B77D;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D90D48B78B;
  Tue, 24 May 2022 15:18:09 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 9I-MCx3T8Oam; Tue, 24 May 2022 15:18:09 +0200 (CEST)
+ with ESMTP id LKcvQZdc1zap; Tue, 24 May 2022 15:18:09 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.153])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1D5AF8B775;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 30CDB8B77C;
  Tue, 24 May 2022 15:18:09 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 24ODI0vw4109098
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 24ODHxgC4109082
  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 24 May 2022 15:18:00 +0200
+ Tue, 24 May 2022 15:17:59 +0200
 Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 24ODI0wu4109097;
- Tue, 24 May 2022 15:18:00 +0200
+ by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 24ODHx7I4109081;
+ Tue, 24 May 2022 15:17:59 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
  christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
@@ -53,19 +53,17 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>, peterz@infradead.org,
  aik@ozlabs.ru, sv@linux.ibm.com, rostedt@goodmis.org,
  jpoimboe@redhat.com, naveen.n.rao@linux.vnet.ibm.com, mbenes@suse.cz
-Subject: [RFC PATCH v2 5/7] objtool: Enable objtool to run only on files with
- ftrace enabled
-Date: Tue, 24 May 2022 15:17:45 +0200
-Message-Id: <cf3013dfad89ad5ac7d16d56dced72d7c138a20e.1653398233.git.christophe.leroy@csgroup.eu>
+Subject: [RFC PATCH v2 1/7] objtool: Fix SEGFAULT
+Date: Tue, 24 May 2022 15:17:41 +0200
+Message-Id: <26da455a633a493c069cc517ca3b6e2e1154bf34.1653398233.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.3
 In-Reply-To: <cover.1653398233.git.christophe.leroy@csgroup.eu>
 References: <cover.1653398233.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1653398265; l=1144;
- i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id;
- bh=4ak3imJrKRJE57Md7N5q2CLhsaKTcV3PIH/MESED9zQ=;
- b=SlkKfXVLYvLavYcNv4sPXhd6H4ZbQapa4sTVG52/RVMDqSDvwB1kAygOuPTjF1V2D2eN9PbMpnpf
- hf4EMgMaCb8UKStIzfmyxCnSAB6SkAsMPLX1swE8wJ5KYArv1wO7
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1653398264; l=607; s=20211009;
+ h=from:subject:message-id; bh=cdKazw58v9ydhEdDV3mxid/swhGwgfG8Z4q+hdZCCmc=;
+ b=vej0SN8GnZu8PVJY8flyCN6dS0pl0mgEBEe/yP3csMNp+80i2IKG+G/9gXOcQoXkl+o8VpKIpUfD
+ fBLJal2HDrH/VH4FiO2P0da/u77ynvUvZrmYErxDsMPlLsbGH0LW
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
  pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
@@ -85,34 +83,24 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Sathvika Vasireddy <sv@linux.ibm.com>
-
-This patch makes sure objtool runs only on the object files
-that have ftrace enabled, instead of running on all the object
-files.
-
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- scripts/Makefile.build | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ tools/objtool/check.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 2e0c3f9c1459..06ceffd92921 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -258,8 +258,8 @@ else
- # 'OBJECT_FILES_NON_STANDARD_foo.o := 'y': skip objtool checking for a file
- # 'OBJECT_FILES_NON_STANDARD_foo.o := 'n': override directory skip for a file
+diff --git a/tools/objtool/check.c b/tools/objtool/check.c
+index 190b2f6e360a..6cb07e151588 100644
+--- a/tools/objtool/check.c
++++ b/tools/objtool/check.c
+@@ -203,7 +203,7 @@ static bool __dead_end_function(struct objtool_file *file, struct symbol *func,
+ 		return false;
  
--$(obj)/%.o: objtool-enabled = $(if $(filter-out y%, \
--	$(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n),y)
-+$(obj)/%.o: objtool-enabled = $(and $(if $(filter-out y%, $(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n),y),        \
-+        $(if $(findstring $(strip $(CC_FLAGS_FTRACE)),$(_c_flags)),y),y)
+ 	insn = find_insn(file, func->sec, func->offset);
+-	if (!insn->func)
++	if (!insn || !insn->func)
+ 		return false;
  
- endif
- 
+ 	func_for_each_insn(file, func, insn) {
 -- 
 2.35.3
 
