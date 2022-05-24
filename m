@@ -4,33 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBA0FC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:19:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 125BEC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:19:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sCb4lk8z3fPd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:19:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sD75NlNz3dtY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:19:35 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7Y5bG5z3bkD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7d3NPkz3bnn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:41 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7Y0nh8z4ySt;
- Tue, 24 May 2022 21:15:37 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7Z28Jtz4ySg;
+ Tue, 24 May 2022 21:15:38 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Finn Thain <fthain@linux-m68k.org>
-In-Reply-To: <5edbe76ce68227f71e09af4614cc4c1bd61c7ec8.1649326292.git.fthain@linux-m68k.org>
-References: <5edbe76ce68227f71e09af4614cc4c1bd61c7ec8.1649326292.git.fthain@linux-m68k.org>
-Subject: Re: [PATCH v2] macintosh/via-pmu: Fix build failure when CONFIG_INPUT
- is disabled
-Message-Id: <165339058086.1718562.16646756520470631496.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:09:40 +1000
+To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+In-Reply-To: <20220427224924.592546-1-gpiccoli@igalia.com>
+References: <20220427224924.592546-1-gpiccoli@igalia.com>
+Subject: Re: (subset) [PATCH 00/30] The panic notifiers refactor
+Message-Id: <165339051490.1718562.1423253645001601000.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:08:34 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,30 +43,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Randy Dunlap <rdunlap@infradead.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 07 Apr 2022 20:11:32 +1000, Finn Thain wrote:
-> drivers/macintosh/via-pmu-event.o: In function `via_pmu_event':
-> via-pmu-event.c:(.text+0x44): undefined reference to `input_event'
-> via-pmu-event.c:(.text+0x68): undefined reference to `input_event'
-> via-pmu-event.c:(.text+0x94): undefined reference to `input_event'
-> via-pmu-event.c:(.text+0xb8): undefined reference to `input_event'
-> drivers/macintosh/via-pmu-event.o: In function `via_pmu_event_init':
-> via-pmu-event.c:(.init.text+0x20): undefined reference to `input_allocate_device'
-> via-pmu-event.c:(.init.text+0xc4): undefined reference to `input_register_device'
-> via-pmu-event.c:(.init.text+0xd4): undefined reference to `input_free_device'
-> make[1]: *** [Makefile:1155: vmlinux] Error 1
-> make: *** [Makefile:350: __build_one_by_one] Error 2
+On Wed, 27 Apr 2022 19:48:54 -0300, Guilherme G. Piccoli wrote:
+> Hey folks, this is an attempt to improve/refactor the dated panic notifiers
+> infrastructure. This is strongly based in a suggestion made by Pter Mladek [0]
+> some time ago, and it's finally ready. Below I'll detail the patch ordering,
+> testing made, etc.
+> First, a bit about the reason behind this.
+> 
+> The panic notifiers list is an infrastructure that allows callbacks to execute
+> during panic time. Happens that anybody can add functions there, no ordering
+> is enforced (by default) and the decision to execute or not such notifiers
+> before kdump may lead to high risk of failure in crash scenarios - default is
+> not to execute any of them. There is a parameter acting as a switch for that.
+> But some architectures require some notifiers, so..it's messy.
 > 
 > [...]
 
-Applied to powerpc/next.
+Patch 8 applied to powerpc/next.
 
-[1/1] macintosh/via-pmu: Fix build failure when CONFIG_INPUT is disabled
-      https://git.kernel.org/powerpc/c/86ce436e30d86327c9f5260f718104ae7b21f506
+[08/30] powerpc/setup: Refactor/untangle panic notifiers
+        https://git.kernel.org/powerpc/c/e2aa34ce80a26d24a0333da9402d533885f239c9
 
 cheers
