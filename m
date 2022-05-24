@@ -4,70 +4,131 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99C48C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 13:21:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7092C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 13:29:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6vww1LZpz3fB6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 23:21:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6w5w1R2Vz3bl3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 23:29:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr;
+ smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e18::622;
+ helo=fra01-pr2-obe.outbound.protection.outlook.com;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Received: from FRA01-PR2-obe.outbound.protection.outlook.com
+ (mail-pr2fra01on0622.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:7e18::622])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6vsl2G5xz3cdr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 23:18:51 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
- by localhost (Postfix) with ESMTP id 4L6vs51cS6z9t9W;
- Tue, 24 May 2022 15:18:17 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
- by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id LFxhgSLmpAIM; Tue, 24 May 2022 15:18:17 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase2.c-s.fr (Postfix) with ESMTP id 4L6vry0jcJz9t9r;
- Tue, 24 May 2022 15:18:10 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0658C8B779;
- Tue, 24 May 2022 15:18:10 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id k5I6z2G6WV_Z; Tue, 24 May 2022 15:18:09 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.203.153])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 254C88B776;
- Tue, 24 May 2022 15:18:09 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 24ODHx3K4109086
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
- Tue, 24 May 2022 15:17:59 +0200
-Received: (from chleroy@localhost)
- by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 24ODHx454109085;
- Tue, 24 May 2022 15:17:59 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to
- christophe.leroy@csgroup.eu using -f
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6w5P0QzJz2xX6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 23:28:55 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Sa+iDv8wo/1WUqF+8ErxZO5yHNhP/QwgKHrdivl2eBclpR2NGKZ5/ip10k/KxPwNdEgDT/SMWNY+leaRtNhk11dC3ruphFaDC6qgd1HM22k8GN9/HAmjucKfMa41oUeHHh0m6cEG3wSIDTOr06YJDvlv/QDgc+uX8Fp6AdCFcWrgBUpmRSiRpJpy5TB/dIfstKl6hivYpWfYdIXPbK5wvEl4iOGscUtN/EkOTh1xskPqvbeGZ7R5umXuEZYObrNxtc6hlejJH/ENbENd7vNjMeIblvFwiLuiqKUOBSvuR2fy3Edczxabh7T0s2oN5OG3DVJnQ5Vdh4wICrKV6sM4Pw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=u69MdDk2CpCr2//TMJBJI10tRlJIoEHmqfL6476CVbI=;
+ b=Y1JoUyIRVmxgZJGVe8KCYqBqyIBhw9GFepTXs2D59LIxb+n5KLaQUAR42YI+0C8l4LQ21usqfo8CZ80FSKKLWkg0HKkw0iix9N85hWOQZUaz5ZJRlvBa+n1i5y7O0FHLn5owK/N5qQ64/BtSj2vnUrlJoEH+Wr1cJKXtK1ioZkyvBC3mSYnq2cRdUSvrQxuzUL9VxflQ1Y6fCxx/hMXbJ0RNH1YRBR6My3BrYUHWGm2DsBAqmoOjvLFlXHs1GWKQF5oLEpD/+3FdSzvz7MA3f8J446a6+A8O6sDd9KU+qW61KfVhm2ORODxwmk/GlQLUWK0QZyu/NRC0jh9nOjTMUA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
+ by PR1P264MB1664.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:1b2::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5273.14; Tue, 24 May
+ 2022 13:28:34 +0000
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::b15e:862f:adf7:5356]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::b15e:862f:adf7:5356%5]) with mapi id 15.20.5273.023; Tue, 24 May 2022
+ 13:28:34 +0000
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, peterz@infradead.org,
- aik@ozlabs.ru, sv@linux.ibm.com, rostedt@goodmis.org,
- jpoimboe@redhat.com, naveen.n.rao@linux.vnet.ibm.com, mbenes@suse.cz
-Subject: [RFC PATCH v2 2/7] objtool: Use target file endianness instead of a
- compiled constant
-Date: Tue, 24 May 2022 15:17:42 +0200
-Message-Id: <3bfeb8ed2f77ac47ff9584d2e68a319a4b468228.1653398233.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.35.3
-In-Reply-To: <cover.1653398233.git.christophe.leroy@csgroup.eu>
-References: <cover.1653398233.git.christophe.leroy@csgroup.eu>
+To: Sathvika Vasireddy <sv@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [RFC PATCH 2/4] objtool: Enable objtool to run only on files with
+ ftrace enabled
+Thread-Topic: [RFC PATCH 2/4] objtool: Enable objtool to run only on files
+ with ftrace enabled
+Thread-Index: AQHYbs5kDECg5GS16kaacJPiXFfVO60tuxeAgAAgbICAACs0gA==
+Date: Tue, 24 May 2022 13:28:34 +0000
+Message-ID: <ce4d2b3c-5cd9-d33a-648c-7f294e9eb94f@csgroup.eu>
+References: <20220523175548.922671-1-sv@linux.ibm.com>
+ <20220523175548.922671-3-sv@linux.ibm.com>
+ <89012c4c-e989-6092-d4f1-0dc4eca983f1@csgroup.eu>
+ <d28a9bf0-65ac-797c-3640-8af7e0beec33@linux.vnet.ibm.com>
+In-Reply-To: <d28a9bf0-65ac-797c-3640-8af7e0beec33@linux.vnet.ibm.com>
+Accept-Language: fr-FR, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 245c6ff2-a865-4bf3-4899-08da3d894d4d
+x-ms-traffictypediagnostic: PR1P264MB1664:EE_
+x-microsoft-antispam-prvs: <PR1P264MB1664BC09D85C481F8F07FAD7EDD79@PR1P264MB1664.FRAP264.PROD.OUTLOOK.COM>
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: iZfSHLL6ch6r+Wuwt3DcxhTlmD2UQqLtrONMBZHonrvKwiDeu9TeT6tI3mzmF3Remau4zZpPuRRySdRyLGxpEQxHPWoxmhSqcWdSDw3yJEU56SItb9gUbDbpPDQsAp/6rHzVAGO0ic0+EHmLQtr2cXE10ztTfS8gS58butq+9hKnH24WJQviNHeZraQMkFViLeQCqmA94LLsx3bdOPCR4Y7fXbCxMGQqtb9ztIDqYfa+Xt3Y1wGFgvGDumoRhA8a0cS09Tw/xmzK0FlPTFwx/fSKsapTUs8rskZQuZtlzWD/u8AI3ZOFUMywKUPY5h06EOUBlhyefP60uj7KsmMeL//zJeo0Rddo2IYEaclxuEiLbzQrDeKfbNfjnJ74DwFilhXTA5wFxAy5vhF5Y9/dBI2/1qnjAo6z3aYGzk6GaGNQOh9hvm3xvJc6BJ2tzRnqGYhRSTXkoWbE/AUi24kwOQ0LpuSCvNw7PpD7Vkz7xs+cpAWNNaiA2RCiHjifwVkWNOGe/O9ZWrJwQ66SGALh+QU2bkiD/8a/tDObRv5B4r1cWkL2eqCWlxlt4Ne9/iFrRHw5xMyvFvmRSBpgz6aHVWP9ZC6h+t8K4UahEl+YD5TBtCymbJI5mPja02za0I/eGrDkOSvSPfPV83IewmLcEB3VZOivmoJKBtjZ++cVDllFXakjMYy3h09zdNPzs/Mp3uMp7WZPj7U/DJiYtw8seAiw7cSKUP0PSAOrQd+c+7OYgliqwSXtB+tCXJJZZM93huRzsKtshB0UGZ/GWNzezAmLTLovtqqfcMmwFSbBuy3nHXfSNXTKtLc+j4sdpKd+NpvU2CzubvIUpXR0XCcv/J9Ijig+6BzP89/rzR6sIk4=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
+ SFS:(13230001)(4636009)(366004)(66946007)(71200400001)(66446008)(64756008)(26005)(36756003)(122000001)(66556008)(83380400001)(66476007)(4326008)(76116006)(8676002)(5660300002)(6512007)(91956017)(38070700005)(38100700002)(2616005)(316002)(110136005)(31686004)(966005)(6486002)(54906003)(86362001)(8936002)(6506007)(508600001)(66574015)(186003)(2906002)(7416002)(44832011)(53546011)(31696002)(45980500001)(43740500002);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?VXR6ejQ3d3EvYjhNKzhyUTBMWTFTUXZ3VWtPVHMzdnBwUXlmdHpHNU9YNDBw?=
+ =?utf-8?B?OTF4N3loOHhNajlYZm0ycStNU1QwSWFiS2xiTEtmQXdZRkcvU2FYTnl1WkFX?=
+ =?utf-8?B?ZWRhK3Jic05pb1lncUlXL3NKWFdDVTRKR253a09vaHVRQlJ4ZVJhS0tSdDRW?=
+ =?utf-8?B?VldwUFJZR04vS3BXR2UyMi8wMzM1RHdSVjIxTkRkSGhjTlYyUkl6MXZ0YzF1?=
+ =?utf-8?B?dHN6c0Jud3c1L21XWmlVWm4xcitmd0U0alNEK1VhSHQ5MFpJTkp2Zm42RDA0?=
+ =?utf-8?B?aXVBblBlRlcyRUJiRzZCaFNXT3hLVmFjc0cyblI4SUw5VUZVMHlzV0VxamF4?=
+ =?utf-8?B?WlZETkcyMmxicitsS2xhK3dpT0dKVjV2dC9FcnZjUnI4aFpKbUpubmlKMm4w?=
+ =?utf-8?B?VDYrMDE3OXVNMTZaQndDUThLWEFGM1BYa1lKVmcvM0k5ajlWSTMzUDNkdnFH?=
+ =?utf-8?B?SDAveEp4MXUvbEY0N1A5dEpMN0UwVmJlZDBsMGJBOHpxSkJvK1BQOWhyb013?=
+ =?utf-8?B?ZXg5cWMwMEZDZE5KMmFQWStFdkNvWk1XVWU2SjFsN3pOajJlMzVUcnpQN1hM?=
+ =?utf-8?B?QXQrMnJFc2o1bVh1MXZoZjM1cGJkZVU4NWF0Tmo1bHBjMXgrTi80ZG1vTDJ2?=
+ =?utf-8?B?Y2Z4bGRhTmZxYWN3TWFRU3Rqd1hZTGZ4dW5zT1pZVjR0MDlkbUpvcEIxblFL?=
+ =?utf-8?B?VHJYRkZTTWwwdHhZZXZyRHNGRGdKV3FuOWduaHEvWkR6WGlKYkF0TGRlMVpG?=
+ =?utf-8?B?ay9ORkFoUEF3dko3ejZXc1BWekg3Vzh4Z2RqTjhDVzlPanVlRG1nZSs5U2hB?=
+ =?utf-8?B?WThVM0s4Q09rTW5KYXhaVTJqZmtFQlhsQ3RISkRrVkNHR05GVmRKMlpWWVR0?=
+ =?utf-8?B?SHdGcTVJQmY3UXAxT2NmNmpQMTc5c21TWDhqVjlEai95TVpsRS8xaWp3b0Ft?=
+ =?utf-8?B?YWJkOUVQaEYya2FKUGU0d0IwTFJHZW1UU3hCYU1SM2dZaTFDcVI5WDBYMDhv?=
+ =?utf-8?B?VUR0T3owNWFzRkdBYk1KNDBjZjVlRnQ4NVdoeXRsM1l0dm5JYmpFT1Ftckk1?=
+ =?utf-8?B?eFNNODVNM1RjVnJrRzJnWjhRVG1xYWR4bUsxbkNUV1JTTnpkR1RLZUNQZjQ3?=
+ =?utf-8?B?b1piaitZNHhnWnNPMW9PaWlISUZNV0NqVlJhaTUwTCt2OTRobWlzYUpJckRC?=
+ =?utf-8?B?cUdCTC9SaGZZTHdjekVjSjg3ZGxHazdXa1BuM1cwZWc4Q0dIQzZoaDFwaURZ?=
+ =?utf-8?B?SmFkMzk3SEY5ekRGWWh2bXlvVmVGQjdqRDk4NHFzbnE0VTZVanFOZWlLRXBD?=
+ =?utf-8?B?c1BqSXNHdXVIcVN6di9yb1VnQU1SUnZlb2Q5WG5LdUdIMDRCUVhEUVNvVjl1?=
+ =?utf-8?B?dzRvVHE2clprbmhQam9hZGpNM0RZK1R2MzcrdVFkNGNrRjEzUmt1ZG9objFz?=
+ =?utf-8?B?Z3FQcy9pbXRtV1I3bVdnQzFCN3Rrc1lZT1VQakJvL0FVcDJIQXgra1ZjN3po?=
+ =?utf-8?B?WWxabDJ3S3ZuNGsxWGtPNmsrQUg3MW1weHljRndIK1kxWm5mRjhLckpXU2dj?=
+ =?utf-8?B?alhpaS8wYUFBWDBwem41L1BjTmd5aDJiL3V4eEp1MGx5TTgrcXdHR2xqYVhL?=
+ =?utf-8?B?VFlqc05CK29DeFpZVk12VlVuTzA0TU5zOU43MHZXa0EzY1hocFVJcXV2ZVcw?=
+ =?utf-8?B?VE9JcHMxRUhNZFlUOVU1cG01UnB4ZzBWL2U3UTlQZGhJUm5KRm9yS2dyYlRy?=
+ =?utf-8?B?Zk5zN3JvV3RGUDFINmVOZkZoK0JuWGl0OEd1RDQ5WHRiNWRhTEx3WFFtR285?=
+ =?utf-8?B?RXlzRkZHSVNROUkxY2dDYWg5SnlpVVE4aHNWbmNYcG1FRW12TUNhYmtZWU54?=
+ =?utf-8?B?UlhmQXFFeExaY21CMDRhdW5yMk94UmRYWHo2TEVvTW9TMERLQWRKOG9mMk9X?=
+ =?utf-8?B?T2VybUJLaWdRYkxrcVBCK09QeEQzQU5mVHpVbGRCVW5qK04xbmZ5aXdQSERi?=
+ =?utf-8?B?dnpNalVuWGV3ekZUdlJ6SEZuNktkNTlQVlk5a0NTb1A3bmNPNkpRS0F1QVhw?=
+ =?utf-8?B?cTJiSVhHOGw3ZkdxT1F1SVZwL3E5SkJZSHNRN0FiZHoxSnh2T1pBbis1WktY?=
+ =?utf-8?B?dmJZc0VyRmZOT2N5QmdMV2Z1MFlncytsS3NYWVQ0VTgwZFQyNlRoRjRBSWgv?=
+ =?utf-8?B?aFhHK2toenorTWYzb2k0MjE1NStOVS9aa0tEeS80ZExraWg3NGtEZU1qVkUz?=
+ =?utf-8?B?MUNFUTlWRVIwazhWQkgzRys3bTFDa1Jvb3NaQmNRQXh3dHhPS3dkQk5qb0dQ?=
+ =?utf-8?B?elV3MGdYV0pmWUdGSk42aGNqbWRRRUJab3UzenBEUGt5dTRDVVh0MTNZcWFR?=
+ =?utf-8?Q?39ZZqNtogpUYSP+Ajp48Fc48mkndggJvSzaTq?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <6EB17579976E1B489494DED33B913012@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1653398264; l=6053; s=20211009;
- h=from:subject:message-id; bh=vrJjX00xFfQBCHJhATW2ODphbJWhXLoDp74msldAT/c=;
- b=BnmHH0glQWQzzHLztdyovLdYh+gFiYGyF/C5XlVnb7M1+mhlc4D8ieXNh8pzVmQtVhCI2YRlNybG
- b8LrOoROCwwk4lUqqsgG0/eI+yhFLugOzcR4orczCBCTBkDb7jch
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519;
- pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: 245c6ff2-a865-4bf3-4899-08da3d894d4d
+X-MS-Exchange-CrossTenant-originalarrivaltime: 24 May 2022 13:28:34.2914 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: +KwB2xNbLvsuVPATrNqHjUGijOoOc0DXEtgQEcV37P8mWMk1m/V+pN2PEH3/TVutkVcwGPMkL8XzD+kkNbO4M4lmk/tqxyqoe8AyACOcEXk=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR1P264MB1664
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,176 +140,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "peterz@infradead.org" <peterz@infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rostedt@goodmis.org" <rostedt@goodmis.org>, "aik@ozlabs.ru" <aik@ozlabs.ru>,
+ Sathvika Vasireddy <sv@linux.ibm.com>,
+ "jpoimboe@redhat.com" <jpoimboe@redhat.com>,
+ "naveen.n.rao@linux.vnet.ibm.com" <naveen.n.rao@linux.vnet.ibm.com>,
+ "mbenes@suse.cz" <mbenes@suse.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some architectures like powerpc support both endianness, it's
-therefore not possible to fix the endianness via arch/endianness.h
-because there is no easy way to get the target endianness at
-build time.
-
-Use the endianness recorded in the file objtool is working on.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- .../arch/x86/include/arch/endianness.h        |  9 ------
- tools/objtool/check.c                         |  2 +-
- tools/objtool/include/objtool/endianness.h    | 29 +++++++++----------
- tools/objtool/orc_dump.c                      | 11 +++++--
- tools/objtool/orc_gen.c                       |  4 +--
- tools/objtool/special.c                       |  3 +-
- 6 files changed, 27 insertions(+), 31 deletions(-)
- delete mode 100644 tools/objtool/arch/x86/include/arch/endianness.h
-
-diff --git a/tools/objtool/arch/x86/include/arch/endianness.h b/tools/objtool/arch/x86/include/arch/endianness.h
-deleted file mode 100644
-index 7c362527da20..000000000000
---- a/tools/objtool/arch/x86/include/arch/endianness.h
-+++ /dev/null
-@@ -1,9 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--#ifndef _ARCH_ENDIANNESS_H
--#define _ARCH_ENDIANNESS_H
--
--#include <endian.h>
--
--#define __TARGET_BYTE_ORDER __LITTLE_ENDIAN
--
--#endif /* _ARCH_ENDIANNESS_H */
-diff --git a/tools/objtool/check.c b/tools/objtool/check.c
-index 6cb07e151588..cef1dd54d505 100644
---- a/tools/objtool/check.c
-+++ b/tools/objtool/check.c
-@@ -1971,7 +1971,7 @@ static int read_unwind_hints(struct objtool_file *file)
- 			return -1;
- 		}
- 
--		cfi.cfa.offset = bswap_if_needed(hint->sp_offset);
-+		cfi.cfa.offset = bswap_if_needed(file->elf, hint->sp_offset);
- 		cfi.type = hint->type;
- 		cfi.end = hint->end;
- 
-diff --git a/tools/objtool/include/objtool/endianness.h b/tools/objtool/include/objtool/endianness.h
-index 10241341eff3..ab0515ba0538 100644
---- a/tools/objtool/include/objtool/endianness.h
-+++ b/tools/objtool/include/objtool/endianness.h
-@@ -2,33 +2,30 @@
- #ifndef _OBJTOOL_ENDIANNESS_H
- #define _OBJTOOL_ENDIANNESS_H
- 
--#include <arch/endianness.h>
- #include <linux/kernel.h>
- #include <endian.h>
--
--#ifndef __TARGET_BYTE_ORDER
--#error undefined arch __TARGET_BYTE_ORDER
--#endif
--
--#if __BYTE_ORDER != __TARGET_BYTE_ORDER
--#define __NEED_BSWAP 1
--#else
--#define __NEED_BSWAP 0
--#endif
-+#include <objtool/elf.h>
- 
- /*
-- * Does a byte swap if target endianness doesn't match the host, i.e. cross
-+ * Does a byte swap if target file endianness doesn't match the host, i.e. cross
-  * compilation for little endian on big endian and vice versa.
-  * To be used for multi-byte values conversion, which are read from / about
-  * to be written to a target native endianness ELF file.
-  */
--#define bswap_if_needed(val)						\
-+static inline bool need_bswap(struct elf *elf)
-+{
-+	return (__BYTE_ORDER == __LITTLE_ENDIAN) ^
-+	       (elf->ehdr.e_ident[EI_DATA] == ELFDATA2LSB);
-+}
-+
-+#define bswap_if_needed(elf, val)					\
- ({									\
- 	__typeof__(val) __ret;						\
-+	bool __need_bswap = need_bswap(elf);				\
- 	switch (sizeof(val)) {						\
--	case 8: __ret = __NEED_BSWAP ? bswap_64(val) : (val); break;	\
--	case 4: __ret = __NEED_BSWAP ? bswap_32(val) : (val); break;	\
--	case 2: __ret = __NEED_BSWAP ? bswap_16(val) : (val); break;	\
-+	case 8: __ret = __need_bswap ? bswap_64(val) : (val); break;	\
-+	case 4: __ret = __need_bswap ? bswap_32(val) : (val); break;	\
-+	case 2: __ret = __need_bswap ? bswap_16(val) : (val); break;	\
- 	default:							\
- 		BUILD_BUG(); break;					\
- 	}								\
-diff --git a/tools/objtool/orc_dump.c b/tools/objtool/orc_dump.c
-index f5a8508c42d6..4f1211fec82c 100644
---- a/tools/objtool/orc_dump.c
-+++ b/tools/objtool/orc_dump.c
-@@ -76,6 +76,7 @@ int orc_dump(const char *_objname)
- 	GElf_Rela rela;
- 	GElf_Sym sym;
- 	Elf_Data *data, *symtab = NULL, *rela_orc_ip = NULL;
-+	struct elf dummy_elf = {};
- 
- 
- 	objname = _objname;
-@@ -94,6 +95,12 @@ int orc_dump(const char *_objname)
- 		return -1;
- 	}
- 
-+	if (!elf64_getehdr(elf)) {
-+		WARN_ELF("elf64_getehdr");
-+		return -1;
-+	}
-+	memcpy(&dummy_elf.ehdr, elf64_getehdr(elf), sizeof(dummy_elf.ehdr));
-+
- 	if (elf_getshdrnum(elf, &nr_sections)) {
- 		WARN_ELF("elf_getshdrnum");
- 		return -1;
-@@ -198,11 +205,11 @@ int orc_dump(const char *_objname)
- 
- 		printf(" sp:");
- 
--		print_reg(orc[i].sp_reg, bswap_if_needed(orc[i].sp_offset));
-+		print_reg(orc[i].sp_reg, bswap_if_needed(&dummy_elf, orc[i].sp_offset));
- 
- 		printf(" bp:");
- 
--		print_reg(orc[i].bp_reg, bswap_if_needed(orc[i].bp_offset));
-+		print_reg(orc[i].bp_reg, bswap_if_needed(&dummy_elf, orc[i].bp_offset));
- 
- 		printf(" type:%s end:%d\n",
- 		       orc_type_name(orc[i].type), orc[i].end);
-diff --git a/tools/objtool/orc_gen.c b/tools/objtool/orc_gen.c
-index dd3c64af9db2..1f22b7ebae58 100644
---- a/tools/objtool/orc_gen.c
-+++ b/tools/objtool/orc_gen.c
-@@ -97,8 +97,8 @@ static int write_orc_entry(struct elf *elf, struct section *orc_sec,
- 	/* populate ORC data */
- 	orc = (struct orc_entry *)orc_sec->data->d_buf + idx;
- 	memcpy(orc, o, sizeof(*orc));
--	orc->sp_offset = bswap_if_needed(orc->sp_offset);
--	orc->bp_offset = bswap_if_needed(orc->bp_offset);
-+	orc->sp_offset = bswap_if_needed(elf, orc->sp_offset);
-+	orc->bp_offset = bswap_if_needed(elf, orc->bp_offset);
- 
- 	/* populate reloc for ip */
- 	if (elf_add_reloc_to_insn(elf, ip_sec, idx * sizeof(int), R_X86_64_PC32,
-diff --git a/tools/objtool/special.c b/tools/objtool/special.c
-index e2223dd91c37..9c8d827f69af 100644
---- a/tools/objtool/special.c
-+++ b/tools/objtool/special.c
-@@ -87,7 +87,8 @@ static int get_alt_entry(struct elf *elf, struct special_entry *entry,
- 	if (entry->feature) {
- 		unsigned short feature;
- 
--		feature = bswap_if_needed(*(unsigned short *)(sec->data->d_buf +
-+		feature = bswap_if_needed(elf,
-+					  *(unsigned short *)(sec->data->d_buf +
- 							      offset +
- 							      entry->feature));
- 		arch_handle_alternative(feature, alt);
--- 
-2.35.3
-
+SGkgU2F0aHZpa2ENCg0KTGUgMjQvMDUvMjAyMiDDoCAxMjo1MywgU2F0aHZpa2EgVmFzaXJlZGR5
+IGEgw6ljcml0wqA6DQo+IFtWb3VzIG5lIHJlY2V2ZXogcGFzIHNvdXZlbnQgZGUgY291cnJpZXJz
+IGRlIGxhIHBhcnQgZGUgDQo+IHN2QGxpbnV4LnZuZXQuaWJtLmNvbS4gRMOpY291dnJleiBwb3Vy
+cXVvaSBjZWxhIHBldXQgw6p0cmUgaW1wb3J0YW50IMOgIA0KPiBs4oCZYWRyZXNzZSBodHRwczov
+L2FrYS5tcy9MZWFybkFib3V0U2VuZGVySWRlbnRpZmljYXRpb24uXQ0KPiANCj4gSGkgQ2hyaXN0
+b3BoZSwNCj4gDQo+IE9uIDI0LzA1LzIyIDE0OjI3LCBDaHJpc3RvcGhlIExlcm95IHdyb3RlOg0K
+Pj4NCj4+IExlIDIzLzA1LzIwMjIgw6AgMTk6NTUsIFNhdGh2aWthIFZhc2lyZWRkeSBhIMOpY3Jp
+dCA6DQo+Pj4gVGhpcyBwYXRjaCBtYWtlcyBzdXJlIG9ianRvb2wgcnVucyBvbmx5IG9uIHRoZSBv
+YmplY3QgZmlsZXMNCj4+PiB0aGF0IGhhdmUgZnRyYWNlIGVuYWJsZWQsIGluc3RlYWQgb2YgcnVu
+bmluZyBvbiBhbGwgdGhlIG9iamVjdA0KPj4+IGZpbGVzLg0KPj4gV2h5IGRvIHRoYXQgPw0KPiBU
+aGlzIHdhcyBkb25lIHRvIGFkZHJlc3MgdGhlIGlzc3VlIGRpc2N1c3NlZCBoZXJlOg0KPiBodHRw
+czovL2xvcmUua2VybmVsLm9yZy9hbGwvYjA2YmI5YmMtMjJkMS1hY2NlLWZlNjgtYzdjNGNiN2Mx
+NWI1QGNzZ3JvdXAuZXUvIA0KDQpBaCA/IE9rLg0KDQpCdXQgaG93IGRvZXMgeDg2IGRvIGl0IGF0
+IHRoZSBtb21lbnQgPyBTaG91bGRuJ3Qgd2UgdXNlIA0KT0JKRUNUX0ZJTEVTX05PTl9TVEFOREFS
+RCBpbnN0ZWFkID8NCg0KDQo+IA0KPiANCj4+DQo+PiBXaGF0IGFib3V0IHN0YXRpY19jYWxscyA/
+IFRoZXJlIG1heSBiZSBmaWxlcyB3aXRob3V0IGZ0cmFjZSBidXQgd2l0aA0KPj4gc3RhdGljIGNh
+bGxzLg0KPiBZZXMsIHRoaXMgcHJldmVudHMgb2JqdG9vbCBmcm9tIHJ1bm5pbmcgb24gdGhvc2Ug
+ZmlsZXMuIFdlIGNhbg0KPiByZXN0cmljdCB0aGlzIGNoYW5nZSB0byBGVFJBQ0VfTUNPVU5UX1VT
+RV9PQkpUT09MDQo+Pg0KPj4gQnkgdGhlIHdheSwgaXQgd291bGQgYmUgbmljZSBpZiB3ZSBjb3Vs
+ZCB1c2UgaXQgb25seSBvbiBDIGZpbGVzLg0KPj4gSSBnZXQgdGhlIGZvbGxvd2luZyBlcnJvcnMg
+Zm9yIEFTTSBmaWxlczoNCj4+DQo+PiBhcmNoL3Bvd2VycGMva2VybmVsL2VudHJ5XzMyLm86IHdh
+cm5pbmc6IG9ianRvb2w6IC50ZXh0KzB4MWI0Og0KPj4gdW5hbm5vdGF0ZWQgaW50cmEtZnVuY3Rp
+b24gY2FsbA0KPiANCj4gSSdtIGxvb2tpbmcgaW50byB3YXlzIHRvIGFkZHJlc3MgdGhpcy4NCj4g
+DQoNCk5pY2UuDQoNCkNocmlzdG9waGU=
