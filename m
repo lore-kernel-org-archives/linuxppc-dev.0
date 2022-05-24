@@ -4,31 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FCD9C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 10:55:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D59DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 10:56:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6rhW6dCfz3c8p
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 20:55:39 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6rhx2VY1z3cKm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 20:56:01 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6rfZ5qfKz30Hf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 20:53:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6rfb3GJnz3bkx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 20:53:59 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6rfZ54jXz4ySb;
- Tue, 24 May 2022 20:53:58 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6rfb2N5Jz4ySg;
+ Tue, 24 May 2022 20:53:59 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Fabiano Rosas <farosas@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220328215831.320409-1-farosas@linux.ibm.com>
-References: <20220328215831.320409-1-farosas@linux.ibm.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix vcore_blocked tracepoint
-Message-Id: <165338951438.1711920.10689960042369328588.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 20:51:54 +1000
+In-Reply-To: <20220425142151.1495142-1-farosas@linux.ibm.com>
+References: <20220425142151.1495142-1-farosas@linux.ibm.com>
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Initialize AMOR in nested entry
+Message-Id: <165338950975.1711920.1719547905413421851.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 20:51:49 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -48,15 +47,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 28 Mar 2022 18:58:31 -0300, Fabiano Rosas wrote:
-> We removed most of the vcore logic from the P9 path but there's still
-> a tracepoint that tried to dereference vc->runner.
+On Mon, 25 Apr 2022 11:21:51 -0300, Fabiano Rosas wrote:
+> The hypervisor always sets AMOR to ~0, but let's ensure we're not
+> passing stale values around.
 > 
 > 
 
 Applied to powerpc/topic/ppc-kvm.
 
-[1/1] KVM: PPC: Book3S HV: Fix vcore_blocked tracepoint
-      https://git.kernel.org/powerpc/c/ad55bae7dc364417434b69dd6c30104f20d0f84d
+[1/1] KVM: PPC: Book3S HV: Initialize AMOR in nested entry
+      https://git.kernel.org/powerpc/c/1d1cd0f12a3ab5d7f79ae6cca28e7d23dd351ce3
 
 cheers
