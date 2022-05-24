@@ -4,31 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2C2EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:27:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABF33C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:28:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sPf3T5Gz3hCH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:27:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sQ41cjGz3hHH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:28:12 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s800Psrz3cDk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s804jqwz3cj3
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:16:00 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7z6qnFz4yTQ;
- Tue, 24 May 2022 21:15:59 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s803mz0z4yTS;
+ Tue, 24 May 2022 21:16:00 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220404101536.104794-1-ruscur@russell.cc>
-References: <20220404101536.104794-1-ruscur@russell.cc>
-Subject: Re: [PATCH v2 1/2] powerpc/powernv: Get L1D flush requirements from
- device-tree
-Message-Id: <165339056252.1718562.14599568205155142624.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:09:22 +1000
+To: nvdimm@lists.linux.dev, Kajol Jain <kjain@linux.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220511082637.646714-1-vaibhav@linux.ibm.com>
+References: <20220511082637.646714-1-vaibhav@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/papr_scm: Fix leaking nvdimm_events_map
+ elements
+Message-Id: <165339058556.1718562.12936352188808932969.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:09:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,31 +44,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mopsfelder@gmail.com, joel@jms.id.au, npiggin@gmail.com
+Cc: Dan Williams <dan.j.williams@intel.com>, Ira Weiny <ira.weiny@intel.com>,
+ Shivaprasad G Bhat <sbhat@linux.ibm.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 4 Apr 2022 20:15:35 +1000, Russell Currey wrote:
-> The device-tree properties no-need-l1d-flush-msr-pr-1-to-0 and
-> no-need-l1d-flush-kernel-on-user-access are the equivalents of
-> H_CPU_BEHAV_NO_L1D_FLUSH_ENTRY and H_CPU_BEHAV_NO_L1D_FLUSH_UACCESS
-> from the H_GET_CPU_CHARACTERISTICS hcall on pseries respectively.
+On Wed, 11 May 2022 13:56:36 +0530, Vaibhav Jain wrote:
+> Right now 'char *' elements allocated for individual 'stat_id' in
+> 'papr_scm_priv.nvdimm_events_map[]' during papr_scm_pmu_check_events(), get
+> leaked in papr_scm_remove() and papr_scm_pmu_register(),
+> papr_scm_pmu_check_events() error paths.
 > 
-> In commit d02fa40d759f ("powerpc/powernv: Remove POWER9 PVR version
-> check for entry and uaccess flushes") the condition for disabling the
-> L1D flush on kernel entry and user access was changed from any non-P9
-> CPU to only checking P7 and P8.  Without the appropriate device-tree
-> checks for newer processors on powernv, these flushes are unnecessarily
-> enabled on those systems.  This patch corrects this.
+> Also individual 'stat_id' arent NULL terminated 'char *' instead they are fixed
+> 8-byte sized identifiers. However papr_scm_pmu_register() assumes it to be a
+> NULL terminated 'char *' and at other places it assumes it to be a
+> 'papr_scm_perf_stat.stat_id' sized string which is 8-byes in size.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc/powernv: Get L1D flush requirements from device-tree
-      https://git.kernel.org/powerpc/c/2efee6adb56159288bce9d1ab51fc9056d7007d4
-[2/2] powerpc/powernv: Get STF barrier requirements from device-tree
-      https://git.kernel.org/powerpc/c/d2a3c131981d4498571908df95c3c9393a00adf5
+[1/1] powerpc/papr_scm: Fix leaking nvdimm_events_map elements
+      https://git.kernel.org/powerpc/c/0e0946e22f3665d27325d389ff45ade6e93f3678
 
 cheers
