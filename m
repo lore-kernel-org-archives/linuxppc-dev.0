@@ -4,32 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31BE1C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 10:57:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF08DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 10:58:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6rl65jrzz3fQZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 20:57:54 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org
- [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6rlX3ldPz3fV4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 20:58:16 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6rfg46hCz3bxr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 20:54:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6rfh6Gzqz3bl8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 20:54:04 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6rfg3Hhpz4ySt;
- Tue, 24 May 2022 20:54:03 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6rfh119Lz4yT3;
+ Tue, 24 May 2022 20:54:04 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220123114725.3549202-1-npiggin@gmail.com>
-References: <20220123114725.3549202-1-npiggin@gmail.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV P9: Optimise loads around context
- switch
-Message-Id: <165338949438.1711920.13741769008335923096.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 20:51:34 +1000
+To: akpm@linux-foundation.org, bharata@linux.ibm.com, linuxram@us.ibm.com,
+ Felix.Kuehling@amd.com, mpe@ellerman.id.au, paulus@samba.org,
+ benh@kernel.crashing.org, maciej.szmigiero@oracle.com, maz@kernel.org,
+ david@redhat.com, Xiaomeng Tong <xiam0nd.tong@gmail.com>,
+ liam.howlett@oracle.com, apopple@nvidia.com
+In-Reply-To: <20220414062103.8153-1-xiam0nd.tong@gmail.com>
+References: <20220414062103.8153-1-xiam0nd.tong@gmail.com>
+Subject: Re: [RESEND][PATCH] KVM: PPC: Book3S HV: fix incorrect NULL check on
+ list iterator
+Message-Id: <165338950780.1711920.5897036006589907982.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 20:51:47 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -44,23 +47,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 23 Jan 2022 21:47:25 +1000, Nicholas Piggin wrote:
-> It is better to get all loads for the register values in flight
-> before starting to switch LPID, PID, and LPCR because those
-> mtSPRs are expensive and serialising.
+On Thu, 14 Apr 2022 14:21:03 +0800, Xiaomeng Tong wrote:
+> The bug is here:
+> 	if (!p)
+>                 return ret;
 > 
-> This also just tidies up the code for a potential future change
-> to the context switching sequence.
+> The list iterator value 'p' will *always* be set and non-NULL by
+> list_for_each_entry(), so it is incorrect to assume that the iterator
+> value will be NULL if the list is empty or no element is found.
 > 
 > [...]
 
 Applied to powerpc/topic/ppc-kvm.
 
-[1/1] KVM: PPC: Book3S HV P9: Optimise loads around context switch
-      https://git.kernel.org/powerpc/c/361234d7a1c9a5290d33e35d49821b7a32a32854
+[1/1] KVM: PPC: Book3S HV: fix incorrect NULL check on list iterator
+      https://git.kernel.org/powerpc/c/300981abddcb13f8f06ad58f52358b53a8096775
 
 cheers
