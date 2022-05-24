@@ -4,32 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABF33C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:28:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C1BBC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:28:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sQ41cjGz3hHH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:28:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sQd0Jd4z3dsY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:28:41 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s804jqwz3cj3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:16:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s834PVHz3bsr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:16:03 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s803mz0z4yTS;
- Tue, 24 May 2022 21:16:00 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s810S6Qz4yTT;
+ Tue, 24 May 2022 21:16:01 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: nvdimm@lists.linux.dev, Kajol Jain <kjain@linux.ibm.com>,
- Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220511082637.646714-1-vaibhav@linux.ibm.com>
-References: <20220511082637.646714-1-vaibhav@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc/papr_scm: Fix leaking nvdimm_events_map
- elements
-Message-Id: <165339058556.1718562.12936352188808932969.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:09:45 +1000
+To: benh@kernel.crashing.org, mpe@ellerman.id.au, nick.child@ibm.com,
+ Peng Wu <wupeng58@huawei.com>
+In-Reply-To: <20220425081245.21705-1-wupeng58@huawei.com>
+References: <20220425081245.21705-1-wupeng58@huawei.com>
+Subject: Re: [PATCH -next] powerpc/iommu: Add missing of_node_put in
+ iommu_init_early_dart
+Message-Id: <165339058771.1718562.10340726142485751524.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:09:47 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -44,29 +44,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dan Williams <dan.j.williams@intel.com>, Ira Weiny <ira.weiny@intel.com>,
- Shivaprasad G Bhat <sbhat@linux.ibm.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, liwei391@huawei.com,
+ wangxiongfeng2@huawei.com, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 11 May 2022 13:56:36 +0530, Vaibhav Jain wrote:
-> Right now 'char *' elements allocated for individual 'stat_id' in
-> 'papr_scm_priv.nvdimm_events_map[]' during papr_scm_pmu_check_events(), get
-> leaked in papr_scm_remove() and papr_scm_pmu_register(),
-> papr_scm_pmu_check_events() error paths.
+On Mon, 25 Apr 2022 08:12:45 +0000, Peng Wu wrote:
+> The device_node pointer is returned by of_find_compatible_node
+> with refcount incremented. We should use of_node_put() to avoid
+> the refcount leak.
 > 
-> Also individual 'stat_id' arent NULL terminated 'char *' instead they are fixed
-> 8-byte sized identifiers. However papr_scm_pmu_register() assumes it to be a
-> NULL terminated 'char *' and at other places it assumes it to be a
-> 'papr_scm_perf_stat.stat_id' sized string which is 8-byes in size.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/papr_scm: Fix leaking nvdimm_events_map elements
-      https://git.kernel.org/powerpc/c/0e0946e22f3665d27325d389ff45ade6e93f3678
+[1/1] powerpc/iommu: Add missing of_node_put in iommu_init_early_dart
+      https://git.kernel.org/powerpc/c/57b742a5b8945118022973e6416b71351df512fb
 
 cheers
