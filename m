@@ -4,38 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 511CFC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:22:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9990C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:22:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sHR6NmNz3g3l
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:22:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sHs2f9qz3g7j
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:22:49 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org
  [IPv6:2404:9400:2221:ea00::3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7m41lfz3cCN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7n4D80z3c9X
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:49 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7m0kpLz4ySl;
- Tue, 24 May 2022 21:15:48 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7n0xfyz4yT3;
+ Tue, 24 May 2022 21:15:49 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Miaoqian Lin <linmq006@gmail.com>, Li Yang <leoyang.li@nxp.com>,
- Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
- Jin Qing <b24347@freescale.com>, Alexandre Bounine <alexandre.bounine@idt.com>,
- Liu Gang <Gang.Liu@freescale.com>, Nicholas Piggin <npiggin@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220512123724.62931-1-linmq006@gmail.com>
-References: <20220512123724.62931-1-linmq006@gmail.com>
-Subject: Re: [PATCH] powerpc/fsl_rio: Fix refcount leak in fsl_rio_setup
-Message-Id: <165339058446.1718562.15673499679733918948.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:09:44 +1000
+To: Miaoqian Lin <linmq006@gmail.com>, Cédric Le Goater <clg@kaod.org>, linux-kernel@vger.kernel.org, Ammar Faizi <ammarfaizi2@gmail.com>, Nick Child <nick.child@ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220512090535.33397-1-linmq006@gmail.com>
+References: <20220512090535.33397-1-linmq006@gmail.com>
+Subject: Re: [PATCH] powerpc/xive: Fix refcount leak in xive_spapr_init
+Message-Id: <165339058372.1718562.18123133875688618492.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:09:43 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -54,16 +47,16 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 12 May 2022 16:37:18 +0400, Miaoqian Lin wrote:
-> of_parse_phandle() returns a node pointer with refcount
-> incremented, we should use of_node_put() on it when not need anymore.
+On Thu, 12 May 2022 13:05:33 +0400, Miaoqian Lin wrote:
+> of_find_compatible_node() returns a node pointer with refcount
+> incremented, we should use of_node_put() on it when done.
 > Add missing of_node_put() to avoid refcount leak.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/fsl_rio: Fix refcount leak in fsl_rio_setup
-      https://git.kernel.org/powerpc/c/fcee96924ba1596ca80a6770b2567ca546f9a482
+[1/1] powerpc/xive: Fix refcount leak in xive_spapr_init
+      https://git.kernel.org/powerpc/c/1d1fb9618bdd5a5fbf9a9eb75133da301d33721c
 
 cheers
