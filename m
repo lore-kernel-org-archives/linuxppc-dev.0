@@ -4,32 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E8A7C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:21:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98A71C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 11:22:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sGc1ChFz3fw6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:21:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L6sH16TfPz3g0n
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 May 2022 21:22:05 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7k43W2z3cCN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L6s7l3gVwz3bnd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2022 21:15:47 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7k3J4fz4ySv;
- Tue, 24 May 2022 21:15:46 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4L6s7l154dz4yT2;
+ Tue, 24 May 2022 21:15:47 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Kajol Jain <kjain@linux.ibm.com>, mpe@ellerman.id.au,
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Frank Rowand <frowand.list@gmail.com>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
  linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220506061015.43916-1-kjain@linux.ibm.com>
-References: <20220506061015.43916-1-kjain@linux.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/perf: Fix the threshold compare group
- constraint for power10
-Message-Id: <165339057636.1718562.13444860575931956627.b4-ty@ellerman.id.au>
-Date: Tue, 24 May 2022 21:09:36 +1000
+In-Reply-To: <20210924105653.46963-1-krzysztof.kozlowski@canonical.com>
+References: <20210924105653.46963-1-krzysztof.kozlowski@canonical.com>
+Subject: Re: [PATCH v3 1/2] powerpc/powermac: add missing
+ g5_phy_disable_cpu1() declaration
+Message-Id: <165339059600.1718562.826859123615066589.b4-ty@ellerman.id.au>
+Date: Tue, 24 May 2022 21:09:56 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -44,28 +50,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, maddy@linux.ibm.com,
- disgoel@linux.vnet.ibm.com, rnsastry@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 6 May 2022 11:40:14 +0530, Kajol Jain wrote:
-> Thresh compare bits for a event is used to program thresh compare
-> field in Monitor Mode Control Register A (MMCRA: 8-18 bits for power10).
-> When scheduling events as a group, all events in that group should
-> match value in threshold bits. Otherwise event open for the sibling
-> events should fail. But in the current code, incase thresh compare bits are
-> not valid, we are not failing in group_constraint function which can result
-> in invalid group schduling.
+On Fri, 24 Sep 2021 12:56:52 +0200, Krzysztof Kozlowski wrote:
+> g5_phy_disable_cpu1() is used outside of platforms/powermac/feature.c,
+> so it should have a declaration to fix W=1 warning:
+> 
+>   arch/powerpc/platforms/powermac/feature.c:1533:6:
+>     error: no previous prototype for ‘g5_phy_disable_cpu1’ [-Werror=missing-prototypes]
+> 
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc/perf: Fix the threshold compare group constraint for power10
-      https://git.kernel.org/powerpc/c/505d31650ba96d6032313480fdb566d289a4698c
-[2/2] powerpc/perf: Fix the threshold compare group constraint for power9
-      https://git.kernel.org/powerpc/c/ab0cc6bbf0c812731c703ec757fcc3fc3a457a34
+[1/2] powerpc/powermac: add missing g5_phy_disable_cpu1() declaration
+      https://git.kernel.org/powerpc/c/cc025916b12a452df7932da528d25b2ef2b05072
+[2/2] powerpc/powermac: constify device_node in of_irq_parse_oldworld()
+      https://git.kernel.org/powerpc/c/bb12dd42d20f5513a8d1da225232af0a0743fd79
 
 cheers
