@@ -4,50 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C97D2C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 13:20:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B6DEC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 01:57:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L87pz6hLGz3c8C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 23:20:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L7rfj2xm1z3bxt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 11:57:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=HpU41jjz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=cmpxchg-org.20210112.gappssmtp.com header.i=@cmpxchg-org.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=LMEKNyEI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cmpxchg.org (client-ip=2607:f8b0:4864:20::734; helo=mail-qk1-x734.google.com; envelope-from=hannes@cmpxchg.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=HpU41jjz;
+	dkim=pass (2048-bit key; unprotected) header.d=cmpxchg-org.20210112.gappssmtp.com header.i=@cmpxchg-org.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=LMEKNyEI;
 	dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+Received: from mail-qk1-x734.google.com (mail-qk1-x734.google.com [IPv6:2607:f8b0:4864:20::734])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L87pF0Wdxz2yph
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 23:20:03 +1000 (AEST)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-	by smtp-out1.suse.de (Postfix) with ESMTP id 539D2219FB;
-	Thu, 26 May 2022 13:20:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-	t=1653571200; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QoYDBLxX9BnU+G+6FHIPva/2AM2AhlaFaohhF5jTXUo=;
-	b=HpU41jjz/FvW2F/+inOvSarcXtO2B7pbUzjTH+QRrS2NXXkjN7owGcyutNO4z8qCpJ0ESI
-	sYkIx3PgYKHL6dxtfO6KcJ3qGpKr/sEK5iIGjOYBrv2sRZVUgyLnoZMUe6vSsF8F5u1PCF
-	DKz2AlWoGbFVeDiiavJ2/mLchIghitU=
-Received: from suse.cz (unknown [10.100.201.202])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by relay2.suse.de (Postfix) with ESMTPS id EA27A2C141;
-	Thu, 26 May 2022 13:19:58 +0000 (UTC)
-Date: Thu, 26 May 2022 15:19:57 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Bagas Sanjaya <bagasdotme@gmail.com>
-Subject: Re: dangling pointer to '__str' error on ppc64_defconfig, GCC 12.1.0
-Message-ID: <Yo9+fQ32Br9+NpUW@alley>
-References: <Yo9Fm/hdtac1t9sW@debian.me>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L7W3b5H3jz2yb6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2022 22:44:24 +1000 (AEST)
+Received: by mail-qk1-x734.google.com with SMTP id v11so17212111qkf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2022 05:44:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=cmpxchg-org.20210112.gappssmtp.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=w0F6iR9EKs/zIprBUHWYk0xdfCPICb6b6FOC3ooI/Qg=;
+        b=LMEKNyEIRYPV5QWJlwplZCx+Yze+80z3MALcLFPz5jKdddgbR28N/X6bo9Jvgd00MP
+         WWkcUcb1+z91voFM8WjtduJpm5pvevvusNqH0PzjaxsPqwHpEmvLG6H17fO8d+8uqQ/c
+         xW/rbo+trH8MjL1X/foXOCmesnHHx99Tmug43Nb91EXZFTR7KAdlglnJRYtL1NUTbXz5
+         2CGVavB8u5eJ5bdNx8JVu0TNi6KB2NiCnWSVtKfIEdRU3i4wp/Kah2nDHcLAJXmplYfJ
+         xzofRGg4rofGSre9mJv/qm1XS4Pms5gIR+r4L8hjS8Owdd3qkT56i/sicOD/din7w+oO
+         VJFw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=w0F6iR9EKs/zIprBUHWYk0xdfCPICb6b6FOC3ooI/Qg=;
+        b=ekKQSyGANCj9SdC/iari6IhJIihW0OT8xafQlJx3Laf7/HdojPZZ34q4TXAgtTCM4L
+         zB07ac9AyZPg2Lh7Rg3EBHi8gKbp62NpU2WumGy7feRILQszEsZwxNDwkBw4tTTyIIU3
+         HH8b3WVvHVU3IKCSOXckRKIv3rpEOKfbtx4LBxP3oRTukoXqXEiR3Jzg6R6pytfcXrVy
+         SdD89Zmqr+4f/lBC34apTxoOcGyYRUidNuQKZCnwATdhAtaq6wg2Ij9PfEjvTjIwN7p5
+         n0Gjel7HpLXNVA6jHXCX9JfWB7bisTf4GqnK+8m86RoIiD1NfNMnmnvnpKZ6G5pPZ2DE
+         BoLw==
+X-Gm-Message-State: AOAM532eVl90gc0wR9nB1t5ljBdO1IqsVV/UTUqLaH0AEsDUBxP1brfH
+	Petl3VzOY+c14rRemrjr28symg==
+X-Google-Smtp-Source: ABdhPJx/POKWSCbmzd2neCxXDwISwEb1wGzjcuEavupLeI/smDQTCNVGAU9PwpCoNv+A6qxiW2wj4Q==
+X-Received: by 2002:a05:620a:4047:b0:6a0:5dae:ad67 with SMTP id i7-20020a05620a404700b006a05daead67mr19946570qko.530.1653482659851;
+        Wed, 25 May 2022 05:44:19 -0700 (PDT)
+Received: from localhost ([2620:10d:c091:480::1:741f])
+        by smtp.gmail.com with ESMTPSA id g25-20020ac870d9000000b002f9433ed963sm1207797qtp.64.2022.05.25.05.44.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 25 May 2022 05:44:19 -0700 (PDT)
+Date: Wed, 25 May 2022 08:44:18 -0400
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Peter Xu <peterx@redhat.com>
+Subject: Re: [PATCH v3] mm: Avoid unnecessary page fault retires on shared
+ memory types
+Message-ID: <Yo4kojxZfjNiZI7/@cmpxchg.org>
+References: <20220524234531.1949-1-peterx@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Yo9Fm/hdtac1t9sW@debian.me>
+In-Reply-To: <20220524234531.1949-1-peterx@redhat.com>
+X-Mailman-Approved-At: Thu, 26 May 2022 11:56:59 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,229 +78,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: John Ogness <john.ogness@linutronix.de>, linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, David Howells <dhowells@redhat.com>, Sergey Senozhatsky <senozhatsky@chromium.org>, Jordan Niethe <jniethe5@gmail.com>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, linux-mm@kvack.org, Rich Felker <dalias@libc.org>, Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, Anton Ivanov <anton.ivanov@cambridgegreys.com>, Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, linux-snps-arc@lists.infradead.org, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-xtensa@linux-xtensa.org, linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, linux-sh@vger.ke
+ rnel.org, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-arm-kernel@lists.infradead.org, Vineet Gupta <vgupta@kernel.org>, Stafford Horne <shorne@gmail.com>, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Andrea Arcangeli <aarcange@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Brian Cain <bcain@quicinc.com>, Heiko Carstens <hca@linux.ibm.com>, linux-alpha@vger.kernel.org, linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Richard Weinberger <richard@nod.at>, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Al Viro <viro@zeniv.linux.org.uk>, Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>, Richard Henderson
+  <rth@twiddle.net>, Chris Zankel <chris@zankel.net>, 
+
+Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, Guo Ren <guoren@kernel.org>, Borislav Petkov <bp@alien8.de>, Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu 2022-05-26 16:17:15, Bagas Sanjaya wrote:
-> Hi everyone,
+On Tue, May 24, 2022 at 07:45:31PM -0400, Peter Xu wrote:
+> I observed that for each of the shared file-backed page faults, we're very
+> likely to retry one more time for the 1st write fault upon no page.  It's
+> because we'll need to release the mmap lock for dirty rate limit purpose
+> with balance_dirty_pages_ratelimited() (in fault_dirty_shared_page()).
 > 
-> Attempting to build ppc64_defconfig kernel with powerpc64-unknown-linux-gnu
-> (GCC 12.1.0) on v5.18, I got build error on ftrace.o:
+> Then after that throttling we return VM_FAULT_RETRY.
 > 
->   CC      arch/powerpc/kernel/trace/ftrace.o
->   CC      init/init_task.o
-> In file included from ./include/asm-generic/bug.h:22,
->                  from ./arch/powerpc/include/asm/bug.h:156,
->                  from ./include/linux/bug.h:5,
->                  from ./include/linux/thread_info.h:13,
->                  from ./include/asm-generic/preempt.h:5,
->                  from ./arch/powerpc/include/generated/asm/preempt.h:1,
->                  from ./include/linux/preempt.h:78,
->                  from ./include/linux/spinlock.h:55,
->                  from arch/powerpc/kernel/trace/ftrace.c:16:
-> arch/powerpc/kernel/trace/ftrace.c: In function 'ftrace_modify_code':
-> ./include/linux/printk.h:446:44: error: using a dangling pointer to '__str' [-Werror=dangling-pointer=]
->   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
->       |                                            ^
-> ./include/linux/printk.h:418:17: note: in definition of macro 'printk_index_wrap'
->   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
->       |                 ^~~~~~~
-> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
->   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
->       |         ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c:75:17: note: in expansion of macro 'pr_err'
->    75 |                 pr_err("%p: replaced (%s) != old (%s)",
->       |                 ^~~~~~
-> In file included from ./arch/powerpc/include/asm/code-patching.h:14,
->                  from arch/powerpc/kernel/trace/ftrace.c:26:
-> ./arch/powerpc/include/asm/inst.h:156:14: note: '__str' declared here
->   156 |         char __str[PPC_INST_STR_LEN];   \
->       |              ^~~~~
-
-IMHO, the problem is in the macro:
-
-#define ppc_inst_as_str(x)		\
-({					\
-	char __str[PPC_INST_STR_LEN];	\
-	__ppc_inst_as_str(__str, x);	\
-	__str;				\
-})
-
-The buffer __str is defined inside the code block {} and
-the macro passes the pointer to the buffer outside.
-IMHO, from the compiler POV, the buffer does not exist
-outside of the code block.
-
-The macro was added by the commit 50428fdc53ba48f6936b10dfd ("powerpc:
-Add a ppc_inst_as_str() helper").
-
-Adding Jordan Niethe into Cc.
-
-Best Regards,
-Petr
-
-
-> ./include/linux/printk.h:418:33: note: in expansion of macro 'ppc_inst_as_str'
->   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
->       |                                 ^~~~~~~~~~~
-> ./include/linux/printk.h:446:26: note: in expansion of macro 'printk_index_wrap'
->   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
->       |                          ^~~~~~~~~~~~~~~~~
-> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
->   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
->       |         ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c:75:17: note: in expansion of macro 'pr_err'
->    75 |                 pr_err("%p: replaced (%s) != old (%s)",
->       |                 ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c: In function '__ftrace_make_nop_kernel':
-> ./include/linux/printk.h:446:44: error: using a dangling pointer to '__str' [-Werror=dangling-pointer=]
->   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
->       |                                            ^
-> ./include/linux/printk.h:418:17: note: in definition of macro 'printk_index_wrap'
->   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
->       |                 ^~~~~~~
-> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
->   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
->       |         ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c:379:17: note: in expansion of macro 'pr_err'
->   379 |                 pr_err("Not expected bl: opcode is %s\n", ppc_inst_as_str(op));
->       |                 ^~~~~~
-> ./arch/powerpc/include/asm/inst.h:156:14: note: '__str' declared here
->   156 |         char __str[PPC_INST_STR_LEN];   \
->       |              ^~~~~
-> ./include/linux/printk.h:418:33: note: in expansion of macro 'ppc_inst_as_str'
->   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
->       |                                 ^~~~~~~~~~~
-> ./include/linux/printk.h:446:26: note: in expansion of macro 'printk_index_wrap'
->   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
->       |                          ^~~~~~~~~~~~~~~~~
-> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
->   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
->       |         ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c:379:17: note: in expansion of macro 'pr_err'
->   379 |                 pr_err("Not expected bl: opcode is %s\n", ppc_inst_as_str(op));
->       |                 ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c: In function '__ftrace_make_call_kernel':
-> ./include/linux/printk.h:446:44: error: using a dangling pointer to '__str' [-Werror=dangling-pointer=]
->   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
->       |                                            ^
-> ./include/linux/printk.h:418:17: note: in definition of macro 'printk_index_wrap'
->   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
->       |                 ^~~~~~~
-> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
->   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
->       |         ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c:638:17: note: in expansion of macro 'pr_err'
->   638 |                 pr_err("Unexpected call sequence at %p: %s\n", ip, ppc_inst_as_str(op));
->       |                 ^~~~~~
-> ./arch/powerpc/include/asm/inst.h:156:14: note: '__str' declared here
->   156 |         char __str[PPC_INST_STR_LEN];   \
->       |              ^~~~~
-> ./include/linux/printk.h:418:33: note: in expansion of macro 'ppc_inst_as_str'
->   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
->       |                                 ^~~~~~~~~~~
-> ./include/linux/printk.h:446:26: note: in expansion of macro 'printk_index_wrap'
->   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
->       |                          ^~~~~~~~~~~~~~~~~
-> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
->   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
->       |         ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c:638:17: note: in expansion of macro 'pr_err'
->   638 |                 pr_err("Unexpected call sequence at %p: %s\n", ip, ppc_inst_as_str(op));
->       |                 ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c: In function '__ftrace_make_nop':
-> ./include/linux/printk.h:446:44: error: using a dangling pointer to '__str' [-Werror=dangling-pointer=]
->   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
->       |                                            ^
-> ./include/linux/printk.h:418:17: note: in definition of macro 'printk_index_wrap'
->   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
->       |                 ^~~~~~~
-> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
->   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
->       |         ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c:205:17: note: in expansion of macro 'pr_err'
->   205 |                 pr_err("Expected %08lx found %s\n", PPC_INST_LD_TOC, ppc_inst_as_str(op));
->       |                 ^~~~~~
-> ./arch/powerpc/include/asm/inst.h:156:14: note: '__str' declared here
->   156 |         char __str[PPC_INST_STR_LEN];   \
->       |              ^~~~~
-> ./include/linux/printk.h:418:33: note: in expansion of macro 'ppc_inst_as_str'
->   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
->       |                                 ^~~~~~~~~~~
-> ./include/linux/printk.h:446:26: note: in expansion of macro 'printk_index_wrap'
->   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
->       |                          ^~~~~~~~~~~~~~~~~
-> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
->   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
->       |         ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c:205:17: note: in expansion of macro 'pr_err'
->   205 |                 pr_err("Expected %08lx found %s\n", PPC_INST_LD_TOC, ppc_inst_as_str(op));
->       |                 ^~~~~~
-> ./include/linux/printk.h:446:44: error: using a dangling pointer to '__str' [-Werror=dangling-pointer=]
->   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
->       |                                            ^
-> ./include/linux/printk.h:418:17: note: in definition of macro 'printk_index_wrap'
->   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
->       |                 ^~~~~~~
-> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
->   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
->       |         ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c:139:17: note: in expansion of macro 'pr_err'
->   139 |                 pr_err("Not expected bl: opcode is %s\n", ppc_inst_as_str(op));
->       |                 ^~~~~~
-> ./arch/powerpc/include/asm/inst.h:156:14: note: '__str' declared here
->   156 |         char __str[PPC_INST_STR_LEN];   \
->       |              ^~~~~
-> ./include/linux/printk.h:418:33: note: in expansion of macro 'ppc_inst_as_str'
->   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
->       |                                 ^~~~~~~~~~~
-> ./include/linux/printk.h:446:26: note: in expansion of macro 'printk_index_wrap'
->   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
->       |                          ^~~~~~~~~~~~~~~~~
-> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
->   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
->       |         ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c:139:17: note: in expansion of macro 'pr_err'
->   139 |                 pr_err("Not expected bl: opcode is %s\n", ppc_inst_as_str(op));
->       |                 ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c: In function '__ftrace_make_call':
-> ./include/linux/printk.h:446:44: error: using a dangling pointer to '__str' [-Werror=dangling-pointer=]
->   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
->       |                                            ^
-> ./include/linux/printk.h:418:17: note: in definition of macro 'printk_index_wrap'
->   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
->       |                 ^~~~~~~
-> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
->   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
->       |         ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c:506:17: note: in expansion of macro 'pr_err'
->   506 |                 pr_err("Unexpected call sequence at %p: %s %s\n",
->       |                 ^~~~~~
-> ./arch/powerpc/include/asm/inst.h:156:14: note: '__str' declared here
->   156 |         char __str[PPC_INST_STR_LEN];   \
->       |              ^~~~~
-> ./include/linux/printk.h:418:33: note: in expansion of macro 'ppc_inst_as_str'
->   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
->       |                                 ^~~~~~~~~~~
-> ./include/linux/printk.h:446:26: note: in expansion of macro 'printk_index_wrap'
->   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
->       |                          ^~~~~~~~~~~~~~~~~
-> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
->   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
->       |         ^~~~~~
-> arch/powerpc/kernel/trace/ftrace.c:506:17: note: in expansion of macro 'pr_err'
->   506 |                 pr_err("Unexpected call sequence at %p: %s %s\n",
->       |                 ^~~~~~
-> cc1: all warnings being treated as errors
-> make[3]: *** [scripts/Makefile.build:288: arch/powerpc/kernel/trace/ftrace.o] Error 1
+> We did that probably because VM_FAULT_RETRY is the only way we can return
+> to the fault handler at that time telling it we've released the mmap lock.
 > 
-> I also hit this error on current master (commit babf0bb978e3c9
-> ("Merge tag 'xfs-5.19-for-linus' of git://git.kernel.org/pub/scm/fs/xfs/xfs-linux")).
+> However that's not ideal because it's very likely the fault does not need
+> to be retried at all since the pgtable was well installed before the
+> throttling, so the next continuous fault (including taking mmap read lock,
+> walk the pgtable, etc.) could be in most cases unnecessary.
 > 
-> Thanks.
+> It's not only slowing down page faults for shared file-backed, but also add
+> more mmap lock contention which is in most cases not needed at all.
 > 
-> Reported-by: Bagas Sanjaya <bagasdotme@gmail.com>
+> To observe this, one could try to write to some shmem page and look at
+> "pgfault" value in /proc/vmstat, then we should expect 2 counts for each
+> shmem write simply because we retried, and vm event "pgfault" will capture
+> that.
 > 
-> -- 
-> An old man doll... just what I always wanted! - Clara
+> To make it more efficient, add a new VM_FAULT_COMPLETED return code just to
+> show that we've completed the whole fault and released the lock.  It's also
+> a hint that we should very possibly not need another fault immediately on
+> this page because we've just completed it.
+> 
+> This patch provides a ~12% perf boost on my aarch64 test VM with a simple
+> program sequentially dirtying 400MB shmem file being mmap()ed and these are
+> the time it needs:
+> 
+>   Before: 650.980 ms (+-1.94%)
+>   After:  569.396 ms (+-1.38%)
+> 
+> I believe it could help more than that.
+> 
+> We need some special care on GUP and the s390 pgfault handler (for gmap
+> code before returning from pgfault), the rest changes in the page fault
+> handlers should be relatively straightforward.
+> 
+> Another thing to mention is that mm_account_fault() does take this new
+> fault as a generic fault to be accounted, unlike VM_FAULT_RETRY.
+> 
+> I explicitly didn't touch hmm_vma_fault() and break_ksm() because they do
+> not handle VM_FAULT_RETRY even with existing code, so I'm literally keeping
+> them as-is.
+> 
+> Signed-off-by: Peter Xu <peterx@redhat.com>
+
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
