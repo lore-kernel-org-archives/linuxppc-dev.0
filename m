@@ -4,64 +4,108 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B5CBC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 May 2022 11:08:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C77E3C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 May 2022 11:09:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L7SxM0DKlz3bqL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 May 2022 21:08:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.160.181;
- helo=mail-qt1-f181.google.com; envelope-from=geert.uytterhoeven@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L7SyD2BC5z3c8M
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 May 2022 21:09:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MkmM3JkY;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sv@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Received: from mail-qt1-f181.google.com (mail-qt1-f181.google.com
- [209.85.160.181])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=MkmM3JkY; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L7NrQ27mzz3029
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2022 18:04:21 +1000 (AEST)
-Received: by mail-qt1-f181.google.com with SMTP id g3so16416893qtb.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2022 01:04:21 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=AP6YAmjuideizUL7mupGqzQ5PgkASmXHUBF+HT7ISso=;
- b=NQvL89RAPItDT/nFOW/7hz6avmzW6OR7Y2zfChnu9JK3WRHGjOLkZQ3Pym6T6x0zPL
- GMxLseNZWESoUWZXtEH4m3G+3w/e+GLUX0XiztLm7vywCChxup8KmPCOBFAad3SfN3PY
- BixpYwXQBErwVF5k/o+FAWU7HRu82QoZqsIsUZBC4iM78+9/23eMz9x19qjF45viEUDN
- /xm8+0B7SFvOZl+Vv9J/ACCurSIJbTJx9NhUxqG+wV3nZ/l+vuTzNYQmOPPVq0DSalJo
- bP8674jpsRAfXOhALsLVirlGMzSnXVKcryAHuzs9QWHv6hPrF/CtBTI3PlQlXCE9yvPa
- BuvQ==
-X-Gm-Message-State: AOAM533sLf6xYxMCDknfkNEPtgiQMwRnuDEwkkKm2KGSdlmW7//ZGc04
- U1aEbF1gEebJsnVgmqD1WUxqbBu2gs0qmQ==
-X-Google-Smtp-Source: ABdhPJzHEz77DwQzbMjwrUlC0vXkeWd07a1AeYIaBjUnptgUCeao3u/cnNVkrTFwPLtTifuVfauQgw==
-X-Received: by 2002:a05:622a:1998:b0:2f9:4415:49e6 with SMTP id
- u24-20020a05622a199800b002f9441549e6mr4834294qtc.423.1653465856682; 
- Wed, 25 May 2022 01:04:16 -0700 (PDT)
-Received: from mail-yb1-f170.google.com (mail-yb1-f170.google.com.
- [209.85.219.170]) by smtp.gmail.com with ESMTPSA id
- j23-20020ac85517000000b002f939be4868sm974216qtq.19.2022.05.25.01.04.16
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 25 May 2022 01:04:16 -0700 (PDT)
-Received: by mail-yb1-f170.google.com with SMTP id t26so34929890ybt.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2022 01:04:16 -0700 (PDT)
-X-Received: by 2002:a05:6902:120e:b0:634:6f29:6b84 with SMTP id
- s14-20020a056902120e00b006346f296b84mr30228977ybu.604.1653465845434; Wed, 25
- May 2022 01:04:05 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L7SmH4K2Zz2y7V
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2022 21:01:03 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24P8X8lr001819;
+ Wed, 25 May 2022 11:00:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=content-type :
+ message-id : date : subject : to : cc : references : from : in-reply-to :
+ mime-version; s=pp1; bh=v30RAzu0pmztxKiLoTeEHBpD/pNQmgeE4NQFH4FjzIU=;
+ b=MkmM3JkYlb+RjnsH1yVt2nY7/gMJQ6UvniwbEYWny3aQQ9ijiStkCNPYzAUX6cvaifdv
+ fEJn0uivrCW+QMDt48Xx1mmsTNB91ppg+5ilh9VnjqY3UI3L5aCCpn09IYhSmt3h6bg1
+ /MfRBXSVxaAUrNnHW1IOt3QepylRaH+Wllrc0+aw8QdEieON8TRCkp22GtGYgStXKUz1
+ sLG5fZSvUXhE9tVf5VBa6ZXYNCnPRMitSB2+UU80GarQcHuYnq2Z24jKwG/8AQ2PUV69
+ eAEAdgFPxwIV/mCPArvNe+8dBOxQS2LROrjHWKBk8/vXnep9UWLx2PZPA5UP5KqBsY++ BQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3g9fuu3w4k-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 25 May 2022 11:00:47 +0000
+Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
+ by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 24PArNb2029847;
+ Wed, 25 May 2022 11:00:45 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3g9fuu3w39-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 25 May 2022 11:00:45 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24PAwkbW026506;
+ Wed, 25 May 2022 11:00:43 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma06ams.nl.ibm.com with ESMTP id 3g93uw919t-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 25 May 2022 11:00:42 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 24PAkW6G42467786
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 25 May 2022 10:46:32 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A98F44C040;
+ Wed, 25 May 2022 11:00:40 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A09034C044;
+ Wed, 25 May 2022 11:00:36 +0000 (GMT)
+Received: from [9.43.54.165] (unknown [9.43.54.165])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 25 May 2022 11:00:36 +0000 (GMT)
+Content-Type: multipart/alternative;
+ boundary="------------OiF0gun0GxmZU3zFlP9iz0et"
+Message-ID: <cd006053-1bf2-eea0-dd82-9b0b997793df@linux.vnet.ibm.com>
+Date: Wed, 25 May 2022 16:30:34 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [RFC PATCH v2 5/7] objtool: Enable objtool to run only on files
+ with ftrace enabled
+Content-Language: en-US
+To: Peter Zijlstra <peterz@infradead.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+References: <cover.1653398233.git.christophe.leroy@csgroup.eu>
+ <cf3013dfad89ad5ac7d16d56dced72d7c138a20e.1653398233.git.christophe.leroy@csgroup.eu>
+ <Yo0dgyqAOuwU6gHq@hirez.programming.kicks-ass.net>
+ <Yo0dpDuK3ilphNAA@hirez.programming.kicks-ass.net>
+ <5cb959a2-7e88-5aff-2f8e-be8fdecd002c@csgroup.eu>
+ <Yo03Flwa1s+o6wda@hirez.programming.kicks-ass.net>
+From: Sathvika Vasireddy <sv@linux.vnet.ibm.com>
+In-Reply-To: <Yo03Flwa1s+o6wda@hirez.programming.kicks-ass.net>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 4YqMvogko2I9d6pEBVuF8i522KJHvBDN
+X-Proofpoint-GUID: ew1g5_wJwFglrHLWsTpvi7cQPaFylRc0
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-References: <20220524234531.1949-1-peterx@redhat.com>
-In-Reply-To: <20220524234531.1949-1-peterx@redhat.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 25 May 2022 10:03:53 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWpCUGXn=KzfpfZqResRR41XkBKZiQQVo_O_Hq+KMcDKg@mail.gmail.com>
-Message-ID: <CAMuHMdWpCUGXn=KzfpfZqResRR41XkBKZiQQVo_O_Hq+KMcDKg@mail.gmail.com>
-Subject: Re: [PATCH v3] mm: Avoid unnecessary page fault retires on shared
- memory types
-To: Peter Xu <peterx@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Wed, 25 May 2022 21:08:31 +1000
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.486,FMLib:17.11.64.514
+ definitions=2022-05-25_03,2022-05-25_01,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 spamscore=0
+ priorityscore=1501 lowpriorityscore=0 mlxlogscore=999 phishscore=0
+ bulkscore=0 clxscore=1015 malwarescore=0 impostorscore=0 suspectscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2204290000 definitions=main-2205250051
+X-Mailman-Approved-At: Wed, 25 May 2022 21:09:00 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,111 +117,229 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org,
- "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
- Linux MM <linux-mm@kvack.org>, Rich Felker <dalias@libc.org>,
- Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
- Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>,
- linux-riscv <linux-riscv@lists.infradead.org>,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org,
- linux-snps-arc@lists.infradead.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-xtensa@linux-xtensa.org,
- linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
- Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>,
- Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
- linux-sh@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- linux-arm-kernel@lists.infradead.org, Vineet Gupta <vgupta@kernel.org>,
- Stafford Horne <shorne@gmail.com>, Matt Turner <mattst88@gmail.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Andrea Arcangeli <aarcange@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Vasily Gorbik <gor@linux.ibm.com>, Brian Cain <bcain@quicinc.com>,
- Heiko Carstens <hca@linux.ibm.com>, Johannes Weiner <hannes@cmpxchg.org>,
- linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Richard Weinberger <richard@nod.at>, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Al Viro <viro@zeniv.linux.org.uk>, Andy Lutomirski <luto@kernel.org>,
- Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Vlastimil Babka <vbabka@suse.cz>, Richard Henderson <rth@twiddle.net>,
- Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
- Max Filippov <jcmvbkbc@gmail.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Sven Schnelle <svens@linux.ibm.com>, Guo Ren <guoren@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Johannes Berg <johannes@sipsolutions.net>,
- linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>,
+ "jpoimboe@redhat.com" <jpoimboe@redhat.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "rostedt@goodmis.org" <rostedt@goodmis.org>,
+ "sv@linux.ibm.com" <sv@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "naveen.n.rao@linux.vnet.ibm.com" <naveen.n.rao@linux.vnet.ibm.com>,
+ "mbenes@suse.cz" <mbenes@suse.cz>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 25, 2022 at 1:45 AM Peter Xu <peterx@redhat.com> wrote:
-> I observed that for each of the shared file-backed page faults, we're very
-> likely to retry one more time for the 1st write fault upon no page.  It's
-> because we'll need to release the mmap lock for dirty rate limit purpose
-> with balance_dirty_pages_ratelimited() (in fault_dirty_shared_page()).
->
-> Then after that throttling we return VM_FAULT_RETRY.
->
-> We did that probably because VM_FAULT_RETRY is the only way we can return
-> to the fault handler at that time telling it we've released the mmap lock.
->
-> However that's not ideal because it's very likely the fault does not need
-> to be retried at all since the pgtable was well installed before the
-> throttling, so the next continuous fault (including taking mmap read lock,
-> walk the pgtable, etc.) could be in most cases unnecessary.
->
-> It's not only slowing down page faults for shared file-backed, but also add
-> more mmap lock contention which is in most cases not needed at all.
->
-> To observe this, one could try to write to some shmem page and look at
-> "pgfault" value in /proc/vmstat, then we should expect 2 counts for each
-> shmem write simply because we retried, and vm event "pgfault" will capture
-> that.
->
-> To make it more efficient, add a new VM_FAULT_COMPLETED return code just to
-> show that we've completed the whole fault and released the lock.  It's also
-> a hint that we should very possibly not need another fault immediately on
-> this page because we've just completed it.
->
-> This patch provides a ~12% perf boost on my aarch64 test VM with a simple
-> program sequentially dirtying 400MB shmem file being mmap()ed and these are
-> the time it needs:
->
->   Before: 650.980 ms (+-1.94%)
->   After:  569.396 ms (+-1.38%)
->
-> I believe it could help more than that.
->
-> We need some special care on GUP and the s390 pgfault handler (for gmap
-> code before returning from pgfault), the rest changes in the page fault
-> handlers should be relatively straightforward.
->
-> Another thing to mention is that mm_account_fault() does take this new
-> fault as a generic fault to be accounted, unlike VM_FAULT_RETRY.
->
-> I explicitly didn't touch hmm_vma_fault() and break_ksm() because they do
-> not handle VM_FAULT_RETRY even with existing code, so I'm literally keeping
-> them as-is.
->
-> Signed-off-by: Peter Xu <peterx@redhat.com>
+This is a multi-part message in MIME format.
+--------------OiF0gun0GxmZU3zFlP9iz0et
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
->  arch/m68k/mm/fault.c          |  4 ++++
+Hi Peter,
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+On 25/05/22 01:20, Peter Zijlstra wrote:
+> On Tue, May 24, 2022 at 06:59:50PM +0000, Christophe Leroy wrote:
+>>
+>> Le 24/05/2022 à 20:02, Peter Zijlstra a écrit :
+>>> On Tue, May 24, 2022 at 08:01:39PM +0200, Peter Zijlstra wrote:
+>>>> On Tue, May 24, 2022 at 03:17:45PM +0200, Christophe Leroy wrote:
+>>>>> From: Sathvika Vasireddy<sv@linux.ibm.com>
+>>>>>
+>>>>> This patch makes sure objtool runs only on the object files
+>>>>> that have ftrace enabled, instead of running on all the object
+>>>>> files.
+>>>>>
+>>>>> Signed-off-by: Naveen N. Rao<naveen.n.rao@linux.vnet.ibm.com>
+>>>>> Signed-off-by: Sathvika Vasireddy<sv@linux.ibm.com>
+>>>>> Signed-off-by: Christophe Leroy<christophe.leroy@csgroup.eu>
+>>>>> ---
+>>>>>    scripts/Makefile.build | 4 ++--
+>>>>>    1 file changed, 2 insertions(+), 2 deletions(-)
+>>>>>
+>>>>> diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+>>>>> index 2e0c3f9c1459..06ceffd92921 100644
+>>>>> --- a/scripts/Makefile.build
+>>>>> +++ b/scripts/Makefile.build
+>>>>> @@ -258,8 +258,8 @@ else
+>>>>>    # 'OBJECT_FILES_NON_STANDARD_foo.o := 'y': skip objtool checking for a file
+>>>>>    # 'OBJECT_FILES_NON_STANDARD_foo.o := 'n': override directory skip for a file
+>>>>>    
+>>>>> -$(obj)/%.o: objtool-enabled = $(if $(filter-out y%, \
+>>>>> -	$(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n),y)
+>>>>> +$(obj)/%.o: objtool-enabled = $(and $(if $(filter-out y%, $(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n),y),        \
+>>>>> +        $(if $(findstring $(strip $(CC_FLAGS_FTRACE)),$(_c_flags)),y),y)
+>>>> I think this breaks x86, quite a bit of files have ftrace disabled but
+>>>> very much must run objtool anyway.
+>>> Also; since the Changelog gives 0 clue as to what problem it's trying to
+>>> solve, I can't suggest anything.
+>> I asked Sathvika on the previous series, see
+>> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220523175548.922671-3-sv@linux.ibm.com/
+>>
+>> He says it is to solve the problem I reported at
+>> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220318105140.43914-4-sv@linux.ibm.com/#2861128
+> So on x86 we have:
+>
+> arch/x86/entry/vdso/Makefile:OBJECT_FILES_NON_STANDARD       := y
+>
+> to kill objtool for the whole of the VDSO. When we run objtool on
+> vmlinux it isn't a problem, because the VDSO ends up as a data section
+> through linker scripts.
+Right.. Like you and Christophe mentioned,
+arch/powerpc/kernel/vdso/Makefile:OBJECT_FILES_NON_STANDARD := y
+should solve it for powerpc as well.
 
-Gr{oetje,eeting}s,
 
-                        Geert
+I'll drop this patch and replace it with the above change as part of next
+revision series.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thanks for reviewing!
+
+
+
+- Sathvika
+
+
+--------------OiF0gun0GxmZU3zFlP9iz0et
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p><font face="monospace">Hi Peter, </font><br>
+    </p>
+    <div class="moz-cite-prefix"><font face="monospace">On 25/05/22
+        01:20, Peter Zijlstra wrote:</font><br>
+    </div>
+    <blockquote type="cite"
+      cite="mid:Yo03Flwa1s+o6wda@hirez.programming.kicks-ass.net">
+      <pre class="moz-quote-pre" wrap="">On Tue, May 24, 2022 at 06:59:50PM +0000, Christophe Leroy wrote:
+</pre>
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap="">
+
+Le 24/05/2022 à 20:02, Peter Zijlstra a écrit :
+</pre>
+        <blockquote type="cite">
+          <pre class="moz-quote-pre" wrap="">On Tue, May 24, 2022 at 08:01:39PM +0200, Peter Zijlstra wrote:
+</pre>
+          <blockquote type="cite">
+            <pre class="moz-quote-pre" wrap="">On Tue, May 24, 2022 at 03:17:45PM +0200, Christophe Leroy wrote:
+</pre>
+            <blockquote type="cite">
+              <pre class="moz-quote-pre" wrap="">From: Sathvika Vasireddy <a class="moz-txt-link-rfc2396E" href="mailto:sv@linux.ibm.com">&lt;sv@linux.ibm.com&gt;</a>
+
+This patch makes sure objtool runs only on the object files
+that have ftrace enabled, instead of running on all the object
+files.
+
+Signed-off-by: Naveen N. Rao <a class="moz-txt-link-rfc2396E" href="mailto:naveen.n.rao@linux.vnet.ibm.com">&lt;naveen.n.rao@linux.vnet.ibm.com&gt;</a>
+Signed-off-by: Sathvika Vasireddy <a class="moz-txt-link-rfc2396E" href="mailto:sv@linux.ibm.com">&lt;sv@linux.ibm.com&gt;</a>
+Signed-off-by: Christophe Leroy <a class="moz-txt-link-rfc2396E" href="mailto:christophe.leroy@csgroup.eu">&lt;christophe.leroy@csgroup.eu&gt;</a>
+---
+  scripts/Makefile.build | 4 ++--
+  1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 2e0c3f9c1459..06ceffd92921 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -258,8 +258,8 @@ else
+  # 'OBJECT_FILES_NON_STANDARD_foo.o := 'y': skip objtool checking for a file
+  # 'OBJECT_FILES_NON_STANDARD_foo.o := 'n': override directory skip for a file
+  
+-$(obj)/%.o: objtool-enabled = $(if $(filter-out y%, \
+-	$(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n),y)
++$(obj)/%.o: objtool-enabled = $(and $(if $(filter-out y%, $(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n),y),        \
++        $(if $(findstring $(strip $(CC_FLAGS_FTRACE)),$(_c_flags)),y),y)
+</pre>
+            </blockquote>
+            <pre class="moz-quote-pre" wrap="">
+I think this breaks x86, quite a bit of files have ftrace disabled but
+very much must run objtool anyway.
+</pre>
+          </blockquote>
+          <pre class="moz-quote-pre" wrap="">
+Also; since the Changelog gives 0 clue as to what problem it's trying to
+solve, I can't suggest anything.
+</pre>
+        </blockquote>
+        <pre class="moz-quote-pre" wrap="">
+I asked Sathvika on the previous series, see 
+<a class="moz-txt-link-freetext" href="https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220523175548.922671-3-sv@linux.ibm.com/">https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220523175548.922671-3-sv@linux.ibm.com/</a>
+
+He says it is to solve the problem I reported at 
+<a class="moz-txt-link-freetext" href="https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220318105140.43914-4-sv@linux.ibm.com/#2861128">https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220318105140.43914-4-sv@linux.ibm.com/#2861128</a>
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+So on x86 we have:
+
+arch/x86/entry/vdso/Makefile:OBJECT_FILES_NON_STANDARD       := y
+
+to kill objtool for the whole of the VDSO. When we run objtool on
+vmlinux it isn't a problem, because the VDSO ends up as a data section
+through linker scripts.
+</pre>
+    </blockquote>
+    <font face="monospace">Right.. Like you and Christophe mentioned, </font><br>
+    <font face="monospace">arch/powerpc/kernel/vdso/Makefile:OBJECT_FILES_NON_STANDARD
+      := y</font><br>
+    <font face="monospace">should solve it for powerpc as well. <br>
+    </font><br>
+    <br>
+    <font face="monospace">I'll drop this patch and replace it with the
+      above change as part of next</font><br>
+    <font face="monospace">revision series. <br>
+    </font><font face="monospace"><br>
+    </font><br>
+    <font face="monospace">Thanks for reviewing! <br>
+    </font><br>
+    <font face="monospace"><br>
+    </font><br>
+    <font face="monospace">- Sathvika</font><br>
+    <div class="c-message_actions__container c-message__actions"
+      role="group" style="box-sizing: inherit; display: inline-flex;
+      position: absolute; right: 17px; top: -16px; z-index: 1; color:
+      rgb(29, 28, 29); font-family: Slack-Lato, Slack-Fractions,
+      appleLogo, sans-serif; font-size: 15px; font-style: normal;
+      font-variant-ligatures: common-ligatures; font-variant-caps:
+      normal; font-weight: 400; letter-spacing: normal; orphans: 2;
+      text-align: start; text-indent: 0px; text-transform: none;
+      white-space: normal; widows: 2; word-spacing: 0px;
+      -webkit-text-stroke-width: 0px; background-color: rgb(248, 248,
+      248); text-decoration-thickness: initial; text-decoration-style:
+      initial; text-decoration-color: initial;">
+      <div class="c-message_actions__group" role="group"
+        aria-label="Message shortcuts" data-qa="message-actions"
+        style="box-sizing: inherit;
+        --saf-0:rgba(var(--sk_foreground_low,29,28,29),0.13);
+        background: rgba(var(--sk_primary_background,255,255,255),1);
+        border: unset; border-radius: 0.375em; box-shadow: 0 0 0 1px
+        var(--saf-0),0 1px 3px 0 #00000014; display: flex; line-height:
+        1; margin-left: 8px; padding: 2px;"><button
+          class="c-button-unstyled c-icon_button c-icon_button--light
+          c-icon_button--size_small c-message_actions__button"
+          aria-label="Add reaction" aria-haspopup="true"
+          data-qa="add_reaction_action" data-focus-key="message_actions"
+data-focus-metadata="{&quot;button&quot;:&quot;reaction&quot;,&quot;channelId&quot;:&quot;D028LG8V275&quot;,&quot;ts&quot;:&quot;1653474154.964119&quot;,&quot;messageContainerType&quot;:&quot;message-pane&quot;}"
+          data-sk="tooltip_parent" type="button" tabindex="-1"
+          data-remove-tab-index="true" style="box-sizing: inherit;
+          padding: 0px; background: none; border: 0px; cursor: pointer;
+          font: inherit; color:
+          rgba(var(--sk_foreground_max,29,28,29),0.7); margin: 0px;
+          overflow: initial; text-align: initial; vertical-align:
+          initial; align-items: center; border-radius: 4px; display:
+          inline-flex; justify-content: center; position: relative;
+          height: 32px; width: 32px;"><br
+            class="Apple-interchange-newline">
+          <br>
+        </button></div>
+    </div>
+  </body>
+</html>
+
+--------------OiF0gun0GxmZU3zFlP9iz0et--
+
