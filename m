@@ -4,37 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62A37C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 May 2022 11:10:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9CBDC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 May 2022 11:37:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L7SzS43Zkz3cgF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 May 2022 21:10:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L7TZR21Jgz3bXg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 May 2022 21:37:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=sntech.de
- (client-ip=185.11.138.130; helo=gloria.sntech.de;
- envelope-from=heiko@sntech.de; receiver=<UNKNOWN>)
-Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=ZIakz9se;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=desiato.20200630 header.b=ZIakz9se; 
+ dkim-atps=neutral
+Received: from desiato.infradead.org (desiato.infradead.org
+ [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4L7Sz110PLz2y7V
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2022 21:10:18 +1000 (AEST)
-Received: from ip5b412258.dynamic.kabel-deutschland.de ([91.65.34.88]
- helo=diego.localnet)
- by gloria.sntech.de with esmtpsa (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
- (Exim 4.92) (envelope-from <heiko@sntech.de>)
- id 1ntou5-0005Nh-BQ; Wed, 25 May 2022 13:10:13 +0200
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-To: Guo Ren <guoren@kernel.org>, Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH V9 20/20] riscv: compat: Add COMPAT Kbuild skeletal support
-Date: Wed, 25 May 2022 13:10:12 +0200
-Message-ID: <3418219.V25eIC5XRa@diego>
-In-Reply-To: <6435704.4vTCxPXJkl@diego>
-References: <20220322144003.2357128-1-guoren@kernel.org>
- <20220524220646.GA3990738@roeck-us.net> <6435704.4vTCxPXJkl@diego>
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4L7TYl30gBz2ywQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2022 21:36:56 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=BtatFXJHwOsF1iN9MX4tcAeOtxNVAo5gxULQ5AIMb08=; b=ZIakz9seohAXW9BDPKhZq7RgEW
+ WG+5PgpE+MFFpgPJT9GYaqhQEzm0PGEOaofnt9p53k70ThXN7i3PdncwedqqQQFTfPxY4jz0aLXCf
+ 8sfTMDmh/mBspt/a1Dboh+rLEkAesPZHw4HOlEc9QWttfl9D9Ai0+OlitMOzJv7w5/uKWekH+btNP
+ 1QklzOjtFoli9LnPFUN3aBtjEX1rMqYMq3yaUKUAnzCQWxRH6Tvzhn1vSprgAy5C140kEalGWnV8w
+ x6MDk+6O9E/7SzZShfzZAULNj6A9RLe4sxNEhjGUgFnDPZll3QVgnhfQCTn4Ji/EpFu9ctTVwLUsW
+ zMURbl0w==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+ id 1ntpJj-001bMC-I1; Wed, 25 May 2022 11:36:44 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id E6D0A30022C;
+ Wed, 25 May 2022 13:36:42 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id C6FF3207693A1; Wed, 25 May 2022 13:36:42 +0200 (CEST)
+Date: Wed, 25 May 2022 13:36:42 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 1/4] objtool: Add --mnop as an option to --mcount
+Message-ID: <Yo4UysC69UCwhlYp@hirez.programming.kicks-ass.net>
+References: <20220523175548.922671-1-sv@linux.ibm.com>
+ <20220523175548.922671-2-sv@linux.ibm.com>
+ <26c7bfc8-3089-034a-70c0-8857d7cd3a99@csgroup.eu>
+ <1653386854.o7nss9hzc9.naveen@linux.ibm.com>
+ <d45030be-3f6b-ebeb-3d63-bf7a96d3ff3b@csgroup.eu>
+ <1653388084.w21cyb07gc.naveen@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1653388084.w21cyb07gc.naveen@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -46,69 +76,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Guo Ren <guoren@linux.alibaba.com>,
- Parisc List <linux-parisc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- the arch/x86 maintainers <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-csky@vger.kernel.org,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, sparclinux <sparclinux@vger.kernel.org>,
- linux-riscv <linux-riscv@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Sathvika Vasireddy <sv@linux.ibm.com>,
+ "rostedt@goodmis.org" <rostedt@goodmis.org>,
+ "jpoimboe@redhat.com" <jpoimboe@redhat.com>, "mbenes@suse.cz" <mbenes@suse.cz>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Am Mittwoch, 25. Mai 2022, 12:57:30 CEST schrieb Heiko St=FCbner:
-> Am Mittwoch, 25. Mai 2022, 00:06:46 CEST schrieb Guenter Roeck:
-> > On Wed, May 25, 2022 at 01:46:38AM +0800, Guo Ren wrote:
-> > [ ... ]
-> >=20
-> > > > The problem is come from "__dls3's vdso decode part in musl's
-> > > > ldso/dynlink.c". The ehdr->e_phnum & ehdr->e_phentsize are wrong.
-> > > >
-> > > > I think the root cause is from musl's implementation with the wrong
-> > > > elf parser. I would fix that soon.
-> > > Not elf parser, it's "aux vector just past environ[]". I think I could
-> > > solve this, but anyone who could help dig in is welcome.
-> > >=20
-> >=20
-> > I am not sure I understand what you are saying here. Point is that my
-> > root file system, generated with musl a year or so ago, crashes with
-> > your patch set applied. That is a regression, even if there is a bug
-> > in musl.
->=20
-> Also as I said in the other part of the thread, the rootfs seems innocent,
-> as my completely-standard Debian riscv64 rootfs is also affected.
->=20
-> The merged version seems to be v12 [0] - not sure how we this discussion
-> ended up in v9, but I just tested this revision in two variants:
->=20
-> - v5.17 + this v9 -> works nicely
+On Tue, May 24, 2022 at 04:01:48PM +0530, Naveen N. Rao wrote:
 
-I take that back ... now going back to that build I somehow also run into
-that issue here ... will investigate more.
+> We need to know for sure either way. Nop'ing out the _mcount locations at
+> boot allows us to discover existing long branch trampolines. If we want to
+> avoid it, we need to note down those locations during build time.
+> 
+> Do you have a different approach in mind?
 
+If you put _mcount in a separate section then the compiler cannot tell
+where it is and is forced to always emit a long branch trampoline.
 
-> - v5.18-rc6 + this v9 (rebased onto it) -> breaks the boot
->   The only rebase-conflict was with the introduction of restartable
->   sequences and removal of the tracehook include, but turning CONFIG_RSEQ
->   off doesn't seem to affect the breakage.
->=20
-> So it looks like something changed between 5.17 and 5.18 that causes the =
-issue.
->=20
->=20
-> Heiko
->=20
->=20
-> [0] https://lore.kernel.org/all/20220405071314.3225832-1-guoren@kernel.or=
-g/
->=20
-
-
-
-
+Does that help?
