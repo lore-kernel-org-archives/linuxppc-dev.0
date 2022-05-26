@@ -4,79 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20A78C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 06:59:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93AD1C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 07:51:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L7zMF4Xdnz3cLZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 16:59:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=F8VufYvf;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=canonical.com (client-ip=185.125.188.123; helo=smtp-relay-internal-1.canonical.com; envelope-from=juerg.haefliger@canonical.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=F8VufYvf;
-	dkim-atps=neutral
-Received: from smtp-relay-internal-1.canonical.com (smtp-relay-internal-1.canonical.com [185.125.188.123])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L80W16b4kz3bsB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 17:51:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=195.130.137.81; helo=weierstrass.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
+X-Greylist: delayed 420 seconds by postgrey-1.36 at boromir; Thu, 26 May 2022 17:51:00 AEST
+Received: from weierstrass.telenet-ops.be (weierstrass.telenet-ops.be [195.130.137.81])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L7zK96N14z3bvX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 16:57:49 +1000 (AEST)
-Received: from mail-ed1-f71.google.com (mail-ed1-f71.google.com [209.85.208.71])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id A21073F4B8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 06:57:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-	s=20210705; t=1653548264;
-	bh=Txe6Joc+D2sNVGRTbSJSoJjs7Jo7D+TANko+R2z0/4w=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version;
-	b=F8VufYvfGCPsRjd4WVp2p0KmFBf5XcVRnngbofvAbVszPRw1cmrIR/SGGtC6uFQ19
-	 DNHYSLzFpkFH2kJ8vLt1kHj8cfjuAT2NWxPCt7mieY2NRcYIESP7EtO0sB2PwjG+9M
-	 3KSZ7DcnqnSCUTrAawPJiQgrFu8eQnGIgJeorkxOTNem9aTJZ2TRAJtpq7hWc3lpc0
-	 GzlBzcsp2QxYVl3zdtJqEO7wwCqbMnIMsMU6X2NA6PqXRpflPVhB04kW9U0LB+ys41
-	 cbQm3hWiiDQN9wiX4Nx8QieGuzRaSkyHYNeJH8I5+zkMjBln7cHgfA12OMmpS0RtXg
-	 WuYbLt5Ug0x2w==
-Received: by mail-ed1-f71.google.com with SMTP id q12-20020a056402040c00b0042a84f9939dso480208edv.7
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2022 23:57:44 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=Txe6Joc+D2sNVGRTbSJSoJjs7Jo7D+TANko+R2z0/4w=;
-        b=2IsN0HiuDPbQBU8Fy5tkvuCO6uaBOSGIBWqMvUu/JLf8coUW/0M9iy7/uadrEBAwmF
-         nYwmYMfi9rmezGlBV/TLwTsP862MMyN5iuQO3/JvmaMIWwJtBF1ut8XbaMU2K3khYYsA
-         OTPPcwp9G7qJMx7t57yxZV8kZddqOI9TK30z4ULckI4IWoE3YG0BW23jMtaseQAaNaXD
-         kC3Ddm6hKXlaXBV0TZVj/S7SX4CaFQXWQPX/6TQvzPu7sZrDIMcBHwloGv1BHIr/VJDg
-         VmgwK6JWsDExPjCzXtMTy+VSbFKvLLWSAOSqngK90R5zPEK2DRjokCNf5bgXJDuZF5XO
-         r7LA==
-X-Gm-Message-State: AOAM53272aa3rkxIvsSmrFbXfA2DG2Q+FQ8I8hy5cXsUWIZBGsMC9LT2
-	VJV1m+/77IlqjHNxsNqOzoTuej0iiSjNypWCCRIAPuSxqz+d13Fs42/iiDLc8Ggu8ei+Ft+tFVP
-	W+s0VSNZzm6RjLAjAVdydoZ+M3uHYLoJC6lAma6PDfyo=
-X-Received: by 2002:a17:907:2cc5:b0:6f9:1fc:ebef with SMTP id hg5-20020a1709072cc500b006f901fcebefmr31436513ejc.121.1653548262291;
-        Wed, 25 May 2022 23:57:42 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJxAzlMCLTa7rB0D14mp1uSRSJck3CimWoqaJa1PBLLHcC7RI032CbnbDvhBqTGp/pQy8R5TgQ==
-X-Received: by 2002:a17:907:2cc5:b0:6f9:1fc:ebef with SMTP id hg5-20020a1709072cc500b006f901fcebefmr31436506ejc.121.1653548262126;
-        Wed, 25 May 2022 23:57:42 -0700 (PDT)
-Received: from gollum.fritz.box ([194.191.244.86])
-        by smtp.gmail.com with ESMTPSA id w15-20020a17090652cf00b006fed8dfcf78sm220906ejn.225.2022.05.25.23.57.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 May 2022 23:57:41 -0700 (PDT)
-From: Juerg Haefliger <juerg.haefliger@canonical.com>
-To: mpe@ellerman.id.au,
-	benh@kernel.crashing.org,
-	paulus@samba.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc: Kconfig: Replace tabs with whitespaces
-Date: Thu, 26 May 2022 08:57:36 +0200
-Message-Id: <20220526065737.86370-2-juerg.haefliger@canonical.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220526065737.86370-1-juerg.haefliger@canonical.com>
-References: <20220526065737.86370-1-juerg.haefliger@canonical.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L80VX3301z2ypR
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 17:50:59 +1000 (AEST)
+Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
+	by weierstrass.telenet-ops.be (Postfix) with ESMTPS id 4L80L84HwPz4x2cT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 09:43:44 +0200 (CEST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed30:6498:8099:cb9:b18e])
+	by michel.telenet-ops.be with bizsmtp
+	id bKjX2700H0qhjiN06KjXSy; Thu, 26 May 2022 09:43:43 +0200
+Received: from geert (helo=localhost)
+	by ramsan.of.borg with local-esmtp (Exim 4.93)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1nu89a-001en6-FJ; Thu, 26 May 2022 09:43:30 +0200
+Date: Thu, 26 May 2022 09:43:30 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+X-X-Sender: geert@ramsan.of.borg
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH net-next] eth: de4x5: remove support for Generic DECchip
+ & DIGITAL EtherWORKS PCI/EISA
+In-Reply-To: <f84c4cb17eebe385fe22c3fc4563645742269d46.camel@kernel.crashing.org>
+Message-ID: <alpine.DEB.2.22.394.2205260933520.394690@ramsan.of.borg>
+References: <20220519031345.2134401-1-kuba@kernel.org> <f84c4cb17eebe385fe22c3fc4563645742269d46.camel@kernel.crashing.org>
+User-Agent: Alpine 2.22 (DEB 394 2020-01-19)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,48 +50,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juerg Haefliger <juerg.haefliger@canonical.com>, linux-kernel@vger.kernel.org
+Cc: tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, arnd@arndb.de, corbet@lwn.net, netdev@vger.kernel.org, sburla@marvell.com, linux-doc@vger.kernel.org, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, edumazet@google.com, paulus@samba.org, vburru@marvell.com, Jakub Kicinski <kuba@kernel.org>, zhangyue1@kylinos.cn, pabeni@redhat.com, aayarekar@marvell.com, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace tabs after keywords with whitespaces to be consistent.
+ 	Hi Ben,
 
-Signed-off-by: Juerg Haefliger <juerg.haefliger@canonical.com>
----
- arch/powerpc/Kconfig | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+On Sat, 21 May 2022, Benjamin Herrenschmidt wrote:
+> On Wed, 2022-05-18 at 20:13 -0700, Jakub Kicinski wrote:
+>> Looks like almost all changes to this driver had been tree-wide
+>> refactoring since git era begun. There is one commit from Al
+>> 15 years ago which could potentially be fixing a real bug.
+>>
+>> The driver is using virt_to_bus() and is a real magnet for pointless
+>> cleanups. It seems unlikely to have real users. Let's try to shed
+>> this maintenance burden.
+>>
+>> Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+>
+> Removing this driver will kill support for some rather old PowerMac
+> models (some PowerBooks I think, paulus would know). No objection on my
+> part, though. I doubt people still use these things with new kernels
+> but ... who knows ? :-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 174edabb74fa..b4acaa77837a 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -11,7 +11,7 @@ config 64BIT
- 
- config LIVEPATCH_64
- 	def_bool PPC64
--	depends	on LIVEPATCH
-+	depends on LIVEPATCH
- 
- config MMU
- 	bool
-@@ -446,7 +446,7 @@ choice
- 	default MATH_EMULATION_FULL
- 	depends on MATH_EMULATION
- 
--config	MATH_EMULATION_FULL
-+config MATH_EMULATION_FULL
- 	bool "Emulate all the floating point instructions"
- 	help
- 	  Select this option will enable the kernel to support to emulate
-@@ -1235,7 +1235,7 @@ config PHYSICAL_START
- 	default "0x00000000"
- endif
- 
--config	ARCH_RANDOM
-+config ARCH_RANDOM
- 	def_bool n
- 
- config PPC_LIB_RHEAP
--- 
-2.32.0
+Aren't these PCI, and thus working fine with the PCI-only DE2104X
+(dc2104x) or TULIP (dc2114x) drivers?
 
+IIRC, I've initially used the de4x5 driver on Alpha (UDB/Multia) or PPC
+(CHRP), but switched to the TULIP driver later (that was before the
+dc2104x/dc2114x driver split, hence a loooong time ago).
+
+Gr{oetje,eeting}s,
+
+ 						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+ 							    -- Linus Torvalds
