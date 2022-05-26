@@ -4,74 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE31AC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 06:58:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37621C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 06:59:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L7zKs3J1gz3cDh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 16:58:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L7zLX5Hbmz3ch3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 16:59:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=AVzKQVVw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=XjZO7lqk;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=canonical.com (client-ip=185.125.188.122; helo=smtp-relay-internal-0.canonical.com; envelope-from=juerg.haefliger@canonical.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=AVzKQVVw;
+	dkim=pass (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=XjZO7lqk;
 	dkim-atps=neutral
 Received: from smtp-relay-internal-0.canonical.com (smtp-relay-internal-0.canonical.com [185.125.188.122])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L7zK71nsfz3bwg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 16:57:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L7zK720zhz3bwk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 16:57:46 +1000 (AEST)
 Received: from mail-ej1-f71.google.com (mail-ej1-f71.google.com [209.85.218.71])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id BD92D3F20B
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 06:57:41 +0000 (UTC)
+	by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id BC2233F864
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 06:57:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-	s=20210705; t=1653548261;
-	bh=YwbocuSneHvQq0fh/EdmbXmlfTeqDwMbby8XL3N7k/U=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version;
-	b=AVzKQVVw6TAGDLnKvunWmwYt/vuoJeWlSsWN0c6fC8Ls5GcSKlxqeKHXqxPZAigMq
-	 uewf8jwgt5JMG1muu29/LGH6bz6E+VkF6YiYd2xiToOOdiCtwMWzSu83+emDMaLnw/
-	 v9h8nC9Lw5jhtIMufDudYqzJHi9Jebb0BTAr3V7FPGmuWuHD1oCnnpRDGol+5ML8EN
-	 KwVzfBBmnCxM7C/z+DUfBAofjmg5fmlHA5CbZEXq0+q6C+JDTrUXviy5AfbJnunszD
-	 hdXu2P3o+BcVKxl4OJg3sAmJDXQ+V9mE56zTvAD3N6s3YQkvWHyObTALV0tNJc6lJO
-	 lQ/hmLZbP07HQ==
-Received: by mail-ej1-f71.google.com with SMTP id v13-20020a170906b00d00b006f51e289f7cso353645ejy.19
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2022 23:57:41 -0700 (PDT)
+	s=20210705; t=1653548263;
+	bh=Ye7eLUY2KVbpTNU7R7EP53lRPzenCCRrRZNY2f0Pw2s=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version;
+	b=XjZO7lqkx+arWLHLPSz6iBnBw78rkn+znXI7Owav+lQ3WLWA2SUIRcRT9n/ZhNcZv
+	 RayLVhCsf0xR0goPd4M1+cFljKTOhn2XZmaUGAStuzQ4iEcZCpRVBfgBdVuIuskwZ1
+	 STvEniKvQzaIuVVyrw3sYHHBriaHVoBkBBFpb5Zxhr/0JpjYmKsHyZwwBuE2q7GU41
+	 zXvj7oJC/8TdRnNhRwbCLN2SGfx3oWpcnZnyZ9fhzFXOz9yZ3zzb12YCzmR5PXhCFH
+	 a8NDyxu/EAuFtqRjsF1+i0OWAtgQr0StsOAyQwbtGc8WzBtlc6UVb+ZKjsNulu2SNU
+	 s1NSt/upxl9aw==
+Received: by mail-ej1-f71.google.com with SMTP id m20-20020a170906849400b006ff296bb911so186911ejx.6
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2022 23:57:43 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=YwbocuSneHvQq0fh/EdmbXmlfTeqDwMbby8XL3N7k/U=;
-        b=DXV2QrqywSJGHiQh4YnnYWt/xhFVVwUeThnWVJ+B80xzPpogZV3JXAn0alupOjlpD1
-         zkIZekCablhSW63DPX1mTxb/d2GE/VW59q0hLQihKqEk9iQaWn3eGApxcOvHVH4oU8bW
-         b/EisNS5HioczSk8dH/d5yKwipP1sM/6fUbN2QKYUdGmijh+jJfRaRG7/MXfTdqh+sbW
-         8YBUK4DeQRngiAwtrV7M+EdsKGIasU4uy7L4OlwKpN43o/OOOsIxUdUay7K+xMC6i+C9
-         1B7lJJnRB3KtSFM8ycBn4Pn+FGVdOuqL6p1xk9lkaCR8R6yljQEnFJslDdd9or/Y8nUM
-         YG5g==
-X-Gm-Message-State: AOAM533tQgXZ6Dghukvw40ciasvQFl3FCZSd/CcRY5kaTow4lf1KyFAD
-	WThsR0iyMjb9n9hop1MyNziFKxsUy4HlQtWULNanB9ro30Wsy9Cdq2IosRqtGvzsh/lmFwo95gz
-	74yPVGEZyC0vc+nL3dUAYsaRfKDrhIvLq9Q1ifmhEteg=
-X-Received: by 2002:a05:6402:380f:b0:42b:27aa:d4cb with SMTP id es15-20020a056402380f00b0042b27aad4cbmr31517638edb.211.1653548261445;
-        Wed, 25 May 2022 23:57:41 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzrCbaTkwubd8CefOtFsYwzxV3AEkWN3OGRmcmHpo3yFUy4WL5kUwmf18rbGX6Kv/KSsK8d0A==
-X-Received: by 2002:a05:6402:380f:b0:42b:27aa:d4cb with SMTP id es15-20020a056402380f00b0042b27aad4cbmr31517629edb.211.1653548261294;
-        Wed, 25 May 2022 23:57:41 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=Ye7eLUY2KVbpTNU7R7EP53lRPzenCCRrRZNY2f0Pw2s=;
+        b=p23ufP0NdkOI/+Myb08FVf7Ldw4sHToqRL545QZH4dzU5vDuwohJTKzSFEhfK0IYLF
+         BSsgupUPM0eMD2P4hhxe4Xlhkf2s74IlktnWTROOCoR3FtX8wA77rXBbvvogZOjD9g1B
+         fF1uXbYMOH9n2vPsDy2/csj+ke+zHODZkyiXHdRKPY37hcd1eIMEN8z84ZrmvcuYEMFz
+         Ukf8m42CVN7IJEps/780qkNh2XcHxNIrJ0bNiflDdx7UF2xb6jgXFGrLzBiKs8BCvC+3
+         oJN0qCyL7P338UePEq/kyW9kGG5EPr3qRTsaM+/Tcql1JDhN6C/xdVvyiEBIV9Fy6LLq
+         Qdcw==
+X-Gm-Message-State: AOAM531GiCXxsWfigtCZ0bxXVsZJk8XmzFxvlbYI9bvc2K6WX/jRfgYg
+	YVQak2twF+g9NyYqSzlnBWpHUyavU30qe2I3z5DPuOyQb1kx5Nxir3KdjfnNoznL453G7VXYnH0
+	QakD0k4N0o5ABA/FyClJyMhAVpzU8dxFRNFrrdFI1QZE=
+X-Received: by 2002:a05:6402:3312:b0:42a:e883:5397 with SMTP id e18-20020a056402331200b0042ae8835397mr18160464eda.74.1653548263136;
+        Wed, 25 May 2022 23:57:43 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJxR4IFmT/fyGSD8rES9S1+NQ2cUFE7jP02xDAxp+UsJlxwdSHoZNNzwFy42v0L4V/6VSI1Tag==
+X-Received: by 2002:a05:6402:3312:b0:42a:e883:5397 with SMTP id e18-20020a056402331200b0042ae8835397mr18160454eda.74.1653548262989;
+        Wed, 25 May 2022 23:57:42 -0700 (PDT)
 Received: from gollum.fritz.box ([194.191.244.86])
-        by smtp.gmail.com with ESMTPSA id w15-20020a17090652cf00b006fed8dfcf78sm220906ejn.225.2022.05.25.23.57.40
+        by smtp.gmail.com with ESMTPSA id w15-20020a17090652cf00b006fed8dfcf78sm220906ejn.225.2022.05.25.23.57.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 May 2022 23:57:40 -0700 (PDT)
+        Wed, 25 May 2022 23:57:42 -0700 (PDT)
 From: Juerg Haefliger <juerg.haefliger@canonical.com>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org,
 	paulus@samba.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/2] powerpc: Kconfig cleanups
-Date: Thu, 26 May 2022 08:57:35 +0200
-Message-Id: <20220526065737.86370-1-juerg.haefliger@canonical.com>
+Subject: [PATCH 2/2] powerpc: Kconfig.debug: Remove extra empty line
+Date: Thu, 26 May 2022 08:57:37 +0200
+Message-Id: <20220526065737.86370-3-juerg.haefliger@canonical.com>
 X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20220526065737.86370-1-juerg.haefliger@canonical.com>
+References: <20220526065737.86370-1-juerg.haefliger@canonical.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -89,17 +92,25 @@ Cc: Juerg Haefliger <juerg.haefliger@canonical.com>, linux-kernel@vger.kernel.or
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace some stray tabs with whitespaces and remove an extra empty
-line.
+Remove a stray extra empty line.
 
-Juerg Haefliger (2):
-  powerpc: Kconfig: Replace tabs with whitespaces
-  powerpc: Kconfig.debug: Remove extra empty line
-
- arch/powerpc/Kconfig       | 6 +++---
+Signed-off-by: Juerg Haefliger <juerg.haefliger@canonical.com>
+---
  arch/powerpc/Kconfig.debug | 1 -
- 2 files changed, 3 insertions(+), 4 deletions(-)
+ 1 file changed, 1 deletion(-)
 
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 192f0ed0097f..2c019e4ac432 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -305,7 +305,6 @@ config PPC_EARLY_DEBUG_OPAL
+ 	def_bool y
+ 	depends on PPC_EARLY_DEBUG_OPAL_RAW || PPC_EARLY_DEBUG_OPAL_HVSI
+ 
+-
+ config PPC_EARLY_DEBUG_HVSI_VTERMNO
+ 	hex "vterm number to use with early debug HVSI"
+ 	depends on PPC_EARLY_DEBUG_LPAR_HVSI
 -- 
 2.32.0
 
