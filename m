@@ -4,52 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31103C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 12:15:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C455C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 12:43:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L86My3rC5z3bn4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 22:15:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gy/HsX4B;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L86MH4QkDz2yYd
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 22:15:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gy/HsX4B;
-	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4L86MB4xFWz4xXj;
-	Thu, 26 May 2022 22:15:02 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1653567305;
-	bh=qdGxLuOgWLxtGXOKT8uILQNK4Btl7FJ5JZwGbkMtGZY=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:From;
-	b=gy/HsX4BcAReBDnH2meEdqv0xBEOfx6GpCJHtCRxUA2TaJxbHBPmt8AFbY5T6mec0
-	 pnpSvVoevK98Fo9Y7mkImcHOTfpnXb8bh1O1uVXiJv5Voaey3zNbeOZ976zjqL3heV
-	 qyOGYloDmu8j75LG/AEkilOAokL7NxLBEHGStWN065+jzpvOsREi/uA9KlURYKY1Dm
-	 eM6wktQ9ce7mUGpT7h6+mqQsLE1OfnCgb24rnWz+DbMrPz2DvsFZ9fuzhp94HJDw9Y
-	 o7M0+NMfHXpYF1/iec34epetlmqqblvv3oxZqreh7iA06fLjXXdSkVtXKqZzeU7GW2
-	 B4FcFh50RkD7A==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>, Uros Bizjak
- <ubizjak@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will
- Deacon <will@kernel.org>, Russell King <linux@armlinux.org.uk>, Thomas
- Bogendoerfer <tsbogend@alpha.franken.de>, Heiko Carstens
- <hca@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L870H52PBz3bcW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 22:43:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L86zr0g77z2yWr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 22:43:18 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8242A1688;
+	Thu, 26 May 2022 05:42:44 -0700 (PDT)
+Received: from FVFF77S0Q05N.cambridge.arm.com (FVFF77S0Q05N.cambridge.arm.com [10.1.27.164])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8D8193F70D;
+	Thu, 26 May 2022 05:42:41 -0700 (PDT)
+Date: Thu, 26 May 2022 13:42:35 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [PATCH 1/2] locking/lockref: Use try_cmpxchg64 in CMPXCHG_LOOP
  macro
-In-Reply-To: <CAHk-=wh1XeaxWXG5QziGA4ds918UnW1hO924kusgVB-wGj+9Og@mail.gmail.com>
-Date: Thu, 26 May 2022 22:14:59 +1000
-Message-ID: <871qwgmqws.fsf@mpe.ellerman.id.au>
+Message-ID: <Yo91omfDZtTgXhyn@FVFF77S0Q05N.cambridge.arm.com>
+References: <CAHk-=wh1XeaxWXG5QziGA4ds918UnW1hO924kusgVB-wGj+9Og@mail.gmail.com>
+ <871qwgmqws.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <871qwgmqws.fsf@mpe.ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,43 +43,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Waiman.Long@hp.com, Peter Zijlstra <peterz@infradead.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Waiman.Long@hp.com, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Heiko Carstens <hca@linux.ibm.com>, the arch/x86 maintainers <x86@kernel.org>, Uros Bizjak <ubizjak@gmail.com>, Russell King <linux@armlinux.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Will Deacon <will@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
-> On Wed, May 25, 2022 at 7:40 AM Uros Bizjak <ubizjak@gmail.com> wrote:
->>
->> Use try_cmpxchg64 instead of cmpxchg64 in CMPXCHG_LOOP macro.
->> x86 CMPXCHG instruction returns success in ZF flag, so this
->> change saves a compare after cmpxchg (and related move instruction
->> in front of cmpxchg). The main loop of lockref_get improves from:
->
-> Ack on this one regardless of the 32-bit x86 question.
->
-> HOWEVER.
->
-> I'd like other architectures to pipe up too, because I think right now
-> x86 is the only one that implements that "arch_try_cmpxchg()" family
-> of operations natively, and I think the generic fallback for when it
-> is missing might be kind of nasty.
->
-> Maybe it ends up generating ok code, but it's also possible that it
-> just didn't matter when it was only used in one place in the
-> scheduler.
+On Thu, May 26, 2022 at 10:14:59PM +1000, Michael Ellerman wrote:
+> Linus Torvalds <torvalds@linux-foundation.org> writes:
+> > On Wed, May 25, 2022 at 7:40 AM Uros Bizjak <ubizjak@gmail.com> wrote:
+> >>
+> >> Use try_cmpxchg64 instead of cmpxchg64 in CMPXCHG_LOOP macro.
+> >> x86 CMPXCHG instruction returns success in ZF flag, so this
+> >> change saves a compare after cmpxchg (and related move instruction
+> >> in front of cmpxchg). The main loop of lockref_get improves from:
+> >
+> > Ack on this one regardless of the 32-bit x86 question.
+> >
+> > HOWEVER.
+> >
+> > I'd like other architectures to pipe up too, because I think right now
+> > x86 is the only one that implements that "arch_try_cmpxchg()" family
+> > of operations natively, and I think the generic fallback for when it
+> > is missing might be kind of nasty.
+> >
+> > Maybe it ends up generating ok code, but it's also possible that it
+> > just didn't matter when it was only used in one place in the
+> > scheduler.
+> 
+> This patch seems to generate slightly *better* code on powerpc.
+> 
+> I see one register-to-register move that gets shifted slightly later, so
+> that it's skipped on the path that returns directly via the SUCCESS
+> case.
 
-This patch seems to generate slightly *better* code on powerpc.
+FWIW, I see the same on arm64; a register-to-register move gets moved out of
+the success path. That changes the register allocation, and resulting in one
+fewer move, but otherwise the code generation is the same.
 
-I see one register-to-register move that gets shifted slightly later, so
-that it's skipped on the path that returns directly via the SUCCESS
-case.
-
-So LGTM.
-
-> The lockref_get() case can be quite hot under some loads, it would be
-> sad if this made other architectures worse.
-
-Do you know of a benchmark that shows it up? I tried a few things but
-couldn't get lockref_get() to count for more than 1-2%.
-
-cheers
+Thanks,
+Mark.
