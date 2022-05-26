@@ -4,56 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAE5BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 04:05:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CF1FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 16:53:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L7vVH0BtCz3bpJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 May 2022 14:05:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L8DX84Cbqz3by9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 May 2022 02:53:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hLLrqk/d;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=Uw2QqULb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=vgupta@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::629; helo=mail-ej1-x629.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hLLrqk/d;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=Uw2QqULb;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-x629.google.com (mail-ej1-x629.google.com [IPv6:2a00:1450:4864:20::629])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L7ty352Zvz305v
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 13:40:59 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 13040615AC;
-	Thu, 26 May 2022 03:40:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5BBA1C385B8;
-	Thu, 26 May 2022 03:40:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1653536455;
-	bh=/FC3fRDbTNCC3O7WmAhxUVAkmggWpUFeLv7OpR1lxLg=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=hLLrqk/dSj3ABZgHj+oG01SXfcPdfcPLbCPW5c/vtlKKjGhr826rFN6lLQogyE6R+
-	 V4+rLm9jBH6we4JcRrEMO+7ArvhQ4vUukeFX5qG0umNfJEjOVl7t+dToTe7orX2kZK
-	 bSWoDGynO3/vHi04K7UfgRIeRSjHN5GtmmMIX2USGvftGI9pdfeJrjgnAmxrltc5n0
-	 8y833O4MCr4JKKzVPSDGbAvYYjpDQY/dQCqYoM1yOIlCVTJtDFNiHcFx0Vs05+lAF0
-	 ALTHrfJeOAfPcImvCexeRL9L6Mpy6p/bjPRzg8B1971s8Zq8YHz1AyoKFvxIGL0AWO
-	 PHAjKqVSOf5bw==
-Message-ID: <8f6add25-2e8f-4533-fa42-e43db0e32f2d@kernel.org>
-Date: Wed, 25 May 2022 20:40:51 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L8DWQ4rslz3bbV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2022 02:52:32 +1000 (AEST)
+Received: by mail-ej1-x629.google.com with SMTP id m20so4031078ejj.10
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 09:52:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linux-foundation.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=KIrgpKkAzwB07gYimrtbZQWgxesfa74CNz+gljHxsDM=;
+        b=Uw2QqULbsgoG8dWkUYz5Wetvt9zrj+w2Z/3KG1NXe+Ga2SYOQA4ahHz0GCrZxRVxxs
+         V+aWCEb61jpbUN2D2snj9yzTr4OzNyUFkAE5Zt5ZRUjf0jixHym11fMEvpdfrn+XIvS7
+         eBQrWbr/A3ETMNkjZcLBXDbPoHW+g5IGealpM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=KIrgpKkAzwB07gYimrtbZQWgxesfa74CNz+gljHxsDM=;
+        b=iEStRjoA4CNtCClxnzkXmG98hryqxfwPdMJCBMc6MqIRnPgnT9687KubnHpa4RK/jZ
+         eiTfcUyVmtC55pU6pOYp0gaLwN5dU8OYYCKK4/XRZXwzl2nXkdyje8UymFIE1dd96bGd
+         FDDzlwTCqADDYUXV6jgdWP0+movdWHko8S9my67iPiEipvBTAIAbAzV+yAqfDic7YQzM
+         KkaVkK08d0kaNouyiNlRED51jt5HBwKxClm3UWsw+OwLOrXZlWCyEzmHzE/bzF8S8Yj4
+         zP0DtyCmoayMglv2bstJmig46KMgFOs8I7vrz4lkoVI/4ag2P3xQ3YTeX1CT5LrOW7K1
+         63og==
+X-Gm-Message-State: AOAM532nL486HK99ua0Vnue9H6LhSmxY+WNHDNI/Sk5RoWalWpV/xf8/
+	pQpnhA9DeaO023jmreZHNlzMrK5px8WIVqJ0P4c=
+X-Google-Smtp-Source: ABdhPJzhBZMGTQgMt75OffHEa5zvaTmkFQZzY8OL6XnSb08j2uyxbQmXRhgUK9H4ywc1LWWm/C37tQ==
+X-Received: by 2002:a17:907:7ea7:b0:6fe:fce4:e802 with SMTP id qb39-20020a1709077ea700b006fefce4e802mr15297082ejc.47.1653583944394;
+        Thu, 26 May 2022 09:52:24 -0700 (PDT)
+Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com. [209.85.221.42])
+        by smtp.gmail.com with ESMTPSA id o25-20020a509b19000000b0042617ba63a7sm1014693edi.49.2022.05.26.09.52.20
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 26 May 2022 09:52:22 -0700 (PDT)
+Received: by mail-wr1-f42.google.com with SMTP id l30so2843800wrb.8
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2022 09:52:20 -0700 (PDT)
+X-Received: by 2002:a5d:58cc:0:b0:20e:643d:e46a with SMTP id
+ o12-20020a5d58cc000000b0020e643de46amr30854195wrf.97.1653583940350; Thu, 26
+ May 2022 09:52:20 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.1
-Subject: Re: [PATCH v3] mm: Avoid unnecessary page fault retires on shared
- memory types
-Content-Language: en-US
-To: Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org
-References: <20220524234531.1949-1-peterx@redhat.com>
-From: Vineet Gupta <vgupta@kernel.org>
-In-Reply-To: <20220524234531.1949-1-peterx@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Thu, 26 May 2022 14:04:55 +1000
+References: <CAHk-=wh1XeaxWXG5QziGA4ds918UnW1hO924kusgVB-wGj+9Og@mail.gmail.com>
+ <871qwgmqws.fsf@mpe.ellerman.id.au>
+In-Reply-To: <871qwgmqws.fsf@mpe.ellerman.id.au>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 26 May 2022 09:52:04 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wjd-RVttYwPc9RYD+x0b=WNYc_PZ2JKwPxc8fm54t0d2w@mail.gmail.com>
+Message-ID: <CAHk-=wjd-RVttYwPc9RYD+x0b=WNYc_PZ2JKwPxc8fm54t0d2w@mail.gmail.com>
+Subject: Re: [PATCH 1/2] locking/lockref: Use try_cmpxchg64 in CMPXCHG_LOOP macro
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,75 +80,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Rich Felker <dalias@libc.org>, Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, Anton Ivanov <anton.ivanov@cambridgegreys.com>, Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, linux-snps-arc@lists.infradead.org, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-xtensa@linux-xtensa.org, linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, linux-sh@vger.kernel.org, Ing
- o Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-arm-kernel@lists.infradead.org, Vineet Gupta <vgupta@kernel.org>, Stafford Horne <shorne@gmail.com>, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Andrea Arcangeli <aarcange@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Brian Cain <bcain@quicinc.com>, Heiko Carstens <hca@linux.ibm.com>, Johannes Weiner <hannes@cmpxchg.org>, linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Richard Weinberger <richard@nod.at>, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Al Viro <viro@zeniv.linux.org.uk>, Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@su
- se.cz>, Richard Henderson <rth@twiddle.net>, Chris Za
-
-nkel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, Guo Ren <guoren@kernel.org>, Borislav Petkov <bp@alien8.de>, Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: Waiman.Long@hp.com, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Heiko Carstens <hca@linux.ibm.com>, the arch/x86 maintainers <x86@kernel.org>, Uros Bizjak <ubizjak@gmail.com>, Russell King <linux@armlinux.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Will Deacon <will@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Thu, May 26, 2022 at 5:15 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> Do you know of a benchmark that shows it up? I tried a few things but
+> couldn't get lockref_get() to count for more than 1-2%.
 
+Heh. 1% for a small instruction sequence that is only handful of
+instructions and is used in just a couple of places counts as "very
+hot" for me.
 
-On 5/24/22 16:45, Peter Xu wrote:
-> I observed that for each of the shared file-backed page faults, we're very
-> likely to retry one more time for the 1st write fault upon no page.  It's
-> because we'll need to release the mmap lock for dirty rate limit purpose
-> with balance_dirty_pages_ratelimited() (in fault_dirty_shared_page()).
->
-> Then after that throttling we return VM_FAULT_RETRY.
->
-> We did that probably because VM_FAULT_RETRY is the only way we can return
-> to the fault handler at that time telling it we've released the mmap lock.
->
-> However that's not ideal because it's very likely the fault does not need
-> to be retried at all since the pgtable was well installed before the
-> throttling, so the next continuous fault (including taking mmap read lock,
-> walk the pgtable, etc.) could be in most cases unnecessary.
->
-> It's not only slowing down page faults for shared file-backed, but also add
-> more mmap lock contention which is in most cases not needed at all.
->
-> To observe this, one could try to write to some shmem page and look at
-> "pgfault" value in /proc/vmstat, then we should expect 2 counts for each
-> shmem write simply because we retried, and vm event "pgfault" will capture
-> that.
->
-> To make it more efficient, add a new VM_FAULT_COMPLETED return code just to
-> show that we've completed the whole fault and released the lock.  It's also
-> a hint that we should very possibly not need another fault immediately on
-> this page because we've just completed it.
->
-> This patch provides a ~12% perf boost on my aarch64 test VM with a simple
-> program sequentially dirtying 400MB shmem file being mmap()ed and these are
-> the time it needs:
->
->    Before: 650.980 ms (+-1.94%)
->    After:  569.396 ms (+-1.38%)
->
-> I believe it could help more than that.
->
-> We need some special care on GUP and the s390 pgfault handler (for gmap
-> code before returning from pgfault), the rest changes in the page fault
-> handlers should be relatively straightforward.
->
-> Another thing to mention is that mm_account_fault() does take this new
-> fault as a generic fault to be accounted, unlike VM_FAULT_RETRY.
->
-> I explicitly didn't touch hmm_vma_fault() and break_ksm() because they do
-> not handle VM_FAULT_RETRY even with existing code, so I'm literally keeping
-> them as-is.
->
-> Signed-off-by: Peter Xu<peterx@redhat.com>
-> ---
->
-> v3:
-> - Rebase to akpm/mm-unstable
-> - Copy arch maintainers
-> ---
->    arch/arc/mm/fault.c           |  4 ++++
+I assume you did the natural thing: threaded pathname lookup (with
+paths being of the longer variety to not be dominated by system call
+etc costs).
 
-Acked-by: Vineet Gupta <vgupta@kernel.org>
-
-Thx,
--Vineet
+               Linus
