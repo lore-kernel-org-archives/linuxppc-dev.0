@@ -4,49 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E08BC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 May 2022 01:41:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65FDCC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 May 2022 07:05:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L8SG24GHNz3c8n
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 May 2022 11:41:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L8bRm0RT9z3cBV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 May 2022 17:05:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 957 seconds by postgrey-1.36 at boromir; Fri, 27 May 2022 17:05:16 AEST
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L8SFY1Rfdz306F
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2022 11:41:16 +1000 (AEST)
-Received: from kwepemi500017.china.huawei.com (unknown [172.30.72.54])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4L8SBx4QsyzgYPc;
-	Fri, 27 May 2022 09:39:05 +0800 (CST)
-Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- kwepemi500017.china.huawei.com (7.221.188.110) with Microsoft SMTP Server
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L8bRJ0QjRz2yn2
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2022 17:05:15 +1000 (AEST)
+Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.55])
+	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4L8b4Z3QVBzDqT6;
+	Fri, 27 May 2022 14:49:02 +0800 (CST)
+Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
+ dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Fri, 27 May 2022 09:40:38 +0800
-Received: from [10.174.179.234] (10.174.179.234) by
- kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Fri, 27 May 2022 09:40:36 +0800
-Message-ID: <b992e7ab-b168-672c-128d-fbe5684a3855@huawei.com>
-Date: Fri, 27 May 2022 09:40:36 +0800
+ 15.1.2375.24; Fri, 27 May 2022 14:49:08 +0800
+Received: from [127.0.0.1] (10.67.108.67) by dggpemm500013.china.huawei.com
+ (7.185.36.172) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Fri, 27 May
+ 2022 14:49:08 +0800
+Message-ID: <fd69f464-4cc9-859e-d38d-bda85e6b33a6@huawei.com>
+Date: Fri, 27 May 2022 14:49:03 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
-Subject: Re: [PATCH -next v4 3/7] arm64: add support for machine check error
- safe
-To: Mark Rutland <mark.rutland@arm.com>
-References: <20220420030418.3189040-1-tongtiangen@huawei.com>
- <20220420030418.3189040-4-tongtiangen@huawei.com> <Yn54mA7KnlAs1dER@lakrids>
- <46e5954c-a9a8-f4a8-07cc-de42e2753051@huawei.com>
- <Yo3pP/Y+6HHuVBns@FVFF77S0Q05N>
- <87bdb1c6-5803-d9c0-9208-432027ae1d8b@huawei.com>
- <Yo9NX8BvQQXryHDV@FVFF77S0Q05N>
-From: Tong Tiangen <tongtiangen@huawei.com>
-In-Reply-To: <Yo9NX8BvQQXryHDV@FVFF77S0Q05N>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+ Thunderbird/91.7.0
+Subject: Re: [PATCH v4] locking/csd_lock: change csdlock_debug from
+ early_param to __setup
+Content-Language: en-US
+To: <paulmck@kernel.org>
+References: <20220510094639.106661-1-chenzhongjin@huawei.com>
+ <9b3e61b8-ecab-08ff-a3b6-83d6862ead77@huawei.com>
+ <20220518011101.GK1790663@paulmck-ThinkPad-P17-Gen-1>
+From: Chen Zhongjin <chenzhongjin@huawei.com>
+In-Reply-To: <20220518011101.GK1790663@paulmck-ThinkPad-P17-Gen-1>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.174.179.234]
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- kwepemm600017.china.huawei.com (7.193.23.234)
+X-Originating-IP: [10.67.108.67]
+X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
+ dggpemm500013.china.huawei.com (7.185.36.172)
 X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -59,114 +58,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>, Guohanjun <guohanjun@huawei.com>, Will Deacon <will@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Ingo
- Molnar <mingo@redhat.com>, Catalin
- Marinas <catalin.marinas@arm.com>, Xie XiuQi <xiexiuqi@huawei.com>, Borislav Petkov <bp@alien8.de>, Alexander
- Viro <viro@zeniv.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org, James Morse <james.morse@arm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, jgross@suse.com, gor@linux.ibm.com, peterz@infradead.org, gregkh@linuxfoundation.org, rdunlap@infradead.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, namit@vmware.com, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi,
 
-
-在 2022/5/26 17:50, Mark Rutland 写道:
-> On Thu, May 26, 2022 at 11:36:41AM +0800, Tong Tiangen wrote:
+On 2022/5/18 9:11, Paul E. McKenney wrote:
+> On Tue, May 17, 2022 at 11:22:04AM +0800, Chen Zhongjin wrote:
+>> On 2022/5/10 17:46, Chen Zhongjin wrote:
+>>> csdlock_debug uses early_param and static_branch_enable() to enable
+>>> csd_lock_wait feature, which triggers a panic on arm64 with config:
+>>> CONFIG_SPARSEMEM=y
+>>> CONFIG_SPARSEMEM_VMEMMAP=n
+>>>
+>>> With CONFIG_SPARSEMEM_VMEMMAP=n, __nr_to_section is called in
+>>> static_key_enable() and returns NULL which makes NULL dereference
+>>> because mem_section is initialized in sparse_init() which is later
+>>> than parse_early_param() stage.
+>>>
+>>> For powerpc this is also broken, because early_param stage is
+>>> earlier than jump_label_init() so static_key_enable won't work.
+>>> powerpc throws an warning: "static key 'xxx' used before call
+>>> to jump_label_init()".
+>>>
+>>> Thus, early_param is too early for csd_lock_wait to run
+>>> static_branch_enable(), so changes it to __setup to fix these.
+>>>
+>>> Fixes: 8d0968cc6b8f ("locking/csd_lock: Add boot parameter for controlling CSD lock debugging")
+>>> Cc: stable@vger.kernel.org
+>>> Reported-by: Chen jingwen <chenjingwen6@huawei.com>
+>>> Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
+>>> ---
+>>> Change v3 -> v4:
+>>> Fix title and description because this fix is also applied
+>>> to powerpc.
+>>> For more detailed arm64 bug report see:
+>>> https://lore.kernel.org/linux-arm-kernel/e8715911-f835-059d-27f8-cc5f5ad30a07@huawei.com/t/
+>>>
+>>> Change v2 -> v3:
+>>> Add module name in title
+>>>
+>>> Change v1 -> v2:
+>>> Fix return 1 for __setup
+>>> ---
+>>>  kernel/smp.c | 4 ++--
+>>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/kernel/smp.c b/kernel/smp.c
+>>> index 65a630f62363..381eb15cd28f 100644
+>>> --- a/kernel/smp.c
+>>> +++ b/kernel/smp.c
+>>> @@ -174,9 +174,9 @@ static int __init csdlock_debug(char *str)
+>>>  	if (val)
+>>>  		static_branch_enable(&csdlock_debug_enabled);
+>>>  
+>>> -	return 0;
+>>> +	return 1;
+>>>  }
+>>> -early_param("csdlock_debug", csdlock_debug);
+>>> +__setup("csdlock_debug=", csdlock_debug);
+>>>  
+>>>  static DEFINE_PER_CPU(call_single_data_t *, cur_csd);
+>>>  static DEFINE_PER_CPU(smp_call_func_t, cur_csd_func);
 >>
->>
->> 在 2022/5/25 16:30, Mark Rutland 写道:
->>> On Thu, May 19, 2022 at 02:29:54PM +0800, Tong Tiangen wrote:
->>>>
->>>>
->>>> 在 2022/5/13 23:26, Mark Rutland 写道:
->>>>> On Wed, Apr 20, 2022 at 03:04:14AM +0000, Tong Tiangen wrote:
->>>>>> During the processing of arm64 kernel hardware memory errors(do_sea()), if
->>>>>> the errors is consumed in the kernel, the current processing is panic.
->>>>>> However, it is not optimal.
->>>>>>
->>>>>> Take uaccess for example, if the uaccess operation fails due to memory
->>>>>> error, only the user process will be affected, kill the user process
->>>>>> and isolate the user page with hardware memory errors is a better choice.
->>>>>
->>>>> Conceptually, I'm fine with the idea of constraining what we do for a
->>>>> true uaccess, but I don't like the implementation of this at all, and I
->>>>> think we first need to clean up the arm64 extable usage to clearly
->>>>> distinguish a uaccess from another access.
->>>>
->>>> OK,using EX_TYPE_UACCESS and this extable type could be recover, this is
->>>> more reasonable.
->>>
->>> Great.
->>>
->>>> For EX_TYPE_UACCESS_ERR_ZERO, today we use it for kernel accesses in a
->>>> couple of cases, such as
->>>> get_user/futex/__user_cache_maint()/__user_swpX_asm(),
->>>
->>> Those are all user accesses.
->>>
->>> However, __get_kernel_nofault() and __put_kernel_nofault() use
->>> EX_TYPE_UACCESS_ERR_ZERO by way of __{get,put}_mem_asm(), so we'd need to
->>> refactor that code to split the user/kernel cases higher up the callchain.
->>>
->>>> your suggestion is:
->>>> get_user continues to use EX_TYPE_UACCESS_ERR_ZERO and the other cases use
->>>> new type EX_TYPE_FIXUP_ERR_ZERO?
->>>
->>> Yes, that's the rough shape. We could make the latter EX_TYPE_KACCESS_ERR_ZERO
->>> to be clearly analogous to EX_TYPE_UACCESS_ERR_ZERO, and with that I susepct we
->>> could remove EX_TYPE_FIXUP.
->>>
->>> Thanks,
->>> Mark.
->> According to your suggestion, i think the definition is like this:
->>
->> #define EX_TYPE_NONE                    0
->> #define EX_TYPE_FIXUP                   1    --> delete
->> #define EX_TYPE_BPF                     2
->> #define EX_TYPE_UACCESS_ERR_ZERO        3
->> #define EX_TYPE_LOAD_UNALIGNED_ZEROPAD  4
->> #define EX_TYPE_UACCESS		        xx   --> add
->> #define EX_TYPE_KACCESS_ERR_ZERO        xx   --> add
->> [The value defined by the macro here is temporary]
+>> Ping for review. Thanks！
 > 
-> Almost; you don't need to add EX_TYPE_UACCESS here, as you can use
-> EX_TYPE_UACCESS_ERR_ZERO for that.
-> 
-> We already have:
-> 
-> | #define _ASM_EXTABLE_UACCESS_ERR(insn, fixup, err)		\
-> |         _ASM_EXTABLE_UACCESS_ERR_ZERO(insn, fixup, err, wzr)
-> 
-> ... and we can add:
-> 
-> | #define _ASM_EXTABLE_UACCESS(insn, fixup)			\
-> |         _ASM_EXTABLE_UACCESS_ERR_ZERO(insn, fixup, wzr, wzr)
-> 
-> 
-> ... and maybe we should use 'xzr' rather than 'wzr' for clarity.
-> 
->> There are two points to modify:
->>
->> 1、_get_kernel_nofault() and __put_kernel_nofault()  using
->> EX_TYPE_KACCESS_ERR_ZERO, Other positions using EX_TYPE_UACCESS_ERR_ZERO
->> keep unchanged.
-> 
-> That sounds right to me. This will require refactoring __raw_{get,put}_mem()
-> and __{get,put}_mem_asm().
-> 
->> 2、delete EX_TYPE_FIXUP.
->>
->> There is no doubt about others. As for EX_TYPE_FIXUP, I think it needs to be
->> retained, _cond_extable(EX_TYPE_FIXUP) is still in use in assembler.h.
-> 
-> We use _cond_extable for cache maintenance uaccesses, so those should be moved
-> over to to EX_TYPE_UACCESS_ERR_ZERO. We can rename _cond_extable to
-> _cond_uaccess_extable for clarity.
-> 
-> That will require restructuring asm-extable.h a bit. If that turns out to be
-> painful I'm happy to take a look.
-> 
-> Thanks,
-> Mark.
-
-OK, I'll do it these days, thanks a lot.
-
+> I have pulled it into -rcu for testing and further review.  It might
+> well need to go through some other path, though.
+>> 								Thanx, Paul
 > .
+
+So did it have any result? Do we have any idea to fix that except delaying the
+set timing? I guess that maybe not using static_branch can work for this, but it
+still needs to be evaluated for performance influence of not enabled situation.
+
+Best,
+Chen
+
