@@ -4,89 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9638FC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 May 2022 09:37:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87023C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 May 2022 09:52:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L8fqL4TTfz3c8M
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 May 2022 19:37:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L8g8b4zhGz3c8c
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 May 2022 19:52:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M2/yJLI3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=FWKNkvb6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::22f; helo=mail-lj1-x22f.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M2/yJLI3;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=FWKNkvb6;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-x22f.google.com (mail-lj1-x22f.google.com [IPv6:2a00:1450:4864:20::22f])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L8fpV1VWRz2yxS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2022 19:37:05 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24R8wtBu000420;
-	Fri, 27 May 2022 09:36:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- in-reply-to; s=pp1; bh=/3yhtcLV7lGw1O774Uj3YB+h1YJJQMkZuXgBVStyG1I=;
- b=M2/yJLI3eFZtBs1FuFgCL5WalrJ0IGN7srYzhcEtEVvAAFwudph3NKOEmhxEO2geNBEz
- x1ekL6rwU72zQ4ANWO8Q34mM7oKrlECb3T6PFMzb3efDP0yEcRB5EW71mkIEadr/sVIg
- EkZK01+lspZdCcQdnsC9C3LAHlw7O+iYMjEr8l5icRGvPLg7hqAxZgweWo0qn4MSEX7G
- q+AKz8O1n1DgYALF8AhMse09pqelh3YyeVd+nNE/QFrcYLYbIriEfNl3duLUzGvj753B
- 8PLpr51T6m6g67/zMdINnIQ3kM0PCdQ1wRTZXQljDj0a7yZ2GQ42Fo38+E7uEBp59/mF /w== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3gaum30my7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 May 2022 09:36:16 +0000
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 24R9WHZ2028821;
-	Fri, 27 May 2022 09:36:15 GMT
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3gaum30mxh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 May 2022 09:36:15 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 24R9CccZ005327;
-	Fri, 27 May 2022 09:36:13 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
-	by ppma03ams.nl.ibm.com with ESMTP id 3g93ux3r7e-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 May 2022 09:36:12 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
-	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 24R9aAB617236406
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 27 May 2022 09:36:10 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 91E93A4054;
-	Fri, 27 May 2022 09:36:10 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F35E0A405C;
-	Fri, 27 May 2022 09:36:09 +0000 (GMT)
-Received: from osiris (unknown [9.145.57.114])
-	by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
-	Fri, 27 May 2022 09:36:09 +0000 (GMT)
-Date: Fri, 27 May 2022 11:36:08 +0200
-From: Heiko Carstens <hca@linux.ibm.com>
-To: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH 1/2] locking/lockref: Use try_cmpxchg64 in CMPXCHG_LOOP
- macro
-Message-ID: <YpCbiBCx1o38uhhX@osiris>
-References: <CAHk-=wh1XeaxWXG5QziGA4ds918UnW1hO924kusgVB-wGj+9Og@mail.gmail.com>
- <871qwgmqws.fsf@mpe.ellerman.id.au>
- <Yo91omfDZtTgXhyn@FVFF77S0Q05N.cambridge.arm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L8d7056WVz2yhp
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2022 18:21:15 +1000 (AEST)
+Received: by mail-lj1-x22f.google.com with SMTP id m11so4198438ljc.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2022 01:21:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=1bhxU9R3etbe0aMg7Elh3OdIVGpBwQKqRBhXNWuSOSc=;
+        b=FWKNkvb63EkAcAUlzXUvM8I2I69XfNve9rJraEbZH5uCSgEGev1qFT2VW9fTOop6WR
+         hZE2bZ7wwWB5FHkfLa67JVv0Rej1wO9lL8YuB04PA+ZFXU244nVt2GBGKWnbOUY/UdQz
+         zEfyuqMiSYM9Gm4cV5OUw1a1uz1yOv90r9y6Td+00vWXYGMch6E2S4EQoMy6tgg8RGUN
+         r7Q7OdcCtMmDyK2sVn5xOHJoixoMOpdxmorbcF87ECDDedQV4PKKoHu0Qio/5Vk8eDcQ
+         KJCq6ZOm11FBwKyMNmOd36Bf+q2lOfjhV2ed9FohDvsbTP2bOiNjOMBwwUL3IMJ01w4v
+         FKMw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=1bhxU9R3etbe0aMg7Elh3OdIVGpBwQKqRBhXNWuSOSc=;
+        b=NEqQavTD7a4SzYMR+fVc/w62qq6vXOdXO1//pfBkq+vX9impBaimHNkX08dj4eeyq/
+         V9d/pKdDwQckfxDmmA6u6WL2j32VRXCZ4oRm58MxpGhJbdckZ6Jp7Aszg0s6WOCRnQ+D
+         xMlwlFBQ597fR/64Hbfp1oUa5Jww9oBizgZuNbSNjkSOrGGweUYxeqzhVw4wFPGIqnA0
+         Qp99B4F4ISG+iY7DkYeefzXYo9yhmhGplztiAid8UiHPis3IWm/paCfCxZYEDYwfP/gz
+         2PS142/+2QLvFPo3iVmhnb8qkVvdkhdSRYE8iTD15VmU6S68ueNLm9bNeG6wvzhtbUVB
+         jIRg==
+X-Gm-Message-State: AOAM532Msyb+lWbTIqWO2BUZDy0igDVUxANZ5nFAVskh102NfDRfJyQM
+	qaFPQY1l8AIpodVIM4f2UfFHVvsCm51rneMSrPo=
+X-Google-Smtp-Source: ABdhPJyTHUXDwANLG6wBs8U8ygZ7Gn50fbaiJBAj1wFOlt4Q39yhMaTfZfyh6lxacwcUGmL1cS/NWxWO+5UgrcZKuEA=
+X-Received: by 2002:a2e:a78f:0:b0:253:e71f:69a8 with SMTP id
+ c15-20020a2ea78f000000b00253e71f69a8mr15839350ljf.432.1653639668071; Fri, 27
+ May 2022 01:21:08 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Yo91omfDZtTgXhyn@FVFF77S0Q05N.cambridge.arm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: IInokStyvhEzGjfG9nWgkGvGO89yAxRN
-X-Proofpoint-ORIG-GUID: ZMfPYhuHlVUkExUVG7NJSGyAZDOiDEYf
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.486,FMLib:17.11.64.514
- definitions=2022-05-27_03,2022-05-25_02,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- lowpriorityscore=0 mlxscore=0 adultscore=0 phishscore=0 clxscore=1011
- bulkscore=0 mlxlogscore=674 spamscore=0 impostorscore=0 suspectscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2204290000 definitions=main-2205270044
+References: <20220526011958.139391-1-zhangqilong3@huawei.com>
+In-Reply-To: <20220526011958.139391-1-zhangqilong3@huawei.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Fri, 27 May 2022 16:20:56 +0800
+Message-ID: <CAA+D8AOD=u0Q7Npy0z=r02CyM9qVu+-vbqTD2nGfO95K_t-xFA@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_xcvr:Fix unbalanced pm_runtime_enable in fsl_xcvr_probe
+To: zhangqilong <zhangqilong3@huawei.com>
+Content-Type: multipart/alternative; boundary="0000000000000081c905dff9fd86"
+X-Mailman-Approved-At: Fri, 27 May 2022 19:52:13 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,42 +73,112 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Waiman.Long@hp.com, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Will Deacon <will@kernel.org>, Peter Zijlstra <peterz@infradead.org>, the arch/x86 maintainers <x86@kernel.org>, Uros Bizjak <ubizjak@gmail.com>, Russell King <linux@armlinux.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org, Catalin Marinas <catalin.marinas@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: alsa-devel@alsa-project.org, Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>, Fabio Estevam <festevam@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 26, 2022 at 01:42:35PM +0100, Mark Rutland wrote:
-> On Thu, May 26, 2022 at 10:14:59PM +1000, Michael Ellerman wrote:
-> > Linus Torvalds <torvalds@linux-foundation.org> writes:
-> > > On Wed, May 25, 2022 at 7:40 AM Uros Bizjak <ubizjak@gmail.com> wrote:
-> > >>
-> > >> Use try_cmpxchg64 instead of cmpxchg64 in CMPXCHG_LOOP macro.
-> > >> x86 CMPXCHG instruction returns success in ZF flag, so this
-> > >> change saves a compare after cmpxchg (and related move instruction
-> > >> in front of cmpxchg). The main loop of lockref_get improves from:
-> > >
-> > > Ack on this one regardless of the 32-bit x86 question.
-> > >
-> > > HOWEVER.
-> > >
-> > > I'd like other architectures to pipe up too, because I think right now
-> > > x86 is the only one that implements that "arch_try_cmpxchg()" family
-> > > of operations natively, and I think the generic fallback for when it
-> > > is missing might be kind of nasty.
-> > >
-> > > Maybe it ends up generating ok code, but it's also possible that it
-> > > just didn't matter when it was only used in one place in the
-> > > scheduler.
-> > 
-> > This patch seems to generate slightly *better* code on powerpc.
-> > 
-> > I see one register-to-register move that gets shifted slightly later, so
-> > that it's skipped on the path that returns directly via the SUCCESS
-> > case.
-> 
-> FWIW, I see the same on arm64; a register-to-register move gets moved out of
-> the success path. That changes the register allocation, and resulting in one
-> fewer move, but otherwise the code generation is the same.
+--0000000000000081c905dff9fd86
+Content-Type: text/plain; charset="UTF-8"
 
-Just for the records: s390 code generation changes the same like on
-powerpc; so looks good.
+On Thu, May 26, 2022 at 9:18 AM zhangqilong <zhangqilong3@huawei.com> wrote:
+
+> Add missing pm_runtime_disable() when probe error out. It could
+> avoid pm_runtime implementation complains when removing and probing
+> again the driver.
+>
+> Fix:c590fa80b3928 ("ASoC: fsl_xcvr: register platform component before
+> registering cpu dai")
+> Signed-off-by: Zhang Qilong <zhangqilong3@huawei.com>
+> ---
+>  sound/soc/fsl/fsl_xcvr.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
+> index d0556c79fdb1..907435efe121 100644
+> --- a/sound/soc/fsl/fsl_xcvr.c
+> +++ b/sound/soc/fsl/fsl_xcvr.c
+> @@ -1228,6 +1228,7 @@ static int fsl_xcvr_probe(struct platform_device
+> *pdev)
+>          */
+>         ret = devm_snd_dmaengine_pcm_register(dev, NULL, 0);
+>         if (ret) {
+> +               pm_runtime_disable(dev);
+>                 dev_err(dev, "failed to pcm register\n");
+>                 return ret;
+>         }
+> @@ -1235,6 +1236,7 @@ static int fsl_xcvr_probe(struct platform_device
+> *pdev)
+>         ret = devm_snd_soc_register_component(dev, &fsl_xcvr_comp,
+>                                               &fsl_xcvr_dai, 1);
+>         if (ret) {
+> +               pm_runtime_disable(dev);
+>                 dev_err(dev, "failed to register component %s\n",
+>                         fsl_xcvr_comp.name);
+>         }
+>
+> Could you please also help add remove() function and add
+pm_runtime_disable()
+in the remove()?
+Thanks.
+
+best regards
+wang shengjiu
+
+--0000000000000081c905dff9fd86
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
+<div dir=3D"ltr" class=3D"gmail_attr">On Thu, May 26, 2022 at 9:18 AM zhang=
+qilong &lt;<a href=3D"mailto:zhangqilong3@huawei.com">zhangqilong3@huawei.c=
+om</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=3D"margi=
+n:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex=
+">Add missing pm_runtime_disable() when probe error out. It could<br>
+avoid pm_runtime implementation complains when removing and probing<br>
+again the driver.<br>
+<br>
+Fix:c590fa80b3928 (&quot;ASoC: fsl_xcvr: register platform component before=
+ registering cpu dai&quot;)<br>
+Signed-off-by: Zhang Qilong &lt;<a href=3D"mailto:zhangqilong3@huawei.com" =
+target=3D"_blank">zhangqilong3@huawei.com</a>&gt;<br>
+---<br>
+=C2=A0sound/soc/fsl/fsl_xcvr.c | 2 ++<br>
+=C2=A01 file changed, 2 insertions(+)<br>
+<br>
+diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c<br>
+index d0556c79fdb1..907435efe121 100644<br>
+--- a/sound/soc/fsl/fsl_xcvr.c<br>
++++ b/sound/soc/fsl/fsl_xcvr.c<br>
+@@ -1228,6 +1228,7 @@ static int fsl_xcvr_probe(struct platform_device *pde=
+v)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0*/<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 ret =3D devm_snd_dmaengine_pcm_register(dev, NU=
+LL, 0);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 if (ret) {<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0pm_runtime_disable(=
+dev);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(dev, &quot;=
+failed to pcm register\n&quot;);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return ret;<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
+@@ -1235,6 +1236,7 @@ static int fsl_xcvr_probe(struct platform_device *pde=
+v)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 ret =3D devm_snd_soc_register_component(dev, &a=
+mp;fsl_xcvr_comp,<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 &amp;fsl_xcvr_dai, 1);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 if (ret) {<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0pm_runtime_disable(=
+dev);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(dev, &quot;=
+failed to register component %s\n&quot;,<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 <a href=3D"http://fsl_xcvr_comp.name" rel=3D"noreferrer" target=
+=3D"_blank">fsl_xcvr_comp.name</a>);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br><br></blockquote><div>Could you please als=
+o help add remove() function and add pm_runtime_disable()</div><div>in the =
+remove()?</div><div>Thanks.</div><div><br></div><div>best regards</div><div=
+>wang shengjiu</div></div></div>
+
+--0000000000000081c905dff9fd86--
