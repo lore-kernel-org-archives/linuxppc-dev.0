@@ -4,47 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6553CC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 18:00:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90060C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 18:51:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L9Tx83MZfz3bm3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 May 2022 04:00:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L9W3650Kpz3bqg
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 May 2022 04:50:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qajevGr0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Irsku3R6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qajevGr0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Irsku3R6;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9TwM1ZMQz3bkG
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 May 2022 04:00:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9W2J1rsXz3bk4
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 May 2022 04:50:16 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 4519F60A3C
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 18:00:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id A5481C34113
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 17:59:59 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id AA46E60E8D
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 18:50:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 16D26C34100
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 18:50:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1653760799;
-	bh=384i0G6StZ52ihgkd4pLC6/F5VdWa9pm3iaArCn3giw=;
+	s=k20201202; t=1653763813;
+	bh=w5S6+3n9UCFdsdmPFHj/szHr2oMxQob6Q7qqQ2u40pw=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=qajevGr0WqKueUaChBZTA0A6Qt66TMEkJLzgvHdDeSgfYFie963uSZlLGCQCtwyX7
-	 QlW5WH06dJ0SBzRJRYKW9nPxSJ68PPqgx9HV6ZRxPdX0Vv8vPP0UfPRCabJxoy/Rp9
-	 /k6M0g2Kpe3ACvA2F8Agq+JWGRxxYyXxHNOfuGxLlPk/n3F/suOhB70bkjWB9KxAjD
-	 8t5nzhrmQA0LqxzgwpRYfZqSet9FxVQnddVOQMeIb1A1AwUqez0uJVZwC+EaB4yct/
-	 fulRk78+bjPNusNkJ76BVT7EV6eIpRnvCqcG05b960zWO6Gg2hpLQU4fQ12VBjQeXJ
-	 PB1AQnkyRrFYQ==
+	b=Irsku3R6l+Ae672VFE7uscRf9wtgcjEtm1VXYYppQr1+tFX1bSv+e7rIA25yj4CH8
+	 mQXkLQ011F+tfQtDUaOmKChAskNw1y44hWx5sB024QujJGgP09JScG2pHnxhpY5x16
+	 b30fSDfkY2puaOwslr+4VrCqL3xtsd9bBA+MzQEogPu2OYFse4LjCRXI71uAc1woY2
+	 Kwe16zb8ROlPmtIMdBRs/1FUblrHCHFX2tjnz8gl7a6pKUP7eEiygzsCxOhB9CkLpB
+	 trM9iOLHT1ZYVEG1wEjHZWsEzglK7+TcPsbpHkISc8UdEsZpKX8HOjK6ZucaQateMZ
+	 ebuHIISBLKRLQ==
 Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 8B8F2C05FD2; Sat, 28 May 2022 17:59:59 +0000 (UTC)
+	id F1234C05FD4; Sat, 28 May 2022 18:50:12 +0000 (UTC)
 From: bugzilla-daemon@kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 216041] Stack overflow at boot (do_IRQ: stack overflow: 1984)
  on a PowerMac G4 DP, KASAN debug build
-Date: Sat, 28 May 2022 17:59:59 +0000
+Date: Sat, 28 May 2022 18:50:12 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -53,14 +53,14 @@ X-Bugzilla-Component: PPC-32
 X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
-X-Bugzilla-Who: christophe.leroy@csgroup.eu
+X-Bugzilla-Who: arnd@arndb.de
 X-Bugzilla-Status: NEW
 X-Bugzilla-Resolution: 
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: cc
-Message-ID: <bug-216041-206035-kzx69vWV7M@https.bugzilla.kernel.org/>
+Message-ID: <bug-216041-206035-VofFoHiJIj@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-216041-206035@https.bugzilla.kernel.org/>
 References: <bug-216041-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -84,19 +84,37 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D216041
 
-Christophe Leroy (christophe.leroy@csgroup.eu) changed:
+Arnd Bergmann (arnd@arndb.de) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |christophe.leroy@csgroup.eu
+                 CC|                            |arnd@arndb.de
 
---- Comment #3 from Christophe Leroy (christophe.leroy@csgroup.eu) ---
-I can't see any issue, other than your CONFIG_THREAD_SHIFT is set to 13.
+--- Comment #4 from Arnd Bergmann (arnd@arndb.de) ---
+Setting it higher is probably a good idea, but there really isn't a safe li=
+mit
+with KASAN, at least if KASAN_STACK is active, running with KASAN always ha=
+s a
+risk of running into stack overflow issues.
 
-It should be 14 by default, see
-https://elixir.bootlin.com/linux/v5.18/source/arch/powerpc/Kconfig#L769
+One thing that sticks out is that there is an interrupt on the same stack as
+the task, in=20
 
-Is there any reason why you set it to 13 ?
+[eaa1c800] [c0009258] do_IRQ+0x20/0x34
+[eaa1c820] [c00045b4] HardwareInterrupt_virt+0x108/0x10c
+[eaa1c920] [c0c59b2c] __schedule+0x3f0/0x9dc
+[eaa1c9b0] [c0c5a18c] schedule+0x74/0x13c
+
+
+It looks like on ppc32, as of 547db12fd8a0 ("powerpc/32: Use vmapped stacks=
+ for
+interrupts"), you have either VMAP_STACK (to detect stack overflows) or IRQ
+stacks (to make them less likely). I think you really want both instead, and
+allocate the  IRQ stacks from vmalloc space as well.
+
+The ext4 read path is a bit wasteful with KASAN enabled, using 1776 bytes f=
+rom
+ext4_lookup to ext4_read_bh, but not excessively so.
 
 --=20
 You may reply to this email to add a comment.
