@@ -4,28 +4,28 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A409CC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 06:32:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7711BC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 06:32:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L9Bfk1XFFz3c8W
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 16:32:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L9Bg904NDz3bwk
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 16:32:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9BcD3QNgz3cCp
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 16:30:04 +1000 (AEST)
-Received: from kwepemi500004.china.huawei.com (unknown [172.30.72.53])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4L9BZf6BgtzjX87;
-	Sat, 28 May 2022 14:28:42 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9BcF2JXVz3bqd
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 16:30:05 +1000 (AEST)
+Received: from kwepemi500010.china.huawei.com (unknown [172.30.72.55])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4L9BZb6mHvzjX5R;
+	Sat, 28 May 2022 14:28:39 +0800 (CST)
 Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- kwepemi500004.china.huawei.com (7.221.188.17) with Microsoft SMTP Server
+ kwepemi500010.china.huawei.com (7.221.188.191) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Sat, 28 May 2022 14:29:28 +0800
+ 15.1.2375.24; Sat, 28 May 2022 14:29:25 +0800
 Received: from localhost.localdomain (10.175.112.125) by
  kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Sat, 28 May 2022 14:29:27 +0800
+ 15.1.2375.24; Sat, 28 May 2022 14:29:24 +0800
 From: Tong Tiangen <tongtiangen@huawei.com>
 To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
 	Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
@@ -36,12 +36,10 @@ To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
 	<benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
 	<x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -next v5 2/8] arm64: extable: make uaaccess helper use extable type EX_TYPE_UACCESS_ERR_ZERO
-Date: Sat, 28 May 2022 06:50:50 +0000
-Message-ID: <20220528065056.1034168-3-tongtiangen@huawei.com>
+Subject: [PATCH -next v5 0/8]arm64: add machine check safe support
+Date: Sat, 28 May 2022 06:50:48 +0000
+Message-ID: <20220528065056.1034168-1-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220528065056.1034168-1-tongtiangen@huawei.com>
-References: <20220528065056.1034168-1-tongtiangen@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -64,78 +62,105 @@ Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Xie XiuQi <xiexiuqi@huawei.com>, l
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currnetly, the extable type used by __arch_copy_from/to_user() is
-EX_TYPE_FIXUP. In fact, It is more clearly to use meaningful
-EX_TYPE_UACCESS_*.
+With the increase of memory capacity and density, the probability of
+memory error increases. The increasing size and density of server RAM
+in the data center and cloud have shown increased uncorrectable memory
+errors.
 
-Suggested-by: Mark Rutland <mark.rutland@arm.com>
-Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
----
- arch/arm64/include/asm/asm-extable.h |  8 ++++++++
- arch/arm64/include/asm/asm-uaccess.h | 12 ++++++------
- 2 files changed, 14 insertions(+), 6 deletions(-)
+Currently, the kernel has a mechanism to recover from hardware memory
+errors. This patchset provides an new recovery mechanism.
 
-diff --git a/arch/arm64/include/asm/asm-extable.h b/arch/arm64/include/asm/asm-extable.h
-index 56ebe183e78b..9c94ac1f082c 100644
---- a/arch/arm64/include/asm/asm-extable.h
-+++ b/arch/arm64/include/asm/asm-extable.h
-@@ -28,6 +28,14 @@
- 	__ASM_EXTABLE_RAW(\insn, \fixup, EX_TYPE_FIXUP, 0)
- 	.endm
- 
-+/*
-+ * Create an exception table entry for uaccess `insn`, which will branch to `fixup`
-+ * when an unhandled fault is taken.
-+ * ex->data = ~0 means both reg_err and reg_zero is set to wzr(x31).
-+ */
-+	.macro          _asm_extable_uaccess, insn, fixup
-+	__ASM_EXTABLE_RAW(\insn, \fixup, EX_TYPE_UACCESS_ERR_ZERO, ~0)
-+	.endm
- /*
-  * Create an exception table entry for `insn` if `fixup` is provided. Otherwise
-  * do nothing.
-diff --git a/arch/arm64/include/asm/asm-uaccess.h b/arch/arm64/include/asm/asm-uaccess.h
-index 0557af834e03..75b211c98dea 100644
---- a/arch/arm64/include/asm/asm-uaccess.h
-+++ b/arch/arm64/include/asm/asm-uaccess.h
-@@ -61,7 +61,7 @@ alternative_else_nop_endif
- 
- #define USER(l, x...)				\
- 9999:	x;					\
--	_asm_extable	9999b, l
-+	_asm_extable_uaccess	9999b, l
- 
- /*
-  * Generate the assembly for LDTR/STTR with exception table entries.
-@@ -73,8 +73,8 @@ alternative_else_nop_endif
- 8889:		ldtr	\reg2, [\addr, #8];
- 		add	\addr, \addr, \post_inc;
- 
--		_asm_extable	8888b,\l;
--		_asm_extable	8889b,\l;
-+		_asm_extable_uaccess	8888b, \l;
-+		_asm_extable_uaccess	8889b, \l;
- 	.endm
- 
- 	.macro user_stp l, reg1, reg2, addr, post_inc
-@@ -82,14 +82,14 @@ alternative_else_nop_endif
- 8889:		sttr	\reg2, [\addr, #8];
- 		add	\addr, \addr, \post_inc;
- 
--		_asm_extable	8888b,\l;
--		_asm_extable	8889b,\l;
-+		_asm_extable_uaccess	8888b,\l;
-+		_asm_extable_uaccess	8889b,\l;
- 	.endm
- 
- 	.macro user_ldst l, inst, reg, addr, post_inc
- 8888:		\inst		\reg, [\addr];
- 		add		\addr, \addr, \post_inc;
- 
--		_asm_extable	8888b,\l;
-+		_asm_extable_uaccess	8888b, \l;
- 	.endm
- #endif
+For arm64, the hardware memory error handling is do_sea() which divided
+into two cases:
+ 1. The user state consumed the memory errors, the solution is kill the
+    user process and isolate the error page.
+ 2. The kernel state consumed the memory errors, the solution is panic.
+
+For case 2, Undifferentiated panic maybe not the optimal choice, it can be
+handled better, in some scenarios, we can avoid panic, such as uaccess, if the
+uaccess fails due to memory error, only the user process will be affected,
+kill the user process and isolate the user page with hardware memory errors
+is a better choice.
+
+This patchset can be divided into two parts:
+ 1. Patch 1~4    - do some restructuring to arm64 extable.
+ 2. Patch 5~8    - arm64 add support for machine check safe framework,
+ then ,add two specific scenarios(uaccess/cow) to machine check safe.
+
+Since V4:
+ 1. According Michael's suggestion, add patch5.
+ 2. According Mark's suggestiog, do some restructuring to arm64
+ extable, then a new adaptation of machine check safe support is made based
+ on this.
+ 3. According Mark's suggestion, support machine check safe in do_mte() in
+ cow scene.
+ 4. In V4, two patches have been merged into -next, so V5 not send these
+ two patches.
+
+Since V3:
+ 1. According to Robin's suggestion, direct modify user_ldst and
+ user_ldp in asm-uaccess.h and modify mte.S.
+ 2. Add new macro USER_MC in asm-uaccess.h, used in copy_from_user.S
+ and copy_to_user.S.
+ 3. According to Robin's suggestion, using micro in copy_page_mc.S to
+ simplify code.
+ 4. According to KeFeng's suggestion, modify powerpc code in patch1.
+ 5. According to KeFeng's suggestion, modify mm/extable.c and some code
+ optimization.
+
+Since V2:
+ 1. According to Mark's suggestion, all uaccess can be recovered due to
+    memory error.
+ 2. Scenario pagecache reading is also supported as part of uaccess
+    (copy_to_user()) and duplication code problem is also solved. 
+    Thanks for Robin's suggestion.
+ 3. According Mark's suggestion, update commit message of patch 2/5.
+ 4. According Borisllav's suggestion, update commit message of patch 1/5.
+
+Since V1:
+ 1.Consistent with PPC/x86, Using CONFIG_ARCH_HAS_COPY_MC instead of
+   ARM64_UCE_KERNEL_RECOVERY.
+ 2.Add two new scenes, cow and pagecache reading.
+ 3.Fix two small bug(the first two patch).
+
+V1 in here:
+https://lore.kernel.org/lkml/20220323033705.3966643-1-tongtiangen@huawei.com/
+
+Tong Tiangen (8):
+  arm64: extable: add new extable type EX_TYPE_KACCESS_ERR_ZERO support
+  arm64: extable: make uaaccess helper use extable type
+    EX_TYPE_UACCESS_ERR_ZERO
+  arm64: extable: move _cond_extable to _cond_uaccess_extable
+  arm64: extable: cleanup redundant extable type EX_TYPE_FIXUP
+  Add generic fallback version of copy_mc_to_user()
+  arm64: add support for machine check error safe
+  arm64: add uaccess to machine check safe
+  arm64: add cow to machine check safe
+
+ arch/arm64/Kconfig                   |  1 +
+ arch/arm64/include/asm/asm-extable.h | 45 +++++++++----
+ arch/arm64/include/asm/asm-uaccess.h | 12 ++--
+ arch/arm64/include/asm/assembler.h   |  4 +-
+ arch/arm64/include/asm/extable.h     |  1 +
+ arch/arm64/include/asm/mte.h         |  4 ++
+ arch/arm64/include/asm/page.h        | 10 +++
+ arch/arm64/include/asm/uaccess.h     | 94 ++++++++++++++--------------
+ arch/arm64/lib/Makefile              |  2 +
+ arch/arm64/lib/copy_from_user.S      |  8 +--
+ arch/arm64/lib/copy_page_mc.S        | 82 ++++++++++++++++++++++++
+ arch/arm64/lib/copy_to_user.S        |  8 +--
+ arch/arm64/lib/mte.S                 | 19 ++++++
+ arch/arm64/mm/copypage.c             | 41 +++++++++---
+ arch/arm64/mm/extable.c              | 22 ++++++-
+ arch/arm64/mm/fault.c                | 27 +++++++-
+ arch/powerpc/include/asm/uaccess.h   |  1 +
+ arch/x86/include/asm/uaccess.h       |  1 +
+ include/linux/highmem.h              |  8 +++
+ include/linux/uaccess.h              |  9 +++
+ mm/memory.c                          |  2 +-
+ 21 files changed, 314 insertions(+), 87 deletions(-)
+ create mode 100644 arch/arm64/lib/copy_page_mc.S
+
 -- 
 2.25.1
 
