@@ -4,28 +4,28 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0BAEC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 06:33:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69B48C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 06:33:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L9Bgb2V7zz3fKH
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 16:32:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L9Bh173wCz3dPq
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 16:33:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9BcG5Q74z2xB1
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 16:30:06 +1000 (AEST)
-Received: from kwepemi500006.china.huawei.com (unknown [172.30.72.57])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4L9BZj5tX3zjX8d;
-	Sat, 28 May 2022 14:28:45 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9BcL0XNgz3cdF
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 16:30:10 +1000 (AEST)
+Received: from kwepemi500002.china.huawei.com (unknown [172.30.72.55])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4L9BYr1rk3zgY9h;
+	Sat, 28 May 2022 14:28:00 +0800 (CST)
 Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- kwepemi500006.china.huawei.com (7.221.188.68) with Microsoft SMTP Server
+ kwepemi500002.china.huawei.com (7.221.188.171) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Sat, 28 May 2022 14:29:31 +0800
+ 15.1.2375.24; Sat, 28 May 2022 14:29:34 +0800
 Received: from localhost.localdomain (10.175.112.125) by
  kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Sat, 28 May 2022 14:29:30 +0800
+ 15.1.2375.24; Sat, 28 May 2022 14:29:33 +0800
 From: Tong Tiangen <tongtiangen@huawei.com>
 To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
 	Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
@@ -36,9 +36,9 @@ To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
 	<benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
 	<x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -next v5 4/8] arm64: extable: cleanup redundant extable type EX_TYPE_FIXUP
-Date: Sat, 28 May 2022 06:50:52 +0000
-Message-ID: <20220528065056.1034168-5-tongtiangen@huawei.com>
+Subject: [PATCH -next v5 6/8] arm64: add support for machine check error safe
+Date: Sat, 28 May 2022 06:50:54 +0000
+Message-ID: <20220528065056.1034168-7-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220528065056.1034168-1-tongtiangen@huawei.com>
 References: <20220528065056.1034168-1-tongtiangen@huawei.com>
@@ -64,88 +64,126 @@ Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Xie XiuQi <xiexiuqi@huawei.com>, l
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, extable type EX_TYPE_FIXUP is no place to use, We can safely
-remove it.
+During the processing of arm64 kernel hardware memory errors(do_sea()), if
+the errors is consumed in the kernel, the current processing is panic.
+However, it is not optimal.
 
-Suggested-by: Mark Rutland <mark.rutland@arm.com>
+Take uaccess for example, if the uaccess operation fails due to memory
+error, only the user process will be affected, kill the user process
+and isolate the user page with hardware memory errors is a better choice.
+
+This patch only enable machine error check framework, it add exception
+fixup before kernel panic in do_sea() and only limit the consumption of
+hardware memory errors in kernel mode triggered by user mode processes.
+If fixup successful, panic can be avoided.
+
 Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
 ---
- arch/arm64/include/asm/asm-extable.h | 20 ++++----------------
- arch/arm64/mm/extable.c              |  9 ---------
- 2 files changed, 4 insertions(+), 25 deletions(-)
+ arch/arm64/Kconfig               |  1 +
+ arch/arm64/include/asm/extable.h |  1 +
+ arch/arm64/mm/extable.c          | 17 +++++++++++++++++
+ arch/arm64/mm/fault.c            | 27 ++++++++++++++++++++++++++-
+ 4 files changed, 45 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/include/asm/asm-extable.h b/arch/arm64/include/asm/asm-extable.h
-index d01bd94cc4c2..1f2974467273 100644
---- a/arch/arm64/include/asm/asm-extable.h
-+++ b/arch/arm64/include/asm/asm-extable.h
-@@ -3,11 +3,10 @@
- #define __ASM_ASM_EXTABLE_H
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index aaeb70358979..a3b12ff0cd7f 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -19,6 +19,7 @@ config ARM64
+ 	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if PGTABLE_LEVELS > 2
+ 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
+ 	select ARCH_HAS_CACHE_LINE_SIZE
++	select ARCH_HAS_COPY_MC if ACPI_APEI_GHES
+ 	select ARCH_HAS_CURRENT_STACK_POINTER
+ 	select ARCH_HAS_DEBUG_VIRTUAL
+ 	select ARCH_HAS_DEBUG_VM_PGTABLE
+diff --git a/arch/arm64/include/asm/extable.h b/arch/arm64/include/asm/extable.h
+index 72b0e71cc3de..f80ebd0addfd 100644
+--- a/arch/arm64/include/asm/extable.h
++++ b/arch/arm64/include/asm/extable.h
+@@ -46,4 +46,5 @@ bool ex_handler_bpf(const struct exception_table_entry *ex,
+ #endif /* !CONFIG_BPF_JIT */
  
- #define EX_TYPE_NONE			0
--#define EX_TYPE_FIXUP			1
--#define EX_TYPE_BPF			2
--#define EX_TYPE_UACCESS_ERR_ZERO	3
--#define EX_TYPE_LOAD_UNALIGNED_ZEROPAD	4
--#define EX_TYPE_KACCESS_ERR_ZERO	5
-+#define EX_TYPE_BPF			1
-+#define EX_TYPE_UACCESS_ERR_ZERO	2
-+#define EX_TYPE_LOAD_UNALIGNED_ZEROPAD	3
-+#define EX_TYPE_KACCESS_ERR_ZERO	4
- 
- #ifdef __ASSEMBLY__
- 
-@@ -20,14 +19,6 @@
- 	.short		(data);				\
- 	.popsection;
- 
--/*
-- * Create an exception table entry for `insn`, which will branch to `fixup`
-- * when an unhandled fault is taken.
-- */
--	.macro		_asm_extable, insn, fixup
--	__ASM_EXTABLE_RAW(\insn, \fixup, EX_TYPE_FIXUP, 0)
--	.endm
--
- /*
-  * Create an exception table entry for uaccess `insn`, which will branch to `fixup`
-  * when an unhandled fault is taken.
-@@ -62,9 +53,6 @@
- 	".short		(" data ")\n"			\
- 	".popsection\n"
- 
--#define _ASM_EXTABLE(insn, fixup) \
--	__ASM_EXTABLE_RAW(#insn, #fixup, __stringify(EX_TYPE_FIXUP), "0")
--
- #define EX_DATA_REG_ERR_SHIFT	0
- #define EX_DATA_REG_ERR		GENMASK(4, 0)
- #define EX_DATA_REG_ZERO_SHIFT	5
+ bool fixup_exception(struct pt_regs *regs);
++bool fixup_exception_mc(struct pt_regs *regs);
+ #endif
 diff --git a/arch/arm64/mm/extable.c b/arch/arm64/mm/extable.c
-index 056591e5ca80..228d681a8715 100644
+index 228d681a8715..c301dcf6335f 100644
 --- a/arch/arm64/mm/extable.c
 +++ b/arch/arm64/mm/extable.c
-@@ -16,13 +16,6 @@ get_ex_fixup(const struct exception_table_entry *ex)
- 	return ((unsigned long)&ex->fixup + ex->fixup);
+@@ -9,6 +9,7 @@
+ 
+ #include <asm/asm-extable.h>
+ #include <asm/ptrace.h>
++#include <asm/esr.h>
+ 
+ static inline unsigned long
+ get_ex_fixup(const struct exception_table_entry *ex)
+@@ -76,3 +77,19 @@ bool fixup_exception(struct pt_regs *regs)
+ 
+ 	BUG();
+ }
++
++bool fixup_exception_mc(struct pt_regs *regs)
++{
++	const struct exception_table_entry *ex;
++
++	ex = search_exception_tables(instruction_pointer(regs));
++	if (!ex)
++		return false;
++
++	/*
++	 * This is not complete, More Machine check safe extable type can
++	 * be processed here.
++	 */
++
++	return false;
++}
+diff --git a/arch/arm64/mm/fault.c b/arch/arm64/mm/fault.c
+index c5e11768e5c1..b262bd282a89 100644
+--- a/arch/arm64/mm/fault.c
++++ b/arch/arm64/mm/fault.c
+@@ -696,6 +696,29 @@ static int do_bad(unsigned long far, unsigned long esr, struct pt_regs *regs)
+ 	return 1; /* "fault" */
  }
  
--static bool ex_handler_fixup(const struct exception_table_entry *ex,
--			     struct pt_regs *regs)
--{
--	regs->pc = get_ex_fixup(ex);
--	return true;
--}
--
- static bool ex_handler_uaccess_err_zero(const struct exception_table_entry *ex,
- 					struct pt_regs *regs)
++static bool arm64_do_kernel_sea(unsigned long addr, unsigned int esr,
++				     struct pt_regs *regs, int sig, int code)
++{
++	if (!IS_ENABLED(CONFIG_ARCH_HAS_COPY_MC))
++		return false;
++
++	if (user_mode(regs) || !current->mm)
++		return false;
++
++	if (apei_claim_sea(regs) < 0)
++		return false;
++
++	if (!fixup_exception_mc(regs))
++		return false;
++
++	set_thread_esr(0, esr);
++
++	arm64_force_sig_fault(sig, code, addr,
++		"Uncorrected hardware memory error in kernel-access\n");
++
++	return true;
++}
++
+ static int do_sea(unsigned long far, unsigned long esr, struct pt_regs *regs)
  {
-@@ -72,8 +65,6 @@ bool fixup_exception(struct pt_regs *regs)
- 		return false;
+ 	const struct fault_info *inf;
+@@ -721,7 +744,9 @@ static int do_sea(unsigned long far, unsigned long esr, struct pt_regs *regs)
+ 		 */
+ 		siaddr  = untagged_addr(far);
+ 	}
+-	arm64_notify_die(inf->name, regs, inf->sig, inf->code, siaddr, esr);
++
++	if (!arm64_do_kernel_sea(siaddr, esr, regs, inf->sig, inf->code))
++		arm64_notify_die(inf->name, regs, inf->sig, inf->code, siaddr, esr);
  
- 	switch (ex->type) {
--	case EX_TYPE_FIXUP:
--		return ex_handler_fixup(ex, regs);
- 	case EX_TYPE_BPF:
- 		return ex_handler_bpf(ex, regs);
- 	case EX_TYPE_UACCESS_ERR_ZERO:
+ 	return 0;
+ }
 -- 
 2.25.1
 
