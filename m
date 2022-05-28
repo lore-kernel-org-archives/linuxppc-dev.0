@@ -4,28 +4,28 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2CA7C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 06:31:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D41C3C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 06:31:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L9Bdb2vbwz3dvy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 16:31:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L9Bf23p3Rz3f1m
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 16:31:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9Bbs1yF7z2yw0
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 16:29:45 +1000 (AEST)
-Received: from kwepemi100008.china.huawei.com (unknown [172.30.72.56])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4L9BXB5rvWzRhVs;
-	Sat, 28 May 2022 14:26:34 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9Bbr3X5Kz2xnN
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 16:29:43 +1000 (AEST)
+Received: from kwepemi500005.china.huawei.com (unknown [172.30.72.53])
+	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4L9BbN4qW4zDqKD;
+	Sat, 28 May 2022 14:29:20 +0800 (CST)
 Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- kwepemi100008.china.huawei.com (7.221.188.57) with Microsoft SMTP Server
+ kwepemi500005.china.huawei.com (7.221.188.179) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Sat, 28 May 2022 14:29:37 +0800
+ 15.1.2375.24; Sat, 28 May 2022 14:29:27 +0800
 Received: from localhost.localdomain (10.175.112.125) by
  kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Sat, 28 May 2022 14:29:36 +0800
+ 15.1.2375.24; Sat, 28 May 2022 14:29:25 +0800
 From: Tong Tiangen <tongtiangen@huawei.com>
 To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
 	Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
@@ -36,9 +36,9 @@ To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
 	<benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
 	<x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -next v5 8/8] arm64: add cow to machine check safe
-Date: Sat, 28 May 2022 06:50:56 +0000
-Message-ID: <20220528065056.1034168-9-tongtiangen@huawei.com>
+Subject: [PATCH -next v5 1/8] arm64: extable: add new extable type EX_TYPE_KACCESS_ERR_ZERO support
+Date: Sat, 28 May 2022 06:50:49 +0000
+Message-ID: <20220528065056.1034168-2-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220528065056.1034168-1-tongtiangen@huawei.com>
 References: <20220528065056.1034168-1-tongtiangen@huawei.com>
@@ -64,380 +64,219 @@ Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Xie XiuQi <xiexiuqi@huawei.com>, l
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In the cow(copy on write) processing, the data of the user process is
-copied, when hardware memory error is encountered during copy, only the
-relevant processes are affected, so killing the user process and isolate
-the user page with hardware memory errors is a more reasonable choice than
-kernel panic.
+Currently, The extable type EX_TYPE_UACCESS_ERR_ZERO is used by
+__get/put_kernel_nofault(), but those helpers are not uaccess type, so we
+add a new extable type EX_TYPE_KACCESS_ERR_ZERO which can be used by
+__get/put_kernel_no_fault().
 
-Add new helper copy_page_mc() which provide a page copy implementation with
-machine check safe. At present, only used in cow. In future, we can expand
-more scenes. As long as the consequences of page copy failure are not
-fatal(eg: only affect user process), we can use this helper.
+This is also to prepare for distinguishing the two types in machine check
+safe process.
 
-The copy_page_mc() in copy_page_mc.S is largely borrows from copy_page()
-in copy_page.S and the main difference is copy_page_mc() add extable entry
-to every load/store insn to support machine check safe. largely to keep the
-patch simple. If needed those optimizations can be folded in.
-
-Add new extable type EX_TYPE_COPY_PAGE_MC which used in copy_page_mc().
-
+Suggested-by: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
 ---
- arch/arm64/include/asm/asm-extable.h | 10 ++++
- arch/arm64/include/asm/mte.h         |  4 ++
- arch/arm64/include/asm/page.h        | 10 ++++
- arch/arm64/lib/Makefile              |  2 +
- arch/arm64/lib/copy_page_mc.S        | 82 ++++++++++++++++++++++++++++
- arch/arm64/lib/mte.S                 | 19 +++++++
- arch/arm64/mm/copypage.c             | 41 +++++++++++---
- arch/arm64/mm/extable.c              |  9 +++
- include/linux/highmem.h              |  8 +++
- mm/memory.c                          |  2 +-
- 10 files changed, 179 insertions(+), 8 deletions(-)
- create mode 100644 arch/arm64/lib/copy_page_mc.S
+ arch/arm64/include/asm/asm-extable.h | 13 ++++
+ arch/arm64/include/asm/uaccess.h     | 94 ++++++++++++++--------------
+ arch/arm64/mm/extable.c              |  1 +
+ 3 files changed, 61 insertions(+), 47 deletions(-)
 
 diff --git a/arch/arm64/include/asm/asm-extable.h b/arch/arm64/include/asm/asm-extable.h
-index 1f2974467273..6f626388c176 100644
+index c39f2437e08e..56ebe183e78b 100644
 --- a/arch/arm64/include/asm/asm-extable.h
 +++ b/arch/arm64/include/asm/asm-extable.h
 @@ -7,6 +7,7 @@
- #define EX_TYPE_UACCESS_ERR_ZERO	2
- #define EX_TYPE_LOAD_UNALIGNED_ZEROPAD	3
- #define EX_TYPE_KACCESS_ERR_ZERO	4
-+#define EX_TYPE_COPY_PAGE_MC		5
+ #define EX_TYPE_BPF			2
+ #define EX_TYPE_UACCESS_ERR_ZERO	3
+ #define EX_TYPE_LOAD_UNALIGNED_ZEROPAD	4
++#define EX_TYPE_KACCESS_ERR_ZERO	5
  
  #ifdef __ASSEMBLY__
  
-@@ -27,6 +28,11 @@
- 	.macro          _asm_extable_uaccess, insn, fixup
- 	__ASM_EXTABLE_RAW(\insn, \fixup, EX_TYPE_UACCESS_ERR_ZERO, ~0)
- 	.endm
+@@ -73,9 +74,21 @@
+ 			    EX_DATA_REG(ZERO, zero)			\
+ 			  ")")
+ 
++#define _ASM_EXTABLE_KACCESS_ERR_ZERO(insn, fixup, err, zero)		\
++	__DEFINE_ASM_GPR_NUMS						\
++	__ASM_EXTABLE_RAW(#insn, #fixup, 				\
++			  __stringify(EX_TYPE_KACCESS_ERR_ZERO),	\
++			  "("						\
++			    EX_DATA_REG(ERR, err) " | "			\
++			    EX_DATA_REG(ZERO, zero)			\
++			  ")")
 +
-+	.macro          _asm_extable_copy_page_mc, insn, fixup
-+	__ASM_EXTABLE_RAW(\insn, \fixup, EX_TYPE_COPY_PAGE_MC, 0)
-+	.endm
+ #define _ASM_EXTABLE_UACCESS_ERR(insn, fixup, err)			\
+ 	_ASM_EXTABLE_UACCESS_ERR_ZERO(insn, fixup, err, wzr)
+ 
++#define _ASM_EXTABLE_KACCESS_ERR(insn, fixup, err)			\
++	_ASM_EXTABLE_KACCESS_ERR_ZERO(insn, fixup, err, wzr)
 +
+ #define EX_DATA_REG_DATA_SHIFT	0
+ #define EX_DATA_REG_DATA	GENMASK(4, 0)
+ #define EX_DATA_REG_ADDR_SHIFT	5
+diff --git a/arch/arm64/include/asm/uaccess.h b/arch/arm64/include/asm/uaccess.h
+index 63f9c828f1a7..2fc9f0861769 100644
+--- a/arch/arm64/include/asm/uaccess.h
++++ b/arch/arm64/include/asm/uaccess.h
+@@ -232,34 +232,34 @@ static inline void __user *__uaccess_mask_ptr(const void __user *ptr)
+  * The "__xxx_error" versions set the third argument to -EFAULT if an error
+  * occurs, and leave it unchanged on success.
+  */
+-#define __get_mem_asm(load, reg, x, addr, err)				\
++#define __get_mem_asm(load, reg, x, addr, err, type)			\
+ 	asm volatile(							\
+ 	"1:	" load "	" reg "1, [%2]\n"			\
+ 	"2:\n"								\
+-	_ASM_EXTABLE_UACCESS_ERR_ZERO(1b, 2b, %w0, %w1)			\
++	_ASM_EXTABLE_##type##ACCESS_ERR_ZERO(1b, 2b, %w0, %w1)		\
+ 	: "+r" (err), "=&r" (x)						\
+ 	: "r" (addr))
+ 
+-#define __raw_get_mem(ldr, x, ptr, err)					\
+-do {									\
+-	unsigned long __gu_val;						\
+-	switch (sizeof(*(ptr))) {					\
+-	case 1:								\
+-		__get_mem_asm(ldr "b", "%w", __gu_val, (ptr), (err));	\
+-		break;							\
+-	case 2:								\
+-		__get_mem_asm(ldr "h", "%w", __gu_val, (ptr), (err));	\
+-		break;							\
+-	case 4:								\
+-		__get_mem_asm(ldr, "%w", __gu_val, (ptr), (err));	\
+-		break;							\
+-	case 8:								\
+-		__get_mem_asm(ldr, "%x",  __gu_val, (ptr), (err));	\
+-		break;							\
+-	default:							\
+-		BUILD_BUG();						\
+-	}								\
+-	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
++#define __raw_get_mem(ldr, x, ptr, err, type)					\
++do {										\
++	unsigned long __gu_val;							\
++	switch (sizeof(*(ptr))) {						\
++	case 1:									\
++		__get_mem_asm(ldr "b", "%w", __gu_val, (ptr), (err), type);	\
++		break;								\
++	case 2:									\
++		__get_mem_asm(ldr "h", "%w", __gu_val, (ptr), (err), type);	\
++		break;								\
++	case 4:									\
++		__get_mem_asm(ldr, "%w", __gu_val, (ptr), (err), type);		\
++		break;								\
++	case 8:									\
++		__get_mem_asm(ldr, "%x",  __gu_val, (ptr), (err), type);	\
++		break;								\
++	default:								\
++		BUILD_BUG();							\
++	}									\
++	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
+ } while (0)
+ 
  /*
-  * Create an exception table entry for `insn` if `fixup` is provided. Otherwise
-  * do nothing.
-@@ -37,6 +43,10 @@
- 	.endif
- 	.endm
+@@ -274,7 +274,7 @@ do {									\
+ 	__chk_user_ptr(ptr);						\
+ 									\
+ 	uaccess_ttbr0_enable();						\
+-	__raw_get_mem("ldtr", __rgu_val, __rgu_ptr, err);		\
++	__raw_get_mem("ldtr", __rgu_val, __rgu_ptr, err, U);		\
+ 	uaccess_ttbr0_disable();					\
+ 									\
+ 	(x) = __rgu_val;						\
+@@ -314,40 +314,40 @@ do {									\
+ 									\
+ 	__uaccess_enable_tco_async();					\
+ 	__raw_get_mem("ldr", *((type *)(__gkn_dst)),			\
+-		      (__force type *)(__gkn_src), __gkn_err);		\
++		      (__force type *)(__gkn_src), __gkn_err, K);	\
+ 	__uaccess_disable_tco_async();					\
+ 									\
+ 	if (unlikely(__gkn_err))					\
+ 		goto err_label;						\
+ } while (0)
  
-+#define CPY_MC(l, x...)		\
-+9999:   x;			\
-+	_asm_extable_copy_page_mc    9999b, l
-+
- #else /* __ASSEMBLY__ */
+-#define __put_mem_asm(store, reg, x, addr, err)				\
++#define __put_mem_asm(store, reg, x, addr, err, type)			\
+ 	asm volatile(							\
+ 	"1:	" store "	" reg "1, [%2]\n"			\
+ 	"2:\n"								\
+-	_ASM_EXTABLE_UACCESS_ERR(1b, 2b, %w0)				\
++	_ASM_EXTABLE_##type##ACCESS_ERR(1b, 2b, %w0)			\
+ 	: "+r" (err)							\
+ 	: "r" (x), "r" (addr))
  
- #include <linux/bits.h>
-diff --git a/arch/arm64/include/asm/mte.h b/arch/arm64/include/asm/mte.h
-index aa523591a44e..b8129f64cfea 100644
---- a/arch/arm64/include/asm/mte.h
-+++ b/arch/arm64/include/asm/mte.h
-@@ -40,6 +40,7 @@ void mte_free_tag_storage(char *storage);
- void mte_zero_clear_page_tags(void *addr);
- void mte_sync_tags(pte_t old_pte, pte_t pte);
- void mte_copy_page_tags(void *kto, const void *kfrom);
-+void mte_copy_page_tags_mc(void *kto, const void *kfrom);
- void mte_thread_init_user(void);
- void mte_thread_switch(struct task_struct *next);
- void mte_suspend_enter(void);
-@@ -63,6 +64,9 @@ static inline void mte_sync_tags(pte_t old_pte, pte_t pte)
- static inline void mte_copy_page_tags(void *kto, const void *kfrom)
- {
- }
-+static inline void mte_copy_page_tags_mc(void *kto, const void *kfrom)
-+{
-+}
- static inline void mte_thread_init_user(void)
- {
- }
-diff --git a/arch/arm64/include/asm/page.h b/arch/arm64/include/asm/page.h
-index 993a27ea6f54..832571a7dddb 100644
---- a/arch/arm64/include/asm/page.h
-+++ b/arch/arm64/include/asm/page.h
-@@ -29,6 +29,16 @@ void copy_user_highpage(struct page *to, struct page *from,
- void copy_highpage(struct page *to, struct page *from);
- #define __HAVE_ARCH_COPY_HIGHPAGE
+-#define __raw_put_mem(str, x, ptr, err)					\
+-do {									\
+-	__typeof__(*(ptr)) __pu_val = (x);				\
+-	switch (sizeof(*(ptr))) {					\
+-	case 1:								\
+-		__put_mem_asm(str "b", "%w", __pu_val, (ptr), (err));	\
+-		break;							\
+-	case 2:								\
+-		__put_mem_asm(str "h", "%w", __pu_val, (ptr), (err));	\
+-		break;							\
+-	case 4:								\
+-		__put_mem_asm(str, "%w", __pu_val, (ptr), (err));	\
+-		break;							\
+-	case 8:								\
+-		__put_mem_asm(str, "%x", __pu_val, (ptr), (err));	\
+-		break;							\
+-	default:							\
+-		BUILD_BUG();						\
+-	}								\
++#define __raw_put_mem(str, x, ptr, err, type)					\
++do {										\
++	__typeof__(*(ptr)) __pu_val = (x);					\
++	switch (sizeof(*(ptr))) {						\
++	case 1:									\
++		__put_mem_asm(str "b", "%w", __pu_val, (ptr), (err), type);	\
++		break;								\
++	case 2:									\
++		__put_mem_asm(str "h", "%w", __pu_val, (ptr), (err), type);	\
++		break;								\
++	case 4:									\
++		__put_mem_asm(str, "%w", __pu_val, (ptr), (err), type);		\
++		break;								\
++	case 8:									\
++		__put_mem_asm(str, "%x", __pu_val, (ptr), (err), type);		\
++		break;								\
++	default:								\
++		BUILD_BUG();							\
++	}									\
+ } while (0)
  
-+#ifdef CONFIG_ARCH_HAS_COPY_MC
-+extern void copy_page_mc(void *to, const void *from);
-+void copy_highpage_mc(struct page *to, struct page *from);
-+#define __HAVE_ARCH_COPY_HIGHPAGE_MC
-+
-+void copy_user_highpage_mc(struct page *to, struct page *from,
-+		unsigned long vaddr, struct vm_area_struct *vma);
-+#define __HAVE_ARCH_COPY_USER_HIGHPAGE_MC
-+#endif
-+
- struct page *alloc_zeroed_user_highpage_movable(struct vm_area_struct *vma,
- 						unsigned long vaddr);
- #define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE_MOVABLE
-diff --git a/arch/arm64/lib/Makefile b/arch/arm64/lib/Makefile
-index 29490be2546b..0d9f292ef68a 100644
---- a/arch/arm64/lib/Makefile
-+++ b/arch/arm64/lib/Makefile
-@@ -15,6 +15,8 @@ endif
- 
- lib-$(CONFIG_ARCH_HAS_UACCESS_FLUSHCACHE) += uaccess_flushcache.o
- 
-+lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_page_mc.o
-+
- obj-$(CONFIG_CRC32) += crc32.o
- 
- obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
-diff --git a/arch/arm64/lib/copy_page_mc.S b/arch/arm64/lib/copy_page_mc.S
-new file mode 100644
-index 000000000000..65fcad1dd7c8
---- /dev/null
-+++ b/arch/arm64/lib/copy_page_mc.S
-@@ -0,0 +1,82 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Copyright (C) 2012 ARM Ltd.
-+ */
-+
-+#include <linux/linkage.h>
-+#include <linux/const.h>
-+#include <asm/assembler.h>
-+#include <asm/page.h>
-+#include <asm/cpufeature.h>
-+#include <asm/alternative.h>
-+#include <asm/asm-extable.h>
-+
-+/*
-+ * Copy a page from src to dest (both are page aligned) with machine check
-+ *
-+ * Parameters:
-+ *	x0 - dest
-+ *	x1 - src
-+ */
-+SYM_FUNC_START(__pi_copy_page_mc)
-+alternative_if ARM64_HAS_NO_HW_PREFETCH
-+	// Prefetch three cache lines ahead.
-+	prfm	pldl1strm, [x1, #128]
-+	prfm	pldl1strm, [x1, #256]
-+	prfm	pldl1strm, [x1, #384]
-+alternative_else_nop_endif
-+
-+CPY_MC(9998f, ldp	x2, x3, [x1])
-+CPY_MC(9998f, ldp	x4, x5, [x1, #16])
-+CPY_MC(9998f, ldp	x6, x7, [x1, #32])
-+CPY_MC(9998f, ldp	x8, x9, [x1, #48])
-+CPY_MC(9998f, ldp	x10, x11, [x1, #64])
-+CPY_MC(9998f, ldp	x12, x13, [x1, #80])
-+CPY_MC(9998f, ldp	x14, x15, [x1, #96])
-+CPY_MC(9998f, ldp	x16, x17, [x1, #112])
-+
-+	add	x0, x0, #256
-+	add	x1, x1, #128
-+1:
-+	tst	x0, #(PAGE_SIZE - 1)
-+
-+alternative_if ARM64_HAS_NO_HW_PREFETCH
-+	prfm	pldl1strm, [x1, #384]
-+alternative_else_nop_endif
-+
-+CPY_MC(9998f, stnp	x2, x3, [x0, #-256])
-+CPY_MC(9998f, ldp	x2, x3, [x1])
-+CPY_MC(9998f, stnp	x4, x5, [x0, #16 - 256])
-+CPY_MC(9998f, ldp	x4, x5, [x1, #16])
-+CPY_MC(9998f, stnp	x6, x7, [x0, #32 - 256])
-+CPY_MC(9998f, ldp	x6, x7, [x1, #32])
-+CPY_MC(9998f, stnp	x8, x9, [x0, #48 - 256])
-+CPY_MC(9998f, ldp	x8, x9, [x1, #48])
-+CPY_MC(9998f, stnp	x10, x11, [x0, #64 - 256])
-+CPY_MC(9998f, ldp	x10, x11, [x1, #64])
-+CPY_MC(9998f, stnp	x12, x13, [x0, #80 - 256])
-+CPY_MC(9998f, ldp	x12, x13, [x1, #80])
-+CPY_MC(9998f, stnp	x14, x15, [x0, #96 - 256])
-+CPY_MC(9998f, ldp	x14, x15, [x1, #96])
-+CPY_MC(9998f, stnp	x16, x17, [x0, #112 - 256])
-+CPY_MC(9998f, ldp	x16, x17, [x1, #112])
-+
-+	add	x0, x0, #128
-+	add	x1, x1, #128
-+
-+	b.ne	1b
-+
-+CPY_MC(9998f, stnp	x2, x3, [x0, #-256])
-+CPY_MC(9998f, stnp	x4, x5, [x0, #16 - 256])
-+CPY_MC(9998f, stnp	x6, x7, [x0, #32 - 256])
-+CPY_MC(9998f, stnp	x8, x9, [x0, #48 - 256])
-+CPY_MC(9998f, stnp	x10, x11, [x0, #64 - 256])
-+CPY_MC(9998f, stnp	x12, x13, [x0, #80 - 256])
-+CPY_MC(9998f, stnp	x14, x15, [x0, #96 - 256])
-+CPY_MC(9998f, stnp	x16, x17, [x0, #112 - 256])
-+
-+9998:	ret
-+
-+SYM_FUNC_END(__pi_copy_page_mc)
-+SYM_FUNC_ALIAS(copy_page_mc, __pi_copy_page_mc)
-+EXPORT_SYMBOL(copy_page_mc)
-diff --git a/arch/arm64/lib/mte.S b/arch/arm64/lib/mte.S
-index eeb9e45bcce8..cf728a9f39b5 100644
---- a/arch/arm64/lib/mte.S
-+++ b/arch/arm64/lib/mte.S
-@@ -80,6 +80,25 @@ SYM_FUNC_START(mte_copy_page_tags)
- 	ret
- SYM_FUNC_END(mte_copy_page_tags)
- 
-+/*
-+ * Copy the tags from the source page to the destination one wiht machine check safe
-+ *   x0 - address of the destination page
-+ *   x1 - address of the source page
-+ */
-+SYM_FUNC_START(mte_copy_page_tags_mc)
-+	mov	x2, x0
-+	mov	x3, x1
-+	multitag_transfer_size x5, x6
-+1:
-+CPY_MC(2f, ldgm	x4, [x3])
-+	stgm	x4, [x2]
-+	add	x2, x2, x5
-+	add	x3, x3, x5
-+	tst	x2, #(PAGE_SIZE - 1)
-+	b.ne	1b
-+2:	ret
-+SYM_FUNC_END(mte_copy_page_tags_mc)
-+
  /*
-  * Read tags from a user buffer (one tag per byte) and set the corresponding
-  * tags at the given kernel address. Used by PTRACE_POKEMTETAGS.
-diff --git a/arch/arm64/mm/copypage.c b/arch/arm64/mm/copypage.c
-index 0dea80bf6de4..d68c5fc753a2 100644
---- a/arch/arm64/mm/copypage.c
-+++ b/arch/arm64/mm/copypage.c
-@@ -14,13 +14,8 @@
- #include <asm/cpufeature.h>
- #include <asm/mte.h>
+@@ -362,7 +362,7 @@ do {									\
+ 	__chk_user_ptr(__rpu_ptr);					\
+ 									\
+ 	uaccess_ttbr0_enable();						\
+-	__raw_put_mem("sttr", __rpu_val, __rpu_ptr, err);		\
++	__raw_put_mem("sttr", __rpu_val, __rpu_ptr, err, U);		\
+ 	uaccess_ttbr0_disable();					\
+ } while (0)
  
--void copy_highpage(struct page *to, struct page *from)
-+static void do_mte(struct page *to, struct page *from, void *kto, void *kfrom, bool mc)
- {
--	void *kto = page_address(to);
--	void *kfrom = page_address(from);
--
--	copy_page(kto, kfrom);
--
- 	if (system_supports_mte() && test_bit(PG_mte_tagged, &from->flags)) {
- 		set_bit(PG_mte_tagged, &to->flags);
- 		page_kasan_tag_reset(to);
-@@ -32,9 +27,21 @@ void copy_highpage(struct page *to, struct page *from)
- 		 * the new page->flags are visible before the tags were updated.
- 		 */
- 		smp_wmb();
--		mte_copy_page_tags(kto, kfrom);
-+		if (mc)
-+			mte_copy_page_tags_mc(kto, kfrom);
-+		else
-+			mte_copy_page_tags(kto, kfrom);
- 	}
- }
-+
-+void copy_highpage(struct page *to, struct page *from)
-+{
-+	void *kto = page_address(to);
-+	void *kfrom = page_address(from);
-+
-+	copy_page(kto, kfrom);
-+	do_mte(to, from, kto, kfrom, false);
-+}
- EXPORT_SYMBOL(copy_highpage);
- 
- void copy_user_highpage(struct page *to, struct page *from,
-@@ -44,3 +51,23 @@ void copy_user_highpage(struct page *to, struct page *from,
- 	flush_dcache_page(to);
- }
- EXPORT_SYMBOL_GPL(copy_user_highpage);
-+
-+#ifdef CONFIG_ARCH_HAS_COPY_MC
-+void copy_highpage_mc(struct page *to, struct page *from)
-+{
-+	void *kto = page_address(to);
-+	void *kfrom = page_address(from);
-+
-+	copy_page_mc(kto, kfrom);
-+	do_mte(to, from, kto, kfrom, true);
-+}
-+EXPORT_SYMBOL(copy_highpage_mc);
-+
-+void copy_user_highpage_mc(struct page *to, struct page *from,
-+			unsigned long vaddr, struct vm_area_struct *vma)
-+{
-+	copy_highpage_mc(to, from);
-+	flush_dcache_page(to);
-+}
-+EXPORT_SYMBOL_GPL(copy_user_highpage_mc);
-+#endif
+@@ -400,7 +400,7 @@ do {									\
+ 									\
+ 	__uaccess_enable_tco_async();					\
+ 	__raw_put_mem("str", *((type *)(__pkn_src)),			\
+-		      (__force type *)(__pkn_dst), __pkn_err);		\
++		      (__force type *)(__pkn_dst), __pkn_err, K);	\
+ 	__uaccess_disable_tco_async();					\
+ 									\
+ 	if (unlikely(__pkn_err))					\
 diff --git a/arch/arm64/mm/extable.c b/arch/arm64/mm/extable.c
-index 8ca8d9639f9f..c96274a4db40 100644
+index 489455309695..056591e5ca80 100644
 --- a/arch/arm64/mm/extable.c
 +++ b/arch/arm64/mm/extable.c
-@@ -17,6 +17,13 @@ get_ex_fixup(const struct exception_table_entry *ex)
- 	return ((unsigned long)&ex->fixup + ex->fixup);
- }
- 
-+static bool ex_handler_fixup(const struct exception_table_entry *ex,
-+			     struct pt_regs *regs)
-+{
-+	regs->pc = get_ex_fixup(ex);
-+	return true;
-+}
-+
- static bool ex_handler_uaccess_err_zero(const struct exception_table_entry *ex,
- 					struct pt_regs *regs)
- {
-@@ -89,6 +96,8 @@ bool fixup_exception_mc(struct pt_regs *regs)
- 	switch (ex->type) {
+@@ -77,6 +77,7 @@ bool fixup_exception(struct pt_regs *regs)
+ 	case EX_TYPE_BPF:
+ 		return ex_handler_bpf(ex, regs);
  	case EX_TYPE_UACCESS_ERR_ZERO:
++	case EX_TYPE_KACCESS_ERR_ZERO:
  		return ex_handler_uaccess_err_zero(ex, regs);
-+	case EX_TYPE_COPY_PAGE_MC:
-+		return ex_handler_fixup(ex, regs);
- 	}
- 
- 	return false;
-diff --git a/include/linux/highmem.h b/include/linux/highmem.h
-index 3af34de54330..6c19e6bc0746 100644
---- a/include/linux/highmem.h
-+++ b/include/linux/highmem.h
-@@ -308,6 +308,10 @@ static inline void copy_user_highpage(struct page *to, struct page *from,
- 
- #endif
- 
-+#ifndef __HAVE_ARCH_COPY_USER_HIGHPAGE_MC
-+#define copy_user_highpage_mc copy_user_highpage
-+#endif
-+
- #ifndef __HAVE_ARCH_COPY_HIGHPAGE
- 
- static inline void copy_highpage(struct page *to, struct page *from)
-@@ -323,6 +327,10 @@ static inline void copy_highpage(struct page *to, struct page *from)
- 
- #endif
- 
-+#ifndef __HAVE_ARCH_COPY_HIGHPAGE_MC
-+#define cop_highpage_mc copy_highpage
-+#endif
-+
- static inline void memcpy_page(struct page *dst_page, size_t dst_off,
- 			       struct page *src_page, size_t src_off,
- 			       size_t len)
-diff --git a/mm/memory.c b/mm/memory.c
-index 21dadf03f089..06408451ed38 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2845,7 +2845,7 @@ static inline bool __wp_page_copy_user(struct page *dst, struct page *src,
- 	unsigned long addr = vmf->address;
- 
- 	if (likely(src)) {
--		copy_user_highpage(dst, src, addr, vma);
-+		copy_user_highpage_mc(dst, src, addr, vma);
- 		return true;
- 	}
- 
+ 	case EX_TYPE_LOAD_UNALIGNED_ZEROPAD:
+ 		return ex_handler_load_unaligned_zeropad(ex, regs);
 -- 
 2.25.1
 
